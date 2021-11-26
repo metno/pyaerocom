@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Type
 
@@ -13,21 +12,20 @@ from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
 from ..conftest import geojson_unavail
+from ._outbase import AEROVAL_OUT
 from .cfg_test_exp1 import CFG as cfgexp1
 
-BASEDIR_DEFAULT = os.path.join(const.OUTPUTDIR, "aeroval/data")
-from ._outbase import AEROVAL_OUT as BASEOUT
-
-DUMMY_OUT = os.path.join(BASEOUT, "dummy")
+BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
+DUMMY_OUT = Path(AEROVAL_OUT) / "dummy"
 
 
 @pytest.fixture(scope="module")
-def dummy_setup():
-    return EvalSetup(proj_id="proj", exp_id="exp", json_basedir=DUMMY_OUT)
+def dummy_setup() -> EvalSetup:
+    return EvalSetup(proj_id="proj", exp_id="exp", json_basedir=str(DUMMY_OUT))
 
 
 @pytest.fixture(scope="module")
-def dummy_expout(dummy_setup):
+def dummy_expout(dummy_setup) -> ExperimentOutput:
     return ExperimentOutput(dummy_setup)
 
 
@@ -60,51 +58,51 @@ def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], 
     assert str(e.value) == error
 
 
-def test_ProjectOutput_proj_dir(tmpdir):
-    loc = str(tmpdir)
-    val = ProjectOutput("test", loc)
-    path = os.path.join(loc, "test")
-    assert val.proj_dir == path
-    assert os.path.exists(path)
+def test_ProjectOutput_proj_dir(tmp_path: Path):
+    val = ProjectOutput("test", str(tmp_path))
+    path = tmp_path / "test"
+    assert val.proj_dir == str(path)
+    assert path.exists()
 
 
-def test_ProjectOutput_experiments_file(tmpdir):
-    loc = str(tmpdir)
-    val = ProjectOutput("test", loc)
-    fp = os.path.join(loc, "test", "experiments.json")
-    assert val.experiments_file == fp
-    assert os.path.exists(fp)
+def test_ProjectOutput_experiments_file(tmp_path: Path):
+    val = ProjectOutput("test", str(tmp_path))
+    path = tmp_path / "test" / "experiments.json"
+    assert Path(val.experiments_file) == path
+    assert path.exists()
 
 
-@pytest.mark.parametrize("add", [None, "exp"])
-def test_ProjectOutput_available_experiments(tmpdir, add):
-    loc = str(tmpdir)
-    val = ProjectOutput("test", loc)
-    fp = val.experiments_file
-    if add is not None:
-        write_json({add: 42}, fp)
-        assert add in val.available_experiments
-    else:
-        val.available_experiments == []
+def test_ProjectOutput_available_experiments(tmp_path: Path):
+    val = ProjectOutput("test", str(tmp_path))
+    assert val.available_experiments == []
+
+    write_json({"exp": 42}, val.experiments_file)
+    assert val.available_experiments == ["exp"]
 
 
-def test_ProjectOutput__add_entry_experiments_json(tmpdir):
-    loc = str(tmpdir)
-    val = ProjectOutput("test", loc)
+def test_ProjectOutput__add_entry_experiments_json(tmp_path: Path):
+    val = ProjectOutput("test", str(tmp_path))
+    assert val.available_experiments == []
+
     val._add_entry_experiments_json("test", 42)
-    assert "test" in val.available_experiments
+    assert val.available_experiments == ["test"]
 
 
-def test_ProjectOutput__del_entry_experiments_json(tmpdir):
-    loc = str(tmpdir)
+def test_ProjectOutput__del_entry_experiments_json(tmp_path: Path):
+    val = ProjectOutput("test", str(tmp_path))
+
     exp_id = "test"
-    val = ProjectOutput("test", loc)
+    assert exp_id not in val.available_experiments
+
     val._add_entry_experiments_json(exp_id, {})
     assert exp_id in val.available_experiments
+
     val._del_entry_experiments_json(exp_id)
     assert exp_id not in val.available_experiments
+
     # to catch KeyError and make sure it passes
     val._del_entry_experiments_json(exp_id)
+    assert exp_id not in val.available_experiments
 
 
 def test_ExperimentOutput():
@@ -112,8 +110,10 @@ def test_ExperimentOutput():
     val = ExperimentOutput(cfg)
     assert isinstance(val.cfg, EvalSetup)
     assert val.proj_id == cfg["proj_info"]["proj_id"]
-    assert os.path.exists(BASEDIR_DEFAULT)
-    assert os.path.samefile(val.json_basedir, BASEDIR_DEFAULT)
+
+    path = Path(val.json_basedir)
+    assert path == BASEDIR_DEFAULT
+    assert path.exists()
 
 
 def test_ExperimentOutput_error():
@@ -122,50 +122,53 @@ def test_ExperimentOutput_error():
     assert str(e.value) == "need instance of <class 'pyaerocom.aeroval.setupclasses.EvalSetup'>"
 
 
-def test_ExperimentOutput_exp_id(dummy_expout):
+def test_ExperimentOutput_exp_id(dummy_expout: ExperimentOutput):
     assert dummy_expout.exp_id == "exp"
 
 
-def test_ExperimentOutput_exp_dir(dummy_expout):
-
-    exp_dir = os.path.join(DUMMY_OUT, "proj", "exp")
-    assert dummy_expout.exp_dir == exp_dir
+def test_ExperimentOutput_exp_dir(dummy_expout: ExperimentOutput):
+    assert Path(dummy_expout.exp_dir) == DUMMY_OUT / "proj" / "exp"
 
 
-def test_ExperimentOutput_regions_file(dummy_expout):
-    assert dummy_expout.regions_file == os.path.join(dummy_expout.exp_dir, "regions.json")
+def test_ExperimentOutput_regions_file(dummy_expout: ExperimentOutput):
+    path = Path(dummy_expout.regions_file)
+    assert str(path.parent) == dummy_expout.exp_dir
+    assert path.name == "regions.json"
 
 
-def test_ExperimentOutput_statistics_file(dummy_expout):
-    assert dummy_expout.statistics_file == os.path.join(dummy_expout.exp_dir, "statistics.json")
+def test_ExperimentOutput_statistics_file(dummy_expout: ExperimentOutput):
+    path = Path(dummy_expout.statistics_file)
+    assert str(path.parent) == dummy_expout.exp_dir
+    assert path.name == "statistics.json"
 
 
-def test_ExperimentOutput_var_ranges_file(dummy_expout):
-    assert dummy_expout.var_ranges_file == os.path.join(dummy_expout.exp_dir, "ranges.json")
+def test_ExperimentOutput_var_ranges_file(dummy_expout: ExperimentOutput):
+    path = Path(dummy_expout.var_ranges_file)
+    assert str(path.parent) == dummy_expout.exp_dir
+    assert path.name == "ranges.json"
 
 
-def test_ExperimentOutput_menu_file(dummy_expout):
-    assert dummy_expout.menu_file == os.path.join(dummy_expout.exp_dir, "menu.json")
+def test_ExperimentOutput_menu_file(dummy_expout: ExperimentOutput):
+    path = Path(dummy_expout.menu_file)
+    assert str(path.parent) == dummy_expout.exp_dir
+    assert path.name == "menu.json"
 
 
-def test_ExperimentOutput_results_available_False(dummy_setup):
-    eo = ExperimentOutput(dummy_setup)
-    assert not eo.results_available
-    fp = eo.exp_dir
-    assert not eo.results_available
+def test_ExperimentOutput_results_available_False(dummy_expout: ExperimentOutput):
+    assert not dummy_expout.results_available
 
 
-def test_ExperimentOutput_update_menu_EMPTY(dummy_expout):
+def test_ExperimentOutput_update_menu_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout.update_menu()
-    assert os.path.exists(dummy_expout.menu_file)
+    assert Path(dummy_expout.menu_file).exists()
     assert read_json(dummy_expout.menu_file) == {}
 
 
-def test_ExperimentOutput_update_interface_EMPTY(dummy_expout):
+def test_ExperimentOutput_update_interface_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout.update_interface()
 
 
-def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout):
+def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout._sync_heatmaps_with_menu_and_regions()
 
 
@@ -192,48 +195,43 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
     )
 
 
-def test_ExperimentOutput__results_summary_EMPTY(dummy_expout):
-    assert dummy_expout._results_summary() == {
-        "obs": [],
-        "ovar": [],
-        "vc": [],
-        "mod": [],
-        "mvar": [],
-    }
+def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
+    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[])
 
 
-def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout):
+def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout: ExperimentOutput):
     modified = dummy_expout.clean_json_files()
     assert len(modified) == 0
 
 
 @pytest.mark.skip(reason="needs revision")
-def test_ExperimentOutput__clean_modelmap_files(dummy_expout):
+def test_ExperimentOutput__clean_modelmap_files(dummy_expout: ExperimentOutput):
     dummy_expout._clean_modelmap_files()
 
 
 @pytest.mark.parametrize("also_coldata", [True, False])
-def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
-    json_dir = os.path.join(tmpdir, "json")
-    coldata_dir = os.path.join(tmpdir, "coldata")
-    stp = EvalSetup(
-        proj_id="proj", exp_id="exp", coldata_basedir=coldata_dir, json_basedir=json_dir
+def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: bool):
+    json_path = tmp_path / "json"
+    coldata_path = tmp_path / "coldata"
+    setup = EvalSetup(
+        proj_id="proj",
+        exp_id="exp",
+        coldata_basedir=str(coldata_path),
+        json_basedir=str(json_path),
     )
+    assert coldata_path.exists()
 
-    eo = ExperimentOutput(stp)
-    expdir = os.path.join(json_dir, "proj", "exp")
-    coldir = os.path.join(coldata_dir, "proj", "exp")
-    col_out = eo.cfg.path_manager.get_coldata_dir()
-    assert os.path.samefile(coldir, col_out)
-    assert os.path.samefile(expdir, eo.exp_dir)
-    assert os.path.exists(coldata_dir)
-    assert os.path.exists(coldir)
-    eo.delete_experiment_data(also_coldata=also_coldata)
-    assert not os.path.exists(expdir)
-    if also_coldata:
-        assert not os.path.exists(coldir)
-    else:
-        assert os.path.exists(coldata_dir)
+    out = ExperimentOutput(setup)
+    expdir = json_path / "proj" / "exp"
+    coldir = coldata_path / "proj" / "exp"
+    assert coldir == Path(out.cfg.path_manager.get_coldata_dir())
+    assert expdir == Path(out.exp_dir)
+    assert coldir.exists()
+
+    out.delete_experiment_data(also_coldata=also_coldata)
+    assert coldata_path.exists()
+    assert not expdir.exists()
+    assert coldir.exists() == (not also_coldata)
 
 
 @pytest.mark.parametrize(
@@ -249,7 +247,7 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
         ),
     ],
 )
-def test_ExperimentOutput__get_cmap_info(dummy_expout, var, val):
+def test_ExperimentOutput__get_cmap_info(dummy_expout: ExperimentOutput, var, val):
     assert dummy_expout._get_cmap_info(var) == val
 
 
@@ -264,10 +262,10 @@ def test_ExperimentOutput_delete_experiment_data_CFG1():
     cfg.time_cfg.add_seasons = False
     proc = ExperimentProcessor(cfg)
     proc.run()
-    chk = proc.exp_output.exp_dir
-    assert os.path.exists(chk)
+    path = Path(proc.exp_output.exp_dir)
+    assert path.exists()
     proc.exp_output.delete_experiment_data()
-    assert not os.path.exists(chk)
+    assert not path.exists()
 
 
 @geojson_unavail
@@ -311,22 +309,23 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
         (["c", "b", "a"], ["b", "c"], ["b", "c", "a"]),
     ],
 )
-def test_ExperimentOutput_reorder_experiments(dummy_expout, add_names, order, result):
+def test_ExperimentOutput_reorder_experiments(
+    dummy_expout: ExperimentOutput, add_names, order, result
+):
 
-    out = dummy_expout
-    path = Path(out.experiments_file)
+    path = Path(dummy_expout.experiments_file)
 
     data = dict().fromkeys(add_names, dict(public=True))
     assert list(data) == add_names
 
     write_json(data, path, indent=4)
-    out.reorder_experiments(order)
+    dummy_expout.reorder_experiments(order)
     new = read_json(path)
     assert list(new) == result
     path.unlink()
 
 
-def test_ExperimentOutput_reorder_experiments_error(dummy_expout):
+def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutput):
     with pytest.raises(ValueError) as e:
         dummy_expout.reorder_experiments("b")
     assert str(e.value) == "need list as input"
