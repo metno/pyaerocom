@@ -5,25 +5,32 @@ from typing import Type
 
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 
-import pyaerocom.aeroval.coldatatojson_helpers as mod
-import pyaerocom.exceptions as exceptions
 from pyaerocom import ColocatedData, TsType
+from pyaerocom.aeroval.coldatatojson_helpers import (
+    _get_jsdate,
+    _init_data_default_frequencies,
+    _make_trends,
+    _process_statistics_timeseries,
+    get_heatmap_filename,
+    get_json_mapname,
+    get_stationfile_name,
+)
+from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
 
 
 def test_get_heatmap_filename():
-    assert mod.get_heatmap_filename("daily") == "glob_stats_daily.json"
+    assert get_heatmap_filename("daily") == "glob_stats_daily.json"
 
 
 def test_get_stationfile_name():
-
-    val = mod.get_stationfile_name("stat1", "obs1", "var1", "Column")
+    val = get_stationfile_name("stat1", "obs1", "var1", "Column")
     assert val == "stat1_obs1-var1_Column.json"
 
 
 def test_get_json_mapname():
-    """Get name base name of json file"""
-    val = mod.get_json_mapname("obs1", "var1", "mod1", "var1", "Column")
+    val = get_json_mapname("obs1", "var1", "mod1", "var1", "Column")
     assert val == "obs1-var1_Column_mod1-var1.json"
 
 
@@ -36,7 +43,7 @@ def test_get_json_mapname():
 )
 def test__init_data_default_frequencies(coldata, which, to_ts_types):
     data = coldata[which]
-    result = mod._init_data_default_frequencies(data, to_ts_types)
+    result = _init_data_default_frequencies(data, to_ts_types)
     tst = TsType(data.ts_type)
     assert len(result) == len(to_ts_types)
     for freq, val in result.items():
@@ -49,13 +56,11 @@ def test__init_data_default_frequencies(coldata, which, to_ts_types):
 
 @pytest.fixture(scope="module")
 def example_coldata(coldata):
-    return mod._init_data_default_frequencies(
-        coldata["tm5_aeronet"], ["daily", "monthly", "yearly"]
-    )
+    return _init_data_default_frequencies(coldata["tm5_aeronet"], ["daily", "monthly", "yearly"])
 
 
 def test_get_jsdate(example_coldata):
-    vals = mod._get_jsdate(example_coldata["monthly"].data.time.values)
+    vals = _get_jsdate(example_coldata["monthly"].data.time.values)
     assert len(vals) == 12
 
 
@@ -75,7 +80,7 @@ def test_get_jsdate(example_coldata):
 def test__process_statistics_timeseries(
     example_coldata, freq: str, region_ids: dict[str, str], data_freq: str, nmb_avg
 ):
-    result = mod._process_statistics_timeseries(
+    result = _process_statistics_timeseries(
         example_coldata, freq, region_ids, False, False, data_freq
     )
     assert len(result) == len(region_ids)
@@ -87,7 +92,7 @@ def test__process_statistics_timeseries(
     if np.isnan(nmb_avg):
         assert np.isnan(mean_bias)
     else:
-        np.testing.assert_allclose(mean_bias, nmb_avg, atol=0.001)
+        assert_allclose(mean_bias, nmb_avg, atol=0.001)
 
 
 @pytest.mark.parametrize(
@@ -97,7 +102,7 @@ def test__process_statistics_timeseries(
             "monthly",
             {"bla": "blub"},
             None,
-            exceptions.UnknownRegion,
+            UnknownRegion,
             "no such region defined bla",
             id="unknown region",
         ),
@@ -105,7 +110,7 @@ def test__process_statistics_timeseries(
             "daily",
             {},
             "daily",
-            exceptions.TemporalResolutionError,
+            TemporalResolutionError,
             "failed to compute statistics timeseries, no co-located data available in specified base resolution daily",
             id="no daily data",
         ),
@@ -113,7 +118,7 @@ def test__process_statistics_timeseries(
             "daily",
             {},
             "monthly",
-            exceptions.TemporalResolutionError,
+            TemporalResolutionError,
             "Desired input frequency monthly is lower than desired output frequency daily",
             id="wrong data_freq",
         ),
@@ -128,9 +133,7 @@ def test__process_statistics_timeseries_error(
     error: str,
 ):
     with pytest.raises(exception) as e:
-        mod._process_statistics_timeseries(
-            example_coldata, freq, region_ids, False, False, data_freq
-        )
+        _process_statistics_timeseries(example_coldata, freq, region_ids, False, False, data_freq)
     assert str(e.value) == error
 
 
@@ -152,9 +155,7 @@ def test__make_trends(
     mod_val = trend_1d.data.data[1, :, station]
     time = trend_1d.data.time
 
-    obs_trend, mod_trend = mod._make_trends(
-        obs_val, mod_val, time, freq, season, start, stop, min_yrs
-    )
+    obs_trend, mod_trend = _make_trends(obs_val, mod_val, time, freq, season, start, stop, min_yrs)
 
     assert obs_trend["period"] == f"{start}-{stop}"
     assert mod_trend["period"] == f"{start}-{stop}"
@@ -186,7 +187,7 @@ def test__make_trends(
             "yearly",
             "all",
             7,
-            exceptions.AeroValTrendsError,
+            AeroValTrendsError,
             "min_yrs (7) larger than time between start and stop",
             id="wrong min_yrs",
         ),
@@ -200,5 +201,5 @@ def test__make_trends_error(
     mod_val = trend_1d.data.data[1, :, 0]
     time = trend_1d.data.time
     with pytest.raises(exception) as e:
-        mod._make_trends(obs_val, mod_val, time, freq, season, 2010, 2015, min_yrs)
+        _make_trends(obs_val, mod_val, time, freq, season, 2010, 2015, min_yrs)
     assert str(e.value) == error
