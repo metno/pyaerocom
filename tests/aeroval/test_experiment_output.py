@@ -9,7 +9,7 @@ import pytest
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom.aeroval import ExperimentProcessor
-from pyaerocom.aeroval import experiment_output as mod
+from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
 from ..conftest import geojson_unavail
@@ -28,7 +28,7 @@ def dummy_setup():
 
 @pytest.fixture(scope="module")
 def dummy_expout(dummy_setup):
-    return mod.ExperimentOutput(dummy_setup)
+    return ExperimentOutput(dummy_setup)
 
 
 @pytest.mark.parametrize(
@@ -38,8 +38,8 @@ def dummy_expout(dummy_setup):
         ("bla", "/"),
     ],
 )
-def test_ProjectOutput(proj_id: str, json_basedir: str | None):
-    val = mod.ProjectOutput(proj_id, json_basedir)
+def test_ProjectOutput(proj_id: str, json_basedir: str):
+    val = ProjectOutput(proj_id, json_basedir)
     assert val.proj_id == proj_id
     if json_basedir is not None:
         assert Path(val.json_basedir).exists()
@@ -56,13 +56,13 @@ def test_ProjectOutput(proj_id: str, json_basedir: str | None):
 )
 def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], error: str):
     with pytest.raises(exception) as e:
-        mod.ProjectOutput(proj_id, json_basedir)
+        ProjectOutput(proj_id, json_basedir)
     assert str(e.value) == error
 
 
 def test_ProjectOutput_proj_dir(tmpdir):
     loc = str(tmpdir)
-    val = mod.ProjectOutput("test", loc)
+    val = ProjectOutput("test", loc)
     path = os.path.join(loc, "test")
     assert val.proj_dir == path
     assert os.path.exists(path)
@@ -70,7 +70,7 @@ def test_ProjectOutput_proj_dir(tmpdir):
 
 def test_ProjectOutput_experiments_file(tmpdir):
     loc = str(tmpdir)
-    val = mod.ProjectOutput("test", loc)
+    val = ProjectOutput("test", loc)
     fp = os.path.join(loc, "test", "experiments.json")
     assert val.experiments_file == fp
     assert os.path.exists(fp)
@@ -79,7 +79,7 @@ def test_ProjectOutput_experiments_file(tmpdir):
 @pytest.mark.parametrize("add", [None, "exp"])
 def test_ProjectOutput_available_experiments(tmpdir, add):
     loc = str(tmpdir)
-    val = mod.ProjectOutput("test", loc)
+    val = ProjectOutput("test", loc)
     fp = val.experiments_file
     if add is not None:
         write_json({add: 42}, fp)
@@ -90,7 +90,7 @@ def test_ProjectOutput_available_experiments(tmpdir, add):
 
 def test_ProjectOutput__add_entry_experiments_json(tmpdir):
     loc = str(tmpdir)
-    val = mod.ProjectOutput("test", loc)
+    val = ProjectOutput("test", loc)
     val._add_entry_experiments_json("test", 42)
     assert "test" in val.available_experiments
 
@@ -98,7 +98,7 @@ def test_ProjectOutput__add_entry_experiments_json(tmpdir):
 def test_ProjectOutput__del_entry_experiments_json(tmpdir):
     loc = str(tmpdir)
     exp_id = "test"
-    val = mod.ProjectOutput("test", loc)
+    val = ProjectOutput("test", loc)
     val._add_entry_experiments_json(exp_id, {})
     assert exp_id in val.available_experiments
     val._del_entry_experiments_json(exp_id)
@@ -109,7 +109,7 @@ def test_ProjectOutput__del_entry_experiments_json(tmpdir):
 
 def test_ExperimentOutput():
     cfg = EvalSetup(proj_id="proj", exp_id="exp")
-    val = mod.ExperimentOutput(cfg)
+    val = ExperimentOutput(cfg)
     assert isinstance(val.cfg, EvalSetup)
     assert val.proj_id == cfg["proj_info"]["proj_id"]
     assert os.path.exists(BASEDIR_DEFAULT)
@@ -118,7 +118,7 @@ def test_ExperimentOutput():
 
 def test_ExperimentOutput_error():
     with pytest.raises(ValueError) as e:
-        mod.ExperimentOutput(None)
+        ExperimentOutput(None)
     assert str(e.value) == "need instance of <class 'pyaerocom.aeroval.setupclasses.EvalSetup'>"
 
 
@@ -149,7 +149,7 @@ def test_ExperimentOutput_menu_file(dummy_expout):
 
 
 def test_ExperimentOutput_results_available_False(dummy_setup):
-    eo = mod.ExperimentOutput(dummy_setup)
+    eo = ExperimentOutput(dummy_setup)
     assert not eo.results_available
     fp = eo.exp_dir
     assert not eo.results_available
@@ -170,7 +170,7 @@ def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout):
 
 
 def test_ExperimentOutput__info_from_map_file():
-    output = mod.ExperimentOutput._info_from_map_file(
+    output = ExperimentOutput._info_from_map_file(
         "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer.json"
     )
     assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer")
@@ -185,7 +185,7 @@ def test_ExperimentOutput__info_from_map_file():
 )
 def test_ExperimentOutput__info_from_map_file_error(filename: str):
     with pytest.raises(ValueError) as e:
-        mod.ExperimentOutput._info_from_map_file(filename)
+        ExperimentOutput._info_from_map_file(filename)
     assert str(e.value) == (
         f"invalid map filename: {filename}. "
         "Must contain exactly 2 underscores _ to separate obsinfo, vertical and model info"
@@ -220,7 +220,7 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
         proj_id="proj", exp_id="exp", coldata_basedir=coldata_dir, json_basedir=json_dir
     )
 
-    eo = mod.ExperimentOutput(stp)
+    eo = ExperimentOutput(stp)
     expdir = os.path.join(json_dir, "proj", "exp")
     coldir = os.path.join(coldata_dir, "proj", "exp")
     col_out = eo.cfg.path_manager.get_coldata_dir()
