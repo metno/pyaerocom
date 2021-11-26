@@ -1,4 +1,4 @@
-from contextlib import nullcontext as does_not_raise_exception
+from __future__ import annotations
 
 import pytest
 
@@ -6,23 +6,43 @@ from pyaerocom.variable import Variable
 
 
 @pytest.mark.parametrize(
-    "var_name,init,cfg,kwargs,raises",
+    "var_name,init,kwargs",
     [
-        (None, True, None, {}, does_not_raise_exception()),
-        (None, True, "bla", {}, pytest.raises(ValueError)),
-        ("bla_blub", True, None, {}, pytest.raises(ValueError)),
-        ("od550aer", True, None, {"bla": 42}, does_not_raise_exception()),
-        ("od550aer", True, None, {"map_vmin": 0, "map_vmax": 1}, does_not_raise_exception()),
-        ("concpm10", False, None, {}, does_not_raise_exception()),
-        ("concpm103d", False, None, {}, does_not_raise_exception()),
-        ("concpm103D", False, None, {}, does_not_raise_exception()),
+        (None, True, {}),
+        ("od550aer", None, {"bla": 42}),
+        ("od550aer", None, {"map_vmin": 0, "map_vmax": 1}),
+        ("concpm10", None, {}),
+        ("concpm103d", None, {}),
+        ("concpm103D", None, {}),
     ],
 )
-def test_Variable___init__(var_name, init, cfg, kwargs, raises):
-    with raises:
-        var = Variable(var_name=var_name, init=init, cfg=cfg, **kwargs)
-        for key, val in kwargs.items():
-            assert getattr(var, key) == val
+def test_Variable(var_name: str | None, init: bool, kwargs: dict):
+    var = Variable(var_name, init, **kwargs)
+    for key, val in kwargs.items():
+        assert getattr(var, key) == val
+
+
+@pytest.mark.parametrize(
+    "var_name,cfg,error",
+    [
+        pytest.param(
+            None,
+            "bla",
+            "invalid input for cfg, need config parser got <class 'str'>",
+            id="not a config parser",
+        ),
+        pytest.param(
+            "bla_blub",
+            None,
+            "invalid variable name bla_blub. Must not contain underscore",
+            id="variable name with underscore",
+        ),
+    ],
+)
+def test_Variable_error(var_name, cfg, error):
+    with pytest.raises(ValueError) as e:
+        Variable(var_name, True, cfg)
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
