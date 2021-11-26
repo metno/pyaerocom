@@ -1118,7 +1118,9 @@ def _process_heatmap_data(
 
                                 if stop - start >= trends_min_yrs:
                                     try:
-                                        subset_time_series = subset.get_regional_timeseries(regid)
+                                        subset_time_series = subset.get_regional_timeseries(
+                                            regid, check_country_meta=use_country
+                                        )
 
                                         (obs_trend, mod_trend) = _make_trends_from_timeseries(
                                             subset_time_series["obs"],

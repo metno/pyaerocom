@@ -1,3 +1,5 @@
+import os
+
 import iris
 import numpy as np
 import numpy.testing as npt
@@ -250,7 +252,7 @@ def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
     # tempfix
     with pytest.raises(ValueError):
         filepath = path_emep["monthly"]
-        r = ReadMscwCtm(path_emep["monthly"])
+        r = ReadMscwCtm(data_dir=os.path.split(path_emep["monthly"])[0])
         data_emep = r.read_var("concpm10", ts_type="monthly")
 
         # Change units and year to match TM5 data

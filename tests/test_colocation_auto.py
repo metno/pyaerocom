@@ -387,7 +387,6 @@ def test_colocator_instantiate_gridded_reader(path_emep):
     col.model_id = model_id
     r = col._instantiate_gridded_reader(what="model")
     assert isinstance(r, ReadMscwCtm)
-    assert r.filepath == col.filepath
     assert r.data_id == model_id
 
 
