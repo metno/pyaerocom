@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
-from contextlib import nullcontext as does_not_raise_exception
+from pathlib import Path
+from typing import Type
 
 import pytest
 
@@ -29,20 +32,32 @@ def dummy_expout(dummy_setup):
 
 
 @pytest.mark.parametrize(
-    "proj_id,json_basedir,raises",
+    "proj_id,json_basedir",
     [
-        (42, None, pytest.raises(ValueError)),
-        ("bla", None, does_not_raise_exception()),
-        ("bla", "/", does_not_raise_exception()),
-        ("bla", "/blablub/blaaaa", pytest.raises(FileNotFoundError)),
+        ("bla", None),
+        ("bla", "/"),
     ],
 )
-def test_ProjectOutput___init__(proj_id, json_basedir, raises):
-    with raises:
-        val = mod.ProjectOutput(proj_id, json_basedir)
-        assert val.proj_id == proj_id
-        if json_basedir is not None:
-            assert os.path.exists(val.json_basedir)
+def test_ProjectOutput(proj_id: str, json_basedir: str | None):
+    val = mod.ProjectOutput(proj_id, json_basedir)
+    assert val.proj_id == proj_id
+    if json_basedir is not None:
+        assert Path(val.json_basedir).exists()
+
+
+@pytest.mark.parametrize(
+    "proj_id,json_basedir,exception,error",
+    [
+        pytest.param(42, None, ValueError, "need str, got 42", id="ValueError"),
+        pytest.param(
+            "bla", "/blablub/blaaaa", FileNotFoundError, "/blablub/blaaaa", id="FileNotFoundError"
+        ),
+    ],
+)
+def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], error: str):
+    with pytest.raises(exception) as e:
+        mod.ProjectOutput(proj_id, json_basedir)
+    assert str(e.value) == error
 
 
 def test_ProjectOutput_proj_dir(tmpdir):
@@ -92,20 +107,19 @@ def test_ProjectOutput__del_entry_experiments_json(tmpdir):
     val._del_entry_experiments_json(exp_id)
 
 
-@pytest.mark.parametrize(
-    "cfg,raises",
-    [
-        (None, pytest.raises(ValueError)),
-        (EvalSetup(proj_id="proj", exp_id="exp"), does_not_raise_exception()),
-    ],
-)
-def test_ExperimentOutput___init__(cfg, raises):
-    with raises:
-        val = mod.ExperimentOutput(cfg)
-        assert isinstance(val.cfg, EvalSetup)
-        assert val.proj_id == cfg["proj_info"]["proj_id"]
-        assert os.path.exists(BASEDIR_DEFAULT)
-        assert os.path.samefile(val.json_basedir, BASEDIR_DEFAULT)
+def test_ExperimentOutput():
+    cfg = EvalSetup(proj_id="proj", exp_id="exp")
+    val = mod.ExperimentOutput(cfg)
+    assert isinstance(val.cfg, EvalSetup)
+    assert val.proj_id == cfg["proj_info"]["proj_id"]
+    assert os.path.exists(BASEDIR_DEFAULT)
+    assert os.path.samefile(val.json_basedir, BASEDIR_DEFAULT)
+
+
+def test_ExperimentOutput_error():
+    with pytest.raises(ValueError) as e:
+        mod.ExperimentOutput(None)
+    assert str(e.value) == "need instance of <class 'pyaerocom.aeroval.setupclasses.EvalSetup'>"
 
 
 def test_ExperimentOutput_exp_id(dummy_expout):
@@ -155,22 +169,27 @@ def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout):
     dummy_expout._sync_heatmaps_with_menu_and_regions()
 
 
+def test_ExperimentOutput__info_from_map_file():
+    output = mod.ExperimentOutput._info_from_map_file(
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer.json"
+    )
+    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer")
+
+
 @pytest.mark.parametrize(
-    "filename,result,raises",
+    "filename",
     [
-        ("blaaaa", None, pytest.raises(ValueError)),
-        (
-            "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer.json",
-            ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer"),
-            does_not_raise_exception(),
-        ),
-        ("EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer.json", None, pytest.raises(ValueError)),
+        "blaaaa",
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer.json",
     ],
 )
-def test_ExperimentOutput__info_from_map_file(filename, result, raises):
-    with raises:
-        output = mod.ExperimentOutput._info_from_map_file(filename)
-        assert output == result
+def test_ExperimentOutput__info_from_map_file_error(filename: str):
+    with pytest.raises(ValueError) as e:
+        mod.ExperimentOutput._info_from_map_file(filename)
+    assert str(e.value) == (
+        f"invalid map filename: {filename}. "
+        "Must contain exactly 2 underscores _ to separate obsinfo, vertical and model info"
+    )
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout):
@@ -283,28 +302,31 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
 
 
 @pytest.mark.parametrize(
-    "add_names,order,result,raises",
+    "add_names,order,result",
     [
-        (["c", "b", "a"], None, ["a", "b", "c"], does_not_raise_exception()),
-        (["c", "b", "a"], ["c", "b", "a"], ["c", "b", "a"], does_not_raise_exception()),
-        (["c", "b", "a"], [42], ["a", "b", "c"], does_not_raise_exception()),
-        (["c", "b", "a"], "b", ["b", "a", "c"], pytest.raises(ValueError)),
-        (["c", "b", "a"], ["b"], ["b", "a", "c"], does_not_raise_exception()),
-        (["c", "b", "a"], ["b", "c"], ["b", "c", "a"], does_not_raise_exception()),
+        (["c", "b", "a"], None, ["a", "b", "c"]),
+        (["c", "b", "a"], ["c", "b", "a"], ["c", "b", "a"]),
+        (["c", "b", "a"], [42], ["a", "b", "c"]),
+        (["c", "b", "a"], ["b"], ["b", "a", "c"]),
+        (["c", "b", "a"], ["b", "c"], ["b", "c", "a"]),
     ],
 )
-def test_ExperimentOutput_reorder_experiments(dummy_expout, add_names, order, result, raises):
+def test_ExperimentOutput_reorder_experiments(dummy_expout, add_names, order, result):
 
     out = dummy_expout
-    fp = out.experiments_file
+    path = Path(out.experiments_file)
 
-    data = {}
-    for name in add_names:
-        data[name] = dict(public=True)
+    data = dict().fromkeys(add_names, dict(public=True))
     assert list(data) == add_names
-    write_json(data, fp, indent=4)
-    with raises:
-        out.reorder_experiments(order)
-        new = read_json(fp)
-        assert list(new) == result
-    os.remove(fp)
+
+    write_json(data, path, indent=4)
+    out.reorder_experiments(order)
+    new = read_json(path)
+    assert list(new) == result
+    path.unlink()
+
+
+def test_ExperimentOutput_reorder_experiments_error(dummy_expout):
+    with pytest.raises(ValueError) as e:
+        dummy_expout.reorder_experiments("b")
+    assert str(e.value) == "need list as input"
