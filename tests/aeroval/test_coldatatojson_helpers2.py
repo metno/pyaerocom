@@ -25,27 +25,28 @@ def test_get_heatmap_filename():
 
 
 def test_get_stationfile_name():
-    val = get_stationfile_name("stat1", "obs1", "var1", "Column")
-    assert val == "stat1_obs1-var1_Column.json"
+    json = get_stationfile_name("stat1", "obs1", "var1", "Column")
+    assert json == "stat1_obs1-var1_Column.json"
 
 
 def test_get_json_mapname():
-    val = get_json_mapname("obs1", "var1", "mod1", "var1", "Column")
-    assert val == "obs1-var1_Column_mod1-var1.json"
+    json = get_json_mapname("obs1", "var1", "mod1", "var1", "Column")
+    assert json == "obs1-var1_Column_mod1-var1.json"
 
 
 @pytest.mark.parametrize(
-    "which,to_ts_types",
+    "to_ts_types",
     [
-        ("tm5_aeronet", ["daily", "monthly"]),
-        ("tm5_aeronet", ["3yearly"]),
+        ["daily", "monthly"],
+        ["3yearly"],
     ],
 )
-def test__init_data_default_frequencies(coldata, which, to_ts_types):
-    data = coldata[which]
+def test__init_data_default_frequencies(coldata, to_ts_types: str):
+    data = coldata["tm5_aeronet"]
     result = _init_data_default_frequencies(data, to_ts_types)
-    tst = TsType(data.ts_type)
     assert len(result) == len(to_ts_types)
+
+    tst = TsType(data.ts_type)
     for freq, val in result.items():
         if TsType(freq) > tst:
             assert val is None
@@ -60,8 +61,8 @@ def example_coldata(coldata):
 
 
 def test_get_jsdate(example_coldata):
-    vals = _get_jsdate(example_coldata["monthly"].data.time.values)
-    assert len(vals) == 12
+    time = _get_jsdate(example_coldata["monthly"].data.time.values)
+    assert len(time) == 12
 
 
 @pytest.mark.parametrize(
