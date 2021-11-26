@@ -12,21 +12,15 @@ from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
 from ..conftest import geojson_unavail
-from ._outbase import AEROVAL_OUT
 from .cfg_test_exp1 import CFG as cfgexp1
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
-DUMMY_OUT = Path(AEROVAL_OUT) / "dummy"
 
 
-@pytest.fixture(scope="module")
-def dummy_setup() -> EvalSetup:
-    return EvalSetup(proj_id="proj", exp_id="exp", json_basedir=str(DUMMY_OUT))
-
-
-@pytest.fixture(scope="module")
-def dummy_expout(dummy_setup) -> ExperimentOutput:
-    return ExperimentOutput(dummy_setup)
+@pytest.fixture()
+def dummy_expout(tmp_path: Path) -> ExperimentOutput:
+    setup = EvalSetup(proj_id="proj", exp_id="exp", json_basedir=str(tmp_path))
+    return ExperimentOutput(setup)
 
 
 @pytest.mark.parametrize(
@@ -126,8 +120,8 @@ def test_ExperimentOutput_exp_id(dummy_expout: ExperimentOutput):
     assert dummy_expout.exp_id == "exp"
 
 
-def test_ExperimentOutput_exp_dir(dummy_expout: ExperimentOutput):
-    assert Path(dummy_expout.exp_dir) == DUMMY_OUT / "proj" / "exp"
+def test_ExperimentOutput_exp_dir(dummy_expout: ExperimentOutput, tmp_path: Path):
+    assert Path(dummy_expout.exp_dir) == tmp_path / "proj" / "exp"
 
 
 def test_ExperimentOutput_regions_file(dummy_expout: ExperimentOutput):
