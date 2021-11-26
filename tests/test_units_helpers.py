@@ -1,9 +1,15 @@
-import numpy.testing as npt
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
 
-from pyaerocom import units_helpers as mod
 from pyaerocom.exceptions import UnitConversionError
+from pyaerocom.units_helpers import (
+    _check_unit_endswith_freq,
+    _unit_conversion_fac_custom,
+    _unit_conversion_fac_si,
+    convert_unit,
+    get_unit_conversion_fac,
+)
 
 
 @pytest.mark.parametrize(
@@ -23,12 +29,12 @@ from pyaerocom.exceptions import UnitConversionError
     ],
 )
 def test__check_unit_endswith_freq(unit, val):
-    assert mod._check_unit_endswith_freq(unit) == val
+    assert _check_unit_endswith_freq(unit) == val
 
 
 @pytest.mark.parametrize("from_unit,to_unit,val", [("m-1", "1/Mm", 1e6), ("ug m-3", "ug/m3", 1)])
 def test__unit_conversion_fac_si(from_unit, to_unit, val):
-    assert mod._unit_conversion_fac_si(from_unit, to_unit) == val
+    assert _unit_conversion_fac_si(from_unit, to_unit) == val
 
 
 @pytest.mark.parametrize(
@@ -45,31 +51,29 @@ def test__unit_conversion_fac_si(from_unit, to_unit, val):
     ],
 )
 def test__unit_conversion_fac_custom(var_name, from_unit, to_unit, val):
-    to, num = mod._unit_conversion_fac_custom(var_name, from_unit)
+    to, num = _unit_conversion_fac_custom(var_name, from_unit)
     assert to == to_unit
-    npt.assert_allclose(num, val, rtol=1e-2)
+    assert_allclose(num, val, rtol=1e-2)
 
 
 def test__unit_conversion_fac_custom_error():
     with pytest.raises(UnitConversionError) as e:
-        mod._unit_conversion_fac_custom("concNno3", "ug N m-3")
+        _unit_conversion_fac_custom("concNno3", "ug N m-3")
     assert str(e.value).startswith("Failed to convert unit ug N/m3 (variable concNno3).")
 
 
-def test__unit_conversion_fac_custom_FAIL():
-    df = mod.UCONV_MUL_FACS
-
-    UCONV_MUL_FACS = pd.DataFrame(
+def test__unit_conversion_fac_custom_FAIL(monkeypatch):
+    MOCK_UCONV_MUL_FACS = pd.DataFrame(
         [
             ["concso4", "ug S/m3", "ug m-3", 1],
             ["concso4", "ug S/m3", "ug m-3", 2],
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
-    mod.UCONV_MUL_FACS = UCONV_MUL_FACS
+    monkeypatch.setattr("pyaerocom.units_helpers.UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
+
     with pytest.raises(UnitConversionError):
-        mod._unit_conversion_fac_custom("concso4", "ug S/m3")
-    mod.UCONV_MUL_FACS = df
+        _unit_conversion_fac_custom("concso4", "ug S/m3")
 
 
 @pytest.mark.parametrize(
@@ -82,8 +86,8 @@ def test__unit_conversion_fac_custom_FAIL():
     ],
 )
 def test_convert_unit(from_unit, to_unit, var_name, val):
-    result = mod.convert_unit(1, from_unit, to_unit, var_name)
-    npt.assert_allclose(result, val, rtol=1e-2)
+    result = convert_unit(1, from_unit, to_unit, var_name)
+    assert_allclose(result, val, rtol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -102,8 +106,8 @@ def test_convert_unit(from_unit, to_unit, var_name, val):
     ],
 )
 def test_get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type, result):
-    val = mod.get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type)
-    npt.assert_allclose(val, result, rtol=1e-3)
+    val = get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type)
+    assert_allclose(val, result, rtol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -116,5 +120,5 @@ def test_get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type, result):
 )
 def test_get_unit_conversion_fac_error(from_unit, to_unit, var_name):
     with pytest.raises(UnitConversionError) as e:
-        mod.get_unit_conversion_fac(from_unit, to_unit, var_name)
+        get_unit_conversion_fac(from_unit, to_unit, var_name)
     assert str(e.value) == f"failed to convert unit from {from_unit} to {to_unit}"
