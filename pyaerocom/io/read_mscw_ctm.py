@@ -2,6 +2,9 @@ import xarray as xr
 import numpy as np
 import os
 import glob
+import re
+
+import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
@@ -95,98 +98,181 @@ class ReadMscwCtm(object):
 
     }
 
+    REVERSE_FREQ_CODES = {
+        'hourly'    : 'hour',
+        'daily'     : 'day',
+        'monthly'   : 'month',
+        'yearly'    : 'fullrun',
+
+    }
+
     DEFAULT_FILE_NAME = 'Base_day.nc'
 
-    def __init__(self, filepath=None, data_id=None, data_dir=None):
+    def __init__(self, data_id=None, data_dir=None):
         self._data_dir = None
         # opened dataset (for performance boost), will be reset if data_dir is
         # changed
         self._filename = None
         self._filedata = None
+        self._filepaths = None
+        self._filepath = None
 
-        self._file_mask = None
+        self._file_mask = self.FILE_MASKS[0]
         self._files = None
 
         self.var_map = get_emep_variables()
 
-        data_dir, filename, data_id = self._eval_input(filepath, data_id,
-                                                       data_dir)
-        self.data_id = data_id
-        if data_dir is not None:
-            self.data_dir = data_dir
-
-        if filename is None:
-            filename = self.DEFAULT_FILE_NAME
-
-        self.filename = filename
-
-    def _eval_input(self, filepath, data_id, data_dir):
-        """
-        Evaluate input (helper method for __init__)
-
-        Note, this method does not change the associated class attributes, it
-        just does some sanity checking on what the user inputs.
-
-        Parameters
-        ----------
-        filepath : str, optional
-            path to file to be read
-        data_id : str, optional
-            ID of dataset
-        data_dir : str, optional
-            directory containing EMEP data files
-
-        Raises
-        ------
-        FileNotFoundError
-            if any of input data_dir or filepath are provided but do not exist
-        ValueError
-            if any of input data_dir or filepath are provided but are not
-            a directory or file, respectively.
-
-        Returns
-        -------
-        tuple
-            3-element tuple containing (potentially updated / inferred values of):
-
-                - `data_dir`
-                - `filename`
-                - `data_id`
-
-        """
-        filename = None
-        if filepath is not None:
-            if not isinstance(filepath, str) or not os.path.exists(filepath):
-                raise FileNotFoundError(f'{filepath}')
-            if os.path.isdir(filepath):
-                raise ValueError(f'{filepath} is a directory, please use data_dir')
-            data_dir,filename = os.path.split(filepath)
-
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
                 raise FileNotFoundError(f'{data_dir}')
-            if not os.path.isdir(data_dir):
-                raise ValueError(f'{data_dir} is not a directory')
-        if data_id is None and data_dir is not None:
-            data_id = data_dir.split(os.sep)[-1]
-        return (data_dir,filename,data_id)
+
+            self.data_dir = data_dir
+
+        self.data_id = data_id
+
+        self.filename = self.DEFAULT_FILE_NAME
+
+
+
+    def search_all_files(self):
+        namelist = self._get_namelist_from_folder()
+        self.filepaths = self._get_files_from_namelist(namelist)
+
+    def _get_files_from_namelist(self, namelist):
+        files = []
+        for d in namelist:
+            mask, f = self._check_files_in_data_dir(d)
+            files += f
+        
+        return files
+
+
+
+    def _get_namelist_from_folder(self):
+        """
+        Finds all the subfolders where a emep file for one year might be.
+
+        Note
+        -------
+        Checks only current level for folders. Should be able
+        to search deeper.
+
+        The only qualification of being a valid subfolder is whether or not
+        the subfolder has contains a number >= 2000. There are no check if there 
+        are any emep files in the folder
+
+        Returns
+        -------
+        List
+         List of the names of the subfolder
+
+        """
+        dd = self.data_dir
+
+        dirs = glob.glob(dd+"/*/")
+        namelist = []
+        yrs = []
+
+        for d in dirs:
+            if re.match(r".*20\d\d.*", d) is None:
+                continue
+            yrs.append(d.split("/")[-1])
+
+            namelist.append(d)
+
+        if len(namelist) == 0:
+            namelist = [dd]
+        else:
+            namelist = [d for _,d in sorted(zip(yrs, namelist))]
+        return list(set(namelist))
+
+    def _get_yrs_from_filepaths(self):
+        fps = self.filepaths
+        yrs = []
+        for fp in fps:
+
+            try:
+                yr = re.search(r".*(20\d\d).*", fp).group(1)
+            except:
+                raise ValueError(f"Could not find any year in {fp}")
+            
+            yrs.append(yr)
+        
+        return sorted(list(set(yrs)))
+
+    def _get_tst_from_file(self, file):
+            #tst = re.search("Base_(.*).nc", file).group(1)
+            mask = self._file_mask.replace("*", "(.*)")
+            tst = re.search(mask, file).group(1)
+
+            if "LF_" in tst:
+                return None
+
+
+            if tst not in list(self.FREQ_CODES.keys()):
+                raise ValueError(f"The ts_type {tst} is not supported")
+            
+            return self.FREQ_CODES[tst]
+            
+
+    def _clean_filepaths(self, filepaths, yrs, ts_type):
+        clean_paths = []
+        found_yrs = []
+        
+        yrs = [int(yr) for yr in yrs]
+        for path in filepaths:
+            ddir, file = os.path.split(path)
+
+            if self._get_tst_from_file(file) != ts_type:
+                continue
+            
+
+            yrs_dir = ddir.split(os.sep)[-1]
+            try:
+                yr = re.search(r".*(20\d\d).*", yrs_dir).group(1)
+            except:
+                raise ValueError(f"Could not find any year in {yrs_dir}")
+            
+            if int(yr) not in yrs:
+                raise ValueError(f"The year {yr} is not in {yrs}")
+
+            if int(yr) in found_yrs:
+                raise ValueError(f"The year {yr} is already found: {found_yrs}")
+
+            found_yrs.append(int(yr))
+
+            clean_paths.append(path)
+
+        
+        if len(found_yrs) != len(yrs):
+            raise ValueError(f"A different amount of years {found_yrs} were found compared tp {yrs}")
+        
+        return [d for _,d in sorted(zip(found_yrs, clean_paths))]
+        
+
+
 
     @property
     def data_dir(self):
         """
         Directory containing netcdf files
         """
+        if self._data_dir is None:
+            raise AttributeError(f"data_dir needs to be set before accessing")
         return self._data_dir
 
     @data_dir.setter
     def data_dir(self, val):
+        if val is None:
+            raise ValueError(f"Data dir {val} needs to be a dictionary or a file")
         if not os.path.isdir(val):
             raise FileNotFoundError(val)
-        mask, filelist = self._check_files_in_data_dir(val)
-        self._file_mask = mask
-        self._files = filelist
+        self._file_mask = self.FILE_MASKS[0]
         self._data_dir = val
         self._filedata = None
+        self.search_all_files()
+        self._files = self.filepaths
+
 
     @property
     def filename(self):
@@ -201,26 +287,48 @@ class ReadMscwCtm(object):
         Name of netcdf file
         """
         if not isinstance(val, str):
-            raise ValueError('need str')
+            raise ValueError('needs str')
         elif val == self._filename:
             return
         self._filename = val
         self._filedata = None
+
 
     @property
     def filepath(self):
         """
         Path to data file
         """
-        if self.data_dir is None:
-            raise AttributeError('need data_dir to be set in data')
-        return os.path.join(self.data_dir, self.filename)
+        if self.data_dir is None and self._filepaths is None:
+            raise AttributeError('data_dir or filepaths needs to be set before accessing')
+        return self._filepath
 
     @filepath.setter
     def filepath(self, value):
+        if not isinstance(value, str):
+            raise TypeError('needs to be a string')
+        
+        self._filepath = value
         ddir, fname = os.path.split(value)
         self.data_dir = ddir
         self.filename = fname
+
+    @property
+    def filepaths(self):
+        """
+        Path to data file
+        """
+        if self.data_dir is None and self._filepaths is None:
+            raise AttributeError('data_dir or filepaths needs to be set before accessing')
+        return self._filepaths
+
+
+    @filepaths.setter
+    def filepaths(self, value):
+        if not isinstance(value, list):
+            raise ValueError('needs to be list of strings')
+        self._filepaths = value
+
 
     @property
     def filedata(self):
@@ -302,15 +410,16 @@ class ReadMscwCtm(object):
         tsts = []
         for file in self._files:
             tsts.append(self.ts_type_from_filename(file))
-        return tsts
+        return list(set(tsts))
 
     @property
     def years_avail(self):
         """
         Years available in loaded dataset
         """
-        data = self.filedata
-        years = data.time.dt.year.values
+        data = self.filepaths
+        years = self._get_yrs_from_filepaths()
+
         years = list(np.unique(years))
         return sorted(years)
 
@@ -319,20 +428,37 @@ class ReadMscwCtm(object):
         """Variables provided by this dataset"""
         return list(self.var_map) + list(self.AUX_REQUIRES)
 
+
     def open_file(self):
         """
         Open current netcdf file
 
         Returns
         -------
-        xarray.Dataset
+        dict(xarray.Dataset)
+            Dict with years as keys and Datasets as items
 
         """
-        fp = self.filepath
-        const.print_log.info(f'Opening {fp}')
+        fps = self.filepaths
+        ds = {}
 
-        ds = xr.open_dataset(fp)
+        yrs = self._get_yrs_from_filepaths()
+
+        ts_type = self.ts_type_from_filename(self.filename)
+        fps = self._clean_filepaths(fps, yrs, ts_type)
+
+        for i,fp in enumerate(fps):
+            if not os.path.split(fp)[-1] == self.filename:   
+                continue
+
+            const.print_log.info(f'Opening {fp}')
+            tmp_ds = xr.open_dataset(fp)
+            
+            ds[yrs[i]] = tmp_ds
+
+
         self._filedata = ds
+        
         return ds
 
     def __repr__(self):
@@ -408,7 +534,7 @@ class ReadMscwCtm(object):
             if tst == ts_type:
                 fname = mask.replace('*', substr)
                 return fname
-        raise ValueError('failed to infer filename from input ts_type={ts_type}')
+        raise ValueError(f'failed to infer filename from input ts_type={ts_type}')
 
     def _compute_var(self, var_name_aerocom, ts_type):
         """Compute auxiliary variable
@@ -524,7 +650,7 @@ class ReadMscwCtm(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = [self.filepath]
+        gridded.metadata['from_files'] = self.filepaths 
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
@@ -557,8 +683,21 @@ class ReadMscwCtm(object):
 
         """
         emep_var = self.var_map[var_name_aerocom]
+
         try:
-            data = self.filedata[emep_var]
+            filedata = self.filedata
+
+            if len(filedata.keys()) == 1:
+                data = filedata[list(filedata.keys())[0]][emep_var]
+            else:
+                if ts_type == "hourly":
+                    raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
+                data = xr.concat([filedata[yr][emep_var] for yr in filedata.keys()]
+                                                                , dim="time")
+     
+
+            
+
         except KeyError:
             raise VarNotAvailableError(
                 f'{var_name_aerocom} ({emep_var}) not available in {self.filename}')
