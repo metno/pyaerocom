@@ -1,5 +1,4 @@
 from __future__ import annotations
-from ntpath import join
 
 import warnings
 from contextlib import contextmanager
@@ -41,9 +40,9 @@ def ignore_warnings(apply: bool, category: Type[Warning], *messages: str):
         raise ValueError("category must be a Warning subclass")
 
     if not messages:
-        message=""
+        message = ""
     elif all(type(msg) == str for msg in messages):
-        message="|".join(messages)
+        message = "|".join(messages)
     else:
         raise ValueError("messages must be list of strings")
 

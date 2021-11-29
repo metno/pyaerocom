@@ -1,9 +1,10 @@
 import numpy.testing as npt
-import pyaerocom as pya
 from cf_units import Unit
 
-u = Unit('kg/m2/s')
-test_cases = {'kg h-1' : ['kg s-1', 1/3600]}
+import pyaerocom as pya
+
+u = Unit("kg/m2/s")
+test_cases = {"kg h-1": ["kg s-1", 1 / 3600]}
 
 for unit, (to, val) in test_cases.items():
 
@@ -24,4 +25,3 @@ for unit, (to, val) in test_cases.items():
 #
 # print(data)
 # =============================================================================
-

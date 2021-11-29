@@ -3,8 +3,9 @@ from configparser import ConfigParser
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.io import EbasSQLRequest
 from pyaerocom.exceptions import VarNotAvailableError
+from pyaerocom.io import EbasSQLRequest
+
 
 class EbasVarInfo(BrowseDict):
     """Interface for mapping between EBAS variable information and AeroCom
@@ -66,7 +67,7 @@ class EbasVarInfo(BrowseDict):
         #: scale factor for conversion to Aerocom units
         self.scale_factor = 1
 
-        #imports default information and, on top, variable information (if
+        # imports default information and, on top, variable information (if
         # applicable)
         if init:
             self.parse_from_ini(var_name)
@@ -86,6 +87,7 @@ class EbasVarInfo(BrowseDict):
         ConfigParser
         """
         from pyaerocom import __dir__
+
         fpath = os.path.join(__dir__, "data", "ebas_config.ini")
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
@@ -124,25 +126,26 @@ class EbasVarInfo(BrowseDict):
             # this will raise Variable
             var_name = const.VARS[var_name].var_name_aerocom
             if not var_name in conf_reader:
-                raise VarNotAvailableError('Variable {} is not available in '
-                                           'EBAS interface'.format(var_name))
+                raise VarNotAvailableError(
+                    f"Variable {var_name} is not available in EBAS interface"
+                )
 
         var_info = conf_reader[var_name]
         for key in self.keys():
             if key in var_info:
                 val = var_info[key]
-                if key == 'scale_factor':
-                    self[key] = float(val.split('#')[0].strip())
+                if key == "scale_factor":
+                    self[key] = float(val.split("#")[0].strip())
                 else:
-                    self[key] = list(dict.fromkeys([x for x in val.split(',')]))
-        self.var_name=var_name
+                    self[key] = list(dict.fromkeys([x for x in val.split(",")]))
+        self.var_name = var_name
 
     def to_dict(self):
         """Convert into dictionary"""
         d = {}
         for k, v in self.items():
-            if k == 'unit':
-                k = 'units'
+            if k == "unit":
+                k = "units"
             if v is not None:
                 d[k] = v
         return d
@@ -164,22 +167,26 @@ class EbasVarInfo(BrowseDict):
         """
         if self.requires is not None:
             raise ValueError(
-                f'This variable {self.var_name} requires other variables '
-                f'for reading, thus more than one SQL request is needed. '
-                f'Please use :func:`make_sql_requests` instead')
+                f"This variable {self.var_name} requires other variables "
+                f"for reading, thus more than one SQL request is needed. "
+                f"Please use :func:`make_sql_requests` instead"
+            )
 
         variables = self.component
 
         if variables is None:
             raise AttributeError(
-                f'At least one component (Ebas variable name) '
-                f'must be specified for retrieval of variable {self.var_name}'
-                )
+                f"At least one component (Ebas variable name) "
+                f"must be specified for retrieval of variable {self.var_name}"
+            )
 
         # default request
-        req = EbasSQLRequest(variables=variables, matrices=self.matrix,
-                              instrument_types=self.instrument,
-                              statistics=self.statistics)
+        req = EbasSQLRequest(
+            variables=variables,
+            matrices=self.matrix,
+            instrument_types=self.instrument,
+            statistics=self.statistics,
+        )
 
         req.update(**constraints)
         return req
@@ -204,10 +211,12 @@ class EbasVarInfo(BrowseDict):
         """
         requests = {}
         if self.component is not None:
-            req = EbasSQLRequest(variables=self.component,
-                                 matrices=self.matrix,
-                                 instrument_types=self.instrument,
-                                 statistics=self.statistics)
+            req = EbasSQLRequest(
+                variables=self.component,
+                matrices=self.matrix,
+                instrument_types=self.instrument,
+                statistics=self.statistics,
+            )
             req.update(**constraints)
             requests[self.var_name] = req
 
@@ -216,23 +225,25 @@ class EbasVarInfo(BrowseDict):
                 if var in requests:
                     # ToDo: check if this can be generalised better
                     raise ValueError(
-                        f'Variable conflict in EBAS SQL request: '
-                        f'{var} cannot depent on itself...')
+                        f"Variable conflict in EBAS SQL request: "
+                        f"{var} cannot depent on itself..."
+                    )
                 info = EbasVarInfo(var)
                 _reqs = info.make_sql_requests(**constraints)
                 for _var, _req in _reqs.items():
                     if _var in requests:
                         # ToDo: check if this can be generalised better
                         raise ValueError(
-                            f'Variable conflict in EBAS SQL request: '
-                            f'{_var} cannot depent on itself...')
+                            f"Variable conflict in EBAS SQL request: "
+                            f"{_var} cannot depent on itself..."
+                        )
                     requests[_var] = _req
 
         return requests
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}".format(head, len(head)*"-")
+        head = f"Pyaerocom {type(self).__name__}"
+        s = f"\n{head}\n{len(head)*'-'}"
         for k, v in self.items():
-                s += "\n%s: %s" %(k,v)
+            s += f"\n{k}: {v}"
         return s

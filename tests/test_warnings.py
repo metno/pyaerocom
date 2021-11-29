@@ -27,7 +27,6 @@ def test_filter_warnings_category():
     with ignore_warnings(True, RuntimeWarning):
         warnings.warn(RuntimeWarning("somethng unexpected..."))
 
-
     # raise warning
     with pytest.warns(RuntimeWarning):
         with ignore_warnings(False, RuntimeWarning):

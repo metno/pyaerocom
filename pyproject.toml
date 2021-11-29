@@ -14,38 +14,37 @@ filterwarnings = [
 [tool.coverage.run]
 source = ["pyaerocom"]
 omit = [
-  # not used
-  "pyaerocom/aeroval/utils.py",
-  "pyaerocom/io/read_aeronet_invv2.py",
-  "pyaerocom/io/read_aeronet_sdav2.py",
-  "pyaerocom/io/read_aeronet_sunv2.py",
-  "pyaerocom/io/read_gaw.py",
-  "pyaerocom/io/read_aeolus_l2a_data.py",
-  "pyaerocom/io/read_sentinel5p_data.py",
-  "pyaerocom/io/readsatellitel2base.py",
-  "pyaerocom/vert_coords.py",
+    # not used
+    "pyaerocom/aeroval/utils.py",
+    "pyaerocom/io/read_aeronet_invv2.py",
+    "pyaerocom/io/read_aeronet_sdav2.py",
+    "pyaerocom/io/read_aeronet_sunv2.py",
+    "pyaerocom/io/read_gaw.py",
+    "pyaerocom/io/read_aeolus_l2a_data.py",
+    "pyaerocom/io/read_sentinel5p_data.py",
+    "pyaerocom/io/readsatellitel2base.py",
+    "pyaerocom/vert_coords.py",
 ]
 
 [tool.coverage.report]
 skip_covered = true
 exclude_lines = [
-  "pragma: no cover",
-  "NotImplementedError",
-  "abc.ABC",
-  "if __name__=='__main__':",
-  'if __name__=="__main__":',
-  'if __name__ == "__main__":',
-  "if __name__ == '__main__':",
+    "pragma: no cover",
+    "NotImplementedError",
+    "abc.ABC",
+    'if __name__ == "__main__":',
 ]
 
 [tool.black]
 target-version = ['py38']
+extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
 [tool.isort]
 py_version = "38"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
+extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
@@ -58,6 +57,7 @@ warn_unreachable = true
 show_error_codes = true
 pretty = true
 sqlite_cache = true
+exclude = "pyaerocom-tutorials|_build"
 
 [[tool.mypy.overrides]]
 module = [
@@ -79,3 +79,50 @@ module = [
     "coda",
 ]
 ignore_missing_imports = true
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326"
+
+[tool.pylint.format]
+max-line-length = 99
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39, py310, format, lint, docs
+skip_missing_interpreters = True
+isolated_build = True
+
+[testenv]
+commands_pre =
+    python --version
+commands =
+    pytest -ra -q {posargs:--cov}
+extras = 
+    test
+
+[testenv:format]
+skipsdist=True
+commands =
+    black --check .
+    isort --check .
+extras = 
+    format
+
+[testenv:lint]
+skipsdist=True
+commands =
+    mypy pyaerocom/
+    pylint pyaerocom/
+    pycodestyle pyaerocom/
+    pydocstyle pyaerocom/
+extras = 
+    lint
+
+[testenv:docs]
+skipsdist=True
+commands =
+    sphinx-build {posargs:-T} docs/ docs/_build/html
+extras = 
+    docs
+"""
