@@ -1,4 +1,6 @@
-from contextlib import nullcontext as does_not_raise_exception
+from __future__ import annotations
+
+from typing import Type
 
 import cartopy.mpl.geoaxes
 import numpy as np
@@ -12,15 +14,15 @@ from pyaerocom.plot.config import ColorTheme, get_color_theme
 
 
 @pytest.mark.parametrize(
-    "color_theme,vmin,vmax,raises,name",
+    "color_theme,vmin,vmax,name",
     [
-        (None, None, None, does_not_raise_exception(), "Blues"),
-        (None, -1, 1, does_not_raise_exception(), "shiftedcmap"),
-        (get_color_theme("light"), None, None, does_not_raise_exception(), "Blues"),
-        (get_color_theme("dark"), None, None, does_not_raise_exception(), "viridis"),
+        (None, None, None, "Blues"),
+        (None, -1, 1, "shiftedcmap"),
+        (get_color_theme("light"), None, None, "Blues"),
+        (get_color_theme("dark"), None, None, "viridis"),
     ],
 )
-def test_get_cmap_maps_aerocom(color_theme, vmin, vmax, raises, name):
+def test_get_cmap_maps_aerocom(color_theme, vmin, vmax, name):
     cmap = mod.get_cmap_maps_aerocom(color_theme, vmin, vmax)
     assert cmap.name == name
 
@@ -37,74 +39,76 @@ def test_set_cmap_ticks():
 
 
 @pytest.mark.parametrize(
-    "args,raises",
+    "kwargs",
     [
-        (dict(), does_not_raise_exception()),
-        (dict(projection="blaaa"), pytest.raises(ValueError)),
-        (dict(projection="PlateCarree"), does_not_raise_exception()),
-        (dict(projection="Mercator"), does_not_raise_exception()),
-        (dict(projection="Miller"), does_not_raise_exception()),
-        (dict(projection=42), pytest.raises(ValueError)),
-        (dict(fig=Figure()), does_not_raise_exception()),
-        (dict(fix_aspect=True), does_not_raise_exception()),
-        (dict(color_theme="dark"), does_not_raise_exception()),
-        (dict(color_theme=ColorTheme("dark")), does_not_raise_exception()),
+        dict(),
+        dict(projection="PlateCarree"),
+        dict(projection="Mercator"),
+        dict(projection="Miller"),
+        dict(fig=Figure()),
+        dict(fix_aspect=True),
+        dict(color_theme="dark"),
+        dict(color_theme=ColorTheme("dark")),
     ],
 )
-def test_init_map(args, raises):
+def test_init_map(kwargs: dict):
+    ax = mod.init_map(**kwargs)
+    assert isinstance(ax, cartopy.mpl.geoaxes.GeoAxes)
 
-    with raises:
-        ax = mod.init_map(**args)
-        assert isinstance(ax, cartopy.mpl.geoaxes.GeoAxes)
+
+@pytest.mark.parametrize(
+    "kwargs,error",
+    [
+        pytest.param(
+            dict(projection="blaaa"),
+            "no such projection blaaa",
+            id="unknown projection",
+        ),
+        pytest.param(
+            dict(projection=42),
+            "Input for projection needs to be instance of cartopy.crs.Projection",
+            id="wrong projection",
+        ),
+    ],
+)
+def test_init_map_error(kwargs: dict, error: str):
+
+    with pytest.raises(ValueError) as e:
+        mod.init_map(**kwargs)
+    assert str(e.value) == error
 
 
 fake_gridded = type("FakeData", (GriddedData,), {"content": dict(_has_latlon_dims=True, ndim=4)})
 
 
 @pytest.mark.parametrize(
-    "data,args,raises",
+    "data,kwargs",
     [
-        (None, dict(), does_not_raise_exception()),
-        (42, dict(), pytest.raises(ValueError)),
-        (GriddedData(), dict(), pytest.raises(DataDimensionError)),
-        (fake_gridded(), dict(), pytest.raises(DataDimensionError)),
-        (None, dict(add_cbar=False), does_not_raise_exception()),
-        (None, dict(ax=42), pytest.raises(ValueError)),
-        (None, dict(cbar_levels=[0.2, 0.4, 0.6], vmin=0.1, vmax=0.2), pytest.raises(ValueError)),
-        (None, dict(cbar_levels=[0.2, 0.4, 0.6]), does_not_raise_exception()),
-        (None, dict(cbar_levels=[0.2, 0.6], cmap="Blues"), does_not_raise_exception()),
-        (None, dict(cbar_levels=[0.2, 0.6], add_zero=True), does_not_raise_exception()),
-        (None, dict(vmin=-0.2, log_scale=True), does_not_raise_exception()),
-        (None, dict(vmin=-0.2, log_scale=False), does_not_raise_exception()),
-        (None, dict(vmin=-0.1, log_scale=True, vmax=2, cmap="Reds"), does_not_raise_exception()),
-        (None, dict(discrete_norm=False), does_not_raise_exception()),
-        (None, dict(vmin=-0.1, discrete_norm=False), does_not_raise_exception()),
-        ("const", dict(discrete_norm=False), pytest.raises(ValueError)),
-        ("negval", dict(discrete_norm=False), does_not_raise_exception()),
-        ("allnan", dict(), pytest.raises(ValueError)),
-        (None, dict(), does_not_raise_exception()),
-        (
-            None,
-            dict(
-                log_scale=False,
-                add_zero=True,
-            ),
-            does_not_raise_exception(),
-        ),
-        (None, dict(log_scale=False, cmap="viridis"), does_not_raise_exception()),
-        (None, dict(c_over="r", c_under="b"), does_not_raise_exception()),
-        (None, dict(cbar_levels=[0.2, 0.6], c_over="r", c_under="b"), does_not_raise_exception()),
-        (None, dict(cbar_levels=[0.2, 0.6], c_over="r"), does_not_raise_exception()),
-        (None, dict(add_cbar=True, var_name="od550aer", unit="ug"), does_not_raise_exception()),
-        (None, dict(add_cbar=True, cbar_ticks=[0.1, 0.2, 0.3]), does_not_raise_exception()),
-        (
-            None,
-            dict(add_cbar=True, cbar_ticks=[0.1, 0.2, 0.3], cbar_ticks_sci=True),
-            does_not_raise_exception(),
-        ),
+        (None, dict()),
+        (None, dict(add_cbar=False)),
+        (None, dict(cbar_levels=[0.2, 0.4, 0.6])),
+        (None, dict(cbar_levels=[0.2, 0.6], cmap="Blues")),
+        (None, dict(cbar_levels=[0.2, 0.6], add_zero=True)),
+        (None, dict(vmin=-0.2, log_scale=True)),
+        (None, dict(vmin=-0.2, log_scale=False)),
+        (None, dict(vmin=-0.1, log_scale=True, vmax=2, cmap="Reds")),
+        (None, dict(discrete_norm=False)),
+        (None, dict(vmin=-0.1, discrete_norm=False)),
+        ("negval", dict(discrete_norm=False)),
+        (None, dict(log_scale=False, add_zero=True)),
+        (None, dict(log_scale=False, cmap="viridis")),
+        (None, dict(c_over="r", c_under="b")),
+        (None, dict(cbar_levels=[0.2, 0.6], c_over="r", c_under="b")),
+        (None, dict(cbar_levels=[0.2, 0.6], c_over="r")),
+        (None, dict(add_cbar=True, var_name="od550aer", unit="ug")),
+        (None, dict(add_cbar=True, cbar_ticks=[0.1, 0.2, 0.3])),
+        (None, dict(add_cbar=True, cbar_ticks=[0.1, 0.2, 0.3], cbar_ticks_sci=True)),
     ],
 )
-def test_plot_griddeddata_on_map(data_tm5, data, args, raises):
+@pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
+def test_plot_griddeddata_on_map(
+    data_tm5: GriddedData, data: GriddedData | str | None, kwargs: dict
+):
     if data is None:
         data = data_tm5
     elif data == "allnan":
@@ -116,7 +120,38 @@ def test_plot_griddeddata_on_map(data_tm5, data, args, raises):
     elif data == "const":
         data = data_tm5.copy()
         data.grid.data[:, :, :] = 1
-    with raises:
+    val = mod.plot_griddeddata_on_map(data, **kwargs)
+    assert isinstance(val, Figure)
+
+
+@pytest.mark.parametrize(
+    "data,args,exception",
+    [
+        (42, dict(), ValueError),
+        (GriddedData(), dict(), DataDimensionError),
+        (fake_gridded(), dict(), DataDimensionError),
+        (None, dict(ax=42), ValueError),
+        (None, dict(cbar_levels=[0.2, 0.4, 0.6], vmin=0.1, vmax=0.2), ValueError),
+        ("const", dict(discrete_norm=False), ValueError),
+        ("allnan", dict(), ValueError),
+    ],
+)
+@pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
+def test_plot_griddeddata_on_map_error(
+    data_tm5: GriddedData, data: GriddedData | str | None, args: dict, exception: Type[Exception]
+):
+    if data is None:
+        data = data_tm5
+    elif data == "allnan":
+        data = data_tm5.copy()
+        data.grid.data = data.grid.data * np.nan
+    elif data == "negval":
+        data = data_tm5.copy()
+        data.grid.data[0, 0, 0] = -100
+    elif data == "const":
+        data = data_tm5.copy()
+        data.grid.data[:, :, :] = 1
+    with pytest.raises(exception) as e:
         val = mod.plot_griddeddata_on_map(data, **args)
         assert isinstance(val, Figure)
 
