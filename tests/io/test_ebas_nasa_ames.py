@@ -3,18 +3,18 @@ from collections import OrderedDict
 import numpy as np
 import pytest
 
-from pyaerocom.io import ebas_nasa_ames as ena
+from pyaerocom.io.ebas_nasa_ames import EbasColDef, EbasFlagCol, EbasNasaAmesFile, NasaAmesHeader
 
 from ..conftest import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")
 def head():
-    return ena.NasaAmesHeader
+    return NasaAmesHeader
 
 
 def test_EbasFlagCol():
-    fc = ena.EbasFlagCol(np.asarray([0, 0.66, 0.456, 0.999, 0.999100, 0.999100456]))
+    fc = EbasFlagCol(np.asarray([0, 0.66, 0.456, 0.999, 0.999100, 0.999100456]))
     assert (fc.valid == np.asarray([True, True, False, False, True, True])).all()
 
 
@@ -29,7 +29,7 @@ def test_EbasFlagCol():
     ],
 )
 def test_EbasFlagCol_decoded(raw_data, decoded):
-    fc = ena.EbasFlagCol(raw_data, False)
+    fc = EbasFlagCol(raw_data, False)
     assert fc._decoded is None
     dc = fc.decoded
     assert fc._decoded is dc
@@ -50,8 +50,8 @@ def test_NasaAmesHeader_CONV_PI(head):
 
 
 def test_EbasNasaAmesFile_instance(filedata):
-    assert isinstance(filedata, ena.NasaAmesHeader)
-    assert isinstance(filedata, ena.EbasNasaAmesFile)
+    assert isinstance(filedata, NasaAmesHeader)
+    assert isinstance(filedata, EbasNasaAmesFile)
 
 
 def test_EbasNasaAmesFile_head_fix(filedata):
@@ -149,7 +149,7 @@ def test_EbasNasaAmesFile___str__(filedata):
 )
 def test_EbasColDef_get_wavelength_nm(filedata, colnum, value):
     coldef = filedata.var_defs[colnum]
-    assert isinstance(coldef, ena.EbasColDef)
+    assert isinstance(coldef, EbasColDef)
     assert coldef.get_wavelength_nm() == value
 
 
