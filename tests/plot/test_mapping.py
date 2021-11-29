@@ -7,10 +7,17 @@ import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
-import pyaerocom.plot.mapping as mod
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import ColorTheme, get_color_theme
+from pyaerocom.plot.mapping import (
+    get_cmap_maps_aerocom,
+    init_map,
+    plot_griddeddata_on_map,
+    plot_map_aerocom,
+    plot_nmb_map_colocateddata,
+    set_map_ticks,
+)
 
 
 @pytest.mark.parametrize(
@@ -23,17 +30,17 @@ from pyaerocom.plot.config import ColorTheme, get_color_theme
     ],
 )
 def test_get_cmap_maps_aerocom(color_theme, vmin, vmax, name):
-    cmap = mod.get_cmap_maps_aerocom(color_theme, vmin, vmax)
+    cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
     assert cmap.name == name
 
 
 def test_set_cmap_ticks():
-    ax = mod.init_map()
-    ax = mod.set_map_ticks(ax, None, None)
+    ax = init_map()
+    ax = set_map_ticks(ax, None, None)
     assert isinstance(ax, cartopy.mpl.geoaxes.GeoAxes)
     xticks = [-90, 0, 90]
     yticks = [-60, 5, 60]
-    ax = mod.set_map_ticks(ax, xticks=xticks, yticks=yticks)
+    ax = set_map_ticks(ax, xticks=xticks, yticks=yticks)
     assert list(ax.get_xticks()) == xticks
     assert list(ax.get_yticks()) == yticks
 
@@ -52,7 +59,7 @@ def test_set_cmap_ticks():
     ],
 )
 def test_init_map(kwargs: dict):
-    ax = mod.init_map(**kwargs)
+    ax = init_map(**kwargs)
     assert isinstance(ax, cartopy.mpl.geoaxes.GeoAxes)
 
 
@@ -74,7 +81,7 @@ def test_init_map(kwargs: dict):
 def test_init_map_error(kwargs: dict, error: str):
 
     with pytest.raises(ValueError) as e:
-        mod.init_map(**kwargs)
+        init_map(**kwargs)
     assert str(e.value) == error
 
 
@@ -120,7 +127,7 @@ def test_plot_griddeddata_on_map(
     elif data == "const":
         data = data_tm5.copy()
         data.grid.data[:, :, :] = 1
-    val = mod.plot_griddeddata_on_map(data, **kwargs)
+    val = plot_griddeddata_on_map(data, **kwargs)
     assert isinstance(val, Figure)
 
 
@@ -152,7 +159,7 @@ def test_plot_griddeddata_on_map_error(
         data = data_tm5.copy()
         data.grid.data[:, :, :] = 1
     with pytest.raises(exception) as e:
-        val = mod.plot_griddeddata_on_map(data, **args)
+        val = plot_griddeddata_on_map(data, **args)
         assert isinstance(val, Figure)
 
 
@@ -168,29 +175,29 @@ def test_plot_griddeddata_on_map_error(
     ],
 )
 def test_plot_map_aerocom(data_tm5, region):
-    val = mod.plot_map_aerocom(data_tm5, region)
+    val = plot_map_aerocom(data_tm5, region)
     assert isinstance(val, Figure)
 
 
 def test_plot_map_aerocom_error(data_tm5):
     with pytest.raises(ValueError):
-        mod.plot_map_aerocom(42, "WORLD")
+        plot_map_aerocom(42, "WORLD")
 
 
 def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet):
-    val = mod.plot_nmb_map_colocateddata(coldata_tm5_aeronet)
+    val = plot_nmb_map_colocateddata(coldata_tm5_aeronet)
     assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
 
 
 def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5):
-    val = mod.plot_nmb_map_colocateddata(coldata_tm5_tm5)
+    val = plot_nmb_map_colocateddata(coldata_tm5_tm5)
     assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
 
 
 def test_plot_nmb_map_colocateddataFAIL(coldata):
     cd = coldata["fake_5d"]
     with pytest.raises(DataDimensionError):
-        mod.plot_nmb_map_colocateddata(cd)
+        plot_nmb_map_colocateddata(cd)
     cd = coldata["fake_nodims"]
     with pytest.raises(AssertionError):
-        mod.plot_nmb_map_colocateddata(cd)
+        plot_nmb_map_colocateddata(cd)
