@@ -80,9 +80,10 @@ def test_EbasNasaAmesFile_head_fix(filedata):
     assert filedata.head_fix == HEAD_FIX
 
 
-def test_EbasNasaAmesFile_head_fix__setitem__(filedata):
-    with pytest.raises(AttributeError):
+def test_EbasNasaAmesFile_head_fix_error(filedata):
+    with pytest.raises(AttributeError) as e:
         filedata.head_fix = "Blaaaaaaaaaaaaaaa"
+    assert str(e.value) == "can't set attribute"
 
 
 def test_EbasNasaAmesFile_data(filedata):
@@ -121,19 +122,14 @@ def test_EbasNasaAmesFile_get_dt_meas(filedata):
 
 
 @pytest.mark.parametrize("update", [{"bla": 42}, {"vol_num": 42}])
-def test_EbasNasaAmesFile_update(filedata, update):
-    meta_before = {}
-    meta_before.update(**filedata._meta)
-    head_before = {}
-    head_before.update(**filedata._head_fix)
-    filedata.update(**update)
+def test_EbasNasaAmesFile_update(filedata: EbasNasaAmesFile, update: dict):
+    data = EbasNasaAmesFile(filedata.file)
+    data.update(**update)
     for key, val in update.items():
-        if key in head_before:
-            assert filedata._head_fix[key] == val
+        if key in filedata._head_fix:
+            assert data._head_fix[key] == val
         else:
-            assert filedata._meta[key] == val
-    filedata._head_fix = head_before
-    filedata._meta = meta_before
+            assert data._meta[key] == val
 
 
 def test_EbasNasaAmesFile___str__(filedata):
