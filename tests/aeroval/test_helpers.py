@@ -2,7 +2,6 @@ from __future__ import absolute_import, annotations
 
 import pytest
 
-from pyaerocom import const
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
     _get_min_max_year_periods,
@@ -11,7 +10,6 @@ from pyaerocom.aeroval.helpers import (
 )
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.varcollection import VarCollection
 
 
 @pytest.mark.parametrize(
@@ -28,31 +26,30 @@ def test_check_var_ranges_avail(data_tm5: GriddedData, dvar: str, var: str):
     data.var_name = dvar
     check_var_ranges_avail(data, var)
 
-    # cleanup
-    varcfg = const._var_info_file
-    const._var_param = VarCollection(varcfg)
-
 
 def test_check_var_ranges_avail_error(data_tm5: GriddedData):
     with pytest.raises(VariableDefinitionError) as e:
         check_var_ranges_avail(data_tm5, "bla")
     assert str(e.value) == "Error (VarCollection): input variable bla is not supported"
 
-    # cleanup
-    varcfg = const._var_info_file
-    const._var_param = VarCollection(varcfg)
-
 
 def test__check_statistics_periods():
-    val = _check_statistics_periods(["2010-2010", "2005"])
-    assert val == ["2010-2010", "2005"]
+    assert _check_statistics_periods(["2010-2010", "2005"]) == ["2010-2010", "2005"]
 
 
 @pytest.mark.parametrize(
     "periods,error",
     [
-        pytest.param(42, "statistics_periods needs to be a list", id="not list"),
-        pytest.param([42], "All periods need to be strings", id="not list[str]"),
+        pytest.param(
+            42,
+            "statistics_periods needs to be a list",
+            id="not list",
+        ),
+        pytest.param(
+            [42],
+            "All periods need to be strings",
+            id="not list[str]",
+        ),
         pytest.param(
             ["2010-2010-20"],
             "Invalid value for period (2010-2010-20), can be either single years or period of years (e.g. 2000-2010).",
@@ -74,8 +71,7 @@ def test__check_statistics_periods_error(periods: list[str], error: str):
     ],
 )
 def test__period_str_to_timeslice(period: str, result: slice):
-    val = _period_str_to_timeslice(period)
-    assert val == result
+    assert _period_str_to_timeslice(period) == result
 
 
 def test__period_str_to_timeslice_error():
@@ -85,15 +81,14 @@ def test__period_str_to_timeslice_error():
 
 
 @pytest.mark.parametrize(
-    "statistics_periods,result",
+    "periods,result",
     [
         (["2005", "2000"], (2000, 2005)),
         (["2005", "2000", "1999-2021"], (1999, 2021)),
     ],
 )
-def test__get_min_max_year_periods(statistics_periods: list[str], result: tuple[int, int]):
-    val = _get_min_max_year_periods(statistics_periods)
-    assert val == result
+def test__get_min_max_year_periods(periods: list[str], result: tuple[int, int]):
+    assert _get_min_max_year_periods(periods) == result
 
 
 def test__get_min_max_year_periods_error():
