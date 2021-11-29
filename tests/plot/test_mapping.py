@@ -137,7 +137,9 @@ def test_plot_griddeddata_on_map(gridded_data: GriddedData, kwargs: dict):
     assert isinstance(val, Figure)
 
 
-fake_gridded = type("FakeData", (GriddedData,), {"content": dict(_has_latlon_dims=True, ndim=4)})
+class Fake4D(GriddedData):
+    has_latlon_dims = True
+    ndim = 4
 
 
 @pytest.mark.parametrize(
@@ -158,11 +160,11 @@ fake_gridded = type("FakeData", (GriddedData,), {"content": dict(_has_latlon_dim
             id="no lon/lat",
         ),
         pytest.param(
-            fake_gridded(),
+            Fake4D(),
             dict(),
             DataDimensionError,
-            "Input data needs to have latitude and longitude dimension",
-            id="no lon/lat",
+            "Input data needs to be 2 dimensional or 3D with time being the 3rd dimension",
+            id="fake 4D",
         ),
         pytest.param(
             None,
