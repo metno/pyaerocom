@@ -8,6 +8,7 @@ import pytest
 from matplotlib.figure import Figure
 
 from pyaerocom import GriddedData
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import ColorTheme, get_color_theme
 from pyaerocom.plot.mapping import (
@@ -166,38 +167,53 @@ def test_plot_griddeddata_on_map_error(
 @pytest.mark.parametrize(
     "region",
     [
-        ("WORLD"),
-        ("EUROPE"),
+        "WORLD",
+        "EUROPE",
         pytest.param(
             "EEUROPE",
             marks=pytest.mark.filterwarnings("ignore:Out of bound index found:DeprecationWarning"),
         ),
     ],
 )
-def test_plot_map_aerocom(data_tm5, region):
+def test_plot_map_aerocom(data_tm5: GriddedData, region: str):
     val = plot_map_aerocom(data_tm5, region)
     assert isinstance(val, Figure)
 
 
-def test_plot_map_aerocom_error(data_tm5):
+def test_plot_map_aerocom_error():
     with pytest.raises(ValueError):
         plot_map_aerocom(42, "WORLD")
 
 
-def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet):
+def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet: ColocatedData):
     val = plot_nmb_map_colocateddata(coldata_tm5_aeronet)
     assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
 
 
-def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5):
+def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
     val = plot_nmb_map_colocateddata(coldata_tm5_tm5)
     assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
 
 
-def test_plot_nmb_map_colocateddataFAIL(coldata):
-    cd = coldata["fake_5d"]
-    with pytest.raises(DataDimensionError):
-        plot_nmb_map_colocateddata(cd)
-    cd = coldata["fake_nodims"]
-    with pytest.raises(AssertionError):
-        plot_nmb_map_colocateddata(cd)
+@pytest.mark.parametrize(
+    "key,exception,error",
+    [
+        pytest.param(
+            "fake_5d",
+            DataDimensionError,
+            "only 3D or 4D colocated data objects are supported",
+            id="5d",
+        ),
+        pytest.param(
+            "fake_nodims",
+            AssertionError,
+            "",
+            id="nodims",
+        ),
+    ],
+)
+def test_plot_nmb_map_colocateddataFAIL(coldata, key: str, exception: Type[Exception], error: str):
+    data = coldata[key]
+    with pytest.raises(exception) as e:
+        plot_nmb_map_colocateddata(data)
+    assert str(e.value) == error
