@@ -1,4 +1,4 @@
-from contextlib import nullcontext as does_not_raise_exception
+from __future__ import annotations
 
 import pytest
 
@@ -12,19 +12,22 @@ def test_EbasSQLRequest___init__():
 
 
 @pytest.mark.parametrize(
-    "var,output,raises",
+    "var,output",
     [
-        ("bla", "('bla')", does_not_raise_exception()),
-        ({}, None, pytest.raises(ValueError)),
-        (("bla", "blub"), "('bla', 'blub')", does_not_raise_exception()),
-        (["bla", "blub"], "('bla', 'blub')", does_not_raise_exception()),
+        ("bla", "('bla')"),
+        (("bla", "blub"), "('bla', 'blub')"),
+        (["bla", "blub"], "('bla', 'blub')"),
     ],
 )
-def test_EbasSQLRequest__var2sql(var, output, raises):
-    with raises:
-        req = mod.EbasSQLRequest()
-        _val = req._var2sql(var)
-        assert _val == output
+def test_EbasSQLRequest__var2sql(var: str | tuple[str] | list[str], output: str):
+    req = mod.EbasSQLRequest()
+    assert req._var2sql(var) == output
+
+
+def test_EbasSQLRequest__var2sql_error():
+    with pytest.raises(ValueError) as e:
+        mod.EbasSQLRequest()._var2sql({})
+    assert str(e.value) == "Invalid value..."
 
 
 @pytest.mark.parametrize(
