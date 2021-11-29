@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import pytest
@@ -142,15 +141,19 @@ def test_EbasNasaAmesFile___str__(filedata):
 
 
 @pytest.mark.parametrize(
-    "colnum,raises,value",
+    "colnum,value",
     [
-        (0, pytest.raises(KeyError), None),
-        (5, does_not_raise_exception(), 450),
-        (8, does_not_raise_exception(), 550),
+        (5, 450),
+        (8, 550),
     ],
 )
-def test_EbasColDef_get_wavelength_nm(filedata, colnum, raises, value):
+def test_EbasColDef_get_wavelength_nm(filedata, colnum, value):
     coldef = filedata.var_defs[colnum]
     assert isinstance(coldef, ena.EbasColDef)
-    with raises:
-        assert coldef.get_wavelength_nm() == value
+    assert coldef.get_wavelength_nm() == value
+
+
+def test_EbasColDef_get_wavelength_nm_error(filedata):
+    with pytest.raises(KeyError) as e:
+        filedata.var_defs[0].get_wavelength_nm()
+    assert str(e.value) == "'Column variable starttime does not contain wavelength information'"
