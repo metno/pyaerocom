@@ -18,6 +18,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 from .conftest import FAKE_STATION_DATA
 
@@ -72,9 +73,10 @@ def test_StationData_has_var():
     assert stat1.has_var("od550aer")
     assert stat2.has_var("conco3")
     assert not stat2.has_var("abs550aer")
-    st = stat2.copy()
-    st["abs550aer"] = np.ones(10)
-    assert st.has_var("abs550aer")
+
+    copy = stat2.copy()
+    copy["abs550aer"] = np.ones(10)
+    assert copy.has_var("abs550aer")
 
 
 def test_StationData_get_unit():
@@ -121,14 +123,14 @@ def test_StationData_check_var_unit_aerocom():
     "stat,var_name,exception,error",
     [
         pytest.param(
-            stat1,
+            stat1.copy(),
             "concco",
             MetaDataError,
             "Could not access variable metadata dict for concco.",
             id="var not found",
         ),
         pytest.param(
-            stat3,
+            stat3.copy(),
             "concso4",
             UnitConversionError,
             "failed to convert unit from 1 to ug m-3",
@@ -139,7 +141,6 @@ def test_StationData_check_var_unit_aerocom():
 def test_StationData_check_var_unit_aerocom_error(
     stat: StationData, var_name: str, exception: Type[Exception], error: str
 ):
-    stat = stat.copy()
     with pytest.raises(exception) as e:
         stat.check_var_unit_aerocom(var_name)
     assert str(e.value) == error
@@ -166,7 +167,7 @@ def test_StationData_convert_unit_error():
 
 
 def test_StationData_dist_other():
-    dist = stat1.copy().dist_other(stat2.copy())
+    dist = stat1.dist_other(stat2)
     assert_allclose(dist, 1.11, atol=0.1)
 
 
@@ -178,8 +179,10 @@ def test_StationData_dist_other():
         (stat1, stat2, 2, True),
     ],
 )
-def test_StationData_same_coords(stat, other, tol_km, result):
-    assert stat.copy().same_coords(other.copy(), tol_km) == result
+def test_StationData_same_coords(
+    stat: StationData, other: StationData, tol_km: float | None, result: bool
+):
+    assert stat.same_coords(other, tol_km) == result
 
 
 @pytest.mark.parametrize(
@@ -239,7 +242,7 @@ def test_StationData_get_station_coords_error(
 
 
 @pytest.mark.parametrize(
-    "add_none_vals,add_meta_keys,numitems",
+    "add_none_vals,add_meta_keys,num",
     [
         (False, None, 14),
         (False, "blaaa", 14),
@@ -255,13 +258,13 @@ def test_StationData_get_meta(
     quality_check: bool,
     add_none_vals: bool,
     add_meta_keys: list[str],
-    numitems: int,
+    num: int,
 ):
     meta = stat.copy().get_meta(
         force_single_value, quality_check, add_none_vals, add_meta_keys=add_meta_keys
     )
     assert isinstance(meta, dict)
-    assert len(meta) == numitems
+    assert len(meta) == num
 
 
 def test_StationData_get_meta_error():
@@ -271,20 +274,21 @@ def test_StationData_get_meta_error():
 
 
 @pytest.mark.parametrize("key", ["station_name", "framework", "longitude"])
-def test_StationData__check_meta_item(key: str):
-    stat1.copy()._check_meta_item(key)
+@pytest.mark.parametrize("stat", [stat1.copy()])
+def test_StationData__check_meta_item(stat: StationData, key: str):
+    stat._check_meta_item(key)
 
 
 @pytest.mark.parametrize(
-    "stat,other,coord_tol_km,inplace,add_meta_keys",
+    "other,coord_tol_km,inplace,add_meta_keys",
     [
-        (stat1, stat1, 0.1, True, None),
-        (stat1, stat2, 50, True, None),
-        (stat1, stat2, 50, True, ["random_key1"]),
-        (stat1, stat2, 50, False, ["random_key1"]),
+        (stat1, 0.1, True, None),
+        (stat2, 50, True, None),
+        (stat2, 50, True, ["random_key1"]),
+        (stat2, 50, False, ["random_key1"]),
     ],
 )
-@pytest.mark.parametrize("check_coords,raise_on_error", [(True, True)])
+@pytest.mark.parametrize("stat,check_coords,raise_on_error", [(stat1.copy(), True, True)])
 def test_StationData_merge_meta_same_station(
     stat: StationData,
     other: StationData,
@@ -294,7 +298,6 @@ def test_StationData_merge_meta_same_station(
     add_meta_keys: list[str],
     raise_on_error: bool,
 ):
-    stat = stat.copy()
     _stat = stat.merge_meta_same_station(
         other, coord_tol_km, check_coords, inplace, add_meta_keys, raise_on_error
     )
@@ -310,46 +313,52 @@ def test_StationData_merge_meta_same_station_error():
     assert str(e.value) == "Station coordinates differ by more than 0.001 km."
 
 
-@pytest.mark.parametrize("stat", [stat1, stat2])
+@pytest.mark.parametrize("stat", [stat1.copy(), stat2.copy()])
 @pytest.mark.parametrize("other", [stat1, stat2])
 def test_StationData_merge_varinfo(stat: StationData, other: StationData):
-    stat = stat.copy().merge_varinfo(other, "ec550aer")
-    assert isinstance(stat, StationData)
+    assert stat.merge_varinfo(other, "ec550aer") is stat
 
 
-@pytest.mark.parametrize("stat,other", [(stat1, stat2), (stat2, stat1)])
+@pytest.mark.parametrize("stat,other", [(stat1.copy(), stat2), (stat2.copy(), stat1)])
 def test_StationData_merge_varinfo_error(stat: StationData, other: StationData):
     with pytest.raises(MetaDataError) as e:
-        stat.copy().merge_varinfo(other, "conco3")
+        stat.merge_varinfo(other, "conco3")
     assert str(e.value) == "No variable meta information available for conco3"
 
 
 @pytest.mark.parametrize(
-    "stat,var_name,val",
+    "stat,var_name,result",
     [
         (stat1, "od550aer", False),
         (stat2, "od550aer", False),
         (ec_earlinet, "ec532aer", True),
     ],
 )
-def test_StationData_check_if_3d(stat, var_name, val):
-    assert stat.check_if_3d(var_name) == val
+def test_StationData_check_if_3d(stat: StationData, var_name: str, result: bool):
+    assert stat.check_if_3d(var_name) == result
 
 
-@pytest.mark.parametrize("s1,s2,var_name,val", [(stat1, stat2, "ec550aer", "monthly")])
-def test_StationData__check_ts_types_for_merge(s1, s2, var_name, val):
-    assert s1._check_ts_types_for_merge(s2, var_name) == val
+def test_StationData__check_ts_types_for_merge():
+    assert stat1._check_ts_types_for_merge(stat2, "ec550aer") == "monthly"
 
 
 @pytest.mark.parametrize(
-    "stat,var_name,low,high,check_unit,mean",
+    "low,high,mean",
     [
-        (stat1.copy(), "od550aer", None, None, True, 1),
-        (stat1.copy(), "od550aer", 10, 20, True, np.nan),
+        (None, None, 1),
+        (10, 20, np.nan),
     ],
 )
+@pytest.mark.parametrize("stat,var_name,check_unit", [(stat1.copy(), "od550aer", True)])
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
-def test_StationData_remove_outliers(stat, var_name, low, high, check_unit, mean):
+def test_StationData_remove_outliers(
+    stat: StationData,
+    var_name: str,
+    low: float | None,
+    high: float | None,
+    check_unit: bool,
+    mean: float,
+):
     stat.remove_outliers(var_name, low, high, check_unit)
     avg = np.nanmean(stat[var_name])
     if np.isnan(mean):
@@ -358,13 +367,12 @@ def test_StationData_remove_outliers(stat, var_name, low, high, check_unit, mean
         assert_allclose(avg, mean)
 
 
-def test_StationData_calc_climatology(aeronetsunv3lev2_subset):
-    data = aeronetsunv3lev2_subset
-    site = data.to_station_data(6, vars_to_convert="od550aer")
+def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
+    site = aeronetsunv3lev2_subset.to_station_data(6, vars_to_convert="od550aer")
     clim = site.calc_climatology("od550aer")
     assert clim is not site
     assert isinstance(clim, StationData)
-    mean = np.nanmean(clim.od550aer)
+    mean = np.nanmean(clim.od550aer)  # type:ignore[attr-defined]
     assert_allclose(mean, 0.44, atol=0.01)
 
 
@@ -387,16 +395,20 @@ def test_StationData_remove_variable_error():
 
 
 def test_StationData_select_altitude_DataArray():
-    with pytest.raises(NotImplementedError):
-        val = ec_earlinet.select_altitude("ec532aer", 1000)
-    val = ec_earlinet.select_altitude("ec532aer", (1000, 2000))
-    assert isinstance(val, DataArray)
-    assert val.shape == (4, 5)
-    assert list(val.altitude.values) == [1125, 1375, 1625, 1875]
+    selection = ec_earlinet.select_altitude("ec532aer", (1000, 2000))
+    assert isinstance(selection, DataArray)
+    assert selection.shape == (4, 5)
+    assert list(selection.altitude.values) == [1125, 1375, 1625, 1875]
+
+
+def test_StationData_select_altitude_DataArray_error():
+    with pytest.raises(NotImplementedError) as e:
+        ec_earlinet.select_altitude("ec532aer", 1000)
+    assert str(e.value) == "So far only a range (low, high) is supported for altitude extraction."
 
 
 def test_StationData_select_altitude_Series():
-    series = stat1.copy().select_altitude("od550aer", (100, 301))
+    series = stat1.select_altitude("od550aer", (100, 301))
     assert isinstance(series, pd.Series)
 
 
@@ -408,7 +420,7 @@ def test_StationData_select_altitude_Series():
     ],
 )
 def test_StationData_select_altitude_Series_error(
-    stat, altitudes, exception: Type[Exception], error: str
+    stat: StationData, altitudes: tuple[int, int], exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.select_altitude("od550aer", altitudes)
@@ -422,7 +434,7 @@ def test_StationData_select_altitude_Series_error(
         (ec_earlinet, "ec532aer", dict(altitude=(0, 1000))),
     ],
 )
-def test_StationData_to_timeseries(stat, var_name, kwargs):
+def test_StationData_to_timeseries(stat: StationData, var_name: str, kwargs: dict):
     series = stat.to_timeseries(var_name, **kwargs)
     assert isinstance(series, pd.Series)
 
@@ -442,7 +454,7 @@ def test_StationData_to_timeseries(stat, var_name, kwargs):
         ),
     ],
 )
-def test_StationData_to_timeseries_error(kwargs, error: str):
+def test_StationData_to_timeseries_error(kwargs: dict, error: str):
     with pytest.raises(ValueError) as e:
         ec_earlinet.to_timeseries("ec532aer", **kwargs)
     assert str(e.value) == error
