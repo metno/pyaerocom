@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import tempfile
-from contextlib import nullcontext as does_not_raise_exception
 from pathlib import Path
+from typing import Type
 
 import numpy as np
 import pytest
@@ -68,20 +70,61 @@ FAKE_FILE.parent.mkdir(exist_ok=True, parents=True)
 FAKE_FILE.write_text("")
 
 
+def test_check_time_coord():
+    iris_io.check_time_coord(aod_cube, "monthly", 2010)
+
+
 @pytest.mark.parametrize(
-    "cube,ts_type,year,raises",
+    "cube,ts_type,year,exception,error",
     [
-        (aod_cube, "monthly", 2010, does_not_raise_exception()),
-        (aod_cube_notime, "monthly", 2010, pytest.raises(AttributeError)),
-        (aod_cube, "blaa", 2010, pytest.raises(TemporalResolutionError)),
-        (aod_cube, "daily", 2010, pytest.raises(UnresolvableTimeDefinitionError)),
-        (aod_cube, "daily", 2012, pytest.raises(UnresolvableTimeDefinitionError)),
-        (aod_cube, "monthly", 2008, pytest.raises(ValueError)),
+        pytest.param(
+            aod_cube_notime,
+            "monthly",
+            2010,
+            AttributeError,
+            "Cube does not contain time dimension",
+            id="no time dimension",
+        ),
+        pytest.param(
+            aod_cube,
+            "blaa",
+            2010,
+            TemporalResolutionError,
+            "Invalid input for ts_type blaa. Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native']",
+            id="wrong ts_type",
+        ),
+        pytest.param(
+            aod_cube,
+            "daily",
+            2010,
+            UnresolvableTimeDefinitionError,
+            "Expected 365 timestamps but data has 12",
+            id="daily from monthly",
+        ),
+        pytest.param(
+            aod_cube,
+            "daily",
+            2012,
+            UnresolvableTimeDefinitionError,
+            "Expected 366 timestamps but data has 12",
+            id="daily from monthly",
+        ),
+        pytest.param(
+            aod_cube,
+            "monthly",
+            2008,
+            ValueError,
+            "First timestamp of data 2010-01-15T12:00:00.000000 does not lie in first period: 2008-01",
+            id="worng year",
+        ),
     ],
 )
-def test_check_time_coord(cube, ts_type, year, raises):
-    with raises:
+def test_check_time_coord_error(
+    cube: CubeList, ts_type: str, year: int, exception: Type[Exception], error: str
+):
+    with pytest.raises(exception) as e:
         iris_io.check_time_coord(cube, ts_type, year)
+    assert str(e.value) == error
 
 
 def test_get_dim_names_cube():
@@ -93,80 +136,98 @@ def test_get_dimnames_cube():
 
 
 @pytest.mark.parametrize(
-    "cube,file,file_convention,raises,dimnames",
+    "cube,file,file_convention",
     [
         (
             aod_cube_notime,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             None,
-            does_not_raise_exception(),
-            ["time", "latitude", "longitude"],
         ),
         (
             aod_cube_wrongtime2,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             None,
-            does_not_raise_exception(),
-            ["time", "latitude", "longitude"],
         ),
         (
             aod_cube,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             None,
-            does_not_raise_exception(),
-            ["time", "latitude", "longitude"],
         ),
         (
             aod_cube,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             FileConventionRead("aerocom2"),
-            does_not_raise_exception(),
-            ["time", "latitude", "longitude"],
         ),
         (
             aod_cube_nounit,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             None,
-            does_not_raise_exception(),
-            ["time", "latitude", "longitude"],
         ),
         (
             aod_cube_notime,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             FileConventionRead("aerocom2"),
-            does_not_raise_exception(),
-            ["time", "latitude", "longitude"],
-        ),
-        (
-            aod_cube_wrongtime,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
-            None,
-            pytest.raises(UnresolvableTimeDefinitionError),
-            None,
         ),
     ],
 )
-def test__cube_quality_check(cube, file, file_convention, raises, dimnames):
-    with raises:
-        cube = iris_io._cube_quality_check(cube, file, file_convention)
-        _dimnames = [c.name() for c in cube.dim_coords]
-        assert _dimnames == dimnames
+def test__cube_quality_check(cube, file, file_convention):
+    cube = iris_io._cube_quality_check(cube, file, file_convention)
+    assert [c.name() for c in cube.dim_coords] == ["time", "latitude", "longitude"]
+
+
+def test__cube_quality_check_error():
+    with pytest.raises(UnresolvableTimeDefinitionError) as e:
+        iris_io._cube_quality_check(
+            aod_cube_wrongtime, "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
+        )
+    error = "UnresolvableTimeDefinitionError('Expected 12 timestamps but data has 13')"
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
-    "file,var_name,file_convention,perform_fmt_checks,raises",
+    "file,var_name",
     [
-        (FAKE_FILE, None, None, None, pytest.raises(TranslationError)),
-        (TM5_FILE1, None, None, None, does_not_raise_exception()),
-        (EMEP_FILE, None, None, None, pytest.raises(NetcdfError)),
-        (EMEP_FILE, "SURF_ug_NO2", None, None, does_not_raise_exception()),
-        (EMEP_FILE, "od550aer", None, None, pytest.raises(NetcdfError)),
+        (TM5_FILE1, None),
+        (EMEP_FILE, "SURF_ug_NO2"),
     ],
 )
-def test_load_cube_custom(file, var_name, file_convention, perform_fmt_checks, raises):
-    with raises:
-        result = iris_io.load_cube_custom(file, var_name, file_convention, perform_fmt_checks)
-        assert isinstance(result, Cube)
+def test_load_cube_custom(file, var_name):
+    cube = iris_io.load_cube_custom(file, var_name)
+    assert isinstance(cube, Cube)
+
+
+@pytest.mark.parametrize(
+    "file,var_name,exception,error",
+    [
+        pytest.param(
+            FAKE_FILE,
+            None,
+            TranslationError,
+            "The file appears empty or incomplete",
+            id="enpty file",
+        ),
+        pytest.param(
+            EMEP_FILE,
+            None,
+            NetcdfError,
+            "Could not load single cube from",
+            id="no cube",
+        ),
+        pytest.param(
+            EMEP_FILE,
+            "od550aer",
+            NetcdfError,
+            "Variable od550aer not available in file",
+            id="no variable",
+        ),
+    ],
+)
+def test_load_cube_custom_error(
+    file: Path | str, var_name: str | None, exception: Type[Exception], error: str
+):
+    with pytest.raises(exception) as e:
+        iris_io.load_cube_custom(file, var_name)
+    assert str(e.value).startswith(error)
 
 
 @pytest.mark.parametrize(
@@ -183,43 +244,49 @@ def test_load_cubes_custom(files, num_loaded):
     assert all(len(res) == num_loaded for res in result)
 
 
-@pytest.mark.parametrize(
-    "cube,raises", [(aod_cube_only_longname_dims, does_not_raise_exception())]
-)
-def test_check_dim_coord_names_cube(cube, raises):
-    with raises:
-        iris_io.check_dim_coord_names_cube(cube)
+def test_check_dim_coord_names_cube():
+    iris_io.check_dim_coord_names_cube(aod_cube_only_longname_dims)
 
 
 @pytest.mark.parametrize(
-    "cube,file,raises",
+    "cube,file",
     [
         (
             aod_cube_wrongtime3,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_daily.nc",
-            does_not_raise_exception(),
         ),
         (
             aod_cube,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
-            does_not_raise_exception(),
-        ),
-        (
-            aod_cube,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_-1_monthly.nc",
-            pytest.raises(FileConventionError),
-        ),
-        (
-            aod_cube,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_20001_monthly.nc",
-            pytest.raises(FileConventionError),
         ),
     ],
 )
-def test__check_correct_time_dim(cube, file, raises):
-    with raises:
-        cube = iris_io._check_correct_time_dim(cube, file)
-        assert isinstance(cube, Cube)
+def test__check_correct_time_dim(cube: CubeList, file: str):
+    cube = iris_io._check_correct_time_dim(cube, file)
+    assert isinstance(cube, Cube)
+
+
+@pytest.mark.parametrize(
+    "cube,file,error",
+    [
+        pytest.param(
+            aod_cube,
+            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_-1_monthly.nc",
+            "Invalid year -1 in filename aerocom3_TM5_AP3-CTRL2016_od550aer_Column_-1_monthly.nc",
+            id="year=-1",
+        ),
+        pytest.param(
+            aod_cube,
+            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_20001_monthly.nc",
+            "Invalid year 20001 in filename aerocom3_TM5_AP3-CTRL2016_od550aer_Column_20001_monthly.nc",
+            id="year=20001",
+        ),
+    ],
+)
+def test__check_correct_time_dim_error(cube: CubeList, file: str, error: str):
+    with pytest.raises(FileConventionError) as e:
+        iris_io._check_correct_time_dim(cube, file)
+    assert str(e.value) == error
 
 
 def make_cubelist(dtype):
