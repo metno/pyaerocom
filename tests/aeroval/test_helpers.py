@@ -1,9 +1,14 @@
-from __future__ import annotations
+from __future__ import absolute_import, annotations
 
 import pytest
 
-import pyaerocom.aeroval.helpers as mod
 from pyaerocom import const
+from pyaerocom.aeroval.helpers import (
+    _check_statistics_periods,
+    _get_min_max_year_periods,
+    _period_str_to_timeslice,
+    check_var_ranges_avail,
+)
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.varcollection import VarCollection
@@ -21,7 +26,7 @@ from pyaerocom.varcollection import VarCollection
 def test_check_var_ranges_avail(data_tm5: GriddedData, dvar: str, var: str):
     data = data_tm5.copy()
     data.var_name = dvar
-    mod.check_var_ranges_avail(data, var)
+    check_var_ranges_avail(data, var)
 
     # cleanup
     varcfg = const._var_info_file
@@ -30,7 +35,7 @@ def test_check_var_ranges_avail(data_tm5: GriddedData, dvar: str, var: str):
 
 def test_check_var_ranges_avail_error(data_tm5: GriddedData):
     with pytest.raises(VariableDefinitionError) as e:
-        mod.check_var_ranges_avail(data_tm5, "bla")
+        check_var_ranges_avail(data_tm5, "bla")
     assert str(e.value) == "Error (VarCollection): input variable bla is not supported"
 
     # cleanup
@@ -39,7 +44,7 @@ def test_check_var_ranges_avail_error(data_tm5: GriddedData):
 
 
 def test__check_statistics_periods():
-    val = mod._check_statistics_periods(["2010-2010", "2005"])
+    val = _check_statistics_periods(["2010-2010", "2005"])
     assert val == ["2010-2010", "2005"]
 
 
@@ -57,7 +62,7 @@ def test__check_statistics_periods():
 )
 def test__check_statistics_periods_error(periods: list[str], error: str):
     with pytest.raises(ValueError) as e:
-        mod._check_statistics_periods(periods)
+        _check_statistics_periods(periods)
     assert str(e.value) == error
 
 
@@ -69,12 +74,13 @@ def test__check_statistics_periods_error(periods: list[str], error: str):
     ],
 )
 def test__period_str_to_timeslice(period: str, result: slice):
+    val = _period_str_to_timeslice(period)
     assert val == result
 
 
 def test__period_str_to_timeslice_error():
     with pytest.raises(ValueError) as e:
-        mod._period_str_to_timeslice("2005-2019-2000")
+        _period_str_to_timeslice("2005-2019-2000")
     assert str(e.value) == "2005-2019-2000"
 
 
@@ -86,11 +92,11 @@ def test__period_str_to_timeslice_error():
     ],
 )
 def test__get_min_max_year_periods(statistics_periods: list[str], result: tuple[int, int]):
-    val = mod._get_min_max_year_periods(statistics_periods)
+    val = _get_min_max_year_periods(statistics_periods)
     assert val == result
 
 
 def test__get_min_max_year_periods_error():
     with pytest.raises(ValueError) as e:
-        mod._get_min_max_year_periods(["2005-2004-23", "2000", "1999-2021"])
+        _get_min_max_year_periods(["2005-2004-23", "2000", "1999-2021"])
     assert str(e.value) == "2005-2004-23"
