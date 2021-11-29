@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.axes import Axes
+from numpy.testing import assert_allclose
 from xarray import DataArray
 
-from pyaerocom import stationdata as mod
 from pyaerocom.exceptions import (
     CoordinateError,
     DataUnitError,
@@ -17,6 +17,7 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.io import ReadEarlinet
+from pyaerocom.stationdata import StationData
 
 from .conftest import FAKE_STATION_DATA
 
@@ -98,7 +99,7 @@ def test_StationData_get_unit():
         ),
     ],
 )
-def test_StationData_get_unit_error(stat: mod.StationData, var_name: str, error: str):
+def test_StationData_get_unit_error(stat: StationData, var_name: str, error: str):
     with pytest.raises(MetaDataError) as e:
         stat.get_unit(var_name)
     assert str(e.value) == error
@@ -136,7 +137,7 @@ def test_StationData_check_var_unit_aerocom():
     ],
 )
 def test_StationData_check_var_unit_aerocom_error(
-    stat: mod.StationData, var_name: str, exception: Type[Exception], error: str
+    stat: StationData, var_name: str, exception: Type[Exception], error: str
 ):
     stat = stat.copy()
     with pytest.raises(exception) as e:
@@ -166,7 +167,7 @@ def test_StationData_convert_unit_error():
 
 def test_StationData_dist_other():
     dist = stat1.copy().dist_other(stat2.copy())
-    np.testing.assert_allclose(dist, 1.11, atol=0.1)
+    assert_allclose(dist, 1.11, atol=0.1)
 
 
 @pytest.mark.parametrize(
@@ -184,19 +185,19 @@ def test_StationData_same_coords(stat, other, tol_km, result):
 @pytest.mark.parametrize(
     "stat,force_single_value,dtype",
     [
-        (mod.StationData(), False, None),
+        (StationData(), False, None),
         (stat1, False, None),
         (stat1, True, float),
         (stat2, True, float),
         (
-            mod.StationData(station_coords=dict(latitude=42, longitude=42, altitude=42)),
+            StationData(station_coords=dict(latitude=42, longitude=42, altitude=42)),
             False,
             None,
         ),
     ],
 )
 def test_StationData_get_station_coords(
-    stat: mod.StationData, force_single_value: bool, dtype: type | None
+    stat: StationData, force_single_value: bool, dtype: type | None
 ):
     coords = stat.get_station_coords(force_single_value=force_single_value)
     assert isinstance(coords, dict)
@@ -221,7 +222,7 @@ def test_StationData_get_station_coords(
             id="wrong station latitude",
         ),
         pytest.param(
-            mod.StationData(latitude=[42, 44, 32], longitude=42, altitude=42),
+            StationData(latitude=[42, 44, 32], longitude=42, altitude=42),
             ValueError,
             "meas point coordinate arrays of latitude vary too much to reduce them to a single coordinate. "
             "Order of difference in latitude is 12 and maximum allowed is 0.05.",
@@ -230,7 +231,7 @@ def test_StationData_get_station_coords(
     ],
 )
 def test_StationData_get_station_coords_error(
-    stat: mod.StationData, exception: Type[Exception], error: str
+    stat: StationData, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.get_station_coords(force_single_value=True)
@@ -249,7 +250,7 @@ def test_StationData_get_station_coords_error(
 )
 @pytest.mark.parametrize("stat,force_single_value,quality_check", [(stat1, True, True)])
 def test_StationData_get_meta(
-    stat: mod.StationData,
+    stat: StationData,
     force_single_value: bool,
     quality_check: bool,
     add_none_vals: bool,
@@ -285,8 +286,8 @@ def test_StationData__check_meta_item(key: str):
 )
 @pytest.mark.parametrize("check_coords,raise_on_error", [(True, True)])
 def test_StationData_merge_meta_same_station(
-    stat: mod.StationData,
-    other: mod.StationData,
+    stat: StationData,
+    other: StationData,
     coord_tol_km: float,
     check_coords: bool,
     inplace: bool,
@@ -297,7 +298,7 @@ def test_StationData_merge_meta_same_station(
     _stat = stat.merge_meta_same_station(
         other, coord_tol_km, check_coords, inplace, add_meta_keys, raise_on_error
     )
-    assert isinstance(_stat, mod.StationData)
+    assert isinstance(_stat, StationData)
     assert (_stat is stat) == inplace
 
 
@@ -311,13 +312,13 @@ def test_StationData_merge_meta_same_station_error():
 
 @pytest.mark.parametrize("stat", [stat1, stat2])
 @pytest.mark.parametrize("other", [stat1, stat2])
-def test_StationData_merge_varinfo(stat: mod.StationData, other: mod.StationData):
+def test_StationData_merge_varinfo(stat: StationData, other: StationData):
     stat = stat.copy().merge_varinfo(other, "ec550aer")
-    assert isinstance(stat, mod.StationData)
+    assert isinstance(stat, StationData)
 
 
 @pytest.mark.parametrize("stat,other", [(stat1, stat2), (stat2, stat1)])
-def test_StationData_merge_varinfo_error(stat: mod.StationData, other: mod.StationData):
+def test_StationData_merge_varinfo_error(stat: StationData, other: StationData):
     with pytest.raises(MetaDataError) as e:
         stat.copy().merge_varinfo(other, "conco3")
     assert str(e.value) == "No variable meta information available for conco3"
@@ -354,7 +355,7 @@ def test_StationData_remove_outliers(stat, var_name, low, high, check_unit, mean
     if np.isnan(mean):
         assert np.isnan(avg)
     else:
-        np.testing.assert_allclose(avg, mean)
+        assert_allclose(avg, mean)
 
 
 def test_StationData_calc_climatology(aeronetsunv3lev2_subset):
@@ -362,9 +363,9 @@ def test_StationData_calc_climatology(aeronetsunv3lev2_subset):
     site = data.to_station_data(6, vars_to_convert="od550aer")
     clim = site.calc_climatology("od550aer")
     assert clim is not site
-    assert isinstance(clim, mod.StationData)
+    assert isinstance(clim, StationData)
     mean = np.nanmean(clim.od550aer)
-    np.testing.assert_allclose(mean, 0.44, atol=0.01)
+    assert_allclose(mean, 0.44, atol=0.01)
 
 
 def test_StationData_remove_variable():
