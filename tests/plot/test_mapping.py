@@ -86,11 +86,29 @@ def test_init_map_error(kwargs: dict, error: str):
     assert str(e.value) == error
 
 
-fake_gridded = type("FakeData", (GriddedData,), {"content": dict(_has_latlon_dims=True, ndim=4)})
+@pytest.fixture
+def gridded_data(data_tm5: GriddedData, key: GriddedData | str | None) -> GriddedData:
+    if key is None:
+        return data_tm5
+
+    data: GriddedData = data_tm5.copy()
+    if key == "allnan":
+        data.grid.data = data.grid.data * np.nan
+        return data
+
+    if key == "negval":
+        data.grid.data[0, 0, 0] = -100
+        return data
+
+    if key == "const":
+        data.grid.data[:, :, :] = 1
+        return data
+
+    return key  # type:ignore[return-value]
 
 
 @pytest.mark.parametrize(
-    "data,kwargs",
+    "key,kwargs",
     [
         (None, dict()),
         (None, dict(add_cbar=False)),
@@ -114,54 +132,75 @@ fake_gridded = type("FakeData", (GriddedData,), {"content": dict(_has_latlon_dim
     ],
 )
 @pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
-def test_plot_griddeddata_on_map(
-    data_tm5: GriddedData, data: GriddedData | str | None, kwargs: dict
-):
-    if data is None:
-        data = data_tm5
-    elif data == "allnan":
-        data = data_tm5.copy()
-        data.grid.data = data.grid.data * np.nan
-    elif data == "negval":
-        data = data_tm5.copy()
-        data.grid.data[0, 0, 0] = -100
-    elif data == "const":
-        data = data_tm5.copy()
-        data.grid.data[:, :, :] = 1
-    val = plot_griddeddata_on_map(data, **kwargs)
+def test_plot_griddeddata_on_map(gridded_data: GriddedData, kwargs: dict):
+    val = plot_griddeddata_on_map(gridded_data, **kwargs)
     assert isinstance(val, Figure)
 
 
+fake_gridded = type("FakeData", (GriddedData,), {"content": dict(_has_latlon_dims=True, ndim=4)})
+
+
 @pytest.mark.parametrize(
-    "data,args,exception",
+    "key,kwargs,exception,error",
     [
-        (42, dict(), ValueError),
-        (GriddedData(), dict(), DataDimensionError),
-        (fake_gridded(), dict(), DataDimensionError),
-        (None, dict(ax=42), ValueError),
-        (None, dict(cbar_levels=[0.2, 0.4, 0.6], vmin=0.1, vmax=0.2), ValueError),
-        ("const", dict(discrete_norm=False), ValueError),
-        ("allnan", dict(), ValueError),
+        pytest.param(
+            42,
+            dict(),
+            ValueError,
+            "need GriddedData",
+            id="no GriddedData",
+        ),
+        pytest.param(
+            GriddedData(),
+            dict(),
+            DataDimensionError,
+            "Input data needs to have latitude and longitude dimension",
+            id="no lon/lat",
+        ),
+        pytest.param(
+            fake_gridded(),
+            dict(),
+            DataDimensionError,
+            "Input data needs to have latitude and longitude dimension",
+            id="no lon/lat",
+        ),
+        pytest.param(
+            None,
+            dict(ax=42),
+            ValueError,
+            "Invalid input for ax, need GeoAxes",
+            id="wrong ax",
+        ),
+        pytest.param(
+            None,
+            dict(cbar_levels=[0.2, 0.4, 0.6], vmin=0.1, vmax=0.2),
+            ValueError,
+            "Please provide either vmin/vmax OR cbar_levels",
+            id="cbar_levels and vmin/vmax",
+        ),
+        pytest.param(
+            "const",
+            dict(discrete_norm=False),
+            ValueError,
+            "Minimum value in data equals maximum value: 1.0",
+            id="constant",
+        ),
+        pytest.param(
+            "allnan",
+            dict(),
+            ValueError,
+            "Cannot plot map of data: all values are NaN",
+            id="all NaN",
+        ),
     ],
 )
 @pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
 def test_plot_griddeddata_on_map_error(
-    data_tm5: GriddedData, data: GriddedData | str | None, args: dict, exception: Type[Exception]
+    gridded_data: GriddedData, kwargs: dict, exception: Type[Exception], error: str
 ):
-    if data is None:
-        data = data_tm5
-    elif data == "allnan":
-        data = data_tm5.copy()
-        data.grid.data = data.grid.data * np.nan
-    elif data == "negval":
-        data = data_tm5.copy()
-        data.grid.data[0, 0, 0] = -100
-    elif data == "const":
-        data = data_tm5.copy()
-        data.grid.data[:, :, :] = 1
     with pytest.raises(exception) as e:
-        val = plot_griddeddata_on_map(data, **args)
-        assert isinstance(val, Figure)
+        plot_griddeddata_on_map(gridded_data, **kwargs)
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
