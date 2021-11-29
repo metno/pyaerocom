@@ -43,10 +43,9 @@ def test_EbasSQLRequest__var2sql_error():
         ),
     ],
 )
-def test_EbasSQLRequest_make_file_query_str(kwargs, output):
+def test_EbasSQLRequest_make_file_query_str(kwargs: dict, output: str):
     req = EbasSQLRequest()
-    _val = req.make_file_query_str(**kwargs)
-    assert _val == output
+    assert req.make_file_query_str(**kwargs) == output
 
 
 @pytest.mark.parametrize(
@@ -86,10 +85,9 @@ def test_EbasSQLRequest_make_file_query_str(kwargs, output):
         ),
     ],
 )
-def test_EbasSQLRequest_make_query_str(kwargs, output):
+def test_EbasSQLRequest_make_query_str(kwargs: dict, output: str):
     req = EbasSQLRequest()
-    _val = req.make_query_str(**kwargs)
-    assert _val == output
+    assert req.make_query_str(**kwargs) == output
 
 
 def test_EbasSQLRequest___str__():
@@ -101,43 +99,42 @@ def test_EbasFileIndex___init__():
 
 
 def test_EbasFileIndex_database_getter():
-    ebas = EbasFileIndex()
-    with pytest.raises(AttributeError):
-        assert ebas.database == ebas._database
+    with pytest.raises(AttributeError) as e:
+        EbasFileIndex().database
+    error = "EBAS SQLite database file could not be located but is needed in EbasFileIndex class"
+    assert str(e.value) == error
 
 
-def test_EbasFileIndex_ALL_STATION_NAMES():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+@pytest.fixture(scope="module")
+def ebas() -> EbasFileIndex:
+    return EbasFileIndex(EBAS_SQLite_DB)
+
+
+def test_EbasFileIndex_ALL_STATION_NAMES(ebas: EbasFileIndex):
     assert isinstance(ebas.ALL_STATION_NAMES, list)
 
 
-def test_EbasFileIndex_ALL_STATION_CODES():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_ALL_STATION_CODES(ebas: EbasFileIndex):
     assert isinstance(ebas.ALL_STATION_CODES, list)
 
 
-def test_EbasFileIndex_ALL_STATISTICS_PARAMS():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_ALL_STATISTICS_PARAMS(ebas: EbasFileIndex):
     assert isinstance(ebas.ALL_STATISTICS_PARAMS, list)
 
 
-def test_EbasFileIndex_ALL_VARIABLES():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_ALL_VARIABLES(ebas: EbasFileIndex):
     assert isinstance(ebas.ALL_VARIABLES, list)
 
 
-def test_EbasFileIndex_ALL_MATRICES():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_ALL_MATRICES(ebas: EbasFileIndex):
     assert isinstance(ebas.ALL_MATRICES, list)
 
 
-def test_EbasFileIndex_ALL_INSTRUMENTS():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_ALL_INSTRUMENTS(ebas: EbasFileIndex):
     assert isinstance(ebas.ALL_INSTRUMENTS, list)
 
 
-def test_EbasFileIndex_get_table_names():
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_get_table_names(ebas: EbasFileIndex):
     assert ebas.get_table_names() == ["station", "variable"]
 
 
@@ -182,6 +179,5 @@ table_comulns = dict(
 
 
 @pytest.mark.parametrize("table,column_names", table_comulns.items())
-def test_EbasFileIndex_get_column_names(table, column_names):
-    ebas = EbasFileIndex(EBAS_SQLite_DB)
+def test_EbasFileIndex_get_column_names(ebas: EbasFileIndex, table: str, column_names: list[str]):
     assert ebas.get_table_columns(table) == column_names
