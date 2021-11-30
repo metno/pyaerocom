@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+from itertools import chain
 from pathlib import Path
 from typing import Type
 
@@ -178,14 +178,18 @@ def test_data_id(reader: ReadEbas):
 
 
 def test_file_dir(reader: ReadEbas):
-    fd = reader.file_dir
     assert reader._file_dir is None
-    assert fd.endswith("data")
-    assert os.path.exists(fd)
+
     with pytest.raises(FileNotFoundError):
         reader.file_dir = 42
-    reader.file_dir = fd  # sets private attr _file_dir
-    assert reader._file_dir == reader.file_dir == fd
+
+    path = Path(reader.file_dir)
+    assert path.name == "data"
+    assert path.exists()
+    assert path.is_dir()
+
+    reader.file_dir = str(path)  # sets private attr _file_dir
+    assert reader._file_dir == reader.file_dir == str(path)
 
 
 def test_FILE_REQUEST_OPTS(reader: ReadEbas):
@@ -233,7 +237,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
     concprcpoxs concprcpoxn concprcprdn
     wetoxs wetoxn wetrdn pr prmm
     concpm1 concca concmg conck concso4pm10 concso4pm25
-    """.strip().split()
+    """.split()
 
     assert sorted(reader.PROVIDES_VARIABLES) == sorted(PROVIDES_VARIABLES)
 
@@ -276,11 +280,10 @@ def test_get_file_list_error(reader: ReadEbas):
 
 
 def test__merge_lists(reader: ReadEbas):
-    var = ["sc550aer", "ac550aer"]
-    lst = reader.get_file_list(var)
-    assert list(reader._lists_orig.keys()) == var
-    merged = reader._merge_lists(reader._lists_orig)
-    assert merged == lst
+    vars_to_retrieve = ["sc550aer", "ac550aer"]
+    files = reader.get_file_list(vars_to_retrieve)
+    assert list(reader._lists_orig) == vars_to_retrieve
+    assert reader._merge_lists(reader._lists_orig) == files
 
 
 def test__find_station_matches(reader: ReadEbas):
@@ -381,42 +384,11 @@ def test__get_var_cols_error(
     assert str(e.value) == error
 
 
-@pytest.mark.skip(reason="Not implemented, is tested via read_file")
-def test__find_best_data_column():
-    pass
-
-
-@pytest.mark.skip(reason="Not implemented, is tested via read_file")
-def test__add_meta():
-    pass
-
-
-@pytest.mark.skip(reason="Not implemented, is tested via read_file")
-def test__find_wavelength_matches():
-    pass
-
-
-@pytest.mark.skip(reason="Not implemented, is tested via read_file")
-def test__find_closest_wavelength_cols():
-    pass
-
-
-@pytest.mark.skip(reason="Not implemented, is tested via read_file")
-def test__shift_wavelength():
-    pass
-
-
-@pytest.mark.skip(
-    reason="Updated in more recent dev version, example file not in testdata anymore"
-)
-def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example):
-    var = ["sc550aer", "scrh"]
-    desired = {"sc550aer": 17, "scrh": 3}
-
-    cols = reader.find_var_cols(var, loaded_nasa_ames_example)
-    for k, v in desired.items():
-        assert k in cols
-        assert cols[k] == v
+def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
+    vars_to_read = ["sc550aer", "scrh"]
+    columns = reader.find_var_cols(vars_to_read, loaded_nasa_ames_example)
+    assert columns["sc550aer"] == 17
+    assert columns["scrh"] == 3
 
 
 @pytest.mark.parametrize(
@@ -428,28 +400,27 @@ def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example):
     ],
 )
 def test__flag_incorrect_frequencies(
-    reader: ReadEbas, loaded_nasa_ames_example, ts_type, tol_percent, num_flagged
+    monkeypatch,
+    reader: ReadEbas,
+    loaded_nasa_ames_example: EbasNasaAmesFile,
+    ts_type: str,
+    tol_percent: int,
+    num_flagged: int,
 ):
-    st = StationData()
-    from pyaerocom import TsType
 
-    _default_tol = TsType.TOL_SECS_PERCENT
+    station = StationData()
+    station.start_meas = loaded_nasa_ames_example.start_meas
+    station.stop_meas = loaded_nasa_ames_example.stop_meas
+    station.var_info["bla"] = dict(units="1")
+    station.bla = np.ones_like(loaded_nasa_ames_example.start_meas)
+    station.ts_type = ts_type
 
-    TsType.TOL_SECS_PERCENT = tol_percent
+    monkeypatch.setattr("pyaerocom.TsType.TOL_SECS_PERCENT", tol_percent)
+    reader._flag_incorrect_frequencies(station)
 
-    num = len(loaded_nasa_ames_example.start_meas)
-    st.start_meas = loaded_nasa_ames_example.start_meas
-    st.stop_meas = loaded_nasa_ames_example.stop_meas
-    st.var_info["bla"] = dict(units="1")
-    st.bla = np.ones(num)
-    st.ts_type = ts_type
-
-    reader._flag_incorrect_frequencies(st)
-
-    assert "bla" in st.data_flagged
-    flagged = st.data_flagged["bla"]
+    assert "bla" in station.data_flagged
+    flagged = station.data_flagged["bla"]
     assert flagged.sum() == num_flagged
-    TsType.TOL_SECS_PERCENT = _default_tol
 
 
 conco3_tower_var_info = {
@@ -550,52 +521,63 @@ def test_read_file_error(
     assert str(e.value).startswith(error)
 
 
-def get_ebas_filelist(var_name):
-    files = []
-    for stat, filenames in EBAS_FILES[var_name].items():
-        for filename in filenames:
-            fp = EBAS_FILEDIR.joinpath(filename)
-            assert fp.exists()
-            files.append(str(fp))
-    return files
-
-
 def test__try_get_pt_conversion(reader: ReadEbas):
     fname = (
         "CH0001G.19910101000000.20181029122358.uv_abs.ozone.air.1y.1h.CH01L_TEI94C_1.CH01L_O3..nas"
     )
-    fp = os.path.join(reader.file_dir, fname)
-    assert os.path.exists(fp)
-    data = EbasNasaAmesFile(fp)
+    path = Path(reader.file_dir) / fname
+    assert path.exists()
+
+    data = EbasNasaAmesFile(path)
     with pytest.raises(MetaDataError):
         reader._try_get_pt_conversion(data.meta)
+
     p, T = reader._try_get_pt_conversion(data.var_defs[2])
     assert p == 65300  # Pa
     assert T == 265.15  # K
 
 
+def get_ebas_filelist(var_name: str) -> list[Path]:
+    paths: list[Path] = [
+        EBAS_FILEDIR / file for files in EBAS_FILES[var_name].values() for file in files
+    ]
+    assert all(path.exists() for path in paths)
+    return paths
+
+
+@pytest.fixture
+def ebas_files(file_vars: list[str] | str | None) -> list[Path] | None:
+    if file_vars is None:
+        return None
+    if isinstance(file_vars, str):
+        return get_ebas_filelist(file_vars)
+
+    paths = (get_ebas_filelist(var_name) for var_name in file_vars)
+    return list(chain.from_iterable(paths))
+
+
 @pytest.mark.parametrize(
-    "vars_to_retrieve,files,num_meta,num_stats",
+    "vars_to_retrieve,file_vars,num_meta,num_stats",
     [
-        ("concno2", get_ebas_filelist("concno2"), 2, 2),
-        ("vmrno2", get_ebas_filelist("vmrno2"), 2, 2),
-        ("vmrno2", get_ebas_filelist("vmrno2") + get_ebas_filelist("concno2"), 4, 4),
-        ("conco3", get_ebas_filelist("conco3"), 4, 4),
-        ("vmro3", get_ebas_filelist("conco3"), 4, 4),
-        ("concpm10", get_ebas_filelist("concpm10"), 4, 4),
+        ("concno2", "concno2", 2, 2),
+        ("vmrno2", "vmrno2", 2, 2),
+        ("vmrno2", ["vmrno2", "concno2"], 4, 4),
+        ("conco3", "conco3", 4, 4),
+        ("vmro3", "conco3", 4, 4),
+        ("concpm10", "concpm10", 4, 4),
         ("sc550aer", None, 5, 4),
-        ("sc550dryaer", get_ebas_filelist("sc550dryaer"), 5, 4),
-        ("ac550aer", get_ebas_filelist("ac550aer"), 4, 4),
+        ("sc550dryaer", "sc550dryaer", 5, 4),
+        ("ac550aer", "ac550aer", 4, 4),
     ],
 )
 def test_read(
     reader: ReadEbas,
     vars_to_retrieve: list[str] | str,
-    files: list[str] | None,
+    ebas_files: list[Path] | None,
     num_meta: int,
     num_stats: int,
 ):
-    data = reader.read(vars_to_retrieve, files=files)
+    data = reader.read(vars_to_retrieve, files=ebas_files)
     assert isinstance(data, UngriddedData)
     assert len(data.metadata) == num_meta
     assert len(data.unique_station_names) == num_stats
