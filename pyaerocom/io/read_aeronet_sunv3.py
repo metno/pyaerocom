@@ -146,10 +146,10 @@ class ReadAeronetSunV3(ReadAeronetBase):
             with open(filename, 'rt', encoding='ISO-8859-1') as in_file:
                 lines = in_file.readlines()
         except OSError:
+            # faulty gzip file
             if suffix == '.gz':
                 os.remove(f_out.name)
             raise AeronetReadError(f'gzip error in file {tmp_name}')
-            return None
 
         _lines_ignored = []
 
@@ -177,10 +177,6 @@ class ReadAeronetSunV3(ReadAeronetBase):
             self._update_col_index(col_index_str)
         col_index = self.col_index
 
-        # create empty arrays for all variables that are supposed to be read
-        # from file
-        for var in vars_to_read:
-            data_out[var] = []
         # dependent on the station, some of the required input variables
         # may not be provided in the data file. These will be ignored
         # in the following list that iterates over all data rows and will
@@ -188,6 +184,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
         # reading loop
         vars_available = {}
         for var in vars_to_read:
+            data_out[var] = []
             if var in col_index:
                 vars_available[var] = col_index[var]
             else:
