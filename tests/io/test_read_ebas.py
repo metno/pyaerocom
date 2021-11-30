@@ -7,7 +7,6 @@ from typing import Type
 import numpy as np
 import pytest
 
-import pyaerocom.exceptions as err
 from pyaerocom import const
 from pyaerocom.aux_var_helpers import (
     compute_ac550dryaer,
@@ -16,7 +15,14 @@ from pyaerocom.aux_var_helpers import (
     compute_sc550dryaer,
     compute_sc700dryaer,
 )
-from pyaerocom.exceptions import DataCoverageError, MetaDataError, TemporalResolutionError
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    MetaDataError,
+    NotInFileError,
+    TemporalResolutionError,
+    VariableDefinitionError,
+    VarNotAvailableError,
+)
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
@@ -333,13 +339,13 @@ def test_get_ebas_var(reader: ReadEbas):
     [
         pytest.param(
             "blaaablub",
-            err.VariableDefinitionError,
+            VariableDefinitionError,
             "Error (VarCollection): input variable blaaablub is not supported",
             id="VariableDefinitionError",
         ),
         pytest.param(
             "abs550aer",
-            err.VarNotAvailableError,
+            VarNotAvailableError,
             "Variable abs550aer is not available in EBAS interface",
             id="VarNotAvailableError",
         ),
@@ -370,7 +376,7 @@ def test__get_var_cols_error(
     reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
 ):
     info = EbasVarInfo(var)
-    with pytest.raises(err.NotInFileError) as e:
+    with pytest.raises(NotInFileError) as e:
         reader._get_var_cols(info, loaded_nasa_ames_example)
     assert str(e.value) == error
 
