@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
-from contextlib import nullcontext as does_not_raise_exception
 from pathlib import Path
+from typing import Type
 
 import numpy as np
 import pytest
@@ -237,30 +239,34 @@ def test_sqlite_database_file(reader: ReadEbas):
 
 
 @pytest.mark.parametrize(
-    "vars_to_retrieve,constraints,raises",
+    "vars_to_retrieve,constraints",
     [
-        ("vmrno", {}, does_not_raise_exception()),
-        ("vmrno", {"station_names": "xkcd"}, pytest.raises(FileNotFoundError)),
-        ("sc550aer", {}, does_not_raise_exception()),
-        ("sc550dryaer", {}, does_not_raise_exception()),
-        ("sc550dryaer", {"station_names": "Jungfraujoch"}, does_not_raise_exception()),
-        ("ac550aer", {}, does_not_raise_exception()),
-        ("concpm10", {}, does_not_raise_exception()),
-        ("conco3", {}, does_not_raise_exception()),
-        (
-            ["sc550aer", "ac550aer", "concpm10", "conco3"],
-            {"station_names": "*Kose*"},
-            does_not_raise_exception(),
-        ),
-        (["sc550aer", "ac550aer", "concpm10", "conco3"], {}, does_not_raise_exception()),
+        ("vmrno", {}),
+        ("sc550aer", {}),
+        ("sc550dryaer", {}),
+        ("sc550dryaer", {"station_names": "Jungfraujoch"}),
+        ("ac550aer", {}),
+        ("concpm10", {}),
+        ("conco3", {}),
+        (["sc550aer", "ac550aer", "concpm10", "conco3"], {}),
+        (["sc550aer", "ac550aer", "concpm10", "conco3"], {"station_names": "*Kose*"}),
     ],
 )
-def test_get_file_list(reader: ReadEbas, vars_to_retrieve, constraints, raises):
-    with raises:
-        lst = reader.get_file_list(vars_to_retrieve, **constraints)
+def test_get_file_list(
+    reader: ReadEbas, vars_to_retrieve: list[str] | str, constraints: dict[str, str]
+):
+    files = reader.get_file_list(vars_to_retrieve, **constraints)
+    assert isinstance(files, list)
+    assert files
 
-        assert isinstance(lst, list)
-        assert len(lst) > 0
+
+def test_get_file_list_error(reader: ReadEbas):
+    with pytest.raises(FileNotFoundError) as e:
+        reader.get_file_list("vmrno", station_names="xkcd")
+    assert (
+        str(e.value)
+        == "No files could be found for ['vmrno'] and reading constraints {'station_names': 'xkcd'}."
+    )
 
 
 def test__merge_lists(reader: ReadEbas):
@@ -271,61 +277,102 @@ def test__merge_lists(reader: ReadEbas):
     assert merged == lst
 
 
-@pytest.mark.parametrize(
-    "val,raises,output",
-    [
-        ("Bla", pytest.raises(FileNotFoundError), []),
-        ("*fraujo*", does_not_raise_exception(), ["Jungfraujoch"]),
-        (42, pytest.raises(ValueError), None),
-    ],
-)
-def test__find_station_matches(reader: ReadEbas, val, raises, output):
-    with raises:
-        assert reader._find_station_matches(val) == output
+def test__find_station_matches(reader: ReadEbas):
+    assert reader._find_station_matches("*fraujo*") == ["Jungfraujoch"]
 
 
 @pytest.mark.parametrize(
-    "val,raises,output",
+    "val,exception,error",
     [
-        # (['sconco3'], does_not_raise_exception(), ['conco3']),
-        (None, does_not_raise_exception(), None)
+        pytest.param(
+            "Bla",
+            FileNotFoundError,
+            "No EBAS data files could be found for stations Bla",
+            id="station not found",
+        ),
+        pytest.param(
+            42,
+            ValueError,
+            "Need list or string...",
+            id="wrong pattern type",
+        ),
     ],
 )
-def test__precheck_vars_to_retrieve(reader: ReadEbas, val, raises, output):
-    if val is None:
-        output = reader.PROVIDES_VARIABLES
-    with raises:
-        assert reader._precheck_vars_to_retrieve(val) == output
+def test__find_station_matches_error(
+    reader: ReadEbas, val, exception: Type[Exception], error: str
+):
+    with pytest.raises(exception) as e:
+        reader._find_station_matches(val)
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
-    "var,raises",
+    "vars_to_retrieve,result",
     [
-        ("sc550aer", does_not_raise_exception()),
-        ("blaaablub", pytest.raises(err.VariableDefinitionError)),
-        ("abs550aer", pytest.raises(err.VarNotAvailableError)),
+        (None, None),
+        (["sconco3"], ["conco3"]),
     ],
 )
-def test_get_ebas_var(reader: ReadEbas, var, raises):
-    with raises:
-        vi = reader.get_ebas_var(var)
-        assert isinstance(vi, EbasVarInfo)
-        assert var in reader._loaded_ebas_vars
+def test__precheck_vars_to_retrieve(
+    reader: ReadEbas, vars_to_retrieve: list[str] | None, result: list[str] | None
+):
+    if result is None:
+        result = reader.PROVIDES_VARIABLES
+    assert reader._precheck_vars_to_retrieve(vars_to_retrieve) == result
+
+
+def test_get_ebas_var(reader: ReadEbas):
+    var_name = "sc550aer"
+    info = reader.get_ebas_var(var_name)
+    assert isinstance(info, EbasVarInfo)
+    assert var_name in reader._loaded_ebas_vars
 
 
 @pytest.mark.parametrize(
-    "var,raises,colnums",
+    "var_name,exception,error",
     [
-        ("sc550aer", does_not_raise_exception(), [14, 17, 20]),
-        ("ac550aer", pytest.raises(err.NotInFileError), None),
-        ("sc550dryaer", pytest.raises(err.NotInFileError), None),
+        pytest.param(
+            "blaaablub",
+            err.VariableDefinitionError,
+            "Error (VarCollection): input variable blaaablub is not supported",
+            id="VariableDefinitionError",
+        ),
+        pytest.param(
+            "abs550aer",
+            err.VarNotAvailableError,
+            "Variable abs550aer is not available in EBAS interface",
+            id="VarNotAvailableError",
+        ),
     ],
 )
-def test__get_var_cols(reader: ReadEbas, loaded_nasa_ames_example, var, raises, colnums):
-    vi = EbasVarInfo(var)
-    with raises:
-        cols = reader._get_var_cols(vi, loaded_nasa_ames_example)
-        assert cols == colnums
+def test_get_ebas_var_error(
+    reader: ReadEbas, var_name: str, exception: Type[Exception], error: str
+):
+    with pytest.raises(exception) as e:
+        reader.get_ebas_var(var_name)
+    assert str(e.value) == error
+
+
+def test__get_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
+    info = EbasVarInfo("sc550aer")
+    cols = reader._get_var_cols(info, loaded_nasa_ames_example)
+    assert cols == [14, 17, 20]
+
+
+@pytest.mark.parametrize(
+    "var,error",
+    [
+        ("ac550aer", "Variable ac550aer could not be found in file"),
+        ("sc550dryaer", ""),
+    ],
+)
+def test__get_var_cols_error(
+    reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
+):
+    info = EbasVarInfo(var)
+    with pytest.raises(err.NotInFileError) as e:
+        reader._get_var_cols(info, loaded_nasa_ames_example)
+    assert str(e.value) == error
 
 
 @pytest.mark.skip(reason="Not implemented, is tested via read_file")
@@ -432,58 +479,69 @@ vmro3_tower_var_info = {
 
 
 @pytest.mark.parametrize(
-    "filename,vars_to_retrieve,raises,check_attrs",
+    "filename,vars_to_retrieve,check",
     [
         (
-            EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES["o3_tower"]),
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_tower"],
             "vmro3",
-            does_not_raise_exception(),
-            {"var_info": vmro3_tower_var_info},
+            dict(var_info=vmro3_tower_var_info),
         ),
         (
-            EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES["o3_tower"]),
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_tower"],
             "conco3",
-            does_not_raise_exception(),
-            {"var_info": conco3_tower_var_info},
+            dict(var_info=conco3_tower_var_info),
         ),
         (
-            EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES["pm10_tstype"]),
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["pm10_tstype"],
             "concpm10",
-            does_not_raise_exception(),
-            {"ts_type": "2daily"},
+            dict(ts_type="2daily"),
         ),
         (
-            EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES["pm10_colsel"]),
-            "concpm10",
-            pytest.raises(ValueError),
-            {},
-        ),
-        (
-            EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES["o3_neg_dt"]),
-            "conco3",
-            pytest.raises(TemporalResolutionError),
-            {},
-        ),
-        (
-            EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES["o3_tstype"]),
-            "conco3",
-            pytest.raises(TemporalResolutionError),
-            {},
-        ),
-        (
-            EBAS_FILEDIR.joinpath(EBAS_FILES["sc550dryaer"]["Jungfraujoch"][0]),
+            EBAS_FILEDIR / EBAS_FILES["sc550dryaer"]["Jungfraujoch"][0],
             ["sc550aer"],
-            does_not_raise_exception(),
-            {"station_name": "Jungfraujoch"},
+            dict(station_name="Jungfraujoch"),
         ),
     ],
 )
-def test_read_file(reader: ReadEbas, filename, vars_to_retrieve, raises, check_attrs):
-    with raises:
-        data = reader.read_file(filename=filename, vars_to_retrieve=vars_to_retrieve)
-        assert isinstance(data, StationData)
-        for key, val in check_attrs.items():
-            assert data[key] == val
+def test_read_file(reader: ReadEbas, filename: Path, vars_to_retrieve: str, check: dict):
+    data = reader.read_file(filename, vars_to_retrieve)
+    assert isinstance(data, StationData)
+    for key, val in check.items():
+        assert data[key] == val
+
+
+@pytest.mark.parametrize(
+    "filename,vars_to_retrieve,exception,error",
+    [
+        pytest.param(
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["pm10_colsel"],
+            "concpm10",
+            ValueError,
+            "failed to identify unique data column",
+            id="repeated column",
+        ),
+        pytest.param(
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_neg_dt"],
+            "conco3",
+            TemporalResolutionError,
+            "Nasa Ames file contains neg. meas periods...",
+            id="negative period",
+        ),
+        pytest.param(
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_tstype"],
+            "conco3",
+            TemporalResolutionError,
+            "Failed to derive correct sampling frequency in LT0015R.",
+            id="wrong freq",
+        ),
+    ],
+)
+def test_read_file_error(
+    reader: ReadEbas, filename: Path, vars_to_retrieve: str, exception: Type[Exception], error: str
+):
+    with pytest.raises(exception) as e:
+        reader.read_file(filename, vars_to_retrieve)
+    assert str(e.value).startswith(error)
 
 
 def get_ebas_filelist(var_name):
@@ -511,121 +569,40 @@ def test__try_get_pt_conversion(reader: ReadEbas):
 
 
 @pytest.mark.parametrize(
-    "vars_to_retrieve,first_file,last_file,files,constraints,num_meta,num_stats,raises",
+    "vars_to_retrieve,files,num_meta,num_stats",
     [
-        (
-            "concno2",
-            None,
-            None,
-            get_ebas_filelist("concno2"),
-            {},
-            2,
-            2,
-            does_not_raise_exception(),
-        ),
-        (
-            "vmrno2",
-            None,
-            None,
-            get_ebas_filelist("vmrno2"),
-            {},
-            2,
-            2,
-            does_not_raise_exception(),
-        ),
-        (
-            "vmrno2",
-            None,
-            None,
-            get_ebas_filelist("vmrno2") + get_ebas_filelist("concno2"),
-            {},
-            4,
-            4,
-            does_not_raise_exception(),
-        ),
-        (
-            "conco3",
-            None,
-            None,
-            get_ebas_filelist("conco3"),
-            {},
-            4,
-            4,
-            does_not_raise_exception(),
-        ),
-        (
-            "vmro3",
-            None,
-            None,
-            get_ebas_filelist("conco3"),
-            {},
-            4,
-            4,
-            does_not_raise_exception(),
-        ),
-        (
-            "concpm10",
-            None,
-            None,
-            get_ebas_filelist("concpm10"),
-            {},
-            4,
-            4,
-            does_not_raise_exception(),
-        ),
-        ("sc550aer", None, None, None, {}, 5, 4, does_not_raise_exception()),
-        (
-            "sc550dryaer",
-            None,
-            None,
-            get_ebas_filelist("sc550dryaer"),
-            {},
-            5,
-            4,
-            does_not_raise_exception(),
-        ),
-        (
-            "ac550aer",
-            None,
-            None,
-            get_ebas_filelist("sc550dryaer"),
-            {},
-            4,
-            4,
-            pytest.raises(DataCoverageError),
-        ),
-        (
-            "ac550aer",
-            None,
-            None,
-            get_ebas_filelist("ac550aer"),
-            {},
-            4,
-            4,
-            does_not_raise_exception(),
-        ),
+        ("concno2", get_ebas_filelist("concno2"), 2, 2),
+        ("vmrno2", get_ebas_filelist("vmrno2"), 2, 2),
+        ("vmrno2", get_ebas_filelist("vmrno2") + get_ebas_filelist("concno2"), 4, 4),
+        ("conco3", get_ebas_filelist("conco3"), 4, 4),
+        ("vmro3", get_ebas_filelist("conco3"), 4, 4),
+        ("concpm10", get_ebas_filelist("concpm10"), 4, 4),
+        ("sc550aer", None, 5, 4),
+        ("sc550dryaer", get_ebas_filelist("sc550dryaer"), 5, 4),
+        ("ac550aer", get_ebas_filelist("ac550aer"), 4, 4),
     ],
 )
 def test_read(
     reader: ReadEbas,
-    vars_to_retrieve,
-    first_file,
-    last_file,
-    files,
-    constraints,
-    num_meta,
-    num_stats,
-    raises,
+    vars_to_retrieve: list[str] | str,
+    files: list[str] | None,
+    num_meta: int,
+    num_stats: int,
 ):
-    with raises:
-        data = reader.read(vars_to_retrieve, first_file, last_file, files, **constraints)
-        assert isinstance(data, UngriddedData)
-        assert len(data.metadata) == num_meta
-        assert len(data.unique_station_names) == num_stats
-        if isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
+    data = reader.read(vars_to_retrieve, files=files)
+    assert isinstance(data, UngriddedData)
+    assert len(data.metadata) == num_meta
+    assert len(data.unique_station_names) == num_stats
+
+    if isinstance(vars_to_retrieve, str):
+        vars_to_retrieve = [vars_to_retrieve]
+    for var in vars_to_retrieve:
         for meta in data.metadata.values():
-            for var in vars_to_retrieve:
-                if var in meta["var_info"]:
-                    unit_desired = const.VARS[var].units
-                    assert meta["var_info"][var]["units"] == unit_desired
+            assert meta["var_info"][var]["units"] == const.VARS[var].units
+
+
+def test_read_error(reader: ReadEbas):
+    files = get_ebas_filelist("sc550dryaer")
+    with pytest.raises(DataCoverageError) as e:
+        reader.read("ac550aer", files=files)
+    assert str(e.value) == "UngriddedData object appears to be empty"
