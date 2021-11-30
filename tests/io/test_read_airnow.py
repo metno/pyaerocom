@@ -1,4 +1,5 @@
-from contextlib import nullcontext as does_not_raise_exception
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -244,122 +245,129 @@ def test__read_file(reader: ReadAirNow):
 # This should test all variables available and reads the first 3 data files
 # so for each variable, the StationData objects should contain 3 timestamps
 @pytest.mark.parametrize(
-    "vars_to_retrieve,statnum,first_dtime,first_vals,unit,expectation",
+    "var_name,statnum,first_dtime,first_vals,unit",
     [
-        (
-            ["concbc"],
+        pytest.param(
+            "concbc",
             8,
             ["2019-12-31T17:00:00", "2019-12-31T18:00:00", "2019-12-31T23:00:00"],
             [0.92, 1.53, 3.37],
             "ug m-3",
-            does_not_raise_exception(),
+            id="concbc",
         ),
-        (
-            ["concpm10"],
+        pytest.param(
+            "concpm10",
             196,
             ["2019-12-31T19:00:00", "2019-12-31T20:00:00", "2020-01-01T01:00:00"],
             [0.0, 0.0, -1.0],
             "ug m-3",
-            does_not_raise_exception(),
+            id="concpm10",
         ),
-        (
-            ["concpm25"],
+        pytest.param(
+            "concpm25",
             679,
             ["2019-12-31T21:00:00", "2019-12-31T22:00:00", "2020-01-01T03:00:00"],
             [11.0, 12.0, 5.0],
             "ug m-3",
-            does_not_raise_exception(),
+            id="concpm25",
         ),
-        (
-            ["vmrco"],
+        pytest.param(
+            "vmrco",
             115,
             ["2019-12-31T18:00:00", "2019-12-31T19:00:00", "2020-01-01T00:00:00"],
             [0.7, 0.8, 0.6],
             "ppm",
-            does_not_raise_exception(),
+            id="vmrco",
         ),
-        # ToDo: revies NH3 (not available in selected 3 test files...)
-        (["vmrnh3"], None, None, None, None, pytest.raises(DataRetrievalError)),
-        (
-            ["vmrno"],
+        pytest.param(
+            "vmrno",
             129,
             ["2019-12-31T21:00:00", "2019-12-31T22:00:00", "2020-01-01T03:00:00"],
             [0.0, 0.0, 0.0],
             "ppb",
-            does_not_raise_exception(),
+            id="vmrno",
         ),
-        (
-            ["vmrno2"],
+        pytest.param(
+            "vmrno2",
             187,
             ["2019-12-31T21:00:00", "2019-12-31T22:00:00", "2020-01-01T03:00:00"],
             [0.0, 0.0, 0.0],
             "ppb",
-            does_not_raise_exception(),
+            id="vmrno2",
         ),
-        (
-            ["vmrnox"],
+        pytest.param(
+            "vmrnox",
             103,
             ["2019-12-31T17:00:00", "2019-12-31T18:00:00", "2019-12-31T23:00:00"],
             [22.7, 30.9, 31.5],
             "ppb",
-            does_not_raise_exception(),
+            id="vmrnox",
         ),
-        (
-            ["vmrnoy"],
+        pytest.param(
+            "vmrnoy",
             33,
             ["2019-12-31T18:00:00", "2019-12-31T19:00:00", "2020-01-01T00:00:00"],
             [21.6, 28.8, 84.5],
             "ppb",
-            does_not_raise_exception(),
+            id="vmrnoy",
         ),
-        (
-            ["vmro3"],
+        pytest.param(
+            "vmro3",
             747,
             ["2019-12-31T21:00:00", "2019-12-31T22:00:00", "2020-01-01T03:00:00"],
             [30.0, 25.0, 29.0],
             "ppb",
-            does_not_raise_exception(),
+            id="vmro3",
         ),
-        (
-            ["vmrso2"],
+        pytest.param(
+            "vmrso2",
             181,
             ["2019-12-31T21:00:00", "2019-12-31T22:00:00", "2020-01-01T03:00:00"],
             [0.0, 0.0, 0.0],
             "ppb",
-            does_not_raise_exception(),
+            id="vmrso2",
         ),
     ],
 )
 def test__read_files_single_var(
-    reader, vars_to_retrieve, statnum, first_dtime, first_vals, unit, expectation
+    reader: ReadAirNow,
+    var_name: str,
+    statnum: int,
+    first_dtime: list[str],
+    first_vals: list[float],
+    unit: str,
 ):
-    if not len(vars_to_retrieve) == 1:
-        raise ValueError("invalid input for test, only single variables are supported here")
 
-    lst = reader.get_file_list()
+    files = reader.get_file_list()
+    data = reader._read_files(files, [var_name])
+    assert isinstance(data, list)
+    assert len(data) == statnum
 
-    with expectation:
-        data = reader._read_files(lst, vars_to_retrieve)
-        assert isinstance(data, list)
-        assert len(data) == statnum
+    for stat in data:
+        assert isinstance(stat, StationData)
+        assert var_name in stat
 
-        var = vars_to_retrieve[0]
-        for stat in data:
-            assert isinstance(stat, StationData)
-            assert var in stat
+    first_stat = data[0]
 
-        first_stat = data[0]
-        first_stat_vals = first_stat[var]
-        # check timeseries data
-        assert isinstance(first_stat_vals, np.ndarray)
-        assert var in first_stat["var_info"]
-        assert "units" in first_stat["var_info"][var]
-        assert first_stat["var_info"][var]["units"] == unit
+    # timeseries metadata
+    assert var_name in first_stat["var_info"]
+    assert "units" in first_stat["var_info"][var_name]
+    assert first_stat["var_info"][var_name]["units"] == unit
 
-        dtimelist = [str(x) for x in first_stat.dtime]
-        assert dtimelist == first_dtime, dtimelist
+    dtimelist = [str(x) for x in first_stat.dtime]
+    assert dtimelist == first_dtime
 
-        assert [x for x in first_stat_vals] == first_vals
+    assert isinstance(first_stat[var_name], np.ndarray)
+    assert list(first_stat[var_name]) == first_vals
+
+
+def test__read_files_single_var_error(reader: ReadAirNow):
+
+    files = reader.get_file_list()
+    # NH3 not available in selected 3 test files
+    with pytest.raises(DataRetrievalError) as e:
+        reader._read_files(files, ["vmrnh3"])
+    assert str(e.value) == "None of the input variables could be found in input list"
 
 
 def test_read_file(reader):
@@ -389,7 +397,9 @@ def test_read_file(reader):
         ),
     ],
 )
-def test_read(reader, vars_to_retrieve, num_meta_blocks, num_stats):
+def test_read(
+    reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
+):
     data = reader.read(vars_to_retrieve)
     if isinstance(vars_to_retrieve, str):
         vars_to_retrieve = [vars_to_retrieve]
