@@ -1,6 +1,7 @@
 from collections import OrderedDict as od
 from configparser import ConfigParser
-from os.path import basename, exists, join, splitext
+from importlib import resources
+from os.path import basename, splitext
 
 from pyaerocom import const
 from pyaerocom.exceptions import FileConventionError
@@ -343,17 +344,14 @@ class FileConventionRead:
                 f"File matching mask for convention {self.name} not yet defined..."
             )
 
-    def import_default(self, name):
+    def import_default(self, name: str):
         """Checks and load default information from database"""
-        from pyaerocom import __dir__
 
-        fpath = join(__dir__, "data", "file_conventions.ini")
-        if not exists(fpath):
-            raise OSError(f"File conventions ini file could not be found: {fpath}")
         conf_reader = ConfigParser()
-        conf_reader.read(fpath)
+        with resources.path(f"{__package__}.data", "file_conventions.ini") as path:
+            conf_reader.read(path)
         if not name in conf_reader:
-            raise NameError("No default available for %s" % name)
+            raise NameError(f"No default available for {name}")
         self.name = name
         for key, val in conf_reader[name].items():
             if key in self.__dict__:

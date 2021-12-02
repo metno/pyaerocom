@@ -1,18 +1,24 @@
-import os
+from __future__ import annotations
+
 from configparser import ConfigParser
+from importlib import resources
+from pathlib import Path
 
 from pyaerocom.exceptions import VariableDefinitionError
 
 
-def parse_variables_ini(fpath=None):
+def parse_variables_ini(fpath: str | Path | None = None):
     """Returns instance of ConfigParser to access information"""
-    from pyaerocom import __dir__
 
     if fpath is None:
-        fpath = os.path.join(__dir__, "data", "variables.ini")
+        with resources.path(f"{__package__}.data", "variables.ini") as path:
+            fpath = path
 
-    if not os.path.exists(fpath):
+    if isinstance(fpath, str):
+        fpath = Path(fpath)
+    if not fpath.exists():
         raise FileNotFoundError(f"FATAL: variables.ini file could not be found at {fpath}")
+
     parser = ConfigParser()
     parser.read(fpath)
     return parser
@@ -20,17 +26,15 @@ def parse_variables_ini(fpath=None):
 
 def parse_aliases_ini():
     """Returns instance of ConfigParser to access information"""
-    from pyaerocom import __dir__
+    with resources.path(f"{__package__}.data", "aliases.ini") as path:
+        fpath = path
 
-    fpath = os.path.join(__dir__, "data", "aliases.ini")
-    if not os.path.exists(fpath):
-        raise FileNotFoundError(f"FATAL: aliases.ini file could not be found at {fpath}")
     parser = ConfigParser()
     parser.read(fpath)
     return parser
 
 
-def get_emep_variables(parser=None):
+def get_emep_variables(parser: ConfigParser | None = None):
     """Read variable definitions from emep_variables.ini file
 
     Returns
@@ -49,14 +53,18 @@ def get_emep_variables(parser=None):
     return variables
 
 
-def parse_emep_variables_ini(fpath=None):
+def parse_emep_variables_ini(fpath: str | Path | None = None):
     """Returns instance of ConfigParser to access information"""
-    from pyaerocom import __dir__
 
     if fpath is None:
-        fpath = os.path.join(__dir__, "data", "emep_variables.ini")
-    if not os.path.exists(fpath):
+        with resources.path(f"{__package__}.data", "emep_variables.ini") as path:
+            fpath = path
+
+    if isinstance(fpath, str):
+        fpath = Path(fpath)
+    if not fpath.exists():
         raise FileNotFoundError(f"FATAL: emep_variables.ini file could not be found at {fpath}")
+
     parser = ConfigParser()
     # added 12.7.21 by jgliss for EMEP trends processing. See here:
     # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
@@ -65,7 +73,7 @@ def parse_emep_variables_ini(fpath=None):
     return parser
 
 
-def _read_alias_ini(parser=None):
+def _read_alias_ini(parser: ConfigParser | None = None):
     """Read all alias definitions from aliases.ini file and return as dict
 
     Returns
@@ -91,14 +99,12 @@ def _read_alias_ini(parser=None):
     return aliases
 
 
-def get_aliases(var_name, parser=None):
+def get_aliases(var_name: str, parser: ConfigParser | None = None):
     """Get aliases for a certain variable"""
     if parser is None:
-        from pyaerocom import __dir__
-
-        file = os.path.join(__dir__, "data", "aliases.ini")
         parser = ConfigParser()
-        parser.read(file)
+        with resources.path(f"{__package__}.data", "aliases.ini") as path:
+            parser.read(path)
 
     info = parser["aliases"]
     aliases = []
@@ -111,7 +117,7 @@ def get_aliases(var_name, parser=None):
     return aliases
 
 
-def _check_alias_family(var_name, parser):
+def _check_alias_family(var_name: str, parser: ConfigParser):
     for var_fam, alias_fam in parser["alias_families"].items():
         if var_name.startswith(alias_fam):
             var_name_aerocom = var_name.replace(alias_fam, var_fam)
@@ -123,7 +129,7 @@ def _check_alias_family(var_name, parser):
     )
 
 
-def get_variable(var_name):
+def get_variable(var_name: str):
     """
     Get a certain variable
 

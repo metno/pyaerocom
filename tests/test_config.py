@@ -227,13 +227,14 @@ def test_empty_class_header(empty_cfg):
     assert cfg.SERVER_CHECK_TIMEOUT == 1  # s
 
     assert cfg._outhomename == "MyPyaerocom"
-    from pyaerocom import __dir__
 
-    config_files = {
-        "lustre": os.path.join(__dir__, "data", "paths.ini"),
-        "user_server": os.path.join(__dir__, "data", "paths_user_server.ini"),
-        "local-db": os.path.join(__dir__, "data", "paths_local_database.ini"),
-    }
+    config_files = {}
+    with resources.path("pyaerocom.data", "paths.ini") as path:
+        config_files["lustre"] = str(path)
+    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
+        config_files["user_server"] = str(path)
+    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
+        config_files["local-db"] = str(path)
 
     assert cfg._config_ini_lustre == config_files["lustre"]
     assert cfg._config_ini_user_server == config_files["user_server"]
@@ -250,8 +251,10 @@ def test_empty_class_header(empty_cfg):
         "local-db": "modeldata",
     }
 
-    assert cfg._var_info_file == os.path.join(__dir__, "data", "variables.ini")
-    assert cfg._coords_info_file == os.path.join(__dir__, "data", "coords.ini")
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        assert cfg._var_info_file == str(path)
+    with resources.path("pyaerocom.data", "coords.ini") as path:
+        assert cfg._coords_info_file == str(path)
     dbdirs = {
         "lustre/storeA/project": "metno",
         "metno/aerocom_users_database": "users-db",
