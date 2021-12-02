@@ -513,13 +513,6 @@ class Config:
         return self._logdir
 
     @property
-    def DIR_INI_FILES(self):
-        """Directory containing configuration files"""
-        from pyaerocom import __dir__
-
-        return os.path.join(__dir__, "data")
-
-    @property
     def ETOPO1_AVAILABLE(self):
         """
         Boolean specifying if access to ETOPO1 dataset is provided
