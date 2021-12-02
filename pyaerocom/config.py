@@ -20,8 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-import pyaerocom
-import pyaerocom.obs_io as obs_io
+from pyaerocom import obs_io
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
     check_write_access,
@@ -166,11 +165,11 @@ class Config:
 
     _outhomename = "MyPyaerocom"
 
-    with resources.path(f"{__package__}.data", "paths.ini") as path:
+    with resources.path("pyaerocom.data", "paths.ini") as path:
         _config_ini_lustre = str(path)
-    with resources.path(f"{__package__}.data", "paths_user_server.ini") as path:
+    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
         _config_ini_user_server = str(path)
-    with resources.path(f"{__package__}.data", "paths_local_database.ini") as path:
+    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
         _config_ini_localdb = str(path)
 
     # this dictionary links environment ID's with corresponding ini files
@@ -184,9 +183,9 @@ class Config:
     # names that are required to exist in order to load this environment
     _check_subdirs_cfg = {"metno": "aerocom", "users-db": "AMAP", "local-db": "modeldata"}
 
-    with resources.path(f"{__package__}.data", "variables.ini") as path:
+    with resources.path("pyaerocom.data", "variables.ini") as path:
         _var_info_file = str(path)
-    with resources.path(f"{__package__}.data", "coords.ini") as path:
+    with resources.path("pyaerocom.data", "coords.ini") as path:
         _coords_info_file = str(path)
 
     # these are searched in preferred order both in root and home
@@ -545,7 +544,7 @@ class Config:
     @property
     def EBAS_FLAGS_FILE(self):
         """Location of CSV file specifying meaning of EBAS flags"""
-        with resources.path(f"{__package__}.data", "ebas_flags.csv") as path:
+        with resources.path("pyaerocom.data", "ebas_flags.csv") as path:
             return str(path)
 
     @property

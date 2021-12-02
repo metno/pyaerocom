@@ -1761,7 +1761,7 @@ class ReadEbas(ReadUngriddedBase):
             except Exception as e:
                 self.files_failed.append(_file)
                 const.print_log.warning(
-                    "Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
+                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
 

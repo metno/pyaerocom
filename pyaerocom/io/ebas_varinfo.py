@@ -77,8 +77,8 @@ class EbasVarInfo(BrowseDict):
     @staticmethod
     def PROVIDES_VARIABLES() -> list[str]:
         """List specifying provided variables"""
-        data = EbasVarInfo.open_config()
-        return list(data)
+        info = EbasVarInfo.open_config()
+        return list(info)
 
     @staticmethod
     def open_config():
@@ -90,7 +90,7 @@ class EbasVarInfo(BrowseDict):
         """
 
         conf_reader = ConfigParser()
-        with resources.path(f"{__package__}.data", "ebas_config.ini") as path:
+        with resources.path("pyaerocom.data", "ebas_config.ini") as path:
             conf_reader.read(path)
         return conf_reader
 

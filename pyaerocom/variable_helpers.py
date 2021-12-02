@@ -11,7 +11,7 @@ def parse_variables_ini(fpath: str | Path | None = None):
     """Returns instance of ConfigParser to access information"""
 
     if fpath is None:
-        with resources.path(f"{__package__}.data", "variables.ini") as path:
+        with resources.path("pyaerocom.data", "variables.ini") as path:
             fpath = path
 
     if isinstance(fpath, str):
@@ -26,7 +26,7 @@ def parse_variables_ini(fpath: str | Path | None = None):
 
 def parse_aliases_ini():
     """Returns instance of ConfigParser to access information"""
-    with resources.path(f"{__package__}.data", "aliases.ini") as path:
+    with resources.path("pyaerocom.data", "aliases.ini") as path:
         fpath = path
 
     parser = ConfigParser()
@@ -57,7 +57,7 @@ def parse_emep_variables_ini(fpath: str | Path | None = None):
     """Returns instance of ConfigParser to access information"""
 
     if fpath is None:
-        with resources.path(f"{__package__}.data", "emep_variables.ini") as path:
+        with resources.path("pyaerocom.data", "emep_variables.ini") as path:
             fpath = path
 
     if isinstance(fpath, str):
@@ -103,7 +103,7 @@ def get_aliases(var_name: str, parser: ConfigParser | None = None):
     """Get aliases for a certain variable"""
     if parser is None:
         parser = ConfigParser()
-        with resources.path(f"{__package__}.data", "aliases.ini") as path:
+        with resources.path("pyaerocom.data", "aliases.ini") as path:
             parser.read(path)
 
     info = parser["aliases"]

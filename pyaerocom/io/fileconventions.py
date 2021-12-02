@@ -348,7 +348,7 @@ class FileConventionRead:
         """Checks and load default information from database"""
 
         conf_reader = ConfigParser()
-        with resources.path(f"{__package__}.data", "file_conventions.ini") as path:
+        with resources.path("pyaerocom.data", "file_conventions.ini") as path:
             conf_reader.read(path)
         if not name in conf_reader:
             raise NameError(f"No default available for {name}")

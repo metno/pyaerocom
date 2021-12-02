@@ -294,7 +294,7 @@ def get_country_name_from_iso(
     """
     if filename is None:
         # set default file name
-        with resources.path(f"{__package__}.data", COUNTRY_CODE_FILE) as path:
+        with resources.path("pyaerocom.data", COUNTRY_CODE_FILE) as path:
             filename = path
 
     if isinstance(filename, str):

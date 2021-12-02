@@ -111,11 +111,11 @@ class DataSource(BrowseDict):
     def _parse_source_info_from_ini(self):
         """Parse source info from ini file"""
 
-        if not resources.is_resource(f"{__package__}.data", self._ini_file_name):
+        if not resources.is_resource("pyaerocom.data", self._ini_file_name):
             raise OSError(f"File {self._ini_file_name} does not exist")
 
         parser = ConfigParser()
-        with resources.path(f"{__package__}.data", self._ini_file_name) as path:
+        with resources.path("pyaerocom.data", self._ini_file_name) as path:
             parser.read(path)
         if self.data_id in parser:
             for k, v in parser[self.data_id].items():
