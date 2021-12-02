@@ -1,13 +1,16 @@
-#!/usr/bin/env python3
 """
 I/O helper methods of the pyaerocom package
 """
+from __future__ import annotations
+
 import os
 import shutil
-from collections import OrderedDict as od
 from datetime import datetime
+from importlib import resources
 from pathlib import Path
 from time import time
+
+import simplejson as json
 
 from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
@@ -259,7 +262,9 @@ def get_obsnetwork_dir(obs_id):
     return data_dir
 
 
-def get_country_name_from_iso(iso_code=None, filename=None, return_as_dict=False):
+def get_country_name_from_iso(
+    iso_code: str | None = None, filename: str | Path | None = None, return_as_dict: bool = False
+):
     """get the country name from the 2 digit iso country code
 
     the underlaying json file was taken from this github repository
@@ -287,35 +292,20 @@ def get_country_name_from_iso(iso_code=None, filename=None, return_as_dict=False
     ValueError
         if the country code ins invalid
     """
-    if iso_code is None:
-        return_as_dict = True
-
     if filename is None:
         # set default file name
-        from pyaerocom import __dir__
+        with resources.path(f"{__package__}.data", COUNTRY_CODE_FILE) as path:
+            filename = path
 
-        filename = os.path.join(__dir__, "data", COUNTRY_CODE_FILE)
-
-    import simplejson as json
-
-    with open(filename) as fh:
-        json_data = json.load(fh)
+    if isinstance(filename, str):
+        filename = Path(filename)
+    json_data = json.loads(filename.read_text())
 
     iso_dict = {}
     for indict in json_data:
         iso_dict[indict["alpha-2"]] = indict["name"]
 
-    if return_as_dict:
+    if iso_code is None or return_as_dict:
         return iso_dict
-    else:
-        try:
-            ret_val = iso_dict[iso_code.upper()]
-        except KeyError:
-            ret_val = ""
-            raise ValueError
-        return ret_val
 
-
-if __name__ == "__main__":
-    # names = search_names()
-    names = get_all_names()
+    return iso_dict[iso_code.upper()]
