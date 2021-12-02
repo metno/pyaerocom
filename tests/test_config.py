@@ -1,6 +1,7 @@
 import getpass
 import os
 import tempfile
+from importlib import resources
 from pathlib import Path
 from tarfile import PAX_FIELDS
 
@@ -10,7 +11,7 @@ import pyaerocom.config as testmod
 from pyaerocom import const as DEFAULT_CFG
 from pyaerocom.config import Config
 
-from .conftest import PYADIR, lustre_avail
+from .conftest import lustre_avail
 
 USER = getpass.getuser()
 
@@ -22,7 +23,14 @@ os.makedirs(os.path.join(LOCAL_DB_DIR, "modeldata"))
 os.makedirs(os.path.join(LOCAL_DB_DIR, "obsdata"))
 open(CFG_FILE_WRONG, "w").close()
 
-CFG_FILE = os.path.join(PYADIR, "data/paths.ini")
+
+def test_CFG_FILE_EXISTS():
+    assert resources.is_resource("pyaerocom.data", "paths.ini")
+    assert os.path.exists(CFG_FILE)
+
+
+with resources.path("pyaerocom.data", "paths.ini") as path:
+    CFG_FILE = str(path)
 
 
 def test_CFG_FILE_EXISTS():

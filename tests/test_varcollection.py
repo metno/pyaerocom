@@ -1,9 +1,7 @@
-import os
-from pathlib import Path
+from importlib import resources
 
 import pytest
 
-from pyaerocom import __dir__ as pyadir
 from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.varcollection import VarCollection
@@ -16,9 +14,9 @@ def test_VARS_is_VarCollection():
 
 @pytest.fixture()
 def collection() -> VarCollection:
-    var_ini = Path(pyadir) / "data/variables.ini"
-    assert var_ini.exists()
-    return VarCollection(str(var_ini))
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        assert path.exists()
+        return VarCollection(str(path))
 
 
 def test_invalid_entries(collection: VarCollection):
