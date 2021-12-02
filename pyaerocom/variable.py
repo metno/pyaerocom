@@ -396,7 +396,7 @@ class Variable:
         return self.description
 
     def keys(self):
-        return list(self.__dict__.keys())
+        return list(self.__dict__)
 
     @staticmethod
     def _check_aliases(var_name):

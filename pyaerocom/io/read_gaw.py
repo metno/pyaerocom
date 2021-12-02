@@ -67,7 +67,7 @@ class ReadGAW(ReadUngriddedBase):
     # List of variables that are provided by this dataset (will be extended
     # by auxiliary variables on class init, for details see __init__ method of
     # base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     INSTRUMENT_NAME = "unknown"
 

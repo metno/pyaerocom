@@ -208,7 +208,7 @@ class ReadMscwCtm:
         if "LF_" in tst:
             return None
 
-        if tst not in list(self.FREQ_CODES.keys()):
+        if tst not in list(self.FREQ_CODES):
             raise ValueError(f"The ts_type {tst} is not supported")
 
         return self.FREQ_CODES[tst]
@@ -679,7 +679,7 @@ class ReadMscwCtm:
             filedata = self.filedata
 
             if len(filedata.keys()) == 1:
-                data = filedata[list(filedata.keys())[0]][emep_var]
+                data = filedata[list(filedata)[0]][emep_var]
             else:
                 if ts_type == "hourly":
                     raise ValueError(

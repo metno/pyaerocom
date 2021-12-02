@@ -80,7 +80,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     def read_file(self, filename, vars_to_retrieve=None, vars_as_series=False):
         """Read Aeronet file containing results from v2 inversion algorithm

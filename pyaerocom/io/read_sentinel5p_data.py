@@ -553,10 +553,10 @@ class ReadL2Data(ReadL2DataBase):
 
         # if vars_to_retrieve[0] is None:
         #     # read all variables
-        #     vars_to_read_in = list(self.CODA_READ_PARAMETERS[vars_to_retrieve[0]]['vars'].keys())
+        #     vars_to_read_in = list(self.CODA_READ_PARAMETERS[vars_to_retrieve[0]]['vars'])
         for _vars in vars_to_retrieve:
-            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[_vars]["vars"].keys()))
-            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[_vars]["metadata"].keys()))
+            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[_vars]["vars"]))
+            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[_vars]["metadata"]))
         # get rid of duplicates
         vars_to_read_in = list(set(vars_to_read_in))
 
@@ -779,7 +779,7 @@ class ReadL2Data(ReadL2DataBase):
         level_dim_size = self._LEVELSSIZE
 
         if not gridded:
-            # vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata'].keys()))
+            # vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata']))
             # var_write_out = _data.keys()
 
             # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))

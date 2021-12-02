@@ -410,7 +410,7 @@ class BrowseDict(MutableMapping):
         return _class_name(self)
 
     def keys(self):
-        return list(self.__dict__.keys()) + self.ADD_GLOB
+        return list(self.__dict__) + self.ADD_GLOB
 
     def _get_glob_vals(self):
         return [getattr(self, x) for x in self.ADD_GLOB]

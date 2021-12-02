@@ -378,7 +378,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def FILE_REQUEST_OPTS(self):
         """List of options for file retrieval"""
-        return list(EbasSQLRequest().keys())
+        return list(EbasSQLRequest())
 
     @property
     def _FILEMASK(self):
@@ -493,7 +493,7 @@ class ReadEbas(ReadUngriddedBase):
             raise FileNotFoundError(
                 f"No EBAS data files could be found for stations {stats_or_patterns}"
             )
-        return list(dict.fromkeys(stats).keys())
+        return list(set(stats))
 
     def _precheck_vars_to_retrieve(self, vars_to_retrieve):
         """
@@ -1783,7 +1783,7 @@ class ReadEbas(ReadUngriddedBase):
 
             num_times = len(station_data["dtime"])
 
-            contains_vars = list(station_data.var_info.keys())
+            contains_vars = list(station_data.var_info)
             # access array containing time stamps
             # TODO: check using index instead (even though not a problem here
             # since all Aerocom data files are of type timeseries)

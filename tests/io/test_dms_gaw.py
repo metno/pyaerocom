@@ -53,7 +53,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0)
 
-    keys = list(stat.keys())
+    keys = list(stat)
     assert "vmrdms" in keys
     assert "var_info" in keys
 

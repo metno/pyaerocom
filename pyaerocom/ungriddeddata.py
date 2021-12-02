@@ -299,7 +299,7 @@ class UngriddedData:
 
             meta_idx[meta_key] = {}
 
-            append_vars = list(stat.var_info.keys())
+            append_vars = list(stat.var_info)
 
             for var in append_vars:
                 if not var in data_obj.var_idx:
@@ -389,7 +389,7 @@ class UngriddedData:
         """
         Index of last metadata block
         """
-        return np.max(list(self.meta_idx.keys()))
+        return np.max(list(self.meta_idx))
 
     @property
     def index(self):
@@ -398,7 +398,7 @@ class UngriddedData:
     @property
     def first_meta_idx(self):
         # First available metadata index
-        return list(self.metadata.keys())[0]
+        return list(self.metadata)[0]
 
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
@@ -1009,7 +1009,7 @@ class UngriddedData:
                 logger.warning("Data revision could not be accessed")
         sd.data_revision = rev
         try:
-            vars_avail = list(meta["var_info"].keys())
+            vars_avail = list(meta["var_info"])
         except KeyError:
             if not "variables" in meta or meta["variables"] in (None, []):
                 raise VarNotAvailableError("Metablock does not contain variable information")

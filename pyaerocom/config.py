@@ -340,7 +340,7 @@ class Config:
     @property
     def ALL_DATABASE_IDS(self):
         """ID's of available database configurations"""
-        return list(self._config_files.keys())
+        return list(self._config_files)
 
     @property
     def ROOTDIR(self):

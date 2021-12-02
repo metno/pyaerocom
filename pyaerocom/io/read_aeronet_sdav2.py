@@ -149,7 +149,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(COL_INDEX.keys())
+    PROVIDES_VARIABLES = list(COL_INDEX)
 
     # This how the beginning of data file looks like
 

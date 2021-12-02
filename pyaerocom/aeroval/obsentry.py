@@ -189,7 +189,7 @@ class ObsEntry(BrowseDict):
             _ovt = self.ALT_NAMES_VERT_CODES[ovt]
             const.print_log.warning(f"Please use {_ovt} for obs_vert_code and not {ovt}")
             return _ovt
-        valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES.keys())
+        valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES)
         raise ValueError(
             f"Invalid value for obs_vert_type: {self.obs_vert_type}. "
             f"Supported codes are {valid}."

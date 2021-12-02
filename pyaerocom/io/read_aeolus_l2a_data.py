@@ -338,7 +338,7 @@ class ReadL2Data(ReadL2DataBase):
         self.NAN_DICT.update({self._SRNAME: -1.0})
         self.NAN_DICT.update({self._QANAME: -1.0})
 
-        self.PROVIDES_VARIABLES = list(self.CODA_READ_PARAMETERS["sca"]["metadata"].keys())
+        self.PROVIDES_VARIABLES = list(self.CODA_READ_PARAMETERS["sca"]["metadata"])
         self.PROVIDES_VARIABLES.extend(self.CODA_READ_PARAMETERS["sca"]["vars"].keys())
 
         # these are the variable specific attributes written into a netcdf file
@@ -772,8 +772,8 @@ class ReadL2Data(ReadL2DataBase):
             vars_to_read_in = vars_to_retrieve.copy()
             if vars_to_retrieve is None:
                 # read all variables
-                vars_to_read_in = list(self.CODA_READ_PARAMETERS[retrieval]["vars"].keys())
-            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[retrieval]["metadata"].keys()))
+                vars_to_read_in = list(self.CODA_READ_PARAMETERS[retrieval]["vars"])
+            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[retrieval]["metadata"]))
             vars_to_read_in.append(self._UPPERALTITUDENAME)
             # get rid of duplicates
             vars_to_read_in = list(set(vars_to_read_in))
@@ -1417,9 +1417,9 @@ class ReadL2Data(ReadL2DataBase):
                 except AttributeError:
                     _data = data_to_write
 
-            # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
+            # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata']))
             vars_to_write_out.extend(
-                list(self.CODA_READ_PARAMETERS[self.RETRIEVAL_READ[0]]["metadata"].keys())
+                list(self.CODA_READ_PARAMETERS[self.RETRIEVAL_READ[0]]["metadata"])
             )
             vars_to_write_out.append(self._UPPERALTITUDENAME)
 
@@ -1601,7 +1601,7 @@ class ReadL2Data(ReadL2DataBase):
     #     else:
     #         _data = data_to_write
     #
-    #     vars_to_read_in.extend(list(self.RETRIEVAL_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata'].keys()))
+    #     vars_to_read_in.extend(list(self.RETRIEVAL_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata']))
     #
     #     datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
     #     pointnumber = np.arange(0, len(datetimedata))

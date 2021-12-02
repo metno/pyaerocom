@@ -89,7 +89,7 @@ class ReadAasEtal(ReadUngriddedBase):
     # =============================================================================
     #: :obj: `list` of :obj: `str`
     #: List containing all the variables available in this data set.
-    PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
+    PROVIDES_VARIABLES = list(VARS_TO_FILES)
 
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
@@ -276,7 +276,7 @@ class ReadAasEtal(ReadUngriddedBase):
 
                 num_times = len(stat["dtime"])
                 num_vars = len(stat["var_info"])
-                temp_vars = list(stat["var_info"].keys())
+                temp_vars = list(stat["var_info"])
                 tconv = stat["dtime"].astype("datetime64[s]")
                 times = np.float64(tconv)
                 totnum = num_times * num_vars

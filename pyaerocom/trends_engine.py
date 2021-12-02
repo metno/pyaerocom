@@ -198,7 +198,7 @@ class TrendPlotter:  # pragma: no cover
                     f"Found multiple trends for different periods: {list(self.results[season])}. "
                     f"Please specify period..."
                 )
-            period = list(self.results[season].keys())[0]
+            period = list(self.results[season])[0]
         if ax is None:
             fig, ax = plt.subplots(1, 1, figsize=(18, 8))
         if self.has_daily:
