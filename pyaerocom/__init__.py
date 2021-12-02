@@ -1,7 +1,9 @@
 # isort:skip_file
-from ._init_helpers import _init_supplemental, _init_logger, LOGLEVELS, change_verbosity
+from importlib import metadata
 
-__version__, __dir__ = _init_supplemental()
+from ._init_helpers import _init_logger, LOGLEVELS, change_verbosity
+
+__version__ = metadata.version(__package__)
 
 logger, print_log = _init_logger()
 

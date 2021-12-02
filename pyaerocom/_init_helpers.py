@@ -1,8 +1,9 @@
+import logging
+
 LOGLEVELS = {"debug": 10, "info": 20, "warning": 30, "error": 40, "critical": 50}
 
 
 def _init_logger():
-    import logging
 
     ### LOGGING
     # Note: configuration will be propagated to all child modules of
@@ -62,26 +63,3 @@ def change_verbosity(new_level="debug", log=None):
                 f"invalid log level {new_level}, choose from keys or values of {LOGLEVELS}"
             )
     log.setLevel(new_level)
-
-
-### Functions for package initialisation
-def _init_supplemental():
-    """
-    Get version and pyaerocom installation path
-
-    Returns
-    -------
-    str
-        version string
-    str
-        path to source code base directory (
-        <installed_basedir>/pyaerocom/pyaerocom)
-
-
-    """
-    import os
-
-    from pkg_resources import get_distribution
-
-    dist = get_distribution("pyaerocom")
-    return (dist.version, os.path.join(dist.location, "pyaerocom"))

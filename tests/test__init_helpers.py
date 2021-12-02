@@ -34,14 +34,3 @@ def test_change_verbosity(new_level, log):
 def test_change_verbosity_error(new_level, log):
     with pytest.raises(ValueError):
         mod.change_verbosity(new_level, log)
-
-
-### Functions for package initialisation
-def test__init_supplemental():
-    import os
-
-    from pkg_resources import get_distribution
-
-    version, fpath = mod._init_supplemental()
-    assert version == get_distribution("pyaerocom").version
-    assert os.path.normpath(fpath).endswith("/pyaerocom")
