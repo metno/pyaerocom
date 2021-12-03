@@ -9,7 +9,7 @@ import pytest
 
 import pyaerocom.access_testdata as td
 from pyaerocom import __dir__ as PYADIR
-from pyaerocom import const
+from pyaerocom import const, print_log
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
@@ -126,7 +126,7 @@ broken_test = pytest.mark.skip(reason="Method raises Exception")
 
 from pyaerocom import change_verbosity
 
-change_verbosity("critical", const.print_log)
+change_verbosity("critical", print_log)
 ### Fixtures representing data
 
 EMEP_DIR = str(TESTDATADIR.joinpath(CHECK_PATHS["emep"]))

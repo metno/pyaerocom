@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from time import time
 
-from pyaerocom import const
+from pyaerocom import const, print_log
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
 
@@ -52,13 +52,13 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
         try:
             t0 = time()
             shutil.copy2(loc_remote, loc_local)
-            const.print_log.info(
+            print_log.info(
                 f"Copied EBAS SQL database to {loc_local}\nElapsed time: {time()-t0:.3f} s"
             )
 
             return loc_local
         except Exception as e:
-            const.print_log.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
+            print_log.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
             return loc_remote
     return loc_remote
 

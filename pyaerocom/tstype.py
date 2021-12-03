@@ -6,7 +6,7 @@ import re
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import const, logger
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.time_config import (
     PANDAS_FREQ_TO_TS_TYPE,
@@ -369,7 +369,7 @@ class TsType:
                 try:
                     return TsType._try_infer_from_total_seconds(base_tst, total_seconds)
                 except TemporalResolutionError as e:
-                    const.logger.info(e)
+                    logger.info(e)
                     continue
 
         raise TemporalResolutionError(

@@ -6,7 +6,7 @@ from collections import OrderedDict as od
 import numpy as np
 import xarray
 
-from pyaerocom import const
+from pyaerocom import const, print_log
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -296,7 +296,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 unit = to_unit
                 unit_ok = True
             except Exception as e:
-                const.print_log.warning(
+                print_log.warning(
                     f"Failed to convert unit of {var} in file {filename} (Earlinet): "
                     f"Error: {repr(e)}"
                 )
@@ -317,7 +317,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     raise ValueError("Fatal: dust layer height data must be single value")
 
                 if unit_ok and info.minimum < val < info.maximum:
-                    const.print_log.warning(f"zdust value {val} out of range, setting to NaN")
+                    print_log.warning(f"zdust value {val} out of range, setting to NaN")
                     val = np.nan
 
                 if np.isnan(val):
@@ -626,7 +626,7 @@ class ReadEarlinet(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         exclude = self._get_exclude_filelist()
-        const.print_log.info("Fetching EARLINET data files. This might take a while...")
+        print_log.info("Fetching EARLINET data files. This might take a while...")
         patterns = []
         for var in vars_to_retrieve:
             if not var in self.VAR_PATTERNS_FILE:

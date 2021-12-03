@@ -6,7 +6,7 @@ from fnmatch import fnmatch
 
 import numpy as np
 
-from pyaerocom import LOGLEVELS, const
+from pyaerocom import LOGLEVELS, const, print_log
 from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
@@ -235,7 +235,7 @@ class ReadUngriddedBase(abc.ABC):
     @property
     def DATASET_PATH(self):
         """Wrapper for :attr:`data_dir`."""
-        const.print_log.warning(
+        print_log.warning(
             DeprecationWarning(
                 "WARNING: Attr. DATASET_PATH is deprecated in ungridded readers "
                 "as of pyaerocom v0.11.0. Please use data_dir instead."
@@ -589,7 +589,7 @@ class ReadUngriddedBase(abc.ABC):
         else:
             pattern = self._FILEMASK
         if pattern is None:
-            const.print_log.warning(
+            print_log.warning(
                 "_FILEMASK attr. must not be None...using default pattern *.* for file search"
             )
             pattern = "*.*"

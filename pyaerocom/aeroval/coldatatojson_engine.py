@@ -1,7 +1,7 @@
 import os
 from time import time
 
-from pyaerocom import ColocatedData, const
+from pyaerocom import ColocatedData, print_log
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -44,7 +44,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         """
         converted = []
         for file in files:
-            const.print_log.info(f"Processing: {file}")
+            print_log.info(f"Processing: {file}")
             coldata = ColocatedData(file)
             self.process_coldata(coldata)
             converted.append(file)
@@ -134,7 +134,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         mcfg = self.cfg.model_cfg.get_entry(model_name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
-        const.print_log.info(
+        print_log.info(
             f"Computing json files for {model_name} ({model_var}) vs. {obs_name} ({obs_var})"
         )
 
@@ -158,7 +158,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             data = _apply_annual_constraint(data)
 
         if not diurnal_only:
-            const.print_log.info("Processing statistics timeseries for all regions")
+            print_log.info("Processing statistics timeseries for all regions")
             input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
             try:
                 stats_ts = _process_statistics_timeseries(
@@ -177,7 +177,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
-            const.print_log.info("Processing heatmap data for all regions")
+            print_log.info("Processing heatmap data for all regions")
             hm_all = _process_heatmap_data(
                 data,
                 regnames,
@@ -199,7 +199,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
                 )
 
-            const.print_log.info("Processing regional timeseries for all regions")
+            print_log.info("Processing regional timeseries for all regions")
             ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
             _write_site_data(ts_objs_regional, out_dirs["ts"])
@@ -208,7 +208,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     if cd is not None:
                         cd.data = cd.flatten_latlondim_station_name().data
 
-            const.print_log.info("Processing individual site timeseries data")
+            print_log.info("Processing individual site timeseries data")
             (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
             _write_site_data(ts_objs, out_dirs["ts"])
@@ -234,7 +234,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             write_json(scat_data, outfile_scat, ignore_nan=True)
 
         if coldata.ts_type == "hourly":
-            const.print_log.info("Processing diurnal profiles")
+            print_log.info("Processing diurnal profiles")
             (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
                 coldata, regions_how, regnames, meta_glob
             )
@@ -247,10 +247,10 @@ class ColdataToJsonEngine(ProcessingEngine):
                     # writes json file
                     _write_stationdata_json(ts_data_weekly_reg, outdir)
 
-        const.print_log.info(
+        print_log.info(
             f"Finished computing json files for {model_name} ({model_var}) vs. "
             f"{obs_name} ({obs_var})"
         )
 
         dt = time() - t00
-        const.print_log.info(f"Time expired (TOTAL): {dt:.2f} s")
+        print_log.info(f"Time expired (TOTAL): {dt:.2f} s")

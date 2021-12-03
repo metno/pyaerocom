@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const, logger
+from pyaerocom import const, logger, print_log
 from pyaerocom._lowlevel_helpers import BrowseDict, dict_to_str, list_to_shortstr, merge_dicts
 from pyaerocom.exceptions import (
     CoordinateError,
@@ -128,7 +128,7 @@ class StationData(StationMetaData):
         if not var_name in self:
             return False
         if not var_name in self.var_info:
-            const.print_log.warning(
+            print_log.warning(
                 f"Variable {var_name} exists in data but has no "
                 f"metadata assigned in :attr:`var_info`"
             )
@@ -258,7 +258,7 @@ class StationData(StationMetaData):
 
         self[var_name] = data
         self.var_info[var_name]["units"] = to_unit
-        const.logger.info(
+        logger.info(
             f"Successfully converted unit of variable {var_name} in {self.station_name} "
             f"from {unit} to {to_unit}"
         )
@@ -423,7 +423,7 @@ class StationData(StationMetaData):
         keys.extend(add_meta_keys)
         for key in keys:
             if not key in self:
-                const.print_log.warning(f"No such key in StationData: {key}")
+                print_log.warning(f"No such key in StationData: {key}")
                 continue
             elif key in self.PROTECTED_KEYS:
                 # this is not metadata...
@@ -630,7 +630,7 @@ class StationData(StationMetaData):
                     if raise_on_error:
                         raise MetaDataError(msg)
                     else:
-                        const.print_log.warning(msg)
+                        print_log.warning(msg)
 
         return obj
 
@@ -763,7 +763,7 @@ class StationData(StationMetaData):
                 s0.sort_index(inplace=True)
                 self.merge_varinfo(other, var_name)
             except KeyError:
-                const.print_log.warning(
+                print_log.warning(
                     f"failed to merge {var_name} data from 2 StationData "
                     f"objects for station {self.station_name}. Ignoring 2nd "
                     f"data object."
@@ -921,7 +921,7 @@ class StationData(StationMetaData):
             return ts_type
 
         if try_infer:
-            const.print_log.warning(
+            print_log.warning(
                 f"Trying to infer ts_type in StationData {self.station_name} "
                 f"for variable {var_name}"
             )
@@ -1125,7 +1125,7 @@ class StationData(StationMetaData):
             from_ts_type = TsType(outdata.get_var_ts_type(var_name))
         except (MetaDataError, TemporalResolutionError):
             from_ts_type = None
-            const.print_log.warning(
+            print_log.warning(
                 f"Failed to access current temporal resolution of {var_name} data "
                 f"in StationData {outdata.station_name}. "
                 f"No resampling constraints will be applied"
@@ -1169,7 +1169,7 @@ class StationData(StationMetaData):
         For backwards compatibility, this method will return a pandas Series
         instead of the actual StationData object
         """
-        const.print_log.warning(
+        print_log.warning(
             DeprecationWarning(
                 "This method was renamed "
                 "to resample_time as a means "

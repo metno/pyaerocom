@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 
@@ -349,7 +349,7 @@ class AerocomDataID:
         values = [""] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
-            const.logger.warning(
+            logger.warning(
                 f"Invalid data ID {val}. Need format <model-name>_<meteo-config>_<eperiment-name>"
             )
             values[0] = val
@@ -363,7 +363,7 @@ class AerocomDataID:
             if meteo.startswith("met"):
                 values[1] = meteo  # meteo_config
             else:
-                const.logger.warning(
+                logger.warning(
                     f"Meteorology config substring in data_id {meteo} needs to start with met."
                 )
                 values[0] = spl[0]

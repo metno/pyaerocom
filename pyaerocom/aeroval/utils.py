@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import print_log
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
@@ -144,7 +144,7 @@ def compute_model_average_and_diversity(
     unit_out = get_variable(var_name).units
 
     for mname in models:
-        const.print_log.info(f"Adding {mname} ({var_name})")
+        print_log.info(f"Adding {mname} ({var_name})")
 
         mid = cfg.cfg.model_cfg.get_entry(mname)["model_id"]
         if mid == data_id or mname == data_id:
@@ -173,10 +173,10 @@ def compute_model_average_and_diversity(
                 else:
                     raise NotImplementedError("Cannot process ModelLevel fields yet")
             data = data.regrid(dummy)
-            const.print_log.info("Success!")
+            print_log.info("Success!")
         except Exception as e:
             models_failed.append(mid)
-            const.print_log.info(f"Failed! Reason: {e}")
+            print_log.info(f"Failed! Reason: {e}")
             continue
 
         loaded.append(data.cube.data)

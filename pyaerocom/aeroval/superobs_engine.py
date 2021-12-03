@@ -3,7 +3,7 @@ from traceback import format_exc
 import numpy as np
 import xarray as xr
 
-from pyaerocom import const
+from pyaerocom import print_log
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.colocateddata import ColocatedData
@@ -41,7 +41,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                const.print_log.warning(
+                print_log.warning(
                     f"Failed to process superobs entry for {obs_name},  "
                     f"{model_name}, var {var_name}. Reason: {format_exc()}"
                 )

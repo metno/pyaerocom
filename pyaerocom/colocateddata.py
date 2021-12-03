@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import xarray
 
-from pyaerocom import const, logger
+from pyaerocom import const, logger, print_log
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,
@@ -1141,9 +1141,7 @@ class ColocatedData:
             try:
                 settings[to_key] = self.metadata[from_key]
             except KeyError:
-                const.print_log.warning(
-                    f"Meta key {from_key} not defined in ColocatedData.meta..."
-                )
+                print_log.warning(f"Meta key {from_key} not defined in ColocatedData.meta...")
                 settings[to_key] = None
         return settings
 
@@ -1880,7 +1878,7 @@ class ColocatedData:
     @property
     def unit(self):
         """DEPRECATED -> use :attr:`units`"""
-        const.print_log.warning(
+        print_log.warning(
             DeprecationWarning(
                 "Attr. ColocatedData.unit is deprecated (but still works), "
                 "please use ColocatedData.units. "
@@ -1892,7 +1890,7 @@ class ColocatedData:
     @property
     def meta(self):
         """DEPRECATED -> use :attr:`metadata`"""
-        const.print_log.warning(
+        print_log.warning(
             DeprecationWarning(
                 "Attr. ColocatedData.meta is deprecated (but still works), "
                 "please use ColocatedData.metadata"
@@ -1904,7 +1902,7 @@ class ColocatedData:
     @property
     def num_grid_points(self):
         """DEPRECATED -> use :attr:`num_coords`"""
-        const.print_log.warning(
+        print_log.warning(
             DeprecationWarning(
                 "Attr. ColocatedData.num_grid_points is deprecated (but still "
                 "works), please use ColocatedData.num_coords"

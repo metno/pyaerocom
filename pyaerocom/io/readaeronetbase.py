@@ -1,5 +1,4 @@
 from collections import OrderedDict as od
-from datetime import datetime
 
 import numpy as np
 from tqdm import tqdm
@@ -373,7 +372,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 stat = station_data.station_name
                 if isinstance(stat, (list, np.ndarray)):
                     stat = stat[0]
-                const.print_log.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
+                print_log.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1
                 continue
             # Fill the metatdata dict
@@ -455,7 +454,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta_key = meta_key + 1.0
 
         if skipped:
-            const.print_log.warning(
+            print_log.warning(
                 f"{skipped} out of {len(files)} files have been skipped (for "
                 f"details see output)."
             )

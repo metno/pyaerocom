@@ -11,7 +11,7 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 """
 
-from pyaerocom import const
+from pyaerocom import const, print_log
 from pyaerocom.exceptions import (
     CoordinateNameError,
     DataDimensionError,
@@ -115,7 +115,7 @@ def geopotentialheight2altitude(geopotential_height):
     Computed altitude levels
     """
 
-    const.print_log.warning(
+    print_log.warning(
         "Conversion method of geopotential height to "
         "altitude is not yet implemented and returns the "
         "input values. The introduced error is small at "

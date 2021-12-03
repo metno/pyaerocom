@@ -236,7 +236,7 @@ class ReadUngridded:
         return reader.PROVIDES_VARIABLES
 
     def get_reader(self, data_id):
-        const.print_log.warning(
+        print_log.warning(
             DeprecationWarning(
                 "this method was renamed to get_lowlevel_reader, please use the new name"
             )
@@ -324,7 +324,7 @@ class ReadUngridded:
         """
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
-            const.print_log.info(f"Reading {data_id} from specified data loaction: {ddir}")
+            print_log.info(f"Reading {data_id} from specified data loaction: {ddir}")
         else:
             ddir = None
         return reader(data_id=data_id, data_dir=ddir)

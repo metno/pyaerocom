@@ -29,7 +29,7 @@ import pandas as pd
 import xarray as xr
 
 import pyaerocom as pya
-from pyaerocom import const
+from pyaerocom import const, logger, print_log
 from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
@@ -421,7 +421,7 @@ class ReadGhost(ReadUngriddedBase):
             try:
                 meta_glob[meta_key] = ds[meta_key].values
             except KeyError:
-                const.print_log.warning(
+                print_log.warning(
                     f"No such metadata key in GHOST data file: {os.path.basename(filename)}"
                 )
 
@@ -481,7 +481,7 @@ class ReadGhost(ReadUngriddedBase):
                     # is required, i.e. the same flags can be used)
                     stat["data_flagged"][var_to_compute] = flags
                 else:
-                    const.print_log.warning(
+                    print_log.warning(
                         "THIS HAS NOT BEEN TESTED AND IS "
                         "SHOULD CURRENTLY NOT BE ABLE "
                         "TO BE REACHED."
@@ -612,7 +612,7 @@ class ReadGhost(ReadUngriddedBase):
 
             stats, added = self.compute_additional_vars(stats, vars_to_compute)
             if len(stats) == 0:
-                const.logger.info(
+                logger.info(
                     f"File {_file} does not contain any of the input variables {vars_to_retrieve}"
                 )
             vars_avail = [var_read] + added

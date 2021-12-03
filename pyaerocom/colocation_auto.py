@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from pyaerocom import const
+from pyaerocom import const, print_log
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
@@ -434,7 +434,7 @@ class ColocationSetup(BrowseDict):
         if basedir_coldata is None:
             basedir_coldata = const.COLOCATEDDATADIR
             if not os.path.exists(basedir_coldata):
-                const.print_log.info(f"Creating directory: {basedir_coldata}")
+                print_log.info(f"Creating directory: {basedir_coldata}")
                 os.mkdir(basedir_coldata)
         elif isinstance(basedir_coldata, Path):
             basedir_coldata = str(basedir_coldata)
@@ -542,7 +542,7 @@ class Colocator(ColocationSetup):
 
         for ovar, mvars in self.model_add_vars.items():
             if not ovar in ovars:
-                const.print_log.warning(
+                print_log.warning(
                     f"Found entry in model_add_vars for obsvar {ovar} which "
                     f"is not specified in attr obs_vars, and will thus be "
                     f"ignored"
@@ -565,7 +565,7 @@ class Colocator(ColocationSetup):
         if self._model_reader is not None:
             if self._model_reader.data_id == self.model_id:
                 return self._model_reader
-            const.print_log.info(
+            print_log.info(
                 f"Reloading outdated model reader. ID of current reader: "
                 f"{self._model_reader.data_id}. New ID: {self.model_id}"
             )
@@ -612,7 +612,7 @@ class Colocator(ColocationSetup):
         self._check_basedir_coldata()
         loc = os.path.join(self.basedir_coldata, self.get_model_name())
         if not os.path.exists(loc):
-            const.print_log.info(f"Creating dir {loc}")
+            print_log.info(f"Creating dir {loc}")
             os.mkdir(loc)
         return loc
 
@@ -729,7 +729,7 @@ class Colocator(ColocationSetup):
         try:
             self._init_log()
         except Exception:
-            const.print_log.warning("Deactivating logging in Colocator")
+            print_log.warning("Deactivating logging in Colocator")
             self.logging = False
 
         if isinstance(self.obs_vars, str):
@@ -794,7 +794,7 @@ class Colocator(ColocationSetup):
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
                 msg = f"Failed to perform analysis: {traceback.format_exc()}\n"
-                const.print_log.warning(msg)
+                print_log.warning(msg)
                 self._processing_status.append([mod_var, obs_var, 5])
                 self._write_log(msg)
                 if self.raise_exceptions:
@@ -959,7 +959,7 @@ class Colocator(ColocationSetup):
                 ts_types[mvar] = mdata.ts_type
             except Exception as e:
                 msg = f"Failed to load model data: {self.model_id} ({mvar}). Reason {e}"
-                const.print_log.warning(msg)
+                print_log.warning(msg)
                 self._write_log(msg + "\n")
                 self._processing_status.append([mvar, ovar, 4])
                 if self.raise_exceptions:
@@ -1052,7 +1052,7 @@ class Colocator(ColocationSetup):
         if len(self.obs_vars) > len(avail):
             for ovar in self.obs_vars:
                 if not ovar in avail:
-                    const.print_log.warning(
+                    print_log.warning(
                         f"Obs variable {ovar} is not available in {self.obs_id} "
                         f"and will be ignored"
                     )
@@ -1069,8 +1069,8 @@ class Colocator(ColocationSetup):
 
         mname = self.get_model_name()
         oname = self.get_obs_name()
-        const.print_log.info(f"Colocation processing status for {mname} vs. {oname}")
-        const.print_log.info(self.processing_status)
+        print_log.info(f"Colocation processing status for {mname} vs. {oname}")
+        print_log.info(self.processing_status)
 
     def _filter_var_matches_var_name(self, var_matches, var_name):
         filtered = {}
@@ -1213,7 +1213,7 @@ class Colocator(ColocationSetup):
             outlier_ranges = self.obs_outlier_ranges
 
         if len(outlier_ranges) > 0 and not rm_outliers:
-            const.print_log.warning(
+            print_log.warning(
                 f"WARNING: Found definition of outlier ranges for {var_name} "
                 f"({data.data_id}) but outlier removal is deactivated. Consider "
                 f"checking your setup (note: model or obs outlier removal can be "
@@ -1257,7 +1257,7 @@ class Colocator(ColocationSetup):
         obs_var, mod_var = coldata.metadata["var_name_input"]
         if mod_var in self.model_rename_vars:
             mvar = self.model_rename_vars[mod_var]
-            const.print_log.info(
+            print_log.info(
                 f"Renaming model variable from {mod_var} to {mvar} in "
                 f"ColocatedData before saving to NetCDF."
             )
@@ -1269,7 +1269,7 @@ class Colocator(ColocationSetup):
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"
         self._write_log(msg)
-        const.print_log.info(msg)
+        print_log.info(msg)
 
     def _eval_resample_how(self, model_var, obs_var):
         rshow = self.resample_how
@@ -1413,9 +1413,7 @@ class Colocator(ColocationSetup):
         return args
 
     def _run_helper(self, model_var, obs_var):
-        const.print_log.info(
-            f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})"
-        )
+        print_log.info(f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})")
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
@@ -1436,14 +1434,12 @@ class Colocator(ColocationSetup):
 
     def _print_coloc_info(self, var_matches):
         if not var_matches:
-            const.print_log.info("Nothing to colocate")
+            print_log.info("Nothing to colocate")
             return
-        const.print_log.info(
-            "The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR"
-        )
+        print_log.info("The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR")
 
         for key, val in var_matches.items():
-            const.print_log.info(f"{key}\t{val}")
+            print_log.info(f"{key}\t{val}")
 
     def _init_log(self):
         logdir = chk_make_subdir(self.basedir_logfiles, self.get_model_name())

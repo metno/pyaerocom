@@ -1,4 +1,4 @@
-from pyaerocom import const
+from pyaerocom import print_log
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
@@ -21,13 +21,13 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     """
 
-    _log = const.print_log
+    _log = print_log
 
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
             msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name})"
             self._log.info(msg)
-            const.print_log.info(msg)
+            print_log.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
         if ocfg["is_superobs"]:
@@ -42,9 +42,9 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                const.print_log.warning("failed to process superobs...")
+                print_log.warning("failed to process superobs...")
         elif ocfg["only_superobs"]:
-            const.print_log.info(
+            print_log.info(
                 f"Skipping json processing of {obs_name}, as this is "
                 f"marked to be used only as part of a superobs "
                 f"network"
@@ -104,7 +104,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         model_list = self.cfg.model_cfg.keylist(model_name)
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
 
-        const.print_log.info("Start processing")
+        print_log.info("Start processing")
 
         # compute model maps (completely independent of obs-eval
         # processing below)
@@ -119,7 +119,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         if update_interface:
             self.update_interface()
-        const.print_log.info("Finished processing.")
+        print_log.info("Finished processing.")
 
     def update_interface(self):
         """Update aeroval interface

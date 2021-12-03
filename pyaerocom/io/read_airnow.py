@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import print_log
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -318,7 +318,7 @@ class ReadAirNow(ReadUngriddedBase):
             list of StationData objects
 
         """
-        const.print_log.info("Read AirNow data file(s)")
+        print_log.info("Read AirNow data file(s)")
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
@@ -361,7 +361,7 @@ class ReadAirNow(ReadUngriddedBase):
         """
         data = np.concatenate(arrs)
 
-        const.print_log.info("Converting filedata to list os StationData")
+        print_log.info("Converting filedata to list os StationData")
         stat_meta = self.station_metadata
         stat_ids = list(stat_meta.keys())
         varcol = self.FILE_COL_NAMES.index("variable")

@@ -8,10 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const
-
-logger = const.logger
-print_log = const.print_log
+from pyaerocom import const, logger, print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (
@@ -705,7 +702,7 @@ class UngriddedData:
             try:
                 lat, lon = meta["latitude"], meta["longitude"]
             except:
-                const.print_log.warning(f"Could not retrieve lat lon coord at meta index {idx}")
+                print_log.warning(f"Could not retrieve lat lon coord at meta index {idx}")
                 continue
             meta_idx.append(idx)
             coords.append((lat, lon))
@@ -759,9 +756,9 @@ class UngriddedData:
             try:
                 countries.append(meta["country"])
             except:
-                const.logger.warning("No country information in meta block", idx)
+                logger.warning("No country information in meta block", idx)
         if len(countries) == 0:
-            const.print_log.warning(
+            print_log.warning(
                 "None of the metadata blocks contains "
                 "country information. You may want to "
                 "run class method check_set_country first "
@@ -1693,7 +1690,7 @@ class UngriddedData:
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
-                        const.print_log.warning(
+                        print_log.warning(
                             f"Ignoring variable {var} in meta block {meta_idx} "
                             f"since no data could be found"
                         )
@@ -1920,7 +1917,7 @@ class UngriddedData:
             *filters,
         )
         if len(meta_matches) == len(self.metadata):
-            const.logger.info(f"Input filters {filter_attributes} result in unchanged data object")
+            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum_new)
         time_str = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -2057,7 +2054,7 @@ class UngriddedData:
             else:
                 raise VarNotAvailableError(f"No such variable {var_name} in data")
         elif len(self.contains_vars) == 1:
-            const.print_log.info("Data object is already single variable. Returning copy")
+            print_log.info("Data object is already single variable. Returning copy")
             return self.copy()
 
         var_idx = self.var_idx[var_name]
@@ -2918,7 +2915,7 @@ class UngriddedData:
         try:
             return self[self._idx]
         except DataCoverageError:
-            const.print_log.warning(
+            print_log.warning(
                 f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
             )
             return StationData()

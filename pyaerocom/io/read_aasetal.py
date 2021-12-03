@@ -6,7 +6,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const
+from pyaerocom import print_log
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -204,7 +204,7 @@ class ReadAasEtal(ReadUngriddedBase):
             #             except ValueError as e:
             #                 s['altitude'] = np.nan
             #                 from pyaerocom import const
-            #                 const.logger.warning(f'Failed to access altitude for {name}')
+            #                 logger.warning(f'Failed to access altitude for {name}')
             # =============================================================================
             # Added the created station to the station list.
             station_list.append(stat)
@@ -350,7 +350,7 @@ class ReadSulphurAasEtAl(ReadAasEtal):
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
         msg = "You are using an old name for class ReadAasEtal"
-        const.print_log.warning(DeprecationWarning(msg))
+        print_log.warning(DeprecationWarning(msg))
 
 
 if __name__ == "__main__":

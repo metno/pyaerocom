@@ -6,7 +6,7 @@ import glob
 import os
 import pickle
 
-from pyaerocom import const
+from pyaerocom import const, logger, print_log
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -149,7 +149,7 @@ class CacheHandlerUngridded:
             if not k in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
             elif not v == current[k]:
-                const.print_log.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
+                print_log.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
                 return False
         return True
 
@@ -222,11 +222,11 @@ class CacheHandlerUngridded:
         try:
             fp = self.file_path(var_or_file_name, cache_dir=cache_dir)
         except FileNotFoundError as e:
-            const.logger.warning(repr(e))
+            logger.warning(repr(e))
             return False
 
         if not os.path.isfile(fp):
-            const.logger.info(f"Cache file does not exist: {fp}")
+            logger.info(f"Cache file does not exist: {fp}")
             return False
 
         delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
@@ -242,19 +242,19 @@ class CacheHandlerUngridded:
             except Exception as e:
                 ok = False
                 delete_existing = True
-                const.logger.exception(
+                logger.exception(
                     f"File error in cached data file {fp}. "
                     f"File will be removed and data reloaded. Error: {repr(e)}"
                 )
         if not ok:
             # TODO: Should we delete the cache file if it is outdated ???
-            const.logger.info(
+            logger.info(
                 f"Aborting reading cache file {fp}. Aerocom database "
                 f"or pyaerocom version has changed compared to cached version"
             )
             in_handle.close()
             if delete_existing:  # something was wrong
-                const.print_log.info(f"Deleting outdated cache file: {fp}")
+                print_log.info(f"Deleting outdated cache file: {fp}")
                 os.remove(fp)
             return False
 
@@ -267,7 +267,7 @@ class CacheHandlerUngridded:
             )
 
         self.loaded_data[var_or_file_name] = data
-        const.logger.info(f"Successfully loaded cache file {fp}")
+        logger.info(f"Successfully loaded cache file {fp}")
         return True
 
     def delete_all_cache_files(self):
@@ -280,7 +280,7 @@ class CacheHandlerUngridded:
         """
         for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
             os.remove(fp)
-            const.print_log.info(f"Deleted {fp}")
+            print_log.info(f"Deleted {fp}")
 
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
@@ -334,7 +334,7 @@ class CacheHandlerUngridded:
                 data = data.extract_var(var_name)
 
         fp = self.file_path(var_or_file_name, cache_dir=cache_dir)
-        const.logger.info(f"Writing cache file: {fp}")
+        logger.info(f"Writing cache file: {fp}")
         success = True
         # OutHandle = gzip.open(c__cache_file, 'wb') # takes too much time
         out_handle = open(fp, "wb")
@@ -354,7 +354,7 @@ class CacheHandlerUngridded:
             out_handle.close()
             if not success:
                 os.remove(fp)
-        const.logger.info(f"Wrote: {fp}")
+        logger.info(f"Wrote: {fp}")
         return fp
 
     def __str__(self):

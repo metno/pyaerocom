@@ -9,7 +9,7 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import __version__ as pya_ver
-from pyaerocom import const, logger
+from pyaerocom import const, logger, print_log
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -870,13 +870,13 @@ def colocate_gridded_ungridded(
                     arr[0, :, i] = _df["ref"].values
                     arr[1, :, i] = _df["data"].values
                 except ValueError as e:
-                    const.print_log.warning(
+                    print_log.warning(
                         f"Failed to colocate time for station {obs_stat.station_name}. "
                         f"This station will be skipped (error: {e})"
                     )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
-            const.print_log.warning(
+            print_log.warning(
                 f"{var_ref} data from site {obs_stat.station_name} will "
                 f"not be added to ColocatedData. Reason: {e}"
             )
@@ -969,17 +969,17 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     )
     if p0 is None:
         p0 = pressure()  # STD conditions sea level
-    const.logger.info("Correcting model data in ColocatedData instance to STP")
+    logger.info("Correcting model data in ColocatedData instance to STP")
     cfacs = []
     meantemps = []
     mintemps = []
     maxtemps = []
     ps = []
     for i, (lat, lon, alt, name) in enumerate(coords):
-        const.logger.info(name, ", Lat", lat, ", Lon", lon)
+        logger.info(name, ", Lat", lat, ", Lon", lon)
         p = pressure(alt)
-        const.logger.info("Alt", alt)
-        const.logger.info("P=", p / 100, "hPa")
+        logger.info("Alt", alt)
+        logger.info("P=", p / 100, "hPa")
 
         ps.append(p / 100)
 
@@ -991,11 +991,11 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
 
         if not len(temps) == len(arr.time):
             raise NotImplementedError("Check timestamps")
-        const.logger.info("Mean Temp: ", temps.mean() - t0, " C")
+        logger.info("Mean Temp: ", temps.mean() - t0, " C")
 
         corrfacs = (p0 / p) * (temps / t0)
 
-        const.logger.info("Corr fac:", corrfacs.mean(), "+/-", corrfacs.std())
+        logger.info("Corr fac:", corrfacs.mean(), "+/-", corrfacs.std())
 
         cfacs.append(corrfacs.mean())
 
@@ -1009,9 +1009,9 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
 
     cfacs = np.asarray(cfacs)
 
-    const.logger.info("Min: ", cfacs.min())
-    const.logger.info("Mean: ", cfacs.mean())
-    const.logger.info("Max: ", cfacs.max())
+    logger.info("Min: ", cfacs.min())
+    logger.info("Mean: ", cfacs.mean())
+    logger.info("Max: ", cfacs.max())
     coldata.data.attrs["Model_STP_corr"] = True
 
     newcoords = dict(
