@@ -19,7 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
-import pyaerocom.obs_io as obs_io
+from pyaerocom import logger, obs_io, print_log
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
     check_write_access,
@@ -203,11 +203,6 @@ class Config:
 
     def __init__(self, config_file=None, try_infer_environment=True):
 
-        from pyaerocom import logger, print_log
-
-        self.print_log = print_log
-        self.logger = logger
-
         # Directories
         self._outputdir = None
         self._cache_basedir = None
@@ -256,7 +251,7 @@ class Config:
             try:
                 self.read_config(config_file, basedir=basedir)
             except Exception as e:
-                self.print_log.warning(f"Failed to read config. Error: {repr(e)}")
+                print_log.warning(f"Failed to read config. Error: {repr(e)}")
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
 
@@ -284,7 +279,7 @@ class Config:
         if timeout is None:
             timeout = self.SERVER_CHECK_TIMEOUT
 
-        self.logger.info(f"Checking access to: {loc}")
+        logger.info(f"Checking access to: {loc}")
         if check_dir_access(loc, timeout=timeout):
             self._confirmed_access.append(loc)
             return True
@@ -455,7 +450,7 @@ class Config:
         try:
             return chk_make_subdir(self.cache_basedir, self.user)
         except Exception as e:
-            self.print_log.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
+            print_log.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
             self._caching_active = False
 
     @CACHEDIR.setter
@@ -483,7 +478,7 @@ class Config:
     @property
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
-        self.print_log.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
+        print_log.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
         return self.VARS
 
     @property
@@ -725,7 +720,7 @@ class Config:
         except DataSourceError:
             if not "renamed" in os.listdir(data_dir):
                 raise
-            self.print_log.warning(
+            print_log.warning(
                 f"Failed to register {obs_id} at {data_dir} using ungridded "
                 f"reader {reader} but input dir has a renamed subdirectory, "
                 f"trying to find valid data files in there instead"
