@@ -1,6 +1,7 @@
 import pytest
 
 from pyaerocom.io.cams2_83.models import ModelName, PollutantName
+from pyaerocom.io.cams2_83.reader import find_model_path
 
 
 @pytest.mark.parametrize(
@@ -22,3 +23,7 @@ def test_ModelName(model: str, name: str):
 )
 def test_PollutantName(poll: str, name: str):
     assert PollutantName[poll] == name
+
+
+def test_find_model_path():
+    assert False
