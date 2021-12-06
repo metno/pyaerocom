@@ -190,8 +190,8 @@ class UngriddedData:
         """Checks if all indices are assigned correctly"""
         assert len(self.meta_idx) == len(self.metadata), "Mismatch len(meta_idx) and len(metadata)"
 
-        assert sum(self.meta_idx.keys()) == sum(
-            self.metadata.keys()
+        assert sum(self.meta_idx) == sum(
+            self.metadata
         ), "Mismatch between keys of metadata dict and meta_idx dict"
 
         _varnums = self._data[:, self._VARINDEX]
@@ -374,7 +374,7 @@ class UngriddedData:
         raise NotImplementedError("Coming at some point")
         if meta_idx is None:
             meta_idx = self.last_meta_idx + 1
-        elif meta_idx in self.meta_idx.keys():
+        elif meta_idx in self.meta_idx:
             raise ValueError(
                 f"Cannot add data at meta block index {meta_idx}, index already exists"
             )
@@ -468,7 +468,7 @@ class UngriddedData:
     @property
     def contains_vars(self):
         """List of all variables in this dataset"""
-        return [k for k in self.var_idx.keys()]
+        return list(self.var_idx)
 
     @property
     def contains_datasets(self):
@@ -622,7 +622,7 @@ class UngriddedData:
         """
         if not self.is_filtered:
             raise AttributeError("No filters were applied so far")
-        return self.filter_hist[max(self.filter_hist.keys())]
+        return self.filter_hist[max(self.filter_hist)]
 
     def add_chunk(self, size=None):
         """Extend the size of the data array
@@ -1381,7 +1381,7 @@ class UngriddedData:
 
         """
         # initiate filters that are checked
-        valid_keys = self.metadata[self.first_meta_idx].keys()
+        valid_keys = list(self.metadata[self.first_meta_idx])
         str_f = {}
         list_f = {}
         range_f = {}
@@ -2312,7 +2312,7 @@ class UngriddedData:
             obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
-            meta_offset = max(x for x in obj.metadata.keys()) + 1
+            meta_offset = max(obj.metadata) + 1
             data_offset = obj.shape[0]
 
             # add this offset to indices of meta dictionary in input data object
@@ -2644,7 +2644,7 @@ class UngriddedData:
         return (dates, data_this_match, data_other_match)
 
     def _meta_to_lists(self):
-        meta = {k: [] for k in self.metadata[self.first_meta_idx].keys()}
+        meta = {k: [] for k in self.metadata[self.first_meta_idx]}
         for meta_item in self.metadata.values():
             for k, v in meta.items():
                 v.append(meta_item[k])

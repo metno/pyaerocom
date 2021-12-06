@@ -952,8 +952,7 @@ class ReadL2Data(ReadL2DataBase):
             ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
 
             # for var in vars_to_write_out:
-            vars_to_write_out = data_to_write.keys()
-            for var in vars_to_write_out:
+            for var in data_to_write:
                 if var in self.COORDINATE_NAMES:
                     # if var == self._TIME_NAME:
                     continue

@@ -113,7 +113,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = [k for k in COL_INDEX.keys()][3:]
+    PROVIDES_VARIABLES = list(COL_INDEX)[3:]
 
     @property
     def col_index(self):

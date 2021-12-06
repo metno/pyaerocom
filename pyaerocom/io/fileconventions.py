@@ -2,6 +2,8 @@ from collections import OrderedDict as od
 from configparser import ConfigParser
 from os.path import basename, exists, join, splitext
 
+from numpy import inf
+
 from pyaerocom import const
 from pyaerocom.exceptions import FileConventionError
 from pyaerocom.tstype import TsType
@@ -131,7 +133,7 @@ class FileConventionRead:
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
             raise FileConventionError(f"Invalid year {info['year']} in filename {basename(file)}")
 
-    def _info_from_aerocom3(self, file):
+    def _info_from_aerocom3(self, file: str) -> dict:
         """Extract info from filename Aerocom 3 convention
 
         Parameters
@@ -204,7 +206,7 @@ class FileConventionRead:
             info["is_at_stations"] = True
         return info
 
-    def _info_from_aerocom2(self, file):
+    def _info_from_aerocom2(self, file: str) -> dict:
         """Extract info from filename Aerocom 2 convention
 
         Parameters
@@ -258,7 +260,7 @@ class FileConventionRead:
             )
         return info
 
-    def get_info_from_file(self, file):
+    def get_info_from_file(self, file: str) -> dict:
         """Identify convention from a file
 
         Currently only two conventions (aerocom2 and aerocom3) exist that are
@@ -293,8 +295,9 @@ class FileConventionRead:
         """
         if self.name == "aerocom3":
             return self._info_from_aerocom3(file)
-        elif self.name == "aerocom2":
+        if self.name == "aerocom2":
             return self._info_from_aerocom2(file)
+        raise FileConventionError(f"Unknown {self.name}")
 
     def string_mask(self, data_id, var, year, ts_type, vert_which=None):
         """Returns mask that can be used to identify files of this convention

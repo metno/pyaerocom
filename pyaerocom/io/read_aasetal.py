@@ -167,7 +167,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     elif len(_var) > 1:
                         raise OSError("Found multiple matches...")
                     var = _var[0]
-                    if var in self.UNITCONVERSION.keys():
+                    if var in self.UNITCONVERSION:
                         # Convert units
                         from_unit, to_unit = self.UNITCONVERSION[var]
                         values = pd.to_numeric(station_group[key], errors="coerce").values

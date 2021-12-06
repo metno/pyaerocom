@@ -554,7 +554,7 @@ class Config:
     @property
     def OBS_IDS_UNGRIDDED(self):
         """List of all data IDs of supported ungridded observations"""
-        ids = [x for x in self.OBSLOCS_UNGRIDDED.keys()]
+        ids = list(self.OBSLOCS_UNGRIDDED)
         ids.extend(self.OBS_UNGRIDDED_POST)
         return ids
 
