@@ -1,4 +1,3 @@
-from collections import OrderedDict as od
 from configparser import ConfigParser
 from os.path import basename, exists, join, splitext
 
@@ -73,7 +72,7 @@ class FileConventionRead:
         """Empty dictionary containing init values of infos to be
         extracted from filenames
         """
-        return od(
+        return dict(
             year=None, var_name=None, ts_type=None, vert_code="", is_at_stations=False, data_id=""
         )
 
@@ -273,7 +272,7 @@ class FileConventionRead:
 
         Returns
         -------
-        OrderedDict
+        dict
             dictionary containing keys `year, var_name, ts_type` and
             corresponding variables, extracted from the filename
 
@@ -385,7 +384,7 @@ class FileConventionRead:
 
     def to_dict(self):
         """Convert this object to ordered dictionary"""
-        return od(
+        return dict(
             name=self.name,
             file_sep=self.file_sep,
             year_pos=self.year_pos,
@@ -410,7 +409,7 @@ if __name__ == "__main__":
 
     print(conf)
 
-    d = od(name="Fake", file_sep=10, year_pos=-6, var_pos=15, ts_pos=3)
+    d = dict(name="Fake", file_sep=10, year_pos=-6, var_pos=15, ts_pos=3)
     print(conf.from_dict(d))
     try:
         conf.import_default("blaaa")

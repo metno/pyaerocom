@@ -4,7 +4,6 @@ I/O helper methods of the pyaerocom package
 """
 import os
 import shutil
-from collections import OrderedDict as od
 from datetime import datetime
 from pathlib import Path
 from time import time
@@ -288,7 +287,7 @@ def search_names(update_inifile=True, check_nc_file=True):
                             break
                 if add:
                     names.append(item)
-    names = sorted(od.fromkeys(names))
+    names = sorted(set(names))
     if update_inifile:
         from pyaerocom import __dir__
 

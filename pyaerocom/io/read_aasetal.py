@@ -1,8 +1,5 @@
 import os
 
-# from datetime import datetime
-from collections import OrderedDict
-
 import numpy as np
 import pandas as pd
 
@@ -242,8 +239,8 @@ class ReadAasEtal(ReadUngriddedBase):
         varindex = -1
 
         # assign metadata object
-        metadata = data_obj.metadata  # OrderedDict
-        meta_idx = data_obj.meta_idx  # OrderedDict
+        metadata = data_obj.metadata  # dict
+        meta_idx = data_obj.meta_idx  # dict
 
         for file in files:
             filename = os.path.basename(file)
@@ -255,7 +252,7 @@ class ReadAasEtal(ReadUngriddedBase):
             stat_list = self.read_file(file, vars_to_retrieve=var_matches)
             for stat in stat_list:
                 # self.counter += 1
-                metadata[meta_key] = OrderedDict()
+                metadata[meta_key] = {}
                 metadata[meta_key].update(stat.get_meta())
                 metadata[meta_key].update(stat.get_station_coords())
                 metadata[meta_key]["data_id"] = self.data_id
@@ -272,7 +269,7 @@ class ReadAasEtal(ReadUngriddedBase):
 
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = OrderedDict()
+                meta_idx[meta_key] = {}
 
                 num_times = len(stat["dtime"])
                 num_vars = len(stat["var_info"])
@@ -285,7 +282,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
 
-                metadata[meta_key]["var_info"] = OrderedDict()
+                metadata[meta_key]["var_info"] = {}
                 for var_count, var in enumerate(temp_vars):
 
                     values = stat[var]

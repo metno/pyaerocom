@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import fnmatch
 import os
-from collections import OrderedDict as od
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -144,15 +145,15 @@ class UngriddedData:
         # keep private, this is not supposed to be used by the user
         self._data = np.full([num_points, self._COLNO], np.nan)
 
-        self.metadata = od()
+        self.metadata = {}
         # single value data revision is deprecated
-        self.data_revision = od()
-        self.meta_idx = od()
-        self.var_idx = od()
+        self.data_revision = {}
+        self.meta_idx = {}
+        self.var_idx = {}
 
         self._idx = -1
 
-        self.filter_hist = od()
+        self.filter_hist = {}
 
     def _get_data_revision_helper(self, data_id):
         """
@@ -283,7 +284,7 @@ class UngriddedData:
                 stat = StationData(**stat)
             elif not isinstance(stat, StationData):
                 raise ValueError("Need instances of StationData or dicts")
-            metadata[meta_key] = od()
+            metadata[meta_key] = {}
             metadata[meta_key].update(
                 stat.get_meta(force_single_value=False, quality_check=False, add_none_vals=True)
             )
@@ -295,7 +296,7 @@ class UngriddedData:
 
                 metadata[meta_key][key] = val
 
-            metadata[meta_key]["var_info"] = od()
+            metadata[meta_key]["var_info"] = {}
 
             meta_idx[meta_key] = {}
 
@@ -355,7 +356,7 @@ class UngriddedData:
                     data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
 
                 var_info = stat["var_info"][var]
-                metadata[meta_key]["var_info"][var] = od()
+                metadata[meta_key]["var_info"][var] = {}
                 metadata[meta_key]["var_info"][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
@@ -402,7 +403,7 @@ class UngriddedData:
 
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
-        idx = od(
+        idx = dict(
             meta=self._METADATAKEYINDEX,
             time=self._TIMEINDEX,
             stoptime=self._STOPTIMEINDEX,
@@ -1102,7 +1103,7 @@ class UngriddedData:
 
             sd["dtime"] = data.index.values
             sd[var] = data
-            sd["var_info"][var] = od()
+            sd["var_info"][var] = {}
             FOUND_ONE = True
             # check if there is information about altitude (then relevant 3D
             # variables and parameters are included too)
@@ -1940,7 +1941,7 @@ class UngriddedData:
         for meta_idx in meta_indices:
             meta = self.metadata[meta_idx]
             new.metadata[meta_idx_new] = meta
-            new.meta_idx[meta_idx_new] = od()
+            new.meta_idx[meta_idx_new] = {}
             for var in meta["var_info"]:
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
@@ -1987,8 +1988,8 @@ class UngriddedData:
             obj = self
         else:
             obj = self.copy()
-        meta_new = od()
-        meta_idx_new = od()
+        meta_new = {}
+        meta_idx_new = {}
         for idx, val in obj.meta_idx.items():
             meta = obj.metadata[idx]
             if not bool(val):  # no data assigned with this metadata block
@@ -2086,7 +2087,7 @@ class UngriddedData:
                 meta = {}
                 _meta = self.metadata[midx]
                 meta.update(_meta)
-                meta["var_info"] = od()
+                meta["var_info"] = {}
                 meta["var_info"][var_name] = _meta["var_info"][var_name]
                 meta["variables"] = [var_name]
                 subset.metadata[meta_idx] = meta
@@ -2239,10 +2240,10 @@ class UngriddedData:
         new = UngriddedData(num_points=self.shape[0])
         didx = 0
         for i, idx_lst in enumerate(lst_meta_idx):
-            _meta_check = od()
+            _meta_check = {}
             # write metadata of first index that matches
             _meta_check.update(self.metadata[idx_lst[0]])
-            _meta_idx_new = od()
+            _meta_idx_new = {}
             for j, meta_idx in enumerate(idx_lst):
                 if j > 0:  # don't check first against first
                     meta = self.metadata[meta_idx]
@@ -2319,7 +2320,7 @@ class UngriddedData:
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other
                 obj.metadata[meta_idx] = meta_other
-                _idx_map = od()
+                _idx_map = {}
                 for var_name, indices in other.meta_idx[meta_idx_other].items():
                     _idx_map[var_name] = np.asarray(indices) + data_offset
                 obj.meta_idx[meta_idx] = _idx_map
@@ -2482,8 +2483,12 @@ class UngriddedData:
         raise NotImplementedError("Coming soon")
 
     def find_common_stations(
-        self, other, check_vars_available=None, check_coordinates=True, max_diff_coords_km=0.1
-    ):
+        self,
+        other: UngriddedData,
+        check_vars_available=None,
+        check_coordinates: bool = True,
+        max_diff_coords_km: float = 0.1,
+    ) -> dict:
         """Search common stations between two UngriddedData objects
 
         This method loops over all stations that are stored within this
@@ -2511,7 +2516,7 @@ class UngriddedData:
 
         Returns
         -------
-        OrderedDict
+        dict
             dictionary where keys are meta_indices of the common station in
             this object and corresponding values are meta indices of the
             station in the other object
@@ -2548,7 +2553,7 @@ class UngriddedData:
                     f"Need str or list-like, got: {check_vars_available}"
                 )
         lat_len = 111.0  # approximate length of latitude degree in km
-        station_map = od()
+        station_map = {}
         stations_other = other.station_name
         for meta_idx, meta in self.metadata.items():
             name = meta["station_name"]

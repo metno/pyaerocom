@@ -32,7 +32,6 @@
 # MA 02110-1301, USA
 
 import re
-from collections import OrderedDict as od
 
 import numpy as np
 import pandas as pd
@@ -78,7 +77,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     NAN_VAL = -9999.0
 
     #: Dictionary that specifies the index for each data column
-    COL_INDEX = od(
+    COL_INDEX = dict(
         date=0,
         time=1,
         julien_day=2,
