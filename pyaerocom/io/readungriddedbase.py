@@ -6,7 +6,7 @@ from fnmatch import fnmatch
 
 import numpy as np
 
-from pyaerocom import LOGLEVELS, const, print_log
+from pyaerocom import const, print_log
 from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
@@ -303,10 +303,6 @@ class ReadUngriddedBase(abc.ABC):
 
     @verbosity_level.setter
     def verbosity_level(self, val):
-        if isinstance(val, str):
-            if not val in LOGLEVELS:
-                raise ValueError("Invalid input for loglevel")
-            val = LOGLEVELS[val]
         self.logger.setLevel(val)
 
     def _add_aux_variables(self):

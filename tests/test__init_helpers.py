@@ -1,13 +1,10 @@
+import logging
 from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
 from pyaerocom import _init_helpers as mod
 from pyaerocom import logger, print_log
-
-
-def test_LOGLEVELS():
-    assert mod.LOGLEVELS == {"debug": 10, "info": 20, "warning": 30, "error": 40, "critical": 50}
 
 
 def test__init_logger():
@@ -46,9 +43,11 @@ def test_change_verbosity(new_level, log, raises):
     lvl = _log.getEffectiveLevel()
     with raises:
         mod.change_verbosity(new_level, log)
+        log_level = _log.getEffectiveLevel()
         if isinstance(new_level, str):
-            new_level = mod.LOGLEVELS[new_level]
-        assert _log.getEffectiveLevel() == new_level
+            new_level = new_level.upper()
+            log_level = logging.getLevelName(log_level)
+        assert log_level == new_level
         # revoke changes
         _log.setLevel(lvl)
         assert _log.getEffectiveLevel() == lvl

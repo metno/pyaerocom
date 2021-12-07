@@ -1,9 +1,9 @@
-LOGLEVELS = {"debug": 10, "info": 20, "warning": 30, "error": 40, "critical": 50}
+from __future__ import annotations
+
+import logging
 
 
 def _init_logger():
-    import logging
-
     ### LOGGING
     # Note: configuration will be propagated to all child modules of
     # pyaerocom, for details see
@@ -30,15 +30,15 @@ def _init_logger():
     return (logger, print_log)
 
 
-def change_verbosity(new_level="debug", log=None):
+def change_verbosity(level: str | int = "debug", logger: logging.Logger = None) -> None:
     """
     Change verbosity of one of the pyaerocom loggers
 
     Parameters
     ----------
-    new_level : str or int
-        choose from either keys, or values of :attr:`LOGLEVELS`.
-    log
+    level : str or int
+        new `logging level<https://docs.python.org/3/library/logging.html#logging-levels>`_
+    logger
         either `pyaerocom.logger` or `pyaerocom.print_log`.
 
     Returns
@@ -46,22 +46,18 @@ def change_verbosity(new_level="debug", log=None):
     None
 
     """
-    if log is None:
-        from pyaerocom import logger
+    if isinstance(level, str):
+        level = level.upper()
 
-        log = logger
-    if isinstance(new_level, str):
-        if not new_level in LOGLEVELS:
-            raise ValueError(
-                f"invalid log level {new_level}, choose from keys or values of {LOGLEVELS}"
-            )
-        new_level = LOGLEVELS[new_level]
-    else:
-        if not new_level in LOGLEVELS.values():
-            raise ValueError(
-                f"invalid log level {new_level}, choose from keys or values of {LOGLEVELS}"
-            )
-    log.setLevel(new_level)
+    if isinstance(level, int) and not (logging.DEBUG <= level <= logging.CRITICAL):
+        raise ValueError(
+            f"invalid log level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
+        )
+
+    if logger is None:
+        logger = logging.getLogger("pyaerocom")
+
+    logger.setLevel(level)
 
 
 ### Functions for package initialisation
