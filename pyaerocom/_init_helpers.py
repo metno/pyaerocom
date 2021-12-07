@@ -1,19 +1,26 @@
 from __future__ import annotations
 
 import logging
+from logging.handlers import TimedRotatingFileHandler
+
+logger = logging.getLogger("pyaerocom")
 
 
-def _init_logger():
-    ### LOGGING
-    # Note: configuration will be propagated to all child modules of
-    # pyaerocom, for details see
-    # http://eric.themoritzfamily.com/learning-python-logging.html
+def _init_logger(logger: logging.Logger = logger, backup_days: int = 14) -> logging.Logger:
 
-    logger = logging.getLogger("pyaerocom")
+    # keep the up to backup_days days of daily log files
+    file_handler = TimedRotatingFileHandler("pyaerocom.log", when="D", backupCount=backup_days)
+    file_formatter = logging.Formatter(
+        "%(asctime)s:%(module)s:%(levelname)s:%(message)s", datefmt="%F %T"
+    )
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+
     console_handler = logging.StreamHandler()
-    console_formatter = logging.Formatter("%(asctime)s:%(levelname)s:\n%(message)s")
+    console_formatter = logging.Formatter("%(message)s")
     console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(logging.CRITICAL)
+    console_handler.setLevel(logging.INFO)
     logger.addHandler(console_handler)
 
     print_log = logging.getLogger("pyaerocom_print")
@@ -26,7 +33,7 @@ def _init_logger():
     return (logger, print_log)
 
 
-def change_verbosity(level: str | int = "debug", log: logging.Logger = None) -> None:
+def change_verbosity(level: str | int = "debug", logger: logging.Logger = logger) -> None:
     """
     Change logging verbosity to the console
 
@@ -34,8 +41,8 @@ def change_verbosity(level: str | int = "debug", log: logging.Logger = None) -> 
     ----------
     level : str or int
         new `logging level<https://docs.python.org/3/library/logging.html#logging-levels>`_
-    log
-        either `pyaerocom.logger` or `pyaerocom.print_log`.
+    logger:
+        `pyaerocom.logger` by default
 
     Returns
     -------
@@ -50,16 +57,11 @@ def change_verbosity(level: str | int = "debug", log: logging.Logger = None) -> 
             f"invalid log level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
-    if log is None:
-        from pyaerocom import logger
-
-        log = logger
-
-    if not log.hasHandlers():
-        log.setLevel(level)
+    if not logger.hasHandlers():
+        logger.setLevel(level)
         return
 
-    for handler in log.handlers:
+    for handler in logger.handlers:
         if not isinstance(handler, logging.StreamHandler):
             continue
         handler.setLevel(level)
