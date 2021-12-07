@@ -228,9 +228,9 @@ class ReadAeronetSunV2(ReadAeronetBase):
 
 
 if __name__ == "__main__":
-    import pyaerocom as pya
+    from pyaerocom import change_verbosity
 
-    pya.change_verbosity("critical")
+    change_verbosity("critical")
     data = {}
     failed = []
     for name in ReadAeronetSunV2.SUPPORTED_DATASETS:
