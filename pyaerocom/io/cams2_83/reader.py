@@ -7,11 +7,11 @@ from pyaerocom.griddeddata import GriddedData
 
 import xarray as xr
 
-from .models import ModelName
+from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.units_helpers import UALIASES
 
 
-DATA_FOLDER_PATH = Path("/home/kristersk/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
 
 def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path:
     if not isinstance(model, ModelName):
@@ -46,7 +46,7 @@ class ReadCAMS2_83:
         self._data_dir = None
 
         if data_dir is not None:
-            if not isinstance(data_dir, str) or not os.path.exists(data_dir):
+            if (not isinstance(data_dir, str) and not isinstance(data_dir, Path)) or not os.path.exists(data_dir):
                 raise FileNotFoundError(f"{data_dir}")
 
             self.data_dir = data_dir
@@ -81,8 +81,8 @@ class ReadCAMS2_83:
         """
         if self.data_dir is None and self._filepaths is None:
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
-
-        self._filepaths = find_model_path()
+        #if self._filepaths is None:
+            #self._filepaths = find_model_path()
         return self._filepaths
 
     @filepaths.setter
@@ -183,3 +183,10 @@ class ReadCAMS2_83:
         """
         raise NotImplementedError
 
+
+if __name__=="__main__":
+    data_dir = DATA_FOLDER_PATH
+    reader = ReadCAMS2_83(data_dir=data_dir)
+
+    reader.filepaths = [find_model_path("EMEP", "20210602")]
+    print(reader.open_file()["no2_conc"])
