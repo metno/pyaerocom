@@ -41,7 +41,7 @@ def change_verbosity(level: str | int = "debug", logger: logging.Logger = logger
     level : str or int
         new `logging level<https://docs.python.org/3/library/logging.html#logging-levels>`_
     logger:
-        `pyaerocom.logger` by default
+        pyaerocom root logger by default
 
     Returns
     -------
@@ -60,10 +60,14 @@ def change_verbosity(level: str | int = "debug", logger: logging.Logger = logger
         logger.setLevel(level)
         return
 
-    for handler in logger.handlers:
-        if not isinstance(handler, logging.StreamHandler):
-            continue
-        handler.setLevel(level)
+    while logger:
+        for handler in logger.handlers:
+            if type(handler) == logging.StreamHandler:
+                handler.setLevel(level)
+                return
+        if not logger.propagate:
+            return
+        logger = logger.parent
 
 
 ### Functions for package initialisation

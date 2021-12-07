@@ -8,28 +8,44 @@ import pytest
 from pyaerocom import _init_helpers as mod
 
 
-def check_loggger_level(logger: logging.Logger, level: int | str):
-    assert logger.hasHandlers()
-    assert any(isinstance(h, logging.StreamHandler) for h in logger.handlers)
-    if isinstance(level, int):
-        assert any(
-            h.level == level for h in logger.handlers if isinstance(h, logging.StreamHandler)
-        )
-    if isinstance(level, str):
-        assert any(
-            logging.getLevelName(h.level) == level.upper()
-            for h in logger.handlers
-            if isinstance(h, logging.StreamHandler)
-        )
+def get_level_value(logger: logging.Logger) -> int:
+
+    while logger:
+        mod.logging.critical(f"{logger=}")
+        if not logger.hasHandlers():
+            return logger.getEffectiveLevel()
+        for handler in logger.handlers:
+            if type(handler) == logging.StreamHandler:
+                mod.logging.critical(f"found {handler.name} {handler.level}")
+                return handler.level
+        if not logger.propagate:
+            return logging.NOTSET
+        logger = logger.parent
+
+    return logging.NOTSET
+
+
+def get_level_name(logger: logging.Logger) -> str:
+    level = get_level_value(logger)
+    return logging.getLevelName(level)
 
 
 @pytest.fixture
-def test_logger() -> logging.Logger:
-    return mod._init_logger(logging.getLogger("test"))
+def test_logger(name: str | None) -> logging.Logger:
+    return logging.getLogger(name)
 
 
-def test__init_logger(test_logger: logging.Logger):
-    check_loggger_level(test_logger, logging.INFO)
+@pytest.mark.parametrize(
+    "name,level",
+    [
+        ("pyaerocom.test", get_level_value(mod.logger)),
+        ("pyaerocom.deep.nested.module", get_level_value(mod.logger)),
+        ("other.module", logging.NOTSET),
+        (None, logging.NOTSET),
+    ],
+)
+def test_logger_level(test_logger: logging.Logger, level: int):
+    assert get_level_value(test_logger) == level
 
 
 @pytest.mark.parametrize(
@@ -49,10 +65,14 @@ def test__init_logger(test_logger: logging.Logger):
         ("blaaa", pytest.raises(ValueError)),
     ],
 )
+@pytest.mark.parametrize("name", ["pyaerocom", "pyaerocom.test"])
 def test_change_verbosity(level: str | int, test_logger: logging.Logger, raises):
     with raises:
         mod.change_verbosity(level, test_logger)
-        check_loggger_level(test_logger, level)
+        if isinstance(level, int):
+            assert get_level_value(test_logger) == level
+        if isinstance(level, str):
+            assert get_level_name(test_logger) == level.upper()
 
 
 ### Functions for package initialisation
