@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from contextlib import nullcontext as does_not_raise_exception
 
@@ -7,16 +9,31 @@ from pyaerocom import _init_helpers as mod
 from pyaerocom import logger, print_log
 
 
+def check_loggger_level(logger: logging.Logger, level: int | str):
+    assert logger.hasHandlers()
+    assert any(isinstance(h, logging.StreamHandler) for h in logger.handlers)
+    if isinstance(level, int):
+        assert any(
+            h.level == level for h in logger.handlers if isinstance(h, logging.StreamHandler)
+        )
+    if isinstance(level, str):
+        assert any(
+            logging.getLevelName(h.level) == level.upper()
+            for h in logger.handlers
+            if isinstance(h, logging.StreamHandler)
+        )
+
+
 def test__init_logger():
     logger, print_log = mod._init_logger()
-    assert logger.getEffectiveLevel() == 50
-    assert print_log.getEffectiveLevel() == 20
+    check_loggger_level(logger, 50)
+    check_loggger_level(print_log, 20)
 
 
 @pytest.mark.parametrize(
     "new_level,log,raises",
     [
-        ("debug", None, does_not_raise_exception()),
+        ("debug", logger, does_not_raise_exception()),
         ("info", logger, does_not_raise_exception()),
         ("warning", logger, does_not_raise_exception()),
         ("error", logger, does_not_raise_exception()),
@@ -36,21 +53,12 @@ def test__init_logger():
     ],
 )
 def test_change_verbosity(new_level, log, raises):
-    if log is None:
-        _log = logger
-    else:
-        _log = log
-    lvl = _log.getEffectiveLevel()
     with raises:
         mod.change_verbosity(new_level, log)
-        log_level = _log.getEffectiveLevel()
-        if isinstance(new_level, str):
-            new_level = new_level.upper()
-            log_level = logging.getLevelName(log_level)
-        assert log_level == new_level
+        check_loggger_level(log, new_level)
         # revoke changes
-        _log.setLevel(lvl)
-        assert _log.getEffectiveLevel() == lvl
+        mod.change_verbosity(logging.CRITICAL, log)
+        check_loggger_level(log, "critical")
 
 
 ### Functions for package initialisation

@@ -8,37 +8,33 @@ def _init_logger():
     # Note: configuration will be propagated to all child modules of
     # pyaerocom, for details see
     # http://eric.themoritzfamily.com/learning-python-logging.html
+
     logger = logging.getLogger("pyaerocom")
-
-    default_formatter = logging.Formatter("%(asctime)s:%(levelname)s:\n%(message)s")
-
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(default_formatter)
-
+    console_formatter = logging.Formatter("%(asctime)s:%(levelname)s:\n%(message)s")
+    console_handler.setFormatter(console_formatter)
+    console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
 
-    logger.setLevel(logging.CRITICAL)
-
     print_log = logging.getLogger("pyaerocom_print")
-
     print_handler = logging.StreamHandler()
-    print_handler.setFormatter(logging.Formatter("%(message)s"))
-
+    print_formatter = logging.Formatter("%(message)s")
+    print_handler.setFormatter(print_formatter)
+    print_handler.setLevel(logging.INFO)
     print_log.addHandler(print_handler)
 
-    print_log.setLevel(logging.INFO)
     return (logger, print_log)
 
 
-def change_verbosity(level: str | int = "debug", logger: logging.Logger = None) -> None:
+def change_verbosity(level: str | int = "debug", log: logging.Logger = None) -> None:
     """
-    Change verbosity of one of the pyaerocom loggers
+    Change logging verbosity to the console
 
     Parameters
     ----------
     level : str or int
         new `logging level<https://docs.python.org/3/library/logging.html#logging-levels>`_
-    logger
+    log
         either `pyaerocom.logger` or `pyaerocom.print_log`.
 
     Returns
@@ -54,10 +50,19 @@ def change_verbosity(level: str | int = "debug", logger: logging.Logger = None) 
             f"invalid log level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
-    if logger is None:
-        logger = logging.getLogger("pyaerocom")
+    if log is None:
+        from pyaerocom import logger
 
-    logger.setLevel(level)
+        log = logger
+
+    if not log.hasHandlers():
+        log.setLevel(level)
+        return
+
+    for handler in log.handlers:
+        if not isinstance(handler, logging.StreamHandler):
+            continue
+        handler.setLevel(level)
 
 
 ### Functions for package initialisation
