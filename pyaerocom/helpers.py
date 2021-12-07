@@ -2,6 +2,7 @@
 """
 General helper methods for the pyaerocom library.
 """
+import logging
 import math as ma
 from collections import Counter
 from datetime import MINYEAR, date, datetime
@@ -15,7 +16,7 @@ import pandas as pd
 import xarray as xr
 from cf_units import Unit
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
@@ -39,6 +40,8 @@ from pyaerocom.time_config import (
     sec_units,
 )
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 NUM_KEYS_META = ["longitude", "latitude", "altitude"]
 

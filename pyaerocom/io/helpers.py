@@ -2,6 +2,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
+import logging
 import os
 import shutil
 from collections import OrderedDict as od
@@ -9,9 +10,12 @@ from datetime import datetime
 from pathlib import Path
 from time import time
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
+
+logger = logging.getLogger(__name__)
+
 
 #: country code file name
 #: will be prepended with the path later on

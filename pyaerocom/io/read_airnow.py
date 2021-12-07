@@ -11,6 +11,7 @@
 #
 ########################################################################
 
+import logging
 import os
 from glob import glob
 
@@ -18,11 +19,12 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyaerocom import logger
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAirNow(ReadUngriddedBase):

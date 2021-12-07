@@ -3,6 +3,7 @@
 Classes and methods to perform high-level colocation.
 """
 import glob
+import logging
 import os
 import traceback
 from datetime import datetime
@@ -10,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
@@ -27,6 +28,8 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.io import ReadGridded, ReadMscwCtm, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+
+logger = logging.getLogger(__name__)
 
 
 class ColocationSetup(BrowseDict):

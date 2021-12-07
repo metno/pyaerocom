@@ -33,6 +33,7 @@ Example
 look at the end of the file
 """
 import gzip
+import logging
 import os
 import pathlib
 import shutil
@@ -44,12 +45,13 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyaerocom import logger
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):

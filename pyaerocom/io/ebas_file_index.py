@@ -1,8 +1,10 @@
+import logging
 import os
 import sqlite3
 
-from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import BrowseDict
+
+logger = logging.getLogger(__name__)
 
 
 class EbasSQLRequest(BrowseDict):

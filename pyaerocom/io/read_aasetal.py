@@ -1,3 +1,4 @@
+import logging
 import os
 
 # from datetime import datetime
@@ -6,14 +7,13 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from pyaerocom import logger
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
 
-# from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
+logger = logging.getLogger(__name__)
 
 
 class ReadAasEtal(ReadUngriddedBase):

@@ -1,13 +1,16 @@
+import logging
 from ast import literal_eval
 from configparser import ConfigParser
 
 import numpy as np
 
-from pyaerocom import logger, var_groups
+from pyaerocom import var_groups
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import make_binlist
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
+
+logger = logging.getLogger(__name__)
 
 #: helper vor checking if variable name contains str 3d or 3D
 from pyaerocom.variable_helpers import (

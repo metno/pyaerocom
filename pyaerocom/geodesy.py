@@ -5,12 +5,15 @@ Module for geographical calculations
 This module contains low-level methods to perform geographical calculations,
 (e.g. distance between two coordinates)
 """
+import logging
 import os
 
 import numpy as np
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.helpers import isnumeric
+
+logger = logging.getLogger(__name__)
 
 
 def calc_latlon_dists(latref, lonref, latlons):

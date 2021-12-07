@@ -1,4 +1,5 @@
 import fnmatch
+import logging
 import os
 import re
 from collections import OrderedDict as od
@@ -6,7 +7,7 @@ from collections import OrderedDict as od
 import numpy as np
 import xarray
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -14,6 +15,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEarlinet(ReadUngriddedBase):

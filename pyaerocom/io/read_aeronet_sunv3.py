@@ -1,12 +1,15 @@
+import logging
 import os
 
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetSunV3(ReadAeronetBase):

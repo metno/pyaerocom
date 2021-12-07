@@ -1,15 +1,18 @@
+import logging
 from collections import OrderedDict as od
 
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import MetaDataError, StationCoordinateError, VariableNotFoundError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.time_config import TS_TYPES
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetBase(ReadUngriddedBase):

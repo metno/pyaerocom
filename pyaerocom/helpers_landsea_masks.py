@@ -11,6 +11,7 @@ data classes (i.e. :class:`GriddedData`, :class:`UngriddedData`,
 """
 
 import glob
+import logging
 import os
 
 import numpy as np
@@ -18,9 +19,11 @@ import requests
 import xarray as xr
 from iris import load_cube
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.helpers import numpy_to_cube
+
+logger = logging.getLogger(__name__)
 
 
 def available_htap_masks():

@@ -12,6 +12,7 @@
 ########################################################################
 
 import getpass
+import logging
 import os
 from collections import OrderedDict as od
 from configparser import ConfigParser
@@ -19,7 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pyaerocom import logger, obs_io
+from pyaerocom import obs_io
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
     check_write_access,
@@ -30,6 +31,8 @@ from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
 from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
+
+logger = logging.getLogger(__name__)
 
 
 class Config:

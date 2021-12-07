@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import fnmatch
+import logging
 import os
 from collections import OrderedDict as od
 from datetime import datetime
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (
@@ -33,6 +34,8 @@ from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+logger = logging.getLogger(__name__)
 
 
 class UngriddedData:

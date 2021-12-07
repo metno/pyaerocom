@@ -1,7 +1,8 @@
+import logging
 import os
 from getpass import getuser
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
     AsciiFileLoc,
     ConstrainedContainer,
@@ -18,6 +19,8 @@ from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
+
+logger = logging.getLogger(__name__)
 
 
 class OutputPaths(ConstrainedContainer):

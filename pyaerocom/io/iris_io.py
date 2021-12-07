@@ -7,6 +7,7 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
 """
 
+import logging
 from datetime import datetime
 
 import cf_units
@@ -26,7 +27,7 @@ from traceback import format_exc
 
 import numpy as np
 
-from pyaerocom import const, logger, logger
+from pyaerocom import const
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     FileConventionError,
@@ -38,6 +39,8 @@ from pyaerocom.helpers import cftime_to_datetime64, make_datetimeindex_from_year
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 @ignore_warnings(const.FILTER_IRIS_WARNINGS, UserWarning)

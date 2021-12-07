@@ -6,12 +6,13 @@ from fnmatch import fnmatch
 
 import numpy as np
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.helpers import get_obsnetwork_dir
 
+logger = logging.getLogger(__name__)
 
 # TODO: Proposal: include attribute ts_type that is by default undefined but
 # may be set to either of the defined

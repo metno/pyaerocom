@@ -1,5 +1,5 @@
 # isort:skip_file
-from ._init_helpers import _init_supplemental, logger, change_verbosity
+from ._init_helpers import _init_supplemental, change_verbosity
 
 __version__, __dir__ = _init_supplemental()
 

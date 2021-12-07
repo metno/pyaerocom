@@ -1,11 +1,12 @@
 import glob
+import logging
 import os
 import re
 
 import numpy as np
 import xarray as xr
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io._read_mscw_ctm_helpers import (
@@ -24,6 +25,8 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
 )
 from pyaerocom.units_helpers import UALIASES
 from pyaerocom.variable_helpers import get_emep_variables
+
+logger = logging.getLogger(__name__)
 
 
 class ReadMscwCtm:

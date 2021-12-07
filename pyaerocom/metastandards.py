@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+import logging
 import os
 
 import numpy as np
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+
+logger = logging.getLogger(__name__)
 
 
 class DataSource(BrowseDict):

@@ -15,7 +15,7 @@ import logging
 import os
 from pathlib import Path
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.helpers import varlist_aerocom
@@ -37,6 +37,8 @@ from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
+
+logger = logging.getLogger(__name__)
 
 
 class ReadUngridded:

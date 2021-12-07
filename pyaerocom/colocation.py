@@ -2,6 +2,7 @@
 """
 Methods and / or classes to perform colocation
 """
+import logging
 import os
 
 import numpy as np
@@ -9,7 +10,7 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import __version__ as pya_ver
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -30,6 +31,8 @@ from pyaerocom.helpers import (
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
+
+logger = logging.getLogger(__name__)
 
 
 def _resolve_var_name(data):

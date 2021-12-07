@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import os
 from ast import literal_eval
 from pathlib import Path
@@ -8,7 +9,7 @@ import numpy as np
 import pandas as pd
 import xarray
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,
@@ -27,6 +28,8 @@ from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.time_resampler import TimeResampler
+
+logger = logging.getLogger(__name__)
 
 
 class ColocatedData:

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import os
 from collections import OrderedDict as od
 from pathlib import Path
@@ -11,7 +12,7 @@ from cf_units import Unit
 from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     CoordinateError,
@@ -49,6 +50,8 @@ from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
+
+logger = logging.getLogger(__name__)
 
 
 class GriddedData:
@@ -709,9 +712,7 @@ class GriddedData:
             try:
                 self.var_name = var_name
             except ValueError:
-                logger.warning(
-                    f"Could not update var_name, invalid input {var_name} (need str)"
-                )
+                logger.warning(f"Could not update var_name, invalid input {var_name} (need str)")
 
     def _check_invalid_unit_alias(self):
         """Check for units that have been invalidated by iris
@@ -738,9 +739,7 @@ class GriddedData:
 
             from_unit = cube.attributes["invalid_units"]
             to_unit = UALIASES[from_unit]
-            logger.info(
-                f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}"
-            )
+            logger.info(f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}")
             del cube.attributes["invalid_units"]
             cube.units = to_unit
         return cube
@@ -2748,16 +2747,12 @@ class GriddedData:
     @property
     def unit(self):
         """Unit of data"""
-        logger.warning(
-            DeprecationWarning("Attr. unit is deprecated, please use units instead")
-        )
+        logger.warning(DeprecationWarning("Attr. unit is deprecated, please use units instead"))
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
-        logger.warning(
-            DeprecationWarning("Attr. unit is deprecated, please use units instead")
-        )
+        logger.warning(DeprecationWarning("Attr. unit is deprecated, please use units instead"))
         self.grid.units = val
 
 

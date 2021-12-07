@@ -14,7 +14,7 @@ def _init_logger(logger: logging.Logger = logger, backup_days: int = 14) -> logg
     # keep the up to backup_days days of daily log files
     file_handler = TimedRotatingFileHandler("pyaerocom.log", when="D", backupCount=backup_days)
     file_formatter = logging.Formatter(
-        "%(asctime)s:%(module)s:%(levelname)s:%(message)s", datefmt="%F %T"
+        "%(asctime)s:%(name)s:%(levelname)s:%(message)s", datefmt="%F %T"
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging.DEBUG)

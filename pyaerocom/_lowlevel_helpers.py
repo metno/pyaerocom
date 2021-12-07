@@ -11,8 +11,9 @@ from pathlib import Path
 import numpy as np
 import simplejson
 
-from pyaerocom import logger
 from pyaerocom._warnings_management import ignore_warnings
+
+logger = logging.getLogger(__name__)
 
 
 def round_floats(in_data, precision=5):

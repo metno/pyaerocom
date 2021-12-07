@@ -11,13 +11,17 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 """
 
-from pyaerocom import const, logger
+import logging
+
+from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
     DataDimensionError,
     VariableDefinitionError,
     VariableNotFoundError,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
@@ -330,7 +334,6 @@ class AltitudeAccess:
     ADD_FILE_OPT = {"pres": ["temp"]}
 
     def __init__(self, gridded_data):
-        from pyaerocom import logger
         from pyaerocom.griddeddata import GriddedData
 
         if not isinstance(gridded_data, GriddedData):

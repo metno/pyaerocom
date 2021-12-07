@@ -1,8 +1,11 @@
-from pyaerocom import logger
+import logging
+
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
+
+logger = logging.getLogger(__name__)
 
 
 class ExperimentProcessor(ProcessingEngine, HasColocator):

@@ -1,7 +1,8 @@
+import logging
 import os
 from time import time
 
-from pyaerocom import ColocatedData, logger
+from pyaerocom import ColocatedData
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -23,6 +24,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     update_regions_json,
 )
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
+
+logger = logging.getLogger(__name__)
 
 
 class ColdataToJsonEngine(ProcessingEngine):

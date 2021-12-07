@@ -2,13 +2,16 @@
 """
 Module containing time resampling functionality
 """
+import logging
+
 import pandas as pd
 import xarray as xarr
 
-from pyaerocom import logger
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_timeseries
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 class TimeResampler:

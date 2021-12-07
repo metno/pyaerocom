@@ -30,7 +30,9 @@ with catch_warnings():
     filterwarnings("ignore")
     from geonum.atmosphere import T0_STD, p0
 
-from pyaerocom import const, logger
+import logging
+
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
     compute_ac550dryaer,
@@ -62,6 +64,8 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEbasOptions(BrowseDict):

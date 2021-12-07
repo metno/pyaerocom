@@ -4,15 +4,18 @@ Pyearocom module for reading and processing of EBAS NASA Ames files
 For details on the file format see `here <https://ebas-submit.nilu.no/
 Submit-Data/Getting-started>`__
 """
+import logging
 import os
 from collections import OrderedDict as od
 from datetime import datetime
 
 import numpy as np
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import dict_to_str, str_underline
 from pyaerocom.exceptions import NasaAmesReadError, TimeZoneError
+
+logger = logging.getLogger(__name__)
 
 
 class EbasColDef(dict):

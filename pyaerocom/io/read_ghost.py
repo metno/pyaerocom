@@ -21,6 +21,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 import glob
+import logging
 import os
 
 import cf_units
@@ -29,7 +30,7 @@ import pandas as pd
 import xarray as xr
 
 import pyaerocom as pya
-from pyaerocom import const, logger, logger
+from pyaerocom import const
 from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
@@ -38,6 +39,8 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):

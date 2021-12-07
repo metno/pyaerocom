@@ -1,9 +1,12 @@
+import logging
 from traceback import format_exc
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrType
 from pyaerocom.exceptions import InitialisationError
 from pyaerocom.metastandards import DataSource
+
+logger = logging.getLogger(__name__)
 
 
 class ObsEntry(BrowseDict):

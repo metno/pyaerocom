@@ -1,12 +1,14 @@
+import logging
 import os
 
 import numpy as np
 
-from pyaerocom import logger
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
 from pyaerocom.variable_helpers import get_variable
+
+logger = logging.getLogger(__name__)
 
 
 def make_config_template(proj_id: str, exp_id: str) -> EvalSetup:

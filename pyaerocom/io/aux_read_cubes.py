@@ -1,13 +1,16 @@
+import logging
 from traceback import format_exc
 
 import iris
 import numpy as np
 
-from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
 from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+logger = logging.getLogger(__name__)
+
 
 CUBE_MATHS = {
     "add": iris.analysis.maths.add,

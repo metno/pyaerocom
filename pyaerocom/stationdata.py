@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, dict_to_str, list_to_shortstr, merge_dicts
 from pyaerocom.exceptions import (
     CoordinateError,
@@ -25,6 +26,8 @@ from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
 from pyaerocom.vertical_profile import VerticalProfile
+
+logger = logging.getLogger(__name__)
 
 
 class StationData(StationMetaData):

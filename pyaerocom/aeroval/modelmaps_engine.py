@@ -1,6 +1,7 @@
+import logging
 import os
 
-from pyaerocom import GriddedData, TsType, logger
+from pyaerocom import GriddedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
@@ -14,6 +15,8 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.helpers import isnumeric
+
+logger = logging.getLogger(__name__)
 
 
 class ModelMapsEngine(ProcessingEngine, DataImporter):

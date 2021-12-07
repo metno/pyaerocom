@@ -1,4 +1,5 @@
 import fnmatch
+import logging
 import os
 from collections import OrderedDict as od
 from glob import glob
@@ -9,7 +10,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -37,6 +38,8 @@ from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
 from pyaerocom.metastandards import AerocomDataID
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
+
+logger = logging.getLogger(__name__)
 
 
 class ReadGridded:

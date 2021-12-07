@@ -1,8 +1,9 @@
 import glob
+import logging
 import os
 import shutil
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
     StrType,
@@ -24,6 +25,8 @@ from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectOutput:

@@ -1,6 +1,7 @@
 """
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
+import logging
 import os
 from datetime import datetime
 
@@ -8,7 +9,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
@@ -26,6 +26,8 @@ from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 def get_heatmap_filename(ts_type):

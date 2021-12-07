@@ -2,11 +2,11 @@
 """
 General helper methods for the pyaerocom library.
 """
+import logging
 import re
 
 import numpy as np
 
-from pyaerocom import const, logger
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.time_config import (
     PANDAS_FREQ_TO_TS_TYPE,
@@ -15,6 +15,8 @@ from pyaerocom.time_config import (
     TS_TYPE_TO_SI,
     TS_TYPES,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class TsType:

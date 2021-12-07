@@ -5,6 +5,7 @@ Created on Thu Oct 29 17:12:54 2020
 @author: jonasg
 """
 
+import logging
 import os
 import tarfile
 from pathlib import Path
@@ -12,7 +13,7 @@ from traceback import format_exc
 
 import requests
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.io import (
     ReadAeronetInvV3,
     ReadAeronetSdaV3,
@@ -23,6 +24,8 @@ from pyaerocom.io import (
     ReadEEAAQEREP_V2,
     ReadGhost,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class AccessTestData:
