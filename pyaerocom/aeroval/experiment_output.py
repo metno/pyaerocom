@@ -2,7 +2,7 @@ import glob
 import os
 import shutil
 
-from pyaerocom import const, print_log
+from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
     StrType,
@@ -42,7 +42,7 @@ class ProjectOutput:
         fp = os.path.join(self.json_basedir, self.proj_id)
         if not os.path.exists(fp):
             os.mkdir(fp)
-            print_log.info(f"Creating AeroVal project directory at {fp}")
+            logger.info(f"Creating AeroVal project directory at {fp}")
         return fp
 
     @property
@@ -83,7 +83,7 @@ class ProjectOutput:
         try:
             del current[exp_id]
         except KeyError:
-            print_log.warning(f"no such experiment registered: {exp_id}")
+            logger.warning(f"no such experiment registered: {exp_id}")
         write_json(current, self.experiments_file, indent=4)
 
     def reorder_experiments(self, exp_order=None):
@@ -130,7 +130,7 @@ class ExperimentOutput(ProjectOutput):
         fp = os.path.join(self.proj_dir, self.exp_id)
         if not os.path.exists(fp):
             os.mkdir(fp)
-            print_log.info(f"Creating AeroVal experiment directory at {fp}")
+            logger.info(f"Creating AeroVal experiment directory at {fp}")
         return fp
 
     @property
@@ -218,9 +218,7 @@ class ExperimentOutput(ProjectOutput):
 
         """
         if not self.results_available:
-            print_log.warning(
-                f"no output available for experiment {self.exp_id} in {self.proj_id}"
-            )
+            logger.warning(f"no output available for experiment {self.exp_id} in {self.proj_id}")
             return
         exp_data = {"public": self.cfg.exp_info.public}
         self._add_entry_experiments_json(self.exp_id, exp_data)
@@ -344,7 +342,7 @@ class ExperimentOutput(ProjectOutput):
         This may be relevant when updating a model name or similar.
         """
         modified = []
-        print_log.info(
+        logger.info(
             "Running clean_json_files: Checking json output directories for "
             "outdated or invalid data and cleaning up."
         )
@@ -356,7 +354,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
             except Exception as e:
-                print_log.warning(
+                logger.warning(
                     f"FATAL: invalid file convention for map json file:"
                     f" {file}. This file will be deleted. Error message: "
                     f"{repr(e)}"
@@ -370,13 +368,13 @@ class ExperimentOutput(ProjectOutput):
 
         scatfiles = os.listdir(outdirs["scat"])
         for file in rmmap:  # delete map files
-            print_log.info(f"Deleting outdated map json file: {file}.")
+            logger.info(f"Deleting outdated map json file: {file}.")
             os.remove(file)
             modified.append(file)
             fname = os.path.basename(file)
             if fname in scatfiles:
                 scfp = os.path.join(outdirs["scat"], fname)
-                print_log.info(f"Deleting outdated scatter json file: {file}.")
+                logger.info(f"Deleting outdated scatter json file: {file}.")
                 os.remove(scfp)
                 modified.append(file)
 
@@ -394,14 +392,14 @@ class ExperimentOutput(ProjectOutput):
         spl = fname.split(".json")[0].split("_")
         vc, obsinfo = spl[-1], spl[-2]
         if not vc in self.cfg.obs_cfg.all_vert_types:
-            print_log.warning(
+            logger.warning(
                 f"Invalid or outdated vert code {vc} in ts file {fp}. File will be deleted."
             )
             os.remove(fp)
             return True
         obs_name = str.join("-", obsinfo.split("-")[:-1])
         if obs_name in self._invalid["obs"]:
-            print_log.info(
+            logger.info(
                 f"Invalid or outdated obs name {obs_name} in ts file {fp}. "
                 f"File will be deleted."
             )
@@ -411,7 +409,7 @@ class ExperimentOutput(ProjectOutput):
         try:
             data = read_json(fp)
         except Exception:
-            print_log.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
+            logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
             os.remove(fp)
             return True
 
@@ -427,7 +425,7 @@ class ExperimentOutput(ProjectOutput):
                 data_new[mod_name] = data[mod_name]
             else:
                 modified = True
-                print_log.info(f"Removing data for model {mod_name} from ts file: {fp}")
+                logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
         write_json(data_new, fp)
         return modified
@@ -448,7 +446,7 @@ class ExperimentOutput(ProjectOutput):
                     if len(spl) > 2:
                         msg += "Likely due to underscore being present in model or variable name."
                     rm.append(file)
-                    print_log.warning(msg)
+                    logger.warning(msg)
                 elif spl[-1] in self._invalid["models"]:
                     rm.append(file)
 
@@ -485,13 +483,13 @@ class ExperimentOutput(ProjectOutput):
             NetCDF files are deleted. Defaults to True.
         """
         if os.path.exists(self.exp_dir):
-            print_log.info(f"Deleting everything under {self.exp_dir}")
+            logger.info(f"Deleting everything under {self.exp_dir}")
             shutil.rmtree(self.exp_dir)
 
         if also_coldata:
             coldir = self.cfg.path_manager.get_coldata_dir()
             if os.path.exists(coldir):
-                print_log.info(f"Deleting everything under {coldir}")
+                logger.info(f"Deleting everything under {coldir}")
                 shutil.rmtree(coldir)
         self._del_entry_experiments_json(self.exp_id)
 
@@ -541,7 +539,7 @@ class ExperimentOutput(ProjectOutput):
             info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
-            print_log.warning(
+            logger.warning(
                 f"Failed to infer cmap and variable "
                 f"ranges for {var}, using default "
                 f"settings which are {info}"
@@ -592,7 +590,7 @@ class ExperimentOutput(ProjectOutput):
             name, tp, cat = var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
-            print_log.warning(f"Missing menu name definition for var {var_name}.")
+            logger.warning(f"Missing menu name definition for var {var_name}.")
         return (name, tp, cat)
 
     def _init_menu_entry(self, var: str) -> dict:
@@ -748,7 +746,7 @@ class ExperimentOutput(ProjectOutput):
                     "obs_var": obs_var,
                 }
             else:
-                print_log.warning(
+                logger.warning(
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var})"
                 )
         return new

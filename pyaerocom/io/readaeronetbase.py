@@ -3,7 +3,7 @@ from collections import OrderedDict as od
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom import const, print_log
+from pyaerocom import const, logger
 from pyaerocom.exceptions import MetaDataError, StationCoordinateError, VariableNotFoundError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -359,7 +359,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         num_vars = len(vars_to_retrieve)
         num_files = len(files)
-        print_log.info("Reading AERONET data")
+        logger.info("Reading AERONET data")
         skipped = 0
         for i in tqdm(range(num_files)):
 
@@ -372,7 +372,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 stat = station_data.station_name
                 if isinstance(stat, (list, np.ndarray)):
                     stat = stat[0]
-                print_log.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
+                logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1
                 continue
             # Fill the metatdata dict
@@ -454,7 +454,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta_key = meta_key + 1.0
 
         if skipped:
-            print_log.warning(
+            logger.warning(
                 f"{skipped} out of {len(files)} files have been skipped (for "
                 f"details see output)."
             )

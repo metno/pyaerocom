@@ -10,7 +10,7 @@ from datetime import datetime
 
 import numpy as np
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import dict_to_str, str_underline
 from pyaerocom.exceptions import NasaAmesReadError, TimeZoneError
 
@@ -632,9 +632,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     data.append(tuple(float(x.strip()) for x in line.strip().split()))
                     # data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
-                    print_log.warning(
-                        f"EbasNasaAmesFile: Failed to read data row {dc}. Reason: {e}"
-                    )
+                    logger.warning(f"EbasNasaAmesFile: Failed to read data row {dc}. Reason: {e}")
                 dc += 1
             elif lc < self._NUM_FIXLINES:  # in header section (before column definitions)
                 try:

@@ -6,7 +6,7 @@ import glob
 import os
 import pickle
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -149,7 +149,7 @@ class CacheHandlerUngridded:
             if not k in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
             elif not v == current[k]:
-                print_log.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
+                logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
                 return False
         return True
 
@@ -254,7 +254,7 @@ class CacheHandlerUngridded:
             )
             in_handle.close()
             if delete_existing:  # something was wrong
-                print_log.info(f"Deleting outdated cache file: {fp}")
+                logger.info(f"Deleting outdated cache file: {fp}")
                 os.remove(fp)
             return False
 
@@ -280,7 +280,7 @@ class CacheHandlerUngridded:
         """
         for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
             os.remove(fp)
-            print_log.info(f"Deleted {fp}")
+            logger.info(f"Deleted {fp}")
 
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
@@ -346,9 +346,7 @@ class CacheHandlerUngridded:
             pickle.dump(data, out_handle, pickle.HIGHEST_PROTOCOL)
 
         except Exception as e:
-            from pyaerocom import print_log
-
-            print_log.exception(f"Failed to write cache: {repr(e)}")
+            logger.exception(f"Failed to write cache: {repr(e)}")
             success = False
         finally:
             out_handle.close()

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -208,7 +208,7 @@ class ReadGridded:
             try:
                 self.search_all_files()
             except DataCoverageError as e:
-                print_log.warning(repr(e))
+                logger.warning(repr(e))
 
     @property
     def data_id(self) -> str:
@@ -571,7 +571,7 @@ class ReadGridded:
         try:
             var = const.VARS[var_name]
         except VariableDefinitionError as e:
-            print_log.warning(repr(e))
+            logger.warning(repr(e))
             return False
 
         if self.check_compute_var(var_name):
@@ -616,7 +616,7 @@ class ReadGridded:
                 1, "s"
             )  # subtract one second to end up at the end of previous year
         if const.MIN_YEAR > start.year:
-            print_log.warning(
+            logger.warning(
                 f"First available year {start} of data {self.data_id} is smaller "
                 f"than supported first year {const.MIN_YEAR}."
             )
@@ -829,7 +829,7 @@ class ReadGridded:
         # get all files with correct ending
         files = glob(f"{self.data_dir}/*{self.file_type}")
         if len(files) == 0:
-            print_log.warning(
+            logger.warning(
                 f"No files of type {self.file_type} could be found in current "
                 f"data directory (data_dir={os.path.abspath(self.data_dir)}"
             )
@@ -843,7 +843,7 @@ class ReadGridded:
             try:
                 self._update_file_convention(files)
             except FileNotFoundError as e:
-                print_log.warning(repr(e))
+                logger.warning(repr(e))
                 return
 
         result = self._evaluate_fileinfo(files)
@@ -1003,7 +1003,7 @@ class ReadGridded:
         if len(subset) == 0:
             if vert_which in self.VERT_ALT:
                 vc = self.VERT_ALT[vert_which]
-                print_log.warning(
+                logger.warning(
                     f"No files could be found for var {var_name} and "
                     f"vert_which {vert_which} in {self.data_id}. "
                     f"Trying to find alternative options"
@@ -1497,9 +1497,7 @@ class ReadGridded:
         # provided in the dataset
         for alias in var.aliases:
             if alias in self.vars_filename:
-                print_log.info(
-                    f"Did not find {var_name} field but {alias}. Using the latter instead"
-                )
+                logger.info(f"Did not find {var_name} field but {alias}. Using the latter instead")
                 return alias
 
         # Finally, if still no match could be found, check if input variable
@@ -1512,7 +1510,7 @@ class ReadGridded:
 
     def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
         if all(x == "" for x in self.file_info.vert_code.values):
-            print_log.info(
+            logger.info(
                 f"Deactivating file search by vertical code for {self.data_id}, "
                 f"since filenames do not include information about vertical code "
                 f"(probably AeroCom 2 convention)"
@@ -1523,7 +1521,7 @@ class ReadGridded:
             try:
                 vert_which = vert_which[var_name]
             except Exception:
-                print_log.info(
+                logger.info(
                     f"Setting vert_which to None, since input dict {vert_which} "
                     f"does not contain input variable {var_name}"
                 )
@@ -1533,7 +1531,7 @@ class ReadGridded:
             try:
                 ts_type = ts_type[var_name]
             except Exception:
-                print_log.info(
+                logger.info(
                     f"Setting ts_type to None, since input dict {ts_type} "
                     f"does not contain specification variable to read {var_name}"
                 )
@@ -1947,7 +1945,7 @@ class ReadGridded:
             variables is available in this object
         """
         if vars_to_retrieve is None and "var_names" in kwargs:
-            print_log.warning(
+            logger.warning(
                 DeprecationWarning(
                     "Input arg var_names "
                     "is deprecated (but "
@@ -2136,7 +2134,7 @@ class ReadGridded:
             try:
                 data = self._check_crop_time(data, start, stop)
             except Exception:
-                print_log.exception(
+                logger.exception(
                     f"Failed to crop time dimension in {data} (start: {start}, stop: {stop})"
                 )
         if rename_var is not None:
@@ -2225,7 +2223,7 @@ class ReadGridded:
     @property
     def name(self):
         """Deprecated name of attribute data_id"""
-        print_log.warning(DeprecationWarning("Please use data_id"))
+        logger.warning(DeprecationWarning("Please use data_id"))
         return self.data_id
 
 

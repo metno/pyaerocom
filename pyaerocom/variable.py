@@ -3,7 +3,7 @@ from configparser import ConfigParser
 
 import numpy as np
 
-from pyaerocom import logger, print_log, var_groups
+from pyaerocom import logger, var_groups
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import make_binlist
@@ -413,7 +413,7 @@ class Variable:
         try:
             return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
         except ValueError:
-            print_log.warning(
+            logger.warning(
                 f"default_vert_code not set for {self.var_name_aerocom} and "
                 f"could also not be inferred"
             )

@@ -1,4 +1,4 @@
-from pyaerocom import print_log
+from pyaerocom import logger
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
@@ -21,13 +21,10 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     """
 
-    _log = print_log
-
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
             msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name})"
-            self._log.info(msg)
-            print_log.info(msg)
+            logger.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
         if ocfg["is_superobs"]:
@@ -42,9 +39,9 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                print_log.warning("failed to process superobs...")
+                logger.warning("failed to process superobs...")
         elif ocfg["only_superobs"]:
-            print_log.info(
+            logger.info(
                 f"Skipping json processing of {obs_name}, as this is "
                 f"marked to be used only as part of a superobs "
                 f"network"
@@ -58,7 +55,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
-                self._log.info(
+                logger.info(
                     f"FLAG ACTIVE: only_colocation: Skipping "
                     f"computation of json files for {obs_name} /"
                     f"{model_name} combination."
@@ -104,7 +101,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         model_list = self.cfg.model_cfg.keylist(model_name)
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
 
-        print_log.info("Start processing")
+        logger.info("Start processing")
 
         # compute model maps (completely independent of obs-eval
         # processing below)
@@ -119,7 +116,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         if update_interface:
             self.update_interface()
-        print_log.info("Finished processing.")
+        logger.info("Finished processing.")
 
     def update_interface(self):
         """Update aeroval interface

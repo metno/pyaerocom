@@ -15,7 +15,7 @@ import logging
 import os
 from pathlib import Path
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.helpers import varlist_aerocom
@@ -236,7 +236,7 @@ class ReadUngridded:
         return reader.PROVIDES_VARIABLES
 
     def get_reader(self, data_id):
-        print_log.warning(
+        logger.warning(
             DeprecationWarning(
                 "this method was renamed to get_lowlevel_reader, please use the new name"
             )
@@ -324,7 +324,7 @@ class ReadUngridded:
         """
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
-            print_log.info(f"Reading {data_id} from specified data loaction: {ddir}")
+            logger.info(f"Reading {data_id} from specified data loaction: {ddir}")
         else:
             ddir = None
         return reader(data_id=data_id, data_dir=ddir)
@@ -378,7 +378,7 @@ class ReadUngridded:
             _caching = const.CACHING
             const.CACHING = False
 
-            print_log.info("Received additional reading constraints, ignoring caching")
+            logger.info("Received additional reading constraints, ignoring caching")
 
         reader = self.get_lowlevel_reader(data_id)
 
@@ -417,10 +417,10 @@ class ReadUngridded:
         data_read = None
         if len(vars_to_read) > 0:
 
-            _loglevel = print_log.level
-            print_log.setLevel(logging.INFO)
+            _loglevel = logger.level
+            logger.setLevel(logging.INFO)
             data_read = reader.read(vars_to_read, **kwargs)
-            print_log.setLevel(_loglevel)
+            logger.setLevel(_loglevel)
 
             for var in vars_to_read:
                 # write the cache file
@@ -429,7 +429,7 @@ class ReadUngridded:
                         cache.write(data_read, var)
                     except Exception as e:
                         _caching = False
-                        print_log.warning(
+                        logger.warning(
                             f"Failed to write to cache directory. "
                             f"Error: {repr(e)}. Deactivating caching "
                             f"in pyaerocom"

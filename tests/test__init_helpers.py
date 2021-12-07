@@ -6,7 +6,6 @@ from contextlib import nullcontext as does_not_raise_exception
 import pytest
 
 from pyaerocom import _init_helpers as mod
-from pyaerocom import logger, print_log
 
 
 def check_loggger_level(logger: logging.Logger, level: int | str):
@@ -24,41 +23,36 @@ def check_loggger_level(logger: logging.Logger, level: int | str):
         )
 
 
-def test__init_logger():
-    logger, print_log = mod._init_logger()
-    check_loggger_level(logger, 50)
-    check_loggger_level(print_log, 20)
+@pytest.fixture
+def test_logger() -> logging.Logger:
+    return mod._init_logger(logging.getLogger("test"))
+
+
+def test__init_logger(test_logger: logging.Logger):
+    check_loggger_level(test_logger, logging.INFO)
 
 
 @pytest.mark.parametrize(
-    "new_level,log,raises",
+    "level,raises",
     [
-        ("debug", logger, does_not_raise_exception()),
-        ("info", logger, does_not_raise_exception()),
-        ("warning", logger, does_not_raise_exception()),
-        ("error", logger, does_not_raise_exception()),
-        ("critical", logger, does_not_raise_exception()),
-        ("debug", print_log, does_not_raise_exception()),
-        ("info", print_log, does_not_raise_exception()),
-        ("warning", print_log, does_not_raise_exception()),
-        ("error", print_log, does_not_raise_exception()),
-        ("critical", print_log, does_not_raise_exception()),
-        (10, print_log, does_not_raise_exception()),
-        (20, print_log, does_not_raise_exception()),
-        (30, print_log, does_not_raise_exception()),
-        (40, print_log, does_not_raise_exception()),
-        (50, print_log, does_not_raise_exception()),
-        (60, print_log, pytest.raises(ValueError)),
-        ("blaaa", print_log, pytest.raises(ValueError)),
+        ("debug", does_not_raise_exception()),
+        ("info", does_not_raise_exception()),
+        ("warning", does_not_raise_exception()),
+        ("error", does_not_raise_exception()),
+        ("critical", does_not_raise_exception()),
+        (10, does_not_raise_exception()),
+        (20, does_not_raise_exception()),
+        (30, does_not_raise_exception()),
+        (40, does_not_raise_exception()),
+        (50, does_not_raise_exception()),
+        (60, pytest.raises(ValueError)),
+        ("blaaa", pytest.raises(ValueError)),
     ],
 )
-def test_change_verbosity(new_level, log, raises):
+def test_change_verbosity(level: str | int, test_logger: logging.Logger, raises):
     with raises:
-        mod.change_verbosity(new_level, log)
-        check_loggger_level(log, new_level)
-        # revoke changes
-        mod.change_verbosity(logging.CRITICAL, log)
-        check_loggger_level(log, "critical")
+        mod.change_verbosity(level, test_logger)
+        check_loggger_level(test_logger, level)
 
 
 ### Functions for package initialisation

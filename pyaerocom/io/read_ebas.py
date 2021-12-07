@@ -30,7 +30,7 @@ with catch_warnings():
     filterwarnings("ignore")
     from geonum.atmosphere import T0_STD, p0
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
     compute_ac550dryaer,
@@ -485,7 +485,7 @@ class ReadEbas(ReadUngriddedBase):
             elif name in all_stats:
                 stats.append(name)
             else:
-                print_log.warning(f"Ignoring station_names input {name}. No match could be found")
+                logger.warning(f"Ignoring station_names input {name}. No match could be found")
 
         if not bool(stats):
             raise FileNotFoundError(
@@ -896,7 +896,7 @@ class ReadEbas(ReadUngriddedBase):
             msg += f"\nFilename: {file.file_name}"
             msg += add_msg
             msg += "\n\nTHIS FILE WILL BE SKIPPED\n"
-            print_log.warning(msg)
+            logger.warning(msg)
             raise ValueError("failed to identify unique data column")
 
         return result_col[0]
@@ -1737,7 +1737,7 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
-        print_log.info(f"Reading EBAS data from {self.file_dir}")
+        logger.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
         for i in tqdm(range(num_files)):
             _file = files[i]
@@ -1758,7 +1758,7 @@ class ReadEbas(ReadUngriddedBase):
                 continue
             except Exception as e:
                 self.files_failed.append(_file)
-                print_log.warning(
+                logger.warning(
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
@@ -1846,7 +1846,7 @@ class ReadEbas(ReadUngriddedBase):
 
         num_failed = len(self.files_failed)
         if num_failed > 0:
-            print_log.warning(f"{num_failed} out of {num_files} could not be read...")
+            logger.warning(f"{num_failed} out of {num_files} could not be read...")
         return data_obj
 
 

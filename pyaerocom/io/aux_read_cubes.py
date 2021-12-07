@@ -3,7 +3,7 @@ from traceback import format_exc
 import iris
 import numpy as np
 
-from pyaerocom import print_log
+from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
 from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass
@@ -24,7 +24,7 @@ def _apply_operator_cubes(cube1, cube2, operator_name, allow_coord_merge=True):
     try:
         return fun(cube1, cube2)
     except ValueError as e:
-        print_log.warning(
+        logger.warning(
             f"Could not {operator_name} cubes straight out of the box. Trying "
             f"to correct for dimension definition errors"
         )
@@ -86,7 +86,7 @@ def merge_meta_cubes(cube1, cube2):
     try:
         return merge_dicts(cube1.attributes, cube2.attributes)
     except Exception:
-        print_log.warning(f"WARNING: Failed to merge Cube metadata. Reason:\n{format_exc()}")
+        logger.warning(f"WARNING: Failed to merge Cube metadata. Reason:\n{format_exc()}")
         ts_type = None
         try:
             if cube1.attributes["ts_type"] == cube2.attributes["ts_type"]:

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pyaerocom import logger, obs_io, print_log
+from pyaerocom import logger, obs_io
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
     check_write_access,
@@ -251,7 +251,7 @@ class Config:
             try:
                 self.read_config(config_file, basedir=basedir)
             except Exception as e:
-                print_log.warning(f"Failed to read config. Error: {repr(e)}")
+                logger.warning(f"Failed to read config. Error: {repr(e)}")
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
 
@@ -450,7 +450,7 @@ class Config:
         try:
             return chk_make_subdir(self.cache_basedir, self.user)
         except Exception as e:
-            print_log.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
+            logger.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
             self._caching_active = False
 
     @CACHEDIR.setter
@@ -478,7 +478,7 @@ class Config:
     @property
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
-        print_log.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
+        logger.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
         return self.VARS
 
     @property
@@ -720,7 +720,7 @@ class Config:
         except DataSourceError:
             if not "renamed" in os.listdir(data_dir):
                 raise
-            print_log.warning(
+            logger.warning(
                 f"Failed to register {obs_id} at {data_dir} using ungridded "
                 f"reader {reader} but input dir has a renamed subdirectory, "
                 f"trying to find valid data files in there instead"

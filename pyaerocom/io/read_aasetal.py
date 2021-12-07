@@ -6,7 +6,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from pyaerocom import print_log
+from pyaerocom import logger
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -350,7 +350,7 @@ class ReadSulphurAasEtAl(ReadAasEtal):
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
         msg = "You are using an old name for class ReadAasEtal"
-        print_log.warning(DeprecationWarning(msg))
+        logger.warning(DeprecationWarning(msg))
 
 
 if __name__ == "__main__":

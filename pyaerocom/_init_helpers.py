@@ -3,6 +3,9 @@ from __future__ import annotations
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
+# Note: configuration will be propagated to all child modules of
+# pyaerocom, for details see
+# http://eric.themoritzfamily.com/learning-python-logging.html
 logger = logging.getLogger("pyaerocom")
 
 
@@ -23,14 +26,10 @@ def _init_logger(logger: logging.Logger = logger, backup_days: int = 14) -> logg
     console_handler.setLevel(logging.INFO)
     logger.addHandler(console_handler)
 
-    print_log = logging.getLogger("pyaerocom_print")
-    print_handler = logging.StreamHandler()
-    print_formatter = logging.Formatter("%(message)s")
-    print_handler.setFormatter(print_formatter)
-    print_handler.setLevel(logging.INFO)
-    print_log.addHandler(print_handler)
+    return logger
 
-    return (logger, print_log)
+
+_init_logger()
 
 
 def change_verbosity(level: str | int = "debug", logger: logging.Logger = logger) -> None:

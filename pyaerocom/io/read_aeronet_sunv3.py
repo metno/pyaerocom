@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const, print_log
+from pyaerocom import const, logger
 from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
@@ -175,14 +175,14 @@ class ReadAeronetSunV3(ReadAeronetBase):
                 dummy_arr = line.split(self.COL_DELIM)
 
                 if pl is not None and len(dummy_arr) != len(pl):
-                    print_log.exception(f"Data line {i} in {filename} is corrupt, skipping...")
+                    logger.exception(f"Data line {i} in {filename} is corrupt, skipping...")
                     continue
                 # copy the meta data (array of type string)
                 for var in self.META_NAMES_FILE:
                     try:
                         val = dummy_arr[col_index[var]]
                     except IndexError as e:
-                        print_log.exception(repr(e))
+                        logger.exception(repr(e))
 
                     try:
                         # e.g. lon, lat, altitude

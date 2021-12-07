@@ -9,7 +9,7 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import __version__ as pya_ver
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -870,13 +870,13 @@ def colocate_gridded_ungridded(
                     arr[0, :, i] = _df["ref"].values
                     arr[1, :, i] = _df["data"].values
                 except ValueError as e:
-                    print_log.warning(
+                    logger.warning(
                         f"Failed to colocate time for station {obs_stat.station_name}. "
                         f"This station will be skipped (error: {e})"
                     )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
-            print_log.warning(
+            logger.warning(
                 f"{var_ref} data from site {obs_stat.station_name} will "
                 f"not be added to ColocatedData. Reason: {e}"
             )

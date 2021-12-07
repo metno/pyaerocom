@@ -5,7 +5,7 @@ Module containing time resampling functionality
 import pandas as pd
 import xarray as xarr
 
-from pyaerocom import logger, print_log
+from pyaerocom import logger
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_timeseries
 from pyaerocom.tstype import TsType
@@ -188,9 +188,7 @@ class TimeResampler:
 
         if from_ts_type is None:
             if min_num_obs is not None:
-                print_log.warning(
-                    "setting min_num_obs to None since from_ts_type is not specified"
-                )
+                logger.warning("setting min_num_obs to None since from_ts_type is not specified")
                 min_num_obs = None
         elif isinstance(from_ts_type, str):
             from_ts_type = TsType(from_ts_type)

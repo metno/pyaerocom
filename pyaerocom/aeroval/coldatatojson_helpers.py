@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import logger, print_log
+from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
@@ -895,7 +895,7 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             try:
                 subset = cd.filter_region(regid, inplace=False, check_country_meta=check_countries)
             except DataCoverageError:
-                print_log.info(f"no data in {regid} ({freq}) to compute regional timeseries")
+                logger.info(f"no data in {regid} ({freq}) to compute regional timeseries")
                 ts_data[f"{freq}_date"] = jsfreq
                 ts_data[f"{freq}_obs"] = [np.nan] * len(jsfreq)
                 ts_data[f"{freq}_mod"] = [np.nan] * len(jsfreq)

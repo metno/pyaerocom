@@ -9,7 +9,7 @@ import os
 
 import numpy as np
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger
 from pyaerocom.helpers import isnumeric
 
 
@@ -160,9 +160,7 @@ def get_topo_data(
     if topodata_loc is None:
         if topo_dataset in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS[topo_dataset]):
             topodata_loc = const.SUPPLDIRS[topo_dataset]
-            print_log.info(
-                f"Found default location for {topo_dataset} topodata at\n{topodata_loc}"
-            )
+            logger.info(f"Found default location for {topo_dataset} topodata at\n{topodata_loc}")
 
     try:
         access = geonum.TopoDataAccess(topo_dataset, local_path=topodata_loc)
@@ -171,7 +169,7 @@ def get_topo_data(
         return topodata
     except Exception as e:
         if try_etopo1 and not topo_dataset == "etopo1":
-            print_log.warning(
+            logger.warning(
                 f"Failed to access topography data for {topo_dataset}. "
                 f"Trying ETOPO1.\nError: {repr(e)}"
             )

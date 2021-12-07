@@ -26,7 +26,7 @@ from traceback import format_exc
 
 import numpy as np
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const, logger, logger
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     FileConventionError,
@@ -164,7 +164,7 @@ def _cube_quality_check(cube, file, file_convention=None):
         try:
             cube = _check_correct_time_dim(cube, file, file_convention)
         except FileConventionError:
-            print_log.warning(
+            logger.warning(
                 "WARNING: failed to check / validate "
                 "time dim. using information in "
                 "filename. Reason: invalid file name "
@@ -204,7 +204,7 @@ def check_and_regrid_lons_cube(cube):
         False
     """
     if cube.coord("longitude").points.max() > 180:
-        print_log.info(
+        logger.info(
             "Rearranging longitude dimension from 0 -> 360 definition to -180 -> 180 definition"
         )
         cube = cube.intersection(longitude=(-180, 180))
@@ -321,7 +321,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
     if not const.MIN_YEAR <= year <= const.MAX_YEAR:
         raise FileConventionError(f"Invalid year in file: {year}")
     elif year == 9999:
-        print_log.info(
+        logger.info(
             "Cannot compare NetCDF time dimension for climatological data "
             "(9999 in filename). Skipping this check."
         )
@@ -346,7 +346,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
                         f"{format_exc()}.\n\nThe file will be imported regardless!"
                     )
                     msg += add_msg
-                    print_log.warning(msg)
+                    logger.warning(msg)
             if const.WRITE_FILEIO_ERR_LOG:
                 add_file_to_log(file, msg)
     return cube

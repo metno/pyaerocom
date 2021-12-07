@@ -1,9 +1,7 @@
 # isort:skip_file
-from ._init_helpers import _init_supplemental, _init_logger, change_verbosity
+from ._init_helpers import _init_supplemental, logger, change_verbosity
 
 __version__, __dir__ = _init_supplemental()
-
-logger, print_log = _init_logger()
 
 from .config import Config
 
