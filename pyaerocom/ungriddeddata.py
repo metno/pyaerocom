@@ -268,7 +268,7 @@ class UngriddedData:
         elif not isinstance(add_meta_keys, list):
             raise ValueError(f"Invalid input for add_meta_keys {add_meta_keys}... need list")
         if isinstance(stats, StationData):
-            stats = [StationData]
+            stats = [stats]
         data_obj = UngriddedData(num_points=1000000)
 
         meta_key = 0.0
