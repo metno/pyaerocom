@@ -8,7 +8,7 @@ from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
 from tests.synthetic_data import FakeStationDataAccess
 
-from .conftest import data_unavail, rg_unavail, FAKE_STATION_DATA
+from .conftest import FAKE_STATION_DATA, data_unavail, rg_unavail
 
 
 @pytest.fixture(scope="module")
@@ -253,6 +253,7 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
             ratio = ratio[~np.isnan(ratio)]
 
             npt.assert_allclose(actual=[ratio.mean(), ratio.std()], desired=[fac, 0], atol=1e-20)
+
 
 def test_from_single_station_data():
     stat = FAKE_STATION_DATA["station_data1"]
