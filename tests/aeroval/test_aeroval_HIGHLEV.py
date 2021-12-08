@@ -1,55 +1,65 @@
+import glob
+import os
+
 import pytest
-import os, glob
-from ..conftest import geojson_unavail
+
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
+
+from ..conftest import geojson_unavail
 from .cfg_test_exp1 import CFG as cfgexp1
 from .cfg_test_exp2 import CFG as cfgexp2
 from .cfg_test_exp4 import CFG as cfgexp4
 
 CHK_CFG1 = {
-    'map': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
-    'contour': ['od550aer_TM5-AP3-CTRL.geojson',
-                'od550aer_TM5-AP3-CTRL.json'],
-    'hm': ['glob_stats_daily.json','glob_stats_monthly.json',
-           'glob_stats_yearly.json'],
-    'hm/ts': ['stats_ts.json'],
-    'scat': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
-    'ts': 11, # number of .json files in subdir
-    'ts/diurnal': 0 # number of .json files in subdir
+    "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "contour": ["od550aer_TM5-AP3-CTRL.geojson", "od550aer_TM5-AP3-CTRL.json"],
+    "hm": ["glob_stats_daily.json", "glob_stats_monthly.json", "glob_stats_yearly.json"],
+    "hm/ts": ["stats_ts.json"],
+    "scat": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "ts": 11,  # number of .json files in subdir
+    "ts/diurnal": 0,  # number of .json files in subdir
 }
 
 CHK_CFG2 = {
-    'map': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json',
-            'AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
-    'contour': 0,
-    'hm': ['glob_stats_monthly.json'],
-    'hm/ts': ['stats_ts.json'],
-    'scat': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json',
-             'AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
-    'ts': 40, # number of .json files in subdir
-    'ts/diurnal': 0 # number of .json files in subdir
+    "map": [
+        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
+        "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
+    ],
+    "contour": 0,
+    "hm": ["glob_stats_monthly.json"],
+    "hm/ts": ["stats_ts.json"],
+    "scat": [
+        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
+        "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
+    ],
+    "ts": 40,  # number of .json files in subdir
+    "ts/diurnal": 0,  # number of .json files in subdir
 }
 
 CHK_CFG4 = {
-    'map': ['SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
-    'contour': 0,
-    'hm': ['glob_stats_monthly.json'],
-    'hm/ts': ['stats_ts.json'],
-    'scat': ['SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
-    'ts': 21, # number of .json files in subdir
-    'ts/diurnal': 0 # number of .json files in subdir
+    "map": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "contour": 0,
+    "hm": ["glob_stats_monthly.json"],
+    "hm/ts": ["stats_ts.json"],
+    "scat": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "ts": 21,  # number of .json files in subdir
+    "ts/diurnal": 0,  # number of .json files in subdir
 }
 
+
 @geojson_unavail
-@pytest.mark.parametrize('cfgdict,chk_files',[
-    (cfgexp1,CHK_CFG1),
-    (cfgexp2,CHK_CFG2),
-    (cfgexp4,CHK_CFG4),
-])
-def test_ExperimentOutput__FILES(cfgdict,chk_files):
+@pytest.mark.parametrize(
+    "cfgdict,chk_files",
+    [
+        (cfgexp1, CHK_CFG1),
+        (cfgexp2, CHK_CFG2),
+        (cfgexp4, CHK_CFG4),
+    ],
+)
+def test_ExperimentOutput__FILES(cfgdict, chk_files):
     cfg = EvalSetup(**cfgdict)
-    fname = f'cfg_{cfg.proj_id}_{cfg.exp_id}.json'
+    fname = f"cfg_{cfg.proj_id}_{cfg.exp_id}.json"
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()
@@ -70,8 +80,9 @@ def test_ExperimentOutput__FILES(cfgdict,chk_files):
                 for fname in check:
                     assert fname in files
             elif isinstance(check, int):
-                numfiles = glob.glob(f'{val}/*.json')
+                numfiles = glob.glob(f"{val}/*.json")
                 assert len(numfiles) == check
+
 
 def test_reanalyse_existing():
     cfg = EvalSetup(**cfgexp4)
@@ -79,16 +90,13 @@ def test_reanalyse_existing():
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()
-    colout = os.path.join(proc.cfg.path_manager.coldata_basedir,
-                          proc.cfg.proj_id,
-                          proc.cfg.exp_id
-                          )
+    colout = os.path.join(proc.cfg.path_manager.coldata_basedir, proc.cfg.proj_id, proc.cfg.exp_id)
     assert os.path.exists(colout)
-    coldata_files = glob.glob(f'{colout}/**/*.nc')
+    coldata_files = glob.glob(f"{colout}/**/*.nc")
     assert len(coldata_files) > 0
     proc.exp_output.delete_experiment_data(also_coldata=False)
     assert os.path.exists(colout)
-    coldata_files = glob.glob(f'{colout}/**/*.nc')
+    coldata_files = glob.glob(f"{colout}/**/*.nc")
     assert len(coldata_files) > 0
     cfg.colocation_opts.reanalyse_existing = False
     proc = ExperimentProcessor(cfg)
@@ -97,25 +105,15 @@ def test_reanalyse_existing():
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()
 
+
 def test_superobs_different_resolutions():
     cfg = EvalSetup(**cfgexp4)
-    cfg.model_cfg['TM5-AP3-CTRL'].model_ts_type_read=None
-    cfg.model_cfg['TM5-AP3-CTRL'].flex_ts_type=True
+    cfg.model_cfg["TM5-AP3-CTRL"].model_ts_type_read = None
+    cfg.model_cfg["TM5-AP3-CTRL"].flex_ts_type = True
 
-    cfg.obs_cfg['AERONET-Sun'].ts_type ='daily'
-    cfg.obs_cfg['AERONET-SDA'].ts_type = 'monthly'
+    cfg.obs_cfg["AERONET-Sun"].ts_type = "daily"
+    cfg.obs_cfg["AERONET-SDA"].ts_type = "monthly"
 
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()
-
-
-
-
-
-
-
-
-
-
-

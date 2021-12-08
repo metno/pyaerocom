@@ -1,7 +1,8 @@
 from copy import deepcopy
-from pyaerocom._lowlevel_helpers import (BrowseDict, DictType,
-                                         StrType, DictStrKeysListVals)
+
+from pyaerocom._lowlevel_helpers import BrowseDict, DictStrKeysListVals, DictType, StrType
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
+
 
 class ModelEntry(BrowseDict):
     """Modeln configuration for evaluation (dictionary)
@@ -39,6 +40,7 @@ class ModelEntry(BrowseDict):
         and `fun` (method that takes list of read data objects and computes
         and returns var)
     """
+
     model_id = StrType()
     model_use_vars = DictType()
     model_add_vars = DictStrKeysListVals()
@@ -47,7 +49,7 @@ class ModelEntry(BrowseDict):
 
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
-        self.model_ts_type_read = ''
+        self.model_ts_type_read = ""
         self.model_use_vars = {}
         self.model_add_vars = {}
         self.model_rename_vars = {}
@@ -92,17 +94,17 @@ class ModelEntry(BrowseDict):
         for ovar, mvars in self.model_add_vars.items():
             if not isinstance(mvars, list):
                 raise AttributeError(
-                    f'values of model_add_vars need to be lists, even if '
-                    f'only single variables are to be added: '
-                    f'{self.model_add_vars}')
+                    f"values of model_add_vars need to be lists, even if "
+                    f"only single variables are to be added: "
+                    f"{self.model_add_vars}"
+                )
             for mvar in mvars:
                 obsout.append(ovar)
                 modout.append(mvar)
         return (obsout, modout)
 
     def get_varname_web(self, mod_var, obs_var):
-        if obs_var in self.model_add_vars and  mod_var in \
-                self.model_add_vars[obs_var]:
+        if obs_var in self.model_add_vars and mod_var in self.model_add_vars[obs_var]:
             return mod_var
         return obs_var
 
@@ -117,5 +119,5 @@ class ModelEntry(BrowseDict):
             funs = {}
         output = deepcopy(self.to_dict())
         if self.aux_funs_required:
-            output['model_read_aux'].update(self._get_aux_funcs_setup(funs))
+            output["model_read_aux"].update(self._get_aux_funcs_setup(funs))
         return output

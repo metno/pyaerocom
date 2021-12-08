@@ -8,11 +8,11 @@ pyaerocom
 
 **Installation:** https://pyaerocom.readthedocs.io/en/latest/install.html  
 
-**Tutorials:** https://pyaerocom.readthedocs.io/en/latest/getstarted.html#tutorials-jupyter-notebooks
+**Tutorials:** https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/index.html
 
 **AeroCom:** https://aeroval.met.no
 
-**AeroVal** evaluation portal: https://aerocom-evaluation.met.no/
+**AeroVal** evaluation portal: https://aeroval.met.no/
 
 .. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
    :target: https://github.com/metno/pyaerocom/actions

@@ -1,9 +1,21 @@
-from pyaerocom.plot.mapping import init_map
 import cartopy
 
-def plot_coordinates(lons, lats, xlim=None, ylim=None,
-                     label=None, legend=True, color=None, marker=None,
-                     markersize=8, ax=None, **kwargs):
+from pyaerocom.plot.mapping import init_map
+
+
+def plot_coordinates(
+    lons,
+    lats,
+    xlim=None,
+    ylim=None,
+    label=None,
+    legend=True,
+    color=None,
+    marker=None,
+    markersize=8,
+    ax=None,
+    **kwargs,
+):
     """Plot input coordinates on a map
 
     lons : ndarray
@@ -39,19 +51,17 @@ def plot_coordinates(lons, lats, xlim=None, ylim=None,
     if ylim is None:
         ylim = (-90, 90)
     if color is None:
-        color = 'r'
+        color = "r"
     if marker is None:
-        marker = 'o'
+        marker = "o"
 
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
         ax = init_map(xlim, ylim, ax=ax, **kwargs)
 
-
     if label is None:
-        label = '{} stations'.format(len(lons))
+        label = f"{len(lons)} stations"
 
-    ax.scatter(lons, lats, markersize, marker=marker, color=color,
-               label=label)
+    ax.scatter(lons, lats, markersize, marker=marker, color=color, label=label)
 
     if legend and label:
         ax.legend()

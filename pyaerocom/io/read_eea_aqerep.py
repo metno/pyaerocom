@@ -43,6 +43,7 @@ class ReadEEAAQEREP(ReadEEAAQEREPBase):
     Extended class derived from  low-level base class :class: ReadUngriddedBase
     that contains the main functionality.
     """
+
     #: Name of the dataset (OBS_ID)
     DATA_ID = const.EEA_NRT_NAME  # change this since we added more vars?
 
@@ -54,7 +55,7 @@ class ReadEEAAQEREP(ReadEEAAQEREPBase):
     #: this class reads the E2a data for now.
     # But by changing the base path
     # and this constant, it can also read the E1a data set
-    DATA_PRODUCT = 'E2a'
+    DATA_PRODUCT = "E2a"
 
 
 if __name__ == "__main__":
@@ -63,34 +64,34 @@ if __name__ == "__main__":
     import getpass
 
     username = getpass.getuser()
-    if username == 'jang':
+    if username == "jang":
         from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 
         # limit the data read
-        ReadEEAAQEREP.FILE_MASKS['concso2'] = '**/AT*_1_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['concpm10'] = '**/XK*_5_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['conco3'] = '**/XK*_7_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['vmro3'] = '**/XK*_7_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['concno2'] = '**/XK*_8_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['concno2'] = '**/AT*_8_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['concco'] = '**/AT*_10_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['concno'] = '**/AT*_38_*_timeseries.csv'
-        ReadEEAAQEREP.FILE_MASKS['concpm25'] = '**/XK*_6001_*_timeseries.csv'
+        ReadEEAAQEREP.FILE_MASKS["concso2"] = "**/AT*_1_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["concpm10"] = "**/XK*_5_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["conco3"] = "**/XK*_7_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["vmro3"] = "**/XK*_7_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["concno2"] = "**/XK*_8_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["concno2"] = "**/AT*_8_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["concco"] = "**/AT*_10_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["concno"] = "**/AT*_38_*_timeseries.csv"
+        ReadEEAAQEREP.FILE_MASKS["concpm25"] = "**/XK*_6001_*_timeseries.csv"
 
         import logging
 
         station_id = {}
-        station_id['concso2'] = 'AT30502'
-        station_id['concpm10'] = 'XK0001A'
-        station_id['conco3'] = 'XK0002A'
-        station_id['vmro3'] = 'XK0002A'
-        station_id['concno2'] = 'XK0002A'
-        station_id['concno2'] = 'AT31703'
-        station_id['concco'] = 'XK0002A'
-        station_id['concco'] = 'AT4S416'
-        station_id['concno'] = 'XK0002A'
-        station_id['concno'] = 'AT4S416'
-        station_id['concpm25'] = 'XK0002A'
+        station_id["concso2"] = "AT30502"
+        station_id["concpm10"] = "XK0001A"
+        station_id["conco3"] = "XK0002A"
+        station_id["vmro3"] = "XK0002A"
+        station_id["concno2"] = "XK0002A"
+        station_id["concno2"] = "AT31703"
+        station_id["concco"] = "XK0002A"
+        station_id["concco"] = "AT4S416"
+        station_id["concno"] = "XK0002A"
+        station_id["concno"] = "AT4S416"
+        station_id["concpm25"] = "XK0002A"
 
         var_names_to_test = station_id.keys()
 
@@ -99,23 +100,29 @@ if __name__ == "__main__":
             # r.logger.setLevel(logging.INFO)
             # data = None
             data = r.read(vars_to_retrieve=[var_name])
-            print('{} data read'.format(var_name))
+            print(f"{var_name} data read")
             try:
                 stat_data = data[station_id[var_name]]
-                print('{} @ station {} mean: {} [{}]'.format(var_name, station_id[var_name],
-                                                             stat_data[var_name].mean(),
-                                                             stat_data['var_info'][var_name]['units']))
+                print(
+                    "{} @ station {} mean: {} [{}]".format(
+                        var_name,
+                        station_id[var_name],
+                        stat_data[var_name].mean(),
+                        stat_data["var_info"][var_name]["units"],
+                    )
+                )
 
             except:
-                print('failed test var {}'.format(var_name))
+                print(f"failed test var {var_name}")
                 pass
 
-    elif username == 'jonasg':
+    elif username == "jonasg":
         # Test that the reading routine works
-        from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
         import logging
 
-        ddir = '/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download'
+        from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
+
+        ddir = "/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download"
         reader = ReadEEAAQEREP(data_dir=ddir)
 
-        data = reader.read(['conco3'], last_file=1)
+        data = reader.read(["conco3"], last_file=1)

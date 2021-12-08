@@ -1,19 +1,16 @@
-LOGLEVELS = {'debug': 10,
-             'info': 20,
-             'warning': 30,
-             'error': 40,
-             'critical': 50}
+LOGLEVELS = {"debug": 10, "info": 20, "warning": 30, "error": 40, "critical": 50}
+
 
 def _init_logger():
     import logging
+
     ### LOGGING
     # Note: configuration will be propagated to all child modules of
     # pyaerocom, for details see
     # http://eric.themoritzfamily.com/learning-python-logging.html
-    logger = logging.getLogger('pyaerocom')
+    logger = logging.getLogger("pyaerocom")
 
-    default_formatter = logging.Formatter(\
-       "%(asctime)s:%(levelname)s:\n%(message)s")
+    default_formatter = logging.Formatter("%(asctime)s:%(levelname)s:\n%(message)s")
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(default_formatter)
@@ -22,7 +19,7 @@ def _init_logger():
 
     logger.setLevel(logging.CRITICAL)
 
-    print_log = logging.getLogger('pyaerocom_print')
+    print_log = logging.getLogger("pyaerocom_print")
 
     print_handler = logging.StreamHandler()
     print_handler.setFormatter(logging.Formatter("%(message)s"))
@@ -32,7 +29,8 @@ def _init_logger():
     print_log.setLevel(logging.INFO)
     return (logger, print_log)
 
-def change_verbosity(new_level='debug', log=None):
+
+def change_verbosity(new_level="debug", log=None):
     """
     Change verbosity of one of the pyaerocom loggers
 
@@ -50,17 +48,21 @@ def change_verbosity(new_level='debug', log=None):
     """
     if log is None:
         from pyaerocom import logger
+
         log = logger
     if isinstance(new_level, str):
         if not new_level in LOGLEVELS:
-            raise ValueError(f'invalid log level {new_level}, choose from '
-                             f'keys or values of {LOGLEVELS}')
+            raise ValueError(
+                f"invalid log level {new_level}, choose from keys or values of {LOGLEVELS}"
+            )
         new_level = LOGLEVELS[new_level]
     else:
         if not new_level in LOGLEVELS.values():
-            raise ValueError(f'invalid log level {new_level}, choose from '
-                             f'keys or values of {LOGLEVELS}')
+            raise ValueError(
+                f"invalid log level {new_level}, choose from keys or values of {LOGLEVELS}"
+            )
     log.setLevel(new_level)
+
 
 ### Functions for package initialisation
 def _init_supplemental():
@@ -77,9 +79,9 @@ def _init_supplemental():
 
 
     """
-    from pkg_resources import get_distribution
     import os
-    dist = get_distribution('pyaerocom')
-    return (dist.version, os.path.join(dist.location, 'pyaerocom'))
 
+    from pkg_resources import get_distribution
 
+    dist = get_distribution("pyaerocom")
+    return (dist.version, os.path.join(dist.location, "pyaerocom"))

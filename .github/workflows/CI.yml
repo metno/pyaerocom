@@ -3,11 +3,60 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON: 3.8
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - name: Set up Python ${{ env.PYTHON }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
+    - name: Python info
+      run: |
+        which python
+        python --version
+    - name: Install system pacakges
+      run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
+    - name: Install Tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+    - name: Check format
+      run: tox -e format
+    - name: Run linters
+      continue-on-error: true
+      run: tox -e lint
+
+  docs:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON: 3.8
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - name: Set up Python ${{ env.PYTHON }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
+    - name: Python info
+      run: |
+        which python
+        python --version
+    - name: Install system pacakges
+      run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin pandoc
+    - name: Install Tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+    - name: Build docs
+      run: tox -e docs
+
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9, '3.10']
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Set up Python ${{ matrix.python-version }}
@@ -20,22 +69,25 @@ jobs:
         python --version
     - name: Install system pacakges
       run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
-    - name: Cache pip
+    - name: Cache pip and tox
       uses: actions/cache@v2
       with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+        path: |
+          ~/.cache/pip
+          .tox
+        key: ${{ runner.os }}-tox-${{ matrix.python-version }}-${{ hashFiles('setup.cfg') }}
         restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install pyaerocom
+          ${{ runner.os }}-tox-${{ matrix.python-version }}
+    - name: Install Tox
       run: |
         python -m pip install --upgrade pip
-        python -m pip install wheel
-        python -m pip install .[test]
-    - name: Run pytest
-      run: pytest --cov=pyaerocom/
+        python -m pip install tox
+    - name: Run test
+      continue-on-error: ${{ matrix.python-version == '3.10' }}
+      run: tox -e py
 
   conda:
+  # needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:

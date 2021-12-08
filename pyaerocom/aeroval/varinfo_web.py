@@ -2,7 +2,6 @@ from pyaerocom.mathutils import is_strictly_monotonic, make_binlist
 from pyaerocom.variable_helpers import get_variable
 
 
-
 class VarinfoWeb:
     """
     Additional variable information relevant for AeroVal web output
@@ -35,17 +34,22 @@ class VarinfoWeb:
     vmax : float, optional
         upper end of range
     """
+
     _num_bins = 8
 
-    def __init__(self, var_name: str, cmap: str = None,
-                 cmap_bins: list = None, vmin: float = None,
-                 vmax: float = None):
+    def __init__(
+        self,
+        var_name: str,
+        cmap: str = None,
+        cmap_bins: list = None,
+        vmin: float = None,
+        vmax: float = None,
+    ):
         if cmap_bins is not None:
             if vmin is not None or vmax is not None:
-                raise ValueError('please provide either vmin and vmax OR '
-                                 'cmap_bins, not both...')
+                raise ValueError("please provide either vmin and vmax OR cmap_bins, not both...")
             if not is_strictly_monotonic(cmap_bins):
-                raise ValueError('cmap_bins need to be strictly monotonic')
+                raise ValueError("cmap_bins need to be strictly monotonic")
 
         self.var_name = var_name
         self.cmap_bins = cmap_bins
@@ -66,7 +70,7 @@ class VarinfoWeb:
         """
         return self.cmap_bins[-1]
 
-    def autofill_missing(self, vmin:float=None, vmax:float=None) -> None:
+    def autofill_missing(self, vmin: float = None, vmax: float = None) -> None:
         """
         Autofill missing attributes related to cmap bins and cmap
 
@@ -120,6 +124,6 @@ class VarinfoWeb:
         dict
         """
         dd = {**self.__dict__}
-        dd['vmin'] = self.vmin
-        dd['vmax'] = self.vmax
+        dd["vmin"] = self.vmin
+        dd["vmax"] = self.vmax
         return dd

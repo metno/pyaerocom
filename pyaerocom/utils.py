@@ -1,10 +1,14 @@
-from pyaerocom.io import ReadGridded
 import fnmatch
 import os
+
 import pandas as pd
 
-def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
-                         sort_by_cols=['Var', 'Model']):
+from pyaerocom.io import ReadGridded
+
+
+def create_varinfo_table(
+    model_ids, vars_or_var_patterns, read_data=False, sort_by_cols=["Var", "Model"]
+):
     """Create an info table for model list based on variables
 
     The method iterates over all models in :attr:`model_list` and creates an
@@ -71,19 +75,30 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
 
     failed = []
 
-    header = ['Var', 'Model', 'Years', 'Freq', 'Vertical', 'At stations',
-              'AUX vars', 'Dim', 'Dim names','Shape', 'Read ok']
+    header = [
+        "Var",
+        "Model",
+        "Years",
+        "Freq",
+        "Vertical",
+        "At stations",
+        "AUX vars",
+        "Dim",
+        "Dim names",
+        "Shape",
+        "Read ok",
+    ]
     result = []
-    table_cols = ['year', 'ts_type', 'vert_code', 'is_at_stations', 'aux_vars']
+    table_cols = ["year", "ts_type", "vert_code", "is_at_stations", "aux_vars"]
     for i, model in enumerate(model_ids):
-        print('At model: {} ({} of {})'.format(model, i, len(model_ids)))
+        print(f"At model: {model} ({i} of {len(model_ids)})")
         try:
             reader = ReadGridded(model)
             var_info = reader.get_var_info_from_files()
             for var_avail, info in var_info.items():
                 for var in vars_or_var_patterns:
                     if fnmatch.fnmatch(var_avail, var):
-                        for freq in info['ts_type']:
+                        for freq in info["ts_type"]:
                             sub_res = [var_avail, model]
                             for key in table_cols:
                                 if key in info:
@@ -101,8 +116,8 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
                                 sub_res.extend([None, None, None, False])
                             result.append(sub_res)
 
-        except IOError as e:
-            dummy = [None]*len(header)
+        except OSError as e:
+            dummy = [None] * len(header)
             dummy[1] = model
             result.append(dummy)
             print(repr(e))
@@ -113,9 +128,10 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
         df.sort_values(sort_by_cols, inplace=True)
     return df
 
+
 def print_file(file_path):
     if not os.path.exists(file_path):
-        raise IOError('File not found...')
+        raise OSError("File not found...")
     with open(file_path) as f:
         for line in f:
             if line.strip():

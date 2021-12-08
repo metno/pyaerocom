@@ -1,9 +1,9 @@
 import abc
 
-from pyaerocom.colocation_auto import Colocator
 from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
+from pyaerocom.colocation_auto import Colocator
 
 
 class HasConfig:
@@ -18,9 +18,11 @@ class HasConfig:
         Manages output for an AeroVal experiment (e.g. path locations).
 
     """
+
     cfg = TypeValidator(EvalSetup)
     exp_output = TypeValidator(ExperimentOutput)
-    def __init__(self, cfg : EvalSetup):
+
+    def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
         self.exp_output = ExperimentOutput(cfg)
 
@@ -71,6 +73,7 @@ class HasColocator(HasConfig):
     """
     Config class that also has the ability to co-locate
     """
+
     def _get_diurnal_only(self, obs_name):
         """
         Check if colocated data is flagged for only diurnal processing
@@ -89,13 +92,12 @@ class HasColocator(HasConfig):
         """
         entry = self.cfg.get_obs_entry(obs_name)
         try:
-            diurnal_only = entry['diurnal_only']
+            diurnal_only = entry["diurnal_only"]
         except KeyError:
             diurnal_only = False
         return diurnal_only
 
-    def get_colocator(self, model_name:str=None,
-                      obs_name:str=None) -> Colocator:
+    def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
         """
         Instantiate colocation engine
 
@@ -138,6 +140,7 @@ class DataImporter(HasColocator):
 
 
     """
+
     def read_model_data(self, model_name, var_name):
         """
         Import model data
