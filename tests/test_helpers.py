@@ -1,10 +1,10 @@
-from contextlib import nullcontext as does_not_raise_exception
+from datetime import timedelta
 
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import pytest
 import xarray as xr
+from numpy.testing import assert_allclose
 
 from pyaerocom import StationData, helpers
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
@@ -43,128 +43,14 @@ def test_isrange(val, result):
 
 
 @pytest.mark.parametrize(
-    "use,var_name,pref_attr,sort_by_largest,fill_missing_nan,add_meta_keys,raises,num,tst,mean",
+    "use,var_name,pref_attr,sort_by_largest,fill_missing_nan,add_meta_keys,num,tst,mean",
     [
-        (
-            "concpm10",
-            "concpm10",
-            None,
-            True,
-            True,
-            None,
-            does_not_raise_exception(),
-            730,
-            "daily",
-            17.93,
-        ),
-        (
-            "concpm10",
-            "concpm10",
-            "awesomeness",
-            True,
-            True,
-            None,
-            does_not_raise_exception(),
-            730,
-            "daily",
-            17.93,
-        ),
-        (
-            "concpm10",
-            "concpm10",
-            "awesomeness",
-            False,
-            True,
-            None,
-            does_not_raise_exception(),
-            730,
-            "daily",
-            15,
-        ),
-        (
-            "concpm10_X2",
-            "concpm10",
-            None,
-            True,
-            True,
-            None,
-            pytest.raises(UnitConversionError),
-            None,
-            None,
-            None,
-        ),
-        (
-            "all",
-            "concpm10",
-            None,
-            True,
-            True,
-            None,
-            pytest.raises(TemporalResolutionError),
-            None,
-            None,
-            None,
-        ),
-        (
-            "concpm10_X",
-            "concpm10",
-            None,
-            True,
-            True,
-            None,
-            pytest.raises(TemporalResolutionError),
-            None,
-            None,
-            None,
-        ),
-        (
-            "od550aer",
-            "od550aer",
-            None,
-            True,
-            True,
-            None,
-            does_not_raise_exception(),
-            67,
-            "60daily",
-            0.51,
-        ),
-        (
-            "od550aer",
-            "od550aer",
-            "awesomeness",
-            True,
-            True,
-            None,
-            does_not_raise_exception(),
-            67,
-            "60daily",
-            0.59,
-        ),
-        (
-            "od550aer",
-            "od550aer",
-            "awesomeness",
-            False,
-            True,
-            None,
-            does_not_raise_exception(),
-            67,
-            "60daily",
-            0.51,
-        ),
-        (
-            "od550aer",
-            "concpm10",
-            None,
-            True,
-            True,
-            None,
-            pytest.raises(DataCoverageError),
-            None,
-            None,
-            None,
-        ),
+        ("concpm10", "concpm10", None, True, True, None, 730, "daily", 17.93),
+        ("concpm10", "concpm10", "awesomeness", True, True, None, 730, "daily", 17.93),
+        ("concpm10", "concpm10", "awesomeness", False, True, None, 730, "daily", 15),
+        ("od550aer", "od550aer", None, True, True, None, 67, "60daily", 0.51),
+        ("od550aer", "od550aer", "awesomeness", True, True, None, 67, "60daily", 0.59),
+        ("od550aer", "od550aer", "awesomeness", False, True, None, 67, "60daily", 0.51),
     ],
 )
 def test_merge_station_data(
@@ -175,22 +61,34 @@ def test_merge_station_data(
     sort_by_largest,
     fill_missing_nan,
     add_meta_keys,
-    raises,
     num,
     tst,
     mean,
 ):
-    with raises:
-        stats = [x.copy() for x in statlist[use]]
-        stat = helpers.merge_station_data(
-            stats, var_name, pref_attr, sort_by_largest, fill_missing_nan, add_meta_keys
-        )
-        assert isinstance(stat, StationData)
-        vardata = stat[var_name]
-        assert len(vardata) == num
-        assert stat.get_var_ts_type(var_name) == tst
-        avg = np.mean(vardata)
-        npt.assert_allclose(avg, mean, rtol=1e-2)
+    stats = [x.copy() for x in statlist[use]]
+    stat = helpers.merge_station_data(
+        stats, var_name, pref_attr, sort_by_largest, fill_missing_nan, add_meta_keys
+    )
+    assert isinstance(stat, StationData)
+    vardata = stat[var_name]
+    assert len(vardata) == num
+    assert stat.get_var_ts_type(var_name) == tst
+    assert_allclose(np.mean(vardata), mean, rtol=1e-2)
+
+
+@pytest.mark.parametrize(
+    "use,exception,error",
+    [
+        ("concpm10_X2", UnitConversionError, "failed to convert unit from mole mole-1 to ug m-3"),
+        ("concpm10_X", TemporalResolutionError, "Invalid input for ts_type daily"),
+        ("od550aer", DataCoverageError, "All input stations must contain concpm10 data"),
+    ],
+)
+def test_merge_station_data_error(statlist, use, exception, error):
+    stats = [x.copy() for x in statlist[use]]
+    with pytest.raises(exception) as e:
+        helpers.merge_station_data(stats, "concpm10")
+    assert str(e.value).startswith(error)
 
 
 def test__get_pandas_freq_and_loffset():
@@ -207,7 +105,7 @@ def fake_hourly_ts():
 
 
 @pytest.mark.parametrize(
-    "freq, how, min_num_obs, num, avg",
+    "freq,how,min_num_obs,num,avg",
     [
         ("daily", "mean", 10000, 8, np.nan),
         ("daily", "50percentile", 10000, 8, np.nan),
@@ -229,9 +127,8 @@ def fake_hourly_ts():
 def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
 
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how, min_num_obs=min_num_obs)
-    _avg = np.nanmean(s1)
-    npt.assert_allclose(_avg, avg, atol=1e-2)
     assert len(s1) == num
+    assert_allclose(np.nanmean(s1), avg, atol=1e-2)
 
 
 def test_same_meta_dict():
@@ -316,35 +213,41 @@ def test_extract_latlon_dataarray():
     assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) - 1
 
 
-@pytest.mark.parametrize(
-    "lat,lon,expectation",
-    [
-        ([], [], pytest.raises(DataCoverageError)),
-        ([1, 2], [-1, 2], pytest.raises(DataCoverageError)),
-        ([15], [15], does_not_raise_exception()),
-    ],
-)
-def test_extract_latlon_dataarray_no_matches(lat, lon, expectation):
+def test_extract_latlon_dataarray_no_matches():
     cube = helpers.make_dummy_cube_latlon(
         lat_res_deg=1, lon_res_deg=1, lat_range=[10, 20], lon_range=[10, 20]
     )
     data = xr.DataArray.from_iris(cube)
-    with expectation:
-        helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
+    helpers.extract_latlon_dataarray(data, [15], [15], check_domain=True)
 
 
 @pytest.mark.parametrize(
-    "date,ts_type,expected",
+    "lat,lon",
     [
-        ("2000-02-18", "monthly", 29),  # February leap year
-        ("2000-02-18", "yearly", 366),  # Leap year
-        ("2001-02-18", "monthly", 28),  # February non leap year
-        ("2001-02-18", "daily", 1),  # Daily
-        ("2001-02-18", "yearly", 365),
+        ([], []),
+        ([1, 2], [-1, 2]),
     ],
-)  # Non leap year
-def test_seconds_in_periods(date, ts_type, expected):
-    seconds_in_day = 24 * 60 * 60
-    ts = np.datetime64(date)
-    seconds = helpers.seconds_in_periods(ts, ts_type)
-    assert seconds == expected * seconds_in_day
+)
+def test_extract_latlon_dataarray_no_matches_error(lat, lon):
+    cube = helpers.make_dummy_cube_latlon(
+        lat_res_deg=1, lon_res_deg=1, lat_range=[10, 20], lon_range=[10, 20]
+    )
+    data = xr.DataArray.from_iris(cube)
+    with pytest.raises(DataCoverageError) as e:
+        helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
+    assert str(e.value) == "Coordinates not found in dataarray"
+
+
+@pytest.mark.parametrize(
+    "date,ts_type,days",
+    [
+        pytest.param("2000-02-18", "yearly", 366, id="leap year"),
+        pytest.param("2001-02-18", "yearly", 365, id="lon leap year"),
+        pytest.param("2000-02-18", "monthly", 29, id="February leap year"),
+        pytest.param("2001-02-18", "monthly", 28, id="February non leap year"),
+        pytest.param("2001-02-18", "daily", 1, id="one day"),
+    ],
+)
+def test_seconds_in_periods(date, ts_type, days):
+    seconds = timedelta(days=days) / timedelta(seconds=1)
+    assert helpers.seconds_in_periods(np.datetime64(date), ts_type) == seconds
