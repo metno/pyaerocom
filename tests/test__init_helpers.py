@@ -9,14 +9,13 @@ from pyaerocom import _init_helpers as mod
 
 
 def get_level_value(logger: logging.Logger) -> int:
+    """logging level of the first applicable StreamHandler"""
 
     while logger:
-        mod.logging.critical(f"{logger=}")
         if not logger.hasHandlers():
             return logger.getEffectiveLevel()
         for handler in logger.handlers:
             if type(handler) == logging.StreamHandler:
-                mod.logging.critical(f"found {handler.name} {handler.level}")
                 return handler.level
         if not logger.propagate:
             return logging.NOTSET
@@ -65,10 +64,10 @@ def test_logger_level(test_logger: logging.Logger, level: int):
         ("blaaa", pytest.raises(ValueError)),
     ],
 )
-@pytest.mark.parametrize("name", ["pyaerocom", "pyaerocom.test"])
+@pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
 def test_change_verbosity(level: str | int, test_logger: logging.Logger, raises):
     with raises:
-        mod.change_verbosity(level, test_logger)
+        mod.change_verbosity(level)
         if isinstance(level, int):
             assert get_level_value(test_logger) == level
         if isinstance(level, str):

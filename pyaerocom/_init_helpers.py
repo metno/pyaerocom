@@ -43,16 +43,14 @@ __configure_file_logger(root_logger, "pyaerocom.log", level=logging.DEBUG, backu
 __configuure_console_logger(pya_logger, level=logging.INFO)
 
 
-def change_verbosity(level: str | int = "debug", logger: logging.Logger = pya_logger) -> None:
+def change_verbosity(level: str | int) -> None:
     """
-    Change logging verbosity to the console
+    Change logging verbosity (to console)
 
     Parameters
     ----------
-    level : str or int
+    level: str or int
         new `logging level<https://docs.python.org/3/library/logging.html#logging-levels>`_
-    logger:
-        pyaerocom root logger by default
 
     Returns
     -------
@@ -64,21 +62,16 @@ def change_verbosity(level: str | int = "debug", logger: logging.Logger = pya_lo
 
     if isinstance(level, int) and not (logging.DEBUG <= level <= logging.CRITICAL):
         raise ValueError(
-            f"invalid log level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
+            f"invalid logging level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
-    if not logger.hasHandlers():
-        logger.setLevel(level)
+    if not pya_logger.handlers:
+        __configuure_console_logger(pya_logger, level=level)
         return
 
-    while logger:
-        for handler in logger.handlers:
-            if type(handler) == logging.StreamHandler:
-                handler.setLevel(level)
-                return
-        if not logger.propagate:
-            return
-        logger = logger.parent
+    for handler in pya_logger.handlers:
+        if type(handler) == logging.StreamHandler:
+            handler.setLevel(level)
 
 
 ### Functions for package initialisation
