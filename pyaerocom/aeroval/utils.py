@@ -288,7 +288,7 @@ def compute_model_average_and_diversity(
                 q3arr,
                 dims=dims,
                 var_name=f"{var_name}q3",
-                units=data.unit,
+                units=data.units,
                 ts_type=ts_type,
                 data_id=data_id,
                 from_files=from_files,

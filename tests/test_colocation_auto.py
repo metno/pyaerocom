@@ -143,9 +143,9 @@ def test_Colocator_model_ts_type_read(tm5_aero_stp, ts_type_desired, ts_type, fl
         assert obs_var in data
         coldata = data[obs_var][obs_var]
         assert coldata.ts_type == ts_type
-        assert coldata.meta["ts_type_src"][0] == "daily"
+        assert coldata.metadata["ts_type_src"][0] == "daily"
         if not flex:
-            assert coldata.meta["ts_type_src"][1] == ts_type_desired
+            assert coldata.metadata["ts_type_src"][1] == ts_type_desired
 
 
 def test_Colocator_model_add_vars(tm5_aero_stp):

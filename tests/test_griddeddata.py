@@ -79,7 +79,7 @@ def test_GriddedData_long_name():
 
 
 def test_GriddedData_suppl_info():
-    assert isinstance(GriddedData().suppl_info, dict)
+    assert isinstance(GriddedData().metadata, dict)
 
 
 @data_unavail
