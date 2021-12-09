@@ -34,9 +34,17 @@ def test_logger(name: str | None) -> logging.Logger:
     return logging.getLogger(name)
 
 
+def test_root_logger():
+    logger = logging.getLogger()
+    assert any(isinstance(h, logging.FileHandler) for h in logger.handlers)
+    handler = next(h for h in logger.handlers if isinstance(h, logging.FileHandler))
+    assert logging.getLevelName(handler.level) == mod.LOGGING_CONFIG["file_level"]
+
+
 def test_pya_logger():
-    assert len(mod.logger.handlers) == 1
-    handler = mod.logger.handlers[0]
+    logger = logging.getLogger("pyaerocom")
+    assert len(logger.handlers) == 1
+    handler = logger.handlers[0]
     assert type(handler) == logging.StreamHandler
     assert logging.getLevelName(handler.level) == mod.LOGGING_CONFIG["console_level"]
 

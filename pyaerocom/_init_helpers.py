@@ -27,8 +27,6 @@ LOGGING_CONFIG = dict(
 with resources.path("pyaerocom.data", "logging.ini") as path:
     fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
 
-logger = logging.getLogger("pyaerocom")
-
 
 def change_verbosity(level: str | int) -> None:
     """
@@ -52,6 +50,7 @@ def change_verbosity(level: str | int) -> None:
             f"invalid logging level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
+    logger = logging.getLogger(__package__)
     assert logger.handlers, f"{logger.name} logger has not been configured correctly"
     for handler in logger.handlers:
         if type(handler) == logging.StreamHandler:
