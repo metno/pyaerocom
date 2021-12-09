@@ -17,6 +17,7 @@ class ModelName(str, Enum):
         return self.value
 
 
+# Change this to use the correct species names that are used in the netCDF file
 class PollutantName(str, Enum):
     NO2 = "nitrogen_dioxide"
     O3 = "ozone"

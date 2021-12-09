@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 import os
 import re
@@ -48,6 +48,7 @@ class ReadCAMS2_83:
         self._filepaths = None
         self._data_dir = None
         self._model = None
+        self._date = None
 
         if data_dir is not None:
             if (not isinstance(data_dir, str) and not isinstance(data_dir, Path)) or not os.path.exists(data_dir):
@@ -142,7 +143,18 @@ class ReadCAMS2_83:
             raise TypeError(f"Date range {val} need to be a pandas DatetimeIndex")
         self._daterange = val
         self._filedata = None
+
+    @property
+    def date(self) -> int:
+        if self._date is None:
+            raise ValueError("Date is not set")
+        return self._date
         
+    @date.setter
+    def date(self, val: int):
+        if not isinstance(val, int) or val < 0 or val > 3:
+            raise TypeError(f"Date {val} is not a int between 0 and 3")
+        self._date = val
 
     def _load_var(self, var_name_aerocom: str, ts_type: str) -> xr.DataArray:
         """
@@ -169,7 +181,7 @@ class ReadCAMS2_83:
             loaded data
 
         """
-        raise NotImplementedError
+        return self.filedata["co_conc"]
 
     def _find_all_files(self):
         model = self.model
@@ -182,17 +194,19 @@ class ReadCAMS2_83:
         
         self.filepaths = filepaths
 
-    def _select_date(self, ds):
+    def _select_date(self, ds: xr.Dataset) -> xr.Dataset:
 
         forecast_date = ds.attrs["FORECAST"]
-
         forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
+        forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
 
-        dt = datetime.strptime(forecast_date, "%Y%m%d")
-
-        dateselect = [f"1 days {i:02d}:00:00" for i in range(24)]
+        day_prefix = " " if abs(self.date) == 0 else f"{int(self.date)} days "
+        dateselect = [f"{day_prefix}{i:02d}:00:00" for i in range(24)]
         
         ds = ds.sel(time=dateselect)
+
+        new_dates = date_range(forecast_date, forecast_date+timedelta(hours=23), freq="h")
+        ds["time"] = new_dates
 
         return ds
 
@@ -206,7 +220,8 @@ class ReadCAMS2_83:
             Dict with years as keys and Datasets as items
 
         """
-        ds = xr.open_mfdataset(self.filepaths)
+        self._find_all_files()
+        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date)
         self._filedata = ds
 
         return ds
@@ -227,30 +242,38 @@ class ReadCAMS2_83:
         -------
         GriddedData
         """
-        raise NotImplementedError
+
+        # var_name have to be made into the correct PollutantName
+
+        # ts_type can be ignored
+
+        ts_type = "hourly"
+        var_name_aerocom = var_name
+        ds = self._load_var(var_name_aerocom, ts_type)
+
+        ds.attrs["Simulation date"] = self.date
+
+        cube = ds.to_iris()
+
+        gridded = GriddedData(
+            cube,
+            var_name=var_name_aerocom,
+            ts_type=ts_type,
+            check_unit=True,
+            convert_unit_on_init=True,
+        )
+
+        gridded.metadata["data_id"] = self.data_id
+
+        return gridded
 
 
 if __name__=="__main__":
     data_dir = DATA_FOLDER_PATH
     reader = ReadCAMS2_83(data_dir=data_dir)
 
-    reader.daterange = date_range(start="20210602", end="20210602")
+    reader.daterange = date_range(start="20210602", end="20210603")
     reader.model = ModelName.EMEP
-
-    reader._find_all_files()
-
-    print(reader.filepaths)
-    
-    ds = reader.open_file()
-    #dateselect = date_range(start="T0000", end="T2300", freq="h")
-    dateselect = [f"1 days {i:02d}:00:00" for i in range(24)]
-    #print(dateselect)
-    #ds = ds.sel(time=dateselect)
-
-    forecast_date = ds.attrs["FORECAST"]
-
-    forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
-
-    dt = datetime.strptime(forecast_date, "%Y%m%d")
-
-    print(dt)
+    reader.date = 3
+ 
+    print(reader.read_var("", "")["time"])
