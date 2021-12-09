@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import warnings
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
@@ -1172,13 +1173,11 @@ class StationData(StationMetaData):
         For backwards compatibility, this method will return a pandas Series
         instead of the actual StationData object
         """
-        logger.warning(
-            DeprecationWarning(
-                "This method was renamed "
-                "to resample_time as a means "
-                "of harmonisation with GriddedData "
-                "and ColocatedData"
-            )
+        warnings.warn(
+            "This method was renamed to resample_time as a means "
+            "of harmonisation with GriddedData and ColocatedData",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.resample_time(var_name, **kwargs)[var_name]
 

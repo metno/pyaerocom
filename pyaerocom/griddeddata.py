@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import os
+import warnings
 from collections import OrderedDict as od
 from pathlib import Path
 
@@ -243,8 +244,11 @@ class GriddedData:
 
     @property
     def suppl_info(self):
-        w = DeprecationWarning("Outdated attribute suppl_info. Please use metadata instead")
-        logger.warning(w)
+        warnings.warn(
+            "Outdated attribute suppl_info. Please use metadata instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.metadata
 
     @property
@@ -2002,8 +2006,10 @@ class GriddedData:
         str
             generated file name based on what is in this object
         """
-        logger.warning(
-            DeprecationWarning("This method is deprecated. Please use aerocom_savename instead")
+        warnings.warn(
+            "This method is deprecated. Please use aerocom_savename instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         from pyaerocom.io import FileConventionRead
 
@@ -2747,12 +2753,20 @@ class GriddedData:
     @property
     def unit(self):
         """Unit of data"""
-        logger.warning(DeprecationWarning("Attr. unit is deprecated, please use units instead"))
+        warnings.warn(
+            "Attr. unit is deprecated, please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
-        logger.warning(DeprecationWarning("Attr. unit is deprecated, please use units instead"))
+        warnings.warn(
+            "Attr. unit is deprecated, please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.grid.units = val
 
 

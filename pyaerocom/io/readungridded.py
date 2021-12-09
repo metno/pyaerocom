@@ -13,6 +13,7 @@
 
 import logging
 import os
+import warnings
 from pathlib import Path
 
 from pyaerocom import const
@@ -238,10 +239,10 @@ class ReadUngridded:
         return reader.PROVIDES_VARIABLES
 
     def get_reader(self, data_id):
-        logger.warning(
-            DeprecationWarning(
-                "this method was renamed to get_lowlevel_reader, please use the new name"
-            )
+        warnings.warn(
+            "this method was renamed to get_lowlevel_reader, please use the new name",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.get_lowlevel_reader(data_id)
 

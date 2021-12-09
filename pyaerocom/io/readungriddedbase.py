@@ -2,6 +2,7 @@ import abc
 import glob
 import logging
 import os
+import warnings
 from fnmatch import fnmatch
 
 import numpy as np
@@ -236,11 +237,11 @@ class ReadUngriddedBase(abc.ABC):
     @property
     def DATASET_PATH(self):
         """Wrapper for :attr:`data_dir`."""
-        logger.warning(
-            DeprecationWarning(
-                "WARNING: Attr. DATASET_PATH is deprecated in ungridded readers "
-                "as of pyaerocom v0.11.0. Please use data_dir instead."
-            )
+        warnings.warn(
+            "Attr. DATASET_PATH is deprecated in ungridded readers "
+            "as of pyaerocom v0.11.0. Please use data_dir instead.",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.data_dir
 

@@ -2,6 +2,7 @@
 
 import logging
 import os
+import warnings
 from ast import literal_eval
 from pathlib import Path
 
@@ -1881,36 +1882,36 @@ class ColocatedData:
     @property
     def unit(self):
         """DEPRECATED -> use :attr:`units`"""
-        logger.warning(
-            DeprecationWarning(
-                "Attr. ColocatedData.unit is deprecated (but still works), "
-                "please use ColocatedData.units. "
-                "Support guaranteed until pyaerocom v0.12.0"
-            )
+        warnings.warn(
+            "Attr. ColocatedData.unit is deprecated (but still works), "
+            "please use ColocatedData.units. "
+            "Support guaranteed until pyaerocom v0.12.0",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.units
 
     @property
     def meta(self):
         """DEPRECATED -> use :attr:`metadata`"""
-        logger.warning(
-            DeprecationWarning(
-                "Attr. ColocatedData.meta is deprecated (but still works), "
-                "please use ColocatedData.metadata"
-                "Support guaranteed until pyaerocom v0.12.0"
-            )
+        warnings.warn(
+            "Attr. ColocatedData.meta is deprecated, "
+            "use ColocatedData.metadata instread."
+            "Support guaranteed until pyaerocom v0.12.0",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.metadata
 
     @property
     def num_grid_points(self):
         """DEPRECATED -> use :attr:`num_coords`"""
-        logger.warning(
-            DeprecationWarning(
-                "Attr. ColocatedData.num_grid_points is deprecated (but still "
-                "works), please use ColocatedData.num_coords"
-                "Support guaranteed until pyaerocom v0.12.0"
-            )
+        warnings.warn(
+            "ColocatedData.num_grid_points is deprecated, "
+            "please use ColocatedData.num_coords"
+            "Support guaranteed until pyaerocom v0.12.0",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.num_coords
 

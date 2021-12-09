@@ -1,6 +1,7 @@
 import fnmatch
 import logging
 import os
+import warnings
 from collections import OrderedDict as od
 from glob import glob
 from pathlib import Path
@@ -1948,14 +1949,10 @@ class ReadGridded:
             variables is available in this object
         """
         if vars_to_retrieve is None and "var_names" in kwargs:
-            logger.warning(
-                DeprecationWarning(
-                    "Input arg var_names "
-                    "is deprecated (but "
-                    "still works). Please "
-                    "use vars_to_retrieve "
-                    "instead"
-                )
+            warnings.warn(
+                "Input arg var_names is deprecated. " "Please use vars_to_retrieve instead",
+                DeprecationWarning,
+                stacklevel=2,
             )
             vars_to_retrieve = kwargs["var_names"]
         if vars_to_retrieve is None:
@@ -2226,7 +2223,7 @@ class ReadGridded:
     @property
     def name(self):
         """Deprecated name of attribute data_id"""
-        logger.warning(DeprecationWarning("Please use data_id"))
+        warnings.warn("Please use data_id", DeprecationWarning, stacklevel=2)
         return self.data_id
 
 

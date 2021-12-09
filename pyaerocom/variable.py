@@ -1,4 +1,5 @@
 import logging
+import warnings
 from ast import literal_eval
 from configparser import ConfigParser
 
@@ -10,8 +11,6 @@ from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import make_binlist
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 
-logger = logging.getLogger(__name__)
-
 #: helper vor checking if variable name contains str 3d or 3D
 from pyaerocom.variable_helpers import (
     _check_alias_family,
@@ -21,6 +20,8 @@ from pyaerocom.variable_helpers import (
     parse_variables_ini,
 )
 from pyaerocom.varnameinfo import VarNameInfo
+
+logger = logging.getLogger(__name__)
 
 
 class Variable:
@@ -327,12 +328,10 @@ class Variable:
     @property
     def unit(self):
         """Unit of variable (old name, deprecated)"""
-        from warnings import warn
-
-        warn(
-            DeprecationWarning(
-                "Attr. name unit in Variable class is deprecated. Please use units instead"
-            )
+        warnings.warn(
+            "Attr. name unit in Variable class is deprecated. Please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.units
 
@@ -356,13 +355,13 @@ class Variable:
     @property
     def lower_limit(self):
         """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
-        logger.warning(DeprecationWarning("Old name for attribute minimum"))
+        warnings.warn("Old name for attribute minimum", DeprecationWarning, stacklevel=2)
         return self.minimum
 
     @property
     def upper_limit(self):
-        """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
-        logger.warning(DeprecationWarning("Old name for attribute minimum"))
+        """Old attribute name for :attr:`maximum` (following HTAP2 defs)"""
+        warnings.warn("Old name for attribute maximum", DeprecationWarning, stacklevel=2)
         return self.maximum
 
     @property

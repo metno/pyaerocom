@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 
 # from datetime import datetime
 from collections import OrderedDict
@@ -349,8 +350,9 @@ class ReadSulphurAasEtAl(ReadAasEtal):
 
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
-        msg = "You are using an old name for class ReadAasEtal"
-        logger.warning(DeprecationWarning(msg))
+        warnings.warn(
+            "You are using an old name for class ReadAasEtal", DeprecationWarning, stacklevel=2
+        )
 
 
 if __name__ == "__main__":
