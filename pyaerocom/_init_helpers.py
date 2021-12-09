@@ -1,38 +1,48 @@
+"""
+Logging configuration and package metadata helpers
+
+NOTE: logging configuration will be propagated to all child pyaerocom modules
+"""
+
+
 from __future__ import annotations
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-# Note: configuration will be propagated to all child modules of
-# pyaerocom, for details see
-# http://eric.themoritzfamily.com/learning-python-logging.html
-logger = logging.getLogger("pyaerocom")
+root_logger = logging.getLogger()
+pya_logger = logging.getLogger("pyaerocom")
 
 
-def _init_logger(logger: logging.Logger = logger, backup_days: int = 14) -> logging.Logger:
-
-    # keep the up to backup_days days of daily log files
-    file_handler = TimedRotatingFileHandler("pyaerocom.log", when="D", backupCount=backup_days)
-    file_formatter = logging.Formatter(
+def __configure_file_logger(
+    logger: logging.Logger = root_logger, level: int = logging.DEBUG, backup_days: int = 14
+):
+    """keep the up to backup_days days of daily log files"""
+    handler = TimedRotatingFileHandler("pyaerocom.log", when="D", backupCount=backup_days)
+    formatter = logging.Formatter(
         "%(asctime)s:%(name)s:%(levelname)s:%(message)s", datefmt="%F %T"
     )
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+    logger.addHandler(handler)
 
-    console_handler = logging.StreamHandler()
-    console_formatter = logging.Formatter("%(message)s")
-    console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(logging.INFO)
-    logger.addHandler(console_handler)
+
+def __configuure_console_logger(logger: logging.Logger = pya_logger, level: int = logging.INFO):
+
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(message)s")
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+    logger.addHandler(handler)
 
     return logger
 
 
-_init_logger()
+__configure_file_logger()
+__configuure_console_logger()
 
 
-def change_verbosity(level: str | int = "debug", logger: logging.Logger = logger) -> None:
+def change_verbosity(level: str | int = "debug", logger: logging.Logger = pya_logger) -> None:
     """
     Change logging verbosity to the console
 

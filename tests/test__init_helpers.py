@@ -38,8 +38,8 @@ def test_logger(name: str | None) -> logging.Logger:
 @pytest.mark.parametrize(
     "name,level",
     [
-        ("pyaerocom.test", get_level_value(mod.logger)),
-        ("pyaerocom.deep.nested.module", get_level_value(mod.logger)),
+        ("pyaerocom.test", get_level_value(mod.pya_logger)),
+        ("pyaerocom.deep.nested.module", get_level_value(mod.pya_logger)),
         ("other.module", logging.NOTSET),
         (None, logging.NOTSET),
     ],
