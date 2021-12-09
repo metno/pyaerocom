@@ -837,11 +837,11 @@ def dict_to_str(dictionary, indent=0, ignore_null=False):
     return s
 
 
-def str_underline(title: str, indent: int = 0):
+def str_underline(s, indent=0):
     """Create underlined string"""
-    length = indent + len(title)
-    underline = "-" * len(title)
-    return f"{title:>{length}}\n{underline:>{length}}"
+    s = indent * " " + f"{s}\n"
+    s += indent * " " + f"{len(s) * '-'}"
+    return s
 
 
 if __name__ == "__main__":

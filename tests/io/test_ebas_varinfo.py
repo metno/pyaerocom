@@ -1,11 +1,7 @@
-from __future__ import annotations
-
-from configparser import ConfigParser
-from typing import Type
+from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
-from pyaerocom.io import EbasSQLRequest
 from pyaerocom.io.ebas_file_index import EbasSQLRequest
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 
@@ -182,12 +178,15 @@ TESTDATA = [
 
 
 def test_init_empty():
-    with pytest.raises(TypeError) as e:
+    try:
         EbasVarInfo()
-    assert "missing 1 required positional argument" in str(e.value)
+    except Exception as e:
+        assert type(e) == TypeError
 
 
 def test_open_config():
+    from configparser import ConfigParser
+
     assert isinstance(EbasVarInfo.open_config(), ConfigParser)
 
 
@@ -195,27 +194,19 @@ def test_var_name_aerocom():
     assert EbasVarInfo("sconcno3").var_name_aerocom == "concno3"
 
 
-@pytest.fixture
-def info(var_name: str | None) -> EbasVarInfo:
-    if var_name is None:
-        info = EbasVarInfo("concpm10")
-        info.component = None
-        return info
-    return EbasVarInfo(var_name)
-
-
 @pytest.mark.parametrize(
-    "var_name,component,matrix,instrument,statistics,requires,scale_factor", TESTDATA
+    "var_name, component, matrix, instrument, statistics, requires, scale_factor", TESTDATA
 )
-def test_varinfo(
-    info: EbasVarInfo, component, matrix, instrument, statistics, requires, scale_factor
-):
-    assert info.component == component
-    assert info.matrix == matrix
-    assert info.instrument == instrument
-    assert info.statistics == statistics
-    assert info.requires == requires
-    assert info.scale_factor == scale_factor
+def test_varinfo(var_name, component, matrix, instrument, statistics, requires, scale_factor):
+
+    var = EbasVarInfo(var_name)
+
+    assert var.component == component
+    assert var.matrix == matrix
+    assert var.instrument == instrument
+    assert var.statistics == statistics
+    assert var.requires == requires
+    assert var.scale_factor == scale_factor
 
 
 def test_to_dict():
@@ -227,63 +218,50 @@ def test_to_dict():
 
 
 @pytest.mark.parametrize(
-    "var_name,constraints",
+    "var,constraints,raises",
     [
-        ("concpm10", {}),
-        ("concpm10", {"bla": 42}),
+        (None, {}, pytest.raises(AttributeError)),
+        ("sc700dryaer", {}, pytest.raises(ValueError)),
+        ("sc550dryaer", {}, pytest.raises(ValueError)),
+        ("concpm10", {}, does_not_raise_exception()),
+        ("concpm10", {"bla": 42}, does_not_raise_exception()),
         # ToDo: the following example should actually be checked and maybe raise an Exception already here
         # (i.e. start_date is a valid constraint but 42 is not allowed as input)
-        ("concpm10", {"start_date": 42}),
+        ("concpm10", {"start_date": 42}, does_not_raise_exception()),
     ],
 )
-def test_make_sql_request(info: EbasVarInfo, constraints: dict):
-    request = info.make_sql_request(**constraints)
-    assert isinstance(request, EbasSQLRequest)
+def test_make_sql_request(var, constraints, raises):
+    if var is None:
+        info = EbasVarInfo("concpm10")
+        info.component = None
+    else:
+        info = EbasVarInfo(var)
+    with raises:
+        req = info.make_sql_request(**constraints)
+        from pyaerocom.io import EbasSQLRequest
+
+        assert isinstance(req, EbasSQLRequest)
 
 
 @pytest.mark.parametrize(
-    "var_name,exception,error",
+    "var,constraints,raises,num",
     [
-        (
-            None,
-            AttributeError,
-            "At least one component (Ebas variable name) must be specified",
-        ),
-        (
-            "sc700dryaer",
-            ValueError,
-            "This variable sc700dryaer requires other variables for reading",
-        ),
-        (
-            "sc550dryaer",
-            ValueError,
-            "This variable sc550dryaer requires other variables for reading",
-        ),
+        ("concpm10", {}, does_not_raise_exception(), 1),
+        ("sc700dryaer", {}, does_not_raise_exception(), 2),
+        ("sc550dryaer", {}, does_not_raise_exception(), 2),
+        ("sc440dryaer", {}, does_not_raise_exception(), 2),
     ],
 )
-def test_make_sql_request_error(info: EbasVarInfo, exception: Type[Exception], error: str):
-    with pytest.raises(exception) as e:
-        info.make_sql_request()
-    assert str(e.value).startswith(error)
-
-
-@pytest.mark.parametrize(
-    "var_name,num",
-    [
-        ("concpm10", 1),
-        ("sc700dryaer", 2),
-        ("sc550dryaer", 2),
-        ("sc440dryaer", 2),
-    ],
-)
-def test_make_sql_requests(info: EbasVarInfo, num: int):
-    requests = info.make_sql_requests()
-    assert isinstance(requests, dict)
-    assert len(requests) == num
-    assert all(isinstance(req, EbasSQLRequest) for req in requests.values())
+def test_make_sql_requests(var, constraints, raises, num):
+    info = EbasVarInfo(var)
+    with raises:
+        reqs = info.make_sql_requests(**constraints)
+        assert isinstance(reqs, dict)
+        assert len(reqs) == num
+        for key, req in reqs.items():
+            assert isinstance(req, EbasSQLRequest)
 
 
 def test___str__():
-    var_info_str = str(EbasVarInfo("concpm10"))
-    assert var_info_str.startswith("\nPyaerocom EbasVarInfo")
-    assert "var_name: concpm10" in var_info_str
+    s = EbasVarInfo("concpm10").__str__()
+    assert isinstance(s, str)

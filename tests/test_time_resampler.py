@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -36,167 +38,79 @@ def fakedata_hourly():
 
 
 @pytest.mark.parametrize(
-    "data",
+    "data, expectation",
     [
-        pytest.param(np.asarray([1]), id="np.array"),
-        pytest.param(GriddedData(), id="GriddedData"),
-        pytest.param(Cube([]), id="Cube"),
+        (pd.Series(dtype=np.float64), does_not_raise_exception()),
+        (xr.DataArray(), does_not_raise_exception()),
+        (np.asarray([1]), pytest.raises(ValueError)),
+        (GriddedData(), pytest.raises(ValueError)),
+        (Cube([]), pytest.raises(ValueError)),
     ],
 )
-def test_TimeResampler_invalid_input_data(data):
-    tr = TimeResampler()
-    with pytest.raises(ValueError) as e:
+def test_TimeResampler_input_data(data, expectation):
+    with expectation:
+        tr = TimeResampler()
         tr.input_data = data
-    assert str(e.value) == "Invalid input: need Series or DataArray"
 
 
 @pytest.mark.parametrize(
-    "data,resampler_function",
+    "data, expectation",
     [
-        pytest.param(pd.Series(dtype=np.float64), resample_timeseries, id="pd.Series"),
-        pytest.param(xr.DataArray(), resample_time_dataarray, id="xr.DataArray"),
+        (pd.Series(dtype=np.float64), resample_timeseries),
+        (xr.DataArray(), resample_time_dataarray),
     ],
 )
-def test_TimeResampler_fun(data, resampler_function):
+def test_TimeResampler_fun(data, expectation):
     tr = TimeResampler()
     tr.input_data = data
-    assert tr.fun == resampler_function
+    assert tr.fun == expectation
 
 
 @pytest.mark.parametrize(
-    "kwargs,index",
+    "from_ts_type,to_ts_type,min_num_obs,how,expected",
     [
-        pytest.param(
-            dict(
-                from_ts_type=TsType("3hourly"),
-                to_ts_type=TsType("monthly"),
-                min_num_obs=min_num_obs_default,
-                how=dict(monthly={"daily": "max"}),
-            ),
+        (
+            TsType("3hourly"),
+            TsType("monthly"),
+            min_num_obs_default,
+            dict(monthly={"daily": "max"}),
             [("daily", 2, "mean"), ("monthly", 7, "max")],
-            id="3hourly to monthly",
         ),
-        pytest.param(
-            dict(
-                from_ts_type=TsType("84hourly"),
-                to_ts_type=TsType("6daily"),
-                min_num_obs={"daily": {"minutely": 12}},
-                how="median",
-            ),
+        (
+            TsType("84hourly"),
+            TsType("6daily"),
+            {"daily": {"minutely": 12}},
+            "median",
             [("6daily", 0, "median")],
-            id="84hourly to 6daily",
         ),
-        pytest.param(
-            dict(
-                from_ts_type=TsType("84hourly"),
-                to_ts_type=TsType("6daily"),
-                min_num_obs={"daily": {"hourly": 12}},
-                how="median",
-            ),
+        (
+            TsType("84hourly"),
+            TsType("6daily"),
+            {"daily": {"hourly": 12}},
+            "median",
             [("6daily", 1, "median")],
-            id="84hourly to 6daily",
         ),
-        pytest.param(
-            dict(
-                from_ts_type=TsType("hourly"),
-                to_ts_type=TsType("daily"),
-                min_num_obs=3,
-                how="median",
-            ),
-            [("daily", 3, "median")],
-            id="hourly to daily",
-        ),
-        pytest.param(
-            dict(
-                from_ts_type=TsType("3hourly"),
-                to_ts_type=TsType("monthly"),
-                min_num_obs=3,
-                how="mean",
-            ),
-            [("monthly", 3, "mean")],
-            id="3hourly to monthly",
-        ),
-        pytest.param(
-            dict(
-                from_ts_type=TsType("3hourly"),
-                to_ts_type=TsType("monthly"),
-                min_num_obs=min_num_obs_default,
-                how="mean",
-            ),
+        (TsType("hourly"), TsType("daily"), 3, "median", [("daily", 3, "median")]),
+        (TsType("3hourly"), TsType("monthly"), 3, "mean", [("monthly", 3, "mean")]),
+        (
+            TsType("3hourly"),
+            TsType("monthly"),
+            min_num_obs_default,
+            "mean",
             [("daily", 2, "mean"), ("monthly", 7, "mean")],
-            id="3hourly to monthly",
         ),
-        pytest.param(
-            dict(
-                from_ts_type=TsType("2daily"),
-                to_ts_type=TsType("weekly"),
-                min_num_obs=min_num_obs_custom,
-                how="max",
-            ),
-            [("weekly", 2, "max")],
-            id="2daily to weekly",
-        ),
+        (TsType("2daily"), TsType("weekly"), min_num_obs_custom, "max", [("weekly", 2, "max")]),
     ],
 )
-def test_TimeResampler__gen_index(kwargs, index):
-    tr = TimeResampler()
-    assert tr._gen_idx(**kwargs) == index
+def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs, how, expected):
+    val = TimeResampler()._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
+    assert val == expected
 
 
 @pytest.mark.parametrize(
-    "kwargs,output_len,output_numnotnan,lup",
+    "args,output_len,output_numnotnan,lup",
     [
-        pytest.param(
-            dict(to_ts_type="monthly", from_ts_type="hourly"),
-            1,
-            1,
-            True,
-            id="monthly from hourly",
-        ),
-        pytest.param(
-            dict(
-                to_ts_type="monthly",
-                from_ts_type="hourly",
-                how="median",
-                min_num_obs=min_num_obs_default,
-            ),
-            1,
-            1,
-            True,
-            id="monthly from hourly, median",
-        ),
-        pytest.param(
-            dict(
-                to_ts_type="monthly",
-                from_ts_type="hourly",
-                how="median",
-                min_num_obs=min_num_obs_custom,
-            ),
-            1,
-            0,
-            True,
-            id="monthly from hourly, median",
-        ),
-        pytest.param(
-            dict(to_ts_type="monthly", from_ts_type="hourly", how="median"),
-            1,
-            1,
-            True,
-            id="monthly from hourly, median",
-        ),
-        pytest.param(
-            dict(
-                to_ts_type="monthly",
-                from_ts_type="hourly",
-                how=dict(daily=dict(hourly="sum")),
-                min_num_obs=min_num_obs_custom,
-            ),
-            1,
-            0,
-            False,
-            id="monthly from hourly, hourly sum",
-        ),
-        pytest.param(
+        (
             dict(
                 to_ts_type="monthly",
                 from_ts_type="hourly",
@@ -206,16 +120,23 @@ def test_TimeResampler__gen_index(kwargs, index):
             1,
             0,
             False,
-            id="monthly from hourly, hourly max",
         ),
-        pytest.param(
-            dict(to_ts_type="daily", from_ts_type="hourly", how="median"),
-            13,
-            13,
-            True,
-            id="daily from hourly, median",
+        (dict(to_ts_type="monthly", from_ts_type="hourly"), 1, 1, True),
+        (
+            dict(
+                to_ts_type="monthly",
+                from_ts_type="hourly",
+                how=dict(daily=dict(hourly="sum")),
+                min_num_obs=min_num_obs_custom,
+            ),
+            1,
+            0,
+            False,
         ),
-        pytest.param(
+        (dict(to_ts_type="monthly", from_ts_type="hourly", how="median"), 1, 1, True),
+        (dict(to_ts_type="daily", from_ts_type="hourly", how="median"), 13, 13, True),
+        (dict(to_ts_type="daily", from_ts_type="hourly", how="median"), 13, 13, True),
+        (
             dict(
                 to_ts_type="daily",
                 from_ts_type="hourly",
@@ -225,9 +146,8 @@ def test_TimeResampler__gen_index(kwargs, index):
             13,
             13,
             True,
-            id="daily from hourly, median",
         ),
-        pytest.param(
+        (
             dict(
                 to_ts_type="daily",
                 from_ts_type="hourly",
@@ -237,13 +157,34 @@ def test_TimeResampler__gen_index(kwargs, index):
             13,
             12,
             True,
-            id="daily from hourly, median",
+        ),
+        (
+            dict(
+                to_ts_type="monthly",
+                from_ts_type="hourly",
+                how="median",
+                min_num_obs=min_num_obs_default,
+            ),
+            1,
+            1,
+            True,
+        ),
+        (
+            dict(
+                to_ts_type="monthly",
+                from_ts_type="hourly",
+                how="median",
+                min_num_obs=min_num_obs_custom,
+            ),
+            1,
+            0,
+            True,
         ),
     ],
 )
-def test_TimeResampler_resample(fakedata_hourly, kwargs, output_len, output_numnotnan, lup):
+def test_TimeResampler_resample(fakedata_hourly, args, output_len, output_numnotnan, lup):
     tr = TimeResampler(input_data=fakedata_hourly)
-    ts = tr.resample(**kwargs)
+    ts = tr.resample(**args)
     assert len(ts) == output_len
     notnan = ~np.isnan(ts)
     assert notnan.sum() == output_numnotnan

@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 import fnmatch
-from pathlib import Path
+import os
 
 import pandas as pd
 
@@ -131,14 +129,10 @@ def create_varinfo_table(
     return df
 
 
-def print_file(path: Path | str):
-    if isinstance(path, str):
-        path = Path(path)
-    if not path.exists():
+def print_file(file_path):
+    if not os.path.exists(file_path):
         raise OSError("File not found...")
-    if not path.is_file():
-        raise ValueError(f"{path} is not a file")
-
-    for line in path.read_text().splitlines():
-        if line.strip():
-            print(line)
+    with open(file_path) as f:
+        for line in f:
+            if line.strip():
+                print(line)

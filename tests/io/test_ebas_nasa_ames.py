@@ -1,21 +1,34 @@
 from collections import OrderedDict
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import pytest
 
-from pyaerocom.io.ebas_nasa_ames import EbasColDef, EbasFlagCol, EbasNasaAmesFile, NasaAmesHeader
+from pyaerocom.io import ebas_nasa_ames as ena
 
 from ..conftest import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")
 def head():
-    return NasaAmesHeader
+    return ena.NasaAmesHeader
 
 
-def test_EbasFlagCol():
-    fc = EbasFlagCol(np.asarray([0, 0.66, 0.456, 0.999, 0.999100, 0.999100456]))
-    assert (fc.valid == np.asarray([True, True, False, False, True, True])).all()
+@pytest.mark.parametrize(
+    "raw_data,raises,valid",
+    [
+        (np.asarray([0]), does_not_raise_exception(), np.asarray([True])),
+        (np.asarray([0.66]), does_not_raise_exception(), np.asarray([True])),
+        (np.asarray([0.456]), does_not_raise_exception(), np.asarray([False])),
+        (np.asarray([0.999]), does_not_raise_exception(), np.asarray([False])),
+        (np.asarray([0.999100]), does_not_raise_exception(), np.asarray([True])),
+        (np.asarray([0.999100456]), does_not_raise_exception(), np.asarray([True])),
+    ],
+)
+def test_EbasFlagCol(raw_data, raises, valid):
+    with raises:
+        fc = ena.EbasFlagCol(raw_data)
+        assert fc.valid == valid
 
 
 @pytest.mark.parametrize(
@@ -29,7 +42,7 @@ def test_EbasFlagCol():
     ],
 )
 def test_EbasFlagCol_decoded(raw_data, decoded):
-    fc = EbasFlagCol(raw_data, False)
+    fc = ena.EbasFlagCol(raw_data, False)
     assert fc._decoded is None
     dc = fc.decoded
     assert fc._decoded is dc
@@ -50,40 +63,97 @@ def test_NasaAmesHeader_CONV_PI(head):
 
 
 def test_EbasNasaAmesFile_instance(filedata):
-    assert isinstance(filedata, NasaAmesHeader)
-    assert isinstance(filedata, EbasNasaAmesFile)
+    assert isinstance(filedata, ena.NasaAmesHeader)
+    assert isinstance(filedata, ena.EbasNasaAmesFile)
+
+
+HEAD_FIX = OrderedDict(
+    [
+        ("num_head_lines", 93),
+        ("num_head_fmt", 1001),
+        ("data_originator", "Brem, Benjamin; Baltensperger, Urs"),
+        (
+            "sponsor_organisation",
+            "CH02L, Paul Scherrer Institut, PSI, Laboratory of Atmospheric Chemistry (LAC), OFLB, , 5232, Villigen PSI, Switzerland",
+        ),
+        ("submitter", "Brem, Benjamin"),
+        ("project_association", "ACTRIS CREATE EMEP GAW-WDCA"),
+        ("vol_num", 1),
+        ("vol_totnum", 1),
+        ("ref_date", np.datetime64("2019-01-01T00:00:00")),
+        ("revision_date", np.datetime64("2020-05-26T00:00:00")),
+        ("freq", 0.041667),
+        ("descr_time_unit", "days from file reference point"),
+        ("num_cols_dependent", 23),
+        (
+            "mul_factors",
+            [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ],
+        ),
+        (
+            "vals_invalid",
+            [
+                999.999999,
+                9999.99,
+                999.99,
+                9999.99,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                99.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                999.99999999,
+                9.999999,
+            ],
+        ),
+        ("descr_first_col", "end_time of measurement, days from the file reference point"),
+    ]
+)
 
 
 def test_EbasNasaAmesFile_head_fix(filedata):
-    HEAD_FIX = OrderedDict(
-        num_head_lines=93,
-        num_head_fmt=1001,
-        data_originator="Brem, Benjamin; Baltensperger, Urs",
-        sponsor_organisation="CH02L, Paul Scherrer Institut, PSI, Laboratory of Atmospheric Chemistry (LAC), OFLB, , 5232, Villigen PSI, Switzerland",
-        submitter="Brem, Benjamin",
-        project_association="ACTRIS CREATE EMEP GAW-WDCA",
-        vol_num=1,
-        vol_totnum=1,
-        ref_date=np.datetime64("2019-01-01T00:00:00"),
-        revision_date=np.datetime64("2020-05-26T00:00:00"),
-        freq=0.041667,
-        descr_time_unit="days from file reference point",
-        num_cols_dependent=23,
-        mul_factors=[1.0] * 23,
-        vals_invalid=[999.999999, 9999.99, 999.99, 9999.99]
-        + [99.99999999] * 9
-        + [999.99999999] * 9
-        + [9.999999],
-        descr_first_col="end_time of measurement, days from the file reference point",
-    )
     assert isinstance(filedata.head_fix, OrderedDict)
-    assert filedata.head_fix == HEAD_FIX
+    for key, val in filedata.head_fix.items():
+        assert key in HEAD_FIX
+        assert val == HEAD_FIX[key]
 
-
-def test_EbasNasaAmesFile_head_fix_error(filedata):
-    with pytest.raises(AttributeError) as e:
+    with pytest.raises(AttributeError):
         filedata.head_fix = "Blaaaaaaaaaaaaaaa"
-    assert str(e.value) == "can't set attribute"
 
 
 def test_EbasNasaAmesFile_data(filedata):
@@ -100,13 +170,33 @@ def test_EbasNasaAmesFile_col_num(filedata):
 
 
 def test_EbasNasaAmesFile_col_names(filedata):
-    COLUMN_NAMES = (
-        ["starttime", "endtime", "pressure", "relative_humidity", "temperature"]
-        + ["aerosol_light_backscattering_coefficient"] * 9
-        + ["aerosol_light_scattering_coefficient"] * 9
-        + ["numflag"]
-    )
-    assert filedata.col_names == COLUMN_NAMES
+    names = filedata.col_names
+    assert names == [
+        "starttime",
+        "endtime",
+        "pressure",
+        "relative_humidity",
+        "temperature",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_backscattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "aerosol_light_scattering_coefficient",
+        "numflag",
+    ]
 
 
 def test_EbasNasaAmesFile_get_time_gaps_meas(filedata):
@@ -122,14 +212,19 @@ def test_EbasNasaAmesFile_get_dt_meas(filedata):
 
 
 @pytest.mark.parametrize("update", [{"bla": 42}, {"vol_num": 42}])
-def test_EbasNasaAmesFile_update(filedata: EbasNasaAmesFile, update: dict):
-    data = EbasNasaAmesFile(filedata.file)
-    data.update(**update)
+def test_EbasNasaAmesFile_update(filedata, update):
+    meta_before = {}
+    meta_before.update(**filedata._meta)
+    head_before = {}
+    head_before.update(**filedata._head_fix)
+    filedata.update(**update)
     for key, val in update.items():
-        if key in filedata._head_fix:
-            assert data._head_fix[key] == val
+        if key in head_before:
+            assert filedata._head_fix[key] == val
         else:
-            assert data._meta[key] == val
+            assert filedata._meta[key] == val
+    filedata._head_fix = head_before
+    filedata._meta = meta_before
 
 
 def test_EbasNasaAmesFile___str__(filedata):
@@ -137,19 +232,15 @@ def test_EbasNasaAmesFile___str__(filedata):
 
 
 @pytest.mark.parametrize(
-    "colnum,value",
+    "colnum,raises,value",
     [
-        (5, 450),
-        (8, 550),
+        (0, pytest.raises(KeyError), None),
+        (5, does_not_raise_exception(), 450),
+        (8, does_not_raise_exception(), 550),
     ],
 )
-def test_EbasColDef_get_wavelength_nm(filedata, colnum, value):
+def test_EbasColDef_get_wavelength_nm(filedata, colnum, raises, value):
     coldef = filedata.var_defs[colnum]
-    assert isinstance(coldef, EbasColDef)
-    assert coldef.get_wavelength_nm() == value
-
-
-def test_EbasColDef_get_wavelength_nm_error(filedata):
-    with pytest.raises(KeyError) as e:
-        filedata.var_defs[0].get_wavelength_nm()
-    assert str(e.value) == "'Column variable starttime does not contain wavelength information'"
+    assert isinstance(coldef, ena.EbasColDef)
+    with raises:
+        assert coldef.get_wavelength_nm() == value

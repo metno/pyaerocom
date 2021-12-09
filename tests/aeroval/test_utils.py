@@ -1,12 +1,10 @@
-from __future__ import annotations
-
-from copy import deepcopy
+from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
+import pyaerocom.aeroval.utils as mod
 from pyaerocom import GriddedData
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-from pyaerocom.aeroval.utils import compute_model_average_and_diversity, make_config_template
 
 from .._conftest_helpers import add_dummy_model_data
 from ._outbase import ADD_MODELS_DIR
@@ -25,56 +23,52 @@ MODEL_DIR = add_dummy_model_data(
     tmpdir=ADD_MODELS_DIR,
 )
 
-# need more than one model
-CFG1 = deepcopy(cfg1)
-CFG1["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)
-
-# need more than one model
-CFG2 = deepcopy(cfg2)
-CFG2["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)
-
 
 def test_make_config_template():
-    val = make_config_template("bla", "blub")
+    val = mod.make_config_template("bla", "blub")
     assert isinstance(val, EvalSetup)
 
 
-@pytest.fixture
-def processor(cfg) -> ExperimentProcessor | None:
-    if cfg is None:
-        return None
-    setup = EvalSetup(**cfg)
-    return ExperimentProcessor(setup)
+from copy import deepcopy
 
-
-@pytest.mark.parametrize("cfg", [CFG2])
-@pytest.mark.parametrize("avg_how", ["median", "mean"])
-def test_compute_model_average_and_diversity(processor: ExperimentProcessor, avg_how: str):
-    avg_out, div_out, q1_out, q3_out, std_out = compute_model_average_and_diversity(
-        processor, "od550aer", avg_how=avg_how
-    )
-
-    assert isinstance(avg_out, GriddedData)
-    assert isinstance(div_out, GriddedData)
-
-    if avg_how == "median":
-        assert isinstance(q1_out, GriddedData)
-        assert isinstance(q3_out, GriddedData)
-    else:
-        assert isinstance(std_out, GriddedData)
+CFG1 = deepcopy(cfg1)
+# need more than one model
+CFG1["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)
+CFG2 = deepcopy(cfg2)
+# need more than one model
+CFG2["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)
 
 
 @pytest.mark.parametrize(
-    "cfg,avg_how,error",
+    "cfg,addargs,raises",
     [
-        (None, None, "invalid input, need ExperimentProcessor"),
-        (cfg1, None, "Need more than one model to compute average..."),
-        (CFG1, "bla", "Invalid input for avg_how bla"),
+        (cfg1, dict(), pytest.raises(ValueError)),
+        (cfg1, dict(avg_how="bla"), pytest.raises(ValueError)),
+        (CFG1, dict(avg_how="bla"), pytest.raises(ValueError)),
+        (CFG2, dict(), does_not_raise_exception()),
+        (CFG2, dict(avg_how="mean"), does_not_raise_exception()),
     ],
 )
-def test_compute_model_average_and_diversity_error(
-    processor: ExperimentProcessor | None, avg_how: str | None, error: str
-):
-    with pytest.raises(ValueError) as e:
-        compute_model_average_and_diversity(processor, "od550aer", avg_how=avg_how)
-    assert str(e.value) == error
+def test_compute_model_average_and_diversity(cfg, addargs, raises):
+    with pytest.raises(ValueError):
+        mod.compute_model_average_and_diversity(42, "od550aer")
+
+    stp = EvalSetup(**cfg)
+    proc = ExperimentProcessor(stp)
+    with raises:
+        (avg_out, div_out, q1_out, q3_out, std_out) = mod.compute_model_average_and_diversity(
+            proc, "od550aer", **addargs
+        )
+
+        try:
+            avghow = addargs["avg_how"]
+        except KeyError:
+            avghow = "median"
+
+        assert isinstance(avg_out, GriddedData)
+        assert isinstance(div_out, GriddedData)
+        if avghow == "median":
+            assert isinstance(q1_out, GriddedData)
+            assert isinstance(q3_out, GriddedData)
+        else:
+            assert isinstance(std_out, GriddedData)

@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 from pyaerocom import const
@@ -49,34 +51,22 @@ def test___init__dummy():
 
 
 @pytest.mark.parametrize(
-    "key,val",
+    "key,val,raises",
     [
-        ("_FILEMASK", ".txt"),
-        ("__version__", "0.01"),
-        ("DATA_ID", "Blaaa"),
-        ("SUPPORTED_DATASETS", ["Blaaa"]),
-        ("PROVIDES_VARIABLES", ["od550aer"]),
-        ("DEFAULT_VARS", ["od550aer"]),
-        ("data_id", "Blaaa"),
-        ("REVISION_FILE", "Revision.txt"),
-        ("AUX_VARS", []),
-        ("data_id", "Blaaa"),
+        ("_FILEMASK", ".txt", does_not_raise_exception()),
+        ("TS_TYPE", None, pytest.raises(NotImplementedError)),
+        ("__version__", "0.01", does_not_raise_exception()),
+        ("DATA_ID", "Blaaa", does_not_raise_exception()),
+        ("SUPPORTED_DATASETS", ["Blaaa"], does_not_raise_exception()),
+        ("PROVIDES_VARIABLES", ["od550aer"], does_not_raise_exception()),
+        ("DEFAULT_VARS", ["od550aer"], does_not_raise_exception()),
+        ("data_dir", None, pytest.raises(ValueError)),
+        ("data_id", "Blaaa", does_not_raise_exception()),
+        ("REVISION_FILE", "Revision.txt", does_not_raise_exception()),
+        ("AUX_VARS", [], does_not_raise_exception()),
+        ("data_id", "Blaaa", does_not_raise_exception()),
     ],
 )
-def test_DummyReader_attrs(dummy_reader, key, val):
-    assert getattr(dummy_reader, key) == val
-
-
-@pytest.mark.parametrize(
-    "key,exception,error",
-    [
-        pytest.param("TS_TYPE", NotImplementedError, "", id="NotImplementedError"),
-        pytest.param(
-            "data_dir", ValueError, "Observation network ID Blaaa does not exist", id="ValueError"
-        ),
-    ],
-)
-def test_DummyReader_attrs_error(dummy_reader, key, exception, error: str):
-    with pytest.raises(exception) as e:
-        getattr(dummy_reader, key)
-    assert str(e.value) == error
+def test_DummyReader_attrs(dummy_reader, key, val, raises):
+    with raises:
+        assert getattr(dummy_reader, key) == val
