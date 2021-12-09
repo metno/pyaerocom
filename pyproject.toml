@@ -4,6 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+log_cli = false
+log_cli_level = "WARNING"
 addopts = "--failed-first"
 testpaths = ["tests"]
 filterwarnings = [

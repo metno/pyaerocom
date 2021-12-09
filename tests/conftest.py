@@ -9,15 +9,13 @@ import pytest
 
 import pyaerocom.access_testdata as td
 from pyaerocom import __dir__ as PYADIR
-from pyaerocom import change_verbosity, const
+from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
 
 from . import _conftest_helpers as cth
 from .synthetic_data import FakeStationDataAccess
-
-change_verbosity("warning")
 
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
