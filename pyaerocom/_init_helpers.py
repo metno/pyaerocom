@@ -1,46 +1,33 @@
 """
 Logging configuration and package metadata helpers
 
-NOTE: logging configuration will be propagated to all child pyaerocom modules
+NOTE: 
+All pyaerocom child modules share the logging configuration
+- all logging messages are time stamped and writen out to file
+- some messages are also printed to the console
+- log files are kept up to 14 days
+- logging configuration is read from pyaerocom/data/logging.ini
+  with default values from LOGGING_CONFIG
 """
-
-
 from __future__ import annotations
 
 import logging
-from logging.handlers import TimedRotatingFileHandler
-from pathlib import Path
+from importlib import resources
+from logging.config import fileConfig
 
-root_logger = logging.getLogger()
-pya_logger = logging.getLogger("pyaerocom")
+LOGGING_CONFIG = dict(
+    # root logger
+    file_name="pyaerocom.log",
+    file_days=14,
+    file_level="DEBUG",
+    # pyaerocom logger
+    console_level="INFO",
+)
 
+with resources.path("pyaerocom.data", "logging.ini") as path:
+    fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
 
-def __configure_file_logger(
-    logger: logging.Logger, filename: str | Path, *, level: int, backup_days: int
-):
-    """keep the up to backup_days days of daily log files"""
-    handler = TimedRotatingFileHandler(filename, when="D", backupCount=backup_days)
-    formatter = logging.Formatter(
-        "%(asctime)s:%(name)s:%(levelname)s:%(message)s", datefmt="%F %T"
-    )
-    handler.setFormatter(formatter)
-    handler.setLevel(level)
-    logger.addHandler(handler)
-
-
-def __configuure_console_logger(logger: logging.Logger, *, level: int):
-
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(message)s")
-    handler.setFormatter(formatter)
-    handler.setLevel(level)
-    logger.addHandler(handler)
-
-    return logger
-
-
-__configure_file_logger(root_logger, "pyaerocom.log", level=logging.DEBUG, backup_days=14)
-__configuure_console_logger(pya_logger, level=logging.INFO)
+logger = logging.getLogger("pyaerocom")
 
 
 def change_verbosity(level: str | int) -> None:
@@ -65,11 +52,8 @@ def change_verbosity(level: str | int) -> None:
             f"invalid logging level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
-    if not pya_logger.handlers:
-        __configuure_console_logger(pya_logger, level=level)
-        return
-
-    for handler in pya_logger.handlers:
+    assert logger.handlers, f"{logger.name} logger has not been configured correctly"
+    for handler in logger.handlers:
         if type(handler) == logging.StreamHandler:
             handler.setLevel(level)
 

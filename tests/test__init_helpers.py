@@ -34,17 +34,27 @@ def test_logger(name: str | None) -> logging.Logger:
     return logging.getLogger(name)
 
 
+def test_pya_logger():
+    assert len(mod.logger.handlers) == 1
+    handler = mod.logger.handlers[0]
+    assert type(handler) == logging.StreamHandler
+    assert logging.getLevelName(handler.level) == mod.LOGGING_CONFIG["console_level"]
+
+
 @pytest.mark.parametrize(
     "name,level",
     [
-        ("pyaerocom.test", get_level_value(mod.pya_logger)),
-        ("pyaerocom.deep.nested.module", get_level_value(mod.pya_logger)),
+        ("pyaerocom.test", mod.LOGGING_CONFIG["console_level"]),
+        ("pyaerocom.deep.nested.module", mod.LOGGING_CONFIG["console_level"]),
         ("other.module", logging.NOTSET),
         (None, logging.NOTSET),
     ],
 )
-def test_logger_level(test_logger: logging.Logger, level: int):
-    assert get_level_value(test_logger) == level
+def test_logger_level(test_logger: logging.Logger, level: int | str):
+    if isinstance(level, int):
+        assert get_level_value(test_logger) == level
+    if isinstance(level, str):
+        assert get_level_name(test_logger) == level.upper()
 
 
 @pytest.mark.parametrize(
