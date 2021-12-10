@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
@@ -66,30 +65,29 @@ def test_logger_level(test_logger: logging.Logger, level: int | str):
 
 
 @pytest.mark.parametrize(
-    "level,raises",
+    "level", ["debug", "info", "warning", "error", "critical", 10, 20, 30, 40, 50]
+)
+@pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
+def test_change_verbosity(level: str | int, test_logger: logging.Logger):
+    mod.change_verbosity(level)
+    if isinstance(level, int):
+        assert get_level_value(test_logger) == level
+    if isinstance(level, str):
+        assert get_level_name(test_logger) == level.upper()
+
+
+@pytest.mark.parametrize(
+    "level,error",
     [
-        ("debug", does_not_raise_exception()),
-        ("info", does_not_raise_exception()),
-        ("warning", does_not_raise_exception()),
-        ("error", does_not_raise_exception()),
-        ("critical", does_not_raise_exception()),
-        (10, does_not_raise_exception()),
-        (20, does_not_raise_exception()),
-        (30, does_not_raise_exception()),
-        (40, does_not_raise_exception()),
-        (50, does_not_raise_exception()),
-        (60, pytest.raises(ValueError)),
-        ("blaaa", pytest.raises(ValueError)),
+        (60, "invalid logging level 60"),
+        ("blaaa", "Unknown level: 'BLAAA'"),
     ],
 )
 @pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
-def test_change_verbosity(level: str | int, test_logger: logging.Logger, raises):
-    with raises:
+def test_change_verbosity(level: str | int, error: str, test_logger: logging.Logger):
+    with pytest.raises(ValueError) as e:
         mod.change_verbosity(level)
-        if isinstance(level, int):
-            assert get_level_value(test_logger) == level
-        if isinstance(level, str):
-            assert get_level_name(test_logger) == level.upper()
+    assert str(e.value).startswith(error)
 
 
 ### Functions for package initialisation
