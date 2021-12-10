@@ -1,9 +1,8 @@
 import os
-from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
@@ -119,15 +118,10 @@ def test_Colocator__add_attr(col):
     assert "blub" in col
 
 
-@pytest.mark.parametrize(
-    "ts_type_desired, ts_type, flex, raises",
-    [
-        ("minutely", "daily", False, pytest.raises(ColocationError)),
-        ("daily", "monthly", False, does_not_raise_exception()),
-        ("monthly", "monthly", False, does_not_raise_exception()),
-    ],
-)
-def test_Colocator_model_ts_type_read(tm5_aero_stp, ts_type_desired, ts_type, flex, raises):
+@pytest.mark.parametrize("ts_type_desired", ["daily", "monthly"])
+@pytest.mark.parametrize("ts_type", ["monthly"])
+@pytest.mark.parametrize("flex", [False, True])
+def test_Colocator_model_ts_type_read(tm5_aero_stp, ts_type_desired, ts_type, flex):
     col = Colocator(**tm5_aero_stp)
     obs_var = "od550aer"
     assert tm5_aero_stp["obs_vars"] == obs_var
@@ -137,15 +131,22 @@ def test_Colocator_model_ts_type_read(tm5_aero_stp, ts_type_desired, ts_type, fl
     # Problem with saving since obs_id is different
     # from obs_data.contains_dataset[0]...
     col.model_ts_type_read = {obs_var: ts_type_desired}
-    with raises:
-        data = col.run()
-        assert isinstance(data, dict)
-        assert obs_var in data
-        coldata = data[obs_var][obs_var]
-        assert coldata.ts_type == ts_type
-        assert coldata.metadata["ts_type_src"][0] == "daily"
-        if not flex:
-            assert coldata.metadata["ts_type_src"][1] == ts_type_desired
+    data = col.run()
+    assert isinstance(data, dict)
+    assert obs_var in data
+    coldata = data[obs_var][obs_var]
+    assert coldata.ts_type == ts_type
+    assert coldata.metadata["ts_type_src"][0] == "daily"
+    if not flex:
+        assert coldata.metadata["ts_type_src"][1] == ts_type_desired
+
+
+def test_Colocator_model_ts_type_read_error(tm5_aero_stp):
+    col = Colocator(**tm5_aero_stp)
+    col.model_ts_type_read = {"od550aer": "minutely"}
+    with pytest.raises(ColocationError) as e:
+        col.run()
+    assert str(e.value).startswith("Failed to load model data: TM5-met2010_CTRL-TEST (od550aer)")
 
 
 def test_Colocator_model_add_vars(tm5_aero_stp):
@@ -207,21 +208,20 @@ def test_Colocator_update_basedir_coldata(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "what,raises",
+    "what",
     [
-        (dict(blaa=42), does_not_raise_exception()),
-        (dict(obs_id="test", model_id="test"), does_not_raise_exception()),
-        (dict(gridded_reader_id="test"), does_not_raise_exception()),
-        (dict(gridded_reader_id={"test": 42}), does_not_raise_exception()),
-        (dict(resample_how={"daily": {"hourly": "max"}}), does_not_raise_exception()),
+        dict(blaa=42),
+        dict(obs_id="test", model_id="test"),
+        dict(gridded_reader_id="test"),
+        dict(gridded_reader_id={"test": 42}),
+        dict(resample_how={"daily": {"hourly": "max"}}),
     ],
 )
-def test_Colocator_update(what, raises):
+def test_Colocator_update(what):
     col = Colocator(raise_exceptions=True)
-    with raises:
-        col.update(**what)
-        for key, val in what.items():
-            assert col[key] == val
+    col.update(**what)
+    for key, val in what.items():
+        assert col[key] == val
 
 
 def test_Colocator_run_gridded_gridded(tm5_aero_stp):
@@ -235,20 +235,11 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
 
 
 @pytest.mark.parametrize(
-    "update_col,chk_mvar,chk_ovar,sh,mean_obs,mean_mod,raises",
+    "update,chk_mvar,chk_ovar,sh,mean_obs,mean_mod",
     [
-        (dict(), "od550aer", "od550aer", (2, 12, 11), 0.272, 0.244, does_not_raise_exception()),
-        (
-            dict(regrid_res_deg=10),
-            "od550aer",
-            "od550aer",
-            (2, 12, 11),
-            0.272,
-            0.229,
-            does_not_raise_exception(),
-        ),
-        (dict(), "od550aer", "od550aer", (2, 12, 11), 0.272, 0.244, does_not_raise_exception()),
-        (dict(obs_vars=[]), None, None, None, None, None, pytest.raises(ColocationSetupError)),
+        (dict(), "od550aer", "od550aer", (2, 12, 11), 0.272, 0.244),
+        (dict(regrid_res_deg=10), "od550aer", "od550aer", (2, 12, 11), 0.272, 0.229),
+        (dict(), "od550aer", "od550aer", (2, 12, 11), 0.272, 0.244),
         (
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
@@ -260,7 +251,6 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
             (2, 12, 1),
             0.123,
             0.002,
-            does_not_raise_exception(),
         ),
         (
             dict(model_use_vars={"od550aer": "abs550aer"}, model_use_climatology=True),
@@ -269,7 +259,6 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
             (2, 12, 1),
             0.159,
             0.002,
-            does_not_raise_exception(),
         ),
         (
             dict(model_use_vars={"od550aer": "abs550aer"}, obs_use_climatology=True),
@@ -278,9 +267,33 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
             (2, 12, 16),
             0.259,
             0.014,
-            does_not_raise_exception(),
         ),
-        (
+    ],
+)
+def test_Colocator_run_gridded_ungridded(
+    tm5_aero_stp, update, chk_mvar, chk_ovar, sh, mean_obs, mean_mod
+):
+    stp = ColocationSetup(**tm5_aero_stp)
+    stp.update(**update)
+
+    result = Colocator(**stp).run()
+    assert isinstance(result, dict)
+
+    coldata = result[chk_mvar][chk_ovar]
+    assert coldata.shape == sh
+
+    mod_clim_used = any("9999" in x for x in coldata.metadata["from_files"])
+    assert stp.model_use_climatology == mod_clim_used
+
+    assert_allclose(np.nanmean(coldata.data[0].values), mean_obs, atol=0.01)
+    assert_allclose(np.nanmean(coldata.data[1].values), mean_mod, atol=0.01)
+
+
+@pytest.mark.parametrize(
+    "update,error",
+    [
+        pytest.param(dict(obs_vars=[]), "no observation variables specified", id="no obs"),
+        pytest.param(
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
                 model_use_climatology=True,
@@ -288,42 +301,22 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
                 start=2008,
                 stop=2012,
             ),
-            "abs550aer",
-            "od550aer",
-            None,
-            None,
-            None,
-            pytest.raises(ColocationSetupError),
+            "Conflict: only single year analyses are support",
+            id="unsupported",
         ),
     ],
 )
-def test_Colocator_run_gridded_ungridded(
-    tm5_aero_stp, update_col, chk_mvar, chk_ovar, sh, mean_obs, mean_mod, raises
-):
+def test_Colocator_run_gridded_ungridded_error(tm5_aero_stp, update, error):
     stp = ColocationSetup(**tm5_aero_stp)
-    stp.update(**update_col)
-    with raises:
-        col = Colocator(**stp)
-        result = col.run()
-
-        assert isinstance(result, dict)
-
-        coldata = result[chk_mvar][chk_ovar]
-
-        assert coldata.shape == sh
-        mod_clim_used = any(["9999" in x for x in coldata.metadata["from_files"]])
-        if stp.model_use_climatology:
-            assert mod_clim_used
-        else:
-            assert not mod_clim_used
-        avg = [np.nanmean(coldata.data[0].values), np.nanmean(coldata.data[1].values)]
-        npt.assert_allclose(avg, [mean_obs, mean_mod], atol=0.01)
+    stp.update(**update)
+    with pytest.raises(ColocationSetupError) as e:
+        Colocator(**stp).run()
+    assert str(e.value).startswith(error)
 
 
 def test_colocator_filter_name():
-    with does_not_raise_exception():
-        col = Colocator(filter_name="WORLD")
-        assert col.filter_name == "WORLD"
+    col = Colocator(filter_name="WORLD")
+    assert col.filter_name == "WORLD"
 
 
 def test_colocator_read_ungridded():

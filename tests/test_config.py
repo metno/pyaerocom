@@ -1,7 +1,8 @@
 import getpass
 import os
 import tempfile
-from contextlib import nullcontext as does_not_raise_exception
+from pathlib import Path
+from tarfile import PAX_FIELDS
 
 import pytest
 
@@ -47,32 +48,39 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 
 
 @pytest.mark.parametrize(
-    "config_file,try_infer_environment,raises",
+    "config_file,try_infer_environment",
     [
-        (CFG_FILE_WRONG, False, pytest.raises(ValueError)),
-        (f"/home/{USER}/blaaaa.ini", False, pytest.raises(FileNotFoundError)),
-        (None, False, does_not_raise_exception()),
-        (None, True, does_not_raise_exception()),
-        (CFG_FILE, False, does_not_raise_exception()),
+        (None, False),
+        (None, True),
+        (CFG_FILE, False),
     ],
 )
-def test_Config___init__(config_file, try_infer_environment, raises):
-    with raises:
-        cfg = testmod.Config(config_file, try_infer_environment)
+def test_Config___init__(config_file, try_infer_environment):
+    testmod.Config(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
-    "basedir,raises,envid",
+    "config_file,exception",
     [
-        ("/blaaa", pytest.raises(FileNotFoundError), None),
-        (LOCAL_DB_DIR, does_not_raise_exception(), "local-db"),
+        (CFG_FILE_WRONG, ValueError),
+        (f"/home/{USER}/blaaaa.ini", FileNotFoundError),
     ],
 )
-def test_Config__infer_config_from_basedir(basedir, raises, envid):
+def test_Config___init___error(config_file, exception):
+    with pytest.raises(exception):
+        testmod.Config(config_file, False)
+
+
+def test_Config__infer_config_from_basedir():
     cfg = testmod.Config(try_infer_environment=False)
-    with raises:
-        res = cfg._infer_config_from_basedir(basedir)
-        assert res[1] == envid
+    res = cfg._infer_config_from_basedir(LOCAL_DB_DIR)
+    assert res[1] == "local-db"
+
+
+def test_Config__infer_config_from_basedir_error():
+    cfg = testmod.Config(try_infer_environment=False)
+    with pytest.raises(FileNotFoundError):
+        cfg._infer_config_from_basedir("/blaaa")
 
 
 def test_Config_has_access_lustre():
@@ -87,28 +95,25 @@ def test_Config_has_access_users_database():
 
 @lustre_avail
 @pytest.mark.parametrize(
-    "cfg_id, basedir, init_obslocs_ungridded,init_data_search_dirs, raises, num_obs, num_dirs",
+    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
     [
-        ("metno", None, False, False, does_not_raise_exception(), 0, 0),
-        ("metno", None, True, False, does_not_raise_exception(), 0, 0),
-        ("metno", None, True, True, does_not_raise_exception(), 0, 0),
-        ("metno", f"/home/{USER}", True, True, does_not_raise_exception(), 0, 0),
-        ("users-db", None, False, False, does_not_raise_exception(), 0, 0),
+        ("metno", None, False, False),
+        ("metno", None, True, False),
+        ("metno", None, True, True),
+        ("metno", f"/home/{USER}", True, True),
+        ("users-db", None, False, False),
     ],
 )
-def test_Config_read_config(
-    cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, raises, num_obs, num_dirs
-):
+def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs):
     cfg = testmod.Config(try_infer_environment=False)
     cfg_file = cfg._config_files[cfg_id]
-    assert os.path.exists(cfg_file)
-    with raises:
-        cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
-        assert len(cfg.DATA_SEARCH_DIRS) == num_dirs
-        assert len(cfg.OBSLOCS_UNGRIDDED) == num_obs
-        assert os.path.exists(cfg.OUTPUTDIR)
-        assert os.path.exists(cfg.COLOCATEDDATADIR)
-        assert os.path.exists(cfg.CACHEDIR)
+    assert Path(cfg_file).exists()
+    cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
+    assert len(cfg.DATA_SEARCH_DIRS) == 0
+    assert len(cfg.OBSLOCS_UNGRIDDED) == 0
+    assert Path(cfg.OUTPUTDIR).exists()
+    assert Path(cfg.COLOCATEDDATADIR).exists()
+    assert Path(cfg.CACHEDIR).exists()
 
 
 def test_empty_class_header(empty_cfg):
