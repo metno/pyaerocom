@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from pyaerocom import _init_helpers as mod
+from pyaerocom._init_helpers import LOGGING_CONFIG, _init_supplemental, change_verbosity
 
 
 def get_level_value(logger: logging.Logger) -> int:
@@ -37,7 +37,7 @@ def test_root_logger():
     logger = logging.getLogger()
     assert any(isinstance(h, logging.FileHandler) for h in logger.handlers)
     handler = next(h for h in logger.handlers if isinstance(h, logging.FileHandler))
-    assert logging.getLevelName(handler.level) == mod.LOGGING_CONFIG["file_level"]
+    assert logging.getLevelName(handler.level) == LOGGING_CONFIG["file_level"]
 
 
 def test_pya_logger():
@@ -45,14 +45,14 @@ def test_pya_logger():
     assert len(logger.handlers) == 1
     handler = logger.handlers[0]
     assert type(handler) == logging.StreamHandler
-    assert logging.getLevelName(handler.level) == mod.LOGGING_CONFIG["console_level"]
+    assert logging.getLevelName(handler.level) == LOGGING_CONFIG["console_level"]
 
 
 @pytest.mark.parametrize(
     "name,level",
     [
-        ("pyaerocom.test", mod.LOGGING_CONFIG["console_level"]),
-        ("pyaerocom.deep.nested.module", mod.LOGGING_CONFIG["console_level"]),
+        ("pyaerocom.test", LOGGING_CONFIG["console_level"]),
+        ("pyaerocom.deep.nested.module", LOGGING_CONFIG["console_level"]),
         ("other.module", logging.NOTSET),
         (None, logging.NOTSET),
     ],
@@ -69,7 +69,7 @@ def test_logger_level(test_logger: logging.Logger, level: int | str):
 )
 @pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
 def test_change_verbosity(level: str | int, test_logger: logging.Logger):
-    mod.change_verbosity(level)
+    change_verbosity(level)
     if isinstance(level, int):
         assert get_level_value(test_logger) == level
     if isinstance(level, str):
@@ -86,7 +86,7 @@ def test_change_verbosity(level: str | int, test_logger: logging.Logger):
 @pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
 def test_change_verbosity(level: str | int, error: str, test_logger: logging.Logger):
     with pytest.raises(ValueError) as e:
-        mod.change_verbosity(level)
+        change_verbosity(level)
     assert str(e.value).startswith(error)
 
 
@@ -96,6 +96,6 @@ def test__init_supplemental():
 
     from pkg_resources import get_distribution
 
-    version, fpath = mod._init_supplemental()
+    version, fpath = _init_supplemental()
     assert version == get_distribution("pyaerocom").version
     assert os.path.normpath(fpath).endswith("/pyaerocom")
