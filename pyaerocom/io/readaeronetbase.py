@@ -25,7 +25,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
 
-    __baseversion__ = "0.13_" + ReadUngriddedBase.__baseversion__
+    __baseversion__ = "0.14_" + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
     COL_DELIM = ","
