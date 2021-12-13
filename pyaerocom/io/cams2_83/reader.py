@@ -4,7 +4,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 import os
 import re
-from pyaerocom.griddeddata import GriddedData
+from time import time
+
 
 import xarray as xr
 from pandas import date_range, DatetimeIndex
@@ -12,6 +13,18 @@ import numpy as np
 
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.units_helpers import UALIASES
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom import const
+
+
+CAMS2_83_vars = dict(
+    concco = "co_conc",
+    concno2 = "no2_conc",
+    conco3 = "o3_conc",
+    concpm10 = "pm10_conc",
+    concpm25 = "pm2p5_conc",
+    concso2 = "so2_conc",
+)
 
 
 DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
@@ -23,6 +36,11 @@ def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path
         date = datetime.strptime(date, "%Y%m%d")
     return DATA_FOLDER_PATH / f"{date:%Y-%m-%d}-{model}-all-species.nc"
 
+
+def get_cams2_83_vars(var_name):
+    if not var_name in CAMS2_83_vars.keys():
+        raise ValueError(f"{var_name} is not a valide variable for CAMS2-83")
+    return CAMS2_83_vars[var_name]
 
 
 
@@ -181,7 +199,7 @@ class ReadCAMS2_83:
             loaded data
 
         """
-        return self.filedata["co_conc"]
+        return self.filedata[var_name_aerocom]
 
     def _find_all_files(self):
         model = self.model
@@ -190,7 +208,14 @@ class ReadCAMS2_83:
         filepaths = []
 
         for date in daterange:
-            filepaths.append(find_model_path(model, date))
+            location = find_model_path(model, date) 
+            if not os.path.isfile(location):
+                print(f"Could not find {location} . Skipping file")
+            else:
+                filepaths.append(location)
+
+        if len(filepaths) == 0:
+            raise ValueError(f"Could not find any data to read for {self.model}")
         
         self.filepaths = filepaths
 
@@ -209,6 +234,22 @@ class ReadCAMS2_83:
         ds["time"] = new_dates
 
         return ds
+    
+    def has_var(self, var_name):
+        """Check if variable is supported
+
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+
+        Returns
+        -------
+        bool
+        """
+        if var_name in CAMS2_83_vars.keys():
+            return True
+        return False
 
     def open_file(self) -> xr.Dataset:
         """
@@ -221,7 +262,7 @@ class ReadCAMS2_83:
 
         """
         self._find_all_files()
-        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date)
+        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date, parallel=True)
         self._filedata = ds
 
         return ds
@@ -244,13 +285,16 @@ class ReadCAMS2_83:
         """
 
         # var_name have to be made into the correct PollutantName
+        var = const.VARS[var_name]
+        var_name_aerocom = var.var_name_aerocom
+
+        cams_var = get_cams2_83_vars(var_name)
 
         # ts_type can be ignored
 
         ts_type = "hourly"
         var_name_aerocom = var_name
-        ds = self._load_var(var_name_aerocom, ts_type)
-
+        ds = self._load_var(cams_var, ts_type)
         ds.attrs["Simulation date"] = self.date
 
         cube = ds.to_iris()
@@ -272,8 +316,13 @@ if __name__=="__main__":
     data_dir = DATA_FOLDER_PATH
     reader = ReadCAMS2_83(data_dir=data_dir)
 
-    reader.daterange = date_range(start="20210602", end="20210603")
-    reader.model = ModelName.EMEP
+    t0 = time()
+    reader.daterange = date_range(start="20210601", end="20210631")
+    reader.model = ModelName.MATCH
     reader.date = 3
- 
-    print(reader.read_var("", "")["time"])
+
+    
+    print(reader.read_var("concco", ""))
+    
+
+    print(time()-t0)

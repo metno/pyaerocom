@@ -74,6 +74,7 @@ from .read_gaw import ReadGAW
 from .read_ghost import ReadGhost
 from .read_marcopolo import ReadMarcoPolo
 from .read_mscw_ctm import ReadMscwCtm
+from .cams2_83.reader import ReadCAMS2_83
 
 if geopy_available() and coda_available():
     # the coda and geopy libraries are needed to read l2 data of the supported satellites

@@ -18,6 +18,7 @@ from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
+from pyaerocom.io.cams2_83.models import ModelName
 
 
 class OutputPaths(ConstrainedContainer):
@@ -92,6 +93,14 @@ class ModelMapsSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.maps_res_deg = 5
         self.update(**kwargs)
+
+
+class CAMS2_83Setup(ConstrainedContainer):
+    def __init__(self, **kwargs):
+        self.use_cams2_83 = False
+        self.cams2_83_daterange = None
+        self.cams2_83_model = ModelName.EMEP
+        self.cams2_83_dateshift = 0
 
 
 class StatisticsSetup(ConstrainedContainer):
@@ -279,9 +288,12 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.webdisp_opts = WebDisplaySetup()
 
         self.processing_opts = EvalRunOptions()
+        
+        self.cams2_83_cfg = CAMS2_83Setup()
 
         self.obs_cfg = ObsCollection()
         self.model_cfg = ModelCollection()
+
 
         self.var_web_info = {}
         self.path_manager = OutputPaths(self.proj_id, self.exp_id)

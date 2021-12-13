@@ -3,6 +3,7 @@ from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
+from pyaerocom.io import cams2_83
 
 
 class ExperimentProcessor(ProcessingEngine, HasColocator):
@@ -54,7 +55,14 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                col.run(var_list)
+                if self.cfg.cams2_83_cfg.use_cams2_83:
+                    col.run(var_list, 
+                            use_cams2_83=True, 
+                            cams2_83_daterange=self.cfg.cams2_83_cfg.cams2_83_daterange,
+                            cams2_83_model=self.cfg.cams2_83_cfg.cams2_83_model,
+                            cams2_83_dateshift=self.cfg.cams2_83_cfg.cams2_83_dateshift)
+                else:
+                    col.run(var_list)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:

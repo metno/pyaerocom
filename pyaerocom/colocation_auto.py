@@ -25,8 +25,9 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded, ReadMscwCtm, ReadUngridded
+from pyaerocom.io import ReadGridded, ReadMscwCtm, ReadCAMS2_83, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.io.cams2_83.models import ModelName
 
 
 class ColocationSetup(BrowseDict):
@@ -493,7 +494,7 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm}
+    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm, "ReadCAMS2_83": ReadCAMS2_83}
 
     STATUS_CODES = {
         1: "SUCCESS",
@@ -1173,6 +1174,11 @@ class Colocator(ColocationSetup):
             vert_which = None
             ts_type_read = self.obs_ts_type_read
             kwargs.update(self._eval_obs_filters(var_name))
+
+        if isinstance(reader, ReadCAMS2_83):
+            reader.model = self.cams2_83_model
+            reader.daterange = self.cams2_83_daterange
+            reader.date = self.cams2_83_dateshift
 
         try:
             data = reader.read_var(
