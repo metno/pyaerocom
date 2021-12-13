@@ -21,9 +21,11 @@
 Module containing pyaerocom custom exceptions
 """
 
+
 class AeronetReadError(IOError):
     # Aeronet reading failed somehow
     pass
+
 
 class AeroValConfigError(ValueError):
     pass

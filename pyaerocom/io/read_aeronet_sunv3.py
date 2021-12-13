@@ -203,9 +203,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             dummy_arr = line.split(self.COL_DELIM)
 
             if pl is not None and len(dummy_arr) != len(pl):
-                self.logger.warning(
-                    f"Data line {i} in {filename} is corrupt, skipping..."
-                )
+                self.logger.warning(f"Data line {i} in {filename} is corrupt, skipping...")
                 continue
             # copy the meta data (array of type string)
             for var in self.META_NAMES_FILE:
@@ -275,10 +273,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+
     plt.close("all")
 
-    from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
     from pyaerocom import const
+    from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
     reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
     od = reader.read("od550aer")
