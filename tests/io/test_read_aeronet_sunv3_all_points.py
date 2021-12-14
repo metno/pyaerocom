@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""
-Created on 20211214
-"""
-import os
 
-import numpy as np
-import numpy.testing as npt
+import os
+import gzip
+
 import pytest
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
+from pyaerocom.exceptions import AeronetReadError
 
 from ..conftest import data_unavail
 
@@ -21,7 +19,7 @@ def reader():
 
 @data_unavail
 def test_get_file_list(reader):
-    assert len(reader.get_file_list()) == 2
+    assert len(reader.get_file_list()) >= 2
 
 
 @data_unavail
@@ -41,12 +39,17 @@ def test_read_file(reader):
 
 @data_unavail
 def test_read_add_common_meta(reader):
-    files = reader.files
+    reader.get_file_list()
+    files = reader.files[0]
+
     data = reader.read("od550aer", files=files, common_meta={"bla": 42})
     assert all("bla" in x for x in data.metadata.values())
 
 
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
+def test_exception_aeronet_read_error(reader):
+    reader.get_file_list()
+    files = sorted(reader.files)[-1]
+    with pytest.raises(AeronetReadError) as e:
+        data = reader.read_file(files[-1])
+        assert data
+    assert str(e.value).startswith('gzip error in file')
