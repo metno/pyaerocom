@@ -18,9 +18,11 @@ from ..conftest import data_unavail
 def reader():
     return ReadAeronetSunV3("AeronetSunV3L2Subset.AP")
 
+
 @data_unavail
 def test_get_file_list(reader):
     assert len(reader.get_file_list()) == 2
+
 
 @data_unavail
 def test_read_file(reader):
@@ -38,6 +40,7 @@ def test_read_file(reader):
     # actual = [data["od550aer"][:10].mean(), data["ang4487aer"][:10].mean()]
     # desired = [0.287, 1.787]
     # npt.assert_allclose(actual, desired, rtol=1e-3)
+
 
 # @data_unavail
 # def test_read(reader):
