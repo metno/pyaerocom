@@ -28,6 +28,7 @@ def test_get_file_list(reader):
 def test_read_file(reader):
     from pyaerocom.stationdata import StationData
 
+    reader.get_file_list()
     file = reader.files[-3]
     assert os.path.basename(file) == "Thessaloniki.lev30"
     data = reader.read_file(file)
@@ -49,7 +50,6 @@ def test_read(reader):
     files = reader.files[2:4]
     assert all(os.path.basename(x) in ("Agoufou.lev30", "Alta_Floresta.lev30") for x in files)
     data = reader.read(files=files)
-
     assert isinstance(data, UngriddedData)
     assert data.unique_station_names == ["Agoufou", "Alta_Floresta"]
     assert data.contains_vars == ["od550aer", "ang4487aer"]

@@ -45,6 +45,7 @@ class AccessTestData:
         "OBSERVATIONS": "obsdata",
         "CONFIG": "config",
         "AeronetSunV3L2Subset.daily": "obsdata/AeronetSunV3Lev2.daily/renamed",
+        "AeronetSunV3L2Subset.AP": "obsdata/AeronetSunV3Lev2.0.AP/renamed",
         "AeronetSDAV3L2Subset.daily": "obsdata/AeronetSDAV3Lev2.daily/renamed",
         "AeronetInvV3L2Subset.daily": "obsdata/AeronetInvV3Lev2.daily/renamed",
         "EBASSubset": "obsdata/EBASMultiColumn",
@@ -59,6 +60,7 @@ class AccessTestData:
 
     _UNGRIDDED_READERS = {
         "AeronetSunV3L2Subset.daily": ReadAeronetSunV3,
+        "AeronetSunV3L2Subset.AP": ReadAeronetSunV3,
         "AeronetSDAV3L2Subset.daily": ReadAeronetSdaV3,
         "AeronetInvV3L2Subset.daily": ReadAeronetInvV3,
         "EBASSubset": ReadEbas,

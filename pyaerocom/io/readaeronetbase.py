@@ -5,7 +5,12 @@ import numpy as np
 from tqdm import tqdm
 
 from pyaerocom import const
-from pyaerocom.exceptions import MetaDataError, StationCoordinateError, VariableNotFoundError
+from pyaerocom.exceptions import (
+    AeronetReadError,
+    MetaDataError,
+    StationCoordinateError,
+    VariableNotFoundError,
+)
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
@@ -22,7 +27,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
 
-    __baseversion__ = "0.13_" + ReadUngriddedBase.__baseversion__
+    __baseversion__ = "0.14_" + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
     COL_DELIM = ","
@@ -365,9 +370,13 @@ class ReadAeronetBase(ReadUngriddedBase):
         logger.info("Reading AERONET data")
         skipped = 0
         for i in tqdm(range(num_files)):
-
             _file = files[i]
-            station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            try:
+                station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            except AeronetReadError as e:
+                self.logger.warning(f"\n{repr(e)}.")
+                skipped += 1
+                continue
 
             try:
                 statmeta = station_data.get_meta()
