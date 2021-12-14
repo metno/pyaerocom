@@ -157,6 +157,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.annual_stats_constrained = False
         self.add_trends = False
         self.trends_min_yrs = 7
+        self.use_diurnal = True
         self.stats_tseries_base_freq = None
         self.update(**kwargs)
 
@@ -375,6 +376,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         """
         filepath = os.path.join(outdir, self.json_filename)
         data = self.json_repr()
+        data['cams2_83_cfg']["cams2_83_daterange"] = ""
         write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
         return filepath
 

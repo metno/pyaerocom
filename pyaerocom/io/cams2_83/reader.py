@@ -10,6 +10,7 @@ from time import time
 import xarray as xr
 from pandas import date_range, DatetimeIndex
 import numpy as np
+import iris
 
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.units_helpers import UALIASES
@@ -27,7 +28,8 @@ CAMS2_83_vars = dict(
 )
 
 
-DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+#DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
 
 def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path:
     if not isinstance(model, ModelName):
@@ -107,7 +109,8 @@ class ReadCAMS2_83:
         if self.data_dir is None and self._filepaths is None:
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         #if self._filepaths is None:
-        #self._filepaths = find_model_path()
+        if self._filepaths is None:
+            self._filepaths = self._find_all_files()
         return self._filepaths
 
     @filepaths.setter
@@ -199,7 +202,26 @@ class ReadCAMS2_83:
             loaded data
 
         """
-        return self.filedata[var_name_aerocom]
+        data = self.filedata[var_name_aerocom]
+
+
+        old_lon = data.longitude.data
+        old_lon = np.where(old_lon > 180, old_lon-360, old_lon)
+        data["longitude"] = old_lon
+
+
+        data.attrs["long_name"] = var_name_aerocom
+        data.time.attrs["long_name"] = "time"
+        data.time.attrs["standard_name"] = "time"
+
+        data.longitude.attrs["long_name"] = "longitude"
+        data.longitude.attrs["standard_name"] = "longitude"
+        data.longitude.attrs["units"] = "degrees_east"
+
+        data.latitude.attrs["long_name"] = "latitude"
+        data.latitude.attrs["standard_name"] = "latitude"
+        data.latitude.attrs["units"] = "degrees_north"
+        return data
 
     def _find_all_files(self):
         model = self.model
@@ -218,6 +240,7 @@ class ReadCAMS2_83:
             raise ValueError(f"Could not find any data to read for {self.model}")
         
         self.filepaths = filepaths
+        return filepaths
 
     def _select_date(self, ds: xr.Dataset) -> xr.Dataset:
 
@@ -227,12 +250,17 @@ class ReadCAMS2_83:
 
         day_prefix = " " if abs(self.date) == 0 else f"{int(self.date)} days "
         dateselect = [f"{day_prefix}{i:02d}:00:00" for i in range(24)]
-        
         ds = ds.sel(time=dateselect)
+        ds = ds.sel(level=0.0)
 
+        forecast_hour = (forecast_date - datetime(1900, 1, 1)).days * 24
+        #new_dates = [forecast_hour+i for i in range(24)]
+        
         new_dates = date_range(forecast_date, forecast_date+timedelta(hours=23), freq="h")
         ds["time"] = new_dates
-
+        # ds.time.attrs["units"] = "hours since 1900-01-01"
+        ds.time.attrs["long_name"] = "time"
+        ds.time.attrs["standard_name"] = "time"
         return ds
     
     def has_var(self, var_name):
@@ -262,7 +290,8 @@ class ReadCAMS2_83:
 
         """
         self._find_all_files()
-        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date, parallel=True)
+        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date)#, parallel=True)
+
         self._filedata = ds
 
         return ds
@@ -296,9 +325,11 @@ class ReadCAMS2_83:
         var_name_aerocom = var_name
         ds = self._load_var(cams_var, ts_type)
         ds.attrs["Simulation date"] = self.date
-
+        
         cube = ds.to_iris()
 
+        # if ts_type == "hourly":
+        #     cube.coord("time").convert_units("hours since 1900-01-01")
         gridded = GriddedData(
             cube,
             var_name=var_name_aerocom,
@@ -317,12 +348,12 @@ if __name__=="__main__":
     reader = ReadCAMS2_83(data_dir=data_dir)
 
     t0 = time()
-    reader.daterange = date_range(start="20210601", end="20210631")
-    reader.model = ModelName.MATCH
+    reader.daterange = date_range(start="20190601", end="20190603")
+    reader.model = ModelName.EMEP
     reader.date = 3
 
-    
-    print(reader.read_var("concco", ""))
+    #print(reader.open_file())
+    print(reader.read_var("concno2", ""))
     
 
     print(time()-t0)

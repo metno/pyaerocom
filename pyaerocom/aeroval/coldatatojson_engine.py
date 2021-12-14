@@ -95,6 +95,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         add_trends = self.cfg.statistics_opts.add_trends
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
+        use_diurnal = self.cfg.statistics_opts.use_diurnal
+
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
         if vert_code == "ModelLevel":
@@ -233,7 +235,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             outfile_scat = os.path.join(out_dirs["scat"], map_name)
             write_json(scat_data, outfile_scat, ignore_nan=True)
 
-        if coldata.ts_type == "hourly":
+        if coldata.ts_type == "hourly" and use_diurnal:
             const.print_log.info("Processing diurnal profiles")
             (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
                 coldata, regions_how, regnames, meta_glob
