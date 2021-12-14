@@ -149,7 +149,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             with open(filename, "rt", encoding="ISO-8859-1") as in_file:
                 lines = in_file.readlines()
         except OSError:
-            # faulty gzip file
+            # faulty gzip file, but also the gzip class raises some exceptions
             if suffix == ".gz":
                 os.remove(f_out.name)
             raise AeronetReadError(f"gzip error in file {tmp_name}")
