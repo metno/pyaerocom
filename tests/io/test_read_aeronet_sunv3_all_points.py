@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-import os
 import gzip
+import os
 
 import pytest
 
-from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.exceptions import AeronetReadError
+from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
 from ..conftest import data_unavail
 
@@ -52,4 +52,4 @@ def test_exception_aeronet_read_error(reader):
     with pytest.raises(AeronetReadError) as e:
         data = reader.read_file(files[-1])
         assert data
-    assert str(e.value).startswith('gzip error in file')
+    assert str(e.value).startswith("gzip error in file")
