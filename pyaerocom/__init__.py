@@ -1,7 +1,7 @@
 # isort:skip_file
 from importlib import metadata
 
-from ._init_helpers import change_verbosity
+from ._logging import change_verbosity
 
 __version__ = metadata.version(__package__)
 
