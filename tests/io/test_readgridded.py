@@ -4,7 +4,6 @@ Created on Mon Jul  9 14:14:29 2018
 """
 
 import os
-from collections import OrderedDict
 
 import numpy as np
 import numpy.testing as npt
@@ -186,9 +185,9 @@ def test_ReadGridded_years_avail(tmpdir, years, expected):
 
 
 def test_ReadGridded_get_var_info_from_files(reader_tm5):
-    od = reader_tm5.get_var_info_from_files()
-    assert isinstance(od, OrderedDict)
-    assert sorted(od.keys()) == sorted(["abs550aer", "od550aer"])
+    info = reader_tm5.get_var_info_from_files()
+    assert isinstance(info, dict)
+    assert sorted(info) == ["abs550aer", "od550aer"]
 
 
 # Lustre tests

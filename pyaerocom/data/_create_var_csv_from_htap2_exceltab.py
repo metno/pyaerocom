@@ -3,7 +3,6 @@ Test script for creating variables.ini from HTAP2 excel table
 """
 import os
 import string
-from collections import OrderedDict as od
 from configparser import ConfigParser
 
 import openpyxl
@@ -41,7 +40,7 @@ if __name__ == "__main__":
         "comments_and_purpose",
     ]
 
-    result = od()
+    result = {}
     multiple = {}
     for sheet_name in sheets:
         sheet = book[sheet_name]
@@ -54,7 +53,7 @@ if __name__ == "__main__":
             if sheet[CTRL_COL][i].value is None:
                 continue
 
-            var_spec = od()
+            var_spec = {}
             var_name = item.value
             if var_name.startswith("HTAP"):
                 continue

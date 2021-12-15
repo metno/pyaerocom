@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-from collections import OrderedDict as od
 from pathlib import Path
 
 import iris
@@ -116,7 +115,7 @@ class GriddedData:
 
     SUPPORTED_VERT_SCHEMES = ["mean", "max", "min", "surface", "altitude", "profile"]
 
-    _META_ADD = od(
+    _META_ADD = dict(
         from_files=[],
         data_id="undefined",
         var_name_read="undefined",
@@ -2275,7 +2274,7 @@ class GriddedData:
 
         data_rg = self.grid.regrid(other.grid, scheme)
 
-        suppl = od(**self.metadata)
+        suppl = dict(**self.metadata)
         suppl["regridded"] = True
         data_out = GriddedData(data_rg, **suppl)
         return data_out

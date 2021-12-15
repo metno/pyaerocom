@@ -512,7 +512,7 @@ if __name__ == "__main__":
 
     input_data = [(vmro3, "GHOST.EEA.daily", "vmro3"), (vmrno2, "GHOST.EEA.daily", "vmrno2")]
 
-    meta_keys = list(vmro3.metadata[0].keys())
+    meta_keys = list(vmro3.metadata[0])
     fun = "GHOST.EEA.daily;vmro3+GHOST.EEA.daily;vmrno2"
     stats_merged = combine_vardata_ungridded(
         input_data,
