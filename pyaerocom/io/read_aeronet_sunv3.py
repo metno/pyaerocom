@@ -272,17 +272,3 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     del data_out[var]
         self.logger.debug(f"The following lines were ignored: {_lines_ignored}")
         return data_out
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    plt.close("all")
-
-    import pyaerocom as pya
-    from pyaerocom import const
-    from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
-
-    pya.change_verbosity(new_level="warning", log=pya.logger)
-    reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
-    od = reader.read("od550aer")

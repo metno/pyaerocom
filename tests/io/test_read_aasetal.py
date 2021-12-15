@@ -162,10 +162,3 @@ def test_reading_routines(aasetal_data, filenum, station_name, colname, var_name
         # stat[var] = stat[var]/numsecs
         # to_unit = 'kg m-2 s-1'
     npt.assert_almost_equal(should_be, actual)
-
-
-if __name__ == "__main__":
-    import sys
-
-    # from pyaerocom.test.conftest import aasetal_data
-    pytest.main(sys.argv)

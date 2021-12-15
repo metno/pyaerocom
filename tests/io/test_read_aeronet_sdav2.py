@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
 import os
 
 import numpy as np
@@ -46,9 +42,3 @@ def test_load_berlin_AeroSdaV2L2D():
     ]
 
     npt.assert_allclose(actual=means, desired=desired, rtol=TEST_RTOL)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

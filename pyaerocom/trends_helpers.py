@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Helper methods for computation of trends
 
@@ -257,22 +256,3 @@ def _init_period_dates(start_year, stop_year, season):
 
     num_dates_period = period_index.values.astype("datetime64[Y]").astype(np.float64)
     return (start_date, stop_date, period_index, num_dates_period)
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    plt.close("all")
-
-    r = pya.io.ReadUngridded()
-    data = r.read("AeronetSunV3Lev2.daily", vars_to_retrieve="od550aer", file_pattern="Solar*")
-
-    stat = data.to_station_data("Solar*")
-
-    stat.compute_trend("od550aer", 2002, 2012)
-    tr = stat.trends["od550aer"]
-
-    ax = tr.plot(season="all", period="1995-2017")
-
-    ax = tr.plot(season="all", period="2002-2012")
-    plt.show()

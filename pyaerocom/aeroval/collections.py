@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Thu May 27 12:27:47 2021
-
-@author: jonasg
-"""
 import abc
 from fnmatch import fnmatch
 

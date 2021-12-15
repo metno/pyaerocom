@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -36,9 +32,3 @@ def test_load_berlin():
     # nominal = [0.014570, 0.908349, 0.012069] before 05/12/2020
     nominal = [0.014396999999999998, 0.8967587000000001, 0.011944501428220868]
     npt.assert_allclose(actual=first_vals, desired=nominal, rtol=TEST_RTOL)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

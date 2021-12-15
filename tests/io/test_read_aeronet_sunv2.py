@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
 import os
 
 import numpy as np
@@ -34,7 +30,3 @@ def test_load_berlin_AeroSunV2L2D():
 
     nominal = [0.229427, 0.18302, 0.151227, 2.002052]
     npt.assert_allclose(actual=first_vals, desired=nominal, rtol=TEST_RTOL)
-
-
-if __name__ == "__main__":
-    test_load_berlin_AeroSunV2L2D()

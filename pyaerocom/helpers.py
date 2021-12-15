@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 General helper methods for the pyaerocom library.
 """
@@ -1683,26 +1682,3 @@ def get_time_rng_constraint(start, stop):
     t_upper = iris.time.PartialDateTime(year=stop.year, month=stop.month, day=stop.day)
 
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
-
-
-if __name__ == "__main__":
-
-    idx = make_datetime_index(2010, 2011, "hourly")
-    print(get_lowest_resolution("yearly", "daily", "monthly"))
-    print(get_highest_resolution("yearly", "daily", "monthly"))
-
-    print(
-        infer_time_resolution(
-            [
-                np.datetime64("2010-01-01"),
-                np.datetime64("2010-01-02"),
-                np.datetime64("2010-01-05"),
-                np.datetime64("2010-10-15"),
-            ]
-        )
-    )
-
-    print(varlist_aerocom(["od550aer", "od550csaer"]))
-
-    rng = (30, 60)
-    get_lon_rng_constraint(*rng, False)

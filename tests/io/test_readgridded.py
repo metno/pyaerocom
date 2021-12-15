@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
-
 import os
 
 import numpy as np
@@ -264,9 +259,3 @@ def test_read_vars(reader_reanalysis):
 def test_read_climatology_file(reader_tm5):
     data = reader_tm5.read_var("abs550aer", start=9999)
     assert isinstance(data, GriddedData)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Wed May 15 11:05:50 2019
-
-@author: paulinast
-"""
-
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -87,13 +80,3 @@ def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     )
     assert stat.ts_type == "monthly"
     assert stat.ts_type_src == "daily"
-
-
-if __name__ == "__main__":
-
-    d = _make_data()
-    # =============================================================================
-    #     test_ungriddeddata_ams_cvo(d)
-    #     test_vmrdms_ams(d)
-    # =============================================================================
-    test_vmrdms_ams_subset(d)

@@ -40,9 +40,3 @@ def test_srtm_altitude():
 def test_etopo_altitude():
     alt = geodesy.get_topo_altitude(TEST_LAT, TEST_LON, topo_dataset="etopo1")
     npt.assert_almost_equal(alt, 217)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

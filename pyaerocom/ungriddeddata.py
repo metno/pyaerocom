@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import fnmatch
@@ -2991,15 +2990,3 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
         closest_idx.append(idx)
         test = test[(idx + 1) :]
     return closest_idx
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    OBS_LOCAL = "/home/jonasg/MyPyaerocom/data/obsdata/"
-
-    GHOST_EEA_LOCAL = os.path.join(OBS_LOCAL, "GHOST/data/EEA_AQ_eReporting/daily")
-
-    data = pya.io.ReadUngridded("GHOST.EEA.daily", data_dirs=GHOST_EEA_LOCAL).read(
-        vars_to_retrieve="vmro3"
-    )

@@ -224,18 +224,3 @@ class ReadAeronetInvV3(ReadAeronetBase):
                     del data_out[var]
 
         return data_out
-
-
-if __name__ == "__main__":
-    from pyaerocom import change_verbosity
-
-    change_verbosity("critical")
-    read = ReadAeronetInvV3()
-    read15 = ReadAeronetInvV3(const.AERONET_INV_V3L15_DAILY_NAME)
-    read.verbosity_level = "info"
-
-    data = read.read_first_file()
-    data15 = read15.read_first_file()
-    print(data)
-
-    udat = read.read(last_file=10)

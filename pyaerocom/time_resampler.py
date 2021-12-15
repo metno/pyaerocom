@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Module containing time resampling functionality
 """
@@ -244,19 +243,3 @@ class TimeResampler:
             else:
                 self._last_units_preserved = False
         return data_out
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    data = pya.io.ReadGridded("AATSR_SU_v4.3").read_var("od550aer", start=2010)
-    mon_iris = data.resample_time("monthly")
-
-    mon_xarr = data.resample_time("monthly", min_num_obs=1)
-
-    plt.close("all")
-    data = pya.io.ReadUngridded().read("EBASMC", "concpm10")
-
-    stats = data.to_station_data_all("concpm10")

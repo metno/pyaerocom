@@ -62,13 +62,3 @@ CFG = dict(
     # directory where colocated data files are supposed to be stored
     weighted_stats=True,
 )
-
-if __name__ == "__main__":
-    from pyaerocom.access_testdata import initialise
-    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-
-    tda = initialise()
-    stp = EvalSetup(**CFG)
-    ana = ExperimentProcessor(stp)
-    ana.run()
-    print(ana.exp_output)

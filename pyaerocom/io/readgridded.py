@@ -2226,11 +2226,4 @@ class ReadGridded:
         return self.data_id
 
 
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    reader = ReadGridded("NorESM2-NHIST_f19_tn14_20190710")
-    print(reader)
-
-    data = reader.read_var("od550aer", start=9999)
 is_3d = lambda var_name: True if "3d" in var_name.lower() else False

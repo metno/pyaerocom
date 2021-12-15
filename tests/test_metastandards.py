@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Mar  3 09:52:16 2020
-
-@author: jonasg
-"""
 import pytest
 
 from pyaerocom import metastandards as mst
@@ -117,9 +111,3 @@ def test_aerocomdataid(data_id, values, test_addstuff):
         assert data_id1 == "NorESM2-met2010_AP3-CTRL"
 
         assert mst.AerocomDataID(**dd) == mst.AerocomDataID.from_dict(dd)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
 import os
 
 import numpy as np
@@ -63,9 +59,3 @@ def test_read_add_common_meta(reader):
     files = reader.files[2:4]
     data = reader.read("od550aer", files=files, common_meta={"bla": 42})
     assert all("bla" in x for x in data.metadata.values())
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

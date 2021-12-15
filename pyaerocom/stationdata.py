@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 import warnings
 from copy import deepcopy

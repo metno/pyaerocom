@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Mar  3 17:10:03 2020
-
-@author: jonasg
-"""
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -86,9 +80,3 @@ def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
     got = [np.mean(mean_vals), np.mean(std_vals)]
     should_be = [0.9196, 0.325]
     npt.assert_allclose(actual=got, desired=should_be, atol=1e-2)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
