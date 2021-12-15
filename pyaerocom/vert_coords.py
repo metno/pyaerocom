@@ -11,6 +11,8 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 """
 
+import logging
+
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
@@ -18,6 +20,8 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
@@ -115,7 +119,7 @@ def geopotentialheight2altitude(geopotential_height):
     Computed altitude levels
     """
 
-    const.print_log.warning(
+    logger.warning(
         "Conversion method of geopotential height to "
         "altitude is not yet implemented and returns the "
         "input values. The introduced error is small at "
@@ -330,7 +334,6 @@ class AltitudeAccess:
     ADD_FILE_OPT = {"pres": ["temp"]}
 
     def __init__(self, gridded_data):
-        from pyaerocom import logger
         from pyaerocom.griddeddata import GriddedData
 
         if not isinstance(gridded_data, GriddedData):

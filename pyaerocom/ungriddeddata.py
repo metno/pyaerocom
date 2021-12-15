@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import fnmatch
+import logging
 import os
 from datetime import datetime
 
@@ -10,9 +11,6 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-
-logger = const.logger
-print_log = const.print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (
@@ -37,6 +35,8 @@ from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+logger = logging.getLogger(__name__)
 
 
 class UngriddedData:
@@ -706,7 +706,7 @@ class UngriddedData:
             try:
                 lat, lon = meta["latitude"], meta["longitude"]
             except:
-                const.print_log.warning(f"Could not retrieve lat lon coord at meta index {idx}")
+                logger.warning(f"Could not retrieve lat lon coord at meta index {idx}")
                 continue
             meta_idx.append(idx)
             coords.append((lat, lon))
@@ -760,9 +760,9 @@ class UngriddedData:
             try:
                 countries.append(meta["country"])
             except:
-                const.logger.warning("No country information in meta block", idx)
+                logger.warning("No country information in meta block", idx)
         if len(countries) == 0:
-            const.print_log.warning(
+            logger.warning(
                 "None of the metadata blocks contains "
                 "country information. You may want to "
                 "run class method check_set_country first "
@@ -1641,10 +1641,10 @@ class UngriddedData:
 
         for i, meta in self.metadata.items():
             if not "station_name" in meta:
-                print_log.warning(f"Skipping meta-block {i}: station_name is not defined")
+                logger.warning(f"Skipping meta-block {i}: station_name is not defined")
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
-                print_log.warning(
+                logger.warning(
                     f"Skipping meta-block {i} (station {meta['station_name']}): "
                     f"one or more of the coordinates is not defined"
                 )
@@ -1694,7 +1694,7 @@ class UngriddedData:
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
-                        const.print_log.warning(
+                        logger.warning(
                             f"Ignoring variable {var} in meta block {meta_idx} "
                             f"since no data could be found"
                         )
@@ -1921,7 +1921,7 @@ class UngriddedData:
             *filters,
         )
         if len(meta_matches) == len(self.metadata):
-            const.logger.info(f"Input filters {filter_attributes} result in unchanged data object")
+            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum_new)
         time_str = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -2058,7 +2058,7 @@ class UngriddedData:
             else:
                 raise VarNotAvailableError(f"No such variable {var_name} in data")
         elif len(self.contains_vars) == 1:
-            const.print_log.info("Data object is already single variable. Returning copy")
+            logger.info("Data object is already single variable. Returning copy")
             return self.copy()
 
         var_idx = self.var_idx[var_name]
@@ -2767,7 +2767,7 @@ class UngriddedData:
         from pyaerocom.plot.plotcoordinates import plot_coordinates
 
         if len(self.contains_datasets) > 1:
-            print_log.warning(
+            logger.warning(
                 "UngriddedData object contains more than one "
                 "dataset ({}). Station coordinates will not be "
                 "distinguishable. You may want to apply a filter "
@@ -2923,7 +2923,7 @@ class UngriddedData:
         try:
             return self[self._idx]
         except DataCoverageError:
-            const.print_log.warning(
+            logger.warning(
                 f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
             )
             return StationData()

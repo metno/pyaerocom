@@ -1,3 +1,4 @@
+import logging
 import os
 from getpass import getuser
 
@@ -18,6 +19,8 @@ from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
+
+logger = logging.getLogger(__name__)
 
 
 class OutputPaths(ConstrainedContainer):
@@ -42,7 +45,7 @@ class OutputPaths(ConstrainedContainer):
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
         assert_exists=True,
         auto_create=True,
-        logger=const.print_log,
+        logger=logger,
         tooltip="Base directory for json output files",
     )
 
@@ -50,7 +53,7 @@ class OutputPaths(ConstrainedContainer):
         default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
         assert_exists=True,
         auto_create=True,
-        logger=const.print_log,
+        logger=logger,
         tooltip="Base directory for colocated data output files (NetCDF)",
     )
 
@@ -255,7 +258,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         default="",
         assert_exists=False,
         auto_create=False,
-        logger=const.print_log,
+        logger=logger,
         tooltip=".py file containing additional read methods for modeldata",
     )
     _aux_funs = {}
@@ -387,7 +390,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
                 raise AeroValConfigError("Either periods or start must be set...")
             per = self.colocation_opts._period_from_start_stop()
             periods = [per]
-            const.print_log.info(
+            logger.info(
                 f"periods is not set, inferred {per} from start / stop colocation settings."
             )
 

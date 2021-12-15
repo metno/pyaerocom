@@ -10,9 +10,9 @@ def test_filter_warnings_decorator():
     @ignore_warnings(True, UserWarning, "User Warning")
     @ignore_warnings(True, DeprecationWarning, "Deprecated")
     def add_num_with_warnings(num1, num2):
-        warnings.warn(UserWarning("User Warning"))
-        warnings.warn(DeprecationWarning("Deprecated"))
-        warnings.warn(UserWarning("General warning"))
+        warnings.warn("User Warning", UserWarning)
+        warnings.warn("Deprecated", DeprecationWarning)
+        warnings.warn("General warning", UserWarning)
         return num1 + num2
 
     with pytest.warns(UserWarning, match="General warning"):

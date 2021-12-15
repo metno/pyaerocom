@@ -1,4 +1,5 @@
 import fnmatch
+import logging
 import os
 import re
 
@@ -13,6 +14,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEarlinet(ReadUngriddedBase):
@@ -295,7 +298,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 unit = to_unit
                 unit_ok = True
             except Exception as e:
-                const.print_log.warning(
+                logger.warning(
                     f"Failed to convert unit of {var} in file {filename} (Earlinet): "
                     f"Error: {repr(e)}"
                 )
@@ -316,7 +319,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     raise ValueError("Fatal: dust layer height data must be single value")
 
                 if unit_ok and info.minimum < val < info.maximum:
-                    const.print_log.warning(f"zdust value {val} out of range, setting to NaN")
+                    logger.warning(f"zdust value {val} out of range, setting to NaN")
                     val = np.nan
 
                 if np.isnan(val):
@@ -625,7 +628,7 @@ class ReadEarlinet(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         exclude = self._get_exclude_filelist()
-        const.print_log.info("Fetching EARLINET data files. This might take a while...")
+        logger.info("Fetching EARLINET data files. This might take a while...")
         patterns = []
         for var in vars_to_retrieve:
             if not var in self.VAR_PATTERNS_FILE:

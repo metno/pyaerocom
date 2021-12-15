@@ -33,6 +33,7 @@ Example
 look at the end of the file
 """
 import gzip
+import logging
 import os
 import pathlib
 import shutil
@@ -43,12 +44,13 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyaerocom import const
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):
@@ -505,7 +507,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         from pyaerocom.exceptions import DataSourceError
 
         if pattern is None:
-            const.print_log.warning("using default pattern *.* for file search")
+            logger.warning("using default pattern *.* for file search")
             pattern = "*.*"
         self.logger.info("Fetching data files. This might take a while...")
         fp = os.path.join(self.data_dir, pattern)
@@ -573,10 +575,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if len(vars_to_retrieve) > 1:
             raise NotImplementedError("So far, only one variable can be read at a time...")
         var_name = vars_to_retrieve[0]
-        const.print_log.info("Reading EEA data")
+        logger.info("Reading EEA data")
         if files is None:
             if len(self.files) == 0:
-                const.print_log.info("Retrieving file list")
+                logger.info("Retrieving file list")
                 files = self.get_file_list(self.FILE_MASKS[var_name])
             files = self.files
 
@@ -598,13 +600,13 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
-        const.print_log.info("Reading metadata file")
+        logger.info("Reading metadata file")
         # non compliant, but efficiently indexed metadata
         self._metadata = self._read_metadata_file(metadatafile)
 
         # returns a dict with country codes as keys and the country names as value
         _country_dict = get_country_name_from_iso()
-        const.print_log.info("Reading files...")
+        logger.info("Reading files...")
 
         for i in tqdm(range(len(files))):
             _file = files[i]
@@ -615,7 +617,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 continue
             except TemporalResolutionError as e:
                 self.logger.warning(f"{_file} has TemporalResolutionError")
-                const.print_log.warning(f"{repr(e)}. Skipping file...")
+                logger.warning(f"{repr(e)}. Skipping file...")
                 continue
 
             # readfile might fail outside of the error captured by the try statement above

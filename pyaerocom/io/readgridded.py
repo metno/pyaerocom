@@ -1,5 +1,7 @@
 import fnmatch
+import logging
 import os
+import warnings
 from glob import glob
 from pathlib import Path
 
@@ -8,7 +10,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const
 from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -36,6 +38,8 @@ from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
 from pyaerocom.metastandards import AerocomDataID
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
+
+logger = logging.getLogger(__name__)
 
 
 class ReadGridded:
@@ -207,7 +211,7 @@ class ReadGridded:
             try:
                 self.search_all_files()
             except DataCoverageError as e:
-                print_log.warning(repr(e))
+                logger.warning(repr(e))
 
     @property
     def data_id(self) -> str:
@@ -570,7 +574,7 @@ class ReadGridded:
         try:
             var = const.VARS[var_name]
         except VariableDefinitionError as e:
-            const.print_log.warning(repr(e))
+            logger.warning(repr(e))
             return False
 
         if self.check_compute_var(var_name):
@@ -615,7 +619,7 @@ class ReadGridded:
                 1, "s"
             )  # subtract one second to end up at the end of previous year
         if const.MIN_YEAR > start.year:
-            print_log.warning(
+            logger.warning(
                 f"First available year {start} of data {self.data_id} is smaller "
                 f"than supported first year {const.MIN_YEAR}."
             )
@@ -712,7 +716,7 @@ class ReadGridded:
         for _file in files:
             # TODO: resolve this in a more general way...
             if "ModelLevelAtStations" in _file:
-                const.logger.info(f"Ignoring file {_file}")
+                logger.info(f"Ignoring file {_file}")
                 continue
             try:
                 info = self.file_convention.get_info_from_file(_file)
@@ -828,7 +832,7 @@ class ReadGridded:
         # get all files with correct ending
         files = glob(f"{self.data_dir}/*{self.file_type}")
         if len(files) == 0:
-            print_log.warning(
+            logger.warning(
                 f"No files of type {self.file_type} could be found in current "
                 f"data directory (data_dir={os.path.abspath(self.data_dir)}"
             )
@@ -842,7 +846,7 @@ class ReadGridded:
             try:
                 self._update_file_convention(files)
             except FileNotFoundError as e:
-                print_log.warning(repr(e))
+                logger.warning(repr(e))
                 return
 
         result = self._evaluate_fileinfo(files)
@@ -1002,7 +1006,7 @@ class ReadGridded:
         if len(subset) == 0:
             if vert_which in self.VERT_ALT:
                 vc = self.VERT_ALT[vert_which]
-                const.print_log.warning(
+                logger.warning(
                     f"No files could be found for var {var_name} and "
                     f"vert_which {vert_which} in {self.data_id}. "
                     f"Trying to find alternative options"
@@ -1496,9 +1500,7 @@ class ReadGridded:
         # provided in the dataset
         for alias in var.aliases:
             if alias in self.vars_filename:
-                const.print_log.info(
-                    f"Did not find {var_name} field but {alias}. Using the latter instead"
-                )
+                logger.info(f"Did not find {var_name} field but {alias}. Using the latter instead")
                 return alias
 
         # Finally, if still no match could be found, check if input variable
@@ -1511,7 +1513,7 @@ class ReadGridded:
 
     def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
         if all(x == "" for x in self.file_info.vert_code.values):
-            const.print_log.info(
+            logger.info(
                 f"Deactivating file search by vertical code for {self.data_id}, "
                 f"since filenames do not include information about vertical code "
                 f"(probably AeroCom 2 convention)"
@@ -1522,7 +1524,7 @@ class ReadGridded:
             try:
                 vert_which = vert_which[var_name]
             except Exception:
-                const.print_log.info(
+                logger.info(
                     f"Setting vert_which to None, since input dict {vert_which} "
                     f"does not contain input variable {var_name}"
                 )
@@ -1532,7 +1534,7 @@ class ReadGridded:
             try:
                 ts_type = ts_type[var_name]
             except Exception:
-                const.print_log.info(
+                logger.info(
                     f"Setting ts_type to None, since input dict {ts_type} "
                     f"does not contain specification variable to read {var_name}"
                 )
@@ -1946,14 +1948,10 @@ class ReadGridded:
             variables is available in this object
         """
         if vars_to_retrieve is None and "var_names" in kwargs:
-            const.print_log.warning(
-                DeprecationWarning(
-                    "Input arg var_names "
-                    "is deprecated (but "
-                    "still works). Please "
-                    "use vars_to_retrieve "
-                    "instead"
-                )
+            warnings.warn(
+                "Input arg var_names is deprecated. " "Please use vars_to_retrieve instead",
+                DeprecationWarning,
+                stacklevel=2,
             )
             vars_to_retrieve = kwargs["var_names"]
         if vars_to_retrieve is None:
@@ -2135,7 +2133,7 @@ class ReadGridded:
             try:
                 data = self._check_crop_time(data, start, stop)
             except Exception:
-                const.print_log.exception(
+                logger.exception(
                     f"Failed to crop time dimension in {data} (start: {start}, stop: {stop})"
                 )
         if rename_var is not None:
@@ -2224,7 +2222,7 @@ class ReadGridded:
     @property
     def name(self):
         """Deprecated name of attribute data_id"""
-        const.print_log.warning(DeprecationWarning("Please use data_id"))
+        warnings.warn("Please use data_id", DeprecationWarning, stacklevel=2)
         return self.data_id
 
 

@@ -1,13 +1,15 @@
 import fnmatch
+import logging
 import os
 from configparser import ConfigParser
 
 from cf_units import Unit
 
-from pyaerocom import logger
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.variable import Variable
 from pyaerocom.variable_helpers import parse_aliases_ini, parse_variables_ini
+
+logger = logging.getLogger(__name__)
 
 
 class VarCollection:

@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import pathlib
 import shutil
@@ -12,6 +13,8 @@ from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetSunV3(ReadAeronetBase):

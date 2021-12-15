@@ -1,10 +1,13 @@
 import fnmatch
+import logging
 import os
 import re
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.exceptions import DataSearchError
+
+logger = logging.getLogger(__name__)
 
 
 class AerocomBrowser(BrowseDict):

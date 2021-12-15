@@ -2,14 +2,16 @@
 """
 Module containing time resampling functionality
 """
-import numpy as np
+import logging
+
 import pandas as pd
 import xarray as xarr
 
-from pyaerocom import const
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_timeseries
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 class TimeResampler:
@@ -189,9 +191,7 @@ class TimeResampler:
 
         if from_ts_type is None:
             if min_num_obs is not None:
-                const.print_log.warning(
-                    "setting min_num_obs to None since from_ts_type is not specified"
-                )
+                logger.warning("setting min_num_obs to None since from_ts_type is not specified")
                 min_num_obs = None
         elif isinstance(from_ts_type, str):
             from_ts_type = TsType(from_ts_type)
@@ -211,7 +211,7 @@ class TimeResampler:
                 f"Cannot resample time-series from {from_ts_type} to {to_ts_type}"
             )
         elif to_ts_type == from_ts_type:
-            const.logger.info(
+            logger.info(
                 f"Input time frequency {to_ts_type.val} equals current frequency of data. "
                 f"Resampling will be applied anyways which will introduce NaN values "
                 f"at missing time stamps"

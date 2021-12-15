@@ -124,9 +124,6 @@ geojson_unavail = pytest.mark.skipif(
 
 broken_test = pytest.mark.skip(reason="Method raises Exception")
 
-from pyaerocom import change_verbosity
-
-change_verbosity("critical", const.print_log)
 ### Fixtures representing data
 
 EMEP_DIR = str(TESTDATADIR.joinpath(CHECK_PATHS["emep"]))

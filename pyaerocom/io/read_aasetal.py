@@ -1,16 +1,17 @@
+import logging
 import os
+import warnings
 
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
 
-# from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
+logger = logging.getLogger(__name__)
 
 
 class ReadAasEtal(ReadUngriddedBase):
@@ -201,7 +202,7 @@ class ReadAasEtal(ReadUngriddedBase):
             #             except ValueError as e:
             #                 s['altitude'] = np.nan
             #                 from pyaerocom import const
-            #                 const.logger.warning(f'Failed to access altitude for {name}')
+            #                 logger.warning(f'Failed to access altitude for {name}')
             # =============================================================================
             # Added the created station to the station list.
             station_list.append(stat)
@@ -346,8 +347,9 @@ class ReadSulphurAasEtAl(ReadAasEtal):
 
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
-        msg = "You are using an old name for class ReadAasEtal"
-        const.print_log.warning(DeprecationWarning(msg))
+        warnings.warn(
+            "You are using an old name for class ReadAasEtal", DeprecationWarning, stacklevel=2
+        )
 
 
 if __name__ == "__main__":
