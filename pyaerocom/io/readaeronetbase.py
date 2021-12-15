@@ -1,7 +1,9 @@
+import logging
+
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom import const, print_log
+from pyaerocom import const
 from pyaerocom.exceptions import (
     AeronetReadError,
     MetaDataError,
@@ -13,6 +15,8 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.time_config import TS_TYPES
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetBase(ReadUngriddedBase):
@@ -362,7 +366,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         num_vars = len(vars_to_retrieve)
         num_files = len(files)
-        print_log.info("Reading AERONET data")
+        logger.info("Reading AERONET data")
         skipped = 0
         for i in tqdm(range(num_files)):
             _file = files[i]
@@ -379,7 +383,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 stat = station_data.station_name
                 if isinstance(stat, (list, np.ndarray)):
                     stat = stat[0]
-                self.logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
+                logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1
                 continue
             # Fill the metatdata dict
@@ -461,7 +465,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta_key = meta_key + 1.0
 
         if skipped:
-            const.print_log.warning(
+            logger.warning(
                 f"{skipped} out of {len(files)} files have been skipped (for "
                 f"details see output)."
             )

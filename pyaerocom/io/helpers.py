@@ -3,6 +3,7 @@ I/O helper methods of the pyaerocom package
 """
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 from datetime import datetime
@@ -15,6 +16,9 @@ import simplejson as json
 from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
+
+logger = logging.getLogger(__name__)
+
 
 #: country code file name
 #: will be prepended with the path later on
@@ -55,13 +59,13 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
         try:
             t0 = time()
             shutil.copy2(loc_remote, loc_local)
-            const.print_log.info(
+            logger.info(
                 f"Copied EBAS SQL database to {loc_local}\nElapsed time: {time()-t0:.3f} s"
             )
 
             return loc_local
         except Exception as e:
-            const.print_log.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
+            logger.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
             return loc_remote
     return loc_remote
 

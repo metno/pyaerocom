@@ -1,9 +1,11 @@
+import logging
+import warnings
 from ast import literal_eval
 from configparser import ConfigParser
 
 import numpy as np
 
-from pyaerocom import logger, print_log, var_groups
+from pyaerocom import var_groups
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import make_binlist
@@ -18,6 +20,8 @@ from pyaerocom.variable_helpers import (
     parse_variables_ini,
 )
 from pyaerocom.varnameinfo import VarNameInfo
+
+logger = logging.getLogger(__name__)
 
 
 class Variable:
@@ -324,12 +328,10 @@ class Variable:
     @property
     def unit(self):
         """Unit of variable (old name, deprecated)"""
-        from warnings import warn
-
-        warn(
-            DeprecationWarning(
-                "Attr. name unit in Variable class is deprecated. Please use units instead"
-            )
+        warnings.warn(
+            "Attr. name unit in Variable class is deprecated. Please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.units
 
@@ -353,13 +355,13 @@ class Variable:
     @property
     def lower_limit(self):
         """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
-        logger.warning(DeprecationWarning("Old name for attribute minimum"))
+        warnings.warn("Old name for attribute minimum", DeprecationWarning, stacklevel=2)
         return self.minimum
 
     @property
     def upper_limit(self):
-        """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
-        logger.warning(DeprecationWarning("Old name for attribute minimum"))
+        """Old attribute name for :attr:`maximum` (following HTAP2 defs)"""
+        warnings.warn("Old name for attribute maximum", DeprecationWarning, stacklevel=2)
         return self.maximum
 
     @property
@@ -413,7 +415,7 @@ class Variable:
         try:
             return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
         except ValueError:
-            print_log.warning(
+            logger.warning(
                 f"default_vert_code not set for {self.var_name_aerocom} and "
                 f"could also not be inferred"
             )

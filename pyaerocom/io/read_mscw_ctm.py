@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 import re
 
@@ -24,6 +25,8 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
 )
 from pyaerocom.units_helpers import UALIASES
 from pyaerocom.variable_helpers import get_emep_variables
+
+logger = logging.getLogger(__name__)
 
 
 class ReadMscwCtm:
@@ -442,7 +445,7 @@ class ReadMscwCtm:
             if not os.path.split(fp)[-1] == self.filename:
                 continue
 
-            const.print_log.info(f"Opening {fp}")
+            logger.info(f"Opening {fp}")
             tmp_ds = xr.open_dataset(fp)
 
             ds[yrs[i]] = tmp_ds
@@ -547,7 +550,7 @@ class ReadMscwCtm:
         temp_arrs = []
         req = self.AUX_REQUIRES[var_name_aerocom]
         aux_func = self.AUX_FUNS[var_name_aerocom]
-        const.print_log.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
+        logger.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
         for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
             arr = self._load_var(aux_var, ts_type)
             temp_arrs.append(arr)

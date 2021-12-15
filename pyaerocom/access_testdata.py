@@ -5,6 +5,7 @@ Created on Thu Oct 29 17:12:54 2020
 @author: jonasg
 """
 
+import logging
 import os
 import tarfile
 from pathlib import Path
@@ -23,6 +24,8 @@ from pyaerocom.io import (
     ReadEEAAQEREP_V2,
     ReadGhost,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class AccessTestData:
@@ -109,7 +112,7 @@ class AccessTestData:
         """
         if basedir is not None:
             self.basedir = basedir
-        const.print_log.info(f"Downloading pyaerocom testdata into {self.basedir}")
+        logger.info(f"Downloading pyaerocom testdata into {self.basedir}")
 
         download_loc = self.basedir.joinpath(f"{self.TESTDATADIRNAME}.tar.gz")
 
@@ -122,7 +125,7 @@ class AccessTestData:
                 tar.extractall(const.OUTPUTDIR)
                 tar.close()
         except Exception:
-            const.print_log.warning(f"Failed to download testdata. Traceback:\n{format_exc()}")
+            logger.warning(f"Failed to download testdata. Traceback:\n{format_exc()}")
             return False
         finally:
             if download_loc.exists():
@@ -186,7 +189,7 @@ class AccessTestData:
                 if self.download() and self.check_access(add_check_paths):
                     return True
             except Exception as e:
-                const.print_log.warning(f"Failed to access testdata: {e}")
+                logger.warning(f"Failed to access testdata: {e}")
             return False
         return True
 
@@ -199,36 +202,34 @@ class AccessTestData:
             ddir = str(testdatadir.joinpath(relpath))
             if name in self._UNGRIDDED_READERS:
                 if name in const.OBSLOCS_UNGRIDDED and ddir == const.OBSLOCS_UNGRIDDED[name]:
-                    const.print_log.info(f"dataset {name} is already registered")
+                    logger.info(f"dataset {name} is already registered")
                     continue
                 reader = self._UNGRIDDED_READERS[name]
                 try:
                     const.add_ungridded_obs(name, ddir, reader=reader, check_read=False)
                 except Exception as e:
-                    const.print_log.warning(
+                    logger.warning(
                         f"Failed to instantiate testdata since ungridded "
                         f"dataset {name} at {ddir} could not be registered: {e}"
                     )
                     return False
-                const.print_log.info(
-                    f"Adding ungridded dataset {name} located at {ddir}. Reader: {reader}"
-                )
+                logger.info(f"Adding ungridded dataset {name} located at {ddir}. Reader: {reader}")
 
             else:
                 const.add_data_search_dir(ddir)
-                const.print_log.info(f"Adding data search directory {ddir}.")
+                logger.info(f"Adding data search directory {ddir}.")
         return True
 
 
 def initialise():
     td = AccessTestData()
     if td.init():
-        const.print_log.info(
+        logger.info(
             f"pyaerocom-testdata is ready to be used. The data "
             f"is available at {td.testdatadir}"
         )
     else:
-        const.print_log.warning("Failed to initiate pyaerocom-testdata")
+        logger.warning("Failed to initiate pyaerocom-testdata")
 
 
 if __name__ == "__main__":

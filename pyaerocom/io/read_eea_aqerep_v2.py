@@ -67,15 +67,14 @@ if __name__ == "__main__":
 
     # Test that the reading routine works
     import getpass
+    import logging
+
+    from pyaerocom import change_verbosity
 
     username = getpass.getuser()
-    import pyaerocom as pya
+    change_verbosity("warning")
 
     if username == "jang":
-        from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-
-        pya.change_verbosity(new_level="warning", log=pya.logger)
-
         # filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep.v2/download/AT/AT_5_48881_2019_timeseries.csv.gz'
         # r = ReadEEAAQEREP_V2()
         # data = r.read_file(filename, 'concpm10')
@@ -83,8 +82,6 @@ if __name__ == "__main__":
         # filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep.v2/download/AT/AT_5_48900_2019_timeseries.csv.gz'
         # r = ReadEEAAQEREP_V2()
         # data2 = r.read_file(filename, 'concpm10')
-
-        import logging
 
         # limit the data read for testing
         # ReadEEAAQEREP_V2.FILE_MASKS['concso2'] = '**/AT*_1_*_timeseries.csv*'
@@ -135,8 +132,6 @@ if __name__ == "__main__":
 
     elif username == "jonasg":
         # Test that the reading routine works
-        from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-
         ddir = "/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download"
         reader = ReadEEAAQEREP_V2(data_dir=ddir)
 

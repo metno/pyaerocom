@@ -29,6 +29,8 @@ with catch_warnings():
     filterwarnings("ignore")
     from geonum.atmosphere import T0_STD, p0
 
+import logging
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
@@ -61,6 +63,8 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEbasOptions(BrowseDict):
@@ -484,9 +488,7 @@ class ReadEbas(ReadUngriddedBase):
             elif name in all_stats:
                 stats.append(name)
             else:
-                const.print_log.warning(
-                    f"Ignoring station_names input {name}. No match could be found"
-                )
+                logger.warning(f"Ignoring station_names input {name}. No match could be found")
 
         if not bool(stats):
             raise FileNotFoundError(
@@ -564,7 +566,7 @@ class ReadEbas(ReadUngriddedBase):
         db = self.file_index
         files_vars = {}
         files_aux_req = {}
-        const.logger.info(f"Retrieving EBAS files for variables\n{vars_to_retrieve}")
+        logger.info(f"Retrieving EBAS files for variables\n{vars_to_retrieve}")
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:
@@ -583,7 +585,7 @@ class ReadEbas(ReadUngriddedBase):
                 paths = []
                 for file in filenames:
                     if file in self.IGNORE_FILES:
-                        const.logger.info(f"Ignoring flagged file {file}")
+                        logger.info(f"Ignoring flagged file {file}")
                         continue
                     paths.append(os.path.join(filedir, file))
 
@@ -702,7 +704,7 @@ class ReadEbas(ReadUngriddedBase):
                 for key in self.IGNORE_COLS_CONTAIN:
                     if key in col_info:
                         ok = False
-                        const.logger.warning(f"\nignore column {col_info}")
+                        logger.warning(f"\nignore column {col_info}")
                         break
                 if ok:
                     col_matches.append(colnum)
@@ -897,7 +899,7 @@ class ReadEbas(ReadUngriddedBase):
             msg += f"\nFilename: {file.file_name}"
             msg += add_msg
             msg += "\n\nTHIS FILE WILL BE SKIPPED\n"
-            const.print_log.warning(msg)
+            logger.warning(msg)
             raise ValueError("failed to identify unique data column")
 
         return result_col[0]
@@ -999,7 +1001,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not "wavelength" in colinfo:
-                const.logger.warning(
+                logger.warning(
                     f"Ignoring column {colnum}\n{colinfo}\nVar {var_info.var_name}: "
                     f"column misses wavelength specification!"
                 )
@@ -1033,7 +1035,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not "wavelength" in colinfo:
-                const.logger.warning(
+                logger.warning(
                     f"Ignoring column {colnum} ({colinfo}) in EBAS file for reading var {var_info}: "
                     f"column misses wavelength specification"
                 )
@@ -1191,7 +1193,7 @@ class ReadEbas(ReadUngriddedBase):
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
-                const.logger.warning(
+                logger.warning(
                     f"Variable {var} (EBAS name(s): {ebas_var_info.component}) is missing "
                     f"in file {os.path.basename(file.file)} (start: {file.base_date})"
                 )
@@ -1351,7 +1353,7 @@ class ReadEbas(ReadUngriddedBase):
             if opts.freq_from_start_stop_meas:
                 tst = self._check_correct_freq(file, freq_ebas)
                 if tst != freq_ebas:
-                    const.logger.info(
+                    logger.info(
                         f"Updating ts_type from {freq_ebas} (EBAS resolution_code) "
                         f"to {tst} (derived from stop_meas-start_meas)"
                     )
@@ -1425,7 +1427,7 @@ class ReadEbas(ReadUngriddedBase):
         if TsType(freq_ebas).check_match_total_seconds(most_common_dt):
             return freq_ebas
 
-        const.logger.warning(
+        logger.warning(
             f"Detected wrong frequency {freq_ebas}. Trying to infer the correct frequency..."
         )
         try:
@@ -1738,7 +1740,7 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
-        const.print_log.info(f"Reading EBAS data from {self.file_dir}")
+        logger.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
         for i in tqdm(range(num_files)):
             _file = files[i]
@@ -1759,7 +1761,7 @@ class ReadEbas(ReadUngriddedBase):
                 continue
             except Exception as e:
                 self.files_failed.append(_file)
-                const.print_log.warning(
+                logger.warning(
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
@@ -1847,7 +1849,7 @@ class ReadEbas(ReadUngriddedBase):
 
         num_failed = len(self.files_failed)
         if num_failed > 0:
-            const.print_log.warning(f"{num_failed} out of {num_files} could not be read...")
+            logger.warning(f"{num_failed} out of {num_files} could not be read...")
         return data_obj
 
 

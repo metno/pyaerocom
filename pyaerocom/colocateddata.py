@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import logging
 import os
+import warnings
 from ast import literal_eval
 from pathlib import Path
 
@@ -8,7 +10,7 @@ import numpy as np
 import pandas as pd
 import xarray
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,
@@ -27,6 +29,8 @@ from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.time_resampler import TimeResampler
+
+logger = logging.getLogger(__name__)
 
 
 class ColocatedData:
@@ -1141,9 +1145,7 @@ class ColocatedData:
             try:
                 settings[to_key] = self.metadata[from_key]
             except KeyError:
-                const.print_log.warning(
-                    f"Meta key {from_key} not defined in ColocatedData.meta..."
-                )
+                logger.warning(f"Meta key {from_key} not defined in ColocatedData.meta...")
                 settings[to_key] = None
         return settings
 
@@ -1880,36 +1882,36 @@ class ColocatedData:
     @property
     def unit(self):
         """DEPRECATED -> use :attr:`units`"""
-        const.print_log.warning(
-            DeprecationWarning(
-                "Attr. ColocatedData.unit is deprecated (but still works), "
-                "please use ColocatedData.units. "
-                "Support guaranteed until pyaerocom v0.12.0"
-            )
+        warnings.warn(
+            "Attr. ColocatedData.unit is deprecated (but still works), "
+            "please use ColocatedData.units. "
+            "Support guaranteed until pyaerocom v0.12.0",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.units
 
     @property
     def meta(self):
         """DEPRECATED -> use :attr:`metadata`"""
-        const.print_log.warning(
-            DeprecationWarning(
-                "Attr. ColocatedData.meta is deprecated (but still works), "
-                "please use ColocatedData.metadata"
-                "Support guaranteed until pyaerocom v0.12.0"
-            )
+        warnings.warn(
+            "Attr. ColocatedData.meta is deprecated, "
+            "use ColocatedData.metadata instread."
+            "Support guaranteed until pyaerocom v0.12.0",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.metadata
 
     @property
     def num_grid_points(self):
         """DEPRECATED -> use :attr:`num_coords`"""
-        const.print_log.warning(
-            DeprecationWarning(
-                "Attr. ColocatedData.num_grid_points is deprecated (but still "
-                "works), please use ColocatedData.num_coords"
-                "Support guaranteed until pyaerocom v0.12.0"
-            )
+        warnings.warn(
+            "ColocatedData.num_grid_points is deprecated, "
+            "please use ColocatedData.num_coords"
+            "Support guaranteed until pyaerocom v0.12.0",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.num_coords
 

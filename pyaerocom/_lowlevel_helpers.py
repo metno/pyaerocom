@@ -11,8 +11,9 @@ from pathlib import Path
 import numpy as np
 import simplejson
 
-from pyaerocom import print_log
 from pyaerocom._warnings_management import ignore_warnings
+
+logger = logging.getLogger(__name__)
 
 
 def round_floats(in_data, precision=5):
@@ -109,7 +110,7 @@ def check_make_json(fp, indent=4):
     if not fp.endswith(".json"):
         raise ValueError("Input filepath must end with .json")
     if not os.path.exists(fp):
-        print_log.info(f"Creating empty json file: {fp}")
+        logger.info(f"Creating empty json file: {fp}")
         write_json({}, fp, indent=indent)
     return fp
 
@@ -577,7 +578,7 @@ class ConstrainedContainer(BrowseDict):
         if not key in dir(self):
             if self.CRASH_ON_INVALID:
                 raise ValueError(f"Invalid key {key}")
-            print_log.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
+            logger.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
             return key, val, False
 
         current = getattr(self, key)

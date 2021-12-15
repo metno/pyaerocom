@@ -7,6 +7,7 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
 """
 
+import logging
 from datetime import datetime
 
 import cf_units
@@ -26,7 +27,7 @@ from traceback import format_exc
 
 import numpy as np
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     FileConventionError,
@@ -38,6 +39,8 @@ from pyaerocom.helpers import cftime_to_datetime64, make_datetimeindex_from_year
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 @ignore_warnings(const.FILTER_IRIS_WARNINGS, UserWarning)
@@ -86,7 +89,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None, perform_fmt_ch
             loaded_files.append(_file)
         except Exception:
             msg = f"Failed to load {_file}. Reason: {format_exc()}"
-            const.logger.warning(msg)
+            logger.warning(msg)
 
             if const.WRITE_FILEIO_ERR_LOG:
                 add_file_to_log(_file, msg)
@@ -164,7 +167,7 @@ def _cube_quality_check(cube, file, file_convention=None):
         try:
             cube = _check_correct_time_dim(cube, file, file_convention)
         except FileConventionError:
-            const.print_log.warning(
+            logger.warning(
                 "WARNING: failed to check / validate "
                 "time dim. using information in "
                 "filename. Reason: invalid file name "
@@ -204,7 +207,7 @@ def check_and_regrid_lons_cube(cube):
         False
     """
     if cube.coord("longitude").points.max() > 180:
-        const.print_log.info(
+        logger.info(
             "Rearranging longitude dimension from 0 -> 360 definition to -180 -> 180 definition"
         )
         cube = cube.intersection(longitude=(-180, 180))
@@ -233,19 +236,19 @@ def check_dim_coord_names_cube(cube):
             std_name = c.standard_name
             lng_name = c.long_name
             if not coord.var_name == var_name:
-                const.logger.warning(
+                logger.warning(
                     f"Invalid var_name {coord.standard_name} for "
                     f"coord {coord.var_name} in cube. Overwriting with {std_name}"
                 )
                 coord.var_name = var_name
             if not coord.standard_name == std_name:
-                const.logger.warning(
+                logger.warning(
                     f"Invalid standard_name {coord.standard_name} for "
                     f"coord {coord.var_name} in cube. Overwriting with {std_name}"
                 )
                 coord.standard_name = std_name
             if not coord.long_name == lng_name:
-                const.logger.warning(
+                logger.warning(
                     f"Invalid long_name {coord.long_name} for "
                     f"coord {coord.var_name} in cube. Overwriting with {lng_name}"
                 )
@@ -321,7 +324,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
     if not const.MIN_YEAR <= year <= const.MAX_YEAR:
         raise FileConventionError(f"Invalid year in file: {year}")
     elif year == 9999:
-        const.print_log.info(
+        logger.info(
             "Cannot compare NetCDF time dimension for climatological data "
             "(9999 in filename). Skipping this check."
         )
@@ -346,7 +349,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
                         f"{format_exc()}.\n\nThe file will be imported regardless!"
                     )
                     msg += add_msg
-                    const.print_log.warning(msg)
+                    logger.warning(msg)
             if const.WRITE_FILEIO_ERR_LOG:
                 add_file_to_log(file, msg)
     return cube

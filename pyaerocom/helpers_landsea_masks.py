@@ -11,6 +11,7 @@ data classes (i.e. :class:`GriddedData`, :class:`UngriddedData`,
 """
 
 import glob
+import logging
 import os
 
 import numpy as np
@@ -21,6 +22,8 @@ from iris import load_cube
 from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.helpers import numpy_to_cube
+
+logger = logging.getLogger(__name__)
 
 
 def available_htap_masks():
@@ -121,7 +124,7 @@ def get_htap_mask_files(*region_ids):
         files = glob.glob(os.path.join(mask_dir, f"{region}*.nc"))
         if len(files) != 1:
             if len(files) == 0:
-                const.print_log.info(f"Downloading HTAP mask {region}")
+                logger.info(f"Downloading HTAP mask {region}")
                 files = download_htap_masks(region)
             elif len(files) > 1:
                 raise NameError(f"Found multiple masks for region {region}")

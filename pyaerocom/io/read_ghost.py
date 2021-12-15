@@ -21,6 +21,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 import glob
+import logging
 import os
 
 import cf_units
@@ -38,6 +39,8 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
@@ -421,7 +424,7 @@ class ReadGhost(ReadUngriddedBase):
             try:
                 meta_glob[meta_key] = ds[meta_key].values
             except KeyError:
-                const.print_log.warning(
+                logger.warning(
                     f"No such metadata key in GHOST data file: {os.path.basename(filename)}"
                 )
 
@@ -481,7 +484,7 @@ class ReadGhost(ReadUngriddedBase):
                     # is required, i.e. the same flags can be used)
                     stat["data_flagged"][var_to_compute] = flags
                 else:
-                    const.print_log.warning(
+                    logger.warning(
                         "THIS HAS NOT BEEN TESTED AND IS "
                         "SHOULD CURRENTLY NOT BE ABLE "
                         "TO BE REACHED."
@@ -612,7 +615,7 @@ class ReadGhost(ReadUngriddedBase):
 
             stats, added = self.compute_additional_vars(stats, vars_to_compute)
             if len(stats) == 0:
-                const.logger.info(
+                logger.info(
                     f"File {_file} does not contain any of the input variables {vars_to_retrieve}"
                 )
             vars_avail = [var_read] + added
