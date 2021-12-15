@@ -1,7 +1,6 @@
 import os
 
-from ._outbase import ADD_MODELS_DIR
-from ._outbase import AEROVAL_OUT as BASEOUT
+from ._outbase import ADD_MODELS_DIR, AEROVAL_OUT
 
 YEAR = "2007"
 from .._conftest_helpers import add_dummy_model_data
@@ -35,8 +34,8 @@ OBS_GROUNDBASED = {"EBAS": dict(obs_id="EBASSubset", obs_vars=["vmro3"], obs_ver
 CFG = dict(
     model_cfg=MODELS,
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=os.path.join(BASEOUT, "data"),
-    coldata_basedir=os.path.join(BASEOUT, "coldata"),
+    json_basedir=os.path.join(AEROVAL_OUT, "data"),
+    coldata_basedir=os.path.join(AEROVAL_OUT, "coldata"),
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

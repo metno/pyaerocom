@@ -1,7 +1,6 @@
 import os
 
 import iris
-import pytest
 import xarray as xr
 
 import pyaerocom.helpers_landsea_masks as lsm

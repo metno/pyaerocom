@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
@@ -36,7 +36,7 @@ def test_read_file(reader):
 
     actual = [data["od550aer"][:10].mean(), data["ang4487aer"][:10].mean()]
     desired = [0.287, 1.787]
-    npt.assert_allclose(actual, desired, rtol=1e-3)
+    assert_allclose(actual, desired, rtol=1e-3)
 
 
 @data_unavail
@@ -51,7 +51,7 @@ def test_read(reader):
     assert data.contains_vars == ["od550aer", "ang4487aer"]
     assert data.contains_instruments == ["sun_photometer"]
     assert data.shape == (11990, 12)
-    npt.assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676, rtol=1e-3)
+    assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676, rtol=1e-3)
 
 
 @data_unavail

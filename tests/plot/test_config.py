@@ -1,14 +1,14 @@
 import pytest
 
-from pyaerocom.plot import config as mod
+from pyaerocom.plot.config import _COLOR_THEMES, DEFAULT_THEME, ColorTheme, _cmap_lighttheme
 
 
 def test__cmap_lighttheme():
-    assert mod._cmap_lighttheme == "Blues"
+    assert _cmap_lighttheme == "Blues"
 
 
 def test__COLOR_THEMES():
-    assert list(mod._COLOR_THEMES) == ["light", "dark"]
+    assert list(_COLOR_THEMES) == ["light", "dark"]
 
 
 @pytest.mark.parametrize(
@@ -16,7 +16,7 @@ def test__COLOR_THEMES():
     [
         pytest.param(
             "bla",
-            mod.DEFAULT_THEME,
+            DEFAULT_THEME,
             id="invalid color theme",
             marks=pytest.mark.filterwarnings("ignore:Invalid name:UserWarning"),
         ),
@@ -26,11 +26,11 @@ def test__COLOR_THEMES():
 )
 def test_ColorTheme___init__(name, theme_name):
 
-    assert mod.ColorTheme(name).name == theme_name
+    assert ColorTheme(name).name == theme_name
 
 
 def test_ColorTheme_to_dict():
-    value = mod.ColorTheme("dark").to_dict()
+    value = ColorTheme("dark").to_dict()
     assert isinstance(value, dict)
     assert value == {
         "name": "dark",
@@ -43,13 +43,13 @@ def test_ColorTheme_to_dict():
 
 
 def test_ColorTheme_to_dict():
-    value = mod.ColorTheme("dark").to_dict()
+    value = ColorTheme("dark").to_dict()
 
-    theme = mod.ColorTheme()
+    theme = ColorTheme()
     theme.from_dict(value)
     for key, val in value.items():
         assert getattr(theme, key) == val
 
 
 def test_ColorTheme___str__():
-    assert isinstance(str(mod.ColorTheme("dark")), str)
+    assert isinstance(str(ColorTheme("dark")), str)

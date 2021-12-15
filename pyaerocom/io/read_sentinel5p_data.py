@@ -4,8 +4,6 @@ read Sentinel5P L2 data
 """
 import logging
 
-# from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-# import geopy
 import numpy as np
 
 from pyaerocom import const

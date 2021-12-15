@@ -1,9 +1,9 @@
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose, assert_almost_equal
 
 from pyaerocom import geodesy
 
-from .conftest import etopo1_unavail, geonum_unavail, lustre_avail, rg_unavail
+from .conftest import etopo1_unavail, geonum_unavail, rg_unavail
 
 TEST_LAT = 50.8
 TEST_LON = 9
@@ -22,7 +22,7 @@ def test_get_country_info_coords(coords, countries):
 
 
 def test_haversine():
-    npt.assert_allclose(geodesy.haversine(0, 15, 0, 16), 111.2, atol=0.1)
+    assert_allclose(geodesy.haversine(0, 15, 0, 16), 111.2, atol=0.1)
 
 
 def test_is_within_radius_km():
@@ -32,11 +32,11 @@ def test_is_within_radius_km():
 # @pytest.mark.skip(reason='https://github.com/tkrajina/srtm.py/issues/51')
 @geonum_unavail
 def test_srtm_altitude():
-    npt.assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON), 207)
+    assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON), 207)
 
 
 @geonum_unavail
 @etopo1_unavail
 def test_etopo_altitude():
     alt = geodesy.get_topo_altitude(TEST_LAT, TEST_LON, topo_dataset="etopo1")
-    npt.assert_almost_equal(alt, 217)
+    assert_almost_equal(alt, 217)

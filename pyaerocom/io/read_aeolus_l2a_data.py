@@ -3,10 +3,6 @@
 read binary ESA L2B files of the ADM Aeolus mission
 """
 import glob
-
-# from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-# import geopy
-# import numpy as np
 import logging
 import os
 import time

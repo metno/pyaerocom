@@ -1,6 +1,5 @@
 import numpy as np
-import numpy.testing as npt
-import pytest
+from numpy.testing import assert_allclose
 
 from .conftest import data_unavail
 
@@ -55,9 +54,7 @@ def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
         std_vals.append(np.std(td))
     assert no_odcount == 4
     should_be = [0.2097, 0.1397]
-    npt.assert_allclose(
-        actual=[np.mean(mean_vals), np.mean(std_vals)], desired=should_be, atol=1e-2
-    )
+    assert_allclose(actual=[np.mean(mean_vals), np.mean(std_vals)], desired=should_be, atol=1e-2)
 
 
 @data_unavail
@@ -79,4 +76,4 @@ def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
     assert no_odcount == 0
     got = [np.mean(mean_vals), np.mean(std_vals)]
     should_be = [0.9196, 0.325]
-    npt.assert_allclose(actual=got, desired=should_be, atol=1e-2)
+    assert_allclose(actual=got, desired=should_be, atol=1e-2)

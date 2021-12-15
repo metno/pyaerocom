@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 
@@ -41,4 +41,4 @@ def test_load_berlin_AeroSdaV2L2D():
         0.11055405137562464,
     ]
 
-    npt.assert_allclose(actual=means, desired=desired, rtol=TEST_RTOL)
+    assert_allclose(actual=means, desired=desired, rtol=TEST_RTOL)
