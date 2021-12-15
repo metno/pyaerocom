@@ -38,7 +38,6 @@ import os
 import pathlib
 import shutil
 import tempfile
-from collections import OrderedDict as od
 
 import cf_units
 import numpy as np
@@ -159,7 +158,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     #: there's no general instrument name in the data
     INSTRUMENT_NAME = "unknown"
@@ -379,7 +378,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         data_out.ts_type = tstype
         # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
         data_out["variables"] = [aerocom_var_name]
-        data_out["var_info"][aerocom_var_name] = od()
+        data_out["var_info"][aerocom_var_name] = {}
         data_out["var_info"][aerocom_var_name]["units"] = unit
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
@@ -636,8 +635,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     f"metadata for station {_meta_key} not found! skipping that station!"
                 )
                 continue
-            metadata[meta_key] = od()
-            meta_idx[meta_key] = od()
+            metadata[meta_key] = {}
+            meta_idx[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(self.get_station_coords(_meta_key))
             metadata[meta_key]["variables"] = list(

@@ -38,9 +38,7 @@ class VarCollection:
         aliases.ini.
         """
         if self._all_vars is None:
-            all_vars = [k for k in self._cfg_parser.keys()]
-            all_vars.extend(self._vars_added.keys())
-            self._all_vars = all_vars
+            self._all_vars = list(self._cfg_parser) + list(self._vars_added)
         return self._all_vars
 
     @property

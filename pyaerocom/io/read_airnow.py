@@ -130,7 +130,7 @@ class ReadAirNow(ReadUngriddedBase):
     }
 
     #: List of variables that are provided
-    PROVIDES_VARIABLES = list(VAR_MAP.keys())
+    PROVIDES_VARIABLES = list(VAR_MAP)
 
     #: Default variables
     DEFAULT_VARS = PROVIDES_VARIABLES
@@ -365,7 +365,7 @@ class ReadAirNow(ReadUngriddedBase):
 
         logger.info("Converting filedata to list os StationData")
         stat_meta = self.station_metadata
-        stat_ids = list(stat_meta.keys())
+        stat_ids = list(stat_meta)
         varcol = self.FILE_COL_NAMES.index("variable")
         statcol = self.FILE_COL_NAMES.index("station_id")
         tzonecol = self.FILE_COL_NAMES.index("time_zone")

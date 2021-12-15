@@ -391,7 +391,7 @@ class AerocomDataID:
         return self._data_id
 
 
-STANDARD_META_KEYS = list(StationMetaData().keys())
+STANDARD_META_KEYS = list(StationMetaData())
 
 if __name__ == "__main__":
     meta = StationMetaData(data_id="AeronetSunV3Lev2.daily", ts_type="blaaaa")

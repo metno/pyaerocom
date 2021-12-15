@@ -2,7 +2,6 @@ import fnmatch
 import logging
 import os
 import re
-from collections import OrderedDict as od
 
 import numpy as np
 import xarray
@@ -71,7 +70,7 @@ class ReadEarlinet(ReadUngriddedBase):
     }
 
     #: metadata names that are supposed to be imported
-    META_NAMES_FILE = od(
+    META_NAMES_FILE = dict(
         location="Location",
         start_date="StartDate",
         start_utc="StartTime_UT",
@@ -265,7 +264,7 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out["has_zdust"] = False
 
         for var in vars_to_read:
-            data_out["var_info"][var] = od()
+            data_out["var_info"][var] = {}
             err_read = False
             unit_ok = False
             outliers_removed = False
@@ -490,7 +489,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 # the location in the data set is time step dependant!
                 # use the lat location here since we have to choose one location
                 # in the time series plot
-                metadata[meta_key] = od()
+                metadata[meta_key] = {}
                 metadata[meta_key].update(stat.get_meta())
                 for add_meta in self.KEEP_ADD_META:
                     if add_meta in stat:
@@ -499,10 +498,10 @@ class ReadEarlinet(ReadUngriddedBase):
 
                 metadata[meta_key]["data_revision"] = self.data_revision
                 metadata[meta_key]["variables"] = []
-                metadata[meta_key]["var_info"] = od()
+                metadata[meta_key]["var_info"] = {}
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = od()
+                meta_idx[meta_key] = {}
                 # last_station_id = station_id
 
                 # Is floating point single value
@@ -515,13 +514,13 @@ class ReadEarlinet(ReadUngriddedBase):
                     var_idx = data_obj.var_idx[var]
 
                     val = stat[var]
-                    metadata[meta_key]["var_info"][var] = vi = od()
+                    metadata[meta_key]["var_info"][var] = vi = {}
                     if isinstance(val, VerticalProfile):
                         altitude = val.altitude
                         data = val.data
                         add = len(data)
                         err = val.data_err
-                        metadata[meta_key]["var_info"]["altitude"] = via = od()
+                        metadata[meta_key]["var_info"]["altitude"] = via = {}
 
                         vi.update(val.var_info[var])
                         via.update(val.var_info["altitude"])

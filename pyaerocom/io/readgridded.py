@@ -2,7 +2,6 @@ import fnmatch
 import logging
 import os
 import warnings
-from collections import OrderedDict as od
 from glob import glob
 from pathlib import Path
 
@@ -368,15 +367,15 @@ class ReadGridded:
         _vars = []
         _vars.extend(self.vars_filename)
 
-        for aux_var in self.AUX_REQUIRES.keys():
+        for aux_var in self.AUX_REQUIRES:
             if "*" in aux_var:
                 continue
-            elif not aux_var in _vars and self.check_compute_var(aux_var):
+            if not aux_var in _vars and self.check_compute_var(aux_var):
                 _vars.append(aux_var)
-        for aux_var in self._aux_requires.keys():
+        for aux_var in self._aux_requires:
             if "*" in aux_var:
                 continue
-            elif not aux_var in _vars and self.check_compute_var(aux_var):
+            if not aux_var in _vars and self.check_compute_var(aux_var):
                 _vars.append(aux_var)
 
         # also add standard names of 3D variables if not already in list
@@ -761,8 +760,8 @@ class ReadGridded:
         if len(_vars_temp + _vars_temp_3d) == 0:
             raise AttributeError("Failed to extract information from filenames")
 
-        self._vars_2d = sorted(od.fromkeys(_vars_temp))
-        self._vars_3d = sorted(od.fromkeys(_vars_temp_3d))
+        self._vars_2d = sorted(set(_vars_temp))
+        self._vars_3d = sorted(set(_vars_temp_3d))
         return result
 
     def _fileinfo_to_dataframe(self, result):
@@ -1091,23 +1090,23 @@ class ReadGridded:
             df = self.file_info
         return sorted(os.path.join(self.data_dir, x) for x in df.filename.values)
 
-    def get_var_info_from_files(self):
+    def get_var_info_from_files(self) -> dict:
         """Creates dicitonary that contains variable specific meta information
 
         Returns
         -------
-        OrderedDict
+        dict
             dictionary where keys are available variables and values (for each
             variable) contain information about available ts_types, years, etc.
         """
-        result = od()
+        result = {}
         for file in self.files:
             finfo = self.file_convention.get_info_from_file(file)
             var_name = finfo["var_name"]
             if not var_name in result:
-                result[var_name] = var_info = od()
-                for key in finfo.keys():
-                    if not key == "var_name":
+                result[var_name] = var_info = {}
+                for key in finfo:
+                    if key != "var_name":
                         var_info[key] = []
             else:
                 var_info = result[var_name]
@@ -1117,7 +1116,7 @@ class ReadGridded:
                 if val is not None and not val in var_info[key]:
                     var_info[key].append(val)
         # now check auxiliary variables
-        for var_to_compute in self.AUX_REQUIRES.keys():
+        for var_to_compute in self.AUX_REQUIRES:
             if var_to_compute in result:
                 continue
             try:
@@ -1128,7 +1127,7 @@ class ReadGridded:
                 pass
             else:
                 # init result info dict for aux variable
-                result[var_to_compute] = var_info = od()
+                result[var_to_compute] = var_info = {}
                 first = result[vars_to_read[0]]
                 # init with results from first required variable
                 var_info.update(**first)

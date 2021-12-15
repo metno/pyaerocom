@@ -299,12 +299,12 @@ class ListOfStrings(FlexList):
 
 
 class DictStrKeysListVals(Validator):
-    def validate(self, val):
+    def validate(self, val: dict):
         if not isinstance(val, dict):
             raise ValueError(f"need dict, got {val}")
-        elif not all([isinstance(x, str) for x in val.keys()]):
+        if any(not isinstance(x, str) for x in val):
             raise ValueError(f"all keys need to be str type in {val}")
-        elif not all([isinstance(x, list) for x in val.values()]):
+        if any(not isinstance(x, list) for x in val.values()):
             raise ValueError(f"all values need to be list type in {val}")
         return val
 
@@ -411,7 +411,7 @@ class BrowseDict(MutableMapping):
         return _class_name(self)
 
     def keys(self):
-        return list(self.__dict__.keys()) + self.ADD_GLOB
+        return list(self.__dict__) + self.ADD_GLOB
 
     def _get_glob_vals(self):
         return [getattr(self, x) for x in self.ADD_GLOB]

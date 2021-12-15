@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict as od
 
 import numpy as np
 from tqdm import tqdm
@@ -76,7 +75,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         # dictionary that contains information about the file columns
         # is written in method _update_col_index
-        self._col_index = od()
+        self._col_index = {}
 
         # header string referring to the content in attr. col_index. Is
         # updated whenever the former is updated (i.e. when method
@@ -188,7 +187,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             if one of the specified meta data columns does not exist in data
         """
         cols = col_index_str.strip().split(self.COL_DELIM)
-        mapping = od()
+        mapping = {}
         for idx, info_str in enumerate(cols):
             if info_str in mapping:
                 mapping[info_str] = "MULTI"
@@ -215,7 +214,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         )
 
     def _find_vars_name_based(self, mapping, cols):
-        col_index = od()
+        col_index = {}
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
             if not val in mapping:
@@ -391,8 +390,8 @@ class ReadAeronetBase(ReadUngriddedBase):
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            meta = od()
-            meta["var_info"] = od()
+            meta = {}
+            meta["var_info"] = {}
             meta.update(statmeta)
 
             meta["data_id"] = self.data_id
@@ -409,7 +408,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta.update(**common_meta)
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            meta_idx[meta_key] = od()
+            meta_idx[meta_key] = {}
 
             num_times = len(station_data["dtime"])
 
@@ -457,7 +456,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                     u = self.UNITS[var]
                 else:
                     u = self.DEFAULT_UNIT
-                meta["var_info"][var] = od(units=u)
+                meta["var_info"][var] = dict(units=u)
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 

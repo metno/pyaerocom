@@ -211,7 +211,7 @@ class ReadMscwCtm:
         if "LF_" in tst:
             return None
 
-        if tst not in list(self.FREQ_CODES.keys()):
+        if tst not in list(self.FREQ_CODES):
             raise ValueError(f"The ts_type {tst} is not supported")
 
         return self.FREQ_CODES[tst]
@@ -681,14 +681,14 @@ class ReadMscwCtm:
         try:
             filedata = self.filedata
 
-            if len(filedata.keys()) == 1:
-                data = filedata[list(filedata.keys())[0]][emep_var]
+            if len(filedata) == 1:
+                data = filedata[list(filedata)[0]][emep_var]
             else:
                 if ts_type == "hourly":
                     raise ValueError(
                         f"ts_type {ts_type} can not be hourly when using multiple years"
                     )
-                data = xr.concat([filedata[yr][emep_var] for yr in filedata.keys()], dim="time")
+                data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
 
         except KeyError:
             raise VarNotAvailableError(

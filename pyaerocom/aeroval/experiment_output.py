@@ -60,7 +60,7 @@ class ProjectOutput:
         """
         List of available experiments
         """
-        return list(read_json(self.experiments_file).keys())
+        return list(read_json(self.experiments_file))
 
     def _add_entry_experiments_json(self, exp_id, data):
         fp = self.experiments_file

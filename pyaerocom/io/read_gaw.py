@@ -7,7 +7,6 @@ Example
 Notebook: '../../notebooks/DMS.ipynb'
 """
 
-from collections import OrderedDict as od
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -67,7 +66,7 @@ class ReadGAW(ReadUngriddedBase):
     # List of variables that are provided by this dataset (will be extended
     # by auxiliary variables on class init, for details see __init__ method of
     # base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     INSTRUMENT_NAME = "unknown"
 
@@ -201,7 +200,7 @@ class ReadGAW(ReadUngriddedBase):
             data[:, idx] = np.where(data[:, idx] == "-", self.NAN_VAL[var], data[:, idx])
 
             # get data
-            data_out["var_info"][var] = od()
+            data_out["var_info"][var] = {}
             if idx == 4:  # variable
                 if u == "ppt":
                     data_out["var_info"][var]["units"] = "mol mol-1"
@@ -321,7 +320,7 @@ class ReadGAW(ReadUngriddedBase):
 
             # Fill the metadata dict.
             # The location in the data set is time step dependant
-            metadata[meta_key] = od()
+            metadata[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]["variables"] = list(
@@ -336,7 +335,7 @@ class ReadGAW(ReadUngriddedBase):
             metadata[meta_key]["var_info"] = station_data["var_info"]
 
             # List with indices of this station for each variable
-            meta_idx[meta_key] = od()
+            meta_idx[meta_key] = {}
 
             num_times = len(station_data["dtime"])
 

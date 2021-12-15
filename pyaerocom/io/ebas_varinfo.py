@@ -76,7 +76,7 @@ class EbasVarInfo(BrowseDict):
     def PROVIDES_VARIABLES():
         """List specifying provided variables"""
         data = EbasVarInfo.open_config()
-        return [k for k in data.keys()]
+        return list(data)
 
     @staticmethod
     def open_config():

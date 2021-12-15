@@ -14,7 +14,6 @@
 import getpass
 import logging
 import os
-from collections import OrderedDict as od
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -114,7 +113,7 @@ class Config:
     STANDARD_COORD_NAMES = ["latitude", "longitude", "altitude"]
     #: Information specifying default vertical grid for post processing of
     #: profile data. The values are in units of m.
-    DEFAULT_VERT_GRID_DEF = od(lower=0, upper=15000, step=250)
+    DEFAULT_VERT_GRID_DEF = dict(lower=0, upper=15000, step=250)
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
@@ -188,7 +187,7 @@ class Config:
     _coords_info_file = os.path.join(__dir__, "data", "coords.ini")
 
     # these are searched in preferred order both in root and home
-    _DB_SEARCH_SUBDIRS = od()
+    _DB_SEARCH_SUBDIRS = {}
     _DB_SEARCH_SUBDIRS["lustre/storeA/project"] = "metno"
     _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
     _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
@@ -224,9 +223,9 @@ class Config:
         self._coords = None
 
         # Attributes that are used to store search directories
-        self.OBSLOCS_UNGRIDDED = od()
-        self.OBS_UNGRIDDED_POST = od()
-        self.SUPPLDIRS = od()
+        self.OBSLOCS_UNGRIDDED = {}
+        self.OBS_UNGRIDDED_POST = {}
+        self.SUPPLDIRS = {}
         self._search_dirs = []
 
         self.WRITE_FILEIO_ERR_LOG = True
@@ -338,7 +337,7 @@ class Config:
     @property
     def ALL_DATABASE_IDS(self):
         """ID's of available database configurations"""
-        return list(self._config_files.keys())
+        return list(self._config_files)
 
     @property
     def ROOTDIR(self):
@@ -552,7 +551,7 @@ class Config:
     @property
     def OBS_IDS_UNGRIDDED(self):
         """List of all data IDs of supported ungridded observations"""
-        ids = [x for x in self.OBSLOCS_UNGRIDDED.keys()]
+        ids = list(self.OBSLOCS_UNGRIDDED)
         ids.extend(self.OBS_UNGRIDDED_POST)
         return ids
 
@@ -796,7 +795,7 @@ class Config:
             )
 
         if init_obslocs_ungridded:
-            self.OBSLOCS_UNGRIDDED = od()
+            self.OBSLOCS_UNGRIDDED = {}
         if init_data_search_dirs:
             self._search_dirs = []
 

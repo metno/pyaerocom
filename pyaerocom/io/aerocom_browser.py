@@ -155,7 +155,7 @@ class AerocomBrowser(BrowseDict):
     @property
     def ids_found(self):
         """All data IDs that were found"""
-        return list(self.keys())
+        return list(self)
 
     def find_data_dir(self, name_or_pattern, ignorecase=True):
         """Find match of input name or pattern in Aerocom database

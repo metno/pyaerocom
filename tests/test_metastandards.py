@@ -25,7 +25,7 @@ def test_datasource_empty():
         "ts_type_src",
         "website",
     ]
-    assert sorted(list(ds.keys())) == keys_sorted
+    assert sorted(list(ds)) == keys_sorted
     assert list(set(ds.values())) == [None]
 
 
