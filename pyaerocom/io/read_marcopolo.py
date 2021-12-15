@@ -133,7 +133,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
     #: functions used to convert variables that are computed
     AUX_FUNS = {"vmro3": _conc_to_vmr_marcopolo_stats, "vmrno2": _conc_to_vmr_marcopolo_stats}
 
-    PROVIDES_VARIABLES = list(VAR_MAP.keys())
+    PROVIDES_VARIABLES = list(VAR_MAP)
     DEFAULT_VARS = ["concpm10", "concpm25", "concno2", "conco3"]
 
     TS_TYPE = "hourly"
@@ -232,7 +232,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
         stat_meta = self._init_station_metadata()
 
         # get all station IDs found in the metadata file
-        stat_ids = list(stat_meta.keys())
+        stat_ids = list(stat_meta)
 
         arrs = []
 

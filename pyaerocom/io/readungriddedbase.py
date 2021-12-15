@@ -278,7 +278,7 @@ class ReadUngriddedBase(abc.ABC):
         Auxiliary variables are those that are not included in original files
         but are computed from other variables during import
         """
-        return list(self.AUX_REQUIRES.keys())
+        return list(self.AUX_REQUIRES)
 
     @property
     def data_revision(self):
@@ -311,7 +311,7 @@ class ReadUngriddedBase(abc.ABC):
 
     def _add_aux_variables(self):
         """Helper that makes sure all auxiliary variables can be computed"""
-        for var in self.AUX_REQUIRES.keys():
+        for var in self.AUX_REQUIRES:
             if not var in self.AUX_FUNS:
                 raise AttributeError(
                     f"Fatal: no computation method defined for auxiliary variable {var}. "

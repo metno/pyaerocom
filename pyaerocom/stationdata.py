@@ -110,7 +110,7 @@ class StationData(StationMetaData):
     @property
     def vars_available(self):
         """Number of variables available in this data object"""
-        return list(self.var_info.keys())
+        return list(self.var_info)
 
     def has_var(self, var_name):
         """Checks if input variable is available in data object
@@ -1035,7 +1035,7 @@ class StationData(StationMetaData):
         if ts_type < TsType(
             clim_freq
         ):  # current resolution is lower than input climatological freq
-            supported = list(const.CLIM_MIN_COUNT.keys())
+            supported = list(const.CLIM_MIN_COUNT)
             if str(ts_type) in supported:
                 clim_freq = str(ts_type)
             else:  # use monthly

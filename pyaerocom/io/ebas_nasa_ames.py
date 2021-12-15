@@ -5,7 +5,6 @@ For details on the file format see `here <https://ebas-submit.nilu.no/
 Submit-Data/Getting-started>`__
 """
 import os
-from collections import OrderedDict as od
 from datetime import datetime
 
 import numpy as np
@@ -164,7 +163,7 @@ class NasaAmesHeader:
     ]  # 13
 
     def __init__(self, **kwargs):
-        self._head_fix = od(
+        self._head_fix = dict(
             num_head_lines=np.nan,
             num_head_fmt=np.nan,
             data_originator="",
@@ -183,7 +182,7 @@ class NasaAmesHeader:
             descr_first_col="",
         )
         self._var_defs = []
-        self._meta = od()
+        self._meta = {}
         self.update(**kwargs)
 
     @property
@@ -374,7 +373,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         self.start_meas = None
         self.stop_meas = None
 
-        self.flag_col_info = od()
+        self.flag_col_info = {}
 
         self.file = None
 

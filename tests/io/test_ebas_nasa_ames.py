@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import numpy as np
 import pytest
 
@@ -55,7 +53,7 @@ def test_EbasNasaAmesFile_instance(filedata):
 
 
 def test_EbasNasaAmesFile_head_fix(filedata):
-    HEAD_FIX = OrderedDict(
+    HEAD_FIX = dict(
         num_head_lines=93,
         num_head_fmt=1001,
         data_originator="Brem, Benjamin; Baltensperger, Urs",
@@ -76,7 +74,7 @@ def test_EbasNasaAmesFile_head_fix(filedata):
         + [9.999999],
         descr_first_col="end_time of measurement, days from the file reference point",
     )
-    assert isinstance(filedata.head_fix, OrderedDict)
+    assert isinstance(filedata.head_fix, dict)
     assert filedata.head_fix == HEAD_FIX
 
 

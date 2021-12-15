@@ -33,7 +33,6 @@
 
 import os
 import re
-from collections import OrderedDict as od
 
 import numpy as np
 import pandas as pd
@@ -84,7 +83,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     # Those, for which no defined name is known were named with a leading
     # underscore (e.g. _eta500lt1 for fine mode fraction at 500nm)
     #: Dictionary that specifies the index for each data column
-    COL_INDEX = od(
+    COL_INDEX = dict(
         date=0,  # Date(dd:mm:yyyy)
         time=1,  # Time(hh:mm:ss),
         julien_day=2,  # Julian_Day
@@ -149,7 +148,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(COL_INDEX.keys())
+    PROVIDES_VARIABLES = list(COL_INDEX)
 
     # This how the beginning of data file looks like
 

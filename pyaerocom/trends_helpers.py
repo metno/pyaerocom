@@ -95,10 +95,9 @@ def _get_unique_seasons(idx):
 
 
 def _get_season_from_months(months: str) -> str:
-    if months in MONTHS_CODES.keys():
-        return MONTHS_CODES[months]
-    else:
+    if months not in MONTHS_CODES:
         raise ValueError(f"{months} is not a valid season")
+    return MONTHS_CODES[months]
 
 
 def _mid_season(seas, yr):

@@ -313,7 +313,7 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
 
     data_allyears = coldata.data
 
-    yearkeys = list(data_allyears.groupby("time.year").groups.keys())
+    yearkeys = list(data_allyears.groupby("time.year").groups)
 
     if resolution == "seasonal":
         seasons = ["DJF", "MAM", "JJA", "SON"]
@@ -633,7 +633,7 @@ def _get_stat_regions(lats, lons, regions):
 
 def _process_sites(data, regions, regions_how, meta_glob):
 
-    freqs = list(data.keys())
+    freqs = list(data)
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
         regs = countries
@@ -881,7 +881,7 @@ def _process_map_and_scat(
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
     ts_objs = []
-    freqs = list(data.keys())
+    freqs = list(data)
     check_countries = True if regions_how == "country" else False
     for regid, regname in region_ids.items():
         ts_data = _init_ts_data(freqs)

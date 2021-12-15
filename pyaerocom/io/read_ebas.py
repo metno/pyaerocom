@@ -20,7 +20,6 @@
 import fnmatch
 import os
 import re
-from collections import OrderedDict as od
 from warnings import catch_warnings, filterwarnings
 
 import numpy as np
@@ -378,7 +377,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def FILE_REQUEST_OPTS(self):
         """List of options for file retrieval"""
-        return list(EbasSQLRequest().keys())
+        return list(EbasSQLRequest())
 
     @property
     def _FILEMASK(self):
@@ -493,7 +492,7 @@ class ReadEbas(ReadUngriddedBase):
             raise FileNotFoundError(
                 f"No EBAS data files could be found for stations {stats_or_patterns}"
             )
-        return list(dict.fromkeys(stats).keys())
+        return list(set(stats))
 
     def _precheck_vars_to_retrieve(self, vars_to_retrieve):
         """
@@ -1769,21 +1768,21 @@ class ReadEbas(ReadUngriddedBase):
             # the location in the data set is time step dependent!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            metadata[meta_key] = od()
+            metadata[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta(add_none_vals=True))
 
             if "station_name_orig" in station_data:
                 metadata[meta_key]["station_name_orig"] = station_data["station_name_orig"]
 
             metadata[meta_key]["data_revision"] = self.data_revision
-            metadata[meta_key]["var_info"] = od()
+            metadata[meta_key]["var_info"] = {}
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = {}
 
             num_times = len(station_data["dtime"])
 
-            contains_vars = list(station_data.var_info.keys())
+            contains_vars = list(station_data.var_info)
             # access array containing time stamps
             # TODO: check using index instead (even though not a problem here
             # since all Aerocom data files are of type timeseries)
@@ -1835,7 +1834,7 @@ class ReadEbas(ReadUngriddedBase):
                     data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
 
                 var_info = station_data["var_info"][var]
-                metadata[meta_key]["var_info"][var] = od()
+                metadata[meta_key]["var_info"][var] = {}
                 metadata[meta_key]["var_info"][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
 

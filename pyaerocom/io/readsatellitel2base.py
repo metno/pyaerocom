@@ -145,7 +145,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         # The valuse are taken form the product readme file
         self.QUALITY_FLAGS = {}
 
-        # PROVIDES_VARIABLES = list(RETRIEVAL_READ_PARAMETERS['sca']['metadata'].keys())
+        # PROVIDES_VARIABLES = list(RETRIEVAL_READ_PARAMETERS['sca']['metadata'])
         # PROVIDES_VARIABLES.extend(RETRIEVAL_READ_PARAMETERS['sca']['vars'].keys())
 
         # max distance between point on the earth's surface for a match
@@ -557,10 +557,8 @@ class ReadL2DataBase(ReadUngriddedBase):
                 except AttributeError:
                     _data = data_to_write
 
-            # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
-            vars_to_write_out.extend(
-                list(self.CODA_READ_PARAMETERS[vars_to_write[0]]["metadata"].keys())
-            )
+            # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata']))
+            vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]["metadata"]))
 
             # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
             datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype("datetime64[ms]"))
