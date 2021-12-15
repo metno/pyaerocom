@@ -8,7 +8,6 @@ import numpy as np
 import pytest
 
 import pyaerocom.access_testdata as td
-from pyaerocom import __dir__ as PYADIR
 from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.griddeddata import GriddedData

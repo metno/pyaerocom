@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from pyaerocom._init_helpers import LOGGING_CONFIG, _init_supplemental, change_verbosity
+from pyaerocom._logging import LOGGING_CONFIG, change_verbosity
 
 
 def get_level_value(logger: logging.Logger) -> int:
@@ -88,14 +88,3 @@ def test_change_verbosity(level: str | int, error: str, test_logger: logging.Log
     with pytest.raises(ValueError) as e:
         change_verbosity(level)
     assert str(e.value).startswith(error)
-
-
-### Functions for package initialisation
-def test__init_supplemental():
-    import os
-
-    from pkg_resources import get_distribution
-
-    version, fpath = _init_supplemental()
-    assert version == get_distribution("pyaerocom").version
-    assert os.path.normpath(fpath).endswith("/pyaerocom")

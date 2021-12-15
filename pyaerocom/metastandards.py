@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
 import logging
-import os
+from configparser import ConfigParser
+from importlib import resources
 
 import numpy as np
 
-from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 logger = logging.getLogger(__name__)
@@ -113,15 +112,15 @@ class DataSource(BrowseDict):
 
     def _parse_source_info_from_ini(self):
         """Parse source info from ini file"""
-        from configparser import ConfigParser
 
-        cfg = ConfigParser()
-        file = os.path.join(const.DIR_INI_FILES, self._ini_file_name)
-        if not os.path.exists(file):
+        if not resources.is_resource("pyaerocom.data", self._ini_file_name):
             raise OSError(f"File {self._ini_file_name} does not exist")
-        cfg.read(file)
-        if self.data_id in cfg:
-            for k, v in cfg[self.data_id].items():
+
+        parser = ConfigParser()
+        with resources.path("pyaerocom.data", self._ini_file_name) as path:
+            parser.read(path)
+        if self.data_id in parser:
+            for k, v in parser[self.data_id].items():
                 if k in self._types:
                     self[k] = self._types[k](v)
                 else:
@@ -392,14 +391,3 @@ class AerocomDataID:
 
 
 STANDARD_META_KEYS = list(StationMetaData())
-
-if __name__ == "__main__":
-    meta = StationMetaData(data_id="AeronetSunV3Lev2.daily", ts_type="blaaaa")
-    print(meta)
-    print(meta.dataset_str())
-
-    data_id = AerocomDataID("EMEP-met2010_EXP-PERT")
-
-    dd = data_id.to_dict()
-
-    assert AerocomDataID(**dd) == AerocomDataID.from_dict(dd)

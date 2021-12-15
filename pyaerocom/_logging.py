@@ -55,26 +55,3 @@ def change_verbosity(level: str | int) -> None:
     for handler in logger.handlers:
         if type(handler) == logging.StreamHandler:
             handler.setLevel(level)
-
-
-### Functions for package initialisation
-def _init_supplemental():
-    """
-    Get version and pyaerocom installation path
-
-    Returns
-    -------
-    str
-        version string
-    str
-        path to source code base directory (
-        <installed_basedir>/pyaerocom/pyaerocom)
-
-
-    """
-    import os
-
-    from pkg_resources import get_distribution
-
-    dist = get_distribution("pyaerocom")
-    return (dist.version, os.path.join(dist.location, "pyaerocom"))

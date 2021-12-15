@@ -1,6 +1,7 @@
 import getpass
 import os
 import tempfile
+from importlib import resources
 from pathlib import Path
 from tarfile import PAX_FIELDS
 
@@ -10,7 +11,7 @@ import pyaerocom.config as testmod
 from pyaerocom import const as DEFAULT_CFG
 from pyaerocom.config import Config
 
-from .conftest import PYADIR, lustre_avail
+from .conftest import lustre_avail
 
 USER = getpass.getuser()
 
@@ -22,7 +23,14 @@ os.makedirs(os.path.join(LOCAL_DB_DIR, "modeldata"))
 os.makedirs(os.path.join(LOCAL_DB_DIR, "obsdata"))
 open(CFG_FILE_WRONG, "w").close()
 
-CFG_FILE = os.path.join(PYADIR, "data/paths.ini")
+
+def test_CFG_FILE_EXISTS():
+    assert resources.is_resource("pyaerocom.data", "paths.ini")
+    assert os.path.exists(CFG_FILE)
+
+
+with resources.path("pyaerocom.data", "paths.ini") as path:
+    CFG_FILE = str(path)
 
 
 def test_CFG_FILE_EXISTS():
@@ -219,31 +227,27 @@ def test_empty_class_header(empty_cfg):
     assert cfg.SERVER_CHECK_TIMEOUT == 1  # s
 
     assert cfg._outhomename == "MyPyaerocom"
-    from pyaerocom import __dir__
 
-    config_files = {
-        "lustre": os.path.join(__dir__, "data", "paths.ini"),
-        "user_server": os.path.join(__dir__, "data", "paths_user_server.ini"),
-        "local-db": os.path.join(__dir__, "data", "paths_local_database.ini"),
-    }
+    with resources.path("pyaerocom.data", "paths.ini") as path:
+        assert cfg._config_files["metno"] == cfg._config_ini_lustre == str(path)
 
-    assert cfg._config_ini_lustre == config_files["lustre"]
-    assert cfg._config_ini_user_server == config_files["user_server"]
-    assert cfg._config_ini_localdb == config_files["local-db"]
+    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
+        assert cfg._config_files["users-db"] == cfg._config_ini_user_server == str(path)
 
-    assert cfg._config_files == {
-        "metno": config_files["lustre"],
-        "users-db": config_files["user_server"],
-        "local-db": config_files["local-db"],
-    }
+    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
+        assert cfg._config_files["local-db"] == cfg._config_ini_localdb == str(path)
+
     assert cfg._check_subdirs_cfg == {
         "metno": "aerocom",
         "users-db": "AMAP",
         "local-db": "modeldata",
     }
 
-    assert cfg._var_info_file == os.path.join(__dir__, "data", "variables.ini")
-    assert cfg._coords_info_file == os.path.join(__dir__, "data", "coords.ini")
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        assert cfg._var_info_file == str(path)
+    with resources.path("pyaerocom.data", "coords.ini") as path:
+        assert cfg._coords_info_file == str(path)
+
     dbdirs = {
         "lustre/storeA/project": "metno",
         "metno/aerocom_users_database": "users-db",

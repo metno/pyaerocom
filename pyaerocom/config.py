@@ -15,6 +15,7 @@ import getpass
 import logging
 import os
 from configparser import ConfigParser
+from importlib import resources
 from pathlib import Path
 
 import numpy as np
@@ -166,11 +167,12 @@ class Config:
 
     _outhomename = "MyPyaerocom"
 
-    from pyaerocom import __dir__
-
-    _config_ini_lustre = os.path.join(__dir__, "data", "paths.ini")
-    _config_ini_user_server = os.path.join(__dir__, "data", "paths_user_server.ini")
-    _config_ini_localdb = os.path.join(__dir__, "data", "paths_local_database.ini")
+    with resources.path("pyaerocom.data", "paths.ini") as path:
+        _config_ini_lustre = str(path)
+    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
+        _config_ini_user_server = str(path)
+    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
+        _config_ini_localdb = str(path)
 
     # this dictionary links environment ID's with corresponding ini files
     _config_files = {
@@ -183,8 +185,10 @@ class Config:
     # names that are required to exist in order to load this environment
     _check_subdirs_cfg = {"metno": "aerocom", "users-db": "AMAP", "local-db": "modeldata"}
 
-    _var_info_file = os.path.join(__dir__, "data", "variables.ini")
-    _coords_info_file = os.path.join(__dir__, "data", "coords.ini")
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        _var_info_file = str(path)
+    with resources.path("pyaerocom.data", "coords.ini") as path:
+        _coords_info_file = str(path)
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = {}
@@ -505,13 +509,6 @@ class Config:
         return self._logdir
 
     @property
-    def DIR_INI_FILES(self):
-        """Directory containing configuration files"""
-        from pyaerocom import __dir__
-
-        return os.path.join(__dir__, "data")
-
-    @property
     def ETOPO1_AVAILABLE(self):
         """
         Boolean specifying if access to ETOPO1 dataset is provided
@@ -544,9 +541,8 @@ class Config:
     @property
     def EBAS_FLAGS_FILE(self):
         """Location of CSV file specifying meaning of EBAS flags"""
-        from pyaerocom import __dir__
-
-        return os.path.join(__dir__, "data", "ebas_flags.csv")
+        with resources.path("pyaerocom.data", "ebas_flags.csv") as path:
+            return str(path)
 
     @property
     def OBS_IDS_UNGRIDDED(self):
