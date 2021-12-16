@@ -8,15 +8,7 @@ from packaging.version import Version
 
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
-from pyaerocom.colocateddata import ColocatedData
 
-from ._conftest_helpers import (
-    _create_fake_coldata_3d,
-    _create_fake_coldata_3d_hourly,
-    _create_fake_coldata_4d,
-    _create_fake_coldata_5d,
-    _create_fake_trends_coldata_3d,
-)
 from .synthetic_data import FakeStationDataAccess
 
 pytest_plugins = [
@@ -25,6 +17,7 @@ pytest_plugins = [
     "tests.fixtures.ebas",
     "tests.fixtures.aeronet",
     "tests.fixtures.stations",
+    "tests.fixtures.collocated_data",
 ]
 
 matplotlib.use("Agg")
@@ -107,20 +100,6 @@ def tempdir(tmpdir_factory):
     """Temporary directory for dumping data shared between tests"""
     tmpdir = tmpdir_factory.mktemp("data")
     return tmpdir
-
-
-@pytest.fixture(scope="session")
-def coldata():
-    EXAMPLE_FILE = TESTDATADIR / CHECK_PATHS["coldata_tm5_aeronet"]
-    return {
-        "tm5_aeronet": ColocatedData(str(EXAMPLE_FILE)),
-        "fake_nodims": ColocatedData(np.ones((2, 1, 1))),
-        "fake_3d": _create_fake_coldata_3d(),
-        "fake_4d": _create_fake_coldata_4d(),
-        "fake_5d": _create_fake_coldata_5d(),
-        "fake_3d_hr": _create_fake_coldata_3d_hourly(),
-        "fake_3d_trends": _create_fake_trends_coldata_3d(),
-    }
 
 
 TMPDIR = os.path.join(os.path.expanduser("~"), "tmp", "pyatest")

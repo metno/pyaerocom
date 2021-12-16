@@ -12,10 +12,7 @@ from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError, MetaDataError
-
-from .conftest import CHECK_PATHS, TESTDATADIR
-
-EXAMPLE_FILE = TESTDATADIR / CHECK_PATHS["coldata_tm5_aeronet"]
+from tests.fixtures.collocated_data import EXAMPLE_FILE
 
 
 @pytest.mark.parametrize("data", [EXAMPLE_FILE, str(EXAMPLE_FILE), np.ones((2, 3, 4))])
