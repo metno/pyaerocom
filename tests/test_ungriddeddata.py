@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -206,18 +207,13 @@ def test_filter_by_meta(aeronetsunv3lev2_subset, args, sitenames):
     assert sorted(sitenames) == stats
 
 
-def test_save_as(aeronetsunv3lev2_subset, tempdir):
-    fp = aeronetsunv3lev2_subset.save_as(
-        file_name="ungridded_aeronet_subset.pkl", save_dir=tempdir
-    )
-
-    assert os.path.exists(fp)
-
-
-def test_from_cache(aeronetsunv3lev2_subset, tempdir):
-    reloaded = UngriddedData.from_cache(data_dir=tempdir, file_name="ungridded_aeronet_subset.pkl")
-
-    assert reloaded.shape == aeronetsunv3lev2_subset.shape
+def test_cache_reload(aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path):
+    path = tmp_path / "ungridded_aeronet_subset.pkl"
+    file = aeronetsunv3lev2_subset.save_as(file_name=path.name, save_dir=path.parent)
+    assert Path(file) == path
+    assert path.exists()
+    data = UngriddedData.from_cache(data_dir=path.parent, file_name=path.name)
+    assert data.shape == aeronetsunv3lev2_subset.shape
 
 
 def test_check_unit(data_scat_jungfraujoch):
