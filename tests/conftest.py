@@ -6,7 +6,6 @@ import pytest
 from packaging.version import Version
 
 from pyaerocom import const
-from pyaerocom.access_testdata import AccessTestData
 
 from .synthetic_data import FakeStationDataAccess
 
@@ -24,14 +23,6 @@ matplotlib.use("Agg")
 TEST_RTOL = 1e-4
 
 FAKE_STATION_DATA = FakeStationDataAccess()
-
-# class that provides / ensures access to testdataset
-tda = AccessTestData()
-
-# checks if testdata-minimal is available and if not, tries to download it
-# automatically into ~/MyPyaerocom/testdata-minimal
-
-assert tda.init(), "cound not find minimal test data"
 
 
 # skipif marker that is True if no access to metno PPI is provided

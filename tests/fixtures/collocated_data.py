@@ -4,9 +4,9 @@ import pytest
 import xarray as xr
 
 from pyaerocom import ColocatedData, Filter
-from pyaerocom.access_testdata import AccessTestData
 
-TESTDATADIR = AccessTestData().testdatadir
+from .data_access import TESTDATADIR
+
 CHECK_PATHS = "coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc"
 EXAMPLE_FILE = TESTDATADIR / CHECK_PATHS
 

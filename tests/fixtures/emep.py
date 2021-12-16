@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from pyaerocom.access_testdata import AccessTestData
+from .data_access import TESTDATADIR
 
-TESTDATADIR = AccessTestData().testdatadir
 DATA_PATH = "modeldata/EMEP_2017"
 EMEP_DATA_PATH = TESTDATADIR / DATA_PATH
 

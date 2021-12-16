@@ -9,8 +9,7 @@ from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
-
-from .conftest import tda
+from tests.fixtures.data_access import tda
 
 HOME = os.path.expanduser("~")
 COL_OUT_DEFAULT = os.path.join(HOME, "MyPyaerocom/colocated_data")

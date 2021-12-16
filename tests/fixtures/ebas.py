@@ -6,13 +6,11 @@ from pathlib import Path
 import pytest
 import simplejson
 
-from pyaerocom.access_testdata import AccessTestData
 from pyaerocom.io.ebas_file_index import EbasFileIndex
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.read_ebas import ReadEbas
 
-TESTDATADIR = AccessTestData().testdatadir
-
+from .data_access import TESTDATADIR
 
 EBAS_FILEDIR = TESTDATADIR / "obsdata/EBASMultiColumn/data"
 
