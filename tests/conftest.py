@@ -9,7 +9,6 @@ from packaging.version import Version
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3
 
 from ._conftest_helpers import (
     _create_fake_coldata_3d,
@@ -25,6 +24,7 @@ pytest_plugins = [
     "tests.fixtures.emep",
     "tests.fixtures.tm5",
     "tests.fixtures.ebas",
+    "tests.fixtures.aeronet",
 ]
 
 matplotlib.use("Agg")
@@ -45,8 +45,6 @@ CHECK_PATHS = {
     "emep": "modeldata/EMEP_2017",
     "coldata_tm5_aeronet": "coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc",
 }
-
-TEST_VARS_AERONET = ["od550aer", "ang4487aer"]
 
 
 # checks if testdata-minimal is available and if not, tries to download it
@@ -102,30 +100,6 @@ geojson_unavail = pytest.mark.skipif(
 broken_test = pytest.mark.skip(reason="Method raises Exception")
 
 ### Fixtures representing data
-
-
-@pytest.fixture(scope="session")
-def aeronet_sun_subset_reader():
-    reader = ReadAeronetSunV3("AeronetSunV3L2Subset.daily")
-    return reader
-
-
-@pytest.fixture(scope="session")
-def aeronet_sda_subset_reader():
-    reader = ReadAeronetSdaV3("AeronetSDAV3L2Subset.daily")
-    return reader
-
-
-@pytest.fixture(scope="session")
-def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
-    r = aeronet_sun_subset_reader
-    return r.read(vars_to_retrieve=TEST_VARS_AERONET)
-
-
-@pytest.fixture(scope="session")
-def aeronetsdav3lev2_subset(aeronet_sda_subset_reader):
-    r = aeronet_sda_subset_reader
-    return r.read(vars_to_retrieve=["od550aer", "od550lt1aer"])
 
 
 @pytest.fixture(scope="session")

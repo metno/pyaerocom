@@ -5,9 +5,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 import pyaerocom.combine_vardata_ungridded as testmod
-
-from .conftest import aeronetsdav3lev2_subset as SDA_DATA
-from .conftest import aeronetsunv3lev2_subset as SUN_DATA
+from tests.fixtures.aeronet import aeronetsdav3lev2_subset as SDA_DATA
+from tests.fixtures.aeronet import aeronetsunv3lev2_subset as SUN_DATA
 
 TESTSTAT = "Mauna_Loa"
 SUN_ID = "AeronetSunV3L2Subset.daily"
