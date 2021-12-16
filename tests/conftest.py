@@ -74,13 +74,6 @@ broken_test = pytest.mark.skip(reason="Method raises Exception")
 ### Fixtures representing data
 
 
-@pytest.fixture(scope="session")
-def tempdir(tmpdir_factory):
-    """Temporary directory for dumping data shared between tests"""
-    tmpdir = tmpdir_factory.mktemp("data")
-    return tmpdir
-
-
 TMPDIR = os.path.join(os.path.expanduser("~"), "tmp", "pyatest")
 os.makedirs(TMPDIR, exist_ok=True)
 
