@@ -27,6 +27,10 @@ from ._conftest_helpers import (
 )
 from .synthetic_data import FakeStationDataAccess
 
+pytest_plugins = [
+    "tests.fixtures.emep",
+]
+
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
 
@@ -141,17 +145,6 @@ EMEP_DIR = str(TESTDATADIR.joinpath(CHECK_PATHS["emep"]))
 EBAS_SQLite_DB = EBAS_FILEDIR.parent.joinpath("ebas_file_index.sqlite3")
 
 assert EBAS_SQLite_DB.exists()
-
-
-@pytest.fixture(scope="session")
-def path_emep():
-    paths = {}
-    emep_path = TESTDATADIR.joinpath(CHECK_PATHS["emep"])
-    paths["daily"] = str(emep_path.joinpath("Base_day.nc"))
-    paths["monthly"] = str(emep_path.joinpath("Base_month.nc"))
-    paths["yearly"] = str(emep_path.joinpath("Base_fullrun.nc"))
-    paths["data_dir"] = str(emep_path)
-    return paths
 
 
 @pytest.fixture(scope="session")
