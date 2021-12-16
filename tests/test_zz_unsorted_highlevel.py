@@ -1,10 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from .conftest import data_unavail
 
-
-@data_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
     assert len(aeronetsunv3lev2_subset.metadata) == 22
     assert len(aeronetsunv3lev2_subset.unique_station_names) == 22
@@ -36,7 +33,6 @@ def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
     assert aeronetsunv3lev2_subset.unique_station_names == names
 
 
-@data_unavail
 def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
     no_odcount = 0
     mean_vals = []
@@ -57,7 +53,6 @@ def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
     assert_allclose(actual=[np.mean(mean_vals), np.mean(std_vals)], desired=should_be, atol=1e-2)
 
 
-@data_unavail
 def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
     no_odcount = 0
     mean_vals = []

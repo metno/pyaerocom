@@ -5,21 +5,16 @@ import pytest
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
-from ..conftest import data_unavail
 
-
-@data_unavail
 @pytest.fixture(scope="module")
 def reader():
     return ReadAeronetSunV3("AeronetSunV3L2Subset.AP")
 
 
-@data_unavail
 def test_get_file_list(reader):
     assert len(reader.get_file_list()) >= 2
 
 
-@data_unavail
 def test_read_file(reader):
     from pyaerocom.stationdata import StationData
 
@@ -34,7 +29,6 @@ def test_read_file(reader):
     assert all(x in data for x in ["od550aer", "ang4487aer"])
 
 
-@data_unavail
 def test_read_add_common_meta(reader):
     reader.get_file_list()
     files = reader.files[0]

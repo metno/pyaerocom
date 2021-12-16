@@ -2,10 +2,7 @@ import pytest
 
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 
-from ..conftest import data_unavail
 
-
-@data_unavail
 @pytest.fixture(scope="module")
 def reader():
     # not sure if we really use this
@@ -24,7 +21,6 @@ def reader():
     return ReadEEAAQEREP_V2("EEA_AQeRep.v2.Subset")
 
 
-@data_unavail
 def test_get_file_list(reader):
     # at this point that is the base directory without recursive search
     # so this returns only Revision.txt and metadata.csv
@@ -32,7 +28,6 @@ def test_get_file_list(reader):
     assert len(reader.get_file_list()) >= 2
 
 
-@data_unavail
 def test_read(reader):
     from pyaerocom.stationdata import StationData
     from pyaerocom.ungriddeddata import UngriddedData

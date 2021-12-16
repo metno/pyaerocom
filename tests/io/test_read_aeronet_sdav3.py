@@ -3,10 +3,9 @@ import os
 import numpy as np
 from numpy.testing import assert_allclose
 
-from ..conftest import TEST_RTOL, data_unavail
+from ..conftest import TEST_RTOL
 
 
-@data_unavail
 def test_load_thessaloniki(aeronet_sda_subset_reader):
     reader = aeronet_sda_subset_reader
     files = reader.find_in_file_list("*Thessaloniki*")

@@ -29,11 +29,10 @@ from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
-from ..conftest import EBAS_FILEDIR, EBAS_FILES, EBAS_ISSUE_FILES, data_unavail
+from ..conftest import EBAS_FILEDIR, EBAS_FILES, EBAS_ISSUE_FILES
 
 
 @pytest.fixture(scope="module")
-@data_unavail
 def reader() -> ReadEbas:
     return ReadEbas("EBASSubset")
 

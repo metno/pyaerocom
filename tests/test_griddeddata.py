@@ -16,7 +16,7 @@ from pyaerocom.exceptions import (
     VariableNotFoundError,
 )
 from pyaerocom.io import ReadGridded
-from tests.conftest import TEST_RTOL, data_unavail, need_iris_32
+from tests.conftest import TEST_RTOL, need_iris_32
 
 TESTLATS = [-10, 20]
 TESTLONS = [-120, 69]
@@ -75,7 +75,6 @@ def test_GriddedData_suppl_info():
     assert isinstance(GriddedData().metadata, dict)
 
 
-@data_unavail
 def test_basic_properties(data_tm5):
     assert isinstance(data_tm5.cube, Cube)
     assert data_tm5.ts_type == "monthly"
@@ -91,7 +90,6 @@ def test_basic_properties(data_tm5):
     assert data_tm5.lon_res == 3.0
 
 
-@data_unavail
 @need_iris_32
 def test_GriddedData_longitude(data_tm5):
     """Test if longitudes are defined right"""
@@ -101,7 +99,6 @@ def test_GriddedData_longitude(data_tm5):
     assert (lons.min(), lons.max()) == (-178.5, 178.5)
 
 
-@data_unavail
 def test_GriddedData_latitude(data_tm5):
     """test latitude array"""
     assert str(data_tm5.latitude.units) == "degrees"
@@ -110,7 +107,6 @@ def test_GriddedData_latitude(data_tm5):
     assert_allclose(lats.max(), 89, rtol=TEST_RTOL)
 
 
-@data_unavail
 def test_GriddedData_time(data_tm5):
     """Test time dimension access and values"""
     time = data_tm5.time
@@ -120,7 +116,6 @@ def test_GriddedData_time(data_tm5):
     assert nominal_eq == vals_eq
 
 
-@data_unavail
 def test_GriddedData_resample_time(data_tm5):
     data = data_tm5
 
@@ -132,7 +127,6 @@ def test_GriddedData_resample_time(data_tm5):
     assert_allclose(yearly.mean(), 0.11865, rtol=TEST_RTOL)
 
 
-@data_unavail
 def test_GriddedData_interpolate(data_tm5):
     data = data_tm5
 
@@ -145,7 +139,6 @@ def test_GriddedData_interpolate(data_tm5):
     assert_allclose(itp.mean(True), 0.13748, rtol=TEST_RTOL)
 
 
-@data_unavail
 def test_GriddedData_to_time_series(data_tm5):
 
     stats = data_tm5.to_time_series(latitude=TESTLATS, longitude=TESTLONS)
@@ -154,7 +147,6 @@ def test_GriddedData_to_time_series(data_tm5):
     assert_allclose([stat.od550aer.mean() for stat in stats], [0.101353, 0.270886], rtol=TEST_RTOL)
 
 
-@data_unavail
 def test_GriddedData_change_baseyear(data_tm5):
     cp = data_tm5.copy()
     cp.change_base_year(1901)
@@ -196,7 +188,6 @@ def test_GriddedData_area_weighted_mean(data_tm5):
     assert_allclose(val.mean(), 0.118648, atol=0.001)
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "kwargs,result",
     [

@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose, assert_array_equal
 from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
 
-from .conftest import FAKE_STATION_DATA, data_unavail, rg_unavail
+from .conftest import FAKE_STATION_DATA, rg_unavail
 
 
 @pytest.fixture(scope="module")
@@ -70,12 +70,10 @@ def test_coordinate_access():
     assert_array_equal(c["altitude"], alts)
 
 
-@data_unavail
 def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
 
 
-@data_unavail
 @rg_unavail
 @pytest.mark.dependency
 def test_check_set_country(aeronetsunv3lev2_subset):

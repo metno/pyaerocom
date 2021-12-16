@@ -15,7 +15,6 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import data_unavail
 
 VAR_MAP = {
     "abs550aer": "AAOD_550nm",
@@ -185,7 +184,6 @@ def test_ReadMscwCtm_var_map():
     assert var_map == VAR_MAP
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "var_name, ts_type", [("vmro3", "daily"), ("vmro3", None), ("concpmgt25", "daily")]
 )
@@ -199,7 +197,6 @@ def test_ReadMscwCtm_read_var(var_name: str, ts_type: str, data_dir: str):
     assert data.ts_type == reader.ts_type
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "var_name, ts_type, exception, error",
     [
@@ -221,7 +218,6 @@ def test_ReadMscwCtm_read_var_error(
     assert str(e.value) == error
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "var_name, ts_type",
     [
@@ -235,14 +231,12 @@ def test_ReadMscwCtm__compute_var(var_name, ts_type, data_dir: str):
     assert isinstance(data, xr.DataArray)
 
 
-@data_unavail
 def test_ReadMscwCtm__compute_var_error(data_dir: str):
     reader = ReadMscwCtm(data_dir=data_dir)
     with pytest.raises(KeyError):
         reader._compute_var("blaaa", "daily")
 
 
-@data_unavail
 def test_ReadMscwCtm_data(data_dir: str):
     reader = ReadMscwCtm(data_dir=data_dir)
 
@@ -263,7 +257,6 @@ def test_ReadMscwCtm_data(data_dir: str):
     assert data.ts_type == "daily"
 
 
-@data_unavail
 def test_ReadMscwCtm_directory(data_dir: str):
     reader = ReadMscwCtm(data_dir=data_dir)
     assert reader.data_dir == data_dir
