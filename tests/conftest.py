@@ -1,13 +1,10 @@
 import os
-
-import matplotlib
-
-matplotlib.use("Agg")
-
 from importlib import metadata
 
+import matplotlib
 import numpy as np
 import pytest
+import simplejson
 from packaging.version import Version
 
 from pyaerocom import const
@@ -30,7 +27,8 @@ pytest_plugins = [
     "tests.fixtures.tm5",
 ]
 
-INIT_TESTDATA = True
+matplotlib.use("Agg")
+
 TEST_RTOL = 1e-4
 
 FAKE_STATION_DATA = FakeStationDataAccess()
@@ -67,25 +65,19 @@ EBAS_ISSUE_FILES = {
 # checks if testdata-minimal is available and if not, tries to download it
 # automatically into ~/MyPyaerocom/testdata-minimal
 
-if INIT_TESTDATA:
-    TESTDATA_AVAIL = tda.init()
-else:
-    TESTDATA_AVAIL = False
+assert tda.init(), "cound not find minimal test data"
 
-EBAS_FILES = None
-EBAS_FILEDIR = None
-if TESTDATA_AVAIL:
-    import simplejson
 
-    _ebas_info_file = TESTDATADIR.joinpath("scripts/ebas_files.json")
-    assert _ebas_info_file.exists()
-    EBAS_FILEDIR = TESTDATADIR.joinpath("obsdata/EBASMultiColumn/data")
-    with open(_ebas_info_file) as f:
-        EBAS_FILES = simplejson.load(f)
-    for var, sites in EBAS_FILES.items():
-        for site, files in sites.items():
-            for file in files:
-                assert EBAS_FILEDIR.joinpath(file).exists()
+_ebas_info_file = TESTDATADIR / "scripts/ebas_files.json"
+assert _ebas_info_file.exists()
+
+EBAS_FILEDIR = TESTDATADIR / "obsdata/EBASMultiColumn/data"
+with open(_ebas_info_file) as f:
+    EBAS_FILES = simplejson.load(f)
+for var, sites in EBAS_FILES.items():
+    for site, files in sites.items():
+        for file in files:
+            assert (EBAS_FILEDIR / file).exists()
 
 
 # skipif marker that is True if no access to metno PPI is provided
@@ -120,9 +112,6 @@ etopo1_unavail = pytest.mark.skipif(
     not const.ETOPO1_AVAILABLE, reason="Skipping tests that require access to ETOPO1 data"
 )
 
-data_unavail = pytest.mark.skipif(
-    not TESTDATA_AVAIL, reason="Skipping tests that require testdata-minimal."
-)
 
 try:
     import geojsoncontour
@@ -139,7 +128,7 @@ broken_test = pytest.mark.skip(reason="Method raises Exception")
 
 ### Fixtures representing data
 
-EBAS_SQLite_DB = EBAS_FILEDIR.parent.joinpath("ebas_file_index.sqlite3")
+EBAS_SQLite_DB = EBAS_FILEDIR.parent / "ebas_file_index.sqlite3"
 
 assert EBAS_SQLite_DB.exists()
 
@@ -190,8 +179,6 @@ def data_scat_jungfraujoch_full():
 
 @pytest.fixture(scope="session")
 def loaded_nasa_ames_example():
-    if not TESTDATA_AVAIL:
-        raise ValueError()
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 
     fname = EBAS_FILES["sc550dryaer"]["Jungfraujoch"][0]
@@ -245,7 +232,3 @@ need_iris_32 = pytest.mark.xfail(
     reason=f"results are different with iris {iris_version} < 3.2",
     strict=True,
 )
-
-
-def pytest_sessionfinish(session, exitstatus):
-    print("\n\nBLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")

@@ -186,7 +186,7 @@ class AccessTestData:
             return False
         return True
 
-    def init(self, add_check_paths=None):
+    def init(self, add_check_paths=None) -> bool:
         if not self.check_access_and_download_if_needed(add_check_paths):
             return False
 
