@@ -17,9 +17,8 @@ from pyaerocom.colocation import (
     colocate_gridded_ungridded,
 )
 from pyaerocom.io import ReadMscwCtm
-
-from ._conftest_helpers import create_fake_station_data
-from .conftest import TEST_RTOL, need_iris_32
+from tests.conftest import TEST_RTOL, need_iris_32
+from tests.fixtures.stations import create_fake_station_data
 
 
 def test__regrid_gridded(data_tm5):

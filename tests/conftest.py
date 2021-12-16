@@ -16,7 +16,6 @@ from ._conftest_helpers import (
     _create_fake_coldata_4d,
     _create_fake_coldata_5d,
     _create_fake_trends_coldata_3d,
-    create_fake_stationdata_list,
 )
 from .synthetic_data import FakeStationDataAccess
 
@@ -25,6 +24,7 @@ pytest_plugins = [
     "tests.fixtures.tm5",
     "tests.fixtures.ebas",
     "tests.fixtures.aeronet",
+    "tests.fixtures.stations",
 ]
 
 matplotlib.use("Agg")
@@ -110,21 +110,8 @@ def tempdir(tmpdir_factory):
 
 
 @pytest.fixture(scope="session")
-def statlist():
-    data = {}
-    stats = create_fake_stationdata_list()
-    data["all"] = stats
-    data["od550aer"] = [stat.copy() for stat in stats if stat.has_var("od550aer")]
-    pm10sites = [stat.copy() for stat in stats if stat.has_var("concpm10")]
-    data["concpm10_X"] = pm10sites
-    data["concpm10_X2"] = [stat.copy() for stat in pm10sites[:3]]
-    data["concpm10"] = [stat.copy() for stat in pm10sites[:2]]
-    return data
-
-
-@pytest.fixture(scope="session")
 def coldata():
-    EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS["coldata_tm5_aeronet"])
+    EXAMPLE_FILE = TESTDATADIR / CHECK_PATHS["coldata_tm5_aeronet"]
     return {
         "tm5_aeronet": ColocatedData(str(EXAMPLE_FILE)),
         "fake_nodims": ColocatedData(np.ones((2, 1, 1))),
