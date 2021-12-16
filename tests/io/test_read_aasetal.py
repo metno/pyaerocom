@@ -1,10 +1,5 @@
 """
 High level test methods that check AasEtAl time series data for selected stations
-Created on June 12 2019.
-
-@author: hannas@met.no
-
-Largely modified and optimised by J. Gliss (Feb 2020)
 """
 import os
 
