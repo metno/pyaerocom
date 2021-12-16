@@ -2,8 +2,7 @@ import numpy as np
 import pytest
 
 from pyaerocom.io.ebas_nasa_ames import EbasColDef, EbasFlagCol, EbasNasaAmesFile, NasaAmesHeader
-
-from ..conftest import loaded_nasa_ames_example as filedata
+from tests.fixtures.ebas import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")

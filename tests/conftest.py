@@ -4,13 +4,12 @@ from importlib import metadata
 import matplotlib
 import numpy as np
 import pytest
-import simplejson
 from packaging.version import Version
 
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
+from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3
 
 from ._conftest_helpers import (
     _create_fake_coldata_3d,
@@ -25,6 +24,7 @@ from .synthetic_data import FakeStationDataAccess
 pytest_plugins = [
     "tests.fixtures.emep",
     "tests.fixtures.tm5",
+    "tests.fixtures.ebas",
 ]
 
 matplotlib.use("Agg")
@@ -48,36 +48,11 @@ CHECK_PATHS = {
 
 TEST_VARS_AERONET = ["od550aer", "ang4487aer"]
 
-EBAS_ISSUE_FILES = {
-    # conco3 tower - 3 different measurement heights
-    "o3_tower": "CZ0003R.20150101000000.20181107114213.uv_abs.ozone.air.1y.1h..CZ06L_uv_abs.lev2.nas",
-    # conco3 - Neg. meas periods
-    "o3_neg_dt": "NZ0003G.20090110030000.20181130115605.uv_abs.ozone.air.9h.1h.US06L_Thermo_49C_LAU.US06L_AM.lev2.nas",
-    # conco3 - Most common meas period is 150s and does not correspond to any of the supported base frequencies ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native']
-    "o3_tstype": "LT0015R.20080101000000.20081231000000.uv_abs.ozone.air.15d.1h.LT01L_uv_abs_15.LT01L_uv_abs..nas",
-    # concpm10 - could not resolve unique data column for concpm10 (EBAS varname: ['pm10_mass'])
-    "pm10_colsel": "ID1013R.20180101000000.20200102000000.beta_gauge_particulate_sampler.pm10_mass.pm10.1y.1h.ID01L_MetOne_BAM1020..lev2.nas",
-    # concpm10 Aliartos - Most common meas period is 172800s and does not correspond to any of the supported base frequencies ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native']
-    "pm10_tstype": "GR0001R.20060119000000.20080120000000.b-attenuation.pm10_mass.pm10.11mo.1w.GR01L_b_att_01.GR01L_b-attenuation..nas",
-}
-
 
 # checks if testdata-minimal is available and if not, tries to download it
 # automatically into ~/MyPyaerocom/testdata-minimal
 
 assert tda.init(), "cound not find minimal test data"
-
-
-_ebas_info_file = TESTDATADIR / "scripts/ebas_files.json"
-assert _ebas_info_file.exists()
-
-EBAS_FILEDIR = TESTDATADIR / "obsdata/EBASMultiColumn/data"
-with open(_ebas_info_file) as f:
-    EBAS_FILES = simplejson.load(f)
-for var, sites in EBAS_FILES.items():
-    for site, files in sites.items():
-        for file in files:
-            assert (EBAS_FILEDIR / file).exists()
 
 
 # skipif marker that is True if no access to metno PPI is provided
@@ -128,10 +103,6 @@ broken_test = pytest.mark.skip(reason="Method raises Exception")
 
 ### Fixtures representing data
 
-EBAS_SQLite_DB = EBAS_FILEDIR.parent / "ebas_file_index.sqlite3"
-
-assert EBAS_SQLite_DB.exists()
-
 
 @pytest.fixture(scope="session")
 def aasetal_data():
@@ -163,28 +134,6 @@ def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
 def aeronetsdav3lev2_subset(aeronet_sda_subset_reader):
     r = aeronet_sda_subset_reader
     return r.read(vars_to_retrieve=["od550aer", "od550lt1aer"])
-
-
-@pytest.fixture(scope="session")
-def data_scat_jungfraujoch():
-    r = ReadEbas("EBASSubset")
-    return r.read("sc550aer", station_names="Jungfrau*")
-
-
-@pytest.fixture(scope="session")
-def data_scat_jungfraujoch_full():
-    r = ReadEbas()
-    return r.read("sc550aer", station_names="Jungfrau*")
-
-
-@pytest.fixture(scope="session")
-def loaded_nasa_ames_example():
-    from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
-
-    fname = EBAS_FILES["sc550dryaer"]["Jungfraujoch"][0]
-    rpath = f"obsdata/EBASMultiColumn/data/{fname}"
-    fp = TESTDATADIR.joinpath(rpath)
-    return EbasNasaAmesFile(fp)
 
 
 @pytest.fixture(scope="session")
