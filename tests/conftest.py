@@ -13,7 +13,6 @@ from packaging.version import Version
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
 
 from ._conftest_helpers import (
@@ -22,13 +21,13 @@ from ._conftest_helpers import (
     _create_fake_coldata_4d,
     _create_fake_coldata_5d,
     _create_fake_trends_coldata_3d,
-    _load_coldata_tm5_aeronet_from_scratch,
     create_fake_stationdata_list,
 )
 from .synthetic_data import FakeStationDataAccess
 
 pytest_plugins = [
     "tests.fixtures.emep",
+    "tests.fixtures.tm5",
 ]
 
 INIT_TESTDATA = True
@@ -143,29 +142,6 @@ broken_test = pytest.mark.skip(reason="Method raises Exception")
 EBAS_SQLite_DB = EBAS_FILEDIR.parent.joinpath("ebas_file_index.sqlite3")
 
 assert EBAS_SQLite_DB.exists()
-
-
-@pytest.fixture(scope="session")
-def data_tm5():
-    fpath = tda.testdatadir.joinpath(CHECK_PATHS["tm5aod"])
-    if not fpath.exists():
-        raise Exception("Unexpected error, please debug")
-    data = GriddedData(fpath)
-    return data
-
-
-@pytest.fixture(scope="session")
-def coldata_tm5_aeronet():
-    fpath = tda.testdatadir.joinpath(CHECK_PATHS["coldata_tm5_aeronet"])
-    return _load_coldata_tm5_aeronet_from_scratch(fpath)
-
-
-@pytest.fixture(scope="session")
-def coldata_tm5_tm5():
-    fpath = tda.testdatadir.joinpath(
-        "coldata/od550aer_REF-TM5_AP3-CTRL2016_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc"
-    )
-    return _load_coldata_tm5_aeronet_from_scratch(fpath)
 
 
 @pytest.fixture(scope="session")
