@@ -8,8 +8,11 @@ from pandas import DataFrame
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.readgridded import ReadGridded
+from tests.fixtures.tm5 import TM5_DATA_PATH
 
-from ..conftest import CHECK_PATHS, TEST_RTOL, TESTDATADIR, lustre_unavail
+from ..conftest import TEST_RTOL, lustre_unavail
+
+path_tm5 = str(TM5_DATA_PATH)
 
 
 def init_reader():
@@ -24,9 +27,6 @@ def reader_reanalysis():
 @pytest.fixture(scope="module")
 def reader_tm5():
     return ReadGridded("TM5-met2010_CTRL-TEST")
-
-
-path_tm5 = str(TESTDATADIR.joinpath(CHECK_PATHS["tm5"]))
 
 
 @pytest.mark.parametrize(

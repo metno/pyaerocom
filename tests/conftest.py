@@ -2,7 +2,6 @@ import os
 from importlib import metadata
 
 import matplotlib
-import numpy as np
 import pytest
 from packaging.version import Version
 
@@ -28,17 +27,6 @@ FAKE_STATION_DATA = FakeStationDataAccess()
 
 # class that provides / ensures access to testdataset
 tda = AccessTestData()
-
-TESTDATADIR = tda.testdatadir
-
-# Additional paths that have to exist (for sanity checking)
-CHECK_PATHS = {
-    "tm5": "modeldata/TM5-met2010_CTRL-TEST/renamed",
-    "tm5aod": "modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
-    "emep": "modeldata/EMEP_2017",
-    "coldata_tm5_aeronet": "coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc",
-}
-
 
 # checks if testdata-minimal is available and if not, tries to download it
 # automatically into ~/MyPyaerocom/testdata-minimal

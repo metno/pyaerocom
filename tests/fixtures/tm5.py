@@ -13,10 +13,13 @@ from pyaerocom.griddeddata import GriddedData
 TESTDATADIR = AccessTestData().testdatadir
 
 CHECK_PATHS = SimpleNamespace(
+    tm5="modeldata/TM5-met2010_CTRL-TEST/renamed",
     tm5aod="modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
     coldata_tm5_aeronet="coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc",
     tm5_tm5="coldata/od550aer_REF-TM5_AP3-CTRL2016_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc",
 )
+
+TM5_DATA_PATH = TESTDATADIR / CHECK_PATHS.tm5
 
 
 @pytest.fixture(scope="session")
