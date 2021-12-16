@@ -10,6 +10,7 @@ from numpy.testing import assert_almost_equal
 
 from pyaerocom import const
 from pyaerocom.io.read_aasetal import ReadAasEtal
+from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
 
 from ..conftest import lustre_unavail
@@ -62,8 +63,15 @@ def test_reader():
     assert filenames == FILENAMES
 
 
+@pytest.fixture(scope="session")
+def aasetal_data() -> UngriddedData:
+    """read expensive dataset"""
+    reader = ReadAasEtal()
+    return reader.read()
+
+
 @lustre_unavail
-def test_aasetal_data(aasetal_data):
+def test_aasetal_data(aasetal_data: UngriddedData):
     data = aasetal_data
     assert len(data.station_name) == 890
     assert len(data.unique_station_names) == 667
@@ -92,7 +100,7 @@ def test_aasetal_data(aasetal_data):
 
 
 @lustre_unavail
-def test_aasetal_data_correct_units(aasetal_data):
+def test_aasetal_data_correct_units(aasetal_data: UngriddedData):
 
     tested = []
     stats = []
@@ -129,7 +137,7 @@ testdata = [
 
 @lustre_unavail
 @pytest.mark.parametrize("filenum,station_name,colname,var_name", testdata)
-def test_reading_routines(aasetal_data, filenum, station_name, colname, var_name):
+def test_reading_routines(aasetal_data: UngriddedData, filenum, station_name, colname, var_name):
 
     UNITCONVERSION = ReadAasEtal().UNITCONVERSION
 

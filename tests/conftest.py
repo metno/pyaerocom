@@ -105,14 +105,6 @@ broken_test = pytest.mark.skip(reason="Method raises Exception")
 
 
 @pytest.fixture(scope="session")
-def aasetal_data():
-    reader = ReadAasEtal()
-    # that's quite time consuming, so keep it for possible usage in other
-    # tests
-    return reader.read()  # read all variables
-
-
-@pytest.fixture(scope="session")
 def aeronet_sun_subset_reader():
     reader = ReadAeronetSunV3("AeronetSunV3L2Subset.daily")
     return reader
