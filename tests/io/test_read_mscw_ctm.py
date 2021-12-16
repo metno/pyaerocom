@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 from typing import Type
@@ -16,7 +15,7 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import EMEP_DIR, data_unavail
+from ..conftest import data_unavail
 
 VAR_MAP = {
     "abs550aer": "AAOD_550nm",
@@ -117,15 +116,22 @@ VAR_MAP = {
 }
 
 
-@pytest.fixture(scope="module")
-def reader():
+@pytest.fixture()
+def reader() -> ReadMscwCtm:
+    """empty EMEP MSCW-CTM reader"""
     return ReadMscwCtm()
 
 
-def test_ReadMscwCtm__init__():
-    reader = ReadMscwCtm("EMEP_2017", EMEP_DIR)
+@pytest.fixture()
+def data_dir(path_emep: dict[str, str]) -> str:
+    """path to EMEP test data"""
+    return path_emep["data_dir"]
+
+
+def test_ReadMscwCtm__init__(data_dir: str):
+    reader = ReadMscwCtm("EMEP_2017", data_dir)
     assert getattr(reader, "data_id") == "EMEP_2017"
-    assert getattr(reader, "data_dir") == EMEP_DIR
+    assert getattr(reader, "data_dir") == data_dir
 
 
 def test_ReadMscwCtm__init___error():
@@ -135,10 +141,10 @@ def test_ReadMscwCtm__init___error():
     assert str(e.value) == data_dir
 
 
-def test_ReadMscwCtm_data_dir():
-    reader = ReadMscwCtm(EMEP_DIR)
-    reader.data_dir = EMEP_DIR
-    assert Path(reader.data_dir) == Path(EMEP_DIR)
+def test_ReadMscwCtm_data_dir(data_dir: str):
+    reader = ReadMscwCtm()
+    reader.data_dir = data_dir
+    assert Path(reader.data_dir) == Path(data_dir)
 
 
 @pytest.mark.parametrize(
@@ -155,10 +161,9 @@ def test_ReadMscwCtm_data_dir_error(value, exception, error: str):
     assert str(e.value) == error
 
 
-def test__ReadMscwCtm__check_files_in_data_dir():
+def test__ReadMscwCtm__check_files_in_data_dir(data_dir: str):
     reader = ReadMscwCtm()
-    value = EMEP_DIR
-    mask, matches = reader._check_files_in_data_dir(value)
+    mask, matches = reader._check_files_in_data_dir(data_dir)
     assert mask == "Base_*.nc"
     assert len(matches) == 3
 
@@ -184,8 +189,8 @@ def test_ReadMscwCtm_var_map():
 @pytest.mark.parametrize(
     "var_name, ts_type", [("vmro3", "daily"), ("vmro3", None), ("concpmgt25", "daily")]
 )
-def test_ReadMscwCtm_read_var(var_name: str, ts_type: str):
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)
+def test_ReadMscwCtm_read_var(var_name: str, ts_type: str, data_dir: str):
+    reader = ReadMscwCtm(data_dir=data_dir)
     data = reader.read_var(var_name, ts_type)
     assert isinstance(data, GriddedData)
     if ts_type is not None:
@@ -208,9 +213,9 @@ def test_ReadMscwCtm_read_var(var_name: str, ts_type: str):
     ],
 )
 def test_ReadMscwCtm_read_var_error(
-    var_name: str, ts_type: str, exception: Type[Exception], error: str
+    var_name: str, ts_type: str, exception: Type[Exception], error: str, data_dir: str
 ):
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)
+    reader = ReadMscwCtm(data_dir=data_dir)
     with pytest.raises(exception) as e:
         reader.read_var(var_name, ts_type)
     assert str(e.value) == error
@@ -224,23 +229,22 @@ def test_ReadMscwCtm_read_var_error(
         ("concpmgt25", "monthly"),
     ],
 )
-def test_ReadMscwCtm__compute_var(var_name, ts_type):
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)
+def test_ReadMscwCtm__compute_var(var_name, ts_type, data_dir: str):
+    reader = ReadMscwCtm(data_dir=data_dir)
     data = reader._compute_var(var_name, ts_type)
     assert isinstance(data, xr.DataArray)
 
 
 @data_unavail
-def test_ReadMscwCtm__compute_var_error():
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)
+def test_ReadMscwCtm__compute_var_error(data_dir: str):
+    reader = ReadMscwCtm(data_dir=data_dir)
     with pytest.raises(KeyError):
         reader._compute_var("blaaa", "daily")
 
 
 @data_unavail
-def test_ReadMscwCtm_data(path_emep):
-    path = EMEP_DIR
-    reader = ReadMscwCtm(data_dir=path)
+def test_ReadMscwCtm_data(data_dir: str):
+    reader = ReadMscwCtm(data_dir=data_dir)
 
     vars_provided = reader.vars_provided
     assert isinstance(vars_provided, list)
@@ -260,8 +264,7 @@ def test_ReadMscwCtm_data(path_emep):
 
 
 @data_unavail
-def test_ReadMscwCtm_directory(path_emep):
-    data_dir = EMEP_DIR
+def test_ReadMscwCtm_directory(data_dir: str):
     reader = ReadMscwCtm(data_dir=data_dir)
     assert reader.data_dir == data_dir
     vars_provided = reader.vars_provided
@@ -312,8 +315,8 @@ def test_ReadMscwCtm_filename_from_ts_type_error(reader):
     assert str(e.value) == "failed to infer filename from input ts_type=blaaa"
 
 
-def test_ReadMscwCtm_years_avail():
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)
+def test_ReadMscwCtm_years_avail(data_dir: str):
+    reader = ReadMscwCtm(data_dir=data_dir)
     assert reader.years_avail == ["2017"]
 
 
@@ -323,11 +326,11 @@ def test_ReadMscwCtm_preprocess_units():
     assert ReadMscwCtm().preprocess_units(units, prefix) == "1"
 
 
-def test_ReadMscwCtm_open_file():
+def test_ReadMscwCtm_open_file(data_dir: str):
     reader = ReadMscwCtm()
     with pytest.raises(AttributeError):
         reader.open_file()
-    reader.data_dir = EMEP_DIR
+    reader.data_dir = data_dir
     data = reader.open_file()
     assert isinstance(data["2017"], xr.Dataset)
     assert reader._filedata is data
@@ -352,8 +355,8 @@ def test_ReadMscwCtm_has_var_error(reader):
     assert str(e.value) == "Error (VarCollection): input variable blaa is not supported"
 
 
-def test_ReadMscwCtm_filepath(reader):
-    path = Path(EMEP_DIR) / "Base_month.nc"
+def test_ReadMscwCtm_filepath(reader, data_dir: str):
+    path = Path(data_dir) / "Base_month.nc"
     reader.filepath = str(path)
     assert Path(reader.filepath) == path
 
@@ -411,6 +414,7 @@ def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[s
 
 @pytest.fixture
 def data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]) -> Path:
+    """emep test data on a temporary path"""
     return emep_data_path(tmp_path, freq, vars_and_units)
 
 
