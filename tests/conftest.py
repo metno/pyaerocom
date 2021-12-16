@@ -71,12 +71,6 @@ geojson_unavail = pytest.mark.skipif(
 
 broken_test = pytest.mark.skip(reason="Method raises Exception")
 
-### Fixtures representing data
-
-
-TMPDIR = os.path.join(os.path.expanduser("~"), "tmp", "pyatest")
-os.makedirs(TMPDIR, exist_ok=True)
-
 # iris >= 3.2 corrected an error in iris.cube.Cube.intersection
 # see https://github.com/metno/pyaerocom/issues/588
 iris_version = metadata.version("scitools-iris")

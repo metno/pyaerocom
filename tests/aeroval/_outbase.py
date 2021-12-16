@@ -1,9 +1,9 @@
-import os
+from pathlib import Path
 
-from ..conftest import TMPDIR
+TMPDIR = Path("~/tmp/pyatest").expanduser()
+AEROVAL_OUT = TMPDIR / "aeroval"
+ADD_MODELS_DIR = TMPDIR / "modeldata"
 
-AEROVAL_OUT = os.path.join(TMPDIR, "aeroval")
-ADD_MODELS_DIR = os.path.join(TMPDIR, "modeldata")
-
-os.makedirs(AEROVAL_OUT, exist_ok=True)
-os.makedirs(ADD_MODELS_DIR, exist_ok=True)
+TMPDIR.mkdir(exist_ok=True)
+AEROVAL_OUT.mkdir(exist_ok=True)
+ADD_MODELS_DIR.mkdir(exist_ok=True)
