@@ -7,9 +7,7 @@ import pytest
 from pyaerocom import GriddedData
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.utils import compute_model_average_and_diversity, make_config_template
-from tests.fixtures.aeroval import ADD_MODELS_DIR, cfgexp1, cfgexp2
-
-from .._conftest_helpers import add_dummy_model_data
+from tests.fixtures.aeroval import ADD_MODELS_DIR, add_dummy_model_data, cfgexp1, cfgexp2
 
 # create some fake AOD model data
 MODEL_DIR = add_dummy_model_data(

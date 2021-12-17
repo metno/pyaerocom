@@ -1,9 +1,8 @@
 import os
 
-from .common import ADD_MODELS_DIR, AEROVAL_OUT
+from .common import ADD_MODELS_DIR, AEROVAL_OUT, add_dummy_model_data
 
 YEAR = "2007"
-from ..._conftest_helpers import add_dummy_model_data
 
 # create some fake model data
 add_dummy_model_data(

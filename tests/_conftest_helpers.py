@@ -1,7 +1,7 @@
-import os
-
+import iris
 import numpy as np
 import xarray as xr
+from cf_units import Unit
 
 
 def _create_fake_MSCWCtm_data(numval=1, tst=None):
@@ -26,10 +26,6 @@ def _create_fake_MSCWCtm_data(numval=1, tst=None):
     arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
 
     return arr
-
-
-import iris
-from cf_units import Unit
 
 
 def make_dummy_cube_3D_daily(
@@ -72,27 +68,3 @@ def make_dummy_cube_3D_daily(
     for coord in dummy.coords():
         coord.points = coord.points.astype(dtype)
     return dummy
-
-
-def make_griddeddata(var_name, units, ts_type, vert_code, name, **kwargs):
-    cube = make_dummy_cube_3D_daily(**kwargs)
-    cube.var_name = var_name
-    cube.units = units
-    from pyaerocom import GriddedData
-
-    data = GriddedData(cube)
-    data.metadata["data_id"] = name
-    data.metadata["vert_code"] = vert_code
-    if ts_type != "daily":
-        data = data.resample_time(ts_type)
-    return data
-
-
-def add_dummy_model_data(var_name, units, ts_type, vert_code, tmpdir, name=None, **kwargs):
-    if name is None:
-        name = "DUMMY-MODEL"
-    outdir = os.path.join(tmpdir, name, "renamed")
-    os.makedirs(outdir, exist_ok=True)
-    data = make_griddeddata(var_name, units, ts_type, vert_code, name=name, **kwargs)
-    data.to_netcdf(out_dir=outdir)
-    return outdir

@@ -2,15 +2,13 @@ import os
 
 import numpy as np
 
-from .common import ADD_MODELS_DIR, AEROVAL_OUT
+from .common import ADD_MODELS_DIR, AEROVAL_OUT, add_dummy_model_data
 
 START = 2000
 STOP = 2020
 YEARS = [str(x) for x in np.arange(START, STOP)]
 lat_range = (30, 60)
 lon_range = (10, 40)
-
-from ..._conftest_helpers import add_dummy_model_data
 
 # create some fake model data
 for i, year in enumerate(YEARS):
