@@ -10,12 +10,12 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_conNtno3,
     update_EC_units,
 )
-from tests._conftest_helpers import _create_fake_MSCWCtm_data
+from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
 
 def test_calc_concNhno3():
 
-    conchno3 = _create_fake_MSCWCtm_data()
+    conchno3 = create_fake_MSCWCtm_data()
 
     concNhno3_from_func = calc_concNhno3(conchno3)
 
@@ -30,8 +30,8 @@ def test_calc_concNhno3():
 
 def test_calc_concNno3pm10():
 
-    concno3c = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
+    concno3c = create_fake_MSCWCtm_data()
+    concno3f = create_fake_MSCWCtm_data()
 
     concNno3pm10_from_func = calc_concNno3pm10(concno3f, concno3c)
 
@@ -48,8 +48,8 @@ def test_calc_concNno3pm10():
 
 def test_calc_concNno3pm25():
 
-    concno3c = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
+    concno3c = create_fake_MSCWCtm_data()
+    concno3f = create_fake_MSCWCtm_data()
 
     concNno3pm10_from_func = calc_concNno3pm25(concno3f, concno3c)
 
@@ -66,9 +66,9 @@ def test_calc_concNno3pm25():
 
 def test_calc_conNtno3():
 
-    conchno3 = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    concno3c = _create_fake_MSCWCtm_data()
+    conchno3 = create_fake_MSCWCtm_data()
+    concno3f = create_fake_MSCWCtm_data()
+    concno3c = create_fake_MSCWCtm_data()
 
     concNtno3_from_func = calc_conNtno3(conchno3, concno3f, concno3c)
 
@@ -81,8 +81,8 @@ def test_calc_conNtno3():
 
 
 def test_calc_concNtnh():
-    concnh3 = _create_fake_MSCWCtm_data()
-    concnh4 = _create_fake_MSCWCtm_data()
+    concnh3 = create_fake_MSCWCtm_data()
+    concnh4 = create_fake_MSCWCtm_data()
 
     concNtnh_from_func = calc_concNtnh(concnh3, concnh4)
 
@@ -95,7 +95,7 @@ def test_calc_concNtnh():
 
 
 def test_calc_concNnh3():
-    concnh3 = _create_fake_MSCWCtm_data()
+    concnh3 = create_fake_MSCWCtm_data()
 
     concNnh3_from_func = calc_concNnh3(concnh3)
 
@@ -109,7 +109,7 @@ def test_calc_concNnh3():
 
 
 def test_calc_concNnh4():
-    concnh4 = _create_fake_MSCWCtm_data()
+    concnh4 = create_fake_MSCWCtm_data()
 
     concNnh4_from_func = calc_concNnh4(concnh4)
 
@@ -124,7 +124,7 @@ def test_calc_concNnh4():
 
 def test_update_EC_units():
 
-    concecpm25 = _create_fake_MSCWCtm_data()
+    concecpm25 = create_fake_MSCWCtm_data()
 
     concCecpm25_from_func = update_EC_units(concecpm25)
 

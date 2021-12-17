@@ -13,8 +13,7 @@ import pyaerocom.exceptions as exc
 from pyaerocom import get_variable
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
-
-from .._conftest_helpers import _create_fake_MSCWCtm_data
+from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
 VAR_MAP = {
     "abs550aer": "AAOD_550nm",
@@ -395,7 +394,7 @@ def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[s
         ds = xr.Dataset()
         for var_name, units in vars_and_units.items():
             var_name = varmap[var_name]
-            ds[var_name] = _create_fake_MSCWCtm_data(tst=reader.FREQ_CODES[freq])
+            ds[var_name] = create_fake_MSCWCtm_data(tst=reader.FREQ_CODES[freq])
             ds[var_name].attrs.update(units=units, var_name=var_name)
 
         for year in ["2017", "2018", "2019", "2015", "2018", "2013"]:

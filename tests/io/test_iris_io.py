@@ -18,7 +18,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import FileConventionRead, iris_io
 from tests.fixtures.aeroval import make_dummy_cube_3D_daily
-from tests.fixtures.emep import EMEP_DATA_PATH
+from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
 from tests.fixtures.tm5 import TM5_DATA_PATH
 
 TM5_FILE1 = TM5_DATA_PATH / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"

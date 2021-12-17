@@ -7,7 +7,7 @@ from packaging.version import Version
 from pyaerocom import const
 
 pytest_plugins = [
-    "tests.fixtures.emep",
+    "tests.fixtures.mscw_ctm",
     "tests.fixtures.tm5",
     "tests.fixtures.ebas",
     "tests.fixtures.aeronet",

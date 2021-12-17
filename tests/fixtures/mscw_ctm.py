@@ -1,8 +1,29 @@
+from __future__ import annotations
+
 import numpy as np
+import pytest
 import xarray as xr
 
+from .data_access import TESTDATADIR
 
-def _create_fake_MSCWCtm_data(numval=1, tst=None):
+DATA_PATH = "modeldata/EMEP_2017"
+EMEP_DATA_PATH = TESTDATADIR / DATA_PATH
+
+
+@pytest.fixture(scope="session")
+def path_emep() -> dict[str, str]:
+    """dictionary contining EMEP test data"""
+    paths = dict(
+        daily=EMEP_DATA_PATH / "Base_day.nc",
+        monthly=EMEP_DATA_PATH / "Base_month.nc",
+        yearly=EMEP_DATA_PATH / "Base_fullrun.nc",
+        data_dir=EMEP_DATA_PATH,
+    )
+
+    return {key: str(path) for key, path in paths.items()}
+
+
+def create_fake_MSCWCtm_data(numval=1, tst=None):
     if tst is None:
         tst = "monthly"
     from pyaerocom import TsType
