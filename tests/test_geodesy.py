@@ -36,6 +36,7 @@ def test_srtm_altitude():
 
 @geonum_unavail
 @etopo1_unavail
+@pytest.mark.xfail(raises=FileNotFoundError)
 def test_etopo_altitude():
     alt = geodesy.get_topo_altitude(TEST_LAT, TEST_LON, topo_dataset="etopo1")
     assert_almost_equal(alt, 217)

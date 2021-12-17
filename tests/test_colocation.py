@@ -1,5 +1,3 @@
-import os
-
 import iris
 import numpy as np
 import pandas as pd
@@ -16,6 +14,7 @@ from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
 )
+from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32
 from tests.fixtures.stations import create_fake_station_data
@@ -244,15 +243,14 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats["R_spearman"] == 1
 
 
+@pytest.mark.xfail(raises=UnresolvableTimeDefinitionError)
 def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
-    # tempfix
-    with pytest.raises(ValueError):
-        filepath = path_emep["monthly"]
-        r = ReadMscwCtm(data_dir=os.path.split(path_emep["monthly"])[0])
-        data_emep = r.read_var("concpm10", ts_type="monthly")
+    reader = ReadMscwCtm(data_dir=path_emep["data_dir"])
+    data_emep = reader.read_var("concpm10", ts_type="monthly")
 
-        # Change units and year to match TM5 data
-        data_emep.change_base_year(2010)
-        data_emep.units = "1"
-        col = colocate_gridded_gridded(data_emep, data_tm5)
-        assert isinstance(col, ColocatedData)
+    # Change units and year to match TM5 data
+    data_emep.change_base_year(2010)
+    data_emep.units = "1"
+
+    col = colocate_gridded_gridded(data_emep, data_tm5)
+    assert isinstance(col, ColocatedData)
