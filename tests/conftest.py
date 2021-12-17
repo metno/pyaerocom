@@ -1,6 +1,5 @@
 from importlib import metadata
 
-import matplotlib
 import pytest
 from packaging.version import Version
 
@@ -14,8 +13,6 @@ pytest_plugins = [
     "tests.fixtures.stations",
     "tests.fixtures.collocated_data",
 ]
-
-matplotlib.use("Agg")
 
 TEST_RTOL = 1e-4
 

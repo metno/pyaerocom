@@ -7,9 +7,8 @@ from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
+from tests.conftest import rg_unavail
 from tests.fixtures.stations import FAKE_STATION_DATA
-
-from .conftest import rg_unavail
 
 
 @pytest.fixture(scope="module")

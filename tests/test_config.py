@@ -9,8 +9,7 @@ import pytest
 import pyaerocom.config as testmod
 from pyaerocom import const
 from pyaerocom.config import Config
-
-from .conftest import lustre_avail
+from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
 

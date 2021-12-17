@@ -2,8 +2,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_almost_equal
 
 from pyaerocom import geodesy
-
-from .conftest import etopo1_unavail, geonum_unavail, rg_unavail
+from tests.conftest import etopo1_unavail, geonum_unavail, rg_unavail
 
 TEST_LAT = 50.8
 TEST_LON = 9
