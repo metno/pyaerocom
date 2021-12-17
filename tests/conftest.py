@@ -1,4 +1,3 @@
-import os
 from importlib import metadata
 
 import matplotlib
@@ -6,8 +5,6 @@ import pytest
 from packaging.version import Version
 
 from pyaerocom import const
-
-from .synthetic_data import FakeStationDataAccess
 
 pytest_plugins = [
     "tests.fixtures.emep",
@@ -21,8 +18,6 @@ pytest_plugins = [
 matplotlib.use("Agg")
 
 TEST_RTOL = 1e-4
-
-FAKE_STATION_DATA = FakeStationDataAccess()
 
 
 # skipif marker that is True if no access to metno PPI is provided

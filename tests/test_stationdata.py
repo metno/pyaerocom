@@ -19,8 +19,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-
-from .conftest import FAKE_STATION_DATA
+from tests.fixtures.stations import FAKE_STATION_DATA
 
 
 def get_earlinet_data(var_name):
