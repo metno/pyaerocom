@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -5,7 +7,7 @@ import pytest
 from pyaerocom import StationData
 
 
-def _make_station_data1():
+def station_data1() -> StationData:
     stat = StationData()
 
     d = dict(
@@ -45,7 +47,7 @@ def _make_station_data1():
     return stat
 
 
-def _make_station_data2():
+def station_data2() -> StationData:
     """Create an example synthetic instance of StationData class"""
     stat = StationData()
     d = dict(
@@ -85,7 +87,7 @@ def _make_station_data2():
 class FakeStationDataAccess:
     """Factory for loading and accessing of data objects"""
 
-    _LOADERS = dict(station_data1=_make_station_data1, station_data2=_make_station_data2)
+    _LOADERS = dict(station_data1=station_data1, station_data2=station_data2)
 
     def __getitem__(self, key):
         if key in self.__dict__:  # item is loaded
@@ -98,7 +100,7 @@ class FakeStationDataAccess:
 FAKE_STATION_DATA = FakeStationDataAccess()
 
 
-def create_fake_station_data(addvars, varinfo, varvals, start, stop, freq, meta):
+def create_fake_station_data(addvars, varinfo, varvals, start, stop, freq, meta) -> StationData:
     if isinstance(addvars, str):
         addvars = [addvars]
     stat = StationData()
@@ -116,114 +118,113 @@ def create_fake_station_data(addvars, varinfo, varvals, start, stop, freq, meta)
     return stat
 
 
-def create_fake_stationdata_list():
-    stats = [
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "ug m-3"}},
-            10,
-            "2010-01-01",
-            "2010-12-31",
-            "d",
-            {
-                "awesomeness": 10,
-                "data_revision": 20120101,
-                "ts_type": "daily",
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # overlaps with first one
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "ug m-3"}},
-            20,
-            "2010-06-01",
-            "2011-12-31",
-            "d",
-            {
-                "awesomeness": 12,
-                "data_revision": 20110101,
-                "ts_type": "daily",
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # monthly, but missing ts_type and wrong unit
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "mole mole-1"}},
-            20,
-            "2014-01-01",
-            "2015-12-31",
-            "3MS",
-            {
-                "awesomeness": 2,
-                "data_revision": 20140101,
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # invalid ts_type
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "ug m-3"}},
-            20,
-            "1850",
-            "2020",
-            "1000d",
-            {
-                "awesomeness": 15,
-                "data_revision": 20130101,
-                "ts_type": "1000daily",
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # new variable and monthly
-        create_fake_station_data(
-            "od550aer",
-            {"od550aer": {"units": "1"}},
-            1,
-            "2005",
-            "2012",
-            "MS",
-            {
-                "awesomeness": 42,
-                "data_revision": 20200101,
-                "ts_type": "monthly",
-                "latitude": 22.001,
-                "longitude": 10,
-                "altitude": 99,
-                "station_name": "FakeSite",
-            },
-        ),
-        create_fake_station_data(
-            "od550aer",
-            {"od550aer": {"units": "1"}},
-            0.1,
-            "2008",
-            "2009",
-            "60d",
-            {
-                "awesomeness": 46,
-                "data_revision": 20200101,
-                "ts_type": "60daily",
-                "latitude": 22.001,
-                "longitude": 10,
-                "altitude": 100,
-                "station_name": "FakeSite2",
-            },
-        ),
-    ]
+def create_fake_stationdata_list() -> list[StationData]:
+    stat1 = create_fake_station_data(
+        "concpm10",
+        {"concpm10": {"units": "ug m-3"}},
+        10,
+        "2010-01-01",
+        "2010-12-31",
+        "d",
+        {
+            "awesomeness": 10,
+            "data_revision": 20120101,
+            "ts_type": "daily",
+            "latitude": 42.001,
+            "longitude": 20,
+            "altitude": 0.1,
+            "station_name": "FakeSite",
+        },
+    )
+
+    stat2 = create_fake_station_data(  # overlaps with first one
+        "concpm10",
+        {"concpm10": {"units": "ug m-3"}},
+        20,
+        "2010-06-01",
+        "2011-12-31",
+        "d",
+        {
+            "awesomeness": 12,
+            "data_revision": 20110101,
+            "ts_type": "daily",
+            "latitude": 42.001,
+            "longitude": 20,
+            "altitude": 0.1,
+            "station_name": "FakeSite",
+        },
+    )
+
+    stat3 = create_fake_station_data(  # monthly, but missing ts_type and wrong unit
+        "concpm10",
+        {"concpm10": {"units": "mole mole-1"}},
+        20,
+        "2014-01-01",
+        "2015-12-31",
+        "3MS",
+        {
+            "awesomeness": 2,
+            "data_revision": 20140101,
+            "latitude": 42.001,
+            "longitude": 20,
+            "altitude": 0.1,
+            "station_name": "FakeSite",
+        },
+    )
+
+    stat4 = create_fake_station_data(  # invalid ts_type
+        "concpm10",
+        {"concpm10": {"units": "ug m-3"}},
+        20,
+        "1850",
+        "2020",
+        "1000d",
+        {
+            "awesomeness": 15,
+            "data_revision": 20130101,
+            "ts_type": "1000daily",
+            "latitude": 42.001,
+            "longitude": 20,
+            "altitude": 0.1,
+            "station_name": "FakeSite",
+        },
+    )
+
+    stat5 = create_fake_station_data(  # new variable and monthly
+        "od550aer",
+        {"od550aer": {"units": "1"}},
+        1,
+        "2005",
+        "2012",
+        "MS",
+        {
+            "awesomeness": 42,
+            "data_revision": 20200101,
+            "ts_type": "monthly",
+            "latitude": 22.001,
+            "longitude": 10,
+            "altitude": 99,
+            "station_name": "FakeSite",
+        },
+    )
+
+    stat6 = create_fake_station_data(
+        "od550aer",
+        {"od550aer": {"units": "1"}},
+        0.1,
+        "2008",
+        "2009",
+        "60d",
+        {
+            "awesomeness": 46,
+            "data_revision": 20200101,
+            "ts_type": "60daily",
+            "latitude": 22.001,
+            "longitude": 10,
+            "altitude": 100,
+            "station_name": "FakeSite2",
+        },
+    )
 
     stat_werr = create_fake_station_data(
         "od550aer",
@@ -243,8 +244,8 @@ def create_fake_stationdata_list():
         },
     )
     stat_werr.data_err["od550aer"] = np.ones(len(stat_werr.dtime)) * 9999
-    stats.append(stat_werr)
-    return stats
+
+    return [stat1, stat2, stat3, stat4, stat5, stat6, stat_werr]
 
 
 @pytest.fixture(scope="session")
