@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -20,7 +20,7 @@ def test_read_file(reader):
 
     reader.get_file_list()
     file = reader.files[0]
-    assert os.path.basename(file) == "19930101_20211120_Karlsruhe.lev20.gz"
+    assert Path(file).name == "19930101_20211120_Karlsruhe.lev20.gz"
     data = reader.read_file(file)
     assert isinstance(data, StationData)
     assert data.latitude[0] == pytest.approx(49.09, 0.01)

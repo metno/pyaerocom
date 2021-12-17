@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pytest
@@ -14,8 +13,8 @@ def cache_handler():
 
 
 def test_cache_dir(cache_handler: CacheHandlerUngridded):
-    cd = cache_handler.cache_dir
-    comps = cd.split(os.path.sep)
+    cache_path = Path(cache_handler.cache_dir)
+    comps = cache_path.parts
     assert comps[-2] == "_cache"
     assert comps[-3] == "MyPyaerocom"
 

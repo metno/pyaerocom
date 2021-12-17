@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -13,7 +13,7 @@ def test_load_berlin_AeroSunV2L2D():
     reader = ReadAeronetSunV2()
     files = reader.find_in_file_list("*Berlin*")
     assert len(files) == 1
-    assert os.path.basename(files[0]) == "920801_180519_Berlin_FUB.lev20"
+    assert Path(files[0]).name == "920801_180519_Berlin_FUB.lev20"
     data = reader.read_file(files[0], vars_to_retrieve=["od550aer"])
 
     test_vars = ["od440aer", "od500aer", "od550aer", "ang4487aer"]

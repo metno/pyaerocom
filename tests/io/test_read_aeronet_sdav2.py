@@ -1,7 +1,6 @@
-import os
+from pathlib import Path
 
 import numpy as np
-import pytest
 from numpy.testing import assert_allclose
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
@@ -14,7 +13,7 @@ def test_load_berlin_AeroSdaV2L2D():
     reader = ReadAeronetSdaV2()
     files = reader.find_in_file_list("*Berlin*")
     assert len(files) == 1
-    assert os.path.basename(files[0]) == "920801_180519_Berlin_FUB.ONEILL_20"
+    assert Path(files[0]).name == "920801_180519_Berlin_FUB.ONEILL_20"
 
     test_vars = ["od870aer", "ang4487aer", "od550aer", "od550gt1aer", "od550lt1aer"]
 

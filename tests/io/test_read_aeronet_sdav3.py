@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -10,7 +10,7 @@ def test_load_thessaloniki(aeronet_sda_subset_reader):
     reader = aeronet_sda_subset_reader
     files = reader.find_in_file_list("*Thessaloniki*")
     assert len(files) == 1
-    assert os.path.basename(files[0]) == "Thessaloniki.lev30", files[0]
+    assert Path(files[0]).name == "Thessaloniki.lev30"
 
     test_vars = ["ang4487aer", "od550aer", "od550gt1aer", "od550lt1aer"]
 

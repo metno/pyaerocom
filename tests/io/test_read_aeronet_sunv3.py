@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -21,7 +21,7 @@ def test_read_file(reader):
 
     reader.get_file_list()
     file = reader.files[-3]
-    assert os.path.basename(file) == "Thessaloniki.lev30"
+    assert Path(file).name == "Thessaloniki.lev30"
     data = reader.read_file(file)
     assert isinstance(data, StationData)
     assert data.latitude[0] == 40.63

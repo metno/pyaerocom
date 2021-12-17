@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -106,7 +106,7 @@ class TestReadGhost:
         )
 
         assert len(files) == filenum
-        assert os.path.basename(files[-1]) == lastfilename
+        assert Path(files[-1]).name == lastfilename
 
     def test__ts_type_from_data_dir(self):
         assert self.get_reader("ghost_eea_daily")._ts_type_from_data_dir() == "daily"
@@ -131,7 +131,7 @@ class TestReadGhost:
 
         reader = self.default_reader
         file = reader.files[-1]
-        assert os.path.basename(file) == "sconco3_201810.nc"
+        assert Path(file).name == "sconco3_201810.nc"
         ds = xr.open_dataset(file)
 
         flagvar = "qa"

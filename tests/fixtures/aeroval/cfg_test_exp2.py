@@ -38,8 +38,8 @@ OBS_GROUNDBASED = {
 CFG = dict(
     model_cfg=MODELS,
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=os.path.join(AEROVAL_OUT, "data"),
-    coldata_basedir=os.path.join(AEROVAL_OUT, "coldata"),
+    json_basedir=f"{AEROVAL_OUT}/data",
+    coldata_basedir=f"{AEROVAL_OUT}/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

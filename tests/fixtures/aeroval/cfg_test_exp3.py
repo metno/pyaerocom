@@ -1,5 +1,3 @@
-import os
-
 from .common import ADD_MODELS_DIR, AEROVAL_OUT, add_dummy_model_data
 
 YEAR = "2007"
@@ -33,8 +31,8 @@ OBS_GROUNDBASED = {"EBAS": dict(obs_id="EBASSubset", obs_vars=["vmro3"], obs_ver
 CFG = dict(
     model_cfg=MODELS,
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=os.path.join(AEROVAL_OUT, "data"),
-    coldata_basedir=os.path.join(AEROVAL_OUT, "coldata"),
+    json_basedir=f"{AEROVAL_OUT}/data",
+    coldata_basedir=f"{AEROVAL_OUT}/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

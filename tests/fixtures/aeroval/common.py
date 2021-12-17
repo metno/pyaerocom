@@ -1,4 +1,5 @@
-import os
+from __future__ import annotations
+
 from pathlib import Path
 
 import iris
@@ -10,10 +11,6 @@ from pyaerocom import GriddedData
 TMPDIR = Path("~/tmp/pyatest").expanduser()
 AEROVAL_OUT = TMPDIR / "aeroval"
 ADD_MODELS_DIR = TMPDIR / "modeldata"
-
-TMPDIR.mkdir(exist_ok=True)
-AEROVAL_OUT.mkdir(exist_ok=True)
-ADD_MODELS_DIR.mkdir(exist_ok=True)
 
 
 def make_dummy_cube_3D_daily(
@@ -71,11 +68,16 @@ def make_griddeddata(var_name, units, ts_type, vert_code, name, **kwargs) -> Gri
     return data
 
 
-def add_dummy_model_data(var_name, units, ts_type, vert_code, tmpdir, name=None, **kwargs):
+def add_dummy_model_data(
+    var_name, units, ts_type, vert_code, tmpdir: str | Path, name=None, **kwargs
+) -> str:
     if name is None:
         name = "DUMMY-MODEL"
-    outdir = os.path.join(tmpdir, name, "renamed")
-    os.makedirs(outdir, exist_ok=True)
+    if isinstance(tmpdir, str):
+        tmpdir = Path(tmpdir)
+
+    out_path = tmpdir / name / "renamed"
+    out_path.mkdir(exist_ok=True, parents=True)
     data = make_griddeddata(var_name, units, ts_type, vert_code, name=name, **kwargs)
-    data.to_netcdf(out_dir=outdir)
-    return outdir
+    data.to_netcdf(out_dir=out_path)
+    return str(out_path)
