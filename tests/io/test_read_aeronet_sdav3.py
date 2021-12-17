@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from numpy.testing import assert_allclose
 
-from ..conftest import TEST_RTOL
+from tests.conftest import TEST_RTOL
 
 
 def test_load_thessaloniki(aeronet_sda_subset_reader):

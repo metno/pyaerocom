@@ -5,6 +5,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 
 @pytest.fixture(scope="module")
@@ -17,8 +19,6 @@ def test_get_file_list(reader):
 
 
 def test_read_file(reader):
-    from pyaerocom.stationdata import StationData
-
     reader.get_file_list()
     file = reader.files[-3]
     assert Path(file).name == "Thessaloniki.lev30"
@@ -35,10 +35,9 @@ def test_read_file(reader):
 
 
 def test_read(reader):
-    from pyaerocom.ungriddeddata import UngriddedData
-
+    reader.get_file_list()
     files = reader.files[2:4]
-    assert all(os.path.basename(x) in ("Agoufou.lev30", "Alta_Floresta.lev30") for x in files)
+    assert [Path(file).name for file in files] == ["Agoufou.lev30", "Alta_Floresta.lev30"]
     data = reader.read(files=files)
     assert isinstance(data, UngriddedData)
     assert data.unique_station_names == ["Agoufou", "Alta_Floresta"]

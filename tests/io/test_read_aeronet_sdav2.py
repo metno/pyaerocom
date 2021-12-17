@@ -4,8 +4,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
-
-from ..conftest import TEST_RTOL, lustre_unavail
+from tests.conftest import TEST_RTOL, lustre_unavail
 
 
 @lustre_unavail
