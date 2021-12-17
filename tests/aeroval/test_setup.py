@@ -6,9 +6,9 @@ from pytest import mark, param, raises
 
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
+from tests.fixtures.aeroval import CAMS84_CONFIG
 
 from ..conftest import broken_test
-from .cams84 import CAMS84_CONFIG
 
 
 def test_evalsetup_args():

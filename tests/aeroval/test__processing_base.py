@@ -7,8 +7,7 @@ from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.exceptions import EntryNotAvailable
-
-from .cfg_test_exp1 import CFG
+from tests.fixtures.aeroval import cfgexp1 as CFG
 
 
 @pytest.fixture(scope="module")

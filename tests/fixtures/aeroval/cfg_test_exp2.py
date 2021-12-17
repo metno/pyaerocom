@@ -1,7 +1,7 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
 import os
 
-from ._outbase import AEROVAL_OUT
+from .common import AEROVAL_OUT
 
 MODELS = {
     "TM5-AP3-CTRL": dict(

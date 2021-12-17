@@ -2,8 +2,7 @@ import pytest
 
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
-
-from .cfg_test_exp1 import CFG as cfgexp1
+from tests.fixtures.aeroval import cfgexp1
 
 
 @pytest.mark.parametrize(

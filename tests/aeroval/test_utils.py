@@ -7,11 +7,9 @@ import pytest
 from pyaerocom import GriddedData
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.utils import compute_model_average_and_diversity, make_config_template
+from tests.fixtures.aeroval import ADD_MODELS_DIR, cfgexp1, cfgexp2
 
 from .._conftest_helpers import add_dummy_model_data
-from ._outbase import ADD_MODELS_DIR
-from .cfg_test_exp1 import CFG as cfg1
-from .cfg_test_exp2 import CFG as cfg2
 
 # create some fake AOD model data
 MODEL_DIR = add_dummy_model_data(
@@ -26,11 +24,11 @@ MODEL_DIR = add_dummy_model_data(
 )
 
 # need more than one model
-CFG1 = deepcopy(cfg1)
+CFG1 = deepcopy(cfgexp1)
 CFG1["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)
 
 # need more than one model
-CFG2 = deepcopy(cfg2)
+CFG2 = deepcopy(cfgexp2)
 CFG2["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)
 
 
@@ -68,7 +66,7 @@ def test_compute_model_average_and_diversity(processor: ExperimentProcessor, avg
     "cfg,avg_how,error",
     [
         (None, None, "invalid input, need ExperimentProcessor"),
-        (cfg1, None, "Need more than one model to compute average..."),
+        (cfgexp1, None, "Need more than one model to compute average..."),
         (CFG1, "bla", "Invalid input for avg_how bla"),
     ],
 )
