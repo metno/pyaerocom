@@ -1,35 +1,34 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
-from pathlib import Path
 import os
 import re
+from datetime import date, datetime, timedelta
+from pathlib import Path
 from time import time
 
-
-import xarray as xr
-from pandas import date_range, DatetimeIndex
-import numpy as np
 import iris
+import numpy as np
+import xarray as xr
+from pandas import DatetimeIndex, date_range
 
+from pyaerocom import const
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.units_helpers import UALIASES
-from pyaerocom.griddeddata import GriddedData
-from pyaerocom import const
-
 
 CAMS2_83_vars = dict(
-    concco = "co_conc",
-    concno2 = "no2_conc",
-    conco3 = "o3_conc",
-    concpm10 = "pm10_conc",
-    concpm25 = "pm2p5_conc",
-    concso2 = "so2_conc",
+    concco="co_conc",
+    concno2="no2_conc",
+    conco3="o3_conc",
+    concpm10="pm10_conc",
+    concpm25="pm2p5_conc",
+    concso2="so2_conc",
 )
 
 
-#DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+# DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
 DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+
 
 def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path:
     if not isinstance(model, ModelName):
@@ -43,8 +42,6 @@ def get_cams2_83_vars(var_name):
     if not var_name in CAMS2_83_vars.keys():
         raise ValueError(f"{var_name} is not a valide variable for CAMS2-83")
     return CAMS2_83_vars[var_name]
-
-
 
 
 class ReadCAMS2_83:
@@ -62,25 +59,31 @@ class ReadCAMS2_83:
         "yearly": "fullrun",
     }
 
+    def __init__(
+        self,
+        data_id: str | None = None,
+        data_dir: str | Path | None = None,
+    ) -> None:
 
-    def __init__(self, data_id: str | None = None, data_dir: str | Path | None = None, daterange: DatetimeIndex | None = None) -> None:
         self._filedata = None
         self._filepaths = None
         self._data_dir = None
         self._model = None
         self._date = None
+        self._data_id = None
+        self._daterange = None
+
+        self.data_id = data_id
 
         if data_dir is not None:
-            if (not isinstance(data_dir, str) and not isinstance(data_dir, Path)) or not os.path.exists(data_dir):
+            if (
+                not isinstance(data_dir, str) and not isinstance(data_dir, Path)
+            ) or not os.path.exists(data_dir):
                 raise FileNotFoundError(f"{data_dir}")
 
             self.data_dir = data_dir
 
         self.data_id = data_id
-
-        self._daterange = daterange
-
-
 
     @property
     def data_dir(self) -> list[str | Path]:
@@ -99,7 +102,22 @@ class ReadCAMS2_83:
             raise FileNotFoundError(val)
         self._data_dir = val
         self._filedata = None
-        
+
+    @property
+    def data_id(self):
+        if self._data_id is None:
+            raise AttributeError(f"data_id needs to be set before accessing")
+        return self._data_id
+
+    @data_id.setter
+    def data_id(self, val):
+        if val is None:
+            raise ValueError(f"The data_id {val} can't be None")
+        elif not isinstance(val, str):
+            raise TypeError(f"The data_id {val} needs to be a string")
+
+        self._get_model_dateshift_from_id(val)
+        self._data_id = val
 
     @property
     def filepaths(self) -> list[str | Path]:
@@ -108,7 +126,6 @@ class ReadCAMS2_83:
         """
         if self.data_dir is None and self._filepaths is None:
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
-        #if self._filepaths is None:
         if self._filepaths is None:
             self._filepaths = self._find_all_files()
         return self._filepaths
@@ -119,7 +136,6 @@ class ReadCAMS2_83:
             raise ValueError("needs to be list of strings")
         self._filepaths = value
 
-
     @property
     def filedata(self) -> list[xr.Dataset]:
         """
@@ -128,7 +144,6 @@ class ReadCAMS2_83:
         if self._filedata is None:
             self.open_file()
         return self._filedata
-
 
     @property
     def model(self) -> str:
@@ -139,9 +154,17 @@ class ReadCAMS2_83:
     @model.setter
     def model(self, val: str | ModelName):
         if isinstance(val, str):
-            if val not in ModelName:
+            if val not in [m.value for m in ModelName]:
                 raise ValueError(f"{val} not a valid model")
-            self._model = val
+
+            for m in ModelName:
+
+                if m.value == val:
+
+                    self._model = m
+                    break
+            else:
+                raise ValueError(f"{val} is not a valide model name")
             self._filedata = None
         elif isinstance(val, ModelName):
             if val not in ModelName.name:
@@ -151,7 +174,7 @@ class ReadCAMS2_83:
             # Read new file paths(?)
         else:
             raise TypeError(f"{val} needs to be string of ModelName")
-    
+
     @property
     def daterange(self) -> DatetimeIndex:
         if self._daterange is None:
@@ -159,10 +182,11 @@ class ReadCAMS2_83:
         return self._daterange
 
     @daterange.setter
-    def daterange(self, val: DatetimeIndex):
-        if not isinstance(val, DatetimeIndex):
-            raise TypeError(f"Date range {val} need to be a pandas DatetimeIndex")
-        self._daterange = val
+    def daterange(self, val: DatetimeIndex | list[datetime]):
+        if (not isinstance(val, DatetimeIndex)) and (not isinstance(val, list)):
+            raise TypeError(f"Date range {val} need to be a pandas DatetimeIndex or a list")
+
+        self._daterange = self._parse_daterange(val)
         self._filedata = None
 
     @property
@@ -170,12 +194,32 @@ class ReadCAMS2_83:
         if self._date is None:
             raise ValueError("Date is not set")
         return self._date
-        
+
     @date.setter
     def date(self, val: int):
         if not isinstance(val, int) or val < 0 or val > 3:
             raise TypeError(f"Date {val} is not a int between 0 and 3")
         self._date = val
+
+    def _parse_daterange(self, val):
+        if isinstance(val, DatetimeIndex):
+            return val
+        daterange = date_range(val[0], val[-1], freq="d")
+        return daterange
+
+    def _get_model_dateshift_from_id(self, id):
+        words = id.split(".")
+
+        if len(words) != 3:
+            raise ValueError(f"The id {id} is not on the correct format")
+
+        model = words[1]
+        if not words[2].startswith("day"):
+            raise ValueError(f"The day {words[2]} needs to be on the format 'day[0-3]'")
+        dateshift = int(re.search("day(\d)", words[2]).group(1))
+
+        self.model = str(model.casefold())
+        self.date = dateshift
 
     def _load_var(self, var_name_aerocom: str, ts_type: str) -> xr.DataArray:
         """
@@ -204,11 +248,9 @@ class ReadCAMS2_83:
         """
         data = self.filedata[var_name_aerocom]
 
-
         old_lon = data.longitude.data
-        old_lon = np.where(old_lon > 180, old_lon-360, old_lon)
+        old_lon = np.where(old_lon > 180, old_lon - 360, old_lon)
         data["longitude"] = old_lon
-
 
         data.attrs["long_name"] = var_name_aerocom
         data.time.attrs["long_name"] = "time"
@@ -230,7 +272,7 @@ class ReadCAMS2_83:
         filepaths = []
 
         for date in daterange:
-            location = find_model_path(model, date) 
+            location = find_model_path(model, date)
             if not os.path.isfile(location):
                 print(f"Could not find {location} . Skipping file")
             else:
@@ -238,7 +280,7 @@ class ReadCAMS2_83:
 
         if len(filepaths) == 0:
             raise ValueError(f"Could not find any data to read for {self.model}")
-        
+
         self.filepaths = filepaths
         return filepaths
 
@@ -254,15 +296,15 @@ class ReadCAMS2_83:
         ds = ds.sel(level=0.0)
 
         forecast_hour = (forecast_date - datetime(1900, 1, 1)).days * 24
-        #new_dates = [forecast_hour+i for i in range(24)]
-        
-        new_dates = date_range(forecast_date, forecast_date+timedelta(hours=23), freq="h")
+        # new_dates = [forecast_hour+i for i in range(24)]
+
+        new_dates = date_range(forecast_date, forecast_date + timedelta(hours=23), freq="h")
         ds["time"] = new_dates
         # ds.time.attrs["units"] = "hours since 1900-01-01"
         ds.time.attrs["long_name"] = "time"
         ds.time.attrs["standard_name"] = "time"
         return ds
-    
+
     def has_var(self, var_name):
         """Check if variable is supported
 
@@ -290,12 +332,11 @@ class ReadCAMS2_83:
 
         """
         self._find_all_files()
-        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date)#, parallel=True)
+        ds = xr.open_mfdataset(self.filepaths, preprocess=self._select_date)  # , parallel=True)
 
         self._filedata = ds
 
         return ds
-        
 
     def read_var(self, var_name: str, ts_type: str | None = None, **kwargs) -> GriddedData:
         """Load data for given variable.
@@ -312,7 +353,6 @@ class ReadCAMS2_83:
         -------
         GriddedData
         """
-
         # var_name have to be made into the correct PollutantName
         var = const.VARS[var_name]
         var_name_aerocom = var.var_name_aerocom
@@ -320,12 +360,23 @@ class ReadCAMS2_83:
         cams_var = get_cams2_83_vars(var_name)
 
         # ts_type can be ignored
+        for key in kwargs.keys():
+            if "daterange" in key:
+                self.daterange = kwargs[key]
+                break
+        else:
+            if self._daterange is None:
+                raise ValueError(f"The date range needs to be defined in the kwargs {kwargs}")
 
-        ts_type = "hourly"
+        # ts_type = "hourly"
+
+        if ts_type != "hourly":
+            raise ValueError(f"CAMS2-83 is not readable using hourly data, and not {ts_type}")
         var_name_aerocom = var_name
         ds = self._load_var(cams_var, ts_type)
+
         ds.attrs["Simulation date"] = self.date
-        
+
         cube = ds.to_iris()
 
         # if ts_type == "hourly":
@@ -343,17 +394,15 @@ class ReadCAMS2_83:
         return gridded
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     data_dir = DATA_FOLDER_PATH
-    reader = ReadCAMS2_83(data_dir=data_dir)
+    data_id = "CAMS2-83.EMEP.day0"
+    reader = ReadCAMS2_83(data_dir=data_dir, data_id=data_id)
 
     t0 = time()
-    reader.daterange = date_range(start="20190601", end="20190603")
-    reader.model = ModelName.EMEP
-    reader.date = 3
+    daterange = list(date_range(start="20190601", end="20190613"))
 
-    #print(reader.open_file())
-    print(reader.read_var("concno2", ""))
-    
+    # print(reader.open_file())
+    print(reader.read_var("concno2", ts_type="hourly", daterange=daterange))
 
-    print(time()-t0)
+    print(time() - t0)

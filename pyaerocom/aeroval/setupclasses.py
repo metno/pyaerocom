@@ -289,12 +289,11 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.webdisp_opts = WebDisplaySetup()
 
         self.processing_opts = EvalRunOptions()
-        
+
         self.cams2_83_cfg = CAMS2_83Setup()
 
         self.obs_cfg = ObsCollection()
         self.model_cfg = ModelCollection()
-
 
         self.var_web_info = {}
         self.path_manager = OutputPaths(self.proj_id, self.exp_id)
@@ -376,7 +375,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         """
         filepath = os.path.join(outdir, self.json_filename)
         data = self.json_repr()
-        data['cams2_83_cfg']["cams2_83_daterange"] = ""
         write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
         return filepath
 

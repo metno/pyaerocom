@@ -25,9 +25,9 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded, ReadMscwCtm, ReadCAMS2_83, ReadUngridded
-from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadMscwCtm, ReadUngridded
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 
 
 class ColocationSetup(BrowseDict):
@@ -360,6 +360,8 @@ class ColocationSetup(BrowseDict):
         self.model_read_aux = {}
         self.model_use_climatology = False
 
+        self.model_kwargs = {}
+
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
 
         self.flex_ts_type = True
@@ -494,7 +496,11 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm, "ReadCAMS2_83": ReadCAMS2_83}
+    SUPPORTED_GRIDDED_READERS = {
+        "ReadGridded": ReadGridded,
+        "ReadMscwCtm": ReadMscwCtm,
+        "ReadCAMS2_83": ReadCAMS2_83,
+    }
 
     STATUS_CODES = {
         1: "SUCCESS",
@@ -1164,6 +1170,8 @@ class Colocator(ColocationSetup):
         if is_model:
             reader = self.model_reader
             vert_which = self.obs_vert_type
+
+            kwargs.update(**self.model_kwargs)
             if self.model_use_climatology:
                 # overwrite start and stop to read climatology file for model
                 start, stop = 9999, None
@@ -1174,11 +1182,6 @@ class Colocator(ColocationSetup):
             vert_which = None
             ts_type_read = self.obs_ts_type_read
             kwargs.update(self._eval_obs_filters(var_name))
-
-        if isinstance(reader, ReadCAMS2_83):
-            reader.model = self.cams2_83_model
-            reader.daterange = self.cams2_83_daterange
-            reader.date = self.cams2_83_dateshift
 
         try:
             data = reader.read_var(
