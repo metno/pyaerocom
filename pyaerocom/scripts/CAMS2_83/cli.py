@@ -89,7 +89,7 @@ def make_config(
 
     cfg["model_cfg"] = model_cfg
 
-    cfg["periodes"] = [
+    cfg["periods"] = [
         make_period(
             start_date,
             end_date,
