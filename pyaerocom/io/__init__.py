@@ -45,6 +45,10 @@ def coda_available():
     return False
 
 
+# Submodule
+from . import cams2_83
+
+
 from .aerocom_browser import AerocomBrowser
 from .ebas_file_index import EbasFileIndex, EbasSQLRequest
 
