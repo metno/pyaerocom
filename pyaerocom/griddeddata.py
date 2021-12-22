@@ -1430,7 +1430,7 @@ class GriddedData:
             last_lev_idx = self.shape[-1] - 1
             if last_lev_idx == 0:
                 return 0
-                
+
             mean_first_idx = np.nanmean(self[0, :, :, 0].data)
             mean_last_idx = np.nanmean(self[0, :, :, last_lev_idx].data)
             if exponent(mean_first_idx) == exponent(mean_last_idx):

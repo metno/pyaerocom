@@ -56,11 +56,9 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
                 if self.cfg.cams2_83_cfg.use_cams2_83:
-                    col.run(var_list, 
-                            use_cams2_83=True, 
-                            cams2_83_daterange=self.cfg.cams2_83_cfg.cams2_83_daterange,
-                            cams2_83_model=self.cfg.cams2_83_cfg.cams2_83_model,
-                            cams2_83_dateshift=self.cfg.cams2_83_cfg.cams2_83_dateshift)
+                    col.run(
+                        var_list,
+                    )
                 else:
                     col.run(var_list)
                 files_to_convert = col.files_written
