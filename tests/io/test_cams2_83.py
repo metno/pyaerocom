@@ -52,6 +52,7 @@ def test_find_model_path(model_path: Path):
 def model_dataset(model_path: Path) -> xr.Dataset:
     return xr.open_dataset(model_path)
 
+
 @pytest.mark.skip(reason="No access to lustre")
 @pytest.mark.parametrize("date", ["20210602"])
 @pytest.mark.parametrize("model", ["EMEP", "MATCH"])
