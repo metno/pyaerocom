@@ -216,7 +216,7 @@ class ReadCAMS2_83:
         model = words[1]
         if not words[2].startswith("day"):
             raise ValueError(f"The day {words[2]} needs to be on the format 'day[0-3]'")
-        dateshift = int(re.search("day(\d)", words[2]).group(1))
+        dateshift = int(re.search(r"day(\d)", words[2]).group(1))
 
         self.model = str(model.casefold())
         self.date = dateshift
