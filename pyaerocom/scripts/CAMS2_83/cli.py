@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 import typer
 
@@ -62,7 +63,7 @@ def make_config(
     path: str,
     data_path: str,
     coldata_path: str,
-    models: list[ModelName],
+    models: List[ModelName],
     id: str | None,
     name: str | None,
 ) -> dict:
@@ -154,7 +155,7 @@ def main(
         writable=True,
         help="Path where the coldata are stored",
     ),
-    model: list[ModelName] = typer.Option(
+    model: List[ModelName] = typer.Option(
         [],
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
