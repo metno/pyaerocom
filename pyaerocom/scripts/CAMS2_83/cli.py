@@ -96,8 +96,8 @@ def make_config(
         )
     ]
 
-    cfg["json_basedir"] = Path(data_path)
-    cfg["coldata_basedir"] = Path(coldata_path)
+    cfg["json_basedir"] = data_path
+    cfg["coldata_basedir"] = coldata_path
 
     if not id is None:
         cfg["exp_id"] = id
