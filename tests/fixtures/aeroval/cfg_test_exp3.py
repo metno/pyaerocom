@@ -11,7 +11,7 @@ add_dummy_model_data(
     year=YEAR,
     lat_range=(-90, 90),
     lon_range=(-180, 180),
-    tmpdir=ADD_MODELS_DIR,
+    tmp_path=ADD_MODELS_DIR,
 )
 MODEL_DIR = add_dummy_model_data(
     "vmro3",
@@ -21,7 +21,7 @@ MODEL_DIR = add_dummy_model_data(
     year=YEAR,
     lat_range=(-90, 90),
     lon_range=(-180, 180),
-    tmpdir=ADD_MODELS_DIR,
+    tmp_path=ADD_MODELS_DIR,
 )
 
 MODELS = {"DUMMY": dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)}

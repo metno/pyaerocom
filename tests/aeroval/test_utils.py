@@ -18,7 +18,7 @@ MODEL_DIR = add_dummy_model_data(
     year=2010,
     lat_range=(-90, 90),
     lon_range=(-180, 180),
-    tmpdir=ADD_MODELS_DIR,
+    tmp_path=ADD_MODELS_DIR,
 )
 
 # need more than one model

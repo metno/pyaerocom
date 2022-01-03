@@ -69,14 +69,14 @@ def make_griddeddata(var_name, units, ts_type, vert_code, name, **kwargs) -> Gri
 
 
 def add_dummy_model_data(
-    var_name, units, ts_type, vert_code, tmpdir: str | Path, name=None, **kwargs
+    var_name, units, ts_type, vert_code, tmp_path: str | Path, name=None, **kwargs
 ) -> str:
     if name is None:
         name = "DUMMY-MODEL"
-    if isinstance(tmpdir, str):
-        tmpdir = Path(tmpdir)
+    if isinstance(tmp_path, str):
+        tmp_path = Path(tmp_path)
 
-    out_path = tmpdir / name / "renamed"
+    out_path = tmp_path / name / "renamed"
     out_path.mkdir(exist_ok=True, parents=True)
     data = make_griddeddata(var_name, units, ts_type, vert_code, name=name, **kwargs)
     data.to_netcdf(out_dir=out_path)

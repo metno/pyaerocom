@@ -22,7 +22,7 @@ for i, year in enumerate(YEARS):
         lat_range=lat_range,
         lon_range=lon_range,
         value=i + 1,
-        tmpdir=ADD_MODELS_DIR,
+        tmp_path=ADD_MODELS_DIR,
     )
 
     OBS_DIR = add_dummy_model_data(
@@ -35,7 +35,7 @@ for i, year in enumerate(YEARS):
         lat_range=lat_range,
         lon_range=lon_range,
         value=i + 1,
-        tmpdir=ADD_MODELS_DIR,
+        tmp_path=ADD_MODELS_DIR,
     )
 
 MODELS = {"DUMMY-MOD": dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)}
