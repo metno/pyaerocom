@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -116,12 +117,13 @@ def test_ReadGridded_read_var(reader_tm5):
         (["exp1", "exp2"]),
     ],
 )
-def test_ReadGridded_experiments(tmpdir, experiments):
+def test_ReadGridded_experiments(tmp_path: Path, experiments):
     for exp in experiments:
-        filename = f"aerocom3_TM5-met2010_{exp}-CTRL2019_abs550aer_Column_2010_daily.nc"
-        open(os.path.join(tmpdir, filename), "a").close()
-    r = ReadGridded(data_dir=str(tmpdir))
-    assert r.experiments == experiments
+        path = tmp_path / f"aerocom3_TM5-met2010_{exp}-CTRL2019_abs550aer_Column_2010_daily.nc"
+        path.write_text("")
+
+    reader = ReadGridded(data_dir=str(tmp_path))
+    assert reader.experiments == experiments
 
 
 @pytest.mark.parametrize(
@@ -131,14 +133,15 @@ def test_ReadGridded_experiments(tmpdir, experiments):
         (["od440aer", "od870aer"], ["ang4487aer", "od440aer", "od870aer"]),
     ],
 )
-def test_ReadGridded_aux(tmpdir, vars, expected):
+def test_ReadGridded_aux(tmp_path: Path, vars, expected):
     for var in vars:
-        filename = f"aerocom3_TM5-met2010_AP3-CTRL2019_{var}_Column_2010_daily.nc"
-        open(os.path.join(tmpdir, filename), "a").close()
-    r = ReadGridded(data_dir=str(tmpdir))
+        path = tmp_path / f"aerocom3_TM5-met2010_AP3-CTRL2019_{var}_Column_2010_daily.nc"
+        path.write_text("")
+
+    reader = ReadGridded(data_dir=str(tmp_path))
     for var in expected:
-        assert r.has_var(var)  # calling has_var
-    assert sorted(r.vars_provided) == sorted(expected)
+        assert reader.has_var(var)  # calling has_var
+    assert sorted(reader.vars_provided) == sorted(expected)
     # assert r.has_var('conco3')
 
 
@@ -169,12 +172,13 @@ def test_filter_query(reader_tm5):
         ([2003, 2005], [2003, 2005]),
     ],
 )
-def test_ReadGridded_years_avail(tmpdir, years, expected):
+def test_ReadGridded_years_avail(tmp_path: Path, years, expected):
     for year in years:
-        filename = f"aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_{year}_daily.nc"
-        open(os.path.join(tmpdir, filename), "a").close()
-    r = ReadGridded(data_dir=str(tmpdir))
-    assert sorted(r.years_avail) == sorted(years)
+        path = tmp_path / f"aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_{year}_daily.nc"
+        path.write_text("")
+
+    reader = ReadGridded(data_dir=str(tmp_path))
+    assert sorted(reader.years_avail) == expected
 
 
 def test_ReadGridded_get_var_info_from_files(reader_tm5):

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -11,8 +11,8 @@ from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
 from tests.fixtures.data_access import tda
 
-HOME = os.path.expanduser("~")
-COL_OUT_DEFAULT = os.path.join(HOME, "MyPyaerocom/colocated_data")
+HOME = Path.home()
+COL_OUT_DEFAULT = HOME / "MyPyaerocom/colocated_data"
 
 default_setup = {
     "model_id": None,
@@ -79,11 +79,11 @@ def col():
 
 
 @pytest.mark.parametrize("stp,should_be", [(ColocationSetup(), default_setup)])
-def test_colocation_setup(stp, should_be):
+def test_colocation_setup(stp: ColocationSetup, should_be: dict):
     for key, val in should_be.items():
         assert key in stp
         if key == "basedir_coldata":
-            assert os.path.samefile(val, stp["basedir_coldata"])
+            assert Path(val) == Path(stp["basedir_coldata"])
         else:
             assert val == stp[key], key
 
@@ -162,10 +162,10 @@ def test_Colocator_model_add_vars(tm5_aero_stp):
     assert coldata.var_name == ["od550aer", "abs550aer"]
 
 
-def test_Colocator_init_basedir_coldata(tmpdir):
-    basedir = os.path.join(tmpdir, "basedir")
-    Colocator(raise_exceptions=True, basedir_coldata=basedir)
-    assert os.path.isdir(basedir)
+def test_Colocator_init_basedir_coldata(tmp_path: Path):
+    base_path = tmp_path / "basedir"
+    Colocator(raise_exceptions=True, basedir_coldata=base_path)
+    assert base_path.is_dir()
 
 
 def test_Colocator__infer_start_stop_yr_from_model_reader():
@@ -189,20 +189,20 @@ def test_Colocator__coldata_savename():
     assert savename == n
 
 
-def test_Colocator_basedir_coldata(tmpdir):
-    basedir = os.path.join(tmpdir, "test")
+def test_Colocator_basedir_coldata(tmp_path: Path):
+    base_path = tmp_path / "test"
     col = Colocator(raise_exceptions=True)
-    col.basedir_coldata = basedir
-    assert not os.path.isdir(basedir)
+    col.basedir_coldata = base_path
+    assert not base_path.is_dir()
 
 
-def test_Colocator_update_basedir_coldata(tmpdir):
+def test_Colocator_update_basedir_coldata(tmp_path: Path):
     col = Colocator(raise_exceptions=True)
 
-    basedir = os.path.join(tmpdir, "basedir")
-    assert not os.path.isdir(basedir)
-    col.update(basedir_coldata=basedir)
-    assert os.path.isdir(basedir)
+    base_path = tmp_path / "basedir"
+    assert not base_path.is_dir()
+    col.update(basedir_coldata=base_path)
+    assert base_path.is_dir()
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -383,12 +384,14 @@ def _make_fake_dataset(var_name, units):
         ("concco", "ugC/m3", "ug C m-3"),
     ],
 )
-def test_GriddedData__check_invalid_unit_alias(tmpdir, var_name, units, data_unit):
+def test_GriddedData__check_invalid_unit_alias(
+    tmp_path: Path, var_name: str, units: str, data_unit: str
+):
 
     ds = _make_fake_dataset(var_name, units)
-    path = os.path.join(tmpdir, "output.nc")
+    path = tmp_path / "output.nc"
     ds.to_netcdf(path)
-    assert os.path.exists(path)
+    assert path.exists()
 
     data = GriddedData(path, var_name=var_name, check_unit=False)
     data._check_invalid_unit_alias()
