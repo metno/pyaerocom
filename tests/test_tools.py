@@ -1,4 +1,3 @@
-import os
 from getpass import getuser
 from pathlib import Path
 
@@ -8,7 +7,8 @@ from pyaerocom import const, tools
 from pyaerocom.exceptions import DataSearchError
 
 
-def test_clear_cache(tmp_path: Path):
+@pytest.fixture
+def tmp_cache(tmp_path: Path) -> Path:  # type:ignore[misc]
     old_cache = const.CACHEDIR
 
     new_cache = tmp_path / "_cache" / getuser()
@@ -18,14 +18,17 @@ def test_clear_cache(tmp_path: Path):
     assert Path(const.CACHEDIR) == new_cache
     assert new_cache.is_dir()
 
-    path = new_cache / "cache_dummy.pkl"
+    yield new_cache
+    const.CACHEDIR = old_cache
+
+
+def test_clear_cache(tmp_cache: Path):
+    path = tmp_cache / "cache_dummy.pkl"
     path.write_bytes(b"")
     assert path.exists()
+
     tools.clear_cache()
     assert not path.exists()
-
-    # revert CACHEDIR
-    const.CACHEDIR = old_cache
 
 
 def test_browse_database():
