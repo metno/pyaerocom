@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 
 from .common import ADD_MODELS_DIR, AEROVAL_OUT, add_dummy_model_data
