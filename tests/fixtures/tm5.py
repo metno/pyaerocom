@@ -23,7 +23,7 @@ TM5_DATA_PATH = TESTDATADIR / CHECK_PATHS.tm5
 
 
 @pytest.fixture(scope="session")
-def data_tm5():
+def data_tm5() -> GriddedData:
     path = TESTDATADIR / CHECK_PATHS.tm5aod
     assert path.exists()
     data = GriddedData(path)
