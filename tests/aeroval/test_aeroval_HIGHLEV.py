@@ -1,9 +1,9 @@
-import glob
-import os
+from pathlib import Path
 
 import pytest
 
 from pyaerocom.aeroval import ExperimentProcessor
+from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from tests.fixtures.aeroval import cfgexp1, cfgexp2, cfgexp4
 
@@ -55,53 +55,68 @@ CHK_CFG4 = {
         (cfgexp4, CHK_CFG4),
     ],
 )
-def test_ExperimentOutput__FILES(cfgdict, chk_files):
+def test_ExperimentOutput__FILES(cfgdict, chk_files: dict):
     cfg = EvalSetup(**cfgdict)
-    fname = f"cfg_{cfg.proj_id}_{cfg.exp_id}.json"
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()
 
-    output = proc.exp_output
-    assert os.path.exists(output.exp_dir)
-    assert os.path.exists(output.experiments_file)
-    assert os.path.exists(output.var_ranges_file)
-    assert os.path.exists(output.statistics_file)
-    assert os.path.exists(output.menu_file)
-    assert os.path.exists(os.path.join(output.exp_dir, fname))
-    for key, val in cfg.path_manager.get_json_output_dirs().items():
-        assert os.path.exists(val)
-        files = os.listdir(val)
-        if key in chk_files:
-            check = chk_files[key]
-            if isinstance(check, list):
-                for fname in check:
-                    assert fname in files
-            elif isinstance(check, int):
-                numfiles = glob.glob(f"{val}/*.json")
-                assert len(numfiles) == check
+    output: ExperimentOutput = proc.exp_output
+    assert Path(output.exp_dir).is_dir()
+    assert Path(output.experiments_file).exists()
+    assert Path(output.var_ranges_file).exists()
+    assert Path(output.statistics_file).exists()
+    assert Path(output.menu_file).exists()
+
+    json_path = Path(output.exp_dir) / f"cfg_{cfg.proj_id}_{cfg.exp_id}.json"
+    assert json_path.exists()
+
+    for key, path in cfg.path_manager.get_json_output_dirs().items():
+        path = Path(path)
+        assert path.is_dir()
+        if key not in chk_files:
+            continue
+
+        check = chk_files[key]
+        if isinstance(check, list):
+            files = [file.name for file in path.iterdir()]
+            assert all(file in files for file in check)
+        elif isinstance(check, int):
+            files = list(path.glob("*.json"))
+            assert len(files) == check
 
 
 def test_reanalyse_existing():
     cfg = EvalSetup(**cfgexp4)
     assert cfg.colocation_opts.reanalyse_existing == True
+    output = Path(cfg.path_manager.coldata_basedir) / cfg.proj_id / cfg.exp_id
+
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
+    assert not output.exists()
+
     proc.run()
-    colout = os.path.join(proc.cfg.path_manager.coldata_basedir, proc.cfg.proj_id, proc.cfg.exp_id)
-    assert os.path.exists(colout)
-    coldata_files = glob.glob(f"{colout}/**/*.nc")
-    assert len(coldata_files) > 0
+    assert output.is_dir()
+    assert list(output.glob("**/*.nc"))
+
     proc.exp_output.delete_experiment_data(also_coldata=False)
-    assert os.path.exists(colout)
-    coldata_files = glob.glob(f"{colout}/**/*.nc")
-    assert len(coldata_files) > 0
+    assert output.is_dir()
+    assert list(output.glob("**/*.nc"))
+
     cfg.colocation_opts.reanalyse_existing = False
     proc = ExperimentProcessor(cfg)
     assert proc.reanalyse_existing == False
+
     proc.run()
+    assert output.is_dir()
+    assert list(output.glob("**/*.nc"))
+
     proc.exp_output.delete_experiment_data(also_coldata=True)
+    assert not output.exists()
+
     proc.run()
+    assert output.is_dir()
+    assert list(output.glob("**/*.nc"))
 
 
 def test_superobs_different_resolutions():
