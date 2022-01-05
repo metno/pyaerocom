@@ -168,23 +168,12 @@ OBS_CONFIG = {}
 
 # EEA observatio
 OBS_CONFIG["EEA"] = dict(
-    obs_id="EEAAQeRep.v2",
+    obs_id="EEAAQeRep.NRT",
     obs_vars=["concno2"],
     web_interface_name="EEA-rural",
     obs_vert_type="Surface",
     # ignore_station_ids=ignore_id_dict, #One station needs to be ignored
     obs_filters=EEA_FILTER,
-)
-
-
-# EBAS observations
-OBS_CONFIG["EBAS"] = dict(
-    obs_id="EBASMC",
-    obs_vars=["concno2"],
-    web_interface_name="EBAS",
-    obs_vert_type="Surface",
-    ts_type="hourly",
-    obs_filters=EBAS_FILTER,
 )
 
 ##################################################

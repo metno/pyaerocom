@@ -16,6 +16,15 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.units_helpers import UALIASES
 
+from .models import ModelName
+
+"""
+TODO:
+
+As it is now, with e.g. leap = 3 and start date 01.12, 01.12 might not be used, since the leap shifts the date three days forward
+This might have to be componsated for, with the filepath being for 3 days before 01.12 (the start date)(?)
+"""
+
 CAMS2_83_vars = dict(
     concco="co_conc",
     concno2="no2_conc",
@@ -27,7 +36,7 @@ CAMS2_83_vars = dict(
 
 
 # DATA_FOLDER_PATH = Path("/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
-DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 
 
 def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path:
@@ -35,7 +44,10 @@ def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path
         model = ModelName[model]
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y%m%d")
-    return DATA_FOLDER_PATH / f"{date:%Y-%m-%d}-{model}-all-species.nc"
+    if os.path.isdir(DATA_FOLDER_PATH / f"{date:%Y%m}"):
+        return DATA_FOLDER_PATH / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
+    else:
+        return DATA_FOLDER_PATH / f"{date:%Y%m%d}_{model}_forecast.nc"
 
 
 def get_cams2_83_vars(var_name):
@@ -290,8 +302,20 @@ class ReadCAMS2_83:
         forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
         forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
 
+        select_date = forecast_date + timedelta(days=self.date)
+
+        dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
+        ds = ds.sel(time=dateselect)
+        ds = ds.sel(level=0.0)
+        ds.time.attrs["long_name"] = "time"
+        ds.time.attrs["standard_name"] = "time"
+        return ds
+
+        """
+
         day_prefix = " " if abs(self.date) == 0 else f"{int(self.date)} days "
         dateselect = [f"{day_prefix}{i:02d}:00:00" for i in range(24)]
+
         ds = ds.sel(time=dateselect)
         ds = ds.sel(level=0.0)
 
@@ -304,6 +328,7 @@ class ReadCAMS2_83:
         ds.time.attrs["long_name"] = "time"
         ds.time.attrs["standard_name"] = "time"
         return ds
+        """
 
     def has_var(self, var_name):
         """Check if variable is supported

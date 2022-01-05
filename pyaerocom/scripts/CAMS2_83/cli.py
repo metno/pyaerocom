@@ -30,7 +30,7 @@ def make_period(
     end_date: datetime,
 ) -> str:
     start_yr = start_date.year
-    end_yr = start_date.year
+    end_yr = end_date.year
 
     if start_yr == end_yr:
         return f"{start_yr}"
