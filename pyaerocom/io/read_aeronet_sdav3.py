@@ -41,7 +41,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     }
 
     #: default variables for read method
-    DEFAULT_VARS = ["od550aer", "od550gt1aer", "od550lt1aer"]
+    DEFAULT_VARS = ["od550aer", "od550gt1aer", "od550lt1aer", "od550dust"]
 
     #: value corresponding to invalid measurement
     NAN_VAL = -999.0
@@ -53,6 +53,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     VAR_NAMES_FILE["od500lt1aer"] = "Fine_Mode_AOD_500nm[tau_f]"
     VAR_NAMES_FILE["od500aer"] = "Total_AOD_500nm[tau_a]"
     VAR_NAMES_FILE["ang4487aer"] = "Angstrom_Exponent(AE)-Total_500nm[alpha]"
+    VAR_NAMES_FILE["od500dust"] = "Coarse_Mode_AOD_500nm[tau_c]"
 
     #: dictionary specifying the file column names (values) for each
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
@@ -74,6 +75,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     AUX_REQUIRES = {
         "od550aer": ["od500aer", "ang4487aer"],
         "od550gt1aer": ["od500gt1aer", "ang4487aer"],
+        "od550dust": ["od500gt1aer", "ang4487aer"],
         "od550lt1aer": ["od500lt1aer", "ang4487aer"],
     }
 
@@ -82,6 +84,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     AUX_FUNS = {
         "od550aer": calc_od550aer,
         "od550gt1aer": calc_od550gt1aer,
+        "od550dust": calc_od550gt1aer,
         "od550lt1aer": calc_od550lt1aer,
     }
 
