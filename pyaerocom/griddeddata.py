@@ -1222,7 +1222,7 @@ class GriddedData:
         for sidx in range(subset.shape[-1]):
 
             data = StationData(
-                latitude=lats[sidx], longitude=lons[sidx], data_id=self.name, ts_type=self.ts_type
+                latitude=lats[sidx], longitude=lons[sidx], data_id=self.data_id, ts_type=self.ts_type
             )
 
             data.var_info[var] = {"units": self.units}
