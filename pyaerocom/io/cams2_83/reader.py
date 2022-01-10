@@ -110,19 +110,8 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
 
 
 class ReadCAMS2_83:
-    FREQ_CODES = {
-        "hour": "hourly",
-        "day": "daily",
-        "month": "monthly",
-        "fullrun": "yearly",
-    }
-
-    REVERSE_FREQ_CODES = {
-        "hourly": "hour",
-        "daily": "day",
-        "monthly": "month",
-        "yearly": "fullrun",
-    }
+    FREQ_CODES = dict(hour="hourly", day="daily", month="monthly", fullrun="yearly")
+    REVERSE_FREQ_CODES = {val: key for key, val in FREQ_CODES.items()}
 
     def __init__(
         self,
@@ -137,8 +126,6 @@ class ReadCAMS2_83:
         self._forecast_day: int | None = None
         self._data_id: str | None = None
         self._daterange: pd.DatetimeIndex | None = None
-
-        self.data_id = data_id
 
         if data_dir is not None:
             if isinstance(data_dir, str):
@@ -265,7 +252,8 @@ class ReadCAMS2_83:
             raise TypeError(f"forecast_day {val} is not a int between 0 and 3")
         self._forecast_day = val
 
-    def has_var(self, var_name):
+    @staticmethod
+    def has_var(var_name):
         """Check if variable is supported
 
         Parameters
