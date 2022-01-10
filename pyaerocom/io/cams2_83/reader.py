@@ -51,14 +51,11 @@ def model_path(
     return ModelData(name, run, date, DATA_FOLDER_PATH).path
 
 
-def date_from_path(path: Path | str) -> date:
-    data = ModelData.frompath(path)
-    return data.date
-
-
-def all_model_paths(model: str | ModelName, *dates: datetime) -> Iterator[Path]:
+def all_model_paths(
+    model: str | ModelName, *dates: datetime | date | str, run: str | RunType = RunType.FC
+) -> Iterator[Path]:
     for date in dates:
-        path = model_path(model, date)
+        path = model_path(model, date, run=run)
         if not path.is_file():
             logger.warning(f"Could not find {path.name}. Skipping {date}")
             continue
