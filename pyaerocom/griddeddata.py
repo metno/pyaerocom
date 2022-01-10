@@ -2759,13 +2759,17 @@ class GriddedData:
     def unit(self):
         """Unit of data"""
         warnings.warn(
-            "Attr. unit is deprecated, please use units instead", DeprecationWarning, stacklevel=2,
+            "Attr. unit is deprecated, please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
         warnings.warn(
-            "Attr. unit is deprecated, please use units instead", DeprecationWarning, stacklevel=2,
+            "Attr. unit is deprecated, please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         self.grid.units = val
