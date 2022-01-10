@@ -294,15 +294,13 @@ class ReadCAMS2_83:
         -------
         GriddedData
         """
-        for key in kwargs:
-            if "daterange" in key:
-                self.daterange = kwargs[key]
-                break
+        if "daterange" in kwargs:
+            self.daterange = kwargs["daterange"]
         if self._daterange is None:
-            raise ValueError(f"The date range needs to be defined in the kwargs {kwargs}")
+            raise ValueError(f"No 'daterange' in kwargs={kwargs}")
 
         if ts_type != "hourly":
-            raise ValueError(f"Only hourly data is supported, not {ts_type}")
+            raise ValueError(f"Only hourly ts_type is supported")
 
         cube = self.filedata[var_name].to_iris()
 
