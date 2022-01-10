@@ -37,7 +37,7 @@ DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 logger = logging.getLogger(__name__)
 
 
-def model_path(
+def __model_path(
     name: str | ModelName, date: str | date | datetime, *, run: str | RunType = RunType.FC
 ) -> Path:
     if not isinstance(name, ModelName):
@@ -51,11 +51,11 @@ def model_path(
     return ModelData(name, run, date, DATA_FOLDER_PATH).path
 
 
-def all_model_paths(
+def model_paths(
     model: str | ModelName, *dates: datetime | date | str, run: str | RunType = RunType.FC
 ) -> Iterator[Path]:
     for date in dates:
-        path = model_path(model, date, run=run)
+        path = __model_path(model, date, run=run)
         if not path.is_file():
             logger.warning(f"Could not find {path.name}. Skipping {date}")
             continue
@@ -202,7 +202,7 @@ class ReadCAMS2_83:
         if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
-            paths = list(all_model_paths(self.model, *self.daterange))
+            paths = list(model_paths(self.model, *self.daterange))
             if not paths:
                 raise ValueError(f"no files found for {self.model}")
             self._filepaths = paths
