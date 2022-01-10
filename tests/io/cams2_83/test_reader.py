@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from pyaerocom.io.cams2_83.models import ModelName, PollutantName
-from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
+from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.reader import AEROCOM_NAMES, DATA_FOLDER_PATH
 from pyaerocom.io.cams2_83.reader import model_path as find_model_path
 
 
@@ -32,5 +32,5 @@ def model_dataset(model_path: Path) -> xr.Dataset:
 @pytest.mark.parametrize("date", ["20211202"])
 @pytest.mark.parametrize("model", ["EMEP", "MATCH"])
 def test_model_file_contents(model_dataset: xr.Dataset):
-    for poll in PollutantName:
-        assert poll.value in model_dataset.data_vars
+    for var_name in AEROCOM_NAMES:
+        assert var_name in model_dataset.data_vars
