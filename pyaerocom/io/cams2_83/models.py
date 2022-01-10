@@ -29,6 +29,10 @@ class RunType(str, Enum):
     def __str__(self) -> str:
         return self.value
 
+    @property
+    def days(self) -> int:
+        return dict(FC=3, AN=0)[self.name]
+
 
 class ModelData(NamedTuple):
     name: ModelName

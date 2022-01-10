@@ -77,6 +77,8 @@ def parse_daterange(
 
 def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     data = ModelData.frompath(ds.encoding["source"])
+    if not (0 <= day <= data.run.days):
+        raise ValueError(f"{data} has no day #{day}")
     date = data.date + timedelta(days=day)
     ds = ds.sel(time=f"{date:%F}", level=0.0)
     ds.time.attrs["long_name"] = "time"
@@ -103,7 +105,7 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
     return ds.rename(AEROCOM_NAMES)
 
 
-def read_forecast(paths: list[Path], *, day: int) -> xr.Dataset:
+def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day)
 
@@ -225,7 +227,7 @@ class ReadCAMS2_83:
         Loaded netcdf file (:class:`xarray.Dataset`)
         """
         if self._filedata is None:
-            self._filedata = read_forecast(self.filepaths, day=self.forecast_day)
+            self._filedata = read_dataset(self.filepaths, day=self.forecast_day)
         return self._filedata
 
     @property
