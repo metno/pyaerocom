@@ -26,7 +26,7 @@ def vertical_profile() -> VerticalProfile:
         pytest.param(
             dict(),
             TypeError,
-            "__init__() missing 7 required positional arguments: 'data', 'altitude', 'dtime', 'var_name', 'data_err', 'var_unit', and 'altitude_unit'",
+            "missing 7 required positional arguments: 'data', 'altitude', 'dtime', 'var_name', 'data_err', 'var_unit', and 'altitude_unit'",
             id="no args",
         ),
         pytest.param(
@@ -48,7 +48,7 @@ def vertical_profile() -> VerticalProfile:
 def test_VerticalProfile_error(kwargs: dict, exception: Type[Exception], error: str):
     with pytest.raises(exception) as e:
         VerticalProfile(**kwargs)
-    assert str(e.value) == error
+    assert str(e.value).endswith(error)
 
 
 @pytest.mark.parametrize(

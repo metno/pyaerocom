@@ -896,7 +896,7 @@ def colocate_gridded_ungridded(
     files = [os.path.basename(x) for x in data.from_files]
 
     meta = {
-        "data_source": [dataset_ref, data.name],
+        "data_source": [dataset_ref, data.data_id],
         "var_name": [var_ref_aerocom, var_aerocom],
         "var_name_input": [var_ref, var],
         "ts_type": col_freq,  # will be updated below if resampling

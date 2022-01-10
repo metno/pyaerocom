@@ -473,7 +473,11 @@ class GriddedData:
     @property
     def name(self):
         """ID of model to which data belongs"""
-        logger.warning("Deprecated attribute name, please use data_id instead")
+        warnings.warn(
+            "Deprecated attribute name, please use data_id instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.metadata["data_id"]
 
     @property
@@ -1222,7 +1226,10 @@ class GriddedData:
         for sidx in range(subset.shape[-1]):
 
             data = StationData(
-                latitude=lats[sidx], longitude=lons[sidx], data_id=self.name, ts_type=self.ts_type
+                latitude=lats[sidx],
+                longitude=lons[sidx],
+                data_id=self.data_id,
+                ts_type=self.ts_type,
             )
 
             data.var_info[var] = {"units": self.units}
@@ -2724,7 +2731,7 @@ class GriddedData:
 
     def __contains__(self, val):
         """Check if variable or coordinate matchs input string"""
-        return val is self.name or val in self.coord_names
+        return val is self.data_id or val in self.coord_names
 
     def __dir__(self):
         return self.coord_names + super().__dir__()
