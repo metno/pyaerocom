@@ -4,7 +4,6 @@ import logging
 import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from time import perf_counter
 from typing import Iterator
 
 import numpy as np
@@ -320,12 +319,14 @@ class ReadCAMS2_83:
 
 
 if __name__ == "__main__":
+    from time import perf_counter
+
     data_dir = DATA_FOLDER_PATH
     data_id = "CAMS2-83.EMEP.day0"
     reader = ReadCAMS2_83(data_dir=data_dir, data_id=data_id)
+    dates = ("2021-12-01", "2021-12-04")
 
     seconds = -perf_counter()
-    dates = ("2021-12-01", "2021-12-04")
     print(reader.read_var("concno2", ts_type="hourly", daterange=dates))
 
     seconds += perf_counter()
