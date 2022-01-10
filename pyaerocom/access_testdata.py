@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Oct 29 17:12:54 2020
-
-@author: jonasg
-"""
-
 import logging
 import os
 import tarfile
@@ -230,7 +223,3 @@ def initialise():
         )
     else:
         logger.warning("Failed to initiate pyaerocom-testdata")
-
-
-if __name__ == "__main__":
-    initialise()

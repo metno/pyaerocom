@@ -350,9 +350,3 @@ class ReadSulphurAasEtAl(ReadAasEtal):
         warnings.warn(
             "You are using an old name for class ReadAasEtal", DeprecationWarning, stacklevel=2
         )
-
-
-if __name__ == "__main__":
-
-    aa = ReadAasEtal("GAWTADsubsetAasEtAl")
-    print(aa.data_id)

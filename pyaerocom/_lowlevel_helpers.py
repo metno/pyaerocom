@@ -843,22 +843,3 @@ def str_underline(title: str, indent: int = 0):
     length = indent + len(title)
     underline = "-" * len(title)
     return f"{title:>{length}}\n{underline:>{length}}"
-
-
-if __name__ == "__main__":
-    d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
-
-    d.update(**{"mypy": 55})
-
-    class CDict(ConstrainedContainer):
-        def __init__(self):
-            self.bla = 1
-            self.blub = 2
-            self.option = None
-
-    cd = CDict()
-    print(cd)
-    cd["option"] = 42
-    cd["option"] = {}
-
-    cd.update(**{"mypy": 55})

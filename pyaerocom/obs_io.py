@@ -128,19 +128,3 @@ class AuxInfoUngridded:
         s = str_underline(name)
         s += dict_to_str(self.to_dict())
         return s
-
-
-if __name__ == "__main__":
-
-    print(ObsVarCombi("Bla", "od550aer"))
-
-    info = AuxInfoUngridded(
-        "bla",
-        "od550aer",
-        {"od550aer": {"a": "od550lt1aer", "b": "od550gt1aer"}},
-        aux_merge_how="combine",
-        aux_funs=None,
-        aux_units=None,
-    )
-
-    print(info)

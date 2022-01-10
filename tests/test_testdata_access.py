@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Oct 29 18:28:45 2020
-
-@author: jonasg
-"""
-
 import os
 
 import pytest
@@ -39,9 +32,3 @@ def test_TestDataAccess_check_access(td):
 
 def test_TestDataAccess_init(td):
     assert td.init()
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

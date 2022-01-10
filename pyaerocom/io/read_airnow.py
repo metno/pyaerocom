@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-########################################################################
-#
-# This python module is part of the pyaerocom software
-#
-# License: GNU General Public License v3.0
-# More information: https://github.com/metno/pyaerocom
-# Documentation: https://pyaerocom.readthedocs.io/en/latest/
-# Copyright (C) 2017 met.no
-# Contact information: Norwegian Meteorological Institute (MET Norway)
-#
-########################################################################
-
 import logging
 import os
 from glob import glob
@@ -459,10 +446,3 @@ class ReadAirNow(ReadUngriddedBase):
         )
 
         return data
-
-
-if __name__ == "__main__":
-    loc = "/home/jonasg/MyPyaerocom/data/obsdata/MACC_INSITU_AirNow"
-    reader = ReadAirNow(data_dir=loc)
-
-    reader.read("concpm25", last_file=10)

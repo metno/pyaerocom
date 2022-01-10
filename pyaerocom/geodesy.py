@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Module for geographical calculations
 
@@ -360,15 +359,3 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     c = 2 * np.arcsin(np.sqrt(a))
 
     return earth_radius * c
-
-
-if __name__ == "__main__":
-    lat = 50.7
-    lon = 8.2
-
-    print(get_topo_altitude(0, 0, try_etopo1=True))
-
-    a0 = get_topo_altitude(lat, lon, "srtm", try_etopo1=False)
-    a1 = get_topo_altitude(lat, lon, "etopo1", try_etopo1=False)
-
-    print(a0, a1)

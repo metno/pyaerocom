@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import logging
 import os
 import warnings
@@ -1914,9 +1912,3 @@ class ColocatedData:
             stacklevel=2,
         )
         return self.num_coords
-
-
-if __name__ == "__main__":
-    name = "od550so4_od550aer_MOD-AEROCOM-MEDIAN_BLABLUB_REF-Aeronet_20050101_20141231_monthly_WORLD-noMOUNTAINS.nc"
-    meta = ColocatedData.get_meta_from_filename(name)
-    print(meta)

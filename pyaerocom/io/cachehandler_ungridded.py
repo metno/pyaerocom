@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Caching class for reading and writing of ungridded data Cache objects
 """
@@ -359,9 +358,3 @@ class CacheHandlerUngridded:
 
     def __str__(self):
         return f"pyaerocom.CacheHandlerUngridded\nDefault cache dir: {self.cache_dir}"
-
-
-if __name__ == "__main__":
-
-    ch = CacheHandlerUngridded()
-    print(ch)

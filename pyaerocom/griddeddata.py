@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 import os
 import warnings
@@ -2774,16 +2773,3 @@ class GriddedData:
             stacklevel=2,
         )
         self.grid.units = val
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-    pya.initialise_testdata()
-    # print("uses last changes ")
-    data = pya.io.ReadGridded("TM5-met2010_CTRL-TEST").read_var(
-        "od550aer", start=2010, ts_type="daily"
-    )

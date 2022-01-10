@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 This module contains functionality related to regions in pyaerocom
 """
@@ -379,28 +378,3 @@ def find_closest_region_coord(lat, lon, regions=None):
             min_dist = dist
             best = match
     return best
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    plt.close("all")
-    import pyaerocom as pya
-
-    res = {}
-    reg = Region("EUROPE")
-    reg.plot()
-
-# =============================================================================
-#     for reg in pya.region_defs.HTAP_REGIONS:
-#
-#         mask = pya.helpers_landsea_masks.load_region_mask_xr(reg)
-#         res[reg] = info = pya.helpers_landsea_masks.get_lat_lon_range_mask_region(mask)
-#         lonr, latr = info['lon_range'], info['lat_range']
-#
-#
-#         print(f'[{reg}]')
-#         print(f'lon_range={lonr[0]:.3f},{lonr[1]:.3f}')
-#         print(f'lat_range={latr[0]:.3f},{latr[1]:.3f}')
-#         print()
-# =============================================================================

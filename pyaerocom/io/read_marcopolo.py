@@ -346,24 +346,3 @@ class ReadMarcoPolo(ReadUngriddedBase):
         data = UngriddedData.from_station_data(stats)
 
         return data
-
-
-if __name__ == "__main__":
-    path_data = "/home/jonasg/MyPyaerocom/data/obsdata/CHINA_SON2020_MP_NRT"
-
-    reader = ReadMarcoPolo(data_dir=path_data)
-
-    # files = reader.get_file_list()
-    # print(files)
-
-    data = reader.read(["vmro3"], last_file=1)
-
-# =============================================================================
-#     stats = data.to_station_data_all('concpm10')['stats']
-#
-#     stat = stats[0]
-#     stats[0].plot_timeseries('concpm10')
-# =============================================================================
-
-
-# data = read_cams84_china(files, ['concpm10','concpm25'])

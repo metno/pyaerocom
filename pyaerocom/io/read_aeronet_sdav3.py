@@ -226,16 +226,3 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                     del data_out[var]
 
         return data_out
-
-
-if __name__ == "__main__":
-    read = ReadAeronetSdaV3()
-    read.verbosity_level = "debug"
-
-    first_ten = read.read(last_file=10)
-
-    data_first = read.read_first_file()
-
-    data_berlin = read.read_station("Berlin")
-
-    print(data_first)

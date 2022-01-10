@@ -1,8 +1,6 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import pytest
 
-from pyaerocom.aeroval import setupclasses as mod
+from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
 
 from .cfg_test_exp1 import CFG as cfgexp1
@@ -14,7 +12,7 @@ from .cfg_test_exp1 import CFG as cfgexp1
 def test_EvalSetup___init__(update):
     CFG = cfgexp1.copy()
     CFG.update(update)
-    mod.EvalSetup(**CFG)
+    EvalSetup(**CFG)
 
 
 @pytest.mark.parametrize(
@@ -38,5 +36,5 @@ def test_EvalSetup___init__INVALID_ENTRY_NAMES(update, error):
     CFG = cfgexp1.copy()
     CFG.update(update)
     with pytest.raises(EvalEntryNameError) as e:
-        mod.EvalSetup(**CFG)
+        EvalSetup(**CFG)
     assert error in str(e.value)

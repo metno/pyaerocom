@@ -194,16 +194,3 @@ def get_cmap_ticks_auto(lvls, num_per_mag=3):
         )
 
     return ticks
-
-
-if __name__ == "__main__":
-
-    vmin, vmax = 0.02, 0.75
-
-    vals = calc_pseudolog_cmaplevels(vmin, vmax, num_per_mag=10, add_zero=True)
-    for val in vals:
-        print("%.4f" % val)
-
-    import doctest
-
-    doctest.testmod()

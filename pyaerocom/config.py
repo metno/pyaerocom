@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-########################################################################
-#
-# This python module is part of the pyaerocom software
-#
-# License: GNU General Public License v3.0
-# More information: https://github.com/metno/pyaerocom
-# Documentation: https://pyaerocom.readthedocs.io/en/latest/
-# Copyright (C) 2017 met.no
-# Contact information: Norwegian Meteorological Institute (MET Norway)
-#
-########################################################################
-
 import getpass
 import logging
 import os
@@ -973,10 +960,3 @@ class Config:
             else:
                 s += f"\n{k}: {v}"
         return s
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    # print(pya.const)
-    print(pya.const.has_access_lustre)

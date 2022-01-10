@@ -1,12 +1,7 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
 import os
 
 import numpy as np
-import numpy.testing as npt
-import pytest
+from numpy.testing import assert_allclose
 
 from ..conftest import TEST_RTOL, data_unavail
 
@@ -36,10 +31,4 @@ def test_load_thessaloniki(aeronet_sda_subset_reader):
 
     desired = [1.4777584841303428, 0.1988665578854858, 0.036805761707404114, 0.16206080598741934]
 
-    npt.assert_allclose(actual=means, desired=desired, rtol=TEST_RTOL)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
+    assert_allclose(actual=means, desired=desired, rtol=TEST_RTOL)

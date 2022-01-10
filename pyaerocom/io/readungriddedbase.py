@@ -652,36 +652,3 @@ class ReadUngriddedBase(abc.ABC):
         if len(files) == 0:
             files = self.get_file_list()
         return self.read_file(files[0], **kwargs)
-
-
-if __name__ == "__main__":
-
-    class ReadUngriddedImplementationExample(ReadUngriddedBase):
-        _FILEMASK = ".txt"
-        DATA_ID = "Blaaa"
-        __version__ = "0.01"
-        PROVIDES_VARIABLES = ["od550aer"]
-        REVISION_FILE = const.REVISION_FILE
-
-        def __init__(self, data_id=None, data_dir=None):
-            super().__init__(data_id, data_dir)
-
-        @property
-        def DEFAULT_VARS(self):
-            return self.PROVIDES_VARIABLES
-
-        @property
-        def SUPPORTED_DATASETS(self):
-            return [self.DATA_ID]
-
-        def TS_TYPE(self):
-            raise NotImplementedError
-
-        def read(self):
-            raise NotImplementedError
-
-        def read_file(self):
-            raise NotImplementedError
-
-    c = ReadUngriddedImplementationExample()
-    print(c.data_id)

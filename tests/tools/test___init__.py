@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Wed Jun 16 19:31:51 2021
-
-@author: jonasg
-"""
 import os
 from getpass import getuser
 
@@ -35,9 +29,3 @@ def test_clear_cache(tmpdir):
 def test_browse_database():
     with pytest.raises(DataSearchError):
         tools.browse_database("blaaa")
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
