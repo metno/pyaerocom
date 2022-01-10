@@ -1,16 +1,10 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Mar  3 09:52:16 2020
-
-@author: jonasg
-"""
 import pytest
 
-from pyaerocom import metastandards as mst
+from pyaerocom.metastandards import AerocomDataID, DataSource, StationMetaData
 
 
 def test_datasource_empty():
-    ds = mst.DataSource()
+    ds = DataSource()
 
     keys_sorted = [
         "data_id",
@@ -48,7 +42,7 @@ def test_datasource(
     stat_merge_pref_attr,
 ):
 
-    ds = mst.DataSource(data_id=data_id)
+    ds = DataSource(data_id=data_id)
     assert ds["dataset_name"] == dataset_name
     assert ds["data_product"] == data_product
     assert ds["data_version"] == data_version
@@ -58,9 +52,9 @@ def test_datasource(
 
 
 def test_stationmetadata():
-    meta = mst.StationMetaData()
+    meta = StationMetaData()
 
-    assert isinstance(meta, mst.DataSource)
+    assert isinstance(meta, DataSource)
     assert sorted(meta.keys(), key=str.casefold) == [
         "altitude",
         "country",
@@ -98,7 +92,7 @@ def test_stationmetadata():
 )
 def test_aerocomdataid(data_id, values, test_addstuff):
 
-    data_id = mst.AerocomDataID(data_id)
+    data_id = AerocomDataID(data_id)
 
     assert data_id.values == values
 
@@ -110,16 +104,10 @@ def test_aerocomdataid(data_id, values, test_addstuff):
         assert dd["experiment"] == values[2]
         assert dd["perturbation"] == values[3]
 
-        data_id1 = mst.AerocomDataID(**dd)
+        data_id1 = AerocomDataID(**dd)
 
         assert data_id1 == str(data_id)
         assert data_id1 == data_id
         assert data_id1 == "NorESM2-met2010_AP3-CTRL"
 
-        assert mst.AerocomDataID(**dd) == mst.AerocomDataID.from_dict(dd)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
+        assert AerocomDataID(**dd) == AerocomDataID.from_dict(dd)

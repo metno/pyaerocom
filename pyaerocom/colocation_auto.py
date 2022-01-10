@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Classes and methods to perform high-level colocation.
 """
@@ -1470,11 +1469,3 @@ class Colocator(ColocationSetup):
         if self._log is not None:
             self._log.close()
             self._log = None
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    plt.close("all")
-    col = ColocationSetup()
-    col.update(bla=42)

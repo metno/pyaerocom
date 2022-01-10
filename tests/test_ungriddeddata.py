@@ -1,12 +1,11 @@
 import os
 
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
-from tests.synthetic_data import FakeStationDataAccess
 
 from .conftest import FAKE_STATION_DATA, data_unavail, rg_unavail
 
@@ -17,19 +16,19 @@ def ungridded_empty():
 
 
 def test_init_shape(ungridded_empty):
-    npt.assert_array_equal(ungridded_empty.shape, (1000000, 12))
+    assert_array_equal(ungridded_empty.shape, (1000000, 12))
 
 
 def test_init_add_cols():
     d1 = UngriddedData(num_points=2, add_cols=["bla", "blub"])
-    npt.assert_array_equal(d1.shape, (2, 14))
+    assert_array_equal(d1.shape, (2, 14))
 
 
 def test_add_chunk(ungridded_empty):
 
     ungridded_empty.add_chunk(111002)
 
-    npt.assert_array_equal(ungridded_empty.shape, (2000000, 12))
+    assert_array_equal(ungridded_empty.shape, (2000000, 12))
 
 
 def test_coordinate_access():
@@ -51,12 +50,10 @@ def test_coordinate_access():
             altitude=alts[i],
         )
 
-    import numpy.testing as npt
-
-    npt.assert_array_equal(d.station_name, stat_names)
-    npt.assert_array_equal(d.latitude, lats)
-    npt.assert_array_equal(d.longitude, lons)
-    npt.assert_array_equal(d.altitude, alts)
+    assert_array_equal(d.station_name, stat_names)
+    assert_array_equal(d.latitude, lats)
+    assert_array_equal(d.longitude, lons)
+    assert_array_equal(d.altitude, alts)
 
     case_ok = False
     try:
@@ -67,10 +64,10 @@ def test_coordinate_access():
     assert case_ok
 
     c = d.station_coordinates
-    npt.assert_array_equal(c["station_name"], stat_names)
-    npt.assert_array_equal(c["latitude"], lats)
-    npt.assert_array_equal(c["longitude"], lons)
-    npt.assert_array_equal(c["altitude"], alts)
+    assert_array_equal(c["station_name"], stat_names)
+    assert_array_equal(c["latitude"], lats)
+    assert_array_equal(c["longitude"], lons)
+    assert_array_equal(c["altitude"], alts)
 
 
 @data_unavail
@@ -252,7 +249,7 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
 
             ratio = ratio[~np.isnan(ratio)]
 
-            npt.assert_allclose(actual=[ratio.mean(), ratio.std()], desired=[fac, 0], atol=1e-20)
+            assert_allclose(actual=[ratio.mean(), ratio.std()], desired=[fac, 0], atol=1e-20)
 
 
 def test_from_single_station_data():
@@ -260,4 +257,4 @@ def test_from_single_station_data():
     d = ungriddeddata.UngriddedData.from_station_data(stat)
     data0 = stat.ec550aer
     data1 = d.all_datapoints_var("ec550aer")
-    npt.assert_allclose(data0, data1, atol=1e-20)
+    assert_allclose(data0, data1, atol=1e-20)

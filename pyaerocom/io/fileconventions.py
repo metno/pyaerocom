@@ -2,8 +2,6 @@ from configparser import ConfigParser
 from importlib import resources
 from os.path import basename, splitext
 
-from numpy import inf
-
 from pyaerocom import const
 from pyaerocom.exceptions import FileConventionError
 from pyaerocom.tstype import TsType
@@ -400,29 +398,3 @@ class FileConventionRead:
         for k, v in self.to_dict().items():
             s += f"\n{k}: {v}"
         return s
-
-
-if __name__ == "__main__":
-    conf = FileConventionRead()
-
-    print(conf)
-
-    d = dict(name="Fake", file_sep=10, year_pos=-6, var_pos=15, ts_pos=3)
-    print(conf.from_dict(d))
-    try:
-        conf.import_default("blaaa")
-    except NameError:
-        print("Works as expected")
-    conf.import_default("aerocom3")
-    print(conf)
-
-    conf = FileConventionRead(name="aerocom2")
-    print(conf)
-
-    fname = "aerocom3_TM5_AP3-INSITU_vmrch4_ModelLevelAtStations_2010_monthly.nc"
-
-    print(f"\nFrom file: {conf.from_file(fname)}")
-    print(conf.get_info_from_file(fname))
-
-    ff = FileConventionRead(from_file="aerocom.CALIOP3.monthly.ec5323Ddust.2006.nc")
-    print(ff)

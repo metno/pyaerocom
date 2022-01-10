@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Methods and / or classes to perform colocation
 """
@@ -1045,18 +1044,3 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     coldata.data.attrs["Model_STP_corr"] = True
     coldata.data.attrs["Model_STP_corr_info"] = info_str
     return coldata
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-
-    obsdata = pya.io.ReadUngridded().read("EBASMC", "ac550aer")
-
-    # update unit to wrong unit
-    obsdata.check_convert_var_units("ac550aer", "m-1", inplace=True)
-
-    obsdata.remove_outliers("ac550aer", inplace=True)

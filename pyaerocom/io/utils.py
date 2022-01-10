@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 High level I/O utility methods for pyaerocom
 """
@@ -74,14 +73,3 @@ def browse_database(model_or_obs, verbose=False):
         except Exception as e:
             print(f"Reading failed for {match}. Error: {repr(e)}")
     return matches
-
-
-if __name__ == "__main__":
-
-    obs_id = "AATSR*"
-
-    browse_database("AATSR_SU*")
-
-    browse_database("AATSR*ORAC*v4*")
-
-    browse_database(obs_id)

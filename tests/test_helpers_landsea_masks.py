@@ -1,13 +1,6 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Feb  4 12:48:45 2020
-
-@author: jonasg
-"""
 import os
 
 import iris
-import pytest
 import xarray as xr
 
 import pyaerocom.helpers_landsea_masks as lsm
@@ -104,9 +97,3 @@ def test_check_all_htap_available():
 
     files = lsm.check_all_htap_available()
     assert sorted(os.path.basename(x) for x in files) == should_be
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

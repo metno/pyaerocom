@@ -2,10 +2,10 @@ import os
 
 import iris
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import pytest
 from cf_units import Unit
+from numpy.testing import assert_allclose
 
 from pyaerocom import GriddedData, const, helpers
 from pyaerocom.colocateddata import ColocatedData
@@ -122,7 +122,7 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
     assert len(df) == 9483
     means = [np.nanmean(df["data"]), np.nanmean(df["ref"])]
     should_be = [0.31171085422102346, 0.07752743643132792]
-    npt.assert_allclose(means, should_be, rtol=1e-5)
+    assert_allclose(means, should_be, rtol=1e-5)
 
 
 def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
@@ -195,7 +195,7 @@ def test_colocate_gridded_ungridded(
 
     means = [np.nanmean(coldata.data.data[0]), np.nanmean(coldata.data.data[1])]
 
-    npt.assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
+    assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
 
 
 @data_unavail
@@ -237,9 +237,9 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert isinstance(coldata, ColocatedData)
     stats = coldata.calc_statistics()
     # check mean value
-    npt.assert_allclose(stats["data_mean"], 0.09825691)
+    assert_allclose(stats["data_mean"], 0.09825691)
     # check that mean value is same as in input GriddedData object
-    npt.assert_allclose(stats["data_mean"], data_tm5.mean(areaweighted=False))
+    assert_allclose(stats["data_mean"], data_tm5.mean(areaweighted=False))
     assert stats["refdata_mean"] == stats["data_mean"]
     assert stats["nmb"] == 0
     assert stats["mnmb"] == 0

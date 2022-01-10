@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Helper methods for access of and working with land/sea masks. pyaerocom
 provides automatic access to HTAP land sea masks from this URL:
@@ -263,17 +262,3 @@ def get_lat_lon_range_mask_region(mask, latdim_name=None, londim_name=None):
     latr = sorted([lats[firstidx], lats[lastidx]])
 
     return dict(lat_range=latr, lon_range=lonr)
-
-
-if __name__ == "__main__":
-    files = check_all_htap_available()
-
-    print(sorted(os.path.basename(x) for x in files))
-
-    raise Exception
-    masks = ["NAF", "MDE", "PAN", "EAS"]
-    for file in get_htap_mask_files(*masks):
-        print(file)
-
-    mask_xr = load_region_mask_xr(*masks)
-    mask_iris = load_region_mask_iris(*masks)

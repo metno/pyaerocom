@@ -447,46 +447,6 @@ def range_magnitude(low, high):
     return exponent(high) - exponent(low)
 
 
-if __name__ == "__main__":
-    # import doctest
-    exp = exponent(23)
-    # print(numbers_in_str('Bla42Blub100'))
-    # run tests in all docstrings
-    # doctest.testmod()
-
-    mod = np.ones(20)
-    obs = np.ones(20)
-    weights = np.ones(20)
-
-    weights[10] = 100
-
-    mod[10] = 10
-    obs[10] = 10
-
-    c1 = calc_statistics(mod, obs)
-    c2 = calc_statistics(mod, obs, weights=weights)
-
-    assert c1["nmb"] == 0
-    assert c1["mnmb"] == 0
-    assert c1["R"] == 1
-
-    assert c2["nmb"] == 0
-    assert c2["mnmb"] == 0
-    assert c2["R"] == 1
-
-    obs[10] = 9
-
-    c1 = calc_statistics(mod, obs)
-    c2 = calc_statistics(mod, obs, weights=weights)
-
-    wm = weighted_mean(mod, weights)
-
-    print(wm)
-
-    wcov = weighted_cov(obs, mod, weights)
-    print(wcov)
-
-
 def estimate_value_range(vmin, vmax, extend_percent=0):
     """
     Round and extend input range to estimate lower and upper bounds of range

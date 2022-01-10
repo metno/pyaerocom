@@ -732,17 +732,3 @@ class ReadEMEP(ReadMscwCtm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         print("You are using a deprecated name ReadEMEP for class ReadMscwCtm")
-
-
-if __name__ == "__main__":  # pragma: no cover
-
-    EMEP_DIR = "/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_REPORTING/EMEP01_rv4_35_2018_emepCRef2_XtraOut/"
-
-    fname = "Base_month.nc"
-
-    fp = EMEP_DIR + fname
-
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)  # +'Base_month.nc')
-
-    # Read variable that uses AUX_FUNS
-    data = reader.read_var("concno3", ts_type="daily")

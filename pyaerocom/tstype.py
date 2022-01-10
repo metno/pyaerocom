@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 General helper methods for the pyaerocom library.
 """
@@ -413,11 +412,3 @@ class TsType:
 
     def __repr__(self):
         return self.val
-
-
-if __name__ == "__main__":
-
-    from pyaerocom.helpers import sort_ts_types
-
-    print(TsType.from_total_seconds(1200))
-    print(TsType.from_total_seconds(31556925 * 2))

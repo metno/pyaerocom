@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
 import pytest
 
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
@@ -81,9 +77,3 @@ def test_read(reader):
             except:
                 print(f"failed test var {var_name}")
                 pass
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

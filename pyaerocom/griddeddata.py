@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 import os
 import warnings
@@ -473,7 +472,11 @@ class GriddedData:
     @property
     def name(self):
         """ID of model to which data belongs"""
-        logger.warning("Deprecated attribute name, please use data_id instead")
+        warnings.warn(
+            "Deprecated attribute name, please use data_id instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.metadata["data_id"]
 
     @property
@@ -2727,7 +2730,7 @@ class GriddedData:
 
     def __contains__(self, val):
         """Check if variable or coordinate matchs input string"""
-        return val is self.name or val in self.coord_names
+        return val is self.data_id or val in self.coord_names
 
     def __dir__(self):
         return self.coord_names + super().__dir__()
@@ -2766,16 +2769,3 @@ class GriddedData:
             "Attr. unit is deprecated, please use units instead", DeprecationWarning, stacklevel=2,
         )
         self.grid.units = val
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-    pya.initialise_testdata()
-    # print("uses last changes ")
-    data = pya.io.ReadGridded("TM5-met2010_CTRL-TEST").read_var(
-        "od550aer", start=2010, ts_type="daily"
-    )

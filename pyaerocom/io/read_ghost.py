@@ -1,25 +1,3 @@
-# this file is part of the pyaerocom package
-# Copyright (C) 2018 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# Author: Jonas Gliss
-# E-mail: jonasg@met.no
-# License: https://github.com/metno/pyaerocom/blob/master/LICENSE
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
 import glob
 import logging
 import os
@@ -696,15 +674,3 @@ class ReadGhost(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         data_obj._check_index()
         return data_obj
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    OBS_BASEDIR = "/home/jonasg/MyPyaerocom/data/obsdata"
-
-    # make sure it works also on lustre
-    GHOST_EBAS_DAILY_LOCAL = os.path.join(OBS_BASEDIR, "GHOST/data/EBAS/daily")
-    GHOST_EEA_DAILY_LOCAL = os.path.join(OBS_BASEDIR, "GHOST/data/EEA_AQ_eReporting/daily")
-
-    obs = ReadGhost("GHOST.EBAS.daily", GHOST_EBAS_DAILY_LOCAL).read("concno")

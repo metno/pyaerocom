@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
 """
 Metadata keys from GHOST that only depend on station dimension
 
 THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
 PROVIDED BY BSC
 """
-from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS as actual_keys
+from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 
 desired_keys = [
     "EDGAR_v4.3.2_annual_average_BC_emissions",
@@ -154,8 +153,4 @@ desired_keys = [
 
 
 def test_ghost_meta_keys():
-    assert sorted(actual_keys) == sorted(desired_keys)
-
-
-if __name__ == "__main__":
-    test_ghost_meta_keys()
+    assert sorted(GHOST_META_KEYS) == sorted(desired_keys)

@@ -3,12 +3,11 @@ import os
 import tempfile
 from importlib import resources
 from pathlib import Path
-from tarfile import PAX_FIELDS
 
 import pytest
 
 import pyaerocom.config as testmod
-from pyaerocom import const as DEFAULT_CFG
+from pyaerocom import const
 from pyaerocom.config import Config
 
 from .conftest import lustre_avail
@@ -298,7 +297,7 @@ def test_empty_init(empty_cfg):
 
 
 def test_default_config_HOMEDIR():
-    assert DEFAULT_CFG.HOMEDIR == os.path.expanduser("~") + "/"
+    assert const.HOMEDIR == os.path.expanduser("~") + "/"
 
 
 def test_default_config():
