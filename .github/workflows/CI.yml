@@ -52,9 +52,10 @@ jobs:
     - name: Build docs
       run: tox -e docs
 
-  build:
+  venv:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.8, 3.9, '3.10']
     steps:
@@ -86,9 +87,9 @@ jobs:
       run: tox -e py
 
   conda:
-  # needs: lint
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.8, 3.9]
     steps:
