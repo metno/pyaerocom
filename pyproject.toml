@@ -4,11 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+log_cli = false
+log_cli_level = "WARNING"
 addopts = "--failed-first"
 testpaths = ["tests"]
 filterwarnings = [
   "error",
   "ignore::pytest.PytestUnraisableExceptionWarning",
+  # xarray calling importlib.metadata.entry_points on Python 3.10
+  "ignore:SelectableGroups dict interface is deprecated:DeprecationWarning",
+  # xarray calling distutils.version.LooseVersion on Python 3.10
+  "ignore:distutils Version classes are deprecated:DeprecationWarning",
+  # numpy calling distutils.sysconfig.customize_compiler on Python 3.10
+  "ignore:The distutils.sysconfig module is deprecated:DeprecationWarning",
 ]
 
 [tool.coverage.run]
