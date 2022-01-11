@@ -97,15 +97,6 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2.3.4
-    - name: Set cache date
-      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-    - name: Cache conda environment
-      uses: actions/cache@v2
-      with:
-        path: /usr/share/miniconda3/envs/pya
-        key: ${{ runner.os }}-conda-${{ matrix.python-version }}-${{ hashFiles('pyaerocom_env.yml') }}-${{ env.DATE }}
-        restore-keys: |
-          ${{ runner.os }}-conda-${{ matrix.python-version }}
     - name: Set up Python ${{ matrix.python-version }}
       uses: conda-incubator/setup-miniconda@v2
       with:
