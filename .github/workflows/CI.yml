@@ -103,7 +103,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
         activate-environment: pya
         environment-file: pyaerocom_env.yml
-        auto-activate-base: false
     - name: Conda info
       run: |
         conda --version
