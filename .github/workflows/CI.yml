@@ -114,7 +114,7 @@ jobs:
     - name: Run pytest
       run: pytest --cov=pyaerocom/ --cov-report xml
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.0.3
+      uses: codecov/codecov-action@v2
       with:
           file: ./coverage.xml
           flags: unittests
