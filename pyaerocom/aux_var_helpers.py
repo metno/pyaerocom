@@ -667,3 +667,80 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         vmr *= conversion_fac
     return vmr
+
+def _compute_ratio_helper(data, numerator, denominator):
+    """
+    Helper to compute wed deposition from concentration in precipitation
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable.
+
+    Parameters
+    ----------
+    data : StationData
+        input data containing concentration in precipitation variable and
+        precipitation variable. Both are needed to be sampled at the same
+        time and both arrays must have the same lengths.
+    numerator : str
+        name of output wet deposition variable
+    denominator : str
+        name of concenration in precipitation variable
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+    """
+
+    vars_needed = (numerator, denominator)
+
+    if not all(x in data.data_flagged for x in vars_needed):
+        raise ValueError(f"Need flags for {vars_needed} to ratio")
+
+    denominator_unit = data.get_unit(denominator)
+    numerator_unit = data.get_unit(numerator)
+    if not denominator_unit == numerator_unit:
+        raise NotImplementedError(f"Can only handle equal units in ratio computation. "
+                                  f"Units given are ({numerator_unit},{denominator_unit})")
+    denominator_flags = data.data_flagged[denominator]
+
+    ratio_data = data[numerator] / data[denominator]
+    ratio_units = "1"
+
+    if not numerator in data.var_info:
+        data.var_info[numerator] = {}
+    data.var_info[numerator]["units"] = ratio_units
+
+    # set flags for the ratio
+    # ratio_flags = np.zeros(len(ratio_data)).astype(bool)
+    ratio_flags = np.zeros_like(ratio_data, dtype=bool)
+    ratio_flags[denominator_flags] = True
+    data.data_flagged[numerator] = ratio_flags
+
+    return ratio_data
+
+def compute_ratpm10pm25(data):
+    """Compute ratio of pm10 and pm25
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_ratio_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with values of the ratio
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "pm10", "pm25",)
+
