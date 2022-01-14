@@ -668,6 +668,7 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
         vmr *= conversion_fac
     return vmr
 
+
 def _compute_ratio_helper(data, numerator, denominator):
     """
     Helper to compute wed deposition from concentration in precipitation
@@ -703,8 +704,10 @@ def _compute_ratio_helper(data, numerator, denominator):
     denominator_unit = data.get_unit(denominator)
     numerator_unit = data.get_unit(numerator)
     if not denominator_unit == numerator_unit:
-        raise NotImplementedError(f"Can only handle equal units in ratio computation. "
-                                  f"Units given are ({numerator_unit},{denominator_unit})")
+        raise NotImplementedError(
+            f"Can only handle equal units in ratio computation. "
+            f"Units given are ({numerator_unit},{denominator_unit})"
+        )
     denominator_flags = data.data_flagged[denominator]
 
     ratio_data = data[numerator] / data[denominator]
@@ -721,6 +724,7 @@ def _compute_ratio_helper(data, numerator, denominator):
     data.data_flagged[numerator] = ratio_flags
 
     return ratio_data
+
 
 def compute_ratpm10pm25(data):
     """Compute ratio of pm10 and pm25
@@ -742,5 +746,8 @@ def compute_ratpm10pm25(data):
         array with values of the ratio
 
     """
-    return _compute_wdep_from_concprcp_helper(data, "pm10", "pm25",)
-
+    return _compute_wdep_from_concprcp_helper(
+        data,
+        "pm10",
+        "pm25",
+    )
