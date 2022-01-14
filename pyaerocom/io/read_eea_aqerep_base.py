@@ -548,7 +548,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if files is None:
             if len(self.files) == 0:
                 logger.info("Retrieving file list")
-                files = self.get_file_list(self.FILE_MASKS[var_name])
+                try:
+                    files = self.get_file_list(self.FILE_MASKS[var_name])
+                except KeyError:
+                    # derived variable
+                    # get vars to tead from self.AUX_REQUIRES
+                    _tmp_files = []
+                    for var in self.AUX_REQUIRES[var_name]:
+                        _tmp_files.extend(self.get_file_list(self.FILE_MASKS[var]))
+
             files = self.files
 
         if first_file is None:
