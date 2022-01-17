@@ -190,6 +190,7 @@ var_web_info = dict(
     od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
     od550lt1aer=["AODf", "2D", "Optical properties"],
     od550gt1aer=["AODc", "2D", "Optical properties"],
+    od550dust=["AODdust", "2D", "Optical properties"],
     abs550aer=["AAOD", "2D", "Optical properties"],
     ang4487aer=["AE", "2D", "Optical properties"],
     angabs4487aer=["AAE", "2D", "Optical properties"],
