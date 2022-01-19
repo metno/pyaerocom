@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from pyaerocom.aux_var_helpers import compute_ratpm10pm25
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -38,7 +39,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.07"
+    __version__ = "0.09"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
@@ -61,6 +62,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     #: Dictionary specifying values corresponding to invalid measurements
     #: there's no value for NaNs in this data set. It uses an empty string
     NAN_VAL = {}
+
+    # name of the ratio of pm10 pm25 variable (the name might still change)
+    RATPM10_NAME = "ratpm10pm25"
 
     #: Dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
@@ -164,12 +168,27 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3": ["conco3"], "vmrno2": ["concno2"]}
+    AUX_REQUIRES = {
+        "vmro3": ["conco3"],
+        "vmrno2": ["concno2"],
+        RATPM10_NAME: ["concpm10", "concpm25"],
+    }
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmrno2": NotImplementedError(),
+        RATPM10_NAME: compute_ratpm10pm25,
     }
+
+    # the reading of RATPM10_NAME needs a cache file with the station code per filename
+    # to have at least usable reading speed since the station id is not in the data file name
+    # this cache file is created at download time with a bash script and looks like this:
+    # DE_5_8615_2020_timeseries.csv,SAM.DE_DENI060_2
+    # DE_5_8615_2021_timeseries.csv,SAM.DE_DENI060_2
+    # DE_6001_6138_2020_timeseries.csv,SAM.DE_DENI060_2
+    # DE_6001_6138_2021_timeseries.csv,SAM.DE_DENI060_2
+    STATION_FILE = 'stationname_per_file.csv'
+
 
     def __init__(self, data_id=None, data_dir=None):
         super().__init__(data_id=data_id, data_dir=data_dir)
@@ -536,38 +555,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             data object
         """
 
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-
-        if len(vars_to_retrieve) > 1:
-            raise NotImplementedError("So far, only one variable can be read at a time...")
-        var_name = vars_to_retrieve[0]
-        logger.info("Reading EEA data")
-        if files is None:
-            if len(self.files) == 0:
-                logger.info("Retrieving file list")
-                try:
-                    files = self.get_file_list(self.FILE_MASKS[var_name])
-                except KeyError:
-                    # derived variable
-                    # get vars to tead from self.AUX_REQUIRES
-                    _tmp_files = []
-                    for var in self.AUX_REQUIRES[var_name]:
-                        _tmp_files.extend(self.get_file_list(self.FILE_MASKS[var]))
-
-            files = self.files
-
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
-
+        # read metadata first
+        logger.info("Reading metadata file")
         if metadatafile is None:
             metadatafile = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
-
-        files = files[first_file:last_file]
+        # non compliant, but efficiently indexed metadata
+        self._metadata = self._read_metadata_file(metadatafile)
 
         data_obj = UngriddedData()
         meta_key = 0.0
@@ -577,16 +570,129 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
-        logger.info("Reading metadata file")
-        # non compliant, but efficiently indexed metadata
-        self._metadata = self._read_metadata_file(metadatafile)
-
         # returns a dict with country codes as keys and the country names as value
         _country_dict = get_country_name_from_iso()
+
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        files = self.files
+
+        # if first_file is None:
+        #     first_file = 0
+        # if last_file is None:
+        #     last_file = len(files)
+        # files = files[first_file:last_file]
+
+        # flag to note if the variable is a calculated one
+        # if yes, a station matching is performed before the actual data is read
+        # to avoid reading unneded data since there are usually ~5000 files per year
+        is_calculated_flag = False
+        if files is None or len(files) == 0:
+            files_dict = {}
+            # if len(vars_to_retrieve) > 1:
+            #     raise NotImplementedError("So far, only one variable can be read at a time...")
+            # var_name = vars_to_retrieve[0]
+
+            for var_name in vars_to_retrieve:
+                # needed in case of a computed variable since var_name will be changed on the code
+                var_name_to_read = var_name
+                self.logger.info("Reading EEA data")
+                self.logger.info(f"Retrieving file list for var {var_name}")
+                try:
+                    files_dict[var_name] = self.get_file_list(self.FILE_MASKS[var_name])
+                except KeyError:
+                    # derived variable
+                    # get vars to read from self.AUX_REQUIRES
+                    is_calculated_flag = True
+                    station_keys = {}
+                    for _var in self.AUX_REQUIRES[var_name]:
+                        logger.info(f"Retrieving file list for more specific var {_var}")
+                        files_dict[_var] = self.get_file_list(self.FILE_MASKS[_var])
+                        # station_keys[_var] = ['_'.join(os.path.basename(i).split('_')[2:4]) for i in files_dict[_var]]
+                        # tmp = {station_keys[_var][i]: files_dict[_var][i] for i in range(len(station_keys[_var]))}
+                        # tmp_file_list = self.get_file_list(self.FILE_MASKS[_var])
+
+
+        if is_calculated_flag:
+            #invert self.VAR_CODES
+            codes_var = {v: k for k, v in self.VAR_CODES.items()}
+            # optimise the list of files to read by doing a station name matching
+            # self.STATION_FILE lists a file where the station name is listed
+            # for each filename. This is used to compile a list of station files to read
+            stationfile = os.path.join(self.data_dir, self.STATION_FILE)
+            # stat_data = pd.read_csv(stationfile, names=['filename','stat_code'], index_col=1index_col=1)
+            try:
+                with open(stationfile) as f:
+                    lines = f.readlines()
+            except FileNotFoundError:
+                pass
+
+            # build some data structures...
+            var_file_dict = {}
+            var_stationname_dict = {}
+            var_codes_to_read = []
+            for _var in self.AUX_REQUIRES[var_name]:
+                var_file_dict[_var] = []
+                var_stationname_dict[_var] = []
+                station_in_file_dict = {}
+                # for shorter string comparisons later on
+                var_codes_to_read.append(codes_var[_var])
+
+            for line in lines:
+                # build a list of files per neede variable
+                try:
+                    _file, _stat_name = line.strip().split(',')
+                except ValueError:
+                    # error in data file not containing a station code
+                    # just skip that
+                    continue
+
+                _var_in_file = _file.split('_')[1]
+                if _var_in_file in var_codes_to_read:
+                    station_in_file_dict[_file] = _stat_name
+                    var_file_dict[self.VAR_CODES[_var_in_file]].append(_file)
+                    var_stationname_dict[self.VAR_CODES[_var_in_file]].append(_stat_name)
+
+            # store the files to read in files_dict[var_name_to_read]
+
+            # for a calculated variable a file only needs to be read if the very same station
+            # does also appear in the other variables data needed for the calculation
+            # so check that and if it is the case put the files into files_dict[var_name_to_read]
+
+            var1_files = files_dict[self.VAR_CODES[var_codes_to_read[0]]]
+            for _file in files_dict[self.VAR_CODES[var_codes_to_read[0]]]:
+                _file_key = os.path.basename(_file)
+                # logger.error(f"{_file}")
+                if _file_key.endswith('.gz'):
+                    _file_key = _file_key[0:-3]
+                try:
+                    _file_stat_name =  station_in_file_dict[_file_key]
+                except KeyError:
+                    # file is not in prepared list skip for now without failure
+                    logger.error(f"file {_file} not in prepared caching list")
+                    continue
+                # limit this to two variables for a computed one for now
+                # TODO: make this work for more than just 2 variables
+                if _file_stat_name in var_stationname_dict[self.VAR_CODES[var_codes_to_read[1]]]:
+                    # station is also in the 2nd variable's data
+                    try:
+                        files_dict[var_name_to_read].append(_file)
+                    except KeyError:
+                        files_dict[var_name_to_read] = []
+                        files_dict[var_name_to_read].append(_file)
+
+
         logger.info("Reading files...")
 
-        for i in tqdm(range(len(files))):
-            _file = files[i]
+        for _file in tqdm(files_dict[var_name_to_read],total=len(files_dict[var_name_to_read])):
+            var_name = var_name_to_read
+            if is_calculated_flag:
+                # for a calculated variable var_name is not the variable name from the file!
+                # get var in file from filename
+                var_name = self.VAR_CODES[os.path.basename(_file).split('_')[1]]
+
             try:
                 station_data = self.read_file(_file, var_name=var_name)
             except EEAv2FileError:
@@ -644,14 +750,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 # if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(num_times)
 
-            for var_idx, var in enumerate(list(station_data.var_info)):
+            for var_idx, _var in enumerate(list(station_data.var_info)):
                 # set invalid data to np.nan according to
                 # https://dd.eionet.europa.eu/vocabulary/aq/observationvalidity/view
                 # data flagged as below the detection limit (values 2 and 3)
                 # will remain in the data
-                station_data[var][station_data["validity"] < 1] = np.nan
+                station_data[_var][station_data["validity"] < 1] = np.nan
 
-                values = station_data[var]
+                values = station_data[_var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
@@ -659,10 +765,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = station_data["dtime"]
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-                meta_idx[meta_key][var] = np.arange(start, stop)
+                meta_idx[meta_key][_var] = np.arange(start, stop)
 
-                if not var in data_obj.var_idx:
-                    data_obj.var_idx[var] = var_idx
+                if not _var in data_obj.var_idx:
+                    data_obj.var_idx[_var] = var_idx
 
             idx += num_times
             meta_key = meta_key + 1.0
