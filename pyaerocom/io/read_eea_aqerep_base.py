@@ -634,9 +634,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             var_stationname_dict = {}
             var_codes_to_read = []
             for _var in self.AUX_REQUIRES[var_name]:
+                # stores the files per variable
                 var_file_dict[_var] = []
+                # stores the station name per variable
                 var_stationname_dict[_var] = []
+                # stores the station name per filename (it's basename)
                 station_in_file_dict = {}
+                # stores the filenames for a given station name
+                file_in_station_dict = {}
                 # for shorter string comparisons later on
                 var_codes_to_read.append(codes_var[_var])
 
@@ -654,6 +659,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     station_in_file_dict[_file] = _stat_name
                     var_file_dict[self.VAR_CODES[_var_in_file]].append(_file)
                     var_stationname_dict[self.VAR_CODES[_var_in_file]].append(_stat_name)
+                    try:
+                        file_in_station_dict[_stat_name].append(_file)
+                    except KeyError:
+                        file_in_station_dict[_stat_name] = []
+                        file_in_station_dict[_stat_name].append(_file)
+
 
             # store the files to read in files_dict[var_name_to_read]
 
@@ -682,6 +693,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     except KeyError:
                         files_dict[var_name_to_read] = []
                         files_dict[var_name_to_read].append(_file)
+                    # now add all other files to the file list
+                    _files_to_add = file_in_station_dict[_file_stat_name]
 
 
         logger.info("Reading files...")
