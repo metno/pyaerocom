@@ -18,6 +18,7 @@ from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.aux_var_helpers import compute_ratpm10pm25
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.07"
+    __version__ = "0.08"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
@@ -57,6 +58,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         "hour": "hourly",
         "day": "daily",
     }
+
+    RATPM10PM25_NAME = 'ratpm10pm25'
 
     #: Dictionary specifying values corresponding to invalid measurements
     #: there's no value for NaNs in this data set. It uses an empty string
@@ -128,6 +131,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
+    # PROVIDES_VARIABLES = [list(VAR_NAMES_FILE), RATPM10PM25_NAME]
 
     #: there's no general instrument name in the data
     INSTRUMENT_NAME = "unknown"
@@ -164,11 +168,13 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3": ["conco3"], "vmrno2": ["concno2"]}
+    AUX_REQUIRES = {"vmro3": ["conco3"], "vmrno2": ["concno2"],
+                    RATPM10PM25_NAME:["concpm10", "concpm25"]}
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmrno2": NotImplementedError(),
+        RATPM10PM25_NAME: compute_ratpm10pm25,
     }
 
     def __init__(self, data_id=None, data_dir=None):

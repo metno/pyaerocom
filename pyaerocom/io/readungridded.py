@@ -665,6 +665,7 @@ class ReadUngridded:
                 )
             else:
                 data.append(
+                    # self.read_dataset(
                     self.read_dataset(
                         ds,
                         vars_to_retrieve,
