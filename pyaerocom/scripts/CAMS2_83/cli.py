@@ -1,3 +1,5 @@
+import importlib.util
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -8,6 +10,19 @@ from pyaerocom import const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.scripts.CAMS2_83.config import CFG
+
+sys.path.append(
+    "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer"
+)
+
+from CAMS2_83_Processer import CAMS2_83_Processer
+
+# spec = importlib.util.spec_from_file_location(
+#     "CAMS2_83_Processer",
+#     "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/CAMS2_83_Processer.py",
+# )
+# CAMS2_83_Processer = importlib.util.module_from_spec(spec)
+# spec.loader.exec_module(CAMS2_83_Processer)
 
 # TODO:
 """
@@ -113,8 +128,11 @@ def runner(cfg):
         typer.echo(cfg)
 
     stp = EvalSetup(**CFG)
-    ana = ExperimentProcessor(stp)
-    res = ana.run()
+    cams2_83_ana = CAMS2_83_Processer(stp)
+    cams2_83_ana.run()
+
+    # ana = ExperimentProcessor(stp)
+    # res = ana.run()
 
 
 @app.command()
