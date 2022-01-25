@@ -130,11 +130,14 @@ def _combine_2_sites(
         var_unit_out = var_unit_in
     # make sure both input data objects are in the correct unit (which is
     # var_unit_out)
-    elif not var_unit_in == var_unit_out:
-        stat.convert_unit(var, var_unit_out)
+    # except if merge_eval_fun is a method
+    # in this case that needs to make sure that the units are right
+    if not callable(merge_eval_fun):
+        if not var_unit_in == var_unit_out:
+            stat.convert_unit(var, var_unit_out)
 
-    if not stat_other.get_unit(var_other) == var_unit_out:
-        stat_other.convert_unit(var_other, var_unit_out)
+        if not stat_other.get_unit(var_other) == var_unit_out:
+            stat_other.convert_unit(var_other, var_unit_out)
 
     new = StationData()
     # add default metadata to new data object
@@ -219,23 +222,30 @@ def _combine_2_sites(
 
     elif merge_how == "eval":
 
-        func = merge_eval_fun.replace(col_order[0], col_names[0])
-        func = func.replace(col_order[1], col_names[1])
-        if "=" in merge_eval_fun:
-            # make sure variable name is not in merge_eval_fun anymore, otherwise
-            # the eval method will return a DataFrame instead of a Series
-            func = func.split("=")[-1].strip()
-        add_ts = df.eval(func)
+        if not callable(merge_eval_fun):
+            # makes only sense if merge_eval_fun is not callable
+            func = merge_eval_fun.replace(col_order[0], col_names[0])
+            func = func.replace(col_order[1], col_names[1])
+            if "=" in merge_eval_fun:
+                # make sure variable name is not in merge_eval_fun anymore, otherwise
+                # the eval method will return a DataFrame instead of a Series
+                func = func.split("=")[-1].strip()
+            add_ts = df.eval(func)
 
-        if var_name_out is None:
-            var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace(f"{stat.data_id};", "")
-            var_name_out = var_name_out.replace(f"{stat_other.data_id};", "")
+            if var_name_out is None:
+                var_name_out = merge_eval_fun
+                var_name_out = var_name_out.replace(f"{stat.data_id};", "")
+                var_name_out = var_name_out.replace(f"{stat_other.data_id};", "")
+        else:
+            # call merge_eval_fun
+            add_ts = merge_eval_fun(df, var_name_out, col_names[0], col_names[1])
+            # remove unneeded data
+            add_ts = add_ts[var_name_out].squeeze()
+            # add_ts.drop(columns=col_names, inplace=True)
+            # add_ts.dropna(axis=0, how="all", inplace=True)
 
     if add_ts is not None:
-
         var_info = {"ts_type": to_ts_type, "units": var_unit_out}
-
         var_info.update(merge_info_vars)
 
         new["var_info"][var_name_out] = var_info
@@ -424,25 +434,31 @@ def combine_vardata_ungridded(
     if not merge_how in merge_how_opts:
         raise ValueError(invalid_input_err_str("merge_how", merge_how, merge_how_opts))
 
+    # jang: this block seems untested since it does not work with a calculation method
+    # not sure what was intended here
+    # jang needs a calculation method to work only and thinks that supporting that only
+    # should be fine
     elif merge_how == "eval":
         if merge_eval_fun is None:
             raise ValueError("Please specify evaluation function for mode eval")
-        elif not all([x in merge_eval_fun for x in [id1, id2]]):
-            raise ValueError(
-                f"merge_eval_fun needs to include both input "
-                f"datasets;variables (e.g. {id1} + {id2}"
-            )
-        if "=" in merge_eval_fun:
-            spl = merge_eval_fun.split("=")
-            if len(spl) > 2:
-                raise ValueError("merge_eval_fun contains more than 1 equality symbol...")
-            var_name_out = spl[0].strip()
-            merge_eval_fun = spl[1].strip()
+        # makes only sense if merge_eval_fun is not callable
+        if not callable(merge_eval_fun):
+            if not all([x in merge_eval_fun for x in [id1, id2]]):
+                raise ValueError(
+                    f"merge_eval_fun needs to include both input "
+                    f"datasets;variables (e.g. {id1} + {id2}"
+                )
+            if "=" in merge_eval_fun:
+                spl = merge_eval_fun.split("=")
+                if len(spl) > 2:
+                    raise ValueError("merge_eval_fun contains more than 1 equality symbol...")
+                var_name_out = spl[0].strip()
+                merge_eval_fun = spl[1].strip()
 
-        elif var_name_out is None:
-            var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace(f"{data_id1};", "")
-            var_name_out = var_name_out.replace(f"{data_id2};", "")
+            elif var_name_out is None:
+                var_name_out = merge_eval_fun
+                var_name_out = var_name_out.replace(f"{data_id1};", "")
+                var_name_out = var_name_out.replace(f"{data_id2};", "")
 
     merge_info_vars = {"merge_how": merge_how}
     if merge_how == "combine" and var1 == var2:

@@ -538,21 +538,37 @@ class ReadUngridded:
             input_data_ids_vars = []
             aux_info_var = aux_info["aux_requires"][var]
             for aux_id, aux_vars in aux_info_var.items():
-                if aux_id in self.post_compute:
-                    aux_data = self.read_dataset_post(
-                        data_id=aux_id,
-                        vars_to_retrieve=aux_vars,
-                        only_cached=only_cached,
-                        **kwargs,
-                    )
-                    for aux_var in aux_vars:
-                        input_data_ids_vars.append((aux_data, aux_id, aux_var))
-                else:
+                if 'aux_flag' not in aux_info:
+                    if aux_id in self.post_compute:
+                        aux_data = self.read_dataset_post(
+                            data_id=aux_id,
+                            vars_to_retrieve=aux_vars,
+                            only_cached=only_cached,
+                            **kwargs,
+                        )
+                        for aux_var in aux_vars:
+                            input_data_ids_vars.append((aux_data, aux_id, aux_var))
+                    else:
 
+                        # read variables individually, so filter_post is more
+                        # flexible if some post filters are specified for
+                        # individual variables...
+                        for aux_var in aux_vars:
+                            _data = self.read_dataset(
+                                aux_id,
+                                aux_var,
+                                only_cached=only_cached,
+                                filter_post=filter_post,
+                                **kwargs,
+                            )
+                            input_data_ids_vars.append((_data, aux_id, aux_var))
+                else:
+                    pass
+                    # reading by jang
                     # read variables individually, so filter_post is more
                     # flexible if some post filters are specified for
                     # individual variables...
-                    for aux_var in aux_vars:
+                    for aux_var in aux_vars[var]:
                         _data = self.read_dataset(
                             aux_id,
                             aux_var,
