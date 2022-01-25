@@ -15,6 +15,9 @@ filterwarnings = [
     # except deprecation and future warnings ouside this packege
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+    # and not on this list
+    "ignore:.*please install Basemap:UserWarning:geonum.*:",
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:"
 ]
 
 [tool.coverage.run]

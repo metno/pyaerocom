@@ -1780,7 +1780,6 @@ class GriddedData:
             data = self._resample_time_iris(to_ts_type)
         return data
 
-    @ignore_warnings(const.FILTER_IRIS_WARNINGS, Warning, "Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         if not self.has_latlon_dims:
