@@ -538,7 +538,7 @@ class ReadUngridded:
             input_data_ids_vars = []
             aux_info_var = aux_info["aux_requires"][var]
             for aux_id, aux_vars in aux_info_var.items():
-                if 'aux_flag' not in aux_info:
+                if "aux_flag" not in aux_info:
                     if aux_id in self.post_compute:
                         aux_data = self.read_dataset_post(
                             data_id=aux_id,

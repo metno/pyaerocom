@@ -13,12 +13,12 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from pyaerocom.aux_var_helpers import compute_ratpm10pm25
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.aux_var_helpers import compute_ratpm10pm25
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         "day": "daily",
     }
 
-    RATPM10PM25_NAME = 'ratpm10pm25'
+    RATPM10PM25_NAME = "ratpm10pm25"
 
     #: Dictionary specifying values corresponding to invalid measurements
     #: there's no value for NaNs in this data set. It uses an empty string
@@ -168,8 +168,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3": ["conco3"], "vmrno2": ["concno2"],
-                    RATPM10PM25_NAME:["concpm10", "concpm25"]}
+    AUX_REQUIRES = {
+        "vmro3": ["conco3"],
+        "vmrno2": ["concno2"],
+        RATPM10PM25_NAME: ["concpm10", "concpm25"],
+    }
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),

@@ -1,9 +1,10 @@
 import cf_units
 import numpy as np
+import pandas
 
 from pyaerocom import const
 from pyaerocom.variable_helpers import get_variable
-import pandas
+
 
 def calc_ang4487aer(data):
     """Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs
@@ -668,6 +669,7 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
         vmr *= conversion_fac
     return vmr
 
+
 def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
     """
     method to compute the ratio between concpm10 and concpm25
@@ -698,7 +700,7 @@ def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
     """
 
     vars_needed = (concpm10_name, concpm25_name)
-    PM10_UNIT = PM25_UNIT = 'ug m-3'
+    PM10_UNIT = PM25_UNIT = "ug m-3"
 
     if isinstance(data, pandas.core.frame.DataFrame):
         data[outvar_name] = data[concpm10_name] / data[concpm25_name]
@@ -708,8 +710,7 @@ def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
         #     data.var_info[outvar_name] = {}
         # data.var_info[outvar_name]["units"] = rat_units
         return data
-    elif isinstance(data,StationData):
-
+    elif isinstance(data, StationData):
 
         # if not all(x in data.data_flagged for x in vars_needed):
         #     raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
@@ -717,7 +718,6 @@ def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
         from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
         # tst = TsType(data.get_var_ts_type(concpm10_name))
-
         # ival = tst.to_si()
 
         pm10_unit = data.get_unit(concpm10_name)
