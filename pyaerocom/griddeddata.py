@@ -12,7 +12,7 @@ from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
 from pyaerocom import const
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
@@ -689,7 +689,7 @@ class GriddedData:
         )
         return vardef
 
-    @ignore_warnings(True, UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
+    @ignore_warnings(UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
 
