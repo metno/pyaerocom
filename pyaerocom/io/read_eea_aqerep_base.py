@@ -39,7 +39,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.08"
+    __version__ = "0.09"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
@@ -631,6 +631,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             except KeyError:
                 pass
             metadata[meta_key]["var_info"] = station_data["var_info"]
+            metadata[meta_key]["data_revision"] = self.data_revision
             metadata[meta_key]["website"] = self.WEBSITE
             metadata[meta_key]["data_product"] = self.DATA_PRODUCT
             metadata[meta_key]["station_name"] = self._metadata[_meta_key][
