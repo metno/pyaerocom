@@ -1341,3 +1341,39 @@ def _init_data_default_frequencies(coldata, to_ts_types):
 def _start_stop_from_periods(periods):
     start, stop = _get_min_max_year_periods(periods)
     return start_stop(start, stop + 1)
+
+
+def _remove_less_covered(data: ColocatedData, min_yrs: int) -> ColocatedData:
+    stations = data.data.station_name.data
+
+    for s in stations:
+        dates = data.data["station_name" == s].time.data
+        years = np.unique(pd.DatetimeIndex(dates).year)
+
+        max_yrs = _find_longest_seq_yrs(years)
+        if min_yrs > max_yrs:
+            # if s != stations[-1]:
+            data.data = data.data.drop_sel(station_name=s)
+
+    stations = data.data.station_name.data
+    if len(stations) == 0:
+        raise AeroValTrendsError(
+            f"No stations left after removing stations with fewer than {min_yrs} years!"
+        )
+
+    return data
+
+
+def _find_longest_seq_yrs(years: np.ndarray) -> int:
+    years = np.sort(years)
+    max_yrs = 1
+    yrs = 1
+    for i in range(1, len(years)):
+        if years[i] == years[i - 1] + 1:
+            yrs += 1
+        else:
+            yrs = 1
+
+        max_yrs = max(yrs, max_yrs)
+
+    return max_yrs

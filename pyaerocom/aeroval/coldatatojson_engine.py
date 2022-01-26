@@ -16,6 +16,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_sites,
     _process_sites_weekly_ts,
     _process_statistics_timeseries,
+    _remove_less_covered,
     _write_site_data,
     _write_stationdata_json,
     get_heatmap_filename,
@@ -98,6 +99,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         add_trends = self.cfg.statistics_opts.add_trends
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
+        min_yrs = self.cfg.statistics_opts.min_yrs
+
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
         if vert_code == "ModelLevel":
@@ -148,6 +151,9 @@ class ColdataToJsonEngine(ProcessingEngine):
             model_name=model_name,
             var_name_web=var_name_web,
         )
+        if min_yrs > 0:
+            logger.info(f"Removing stations with less than {min_yrs} continuous data")
+            coldata = _remove_less_covered(coldata, min_yrs)
 
         # get region IDs
         (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
