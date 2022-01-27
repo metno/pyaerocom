@@ -1345,11 +1345,17 @@ def _start_stop_from_periods(periods):
 
 def _remove_less_covered(data: ColocatedData, min_yrs: int) -> ColocatedData:
     stations = data.data.station_name.data
+    data = data.copy()
+    for i, s in enumerate(stations):
+        dates = data.data.sel(station_name=s).time.data
 
-    for s in stations:
-        dates = data.data["station_name" == s].time.data
-        years = np.unique(pd.DatetimeIndex(dates).year)
+        obs_data = data.data.sel(station_name=s).data[0, :]
+        non_nan_dates = []
+        for j in range(len(dates)):
+            if not np.isnan(obs_data[j]):
+                non_nan_dates.append(dates[j])
 
+        years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
         max_yrs = _find_longest_seq_yrs(years)
         if min_yrs > max_yrs:
             # if s != stations[-1]:

@@ -18,6 +18,7 @@ from ._conftest_helpers import (
     _create_fake_coldata_3d_hourly,
     _create_fake_coldata_4d,
     _create_fake_coldata_5d,
+    _create_fake_partial_trends_coldata_3d,
     _create_fake_trends_coldata_3d,
     _load_coldata_tm5_aeronet_from_scratch,
     create_fake_stationdata_list,
@@ -261,6 +262,8 @@ def coldata():
         "fake_5d": _create_fake_coldata_5d(),
         "fake_3d_hr": _create_fake_coldata_3d_hourly(),
         "fake_3d_trends": _create_fake_trends_coldata_3d(),
+        "fake_3d_partial_trends_coltime": _create_fake_partial_trends_coldata_3d(True),
+        "fake_3d_partial_trends": _create_fake_partial_trends_coldata_3d(False),
     }
 
 
