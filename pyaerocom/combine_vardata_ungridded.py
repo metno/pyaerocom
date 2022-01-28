@@ -240,7 +240,8 @@ def _combine_2_sites(
             # call merge_eval_fun
             add_ts = merge_eval_fun(df, var_name_out, col_names[0], col_names[1])
             # remove unneeded data
-            add_ts = add_ts[var_name_out].squeeze()
+            add_ts = add_ts[var_name_out]
+
             # add_ts.drop(columns=col_names, inplace=True)
             # add_ts.dropna(axis=0, how="all", inplace=True)
 
