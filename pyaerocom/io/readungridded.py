@@ -532,13 +532,45 @@ class ReadUngridded:
         UngriddedData
             data object
         """
-        aux_info = self.post_compute[data_id]
+        try:
+            aux_info = self.post_compute[data_id]
+        except KeyError:
+            self.post_compute[data_id] = {}
+            self.post_compute[data_id]["data_id"] = data_id
+            # 
+            self.post_compute[data_id]["aux_requires"] = {}
+            self.post_compute[data_id]["aux_merge_how"] = {}
+            self.post_compute[data_id]["aux_units"] = {}
+            self.post_compute[data_id]["aux_funs"] = {}
+            # # to make sure the API reading logic is called later on
+            # (and not e.g. aeroval)
+            self.post_compute[data_id]["aux_flag"] = True
+            #The getattr calls fail without the following line
+            reader = self.get_lowlevel_reader(data_id)
+            for var in vars_to_retrieve:
+                self.post_compute[data_id]["aux_requires"][var] = {}
+                self.post_compute[data_id]["aux_requires"][var][data_id] = {}
+                self.post_compute[data_id]["aux_requires"][var][data_id] = getattr(self._readers[data_id],"AUX_REQUIRES")
+                # Supported are 'combine', 'mean' and 'eval'
+                self.post_compute[data_id]["aux_merge_how"][var] = 'eval'
+                self.post_compute[data_id]["aux_units"][var] = '1'
+
+                self.post_compute[data_id]["aux_funs"][var] = {}
+                self.post_compute[data_id]["aux_funs"][var] = getattr(self._readers[data_id],"AUX_FUNS")[var]
+                aux_info = self.post_compute[data_id]
+
         loaded = []
         for var in vars_to_retrieve:
             input_data_ids_vars = []
             aux_info_var = aux_info["aux_requires"][var]
+
             for aux_id, aux_vars in aux_info_var.items():
                 if "aux_flag" not in aux_info:
+                    # (jang): this is code that was in there from before
+                    # not sure if that is still needed, since I could not find any line that
+                    # actually sets self.post_compute the way it's needed.
+                    # But let's make sure for now that it is still there
+                    # Might be some leftover from the removed aerocom-evaluation
                     if aux_id in self.post_compute:
                         aux_data = self.read_dataset_post(
                             data_id=aux_id,
@@ -549,7 +581,6 @@ class ReadUngridded:
                         for aux_var in aux_vars:
                             input_data_ids_vars.append((aux_data, aux_id, aux_var))
                     else:
-
                         # read variables individually, so filter_post is more
                         # flexible if some post filters are specified for
                         # individual variables...
@@ -563,8 +594,7 @@ class ReadUngridded:
                             )
                             input_data_ids_vars.append((_data, aux_id, aux_var))
                 else:
-                    pass
-                    # reading by jang
+                    # API based computed variable reading
                     # read variables individually, so filter_post is more
                     # flexible if some post filters are specified for
                     # individual variables...
@@ -669,7 +699,8 @@ class ReadUngridded:
 
         data = UngriddedData()
         for ds in data_ids:
-            if ds in self.post_compute:
+            # if ds in self.post_compute:
+            if True:
                 data.append(
                     self.read_dataset_post(
                         ds,
