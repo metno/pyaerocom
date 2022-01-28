@@ -62,7 +62,7 @@ GLOBAL_CONFIG = dict(
     harmonise_units=True,
     regions_how="country",
     annual_stats_constrained=False,
-    weighted_stats=True,
+    weighted_stats=False,
     # This is just the order at which the different species will be shown in the web interface
     # Species that are not evaluated can still be in this list. The web interface will not show them if they are not evaluated
     var_order_menu=[
@@ -168,6 +168,7 @@ OBS_CONFIG = {}
 
 # EEA observatio
 OBS_CONFIG["EEA"] = dict(
+    #obs_id="EEAAQeRep.v2",
     obs_id="EEAAQeRep.NRT",
     obs_vars=["concno2"],
     web_interface_name="EEA-rural",

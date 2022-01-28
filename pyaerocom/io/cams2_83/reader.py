@@ -31,7 +31,9 @@ AEROCOM_NAMES = dict(
 )
 
 
+
 DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +44,7 @@ def __model_path(
     if not isinstance(name, ModelName):
         name = ModelName[name]
     if isinstance(date, str):
+
         date = datetime.strptime(date, "%Y%m%d").date()
     if isinstance(date, datetime):
         date = date.date()
@@ -83,6 +86,7 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     for var_name in ds.data_vars:
         ds[var_name].attrs["forecast_day"] = day
     return ds
+
 
 
 def fix_coord(ds: xr.Dataset) -> xr.Dataset:
@@ -241,6 +245,7 @@ class ReadCAMS2_83:
         self._filedata = None
 
     @property
+
     def forecast_day(self) -> int:
         if self._forecast_day is None:
             raise ValueError("forecast_day is not set")
@@ -254,6 +259,7 @@ class ReadCAMS2_83:
 
     @staticmethod
     def has_var(var_name):
+
         """Check if variable is supported
 
         Parameters
