@@ -682,10 +682,8 @@ def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
 
     Parameters
     ----------
-    data : StationData
-        input data containing concentration in precipitation variable and
-        precipitation variable. Both are needed to be sampled at the same
-        time and both arrays must have the same lengths.
+    data : pandas.core.frame.DataFrame
+        input data DataFrame with concpm10 and concpm25 data
     outvar_name : str
         name of output variable
     concpm10_name : str
@@ -695,54 +693,15 @@ def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
 
     Returns
     -------
-    numpy.ndarray
-        array with wet deposition values
+    pandas.core.frame.DataFrame
+        DataFrame with one variable added
     """
 
     vars_needed = (concpm10_name, concpm25_name)
-    PM10_UNIT = PM25_UNIT = "ug m-3"
 
     if isinstance(data, pandas.core.frame.DataFrame):
+        # this is used if the variable calculation is done via the API
         data[outvar_name] = data[concpm10_name] / data[concpm25_name]
-        # rat_units = "1"
-        #
-        # if not outvar_name in data.var_info:
-        #     data.var_info[outvar_name] = {}
-        # data.var_info[outvar_name]["units"] = rat_units
         return data
-    elif isinstance(data, StationData):
-
-        # if not all(x in data.data_flagged for x in vars_needed):
-        #     raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
-        from pyaerocom import TsType
-        from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
-
-        # tst = TsType(data.get_var_ts_type(concpm10_name))
-        # ival = tst.to_si()
-
-        pm10_unit = data.get_unit(concpm10_name)
-        pm10_data = data[concpm10_name]
-        if not pm10_unit.endswith(PM10_UNIT):
-            raise NotImplementedError(f"Can only handle concprcp unit ending with {PM10_UNIT}")
-        # pm10_flags = data.data_flagged[concpm10_name]
-
-        pm25_unit = data.get_unit(concpm25_name)
-        if not pm25_unit.endswith(PM10_UNIT):
-            raise NotImplementedError(f"Can only handle concprcp unit ending with {PM25_UNIT}")
-        pm25_data = data[concpm25_name]
-        # pm25_flags = data.data_flagged[concpm25_name]
-
-        rat_data = pm10_data / pm25_data
-        rat_units = "1"
-
-        if not outvar_name in data.var_info:
-            data.var_info[outvar_name] = {}
-        data.var_info[outvar_name]["units"] = rat_units
-
-        # set flags for ratpm10pm25
-        # rat_flags = np.zeros(len(rat_data)).astype(bool)
-        # rat_flags[pm10_flags] = True
-        # rat_flags[pm25_flags] = True
-        # data.data_flagged[outvar_name] = rat_flags
-
-    return rat_data
+    else:
+        raise NotImplementedError(f"{__name__}: Can only handle inputdata of type pandas.core.frame.DataFrame")
