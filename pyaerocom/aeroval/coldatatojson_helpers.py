@@ -4,6 +4,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from datetime import datetime
+from distutils.log import debug
 
 import numpy as np
 import pandas as pd
@@ -1344,25 +1345,45 @@ def _start_stop_from_periods(periods):
 
 
 def _remove_less_covered(data: ColocatedData, min_yrs: int) -> ColocatedData:
-    stations = data.data.station_name.data
+    freq_data = _init_data_default_frequencies(data, ["yearly"])
+
+    comp_data = data.resample_time("yearly", settings_from_meta=True, inplace=False)
+    stations = comp_data.data.station_name.data
     data = data.copy()
     for i, s in enumerate(stations):
-        dates = data.data.sel(station_name=s).time.data
+        allowed_dates = np.unique(
+            pd.DatetimeIndex(comp_data.data.sel(station_name=s).time.data).year
+        )
+        yearly_obs = comp_data.data.sel(station_name=s)
+        yearly_obs_data = comp_data.data.sel(station_name=s).data[0, :]
 
+        obs_dates = data.data.sel(station_name=s).time.data
         obs_data = data.data.sel(station_name=s).data[0, :]
         non_nan_dates = []
-        for j in range(len(dates)):
-            if not np.isnan(obs_data[j]):
-                non_nan_dates.append(dates[j])
+        debug = []
+
+        yearly_obs_years = pd.DatetimeIndex(yearly_obs.time.data).year
+        assert len(yearly_obs_data) == len(yearly_obs_years)
+
+        for j in range(len(obs_dates)):
+            y = pd.DatetimeIndex([obs_dates[j]]).year[0]
+            if not np.isnan(yearly_obs_data[np.where(yearly_obs_years == y)]):
+                debug.append([obs_data[j], obs_dates[j]])
+                if not np.isnan(obs_data[j]):
+                    non_nan_dates.append(obs_dates[j])
 
         years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
         max_yrs = _find_longest_seq_yrs(years)
+
         if min_yrs > max_yrs:
-            # if s != stations[-1]:
+            print(f"Dropping {s}")
+            logging.info(f"Dropping {s}")
             data.data = data.data.drop_sel(station_name=s)
 
-    stations = data.data.station_name.data
-    if len(stations) == 0:
+    new_stations = data.data.station_name.data
+
+    print(f"Removed {len(stations)-len(new_stations)} stations")
+    if len(new_stations) == 0:
         raise AeroValTrendsError(
             f"No stations left after removing stations with fewer than {min_yrs} years!"
         )

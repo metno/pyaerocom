@@ -152,7 +152,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             var_name_web=var_name_web,
         )
         if min_yrs > 0:
-            logger.info(f"Removing stations with less than {min_yrs} continuous data")
+            logger.info(f"Removing stations with less than {min_yrs} years of continuous data")
             coldata = _remove_less_covered(coldata, min_yrs)
 
         # get region IDs
