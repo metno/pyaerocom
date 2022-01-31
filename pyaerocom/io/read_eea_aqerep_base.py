@@ -39,7 +39,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.09"
+    __version__ = "0.10"
+
+    #: class supports API based calculated variables
+    #: ratpm10pm25 at the time of this writing
+    SUPPORTS_API_BASED_AUX_FUNS = True
 
     #: Column delimiter
     FILE_COL_DELIM = ","

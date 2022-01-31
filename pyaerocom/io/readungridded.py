@@ -699,8 +699,11 @@ class ReadUngridded:
 
         data = UngriddedData()
         for ds in data_ids:
-            # if ds in self.post_compute:
-            if True:
+            # in principle the following line should work, but for some reason
+            # accessing self._readers[ds] results in a KeyError
+            # if ds in self.post_compute or self._readers[ds].SUPPORTS_API_BASED_AUX_FUNS:
+            reader = self.get_lowlevel_reader(ds)
+            if ds in self.post_compute or reader.SUPPORTS_API_BASED_AUX_FUNS:
                 data.append(
                     self.read_dataset_post(
                         ds,
@@ -719,6 +722,7 @@ class ReadUngridded:
                         only_cached=only_cached,
                         filter_post=filter_post,
                         **kwargs,
+
                     )
                 )
 

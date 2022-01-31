@@ -52,6 +52,13 @@ class ReadUngriddedBase(abc.ABC):
 
     _FILEMASK = "*.*"
 
+    # reader supports API based computed variables
+    # so far only the class ReadEEAAQEREPBase supports that
+    # The difference is that AUX_FUNS can be used within the obs network reader only
+    # or also outside
+    # Might need an extension to a variable based parameter later on
+    SUPPORTS_API_BASED_AUX_FUNS = False
+
     def __str__(self):
         return (
             f"Dataset name: {self.data_id}\n"
