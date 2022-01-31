@@ -35,7 +35,8 @@ from CAMS2_83_Processer import CAMS2_83_Processer
 
 app = typer.Typer()
 
-DEFAULT_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
+DEFAULT_MODEL_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
+DEFAULT_OBS_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/obs")
 
 state = {"verbose": False}
 
@@ -57,13 +58,14 @@ def make_model_entry(
     start_date: datetime,
     end_date: datetime,
     leap: str,
-    path: str,
+    model_path: str,
+    obs_path: str,
     model: ModelName,
 ) -> dict:
 
     return dict(
         model_id=f"CAMS2-83.{model.upper()}.day{leap}",
-        model_data_dir=path,
+        model_data_dir=model_path,
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
             cams2_83_daterange=[start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d")],
@@ -75,7 +77,8 @@ def make_config(
     start_date: datetime,
     end_date: datetime,
     leap: int,
-    path: str,
+    model_path: str,
+    obs_path: str,
     data_path: str,
     coldata_path: str,
     models: List[ModelName],
@@ -98,7 +101,8 @@ def make_config(
             start_date,
             end_date,
             leap,
-            path,
+            model_path,
+            obs_path,
             model,
         )
 
@@ -153,11 +157,17 @@ def main(
         max=3,
         help="Which forecast day to use",
     ),
-    path: str = typer.Option(
-        DEFAULT_PATH,
+    model_path: str = typer.Option(
+        DEFAULT_MODEL_PATH,
         exists=True,
         readable=True,
         help="Path where the model data is found",
+    ),
+    obs_path: str = typer.Option(
+        DEFAULT_OBS_PATH,
+        exists=True,
+        readable=True,
+        help="Path where the obs data is found",
     ),
     data_path: str = typer.Option(
         "../../data",
@@ -201,7 +211,8 @@ def main(
         start_date,
         end_date,
         leap,
-        path,
+        model_path,
+        obs_path,
         data_path,
         coldata_path,
         model,
