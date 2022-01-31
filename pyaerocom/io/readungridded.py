@@ -537,7 +537,7 @@ class ReadUngridded:
         except KeyError:
             self.post_compute[data_id] = {}
             self.post_compute[data_id]["data_id"] = data_id
-            # 
+            #
             self.post_compute[data_id]["aux_requires"] = {}
             self.post_compute[data_id]["aux_merge_how"] = {}
             self.post_compute[data_id]["aux_units"] = {}
@@ -545,18 +545,22 @@ class ReadUngridded:
             # # to make sure the API reading logic is called later on
             # (and not e.g. aeroval)
             self.post_compute[data_id]["aux_flag"] = True
-            #The getattr calls fail without the following line
+            # The getattr calls fail without the following line
             reader = self.get_lowlevel_reader(data_id)
             for var in vars_to_retrieve:
                 self.post_compute[data_id]["aux_requires"][var] = {}
                 self.post_compute[data_id]["aux_requires"][var][data_id] = {}
-                self.post_compute[data_id]["aux_requires"][var][data_id] = getattr(self._readers[data_id],"AUX_REQUIRES")
+                self.post_compute[data_id]["aux_requires"][var][data_id] = getattr(
+                    self._readers[data_id], "AUX_REQUIRES"
+                )
                 # Supported are 'combine', 'mean' and 'eval'
-                self.post_compute[data_id]["aux_merge_how"][var] = 'eval'
-                self.post_compute[data_id]["aux_units"][var] = '1'
+                self.post_compute[data_id]["aux_merge_how"][var] = "eval"
+                self.post_compute[data_id]["aux_units"][var] = "1"
 
                 self.post_compute[data_id]["aux_funs"][var] = {}
-                self.post_compute[data_id]["aux_funs"][var] = getattr(self._readers[data_id],"AUX_FUNS")[var]
+                self.post_compute[data_id]["aux_funs"][var] = getattr(
+                    self._readers[data_id], "AUX_FUNS"
+                )[var]
                 aux_info = self.post_compute[data_id]
 
         loaded = []
@@ -722,7 +726,6 @@ class ReadUngridded:
                         only_cached=only_cached,
                         filter_post=filter_post,
                         **kwargs,
-
                     )
                 )
 
