@@ -126,10 +126,16 @@ def make_config(
     return CFG
 
 
-def runner(cfg):
+def runner(
+    cfg: dict,
+    cache: str | Path | None,
+):
     if state["verbose"]:
         typer.echo("Running the evaluation for the config")
         typer.echo(cfg)
+
+    if not cache is None:
+        const.CACHEDIR = cache
 
     stp = EvalSetup(**CFG)
     cams2_83_ana = CAMS2_83_Processer(stp)
@@ -196,6 +202,10 @@ def main(
         None,
         help="Experiment name. If none are given, the name from the default config is used",
     ),
+    cache: str = typer.Option(
+        None,
+        help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
+    ),
     dry_run: bool = typer.Option(
         False,
         help="Will only make and print the config without running the evaluation",
@@ -221,7 +231,7 @@ def main(
     )
 
     if not dry_run:
-        runner(cfg)
+        runner(cfg, cache)
     else:
         typer.echo(cfg)
 
