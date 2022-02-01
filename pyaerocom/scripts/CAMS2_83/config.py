@@ -3,9 +3,6 @@
 ##################################################
 import os
 
-import pandas as pd
-
-from pyaerocom.io import cams2_83
 from pyaerocom.io.cams2_83.models import ModelName
 
 GLOBAL_CONFIG = dict(

@@ -1,4 +1,5 @@
-import importlib.util
+from __future__ import annotations
+
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -6,8 +7,7 @@ from typing import List
 
 import typer
 
-from pyaerocom import const
-from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.scripts.CAMS2_83.config import CFG
 
@@ -56,7 +56,7 @@ def make_period(
 def make_model_entry(
     start_date: datetime,
     end_date: datetime,
-    leap: str,
+    leap: int,
     path: str,
     model: ModelName,
 ) -> dict:
