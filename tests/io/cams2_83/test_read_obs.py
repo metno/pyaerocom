@@ -8,6 +8,7 @@ import pytest
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH, ReadCAMS2_83
 from pyaerocom.io.cams2_83.read_obs import obs_paths as find_obs_paths
 from pyaerocom.io.readungridded import ReadUngridded
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 
 TEST_DATE = datetime(2021, 12, 1)
@@ -28,10 +29,9 @@ def test_obs_paths(obs_paths: list[Path]):
         assert path.exists()
 
 
-@pytest.mark.xfail(reason="not implemented")
-def test_read_obs():
+def test_init():
     data = ReadCAMS2_83()
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, ReadUngriddedBase)
 
 
 @pytest.mark.xfail(reason="not implemented")

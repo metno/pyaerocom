@@ -73,6 +73,9 @@ class ReadCAMS2_83(ReadUngriddedBase):
 
         return UngriddedData.from_station_data(list(self.__reader(vars_to_retrieve, files)))
 
+    def read_file(self, filename, vars_to_retrieve=None):
+        return self.read(vars_to_retrieve, [filename])
+
     @classmethod
     def __reader(cls, vars_to_retrieve: list[str], files: list[str | Path]) -> Iterator[dict]:
         for path in files:
