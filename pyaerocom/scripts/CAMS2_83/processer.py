@@ -48,7 +48,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         model_list = self.cfg.model_cfg.keylist(model_name)
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
 
-        const.print_log.info("Start processing")
+        logger.info("Start processing")
 
         if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:

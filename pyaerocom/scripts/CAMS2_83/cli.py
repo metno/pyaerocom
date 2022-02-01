@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
 import typer
 
+from pyaerocom import change_verbosity
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.io.cams2_83.models import ModelName
-from pyaerocom.scripts.CAMS2_83.config import CFG
-from pyaerocom.scripts.CAMS2_83.processer import CAMS2_83_Processer
+from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
+
+from .config import CFG
+from .processer import CAMS2_83_Processer
 
 """
 TODO:
@@ -21,10 +25,7 @@ TODO:
 
 
 app = typer.Typer(add_completion=False)
-
-DEFAULT_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
-
-state = {"verbose": False}
+logger = logging.getLogger(__name__)
 
 
 def make_period(
@@ -44,16 +45,16 @@ def make_model_entry(
     start_date: datetime,
     end_date: datetime,
     leap: int,
-    path: str,
+    path: Path,
     model: ModelName,
 ) -> dict:
 
     return dict(
         model_id=f"CAMS2-83.{model.upper()}.day{leap}",
-        model_data_dir=path,
+        model_data_dir=str(path.absolute()),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
-            cams2_83_daterange=[start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d")],
+            daterange=(f"{start_date:%Y%m%d}", f"{end_date:%Y%m%d}"),
         ),
     )
 
@@ -62,75 +63,56 @@ def make_config(
     start_date: datetime,
     end_date: datetime,
     leap: int,
-    path: str,
-    data_path: str,
-    coldata_path: str,
-    models: List[ModelName],
+    path: Path,
+    data_path: Path,
+    coldata_path: Path,
+    models: list[ModelName],
     id: str | None,
     name: str | None,
 ) -> dict:
 
-    if state["verbose"]:
-        typer.echo("Making the configuration")
+    logger.info("Making the configuration")
 
     cfg = CFG
 
-    model_cfg = {}
+    if not models:
+        models = list(ModelName)
 
-    if models == []:
-        models = [m for m in ModelName]
+    cfg["model_cfg"] = {
+        f"CAMS2-83-{model}": make_model_entry(start_date, end_date, leap, path, model)
+        for model in models
+    }
 
-    for model in models:
-        model_cfg[f"CAMS2-83-{model}"] = make_model_entry(
-            start_date,
-            end_date,
-            leap,
-            path,
-            model,
-        )
+    cfg["periods"] = [make_period(start_date, end_date)]
 
-    cfg["model_cfg"] = model_cfg
+    cfg["json_basedir"] = str(data_path.absolute())
+    cfg["coldata_basedir"] = str(coldata_path.absolute())
 
-    cfg["periods"] = [
-        make_period(
-            start_date,
-            end_date,
-        )
-    ]
-
-    cfg["json_basedir"] = data_path
-    cfg["coldata_basedir"] = coldata_path
-
-    if not id is None:
+    if id is not None:
         cfg["exp_id"] = id
-    if not id is None:
+    if name is not None:
         cfg["exp_name"] = name
 
     return CFG
 
 
 def runner(cfg):
-    if state["verbose"]:
-        typer.echo("Running the evaluation for the config")
-        typer.echo(cfg)
+    logger.info(f"Running the evaluation for the config\n{cfg}")
 
     stp = EvalSetup(**CFG)
-    cams2_83_ana = CAMS2_83_Processer(stp)
-    cams2_83_ana.run()
-
-    # ana = ExperimentProcessor(stp)
-    # res = ana.run()
+    ana = CAMS2_83_Processer(stp)
+    ana.run()
 
 
 @app.command()
 def main(
     start_date: datetime = typer.Argument(
-        ...,
+        f"{datetime.today():%F}",
         formats=["%Y-%m-%d", "%Y%m%d"],
         help="Start date for the evaluation",
     ),
     end_date: datetime = typer.Argument(
-        ...,
+        f"{datetime.today():%F}",
         formats=["%Y-%m-%d", "%Y%m%d"],
         help="End date for the evaluation",
     ),
@@ -141,7 +123,7 @@ def main(
         help="Which forecast day to use",
     ),
     path: Path = typer.Option(
-        DEFAULT_PATH,
+        DATA_FOLDER_PATH,
         exists=True,
         readable=True,
         help="Path where the model data is found",
@@ -176,15 +158,14 @@ def main(
     dry_run: bool = typer.Option(
         False,
         "--dry-run",
+        "-n",
         help="Will only make and print the config without running the evaluation",
     ),
-    verbose: bool = typer.Option(
-        False,
-        "--verbose",
-    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
 
-    state["verbose"] = verbose
+    if verbose:
+        change_verbosity(logging.INFO)
 
     cfg = make_config(
         start_date,
@@ -202,7 +183,3 @@ def main(
         runner(cfg)
     else:
         typer.echo(cfg)
-
-
-if __name__ == "__main__":
-    app()
