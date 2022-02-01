@@ -1,10 +1,13 @@
 import fnmatch
+import logging
 import os
 import re
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.exceptions import DataSearchError
+
+logger = logging.getLogger(__name__)
 
 
 class AerocomBrowser(BrowseDict):
@@ -152,7 +155,7 @@ class AerocomBrowser(BrowseDict):
     @property
     def ids_found(self):
         """All data IDs that were found"""
-        return list(self.keys())
+        return list(self)
 
     def find_data_dir(self, name_or_pattern, ignorecase=True):
         """Find match of input name or pattern in Aerocom database
@@ -206,36 +209,3 @@ class AerocomBrowser(BrowseDict):
         return self._browse(
             name_or_pattern, ignorecase=ignorecase, return_if_match=False
         )  # returns list
-
-
-if __name__ == "__main__":
-    browser = AerocomBrowser()
-    dd = browser.find_data_dir("TM5_AP3-CTRL2016*")
-    ea = browser.find_data_dir("Earli*")
-    ea1 = browser.find_matches("Earlinet")
-
-    print(ea)
-    print(ea1)
-# =============================================================================
-#     try:
-#         data_dir = browser.find_data_dir('*Cam5.3-Oslo*')
-#     except DataSearchError as e:
-#         print(repr(e))
-#
-#
-#
-#     matches = browser.find_matches('*Cam5.3-Oslo*')
-#
-#     for match in matches:
-#         print(f'{match}: {browser[match]}')
-#
-#     data_dir_earlinet = browser.find_data_dir('EARLIN*')
-#
-#     data_dir_earlinet = browser.find_data_dir('EARLIN*')
-#
-#     browser.find_data_dir('Earlinet')
-#
-#
-#
-#
-# =============================================================================

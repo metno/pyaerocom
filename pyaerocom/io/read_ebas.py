@@ -1,26 +1,6 @@
-# Copyright (C) 2018 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jonasg@met.no
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
 import fnmatch
 import os
 import re
-from collections import OrderedDict as od
 from warnings import catch_warnings, filterwarnings
 
 import numpy as np
@@ -29,6 +9,8 @@ from tqdm import tqdm
 with catch_warnings():
     filterwarnings("ignore")
     from geonum.atmosphere import T0_STD, p0
+
+import logging
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -62,6 +44,8 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEbasOptions(BrowseDict):
@@ -378,7 +362,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def FILE_REQUEST_OPTS(self):
         """List of options for file retrieval"""
-        return list(EbasSQLRequest().keys())
+        return list(EbasSQLRequest())
 
     @property
     def _FILEMASK(self):
@@ -485,15 +469,13 @@ class ReadEbas(ReadUngriddedBase):
             elif name in all_stats:
                 stats.append(name)
             else:
-                const.print_log.warning(
-                    f"Ignoring station_names input {name}. No match could be found"
-                )
+                logger.warning(f"Ignoring station_names input {name}. No match could be found")
 
         if not bool(stats):
             raise FileNotFoundError(
                 f"No EBAS data files could be found for stations {stats_or_patterns}"
             )
-        return list(dict.fromkeys(stats).keys())
+        return list(set(stats))
 
     def _precheck_vars_to_retrieve(self, vars_to_retrieve):
         """
@@ -565,7 +547,7 @@ class ReadEbas(ReadUngriddedBase):
         db = self.file_index
         files_vars = {}
         files_aux_req = {}
-        const.logger.info(f"Retrieving EBAS files for variables\n{vars_to_retrieve}")
+        logger.info(f"Retrieving EBAS files for variables\n{vars_to_retrieve}")
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:
@@ -584,7 +566,7 @@ class ReadEbas(ReadUngriddedBase):
                 paths = []
                 for file in filenames:
                     if file in self.IGNORE_FILES:
-                        const.logger.info(f"Ignoring flagged file {file}")
+                        logger.info(f"Ignoring flagged file {file}")
                         continue
                     paths.append(os.path.join(filedir, file))
 
@@ -703,7 +685,7 @@ class ReadEbas(ReadUngriddedBase):
                 for key in self.IGNORE_COLS_CONTAIN:
                     if key in col_info:
                         ok = False
-                        const.logger.warning(f"\nignore column {col_info}")
+                        logger.warning(f"\nignore column {col_info}")
                         break
                 if ok:
                     col_matches.append(colnum)
@@ -898,7 +880,7 @@ class ReadEbas(ReadUngriddedBase):
             msg += f"\nFilename: {file.file_name}"
             msg += add_msg
             msg += "\n\nTHIS FILE WILL BE SKIPPED\n"
-            const.print_log.warning(msg)
+            logger.warning(msg)
             raise ValueError("failed to identify unique data column")
 
         return result_col[0]
@@ -1000,7 +982,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not "wavelength" in colinfo:
-                const.logger.warning(
+                logger.warning(
                     f"Ignoring column {colnum}\n{colinfo}\nVar {var_info.var_name}: "
                     f"column misses wavelength specification!"
                 )
@@ -1034,7 +1016,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not "wavelength" in colinfo:
-                const.logger.warning(
+                logger.warning(
                     f"Ignoring column {colnum} ({colinfo}) in EBAS file for reading var {var_info}: "
                     f"column misses wavelength specification"
                 )
@@ -1192,7 +1174,7 @@ class ReadEbas(ReadUngriddedBase):
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
-                const.logger.warning(
+                logger.warning(
                     f"Variable {var} (EBAS name(s): {ebas_var_info.component}) is missing "
                     f"in file {os.path.basename(file.file)} (start: {file.base_date})"
                 )
@@ -1352,7 +1334,7 @@ class ReadEbas(ReadUngriddedBase):
             if opts.freq_from_start_stop_meas:
                 tst = self._check_correct_freq(file, freq_ebas)
                 if tst != freq_ebas:
-                    const.logger.info(
+                    logger.info(
                         f"Updating ts_type from {freq_ebas} (EBAS resolution_code) "
                         f"to {tst} (derived from stop_meas-start_meas)"
                     )
@@ -1426,7 +1408,7 @@ class ReadEbas(ReadUngriddedBase):
         if TsType(freq_ebas).check_match_total_seconds(most_common_dt):
             return freq_ebas
 
-        const.logger.warning(
+        logger.warning(
             f"Detected wrong frequency {freq_ebas}. Trying to infer the correct frequency..."
         )
         try:
@@ -1739,7 +1721,7 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
-        const.print_log.info(f"Reading EBAS data from {self.file_dir}")
+        logger.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
         for i in tqdm(range(num_files)):
             _file = files[i]
@@ -1760,8 +1742,8 @@ class ReadEbas(ReadUngriddedBase):
                 continue
             except Exception as e:
                 self.files_failed.append(_file)
-                const.print_log.warning(
-                    "Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
+                logger.warning(
+                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
 
@@ -1769,21 +1751,21 @@ class ReadEbas(ReadUngriddedBase):
             # the location in the data set is time step dependent!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            metadata[meta_key] = od()
+            metadata[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta(add_none_vals=True))
 
             if "station_name_orig" in station_data:
                 metadata[meta_key]["station_name_orig"] = station_data["station_name_orig"]
 
             metadata[meta_key]["data_revision"] = self.data_revision
-            metadata[meta_key]["var_info"] = od()
+            metadata[meta_key]["var_info"] = {}
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = {}
 
             num_times = len(station_data["dtime"])
 
-            contains_vars = list(station_data.var_info.keys())
+            contains_vars = list(station_data.var_info)
             # access array containing time stamps
             # TODO: check using index instead (even though not a problem here
             # since all Aerocom data files are of type timeseries)
@@ -1835,7 +1817,7 @@ class ReadEbas(ReadUngriddedBase):
                     data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
 
                 var_info = station_data["var_info"][var]
-                metadata[meta_key]["var_info"][var] = od()
+                metadata[meta_key]["var_info"][var] = {}
                 metadata[meta_key]["var_info"][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
@@ -1848,15 +1830,5 @@ class ReadEbas(ReadUngriddedBase):
 
         num_failed = len(self.files_failed)
         if num_failed > 0:
-            const.print_log.warning(f"{num_failed} out of {num_files} could not be read...")
+            logger.warning(f"{num_failed} out of {num_files} could not be read...")
         return data_obj
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-    reader = pya.io.ReadEbas()
-    data = reader.read("prmm")

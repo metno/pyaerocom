@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+import logging
 import os
-from collections import OrderedDict as od
+import warnings
 from pathlib import Path
 
 import iris
@@ -11,7 +11,7 @@ from cf_units import Unit
 from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     CoordinateError,
@@ -49,6 +49,8 @@ from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
+
+logger = logging.getLogger(__name__)
 
 
 class GriddedData:
@@ -116,7 +118,7 @@ class GriddedData:
 
     SUPPORTED_VERT_SCHEMES = ["mean", "max", "min", "surface", "altitude", "profile"]
 
-    _META_ADD = od(
+    _META_ADD = dict(
         from_files=[],
         data_id="undefined",
         var_name_read="undefined",
@@ -200,7 +202,7 @@ class GriddedData:
         Temporal resolution of data
         """
         if self.metadata["ts_type"] == "undefined":
-            const.print_log.warning("ts_type is not set in GriddedData, trying to infer.")
+            logger.warning("ts_type is not set in GriddedData, trying to infer.")
             self.infer_ts_type()
 
         return self.metadata["ts_type"]
@@ -240,8 +242,11 @@ class GriddedData:
 
     @property
     def suppl_info(self):
-        w = DeprecationWarning("Outdated attribute suppl_info. Please use metadata instead")
-        const.print_log.warning(w)
+        warnings.warn(
+            "Outdated attribute suppl_info. Please use metadata instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.metadata
 
     @property
@@ -467,7 +472,11 @@ class GriddedData:
     @property
     def name(self):
         """ID of model to which data belongs"""
-        logger.warning("Deprecated attribute name, please use data_id instead")
+        warnings.warn(
+            "Deprecated attribute name, please use data_id instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.metadata["data_id"]
 
     @property
@@ -666,7 +675,7 @@ class GriddedData:
             if self.var_name in varcol:
                 varcol.delete_variable(self.var_name)
         const.VARS.add_var(vardef)
-        const.print_log.warning(
+        logger.warning(
             f"Adding variable {self.var_name} in pyaerocom.const.VARS. "
             f"since such a  "
             f"variable is not defined in pyaerocom. Minimum and maximum "
@@ -709,9 +718,7 @@ class GriddedData:
             try:
                 self.var_name = var_name
             except ValueError:
-                const.print_log.warning(
-                    f"Could not update var_name, invalid input {var_name} (need str)"
-                )
+                logger.warning(f"Could not update var_name, invalid input {var_name} (need str)")
 
     def _check_invalid_unit_alias(self):
         """Check for units that have been invalidated by iris
@@ -738,9 +745,7 @@ class GriddedData:
 
             from_unit = cube.attributes["invalid_units"]
             to_unit = UALIASES[from_unit]
-            const.print_log.info(
-                f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}"
-            )
+            logger.info(f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}")
             del cube.attributes["invalid_units"]
             cube.units = to_unit
         return cube
@@ -760,7 +765,7 @@ class GriddedData:
                 unit_ok = True
             elif Unit(to_unit).convert(1, current_unit) == 1:
                 self.units = to_unit
-                const.print_log.info(
+                logger.info(
                     f"Updating unit string from {current_unit} to {to_unit} in GriddedData."
                 )
                 unit_ok = True
@@ -768,7 +773,7 @@ class GriddedData:
             pass
 
         if not unit_ok and try_convert_if_wrong and isinstance(to_unit, str):
-            const.print_log.warning(
+            logger.warning(
                 f"Unit {self.units} in GriddedData {self.short_str()} is not "
                 f"AeroCom conform ({to_unit}). Trying to convert ... "
             )
@@ -780,7 +785,7 @@ class GriddedData:
                     self.convert_unit(to_unit)
                     unit_ok = True
                 except Exception as e:
-                    const.print_log.warning(
+                    logger.warning(
                         f"Failed to convert unit from {self.units} to {to_unit}. Reason: {e}"
                     )
 
@@ -813,7 +818,7 @@ class GriddedData:
         mulfac = get_unit_conversion_fac(
             from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
         )
-        const.print_log.info(
+        logger.info(
             f"Succesfully converted unit from {current} to {new_unit} in {self.short_str()}"
         )
 
@@ -898,7 +903,7 @@ class GriddedData:
         if years is None:
             years = self.years_avail()
         if len(years) == 1:
-            const.print_log.info(f"Nothing to split... GriddedData contains only {years[0]}")
+            logger.info(f"Nothing to split... GriddedData contains only {years[0]}")
             yield self
         for year in years:
             start, stop = start_stop_from_year(year)
@@ -1137,7 +1142,7 @@ class GriddedData:
             from time import time
 
             t0 = time()
-            const.print_log.info(
+            logger.info(
                 f"Extracting timeseries data from large array (shape: {self.shape}). "
                 f"This may take a while..."
             )
@@ -1155,7 +1160,7 @@ class GriddedData:
                     coords = self._iris_sample_points_to_coords(sample_points)
                 result = self._to_time_series_xarray(scheme=scheme, add_meta=add_meta, **coords)
             if pinfo:
-                const.print_log.info(
+                logger.info(
                     f"Time series extraction successful. Elapsed time: {time() - t0:.0f} s"
                 )
             return result
@@ -1220,7 +1225,10 @@ class GriddedData:
         for sidx in range(subset.shape[-1]):
 
             data = StationData(
-                latitude=lats[sidx], longitude=lons[sidx], data_id=self.name, ts_type=self.ts_type
+                latitude=lats[sidx],
+                longitude=lons[sidx],
+                data_id=self.data_id,
+                ts_type=self.ts_type,
             )
 
             data.var_info[var] = {"units": self.units}
@@ -1421,7 +1429,7 @@ class GriddedData:
                     "global option INFER_SURFACE_LEVEL in"
                     "pyaerocom.const.GRID_IO is deactivated"
                 )
-            const.print_log.info(
+            logger.info(
                 f"Inferring surface level in GriddedData based on mean value of "
                 f"{self.var_name} data in first and last level since CF coordinate info is "
                 f"missing... The level with the largest mean value will be "
@@ -1708,7 +1716,7 @@ class GriddedData:
         if rs.last_units_preserved:
             data.units = self.units
         else:
-            print_log.info(
+            logger.info(
                 f"Cannot infer unit when aggregating using {how}. Please set "
                 f"unit in returned data object!"
             )
@@ -1796,7 +1804,7 @@ class GriddedData:
         GriddedData
             current instance
         """
-        const.logger.info("Altitude filtering is not applied in GriddedData and will be skipped")
+        logger.info("Altitude filtering is not applied in GriddedData and will be skipped")
         return self
 
     def filter_region(self, region_id, inplace=False, **kwargs):
@@ -2006,8 +2014,10 @@ class GriddedData:
         str
             generated file name based on what is in this object
         """
-        const.print_log.warning(
-            DeprecationWarning("This method is deprecated. Please use aerocom_savename instead")
+        warnings.warn(
+            "This method is deprecated. Please use aerocom_savename instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         from pyaerocom.io import FileConventionRead
 
@@ -2207,12 +2217,12 @@ class GriddedData:
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))
-        print_log.info(f"Interpolating data of shape {self.shape}. This may take a while.")
+        logger.info(f"Interpolating data of shape {self.shape}. This may take a while.")
         try:
             itp_cube = self.grid.interpolate(sample_points, scheme, collapse_scalar)
         except MemoryError:
             raise MemoryError("Interpolation failed since grid of interpolated Cube is too large")
-        print_log.info("Successfully interpolated cube")
+        logger.info("Successfully interpolated cube")
         return GriddedData(itp_cube, **self.metadata)
 
     def regrid(
@@ -2278,7 +2288,7 @@ class GriddedData:
 
         data_rg = self.grid.regrid(other.grid, scheme)
 
-        suppl = od(**self.metadata)
+        suppl = dict(**self.metadata)
         suppl["regridded"] = True
         data_out = GriddedData(data_rg, **suppl)
         return data_out
@@ -2413,7 +2423,7 @@ class GriddedData:
                 try:
                     tstr = datetime2str(self.time_stamps()[time_idx], self.ts_type)
                 except Exception:
-                    print_log.warning(f"Failed to retrieve ts_type in GriddedData {repr(self)}")
+                    logger.warning(f"Failed to retrieve ts_type in GriddedData {repr(self)}")
         else:
             if not self.ndim == 2:
                 raise DataDimensionError(f"Invalid number of dimensions: {self.ndim}. Expected 2.")
@@ -2459,7 +2469,7 @@ class GriddedData:
                     bbox=dict(facecolor="#ffffff", edgecolor="none", alpha=0.65),
                 )
             except Exception as e:
-                print_log.warning(f"Failed to compute / add area weighted mean. Reason: {repr(e)}")
+                logger.warning(f"Failed to compute / add area weighted mean. Reason: {repr(e)}")
 
         return fig
 
@@ -2640,7 +2650,7 @@ class GriddedData:
         """
         for key, val in kwargs.items():
             if key == "var_name" and not isinstance(val, str):
-                const.print_log.warning(
+                logger.warning(
                     f"Skipping assignment of var_name from metadata in GriddedData, "
                     f"since attr. needs to be str and is {val}"
                 )
@@ -2723,7 +2733,7 @@ class GriddedData:
 
     def __contains__(self, val):
         """Check if variable or coordinate matchs input string"""
-        return val is self.name or val in self.coord_names
+        return val is self.data_id or val in self.coord_names
 
     def __dir__(self):
         return self.coord_names + super().__dir__()
@@ -2751,27 +2761,18 @@ class GriddedData:
     @property
     def unit(self):
         """Unit of data"""
-        const.print_log.warning(
-            DeprecationWarning("Attr. unit is deprecated, please use units instead")
+        warnings.warn(
+            "Attr. unit is deprecated, please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
-        const.print_log.warning(
-            DeprecationWarning("Attr. unit is deprecated, please use units instead")
+        warnings.warn(
+            "Attr. unit is deprecated, please use units instead",
+            DeprecationWarning,
+            stacklevel=2,
         )
         self.grid.units = val
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-    pya.initialise_testdata()
-    # print("uses last changes ")
-    data = pya.io.ReadGridded("TM5-met2010_CTRL-TEST").read_var(
-        "od550aer", start=2010, ts_type="daily"
-    )

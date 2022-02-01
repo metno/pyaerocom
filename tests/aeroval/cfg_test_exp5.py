@@ -2,8 +2,7 @@ import os
 
 import numpy as np
 
-from ._outbase import ADD_MODELS_DIR
-from ._outbase import AEROVAL_OUT as BASEOUT
+from ._outbase import ADD_MODELS_DIR, AEROVAL_OUT
 
 START = 2000
 STOP = 2020
@@ -52,8 +51,8 @@ OBS_GROUNDBASED = {
 CFG = dict(
     model_cfg=MODELS,
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=os.path.join(BASEOUT, "data"),
-    coldata_basedir=os.path.join(BASEOUT, "coldata"),
+    json_basedir=os.path.join(AEROVAL_OUT, "data"),
+    coldata_basedir=os.path.join(AEROVAL_OUT, "coldata"),
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

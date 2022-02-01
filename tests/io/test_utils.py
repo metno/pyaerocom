@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 High level I/O utility methods for pyaerocom
 """

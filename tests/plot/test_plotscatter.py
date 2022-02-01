@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import numpy as np
 import pytest
 from matplotlib.axes import Axes
@@ -16,9 +14,9 @@ X, Y = np.arange(100), np.arange(100) * 2
 
 
 @pytest.mark.parametrize(
-    "args,raises",
+    "args",
     [
-        (dict(x_vals=np.ones(10), y_vals=np.ones(10)), does_not_raise_exception()),
+        (dict(x_vals=np.ones(10), y_vals=np.ones(10))),
         (
             dict(
                 x_vals=X,
@@ -42,16 +40,11 @@ X, Y = np.arange(100), np.arange(100) * 2
                 marker="o",
                 color="lime",
                 alpha=0.1,
-            ),
-            does_not_raise_exception(),
+            )
         ),
-        (
-            dict(x_vals=np.arange(-10, 10), y_vals=np.arange(-5, 15), loglog=True),
-            does_not_raise_exception(),
-        ),
+        (dict(x_vals=np.arange(-10, 10), y_vals=np.arange(-5, 15), loglog=True)),
     ],
 )
-def test_plot_scatter_aerocom(args, raises):
-    with raises:
-        val = mod.plot_scatter_aerocom(**args)
-        assert isinstance(val, Axes)
+def test_plot_scatter_aerocom(args):
+    val = mod.plot_scatter_aerocom(**args)
+    assert isinstance(val, Axes)

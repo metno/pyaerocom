@@ -1,12 +1,14 @@
+import logging
 import os
 
 import numpy as np
 
-from pyaerocom import const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
 from pyaerocom.variable_helpers import get_variable
+
+logger = logging.getLogger(__name__)
 
 
 def make_config_template(proj_id: str, exp_id: str) -> EvalSetup:
@@ -144,7 +146,7 @@ def compute_model_average_and_diversity(
     unit_out = get_variable(var_name).units
 
     for mname in models:
-        const.print_log.info(f"Adding {mname} ({var_name})")
+        logger.info(f"Adding {mname} ({var_name})")
 
         mid = cfg.cfg.model_cfg.get_entry(mname)["model_id"]
         if mid == data_id or mname == data_id:
@@ -173,10 +175,10 @@ def compute_model_average_and_diversity(
                 else:
                     raise NotImplementedError("Cannot process ModelLevel fields yet")
             data = data.regrid(dummy)
-            const.print_log.info("Success!")
+            logger.info("Success!")
         except Exception as e:
             models_failed.append(mid)
-            const.print_log.info(f"Failed! Reason: {e}")
+            logger.info(f"Failed! Reason: {e}")
             continue
 
         loaded.append(data.cube.data)
@@ -286,7 +288,7 @@ def compute_model_average_and_diversity(
                 q3arr,
                 dims=dims,
                 var_name=f"{var_name}q3",
-                units=data.unit,
+                units=data.units,
                 ts_type=ts_type,
                 data_id=data_id,
                 from_files=from_files,

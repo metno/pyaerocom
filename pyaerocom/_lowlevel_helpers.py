@@ -11,8 +11,9 @@ from pathlib import Path
 import numpy as np
 import simplejson
 
-from pyaerocom import print_log
 from pyaerocom._warnings_management import ignore_warnings
+
+logger = logging.getLogger(__name__)
 
 
 def round_floats(in_data, precision=5):
@@ -109,7 +110,7 @@ def check_make_json(fp, indent=4):
     if not fp.endswith(".json"):
         raise ValueError("Input filepath must end with .json")
     if not os.path.exists(fp):
-        print_log.info(f"Creating empty json file: {fp}")
+        logger.info(f"Creating empty json file: {fp}")
         write_json({}, fp, indent=indent)
     return fp
 
@@ -298,12 +299,12 @@ class ListOfStrings(FlexList):
 
 
 class DictStrKeysListVals(Validator):
-    def validate(self, val):
+    def validate(self, val: dict):
         if not isinstance(val, dict):
             raise ValueError(f"need dict, got {val}")
-        elif not all([isinstance(x, str) for x in val.keys()]):
+        if any(not isinstance(x, str) for x in val):
             raise ValueError(f"all keys need to be str type in {val}")
-        elif not all([isinstance(x, list) for x in val.values()]):
+        if any(not isinstance(x, list) for x in val.values()):
             raise ValueError(f"all values need to be list type in {val}")
         return val
 
@@ -326,7 +327,9 @@ class Loc(abc.ABC):
         self.assert_exists = assert_exists
         self.auto_create = auto_create
         self.tooltip = "" if tooltip is None else tooltip
-        self.logger = logging.getLogger() if logger is None else logger
+        if logger is None:
+            logger = logging.getLogger(f"{__name__}.{type(self).__qualname__}")
+        self.logger = logger
         self.__set__(self, default)
 
     def __set_name__(self, owner, name):
@@ -410,7 +413,7 @@ class BrowseDict(MutableMapping):
         return _class_name(self)
 
     def keys(self):
-        return list(self.__dict__.keys()) + self.ADD_GLOB
+        return list(self.__dict__) + self.ADD_GLOB
 
     def _get_glob_vals(self):
         return [getattr(self, x) for x in self.ADD_GLOB]
@@ -577,7 +580,7 @@ class ConstrainedContainer(BrowseDict):
         if not key in dir(self):
             if self.CRASH_ON_INVALID:
                 raise ValueError(f"Invalid key {key}")
-            print_log.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
+            logger.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
             return key, val, False
 
         current = getattr(self, key)
@@ -837,27 +840,8 @@ def dict_to_str(dictionary, indent=0, ignore_null=False):
     return s
 
 
-def str_underline(s, indent=0):
+def str_underline(title: str, indent: int = 0):
     """Create underlined string"""
-    s = indent * " " + f"{s}\n"
-    s += indent * " " + f"{len(s) * '-'}"
-    return s
-
-
-if __name__ == "__main__":
-    d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
-
-    d.update(**{"mypy": 55})
-
-    class CDict(ConstrainedContainer):
-        def __init__(self):
-            self.bla = 1
-            self.blub = 2
-            self.option = None
-
-    cd = CDict()
-    print(cd)
-    cd["option"] = 42
-    cd["option"] = {}
-
-    cd.update(**{"mypy": 55})
+    length = indent + len(title)
+    underline = "-" * len(title)
+    return f"{title:>{length}}\n{underline:>{length}}"

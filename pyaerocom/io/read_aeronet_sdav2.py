@@ -1,39 +1,8 @@
-################################################################
-# read_aeronet_sdav2.py
-#
-# read Aeronet SDA V2 data
-#
-# this file is part of the pyaerocom package
-#
-#################################################################
-# Created 20171026 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
-# Copyright (C) 2017 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jan.griesfeller@met.no
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
-
+"""
+read Aeronet SDA V2 data
+"""
 import os
 import re
-from collections import OrderedDict as od
 
 import numpy as np
 import pandas as pd
@@ -84,7 +53,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     # Those, for which no defined name is known were named with a leading
     # underscore (e.g. _eta500lt1 for fine mode fraction at 500nm)
     #: Dictionary that specifies the index for each data column
-    COL_INDEX = od(
+    COL_INDEX = dict(
         date=0,  # Date(dd:mm:yyyy)
         time=1,  # Time(hh:mm:ss),
         julien_day=2,  # Julian_Day
@@ -149,7 +118,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(COL_INDEX.keys())
+    PROVIDES_VARIABLES = list(COL_INDEX)
 
     # This how the beginning of data file looks like
 
@@ -317,14 +286,3 @@ class ReadAeronetSdaV2(ReadAeronetBase):
                     del data_out[var]
 
         return data_out
-
-
-if __name__ == "__main__":
-    read = ReadAeronetSdaV2()
-
-    read.verbosity_level = "debug"
-
-    first_ten = read.read(last_file=10)
-
-    data = read.read_first_file()
-    print(data)

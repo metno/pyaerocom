@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
 """
 This module contains methods to create synthetic data objects for unit testing
-
-Created on Mon May 13 11:24:39 2019
-
-@author: jonasg
 """
 import numpy as np
 

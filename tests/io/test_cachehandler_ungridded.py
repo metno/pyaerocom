@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Mar  3 12:58:34 2020
-
-@author: jonasg
-"""
-
 import os
 
 import pytest
@@ -71,9 +64,3 @@ def test_check_and_load(cache_handler, aeronetsunv3lev2_subset, aeronet_sun_subs
 
     assert isinstance(reloaded, UngriddedData)
     assert reloaded.shape == subset.shape
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Dec  3 14:03:55 2019
-
-@author: hannas
-"""
 import numpy as np
 import pytest
 
@@ -73,8 +67,3 @@ def test_filter_colocateddata():
 #
 #     assert data_coloc.data.sum().values - 111340.31777193633 < 0.001
 # =============================================================================
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

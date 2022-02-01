@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 import re
 
@@ -24,6 +25,8 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
 )
 from pyaerocom.units_helpers import UALIASES
 from pyaerocom.variable_helpers import get_emep_variables
+
+logger = logging.getLogger(__name__)
 
 
 class ReadMscwCtm:
@@ -208,7 +211,7 @@ class ReadMscwCtm:
         if "LF_" in tst:
             return None
 
-        if tst not in list(self.FREQ_CODES.keys()):
+        if tst not in list(self.FREQ_CODES):
             raise ValueError(f"The ts_type {tst} is not supported")
 
         return self.FREQ_CODES[tst]
@@ -442,7 +445,7 @@ class ReadMscwCtm:
             if not os.path.split(fp)[-1] == self.filename:
                 continue
 
-            const.print_log.info(f"Opening {fp}")
+            logger.info(f"Opening {fp}")
             tmp_ds = xr.open_dataset(fp)
 
             ds[yrs[i]] = tmp_ds
@@ -547,7 +550,7 @@ class ReadMscwCtm:
         temp_arrs = []
         req = self.AUX_REQUIRES[var_name_aerocom]
         aux_func = self.AUX_FUNS[var_name_aerocom]
-        const.print_log.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
+        logger.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
         for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
             arr = self._load_var(aux_var, ts_type)
             temp_arrs.append(arr)
@@ -678,14 +681,14 @@ class ReadMscwCtm:
         try:
             filedata = self.filedata
 
-            if len(filedata.keys()) == 1:
-                data = filedata[list(filedata.keys())[0]][emep_var]
+            if len(filedata) == 1:
+                data = filedata[list(filedata)[0]][emep_var]
             else:
                 if ts_type == "hourly":
                     raise ValueError(
                         f"ts_type {ts_type} can not be hourly when using multiple years"
                     )
-                data = xr.concat([filedata[yr][emep_var] for yr in filedata.keys()], dim="time")
+                data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
 
         except KeyError:
             raise VarNotAvailableError(
@@ -729,17 +732,3 @@ class ReadEMEP(ReadMscwCtm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         print("You are using a deprecated name ReadEMEP for class ReadMscwCtm")
-
-
-if __name__ == "__main__":  # pragma: no cover
-
-    EMEP_DIR = "/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_REPORTING/EMEP01_rv4_35_2018_emepCRef2_XtraOut/"
-
-    fname = "Base_month.nc"
-
-    fp = EMEP_DIR + fname
-
-    reader = ReadMscwCtm(data_dir=EMEP_DIR)  # +'Base_month.nc')
-
-    # Read variable that uses AUX_FUNS
-    data = reader.read_var("concno3", ts_type="daily")

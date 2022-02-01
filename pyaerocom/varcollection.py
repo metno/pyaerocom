@@ -1,13 +1,15 @@
 import fnmatch
+import logging
 import os
 from configparser import ConfigParser
 
 from cf_units import Unit
 
-from pyaerocom import logger
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.variable import Variable
 from pyaerocom.variable_helpers import parse_aliases_ini, parse_variables_ini
+
+logger = logging.getLogger(__name__)
 
 
 class VarCollection:
@@ -36,9 +38,7 @@ class VarCollection:
         aliases.ini.
         """
         if self._all_vars is None:
-            all_vars = [k for k in self._cfg_parser.keys()]
-            all_vars.extend(self._vars_added.keys())
-            self._all_vars = all_vars
+            self._all_vars = list(self._cfg_parser) + list(self._vars_added)
         return self._all_vars
 
     @property

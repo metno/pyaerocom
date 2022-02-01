@@ -8,8 +8,9 @@ http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html
 Note
 ----
 UNDER DEVELOPMENT -> NOT READY YET
-
 """
+
+import logging
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -18,6 +19,8 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
@@ -115,7 +118,7 @@ def geopotentialheight2altitude(geopotential_height):
     Computed altitude levels
     """
 
-    const.print_log.warning(
+    logger.warning(
         "Conversion method of geopotential height to "
         "altitude is not yet implemented and returns the "
         "input values. The introduced error is small at "
@@ -330,7 +333,6 @@ class AltitudeAccess:
     ADD_FILE_OPT = {"pres": ["temp"]}
 
     def __init__(self, gridded_data):
-        from pyaerocom import logger
         from pyaerocom.griddeddata import GriddedData
 
         if not isinstance(gridded_data, GriddedData):
@@ -659,67 +661,4 @@ class AltitudeAccess:
 #             elif add_var_data.standard_name == 'geopotential_height':
 #                 self._check_coord_conversion(add_var_data, add_var_data_req,
 #                                              add_var_data_opt)
-# =============================================================================
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    # =============================================================================
-    #     # has pressure field directly
-    #     reader0 = pya.io.ReadGridded('GISS-MATRIX_GLOFIR0p5')
-    #
-    #     d0 = reader0.read_var('ec550aer',
-    #                           vert_which='ModelLevel',
-    #                           start=2008)
-    #
-    #     d0.altitude_access.check_altitude_access()
-    # =============================================================================
-    # d0.reorder_dimensions_tseries()
-    # d0 = d0[0]
-    # subset = d0.sel(latitude=30, longitude=15)
-    # p = d0['air_pressure']
-
-    reader1 = pya.io.ReadGridded("ECHAM6-SALSA_CTRL2016-PD")
-
-    d1 = reader1.read_var("od550aer3d", vert_which="ModelLevel", start=2010)
-
-    aac1 = d1.altitude_access
-    aac1.check_altitude_access()
-# =============================================================================
-#     reader2 = pya.io.ReadGridded('OsloCTM3v1.01')
-#
-#     d2 = reader2.read_var('ec550aer',
-#                           vert_which='ModelLevel',
-#                           start=2010)
-#     d2['lon']
-#     aac2 = d2.altitude_access
-#
-#     subset2 = aac2.extract_1D_subset_from_data()
-#
-#
-#     #print(subset1)
-#     print(subset2)
-# =============================================================================
-
-# =============================================================================
-#     import numpy as np
-#     import pyaerocom as pya
-#
-#     pya.change_verbosity('warning')
-#     c = VerticalCoordinate('pressure')
-#
-#     arr = np.linspace(1013*100, 100*100, 100)
-#     print(arr)
-#
-#     print(c.calc_altitude(p=arr))
-#
-#
-#     r = pya.io.ReadGridded('CAM5.3-Oslo_AP3-CTRL2016-PD')
-#     print(r)
-#     data = r.read_var('ec5503Daer')
-#
-#     acc = AltitudeAccess(data)
-#     acc.find_and_import_auxvars()
-#
-#
 # =============================================================================

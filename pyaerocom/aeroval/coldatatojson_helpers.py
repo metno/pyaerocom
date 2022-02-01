@@ -1,6 +1,7 @@
 """
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
+import logging
 import os
 from datetime import datetime
 
@@ -8,7 +9,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
@@ -26,6 +26,8 @@ from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 def get_heatmap_filename(ts_type):
@@ -313,7 +315,7 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
 
     data_allyears = coldata.data
 
-    yearkeys = list(data_allyears.groupby("time.year").groups.keys())
+    yearkeys = list(data_allyears.groupby("time.year").groups)
 
     if resolution == "seasonal":
         seasons = ["DJF", "MAM", "JJA", "SON"]
@@ -633,7 +635,7 @@ def _get_stat_regions(lats, lons, regions):
 
 def _process_sites(data, regions, regions_how, meta_glob):
 
-    freqs = list(data.keys())
+    freqs = list(data)
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
         regs = countries
@@ -856,7 +858,7 @@ def _process_map_and_scat(
 
                                 except AeroValTrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                    const.logger.warning(msg)
+                                    logger.warning(msg)
 
                     perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
@@ -881,7 +883,7 @@ def _process_map_and_scat(
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
     ts_objs = []
-    freqs = list(data.keys())
+    freqs = list(data)
     check_countries = True if regions_how == "country" else False
     for regid, regname in region_ids.items():
         ts_data = _init_ts_data(freqs)
@@ -895,7 +897,7 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             try:
                 subset = cd.filter_region(regid, inplace=False, check_country_meta=check_countries)
             except DataCoverageError:
-                const.print_log.info(f"no data in {regid} ({freq}) to compute regional timeseries")
+                logger.info(f"no data in {regid} ({freq}) to compute regional timeseries")
                 ts_data[f"{freq}_date"] = jsfreq
                 ts_data[f"{freq}_obs"] = [np.nan] * len(jsfreq)
                 ts_data[f"{freq}_mod"] = [np.nan] * len(jsfreq)
@@ -1135,7 +1137,7 @@ def _process_heatmap_data(
                                         trends_successful = True
                                     except AeroValTrendsError as e:
                                         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                        const.logger.warning(msg)
+                                        logger.warning(msg)
 
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
