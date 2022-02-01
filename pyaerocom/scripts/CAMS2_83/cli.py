@@ -1,31 +1,18 @@
 from __future__ import annotations
 
-import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import typer
 
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.scripts.CAMS2_83.config import CFG
+from pyaerocom.scripts.CAMS2_83.processer import CAMS2_83_Processer
 
-sys.path.append(
-    "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer"
-)
-
-from CAMS2_83_Processer import CAMS2_83_Processer
-
-# spec = importlib.util.spec_from_file_location(
-#     "CAMS2_83_Processer",
-#     "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/CAMS2_83_Processer.py",
-# )
-# CAMS2_83_Processer = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(CAMS2_83_Processer)
-
-# TODO:
 """
+TODO:
     - Add option for species
     - Add option for periodes [Done]
     - Add option for running only som observations/models/species
@@ -33,7 +20,7 @@ from CAMS2_83_Processer import CAMS2_83_Processer
 """
 
 
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 DEFAULT_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
 
@@ -153,21 +140,21 @@ def main(
         max=3,
         help="Which forecast day to use",
     ),
-    path: str = typer.Option(
+    path: Path = typer.Option(
         DEFAULT_PATH,
         exists=True,
         readable=True,
         help="Path where the model data is found",
     ),
-    data_path: str = typer.Option(
-        "../../data",
+    data_path: Path = typer.Option(
+        Path("../../data"),
         exists=True,
         readable=True,
         writable=True,
         help="Path where the results are stored",
     ),
-    coldata_path: str = typer.Option(
-        "../../coldata",
+    coldata_path: Path = typer.Option(
+        Path("../../coldata"),
         exists=True,
         readable=True,
         writable=True,
@@ -178,20 +165,22 @@ def main(
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
-    id: str = typer.Option(
+    id: Optional[str] = typer.Option(
         None,
         help="Experiment name. If none are given, the id from the default config is used",
     ),
-    name: str = typer.Option(
+    name: Optional[str] = typer.Option(
         None,
         help="Experiment name. If none are given, the name from the default config is used",
     ),
     dry_run: bool = typer.Option(
         False,
+        "--dry-run",
         help="Will only make and print the config without running the evaluation",
     ),
     verbose: bool = typer.Option(
         False,
+        "--verbose",
     ),
 ):
 
@@ -215,9 +204,5 @@ def main(
         typer.echo(cfg)
 
 
-def entry():
-    app()
-
-
 if __name__ == "__main__":
-    entry()
+    app()

@@ -1,14 +1,15 @@
-from pyaerocom import const
-from pyaerocom.aeroval._processing_base import HasColocator, HasConfig, ProcessingEngine
-from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
+import logging
+from asyncio.log import logger
 
-from processer_engine import CAMS2_83_Engine
+from pyaerocom import const
+from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
+
+from .engine import CAMS2_83_Engine
+
+logger = logging.getLogger(__name__)
 
 
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
-
-    _log = const.print_log
-
     def _run_single_entry(self, model_name, obs_name, var_list):
         col = self.get_colocator(model_name, obs_name)
 
@@ -29,7 +30,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             files_to_convert = col.files_written
 
         if self.cfg.processing_opts.only_colocation:
-            self._log.info(
+            logger.info(
                 f"FLAG ACTIVE: only_colocation: Skipping "
                 f"computation of json files for {obs_name} /"
                 f"{model_name} combination."

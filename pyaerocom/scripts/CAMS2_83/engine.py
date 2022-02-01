@@ -1,12 +1,16 @@
-from datetime import datetime
+from __future__ import annotations
+
+import logging
 from pathlib import Path
-from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from pandas import Timestamp, date_range
-from pyaerocom import ColocatedData, colocateddata, const
+import pandas as pd
+
+from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
+
+logger = logging.getLogger(__name__)
 
 
 class CAMS2_83_Engine(ProcessingEngine):
@@ -14,7 +18,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         coldata = []
         print(files)
         for file in files:
-            const.print_log.info(f"Processing: {file}")
+            logger.info(f"Processing: {file}")
 
             coldata.append(ColocatedData(file))
 
@@ -44,7 +48,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
             time_to_use = []
             for t in time:
-                if Timestamp(t).hour == h:
+                if pd.Timestamp(t).hour == h:
                     time_to_use.append(t)
 
             data = col.data.sel(time=time_to_use)
