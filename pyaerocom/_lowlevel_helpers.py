@@ -327,7 +327,9 @@ class Loc(abc.ABC):
         self.assert_exists = assert_exists
         self.auto_create = auto_create
         self.tooltip = "" if tooltip is None else tooltip
-        self.logger = logging.getLogger() if logger is None else logger
+        if logger is None:
+            logger = logging.getLogger(f"{__name__}.{type(self).__qualname__}")
+        self.logger = logger
         self.__set__(self, default)
 
     def __set_name__(self, owner, name):
