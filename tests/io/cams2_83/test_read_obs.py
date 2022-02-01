@@ -34,6 +34,6 @@ def test_init():
     assert isinstance(data, ReadUngriddedBase)
 
 
-@pytest.mark.xfail(reason="not implemented")
 def test_read_ungridded():
     data = ReadUngridded().read("cams2_83", "concno2")
+    assert isinstance(data, UngriddedData)
