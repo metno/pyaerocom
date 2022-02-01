@@ -26,7 +26,6 @@ jobs:
     - name: Check format
       run: tox -e format
     - name: Run linters
-      continue-on-error: true
       run: tox -e lint
 
   docs:

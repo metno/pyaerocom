@@ -121,6 +121,7 @@ extras =
 
 [testenv:lint]
 skipsdist=True
+ignore_outcome=True
 commands =
     mypy pyaerocom/
     pylint pyaerocom/
