@@ -14,12 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class CAMS2_83_Engine(ProcessingEngine):
-    def run(self, files: list[list[str]] | list[list[Path]]) -> None:
+    def run(self, files: list[list[str | Path]]) -> None:  # type:ignore[override]
         coldata = []
-        print(files)
         for file in files:
             logger.info(f"Processing: {file}")
-
             coldata.append(ColocatedData(file))
 
         self.process_coldata(coldata)
@@ -29,7 +27,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         hourrange = list(range(24 * 1))
 
-        stats_list = {
+        stats_list: dict[str, list[float]] = {
             "rms": [],
             "R": [],
             # "R_spearman": [],
@@ -96,7 +94,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def _get_median_stats_point(self, data, use_weights) -> dict:
 
-        stats_list = {
+        stats_list: dict[str, list[float]] = {
             "rms": [],
             "R": [],
             # "R_spearman": [],
