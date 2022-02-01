@@ -15,6 +15,10 @@ filterwarnings = [
   "ignore:SelectableGroups dict interface is deprecated:DeprecationWarning",
   # xarray calling distutils.version.LooseVersion on Python 3.10
   "ignore:distutils Version classes are deprecated:DeprecationWarning",
+  # xarray calling index.get_loc on Pandas 1.4.0
+  "ignore:Passing method to Float64Index.get_loc is deprecated:FutureWarning",
+  # numpy calling calling distutils.ccompiler
+  "ignore:The distutils package is deprecated:DeprecationWarning",
   # numpy calling distutils.sysconfig.customize_compiler on Python 3.10
   "ignore:The distutils.sysconfig module is deprecated:DeprecationWarning",
   # tornado calling asyncio.get_event_loop on Python 3.10
@@ -121,6 +125,7 @@ extras =
 
 [testenv:lint]
 skipsdist=True
+ignore_outcome=True
 commands =
     mypy pyaerocom/
     pylint pyaerocom/
