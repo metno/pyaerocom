@@ -31,7 +31,6 @@ AEROCOM_NAMES = dict(
 )
 
 
-
 DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 
 
@@ -86,7 +85,6 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     for var_name in ds.data_vars:
         ds[var_name].attrs["forecast_day"] = day
     return ds
-
 
 
 def fix_coord(ds: xr.Dataset) -> xr.Dataset:
@@ -245,7 +243,6 @@ class ReadCAMS2_83:
         self._filedata = None
 
     @property
-
     def forecast_day(self) -> int:
         if self._forecast_day is None:
             raise ValueError("forecast_day is not set")
