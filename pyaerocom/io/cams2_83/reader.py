@@ -121,7 +121,7 @@ class ReadCAMS2_83:
         data_dir: str | Path | None = None,
     ) -> None:
 
-        self._filedata: Path | None = None
+        self._filedata: xr.Dataset | None = None
         self._filepaths: list[Path] | None = None
         self._data_dir: Path | None = None
         self._model: ModelName | None = None
