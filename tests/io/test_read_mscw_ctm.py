@@ -508,9 +508,10 @@ def test_read_emep_clean_filepaths(data_path: Path, year, years: list[int], freq
     found = []
     for path in cleaned_paths:
         assert path in filepaths
-
-        year = re.search(r".*(20\d\d).*", Path(path).parent.name).group(1)
-        found.append(int(year))
+        match = re.search(r".*(20\d\d).*", Path(path).parent.name)
+        assert match is not None
+        year = int(match.group(1))
+        found.append(year)
 
     assert found == sorted(years)
 
