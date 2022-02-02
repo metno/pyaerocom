@@ -1,25 +1,24 @@
 ##################################################
 #        The global configs
 ##################################################
-import os
+from pathlib import Path
 
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
 
 GLOBAL_CONFIG = dict(
     # Description of the experiment
     proj_id="CAMS2-83",
     exp_id="cams2-83-examples",
     exp_name="CAMS2-83 test",
-    exp_descr=(
-        "This is an example config of how to evaluate EMEP. It is meant as an educational experiment only, but can be used freely as a starting point to other experiments."
-    ),
+    exp_descr="CAMS2-83 evaluation of CAMS2-40 model results.",
     exp_pi="Daniel Heinesen",
     # Whether or not the experiment is visible in the web interface
     public=True,
     # Locations where to place the results
     # These can be set as the user want, but as here written to use the folder structures we made
-    json_basedir=os.path.abspath("../../data"),
-    coldata_basedir=os.path.abspath("../../coldata"),
+    json_basedir=str(Path("../../data").absolute()),
+    coldata_basedir=str(Path("../../coldata").absolute()),
     # io_aux_file=os.path.abspath("../eval_py/gridded_io_aux.py"),
     # Some infor about the output
     reanalyse_existing=True,
@@ -94,28 +93,24 @@ GLOBAL_CONFIG = dict(
         "dryo3",
         "dryvelo3",
     ],
-)
-
-GLOBAL_CONFIG["min_num_obs"] = dict(
-    yearly=dict(monthly=9), monthly=dict(daily=21, weekly=3), daily=dict(hourly=18)
+    min_num_obs=dict(
+        yearly=dict(monthly=9),
+        monthly=dict(daily=21, weekly=3),
+        daily=dict(hourly=18),
+    ),
 )
 
 
 ##################################################
 #        The model configs
 ##################################################
-# folder_CAMS2_83 = f'/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data'
-folder_CAMS2_83 = f"/lustre/storeB/project/fou/kl/CAMS2_83/test_data"
-
 
 MODELS_CONFIG = {
     "CAMS2-83": dict(
-        model_id="CAMS2-83.EMEP.day0",  # ID of the model
-        model_data_dir=folder_CAMS2_83,  # Where (on PPI) the netCDF file is found
-        gridded_reader_id={"model": "ReadCAMS2_83"},  #
-        # model_kwargs=dict(
-        #     cams2_83_daterange=["20190601", "20190603"]#list(pd.date_range(start="20190601", end="20190703")),
-        # )
+        model_id="CAMS2-83.EMEP.day0",  # ID for the model and forecast day
+        model_data_dir=DATA_FOLDER_PATH,  # Where (on PPI) the netCDF file is found
+        gridded_reader_id={"model": "ReadCAMS2_83"},
+        # model_kwargs=dict(daterange=["20190601", "20190603"])
     ),
 }
 
@@ -123,61 +118,36 @@ MODELS_CONFIG = {
 ##################################################
 #        The observation configs
 ##################################################
-# Station filters
-ignore_id_dict = dict(
-    concso2="GR0001*",
-    vmro3="RS0005*",
-    concNnh4="EE0009*",
-    concso4="EE0009*",
+EEA_FILTER = dict(
+    altitude=[-20, 1000],
+    # base filter
+    latitude=[30, 82],
+    longitude=[-30, 90],
+    station_id=["NO0042*"],
+    negate="station_id",
+    # only rural stations
+    station_classification=["background"],
+    area_classification=["rural", "rural-nearcity", "rural-regional", "rural-remote"],
 )
 
-BASE_FILTER = {
-    "latitude": [30, 82],
-    "longitude": [-30, 90],
-    "station_id": ["NO0042*"],
-    "negate": "station_id",
-}
 
-EEA_RURAL_FILTER = {
-    "station_classification": ["background"],
-    "area_classification": [
-        "rural",
-        "rural-nearcity",
-        "rural-regional",
-        "rural-remote",
-    ],
-}
-EBAS_FILTER = {
-    "data_level": [None, 2],
-    **BASE_FILTER,
-    "altitude": [-20, 1000],
-    "set_flags_nan": True,
-}
-
-EEA_FILTER = {
-    **BASE_FILTER,
-    **EEA_RURAL_FILTER,
-    "altitude": [-20, 1000],
-}
-
-# Empty observation config
-OBS_CONFIG = {}
-
-# EEA observatio
-OBS_CONFIG["EEA"] = dict(
-    # obs_id="EEAAQeRep.v2",
-    obs_id="EEAAQeRep.NRT",
-    obs_vars=["concno2"],
-    web_interface_name="EEA-rural",
-    obs_vert_type="Surface",
-    # ignore_station_ids=ignore_id_dict, #One station needs to be ignored
-    obs_filters=EEA_FILTER,
+OBS_CONFIG = dict(
+    # EEA NRT observatios
+    EEA=dict(
+        obs_id="EEAAQeRep.NRT",
+        obs_vars=["concno2"],
+        web_interface_name="EEA-rural",
+        obs_vert_type="Surface",
+        obs_filters=EEA_FILTER,
+    )
 )
+
 
 ##################################################
 #        Putting it all together
 ##################################################
-CFG = {**GLOBAL_CONFIG}
-
-CFG["model_cfg"] = MODELS_CONFIG
-CFG["obs_cfg"] = OBS_CONFIG
+CFG = dict(
+    model_cfg=MODELS_CONFIG,
+    obs_cfg=OBS_CONFIG,
+    **GLOBAL_CONFIG,
+)
