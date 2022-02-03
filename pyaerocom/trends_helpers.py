@@ -232,7 +232,11 @@ def _get_yearly(data, seas, start_yr):
             val = np.nan
 
         elif seas == "all":
-            seasons = _get_unique_seasons(subset.index)
+            d = subset.index
+            valid_mask = ~np.isnan(subset.values)
+            # seasons = _get_unique_seasons(d) # original (EMEP raport)
+            seasons = _get_unique_seasons(d[valid_mask])
+
             if len(seasons) == 4:
                 val = np.nanmean(subset.values)
             else:

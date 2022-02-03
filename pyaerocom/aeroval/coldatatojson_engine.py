@@ -100,6 +100,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
         min_yrs = self.cfg.statistics_opts.min_yrs
+        sequential_yrs = self.cfg.statistics_opts.sequential_yrs
 
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
@@ -152,8 +153,10 @@ class ColdataToJsonEngine(ProcessingEngine):
             var_name_web=var_name_web,
         )
         if min_yrs > 0:
-            logger.info(f"Removing stations with less than {min_yrs} years of continuous data")
-            coldata = _remove_less_covered(coldata, min_yrs)
+            logger.info(
+                f"Removing stations with less than {min_yrs} years of continuous data, with sequential_yrs = {sequential_yrs}"
+            )
+            coldata = _remove_less_covered(coldata, min_yrs, sequential_yrs)
 
         # get region IDs
         (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
@@ -203,7 +206,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                 fname = get_heatmap_filename(freq)
 
                 hm_file = os.path.join(out_dirs["hm"], fname)
-
                 _add_entry_json(
                     hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
                 )

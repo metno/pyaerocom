@@ -5,10 +5,12 @@ import logging
 import os
 from datetime import datetime
 from distutils.log import debug
+from typing import Callable, Tuple
 
 import numpy as np
 import pandas as pd
 import xarray as xr
+from matplotlib.cbook import maxdict
 
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings_management import ignore_warnings
@@ -25,7 +27,13 @@ from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.trends_engine import TrendsEngine
-from pyaerocom.trends_helpers import _get_season_from_months
+from pyaerocom.trends_helpers import (
+    _get_season,
+    _get_season_from_months,
+    _get_unique_seasons,
+    _get_yearly,
+    _init_trends_result_dict,
+)
 from pyaerocom.tstype import TsType
 
 logger = logging.getLogger(__name__)
@@ -688,6 +696,156 @@ def _get_statistics(obs_vals, mod_vals, min_num):
     return _prep_stats_json(stats)
 
 
+"""
+TODO: Make the regional trends by finding all the stations with the correct
+amount of data for a certain period and season -> Calculate trends for the average
+of those stations
+
+Almost the same as the _remove_less_covered function, but check for each season and period
+"""
+
+
+def _make_regional_trends(
+    data: ColocatedData,
+    trends_min_yrs: int,
+    per: str,
+    freq: str,
+    season: str,
+    regid: str,
+    use_country: bool = True,
+) -> tuple[dict, dict, bool]:
+    (start, stop) = _get_min_max_year_periods([per])
+    data = data.copy()
+
+    station_mod_trends = []
+    station_obs_trends = []
+
+    trends_successful = True
+
+    subset_time_series = data.get_regional_timeseries(
+        regid,
+        check_country_meta=use_country,
+    )
+
+    data = data.filter_region(
+        regid,
+        inplace=False,
+        check_country_meta=use_country,
+    )
+    nb_stations = len(data.data.data[0, 0, :])
+
+    for i in range(nb_stations):
+        # print(f"Station {i+1}/{nb_stations}")
+
+        if stop - start >= trends_min_yrs:
+            try:
+                obs_vals = data.data.data[0, :, i]
+                mod_vals = data.data.data[1, :, i]
+
+                time = data.data.time.values
+                (obs_trend, mod_trend) = _make_trends(
+                    obs_vals,
+                    mod_vals,
+                    time,
+                    freq,
+                    season,
+                    start,
+                    stop,
+                    trends_min_yrs,
+                )
+                if not obs_trend["m"] is None:
+                    station_mod_trends.append(mod_trend)
+                    station_obs_trends.append(obs_trend)
+            except AeroValTrendsError as e:
+                msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                logger.warning(msg)
+
+    if len(station_obs_trends) == 0 or len(station_mod_trends) == 0:
+        trends_successful = False
+        obs_trend = {}
+        mod_trend = {}
+    else:
+        obs_trend = _combine_regional_trends(
+            station_obs_trends,
+            start,
+            stop,
+            subset_time_series["obs"],
+        )
+        mod_trend = _combine_regional_trends(
+            station_mod_trends,
+            start,
+            stop,
+            subset_time_series["mod"],
+        )
+
+        obs_trend["data"] = obs_trend["data"].to_json()
+        mod_trend["data"] = mod_trend["data"].to_json()
+
+        obs_trend["map_var"] = f"slp_{start}"
+        mod_trend["map_var"] = f"slp_{start}"
+
+    return obs_trend, mod_trend, trends_successful
+
+
+def _combine_regional_trends(
+    trends: list[dict],
+    start_yr: int | float,
+    stop_yr: int | float,
+    time_series: pd.Series,
+) -> dict:
+    result = _init_trends_result_dict(start_yr)
+
+    default_trend = trends[0]
+
+    result["period"] = default_trend["period"]
+    result["season"] = default_trend["season"]
+
+    result["data"] = _get_yearly(time_series, default_trend["season"], start_yr).loc[
+        str(start_yr) : str(stop_yr)
+    ]
+
+    result["n"] = _combine_statistic(trends, "n", np.nanmax)
+    result["y_mean"] = _combine_statistic(trends, "y_mean", np.nanmean)
+    result["y_min"] = _combine_statistic(trends, "y_min", np.nanmin)
+    result["y_max"] = _combine_statistic(trends, "y_max", np.nanmax)
+
+    result["pval"] = _fishers_pval(trends)
+
+    result["m"] = _combine_statistic(trends, "m", np.nanmean)
+    result["m_err"] = _get_trend_error(trends, "m")
+    result["yoffs"] = _combine_statistic(trends, "yoffs", np.nanmean)
+
+    result["slp"] = _combine_statistic(trends, "slp", np.nanmean)
+    result["slp_err"] = _get_trend_error(trends, "slp")
+    result["reg0"] = _combine_statistic(trends, "reg0", np.nanmean)
+
+    result[f"slp_{start_yr}"] = _combine_statistic(trends, f"slp_{start_yr}", np.nanmean)
+    result[f"slp_{start_yr}_err"] = _get_trend_error(trends, f"slp_{start_yr}")
+    result[f"reg0_{start_yr}"] = _combine_statistic(trends, f"reg0_{start_yr}", np.nanmean)
+
+    return result
+
+
+def _combine_statistic(data: list, key: str, func: Callable) -> float:
+    cleaned = np.array([i[key] for i in data])
+    return float(func(cleaned))
+
+
+def _get_trend_error(trends: list, key: str) -> float:
+    cleaned = np.array([i[key] for i in trends])
+    return float(np.nanstd(cleaned))
+
+
+def _fishers_pval(trends: list) -> float:
+    """
+    Quick implementation of Fisher's method for combining p values
+    Is most probably wrong
+    """
+    pvals = np.array([i["pval"] for i in trends])
+    x = -2.0 * np.nansum(np.log(pvals))
+    return float(1 - x)
+
+
 def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
     Function for generating trends from timeseries
@@ -1116,29 +1274,40 @@ def _process_heatmap_data(
 
                             trends_successful = False
                             if add_trends and freq != "daily":
+                                logger.info(f"Adding trend for {regname} in {season} {per}")
+
+                                (obs_trend, mod_trend, trends_successful) = _make_regional_trends(
+                                    subset,
+                                    trends_min_yrs,
+                                    per,
+                                    freq,
+                                    season,
+                                    regid,
+                                    use_country,
+                                )
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                (start, stop) = _get_min_max_year_periods([per])
+                                # (start, stop) = _get_min_max_year_periods([per])
 
-                                if stop - start >= trends_min_yrs:
-                                    try:
-                                        subset_time_series = subset.get_regional_timeseries(
-                                            regid, check_country_meta=use_country
-                                        )
+                                # if stop - start >= trends_min_yrs:
+                                #     try:
+                                #         subset_time_series = subset.get_regional_timeseries(
+                                #             regid, check_country_meta=use_country
+                                #         )
 
-                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(
-                                            subset_time_series["obs"],
-                                            subset_time_series["mod"],
-                                            freq,
-                                            season,
-                                            start,
-                                            stop,
-                                            trends_min_yrs,
-                                        )
+                                #         (obs_trend, mod_trend) = _make_trends_from_timeseries(
+                                #             subset_time_series["obs"],
+                                #             subset_time_series["mod"],
+                                #             freq,
+                                #             season,
+                                #             start,
+                                #             stop,
+                                #             trends_min_yrs,
+                                #         )
 
-                                        trends_successful = True
-                                    except AeroValTrendsError as e:
-                                        msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                        logger.warning(msg)
+                                #         trends_successful = True
+                                #     except AeroValTrendsError as e:
+                                #         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                #         logger.warning(msg)
 
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
@@ -1344,40 +1513,104 @@ def _start_stop_from_periods(periods):
     return start_stop(start, stop + 1)
 
 
-def _remove_less_covered(data: ColocatedData, min_yrs: int) -> ColocatedData:
-    freq_data = _init_data_default_frequencies(data, ["yearly"])
+# def _remove_less_covered(
+#     data: ColocatedData,
+#     min_yrs: int,
+#     sequential_yrs: bool = False,
+# ) -> ColocatedData:
+#     freq_data = _init_data_default_frequencies(data, ["yearly"])
 
-    comp_data = data.resample_time("yearly", settings_from_meta=True, inplace=False)
-    stations = comp_data.data.station_name.data
+#     comp_data = data.resample_time("yearly", settings_from_meta=True, inplace=False)
+#     stations = comp_data.data.station_name.data
+#     data = data.copy()
+#     for i, s in enumerate(stations):
+#         allowed_dates = np.unique(
+#             pd.DatetimeIndex(comp_data.data.sel(station_name=s).time.data).year
+#         )
+#         yearly_obs = comp_data.data.sel(station_name=s)
+#         yearly_obs_data = comp_data.data.sel(station_name=s).data[0, :]
+
+#         obs_dates = data.data.sel(station_name=s).time.data
+#         obs_data = data.data.sel(station_name=s).data[0, :]
+#         non_nan_dates = []
+#         debug = []
+
+#         yearly_obs_years = pd.DatetimeIndex(yearly_obs.time.data).year
+#         assert len(yearly_obs_data) == len(yearly_obs_years)
+
+#         for j in range(len(obs_dates)):
+#             # if "Birkenes" in s:
+#             #     debug.append([obs_dates[j], obs_data[j]])
+
+#             y = pd.DatetimeIndex([obs_dates[j]]).year[0]
+#             if not np.isnan(yearly_obs_data[np.where(yearly_obs_years == y)]):
+#                 if not np.isnan(obs_data[j]):
+#                     non_nan_dates.append(obs_dates[j])
+#         years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
+#         if sequential_yrs:
+#             max_yrs = _find_longest_seq_yrs(years)
+#         else:
+#             max_yrs = _find_n_yrs(years)
+#         # if "Birkenes" in s:
+#         #     print(np.array(debug))
+#         #     print(non_nan_dates)
+#         #     print(s, years, max_yrs, min_yrs)
+#         #     exit()
+
+#         if min_yrs > max_yrs:
+#             print(f"Dropping {s}")
+#             logging.info(f"Dropping {s}")
+#             data.data = data.data.drop_sel(station_name=s)
+
+#     new_stations = data.data.station_name.data
+
+#     print(f"Removed {len(stations)-len(new_stations)} stations")
+#     if len(new_stations) == 0:
+#         raise AeroValTrendsError(
+#             f"No stations left after removing stations with fewer than {min_yrs} years!"
+#         )
+
+#     return data
+
+
+def _remove_less_covered(
+    data: ColocatedData,
+    min_yrs: int,
+    sequential_yrs: bool = False,
+) -> ColocatedData:
+
+    stations = data.data.station_name.data
     data = data.copy()
     for i, s in enumerate(stations):
-        allowed_dates = np.unique(
-            pd.DatetimeIndex(comp_data.data.sel(station_name=s).time.data).year
-        )
-        yearly_obs = comp_data.data.sel(station_name=s)
-        yearly_obs_data = comp_data.data.sel(station_name=s).data[0, :]
 
         obs_dates = data.data.sel(station_name=s).time.data
         obs_data = data.data.sel(station_name=s).data[0, :]
+
+        obs_years = np.unique(pd.DatetimeIndex(obs_dates).year)
         non_nan_dates = []
         debug = []
 
-        yearly_obs_years = pd.DatetimeIndex(yearly_obs.time.data).year
-        assert len(yearly_obs_data) == len(yearly_obs_years)
-
+        season_yrs = {i: [] for i in obs_years}
         for j in range(len(obs_dates)):
             y = pd.DatetimeIndex([obs_dates[j]]).year[0]
-            if not np.isnan(yearly_obs_data[np.where(yearly_obs_years == y)]):
-                debug.append([obs_data[j], obs_dates[j]])
-                if not np.isnan(obs_data[j]):
-                    non_nan_dates.append(obs_dates[j])
+            m = pd.DatetimeIndex([obs_dates[j]]).month[0]
+            season = _get_season(m)
+            if not np.isnan(obs_data[j]):
+                season_yrs[y].append(season)
+                non_nan_dates.append(obs_dates[j])
 
-        years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
-        max_yrs = _find_longest_seq_yrs(years)
-
+        # years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
+        years = _get_yrs_from_season_yrs(season_yrs)
+        if sequential_yrs:
+            max_yrs = _find_longest_seq_yrs(years)
+        else:
+            max_yrs = _find_n_yrs(years)
+        # if s == "Peyrusse Vieille":
+        #     print(years)
+        #     exit()
         if min_yrs > max_yrs:
-            print(f"Dropping {s}")
-            logging.info(f"Dropping {s}")
+            print(f"Dropping {s}; It has only {max_yrs}")
+            logging.info(f"Dropping {s}; It has only {max_yrs}")
             data.data = data.data.drop_sel(station_name=s)
 
     new_stations = data.data.station_name.data
@@ -1389,6 +1622,70 @@ def _remove_less_covered(data: ColocatedData, min_yrs: int) -> ColocatedData:
         )
 
     return data
+
+
+# def _remove_less_covered(
+#     data: ColocatedData,
+#     min_yrs: int,
+#     sequential_yrs: bool = False,
+# ) -> ColocatedData:
+
+#     stations = data.data.station_name.data
+#     data = data.copy()
+#     for i, s in enumerate(stations):
+
+#         years = _get_yeares(data, s)
+#         if sequential_yrs:
+#             max_yrs = _find_longest_seq_yrs(years)
+#         else:
+#             max_yrs = _find_n_yrs(years)
+
+#         if min_yrs > max_yrs:
+#             print(f"Dropping {s}; It has only {max_yrs}")
+#             logging.info(f"Dropping {s}; It has only {max_yrs}")
+#             data.data = data.data.drop_sel(station_name=s)
+
+#     new_stations = data.data.station_name.data
+
+#     print(f"Removed {len(stations)-len(new_stations)} stations")
+#     if len(new_stations) == 0:
+#         raise AeroValTrendsError(
+#             f"No stations left after removing stations with fewer than {min_yrs} years!"
+#         )
+
+#     return data
+
+
+def _get_yeares(coldata: ColocatedData, site: str, start_yr: int = 2000) -> np.ndarray:
+    found_yrs = []
+    data = coldata.data.sel(station_name=site).isel(data_source=0).to_series()
+
+    yrs = np.unique(data.index.year)
+    for yr in yrs:
+        if yr < start_yr:  # winter
+            continue
+
+        subset = data.loc[str(yr)]
+
+        if len(subset) == 0:
+            continue
+        elif np.isnan(subset.values).all():
+            continue
+
+        seasons = _get_unique_seasons(subset.index)
+        if site == "Peyrusse Vieille" and yr == 2014:
+            print(np.array(subset.values))
+            print(np.array(subset.index))
+            print(seasons)
+            exit()
+        if len(seasons) == 4:
+            found_yrs.append(yr)
+
+    return np.array(found_yrs)
+
+
+def _find_n_yrs(years: np.ndarray) -> int:
+    return len(years)
 
 
 def _find_longest_seq_yrs(years: np.ndarray) -> int:
@@ -1404,3 +1701,13 @@ def _find_longest_seq_yrs(years: np.ndarray) -> int:
         max_yrs = max(yrs, max_yrs)
 
     return max_yrs
+
+
+def _get_yrs_from_season_yrs(season_yrs: dict) -> np.ndarray:
+    yrs = []
+    for y in season_yrs.keys():
+        s = season_yrs[y]
+        if len(list(set(s))) == 4:
+            yrs.append(y)
+
+    return np.array(yrs)

@@ -152,6 +152,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.add_trends = False
         self.trends_min_yrs = 7
         self.min_yrs = 0
+        self.sequential_yrs = False
         self.stats_tseries_base_freq = None
         self.update(**kwargs)
 
