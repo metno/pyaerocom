@@ -367,7 +367,7 @@ def find_closest_region_coord(lat, lon, regions=None):
     matches = get_regions_coord(lat, lon, regions)
 
     if len(matches) == 1:
-        return matches[0]
+        return matches[0], matches
 
     min_dist = 1e6
     best = None
@@ -377,4 +377,5 @@ def find_closest_region_coord(lat, lon, regions=None):
         if dist < min_dist:
             min_dist = dist
             best = match
-    return best
+
+    return best, matches
