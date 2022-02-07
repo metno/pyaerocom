@@ -312,8 +312,7 @@ class ReadAirNow(ReadUngriddedBase):
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
-        for i in tqdm(range(len(files)), disable=const.QUIET):
-            fp = files[i]
+        for fp in tqdm(files, disable=const.QUIET):
             filedata = self._read_file(fp)
             arr = filedata.values
 
