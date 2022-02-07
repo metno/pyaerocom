@@ -655,7 +655,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
             "altitude": alts[i],
         }
         if regions_how == "country":
-            site_meta["region"] = regs[i][0]
+            site_meta["region"] = [regs[i][0]]
         else:
             site_meta["region"] = regs[i][1]
         ts_data = _init_ts_data(freqs)
