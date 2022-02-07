@@ -368,7 +368,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         num_files = len(files)
         logger.info("Reading AERONET data")
         skipped = 0
-        for i in tqdm(range(num_files), disable=const.QUITE):
+        for i in tqdm(range(num_files), disable=const.QUIET):
 
             _file = files[i]
             try:

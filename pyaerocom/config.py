@@ -223,7 +223,7 @@ class Config:
         self.GRID_IO = GridIO()
 
         # Setting for quite run (no tqdm)
-        self._quite = False
+        self._quiet = False
 
         if config_file is not None:
             if not os.path.exists(config_file):
@@ -547,14 +547,14 @@ class Config:
         )
 
     @property
-    def QUITE(self):
-        return self._quite
+    def QUIET(self):
+        return self._quiet
 
-    @QUITE.setter
-    def QUITE(self, val):
+    @QUIET.setter
+    def QUIET(self, val):
         if not isinstance(val, bool):
             raise ValueError(f"{val} needs to be a boolean")
-        self._quite = val
+        self._quiet = val
 
     def make_default_vert_grid(self):
         """Makes default vertical grid for resampling of profile data"""

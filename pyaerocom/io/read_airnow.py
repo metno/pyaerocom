@@ -312,7 +312,7 @@ class ReadAirNow(ReadUngriddedBase):
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
-        for i in tqdm(range(len(files)), disable=const.QUITE):
+        for i in tqdm(range(len(files)), disable=const.QUIET):
             fp = files[i]
             filedata = self._read_file(fp)
             arr = filedata.values
@@ -370,7 +370,7 @@ class ReadAirNow(ReadUngriddedBase):
             subset = data[mask]
             dtime_subset = dtime[mask]
             statlist = np.unique(subset[:, statcol])
-            for stat_id in tqdm(statlist, desc=var, disable=const.QUITE):
+            for stat_id in tqdm(statlist, desc=var, disable=const.QUIET):
                 if not stat_id in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id

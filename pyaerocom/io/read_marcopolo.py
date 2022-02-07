@@ -237,7 +237,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
         arrs = []
 
         varcol = filecols["var_name"]
-        for i in tqdm(range(len(files)), disable=const.QUITE):
+        for i in tqdm(range(len(files)), disable=const.QUIET):
             filedata = self._read_file(files[i])
             arr = filedata.values
 
