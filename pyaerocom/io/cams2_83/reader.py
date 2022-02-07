@@ -313,8 +313,6 @@ class ReadCAMS2_83:
         # ds.time.attrs["standard_name"] = "time"
         # return ds
 
-
-
         day_prefix = " " if abs(self.date) == 0 else f"{int(self.date)} days "
         dateselect = [f"{day_prefix}{i:02d}:00:00" for i in range(24)]
 
@@ -330,7 +328,6 @@ class ReadCAMS2_83:
         ds.time.attrs["long_name"] = "time"
         ds.time.attrs["standard_name"] = "time"
         return ds
-
 
     def has_var(self, var_name):
         """Check if variable is supported

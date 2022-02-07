@@ -168,7 +168,7 @@ OBS_CONFIG = {}
 
 # EEA observatio
 OBS_CONFIG["EEA"] = dict(
-    #obs_id="EEAAQeRep.v2",
+    # obs_id="EEAAQeRep.v2",
     obs_id="EEAAQeRep.NRT",
     obs_vars=["concno2"],
     web_interface_name="EEA-rural",
