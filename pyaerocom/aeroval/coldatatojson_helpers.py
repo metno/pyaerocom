@@ -10,7 +10,7 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom._lowlevel_helpers import read_json, write_json
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
@@ -1061,7 +1061,7 @@ def _calc_temporal_corr(coldata):
     if np.prod(arr.shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim="time")
-    with ignore_warnings(True, RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):
+    with ignore_warnings(RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 

@@ -189,11 +189,6 @@ class Config:
 
     _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
 
-    #: bool: can be used to filter specific iris warnings, e.g. using decorator
-    #: :func:`pyaerocom._warnings_management.filter_warnings`. Used e.g. in
-    #: :func:`pyaerocom.io.iris_io.load_cubes_custom`.
-    FILTER_IRIS_WARNINGS = True
-
     def __init__(self, config_file=None, try_infer_environment=True):
 
         # Directories

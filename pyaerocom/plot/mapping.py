@@ -8,7 +8,7 @@ from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
 from pyaerocom import const
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.mathutils import exponent
 from pyaerocom.plot.config import COLOR_THEME, MAP_AXES_ASPECT, ColorTheme
@@ -330,7 +330,7 @@ def plot_griddeddata_on_map(
             cmap = plt.get_cmap(cmap)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     else:
-        with ignore_warnings(True, RuntimeWarning, "All-NaN axis encountered"):
+        with ignore_warnings(RuntimeWarning, "All-NaN axis encountered"):
             dmin = np.nanmin(data)
             dmax = np.nanmax(data)
 
