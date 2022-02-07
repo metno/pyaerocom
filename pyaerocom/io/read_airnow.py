@@ -1,16 +1,4 @@
-#!/usr/bin/env python3
-########################################################################
-#
-# This python module is part of the pyaerocom software
-#
-# License: GNU General Public License v3.0
-# More information: https://github.com/metno/pyaerocom
-# Documentation: https://pyaerocom.readthedocs.io/en/latest/
-# Copyright (C) 2017 met.no
-# Contact information: Norwegian Meteorological Institute (MET Norway)
-#
-########################################################################
-
+import logging
 import os
 from glob import glob
 
@@ -18,11 +6,12 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAirNow(ReadUngriddedBase):
@@ -128,7 +117,7 @@ class ReadAirNow(ReadUngriddedBase):
     }
 
     #: List of variables that are provided
-    PROVIDES_VARIABLES = list(VAR_MAP.keys())
+    PROVIDES_VARIABLES = list(VAR_MAP)
 
     #: Default variables
     DEFAULT_VARS = PROVIDES_VARIABLES
@@ -318,7 +307,7 @@ class ReadAirNow(ReadUngriddedBase):
             list of StationData objects
 
         """
-        const.print_log.info("Read AirNow data file(s)")
+        logger.info("Read AirNow data file(s)")
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
@@ -361,9 +350,9 @@ class ReadAirNow(ReadUngriddedBase):
         """
         data = np.concatenate(arrs)
 
-        const.print_log.info("Converting filedata to list os StationData")
+        logger.info("Converting filedata to list os StationData")
         stat_meta = self.station_metadata
-        stat_ids = list(stat_meta.keys())
+        stat_ids = list(stat_meta)
         varcol = self.FILE_COL_NAMES.index("variable")
         statcol = self.FILE_COL_NAMES.index("station_id")
         tzonecol = self.FILE_COL_NAMES.index("time_zone")
@@ -457,10 +446,3 @@ class ReadAirNow(ReadUngriddedBase):
         )
 
         return data
-
-
-if __name__ == "__main__":
-    loc = "/home/jonasg/MyPyaerocom/data/obsdata/MACC_INSITU_AirNow"
-    reader = ReadAirNow(data_dir=loc)
-
-    reader.read("concpm25", last_file=10)

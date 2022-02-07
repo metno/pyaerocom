@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Helper methods for computation of trends
 
@@ -73,8 +72,8 @@ def _compute_trend_error(m, m_err, v0, v0_err):
     """
 
     delta_sl = m_err / v0
-    delta_ref = m * v0_err / v0 ** 2
-    return np.sqrt(delta_sl ** 2 + delta_ref ** 2) * 100
+    delta_ref = m * v0_err / v0**2
+    return np.sqrt(delta_sl**2 + delta_ref**2) * 100
 
 
 def _get_season(mon):
@@ -95,10 +94,9 @@ def _get_unique_seasons(idx):
 
 
 def _get_season_from_months(months: str) -> str:
-    if months in MONTHS_CODES.keys():
-        return MONTHS_CODES[months]
-    else:
+    if months not in MONTHS_CODES:
         raise ValueError(f"{months} is not a valid season")
+    return MONTHS_CODES[months]
 
 
 def _mid_season(seas, yr):
@@ -258,22 +256,3 @@ def _init_period_dates(start_year, stop_year, season):
 
     num_dates_period = period_index.values.astype("datetime64[Y]").astype(np.float64)
     return (start_date, stop_date, period_index, num_dates_period)
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    plt.close("all")
-
-    r = pya.io.ReadUngridded()
-    data = r.read("AeronetSunV3Lev2.daily", vars_to_retrieve="od550aer", file_pattern="Solar*")
-
-    stat = data.to_station_data("Solar*")
-
-    stat.compute_trend("od550aer", 2002, 2012)
-    tr = stat.trends["od550aer"]
-
-    ax = tr.plot(season="all", period="1995-2017")
-
-    ax = tr.plot(season="all", period="2002-2012")
-    plt.show()

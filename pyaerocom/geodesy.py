@@ -1,16 +1,18 @@
-#!/usr/bin/env python3
 """
 Module for geographical calculations
 
 This module contains low-level methods to perform geographical calculations,
 (e.g. distance between two coordinates)
 """
+import logging
 import os
 
 import numpy as np
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const
 from pyaerocom.helpers import isnumeric
+
+logger = logging.getLogger(__name__)
 
 
 def calc_latlon_dists(latref, lonref, latlons):
@@ -160,9 +162,7 @@ def get_topo_data(
     if topodata_loc is None:
         if topo_dataset in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS[topo_dataset]):
             topodata_loc = const.SUPPLDIRS[topo_dataset]
-            print_log.info(
-                f"Found default location for {topo_dataset} topodata at\n{topodata_loc}"
-            )
+            logger.info(f"Found default location for {topo_dataset} topodata at\n{topodata_loc}")
 
     try:
         access = geonum.TopoDataAccess(topo_dataset, local_path=topodata_loc)
@@ -171,7 +171,7 @@ def get_topo_data(
         return topodata
     except Exception as e:
         if try_etopo1 and not topo_dataset == "etopo1":
-            print_log.warning(
+            logger.warning(
                 f"Failed to access topography data for {topo_dataset}. "
                 f"Trying ETOPO1.\nError: {repr(e)}"
             )
@@ -359,15 +359,3 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     c = 2 * np.arcsin(np.sqrt(a))
 
     return earth_radius * c
-
-
-if __name__ == "__main__":
-    lat = 50.7
-    lon = 8.2
-
-    print(get_topo_altitude(0, 0, try_etopo1=True))
-
-    a0 = get_topo_altitude(lat, lon, "srtm", try_etopo1=False)
-    a1 = get_topo_altitude(lat, lon, "etopo1", try_etopo1=False)
-
-    print(a0, a1)

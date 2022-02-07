@@ -2,12 +2,8 @@
 Definitions and helpers related to time conversion
 """
 from datetime import datetime
-from warnings import catch_warnings, filterwarnings
 
-with catch_warnings():
-    filterwarnings("ignore")
-    from iris import coord_categorisation
-
+from iris import coord_categorisation
 
 TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native"]
 

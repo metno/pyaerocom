@@ -1,17 +1,12 @@
 """
 High level test methods that check AasEtAl time series data for selected stations
-Created on June 12 2019.
-
-@author: hannas@met.no
-
-Largely modified and optimised by J. Gliss (Feb 2020)
 """
 import os
 
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import pytest
+from numpy.testing import assert_almost_equal
 
 from pyaerocom import const
 from pyaerocom.io.read_aasetal import ReadAasEtal
@@ -161,11 +156,4 @@ def test_reading_routines(aasetal_data, filenum, station_name, colname, var_name
         #                                    dtime=station_group['dtime'])
         # stat[var] = stat[var]/numsecs
         # to_unit = 'kg m-2 s-1'
-    npt.assert_almost_equal(should_be, actual)
-
-
-if __name__ == "__main__":
-    import sys
-
-    # from pyaerocom.test.conftest import aasetal_data
-    pytest.main(sys.argv)
+    assert_almost_equal(should_be, actual)

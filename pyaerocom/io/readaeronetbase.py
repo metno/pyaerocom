@@ -1,16 +1,22 @@
-from collections import OrderedDict as od
-from datetime import datetime
+import logging
 
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom import const, print_log
-from pyaerocom.exceptions import MetaDataError, StationCoordinateError, VariableNotFoundError
+from pyaerocom import const
+from pyaerocom.exceptions import (
+    AeronetReadError,
+    MetaDataError,
+    StationCoordinateError,
+    VariableNotFoundError,
+)
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.time_config import TS_TYPES
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetBase(ReadUngriddedBase):
@@ -20,7 +26,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
 
-    __baseversion__ = "0.13_" + ReadUngriddedBase.__baseversion__
+    __baseversion__ = "0.14_" + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
     COL_DELIM = ","
@@ -69,7 +75,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         # dictionary that contains information about the file columns
         # is written in method _update_col_index
-        self._col_index = od()
+        self._col_index = {}
 
         # header string referring to the content in attr. col_index. Is
         # updated whenever the former is updated (i.e. when method
@@ -181,7 +187,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             if one of the specified meta data columns does not exist in data
         """
         cols = col_index_str.strip().split(self.COL_DELIM)
-        mapping = od()
+        mapping = {}
         for idx, info_str in enumerate(cols):
             if info_str in mapping:
                 mapping[info_str] = "MULTI"
@@ -208,7 +214,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         )
 
     def _find_vars_name_based(self, mapping, cols):
-        col_index = od()
+        col_index = {}
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
             if not val in mapping:
@@ -360,12 +366,17 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         num_vars = len(vars_to_retrieve)
         num_files = len(files)
-        print_log.info("Reading AERONET data")
+        logger.info("Reading AERONET data")
         skipped = 0
         for i in tqdm(range(num_files), disable=const.QUITE):
 
             _file = files[i]
-            station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            try:
+                station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            except AeronetReadError as e:
+                self.logger.warning(f"\n{repr(e)}.")
+                skipped += 1
+                continue
 
             try:
                 statmeta = station_data.get_meta()
@@ -373,15 +384,15 @@ class ReadAeronetBase(ReadUngriddedBase):
                 stat = station_data.station_name
                 if isinstance(stat, (list, np.ndarray)):
                     stat = stat[0]
-                const.print_log.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
+                logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1
                 continue
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            meta = od()
-            meta["var_info"] = od()
+            meta = {}
+            meta["var_info"] = {}
             meta.update(statmeta)
 
             meta["data_id"] = self.data_id
@@ -398,7 +409,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta.update(**common_meta)
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            meta_idx[meta_key] = od()
+            meta_idx[meta_key] = {}
 
             num_times = len(station_data["dtime"])
 
@@ -446,7 +457,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                     u = self.UNITS[var]
                 else:
                     u = self.DEFAULT_UNIT
-                meta["var_info"][var] = od(units=u)
+                meta["var_info"][var] = dict(units=u)
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
@@ -455,7 +466,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta_key = meta_key + 1.0
 
         if skipped:
-            const.print_log.warning(
+            logger.warning(
                 f"{skipped} out of {len(files)} files have been skipped (for "
                 f"details see output)."
             )
@@ -464,36 +475,3 @@ class ReadAeronetBase(ReadUngriddedBase):
         # data_obj.data_revision[self.data_id] = self.data_revision
         self.data = data_obj
         return data_obj
-
-
-if __name__ == "__main__":
-
-    class ReadUngriddedImplementationExample(ReadUngriddedBase):
-        _FILEMASK = ".txt"
-        DATA_ID = "Blaaa"
-        __version__ = "0.01"
-        PROVIDES_VARIABLES = ["od550aer"]
-        REVISION_FILE = const.REVISION_FILE
-
-        def __init__(self, data_id=None, data_dir=None):
-            super().__init__(data_id, data_dir)
-
-        @property
-        def DEFAULT_VARS(self):
-            return self.PROVIDES_VARIABLES
-
-        @property
-        def SUPPORTED_DATASETS(self):
-            return [self.DATA_ID]
-
-        @property
-        def TS_TYPE(self):
-            raise NotImplementedError
-
-        def read(self):
-            raise NotImplementedError
-
-        def read_file(self):
-            raise NotImplementedError
-
-    c = ReadUngriddedImplementationExample()

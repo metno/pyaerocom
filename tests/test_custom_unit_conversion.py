@@ -1,5 +1,5 @@
-import numpy.testing as npt
 from cf_units import Unit
+from numpy.testing import assert_allclose
 
 import pyaerocom as pya
 
@@ -13,7 +13,7 @@ for unit, (to, val) in test_cases.items():
     assert (cube.data == 1).all()
     cube.units = unit
     cube.convert_units(to)
-    npt.assert_allclose(cube.data.mean(), val, rtol=1e-3)
+    assert_allclose(cube.data.mean(), val, rtol=1e-3)
 
 # =============================================================================
 #

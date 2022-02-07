@@ -1,8 +1,10 @@
+import logging
 import os
 import sqlite3
 
-from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+
+logger = logging.getLogger(__name__)
 
 
 class EbasSQLRequest(BrowseDict):
@@ -79,7 +81,7 @@ class EbasSQLRequest(BrowseDict):
             if k in self:
                 self[k] = v
             else:
-                const.print_log.warning(f"Unknown EBAS SQL request key {k} (value {v})")
+                logger.warning(f"Unknown EBAS SQL request key {k} (value {v})")
 
     @staticmethod
     def _var2sql(var):

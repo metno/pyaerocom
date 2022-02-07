@@ -1,12 +1,11 @@
-#!/usr/bin/env python3
 """
 General helper methods for the pyaerocom library.
 """
+import logging
 import re
 
 import numpy as np
 
-from pyaerocom import const
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.time_config import (
     PANDAS_FREQ_TO_TS_TYPE,
@@ -15,6 +14,8 @@ from pyaerocom.time_config import (
     TS_TYPE_TO_SI,
     TS_TYPES,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class TsType:
@@ -369,7 +370,7 @@ class TsType:
                 try:
                     return TsType._try_infer_from_total_seconds(base_tst, total_seconds)
                 except TemporalResolutionError as e:
-                    const.logger.info(e)
+                    logger.info(e)
                     continue
 
         raise TemporalResolutionError(
@@ -411,11 +412,3 @@ class TsType:
 
     def __repr__(self):
         return self.val
-
-
-if __name__ == "__main__":
-
-    from pyaerocom.helpers import sort_ts_types
-
-    print(TsType.from_total_seconds(1200))
-    print(TsType.from_total_seconds(31556925 * 2))
