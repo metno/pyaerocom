@@ -1741,7 +1741,7 @@ class ReadEbas(ReadUngriddedBase):
         var_count_glob = -1
         const.print_log.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
-        for i in tqdm(range(num_files)):
+        for i in tqdm(range(num_files), disable=const.QUITE):
             _file = files[i]
             contains = files_contain[i]
             try:

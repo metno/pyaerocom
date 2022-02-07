@@ -239,6 +239,9 @@ class Config:
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
 
+        # Setting for quite run (no tqdm)
+        self._quite = False
+
         if config_file is not None:
             if not os.path.exists(config_file):
                 raise FileNotFoundError(f"input config file does not exist {config_file}")
@@ -567,6 +570,16 @@ class Config:
         raise FileNotFoundError(
             "ERA Interim surface temperature data cannot be accessed (check lustre connection)"
         )
+
+    @property
+    def QUITE(self):
+        return self._quite
+
+    @QUITE.setter
+    def QUITE(self, val):
+        if not isinstance(val, bool):
+            raise ValueError(f"{val} needs to be a boolean")
+        self._quite = val
 
     def make_default_vert_grid(self):
         """Makes default vertical grid for resampling of profile data"""
