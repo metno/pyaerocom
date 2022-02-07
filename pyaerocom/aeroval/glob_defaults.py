@@ -161,7 +161,7 @@ statistics_trend = {
     "obs/mod_trend": {
         "name": "Obs/Mod-Trends",
         "longname": "Trends",
-        "scale": [-10.0, -7.5, -5.0, -2.5, 0, 2.5, 5.0, 7.5, 10.0],
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
@@ -169,7 +169,7 @@ statistics_trend = {
     "obs_trend": {
         "name": "Obs-Trends",
         "longname": "Observed Trends",
-        "scale": [-10.0, -7.5, -5.0, -2.5, 0, 2.5, 5.0, 7.5, 10.0],
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
@@ -177,7 +177,7 @@ statistics_trend = {
     "mod_trend": {
         "name": "Mod-Trends",
         "longname": "Modelled Trends",
-        "scale": [-10, -7.5, -5.0, -2.5, 0, 2.5, 5.0, 7.5, 10.0],
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,

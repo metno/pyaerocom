@@ -1573,6 +1573,51 @@ def _start_stop_from_periods(periods):
 #     return data
 
 
+# def _remove_less_covered(
+#     data: ColocatedData,
+#     min_yrs: int,
+#     sequential_yrs: bool = False,
+# ) -> ColocatedData:
+
+#     stations = data.data.station_name.data
+#     data = data.copy()
+#     for i, s in enumerate(stations):
+
+#         obs_dates = data.data.sel(station_name=s).time.data
+#         obs_data = data.data.sel(station_name=s).data[0, :]
+
+#         obs_years = np.unique(pd.DatetimeIndex(obs_dates).year)
+
+#         season_yrs = {k: [] for k in obs_years}
+#         for j in range(len(obs_dates)):
+#             y = pd.DatetimeIndex([obs_dates[j]]).year[0]
+#             m = pd.DatetimeIndex([obs_dates[j]]).month[0]
+#             season = _get_season(m)
+#             if not np.isnan(obs_data[j]):
+#                 season_yrs[y].append(season)
+
+#         years = _get_yrs_from_season_yrs(season_yrs)
+#         if sequential_yrs:
+#             max_yrs = _find_longest_seq_yrs(years)
+#         else:
+#             max_yrs = _find_n_yrs(years)
+
+#         if min_yrs > max_yrs:
+#             # print(f"Dropping {s}; It has only {max_yrs}")
+#             logging.info(f"Dropping {s}; It has only {max_yrs}")
+#             data.data = data.data.drop_sel(station_name=s)
+
+#     new_stations = data.data.station_name.data
+
+#     print(f"Removed {len(stations)-len(new_stations)} stations")
+#     if len(new_stations) == 0:
+#         raise AeroValTrendsError(
+#             f"No stations left after removing stations with fewer than {min_yrs} years!"
+#         )
+
+#     return data
+
+
 def _remove_less_covered(
     data: ColocatedData,
     min_yrs: int,
@@ -1583,31 +1628,12 @@ def _remove_less_covered(
     data = data.copy()
     for i, s in enumerate(stations):
 
-        obs_dates = data.data.sel(station_name=s).time.data
-        obs_data = data.data.sel(station_name=s).data[0, :]
-
-        obs_years = np.unique(pd.DatetimeIndex(obs_dates).year)
-        non_nan_dates = []
-        debug = []
-
-        season_yrs = {i: [] for i in obs_years}
-        for j in range(len(obs_dates)):
-            y = pd.DatetimeIndex([obs_dates[j]]).year[0]
-            m = pd.DatetimeIndex([obs_dates[j]]).month[0]
-            season = _get_season(m)
-            if not np.isnan(obs_data[j]):
-                season_yrs[y].append(season)
-                non_nan_dates.append(obs_dates[j])
-
-        # years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
-        years = _get_yrs_from_season_yrs(season_yrs)
+        years = _get_yeares(data, s)
         if sequential_yrs:
             max_yrs = _find_longest_seq_yrs(years)
         else:
             max_yrs = _find_n_yrs(years)
-        # if s == "Peyrusse Vieille":
-        #     print(years)
-        #     exit()
+
         if min_yrs > max_yrs:
             print(f"Dropping {s}; It has only {max_yrs}")
             logging.info(f"Dropping {s}; It has only {max_yrs}")
@@ -1622,38 +1648,6 @@ def _remove_less_covered(
         )
 
     return data
-
-
-# def _remove_less_covered(
-#     data: ColocatedData,
-#     min_yrs: int,
-#     sequential_yrs: bool = False,
-# ) -> ColocatedData:
-
-#     stations = data.data.station_name.data
-#     data = data.copy()
-#     for i, s in enumerate(stations):
-
-#         years = _get_yeares(data, s)
-#         if sequential_yrs:
-#             max_yrs = _find_longest_seq_yrs(years)
-#         else:
-#             max_yrs = _find_n_yrs(years)
-
-#         if min_yrs > max_yrs:
-#             print(f"Dropping {s}; It has only {max_yrs}")
-#             logging.info(f"Dropping {s}; It has only {max_yrs}")
-#             data.data = data.data.drop_sel(station_name=s)
-
-#     new_stations = data.data.station_name.data
-
-#     print(f"Removed {len(stations)-len(new_stations)} stations")
-#     if len(new_stations) == 0:
-#         raise AeroValTrendsError(
-#             f"No stations left after removing stations with fewer than {min_yrs} years!"
-#         )
-
-#     return data
 
 
 def _get_yeares(coldata: ColocatedData, site: str, start_yr: int = 2000) -> np.ndarray:
@@ -1672,12 +1666,10 @@ def _get_yeares(coldata: ColocatedData, site: str, start_yr: int = 2000) -> np.n
         elif np.isnan(subset.values).all():
             continue
 
-        seasons = _get_unique_seasons(subset.index)
-        if site == "Peyrusse Vieille" and yr == 2014:
-            print(np.array(subset.values))
-            print(np.array(subset.index))
-            print(seasons)
-            exit()
+        d = subset.index
+        valid_mask = ~np.isnan(subset.values)
+        seasons = _get_unique_seasons(d[valid_mask])
+
         if len(seasons) == 4:
             found_yrs.append(yr)
 
