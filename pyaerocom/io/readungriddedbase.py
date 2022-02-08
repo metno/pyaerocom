@@ -2,16 +2,18 @@ import abc
 import glob
 import logging
 import os
+import warnings
 from fnmatch import fnmatch
 
 import numpy as np
 
-from pyaerocom import LOGLEVELS, const
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.helpers import get_obsnetwork_dir
 
+logger = logging.getLogger(__name__)
 
 # TODO: Proposal: include attribute ts_type that is by default undefined but
 # may be set to either of the defined
@@ -235,11 +237,11 @@ class ReadUngriddedBase(abc.ABC):
     @property
     def DATASET_PATH(self):
         """Wrapper for :attr:`data_dir`."""
-        const.print_log.warning(
-            DeprecationWarning(
-                "WARNING: Attr. DATASET_PATH is deprecated in ungridded readers "
-                "as of pyaerocom v0.11.0. Please use data_dir instead."
-            )
+        warnings.warn(
+            "Attr. DATASET_PATH is deprecated in ungridded readers "
+            "as of pyaerocom v0.11.0. Please use data_dir instead.",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.data_dir
 
@@ -278,7 +280,7 @@ class ReadUngriddedBase(abc.ABC):
         Auxiliary variables are those that are not included in original files
         but are computed from other variables during import
         """
-        return list(self.AUX_REQUIRES.keys())
+        return list(self.AUX_REQUIRES)
 
     @property
     def data_revision(self):
@@ -303,15 +305,11 @@ class ReadUngriddedBase(abc.ABC):
 
     @verbosity_level.setter
     def verbosity_level(self, val):
-        if isinstance(val, str):
-            if not val in LOGLEVELS:
-                raise ValueError("Invalid input for loglevel")
-            val = LOGLEVELS[val]
         self.logger.setLevel(val)
 
     def _add_aux_variables(self):
         """Helper that makes sure all auxiliary variables can be computed"""
-        for var in self.AUX_REQUIRES.keys():
+        for var in self.AUX_REQUIRES:
             if not var in self.AUX_FUNS:
                 raise AttributeError(
                     f"Fatal: no computation method defined for auxiliary variable {var}. "
@@ -589,7 +587,7 @@ class ReadUngriddedBase(abc.ABC):
         else:
             pattern = self._FILEMASK
         if pattern is None:
-            const.print_log.warning(
+            logger.warning(
                 "_FILEMASK attr. must not be None...using default pattern *.* for file search"
             )
             pattern = "*.*"
@@ -654,36 +652,3 @@ class ReadUngriddedBase(abc.ABC):
         if len(files) == 0:
             files = self.get_file_list()
         return self.read_file(files[0], **kwargs)
-
-
-if __name__ == "__main__":
-
-    class ReadUngriddedImplementationExample(ReadUngriddedBase):
-        _FILEMASK = ".txt"
-        DATA_ID = "Blaaa"
-        __version__ = "0.01"
-        PROVIDES_VARIABLES = ["od550aer"]
-        REVISION_FILE = const.REVISION_FILE
-
-        def __init__(self, data_id=None, data_dir=None):
-            super().__init__(data_id, data_dir)
-
-        @property
-        def DEFAULT_VARS(self):
-            return self.PROVIDES_VARIABLES
-
-        @property
-        def SUPPORTED_DATASETS(self):
-            return [self.DATA_ID]
-
-        def TS_TYPE(self):
-            raise NotImplementedError
-
-        def read(self):
-            raise NotImplementedError
-
-        def read_file(self):
-            raise NotImplementedError
-
-    c = ReadUngriddedImplementationExample()
-    print(c.data_id)

@@ -1,19 +1,17 @@
+import logging
 import os
-
-# from datetime import datetime
-from collections import OrderedDict
+import warnings
 
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
 
-# from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
+logger = logging.getLogger(__name__)
 
 
 class ReadAasEtal(ReadUngriddedBase):
@@ -89,7 +87,7 @@ class ReadAasEtal(ReadUngriddedBase):
     # =============================================================================
     #: :obj: `list` of :obj: `str`
     #: List containing all the variables available in this data set.
-    PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
+    PROVIDES_VARIABLES = list(VARS_TO_FILES)
 
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
@@ -167,7 +165,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     elif len(_var) > 1:
                         raise OSError("Found multiple matches...")
                     var = _var[0]
-                    if var in self.UNITCONVERSION.keys():
+                    if var in self.UNITCONVERSION:
                         # Convert units
                         from_unit, to_unit = self.UNITCONVERSION[var]
                         values = pd.to_numeric(station_group[key], errors="coerce").values
@@ -204,7 +202,7 @@ class ReadAasEtal(ReadUngriddedBase):
             #             except ValueError as e:
             #                 s['altitude'] = np.nan
             #                 from pyaerocom import const
-            #                 const.logger.warning(f'Failed to access altitude for {name}')
+            #                 logger.warning(f'Failed to access altitude for {name}')
             # =============================================================================
             # Added the created station to the station list.
             station_list.append(stat)
@@ -242,8 +240,8 @@ class ReadAasEtal(ReadUngriddedBase):
         varindex = -1
 
         # assign metadata object
-        metadata = data_obj.metadata  # OrderedDict
-        meta_idx = data_obj.meta_idx  # OrderedDict
+        metadata = data_obj.metadata  # dict
+        meta_idx = data_obj.meta_idx  # dict
 
         for file in files:
             filename = os.path.basename(file)
@@ -255,7 +253,7 @@ class ReadAasEtal(ReadUngriddedBase):
             stat_list = self.read_file(file, vars_to_retrieve=var_matches)
             for stat in stat_list:
                 # self.counter += 1
-                metadata[meta_key] = OrderedDict()
+                metadata[meta_key] = {}
                 metadata[meta_key].update(stat.get_meta())
                 metadata[meta_key].update(stat.get_station_coords())
                 metadata[meta_key]["data_id"] = self.data_id
@@ -272,11 +270,11 @@ class ReadAasEtal(ReadUngriddedBase):
 
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = OrderedDict()
+                meta_idx[meta_key] = {}
 
                 num_times = len(stat["dtime"])
                 num_vars = len(stat["var_info"])
-                temp_vars = list(stat["var_info"].keys())
+                temp_vars = list(stat["var_info"])
                 tconv = stat["dtime"].astype("datetime64[s]")
                 times = np.float64(tconv)
                 totnum = num_times * num_vars
@@ -285,7 +283,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
 
-                metadata[meta_key]["var_info"] = OrderedDict()
+                metadata[meta_key]["var_info"] = {}
                 for var_count, var in enumerate(temp_vars):
 
                     values = stat[var]
@@ -349,11 +347,6 @@ class ReadSulphurAasEtAl(ReadAasEtal):
 
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
-        msg = "You are using an old name for class ReadAasEtal"
-        const.print_log.warning(DeprecationWarning(msg))
-
-
-if __name__ == "__main__":
-
-    aa = ReadAasEtal("GAWTADsubsetAasEtAl")
-    print(aa.data_id)
+        warnings.warn(
+            "You are using an old name for class ReadAasEtal", DeprecationWarning, stacklevel=2
+        )

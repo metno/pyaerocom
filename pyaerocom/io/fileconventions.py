@@ -1,6 +1,6 @@
-from collections import OrderedDict as od
 from configparser import ConfigParser
-from os.path import basename, exists, join, splitext
+from importlib import resources
+from os.path import basename, splitext
 
 from pyaerocom import const
 from pyaerocom.exceptions import FileConventionError
@@ -71,7 +71,7 @@ class FileConventionRead:
         """Empty dictionary containing init values of infos to be
         extracted from filenames
         """
-        return od(
+        return dict(
             year=None, var_name=None, ts_type=None, vert_code="", is_at_stations=False, data_id=""
         )
 
@@ -131,7 +131,7 @@ class FileConventionRead:
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
             raise FileConventionError(f"Invalid year {info['year']} in filename {basename(file)}")
 
-    def _info_from_aerocom3(self, file):
+    def _info_from_aerocom3(self, file: str) -> dict:
         """Extract info from filename Aerocom 3 convention
 
         Parameters
@@ -204,7 +204,7 @@ class FileConventionRead:
             info["is_at_stations"] = True
         return info
 
-    def _info_from_aerocom2(self, file):
+    def _info_from_aerocom2(self, file: str) -> dict:
         """Extract info from filename Aerocom 2 convention
 
         Parameters
@@ -258,7 +258,7 @@ class FileConventionRead:
             )
         return info
 
-    def get_info_from_file(self, file):
+    def get_info_from_file(self, file: str) -> dict:
         """Identify convention from a file
 
         Currently only two conventions (aerocom2 and aerocom3) exist that are
@@ -271,7 +271,7 @@ class FileConventionRead:
 
         Returns
         -------
-        OrderedDict
+        dict
             dictionary containing keys `year, var_name, ts_type` and
             corresponding variables, extracted from the filename
 
@@ -293,8 +293,9 @@ class FileConventionRead:
         """
         if self.name == "aerocom3":
             return self._info_from_aerocom3(file)
-        elif self.name == "aerocom2":
+        if self.name == "aerocom2":
             return self._info_from_aerocom2(file)
+        raise FileConventionError(f"Unknown {self.name}")
 
     def string_mask(self, data_id, var, year, ts_type, vert_which=None):
         """Returns mask that can be used to identify files of this convention
@@ -343,17 +344,14 @@ class FileConventionRead:
                 f"File matching mask for convention {self.name} not yet defined..."
             )
 
-    def import_default(self, name):
+    def import_default(self, name: str):
         """Checks and load default information from database"""
-        from pyaerocom import __dir__
 
-        fpath = join(__dir__, "data", "file_conventions.ini")
-        if not exists(fpath):
-            raise OSError(f"File conventions ini file could not be found: {fpath}")
         conf_reader = ConfigParser()
-        conf_reader.read(fpath)
+        with resources.path("pyaerocom.data", "file_conventions.ini") as path:
+            conf_reader.read(path)
         if not name in conf_reader:
-            raise NameError("No default available for %s" % name)
+            raise NameError(f"No default available for {name}")
         self.name = name
         for key, val in conf_reader[name].items():
             if key in self.__dict__:
@@ -382,7 +380,7 @@ class FileConventionRead:
 
     def to_dict(self):
         """Convert this object to ordered dictionary"""
-        return od(
+        return dict(
             name=self.name,
             file_sep=self.file_sep,
             year_pos=self.year_pos,
@@ -400,29 +398,3 @@ class FileConventionRead:
         for k, v in self.to_dict().items():
             s += f"\n{k}: {v}"
         return s
-
-
-if __name__ == "__main__":
-    conf = FileConventionRead()
-
-    print(conf)
-
-    d = od(name="Fake", file_sep=10, year_pos=-6, var_pos=15, ts_pos=3)
-    print(conf.from_dict(d))
-    try:
-        conf.import_default("blaaa")
-    except NameError:
-        print("Works as expected")
-    conf.import_default("aerocom3")
-    print(conf)
-
-    conf = FileConventionRead(name="aerocom2")
-    print(conf)
-
-    fname = "aerocom3_TM5_AP3-INSITU_vmrch4_ModelLevelAtStations_2010_monthly.nc"
-
-    print(f"\nFrom file: {conf.from_file(fname)}")
-    print(conf.get_info_from_file(fname))
-
-    ff = FileConventionRead(from_file="aerocom.CALIOP3.monthly.ec5323Ddust.2006.nc")
-    print(ff)

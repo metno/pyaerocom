@@ -1,15 +1,6 @@
-"""Interface for reading GAW files.
-
-This file is part of the pyaerocom package.
-
-Example
--------
-Notebook: '../../notebooks/DMS.ipynb'
 """
-
-from collections import OrderedDict as od
-
-import matplotlib.pyplot as plt
+Interface for reading GAW files.
+"""
 import numpy as np
 import pandas as pd
 
@@ -67,7 +58,7 @@ class ReadGAW(ReadUngriddedBase):
     # List of variables that are provided by this dataset (will be extended
     # by auxiliary variables on class init, for details see __init__ method of
     # base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     INSTRUMENT_NAME = "unknown"
 
@@ -201,11 +192,11 @@ class ReadGAW(ReadUngriddedBase):
             data[:, idx] = np.where(data[:, idx] == "-", self.NAN_VAL[var], data[:, idx])
 
             # get data
-            data_out["var_info"][var] = od()
+            data_out["var_info"][var] = {}
             if idx == 4:  # variable
                 if u == "ppt":
                     data_out["var_info"][var]["units"] = "mol mol-1"
-                    data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e12
+                    data_out[var] = np.asarray(data[:, idx], dtype=np.float64) * 1e12
                     # reset nan values
                     data_out[var] = np.where(
                         data_out[var] == self.NAN_VAL["vmrdms"] * 1e12,
@@ -214,7 +205,7 @@ class ReadGAW(ReadUngriddedBase):
                     )
                 elif u == "ng/m3":
                     data_out["var_info"][var]["units"] = "ug/m3"
-                    data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e-3
+                    data_out[var] = np.asarray(data[:, idx], dtype=np.float64) * 1e-3
                     data_out[var] = np.where(
                         data_out[var] == self.NAN_VAL["concmsa"] * 1e-3,
                         self.NAN_VAL["concmsa"],
@@ -222,10 +213,10 @@ class ReadGAW(ReadUngriddedBase):
                     )
                 else:
                     data_out["var_info"][var]["units"] = u
-                    data_out[var] = data[:, idx].astype(np.float)
+                    data_out[var] = data[:, idx].astype(np.float64)
             else:
                 data_out["var_info"][var]["units"] = 1  # If dimensionless quantity
-                data_out[var] = data[:, idx].astype(np.float)
+                data_out[var] = data[:, idx].astype(np.float64)
 
         # If only vmrdms above, we need to write sd and f
         data_out["f"] = data[:, data_idx[self.VAR_NAMES_FILE["f"]]]
@@ -321,7 +312,7 @@ class ReadGAW(ReadUngriddedBase):
 
             # Fill the metadata dict.
             # The location in the data set is time step dependant
-            metadata[meta_key] = od()
+            metadata[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]["variables"] = list(
@@ -336,7 +327,7 @@ class ReadGAW(ReadUngriddedBase):
             metadata[meta_key]["var_info"] = station_data["var_info"]
 
             # List with indices of this station for each variable
-            meta_idx[meta_key] = od()
+            meta_idx[meta_key] = {}
 
             num_times = len(station_data["dtime"])
 
@@ -380,116 +371,3 @@ class ReadGAW(ReadUngriddedBase):
         self.data = data_obj
 
         return data_obj
-
-
-if __name__ == "__main__":
-
-    # Test that the reading routine works
-
-    r = ReadGAW()
-    data = r.read(vars_to_retrieve=["vmrdms", "f"])
-
-    # If I want to use dms_ai = data['Amsterdam_Island'].vmrdms
-    # data = r.read(files=['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
-    #                '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
-    #                '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat'],
-    #                vars_to_retrieve = ['vmrdms', 'f'])
-
-    print("vars to retrieve:", data.vars_to_retrieve)
-    print("metadata:", data.metadata)
-
-    stat = data["Cape_Verde_Observatory"]
-
-    # Print the station data object
-    print("Cape Verde Observatory:", stat)
-
-    # plot flag at Amsterdam Island
-    ax = stat.plot_timeseries("f")
-    plt.show()
-
-    # Plot vmrdms at Amsterdam Island and Cape Verde Observatory in the same figure
-    ax = data.plot_station_timeseries(
-        station_name="Amsterdam_Island", var_name="vmrdms", label="Amsterdam Island"
-    )
-    data.plot_station_timeseries(
-        station_name="Cape_Verde_Observatory",
-        var_name="vmrdms",
-        ax=ax,
-        label="Cape Verde Observatory",
-    )
-    ax.set_title("vmrdms")
-    plt.show()
-
-    # Compare with papers
-    # References:
-    # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2000JD900236
-    # https://aerocom.met.no/DATA/AEROCOM_WORK/oxford10/pdf_pap/suntharalingam_sulfate_2010.pdf
-
-    # 2004-2008
-    # plot monthly mean
-    # dms_ai = data['Amsterdam_Island'].vmrdms  # error when reading more than one file with the same station name
-    dms_ai = data[0].vmrdms  # if all the files are read
-    dms_ai_0408 = dms_ai["2004-1-1":"2008-12-31"]
-    dms_ai_monthly_0408 = dms_ai_0408.resample("M", "mean")
-    plt.figure()
-    ax = dms_ai_monthly_0408.plot()
-    ax.set_title("Monthlty mean of vmrdms at Amsterdam Island (2004-2008)")
-    plt.show()
-
-    # plot climatology
-    dms_climat_0408 = dms_ai_monthly_0408.groupby(dms_ai_monthly_0408.index.month).mean()
-    # dms_climat_0408 = dms_ai_0408.groupby(dms_ai_0808.index.month).mean()
-    print("DMS climatology at Amsterdam Island (2004-2008):", dms_climat_0408)
-    plt.figure()
-    ax = dms_climat_0408.plot(label="mean")
-    ax.set_title("Monthly climatology of vmrdms at Amsterdam Island (2004-2008)")
-    plt.show()
-
-    # 1990-1999
-    dms_ai_9099 = dms_ai["1990-1-1":"1999-12-31"]
-
-    print("count:", dms_ai_9099.count())  # Should be 2820
-    dms_ai_monthly_mean_9099 = dms_ai_9099.resample("M").mean()
-
-    dms_climat_9099 = dms_ai_monthly_mean_9099.groupby(dms_ai_monthly_mean_9099.index.month).mean()
-
-    print("DMS climatology at Amsterdam Island (1990-1999):", dms_climat_9099)
-    plt.figure()
-    ax = dms_climat_9099.plot(label="mean")
-    ax.set_title("Climatology of vmrdms at Amsterdam Island (1990-1999)")
-
-    dms_ai_monthly_median_9099 = dms_ai_9099.resample("M").median()
-
-    dms_median_9099 = dms_ai_monthly_median_9099.groupby(
-        dms_ai_monthly_median_9099.index.month
-    ).median()
-
-    print("DMS monthly median at Amsterdam Island (1990-1999):", dms_median_9099)
-    dms_median_9099.plot(label="median", ax=ax)
-    plt.legend(loc="best")
-    plt.show()
-
-    # Test that the reading routine wirks for the rest of the variables
-    # SO4
-    data2 = r.read(vars_to_retrieve=["concso4"])
-    stat = data2[5]
-    ax = stat.plot_timeseries("concso4")
-    plt.show()
-
-    # black carbon
-    data3 = r.read(vars_to_retrieve=["concbc"])
-    stat = data3[1]
-    ax = stat.plot_timeseries("concbc")
-    plt.show()
-
-    # dms second file
-    data4 = r.read(vars_to_retrieve=["vmrdms"])
-    stat = data4[3]
-    ax = stat.plot_timeseries("vmrdms")
-    plt.show()
-
-    # msa
-    data5 = r.read(vars_to_retrieve=["concmsa"])
-    stat = data5[4]
-    ax = stat.plot_timeseries("concmsa")
-    plt.show()

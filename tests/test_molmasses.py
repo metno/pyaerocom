@@ -1,13 +1,7 @@
-#!/usr/bin/env python3
-"""
-Created on Fri Mar 13 09:56:54 2020
-
-@author: jonasg
-"""
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
-from pyaerocom import molmasses as mm
+from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass, get_species
 
 
 @pytest.mark.parametrize(
@@ -22,7 +16,7 @@ from pyaerocom import molmasses as mm
     ],
 )
 def test_get_species(var_name, species):
-    assert mm.get_species(var_name) == species
+    assert get_species(var_name) == species
 
 
 @pytest.mark.parametrize(
@@ -37,7 +31,7 @@ def test_get_species(var_name, species):
     ],
 )
 def test_get_molmass(var_name, molmass):
-    assert mm.get_molmass(var_name) == molmass
+    assert get_molmass(var_name) == molmass
 
 
 @pytest.mark.parametrize(
@@ -48,11 +42,5 @@ def test_get_molmass(var_name, molmass):
     ],
 )
 def test_get_mmr_to_vmr_fac(var_name, result):
-    val = mm.get_mmr_to_vmr_fac(var_name)
-    npt.assert_allclose(val, result, rtol=1e-3)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
+    val = get_mmr_to_vmr_fac(var_name)
+    assert_allclose(val, result, rtol=1e-3)

@@ -1,21 +1,9 @@
-#!/usr/bin/env python3
-########################################################################
-#
-# This python module is part of the pyaerocom software
-#
-# License: GNU General Public License v3.0
-# More information: https://github.com/metno/pyaerocom
-# Documentation: https://pyaerocom.readthedocs.io/en/latest/
-# Copyright (C) 2017 met.no
-# Contact information: Norwegian Meteorological Institute (MET Norway)
-#
-########################################################################
-
 import logging
 import os
+import warnings
 from pathlib import Path
 
-from pyaerocom import const, logger, print_log
+from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.helpers import varlist_aerocom
@@ -37,6 +25,8 @@ from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
+
+logger = logging.getLogger(__name__)
 
 
 class ReadUngridded:
@@ -236,10 +226,10 @@ class ReadUngridded:
         return reader.PROVIDES_VARIABLES
 
     def get_reader(self, data_id):
-        const.print_log.warning(
-            DeprecationWarning(
-                "this method was renamed to get_lowlevel_reader, please use the new name"
-            )
+        warnings.warn(
+            "this method was renamed to get_lowlevel_reader, please use the new name",
+            DeprecationWarning,
+            stacklevel=2,
         )
         return self.get_lowlevel_reader(data_id)
 
@@ -324,7 +314,7 @@ class ReadUngridded:
         """
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
-            const.print_log.info(f"Reading {data_id} from specified data loaction: {ddir}")
+            logger.info(f"Reading {data_id} from specified data loaction: {ddir}")
         else:
             ddir = None
         return reader(data_id=data_id, data_dir=ddir)
@@ -378,7 +368,7 @@ class ReadUngridded:
             _caching = const.CACHING
             const.CACHING = False
 
-            print_log.info("Received additional reading constraints, ignoring caching")
+            logger.info("Received additional reading constraints, ignoring caching")
 
         reader = self.get_lowlevel_reader(data_id)
 
@@ -417,10 +407,10 @@ class ReadUngridded:
         data_read = None
         if len(vars_to_read) > 0:
 
-            _loglevel = print_log.level
-            print_log.setLevel(logging.INFO)
+            _loglevel = logger.level
+            logger.setLevel(logging.INFO)
             data_read = reader.read(vars_to_read, **kwargs)
-            print_log.setLevel(_loglevel)
+            logger.setLevel(_loglevel)
 
             for var in vars_to_read:
                 # write the cache file
@@ -429,7 +419,7 @@ class ReadUngridded:
                         cache.write(data_read, var)
                     except Exception as e:
                         _caching = False
-                        print_log.warning(
+                        logger.warning(
                             f"Failed to write to cache directory. "
                             f"Error: {repr(e)}. Deactivating caching "
                             f"in pyaerocom"
@@ -751,12 +741,3 @@ class ReadUngridded:
         for ds in self.data_ids:
             s += f"\n{self.get_lowlevel_reader(ds)}"
         return s
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    ebas_local = os.path.join(pya.const.OUTPUTDIR, "data/obsdata/EBASMultiColumn/data")
-    reader = ReadUngridded(["blaaaa"], data_dirs={"EBASMC": ebas_local})
-
-    data = reader.read("EBASMC", "ac550aer")

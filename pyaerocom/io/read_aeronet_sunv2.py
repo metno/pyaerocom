@@ -1,38 +1,7 @@
-################################################################
-# read_aeronet_sunv2.py
-#
-# read Aeronet direct sun V2 data
-#
-# this file is part of the pyaerocom package
-#
-#################################################################
-# Created 20171026 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
-# Copyright (C) 2017 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jan.griesfeller@met.no
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
-
+"""
+read Aeronet direct sun V2 data
+"""
 import re
-from collections import OrderedDict as od
 
 import numpy as np
 import pandas as pd
@@ -78,7 +47,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     NAN_VAL = -9999.0
 
     #: Dictionary that specifies the index for each data column
-    COL_INDEX = od(
+    COL_INDEX = dict(
         date=0,
         time=1,
         julien_day=2,
@@ -113,7 +82,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = [k for k in COL_INDEX.keys()][3:]
+    PROVIDES_VARIABLES = list(COL_INDEX)[3:]
 
     @property
     def col_index(self):
@@ -225,37 +194,3 @@ class ReadAeronetSunV2(ReadAeronetBase):
                     del data_out[var]
 
         return data_out
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    pya.change_verbosity("critical")
-    data = {}
-    failed = []
-    for name in ReadAeronetSunV2.SUPPORTED_DATASETS:
-        print(f"reading {name}")
-        reader = ReadAeronetSunV2(name)
-        try:
-            data[name] = reader.read_first_file()
-        except Exception as e:
-            failed.append(repr(e))
-
-    for name, sdata in data.items():
-        print(name)
-        print(sdata)
-
-    read = ReadAeronetSunV2()
-
-    read.verbosity_level = "critical"
-    first_ten = read.read(last_file=10)
-
-    data0 = read.read_first_file(vars_as_series=True)
-    data = read.read_first_file()
-    print(data)
-
-    stats = first_ten.to_station_data_all()
-
-    read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
-    data = read.read_first_file(vars_to_retrieve=["ang4487aer", "ang4487aer_calc"])
-    print(data)

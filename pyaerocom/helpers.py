@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
 """
 General helper methods for the pyaerocom library.
 """
+import logging
 import math as ma
 from collections import Counter
 from datetime import MINYEAR, date, datetime
@@ -15,7 +15,7 @@ import pandas as pd
 import xarray as xr
 from cf_units import Unit
 
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
@@ -39,6 +39,8 @@ from pyaerocom.time_config import (
     sec_units,
 )
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 NUM_KEYS_META = ["longitude", "latitude", "altitude"]
 
@@ -69,7 +71,7 @@ def varlist_aerocom(varlist):
             if not _var in output:
                 output.append(_var)
         except VariableDefinitionError as e:
-            const.print_log.warning(repr(e))
+            logger.warning(repr(e))
     if len(output) == 0:
         raise ValueError("None of the input variables appears to be valid")
     return output
@@ -278,7 +280,7 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
     from pyaerocom import const
 
     if len(coord_vals) < 2:
-        const.print_log.warning(
+        logger.warning(
             "Checking coordinate values for circularity "
             "failed since coord array has less than 2 values"
         )
@@ -923,7 +925,7 @@ def merge_station_data(
         try:
             merged.insert_nans_timeseries(var_name)
         except Exception as e:
-            const.print_log.warning(
+            logger.warning(
                 f"Could not insert NaNs into timeseries of variable {var_name} "
                 f"after merging stations. Reason: {repr(e)}"
             )
@@ -1382,7 +1384,7 @@ def datetime2str(time, ts_type=None):
     try:
         time = to_pandas_timestamp(time).strftime(conv)
     except pd.errors.OutOfBoundsDatetime:
-        const.print_log.warning(f"Failed to convert time {time} to string")
+        logger.warning(f"Failed to convert time {time} to string")
         pass
     return time
 
@@ -1680,26 +1682,3 @@ def get_time_rng_constraint(start, stop):
     t_upper = iris.time.PartialDateTime(year=stop.year, month=stop.month, day=stop.day)
 
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
-
-
-if __name__ == "__main__":
-
-    idx = make_datetime_index(2010, 2011, "hourly")
-    print(get_lowest_resolution("yearly", "daily", "monthly"))
-    print(get_highest_resolution("yearly", "daily", "monthly"))
-
-    print(
-        infer_time_resolution(
-            [
-                np.datetime64("2010-01-01"),
-                np.datetime64("2010-01-02"),
-                np.datetime64("2010-01-05"),
-                np.datetime64("2010-10-15"),
-            ]
-        )
-    )
-
-    print(varlist_aerocom(["od550aer", "od550csaer"]))
-
-    rng = (30, 60)
-    get_lon_rng_constraint(*rng, False)

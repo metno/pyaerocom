@@ -115,7 +115,7 @@ def _check_prlim_units(prlim, prlim_units):  # pragma: no cover
     if not prlim_freq in SI_TO_TS_TYPE:
         raise ValueError(
             f"frequency in prlim_units must be either of the "
-            f"following values: {list(SI_TO_TS_TYPE.keys())}."
+            f"following values: {list(SI_TO_TS_TYPE)}."
         )
 
     prlim_tstype = TsType(SI_TO_TS_TYPE[prlim_freq])

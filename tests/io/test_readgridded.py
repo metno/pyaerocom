@@ -1,14 +1,8 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
-
 import os
-from collections import OrderedDict
 
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose, assert_almost_equal, assert_array_equal
 from pandas import DataFrame
 
 from pyaerocom import GriddedData
@@ -76,7 +70,7 @@ def test_read_var(reader_tm5, input_args, mean_val):
     # Needs to be checked.
     # mean = data.mean()
     mean = np.nanmean(data.cube.data)
-    npt.assert_allclose(mean, mean_val, rtol=1e-3)
+    assert_allclose(mean, mean_val, rtol=1e-3)
 
 
 def test_ReadGridded_class_empty():
@@ -107,7 +101,7 @@ def test_ReadGridded_ts_types():
 def test_ReadGridded_read_var(reader_tm5):
     r = reader_tm5
     data = r.read_var("od550aer")
-    npt.assert_almost_equal(data.mean(), 0.0960723)
+    assert_almost_equal(data.mean(), 0.0960723)
     with pytest.raises(VarNotAvailableError):
         r.read_var("wetso4")
     from pyaerocom.io.aux_read_cubes import add_cubes
@@ -186,9 +180,9 @@ def test_ReadGridded_years_avail(tmpdir, years, expected):
 
 
 def test_ReadGridded_get_var_info_from_files(reader_tm5):
-    od = reader_tm5.get_var_info_from_files()
-    assert isinstance(od, OrderedDict)
-    assert sorted(od.keys()) == sorted(["abs550aer", "od550aer"])
+    info = reader_tm5.get_var_info_from_files()
+    assert isinstance(info, dict)
+    assert sorted(info) == ["abs550aer", "od550aer"]
 
 
 # Lustre tests
@@ -205,7 +199,7 @@ def test_file_info(reader_reanalysis):
 @lustre_unavail
 def test_years_available(reader_reanalysis):
     years = list(range(2003, 2022)) + [9999]
-    npt.assert_array_equal(reader_reanalysis.years_avail, years)
+    assert_array_equal(reader_reanalysis.years_avail, years)
 
 
 @lustre_unavail
@@ -224,7 +218,7 @@ def test_read_var_lustre(reader_reanalysis):
     from pyaerocom import GriddedData
 
     assert isinstance(d, GriddedData)
-    npt.assert_array_equal(
+    assert_array_equal(
         [d.var_name, sum(d.shape), d.start, d.stop],
         [
             "od550aer",
@@ -240,7 +234,7 @@ def test_read_var_lustre(reader_reanalysis):
         d.latitude.points[-1],
     ]
     nominal = [-180.0, 178.875, 90.0, -90.0]
-    npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
+    assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
     return d
 
 
@@ -259,15 +253,9 @@ def test_read_vars(reader_reanalysis):
     )
     vals = [len(data), sum(data[0].shape), sum(data[1].shape), sum(data[2].shape)]
     nominal = [3, 2307, 2307, 2307]
-    npt.assert_array_equal(vals, nominal)
+    assert_array_equal(vals, nominal)
 
 
 def test_read_climatology_file(reader_tm5):
     data = reader_tm5.read_var("abs550aer", start=9999)
     assert isinstance(data, GriddedData)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

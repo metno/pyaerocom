@@ -41,7 +41,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     }
 
     #: default variables for read method
-    DEFAULT_VARS = ["od550aer", "od550gt1aer", "od550lt1aer"]
+    DEFAULT_VARS = ["od550aer", "od550gt1aer", "od550lt1aer", "od550dust"]
 
     #: value corresponding to invalid measurement
     NAN_VAL = -999.0
@@ -53,6 +53,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     VAR_NAMES_FILE["od500lt1aer"] = "Fine_Mode_AOD_500nm[tau_f]"
     VAR_NAMES_FILE["od500aer"] = "Total_AOD_500nm[tau_a]"
     VAR_NAMES_FILE["ang4487aer"] = "Angstrom_Exponent(AE)-Total_500nm[alpha]"
+    VAR_NAMES_FILE["od500dust"] = "Coarse_Mode_AOD_500nm[tau_c]"
 
     #: dictionary specifying the file column names (values) for each
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
@@ -74,6 +75,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     AUX_REQUIRES = {
         "od550aer": ["od500aer", "ang4487aer"],
         "od550gt1aer": ["od500gt1aer", "ang4487aer"],
+        "od550dust": ["od500gt1aer", "ang4487aer"],
         "od550lt1aer": ["od500lt1aer", "ang4487aer"],
     }
 
@@ -82,13 +84,14 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     AUX_FUNS = {
         "od550aer": calc_od550aer,
         "od550gt1aer": calc_od550gt1aer,
+        "od550dust": calc_od550gt1aer,
         "od550lt1aer": calc_od550lt1aer,
     }
 
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     def read_file(self, filename, vars_to_retrieve=None, vars_as_series=False):
         """Read Aeronet SDA V3 file and return it in a dictionary
@@ -226,16 +229,3 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                     del data_out[var]
 
         return data_out
-
-
-if __name__ == "__main__":
-    read = ReadAeronetSdaV3()
-    read.verbosity_level = "debug"
-
-    first_ten = read.read(last_file=10)
-
-    data_first = read.read_first_file()
-
-    data_berlin = read.read_station("Berlin")
-
-    print(data_first)

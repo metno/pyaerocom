@@ -1,6 +1,7 @@
+import logging
 import os
 
-from pyaerocom import GriddedData, TsType, const
+from pyaerocom import GriddedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
@@ -14,6 +15,8 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.helpers import isnumeric
+
+logger = logging.getLogger(__name__)
 
 
 class ModelMapsEngine(ProcessingEngine, DataImporter):
@@ -75,7 +78,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_list = self._get_vars_to_process(model_name, var_list)
         files = []
         for var in var_list:
-            const.print_log.info(f"Processing model maps for {model_name} ({var})")
+            logger.info(f"Processing model maps for {model_name} ({var})")
 
             try:
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
@@ -84,9 +87,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             except (TemporalResolutionError, DataCoverageError, VariableDefinitionError) as e:
                 if self.raise_exceptions:
                     raise
-                const.print_log.warning(
-                    f"Failed to process maps for {model_name} {var} data. Reason: {e}."
-                )
+                logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")
         return files
 
     def _check_dimensions(self, data: GriddedData) -> "GriddedData":
@@ -133,7 +134,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         if not reanalyse_existing:
             if os.path.exists(fp_json) and os.path.exists(fp_geojson):
-                const.print_log.info(f"Skipping processing of {outname}: data already exists.")
+                logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
         freq = self.cfg.time_cfg.main_freq
