@@ -1,17 +1,24 @@
-#!/usr/bin/env python3
 """
 I/O helper methods of the pyaerocom package
 """
+from __future__ import annotations
+
+import logging
 import os
 import shutil
-from collections import OrderedDict as od
 from datetime import datetime
+from importlib import resources
 from pathlib import Path
 from time import time
+
+import simplejson as json
 
 from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
+
+logger = logging.getLogger(__name__)
+
 
 #: country code file name
 #: will be prepended with the path later on
@@ -52,13 +59,13 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
         try:
             t0 = time()
             shutil.copy2(loc_remote, loc_local)
-            const.print_log.info(
+            logger.info(
                 f"Copied EBAS SQL database to {loc_local}\nElapsed time: {time()-t0:.3f} s"
             )
 
             return loc_local
         except Exception as e:
-            const.print_log.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
+            logger.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
             return loc_remote
     return loc_remote
 
@@ -259,64 +266,9 @@ def get_obsnetwork_dir(obs_id):
     return data_dir
 
 
-def search_names(update_inifile=True, check_nc_file=True):
-    """Search model IDs in database
-
-    Parameters
-    ----------
-    update_inifile : bool
-        if True, the file *names.txt* will be updated. The file is located
-        in the installation *data* directory.
-    check_nc_file : bool
-        If True, only model IDs are included, for which at least one nc file
-        can be detected in the corresponding renamed sub directory
-    """
-    names = []
-    for mdir in const.DATA_SEARCH_DIRS:
-        print("\n%s\n" % mdir)
-        sub = os.listdir(mdir)
-        for item in sub:
-            path = os.path.join(mdir, item, "renamed")
-            if os.path.isdir(path):
-                print("\n%s\n" % path)
-                add = True
-                if check_nc_file:
-                    add = False
-                    for name in os.listdir(path):
-                        if name.endswith(".nc"):
-                            add = True
-                            break
-                if add:
-                    names.append(item)
-    names = sorted(od.fromkeys(names))
-    if update_inifile:
-        from pyaerocom import __dir__
-
-        fpath = os.path.join(__dir__, "data", "names.txt")
-        f = open(fpath, "w")
-        for name in names:
-            f.write("%s\n" % name)
-        f.close()
-    return names
-
-
-def get_all_names():
-    """Try to import all model IDs from file names.txt in data directory"""
-    from pyaerocom import __dir__
-
-    try:
-        with open(os.path.join(__dir__, "data", "names.txt")) as f:
-            names = f.read().splitlines()
-        f.close()
-    except Exception:
-        try:
-            names = search_names()
-        except Exception:
-            raise Exception("Failed to access model IDs")
-    return names
-
-
-def get_country_name_from_iso(iso_code=None, filename=None, return_as_dict=False):
+def get_country_name_from_iso(
+    iso_code: str | None = None, filename: str | Path | None = None, return_as_dict: bool = False
+):
     """get the country name from the 2 digit iso country code
 
     the underlaying json file was taken from this github repository
@@ -344,35 +296,20 @@ def get_country_name_from_iso(iso_code=None, filename=None, return_as_dict=False
     ValueError
         if the country code ins invalid
     """
-    if iso_code is None:
-        return_as_dict = True
-
     if filename is None:
         # set default file name
-        from pyaerocom import __dir__
+        with resources.path("pyaerocom.data", COUNTRY_CODE_FILE) as path:
+            filename = path
 
-        filename = os.path.join(__dir__, "data", COUNTRY_CODE_FILE)
-
-    import simplejson as json
-
-    with open(filename) as fh:
-        json_data = json.load(fh)
+    if isinstance(filename, str):
+        filename = Path(filename)
+    json_data = json.loads(filename.read_text())
 
     iso_dict = {}
     for indict in json_data:
         iso_dict[indict["alpha-2"]] = indict["name"]
 
-    if return_as_dict:
+    if iso_code is None or return_as_dict:
         return iso_dict
-    else:
-        try:
-            ret_val = iso_dict[iso_code.upper()]
-        except KeyError:
-            ret_val = ""
-            raise ValueError
-        return ret_val
 
-
-if __name__ == "__main__":
-    # names = search_names()
-    names = get_all_names()
+    return iso_dict[iso_code.upper()]

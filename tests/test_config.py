@@ -1,15 +1,16 @@
 import getpass
 import os
 import tempfile
-from contextlib import nullcontext as does_not_raise_exception
+from importlib import resources
+from pathlib import Path
 
 import pytest
 
 import pyaerocom.config as testmod
-from pyaerocom import const as DEFAULT_CFG
+from pyaerocom import const
 from pyaerocom.config import Config
 
-from .conftest import PYADIR, lustre_avail
+from .conftest import lustre_avail
 
 USER = getpass.getuser()
 
@@ -21,7 +22,14 @@ os.makedirs(os.path.join(LOCAL_DB_DIR, "modeldata"))
 os.makedirs(os.path.join(LOCAL_DB_DIR, "obsdata"))
 open(CFG_FILE_WRONG, "w").close()
 
-CFG_FILE = os.path.join(PYADIR, "data/paths.ini")
+
+def test_CFG_FILE_EXISTS():
+    assert resources.is_resource("pyaerocom.data", "paths.ini")
+    assert os.path.exists(CFG_FILE)
+
+
+with resources.path("pyaerocom.data", "paths.ini") as path:
+    CFG_FILE = str(path)
 
 
 def test_CFG_FILE_EXISTS():
@@ -47,32 +55,39 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 
 
 @pytest.mark.parametrize(
-    "config_file,try_infer_environment,raises",
+    "config_file,try_infer_environment",
     [
-        (CFG_FILE_WRONG, False, pytest.raises(ValueError)),
-        (f"/home/{USER}/blaaaa.ini", False, pytest.raises(FileNotFoundError)),
-        (None, False, does_not_raise_exception()),
-        (None, True, does_not_raise_exception()),
-        (CFG_FILE, False, does_not_raise_exception()),
+        (None, False),
+        (None, True),
+        (CFG_FILE, False),
     ],
 )
-def test_Config___init__(config_file, try_infer_environment, raises):
-    with raises:
-        cfg = testmod.Config(config_file, try_infer_environment)
+def test_Config___init__(config_file, try_infer_environment):
+    testmod.Config(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
-    "basedir,raises,envid",
+    "config_file,exception",
     [
-        ("/blaaa", pytest.raises(FileNotFoundError), None),
-        (LOCAL_DB_DIR, does_not_raise_exception(), "local-db"),
+        (CFG_FILE_WRONG, ValueError),
+        (f"/home/{USER}/blaaaa.ini", FileNotFoundError),
     ],
 )
-def test_Config__infer_config_from_basedir(basedir, raises, envid):
+def test_Config___init___error(config_file, exception):
+    with pytest.raises(exception):
+        testmod.Config(config_file, False)
+
+
+def test_Config__infer_config_from_basedir():
     cfg = testmod.Config(try_infer_environment=False)
-    with raises:
-        res = cfg._infer_config_from_basedir(basedir)
-        assert res[1] == envid
+    res = cfg._infer_config_from_basedir(LOCAL_DB_DIR)
+    assert res[1] == "local-db"
+
+
+def test_Config__infer_config_from_basedir_error():
+    cfg = testmod.Config(try_infer_environment=False)
+    with pytest.raises(FileNotFoundError):
+        cfg._infer_config_from_basedir("/blaaa")
 
 
 def test_Config_has_access_lustre():
@@ -87,28 +102,25 @@ def test_Config_has_access_users_database():
 
 @lustre_avail
 @pytest.mark.parametrize(
-    "cfg_id, basedir, init_obslocs_ungridded,init_data_search_dirs, raises, num_obs, num_dirs",
+    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
     [
-        ("metno", None, False, False, does_not_raise_exception(), 0, 0),
-        ("metno", None, True, False, does_not_raise_exception(), 0, 0),
-        ("metno", None, True, True, does_not_raise_exception(), 0, 0),
-        ("metno", f"/home/{USER}", True, True, does_not_raise_exception(), 0, 0),
-        ("users-db", None, False, False, does_not_raise_exception(), 0, 0),
+        ("metno", None, False, False),
+        ("metno", None, True, False),
+        ("metno", None, True, True),
+        ("metno", f"/home/{USER}", True, True),
+        ("users-db", None, False, False),
     ],
 )
-def test_Config_read_config(
-    cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, raises, num_obs, num_dirs
-):
+def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs):
     cfg = testmod.Config(try_infer_environment=False)
     cfg_file = cfg._config_files[cfg_id]
-    assert os.path.exists(cfg_file)
-    with raises:
-        cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
-        assert len(cfg.DATA_SEARCH_DIRS) == num_dirs
-        assert len(cfg.OBSLOCS_UNGRIDDED) == num_obs
-        assert os.path.exists(cfg.OUTPUTDIR)
-        assert os.path.exists(cfg.COLOCATEDDATADIR)
-        assert os.path.exists(cfg.CACHEDIR)
+    assert Path(cfg_file).exists()
+    cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
+    assert len(cfg.DATA_SEARCH_DIRS) == 0
+    assert len(cfg.OBSLOCS_UNGRIDDED) == 0
+    assert Path(cfg.OUTPUTDIR).exists()
+    assert Path(cfg.COLOCATEDDATADIR).exists()
+    assert Path(cfg.CACHEDIR).exists()
 
 
 def test_empty_class_header(empty_cfg):
@@ -214,31 +226,27 @@ def test_empty_class_header(empty_cfg):
     assert cfg.SERVER_CHECK_TIMEOUT == 1  # s
 
     assert cfg._outhomename == "MyPyaerocom"
-    from pyaerocom import __dir__
 
-    config_files = {
-        "lustre": os.path.join(__dir__, "data", "paths.ini"),
-        "user_server": os.path.join(__dir__, "data", "paths_user_server.ini"),
-        "local-db": os.path.join(__dir__, "data", "paths_local_database.ini"),
-    }
+    with resources.path("pyaerocom.data", "paths.ini") as path:
+        assert cfg._config_files["metno"] == cfg._config_ini_lustre == str(path)
 
-    assert cfg._config_ini_lustre == config_files["lustre"]
-    assert cfg._config_ini_user_server == config_files["user_server"]
-    assert cfg._config_ini_localdb == config_files["local-db"]
+    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
+        assert cfg._config_files["users-db"] == cfg._config_ini_user_server == str(path)
 
-    assert cfg._config_files == {
-        "metno": config_files["lustre"],
-        "users-db": config_files["user_server"],
-        "local-db": config_files["local-db"],
-    }
+    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
+        assert cfg._config_files["local-db"] == cfg._config_ini_localdb == str(path)
+
     assert cfg._check_subdirs_cfg == {
         "metno": "aerocom",
         "users-db": "AMAP",
         "local-db": "modeldata",
     }
 
-    assert cfg._var_info_file == os.path.join(__dir__, "data", "variables.ini")
-    assert cfg._coords_info_file == os.path.join(__dir__, "data", "coords.ini")
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        assert cfg._var_info_file == str(path)
+    with resources.path("pyaerocom.data", "coords.ini") as path:
+        assert cfg._coords_info_file == str(path)
+
     dbdirs = {
         "lustre/storeA/project": "metno",
         "metno/aerocom_users_database": "users-db",
@@ -289,7 +297,7 @@ def test_empty_init(empty_cfg):
 
 
 def test_default_config_HOMEDIR():
-    assert DEFAULT_CFG.HOMEDIR == os.path.expanduser("~") + "/"
+    assert const.HOMEDIR == os.path.expanduser("~") + "/"
 
 
 def test_default_config():

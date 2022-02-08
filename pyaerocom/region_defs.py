@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
 """
 Definitions of rectangular regions used in pyaerocom
-
-Created: 8 Feb 2021
-Author: J. Gliss
 
 NOTE: replaces former regions.ini in pyaerocom/data dir
 """
@@ -137,17 +133,3 @@ OLD_AEROCOM_REGIONS = list(_AEROCOM_DEFS)
 HTAP_REGIONS_DEFAULT = list(_HTAP_NAMES)
 HTAP_REGIONS = list(_HTAP_DEFS)
 OTHER_REGIONS = list(_OTHER_REG_DEFS)
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-    for key in REGION_NAMES:
-        assert key in REGION_DEFS, key
-
-    plot = ["NAM", "PAN", "RBU"]
-
-    for rn in plot:
-        pya.Region(rn).plot()

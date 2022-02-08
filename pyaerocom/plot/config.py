@@ -142,12 +142,3 @@ def get_color_theme(theme_name="dark"):
     if not theme_name in _COLOR_THEMES:
         raise ValueError("Invalid input for theme_name, choose from %s" % _COLOR_THEMES)
     return ColorTheme(theme_name)
-
-
-if __name__ == "__main__":
-    print(ColorTheme("dark"))
-    print(ColorTheme("light"))
-
-    import doctest
-
-    doctest.testmod()

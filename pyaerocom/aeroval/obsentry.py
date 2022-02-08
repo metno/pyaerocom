@@ -1,9 +1,12 @@
+import logging
 from traceback import format_exc
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrType
 from pyaerocom.exceptions import InitialisationError
 from pyaerocom.metastandards import DataSource
+
+logger = logging.getLogger(__name__)
 
 
 class ObsEntry(BrowseDict):
@@ -187,9 +190,9 @@ class ObsEntry(BrowseDict):
         """
         if ovt in self.ALT_NAMES_VERT_CODES:
             _ovt = self.ALT_NAMES_VERT_CODES[ovt]
-            const.print_log.warning(f"Please use {_ovt} for obs_vert_code and not {ovt}")
+            logger.warning(f"Please use {_ovt} for obs_vert_code and not {ovt}")
             return _ovt
-        valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES.keys())
+        valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES)
         raise ValueError(
             f"Invalid value for obs_vert_type: {self.obs_vert_type}. "
             f"Supported codes are {valid}."

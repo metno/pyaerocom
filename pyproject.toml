@@ -4,11 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+log_cli = false
+log_cli_level = "WARNING"
 addopts = "--failed-first"
 testpaths = ["tests"]
 filterwarnings = [
-  "error",
-  "ignore::pytest.PytestUnraisableExceptionWarning",
+    # all warnings are errors
+    "error",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+    # except deprecation and future warnings ouside this packege
+    'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
+    'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+    # and not on this list
+    "ignore:.*please install Basemap:UserWarning:geonum.*:",
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:"
 ]
 
 [tool.coverage.run]
@@ -106,16 +115,23 @@ skipsdist=True
 commands =
     black --check .
     isort --check .
+deps =
+    # cartopy-0.20+ fails to install on CI
+    cartopy>=0.16,<0.20
 extras = 
     format
 
 [testenv:lint]
 skipsdist=True
+ignore_outcome=True
 commands =
     mypy pyaerocom/
     pylint pyaerocom/
     pycodestyle pyaerocom/
     pydocstyle pyaerocom/
+deps =
+    # cartopy-0.20+ fails to install on CI
+    cartopy>=0.16,<0.20
 extras = 
     lint
 
@@ -123,6 +139,9 @@ extras =
 skipsdist=True
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
+deps =
+    # cartopy-0.20+ fails to install on CI
+    cartopy>=0.16,<0.20
 extras = 
     docs
 """

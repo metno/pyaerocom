@@ -1,13 +1,15 @@
+import logging
 from traceback import format_exc
 
 import numpy as np
 import xarray as xr
 
-from pyaerocom import const
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import get_lowest_resolution
+
+logger = logging.getLogger(__name__)
 
 
 class SuperObsEngine(ProcessingEngine, HasColocator):
@@ -41,7 +43,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                const.print_log.warning(
+                logger.warning(
                     f"Failed to process superobs entry for {obs_name},  "
                     f"{model_name}, var {var_name}. Reason: {format_exc()}"
                 )

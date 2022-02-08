@@ -1,55 +1,25 @@
-"""Interface for reading EEA AqERep files (formerly known as Airbase data).
-
-This file is part of the pyaerocom package.
-
-#################################################################
-# Created 20120128 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
-# Copyright (C) 2021 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jan.griesfeller@met.no
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
-
-Example
--------
-look at the end of the file
+"""
+Interface for reading EEA AqERep files (formerly known as Airbase data).
 """
 import gzip
+import logging
 import os
 import pathlib
 import shutil
 import tempfile
-from collections import OrderedDict as od
 
 import cf_units
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyaerocom import const
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):
@@ -157,7 +127,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     #: there's no general instrument name in the data
     INSTRUMENT_NAME = "unknown"
@@ -377,7 +347,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         data_out.ts_type = tstype
         # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
         data_out["variables"] = [aerocom_var_name]
-        data_out["var_info"][aerocom_var_name] = od()
+        data_out["var_info"][aerocom_var_name] = {}
         data_out["var_info"][aerocom_var_name]["units"] = unit
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
@@ -506,7 +476,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         from pyaerocom.exceptions import DataSourceError
 
         if pattern is None:
-            const.print_log.warning("using default pattern *.* for file search")
+            logger.warning("using default pattern *.* for file search")
             pattern = "*.*"
         self.logger.info("Fetching data files. This might take a while...")
         fp = os.path.join(self.data_dir, pattern)
@@ -574,10 +544,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if len(vars_to_retrieve) > 1:
             raise NotImplementedError("So far, only one variable can be read at a time...")
         var_name = vars_to_retrieve[0]
-        const.print_log.info("Reading EEA data")
+        logger.info("Reading EEA data")
         if files is None:
             if len(self.files) == 0:
-                const.print_log.info("Retrieving file list")
+                logger.info("Retrieving file list")
                 files = self.get_file_list(self.FILE_MASKS[var_name])
             files = self.files
 
@@ -599,7 +569,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
-        const.print_log.info("Reading metadata file")
+        logger.info("Reading metadata file")
         # non compliant, but efficiently indexed metadata
         self._metadata = self._read_metadata_file(metadatafile)
 
@@ -615,7 +585,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 continue
             except TemporalResolutionError as e:
                 self.logger.warning(f"{_file} has TemporalResolutionError")
-                const.print_log.warning(f"{repr(e)}. Skipping file...")
+                logger.warning(f"{repr(e)}. Skipping file...")
                 continue
 
             # readfile might fail outside of the error captured by the try statement above
@@ -633,8 +603,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     f"metadata for station {_meta_key} not found! skipping that station!"
                 )
                 continue
-            metadata[meta_key] = od()
-            meta_idx[meta_key] = od()
+            metadata[meta_key] = {}
+            meta_idx[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(self.get_station_coords(_meta_key))
             metadata[meta_key]["variables"] = list(
@@ -695,15 +665,3 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         self._metadata = None
 
         return data_obj
-
-
-if __name__ == "__main__":
-    # Test that the reading routine works
-    import logging
-
-    from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
-
-    ddir = "/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download"
-    reader = ReadEEAAQEREP(data_dir=ddir)
-
-    data = reader.read(["concpm10"], last_file=1)

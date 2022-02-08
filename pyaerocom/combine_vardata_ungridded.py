@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import invalid_input_err_str
@@ -490,35 +488,3 @@ def combine_vardata_ungridded(
         merged_stats.append(new)
 
     return merged_stats
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    OBS_LOCAL = "/home/jonasg/MyPyaerocom/data/obsdata/"
-
-    GHOST_DIR = os.path.join(OBS_LOCAL, "GHOST/data/EEA_AQ_eReporting/daily")
-
-    filter_post = {"altitude": [1500, 1700]}
-    # Tests based on whole datasets
-    vmro3 = pya.io.ReadUngridded("GHOST.EEA.daily", data_dirs=GHOST_DIR).read(
-        vars_to_retrieve="vmro3", filter_post=filter_post
-    )
-
-    # Tests based on whole datasets
-    vmrno2 = pya.io.ReadUngridded("GHOST.EEA.daily", data_dirs=GHOST_DIR).read(
-        vars_to_retrieve="vmrno2", filter_post=filter_post
-    )
-
-    input_data = [(vmro3, "GHOST.EEA.daily", "vmro3"), (vmrno2, "GHOST.EEA.daily", "vmrno2")]
-
-    meta_keys = list(vmro3.metadata[0].keys())
-    fun = "GHOST.EEA.daily;vmro3+GHOST.EEA.daily;vmrno2"
-    stats_merged = combine_vardata_ungridded(
-        input_data,
-        merge_eval_fun=fun,
-        var_unit_out="ppt",
-        var_name_out="vmrox",
-        merge_how="eval",
-        add_meta_keys=meta_keys,
-    )

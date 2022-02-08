@@ -7,14 +7,21 @@ matplotlib.use("Agg")
 import numpy as np
 import pytest
 
-import pyaerocom.access_testdata as td
-from pyaerocom import __dir__ as PYADIR
 from pyaerocom import const
+from pyaerocom.access_testdata import AccessTestData
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
 
-from . import _conftest_helpers as cth
+from ._conftest_helpers import (
+    _create_fake_coldata_3d,
+    _create_fake_coldata_3d_hourly,
+    _create_fake_coldata_4d,
+    _create_fake_coldata_5d,
+    _create_fake_trends_coldata_3d,
+    _load_coldata_tm5_aeronet_from_scratch,
+    create_fake_stationdata_list,
+)
 from .synthetic_data import FakeStationDataAccess
 
 INIT_TESTDATA = True
@@ -23,7 +30,7 @@ TEST_RTOL = 1e-4
 FAKE_STATION_DATA = FakeStationDataAccess()
 
 # class that provides / ensures access to testdataset
-tda = td.AccessTestData()
+tda = AccessTestData()
 
 TESTDATADIR = tda.testdatadir
 
@@ -124,9 +131,6 @@ geojson_unavail = pytest.mark.skipif(
 
 broken_test = pytest.mark.skip(reason="Method raises Exception")
 
-from pyaerocom import change_verbosity
-
-change_verbosity("critical", const.print_log)
 ### Fixtures representing data
 
 EMEP_DIR = str(TESTDATADIR.joinpath(CHECK_PATHS["emep"]))
@@ -159,7 +163,7 @@ def data_tm5():
 @pytest.fixture(scope="session")
 def coldata_tm5_aeronet():
     fpath = tda.testdatadir.joinpath(CHECK_PATHS["coldata_tm5_aeronet"])
-    return cth._load_coldata_tm5_aeronet_from_scratch(fpath)
+    return _load_coldata_tm5_aeronet_from_scratch(fpath)
 
 
 @pytest.fixture(scope="session")
@@ -167,7 +171,7 @@ def coldata_tm5_tm5():
     fpath = tda.testdatadir.joinpath(
         "coldata/od550aer_REF-TM5_AP3-CTRL2016_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc"
     )
-    return cth._load_coldata_tm5_aeronet_from_scratch(fpath)
+    return _load_coldata_tm5_aeronet_from_scratch(fpath)
 
 
 @pytest.fixture(scope="session")
@@ -236,7 +240,7 @@ def tempdir(tmpdir_factory):
 @pytest.fixture(scope="session")
 def statlist():
     data = {}
-    stats = cth.create_fake_stationdata_list()
+    stats = create_fake_stationdata_list()
     data["all"] = stats
     data["od550aer"] = [stat.copy() for stat in stats if stat.has_var("od550aer")]
     pm10sites = [stat.copy() for stat in stats if stat.has_var("concpm10")]
@@ -252,11 +256,11 @@ def coldata():
     return {
         "tm5_aeronet": ColocatedData(str(EXAMPLE_FILE)),
         "fake_nodims": ColocatedData(np.ones((2, 1, 1))),
-        "fake_3d": cth._create_fake_coldata_3d(),
-        "fake_4d": cth._create_fake_coldata_4d(),
-        "fake_5d": cth._create_fake_coldata_5d(),
-        "fake_3d_hr": cth._create_fake_coldata_3d_hourly(),
-        "fake_3d_trends": cth._create_fake_trends_coldata_3d(),
+        "fake_3d": _create_fake_coldata_3d(),
+        "fake_4d": _create_fake_coldata_4d(),
+        "fake_5d": _create_fake_coldata_5d(),
+        "fake_3d_hr": _create_fake_coldata_3d_hourly(),
+        "fake_3d_trends": _create_fake_trends_coldata_3d(),
     }
 
 

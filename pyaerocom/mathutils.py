@@ -4,7 +4,7 @@ Mathematical low level utility methods of pyaerocom
 import numpy as np
 from scipy.stats import kendalltau, pearsonr, spearmanr
 
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
@@ -140,10 +140,7 @@ def weighted_corr(ref_data, data, weights):
 
 
 @ignore_warnings(
-    True,
-    RuntimeWarning,
-    "invalid value encountered in double_scalars",
-    "An input array is constant",
+    RuntimeWarning, "invalid value encountered in double_scalars", "An input array is constant"
 )
 def corr(ref_data, data, weights=None):
     """Compute correlation coefficient
@@ -190,7 +187,7 @@ def _nanmean_and_std(data):
 
 
 @ignore_warnings(
-    True, RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
+    RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
 )
 def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None):
     """Calc statistical properties from two data arrays
@@ -295,7 +292,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
 
     difference = data - ref_data
 
-    diffsquare = difference ** 2
+    diffsquare = difference**2
 
     if weights is not None:
         weights = weights[mask]
@@ -445,46 +442,6 @@ def range_magnitude(low, high):
 
     """
     return exponent(high) - exponent(low)
-
-
-if __name__ == "__main__":
-    # import doctest
-    exp = exponent(23)
-    # print(numbers_in_str('Bla42Blub100'))
-    # run tests in all docstrings
-    # doctest.testmod()
-
-    mod = np.ones(20)
-    obs = np.ones(20)
-    weights = np.ones(20)
-
-    weights[10] = 100
-
-    mod[10] = 10
-    obs[10] = 10
-
-    c1 = calc_statistics(mod, obs)
-    c2 = calc_statistics(mod, obs, weights=weights)
-
-    assert c1["nmb"] == 0
-    assert c1["mnmb"] == 0
-    assert c1["R"] == 1
-
-    assert c2["nmb"] == 0
-    assert c2["mnmb"] == 0
-    assert c2["R"] == 1
-
-    obs[10] = 9
-
-    c1 = calc_statistics(mod, obs)
-    c2 = calc_statistics(mod, obs, weights=weights)
-
-    wm = weighted_mean(mod, weights)
-
-    print(wm)
-
-    wcov = weighted_cov(obs, mod, weights)
-    print(wcov)
 
 
 def estimate_value_range(vmin, vmax, extend_percent=0):

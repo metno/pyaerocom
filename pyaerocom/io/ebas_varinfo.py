@@ -1,5 +1,7 @@
-import os
+from __future__ import annotations
+
 from configparser import ConfigParser
+from importlib import resources
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -47,7 +49,7 @@ class EbasVarInfo(BrowseDict):
 
     """
 
-    def __init__(self, var_name, init=True, **kwargs):
+    def __init__(self, var_name: str, init: bool = True, **kwargs):
         self.var_name = var_name
 
         self.component = None
@@ -73,10 +75,10 @@ class EbasVarInfo(BrowseDict):
             self.parse_from_ini(var_name)
 
     @staticmethod
-    def PROVIDES_VARIABLES():
+    def PROVIDES_VARIABLES() -> list[str]:
         """List specifying provided variables"""
-        data = EbasVarInfo.open_config()
-        return [k for k in data.keys()]
+        info = EbasVarInfo.open_config()
+        return list(info)
 
     @staticmethod
     def open_config():
@@ -86,19 +88,18 @@ class EbasVarInfo(BrowseDict):
         -------
         ConfigParser
         """
-        from pyaerocom import __dir__
 
-        fpath = os.path.join(__dir__, "data", "ebas_config.ini")
         conf_reader = ConfigParser()
-        conf_reader.read(fpath)
+        with resources.path("pyaerocom.data", "ebas_config.ini") as path:
+            conf_reader.read(path)
         return conf_reader
 
     @property
-    def var_name_aerocom(self):
+    def var_name_aerocom(self) -> str:
         """Variable name in AeroCom convention"""
         return const.VARS[self.var_name].var_name_aerocom
 
-    def parse_from_ini(self, var_name=None, conf_reader=None):
+    def parse_from_ini(self, var_name: str, conf_reader: ConfigParser | None = None):
         """
         Parse EBAS info for input AeroCom variable (works also for aliases)
 
@@ -140,7 +141,7 @@ class EbasVarInfo(BrowseDict):
                     self[key] = list(dict.fromkeys([x for x in val.split(",")]))
         self.var_name = var_name
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Convert into dictionary"""
         d = {}
         for k, v in self.items():
@@ -150,7 +151,7 @@ class EbasVarInfo(BrowseDict):
                 d[k] = v
         return d
 
-    def make_sql_request(self, **constraints):
+    def make_sql_request(self, **constraints) -> EbasSQLRequest:
         """Create an SQL request for the specifications in this object
 
         Parameters
@@ -191,7 +192,7 @@ class EbasVarInfo(BrowseDict):
         req.update(**constraints)
         return req
 
-    def make_sql_requests(self, **constraints):
+    def make_sql_requests(self, **constraints) -> list[EbasSQLRequest]:
         """Create a list of SQL requests for the specifications in this object
 
         Parameters
@@ -241,7 +242,7 @@ class EbasVarInfo(BrowseDict):
 
         return requests
 
-    def __str__(self):
+    def __str__(self) -> str:
         head = f"Pyaerocom {type(self).__name__}"
         s = f"\n{head}\n{len(head)*'-'}"
         for k, v in self.items():

@@ -1,4 +1,9 @@
 # isort:skip_file
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 def geopy_available():
     """Helper method that checks if geopy library is available
 
@@ -14,9 +19,6 @@ def geopy_available():
 
         return True
     except ModuleNotFoundError:
-        from logging import getLogger
-
-        logger = getLogger("pyaerocom")
         logger.warning("geopy library is not available. Aeolus data read not enabled")
     return False
 
@@ -36,9 +38,6 @@ def coda_available():
 
         return True
     except ModuleNotFoundError:
-        from logging import getLogger
-
-        logger = getLogger("pyaerocom")
         logger.warning(
             "coda library is not available. Sentinel5P and Aeolus data read not enabled"
         )

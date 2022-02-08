@@ -141,7 +141,7 @@ class Filter:
     @property
     def valid_alt_filter_codes(self):
         """Valid codes for altitude filters"""
-        return list(self.ALTITUDE_FILTERS.keys())
+        return list(self.ALTITUDE_FILTERS)
 
     @property
     def valid_land_sea_filter_codes(self):

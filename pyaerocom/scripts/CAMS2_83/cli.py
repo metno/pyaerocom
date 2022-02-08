@@ -2,7 +2,7 @@ import importlib.util
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import typer
 
@@ -57,9 +57,9 @@ def make_period(
 def make_model_entry(
     start_date: datetime,
     end_date: datetime,
-    leap: str,
-    model_path: str,
-    obs_path: str,
+    leap: int,
+    model_path: Path,
+    obs_path: Path,
     model: ModelName,
 ) -> dict:
 
@@ -77,10 +77,10 @@ def make_config(
     start_date: datetime,
     end_date: datetime,
     leap: int,
-    model_path: str,
-    obs_path: str,
-    data_path: str,
-    coldata_path: str,
+    model_path: Path,
+    obs_path: Path,
+    data_path: Path,
+    coldata_path: Path,
     models: List[ModelName],
     id: str | None,
     name: str | None,
@@ -115,12 +115,12 @@ def make_config(
         )
     ]
 
-    cfg["json_basedir"] = data_path
-    cfg["coldata_basedir"] = coldata_path
+    cfg["json_basedir"] = str(data_path)
+    cfg["coldata_basedir"] = str(coldata_path)
 
     if not id is None:
         cfg["exp_id"] = id
-    if not id is None:
+    if not name is None:
         cfg["exp_name"] = name
 
     return CFG
@@ -163,26 +163,26 @@ def main(
         max=3,
         help="Which forecast day to use",
     ),
-    model_path: str = typer.Option(
+    model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH,
         exists=True,
         readable=True,
         help="Path where the model data is found",
     ),
-    obs_path: str = typer.Option(
+    obs_path: Path = typer.Option(
         DEFAULT_OBS_PATH,
         exists=True,
         readable=True,
         help="Path where the obs data is found",
     ),
-    data_path: str = typer.Option(
+    data_path: Path = typer.Option(
         "../../data",
         exists=True,
         readable=True,
         writable=True,
         help="Path where the results are stored",
     ),
-    coldata_path: str = typer.Option(
+    coldata_path: Path = typer.Option(
         "../../coldata",
         exists=True,
         readable=True,
@@ -194,15 +194,15 @@ def main(
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
-    id: str = typer.Option(
+    id: Optional[str] = typer.Option(
         None,
         help="Experiment name. If none are given, the id from the default config is used",
     ),
-    name: str = typer.Option(
+    name: Optional[str] = typer.Option(
         None,
         help="Experiment name. If none are given, the name from the default config is used",
     ),
-    cache: str = typer.Option(
+    cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
     ),

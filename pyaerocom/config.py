@@ -1,25 +1,13 @@
-#!/usr/bin/env python3
-########################################################################
-#
-# This python module is part of the pyaerocom software
-#
-# License: GNU General Public License v3.0
-# More information: https://github.com/metno/pyaerocom
-# Documentation: https://pyaerocom.readthedocs.io/en/latest/
-# Copyright (C) 2017 met.no
-# Contact information: Norwegian Meteorological Institute (MET Norway)
-#
-########################################################################
-
 import getpass
+import logging
 import os
-from collections import OrderedDict as od
 from configparser import ConfigParser
+from importlib import resources
 from pathlib import Path
 
 import numpy as np
 
-import pyaerocom.obs_io as obs_io
+from pyaerocom import obs_io
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
     check_write_access,
@@ -30,6 +18,8 @@ from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
 from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
+
+logger = logging.getLogger(__name__)
 
 
 class Config:
@@ -111,7 +101,7 @@ class Config:
     STANDARD_COORD_NAMES = ["latitude", "longitude", "altitude"]
     #: Information specifying default vertical grid for post processing of
     #: profile data. The values are in units of m.
-    DEFAULT_VERT_GRID_DEF = od(lower=0, upper=15000, step=250)
+    DEFAULT_VERT_GRID_DEF = dict(lower=0, upper=15000, step=250)
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
@@ -164,11 +154,12 @@ class Config:
 
     _outhomename = "MyPyaerocom"
 
-    from pyaerocom import __dir__
-
-    _config_ini_lustre = os.path.join(__dir__, "data", "paths.ini")
-    _config_ini_user_server = os.path.join(__dir__, "data", "paths_user_server.ini")
-    _config_ini_localdb = os.path.join(__dir__, "data", "paths_local_database.ini")
+    with resources.path("pyaerocom.data", "paths.ini") as path:
+        _config_ini_lustre = str(path)
+    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
+        _config_ini_user_server = str(path)
+    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
+        _config_ini_localdb = str(path)
 
     # this dictionary links environment ID's with corresponding ini files
     _config_files = {
@@ -181,11 +172,13 @@ class Config:
     # names that are required to exist in order to load this environment
     _check_subdirs_cfg = {"metno": "aerocom", "users-db": "AMAP", "local-db": "modeldata"}
 
-    _var_info_file = os.path.join(__dir__, "data", "variables.ini")
-    _coords_info_file = os.path.join(__dir__, "data", "coords.ini")
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        _var_info_file = str(path)
+    with resources.path("pyaerocom.data", "coords.ini") as path:
+        _coords_info_file = str(path)
 
     # these are searched in preferred order both in root and home
-    _DB_SEARCH_SUBDIRS = od()
+    _DB_SEARCH_SUBDIRS = {}
     _DB_SEARCH_SUBDIRS["lustre/storeA/project"] = "metno"
     _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
     _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
@@ -196,17 +189,7 @@ class Config:
 
     _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
 
-    #: bool: can be used to filter specific iris warnings, e.g. using decorator
-    #: :func:`pyaerocom._warnings_management.filter_warnings`. Used e.g. in
-    #: :func:`pyaerocom.io.iris_io.load_cubes_custom`.
-    FILTER_IRIS_WARNINGS = True
-
     def __init__(self, config_file=None, try_infer_environment=True):
-
-        from pyaerocom import logger, print_log
-
-        self.print_log = print_log
-        self.logger = logger
 
         # Directories
         self._outputdir = None
@@ -226,9 +209,9 @@ class Config:
         self._coords = None
 
         # Attributes that are used to store search directories
-        self.OBSLOCS_UNGRIDDED = od()
-        self.OBS_UNGRIDDED_POST = od()
-        self.SUPPLDIRS = od()
+        self.OBSLOCS_UNGRIDDED = {}
+        self.OBS_UNGRIDDED_POST = {}
+        self.SUPPLDIRS = {}
         self._search_dirs = []
 
         self.WRITE_FILEIO_ERR_LOG = True
@@ -259,7 +242,7 @@ class Config:
             try:
                 self.read_config(config_file, basedir=basedir)
             except Exception as e:
-                self.print_log.warning(f"Failed to read config. Error: {repr(e)}")
+                logger.warning(f"Failed to read config. Error: {repr(e)}")
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
 
@@ -287,7 +270,7 @@ class Config:
         if timeout is None:
             timeout = self.SERVER_CHECK_TIMEOUT
 
-        self.logger.info(f"Checking access to: {loc}")
+        logger.info(f"Checking access to: {loc}")
         if check_dir_access(loc, timeout=timeout):
             self._confirmed_access.append(loc)
             return True
@@ -343,7 +326,7 @@ class Config:
     @property
     def ALL_DATABASE_IDS(self):
         """ID's of available database configurations"""
-        return list(self._config_files.keys())
+        return list(self._config_files)
 
     @property
     def ROOTDIR(self):
@@ -458,7 +441,7 @@ class Config:
         try:
             return chk_make_subdir(self.cache_basedir, self.user)
         except Exception as e:
-            self.print_log.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
+            logger.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
             self._caching_active = False
 
     @CACHEDIR.setter
@@ -486,7 +469,7 @@ class Config:
     @property
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
-        self.print_log.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
+        logger.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
         return self.VARS
 
     @property
@@ -509,13 +492,6 @@ class Config:
         if self._logdir is None:
             self._logdir = chk_make_subdir(self.OUTPUTDIR, "_log")
         return self._logdir
-
-    @property
-    def DIR_INI_FILES(self):
-        """Directory containing configuration files"""
-        from pyaerocom import __dir__
-
-        return os.path.join(__dir__, "data")
 
     @property
     def ETOPO1_AVAILABLE(self):
@@ -550,14 +526,13 @@ class Config:
     @property
     def EBAS_FLAGS_FILE(self):
         """Location of CSV file specifying meaning of EBAS flags"""
-        from pyaerocom import __dir__
-
-        return os.path.join(__dir__, "data", "ebas_flags.csv")
+        with resources.path("pyaerocom.data", "ebas_flags.csv") as path:
+            return str(path)
 
     @property
     def OBS_IDS_UNGRIDDED(self):
         """List of all data IDs of supported ungridded observations"""
-        ids = [x for x in self.OBSLOCS_UNGRIDDED.keys()]
+        ids = list(self.OBSLOCS_UNGRIDDED)
         ids.extend(self.OBS_UNGRIDDED_POST)
         return ids
 
@@ -738,7 +713,7 @@ class Config:
         except DataSourceError:
             if not "renamed" in os.listdir(data_dir):
                 raise
-            self.print_log.warning(
+            logger.warning(
                 f"Failed to register {obs_id} at {data_dir} using ungridded "
                 f"reader {reader} but input dir has a renamed subdirectory, "
                 f"trying to find valid data files in there instead"
@@ -811,7 +786,7 @@ class Config:
             )
 
         if init_obslocs_ungridded:
-            self.OBSLOCS_UNGRIDDED = od()
+            self.OBSLOCS_UNGRIDDED = {}
         if init_data_search_dirs:
             self._search_dirs = []
 
@@ -993,10 +968,3 @@ class Config:
             else:
                 s += f"\n{k}: {v}"
         return s
-
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-    # print(pya.const)
-    print(pya.const.has_access_lustre)

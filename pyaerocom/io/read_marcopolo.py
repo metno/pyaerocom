@@ -133,7 +133,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
     #: functions used to convert variables that are computed
     AUX_FUNS = {"vmro3": _conc_to_vmr_marcopolo_stats, "vmrno2": _conc_to_vmr_marcopolo_stats}
 
-    PROVIDES_VARIABLES = list(VAR_MAP.keys())
+    PROVIDES_VARIABLES = list(VAR_MAP)
     DEFAULT_VARS = ["concpm10", "concpm25", "concno2", "conco3"]
 
     TS_TYPE = "hourly"
@@ -232,7 +232,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
         stat_meta = self._init_station_metadata()
 
         # get all station IDs found in the metadata file
-        stat_ids = list(stat_meta.keys())
+        stat_ids = list(stat_meta)
 
         arrs = []
 
@@ -346,24 +346,3 @@ class ReadMarcoPolo(ReadUngriddedBase):
         data = UngriddedData.from_station_data(stats)
 
         return data
-
-
-if __name__ == "__main__":
-    path_data = "/home/jonasg/MyPyaerocom/data/obsdata/CHINA_SON2020_MP_NRT"
-
-    reader = ReadMarcoPolo(data_dir=path_data)
-
-    # files = reader.get_file_list()
-    # print(files)
-
-    data = reader.read(["vmro3"], last_file=1)
-
-# =============================================================================
-#     stats = data.to_station_data_all('concpm10')['stats']
-#
-#     stat = stats[0]
-#     stats[0].plot_timeseries('concpm10')
-# =============================================================================
-
-
-# data = read_cams84_china(files, ['concpm10','concpm25'])

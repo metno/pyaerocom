@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
 """
 Methods and / or classes to perform colocation
 """
+import logging
 import os
 
 import numpy as np
@@ -9,7 +9,7 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import __version__ as pya_ver
-from pyaerocom import const, logger
+from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -30,6 +30,8 @@ from pyaerocom.helpers import (
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
+
+logger = logging.getLogger(__name__)
 
 
 def _resolve_var_name(data):
@@ -870,13 +872,13 @@ def colocate_gridded_ungridded(
                     arr[0, :, i] = _df["ref"].values
                     arr[1, :, i] = _df["data"].values
                 except ValueError as e:
-                    const.print_log.warning(
+                    logger.warning(
                         f"Failed to colocate time for station {obs_stat.station_name}. "
                         f"This station will be skipped (error: {e})"
                     )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
-            const.print_log.warning(
+            logger.warning(
                 f"{var_ref} data from site {obs_stat.station_name} will "
                 f"not be added to ColocatedData. Reason: {e}"
             )
@@ -893,7 +895,7 @@ def colocate_gridded_ungridded(
     files = [os.path.basename(x) for x in data.from_files]
 
     meta = {
-        "data_source": [dataset_ref, data.name],
+        "data_source": [dataset_ref, data.data_id],
         "var_name": [var_ref_aerocom, var_aerocom],
         "var_name_input": [var_ref, var],
         "ts_type": col_freq,  # will be updated below if resampling
@@ -969,17 +971,17 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     )
     if p0 is None:
         p0 = pressure()  # STD conditions sea level
-    const.logger.info("Correcting model data in ColocatedData instance to STP")
+    logger.info("Correcting model data in ColocatedData instance to STP")
     cfacs = []
     meantemps = []
     mintemps = []
     maxtemps = []
     ps = []
     for i, (lat, lon, alt, name) in enumerate(coords):
-        const.logger.info(name, ", Lat", lat, ", Lon", lon)
+        logger.info(name, ", Lat", lat, ", Lon", lon)
         p = pressure(alt)
-        const.logger.info("Alt", alt)
-        const.logger.info("P=", p / 100, "hPa")
+        logger.info("Alt", alt)
+        logger.info("P=", p / 100, "hPa")
 
         ps.append(p / 100)
 
@@ -991,11 +993,11 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
 
         if not len(temps) == len(arr.time):
             raise NotImplementedError("Check timestamps")
-        const.logger.info("Mean Temp: ", temps.mean() - t0, " C")
+        logger.info("Mean Temp: ", temps.mean() - t0, " C")
 
         corrfacs = (p0 / p) * (temps / t0)
 
-        const.logger.info("Corr fac:", corrfacs.mean(), "+/-", corrfacs.std())
+        logger.info("Corr fac:", corrfacs.mean(), "+/-", corrfacs.std())
 
         cfacs.append(corrfacs.mean())
 
@@ -1009,9 +1011,9 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
 
     cfacs = np.asarray(cfacs)
 
-    const.logger.info("Min: ", cfacs.min())
-    const.logger.info("Mean: ", cfacs.mean())
-    const.logger.info("Max: ", cfacs.max())
+    logger.info("Min: ", cfacs.min())
+    logger.info("Mean: ", cfacs.mean())
+    logger.info("Max: ", cfacs.max())
     coldata.data.attrs["Model_STP_corr"] = True
 
     newcoords = dict(
@@ -1042,18 +1044,3 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     coldata.data.attrs["Model_STP_corr"] = True
     coldata.data.attrs["Model_STP_corr_info"] = info_str
     return coldata
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    import pyaerocom as pya
-
-    plt.close("all")
-
-    obsdata = pya.io.ReadUngridded().read("EBASMC", "ac550aer")
-
-    # update unit to wrong unit
-    obsdata.check_convert_var_units("ac550aer", "m-1", inplace=True)
-
-    obsdata.remove_outliers("ac550aer", inplace=True)
