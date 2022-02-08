@@ -39,11 +39,18 @@ DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
 # DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 
 
-def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path:
+def find_model_path(
+    model: str | ModelName,
+    date: str | date | datetime,
+    root_path: Path | str,
+) -> Path:
     if not isinstance(model, ModelName):
         model = ModelName[model]
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y%m%d")
+
+    if isinstance(root_path, str):
+        root_path = Path(root_path)
     # if os.path.isdir(DATA_FOLDER_PATH / f"{date:%Y%m}"):
     #     return DATA_FOLDER_PATH / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
     # else:
@@ -100,7 +107,7 @@ class ReadCAMS2_83:
         self.data_id = data_id
 
     @property
-    def data_dir(self) -> list[str | Path]:
+    def data_dir(self) -> str | Path:
         """
         Directory containing netcdf files
         """
@@ -286,7 +293,7 @@ class ReadCAMS2_83:
         filepaths = []
 
         for date in daterange:
-            location = find_model_path(model, date)
+            location = find_model_path(model, date, self.data_dir)
             if not os.path.isfile(location):
                 print(f"Could not find {location} . Skipping file")
             else:
