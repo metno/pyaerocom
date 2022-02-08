@@ -101,6 +101,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         min_yrs = self.cfg.statistics_opts.min_yrs
         sequential_yrs = self.cfg.statistics_opts.sequential_yrs
+        avg_over_trends = self.cfg.statistics_opts.avg_over_trends
 
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
@@ -200,6 +201,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons,
                 add_trends,
                 trends_min_yrs,
+                avg_over_trends,
             )
 
             for freq, hm_data in hm_all.items():

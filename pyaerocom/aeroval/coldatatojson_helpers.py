@@ -1254,6 +1254,7 @@ def _process_heatmap_data(
     seasons,
     add_trends,
     trends_min_yrs,
+    avg_over_trends,
 ):
 
     output = {}
@@ -1274,40 +1275,46 @@ def _process_heatmap_data(
 
                             trends_successful = False
                             if add_trends and freq != "daily":
-                                logger.info(f"Adding trend for {regname} in {season} {per}")
+                                if avg_over_trends:
+                                    logger.info(f"Adding trend for {regname} in {season} {per}")
 
-                                (obs_trend, mod_trend, trends_successful) = _make_regional_trends(
-                                    subset,
-                                    trends_min_yrs,
-                                    per,
-                                    freq,
-                                    season,
-                                    regid,
-                                    use_country,
-                                )
-                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                # (start, stop) = _get_min_max_year_periods([per])
+                                    (
+                                        obs_trend,
+                                        mod_trend,
+                                        trends_successful,
+                                    ) = _make_regional_trends(
+                                        subset,
+                                        trends_min_yrs,
+                                        per,
+                                        freq,
+                                        season,
+                                        regid,
+                                        use_country,
+                                    )
+                                else:
+                                    # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                    (start, stop) = _get_min_max_year_periods([per])
 
-                                # if stop - start >= trends_min_yrs:
-                                #     try:
-                                #         subset_time_series = subset.get_regional_timeseries(
-                                #             regid, check_country_meta=use_country
-                                #         )
+                                    if stop - start >= trends_min_yrs:
+                                        try:
+                                            subset_time_series = subset.get_regional_timeseries(
+                                                regid, check_country_meta=use_country
+                                            )
 
-                                #         (obs_trend, mod_trend) = _make_trends_from_timeseries(
-                                #             subset_time_series["obs"],
-                                #             subset_time_series["mod"],
-                                #             freq,
-                                #             season,
-                                #             start,
-                                #             stop,
-                                #             trends_min_yrs,
-                                #         )
+                                            (obs_trend, mod_trend) = _make_trends_from_timeseries(
+                                                subset_time_series["obs"],
+                                                subset_time_series["mod"],
+                                                freq,
+                                                season,
+                                                start,
+                                                stop,
+                                                trends_min_yrs,
+                                            )
 
-                                #         trends_successful = True
-                                #     except AeroValTrendsError as e:
-                                #         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                #         logger.warning(msg)
+                                            trends_successful = True
+                                        except AeroValTrendsError as e:
+                                            msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                            logger.warning(msg)
 
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
