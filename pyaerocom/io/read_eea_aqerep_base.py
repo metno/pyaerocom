@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from pyaerocom import const
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -575,9 +576,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         # returns a dict with country codes as keys and the country names as value
         _country_dict = get_country_name_from_iso()
-        const.print_log.info("Reading files...")
-        for i in tqdm(range(len(files)), disable=const.QUITE):
-            _file = files[i]
+        logger.info("Reading files...")
+        for _file in tqdm(files, disable=const.QUIET):
             try:
                 station_data = self.read_file(_file, var_name=var_name)
             except EEAv2FileError:

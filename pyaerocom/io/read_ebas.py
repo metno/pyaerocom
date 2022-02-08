@@ -1717,10 +1717,8 @@ class ReadEbas(ReadUngriddedBase):
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
         logger.info(f"Reading EBAS data from {self.file_dir}")
-        num_files = len(files)
-        for i in tqdm(range(num_files), disable=const.QUITE):
-            _file = files[i]
-            contains = files_contain[i]
+        assert len(files) == len(files_contain), "mismatch on files and vars_to_retrieve"
+        for _file, contains in tqdm(zip(files, files_contain), disable=const.QUIET):
             try:
                 station_data = self.read_file(_file, vars_to_retrieve=contains)
 
@@ -1823,7 +1821,6 @@ class ReadEbas(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
 
-        num_failed = len(self.files_failed)
-        if num_failed > 0:
-            logger.warning(f"{num_failed} out of {num_files} could not be read...")
+        if self.files_failed:
+            logger.warning(f"{len(self.files_failed)} out of {len(files)} could not be read...")
         return data_obj
