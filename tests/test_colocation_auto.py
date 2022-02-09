@@ -4,15 +4,14 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedData
+from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
 from tests.fixtures.data_access import TEST_DATA
 
-HOME = Path.home()
-COL_OUT_DEFAULT = HOME / "MyPyaerocom/colocated_data"
+COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 
 default_setup = {
     "model_id": None,
