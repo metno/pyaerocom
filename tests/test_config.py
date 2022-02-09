@@ -312,7 +312,7 @@ def test_default_config_HOMEDIR():
 def test_default_config():
     cfg = Config()
 
-    mypydir = Path(cfg.HOMEDIR).absolute() / "MyPyaerocom"
+    mypydir = Path(cfg.HOMEDIR).resolve() / "MyPyaerocom"
     assert Path(cfg.OUTPUTDIR) == Path(cfg._outputdir) == mypydir
     assert Path(cfg.CACHEDIR) == mypydir / f"_cache/{USER}"
     assert Path(cfg.COLOCATEDDATADIR) == Path(cfg._colocateddatadir) == mypydir / "colocated_data"
