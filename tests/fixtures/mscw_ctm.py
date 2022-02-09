@@ -4,10 +4,9 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from .data_access import TESTDATADIR
+from .data_access import TEST_DATA
 
-DATA_PATH = "modeldata/EMEP_2017"
-EMEP_DATA_PATH = TESTDATADIR / DATA_PATH
+EMEP_DATA_PATH = TEST_DATA["MODELS"].path / "EMEP_2017"
 
 
 @pytest.fixture(scope="session")

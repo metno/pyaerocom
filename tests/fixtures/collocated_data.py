@@ -5,10 +5,10 @@ import xarray as xr
 
 from pyaerocom import ColocatedData, Filter
 
-from .data_access import TESTDATADIR
+from .data_access import TestData
 
 CHECK_PATHS = "coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc"
-EXAMPLE_FILE = TESTDATADIR / CHECK_PATHS
+EXAMPLE_FILE = TestData(CHECK_PATHS).path
 
 
 def _create_fake_coldata_3d():

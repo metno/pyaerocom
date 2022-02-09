@@ -9,7 +9,7 @@ from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
-from tests.fixtures.data_access import tda
+from tests.fixtures.data_access import TEST_DATA
 
 HOME = Path.home()
 COL_OUT_DEFAULT = HOME / "MyPyaerocom/colocated_data"
@@ -414,8 +414,7 @@ def test_colocator_with_obs_data_dir_ungridded():
     col.obs_vars = "od550aer"
     col.ts_type = "monthly"
 
-    aeronet_loc = tda.ADD_PATHS["AeronetSunV3L2Subset.daily"]
-    col.obs_data_dir = tda.testdatadir.joinpath(aeronet_loc)
+    col.obs_data_dir = TEST_DATA["AeronetSunV3L2Subset.daily"].path
 
     data = col.run()
     assert len(data) == 1
@@ -433,8 +432,7 @@ def test_colocator_with_model_data_dir_ungridded():
     col.obs_vars = "od550aer"
     col.ts_type = "monthly"
 
-    model_dir = "modeldata/TM5-met2010_CTRL-TEST/renamed"
-    col.model_data_dir = tda.testdatadir.joinpath(model_dir)
+    col.model_data_dir = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
 
     data = col.run()
     assert len(data) == 1
@@ -452,8 +450,8 @@ def test_colocator_with_obs_data_dir_gridded():
     col.obs_vars = "od550aer"
     col.ts_type = "monthly"
 
-    obs_dir = "modeldata/TM5-met2010_CTRL-TEST/renamed"
-    col.obs_data_dir = str(tda.testdatadir.joinpath(obs_dir))
+    obs_dir = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
+    col.obs_data_dir = str(obs_dir)
 
     data = col.run()
     assert len(data) == 1
