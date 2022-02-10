@@ -4,6 +4,7 @@
 from pathlib import Path
 
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
 
 GLOBAL_CONFIG = dict(
@@ -118,27 +119,13 @@ MODELS_CONFIG = {
 ##################################################
 #        The observation configs
 ##################################################
-EEA_FILTER = dict(
-    altitude=[-20, 1000],
-    # base filter
-    latitude=[30, 82],
-    longitude=[-30, 90],
-    station_id=["NO0042*"],
-    negate="station_id",
-    # only rural stations
-    station_classification=["background"],
-    area_classification=["rural", "rural-nearcity", "rural-regional", "rural-remote"],
-)
-
-
 OBS_CONFIG = dict(
-    # EEA NRT observatios
+    # EEA CAMS2-40 NRT observatios
     EEA=dict(
-        obs_id="EEAAQeRep.NRT",
-        obs_vars=["concno2"],
-        web_interface_name="EEA-rural",
+        obs_id=ReadCAMS2_83.DATA_ID,
+        obs_vars=ReadCAMS2_83.DEFAULT_VARS,
+        web_interface_name="EEA-CAMS2-40",
         obs_vert_type="Surface",
-        obs_filters=EEA_FILTER,
     )
 )
 

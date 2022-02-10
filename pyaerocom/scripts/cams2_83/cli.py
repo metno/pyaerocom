@@ -54,10 +54,9 @@ def make_model_entry(
     obs_path: Path,
     model: ModelName,
 ) -> dict:
-
     return dict(
         model_id=f"CAMS2-83.{model.name}.day{leap}",
-        model_data_dir=str(model_path),
+        model_data_dir=str(model_path.resolve()),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
             daterange=[f"{start_date:%F}", f"{end_date:%F}"],

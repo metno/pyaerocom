@@ -35,5 +35,5 @@ def test_init():
 
 
 def test_read_ungridded():
-    data = ReadUngridded().read("cams2_83", "concno2")
+    data = ReadUngridded().read("CAMS2-83.EEA.NRT", "concco")
     assert isinstance(data, UngriddedData)

@@ -38,25 +38,33 @@ logger = logging.getLogger(__name__)
 
 
 def __model_path(
-    name: str | ModelName, date: str | date | datetime, *, run: str | RunType = RunType.FC
+    name: str | ModelName,
+    date: str | date | datetime,
+    *,
+    root_path: Path | str,
+    run: str | RunType,
 ) -> Path:
     if not isinstance(name, ModelName):
         name = ModelName[name]
     if isinstance(date, str):
-
         date = datetime.strptime(date, "%Y%m%d").date()
     if isinstance(date, datetime):
         date = date.date()
+    if isinstance(root_path, str):
+        root_path = Path(root_path)
     if not isinstance(run, RunType):
         run = RunType[run]
-    return ModelData(name, run, date, DATA_FOLDER_PATH).path
+    return ModelData(name, run, date, root_path).path
 
 
 def model_paths(
-    model: str | ModelName, *dates: datetime | date | str, run: str | RunType = RunType.FC
+    model: str | ModelName,
+    *dates: datetime | date | str,
+    root_path: Path | str = DATA_FOLDER_PATH,
+    run: str | RunType = RunType.FC,
 ) -> Iterator[Path]:
     for date in dates:
-        path = __model_path(model, date, run=run)
+        path = __model_path(model, date, run=run, root_path=root_path)
         if not path.is_file():
             logger.warning(f"Could not find {path.name}. Skipping {date}")
             continue
@@ -188,7 +196,7 @@ class ReadCAMS2_83:
         if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
-            paths = list(model_paths(self.model, *self.daterange))
+            paths = list(model_paths(self.model, *self.daterange, root_path=self.data_dir))
             if not paths:
                 raise ValueError(f"no files found for {self.model}")
             self._filepaths = paths
