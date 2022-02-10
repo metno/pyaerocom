@@ -132,12 +132,10 @@ class ReadCAMS2_83:
         if data_dir is not None:
             if isinstance(data_dir, str):
                 data_dir = Path(data_dir)
-            if not data_dir.is_dir():
-                raise FileNotFoundError(f"{data_dir}")
-
             self.data_dir = data_dir
 
-        self.data_id = data_id
+        if data_id is not None:
+            self.data_id = data_id
 
     @property
     def data_dir(self) -> Path:
@@ -155,7 +153,7 @@ class ReadCAMS2_83:
         if isinstance(val, str):
             val = Path(val)
         if not val.is_dir():
-            raise FileNotFoundError(val)
+            raise NotADirectoryError(val)
         self._data_dir = val
         self._filedata = None
 
@@ -256,7 +254,6 @@ class ReadCAMS2_83:
 
     @staticmethod
     def has_var(var_name):
-
         """Check if variable is supported
 
         Parameters
