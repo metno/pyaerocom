@@ -1,5 +1,5 @@
-import importlib.util
-import sys
+from __future__ import annotations
+
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -7,25 +7,14 @@ from typing import List, Optional
 import typer
 
 from pyaerocom import const
-from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.io.cams2_83.models import ModelName
-from pyaerocom.scripts.CAMS2_83.config import CFG
 
-sys.path.append(
-    "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer"
-)
+from .config import CFG
+from .processer import CAMS2_83_Processer
 
-from CAMS2_83_Processer import CAMS2_83_Processer
-
-# spec = importlib.util.spec_from_file_location(
-#     "CAMS2_83_Processer",
-#     "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/CAMS2_83_Processer.py",
-# )
-# CAMS2_83_Processer = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(CAMS2_83_Processer)
-
-# TODO:
 """
+TODO:
     - Add option for species
     - Add option for periodes [Done]
     - Add option for running only som observations/models/species
@@ -33,7 +22,7 @@ from CAMS2_83_Processer import CAMS2_83_Processer
 """
 
 
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 DEFAULT_MODEL_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 DEFAULT_OBS_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/obs")
