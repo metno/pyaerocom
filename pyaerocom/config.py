@@ -189,11 +189,6 @@ class Config:
 
     _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
 
-    #: bool: can be used to filter specific iris warnings, e.g. using decorator
-    #: :func:`pyaerocom._warnings_management.filter_warnings`. Used e.g. in
-    #: :func:`pyaerocom.io.iris_io.load_cubes_custom`.
-    FILTER_IRIS_WARNINGS = True
-
     def __init__(self, config_file=None, try_infer_environment=True):
 
         # Directories
@@ -226,6 +221,9 @@ class Config:
 
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
+
+        # Setting for quite run (no tqdm)
+        self._quiet = False
 
         if config_file is not None:
             if not os.path.exists(config_file):
@@ -547,6 +545,16 @@ class Config:
         raise FileNotFoundError(
             "ERA Interim surface temperature data cannot be accessed (check lustre connection)"
         )
+
+    @property
+    def QUIET(self):
+        return self._quiet
+
+    @QUIET.setter
+    def QUIET(self, val):
+        if not isinstance(val, bool):
+            raise ValueError(f"{val} needs to be a boolean")
+        self._quiet = val
 
     def make_default_vert_grid(self):
         """Makes default vertical grid for resampling of profile data"""

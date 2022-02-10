@@ -238,7 +238,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             outfile_scat = os.path.join(out_dirs["scat"], map_name)
             write_json(scat_data, outfile_scat, ignore_nan=True)
 
-        if coldata.ts_type == "hourly":
+        if coldata.ts_type == "hourly" and use_diurnal:
             logger.info("Processing diurnal profiles")
             (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
                 coldata, regions_how, regnames, meta_glob

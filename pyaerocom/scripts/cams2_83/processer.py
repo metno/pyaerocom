@@ -1,5 +1,4 @@
 import logging
-from asyncio.log import logger
 
 from pyaerocom import const
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
@@ -36,7 +35,6 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 f"{model_name} combination."
             )
         else:
-            ...
             engine = CAMS2_83_Engine(self.cfg)
             engine.run(files_to_convert)
 
@@ -57,7 +55,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
 
         if update_interface:
             self.update_interface()
-        const.print_log.info("Finished processing.")
+        logger.info("Finished processing.")
 
     def update_interface(self):
         self.exp_output.update_interface()
