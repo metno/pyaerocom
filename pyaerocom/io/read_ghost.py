@@ -581,8 +581,7 @@ class ReadGhost(ReadUngriddedBase):
         rename = self.var_names_data_inv
         from tqdm import tqdm
 
-        for i in tqdm(range(len(files))):
-            _file = files[i]
+        for _file in tqdm(files, disable=const.QUIET):
             metafile = self.get_meta_filename(_file)
             var_to_read = metafile["var_name"]
             begin = metafile["start"]

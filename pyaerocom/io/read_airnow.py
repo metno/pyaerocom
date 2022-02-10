@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -311,8 +312,7 @@ class ReadAirNow(ReadUngriddedBase):
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
-        for i in tqdm(range(len(files))):
-            fp = files[i]
+        for fp in tqdm(files, disable=const.QUIET):
             filedata = self._read_file(fp)
             arr = filedata.values
 
@@ -369,7 +369,7 @@ class ReadAirNow(ReadUngriddedBase):
             subset = data[mask]
             dtime_subset = dtime[mask]
             statlist = np.unique(subset[:, statcol])
-            for stat_id in tqdm(statlist, desc=var):
+            for stat_id in tqdm(statlist, desc=var, disable=const.QUIET):
                 if not stat_id in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id

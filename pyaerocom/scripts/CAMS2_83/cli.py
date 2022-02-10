@@ -1,31 +1,25 @@
-import importlib.util
-import sys
+from __future__ import annotations
+
+import logging
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from pprint import pformat
+from reprlib import repr
+from typing import List, Optional
 
 import typer
 
-from pyaerocom import const
-from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+from pyaerocom import change_verbosity, const
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.io.cams2_83.models import ModelName
-from pyaerocom.scripts.CAMS2_83.config import CFG
+from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 
-sys.path.append(
-    "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer"
-)
+from .config import CFG
+from .processer import CAMS2_83_Processer
 
-from CAMS2_83_Processer import CAMS2_83_Processer
-
-# spec = importlib.util.spec_from_file_location(
-#     "CAMS2_83_Processer",
-#     "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/CAMS2_83_Processer.py",
-# )
-# CAMS2_83_Processer = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(CAMS2_83_Processer)
-
-# TODO:
 """
+TODO:
     - Add option for species
     - Add option for periodes [Done]
     - Add option for running only som observations/models/species
@@ -33,11 +27,10 @@ from CAMS2_83_Processer import CAMS2_83_Processer
 """
 
 
-app = typer.Typer()
+DEFAULT_OBS_PATH = DEFAULT_MODEL_PATH.with_name("obs")
 
-DEFAULT_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
-
-state = {"verbose": False}
+app = typer.Typer(add_completion=False)
+logger = logging.getLogger(__name__)
 
 
 def make_period(
@@ -49,24 +42,25 @@ def make_period(
 
     if start_yr == end_yr:
         return f"{start_yr}"
-    else:
-        return f"{start_yr}-{end_yr}"
+
+    return f"{start_yr}-{end_yr}"
 
 
 def make_model_entry(
     start_date: datetime,
     end_date: datetime,
-    leap: str,
-    path: str,
+    leap: int,
+    model_path: Path,
+    obs_path: Path,
     model: ModelName,
 ) -> dict:
 
     return dict(
-        model_id=f"CAMS2-83.{model.upper()}.day{leap}",
-        model_data_dir=path,
+        model_id=f"CAMS2-83.{model.name}.day{leap}",
+        model_data_dir=str(model_path),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
-            cams2_83_daterange=[start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d")],
+            cams2_83_daterange=[f"{start_date:%F}", f"{end_date:%F}"],
         ),
     )
 
@@ -75,64 +69,62 @@ def make_config(
     start_date: datetime,
     end_date: datetime,
     leap: int,
-    path: str,
-    data_path: str,
-    coldata_path: str,
+    model_path: Path,
+    obs_path: Path,
+    data_path: Path,
+    coldata_path: Path,
     models: List[ModelName],
     id: str | None,
     name: str | None,
 ) -> dict:
 
-    if state["verbose"]:
-        typer.echo("Making the configuration")
+    logger.info("Making the configuration")
 
-    cfg = CFG
+    if not models:
+        models = list(ModelName)
 
-    model_cfg = {}
+    cfg = deepcopy(CFG)
+    cfg.update(
+        model_cfg={
+            f"CAMS2-83-{model}": make_model_entry(
+                start_date,
+                end_date,
+                leap,
+                model_path,
+                obs_path,
+                model,
+            )
+            for model in models
+        },
+        periods=[make_period(start_date, end_date)],
+        json_basedir=str(data_path),
+        coldata_basedir=str(coldata_path),
+    )
 
-    if models == []:
-        models = [m for m in ModelName]
-
-    for model in models:
-        model_cfg[f"CAMS2-83-{model}"] = make_model_entry(
-            start_date,
-            end_date,
-            leap,
-            path,
-            model,
-        )
-
-    cfg["model_cfg"] = model_cfg
-
-    cfg["periods"] = [
-        make_period(
-            start_date,
-            end_date,
-        )
-    ]
-
-    cfg["json_basedir"] = data_path
-    cfg["coldata_basedir"] = coldata_path
-
-    if not id is None:
+    if id is not None:
         cfg["exp_id"] = id
-    if not id is None:
+    if name is not None:
         cfg["exp_name"] = name
 
-    return CFG
+    return cfg
 
 
-def runner(cfg):
-    if state["verbose"]:
-        typer.echo("Running the evaluation for the config")
-        typer.echo(cfg)
+def runner(
+    cfg: dict,
+    cache: str | Path | None,
+    *,
+    dry_run: bool = False,
+):
+    logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
+    if dry_run:
+        return
 
-    stp = EvalSetup(**CFG)
-    cams2_83_ana = CAMS2_83_Processer(stp)
-    cams2_83_ana.run()
+    if cache is not None:
+        const.CACHEDIR = cache
 
-    # ana = ExperimentProcessor(stp)
-    # res = ana.run()
+    stp = EvalSetup(**cfg)
+    ana = CAMS2_83_Processer(stp)
+    ana.run()
 
 
 @app.command()
@@ -153,21 +145,27 @@ def main(
         max=3,
         help="Which forecast day to use",
     ),
-    path: str = typer.Option(
-        DEFAULT_PATH,
+    model_path: Path = typer.Option(
+        DEFAULT_MODEL_PATH,
         exists=True,
         readable=True,
         help="Path where the model data is found",
     ),
-    data_path: str = typer.Option(
-        "../../data",
+    obs_path: Path = typer.Option(
+        DEFAULT_OBS_PATH,
+        exists=True,
+        readable=True,
+        help="Path where the obs data is found",
+    ),
+    data_path: Path = typer.Option(
+        Path("../../data").resolve(),
         exists=True,
         readable=True,
         writable=True,
         help="Path where the results are stored",
     ),
-    coldata_path: str = typer.Option(
-        "../../coldata",
+    coldata_path: Path = typer.Option(
+        Path("../../coldata").resolve(),
         exists=True,
         readable=True,
         writable=True,
@@ -178,46 +176,32 @@ def main(
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
-    id: str = typer.Option(
+    id: Optional[str] = typer.Option(
         None,
         help="Experiment name. If none are given, the id from the default config is used",
     ),
-    name: str = typer.Option(
+    name: Optional[str] = typer.Option(
         None,
         help="Experiment name. If none are given, the name from the default config is used",
     ),
+    cache: Optional[Path] = typer.Option(
+        None,
+        help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
+    ),
     dry_run: bool = typer.Option(
         False,
+        "--dry-run",
+        "-n",
         help="Will only make and print the config without running the evaluation",
     ),
-    verbose: bool = typer.Option(
-        False,
-    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
 
-    state["verbose"] = verbose
+    if verbose or dry_run:
+        change_verbosity(logging.INFO)
 
     cfg = make_config(
-        start_date,
-        end_date,
-        leap,
-        path,
-        data_path,
-        coldata_path,
-        model,
-        id,
-        name,
+        start_date, end_date, leap, model_path, obs_path, data_path, coldata_path, model, id, name
     )
 
-    if not dry_run:
-        runner(cfg)
-    else:
-        typer.echo(cfg)
-
-
-def entry():
-    app()
-
-
-if __name__ == "__main__":
-    entry()
+    runner(cfg, cache, dry_run=dry_run)

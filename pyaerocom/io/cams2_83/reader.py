@@ -35,21 +35,25 @@ CAMS2_83_vars = dict(
 )
 
 
-DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/test_data")
-# DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
+DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 
 
-def find_model_path(model: str | ModelName, date: str | date | datetime) -> Path:
+def find_model_path(
+    model: str | ModelName,
+    date: str | date | datetime,
+    root_path: Path | str,
+) -> Path:
     if not isinstance(model, ModelName):
         model = ModelName[model]
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y%m%d")
-    # if os.path.isdir(DATA_FOLDER_PATH / f"{date:%Y%m}"):
-    #     return DATA_FOLDER_PATH / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
-    # else:
-    #     return DATA_FOLDER_PATH / f"{date:%Y%m%d}_{model}_forecast.nc"
 
-    return DATA_FOLDER_PATH / f"{date:%Y-%m-%d}-{model}-all-species.nc"
+    if isinstance(root_path, str):
+        root_path = Path(root_path)
+    if os.path.isdir(root_path / f"{date:%Y%m}"):
+        return root_path / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
+    else:
+        return root_path / f"{date:%Y%m%d}_{model}_forecast.nc"
 
 
 def get_cams2_83_vars(var_name):
@@ -100,7 +104,7 @@ class ReadCAMS2_83:
         self.data_id = data_id
 
     @property
-    def data_dir(self) -> list[str | Path]:
+    def data_dir(self) -> str | Path:
         """
         Directory containing netcdf files
         """
@@ -286,7 +290,7 @@ class ReadCAMS2_83:
         filepaths = []
 
         for date in daterange:
-            location = find_model_path(model, date)
+            location = find_model_path(model, date, self.data_dir)
             if not os.path.isfile(location):
                 print(f"Could not find {location} . Skipping file")
             else:
@@ -304,33 +308,14 @@ class ReadCAMS2_83:
         forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
         forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
 
-        # select_date = forecast_date + timedelta(days=self.date)
+        select_date = forecast_date + timedelta(days=self.date)
 
-        # dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
-        # ds = ds.sel(time=dateselect)
-        # ds = ds.sel(level=0.0)
-        # ds.time.attrs["long_name"] = "time"
-        # ds.time.attrs["standard_name"] = "time"
-        # return ds
-
-
-
-        day_prefix = " " if abs(self.date) == 0 else f"{int(self.date)} days "
-        dateselect = [f"{day_prefix}{i:02d}:00:00" for i in range(24)]
-
+        dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
         ds = ds.sel(time=dateselect)
         ds = ds.sel(level=0.0)
-
-        forecast_hour = (forecast_date - datetime(1900, 1, 1)).days * 24
-        # new_dates = [forecast_hour+i for i in range(24)]
-
-        new_dates = date_range(forecast_date, forecast_date + timedelta(hours=23), freq="h")
-        ds["time"] = new_dates
-        # ds.time.attrs["units"] = "hours since 1900-01-01"
         ds.time.attrs["long_name"] = "time"
         ds.time.attrs["standard_name"] = "time"
         return ds
-
 
     def has_var(self, var_name):
         """Check if variable is supported

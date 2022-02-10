@@ -40,7 +40,7 @@ class OutputPaths(ConstrainedContainer):
 
     """
 
-    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour"]
+    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour", "conf"]
 
     json_basedir = DirLoc(
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
