@@ -1,6 +1,5 @@
 import logging
 
-from pyaerocom import const
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 
 from .processer_engine import CAMS2_83_Engine
