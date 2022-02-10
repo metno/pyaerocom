@@ -343,8 +343,12 @@ def get_regions_coord(lat, lon, regions=None):
     return matches
 
 
-def find_closest_region_coord(lat, lon, regions=None):
-    """Find region that has it's center closest to input coordinate
+def find_closest_region_coord(
+    lat: float,
+    lon: float,
+    regions: dict | None = None,
+) -> list[str]:
+    """Finds list of regions sorted by their center closest to input coordinate
 
     Parameters
     ----------
@@ -358,24 +362,26 @@ def find_closest_region_coord(lat, lon, regions=None):
 
     Returns
     -------
-    str
-        region ID of identified region
+    list[str]
+        sorted list of region IDs of identified regions
     """
     if regions is None:
         regions = get_all_default_regions()
-
     matches = get_regions_coord(lat, lon, regions)
+    matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
 
-    if len(matches) == 1:
-        return matches[0], matches
+    return matches
 
-    min_dist = 1e6
-    best = None
-    for match in matches:
-        region = regions[match]
-        dist = region.distance_to_center(lat, lon)
-        if dist < min_dist:
-            min_dist = dist
-            best = match
+    # if len(matches) == 1:
+    #     return matches[0], matches
 
-    return best, matches
+    # min_dist = 1e6
+    # best = None
+    # for match in matches:
+    #     region = regions[match]
+    #     dist = region.distance_to_center(lat, lon)
+    #     if dist < min_dist:
+    #         min_dist = dist
+    #         best = match
+
+    # return best, matches

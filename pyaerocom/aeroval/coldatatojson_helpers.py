@@ -628,8 +628,8 @@ def _init_site_coord_arrays(data):
 def _get_stat_regions(lats, lons, regions):
     regs = []
     for (lat, lon) in zip(lats, lons):
-        best, reg = find_closest_region_coord(lat, lon, regions=regions)
-        regs.append([best, reg])
+        reg = find_closest_region_coord(lat, lon, regions=regions)
+        regs.append(reg)
     return regs
 
 
@@ -655,9 +655,9 @@ def _process_sites(data, regions, regions_how, meta_glob):
             "altitude": alts[i],
         }
         if regions_how == "country":
-            site_meta["region"] = [regs[i][0]]
+            site_meta["region"] = [regs[i]]
         else:
-            site_meta["region"] = regs[i][1]
+            site_meta["region"] = regs[i]
         ts_data = _init_ts_data(freqs)
         ts_data.update(meta_glob)
         ts_data.update(site_meta)
