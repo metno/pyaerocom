@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]]) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
+        print()
         coldata = [ColocatedData(file) for file in files]
         self.process_coldata(coldata)
 
@@ -26,6 +27,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         model_name = coldata[0].model_name
+        model = coldata[0].model_name.split("-")[1]
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -33,7 +35,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         else:
             obs_var = model_var = "UNDEFINED"
 
-        mcfg = self.cfg.model_cfg.get_entry(model_name)
+        mcfg = self.cfg.model_cfg.get_entry("-".join(model_name.split("-")[:-1]))
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
         hourrange = list(range(24 * 1))
@@ -95,5 +97,4 @@ class CAMS2_83_Engine(ProcessingEngine):
         for key in stats_list.keys():
             median_stats[key] = np.nanmedian(np.array(stats_list[key]))
 
-        print(median_stats)
         return median_stats
