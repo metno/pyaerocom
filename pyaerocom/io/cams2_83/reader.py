@@ -50,12 +50,10 @@ def find_model_path(
 
     if isinstance(root_path, str):
         root_path = Path(root_path)
-    # if os.path.isdir(DATA_FOLDER_PATH / f"{date:%Y%m}"):
-    #     return DATA_FOLDER_PATH / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
-    # else:
-    #     return DATA_FOLDER_PATH / f"{date:%Y%m%d}_{model}_forecast.nc"
-
-    return DATA_FOLDER_PATH / f"{date:%Y-%m-%d}-{model}-all-species.nc"
+    if os.path.isdir(root_path / f"{date:%Y%m}"):
+        return root_path / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
+    else:
+        return root_path / f"{date:%Y%m%d}_{model}_forecast.nc"
 
 
 def get_cams2_83_vars(var_name):
@@ -310,27 +308,11 @@ class ReadCAMS2_83:
         forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
         forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
 
-        # select_date = forecast_date + timedelta(days=self.date)
+        select_date = forecast_date + timedelta(days=self.date)
 
-        # dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
-        # ds = ds.sel(time=dateselect)
-        # ds = ds.sel(level=0.0)
-        # ds.time.attrs["long_name"] = "time"
-        # ds.time.attrs["standard_name"] = "time"
-        # return ds
-
-        day_prefix = " " if abs(self.date) == 0 else f"{int(self.date)} days "
-        dateselect = [f"{day_prefix}{i:02d}:00:00" for i in range(24)]
-
+        dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
         ds = ds.sel(time=dateselect)
         ds = ds.sel(level=0.0)
-
-        forecast_hour = (forecast_date - datetime(1900, 1, 1)).days * 24
-        # new_dates = [forecast_hour+i for i in range(24)]
-
-        new_dates = date_range(forecast_date, forecast_date + timedelta(hours=23), freq="h")
-        ds["time"] = new_dates
-        # ds.time.attrs["units"] = "hours since 1900-01-01"
         ds.time.attrs["long_name"] = "time"
         ds.time.attrs["standard_name"] = "time"
         return ds

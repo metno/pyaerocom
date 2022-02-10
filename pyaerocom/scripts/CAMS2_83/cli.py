@@ -60,7 +60,7 @@ def make_model_entry(
         model_data_dir=str(model_path),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
-            cams2_83_daterange=(f"{start_date:%F}", f"{end_date:%F}"),
+            cams2_83_daterange=[f"{start_date:%F}", f"{end_date:%F}"],
         ),
     )
 

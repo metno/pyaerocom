@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from reprlib import repr
 
@@ -10,6 +11,7 @@ import pandas as pd
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
+from pyaerocom.aeroval.coldatatojson_helpers import write_json
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,17 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
+        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+        model_name = coldata[0].model_name
+
+        if "var_name_input" in coldata[0].metadata:
+            obs_var = coldata[0].metadata["var_name_input"][0]
+            model_var = coldata[0].metadata["var_name_input"][1]
+        else:
+            obs_var = model_var = "UNDEFINED"
+
+        mcfg = self.cfg.model_cfg.get_entry(model_name)
+        var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
         hourrange = list(range(24 * 1))
 
@@ -35,7 +48,6 @@ class CAMS2_83_Engine(ProcessingEngine):
             "fge": [],
         }
 
-        print(len(coldata))
         for hour in hourrange:
             leap = hour // 24
             h = hour % 24
@@ -54,41 +66,9 @@ class CAMS2_83_Engine(ProcessingEngine):
             for key in stats_list.keys():
                 stats_list[key].append(stats[key])
 
-        plt.plot(stats_list["rms"])
-        plt.xlabel("Forecast Time [h]")
-        plt.ylabel("RMSE")
-        plt.title("Weird Plot for JJA2021")
-        plt.savefig(
-            "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/rms_JJA2021.png"
-        )
-
-        plt.clf()
-
-        plt.plot(stats_list["R"])
-        plt.xlabel("Forecast Time [h]")
-        plt.ylabel("R")
-        plt.title("Weird Plot for JJA2021")
-        plt.savefig(
-            "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/R_JJA2021.png"
-        )
-        plt.clf()
-
-        plt.plot(stats_list["fge"])
-        plt.xlabel("Forecast Time [h]")
-        plt.ylabel("FGE")
-        plt.title("Weird Plot for JJA2021")
-        plt.savefig(
-            "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/fge_JJA2021.png"
-        )
-        plt.clf()
-
-        plt.plot(stats_list["mnmb"])
-        plt.xlabel("Forecast Time [h]")
-        plt.ylabel("MNMB")
-        plt.title("Weird Plot for JJA2021")
-        plt.savefig(
-            "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/CAMS2_83_Processer/MNMB_JJA2021.png"
-        )
+        name = f"cams2-83_{model_name}-{model_var}.json"
+        filename = os.path.join(out_dirs["conf"], name)
+        write_json(stats_list, filename, ignore_nan=True)
 
     def _get_median_stats_point(self, data, use_weights) -> dict:
 
