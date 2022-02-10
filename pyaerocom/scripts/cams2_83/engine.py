@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
 from reprlib import repr
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
@@ -24,76 +22,31 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
+        stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
+        for forecast_hour in range(24 * 1):
+            leap, hour = divmod(forecast_hour, 24)
+            ds = coldata[leap].data
+            ds = ds.data.sel(time=(ds.time.dt.hour == hour))
+            stats = self._get_median_stats_point(ds, use_weights)
+            for key in stats_list:
+                stats_list[key].append(stats[key])
+
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         model_name = coldata[0].model_name
-        model = coldata[0].model_name.split("-")[1]
-
         if "var_name_input" in coldata[0].metadata:
-            obs_var = coldata[0].metadata["var_name_input"][0]
             model_var = coldata[0].metadata["var_name_input"][1]
         else:
-            obs_var = model_var = "UNDEFINED"
+            model_var = "UNDEFINED"
+        path = Path(out_dirs["conf"]) / f"cams2-83_{model_name}-{model_var}.json"
+        write_json(stats_list, path, ignore_nan=True)
 
-        mcfg = self.cfg.model_cfg.get_entry("-".join(model_name.split("-")[:-1]))
-        var_name_web = mcfg.get_varname_web(model_var, obs_var)
+    def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
 
-        hourrange = list(range(24 * 1))
-
-        stats_list: dict[str, list[float]] = {
-            "rms": [],
-            "R": [],
-            # "R_spearman": [],
-            # "R_kendall": [],
-            "nmb": [],
-            "mnmb": [],
-            "fge": [],
-        }
-
-        for hour in hourrange:
-            leap = hour // 24
-            h = hour % 24
-            col = coldata[leap]
-            time = col.time.data
-
-            time_to_use = []
-            for t in time:
-                if pd.Timestamp(t).hour == h:
-                    time_to_use.append(t)
-
-            data = col.data.sel(time=time_to_use)
-
-            stats = self._get_median_stats_point(data, use_weights)
-
+        stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
+        for station, ds in data.groupby("station_name"):
+            stats = ColocatedData(ds).calc_statistics(use_area_weights=use_weights)
             for key in stats_list.keys():
                 stats_list[key].append(stats[key])
 
-        name = f"cams2-83_{model_name}-{model_var}.json"
-        filename = os.path.join(out_dirs["conf"], name)
-        write_json(stats_list, filename, ignore_nan=True)
-
-    def _get_median_stats_point(self, data, use_weights) -> dict:
-
-        stats_list: dict[str, list[float]] = {
-            "rms": [],
-            "R": [],
-            # "R_spearman": [],
-            # "R_kendall": [],
-            "nmb": [],
-            "mnmb": [],
-            "fge": [],
-        }
-
-        station_list = data.station_name.data
-        for station in station_list:
-            d = data.sel(station_name=[station])
-            arr = ColocatedData(d)
-            stats = arr.calc_statistics(use_area_weights=use_weights)
-
-            for key in stats_list.keys():
-                stats_list[key].append(stats[key])
-
-        median_stats = {}
-        for key in stats_list.keys():
-            median_stats[key] = np.nanmedian(np.array(stats_list[key]))
-
-        return median_stats
+        stats = {key: np.nanmedian(value) for key, value in stats_list.items()}
+        return stats

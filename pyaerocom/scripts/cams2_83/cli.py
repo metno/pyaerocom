@@ -5,7 +5,6 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
-from reprlib import repr
 from typing import List, Optional
 
 import typer
