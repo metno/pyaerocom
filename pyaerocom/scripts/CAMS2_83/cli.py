@@ -65,7 +65,7 @@ def make_model_entry(
 
     return dict(
         model_id=f"CAMS2-83.{model.upper()}.day{leap}",
-        model_data_dir=model_path,
+        model_data_dir=str(model_path),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
             cams2_83_daterange=[start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d")],
@@ -234,11 +234,3 @@ def main(
         runner(cfg, cache)
     else:
         typer.echo(cfg)
-
-
-def entry():
-    app()
-
-
-if __name__ == "__main__":
-    entry()
