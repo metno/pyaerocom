@@ -16,7 +16,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             files_to_convert = col.get_available_coldata_files(var_list)
         else:
             files_to_convert = []
-            for leap in range(1):
+            for leap in range(4):
                 model_id = f"CAMS2-83.{model}.day{leap}"
                 model_name = f"CAMS2-83-{model.lower()}-day{leap}"
                 col.model_id = model_id
