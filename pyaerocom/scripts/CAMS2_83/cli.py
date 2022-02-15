@@ -11,7 +11,7 @@ from typing import List, Optional
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.aeroval import EvalSetup
+from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 
@@ -114,6 +114,7 @@ def runner(
     cache: str | Path | None,
     *,
     dry_run: bool = False,
+    quiet: bool = False,
 ):
     logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
     if dry_run:
@@ -122,8 +123,12 @@ def runner(
     if cache is not None:
         const.CACHEDIR = cache
 
+    if quiet:
+        const.QUIET = True
+
     stp = EvalSetup(**cfg)
-    ana = CAMS2_83_Processer(stp)
+    # ana = CAMS2_83_Processer(stp) # For the weird plot
+    ana = ExperimentProcessor(stp)
     ana.run()
 
 
@@ -204,4 +209,5 @@ def main(
         start_date, end_date, leap, model_path, obs_path, data_path, coldata_path, model, id, name
     )
 
-    runner(cfg, cache, dry_run=dry_run)
+    quiet = not verbose
+    runner(cfg, cache, dry_run=dry_run, quiet=quiet)

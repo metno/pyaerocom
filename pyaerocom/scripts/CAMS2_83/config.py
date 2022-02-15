@@ -14,7 +14,7 @@ GLOBAL_CONFIG = dict(
     exp_id="cams2-83-examples",
     exp_name="CAMS2-83 test",
     exp_descr=(
-        "This is an example config of how to evaluate EMEP. It is meant as an educational experiment only, but can be used freely as a starting point to other experiments."
+        "This is a test run for CAMS2_83 using EEA NRT obs."
     ),
     exp_pi="Daniel Heinesen",
     # Whether or not the experiment is visible in the web interface

@@ -13,7 +13,7 @@ from pandas import DatetimeIndex, date_range
 
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
 from pyaerocom.units_helpers import UALIASES
 
 from .models import ModelName
@@ -54,6 +54,27 @@ def find_model_path(
         return root_path / f"{date:%Y%m}/{date:%Y%m%d}_{model}_forecast.nc"
     else:
         return root_path / f"{date:%Y%m%d}_{model}_forecast.nc"
+
+
+def _model_path(
+    name: str | ModelName,
+    date: str | date | datetime,
+    *,
+    run: str | RunType = RunType.FC,
+    root_path: str | Path = DATA_FOLDER_PATH,
+) -> Path:
+    if not isinstance(name, ModelName):
+        name = ModelName[name]
+    if isinstance(date, str):
+        date = datetime.strptime(date, "%Y%m%d").date()
+
+    if isinstance(root_path, str):
+        root_path = Path(root_path)
+    if isinstance(date, datetime):
+        date = date.date()
+    if not isinstance(run, RunType):
+        run = RunType[run]
+    return ModelData(name, run, date, root_path).path
 
 
 def get_cams2_83_vars(var_name):
@@ -290,7 +311,8 @@ class ReadCAMS2_83:
         filepaths = []
 
         for date in daterange:
-            location = find_model_path(model, date, self.data_dir)
+            location = _model_path(model, date, root_path=self.data_dir)
+            # location = find_model_path(model, date, self.data_dir)
             if not os.path.isfile(location):
                 print(f"Could not find {location} . Skipping file")
             else:
@@ -304,9 +326,11 @@ class ReadCAMS2_83:
 
     def _select_date(self, ds: xr.Dataset) -> xr.Dataset:
 
-        forecast_date = ds.attrs["FORECAST"]
-        forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
-        forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
+        # forecast_date = ds.attrs["FORECAST"]
+        # forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
+        # forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
+
+        forecast_date = ModelData.frompath(ds.encoding["source"]).date
 
         select_date = forecast_date + timedelta(days=self.date)
 
