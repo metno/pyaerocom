@@ -330,8 +330,9 @@ class ReadCAMS2_83:
         # forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
         # forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
 
-        forecast_date = ModelData.frompath(ds.encoding["source"]).date
+        fd = ModelData.frompath(ds.encoding["source"]).date
 
+        forecast_date = datetime(fd.year, fd.month, fd.day, 0, 0, 0)
         select_date = forecast_date + timedelta(days=self.date)
 
         dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")

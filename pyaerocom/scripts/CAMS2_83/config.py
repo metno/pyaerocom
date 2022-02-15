@@ -13,9 +13,7 @@ GLOBAL_CONFIG = dict(
     proj_id="CAMS2-83",
     exp_id="cams2-83-examples",
     exp_name="CAMS2-83 test",
-    exp_descr=(
-        "This is a test run for CAMS2_83 using EEA NRT obs."
-    ),
+    exp_descr=("This is a test run for CAMS2_83 using EEA NRT obs."),
     exp_pi="Daniel Heinesen",
     # Whether or not the experiment is visible in the web interface
     public=True,
@@ -108,7 +106,7 @@ GLOBAL_CONFIG["min_num_obs"] = dict(
 #        The model configs
 ##################################################
 # folder_CAMS2_83 = f'/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data'
-folder_CAMS2_83 = f"/lustre/storeB/project/fou/kl/CAMS2_83/test_data"
+folder_CAMS2_83 = f"/lustre/storeB/project/fou/kl/CAMS2_83/model"
 
 
 MODELS_CONFIG = {
