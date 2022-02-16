@@ -10,9 +10,9 @@ from pyaerocom.io.cams2_83.models import ModelName
 
 GLOBAL_CONFIG = dict(
     # Description of the experiment
-    proj_id="CAMS2-83",
-    exp_id="cams2-83-examples",
-    exp_name="CAMS2-83 test",
+    proj_id="cams2-83",
+    exp_id="cams2-83-prototype",
+    exp_name="CAMS2-83 prototype",
     exp_descr=("This is a test run for CAMS2_83 using EEA NRT obs."),
     exp_pi="Daniel Heinesen",
     # Whether or not the experiment is visible in the web interface
@@ -26,6 +26,7 @@ GLOBAL_CONFIG = dict(
     reanalyse_existing=True,
     only_json=False,
     add_model_maps=False,
+    # maps_res_deg=5,
     only_model_maps=False,
     clear_existing_json=False,
     # if True, the analysis will stop whenever an error occurs (else, errors that
@@ -53,8 +54,9 @@ GLOBAL_CONFIG = dict(
     # Here we say that we when O3(vmro3) is evaluated, the daily results will be the maximum for that day
     resample_how={"vmro3": {"daily": {"hourly": "max"}}},
     # Assorted options, more info can be found in 'cfg_examples_examples1.py'
-    zeros_to_nan=False,
-    colocate_time=False,
+    # zeros_to_nan=False,
+    zeros_to_nan=True,
+    colocate_time=True,
     obs_remove_outliers=False,
     model_remove_outliers=False,
     harmonise_units=True,
@@ -110,14 +112,14 @@ folder_CAMS2_83 = f"/lustre/storeB/project/fou/kl/CAMS2_83/model"
 
 
 MODELS_CONFIG = {
-    "CAMS2-83": dict(
-        model_id="CAMS2-83.EMEP.day0",  # ID of the model
-        model_data_dir=folder_CAMS2_83,  # Where (on PPI) the netCDF file is found
-        gridded_reader_id={"model": "ReadCAMS2_83"},  #
-        # model_kwargs=dict(
-        #     cams2_83_daterange=["20190601", "20190603"]#list(pd.date_range(start="20190601", end="20190703")),
-        # )
-    ),
+    # "CAMS2-83": dict(
+    #     model_id="CAMS2-83.EMEP.day0",  # ID of the model
+    #     model_data_dir=folder_CAMS2_83,  # Where (on PPI) the netCDF file is found
+    #     gridded_reader_id={"model": "ReadCAMS2_83"},  #
+    #     # model_kwargs=dict(
+    #     #     cams2_83_daterange=["20190601", "20190603"]#list(pd.date_range(start="20190601", end="20190703")),
+    #     # )
+    # ),
 }
 
 

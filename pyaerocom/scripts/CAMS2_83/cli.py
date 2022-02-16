@@ -86,7 +86,7 @@ def make_config(
     cfg = deepcopy(CFG)
     cfg.update(
         model_cfg={
-            f"CAMS2-83-{model}": make_model_entry(
+            f"{model}": make_model_entry(
                 start_date,
                 end_date,
                 leap,
