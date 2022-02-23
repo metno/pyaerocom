@@ -115,9 +115,6 @@ skipsdist=True
 commands =
     black --check .
     isort --check .
-deps =
-    # cartopy-0.20+ fails to install on CI
-    cartopy>=0.16,<0.20
 extras = 
     format
 
@@ -129,9 +126,6 @@ commands =
     pylint pyaerocom/
     pycodestyle pyaerocom/
     pydocstyle pyaerocom/
-deps =
-    # cartopy-0.20+ fails to install on CI
-    cartopy>=0.16,<0.20
 extras = 
     lint
 
@@ -139,9 +133,6 @@ extras =
 skipsdist=True
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
-deps =
-    # cartopy-0.20+ fails to install on CI
-    cartopy>=0.16,<0.20
 extras = 
     docs
 """
