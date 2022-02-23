@@ -98,8 +98,11 @@ def test_GriddedData_longitude(data_tm5):
     assert str(data_tm5.longitude.units) == "degrees"
 
     lons = data_tm5.longitude.points
-    assert_allclose(lons.min(), -181.5, rtol=TEST_RTOL)
-    assert_allclose(lons.max(), 175.5, rtol=TEST_RTOL)
+    # assert_allclose(lons.min(), -181.5, rtol=TEST_RTOL)
+    # assert_allclose(lons.max(), 175.5, rtol=TEST_RTOL)
+    # iris >= 3.2
+    assert_allclose(lons.min(), -178.5, rtol=TEST_RTOL)
+    assert_allclose(lons.max(), 178.5, rtol=TEST_RTOL)
 
 
 @data_unavail
