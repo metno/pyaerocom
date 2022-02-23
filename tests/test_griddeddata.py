@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
 
+import iris
 import numpy as np
 import pytest
 import xarray as xr
-import iris
 from iris.cube import Cube
 from numpy.testing import assert_allclose
 
@@ -105,15 +105,13 @@ def test_GriddedData_longitude(data_tm5):
     # import iris
     # version('iris')
     # using iris.__version__ instead
-    version = iris.__version__.split('.')
+    version = iris.__version__.split(".")
     if int(version[0]) >= 3 and int(version[1]) > 1:
         assert_allclose(lons.min(), -178.5, rtol=TEST_RTOL)
         assert_allclose(lons.max(), 178.5, rtol=TEST_RTOL)
     else:
         assert_allclose(lons.min(), -181.5, rtol=TEST_RTOL)
         assert_allclose(lons.max(), 175.5, rtol=TEST_RTOL)
-
-
 
 
 @data_unavail
