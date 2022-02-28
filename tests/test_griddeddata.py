@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 from iris.cube import Cube
 from numpy.testing import assert_allclose
+from packaging.version import Version
 
 from pyaerocom import GriddedData, Variable, const
 from pyaerocom.exceptions import (
@@ -101,9 +102,8 @@ def test_GriddedData_longitude(data_tm5):
     lons = data_tm5.longitude.points
     # iris >= 3.2 corrected an error in iris.cube.Cube.intersection
     # see https://github.com/metno/pyaerocom/issues/588
-    iris_version = metadata.version("scitools-iris")
-    iris_version = tuple(map(int, iris_version.split(".")))
-    if iris_version >= (3, 2):
+    iris_version = Version(metadata.version("scitools-iris"))
+    if iris_version >= Version("3.2"):
         lon_min, lon_max = -178.5, 178.5  # correct values
     else:
         lon_min, lon_max = -181.5, 175.5
