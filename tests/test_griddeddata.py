@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
+from importlib import metadata
 
-import iris
 import numpy as np
 import pytest
 import xarray as xr
@@ -100,18 +100,14 @@ def test_GriddedData_longitude(data_tm5):
 
     lons = data_tm5.longitude.points
     # iris >= 3.2 corrected an error in iris.cube.Cube.intersection
-    # this does not work with iris:
-    # from importlib.metadata import version
-    # import iris
-    # version('iris')
-    # using iris.__version__ instead
-    version = iris.__version__.split(".")
-    if int(version[0]) >= 3 and int(version[1]) > 1:
-        assert_allclose(lons.min(), -178.5, rtol=TEST_RTOL)
-        assert_allclose(lons.max(), 178.5, rtol=TEST_RTOL)
+    # see https://github.com/metno/pyaerocom/issues/588
+    iris_version = metadata.version("scitools-iris")
+    iris_version = tuple(map(int, iris_version.split(".")))
+    if iris_version >= (3, 2):
+        lon_min, lon_max = -178.5, 178.5  # correct values
     else:
-        assert_allclose(lons.min(), -181.5, rtol=TEST_RTOL)
-        assert_allclose(lons.max(), 175.5, rtol=TEST_RTOL)
+        lon_min, lon_max = -181.5, 175.5
+    assert (lons.min(), lons.max()) == (lon_min, lon_max)
 
 
 @data_unavail
