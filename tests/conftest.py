@@ -57,8 +57,10 @@ try:
 except ModuleNotFoundError:
     geojson_avail = False
 
-geojson_unavail = pytest.mark.skipif(
-    not geojson_avail, reason="Skipping tests that require access geojsoncontour"
+geojson_unavail = pytest.mark.xfail(
+    not geojson_avail,
+    reason="geojsoncontour might not be avaiable on a conda environment",
+    raises=ModuleNotFoundError,
 )
 
 # iris >= 3.2 corrected an error in iris.cube.Cube.intersection

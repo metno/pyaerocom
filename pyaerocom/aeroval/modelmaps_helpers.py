@@ -7,6 +7,11 @@ from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
 
+try:
+    from geojsoncontour import contourf_to_geojson
+except ModuleNotFoundError:
+    contourf_to_geojson = None
+
 from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
@@ -91,16 +96,14 @@ def calc_contour_json(data, cmap, cmap_bins):
         dictionary containing contour data
 
     """
-    matplotlib.use("Agg")
-    try:
-        import geojsoncontour
-    except ModuleNotFoundError:
+    if contourf_to_geojson is None:
         raise ModuleNotFoundError(
             "Map processing for aeroval interface requires "
-            "library geojsoncontour which is not part of the "
-            "standard installation of pyaerocom."
+            "the geojsoncontour package which is not part of the "
+            "standard conda installation of pyaerocom."
         )
 
+    matplotlib.use("Agg")
     GeoAxes._pcolormesh_patched = Axes.pcolormesh
 
     cm = ListedColormap(color_palette(cmap, len(cmap_bins) - 1))
@@ -110,7 +113,7 @@ def calc_contour_json(data, cmap, cmap_bins):
 
     try:
         data.check_dimcoords_tseries()
-    except:
+    except Exception:
         data.reorder_dimensions_tseries()
 
     nparr = data.cube.data
@@ -125,7 +128,7 @@ def calc_contour_json(data, cmap, cmap_bins):
             lons, lats, datamon, transform=proj, colors=cm.colors, levels=cmap_bins
         )
 
-        result = geojsoncontour.contourf_to_geojson(contourf=contour)
+        result = contourf_to_geojson(contourf=contour)
 
         geojson[str(date)] = eval(result)
 
