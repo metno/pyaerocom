@@ -163,7 +163,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
             0.302636,
             0.234147,
         ),
-        (
+        pytest.param(
             dict(
                 filter_name="WORLD-noMOUNTAINS",
                 regrid_res_deg=30,
@@ -174,6 +174,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
             0.31593,
             # 0.1797,
             0.169897,
+            marks=[need_iris_32],
         ),
         (
             dict(filter_name="WORLD-noMOUNTAINS", ts_type="yearly"),
