@@ -7,6 +7,7 @@ minversion = "6.0"
 log_cli = false
 log_cli_level = "WARNING"
 addopts = "--failed-first"
+xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
     # all warnings are errors

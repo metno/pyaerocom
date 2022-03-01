@@ -3,8 +3,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom.io import ReadGAW
-
-from ..conftest import TEST_RTOL, broken_test, lustre_unavail
+from tests.conftest import TEST_RTOL, lustre_unavail
 
 
 def _make_data():
@@ -19,7 +18,7 @@ def data_vmrdms_ams_cvo():
 
 
 @lustre_unavail
-@broken_test
+@pytest.mark.xfail(reason="wrong data.shape")
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
@@ -42,7 +41,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
 
 
 @lustre_unavail
-@broken_test
+@pytest.mark.xfail(reason='wrong stat["vmrdms"]')
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0)
 
