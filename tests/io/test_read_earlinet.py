@@ -8,8 +8,7 @@ from numpy.testing import assert_allclose
 
 from pyaerocom import VerticalProfile, const
 from pyaerocom.io.read_earlinet import ReadEarlinet
-
-from ..conftest import TEST_RTOL
+from tests.conftest import TEST_RTOL
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Earlinet-test"]
 TEST_FILES: list[str] = [

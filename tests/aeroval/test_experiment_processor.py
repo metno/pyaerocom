@@ -3,9 +3,8 @@ import pytest
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.experiment_processor import ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
+from tests.conftest import geojson_unavail
 from tests.fixtures.aeroval import cfgexp1, cfgexp2, cfgexp3, cfgexp4, cfgexp5
-
-from ..conftest import geojson_unavail
 
 
 def test_ExperimentProcessor___init__():

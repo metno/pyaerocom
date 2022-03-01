@@ -5,9 +5,8 @@ import pytest
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
+from tests.conftest import geojson_unavail
 from tests.fixtures.aeroval import cfgexp1, cfgexp2, cfgexp4
-
-from ..conftest import geojson_unavail
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],

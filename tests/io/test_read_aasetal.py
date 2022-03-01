@@ -13,8 +13,7 @@ from pyaerocom import const
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
-
-from ..conftest import lustre_unavail
+from tests.conftest import lustre_unavail
 
 VARUNITS = {
     "concso2": "ug m-3",

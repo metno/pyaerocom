@@ -8,9 +8,8 @@ from pandas import DataFrame
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.readgridded import ReadGridded
+from tests.conftest import TEST_RTOL, lustre_unavail
 from tests.fixtures.tm5 import TM5_DATA_PATH
-
-from ..conftest import TEST_RTOL, lustre_unavail
 
 path_tm5 = str(TM5_DATA_PATH)
 
