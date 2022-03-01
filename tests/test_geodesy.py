@@ -2,7 +2,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_almost_equal
 
 from pyaerocom import geodesy
-from tests.conftest import etopo1_unavail, geonum_unavail
+from tests.conftest import etopo1_unavail
 
 TEST_LAT = 50.8
 TEST_LON = 9
@@ -27,13 +27,10 @@ def test_is_within_radius_km():
     assert geodesy.is_within_radius_km(0, 15, 0, 16, 1000, 111.2)
 
 
-# @pytest.mark.skip(reason='https://github.com/tkrajina/srtm.py/issues/51')
-@geonum_unavail
 def test_srtm_altitude():
     assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON), 207)
 
 
-@geonum_unavail
 @etopo1_unavail
 @pytest.mark.xfail(raises=FileNotFoundError)
 def test_etopo_altitude():

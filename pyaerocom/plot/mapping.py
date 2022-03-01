@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
+from geonum.helpers import shifted_color_map
 from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
@@ -46,10 +47,6 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     if vmin is not None and vmax is not None and vmin < 0 and vmax > 0:
         cmap = plt.get_cmap(color_theme.cmap_map_div)
         if color_theme.cmap_map_div_shifted:
-            if not const.GEONUM_AVAILABLE:  # pragma: no cover
-                raise ModuleNotFoundError("need geonum to compute shifted colormap")
-            from geonum.helpers import shifted_color_map
-
             cmap = shifted_color_map(vmin, vmax, cmap)
         return cmap
     return plt.get_cmap(color_theme.cmap_map)
