@@ -61,8 +61,6 @@ geojson_unavail = pytest.mark.skipif(
     not geojson_avail, reason="Skipping tests that require access geojsoncontour"
 )
 
-broken_test = pytest.mark.skip(reason="Method raises Exception")
-
 # iris >= 3.2 corrected an error in iris.cube.Cube.intersection
 # see https://github.com/metno/pyaerocom/issues/588
 iris_version = metadata.version("scitools-iris")

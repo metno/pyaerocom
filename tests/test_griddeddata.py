@@ -106,8 +106,7 @@ def test_GriddedData_latitude(data_tm5: GriddedData):
     """test latitude array"""
     assert str(data_tm5.latitude.units) == "degrees"
     lats = data_tm5.latitude.points
-    assert_allclose(lats.min(), -89, rtol=TEST_RTOL)
-    assert_allclose(lats.max(), 89, rtol=TEST_RTOL)
+    assert (lats.min(), lats.max()) == (-89, 89)
 
 
 def test_GriddedData_time(data_tm5: GriddedData):
