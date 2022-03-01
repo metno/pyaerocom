@@ -6,7 +6,6 @@ from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
-from tests.conftest import rg_unavail
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
@@ -74,7 +73,6 @@ def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
 
 
-@rg_unavail
 @pytest.mark.dependency
 def test_check_set_country(aeronetsunv3lev2_subset):
     idx, countries = aeronetsunv3lev2_subset.check_set_country()

@@ -2,13 +2,12 @@ import pytest
 from numpy.testing import assert_allclose, assert_almost_equal
 
 from pyaerocom import geodesy
-from tests.conftest import etopo1_unavail, geonum_unavail, rg_unavail
+from tests.conftest import etopo1_unavail, geonum_unavail
 
 TEST_LAT = 50.8
 TEST_LON = 9
 
 
-@rg_unavail
 @pytest.mark.parametrize(
     "coords,countries",
     [((52, 12), ["Germany"]), ([(46.1956, 6.21125), (55.398, 10.3669)], ["France", "Denmark"])],

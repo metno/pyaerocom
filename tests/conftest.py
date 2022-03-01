@@ -34,17 +34,6 @@ geonum_unavail = pytest.mark.skipif(
     not const.GEONUM_AVAILABLE, reason="Skipping tests that require geonum."
 )
 
-try:
-    import reverse_geocode
-
-    rg_avail = True
-except ModuleNotFoundError:
-    rg_avail = False
-
-rg_unavail = pytest.mark.skipif(
-    not rg_avail, reason="Skipping tests that require access to reverse_geocode"
-)
-
 etopo1_unavail = pytest.mark.skipif(
     not const.ETOPO1_AVAILABLE, reason="Skipping tests that require access to ETOPO1 data"
 )

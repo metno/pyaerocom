@@ -8,6 +8,7 @@ import logging
 import os
 
 import numpy as np
+import reverse_geocode as rg
 
 from pyaerocom import const
 from pyaerocom.helpers import isnumeric
@@ -84,8 +85,6 @@ def get_country_info_coords(coords):
 
     Raises
     ------
-    ModuleNotFoundError
-        if library reverse_geocode is not installed
     ValueError
         if input format is incorrect
 
@@ -95,14 +94,6 @@ def get_country_info_coords(coords):
         list of dictionaries containing country information for each input
         coordinate
     """
-    try:
-        import reverse_geocode as rg
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError(
-            "Cannot retrieve country information for "
-            "lat / lon coordinates. Please install "
-            "library reverse_geocode"
-        )
     if isinstance(coords, np.ndarray):
         coords = list(coords)
     if not isinstance(coords, (list, tuple)):
