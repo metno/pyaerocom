@@ -271,14 +271,18 @@ def _create_fake_coldata_5d():
     return cd
 
 
-@pytest.fixture(scope="session")
-def coldata():
-    return {
-        "tm5_aeronet": ColocatedData(str(EXAMPLE_FILE)),
-        "fake_nodims": ColocatedData(np.ones((2, 1, 1))),
-        "fake_3d": _create_fake_coldata_3d(),
-        "fake_4d": _create_fake_coldata_4d(),
-        "fake_5d": _create_fake_coldata_5d(),
-        "fake_3d_hr": _create_fake_coldata_3d_hourly(),
-        "fake_3d_trends": _create_fake_trends_coldata_3d(),
-    }
+COLDATA = dict(
+    tm5_aeronet=lambda: ColocatedData(str(EXAMPLE_FILE)),
+    fake_nodims=lambda: ColocatedData(np.ones((2, 1, 1))),
+    fake_3d=_create_fake_coldata_3d,
+    fake_4d=_create_fake_coldata_4d,
+    fake_5d=_create_fake_coldata_5d,
+    fake_3d_hr=_create_fake_coldata_3d_hourly,
+    fake_3d_trends=_create_fake_trends_coldata_3d,
+)
+
+
+@pytest.fixture
+def coldata(coldataset: str) -> ColocatedData:
+    """dispatch ColocatedData depending on coldataset"""
+    return COLDATA[coldataset]()

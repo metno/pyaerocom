@@ -18,6 +18,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_stationfile_name,
 )
 from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
+from tests.fixtures.collocated_data import COLDATA
 
 
 def test_get_heatmap_filename():
@@ -41,12 +42,12 @@ def test_get_json_mapname():
         ["3yearly"],
     ],
 )
-def test__init_data_default_frequencies(coldata, to_ts_types: str):
-    data = coldata["tm5_aeronet"]
-    result = _init_data_default_frequencies(data, to_ts_types)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test__init_data_default_frequencies(coldata: ColocatedData, to_ts_types: str):
+    result = _init_data_default_frequencies(coldata, to_ts_types)
     assert len(result) == len(to_ts_types)
 
-    tst = TsType(data.ts_type)
+    tst = TsType(coldata.ts_type)
     for freq, val in result.items():
         if TsType(freq) > tst:
             assert val is None
@@ -56,8 +57,8 @@ def test__init_data_default_frequencies(coldata, to_ts_types: str):
 
 
 @pytest.fixture(scope="module")
-def example_coldata(coldata):
-    return _init_data_default_frequencies(coldata["tm5_aeronet"], ["daily", "monthly", "yearly"])
+def example_coldata():
+    return _init_data_default_frequencies(COLDATA["tm5_aeronet"](), ["daily", "monthly", "yearly"])
 
 
 def test_get_jsdate(example_coldata):
@@ -148,13 +149,19 @@ def test__process_statistics_timeseries_error(
         ("monthly", "all", 2010, 2015, 4, 0),
     ],
 )
+@pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
 def test__make_trends(
-    coldata, freq: str, season: str, start: int, stop: int, min_yrs: int, station: int
+    coldata: ColocatedData,
+    freq: str,
+    season: str,
+    start: int,
+    stop: int,
+    min_yrs: int,
+    station: int,
 ):
-    trend_1d = coldata["fake_3d_trends"]
-    obs_val = trend_1d.data.data[0, :, station]
-    mod_val = trend_1d.data.data[1, :, station]
-    time = trend_1d.data.time
+    obs_val = coldata.data.data[0, :, station]
+    mod_val = coldata.data.data[1, :, station]
+    time = coldata.data.time
 
     obs_trend, mod_trend = _make_trends(obs_val, mod_val, time, freq, season, start, stop, min_yrs)
 
@@ -194,13 +201,18 @@ def test__make_trends(
         ),
     ],
 )
+@pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
 def test__make_trends_error(
-    coldata, freq: str, season: str, min_yrs: int, exception: Type[Exception], error: str
+    coldata: ColocatedData,
+    freq: str,
+    season: str,
+    min_yrs: int,
+    exception: Type[Exception],
+    error: str,
 ):
-    trend_1d = coldata["fake_3d_trends"]
-    obs_val = trend_1d.data.data[0, :, 0]
-    mod_val = trend_1d.data.data[1, :, 0]
-    time = trend_1d.data.time
+    obs_val = coldata.data.data[0, :, 0]
+    mod_val = coldata.data.data[1, :, 0]
+    time = coldata.data.time
     with pytest.raises(exception) as e:
         _make_trends(obs_val, mod_val, time, freq, season, 2010, 2015, min_yrs)
     assert str(e.value) == error
