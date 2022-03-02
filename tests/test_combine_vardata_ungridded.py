@@ -4,7 +4,12 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-import pyaerocom.combine_vardata_ungridded as testmod
+from pyaerocom.combine_vardata_ungridded import (
+    _check_input_data_ids_and_vars,
+    _combine_2_sites,
+    _map_same_stations,
+    combine_vardata_ungridded,
+)
 from tests.fixtures.aeronet import aeronetsdav3lev2_subset as SDA_DATA
 from tests.fixtures.aeronet import aeronetsunv3lev2_subset as SUN_DATA
 
@@ -58,7 +63,7 @@ def test_combine_vardata_ungridded_single_ungridded(
 ):
 
     input_data = [(SUN_DATA, SUN_ID, var1), (SUN_DATA, SUN_ID, var2)]
-    stats = testmod.combine_vardata_ungridded(input_data, **kwargs)
+    stats = combine_vardata_ungridded(input_data, **kwargs)
 
     assert len(stats) == numst
     first = stats[0]
@@ -85,7 +90,7 @@ def test_combine_vardata_ungridded_single_ungridded_error(
 ):
     input_data = [(SUN_DATA, SUN_ID, var1), (SUN_DATA, SUN_ID, var2)]
     with pytest.raises(exception) as e:
-        testmod.combine_vardata_ungridded(input_data, **kwargs)
+        combine_vardata_ungridded(input_data, **kwargs)
     assert str(e.value).startswith(error)
 
 
@@ -114,7 +119,7 @@ def test__combine_2_sites_different_vars(
     stat2 = stats_sda_fineaod["stats"][site_idx2]
     var2 = "od550lt1aer"
 
-    new = testmod._combine_2_sites(
+    new = _combine_2_sites(
         stat1,
         var1,
         stat2,
@@ -214,7 +219,7 @@ VALID_DATA_IDS = (
 )
 def test___check_input_data_ids_and_vars_error(args, exception, error):
     with pytest.raises(exception) as e:
-        testmod._check_input_data_ids_and_vars(args)
+        _check_input_data_ids_and_vars(args)
     assert str(e.value) == error
 
 
@@ -228,7 +233,7 @@ def test___check_input_data_ids_and_vars_error(args, exception, error):
     ],
 )
 def test__map_same_stations_samedata(stats_sun_aod, match_stats_how, match_stats_tol_km):
-    index_short, index_long, statnames_short, statnames_long = testmod._map_same_stations(
+    index_short, index_long, statnames_short, statnames_long = _map_same_stations(
         stats_sun_aod, stats_sun_aod, match_stats_how, match_stats_tol_km
     )
     assert index_short == index_long
@@ -248,7 +253,7 @@ def test__map_same_stations(
     stats_sun_aod, stats_sda_aod, match_stats_how, match_stats_tol_km, num_matches, diff_idx
 ):
 
-    index_short, index_long, statnames_short, statnames_long = testmod._map_same_stations(
+    index_short, index_long, statnames_short, statnames_long = _map_same_stations(
         stats_sun_aod, stats_sda_aod, match_stats_how, match_stats_tol_km
     )
     assert len(index_short) == len(index_long) == num_matches
@@ -283,7 +288,7 @@ def test__combine_2_sites_same_site(
     stat = stats_sun_aod["stats"][site_idx]
     var = "od550aer"
 
-    new = testmod._combine_2_sites(
+    new = _combine_2_sites(
         stat,
         var,
         stat,
