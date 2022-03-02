@@ -18,7 +18,9 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_concNno3pm25,
     calc_concNtnh,
     calc_concsspm25,
+    calc_conNtnh_emep,
     calc_conNtno3,
+    calc_conNtno3_emep,
     calc_vmrox,
     subtract_dataarrays,
     update_EC_units,
@@ -64,8 +66,10 @@ class ReadMscwCtm:
         "concNnh4": ["concnh4"],
         "concNno3pm10": ["concno3f", "concno3c"],
         "concNno3pm25": ["concno3f", "concno3c"],
-        "concNtno3": ["conchno3", "concno3f", "concno3c"],
-        "concNtnh": ["concnh3", "concnh4"],
+        "concNtno3": ["concoxn"],
+        "concNtnh": ["concrdn"],
+        # "concNtno3": ["conchno3", "concno3f", "concno3c"],
+        # "concNtnh": ["concnh3", "concnh4"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concsspm25", "concssc"],
         "concCecpm25": ["concecpm25"],
@@ -87,8 +91,10 @@ class ReadMscwCtm:
         "concNnh4": calc_concNnh4,
         "concNno3pm10": calc_concNno3pm10,
         "concNno3pm25": calc_concNno3pm25,
-        "concNtno3": calc_conNtno3,
-        "concNtnh": calc_concNtnh,
+        "concNtno3": calc_conNtno3_emep,
+        "concNtnh": calc_conNtnh_emep,
+        # "concNtno3": calc_conNtno3,
+        # "concNtnh": calc_concNtnh,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
         "concCecpm25": update_EC_units,
@@ -423,6 +429,37 @@ class ReadMscwCtm:
         """Variables provided by this dataset"""
         return list(self.var_map) + list(self.AUX_REQUIRES)
 
+    # def open_file(self):
+    #     """
+    #     Open current netcdf file
+
+    #     Returns
+    #     -------
+    #     dict(xarray.Dataset)
+    #         Dict with years as keys and Datasets as items
+
+    #     """
+    #     fps = self.filepaths
+    #     ds = {}
+
+    #     yrs = self._get_yrs_from_filepaths()
+
+    #     ts_type = self.ts_type_from_filename(self.filename)
+    #     fps = self._clean_filepaths(fps, yrs, ts_type)
+
+    #     for i, fp in enumerate(fps):
+    #         if not os.path.split(fp)[-1] == self.filename:
+    #             continue
+
+    #         logger.info(f"Opening {fp}")
+    #         tmp_ds = xr.open_dataset(fp)
+
+    #         ds[yrs[i]] = tmp_ds
+
+    #     self._filedata = ds
+
+    #     return ds
+
     def open_file(self):
         """
         Open current netcdf file
@@ -440,15 +477,8 @@ class ReadMscwCtm:
 
         ts_type = self.ts_type_from_filename(self.filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
-
-        for i, fp in enumerate(fps):
-            if not os.path.split(fp)[-1] == self.filename:
-                continue
-
-            logger.info(f"Opening {fp}")
-            tmp_ds = xr.open_dataset(fp)
-
-            ds[yrs[i]] = tmp_ds
+        logger.info(f"Opening {fps}")
+        ds = xr.open_mfdataset(fps)
 
         self._filedata = ds
 
@@ -680,15 +710,15 @@ class ReadMscwCtm:
 
         try:
             filedata = self.filedata
-
-            if len(filedata) == 1:
-                data = filedata[list(filedata)[0]][emep_var]
-            else:
-                if ts_type == "hourly":
-                    raise ValueError(
-                        f"ts_type {ts_type} can not be hourly when using multiple years"
-                    )
-                data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
+            data = filedata[emep_var]
+            # if len(filedata) == 1:
+            #     data = filedata[list(filedata)[0]][emep_var]
+            # else:
+            #     if ts_type == "hourly":
+            #         raise ValueError(
+            #             f"ts_type {ts_type} can not be hourly when using multiple years"
+            #         )
+            #     data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
 
         except KeyError:
             raise VarNotAvailableError(
