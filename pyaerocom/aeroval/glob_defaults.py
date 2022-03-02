@@ -184,6 +184,60 @@ statistics_trend = {
     },
 }
 
+statistics_mean_trend = {
+    "mean_obs/mod_trend": {
+        "name": "Mean Obs/Mod-Trends",
+        "longname": "Mean Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+    },
+    "mean_obs_trend": {
+        "name": "Mean Obs-Trends",
+        "longname": "Observed Mean Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+    },
+    "mean_mod_trend": {
+        "name": "Mean Mod-Trends",
+        "longname": "Modelled Mean Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+    },
+}
+
+statistics_median_trend = {
+    "median_obs/mod_trend": {
+        "name": "Median Obs/Mod-Trends",
+        "longname": "Median Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+    },
+    "median_obs_trend": {
+        "name": "Median Obs-Trends",
+        "longname": "Observed Median Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+    },
+    "median_mod_trend": {
+        "name": "Median Mod-Trends",
+        "longname": "Modelled Median Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+    },
+}
+
 #: Mapping of pyaerocom variable names to web naming conventions
 var_web_info = dict(
     od550aer=["AOD", "2D", "Optical properties"],
@@ -228,15 +282,15 @@ var_web_info = dict(
     concno3=["NO3", "3D", "Gas concentrations"],
     vmro3=["O3", "3D", "Volume mixing ratios"],
     concNtno3=["tNO3", "3D", "Concentration"],
-    concNtnh=["tNH", "3D", "Concentration"],
+    concNtnh=["tNH4", "3D", "Concentration"],
     concNnh3=["NH3", "3D", "Concentration"],
     concNhno3=["HNO3", "3D", "Concentration"],
     concNno3pm10=["NO3_PM10", "3D", "Particle concentration"],
     concNno3pm25=["NO3_PM25", "3D", "Particle concentration"],
     concsspm10=["SS_PM10", "3D", "Particle concentration"],
     concsspm25=["SS_PM25", "3D", "Particle concentration"],
-    concCecpm25=["EC", "3D", "Particle concentration"],
-    concCocpm25=["OC", "3D", "Particle concentration"],
+    concCecpm25=["EC PM2.5", "3D", "Particle concentration"],
+    concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     dryoxs=["FakeDryOXS", "3D", "Deposition"],
@@ -247,4 +301,5 @@ var_web_info = dict(
     vmrco=["CO", "3D", "Volume mixing ratios"],
     vmrno2=["NO2", "3D", "Volume mixing ratios"],
     concco=["CO", "3D", "Particle concentration"],
+    prmm=["Precipitation", "3D", "Precipitation"],
 )

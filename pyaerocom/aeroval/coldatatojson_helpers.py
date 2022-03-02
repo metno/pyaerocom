@@ -713,6 +713,7 @@ def _make_regional_trends(
     season: str,
     regid: str,
     use_country: bool = True,
+    median: bool = False,
 ) -> tuple[dict, dict, bool]:
     (start, stop) = _get_min_max_year_periods([per])
     data = data.copy()
@@ -753,7 +754,7 @@ def _make_regional_trends(
                     stop,
                     trends_min_yrs,
                 )
-                if not obs_trend["m"] is None:
+                if None not in obs_trend.values() and None not in mod_trend.values():
                     station_mod_trends.append(mod_trend)
                     station_obs_trends.append(obs_trend)
             except AeroValTrendsError as e:
@@ -770,12 +771,14 @@ def _make_regional_trends(
             start,
             stop,
             subset_time_series["obs"],
+            median=median,
         )
         mod_trend = _combine_regional_trends(
             station_mod_trends,
             start,
             stop,
             subset_time_series["mod"],
+            median=median,
         )
 
         obs_trend["data"] = obs_trend["data"].to_json()
@@ -792,8 +795,14 @@ def _combine_regional_trends(
     start_yr: int | float,
     stop_yr: int | float,
     time_series: pd.Series,
+    median: bool = False,
 ) -> dict:
     result = _init_trends_result_dict(start_yr)
+
+    if median:
+        avg_func = np.nanmedian
+    else:
+        avg_func = np.nanmean
 
     default_trend = trends[0]
 
@@ -805,29 +814,32 @@ def _combine_regional_trends(
     ]
 
     result["n"] = _combine_statistic(trends, "n", np.nanmax)
-    result["y_mean"] = _combine_statistic(trends, "y_mean", np.nanmean)
+    result["y_mean"] = _combine_statistic(trends, "y_mean", avg_func)
     result["y_min"] = _combine_statistic(trends, "y_min", np.nanmin)
     result["y_max"] = _combine_statistic(trends, "y_max", np.nanmax)
 
     result["pval"] = _fishers_pval(trends)
 
-    result["m"] = _combine_statistic(trends, "m", np.nanmean)
+    result["m"] = _combine_statistic(trends, "m", avg_func)
     result["m_err"] = _get_trend_error(trends, "m")
-    result["yoffs"] = _combine_statistic(trends, "yoffs", np.nanmean)
+    result["yoffs"] = _combine_statistic(trends, "yoffs", avg_func)
 
-    result["slp"] = _combine_statistic(trends, "slp", np.nanmean)
+    result["slp"] = _combine_statistic(trends, "slp", avg_func)
     result["slp_err"] = _get_trend_error(trends, "slp")
-    result["reg0"] = _combine_statistic(trends, "reg0", np.nanmean)
+    result["reg0"] = _combine_statistic(trends, "reg0", avg_func)
 
-    result[f"slp_{start_yr}"] = _combine_statistic(trends, f"slp_{start_yr}", np.nanmean)
+    result[f"slp_{start_yr}"] = _combine_statistic(trends, f"slp_{start_yr}", avg_func)
     result[f"slp_{start_yr}_err"] = _get_trend_error(trends, f"slp_{start_yr}")
-    result[f"reg0_{start_yr}"] = _combine_statistic(trends, f"reg0_{start_yr}", np.nanmean)
+    result[f"reg0_{start_yr}"] = _combine_statistic(trends, f"reg0_{start_yr}", avg_func)
 
     return result
 
 
 def _combine_statistic(data: list, key: str, func: Callable) -> float:
     cleaned = np.array([i[key] for i in data])
+    for i in data:
+        if i[key] is None:
+            print(i)
     return float(func(cleaned))
 
 
@@ -1274,14 +1286,16 @@ def _process_heatmap_data(
                             subset = _select_period_season_coldata(coldata, per, season)
 
                             trends_successful = False
+                            mean_trends_successful = False
+                            median_trends_successful = False
                             if add_trends and freq != "daily":
                                 if avg_over_trends:
                                     logger.info(f"Adding trend for {regname} in {season} {per}")
 
                                     (
-                                        obs_trend,
-                                        mod_trend,
-                                        trends_successful,
+                                        mean_obs_trend,
+                                        mean_mod_trend,
+                                        mean_trends_successful,
                                     ) = _make_regional_trends(
                                         subset,
                                         trends_min_yrs,
@@ -1291,30 +1305,45 @@ def _process_heatmap_data(
                                         regid,
                                         use_country,
                                     )
-                                else:
-                                    # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                    (start, stop) = _get_min_max_year_periods([per])
 
-                                    if stop - start >= trends_min_yrs:
-                                        try:
-                                            subset_time_series = subset.get_regional_timeseries(
-                                                regid, check_country_meta=use_country
-                                            )
+                                    (
+                                        median_obs_trend,
+                                        median_mod_trend,
+                                        median_trends_successful,
+                                    ) = _make_regional_trends(
+                                        subset,
+                                        trends_min_yrs,
+                                        per,
+                                        freq,
+                                        season,
+                                        regid,
+                                        use_country,
+                                        median=True,
+                                    )
 
-                                            (obs_trend, mod_trend) = _make_trends_from_timeseries(
-                                                subset_time_series["obs"],
-                                                subset_time_series["mod"],
-                                                freq,
-                                                season,
-                                                start,
-                                                stop,
-                                                trends_min_yrs,
-                                            )
+                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                (start, stop) = _get_min_max_year_periods([per])
 
-                                            trends_successful = True
-                                        except AeroValTrendsError as e:
-                                            msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                            logger.warning(msg)
+                                if stop - start >= trends_min_yrs:
+                                    try:
+                                        subset_time_series = subset.get_regional_timeseries(
+                                            regid, check_country_meta=use_country
+                                        )
+
+                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(
+                                            subset_time_series["obs"],
+                                            subset_time_series["mod"],
+                                            freq,
+                                            season,
+                                            start,
+                                            stop,
+                                            trends_min_yrs,
+                                        )
+
+                                        trends_successful = True
+                                    except AeroValTrendsError as e:
+                                        msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                        logger.warning(msg)
 
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
@@ -1326,6 +1355,26 @@ def _process_heatmap_data(
                                 # The whole trends dicts are placed in the stats dict
                                 stats["obs_trend"] = obs_trend
                                 stats["mod_trend"] = mod_trend
+
+                            if (
+                                add_trends
+                                and freq != "daily"
+                                and mean_trends_successful
+                                and avg_over_trends
+                            ):
+                                # The whole trends dicts are placed in the stats dict
+                                stats["mean_obs_trend"] = mean_obs_trend
+                                stats["mean_mod_trend"] = mean_mod_trend
+
+                            if (
+                                add_trends
+                                and freq != "daily"
+                                and median_trends_successful
+                                and avg_over_trends
+                            ):
+                                # The whole trends dicts are placed in the stats dict
+                                stats["median_obs_trend"] = median_obs_trend
+                                stats["median_mod_trend"] = median_mod_trend
 
                         except (DataCoverageError, TemporalResolutionError) as e:
                             stats = stats_dummy
@@ -1518,111 +1567,6 @@ def _init_data_default_frequencies(coldata, to_ts_types):
 def _start_stop_from_periods(periods):
     start, stop = _get_min_max_year_periods(periods)
     return start_stop(start, stop + 1)
-
-
-# def _remove_less_covered(
-#     data: ColocatedData,
-#     min_yrs: int,
-#     sequential_yrs: bool = False,
-# ) -> ColocatedData:
-#     freq_data = _init_data_default_frequencies(data, ["yearly"])
-
-#     comp_data = data.resample_time("yearly", settings_from_meta=True, inplace=False)
-#     stations = comp_data.data.station_name.data
-#     data = data.copy()
-#     for i, s in enumerate(stations):
-#         allowed_dates = np.unique(
-#             pd.DatetimeIndex(comp_data.data.sel(station_name=s).time.data).year
-#         )
-#         yearly_obs = comp_data.data.sel(station_name=s)
-#         yearly_obs_data = comp_data.data.sel(station_name=s).data[0, :]
-
-#         obs_dates = data.data.sel(station_name=s).time.data
-#         obs_data = data.data.sel(station_name=s).data[0, :]
-#         non_nan_dates = []
-#         debug = []
-
-#         yearly_obs_years = pd.DatetimeIndex(yearly_obs.time.data).year
-#         assert len(yearly_obs_data) == len(yearly_obs_years)
-
-#         for j in range(len(obs_dates)):
-#             # if "Birkenes" in s:
-#             #     debug.append([obs_dates[j], obs_data[j]])
-
-#             y = pd.DatetimeIndex([obs_dates[j]]).year[0]
-#             if not np.isnan(yearly_obs_data[np.where(yearly_obs_years == y)]):
-#                 if not np.isnan(obs_data[j]):
-#                     non_nan_dates.append(obs_dates[j])
-#         years = np.unique(pd.DatetimeIndex(non_nan_dates).year)
-#         if sequential_yrs:
-#             max_yrs = _find_longest_seq_yrs(years)
-#         else:
-#             max_yrs = _find_n_yrs(years)
-#         # if "Birkenes" in s:
-#         #     print(np.array(debug))
-#         #     print(non_nan_dates)
-#         #     print(s, years, max_yrs, min_yrs)
-#         #     exit()
-
-#         if min_yrs > max_yrs:
-#             print(f"Dropping {s}")
-#             logging.info(f"Dropping {s}")
-#             data.data = data.data.drop_sel(station_name=s)
-
-#     new_stations = data.data.station_name.data
-
-#     print(f"Removed {len(stations)-len(new_stations)} stations")
-#     if len(new_stations) == 0:
-#         raise AeroValTrendsError(
-#             f"No stations left after removing stations with fewer than {min_yrs} years!"
-#         )
-
-#     return data
-
-
-# def _remove_less_covered(
-#     data: ColocatedData,
-#     min_yrs: int,
-#     sequential_yrs: bool = False,
-# ) -> ColocatedData:
-
-#     stations = data.data.station_name.data
-#     data = data.copy()
-#     for i, s in enumerate(stations):
-
-#         obs_dates = data.data.sel(station_name=s).time.data
-#         obs_data = data.data.sel(station_name=s).data[0, :]
-
-#         obs_years = np.unique(pd.DatetimeIndex(obs_dates).year)
-
-#         season_yrs = {k: [] for k in obs_years}
-#         for j in range(len(obs_dates)):
-#             y = pd.DatetimeIndex([obs_dates[j]]).year[0]
-#             m = pd.DatetimeIndex([obs_dates[j]]).month[0]
-#             season = _get_season(m)
-#             if not np.isnan(obs_data[j]):
-#                 season_yrs[y].append(season)
-
-#         years = _get_yrs_from_season_yrs(season_yrs)
-#         if sequential_yrs:
-#             max_yrs = _find_longest_seq_yrs(years)
-#         else:
-#             max_yrs = _find_n_yrs(years)
-
-#         if min_yrs > max_yrs:
-#             # print(f"Dropping {s}; It has only {max_yrs}")
-#             logging.info(f"Dropping {s}; It has only {max_yrs}")
-#             data.data = data.data.drop_sel(station_name=s)
-
-#     new_stations = data.data.station_name.data
-
-#     print(f"Removed {len(stations)-len(new_stations)} stations")
-#     if len(new_stations) == 0:
-#         raise AeroValTrendsError(
-#             f"No stations left after removing stations with fewer than {min_yrs} years!"
-#         )
-
-#     return data
 
 
 def _remove_less_covered(

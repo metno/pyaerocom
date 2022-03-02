@@ -16,6 +16,8 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
+    statistics_mean_trend,
+    statistics_median_trend,
     statistics_trend,
     var_ranges_defaults,
     var_web_info,
@@ -567,6 +569,10 @@ class ExperimentOutput(ProjectOutput):
         stats_info.update(extended_statistics)
         if self.cfg.statistics_opts.add_trends:
             stats_info.update(statistics_trend)
+            if self.cfg.statistics_opts.avg_over_trends:
+                stats_info.update(statistics_mean_trend)
+                stats_info.update(statistics_median_trend)
+
         write_json(stats_info, self.statistics_file, indent=4)
 
     def _get_var_name_and_type(self, var_name):
