@@ -1,5 +1,4 @@
 import pytest
-from numpy.testing import assert_allclose, assert_almost_equal
 
 from pyaerocom import geodesy
 from tests.conftest import etopo1_unavail
@@ -20,7 +19,7 @@ def test_get_country_info_coords(coords, countries):
 
 
 def test_haversine():
-    assert_allclose(geodesy.haversine(0, 15, 0, 16), 111.2, atol=0.1)
+    assert geodesy.haversine(0, 15, 0, 16) == pytest.approx(111.2, abs=0.1)
 
 
 def test_is_within_radius_km():
@@ -28,11 +27,11 @@ def test_is_within_radius_km():
 
 
 def test_srtm_altitude():
-    assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON), 207)
+    assert geodesy.get_topo_altitude(TEST_LAT, TEST_LON) == pytest.approx(207)
 
 
 @etopo1_unavail
 @pytest.mark.xfail(raises=FileNotFoundError)
 def test_etopo_altitude():
     alt = geodesy.get_topo_altitude(TEST_LAT, TEST_LON, topo_dataset="etopo1")
-    assert_almost_equal(alt, 217)
+    assert alt == pytest.approx(217)

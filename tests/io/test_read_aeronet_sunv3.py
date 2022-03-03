@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.stationdata import StationData
@@ -27,11 +26,10 @@ def test_read_file(reader):
     assert data.latitude[0] == 40.63
     assert data.longitude[0] == 22.96
     assert data.station_name[0] == "Thessaloniki"
-    assert all(x in data for x in ["od550aer", "ang4487aer"])
-
-    actual = [data["od550aer"][:10].mean(), data["ang4487aer"][:10].mean()]
-    desired = [0.287, 1.787]
-    assert_allclose(actual, desired, rtol=1e-3)
+    assert "od550aer" in data
+    assert data["od550aer"][:10].mean() == pytest.approx(0.287, rel=1e-3)
+    assert "ang4487aer" in data
+    assert data["ang4487aer"][:10].mean() == pytest.approx(1.787, rel=1e-3)
 
 
 def test_read(reader):
@@ -44,7 +42,7 @@ def test_read(reader):
     assert data.contains_vars == ["od550aer", "ang4487aer"]
     assert data.contains_instruments == ["sun_photometer"]
     assert data.shape == (11990, 12)
-    assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676, rtol=1e-3)
+    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(0.676, rel=1e-3)
 
 
 def test_read_add_common_meta(reader):

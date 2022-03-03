@@ -5,7 +5,6 @@ from typing import Type
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -91,10 +90,7 @@ def test__process_statistics_timeseries(
         for stats in data.values():
             biases.append(stats["nmb"])
     mean_bias = np.nanmean(biases)
-    if np.isnan(nmb_avg):
-        assert np.isnan(mean_bias)
-    else:
-        assert_allclose(mean_bias, nmb_avg, atol=0.001)
+    assert mean_bias == pytest.approx(nmb_avg, abs=0.001, nan_ok=True)
 
 
 @pytest.mark.parametrize(

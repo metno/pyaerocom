@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Type
 
 import cf_units
-import numpy as np
 import pytest
 import xarray as xr
 
@@ -13,6 +12,7 @@ import pyaerocom.exceptions as exc
 from pyaerocom import get_variable
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
+from tests.conftest import TEST_RTOL
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
 VAR_MAP = {
@@ -476,7 +476,7 @@ def test_read_emep_dummy_data(
             objs[var] = data
     if isinstance(chk_mean, dict):
         for var, mean in chk_mean.items():
-            np.testing.assert_allclose(objs[var].cube.data.mean(), mean, atol=0.1)
+            assert objs[var].cube.data.mean() == pytest.approx(mean, abs=0.1, rel=TEST_RTOL)
 
 
 def test_read_emep_dummy_data_error(tmp_path: Path):

@@ -35,7 +35,7 @@ def test_filter_griddeddata(data_tm5, filter_name, mean):
     f = Filter(filter_name)  # europe only land
 
     subset = f.apply(model)
-    np.testing.assert_allclose(np.nanmean(subset.cube.data), mean)
+    assert np.nanmean(subset.cube.data) == pytest.approx(mean)
 
 
 @pytest.mark.parametrize(

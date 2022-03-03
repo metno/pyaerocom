@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom.combine_vardata_ungridded import (
     _check_input_data_ids_and_vars,
@@ -69,7 +68,7 @@ def test_combine_vardata_ungridded_single_ungridded(
     first = stats[0]
     for variable, value in mean_first.items():
         assert variable in first
-        assert_allclose(np.nanmean(first[variable]), value, rtol=1e-4)
+        assert np.nanmean(first[variable]) == pytest.approx(value, rel=1e-4)
 
 
 @pytest.mark.parametrize(
@@ -140,8 +139,8 @@ def test__combine_2_sites_different_vars(
     assert var1 in new
     assert var2 in new
     assert len(new[var1]) == len(new[var2])
-    assert_allclose(np.nanmean(new[var1]), np.nanmean(stat1[var1]), rtol=1e-9)
-    assert_allclose(np.nanmean(new[var2]), np.nanmean(stat2[var2]), rtol=1e-9)
+    assert np.nanmean(new[var1]) == pytest.approx(np.nanmean(stat1[var1]), rel=1e-9)
+    assert np.nanmean(new[var2]) == pytest.approx(np.nanmean(stat2[var2]), rel=1e-9)
 
     if merge_how != "eval":
         return

@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.axes import Axes
-from numpy.testing import assert_allclose
 from xarray import DataArray
 
 from pyaerocom.exceptions import (
@@ -19,6 +18,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from tests.conftest import TEST_RTOL
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
@@ -167,7 +167,7 @@ def test_StationData_convert_unit_error():
 
 def test_StationData_dist_other():
     dist = stat1.dist_other(stat2)
-    assert_allclose(dist, 1.11, atol=0.1)
+    assert dist == pytest.approx(1.11, abs=0.1)
 
 
 @pytest.mark.parametrize(
@@ -338,7 +338,7 @@ def test_StationData_check_if_3d(stat: StationData, var_name: str, result: bool)
 
 
 def test_StationData__check_ts_types_for_merge():
-    assert stat1._check_ts_types_for_merge(stat2, "ec550aer") == "monthly"
+    assert stat1.copy()._check_ts_types_for_merge(stat2, "ec550aer") == "monthly"
 
 
 @pytest.mark.parametrize(
@@ -360,10 +360,7 @@ def test_StationData_remove_outliers(
 ):
     stat.remove_outliers(var_name, low, high, check_unit)
     avg = np.nanmean(stat[var_name])
-    if np.isnan(mean):
-        assert np.isnan(avg)
-    else:
-        assert_allclose(avg, mean)
+    assert avg == pytest.approx(mean, rel=TEST_RTOL, nan_ok=True)
 
 
 def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
@@ -372,7 +369,7 @@ def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
     assert clim is not site
     assert isinstance(clim, StationData)
     mean = np.nanmean(clim.od550aer)  # type:ignore[attr-defined]
-    assert_allclose(mean, 0.44, atol=0.01)
+    assert mean == pytest.approx(0.44, abs=0.01)
 
 
 def test_StationData_remove_variable():

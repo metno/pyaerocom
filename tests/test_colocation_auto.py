@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
@@ -282,8 +281,8 @@ def test_Colocator_run_gridded_ungridded(
     mod_clim_used = any("9999" in x for x in coldata.metadata["from_files"])
     assert stp.model_use_climatology == mod_clim_used
 
-    assert_allclose(np.nanmean(coldata.data[0].values), mean_obs, atol=0.01)
-    assert_allclose(np.nanmean(coldata.data[1].values), mean_mod, atol=0.01)
+    assert np.nanmean(coldata.data[0].values) == pytest.approx(mean_obs, abs=0.01)
+    assert np.nanmean(coldata.data[1].values) == pytest.approx(mean_mod, abs=0.01)
 
 
 @pytest.mark.parametrize(

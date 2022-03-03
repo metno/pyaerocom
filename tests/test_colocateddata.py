@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 import xarray as xr
 from matplotlib.axes import Axes
-from numpy.testing import assert_allclose
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData
@@ -117,7 +116,7 @@ def test_ColocatedData_time_error(coldata: ColocatedData):
     ],
 )
 def test_ColocatedData_lat_range(coldata: ColocatedData, lat_range: tuple[float, float]):
-    assert_allclose(coldata.lat_range, lat_range, rtol=1e-1)
+    assert coldata.lat_range == pytest.approx(lat_range, rel=1e-1)
 
 
 @pytest.mark.parametrize("coldataset", ["fake_nodims"])
@@ -135,7 +134,7 @@ def test_ColocatedData_lat_range_error(coldata: ColocatedData):
     ],
 )
 def test_ColocatedData_lon_range(coldata: ColocatedData, lon_range: tuple[float, float]):
-    assert_allclose(coldata.lon_range, lon_range, rtol=1e-1)
+    assert coldata.lon_range == pytest.approx(lon_range, rel=1e-1)
 
 
 @pytest.mark.parametrize("coldataset", ["fake_nodims"])
@@ -252,8 +251,7 @@ def test_ColocatedData_calc_statistics(coldata: ColocatedData, use_area_weights:
     output = coldata.calc_statistics(use_area_weights=use_area_weights)
     assert isinstance(output, dict)
     for key, val in chk.items():
-        assert key in output
-        assert_allclose(output[key], val, rtol=1e-2)
+        assert output[key] == pytest.approx(val, rel=1e-2, nan_ok=True)
 
 
 @pytest.mark.parametrize("coldataset", ["fake_nodims"])
@@ -279,7 +277,7 @@ def test_ColocatedData_calc_temporal_statistics(
     temporal_statistics = coldata.calc_temporal_statistics(aggr=aggr)
     assert isinstance(temporal_statistics, dict)
     for key, val in statistics.items():
-        assert temporal_statistics.get(key) == pytest.approx(val, rel=1e-2)
+        assert temporal_statistics[key] == pytest.approx(val, rel=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -313,7 +311,7 @@ def test_ColocatedData_calc_spatial_statistics(
     spatial_statistics = coldata.calc_spatial_statistics(**args)
     assert isinstance(spatial_statistics, dict)
     for key, val in statistics.items():
-        assert spatial_statistics.get(key) == pytest.approx(val, rel=1e-2)
+        assert spatial_statistics[key] == pytest.approx(val, rel=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -497,4 +495,4 @@ def test_ColocatedData_resample_time(coldata: ColocatedData, args: dict, mean):
     assert (resampled is coldata) == args.get("inplace", False)
 
     resampled_mean = resampled.data.mean().data
-    assert_allclose(resampled_mean, mean, atol=1e-3)
+    assert resampled_mean == pytest.approx(mean, abs=1e-3, nan_ok=True)

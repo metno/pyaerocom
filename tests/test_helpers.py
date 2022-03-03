@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-from numpy.testing import assert_allclose
 
 from pyaerocom import StationData, helpers
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
@@ -73,7 +72,7 @@ def test_merge_station_data(
     vardata = stat[var_name]
     assert len(vardata) == num
     assert stat.get_var_ts_type(var_name) == tst
-    assert_allclose(np.mean(vardata), mean, rtol=1e-2)
+    assert np.mean(vardata) == pytest.approx(mean, rel=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -128,7 +127,7 @@ def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
 
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how, min_num_obs=min_num_obs)
     assert len(s1) == num
-    assert_allclose(np.nanmean(s1), avg, atol=1e-2)
+    assert np.nanmean(s1) == pytest.approx(avg, abs=1e-2, nan_ok=True)
 
 
 def test_same_meta_dict():
