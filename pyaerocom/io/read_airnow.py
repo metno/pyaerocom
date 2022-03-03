@@ -1,143 +1,136 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-########################################################################
-#
-# This python module is part of the pyaerocom software
-#
-# License: GNU General Public License v3.0
-# More information: https://github.com/metno/pyaerocom
-# Documentation: https://pyaerocom.readthedocs.io/en/latest/
-# Copyright (C) 2017 met.no
-# Contact information: Norwegian Meteorological Institute (MET Norway)
-#
-########################################################################
-
+import logging
 import os
 from glob import glob
+
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import numpy as np
-from pyaerocom import const
+
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
+
 
 class ReadAirNow(ReadUngriddedBase):
     """
     Reading routine for North-American Air Now observations
     """
+
     # Data type of files
-    _FILETYPE = '.dat'
+    _FILETYPE = ".dat"
 
     # File search mask to recursively retrieve list of data files
-    _FILEMASK = f'/**/*{_FILETYPE}'
+    _FILEMASK = f"/**/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = '0.07'
+    __version__ = "0.07"
 
     #: Column delimiter
-    FILE_COL_DELIM = '|'
+    FILE_COL_DELIM = "|"
 
     #: Columns in data files
-    FILE_COL_NAMES = ['date','time', 'station_id',
-                      'station_name', 'time_zone',
-                      'variable', 'unit', 'value',
-                      'institute']
+    FILE_COL_NAMES = [
+        "date",
+        "time",
+        "station_id",
+        "station_name",
+        "time_zone",
+        "variable",
+        "unit",
+        "value",
+        "institute",
+    ]
 
     #: Mapping of columns in station metadata file to pyaerocom standard
     STATION_META_MAP = {
-            'aqsid'             : 'station_id',
-            'name'              : 'station_name',
-            'lat'               : 'latitude',
-            'lon'               : 'longitude',
-            'elevation'         : 'altitude',
-            'city'              : 'city',
-            'address'           : 'address',
-            'timezone'          : 'timezone',
-            'environment'       : 'area_classification',
-            'populationclass'   : 'station_classification',
-            'modificationdate'  : 'modificationdate',
-            'comment'           : 'comment'
-            }
+        "aqsid": "station_id",
+        "name": "station_name",
+        "lat": "latitude",
+        "lon": "longitude",
+        "elevation": "altitude",
+        "city": "city",
+        "address": "address",
+        "timezone": "timezone",
+        "environment": "area_classification",
+        "populationclass": "station_classification",
+        "modificationdate": "modificationdate",
+        "comment": "comment",
+    }
 
     #: conversion functions for metadata dtypes
     STATION_META_DTYPES = {
-            'station_id'                : str,
-            'station_name'              : str,
-            'latitude'                  : float,
-            'longitude'                 : float,
-            'altitude'                  : float,
-            'city'                      : str,
-            'address'                   : str,
-            'timezone'                  : str,
-            'area_classification'       : str,
-            'station_classification'    : str,
-            'modificationdate'          : str,
-            'comment'                   : str
-            }
+        "station_id": str,
+        "station_name": str,
+        "latitude": float,
+        "longitude": float,
+        "altitude": float,
+        "city": str,
+        "address": str,
+        "timezone": str,
+        "area_classification": str,
+        "station_classification": str,
+        "modificationdate": str,
+        "comment": str,
+    }
 
     #: strings to be replaced in original station names
-    REPLACE_STATNAME = {'&' : 'and',
-                        '/' : ' ',
-                        ':' : ' ',
-                        '.' : ' ',
-                        "'" : ''}
+    REPLACE_STATNAME = {"&": "and", "/": " ", ":": " ", ".": " ", "'": ""}
 
     #: Years in timestamps in the files are are 2-digit (e.g. 20 for 2020)
     BASEYEAR = 2000
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = 'AirNow'
+    DATA_ID = "AirNow"
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
 
     #: Units found in data files
     UNIT_MAP = {
-        'C' : 'celcius',
-        'M/S' : 'm s-1',
-        'MILLIBAR' : 'mbar',
-        'MM' : 'mm',
-        'PERCENT' : '%',
-        'PPB' : 'ppb',
-        'PPM' : 'ppm',
-        'UG/M3' : 'ug m-3',
-        'WATTS/M2': 'W m-2'
-        }
+        "C": "celcius",
+        "M/S": "m s-1",
+        "MILLIBAR": "mbar",
+        "MM": "mm",
+        "PERCENT": "%",
+        "PPB": "ppb",
+        "PPM": "ppm",
+        "UG/M3": "ug m-3",
+        "WATTS/M2": "W m-2",
+    }
 
     #: Variable names in data files
     VAR_MAP = {
-        'concbc'    : 'BC',
-        'concpm10'  : 'PM10',
-        'concpm25'  : 'PM2.5',
-        'vmrco'    : 'CO',
-        'vmrnh3'   : 'NH3',
-        'vmrno'    : 'NO',
-        'vmrno2'   : 'NO2',
-        'vmrnox'   : 'NOX',
-        'vmrnoy'   : 'NOY',
-        'vmro3'    : 'OZONE',
-        'vmrso2'   : 'SO2',
-        }
+        "concbc": "BC",
+        "concpm10": "PM10",
+        "concpm25": "PM2.5",
+        "vmrco": "CO",
+        "vmrnh3": "NH3",
+        "vmrno": "NO",
+        "vmrno2": "NO2",
+        "vmrnox": "NOX",
+        "vmrnoy": "NOY",
+        "vmro3": "OZONE",
+        "vmrso2": "SO2",
+    }
 
     #: List of variables that are provided
-    PROVIDES_VARIABLES = list(VAR_MAP.keys())
+    PROVIDES_VARIABLES = list(VAR_MAP)
 
     #: Default variables
     DEFAULT_VARS = PROVIDES_VARIABLES
 
     #: Frequncy of measurements
-    TS_TYPE = 'hourly'
+    TS_TYPE = "hourly"
 
     #: file containing station metadata
-    STAT_METADATA_FILENAME = 'allStations_20191224.csv'
+    STAT_METADATA_FILENAME = "allStations_20191224.csv"
 
     def __init__(self, data_id=None, data_dir=None):
-        super(ReadAirNow, self).__init__(data_id=data_id,
-                                         data_dir=data_dir)
-        self.make_datetime64_array = np.vectorize(
-            self._date_time_str_to_datetime64)
+        super().__init__(data_id=data_id, data_dir=data_dir)
+        self.make_datetime64_array = np.vectorize(self._date_time_str_to_datetime64)
         self._station_metadata = None
 
     @property
@@ -162,11 +155,11 @@ class ReadAirNow(ReadUngriddedBase):
         -------
         datetime64[s]
         """
-        mm, dd, yy = date.split('/')
-        HH, MM = time.split(':')
-        yr=str(self.BASEYEAR + int(yy))
+        mm, dd, yy = date.split("/")
+        HH, MM = time.split(":")
+        yr = str(self.BASEYEAR + int(yy))
         # returns as datetime64[s]
-        return np.datetime64(f'{yr}-{mm}-{dd}T{HH}:{MM}:00')
+        return np.datetime64(f"{yr}-{mm}-{dd}T{HH}:{MM}:00")
 
     def _datetime64_from_filename(self, filepath):
         """
@@ -189,7 +182,7 @@ class ReadAirNow(ReadUngriddedBase):
         """
         fn = os.path.basename(filepath).split(self._FILETYPE)[0]
         assert len(fn) == 10
-        tstr = f'{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00'
+        tstr = f"{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00"
         return np.datetime64(tstr)
 
     def _read_metadata_file(self):
@@ -203,7 +196,7 @@ class ReadAirNow(ReadUngriddedBase):
 
         """
         fn = os.path.join(self.data_dir, self.STAT_METADATA_FILENAME)
-        cfg = pd.read_csv(fn,sep=',', converters={'aqsid': lambda x: str(x)})
+        cfg = pd.read_csv(fn, sep=",", converters={"aqsid": lambda x: str(x)})
         return cfg
 
     def _correct_station_name(self, station_name):
@@ -250,11 +243,11 @@ class ReadAirNow(ReadUngriddedBase):
             stat = {}
             for meta_key, col_num in col_idx.items():
                 stat[meta_key] = dtypes[meta_key](row[col_num])
-            sid = stat['station_id']
+            sid = stat["station_id"]
 
-            stat['station_name'] = self._correct_station_name(stat['station_name'])
-            stat['data_id'] = self.data_id
-            stat['ts_type'] = self.TS_TYPE
+            stat["station_name"] = self._correct_station_name(stat["station_name"])
+            stat["data_id"] = self.data_id
+            stat["ts_type"] = self.TS_TYPE
             stats[sid] = stat
         self._station_metadata = stats
         return stats
@@ -268,7 +261,7 @@ class ReadAirNow(ReadUngriddedBase):
         list
         """
         basepath = self.data_dir
-        pattern = f'{basepath}{self._FILEMASK}'
+        pattern = f"{basepath}{self._FILEMASK}"
         files = sorted(glob(pattern))
         return files
 
@@ -287,8 +280,7 @@ class ReadAirNow(ReadUngriddedBase):
             DataFrame containing the file data
 
         """
-        df = pd.read_csv(file,sep=self.FILE_COL_DELIM,
-                         names=self.FILE_COL_NAMES)
+        df = pd.read_csv(file, sep=self.FILE_COL_DELIM, names=self.FILE_COL_NAMES)
         return df
 
     def _read_files(self, files, vars_to_retrieve):
@@ -315,9 +307,9 @@ class ReadAirNow(ReadUngriddedBase):
             list of StationData objects
 
         """
-        const.print_log.info('Read AirNow data file(s)')
+        logger.info("Read AirNow data file(s)")
         # initialize empty dataframe
-        varcol = self.FILE_COL_NAMES.index('variable')
+        varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
         for i in tqdm(range(len(files))):
             fp = files[i]
@@ -325,7 +317,7 @@ class ReadAirNow(ReadUngriddedBase):
             arr = filedata.values
 
             for i, var in enumerate(vars_to_retrieve):
-                cond = arr[:, varcol]==self.VAR_MAP[var]
+                cond = arr[:, varcol] == self.VAR_MAP[var]
                 if i == 0:
                     mask = cond
                 else:
@@ -335,8 +327,7 @@ class ReadAirNow(ReadUngriddedBase):
                 vardata = arr[mask]
                 arrs.append(vardata)
         if len(arrs) == 0:
-            raise DataRetrievalError(
-                'None of the input variables could be found in input list')
+            raise DataRetrievalError("None of the input variables could be found in input list")
         return self._filedata_to_statlist(arrs, vars_to_retrieve)
 
     def _filedata_to_statlist(self, arrs, vars_to_retrieve):
@@ -359,15 +350,14 @@ class ReadAirNow(ReadUngriddedBase):
         """
         data = np.concatenate(arrs)
 
-        const.print_log.info('Converting filedata to list os StationData')
+        logger.info("Converting filedata to list os StationData")
         stat_meta = self.station_metadata
-        stat_ids = list(stat_meta.keys())
-        varcol = self.FILE_COL_NAMES.index('variable')
-        statcol = self.FILE_COL_NAMES.index('station_id')
-        tzonecol = self.FILE_COL_NAMES.index('time_zone')
-        unitcol = self.FILE_COL_NAMES.index('unit')
-        valcol = self.FILE_COL_NAMES.index('value')
-
+        stat_ids = list(stat_meta)
+        varcol = self.FILE_COL_NAMES.index("variable")
+        statcol = self.FILE_COL_NAMES.index("station_id")
+        tzonecol = self.FILE_COL_NAMES.index("time_zone")
+        unitcol = self.FILE_COL_NAMES.index("unit")
+        valcol = self.FILE_COL_NAMES.index("value")
 
         dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
         stats = []
@@ -396,13 +386,13 @@ class ReadAirNow(ReadUngriddedBase):
                 # errors that did not occur in v0 but that may occur
                 assert len(units) == 1
                 assert units[0] in self.UNIT_MAP
-                toffs = toffs.astype('timedelta64[h]')
+                toffs = toffs.astype("timedelta64[h]")
                 timestamps += toffs
-                stat['dtime'] = timestamps
-                stat['timezone'] ='UTC'
+                stat["dtime"] = timestamps
+                stat["timezone"] = "UTC"
                 stat[var] = vals
                 unit = self.UNIT_MAP[units[0]]
-                stat['var_info'][var] = dict(units=unit)
+                stat["var_info"][var] = dict(units=unit)
                 stats.append(stat)
         return stats
 
@@ -414,8 +404,7 @@ class ReadAirNow(ReadUngriddedBase):
         ------
         NotImplementedError
         """
-        raise NotImplementedError('Not needed for these data since the format '
-                                  'is unsuitable...')
+        raise NotImplementedError("Not needed for these data since the format is unsuitable...")
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """
@@ -452,17 +441,8 @@ class ReadAirNow(ReadUngriddedBase):
 
         stats = self._read_files(files, vars_to_retrieve)
 
-        data = UngriddedData.from_station_data(stats,
-                                               add_meta_keys=['timezone',
-                                                              'area_classification',
-                                                              'station_classification']
-                                               )
+        data = UngriddedData.from_station_data(
+            stats, add_meta_keys=["timezone", "area_classification", "station_classification"]
+        )
 
         return data
-
-
-if __name__ == '__main__':
-    loc =  '/home/jonasg/MyPyaerocom/data/obsdata/MACC_INSITU_AirNow'
-    reader = ReadAirNow(data_dir=loc)
-
-    reader.read('concpm25',last_file=10)

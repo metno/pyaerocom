@@ -1,16 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 14 17:07:45 2021
-
-@author: jonasg
-"""
-import numpy.testing as npt
-import pyaerocom as pya
 from cf_units import Unit
+from numpy.testing import assert_allclose
 
-u = Unit('kg/m2/s')
-test_cases = {'kg h-1' : ['kg s-1', 1/3600]}
+import pyaerocom as pya
+
+u = Unit("kg/m2/s")
+test_cases = {"kg h-1": ["kg s-1", 1 / 3600]}
 
 for unit, (to, val) in test_cases.items():
 
@@ -19,7 +13,7 @@ for unit, (to, val) in test_cases.items():
     assert (cube.data == 1).all()
     cube.units = unit
     cube.convert_units(to)
-    npt.assert_allclose(cube.data.mean(), val, rtol=1e-3)
+    assert_allclose(cube.data.mean(), val, rtol=1e-3)
 
 # =============================================================================
 #
@@ -31,4 +25,3 @@ for unit, (to, val) in test_cases.items():
 #
 # print(data)
 # =============================================================================
-

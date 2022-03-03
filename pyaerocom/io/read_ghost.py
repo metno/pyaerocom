@@ -1,43 +1,25 @@
-# -*- coding: utf-8 -*-
-# this file is part of the pyaerocom package
-# Copyright (C) 2018 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# Author: Jonas Gliss
-# E-mail: jonasg@met.no
-# License: https://github.com/metno/pyaerocom/blob/master/LICENSE
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
-import cf_units
 import glob
+import logging
 import os
+
+import cf_units
 import numpy as np
 import pandas as pd
 import xarray as xr
 
 import pyaerocom as pya
 from pyaerocom import const
-from pyaerocom.exceptions import DataSourceError
 from pyaerocom.aux_var_helpers import vmrx_to_concx
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.exceptions import DataSourceError
+from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.tstype import TsType
 from pyaerocom.molmasses import get_molmass
+from pyaerocom.tstype import TsType
+from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
+
 
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
     """
@@ -66,26 +48,24 @@ def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
     """
     for stat in data:
         vmrdata = stat[vmrvar]
-        meta = stat['meta']
-        p = meta['network_provided_volume_standard_pressure']
-        T = meta['network_provided_volume_standard_temperature']
+        meta = stat["meta"]
+        p = meta["network_provided_volume_standard_pressure"]
+        T = meta["network_provided_volume_standard_temperature"]
         mmol_var = get_molmass(vmrvar)
-        unit_var = meta['var_info'][vmrvar]['units']
+        unit_var = meta["var_info"][vmrvar]["units"]
         to_unit = const.VARS[mconcvar].units
-        conc = vmrx_to_concx(vmrdata,
-                             p_pascal=p,
-                             T_kelvin=T,
-                             mmol_var=mmol_var,
-                             vmr_unit=unit_var,
-                             to_unit=to_unit)
+        conc = vmrx_to_concx(
+            vmrdata, p_pascal=p, T_kelvin=T, mmol_var=mmol_var, vmr_unit=unit_var, to_unit=to_unit
+        )
         stat[mconcvar] = conc
         vi = {}
-        vi.update(meta['var_info'][vmrvar])
-        vi['computed'] = True
-        vi['units'] = to_unit
-        meta['var_info'][mconcvar] = vi
+        vi.update(meta["var_info"][vmrvar])
+        vi["computed"] = True
+        vi["units"] = to_unit
+        meta["var_info"][mconcvar] = vi
 
     return data
+
 
 class ReadGhost(ReadUngriddedBase):
     """Reading interface for GHOST data
@@ -123,85 +103,118 @@ class ReadGhost(ReadUngriddedBase):
     """
 
     #: version of the reader
-    __version__ = '0.0.13'
+    __version__ = "0.0.13"
 
-    _FILEMASK = '*.nc'
+    _FILEMASK = "*.nc"
 
     #: Default data ID
-    DATA_ID = 'GHOST.EEA.daily'
-
+    DATA_ID = "GHOST.EEA.daily"
 
     #: IDs of supported datasets
-    SUPPORTED_DATASETS = ['GHOST.EEA.monthly',
-                          'GHOST.EEA.hourly',
-                          'GHOST.EEA.daily',
-                          'GHOST.EBAS.monthly',
-                          'GHOST.EBAS.hourly',
-                          'GHOST.EBAS.daily',]
+    SUPPORTED_DATASETS = [
+        "GHOST.EEA.monthly",
+        "GHOST.EEA.hourly",
+        "GHOST.EEA.daily",
+        "GHOST.EBAS.monthly",
+        "GHOST.EBAS.hourly",
+        "GHOST.EBAS.daily",
+    ]
 
     #: sampling frequencies of supported datasets
-    TS_TYPES = {'GHOST.EEA.monthly'   : 'monthly',
-                'GHOST.EEA.hourly'    : 'hourly',
-                'GHOST.EEA.daily'     : 'daily',
-                'GHOST.EBAS.monthly'  : 'monthly',
-                'GHOST.EBAS.hourly'   : 'hourly',
-                'GHOST.EBAS.daily'    : 'daily'}
+    TS_TYPES = {
+        "GHOST.EEA.monthly": "monthly",
+        "GHOST.EEA.hourly": "hourly",
+        "GHOST.EEA.daily": "daily",
+        "GHOST.EBAS.monthly": "monthly",
+        "GHOST.EBAS.hourly": "hourly",
+        "GHOST.EBAS.daily": "daily",
+    }
 
     #: List of GHOST metadata keys
     META_KEYS = GHOST_META_KEYS
 
     #: Names of flag variables in GHOST NetCDF files
-    FLAG_VARS = ['flag', 'qa']
+    FLAG_VARS = ["flag", "qa"]
 
     #:
-    FLAG_DIMNAMES = {'qa'   : 'N_qa_codes',
-                     'flag' : 'N_flag_codes'}
+    FLAG_DIMNAMES = {"qa": "N_qa_codes", "flag": "N_flag_codes"}
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
-    VARNAMES_DATA = {'concpm10'  : 'pm10',
-                     'concpm10al': 'pm10al',
-                     'concpm10as': 'pm10as',
-                     'concpm25'  : 'pm2p5',
-                     'concpm1'   : 'pm1',
-                     'conccl'    : 'sconccl',
-                     'concso4'   : 'sconcso4',
-                     'vmrco'     : 'sconcco',
-                     'vmrno'     : 'sconcno',
-                     'vmrno2'    : 'sconcno2',
-                     'vmro3'     : 'sconco3',
-                     'vmrso2'    : 'sconcso2',
-                     'concno3'   : 'sconcno3',
-                     'concnh4'   : 'sconcnh4'
-                     }
+    VARNAMES_DATA = {
+        "concpm10": "pm10",
+        "concpm10al": "pm10al",
+        "concpm10as": "pm10as",
+        "concpm25": "pm2p5",
+        "concpm1": "pm1",
+        "conccl": "sconccl",
+        "concso4": "sconcso4",
+        "vmrco": "sconcco",
+        "vmrno": "sconcno",
+        "vmrno2": "sconcno2",
+        "vmro3": "sconco3",
+        "vmrso2": "sconcso2",
+        "concno3": "sconcno3",
+        "concnh4": "sconcnh4",
+    }
 
-    AUX_REQUIRES = {'concco'    :  ['vmrco'],
-                    'concno'    :  ['vmrno'],
-                    'concno2'   :  ['vmrno2'],
-                    'conco3'    :  ['vmro3'],
-                    'concso2'   :  ['vmrso2']}
+    AUX_REQUIRES = {
+        "concco": ["vmrco"],
+        "concno": ["vmrno"],
+        "concno2": ["vmrno2"],
+        "conco3": ["vmro3"],
+        "concso2": ["vmrso2"],
+    }
 
     AUX_FUNS = {
-        'concco'    : _vmr_to_conc_ghost_stats,
-        'concno'    : _vmr_to_conc_ghost_stats,
-        'concno2'   : _vmr_to_conc_ghost_stats,
-        'conco3'    : _vmr_to_conc_ghost_stats,
-        'concso2'   : _vmr_to_conc_ghost_stats}
+        "concco": _vmr_to_conc_ghost_stats,
+        "concno": _vmr_to_conc_ghost_stats,
+        "concno2": _vmr_to_conc_ghost_stats,
+        "conco3": _vmr_to_conc_ghost_stats,
+        "concso2": _vmr_to_conc_ghost_stats,
+    }
 
     CONVERT_UNITS_META = {
-        'network_provided_volume_standard_pressure' : 'Pa',
+        "network_provided_volume_standard_pressure": "Pa",
     }
 
     # This is the default list of flags that mark bad / invalid data, as
     # provided by Dene: [0, 1, 2, 3, 6, 20, 21, 22, 72, 75, 82, 83, 90, 91,
-    #92, 105 (removed), 110, 111, 112, 113, 115, 132, 133]
+    # 92, 105 (removed), 110, 111, 112, 113, 115, 132, 133]
 
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
-    DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([[0, 1, 2, 3, 6, 20, 21, 22, 72,
-                                                 75, 82, 83, 90, 91, 92, 110,
-                                                 111, 112, 113, 115, 131, 132,
-                                                 133]]),
-                             'flag' : None}
+    DEFAULT_FLAGS_INVALID = {
+        "qa": np.asarray(
+            [
+                [
+                    0,
+                    1,
+                    2,
+                    3,
+                    6,
+                    20,
+                    21,
+                    22,
+                    72,
+                    75,
+                    82,
+                    83,
+                    90,
+                    91,
+                    92,
+                    110,
+                    111,
+                    112,
+                    113,
+                    115,
+                    131,
+                    132,
+                    133,
+                ]
+            ]
+        ),
+        "flag": None,
+    }
 
     @property
     def PROVIDES_VARIABLES(self):
@@ -225,7 +238,7 @@ class ReadGhost(ReadUngriddedBase):
         try:
             return self._var_names_inv
         except AttributeError:
-            self._var_names_inv ={v: k for k, v in self.VARNAMES_DATA.items()}
+            self._var_names_inv = {v: k for k, v in self.VARNAMES_DATA.items()}
             return self._var_names_inv
 
     @property
@@ -261,7 +274,7 @@ class ReadGhost(ReadUngriddedBase):
 
         """
         if vars_to_read is None:
-            vars_to_read =  self.PROVIDES_VARIABLES
+            vars_to_read = self.PROVIDES_VARIABLES
         elif isinstance(vars_to_read, str):
             vars_to_read = [vars_to_read]
 
@@ -276,9 +289,9 @@ class ReadGhost(ReadUngriddedBase):
                 var = self.VARNAMES_DATA[var]
 
             _dir = os.path.join(self.data_dir, var)
-            _files = glob.glob('{}/{}'.format(_dir, pattern))
+            _files = glob.glob(f"{_dir}/{pattern}")
             if len(_files) == 0:
-                raise DataSourceError(f'Could not find any data files for {var}')
+                raise DataSourceError(f"Could not find any data files for {var}")
             files.extend(_files)
 
         self.files = sorted(files)
@@ -298,11 +311,10 @@ class ReadGhost(ReadUngriddedBase):
             dictionary containing var_name, start and stop, and eventually
             also frequency (ts_type)
         """
-        var, time = os.path.basename(filename).split('.nc')[0].split('_')
+        var, time = os.path.basename(filename).split(".nc")[0].split("_")
 
-        per = pd.Period(freq='M', year=int(time[:4]), month=int(time[-2:]))
-        return dict(var_name=var, start=per.start_time,
-                    stop=per.end_time)
+        per = pd.Period(freq="M", year=int(time[:4]), month=int(time[-2:]))
+        return dict(var_name=var, start=per.start_time, stop=per.end_time)
 
     @staticmethod
     def _eval_flags_slice(slc, invalid_flags):
@@ -322,7 +334,7 @@ class ReadGhost(ReadUngriddedBase):
         try:
             freq = str(TsType(os.path.basename(self.data_dir)))
         except Exception as e:
-            freq = 'undefined'
+            freq = "undefined"
         self.TS_TYPES[self.data_id] = freq
         return freq
 
@@ -337,14 +349,13 @@ class ReadGhost(ReadUngriddedBase):
                 flags = ds[flagvar]
                 slice_dim = flags.dims.index(self.FLAG_DIMNAMES[flagvar])
 
-                valid *= np.apply_along_axis(self._eval_flags_slice,
-                                             slice_dim, flags.values,
-                                             invalidate)
+                valid *= np.apply_along_axis(
+                    self._eval_flags_slice, slice_dim, flags.values, invalidate
+                )
         invalid = ~valid
         return invalid
 
-    def read_file(self, filename, var_to_read=None, invalidate_flags=None,
-                  var_to_write=None):
+    def read_file(self, filename, var_to_read=None, invalidate_flags=None, var_to_write=None):
         """Read GHOST NetCDF data file
 
         Parameters
@@ -364,7 +375,7 @@ class ReadGhost(ReadUngriddedBase):
             invalidate_flags = self.DEFAULT_FLAGS_INVALID
 
         if var_to_read is None:
-            var_to_read = self.get_meta_filename(filename)['var_name']
+            var_to_read = self.get_meta_filename(filename)["var_name"]
         elif var_to_read in self.VARNAMES_DATA:
             if var_to_write is None:
                 var_to_read, var_to_write = self.VARNAMES_DATA[var_to_read], var_to_read
@@ -376,10 +387,10 @@ class ReadGhost(ReadUngriddedBase):
 
         ds = xr.open_dataset(filename)
 
-        if not all(x in ds.dims for x in ['station', 'time']):
-            raise AttributeError('Missing dimensions')
-        if not 'station_name' in ds:
-            raise AttributeError('No variable station_name found')
+        if not all(x in ds.dims for x in ["station", "time"]):
+            raise AttributeError("Missing dimensions")
+        if not "station_name" in ds:
+            raise AttributeError("No variable station_name found")
 
         stats = []
 
@@ -391,25 +402,26 @@ class ReadGhost(ReadUngriddedBase):
             try:
                 meta_glob[meta_key] = ds[meta_key].values
             except KeyError:
-                const.print_log.warning('No such metadata key in GHOST data file: '
-                                     '{}'.format(os.path.basename(filename)))
+                logger.warning(
+                    f"No such metadata key in GHOST data file: {os.path.basename(filename)}"
+                )
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
-            from_unit = ds[meta_key].attrs['units']
+            from_unit = ds[meta_key].attrs["units"]
 
             if from_unit != to_unit:
                 cfac = cf_units.Unit(from_unit).convert(1, to_unit)
                 meta_glob[meta_key] *= cfac
 
-        tvals = ds['time'].values
+        tvals = ds["time"].values
 
-        vardata = ds[var_to_read] #DataArray
+        vardata = ds[var_to_read]  # DataArray
         varinfo = vardata.attrs
 
         # ToDo: it is important that station comes first since we use numpy
         # indexing below and not xarray.isel or similar, due to performance
         # issues. This may need to be updated in case of profile data.
-        assert vardata.dims == ('station', 'time')
+        assert vardata.dims == ("station", "time")
         data_np = vardata.values
 
         # evaluate flags
@@ -419,24 +431,24 @@ class ReadGhost(ReadUngriddedBase):
 
             stat = {}
             meta = pya.metastandards.StationMetaData()
-            meta['ts_type'] = self.TS_TYPE
-            stat['time'] = tvals
-            stat['meta'] = meta
-            meta['var_info'] = {}
+            meta["ts_type"] = self.TS_TYPE
+            stat["time"] = tvals
+            stat["meta"] = meta
+            meta["var_info"] = {}
 
             for meta_key, vals in meta_glob.items():
                 meta[meta_key] = vals[idx]
 
-            #vardata = subset[var_name]
+            # vardata = subset[var_name]
             stat[var_to_write] = data_np[idx]
 
-            meta['var_info'][var_to_write] = {}
-            meta['var_info'][var_to_write].update(varinfo)
+            meta["var_info"][var_to_write] = {}
+            meta["var_info"][var_to_write].update(varinfo)
 
             # import flagdata (2D array with time and flag dimensions)
-            #invalid = self._eval_flags(vardata, invalidate_flags)
-            stat['data_flagged'] = {}
-            stat['data_flagged'][var_to_write] = invalid[idx]
+            # invalid = self._eval_flags(vardata, invalidate_flags)
+            stat["data_flagged"] = {}
+            stat["data_flagged"][var_to_write] = invalid[idx]
             stats.append(stat)
 
         return stats
@@ -444,18 +456,20 @@ class ReadGhost(ReadUngriddedBase):
     def _add_flags_var_to_compute(self, statlist_from_file, var_to_compute):
         for stat in statlist_from_file:
             for i, req in enumerate(self.AUX_REQUIRES[var_to_compute]):
-                flags = stat['data_flagged'][req]
+                flags = stat["data_flagged"][req]
                 if i == 0:
                     # pointer (safes computation time in case only one variable
                     # is required, i.e. the same flags can be used)
-                    stat['data_flagged'][var_to_compute] = flags
+                    stat["data_flagged"][var_to_compute] = flags
                 else:
-                    const.print_log.warning('THIS HAS NOT BEEN TESTED AND IS '
-                                            'SHOULD CURRENTLY NOT BE ABLE '
-                                            'TO BE REACHED.')
-                    current = stat['data_flagged'][var_to_compute].copy()
+                    logger.warning(
+                        "THIS HAS NOT BEEN TESTED AND IS "
+                        "SHOULD CURRENTLY NOT BE ABLE "
+                        "TO BE REACHED."
+                    )
+                    current = stat["data_flagged"][var_to_compute].copy()
                     updated = np.logical_or(current, flags)
-                    stat['data_flagged'][var_to_compute] = updated
+                    stat["data_flagged"][var_to_compute] = updated
         return statlist_from_file
 
     def compute_additional_vars(self, statlist_from_file, vars_to_compute):
@@ -492,17 +506,23 @@ class ReadGhost(ReadUngriddedBase):
             if can_compute:
                 # this will add the variable data to each station data in
                 # statlist_from_file
-                statlist_from_file = self.AUX_FUNS[var](statlist_from_file, var,
-                                             *requires)
-                statlist_from_file = self._add_flags_var_to_compute(
-                    statlist_from_file, var)
+                statlist_from_file = self.AUX_FUNS[var](statlist_from_file, var, *requires)
+                statlist_from_file = self._add_flags_var_to_compute(statlist_from_file, var)
 
                 if not var in vars_added:
                     vars_added.append(var)
         return (statlist_from_file, vars_added)
 
-    def read(self, vars_to_retrieve=None, files=None, first_file=None,
-             last_file=None, pattern=None, check_time=True, **kwargs):
+    def read(
+        self,
+        vars_to_retrieve=None,
+        files=None,
+        first_file=None,
+        last_file=None,
+        pattern=None,
+        check_time=True,
+        **kwargs,
+    ):
         """Read data files into :class:`UngriddedData` object
 
         Parameters
@@ -554,28 +574,28 @@ class ReadGhost(ReadUngriddedBase):
         meta_key = -1.0
         idx = 0
 
-        #assign metadata object
+        # assign metadata object
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
         var_count_glob = -1
         rename = self.var_names_data_inv
         from tqdm import tqdm
+
         for i in tqdm(range(len(files))):
             _file = files[i]
             metafile = self.get_meta_filename(_file)
-            var_to_read = metafile['var_name']
-            begin = metafile['start']
-            end = metafile['stop']
+            var_to_read = metafile["var_name"]
+            begin = metafile["start"]
+            end = metafile["stop"]
 
             var_read = rename[var_to_read]
-            stats = self.read_file(_file, var_to_read=var_to_read,
-                                   var_to_write=var_read, **kwargs)
+            stats = self.read_file(_file, var_to_read=var_to_read, var_to_write=var_read, **kwargs)
 
             stats, added = self.compute_additional_vars(stats, vars_to_compute)
             if len(stats) == 0:
-                const.logger.info('File {} does not contain any of the input '
-                                  'variables {}'
-                                  .format(_file, vars_to_retrieve))
+                logger.info(
+                    f"File {_file} does not contain any of the input variables {vars_to_retrieve}"
+                )
             vars_avail = [var_read] + added
             vars_to_add = list(np.intersect1d(vars_to_retrieve, vars_avail))
             if len(vars_to_add) == 0:
@@ -585,41 +605,40 @@ class ReadGhost(ReadUngriddedBase):
                 meta_key += 1
                 meta_idx[meta_key] = {}
 
-                meta = stat['meta']
-                vi = meta['var_info']
+                meta = stat["meta"]
+                vi = meta["var_info"]
 
-                meta['var_info'] = {}
+                meta["var_info"] = {}
 
                 metadata[meta_key] = meta
-                metadata[meta_key]['data_id'] = self.data_id
+                metadata[meta_key]["data_id"] = self.data_id
                 # duplicate for now
-                metadata[meta_key]['instrument_name'] = meta['measuring_instrument_name']
-                statname = metadata[meta_key]['station_name']
-                if '/' in statname:
-                    statname = statname.replace('/','-')
-                metadata[meta_key]['station_name'] = statname
+                metadata[meta_key]["instrument_name"] = meta["measuring_instrument_name"]
+                statname = metadata[meta_key]["station_name"]
+                if "/" in statname:
+                    statname = statname.replace("/", "-")
+                metadata[meta_key]["station_name"] = statname
 
-                times = stat['time'].astype('datetime64[s]')
+                times = stat["time"].astype("datetime64[s]")
                 timenums = np.float64(times)
 
                 if check_time and (begin > times[0] or end < times[-1]):
-                    raise ValueError('Something seems to be off with time '
-                                     'dimension...')
+                    raise ValueError("Something seems to be off with time dimension...")
 
                 num_vars = len(vars_to_add)
                 num_times = len(times)
 
                 totnum = num_times * num_vars
 
-                #check if size of data object needs to be extended
+                # check if size of data object needs to be extended
                 if (idx + totnum) >= data_obj._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                    # if totnum < data_obj._CHUNKSIZE, then the latter is used
                     data_obj.add_chunk(chunksize)
 
                 for j, var_to_write in enumerate(vars_to_add):
                     values = stat[var_to_write]
 
-                    start = idx + j*num_times
+                    start = idx + j * num_times
                     stop = start + num_times
 
                     if not var_to_write in data_obj.var_idx:
@@ -629,17 +648,13 @@ class ReadGhost(ReadUngriddedBase):
                     else:
                         var_idx = data_obj.var_idx[var_to_write]
 
-                    meta['var_info'][var_to_write] = vi[var_to_write]
-                    #write common meta info for this station (data lon, lat and
-                    #altitude are set to station locations)
-                    data_obj._data[start:stop,
-                                   data_obj._LATINDEX] = meta['latitude']
-                    data_obj._data[start:stop,
-                                   data_obj._LONINDEX] = meta['longitude']
-                    data_obj._data[start:stop,
-                                   data_obj._ALTITUDEINDEX] = meta['altitude']
-                    data_obj._data[start:stop,
-                                   data_obj._METADATAKEYINDEX] = meta_key
+                    meta["var_info"][var_to_write] = vi[var_to_write]
+                    # write common meta info for this station (data lon, lat and
+                    # altitude are set to station locations)
+                    data_obj._data[start:stop, data_obj._LATINDEX] = meta["latitude"]
+                    data_obj._data[start:stop, data_obj._LONINDEX] = meta["longitude"]
+                    data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = meta["altitude"]
+                    data_obj._data[start:stop, data_obj._METADATAKEYINDEX] = meta_key
 
                     # write data to data object
                     data_obj._data[start:stop, data_obj._TIMEINDEX] = timenums
@@ -647,7 +662,7 @@ class ReadGhost(ReadUngriddedBase):
                     data_obj._data[start:stop, data_obj._DATAINDEX] = values
 
                     # add invalid measurements
-                    invalid = stat['data_flagged'][var_to_write]
+                    invalid = stat["data_flagged"][var_to_write]
                     data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
 
                     data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
@@ -659,14 +674,3 @@ class ReadGhost(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         data_obj._check_index()
         return data_obj
-
-if __name__ == '__main__':
-    import pyaerocom as pya
-    OBS_BASEDIR = '/home/jonasg/MyPyaerocom/data/obsdata'
-
-
-    # make sure it works also on lustre
-    GHOST_EBAS_DAILY_LOCAL =  os.path.join(OBS_BASEDIR, 'GHOST/data/EBAS/daily')
-    GHOST_EEA_DAILY_LOCAL = os.path.join(OBS_BASEDIR, 'GHOST/data/EEA_AQ_eReporting/daily')
-
-    obs = ReadGhost('GHOST.EBAS.daily', GHOST_EBAS_DAILY_LOCAL).read('concno')

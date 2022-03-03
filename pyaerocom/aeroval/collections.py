@@ -1,21 +1,32 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 27 12:27:47 2021
-
-@author: jonasg
-"""
+import abc
 from fnmatch import fnmatch
+
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.exceptions import EntryNotAvailable
-from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
+from pyaerocom.aeroval.obsentry import ObsEntry
+from pyaerocom.exceptions import EntryNotAvailable, EvalEntryNameError
 
 
-class BaseCollection(BrowseDict):
+class BaseCollection(BrowseDict, abc.ABC):
+    #: maximum length of entry names
     MAXLEN_KEYS = 25
-    FORBIDDEN_CHARS_KEYS =['_']
-    def keylist(self, name_or_pattern:str=None) -> list:
+    #: Invalid chars in entry names
+    FORBIDDEN_CHARS_KEYS = ["_"]
+
+    def _check_entry_name(self, key):
+        if any([x in key for x in self.FORBIDDEN_CHARS_KEYS]):
+            raise EvalEntryNameError(
+                f"Invalid name: {key}. Must not contain any of the following "
+                f"characters: {self.FORBIDDEN_CHARS_KEYS}"
+            )
+
+    def __setitem__(self, key, value):
+        self._check_entry_name(key)
+        if "web_interface_name" in value:
+            self._check_entry_name(value["web_interface_name"])
+        super().__setitem__(key, value)
+
+    def keylist(self, name_or_pattern: str = None) -> list:
         """Find model names that match input search pattern(s)
 
         Parameters
@@ -35,17 +46,17 @@ class BaseCollection(BrowseDict):
             if no matches can be found
         """
         if name_or_pattern is None:
-            name_or_pattern = '*'
+            name_or_pattern = "*"
 
         matches = []
         for key in self.keys():
             if fnmatch(key, name_or_pattern) and not key in matches:
                 matches.append(key)
         if len(matches) == 0:
-            raise KeyError(
-                f'No matches could be found that match input {name_or_pattern}')
+            raise KeyError(f"No matches could be found that match input {name_or_pattern}")
         return matches
 
+    @abc.abstractmethod
     def get_entry(self, key) -> object:
         """
         Getter for eval entries
@@ -55,67 +66,16 @@ class BaseCollection(BrowseDict):
         KeyError
             if input name is not in this collection
         """
-        try:
-            return self[key]
-        except (AttributeError, KeyError):
-            raise EntryNotAvailable(f'no such entry {key}')
-
-
-    def get_web_iface_name(self, key):
-        """
-        Get webinterface name for obs entry
-
-        Note
-        ----
-        Normally this is the key of the obsentry in :attr:`obs_config`,
-        however, it might be specified explicitly via key `web_interface_name`
-        in the corresponding value.
-
-        Parameters
-        ----------
-        key : str
-            key of entry.
-
-        Returns
-        -------
-        str
-            corresponding name
-
-        """
-        if not 'web_interface_name' in self[key]:
-            return key
-        return self[key]['web_interface_name']
-
-    def get_all_vars(self):
-        vars = []
-        for key, cfg in self.items():
-            vars.extend(cfg.get_all_vars())
-        return sorted(list(set(vars)))
-
+        pass
 
     @property
-    def web_iface_names(self):
+    @abc.abstractmethod
+    def web_iface_names(self) -> list:
         """
-        Get webinterface name for obs entry
-
-        Note
-        ----
-        Normally this is the key of the obsentry in :attr:`obs_config`,
-        however, it might be specified explicitly via key `web_interface_name`
-        in the corresponding value.
-
-        Parameters
-        ----------
-        key : str
-            key of entry.
-
-        Returns
-        -------
-        str
-            corresponding name
-
+        List of webinterface names for
         """
-        return [self.get_web_iface_name(key) for key in self.keylist()]
+        pass
+
 
 class ObsCollection(BaseCollection):
     """
@@ -133,7 +93,8 @@ class ObsCollection(BaseCollection):
     heatmap display and must fulfill the protocol defined by :class:`ObsEntry`.
 
     """
-    SETTER_CONVERT = {dict : ObsEntry}
+
+    SETTER_CONVERT = {dict: ObsEntry}
 
     def get_entry(self, key) -> object:
         """
@@ -144,9 +105,70 @@ class ObsCollection(BaseCollection):
         KeyError
             if input name is not in this collection
         """
-        cfg = super(ObsCollection, self).get_entry(key)
-        cfg['obs_name'] = self.get_web_iface_name(key)
-        return cfg
+        try:
+            entry = self[key]
+            entry["obs_name"] = self.get_web_iface_name(key)
+            return entry
+        except (KeyError, AttributeError):
+            raise EntryNotAvailable(f"no such entry {key}")
+
+    def get_all_vars(self) -> list:
+        """
+        Get unique list of all obs variables from all entries
+
+        Returns
+        -------
+        list
+            list of variables specified in obs collection
+
+        """
+        vars = []
+        for ocfg in self.values():
+            vars.extend(ocfg.get_all_vars())
+        return sorted(list(set(vars)))
+
+    def get_web_iface_name(self, key):
+        """
+        Get webinterface name for entry
+
+        Note
+        ----
+        Normally this is the key of the obsentry in :attr:`obs_config`,
+        however, it might be specified explicitly via key `web_interface_name`
+        in the corresponding value.
+
+        Parameters
+        ----------
+        key : str
+            key of entry.
+
+        Returns
+        -------
+        str
+            corresponding name
+
+        """
+        entry = self[key]
+        if not "web_interface_name" in entry:
+            return key
+        return entry["web_interface_name"]
+
+    @property
+    def web_iface_names(self) -> list:
+        """
+        List of web interface names for each obs entry
+
+        Returns
+        -------
+        list
+        """
+        return [self.get_web_iface_name(key) for key in self.keylist()]
+
+    @property
+    def all_vert_types(self):
+        """List of unique vertical types specified in this collection"""
+        return list({x["obs_vert_type"] for x in self.values()})
+
 
 class ModelCollection(BaseCollection):
     """
@@ -166,7 +188,8 @@ class ModelCollection(BaseCollection):
 
     """
 
-    SETTER_CONVERT = {dict : ModelEntry}
+    SETTER_CONVERT = {dict: ModelEntry}
+
     def get_entry(self, key) -> object:
         """Get model entry configuration
 
@@ -193,17 +216,20 @@ class ModelCollection(BaseCollection):
         dict
             Dictionary that specifies the model setup ready for the analysis
         """
-        cfg = super(ModelCollection, self).get_entry(key)
-        cfg['model_name'] = self.get_web_iface_name(key)
-        return cfg
+        try:
+            entry = self[key]
+            entry["model_name"] = key
+            return entry
+        except (KeyError, AttributeError):
+            raise EntryNotAvailable(f"no such entry {key}")
 
+    @property
+    def web_iface_names(self) -> list:
+        """
+        List of web interface names for each obs entry
 
-if __name__ == '__main__':
-    oc = ObsCollection(model1 = dict(obs_id='bla', obs_vars='od550aer',
-                                     obs_vert_type='Column'))
-
-    oc['AN-EEA-MP'] = dict(is_superobs = True,
-                           obs_id = ('AirNow', 'EEA-NRT-rural', 'MarcoPolo'),
-                           obs_vars = ['concpm10', 'concpm25',
-                                           'vmro3', 'vmrno2'],
-                           obs_vert_type = 'Surface')
+        Returns
+        -------
+        list
+        """
+        return self.keylist()
