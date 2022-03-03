@@ -67,6 +67,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
+        "time_series": True,
     },
     "mnmb": {
         "name": "MNMB",
@@ -75,6 +76,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
+        "time_series": True,
     },
     "R": {
         "name": "R",
@@ -83,6 +85,7 @@ statistics_defaults = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "R_spearman": {
         "name": "R Spearman",
@@ -91,6 +94,7 @@ statistics_defaults = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "fge": {
         "name": "FGE",
@@ -99,6 +103,7 @@ statistics_defaults = {
         "colmap": "reverseColmap(RdYlGn)",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "nrms": {
         "name": "NRMSE",
@@ -107,6 +112,7 @@ statistics_defaults = {
         "colmap": "Reds",
         "unit": "%",
         "decimals": 1,
+        "time_series": True,
     },
     "rms": {
         "name": "RMSE",
@@ -115,6 +121,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "data_mean": {
         "name": "Mean-Mod",
@@ -123,6 +130,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "refdata_mean": {
         "name": "Mean-Obs",
@@ -131,6 +139,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
 }
 
@@ -144,6 +153,8 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "category": "Regional Time Series",
+        "time_series": False,
     },
     "R_temporal_median": {
         "name": "R-Temporal",
@@ -153,6 +164,34 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "category": "Regional Time Series",
+        "time_series": False,
+    },
+}
+
+# For adding num statistics
+num_statistics = {
+    "num_valid": {
+        "name": "Nb. Obs",
+        "longname": "Number of Valid Observations",
+        "scale": None,
+        "colmap": None,
+        "unit": "1",
+        "decimals": 0,
+        "overall_only": True,
+        "category": "Regional Time Series",
+        "time_series": True,
+    },
+    "num_coords_with_data": {
+        "name": "Nb. Stations",
+        "longname": "Number of Stations with data",
+        "scale": None,
+        "colmap": None,
+        "unit": "1",
+        "decimals": 0,
+        "overall_only": True,
+        "category": "Regional Time Series",
+        "time_series": True,
     },
 }
 
@@ -165,6 +204,8 @@ statistics_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Regional Time Series",
+        "time_series": False,
     },
     "obs_trend": {
         "name": "Obs-Trends",
@@ -173,6 +214,8 @@ statistics_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Regional Time Series",
+        "time_series": False,
     },
     "mod_trend": {
         "name": "Mod-Trends",
@@ -181,6 +224,8 @@ statistics_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Regional Time Series",
+        "time_series": False,
     },
 }
 
@@ -192,6 +237,8 @@ statistics_mean_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
     "mean_obs_trend": {
         "name": "Mean Obs-Trends",
@@ -200,6 +247,8 @@ statistics_mean_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
     "mean_mod_trend": {
         "name": "Mean Mod-Trends",
@@ -208,6 +257,8 @@ statistics_mean_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
 }
 
@@ -219,6 +270,8 @@ statistics_median_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
     "median_obs_trend": {
         "name": "Median Obs-Trends",
@@ -227,6 +280,8 @@ statistics_median_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
     "median_mod_trend": {
         "name": "Median Mod-Trends",
@@ -235,6 +290,8 @@ statistics_median_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
 }
 

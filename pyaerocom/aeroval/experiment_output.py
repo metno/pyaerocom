@@ -15,6 +15,7 @@ from pyaerocom._lowlevel_helpers import (
 )
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
+    num_statistics,
     statistics_defaults,
     statistics_mean_trend,
     statistics_median_trend,
@@ -567,6 +568,7 @@ class ExperimentOutput(ProjectOutput):
     def _create_statistics_json(self):
         stats_info = statistics_defaults
         stats_info.update(extended_statistics)
+        stats_info.update(num_statistics)
         if self.cfg.statistics_opts.add_trends:
             stats_info.update(statistics_trend)
             if self.cfg.statistics_opts.avg_over_trends:
