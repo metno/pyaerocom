@@ -10,6 +10,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
+    _process_fairmode,
     _process_heatmap_data,
     _process_map_and_scat,
     _process_regional_timeseries,
@@ -98,6 +99,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         add_trends = self.cfg.statistics_opts.add_trends
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
+        use_fairmode = self.cfg.statistics_opts.use_fairmode
+
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
         if vert_code == "ModelLevel":
@@ -157,6 +160,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         use_country = True if regions_how == "country" else False
 
         data = _init_data_default_frequencies(coldata, freqs)
+
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
@@ -226,6 +230,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons,
                 add_trends,
                 trends_min_yrs,
+                use_fairmode,
+                obs_var,
             )
 
             map_name = get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code)

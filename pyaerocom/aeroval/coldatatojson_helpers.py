@@ -4,6 +4,8 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from datetime import datetime
+from math import sqrt
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -805,7 +807,17 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data, map_data, site_indices, periods, main_freq, min_num, seasons, add_trends, trends_min_yrs
+    data,
+    map_data,
+    site_indices,
+    periods,
+    main_freq,
+    min_num,
+    seasons,
+    add_trends,
+    trends_min_yrs,
+    use_fairmode,
+    obs_var,
 ):
 
     stats_dummy = _init_stats_dummy()
@@ -831,6 +843,10 @@ def _process_map_and_scat(
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
+
+                        if use_fairmode and freq != "yearly":
+                            fairmode_stats = _process_fairmode(obs_var, stats)
+                            stats["fairmode"] = fairmode_stats
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
@@ -1341,3 +1357,81 @@ def _init_data_default_frequencies(coldata, to_ts_types):
 def _start_stop_from_periods(periods):
     start, stop = _get_min_max_year_periods(periods)
     return start_stop(start, stop + 1)
+
+
+def _get_RMSU(mean: float, std: float, species: str) -> Tuple[float, float, float, float]:
+    species_values = dict(
+        concno2=dict(
+            UrRV=0.24,
+            RV=200,
+            alpha=0.2,
+        ),
+        vmro3=dict(
+            UrRV=0.18,
+            RV=120,
+            alpha=0.79,
+        ),
+        concpm10=dict(
+            UrRV=0.28,
+            RV=50,
+            alpha=0.13,
+        ),
+        concpm25=dict(
+            UrRV=0.28,
+            RV=25,
+            alpha=0.3,
+        ),
+    )
+
+    if species not in species_values.keys():
+        raise KeyError(f"Species {species} not in list {species_values.keys()}")
+
+    UrRV = species_values[species]["UrRV"]
+    RV = species_values[species]["RV"]
+    alpha = species_values[species]["alpha"]
+
+    in_sqrt = (1 - alpha ** 2) * (mean ** 2 + std ** 2) + alpha ** 2 * RV ** 2
+
+    return UrRV * sqrt(in_sqrt), UrRV, RV, alpha
+
+
+def _get_fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
+    if obs_std * sqrt(2 * (1 - R)) == 0:
+        return 1
+    a = abs(mod_std - obs_std) / (obs_std * sqrt(2 * (1 - R)))
+    return 1 if a >= 1 else -1
+
+
+def _get_crms(mod_std: float, obs_std: float, R: float) -> float:
+    return sqrt(mod_std ** 2 + obs_std ** 2 - 2 * mod_std * obs_std * R)
+
+
+def _process_fairmode(obs_var, stats):
+    species_list = ["concno2", "vmro3", "concpm10", "concpm25"]
+
+    fairmode_stats = dict()
+
+    if obs_var not in species_list:
+        return fairmode_stats
+
+    mean = stats["refdata_mean"]
+    obs_std = stats["refdata_std"]
+    mod_std = stats["data_std"]
+    R = stats["R"]
+    bias = stats["nmb"]
+    rms = stats["rms"]
+
+    crms = _get_crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
+    sign = _get_fairmode_sign(mod_std, obs_std, R)
+    rmsu, UrRV, RV, alpha = _get_RMSU(mean, obs_std, obs_var)
+
+    fairmode_stats["RMSU"] = rmsu
+    fairmode_stats["sign"] = sign
+    fairmode_stats["crms"] = crms
+    fairmode_stats["bias"] = bias
+    fairmode_stats["rms"] = rms
+    fairmode_stats["alpha"] = alpha
+    fairmode_stats["UrRV"] = UrRV
+    fairmode_stats["RV"] = RV
+
+    return fairmode_stats
