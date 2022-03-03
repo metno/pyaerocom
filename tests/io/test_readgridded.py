@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -60,7 +62,7 @@ def reader_tm5():
         ),
     ],
 )
-def test_read_var(reader_tm5, input_args, mean_val):
+def test_read_var(reader_tm5: ReadGridded, input_args: dict, mean_val: float):
     data = reader_tm5.read_var(**input_args)
     assert data.cube.data.mean() == pytest.approx(mean_val, rel=1e-3)
 
@@ -77,7 +79,7 @@ def test_ReadGridded_class_empty():
     assert r.vars_filename == []
 
 
-def test_ReadGridded_data_dir(reader_tm5):
+def test_ReadGridded_data_dir(reader_tm5: ReadGridded):
     assert reader_tm5.data_dir == path_tm5
     assert reader_tm5._vars_2d == ["abs550aer", "od550aer"]
     assert reader_tm5._vars_3d == []
@@ -88,7 +90,7 @@ def test_ReadGridded_ts_types():
     assert sorted(r.ts_types) == ["daily", "monthly"]
 
 
-def test_ReadGridded_read_var(reader_tm5):
+def test_ReadGridded_read_var(reader_tm5: ReadGridded):
     r = reader_tm5
     data = r.read_var("od550aer")
     assert data.mean() == pytest.approx(0.0960723)
@@ -108,7 +110,7 @@ def test_ReadGridded_read_var(reader_tm5):
         (["exp1", "exp2"]),
     ],
 )
-def test_ReadGridded_experiments(tmp_path: Path, experiments):
+def test_ReadGridded_experiments(tmp_path: Path, experiments: list[str]):
     for exp in experiments:
         path = tmp_path / f"aerocom3_TM5-met2010_{exp}-CTRL2019_abs550aer_Column_2010_daily.nc"
         path.write_text("")
@@ -153,7 +155,7 @@ def test_ReadGridded_prefer_longer(options, expected):
     assert gridded.ts_type == expected
 
 
-def test_filter_query(reader_tm5):
+def test_filter_query(reader_tm5: ReadGridded):
     reader_tm5.filter_query("abs550aer", ts_type="yearly", flex_ts_type=True)
 
 
@@ -172,7 +174,7 @@ def test_ReadGridded_years_avail(tmp_path: Path, years, expected):
     assert sorted(reader.years_avail) == expected
 
 
-def test_ReadGridded_get_var_info_from_files(reader_tm5):
+def test_ReadGridded_get_var_info_from_files(reader_tm5: ReadGridded):
     info = reader_tm5.get_var_info_from_files()
     assert isinstance(info, dict)
     assert sorted(info) == ["abs550aer", "od550aer"]
@@ -190,13 +192,13 @@ def test_file_info(reader_reanalysis: ReadGridded):
 
 
 @lustre_unavail
-def test_years_available(reader_reanalysis):
+def test_years_available(reader_reanalysis: ReadGridded):
     years = list(range(2003, 2022)) + [9999]
-    assert_array_equal(reader_reanalysis.years_avail, years)
+    assert reader_reanalysis.years_avail == years
 
 
 @lustre_unavail
-def test_data_dir(reader_reanalysis):
+def test_data_dir(reader_reanalysis: ReadGridded):
     assert reader_reanalysis.data_dir.endswith(
         "aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed"
     )
@@ -216,7 +218,7 @@ def test_read_var_lustre(reader_reanalysis: ReadGridded):
 
 
 @lustre_unavail
-def test_prefer_longer(reader_reanalysis):
+def test_prefer_longer(reader_reanalysis: ReadGridded):
     daily = reader_reanalysis.read_var(
         "od550aer", ts_type="monthly", flex_ts_type=True, prefer_longer=True
     )
@@ -224,7 +226,7 @@ def test_prefer_longer(reader_reanalysis):
 
 
 @lustre_unavail
-def test_read_vars(reader_reanalysis):
+def test_read_vars(reader_reanalysis: ReadGridded):
     data = reader_reanalysis.read(
         ["od440aer", "od550aer", "od865aer"], ts_type="daily", start=START, stop=STOP
     )
@@ -232,6 +234,6 @@ def test_read_vars(reader_reanalysis):
     assert all(d.shape == (1826, 161, 320) for d in data)
 
 
-def test_read_climatology_file(reader_tm5):
+def test_read_climatology_file(reader_tm5: ReadGridded):
     data = reader_tm5.read_var("abs550aer", start=9999)
     assert isinstance(data, GriddedData)
