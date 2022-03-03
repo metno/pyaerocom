@@ -4,10 +4,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+from importlib import metadata
+
 import numpy as np
 import pytest
-
-from importlib import metadata
 from packaging.version import Version
 
 from pyaerocom import const
