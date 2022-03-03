@@ -844,7 +844,8 @@ def _process_map_and_scat(
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
 
-                        if use_fairmode and freq != "yearly":
+                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
+                            stats["mb"] = np.nanmean(mod_vals - obs_vals)
                             fairmode_stats = _process_fairmode(obs_var, stats)
                             stats["fairmode"] = fairmode_stats
 
@@ -1418,7 +1419,7 @@ def _process_fairmode(obs_var, stats):
     obs_std = stats["refdata_std"]
     mod_std = stats["data_std"]
     R = stats["R"]
-    bias = stats["nmb"]
+    bias = stats["mb"]
     rms = stats["rms"]
 
     crms = _get_crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
