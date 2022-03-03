@@ -1,5 +1,3 @@
-import xarray as xr
-
 from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_concNhno3,
     calc_concNnh3,
@@ -25,7 +23,7 @@ def test_calc_concNhno3():
 
     concNhno3 = conchno3 * (M_N / (M_H + M_N + M_O * 3))
     concNhno3.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNhno3, concNhno3_from_func)
+    assert (concNhno3 == concNhno3_from_func).all()
 
 
 def test_calc_concNno3pm10():
@@ -43,7 +41,7 @@ def test_calc_concNno3pm10():
     concNno3pm10 = concno3pm10 * fac
     concNno3pm10.attrs["var_name"] = "concNno3pm10"
     concNno3pm10.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNno3pm10, concNno3pm10_from_func)
+    assert (concNno3pm10 == concNno3pm10_from_func).all()
 
 
 def test_calc_concNno3pm25():
@@ -61,7 +59,7 @@ def test_calc_concNno3pm25():
     concNno3pm10 = concno3pm10 * fac
     concNno3pm10.attrs["var_name"] = "concNno3pm10"
     concNno3pm10.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNno3pm10, concNno3pm10_from_func)
+    assert (concNno3pm10 == concNno3pm10_from_func).all()
 
 
 def test_calc_conNtno3():
@@ -77,7 +75,7 @@ def test_calc_conNtno3():
 
     concNtno3 = concNhno3 + concNno3pm10
     concNtno3.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNtno3, concNtno3_from_func)
+    assert (concNtno3 == concNtno3_from_func).all()
 
 
 def test_calc_concNtnh():
@@ -91,7 +89,7 @@ def test_calc_concNtnh():
 
     concNtnh = concNnh3 + concNnh4
     concNtnh.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNtnh, concNtnh_from_func)
+    assert (concNtnh == concNtnh_from_func).all()
 
 
 def test_calc_concNnh3():
@@ -105,7 +103,7 @@ def test_calc_concNnh3():
 
     concNnh3 = concnh3 * (M_N / (M_H * 3 + M_N))
     concNnh3.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNnh3, concNnh3_from_func)
+    assert (concNnh3 == concNnh3_from_func).all()
 
 
 def test_calc_concNnh4():
@@ -119,7 +117,7 @@ def test_calc_concNnh4():
 
     concNnh4 = concnh4 * (M_N / (M_H * 4 + M_N))
     concNnh4.attrs["units"] = "ug N m-3"
-    xr.testing.assert_allclose(concNnh4, concNnh4_from_func)
+    assert (concNnh4 == concNnh4_from_func).all()
 
 
 def test_update_EC_units():
@@ -131,5 +129,5 @@ def test_update_EC_units():
     concCecpm25 = concecpm25
     concCecpm25.attrs["units"] = "ug C m-3"
 
-    xr.testing.assert_allclose(concCecpm25, concCecpm25_from_func)
+    assert (concCecpm25 == concCecpm25_from_func).all()
     assert concCecpm25.units == concCecpm25_from_func.units
