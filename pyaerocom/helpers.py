@@ -1695,44 +1695,49 @@ def get_max_period_range(periods):
     return start, stop
 
 
-import iris
-import numpy as np
-from cf_units import Unit
-
-
 def _make_dummy_cube(var_name, start_yr=2000, stop_yr=2020, freq="daily", dtype=float):
     startstr = f"days since {start_yr}-01-01 00:00"
 
-    if freq == "daily":
-        timenum = (stop_yr + 1 - start_yr) * 365
-    elif freq == "monthly":
-        timenum = (stop_yr + 1 - start_yr) * 12
-    elif freq == "yearly":
-        timenum = (stop_yr + 1 - start_yr) * 1
-    else:
+    if freq not in TS_TYPE_TO_PANDAS_FREQ.keys():
         raise ValueError(f"{freq} not a recognized frequency")
 
+    start_str = f"{start_yr}-01-01 00:00"
+    stop_str = f"{stop_yr}-12-31 00:00"
+    times = pd.date_range(start_str, stop_str, freq=TS_TYPE_TO_PANDAS_FREQ[freq])
+
+    days_since_start = np.arange(len(times))
     unit = get_variable(var_name).units
 
     lat_range = (-180, 180)
     lon_range = (-90, 90)
     lat_res_deg = 90
     lon_res_deg = 45
-    times = np.arange(timenum)
     time_unit = Unit(startstr, calendar="gregorian")
 
     lons = np.arange(lon_range[0] + lon_res_deg / 2, lon_range[1] + lon_res_deg / 2, lon_res_deg)
     lats = np.arange(lat_range[0] + lat_res_deg / 2, lat_range[1] + lat_res_deg / 2, lat_res_deg)
 
     latdim = iris.coords.DimCoord(
-        lats, var_name="lat", standard_name="latitude", circular=False, units=Unit("degrees")
+        lats,
+        var_name="lat",
+        standard_name="latitude",
+        long_name="Center coordinates for latitudes",
+        circular=False,
+        units=Unit("degrees"),
     )
 
     londim = iris.coords.DimCoord(
-        lons, var_name="lon", standard_name="longitude", circular=False, units=Unit("degrees")
+        lons,
+        var_name="lon",
+        standard_name="longitude",
+        long_name="Center coordinates for longitudes",
+        circular=False,
+        units=Unit("degrees"),
     )
 
-    timedim = iris.coords.DimCoord(times, var_name="time", standard_name="time", units=time_unit)
+    timedim = iris.coords.DimCoord(
+        days_since_start, var_name="time", standard_name="time", long_name="Time", units=time_unit
+    )
 
     latdim.guess_bounds()
     londim.guess_bounds()
