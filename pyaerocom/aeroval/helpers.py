@@ -4,7 +4,6 @@ import os
 import shutil
 
 from pyaerocom import const
-from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocateddata import ColocatedData
@@ -150,7 +149,7 @@ def _get_min_max_year_periods(statistics_periods):
     return startyr, stopyr
 
 
-def _make_dummy_model(obs_list: list, cfg: EvalSetup) -> str:
+def _make_dummy_model(obs_list: list, cfg) -> str:
 
     # Sets up variable for the model register
     tmpdir = const.LOCAL_TMP_DIR
