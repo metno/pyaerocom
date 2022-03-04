@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
@@ -12,7 +12,8 @@ import typer
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.io.cams2_83.models import ModelName
-from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
+from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
+from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 
 from .config import CFG
@@ -26,8 +27,6 @@ TODO:
     - Add options with defaults for the different folders (data/coldata/cache)
 """
 
-
-DEFAULT_OBS_PATH = DEFAULT_MODEL_PATH.with_name("obs")
 
 app = typer.Typer(add_completion=False)
 logger = logging.getLogger(__name__)
@@ -44,6 +43,16 @@ def make_period(
         return f"{start_yr}"
 
     return f"{start_yr}-{end_yr}"
+
+
+def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
+    if isinstance(start_date, datetime):
+        start_date = start_date.date()
+    if isinstance(end_date, datetime):
+        end_date = end_date.date()
+    days = (end_date - start_date) // timedelta(days=1)
+    assert days >= 0
+    return tuple(start_date + timedelta(days=day) for day in range(days + 1))
 
 
 def make_model_entry(
@@ -98,6 +107,10 @@ def make_config(
         periods=[make_period(start_date, end_date)],
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
+    )
+
+    cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = list(  # type:ignore[index]
+        obs_paths(*date_range(start_date, end_date), root_path=obs_path)
     )
 
     if id is not None:

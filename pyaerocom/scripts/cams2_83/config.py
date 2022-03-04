@@ -126,6 +126,9 @@ OBS_CONFIG = dict(
         obs_vars=ReadCAMS2_83.DEFAULT_VARS,
         web_interface_name="EEA-CAMS2-40",
         obs_vert_type="Surface",
+        read_opts_ungridded={
+            "files": [],  # list of fully resolved paths to obs data
+        },
     )
 )
 
