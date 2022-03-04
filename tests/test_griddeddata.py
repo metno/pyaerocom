@@ -1,13 +1,11 @@
 import os
 from datetime import datetime
-from importlib import metadata
 
 import numpy as np
 import pytest
 import xarray as xr
 from iris.cube import Cube
 from numpy.testing import assert_allclose
-from packaging.version import Version
 
 from pyaerocom import GriddedData, Variable, const
 from pyaerocom.exceptions import (
@@ -18,8 +16,7 @@ from pyaerocom.exceptions import (
     VariableNotFoundError,
 )
 from pyaerocom.io import ReadGridded
-
-from .conftest import TEST_RTOL, data_unavail
+from tests.conftest import TEST_RTOL, data_unavail, need_iris_32
 
 TESTLATS = [-10, 20]
 TESTLONS = [-120, 69]
@@ -95,19 +92,13 @@ def test_basic_properties(data_tm5):
 
 
 @data_unavail
+@need_iris_32
 def test_GriddedData_longitude(data_tm5):
     """Test if longitudes are defined right"""
     assert str(data_tm5.longitude.units) == "degrees"
 
     lons = data_tm5.longitude.points
-    # iris >= 3.2 corrected an error in iris.cube.Cube.intersection
-    # see https://github.com/metno/pyaerocom/issues/588
-    iris_version = Version(metadata.version("scitools-iris"))
-    if iris_version >= Version("3.2"):
-        lon_min, lon_max = -178.5, 178.5  # correct values
-    else:
-        lon_min, lon_max = -181.5, 175.5
-    assert (lons.min(), lons.max()) == (lon_min, lon_max)
+    assert (lons.min(), lons.max()) == (-178.5, 178.5)
 
 
 @data_unavail
