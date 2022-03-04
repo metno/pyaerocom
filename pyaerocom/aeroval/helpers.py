@@ -4,6 +4,7 @@ import os
 import shutil
 
 from pyaerocom import const
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocateddata import ColocatedData
@@ -149,7 +150,7 @@ def _get_min_max_year_periods(statistics_periods):
     return startyr, stopyr
 
 
-def _make_dummy_model(obs_list, cfg):
+def _make_dummy_model(obs_list: list, cfg: EvalSetup) -> str:
 
     # Sets up variable for the model register
     tmpdir = const.LOCAL_TMP_DIR
@@ -185,16 +186,13 @@ def _make_dummy_model(obs_list, cfg):
                 save_name = dummy_grid_yr.aerocom_savename(model_id, var, vert_code, yr, freq)
                 dummy_grid_yr.to_netcdf(outdir, savename=save_name)
 
-    # Check if correct
-    # print(ReadGridded(data_id="dummy_model"))
-
     # Add dummy model to cfg
     cfg.model_cfg["dummy"] = ModelEntry(model_id="dummy_model")
 
     return model_id
 
 
-def _delete_dummy_model(model_id):
+def _delete_dummy_model(model_id: str):
     tmpdir = const.LOCAL_TMP_DIR
     const.add_data_search_dir(tmpdir)
 

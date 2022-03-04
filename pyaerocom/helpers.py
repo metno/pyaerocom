@@ -1695,7 +1695,9 @@ def get_max_period_range(periods):
     return start, stop
 
 
-def _make_dummy_cube(var_name, start_yr=2000, stop_yr=2020, freq="daily", dtype=float):
+def _make_dummy_cube(
+    var_name: str, start_yr: int = 2000, stop_yr: int = 2020, freq: str = "daily", dtype=float
+) -> iris.cube.Cube:
     startstr = f"days since {start_yr}-01-01 00:00"
 
     if freq not in TS_TYPE_TO_PANDAS_FREQ.keys():
