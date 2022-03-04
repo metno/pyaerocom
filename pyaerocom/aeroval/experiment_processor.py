@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from multiprocessing import dummy
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
@@ -112,10 +113,11 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
             self.cfg.webdisp_opts.hide_pages = ["maps.php", "intercomp.php", "overall.php"]
             model_id = _make_dummy_model(obs_list, self.cfg)
+            self.cfg.processing_opts.obs_only = True
             use_dummy_model = True
         else:
-            use_dummy_model = False
             model_id = None
+            use_dummy_model = False
 
         model_list = self.cfg.model_cfg.keylist(model_name)
 

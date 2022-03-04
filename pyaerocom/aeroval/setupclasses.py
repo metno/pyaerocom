@@ -229,6 +229,7 @@ class EvalRunOptions(ConstrainedContainer):
         self.only_colocation = False
         #: If True, process only maps (skip obs evaluation)
         self.only_model_maps = False
+        self.obs_only = False
         self.update(**kwargs)
 
 
