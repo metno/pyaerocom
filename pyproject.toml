@@ -124,9 +124,9 @@ skipsdist=True
 ignore_outcome=True
 commands =
     mypy pyaerocom/
-    pylint pyaerocom/
-    pycodestyle pyaerocom/
-    pydocstyle pyaerocom/
+    #pylint pyaerocom/
+    #pycodestyle pyaerocom/
+    #pydocstyle pyaerocom/
 extras = 
     lint
 
