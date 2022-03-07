@@ -11,9 +11,9 @@ from pyaerocom.colocation_auto import Colocator
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import (
-    _make_dummy_cube,
     get_highest_resolution,
     get_max_period_range,
+    make_dummy_cube,
     start_stop_str,
 )
 from pyaerocom.io import ReadGridded
@@ -149,7 +149,7 @@ def _get_min_max_year_periods(statistics_periods):
     return startyr, stopyr
 
 
-def _make_dummy_model(obs_list: list, cfg) -> str:
+def make_dummy_model(obs_list: list, cfg) -> str:
 
     # Sets up variable for the model register
     tmpdir = const.LOCAL_TMP_DIR
@@ -169,7 +169,7 @@ def _make_dummy_model(obs_list: list, cfg) -> str:
         for var in cfg.obs_cfg[obs]["obs_vars"]:
             # Create dummy cube
 
-            dummy_cube = _make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
+            dummy_cube = make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
 
             # Converts cube to GriddedData
             dummy_grid = GriddedData(dummy_cube)
@@ -191,7 +191,7 @@ def _make_dummy_model(obs_list: list, cfg) -> str:
     return model_id
 
 
-def _delete_dummy_model(model_id: str):
+def delete_dummy_model(model_id: str):
     tmpdir = const.LOCAL_TMP_DIR
     const.add_data_search_dir(tmpdir)
 

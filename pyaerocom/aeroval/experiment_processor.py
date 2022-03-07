@@ -6,7 +6,7 @@ from multiprocessing import dummy
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
-from pyaerocom.aeroval.helpers import _delete_dummy_model, _make_dummy_model
+from pyaerocom.aeroval.helpers import delete_dummy_model, make_dummy_model
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
 
@@ -108,11 +108,11 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         self.cfg._check_time_config()
 
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
-        if self.cfg.model_cfg == {}:
+        if not self.cfg.model_cfg:
             logging.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
             self.cfg.webdisp_opts.hide_pages = ["maps.php", "intercomp.php", "overall.php"]
-            model_id = _make_dummy_model(obs_list, self.cfg)
+            model_id = make_dummy_model(obs_list, self.cfg)
             self.cfg.processing_opts.obs_only = True
             use_dummy_model = True
         else:
@@ -137,7 +137,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         if update_interface:
             self.update_interface()
         if use_dummy_model:
-            _delete_dummy_model(model_id)
+            delete_dummy_model(model_id)
         logger.info("Finished processing.")
 
     def update_interface(self):

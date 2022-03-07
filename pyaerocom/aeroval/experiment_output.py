@@ -568,7 +568,7 @@ class ExperimentOutput(ProjectOutput):
         if self.cfg.statistics_opts.add_trends:
             if self.cfg.processing_opts.obs_only:
                 obs_statistics_trend = {}
-                for key in statistics_trend.keys():
+                for key in statistics_trend:
                     if "mod" not in key:
                         obs_statistics_trend[key] = statistics_trend[key]
                 stats_info.update(obs_statistics_trend)

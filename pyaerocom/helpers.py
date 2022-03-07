@@ -1688,14 +1688,12 @@ def get_time_rng_constraint(start, stop):
 
 def get_max_period_range(periods):
     start = min([int(per.split("-")[0]) for per in periods])
-    stop = max(
-        [int(per.split("-")[1]) if len(per.split("-")) > 1 else int(per) for per in periods]
-    )
+    stop = max(int(per.split("-")[1]) if len(per.split("-")) > 1 else int(per) for per in periods)
 
     return start, stop
 
 
-def _make_dummy_cube(
+def make_dummy_cube(
     var_name: str, start_yr: int = 2000, stop_yr: int = 2020, freq: str = "daily", dtype=float
 ) -> iris.cube.Cube:
     startstr = f"days since {start_yr}-01-01 00:00"
