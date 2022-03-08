@@ -1,38 +1,51 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+'''simple script to generate a small enough test data set for the EBAS obs network
+Works only if the user has access to the standard EBAS data path at Met Norway
+'''
+
 import os
 import pyaerocom as pya
 from pathlib import Path
 import shutil
-import pyaerocom.testdata_access as td
-from getpass import getuser
+# import pyaerocom.access_testdata as td
+from pyaerocom.access_testdata import AccessTestData
+import simplejson
+# from getpass import getuser
+#
+# if getuser() == 'jonasg':
+#     ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
+#     assert os.path.exists(ebas_local)
+# else:
+#     ebas_local=None
 
-if getuser() == 'jonasg':
-    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
-    assert os.path.exists(ebas_local)
-else:
-    ebas_local=None
 
-tda = td.TestDataAccess()
+tda = AccessTestData()
 
-TESTDATADIR = tda.testdatadir
+TESTDATADIR = tda.basedir
 
-OUTBASE = Path(TESTDATADIR).joinpath('obsdata/EBASMultiColumn')
+OUTBASE = Path(TESTDATADIR).joinpath('testdata-minimal/obsdata/EBASMultiColumn')
 
 FILES_DEST = OUTBASE.joinpath('data')
 
 UPDATE = True
 UPDATE_EXISTING = False
-DEV = False
+SEARCH_PROBLEM_FILES = False
 NAME = 'EBASMC'
 
-if ebas_local is not None:
-    FILES_SRC = ebas_local
-else:
-    FILES_SRC = ebas_local
+# if ebas_local is not None:
+#     FILES_SRC = ebas_local
+# else:
+EBAS_BASE_DIR = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/'
+assert os.path.exists(EBAS_BASE_DIR)
+
+JSON_FILE='ebas_files.json'
 
 # ------------------------------------------------------------
-# ADDITIONAL STUFF TO V0 pyaerocom >= 0.11.0dev1
+# add some files with known problems
+# at the moment these are static files whose names might change with every data set update
+# from Nilu
 # ------------------------------------------------------------
 add_files = {
     # conco3 tower - 3 different measurement heights
@@ -54,8 +67,7 @@ def check_outdated(filedir):
     files_invalid = []
     files_valid = []
 
-    import simplejson
-    with open('ebas_files.json', 'r') as f:
+    with open(JSON_FILE, 'r') as f:
 
         data = simplejson.load(f)
 
@@ -135,17 +147,23 @@ def get_files_var_statnum(data, var, statnum):
                 break
     return files
 
-if __name__ == '__main__':
 
-    reader = pya.io.ReadUngridded(NAME, data_dir=ebas_local)
-    r_lowlev = reader.get_reader()
-    r_lowlev._dataset_path = ebas_local
+def main():
+
+    # reader = pya.io.ReadUngridded(NAME, data_dir=EBAS_BASE_DIR)
+    reader = pya.io.ReadUngridded(NAME, )
+    r_lowlev = reader.get_lowlevel_reader(NAME)
+
+    # r_lowlev._dataset_path = ebas_local
 
     # directory containing NASA Ames files
     FILEDIR_SRC = r_lowlev.file_dir
+    print(f"checking for invalid files in static file list...")
     CURRENT_OK, files_valid, files_invalid = check_outdated(FILEDIR_SRC)
+    print(f"done...")
 
     if not CURRENT_OK:
+        print(f"outdated files: {files_invalid}")
         print('---------------------WARNING------------------------------')
         print('Some files in current EBAS subset do not exist anymore in '
               'the most recent EBAS database, consider updating them')
@@ -158,12 +176,12 @@ if __name__ == '__main__':
     if not FILES_DEST.exists():
         FILES_DEST.mkdir()
 
-    if DEV: # use this block to find interesting files, e.g. that throw certain exceptions
+    if SEARCH_PROBLEM_FILES: # use this block to find interesting files, e.g. that throw certain exceptions
         var = 'concpm10'
         f0=1100
         f1=f0+1000
 
-        reader = pya.io.ReadEbas(data_dir=ebas_local)
+        reader = pya.io.ReadEbas()
         reader.read(var ,first_file=f0, last_file=f1)
         for i, file in enumerate(reader.files_failed):
             try:
@@ -179,8 +197,7 @@ if __name__ == '__main__':
                     print(e)
 
     else:
-        import simplejson
-        infofile = 'ebas_files.json'
+        infofile = JSON_FILE
         if os.path.exists(infofile):
             with open(infofile, 'r') as f:
                 current_files = simplejson.load(f)
@@ -204,7 +221,9 @@ if __name__ == '__main__':
             ropts = {}
             if var.startswith('conc') or var.startswith('vmr'):
                 ropts['try_convert_vmr_conc'] = False
+            print(f"reading var {var}")
             data = reader.read(NAME, var, **ropts)
+            print("reading done")
             if var in VARS_STATFIX:
                 files, overlap_found = get_files_var_statlist(
                     data, var, STATSFIX, overlap_found)
@@ -217,37 +236,45 @@ if __name__ == '__main__':
             print('NOTHING WILL BE COPIED TO TEST DATA')
         else:
 
-            src = Path(FILES_SRC).joinpath('data')
+            src = Path(EBAS_BASE_DIR).joinpath('data')
+            print(f'updating test data @ {r_lowlev.DATASET_PATH}')
 
             # copy revision file
-            revision_file = os.path.join(r_lowlev.DATASET_PATH,
+            revision_file = os.path.join(r_lowlev.data_dir,
                                          r_lowlev.REVISION_FILE)
-            shutil.copy(revision_file, OUTBASE.joinpath('Revision.txt'))
+            outfile = OUTBASE.joinpath('Revision.txt')
+            print(f"copying {revision_file} to {outfile}")
+            shutil.copy(revision_file, outfile)
 
             # copy sqlite3 file
             db_file = r_lowlev.sqlite_database_file
-            print('copy', db_file)
-            shutil.copy(db_file, OUTBASE.joinpath(os.path.basename(db_file)))
+            outfile = OUTBASE.joinpath(os.path.basename(db_file))
+            print(f'copy {db_file} to {outfile}', db_file)
+            shutil.copy(db_file, outfile)
 
             for var, finfo in all_files.items():
                 print(var)
                 for stat, files in finfo.items():
                     print(stat)
                     for file in files:
-                        print(file)
+                        # print(file)
                         fp = src.joinpath(file)
                         dest = FILES_DEST.joinpath(file)
+                        print(f"copying {fp} to {dest}")
                         shutil.copy(fp, dest)
                     print()
 
             for what, file in add_files.items():
                 fp = src.joinpath(file)
                 dest = FILES_DEST.joinpath(file)
+                print(f"copying {fp} to {dest}")
                 shutil.copy(fp, dest)
 
-            import simplejson
-            with open('ebas_files.json', 'w') as f:
-
+            jsonfile = FILES_DEST.joinpath(JSON_FILE)
+            print(f"writing {jsonfile}")
+            with open(jsonfile, 'w') as f:
                 simplejson.dump(all_files,f)
 
 
+if __name__ == '__main__':
+    main()
