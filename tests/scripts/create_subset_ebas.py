@@ -26,6 +26,7 @@ tda = AccessTestData()
 TESTDATADIR = tda.basedir
 
 OUTBASE = Path(TESTDATADIR).joinpath('testdata-minimal/obsdata/EBASMultiColumn')
+SCRIPT_BASE_DIR = Path(TESTDATADIR).joinpath('testdata-minimal/scripts')
 
 FILES_DEST = OUTBASE.joinpath('data')
 
@@ -40,7 +41,7 @@ NAME = 'EBASMC'
 EBAS_BASE_DIR = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/'
 assert os.path.exists(EBAS_BASE_DIR)
 
-JSON_FILE='ebas_files.json'
+JSON_FILE=SCRIPT_BASE_DIR.joinpath('ebas_files.json')
 
 # ------------------------------------------------------------
 # add some files with known problems
@@ -270,9 +271,8 @@ def main():
                 print(f"copying {fp} to {dest}")
                 shutil.copy(fp, dest)
 
-            jsonfile = FILES_DEST.joinpath(JSON_FILE)
-            print(f"writing {jsonfile}")
-            with open(jsonfile, 'w') as f:
+            print(f"re-writing {JSON_FILE}")
+            with open(JSON_FILE, 'w') as f:
                 simplejson.dump(all_files,f)
 
 
