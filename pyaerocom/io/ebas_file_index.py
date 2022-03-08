@@ -112,7 +112,11 @@ class EbasSQLRequest(BrowseDict):
         str
             SQL file request command for current specs
         """
-        return self.make_query_str(distinct=distinct, **kwargs)
+        query = self.make_query_str(distinct=distinct, **kwargs)
+        # add an extsion to get only files that have no fraction variables in them
+        query.replace(';',
+                      " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');")
+        return query
 
     def make_query_str(self, what=None, distinct=True, **kwargs):
         """Translate current class state into SQL query command string
@@ -194,11 +198,7 @@ class EbasSQLRequest(BrowseDict):
             req += " and " if add_cond else " where "
             req += f"datalevel={self.datalevel}"
             add_cond += 1
-        # return req + ";"
-        return (
-            req
-            + " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');"
-        )
+        return req + ";"
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
