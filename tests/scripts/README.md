@@ -33,4 +33,16 @@ Under "Data policy".
 
 - MODIS: start with the [MODIS landing page](https://modis.gsfc.nasa.gov/data/)
 
+## Updating testdata for CI
+**Note:** The test data has to be updated by hand for CI to pickup the changes!
+
+Howto for that:
+```
+cd ~/MyPyaerocom
+mkdir -p ~/tmp
+tar -cvzf ~/tmp/testdata-minimal.tar.gz testdata-minimal
+```
+The resulting file `~/tmp/testdata-minimal.tar.gz` then needs to be copied to the right place.
+Please ask your fellow developers in case you do not know how to do that.
+
 
