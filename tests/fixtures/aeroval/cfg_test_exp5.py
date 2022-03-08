@@ -1,54 +1,67 @@
-import numpy as np
+from __future__ import annotations
 
-from .common import ADD_MODELS_DIR, AEROVAL_OUT, add_dummy_model_data
+from pathlib import Path
+
+from .common import add_dummy_model_data
 
 START = 2000
 STOP = 2020
-YEARS = [str(x) for x in np.arange(START, STOP)]
 lat_range = (30, 60)
 lon_range = (10, 40)
 
-# create some fake model data
-for i, year in enumerate(YEARS):
-    MODEL_DIR = add_dummy_model_data(
-        "prmm",
-        "mm",
-        "monthly",
-        "Surface",
-        name="DUMMY-MOD-TRENDS",
-        year=year,
-        lat_range=lat_range,
-        lon_range=lon_range,
-        value=i + 1,
-        tmp_path=ADD_MODELS_DIR,
+
+def fake_model_data(tmp_path: str | Path) -> dict:
+    for i, year in enumerate(range(START, STOP), start=1):
+        model_data_dir = add_dummy_model_data(
+            "prmm",
+            "mm",
+            "monthly",
+            "Surface",
+            name="DUMMY-MOD-TRENDS",
+            year=year,
+            lat_range=lat_range,
+            lon_range=lon_range,
+            value=i,
+            tmp_path=tmp_path,
+        )
+    return dict(
+        DUMMY=dict(
+            model_id="DUMMY-MODEL",
+            model_data_dir=model_data_dir,
+        )
     )
 
-    OBS_DIR = add_dummy_model_data(
-        "prmm",
-        "mm d-1",
-        "monthly",
-        "Surface",
-        name="DUMMY-OBS-TRENDS",
-        year=year,
-        lat_range=lat_range,
-        lon_range=lon_range,
-        value=i + 1,
-        tmp_path=ADD_MODELS_DIR,
+
+def fake_obs_data(tmp_path: str | Path) -> dict:
+    for i, year in enumerate(range(START, STOP), start=1):
+        obs_data_dir = add_dummy_model_data(
+            "prmm",
+            "mm d-1",
+            "monthly",
+            "Surface",
+            name="DUMMY-OBS-TRENDS",
+            year=year,
+            lat_range=lat_range,
+            lon_range=lon_range,
+            value=i,
+            tmp_path=tmp_path,
+        )
+
+    return dict(
+        DUMMY=dict(
+            obs_id="DUMMY-OBS",
+            obs_vars=["prmm"],
+            obs_data_dir=obs_data_dir,
+            obs_vert_type="Surface",
+        )
     )
 
-MODELS = {"DUMMY-MOD": dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)}
-
-OBS_GROUNDBASED = {
-    "DUMMY-OBS": dict(
-        obs_id="DUMMY-OBS-TRENDS", obs_vars=["prmm"], obs_data_dir=OBS_DIR, obs_vert_type="Surface"
-    )
-}
 
 CFG = dict(
-    model_cfg=MODELS,
-    obs_cfg=OBS_GROUNDBASED,
-    json_basedir=f"{AEROVAL_OUT}/data",
-    coldata_basedir=f"{AEROVAL_OUT}/coldata",
+    model_cfg=dir(),  # fake_model_data("PATH_TO_MODEL_DATA"),
+    obs_cfg=dir(),  # fake_obs_data("PATH_TO_MODEL_DATA"),
+    json_basedir="PATH_TO_AEROVAL_OUT/data",
+    coldata_basedir="PATH_TO_AEROVAL_OUT/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

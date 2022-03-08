@@ -9,10 +9,6 @@ from cf_units import Unit
 
 from pyaerocom import GriddedData
 
-TMPDIR = Path("~/tmp/pyatest").expanduser()
-AEROVAL_OUT = TMPDIR / "aeroval"
-ADD_MODELS_DIR = TMPDIR / "modeldata"
-
 
 @pytest.fixture
 def aeroval_out_path(tmp_path_factory) -> Path:
