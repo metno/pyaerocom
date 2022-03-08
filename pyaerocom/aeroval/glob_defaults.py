@@ -230,7 +230,7 @@ statistics_trend = {
 }
 
 statistics_mean_trend = {
-    "mean_obs/mod_trend": {
+    "obs/mod_mean_trend": {
         "name": "Mean Obs/Mod-Trends",
         "longname": "Mean Trends",
         "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
@@ -240,7 +240,7 @@ statistics_mean_trend = {
         "category": "Individual Stations",
         "time_series": False,
     },
-    "mean_obs_trend": {
+    "obs_mean_trend": {
         "name": "Mean Obs-Trends",
         "longname": "Observed Mean Trends",
         "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
@@ -250,7 +250,7 @@ statistics_mean_trend = {
         "category": "Individual Stations",
         "time_series": False,
     },
-    "mean_mod_trend": {
+    "mod_mean_trend": {
         "name": "Mean Mod-Trends",
         "longname": "Modelled Mean Trends",
         "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
@@ -263,7 +263,7 @@ statistics_mean_trend = {
 }
 
 statistics_median_trend = {
-    "median_obs/mod_trend": {
+    "obs/mod_median_trend": {
         "name": "Median Obs/Mod-Trends",
         "longname": "Median Trends",
         "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
@@ -273,7 +273,7 @@ statistics_median_trend = {
         "category": "Individual Stations",
         "time_series": False,
     },
-    "median_obs_trend": {
+    "obs_median_trend": {
         "name": "Median Obs-Trends",
         "longname": "Observed Median Trends",
         "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
@@ -283,7 +283,7 @@ statistics_median_trend = {
         "category": "Individual Stations",
         "time_series": False,
     },
-    "median_mod_trend": {
+    "mod_median_trend": {
         "name": "Median Mod-Trends",
         "longname": "Modelled Median Trends",
         "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],

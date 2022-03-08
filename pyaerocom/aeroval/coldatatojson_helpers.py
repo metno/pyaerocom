@@ -858,6 +858,89 @@ def _fishers_pval(trends: list) -> float:
     return float(1 - x)
 
 
+def process_trends(
+    subset: ColocatedData,
+    trends_min_yrs: int,
+    season: str,
+    per: str,
+    avg_over_trends: bool,
+    regid: str,
+    use_country: bool,
+    freq: str,
+    use_weights: bool,
+) -> dict:
+    # subset = _select_period_season_coldata(coldata, per, season)
+    stats = {}
+    trends_successful = False
+    mean_trends_successful = False
+    median_trends_successful = False
+
+    if avg_over_trends:
+        # logger.info(f"Adding trend for {regname} in {season} {per}")
+
+        (mean_obs_trend, mean_mod_trend, mean_trends_successful,) = _make_regional_trends(
+            subset,
+            trends_min_yrs,
+            per,
+            freq,
+            season,
+            regid,
+            use_country,
+        )
+
+        (median_obs_trend, median_mod_trend, median_trends_successful,) = _make_regional_trends(
+            subset,
+            trends_min_yrs,
+            per,
+            freq,
+            season,
+            regid,
+            use_country,
+            median=True,
+        )
+
+    # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+    (start, stop) = _get_min_max_year_periods([per])
+
+    if stop - start >= trends_min_yrs:
+        try:
+            subset_time_series = subset.get_regional_timeseries(
+                regid, check_country_meta=use_country
+            )
+
+            (obs_trend, mod_trend) = _make_trends_from_timeseries(
+                subset_time_series["obs"],
+                subset_time_series["mod"],
+                freq,
+                season,
+                start,
+                stop,
+                trends_min_yrs,
+            )
+
+            trends_successful = True
+        except AeroValTrendsError as e:
+            msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+            logger.warning(msg)
+
+    if trends_successful:
+        # The whole trends dicts are placed in the stats dict
+        stats["obs_trend"] = obs_trend
+        stats["mod_trend"] = mod_trend
+
+    if mean_trends_successful and avg_over_trends:
+        # The whole trends dicts are placed in the stats dict
+        stats["obs_mean_trend"] = mean_obs_trend
+        stats["mod_mean_trend"] = mean_mod_trend
+
+    if median_trends_successful and avg_over_trends:
+        # The whole trends dicts are placed in the stats dict
+        stats["obs_median_trend"] = median_obs_trend
+        stats["mod_median_trend"] = median_mod_trend
+
+    return stats
+
+
 def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
     Function for generating trends from timeseries
@@ -1283,67 +1366,21 @@ def _process_heatmap_data(
                         stats = stats_dummy
                     else:
                         try:
+
                             subset = _select_period_season_coldata(coldata, per, season)
 
-                            trends_successful = False
-                            mean_trends_successful = False
-                            median_trends_successful = False
                             if add_trends and freq != "daily":
-                                if avg_over_trends:
-                                    logger.info(f"Adding trend for {regname} in {season} {per}")
-
-                                    (
-                                        mean_obs_trend,
-                                        mean_mod_trend,
-                                        mean_trends_successful,
-                                    ) = _make_regional_trends(
-                                        subset,
-                                        trends_min_yrs,
-                                        per,
-                                        freq,
-                                        season,
-                                        regid,
-                                        use_country,
-                                    )
-
-                                    (
-                                        median_obs_trend,
-                                        median_mod_trend,
-                                        median_trends_successful,
-                                    ) = _make_regional_trends(
-                                        subset,
-                                        trends_min_yrs,
-                                        per,
-                                        freq,
-                                        season,
-                                        regid,
-                                        use_country,
-                                        median=True,
-                                    )
-
-                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                (start, stop) = _get_min_max_year_periods([per])
-
-                                if stop - start >= trends_min_yrs:
-                                    try:
-                                        subset_time_series = subset.get_regional_timeseries(
-                                            regid, check_country_meta=use_country
-                                        )
-
-                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(
-                                            subset_time_series["obs"],
-                                            subset_time_series["mod"],
-                                            freq,
-                                            season,
-                                            start,
-                                            stop,
-                                            trends_min_yrs,
-                                        )
-
-                                        trends_successful = True
-                                    except AeroValTrendsError as e:
-                                        msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                        logger.warning(msg)
+                                trend_stats = process_trends(
+                                    subset,
+                                    trends_min_yrs,
+                                    season,
+                                    per,
+                                    avg_over_trends,
+                                    regid,
+                                    use_country,
+                                    freq,
+                                    use_weights,
+                                )
 
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
@@ -1351,30 +1388,8 @@ def _process_heatmap_data(
 
                             stats = _get_extended_stats(subset, use_weights)
 
-                            if add_trends and freq != "daily" and trends_successful:
-                                # The whole trends dicts are placed in the stats dict
-                                stats["obs_trend"] = obs_trend
-                                stats["mod_trend"] = mod_trend
-
-                            if (
-                                add_trends
-                                and freq != "daily"
-                                and mean_trends_successful
-                                and avg_over_trends
-                            ):
-                                # The whole trends dicts are placed in the stats dict
-                                stats["mean_obs_trend"] = mean_obs_trend
-                                stats["mean_mod_trend"] = mean_mod_trend
-
-                            if (
-                                add_trends
-                                and freq != "daily"
-                                and median_trends_successful
-                                and avg_over_trends
-                            ):
-                                # The whole trends dicts are placed in the stats dict
-                                stats["median_obs_trend"] = median_obs_trend
-                                stats["median_mod_trend"] = median_mod_trend
+                            if add_trends and freq != "daily":
+                                stats.update(**trend_stats)
 
                         except (DataCoverageError, TemporalResolutionError) as e:
                             stats = stats_dummy
