@@ -14,7 +14,12 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         if self.cfg.processing_opts.only_json:
             files_to_convert = col.get_available_coldata_files(var_list)
         else:
-            col.run(var_list)
+            model = col.model_id.split(".")[1]
+            for leap in range(4):
+                col.model_id = f"CAMS2-83.{model}.day{leap}"
+                col.model_name = f"CAMS2-83-{model.lower()}-day{leap}"
+                col.run(var_list)
+
             files_to_convert = col.files_written
 
         if self.cfg.processing_opts.only_colocation:
