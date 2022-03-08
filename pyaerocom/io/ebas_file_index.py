@@ -197,7 +197,7 @@ class EbasSQLRequest(BrowseDict):
         # return req + ";"
         return (
             req
-            + "and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');"
+            + " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');"
         )
 
     def __str__(self):
