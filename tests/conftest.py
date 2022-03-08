@@ -12,7 +12,7 @@ pytest_plugins = [
     "tests.fixtures.aeronet",
     "tests.fixtures.stations",
     "tests.fixtures.collocated_data",
-    "tests.fixtures.aeroval",
+    "tests.fixtures.aeroval.config",
 ]
 
 TEST_RTOL = 1e-4
