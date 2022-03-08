@@ -1,6 +1,3 @@
-### Very simple setup to make sure the basic stuff works in AeroVal
-from .common import AEROVAL_OUT
-
 MODELS = {
     "TM5-AP3-CTRL": dict(
         model_id="TM5-met2010_CTRL-TEST",
@@ -36,8 +33,8 @@ OBS_GROUNDBASED = {
 CFG = dict(
     model_cfg=MODELS,
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=f"{AEROVAL_OUT}/data",
-    coldata_basedir=f"{AEROVAL_OUT}/coldata",
+    json_basedir="PATH_TO_AEROVAL_OUT/data",
+    coldata_basedir="PATH_TO_AEROVAL_OUT/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

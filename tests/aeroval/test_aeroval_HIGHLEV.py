@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -6,7 +8,7 @@ from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from tests.conftest import geojson_unavail
-from tests.fixtures.aeroval import cfgexp1, cfgexp2, cfgexp4
+from tests.fixtures.aeroval import cfgexp4
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
@@ -47,15 +49,15 @@ CHK_CFG4 = {
 
 @geojson_unavail
 @pytest.mark.parametrize(
-    "cfgdict,chk_files",
+    "cfg,chk_files",
     [
-        (cfgexp1, CHK_CFG1),
-        (cfgexp2, CHK_CFG2),
+        ("cfgexp1", CHK_CFG1),
+        ("cfgexp2", CHK_CFG2),
         (cfgexp4, CHK_CFG4),
     ],
 )
-def test_ExperimentOutput__FILES(cfgdict, chk_files: dict):
-    cfg = EvalSetup(**cfgdict)
+def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
+    cfg = EvalSetup(**eval_config)
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import iris
 import numpy as np
+import pytest
 from cf_units import Unit
 
 from pyaerocom import GriddedData
@@ -11,6 +12,16 @@ from pyaerocom import GriddedData
 TMPDIR = Path("~/tmp/pyatest").expanduser()
 AEROVAL_OUT = TMPDIR / "aeroval"
 ADD_MODELS_DIR = TMPDIR / "modeldata"
+
+
+@pytest.fixture
+def aeroval_out_path(tmp_path_factory) -> Path:
+    return tmp_path_factory.mktemp("aeroval")
+
+
+@pytest.fixture(scope="session")
+def aeroval_model_path(tmp_path_factory) -> Path:
+    return tmp_path_factory.mktemp("modeldata")
 
 
 def make_dummy_cube_3D_daily(

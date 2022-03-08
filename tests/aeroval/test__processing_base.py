@@ -7,7 +7,6 @@ from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.exceptions import EntryNotAvailable
-from tests.fixtures.aeroval import cfgexp1 as CFG
 
 
 @pytest.fixture(scope="module")
@@ -59,17 +58,19 @@ def test_HasColocator_get_colocator_error(collocator: HasColocator):
     assert str(e.value) == "'no such entry mod2'"
 
 
-@pytest.fixture(scope="module")
-def importer() -> DataImporter:
-    setup = EvalSetup(**CFG)
+@pytest.fixture
+def importer(eval_config: dict) -> DataImporter:
+    setup = EvalSetup(**eval_config)
     return DataImporter(setup)
 
 
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_DataImporter_read_model_data(importer: DataImporter):
     data = importer.read_model_data("TM5-AP3-CTRL", "od550aer")
     assert isinstance(data, GriddedData)
 
 
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_DataImporter_read_ungridded_obsdata(importer: DataImporter):
     data = importer.read_ungridded_obsdata("AERONET-Sun", "od550aer")
     assert isinstance(data, UngriddedData)
