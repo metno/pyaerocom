@@ -17,6 +17,7 @@ BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
 
 @pytest.fixture()
 def dummy_expout(tmp_path: Path) -> ExperimentOutput:
+    """ExperimentOutput instance"""
     setup = EvalSetup(proj_id="proj", exp_id="exp", json_basedir=str(tmp_path))
     return ExperimentOutput(setup)
 

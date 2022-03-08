@@ -57,6 +57,7 @@ def test__init_data_default_frequencies(coldata: ColocatedData, to_ts_types: str
 
 @pytest.fixture(scope="module")
 def example_coldata():
+    """dictionary of colocated data statistics"""
     return _init_data_default_frequencies(COLDATA["tm5_aeronet"](), ["daily", "monthly", "yearly"])
 
 

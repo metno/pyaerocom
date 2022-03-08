@@ -18,6 +18,7 @@ def test_ExperimentProcessor___init__(eval_config: dict):
 
 @pytest.fixture
 def processor(eval_config: dict) -> ExperimentProcessor:
+    """ExperimentProcessor instance without experiment data"""
     setup = EvalSetup(**eval_config)
     proc = ExperimentProcessor(setup)
     proc.exp_output.delete_experiment_data(also_coldata=True)

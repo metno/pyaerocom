@@ -33,6 +33,7 @@ def config(
     dummy_model: bool,
     model_data_dir: str,
 ) -> dict | None:
+    """experiment configuration"""
     if cfg is None:
         return None
     if dummy_model:
@@ -45,6 +46,7 @@ def config(
 
 @pytest.fixture
 def processor(config: dict | None) -> ExperimentProcessor | None:
+    """ExperimentProcessor instance, or None"""
     if config is None:
         return None
     setup = EvalSetup(**config)

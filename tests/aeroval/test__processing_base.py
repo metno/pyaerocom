@@ -11,6 +11,7 @@ from pyaerocom.exceptions import EntryNotAvailable
 
 @pytest.fixture(scope="module")
 def setup() -> EvalSetup:
+    """EvalSetup instance"""
     obs_cfg = dict(
         obs1=dict(obs_id="obs1", obs_vars=["od550aer"], obs_vert_type="Column"),
         obs2=dict(obs_id="obs2", obs_vars=["od550aer"], obs_vert_type="Column", diurnal_only=True),
@@ -20,6 +21,7 @@ def setup() -> EvalSetup:
 
 @pytest.fixture(scope="module")
 def config(setup: EvalSetup) -> HasConfig:
+    """HasConfig instance"""
     return HasConfig(setup)
 
 
@@ -38,6 +40,7 @@ def test_HasConfig_reanalyse_existing(config: HasConfig):
 
 @pytest.fixture(scope="module")
 def collocator(setup: EvalSetup) -> HasColocator:
+    """HasColocator instance"""
     return HasColocator(setup)
 
 
@@ -60,6 +63,7 @@ def test_HasColocator_get_colocator_error(collocator: HasColocator):
 
 @pytest.fixture
 def importer(eval_config: dict) -> DataImporter:
+    """initalized DataImporter"""
     setup = EvalSetup(**eval_config)
     return DataImporter(setup)
 
