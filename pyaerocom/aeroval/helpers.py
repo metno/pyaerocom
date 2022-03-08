@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import shutil
+from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
@@ -191,12 +192,11 @@ def make_dummy_model(obs_list: list, cfg) -> str:
     return model_id
 
 
-def delete_dummy_model(model_id: str):
+def delete_dummy_model(model_id: str) -> None:
     tmpdir = const.LOCAL_TMP_DIR
     const.add_data_search_dir(tmpdir)
 
-    outdir = os.path.join(tmpdir, f"{model_id}/renamed")
-    dirs = glob.glob(outdir + "/*.nc")
-    for d in dirs:
-        print(f"Deleting dummy model {d}")
-        os.remove(d)
+    renamed = Path(tmpdir) / f"{model_id}/renamed"
+    for path in renamed.glob("*.nc"):
+        print(f"Deleting dummy model {path}")
+        path.unlink()
