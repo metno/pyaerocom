@@ -195,7 +195,10 @@ class EbasSQLRequest(BrowseDict):
             req += f"datalevel={self.datalevel}"
             add_cond += 1
         # return req + ";"
-        return req + "and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');"
+        return (
+            req
+            + "and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');"
+        )
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
