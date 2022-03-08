@@ -35,11 +35,13 @@ def test_EbasSQLRequest__var2sql_error():
     [
         (
             {},
-            "select distinct filename from variable join station on station.station_code=variable.station_code;",
+            "select distinct filename from variable;",
+            # "select distinct filename from variable join station on station.station_code=variable.station_code;",
         ),
         (
             {"distinct": False},
-            "select filename from variable join station on station.station_code=variable.station_code;",
+            "select filename from variable ;",
+            # "select filename from variable join station on station.station_code=variable.station_code;",
         ),
     ],
 )
@@ -73,11 +75,13 @@ def test_EbasSQLRequest_make_file_query_str(kwargs: dict, output: str):
         ),
         (
             {},
-            "select distinct filename from variable join station on station.station_code=variable.station_code;",
+            "select distinct filename from variable;",
+            # "select distinct filename from variable join station on station.station_code=variable.station_code;",
         ),
         (
             {"distinct": False},
-            "select filename from variable join station on station.station_code=variable.station_code;",
+            "select filename from variable;",
+            # "select filename from variable join station on station.station_code=variable.station_code;",
         ),
         (
             {"what": ("filename", "station_code", "bla")},
