@@ -8,7 +8,6 @@ from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from tests.conftest import geojson_unavail
-from tests.fixtures.aeroval import cfgexp4
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
@@ -53,7 +52,7 @@ CHK_CFG4 = {
     [
         ("cfgexp1", CHK_CFG1),
         ("cfgexp2", CHK_CFG2),
-        (cfgexp4, CHK_CFG4),
+        ("cfgexp4", CHK_CFG4),
     ],
 )
 def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
@@ -87,8 +86,9 @@ def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
             assert len(files) == check
 
 
-def test_reanalyse_existing():
-    cfg = EvalSetup(**cfgexp4)
+@pytest.mark.parametrize("cfg", ["cfgexp4"])
+def test_reanalyse_existing(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     assert cfg.colocation_opts.reanalyse_existing == True
     output = Path(cfg.path_manager.coldata_basedir) / cfg.proj_id / cfg.exp_id
 
@@ -120,8 +120,9 @@ def test_reanalyse_existing():
     assert list(output.glob("**/*.nc"))
 
 
-def test_superobs_different_resolutions():
-    cfg = EvalSetup(**cfgexp4)
+@pytest.mark.parametrize("cfg", ["cfgexp4"])
+def test_superobs_different_resolutions(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.model_cfg["TM5-AP3-CTRL"].model_ts_type_read = None
     cfg.model_cfg["TM5-AP3-CTRL"].flex_ts_type = True
 

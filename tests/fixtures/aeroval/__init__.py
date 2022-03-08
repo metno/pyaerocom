@@ -31,6 +31,7 @@ def eval_config(cfg: str | dict | None, aeroval_out_path: Path, aeroval_model_pa
         cfgexp1=cfgexp1,
         cfgexp2=cfgexp2,
         cfgexp3=cfgexp3,
+        cfgexp4=cfgexp4,
     )
     if cfg not in config:
         raise ValueError(f"Unknown {cfg=}")

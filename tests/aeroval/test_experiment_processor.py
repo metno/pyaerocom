@@ -6,7 +6,7 @@ from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.experiment_processor import ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from tests.conftest import geojson_unavail
-from tests.fixtures.aeroval import cfgexp4, cfgexp5
+from tests.fixtures.aeroval import cfgexp5
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
@@ -26,7 +26,7 @@ def processor(eval_config: dict) -> ExperimentProcessor:
 
 
 @geojson_unavail
-@pytest.mark.parametrize("cfg", ["cfgexp1", "cfgexp2", "cfgexp3", cfgexp4, cfgexp5])
+@pytest.mark.parametrize("cfg", ["cfgexp1", "cfgexp2", "cfgexp3", "cfgexp4", cfgexp5])
 def test_ExperimentProcessor_run(processor: ExperimentProcessor):
     processor.run()
 
