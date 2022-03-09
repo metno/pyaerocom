@@ -114,7 +114,7 @@ class EbasSQLRequest(BrowseDict):
         """
         query = self.make_query_str(distinct=distinct, **kwargs)
         # add an extsion to get only files that have no fraction variables in them
-        query.replace(';',
+        query = query.replace(';',
                       " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');")
         return query
 
@@ -291,7 +291,7 @@ class EbasFileIndex:
             cur.execute(req)
             return [f[0] for f in cur.description]
 
-    def execute_request(self, request):
+    def execute_request(self, request, file_request=False):
         """Connect to database and retrieve data for input request
 
         Parameters
@@ -309,10 +309,13 @@ class EbasFileIndex:
 
         """
         if isinstance(request, EbasSQLRequest):
-            request = request.make_query_str()
+            if not file_request:
+                sql_str = request.make_query_str()
+            else:
+                sql_str = request.make_file_query_str()
         with sqlite3.connect(self.database) as con:
             cur = con.cursor()
-            cur.execute(request)
+            cur.execute(sql_str)
             return [f for f in cur.fetchall()]
 
     def get_file_names(self, request):
@@ -328,4 +331,4 @@ class EbasFileIndex:
         list
             list of file paths that match the request
         """
-        return [f[0] for f in self.execute_request(request)]
+        return [f[0] for f in self.execute_request(request,file_request=True)]
