@@ -1059,7 +1059,16 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data, map_data, site_indices, periods, main_freq, min_num, seasons, add_trends, trends_min_yrs
+    data,
+    map_data,
+    site_indices,
+    periods,
+    main_freq,
+    min_num,
+    seasons,
+    add_trends,
+    trends_min_yrs,
+    avg_over_trends,
 ):
 
     stats_dummy = _init_stats_dummy()
@@ -1109,6 +1118,13 @@ def _process_map_and_scat(
                                     # The whole trends dicts are placed in the stats dict
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
+
+                                    if avg_over_trends:
+                                        stats["obs_mean_trend"] = obs_trend
+                                        stats["mod_mean_trend"] = mod_trend
+
+                                        stats["obs_median_trend"] = obs_trend
+                                        stats["mod_median_trend"] = mod_trend
 
                                 except AeroValTrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"

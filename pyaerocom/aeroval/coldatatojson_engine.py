@@ -236,6 +236,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons,
                 add_trends,
                 trends_min_yrs,
+                avg_over_trends,
             )
 
             map_name = get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code)
