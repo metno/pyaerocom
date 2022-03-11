@@ -39,7 +39,7 @@ HA_TO_SQM = 10000  # hectar to square metre.
 #: factor
 UCONV_MUL_FACS = pd.DataFrame(
     [
-        ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
+        # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
         ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
         ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
         ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
