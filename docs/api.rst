@@ -174,7 +174,6 @@ AERONET Inversion (V3)
 EARLINET
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 `European Aerosol Research Lidar Network (EARLINET) <https://www.earlinet.org/index.php?id=earlinet_homepage>`_
-`European Aerosol Research Lidar Network (EARLINET) <https://www.earlinet.org/index.php?id=earlinet_homepage>`_
 
 .. automodule:: pyaerocom.io.read_earlinet
    :members:
@@ -183,8 +182,9 @@ EARLINET
    :show-inheritance:
 
 EBAS
-`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_.
 
 .. automodule:: pyaerocom.io.read_ebas
    :members:
@@ -210,10 +210,10 @@ EBAS (low level)
 EEA data
 ^^^^^^^^
 
-Reader for `European air pollution data <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`_.
+EEA base reader
 """""""""""""""
 
-Reader for European air pollution data.
+Reader for European air pollution data from `EEA AqERep files <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`_.
 
 .. automodule:: pyaerocom.io.read_eea_aqerep_base
    :members:
@@ -237,19 +237,19 @@ Quality controlled EEA data.
    :members:
    :undoc-members:
 
-Reader for `air quality measurements from North America. <https://www.airnow.gov/about-the-data/>`_
+AirNow data
 ^^^^^^^^^^^
 
-Reader for air quality measurements from North America
+Reader for `air quality measurements from North America. <https://www.airnow.gov/about-the-data/>`_
 
 .. automodule:: pyaerocom.io.read_airnow
    :members:
    :undoc-members:
 
-Reader for air quality measurements for China from the `EU-FP7 project MarcoPolo <https://www.knmi.nl/kennis-en-datacentrum/project/marcopolo>`_.
+MarcoPolo data
 ^^^^^^^^^^^^^^
 
-Reader for air quality measurements from China.
+Reader for air quality measurements for China from the `EU-FP7 project MarcoPolo <https://www.knmi.nl/kennis-en-datacentrum/project/marcopolo>`_.
 
 .. automodule:: pyaerocom.io.read_marcopolo
    :members:
