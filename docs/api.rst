@@ -132,6 +132,7 @@ All ungridded reading routines are based on this template class.
 
 AERONET
 ^^^^^^^^
+`Aerosol Robotic Network (AERONET) <https://aeronet.gsfc.nasa.gov/>`_
 
 AERONET base class
 """"""""""""""""""
