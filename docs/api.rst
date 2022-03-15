@@ -173,6 +173,8 @@ AERONET Inversion (V3)
 
 EARLINET
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`European Aerosol Research Lidar Network (EARLINET) <https://www.earlinet.org/index.php?id=earlinet_homepage>`_
+`European Aerosol Research Lidar Network (EARLINET) <https://www.earlinet.org/index.php?id=earlinet_homepage>`_
 
 .. automodule:: pyaerocom.io.read_earlinet
    :members:
@@ -181,6 +183,7 @@ EARLINET
    :show-inheritance:
 
 EBAS
+`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.read_ebas
@@ -207,7 +210,7 @@ EBAS (low level)
 EEA data
 ^^^^^^^^
 
-EEA base reader
+Reader for `European air pollution data <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`_.
 """""""""""""""
 
 Reader for European air pollution data.
@@ -234,7 +237,7 @@ Quality controlled EEA data.
    :members:
    :undoc-members:
 
-AirNow data
+Reader for `air quality measurements from North America. <https://www.airnow.gov/about-the-data/>`_
 ^^^^^^^^^^^
 
 Reader for air quality measurements from North America
@@ -243,7 +246,7 @@ Reader for air quality measurements from North America
    :members:
    :undoc-members:
 
-MarcoPolo data
+Reader for air quality measurements for China from the `EU-FP7 project MarcoPolo <https://www.knmi.nl/kennis-en-datacentrum/project/marcopolo>`_.
 ^^^^^^^^^^^^^^
 
 Reader for air quality measurements from China.
