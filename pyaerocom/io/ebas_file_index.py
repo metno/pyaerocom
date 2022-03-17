@@ -313,6 +313,11 @@ class EbasFileIndex:
                 sql_str = request.make_query_str()
             else:
                 sql_str = request.make_file_query_str()
+        else:
+            sql_str = request
+
+        print(sql_str)
+
         with sqlite3.connect(self.database) as con:
             cur = con.cursor()
             cur.execute(sql_str)
