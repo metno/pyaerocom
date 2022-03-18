@@ -112,12 +112,11 @@ extras =
     test
 
 [testenv:format]
-skipsdist=True
+skip_install = true
 commands =
-    black --check .
-    isort --check .
-extras = 
-    format
+    pre-commit run --all-files --show-diff-on-failure
+deps =
+    pre-commit
 
 [testenv:lint]
 skipsdist=True
