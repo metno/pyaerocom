@@ -256,6 +256,7 @@ Reader for air quality measurements for China from the `EU-FP7 project MarcoPolo
    :undoc-members:
 GHOST
 ^^^^^
+GHOST (Globally Harmonised Observational Surface Treatment) project developed at the Earth Sciences Department of the Barcelona Supercomputing Center (see e.g., `Petetin et al., 2020 <https://acp.copernicus.org/articles/20/11119/2020/acp-20-11119-2020.html>`_ for more information).
 
 .. automodule:: pyaerocom.io.read_ghost
    :members:
