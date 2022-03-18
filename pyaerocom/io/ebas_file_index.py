@@ -114,8 +114,10 @@ class EbasSQLRequest(BrowseDict):
         """
         query = self.make_query_str(distinct=distinct, **kwargs)
         # add an extsion to get only files that have no fraction variables in them
-        query = query.replace(';',
-                      " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');")
+        query = query.replace(
+            ";",
+            " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
+        )
         return query
 
     def make_query_str(self, what=None, distinct=True, **kwargs):
@@ -336,4 +338,4 @@ class EbasFileIndex:
         list
             list of file paths that match the request
         """
-        return [f[0] for f in self.execute_request(request,file_request=True)]
+        return [f[0] for f in self.execute_request(request, file_request=True)]
