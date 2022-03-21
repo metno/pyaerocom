@@ -10,7 +10,7 @@ def init_parser():
     ap.add_argument("-b", "--browse", help="Browse database")
     ap.add_argument("--clearcache", action="store_true", help="Delete cached data objects")
     ap.add_argument("--ppiaccess", action="store_true", help="Check if MetNO PPI can be accessed")
-    ap.add_argument("-V", "--version", help="Current version of pyaerocom")
+    ap.add_argument("-V", "--version", help="Installed version of pyaerocom")
 
     return ap
 
