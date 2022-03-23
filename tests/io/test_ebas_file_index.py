@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 
 from ..conftest import EBAS_SQLite_DB
@@ -34,16 +33,12 @@ def test_EbasSQLRequest__var2sql_error():
     "kwargs,output",
     [
         (
-            {},
-            # "select distinct filename from variable;",
-            "select distinct filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
-            # "select distinct filename from variable join station on station.station_code=variable.station_code;",
+                {},
+                "select distinct filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
         ),
         (
-            {"distinct": False},
-            # "select filename from variable ;",
-            "select filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
-            # "select filename from variable join station on station.station_code=variable.station_code;",
+                {"distinct": False},
+                "select filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
         ),
     ],
 )
@@ -56,39 +51,39 @@ def test_EbasSQLRequest_make_file_query_str(kwargs: dict, output: str):
     "kwargs,output",
     [
         (
-            {
-                "altitude_range": [10, 21],
-                "lon_range": [10, 20],
-                "lat_range": [10, 20],
-                "start_date": "2010-01-21",
-                "stop_date": "2010-01-24",
-                "statistics": ["arithmetic_mean", "median"],
-                "datalevel": 2,
-            },
-            (
-                "select distinct filename from variable join station on "
-                "station.station_code=variable.station_code where "
-                "station_altitude>10 and station_altitude<21 and "
-                "station_longitude>10 and station_longitude<20 and "
-                "station_latitude>10 and station_latitude<20 and "
-                "first_end < '2010-01-24' and last_start > '2010-01-21' and "
-                "statistics in ('arithmetic_mean', 'median') and datalevel=2;"
-            ),
+                {
+                    "altitude_range": [10, 21],
+                    "lon_range": [10, 20],
+                    "lat_range": [10, 20],
+                    "start_date": "2010-01-21",
+                    "stop_date": "2010-01-24",
+                    "statistics": ["arithmetic_mean", "median"],
+                    "datalevel": 2,
+                },
+                (
+                        "select distinct filename from variable join station on "
+                        "station.station_code=variable.station_code where "
+                        "station_altitude>10 and station_altitude<21 and "
+                        "station_longitude>10 and station_longitude<20 and "
+                        "station_latitude>10 and station_latitude<20 and "
+                        "first_end < '2010-01-24' and last_start > '2010-01-21' and "
+                        "statistics in ('arithmetic_mean', 'median') and datalevel=2;"
+                ),
         ),
         (
-            {},
-            # "select distinct filename from variable;",
-            "select distinct filename from variable join station on station.station_code=variable.station_code;",
+                {},
+                # "select distinct filename from variable;",
+                "select distinct filename from variable join station on station.station_code=variable.station_code;",
         ),
         (
-            {"distinct": False},
-            # "select filename from variable;",
-            "select filename from variable join station on station.station_code=variable.station_code;",
+                {"distinct": False},
+                # "select filename from variable;",
+                "select filename from variable join station on station.station_code=variable.station_code;",
         ),
         (
-            {"what": ("filename", "station_code", "bla")},
-            "select distinct filename,station_code,bla from variable join station on station.station_code=variable.station_code;",
-            # "select distinct filename,station_code,bla from variable ;",
+                {"what": ("filename", "station_code", "bla")},
+                "select distinct filename,station_code,bla from variable join station on station.station_code=variable.station_code;",
+                # "select distinct filename,station_code,bla from variable ;",
         ),
     ],
 )
