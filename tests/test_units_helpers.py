@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
+
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.units_helpers import (
     _check_unit_endswith_freq,
