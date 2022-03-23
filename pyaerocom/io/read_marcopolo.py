@@ -64,7 +64,7 @@ def _conc_to_vmr_marcopolo_stats(
 
 class ReadMarcoPolo(ReadUngriddedBase):
     """
-    Reading routine for chinese MarcoPolo observations
+    Reading routine for Chinese MarcoPolo observations
     """
 
     #: Data type of files
