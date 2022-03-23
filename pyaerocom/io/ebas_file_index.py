@@ -153,7 +153,6 @@ class EbasSQLRequest(BrowseDict):
         # add constraints from station table
         conv = self._var2sql
         if self.station_names is not None:
-
             req += f" where station_name in {conv(self.station_names)}"
             add_cond += 1
         if self.altitude_range is not None:
@@ -204,7 +203,7 @@ class EbasSQLRequest(BrowseDict):
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
-        s = f"\n{head}\n{len(head)*'-'}"
+        s = f"\n{head}\n{len(head) * '-'}"
         for k, v in self.items():
             s += f"\n{k}: {v}"
         s += f"\nFilename request string:\n{self.make_file_query_str()}"
@@ -310,15 +309,15 @@ class EbasFileIndex:
             :func:`make_query_str` using argument ``what``)
 
         """
-        if isinstance(request, EbasSQLRequest):
+        if isinstance(request, str):
+            sql_str = request
+        elif isinstance(request, EbasSQLRequest):
             if not file_request:
                 sql_str = request.make_query_str()
             else:
                 sql_str = request.make_file_query_str()
         else:
-            sql_str = request
-
-        print(sql_str)
+            raise ValueError(f"Unsupported request type {type(request)}")
 
         with sqlite3.connect(self.database) as con:
             cur = con.cursor()
