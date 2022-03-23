@@ -1391,7 +1391,7 @@ def _get_RMSU(mean: float, std: float, species: str) -> Tuple[float, float, floa
     RV = species_values[species]["RV"]
     alpha = species_values[species]["alpha"]
 
-    in_sqrt = (1 - alpha ** 2) * (mean ** 2 + std ** 2) + alpha ** 2 * RV ** 2
+    in_sqrt = (1 - alpha**2) * (mean**2 + std**2) + alpha**2 * RV**2
 
     return UrRV * sqrt(in_sqrt), UrRV, RV, alpha
 
@@ -1404,7 +1404,12 @@ def _get_fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
 
 
 def _get_crms(mod_std: float, obs_std: float, R: float) -> float:
-    return sqrt(mod_std ** 2 + obs_std ** 2 - 2 * mod_std * obs_std * R)
+    return sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
+
+
+def _get_mqi(rms: float, rmsu: float) -> float:
+    """MQI with beta = 1. Can divide by chosen beta."""
+    return rms / rmsu
 
 
 def _process_fairmode(obs_var, stats):
@@ -1425,6 +1430,7 @@ def _process_fairmode(obs_var, stats):
     crms = _get_crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
     sign = _get_fairmode_sign(mod_std, obs_std, R)
     rmsu, UrRV, RV, alpha = _get_RMSU(mean, obs_std, obs_var)
+    mqi = _get_mqi(rms, rmsu)
 
     fairmode_stats["RMSU"] = rmsu
     fairmode_stats["sign"] = sign
@@ -1434,5 +1440,6 @@ def _process_fairmode(obs_var, stats):
     fairmode_stats["alpha"] = alpha
     fairmode_stats["UrRV"] = UrRV
     fairmode_stats["RV"] = RV
+    fairmode_stats["MQI"] = mqi
 
     return fairmode_stats

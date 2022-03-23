@@ -13,6 +13,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _init_data_default_frequencies,
     _make_trends,
     _process_statistics_timeseries,
+    _process_fairmode,
     get_heatmap_filename,
     get_json_mapname,
     get_stationfile_name,
@@ -204,3 +205,28 @@ def test__make_trends_error(
     with pytest.raises(exception) as e:
         _make_trends(obs_val, mod_val, time, freq, season, 2010, 2015, min_yrs)
     assert str(e.value) == error
+
+
+@pytest.mark.parametrize(
+    "obs_var,stats",
+    [
+        pytest.param(
+            "concno2",
+            {"refdata_mean": 0, "refdata_std": 1, "data_std": 1, "R": 1, "mb": 0, "rms": 0},
+        )
+    ],
+)
+def test__process_fairmode(obs_var, stats):
+
+    processed_fairmode_example = _process_fairmode(obs_var, stats)
+    assert processed_fairmode_example == {
+        "RMSU": 9.602879568129552,
+        "sign": 1,
+        "crms": 0.0,
+        "bias": 0,
+        "rms": 0,
+        "alpha": 0.2,
+        "UrRV": 0.24,
+        "RV": 200,
+        "MQI": 0.0,
+    }
