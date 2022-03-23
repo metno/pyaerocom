@@ -40,18 +40,18 @@ HA_TO_SQM = 10000  # hectar to square metre.
 UCONV_MUL_FACS = pd.DataFrame(
     [
         # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
-        ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
-        ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
-        ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
+        # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
+        # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
+        # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
         ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
         ["concbc", "ug C/m3", "ug m-3", 1.0],
         ["concoa", "ug C/m3", "ug m-3", 1.0],
         ["concoc", "ug C/m3", "ug m-3", 1.0],
         ["conctc", "ug C/m3", "ug m-3", 1.0],
         ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
-        ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
+        # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
         ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
-        ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
+        # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
         ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
         ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
     ],
@@ -276,10 +276,10 @@ def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
         return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:
         if (
-            ts_type is not None
-            and var_name is not None
-            and get_variable(var_name).is_rate
-            and rate_unit_implicit(from_unit)
+                ts_type is not None
+                and var_name is not None
+                and get_variable(var_name).is_rate
+                and rate_unit_implicit(from_unit)
         ):
             freq_si = TsType(ts_type).to_si()
             from_unit = f"{from_unit} {freq_si}-1"
