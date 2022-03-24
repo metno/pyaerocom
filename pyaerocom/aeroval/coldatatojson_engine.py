@@ -10,7 +10,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
-    _process_fairmode,
     _process_heatmap_data,
     _process_map_and_scat,
     _process_regional_timeseries,

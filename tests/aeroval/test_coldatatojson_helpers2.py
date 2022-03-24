@@ -13,7 +13,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _init_data_default_frequencies,
     _make_trends,
     _process_statistics_timeseries,
-    _process_fairmode,
     get_heatmap_filename,
     get_json_mapname,
     get_stationfile_name,
@@ -205,37 +204,3 @@ def test__make_trends_error(
     with pytest.raises(exception) as e:
         _make_trends(obs_val, mod_val, time, freq, season, 2010, 2015, min_yrs)
     assert str(e.value) == error
-
-
-@pytest.mark.parametrize(
-    "obs_var,stats,n_stats",
-    [
-        (
-            "concno2",
-            {
-                "refdata_mean": 0,
-                "refdata_std": 1,
-                "data_std": 1,
-                "R": 1,
-                "mb": 0,
-                "rms": 0,
-            },  # dummy values
-            9,  # "RMSE", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"
-        ),
-        (
-            "not_a_variable",
-            {"refdata_mean": 0, "refdata_std": 1, "data_std": 1, "R": 1, "mb": 0, "rms": 0},
-            0,  # if observed variable is not a species then check return an empty dict
-        ),
-    ],
-)
-def test__process_fairmode(obs_var, stats, n_stats):
-    # Create a list with all the statistics returned by _process_fairmode(). If adding statistics there, will need to add here.
-    valid_stats = ["RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"]
-    processed_fairmode_example = _process_fairmode(obs_var, stats)
-    # Check that the length of the returned dict has length all the fairmode stats keys if obs_var is a legitmate species, or returns an empty dict
-    assert len(processed_fairmode_example) == n_stats
-    # If expected number of statistics is the same as the valid_stats
-    if n_stats == len(valid_stats):
-        # Check that all keys in dict returned by _process_fairmode are in valid_stats.
-        assert all(key in processed_fairmode_example for key in valid_stats)
