@@ -231,11 +231,11 @@ def test__make_trends_error(
 )
 def test__process_fairmode(obs_var, stats, n_stats):
     # Create a list with all the statistics returned by _process_fairmode(). If adding statistics there, will need to add here.
-    valid_stats = ["RMSE", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"]
+    valid_stats = ["RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"]
     processed_fairmode_example = _process_fairmode(obs_var, stats)
     # Check that the length of the returned dict has length all the fairmode stats keys if obs_var is a legitmate species, or returns an empty dict
     assert len(processed_fairmode_example) == n_stats
     # If expected number of statistics is the same as the valid_stats
     if n_stats == len(valid_stats):
         # Check that all keys in dict returned by _process_fairmode are in valid_stats.
-        assert (key in processed_fairmode_example for key in valid_stats)
+        assert all(key in processed_fairmode_example for key in valid_stats)
