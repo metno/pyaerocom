@@ -24,7 +24,7 @@ from pyaerocom.aeroval.compute_fairmode_stats import compute_fairmode_stats
         ),
     ],
 )
-def test_fairmode_stats(obs_var: str, stats: dict, n_stats: int, beta: float = 1):
+def test_fairmode_stats(obs_var: str, stats: dict, n_stats: int):
     # Create a list with all the statistics returned by fairmode_stats(). If adding statistics there, will need to add here.
     valid_stats = ["RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"]
     fairmode_stats_for_testing = compute_fairmode_stats(obs_var, stats)
