@@ -818,7 +818,8 @@ def _combine_regional_trends(
     result["y_min"] = _combine_statistic(trends, "y_min", np.nanmin)
     result["y_max"] = _combine_statistic(trends, "y_max", np.nanmax)
 
-    result["pval"] = _fishers_pval(trends)
+    # result["pval"] = _fishers_pval(trends)
+    result["pval"] = _harmonic_mean_pval(trends)
 
     result["m"] = _combine_statistic(trends, "m", avg_func)
     result["m_err"] = _get_trend_error(trends, "m")
@@ -856,6 +857,25 @@ def _fishers_pval(trends: list) -> float:
     pvals = np.array([i["pval"] for i in trends])
     x = -2.0 * np.nansum(np.log(pvals))
     return float(1 - x)
+
+
+def _harmonic_mean_pval(trends: list, weights: np.ndarray | None = None) -> float:
+    """
+    Alternative way of combining pvals
+    """
+    pvals = np.array([i["pval"] for i in trends])
+    L = len(pvals)
+    if weights is not None and len(weights) != L:
+        raise ValueError(
+            f"Weights must be the same length as the number of pvals: {len(weights)} != {L}"
+        )
+
+    if weights is None:
+        weights = np.array([1.0 / L for i in range(L)])
+
+    har_mean = np.sum(weights) / np.sum(weights / pvals)
+
+    return har_mean
 
 
 def process_trends(
