@@ -132,6 +132,7 @@ All ungridded reading routines are based on this template class.
 
 AERONET
 ^^^^^^^^
+`Aerosol Robotic Network (AERONET) <https://aeronet.gsfc.nasa.gov/>`_
 
 AERONET base class
 """"""""""""""""""
@@ -172,6 +173,7 @@ AERONET Inversion (V3)
 
 EARLINET
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`European Aerosol Research Lidar Network (EARLINET) <https://www.earlinet.org/index.php?id=earlinet_homepage>`_
 
 .. automodule:: pyaerocom.io.read_earlinet
    :members:
@@ -181,6 +183,8 @@ EARLINET
 
 EBAS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_.
 
 .. automodule:: pyaerocom.io.read_ebas
    :members:
@@ -209,7 +213,7 @@ EEA data
 EEA base reader
 """""""""""""""
 
-Reader for European air pollution data.
+Reader for European air pollution data from `EEA AqERep files <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`_.
 
 .. automodule:: pyaerocom.io.read_eea_aqerep_base
    :members:
@@ -236,7 +240,7 @@ Quality controlled EEA data.
 AirNow data
 ^^^^^^^^^^^
 
-Reader for air quality measurements from North America
+Reader for `air quality measurements from North America. <https://www.airnow.gov/about-the-data/>`_
 
 .. automodule:: pyaerocom.io.read_airnow
    :members:
@@ -245,13 +249,14 @@ Reader for air quality measurements from North America
 MarcoPolo data
 ^^^^^^^^^^^^^^
 
-Reader for air quality measurements from China.
+Reader for air quality measurements for China from the `EU-FP7 project MarcoPolo <https://www.knmi.nl/kennis-en-datacentrum/project/marcopolo>`_.
 
 .. automodule:: pyaerocom.io.read_marcopolo
    :members:
    :undoc-members:
 GHOST
 ^^^^^
+GHOST (Globally Harmonised Observational Surface Treatment) project developed at the Earth Sciences Department of the Barcelona Supercomputing Center (see e.g., `Petetin et al., 2020 <https://acp.copernicus.org/articles/20/11119/2020/acp-20-11119-2020.html>`_ for more information).
 
 .. automodule:: pyaerocom.io.read_ghost
    :members:
