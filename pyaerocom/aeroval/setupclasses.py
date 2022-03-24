@@ -162,6 +162,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.trends_min_yrs = 7
         self.use_diurnal = True
         self.stats_tseries_base_freq = None
+        self.forecast_evaluation = False
         self.update(**kwargs)
 
 

@@ -63,6 +63,7 @@ GLOBAL_CONFIG = dict(
     regions_how="country",
     annual_stats_constrained=False,
     weighted_stats=False,
+    forecast_evaluation=True,
     # This is just the order at which the different species will be shown in the web interface
     # Species that are not evaluated can still be in this list. The web interface will not show them if they are not evaluated
     var_order_menu=[
