@@ -208,25 +208,29 @@ def test__make_trends_error(
 
 
 @pytest.mark.parametrize(
-    "obs_var,stats",
+    "obs_var,stats,n_stats",
     [
-        pytest.param(
+        (
             "concno2",
+            {
+                "refdata_mean": 0,
+                "refdata_std": 1,
+                "data_std": 1,
+                "R": 1,
+                "mb": 0,
+                "rms": 0,
+            },  # dummy values
+            9,  # "RMSE", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"
+        ),
+        (
+            "not_a_variable",
             {"refdata_mean": 0, "refdata_std": 1, "data_std": 1, "R": 1, "mb": 0, "rms": 0},
-        )
+            0,  # if observed variable is not a species then check return an empty dict
+        ),
     ],
 )
-def test__process_fairmode(obs_var, stats):
-
+def test__process_fairmode(obs_var, stats, n_stats):
     processed_fairmode_example = _process_fairmode(obs_var, stats)
-    assert processed_fairmode_example == {
-        "RMSU": 9.602879568129552,
-        "sign": 1,
-        "crms": 0.0,
-        "bias": 0,
-        "rms": 0,
-        "alpha": 0.2,
-        "UrRV": 0.24,
-        "RV": 200,
-        "MQI": 0.0,
-    }
+    assert (
+        len(processed_fairmode_example) == n_stats
+    )  # Check that the length of the returned dict has length all the fiarmode stats keys if obs_var is a legitmate species, or returns an empty dict

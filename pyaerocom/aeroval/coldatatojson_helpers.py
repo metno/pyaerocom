@@ -1407,12 +1407,12 @@ def _get_crms(mod_std: float, obs_std: float, R: float) -> float:
     return sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
 
 
-def _get_mqi(rms: float, rmsu: float) -> float:
-    """MQI with beta = 1. Can divide by chosen beta."""
+def _get_beta_mqi(rms: float, rmsu: float) -> float:
+    """Beta*MQI. Divide by chosen Beta to get MQI."""
     return rms / rmsu
 
 
-def _process_fairmode(obs_var, stats):
+def _process_fairmode(obs_var: str, stats: dict) -> dict:
     species_list = ["concno2", "vmro3", "concpm10", "concpm25"]
 
     fairmode_stats = dict()
@@ -1430,7 +1430,7 @@ def _process_fairmode(obs_var, stats):
     crms = _get_crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
     sign = _get_fairmode_sign(mod_std, obs_std, R)
     rmsu, UrRV, RV, alpha = _get_RMSU(mean, obs_std, obs_var)
-    mqi = _get_mqi(rms, rmsu)
+    beta_mqi = _get_beta_mqi(rms, rmsu)
 
     fairmode_stats["RMSU"] = rmsu
     fairmode_stats["sign"] = sign
@@ -1440,6 +1440,6 @@ def _process_fairmode(obs_var, stats):
     fairmode_stats["alpha"] = alpha
     fairmode_stats["UrRV"] = UrRV
     fairmode_stats["RV"] = RV
-    fairmode_stats["MQI"] = mqi
+    fairmode_stats["beta_mqi"] = beta_mqi
 
     return fairmode_stats
