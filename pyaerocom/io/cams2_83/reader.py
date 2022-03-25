@@ -28,7 +28,7 @@ This might have to be componsated for, with the filepath being for 3 days before
 CAMS2_83_vars = dict(
     concco="co_conc",
     concno2="no2_conc",
-    conco3="o3_conc",
+    vmro3="o3_conc",
     concpm10="pm10_conc",
     concpm25="pm2p5_conc",
     concso2="so2_conc",

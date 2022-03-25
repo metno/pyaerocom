@@ -39,7 +39,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             obs_var = model_var = "UNDEFINED"
 
         # mcfg = self.cfg.model_cfg.get_entry("-".join(model_name.split("-")[:-1]))
-        mcfg = self.cfg.model_cfg.get_entry(model)
+        mcfg = self.cfg.model_cfg.get_entry(model.name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
         hourrange = list(range(24 * 4))
