@@ -76,16 +76,15 @@ class CAMS2_83_Engine(ProcessingEngine):
         filename = os.path.join(out_dirs["conf"], name)
 
         results = {"WORLD": {"2021-2022-all": stats_list}}
-        _add_entry_json(filename, results, obs_name, var_name_web, vert_code, model, model_var)
-        # write_json(stats_list, filename, ignore_nan=True)
+        _add_entry_json(
+            filename, results, obs_name, var_name_web, vert_code, model.name, model_var
+        )
 
     def _get_median_stats_point(self, data, use_weights) -> dict:
 
         stats_list: dict[str, list[float]] = {
             "rms": [],
             "R": [],
-            # "R_spearman": [],
-            # "R_kendall": [],
             "nmb": [],
             "mnmb": [],
             "fge": [],
