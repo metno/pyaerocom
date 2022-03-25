@@ -171,7 +171,14 @@ OBS_CONFIG = {}
 OBS_CONFIG["EEA"] = dict(
     # obs_id="EEAAQeRep.v2",
     obs_id="EEAAQeRep.NRT",
-    obs_vars=["concno2"],
+    obs_vars=[
+        "concno2",
+        "concco",
+        "vmro3",
+        "concso2",
+        "concpm10",
+        "concpm25",
+    ],
     web_interface_name="EEA-rural",
     obs_vert_type="Surface",
     # ignore_station_ids=ignore_id_dict, #One station needs to be ignored
