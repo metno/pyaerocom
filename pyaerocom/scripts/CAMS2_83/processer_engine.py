@@ -4,6 +4,7 @@ import logging
 import os
 from pathlib import Path
 from reprlib import repr
+from unittest import result
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +12,7 @@ import pandas as pd
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import write_json
+from pyaerocom.aeroval.coldatatojson_helpers import _add_entry_json, write_json
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,9 @@ class CAMS2_83_Engine(ProcessingEngine):
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         model_name = coldata[0].model_name
-        model = coldata[0].model_name.split("-")[1]
+        model = coldata[0].model_name.split("-")[2]
+        vert_code = coldata[0].get_meta_item("vert_code")
+        obs_name = coldata[0].obs_name
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -35,10 +38,11 @@ class CAMS2_83_Engine(ProcessingEngine):
         else:
             obs_var = model_var = "UNDEFINED"
 
-        mcfg = self.cfg.model_cfg.get_entry("-".join(model_name.split("-")[:-1]))
+        # mcfg = self.cfg.model_cfg.get_entry("-".join(model_name.split("-")[:-1]))
+        mcfg = self.cfg.model_cfg.get_entry(model)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
-        hourrange = list(range(24 * 1))
+        hourrange = list(range(24 * 4))
 
         stats_list: dict[str, list[float]] = {
             "rms": [],
@@ -68,9 +72,12 @@ class CAMS2_83_Engine(ProcessingEngine):
             for key in stats_list.keys():
                 stats_list[key].append(stats[key])
 
-        name = f"cams2-83_{model_name}-{model_var}.json"
+        name = "day0.json"  # f"cams2-83_{model_name}-{model_var}.json"
         filename = os.path.join(out_dirs["conf"], name)
-        write_json(stats_list, filename, ignore_nan=True)
+
+        results = {"WORLD": {"2021-2022-all": stats_list}}
+        _add_entry_json(filename, results, obs_name, var_name_web, vert_code, model, model_var)
+        # write_json(stats_list, filename, ignore_nan=True)
 
     def _get_median_stats_point(self, data, use_weights) -> dict:
 

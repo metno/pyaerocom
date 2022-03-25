@@ -131,11 +131,11 @@ def runner(
     ana_cams2_83 = CAMS2_83_Processer(stp)
     ana = ExperimentProcessor(stp)
 
-    logger.info(f"Running CAMS2_83 Spesific Statistics")
-    ana_cams2_83.run()
-
     logger.info(f"Running Rest of Statistics")
     ana.run()
+
+    logger.info(f"Running CAMS2_83 Spesific Statistics")
+    ana_cams2_83.run()
 
 
 @app.command()
