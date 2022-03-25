@@ -1,12 +1,21 @@
 """
 Functions for computing the FAIRMODE statistics
+
+FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together air quality modelers and users.
+    - Promote and Support the use of models by EU Member States
+    - Emphasis is on model application for air quality policy (monitoring, regulation, etc.)
+    - Develop harmonized set of tools to test whether or a not a model is fit for a given purpose
+    - CAMS has to make use of FAIRMODE diagrams
+
+This module contains methods to cmpute the relevant FAIRMODE statistics.
 """
 
 from math import sqrt, isclose
 from typing import Tuple
 
 
-def _get_RMSU(mean: float, std: float, species: str) -> Tuple[float, float, float, float]:
+def _RMSU(mean: float, std: float, species: str) -> Tuple[float, float, float, float]:
+    """RMSU is the Root Mean Squared Uncertainity associated with the uncertainity of the observations, U(O_i)."""
     species_values = dict(
         concno2=dict(
             UrRV=0.24,
@@ -30,8 +39,8 @@ def _get_RMSU(mean: float, std: float, species: str) -> Tuple[float, float, floa
         ),
     )
 
-    if species not in species_values.keys():
-        raise KeyError(f"Species {species} not in list {species_values.keys()}")
+    if species not in species_values:
+        raise ValueError(f"Unsupported {species=}")
 
     UrRV = species_values[species]["UrRV"]
     RV = species_values[species]["RV"]
@@ -42,18 +51,19 @@ def _get_RMSU(mean: float, std: float, species: str) -> Tuple[float, float, floa
     return UrRV * sqrt(in_sqrt), UrRV, RV, alpha
 
 
-def _get_fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
+def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
     if obs_std * sqrt(2 * (1 - R)) == 0:
         return 1
     a = abs(mod_std - obs_std) / (obs_std * sqrt(2 * (1 - R)))
     return 1 if a >= 1 else -1
 
 
-def _get_crms(mod_std: float, obs_std: float, R: float) -> float:
+def _crms(mod_std: float, obs_std: float, R: float) -> float:
+    """Returns the Centered Root Mean Squared Error"""
     return sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
 
 
-def _get_beta_mqi(rms: float, rmsu: float) -> float:
+def _beta_mqi(rms: float, rmsu: float) -> float:
     """Returns Beta*MQI. Divide by chosen Beta to get MQI."""
     return rms / rmsu
 
@@ -73,10 +83,10 @@ def compute_fairmode_stats(obs_var: str, stats: dict) -> dict:
     bias = stats["mb"]
     rms = stats["rms"]
 
-    crms = _get_crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
-    sign = _get_fairmode_sign(mod_std, obs_std, R)
-    rmsu, UrRV, RV, alpha = _get_RMSU(mean, obs_std, obs_var)
-    beta_mqi = _get_beta_mqi(rms, rmsu)
+    crms = _crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
+    sign = _fairmode_sign(mod_std, obs_std, R)
+    rmsu, UrRV, RV, alpha = _RMSU(mean, obs_std, obs_var)
+    beta_mqi = _beta_mqi(rms, rmsu)
 
     # Check that fairmode staistics are computed as expected by checking MQI (Model Quality Indicator) for beta = 1
     assert isclose(
