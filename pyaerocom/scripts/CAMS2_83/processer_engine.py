@@ -13,6 +13,7 @@ import pandas as pd
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import _add_entry_json, write_json
+from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,7 @@ class CAMS2_83_Engine(ProcessingEngine):
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
-        model_name = coldata[0].model_name
-        model = coldata[0].model_name.split("-")[2]
+        model = ModelName[coldata[0].model_name.split("-")[2]]
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
 

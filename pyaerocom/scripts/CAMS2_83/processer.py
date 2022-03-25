@@ -18,7 +18,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             files_to_convert = []
             for leap in range(4):
                 model_id = f"CAMS2-83.{model}.day{leap}"
-                model_name = f"CAMS2-83-{model.lower()}-day{leap}"
+                model_name = f"CAMS2-83-{model}-day{leap}"
                 col.model_id = model_id
                 col.model_name = model_name
                 col.run(var_list)

@@ -257,7 +257,8 @@ class ReadCAMS2_83:
             raise ValueError(f"The day {words[2]} needs to be on the format 'day[0-3]'")
         dateshift = int(re.search(r"day(\d)", words[2]).group(1))
 
-        self.model = str(model.casefold())
+        # self.model = str(model.casefold())
+        self.model = ModelName[model]
         self.date = dateshift
 
     def _load_var(self, var_name_aerocom: str, ts_type: str) -> xr.DataArray:
@@ -336,7 +337,12 @@ class ReadCAMS2_83:
         select_date = forecast_date + timedelta(days=self.date)
 
         dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
-        ds = ds.sel(time=dateselect)
+        try:
+            ds = ds.sel(time=dateselect)
+        except:
+            ds = ds.interp(time=dateselect)
+            ds = ds.sel(time=dateselect)
+
         ds = ds.sel(level=0.0)
         ds.time.attrs["long_name"] = "time"
         ds.time.attrs["standard_name"] = "time"
