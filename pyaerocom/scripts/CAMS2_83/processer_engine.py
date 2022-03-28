@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from pathlib import Path
 from reprlib import repr
+from typing import Tuple
 from unittest import result
 
 import matplotlib.pyplot as plt
@@ -19,15 +21,21 @@ logger = logging.getLogger(__name__)
 
 
 class CAMS2_83_Engine(ProcessingEngine):
-    def run(self, files: list[list[str | Path]]) -> None:  # type:ignore[override]
+    def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
-        print()
         coldata = [ColocatedData(file) for file in files]
-        self.process_coldata(coldata)
+        coldata, found_vars = self._sort_coldata(coldata)
+        if var_list is None:
+            var_list = list(found_vars)
+        for var in var_list:
+            logger.info(f"Processing Component: {var}")
+            self.process_coldata(coldata[var])
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+        forecast_days = self.cfg.statistics_opts.forecast_days
+
         model = ModelName[coldata[0].model_name.split("-")[2]]
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
@@ -42,7 +50,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         mcfg = self.cfg.model_cfg.get_entry(model.name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
-        hourrange = list(range(24 * 4))
+        hourrange = list(range(24 * forecast_days))
 
         stats_list: dict[str, list[float]] = {
             "rms": [],
@@ -104,3 +112,27 @@ class CAMS2_83_Engine(ProcessingEngine):
             median_stats[key] = np.nanmedian(np.array(stats_list[key]))
 
         return median_stats
+
+    def _sort_coldata(
+        self, coldata: list[ColocatedData]
+    ) -> Tuple[dict[str, list[ColocatedData]], set[str]]:
+        col_dict = dict()
+        var_list = []
+
+        for col in coldata:
+            obs_var = col.metadata["var_name_input"][0]
+
+            if obs_var in col_dict:
+                col_dict[obs_var].append(col)
+            else:
+                col_dict[obs_var] = [col]
+                var_list.append(obs_var)
+
+        for var, cols in col_dict.items():
+            l = sorted(cols, key=lambda x: self._get_day(x.model_name))
+            col_dict[var] = l
+
+        return col_dict, set(var_list)
+
+    def _get_day(self, model_name: str) -> int:
+        return int(re.search(".*day([0-3]).*", model_name).group(1))
