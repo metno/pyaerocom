@@ -11,13 +11,12 @@ import tempfile
 import cf_units
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -81,15 +80,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
     #: file masks for the data files
     FILE_MASKS = {}
-    FILE_MASKS["concso2"] = "**/*_1_*_timeseries.csv*"
-    FILE_MASKS["concpm10"] = "**/*_5_*_timeseries.csv*"
-    FILE_MASKS["conco3"] = "**/*_7_*_timeseries.csv*"
-    FILE_MASKS["vmro3"] = "**/*_7_*_timeseries.csv*"
-    FILE_MASKS["concno2"] = "**/*_8_*_timeseries.csv*"
-    FILE_MASKS["vmrno2"] = "**/*_8_*_timeseries.csv*"
-    FILE_MASKS["concco"] = "**/*_10_*_timeseries.csv*"
-    FILE_MASKS["concno"] = "**/*_38_*_timeseries.csv*"
-    FILE_MASKS["concpm25"] = "**/*_6001_*_timeseries.csv*"
+    FILE_MASKS["concso2"] = "**/??_1_*_timeseries.csv*"
+    FILE_MASKS["concpm10"] = "**/??_5_*_timeseries.csv*"
+    FILE_MASKS["conco3"] = "**/??_7_*_timeseries.csv*"
+    FILE_MASKS["vmro3"] = "**/??_7_*_timeseries.csv*"
+    FILE_MASKS["concno2"] = "**/??_8_*_timeseries.csv*"
+    FILE_MASKS["vmrno2"] = "**/??_8_*_timeseries.csv*"
+    FILE_MASKS["concco"] = "**/??_10_*_timeseries.csv*"
+    FILE_MASKS["concno"] = "**/??_38_*_timeseries.csv*"
+    FILE_MASKS["concpm25"] = "**/??_6001_*_timeseries.csv*"
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
@@ -317,7 +316,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if var_name in self.AUX_REQUIRES:
             unit_in_file = self.CONV_UNIT[var_name]
             data_dict[self.VAR_NAMES_FILE[var_name]] = (
-                data_dict[self.VAR_NAMES_FILE[var_name]] * self.CONV_FACTOR[var_name]
+                    data_dict[self.VAR_NAMES_FILE[var_name]] * self.CONV_FACTOR[var_name]
             )
         try:
             unit = self.VAR_UNITS_FILE[unit_in_file]
@@ -473,7 +472,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         import os
 
         from pyaerocom._lowlevel_helpers import list_to_shortstr
-        from pyaerocom.exceptions import DataSourceError
 
         if pattern is None:
             logger.warning("using default pattern *.* for file search")
@@ -508,7 +506,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         return ret_data
 
     def read(
-        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
+            self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
