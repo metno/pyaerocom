@@ -10,7 +10,7 @@ FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together a
 This module contains methods to cmpute the relevant FAIRMODE statistics.
 """
 
-from math import sqrt, isclose
+from math import isclose, sqrt
 from typing import Tuple
 
 

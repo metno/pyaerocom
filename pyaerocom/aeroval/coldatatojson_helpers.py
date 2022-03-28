@@ -11,8 +11,8 @@ import xarray as xr
 
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings import ignore_warnings
-from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.aeroval.compute_fairmode_stats import compute_fairmode_stats
+from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     AeroValConfigError,

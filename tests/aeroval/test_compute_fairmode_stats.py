@@ -1,4 +1,5 @@
 import pytest
+
 from pyaerocom.aeroval.compute_fairmode_stats import compute_fairmode_stats
 
 
