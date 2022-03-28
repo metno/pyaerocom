@@ -12,6 +12,7 @@ from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
     compute_ac550dryaer,
     compute_ang4470dryaer_from_dry_scat,
+    compute_ratpm10pm25,
     compute_sc440dryaer,
     compute_sc550dryaer,
     compute_sc700dryaer,
@@ -199,6 +200,7 @@ class ReadEbas(ReadUngriddedBase):
     CACHE_SQLITE_FILE = [const.EBAS_MULTICOLUMN_NAME]
 
     TS_TYPE = "undefined"
+    RATPM10PM25_NAME = "ratpm10pm25"
 
     MERGE_STATIONS = {
         "Birkenes": "Birkenes II",
@@ -231,6 +233,7 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxs": ["concprcpoxs", "pr"],
         "wetoxn": ["concprcpoxn", "pr"],
         "wetrdn": ["concprcprdn", "pr"],
+        RATPM10PM25_NAME: ["concpm10", "concpm25"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -250,6 +253,7 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxs": compute_wetoxs_from_concprcpoxs,
         "wetoxn": compute_wetoxn_from_concprcpoxn,
         "wetrdn": compute_wetrdn_from_concprcprdn,
+        RATPM10PM25_NAME: compute_ratpm10pm25,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid
