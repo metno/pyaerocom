@@ -11,12 +11,13 @@ import tempfile
 import cf_units
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -316,7 +317,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if var_name in self.AUX_REQUIRES:
             unit_in_file = self.CONV_UNIT[var_name]
             data_dict[self.VAR_NAMES_FILE[var_name]] = (
-                    data_dict[self.VAR_NAMES_FILE[var_name]] * self.CONV_FACTOR[var_name]
+                data_dict[self.VAR_NAMES_FILE[var_name]] * self.CONV_FACTOR[var_name]
             )
         try:
             unit = self.VAR_UNITS_FILE[unit_in_file]
@@ -506,7 +507,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         return ret_data
 
     def read(
-            self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
+        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
