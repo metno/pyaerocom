@@ -36,14 +36,14 @@ logger = logging.getLogger(__name__)
 def make_period(
     start_date: datetime,
     end_date: datetime,
-) -> str:
+) -> List[str]:
     start_yr = start_date.year
     end_yr = end_date.year
 
     if start_yr == end_yr:
-        return f"{start_yr}"
+        return [f"{start_yr}"]
 
-    return f"{start_yr}-{end_yr}"
+    return [f"{start_yr}-{end_yr}", f"{start_yr}", f"{end_yr}"]
 
 
 def make_model_entry(
@@ -96,7 +96,7 @@ def make_config(
             )
             for model in models
         },
-        periods=[make_period(start_date, end_date)],
+        periods=make_period(start_date, end_date),
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
@@ -123,8 +123,8 @@ def runner(
     if cache is not None:
         const.CACHEDIR = cache
 
-    # if quiet:
-    #     const.QUIET = True
+    if quiet:
+        const.QUIET = True
 
     stp = EvalSetup(**cfg)
 

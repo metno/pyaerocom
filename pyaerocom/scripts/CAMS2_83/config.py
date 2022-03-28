@@ -133,13 +133,12 @@ ignore_id_dict = dict(
     vmro3="RS0005*",
     concNnh4="EE0009*",
     concso4="EE0009*",
+    concco=["BETN*"],
 )
 
 BASE_FILTER = {
     "latitude": [30, 82],
     "longitude": [-30, 90],
-    "station_id": ["NO0042*"],
-    "negate": "station_id",
 }
 
 EEA_RURAL_FILTER = {
@@ -164,6 +163,29 @@ EEA_FILTER = {
     "altitude": [-20, 1000],
 }
 
+species_list = [
+    "concno2",
+    # "concco",
+    "conco3",
+    "concso2",
+    "concpm10",
+    "concpm25",
+]
+
+
+get_ignore_list = (
+    lambda species: ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
+)
+
+obs_filters = {
+    key: dict(
+        **EEA_FILTER,
+        station_id=get_ignore_list(key),
+        negate="station_id",
+    )
+    for key in species_list
+}
+
 # Empty observation config
 OBS_CONFIG = {}
 
@@ -171,18 +193,10 @@ OBS_CONFIG = {}
 OBS_CONFIG["EEA"] = dict(
     # obs_id="EEAAQeRep.v2",
     obs_id="EEAAQeRep.NRT",
-    obs_vars=[
-        "concno2",
-        "concco",
-        "vmro3",
-        "concso2",
-        "concpm10",
-        "concpm25",
-    ],
+    obs_vars=species_list,
     web_interface_name="EEA-rural",
     obs_vert_type="Surface",
-    # ignore_station_ids=ignore_id_dict, #One station needs to be ignored
-    obs_filters=EEA_FILTER,
+    obs_filters=obs_filters,
 )
 
 ##################################################
