@@ -50,9 +50,9 @@ def _crms(mod_std: float, obs_std: float, R: float) -> float:
     return sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
 
 
-def _beta_mqi(rms: float, rmsu: float) -> float:
-    """Returns Beta*MQI. Divide by chosen Beta to get MQI."""
-    return rms / rmsu
+def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
+    """Model Quality Indicator (MQI). Pass beta=1 for `beta MQI`"""
+    return rms / (rmsu * beta)
 
 
 def fairmode_stats(obs_var: str, stats: dict) -> dict:
@@ -69,7 +69,7 @@ def fairmode_stats(obs_var: str, stats: dict) -> dict:
     crms = _crms(mod_std, obs_std, R)  # sqrt(rms ** 2 - bias ** 2)
     sign = _fairmode_sign(mod_std, obs_std, R)
     rmsu = _RMSU(mean, obs_std, obs_var)
-    beta_mqi = _beta_mqi(rms, rmsu)
+    beta_mqi = _mqi(rms, rmsu, beta=1)
 
     # Check that fairmode staistics are computed as expected by checking MQI (Model Quality Indicator) for beta = 1
     assert isclose(
