@@ -1,38 +1,31 @@
 from pathlib import Path
 
 import pytest
-from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+
+# although the following is not explicitly referenced, it registers the
+# Subset data ids used for testing.
+import tests.conftest
+
+from pyaerocom.io import ReadUngridded
 
 from ..conftest import data_unavail
 
 TMPFILE = "#AT_5_48900_2019_timeseries.csv#"
-
+DATA_ID = "EEA_AQeRep.v2.Subset"
 
 @data_unavail
 @pytest.fixture(scope="module")
 def reader():
-    # not sure if we really use this
-    # limit the data read for testing so that this test also works
-    # with the full dataset
-    ReadEEAAQEREP_V2.FILE_MASKS["concso2"] = "**/??_1_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["concpm10"] = "**/??_5_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["conco3"] = "**/??_7_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["vmro3"] = "**/??_7_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["concno2"] = "**/??_8_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["concno2"] = "**/??_8_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["concco"] = "**/??_10_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["concno"] = "**/??_38_*_2019_timeseries.csv*"
-    ReadEEAAQEREP_V2.FILE_MASKS["concpm25"] = "**/??_6001_*_2019_timeseries.csv*"
-
-    return ReadEEAAQEREP_V2("EEA_AQeRep.v2.Subset")
+    return ReadUngridded(DATA_ID)
 
 
 @data_unavail
-@pytest.fixture(scope="module")
-def add_additional_file(reader):
-    # temporarily add a emacs bakup file to the test data set
+def test_add_additional_file(reader):
+    # temporarily add a emacs backup file to the test data set
     # to make sure these do not disturb the reading
-    touchfile = Path.joinpath(reader.data_dir, TMPFILE)
+    # reader = ReadUngridded(DATA_ID)
+    lowlevel_reader = reader.get_lowlevel_reader(DATA_ID)
+    touchfile = Path.joinpath(Path(lowlevel_reader.data_dir), Path(TMPFILE))
     Path.touch(touchfile)
     assert Path.exists(touchfile) == True
     return touchfile
@@ -43,7 +36,8 @@ def test_get_file_list(reader):
     # at this point that is the base directory without recursive search
     # so this returns only Revision.txt and metadata.csv
     # don't be too restrictive since we might have additional files in the subdirectory
-    assert len(reader.get_file_list()) >= 2
+    lowlevel_reader = reader.get_lowlevel_reader(DATA_ID)
+    assert len(lowlevel_reader.get_file_list()) >= 2
 
 
 @data_unavail
@@ -57,14 +51,13 @@ def test_read(reader):
     station_id = {}
     # respective mean for a station; index has to be the same as station_id
     station_means = {}
-    # from file AT/AT_5_48881_2019_timeseries.csv.gz and AT/AT_5_48900_2019_timeseries.csv
-    # station_id["concpm10"] = ["AT10002", "AT52000"]
-    station_id["concpm10"] = ["AT10002", "AT52000"]
-    station_means["concpm10"] = [17.128, 15.113]
+    # list of tested variables will be extended
+    var_name = "concpm10"
+    station_id[var_name] = ["AT10002", "AT52000"]
+    station_means[var_name] = [17.128, 15.1]
 
     var_names_to_test = station_id.keys()
     for var_name in var_names_to_test:
-        # r = reader()
         data = None
         data = reader.read(vars_to_retrieve=[var_name])
         assert isinstance(data, UngriddedData)
@@ -86,9 +79,12 @@ def test_read(reader):
 
 
 @data_unavail
-def remove_additional_file(reader):
+def test_remove_additional_file(reader):
     # remove temp file
-    touchfile = Path.joinpath(reader.data_dir, TMPFILE)
+    # touchfile = Path.joinpath(reader.data_dir, TMPFILE)
+    reader = ReadUngridded(DATA_ID)
+    lowlevel_reader = reader.get_lowlevel_reader(DATA_ID)
+    touchfile = Path.joinpath(Path(lowlevel_reader.data_dir), Path(TMPFILE))
     assert Path.exists(touchfile) == True
     Path.unlink(touchfile)
     assert Path.exists(touchfile) == False
