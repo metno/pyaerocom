@@ -37,7 +37,9 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
 
 
 def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
-    if obs_std * sqrt(2 * (1 - R)) == 0:
+    assert obs_std >= 0, f"negative {obs_std=}"
+    assert 0 <= R <= 1, f"out of range {R=}"
+    if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
         return 1
     a = abs(mod_std - obs_std) / (obs_std * sqrt(2 * (1 - R)))
     return 1 if a >= 1 else -1
