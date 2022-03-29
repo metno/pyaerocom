@@ -68,7 +68,7 @@ def _beta_mqi(rms: float, rmsu: float) -> float:
     return rms / rmsu
 
 
-def compute_fairmode_stats(obs_var: str, stats: dict) -> dict:
+def fairmode_stats(obs_var: str, stats: dict) -> dict:
     species_list = ["concno2", "vmro3", "concpm10", "concpm25"]
 
     fairmode_stats = dict()

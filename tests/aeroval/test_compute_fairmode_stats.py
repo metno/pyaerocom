@@ -1,6 +1,6 @@
 import pytest
 
-from pyaerocom.aeroval.compute_fairmode_stats import compute_fairmode_stats
+from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 
 
 @pytest.mark.parametrize(
@@ -28,7 +28,7 @@ from pyaerocom.aeroval.compute_fairmode_stats import compute_fairmode_stats
 def test_compute_fairmode_stats(obs_var: str, stats: dict, n_stats: int):
     # Create a set with all the statistics returned by compute_fairmode_stats(). If adding statistics there, will need to add here.
     valid_stats = {"RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"}
-    fairmode_stats_for_testing = compute_fairmode_stats(obs_var, stats)
+    fairmode_stats_for_testing = fairmode_stats(obs_var, stats)
     # Check that the length of the returned dict has length all the fairmode stats keys if obs_var is a legitmate species, or returns an empty dict
     assert len(fairmode_stats_for_testing) == n_stats
     # Check that all keys in dict returned by fairmode_stats() are in valid_stats.
