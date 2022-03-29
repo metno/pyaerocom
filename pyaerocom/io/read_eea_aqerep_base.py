@@ -80,16 +80,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
 
     #: file masks for the data files
-    FILE_MASKS = {}
-    FILE_MASKS["concso2"] = "**/??_1_*_timeseries.csv*"
-    FILE_MASKS["concpm10"] = "**/??_5_*_timeseries.csv*"
-    FILE_MASKS["conco3"] = "**/??_7_*_timeseries.csv*"
-    FILE_MASKS["vmro3"] = "**/??_7_*_timeseries.csv*"
-    FILE_MASKS["concno2"] = "**/??_8_*_timeseries.csv*"
-    FILE_MASKS["vmrno2"] = "**/??_8_*_timeseries.csv*"
-    FILE_MASKS["concco"] = "**/??_10_*_timeseries.csv*"
-    FILE_MASKS["concno"] = "**/??_38_*_timeseries.csv*"
-    FILE_MASKS["concpm25"] = "**/??_6001_*_timeseries.csv*"
+    FILE_MASKS = dict(
+        concso2="**/??_1_*_timeseries.csv*",
+        concpm10="**/??_5_*_timeseries.csv*",
+        conco3="**/??_7_*_timeseries.csv*",
+        vmro3="**/??_7_*_timeseries.csv*",
+        concno2="**/??_8_*_timeseries.csv*",
+        vmrno2="**/??_8_*_timeseries.csv*",
+        concco="**/??_10_*_timeseries.csv*",
+        concno="**/??_38_*_timeseries.csv*",
+        concpm25="**/??_6001_*_timeseries.csv*",
+    )
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
