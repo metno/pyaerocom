@@ -36,11 +36,11 @@ def test_EbasSQLRequest__var2sql_error():
     [
         (
             {},
-            "select distinct filename from variable join station on station.station_code=variable.station_code;",
+            "select distinct filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
         ),
         (
             {"distinct": False},
-            "select filename from variable join station on station.station_code=variable.station_code;",
+            "select filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
         ),
     ],
 )
@@ -131,7 +131,8 @@ def test_EbasFileIndex_ALL_INSTRUMENTS(ebas: EbasFileIndex):
 
 
 def test_EbasFileIndex_get_table_names(ebas: EbasFileIndex):
-    assert ebas.get_table_names() == ["station", "variable"]
+    # assert ebas.get_table_names() == ["station", "variable"]
+    assert ebas.get_table_names() == ["station", "variable", "characteristic"]
 
 
 table_comulns = dict(
@@ -154,6 +155,7 @@ table_comulns = dict(
         "station_altitude",
     ],
     variable=[
+        "var_id",
         "station_code",
         "matrix",
         "comp_name",
@@ -170,6 +172,15 @@ table_comulns = dict(
         "resolution",
         "datalevel",
         "filename",
+        "vnum",
+    ],
+    characteristic=[
+        "var_id",
+        "ct_type",
+        "datatype",
+        "val_int",
+        "val_dbl",
+        "val_chr",
     ],
 )
 
