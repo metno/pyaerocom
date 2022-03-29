@@ -13,6 +13,7 @@ import xarray as xr
 
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings import ignore_warnings
+from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
@@ -846,8 +847,7 @@ def _process_map_and_scat(
 
                         if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
-                            fairmode_stats = _process_fairmode(obs_var, stats)
-                            stats["fairmode"] = fairmode_stats
+                            stats["fairmode"] = fairmode_stats(obs_var, stats)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
