@@ -5,6 +5,9 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterator
 
+import numpy as np
+import pandas as pd
+
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -89,26 +92,28 @@ class ReadCAMS2_83(ReadUngriddedBase):
     @classmethod
     def __reader(cls, vars_to_retrieve: list[str], files: list[str | Path]) -> Iterator[dict]:
         logger.debug(f"reading {cls.DATA_ID} {vars_to_retrieve=} from {files=}")
-        for path in files:
-            data = read_csv(path)
-            for (station, poll), df in data.groupby(["station", "poll"]):
-                if poll not in AEROCOM_NAMES:
-                    logger.warning(f"unknown {cls.DATA_ID} {poll=}")
-                    continue
-                poll = AEROCOM_NAMES[poll]
-                if poll not in vars_to_retrieve:
-                    continue
-                df = df.set_index("time", drop=False)
-                conc = df["conc"]
-                conc.name = poll
-                yield {
-                    "station_id": station,
-                    "station_name": station,
-                    "latitude": df["lon"].iloc[0],
-                    "longitude": df["lat"].iloc[0],
-                    "altitude": df["alt"].iloc[0],
-                    poll: conc,
-                    "var_info": {conc.name: dict(units="ug m-3")},
-                    "data_id": cls.DATA_ID,
-                    "ts_type": cls.TS_TYPE,
-                }
+        data = pd.concat(read_csv(path) for path in files)
+        df: pd.DataFrame
+        for station, df in data.groupby("station"):
+            output = dict(
+                station_id=station,
+                station_name=station,
+                latitude=df["lat"].iloc[0],
+                longitude=df["lon"].iloc[0],
+                altitude=df["alt"].iloc[0],
+                variables=cls.DEFAULT_VARS,
+                var_info=dict.fromkeys(cls.DEFAULT_VARS, dict(units="ug m-3")),
+                data_id=cls.DATA_ID,
+                ts_type=cls.TS_TYPE,
+            )
+            df = df.pivot(index="time", columns="poll", values="conc")
+            missing = {poll for poll in AEROCOM_NAMES if poll not in df}
+            if missing.issubset(vars_to_retrieve):
+                logger.debug(f"no relevant data on {station=}, skip")
+                continue
+            for poll in missing:
+                df[poll] = np.nan
+            df = df.rename(AEROCOM_NAMES, axis="columns")
+            for poll in cls.DEFAULT_VARS:
+                output[poll] = df[poll]
+            yield output
