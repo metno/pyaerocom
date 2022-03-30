@@ -4,8 +4,11 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+from importlib import metadata
+
 import numpy as np
 import pytest
+from packaging.version import Version
 
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
@@ -266,6 +269,15 @@ def coldata():
 
 TMPDIR = os.path.join(os.path.expanduser("~"), "tmp", "pyatest")
 os.makedirs(TMPDIR, exist_ok=True)
+
+# iris >= 3.2 corrected an error in iris.cube.Cube.intersection
+# see https://github.com/metno/pyaerocom/issues/588
+iris_version = metadata.version("scitools-iris")
+need_iris_32 = pytest.mark.xfail(
+    Version(iris_version) < Version("3.2"),
+    reason=f"results are different with iris {iris_version} < 3.2",
+    strict=True,
+)
 
 
 def pytest_sessionfinish(session, exitstatus):
