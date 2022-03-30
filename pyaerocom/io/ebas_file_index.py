@@ -112,7 +112,13 @@ class EbasSQLRequest(BrowseDict):
         str
             SQL file request command for current specs
         """
-        return self.make_query_str(distinct=distinct, **kwargs)
+        query = self.make_query_str(distinct=distinct, **kwargs)
+        # add an extsion to get only files that have no fraction variables in them
+        query = query.replace(
+            ";",
+            " and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
+        )
+        return query
 
     def make_query_str(self, what=None, distinct=True, **kwargs):
         """Translate current class state into SQL query command string
@@ -147,7 +153,6 @@ class EbasSQLRequest(BrowseDict):
         # add constraints from station table
         conv = self._var2sql
         if self.station_names is not None:
-
             req += f" where station_name in {conv(self.station_names)}"
             add_cond += 1
         if self.altitude_range is not None:
@@ -198,7 +203,7 @@ class EbasSQLRequest(BrowseDict):
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
-        s = f"\n{head}\n{len(head)*'-'}"
+        s = f"\n{head}\n{len(head) * '-'}"
         for k, v in self.items():
             s += f"\n{k}: {v}"
         s += f"\nFilename request string:\n{self.make_file_query_str()}"
@@ -287,7 +292,7 @@ class EbasFileIndex:
             cur.execute(req)
             return [f[0] for f in cur.description]
 
-    def execute_request(self, request):
+    def execute_request(self, request, file_request=False):
         """Connect to database and retrieve data for input request
 
         Parameters
@@ -304,11 +309,19 @@ class EbasFileIndex:
             :func:`make_query_str` using argument ``what``)
 
         """
-        if isinstance(request, EbasSQLRequest):
-            request = request.make_query_str()
+        if isinstance(request, str):
+            sql_str = request
+        elif isinstance(request, EbasSQLRequest):
+            if not file_request:
+                sql_str = request.make_query_str()
+            else:
+                sql_str = request.make_file_query_str()
+        else:
+            raise ValueError(f"Unsupported request type {type(request)}")
+
         with sqlite3.connect(self.database) as con:
             cur = con.cursor()
-            cur.execute(request)
+            cur.execute(sql_str)
             return [f for f in cur.fetchall()]
 
     def get_file_names(self, request):
@@ -324,4 +337,4 @@ class EbasFileIndex:
         list
             list of file paths that match the request
         """
-        return [f[0] for f in self.execute_request(request)]
+        return [f[0] for f in self.execute_request(request, file_request=True)]

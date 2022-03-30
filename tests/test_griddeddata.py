@@ -16,8 +16,7 @@ from pyaerocom.exceptions import (
     VariableNotFoundError,
 )
 from pyaerocom.io import ReadGridded
-
-from .conftest import TEST_RTOL, data_unavail
+from tests.conftest import TEST_RTOL, data_unavail, need_iris_32
 
 TESTLATS = [-10, 20]
 TESTLONS = [-120, 69]
@@ -93,13 +92,13 @@ def test_basic_properties(data_tm5):
 
 
 @data_unavail
+@need_iris_32
 def test_GriddedData_longitude(data_tm5):
     """Test if longitudes are defined right"""
     assert str(data_tm5.longitude.units) == "degrees"
 
     lons = data_tm5.longitude.points
-    assert_allclose(lons.min(), -181.5, rtol=TEST_RTOL)
-    assert_allclose(lons.max(), 175.5, rtol=TEST_RTOL)
+    assert (lons.min(), lons.max()) == (-178.5, 178.5)
 
 
 @data_unavail
