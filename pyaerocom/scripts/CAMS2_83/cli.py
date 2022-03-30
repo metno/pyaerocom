@@ -43,7 +43,7 @@ def make_period(
     if start_yr == end_yr:
         return [f"{start_yr}"]
 
-    return [f"{start_yr}-{end_yr}", f"{start_yr}", f"{end_yr}"]
+    return [f"{start_yr}-{end_yr}"]
 
 
 def make_model_entry(
