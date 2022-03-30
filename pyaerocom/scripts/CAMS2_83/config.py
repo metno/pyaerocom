@@ -47,7 +47,7 @@ GLOBAL_CONFIG = dict(
     periods=[
         "2019"
     ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
-    main_freq="hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
+    main_freq="monthly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
     # This has to be true for the web interface to show diurnal evaluation
     use_diurnal=False,
     # O3 is special, since we want to look at daily max
