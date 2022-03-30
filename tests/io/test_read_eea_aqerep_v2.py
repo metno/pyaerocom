@@ -2,16 +2,16 @@ from pathlib import Path
 
 import pytest
 
-# although the following is not explicitly referenced, it registers the
-# Subset data ids used for testing.
-import tests.conftest
-
 from pyaerocom.io import ReadUngridded
 
 from ..conftest import data_unavail
 
+# although the following is not explicitly referenced, it registers the
+# Subset data ids used for testing.
+
 TMPFILE = "#AT_5_48900_2019_timeseries.csv#"
 DATA_ID = "EEA_AQeRep.v2.Subset"
+
 
 @data_unavail
 @pytest.fixture(scope="module")
@@ -62,8 +62,6 @@ def test_read(reader):
         data = reader.read(vars_to_retrieve=[var_name])
         assert isinstance(data, UngriddedData)
 
-        print(f"{var_name} data read")
-        breakpoint()
         for stat_idx, statid in enumerate(station_id[var_name]):
             try:
                 stat_data = data[statid]
@@ -71,8 +69,9 @@ def test_read(reader):
                 if stat_idx == 1:
                     assert isinstance(stat_data, StationData)
 
-                print(f"calc {stat_data[var_name].mean()}; should {station_means[var_name][stat_idx]}")
-                assert stat_data[var_name].mean() == station_means[var_name][stat_idx]
+                assert stat_data[var_name].mean() == pytest.approx(
+                    station_means[var_name][stat_idx], 0.01
+                )
             except:
                 print(f"failed test var {var_name}")
                 pass
