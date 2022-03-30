@@ -11,10 +11,10 @@ from pyaerocom.io.cams2_83.models import ModelName
 GLOBAL_CONFIG = dict(
     # Description of the experiment
     proj_id="cams2-83",
-    exp_id="cams2-83-prototype",
-    exp_name="CAMS2-83 prototype",
-    exp_descr=("This is a test run for CAMS2_83 using EEA NRT obs."),
-    exp_pi="Daniel Heinesen",
+    exp_id="prototype",
+    exp_name="Prototype",
+    exp_descr=("Prototype for CAMS2_83 using EEA NRT obs."),
+    exp_pi="Daniel Heinesen, Alvaro Valdebenito, Augustine Mortier, Charlie Negri, Krister Karlsen, Michael Gauss",
     # Whether or not the experiment is visible in the web interface
     public=True,
     # Locations where to place the results
@@ -168,7 +168,7 @@ species_list = [
     "concno2",
     # "concco",
     "conco3",
-    "concso2",
+    # "concso2",
     "concpm10",
     "concpm25",
 ]
