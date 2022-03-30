@@ -1,4 +1,5 @@
 import pytest
+
 from pyaerocom.io import ReadUngridded
 
 from ..conftest import data_unavail
@@ -14,18 +15,6 @@ DATA_ID = "EEA_AQeRep.v2.Subset"
 @pytest.fixture(scope="module")
 def reader():
     return ReadUngridded(DATA_ID)
-
-
-# @data_unavail
-# def test_add_additional_file(reader):
-#     # temporarily add a emacs backup file to the test data set
-#     # to make sure these do not disturb the reading
-#     # reader = ReadUngridded(DATA_ID)
-#     lowlevel_reader = reader.get_lowlevel_reader(DATA_ID)
-#     touchfile = Path.joinpath(Path(lowlevel_reader.data_dir), Path(TMPFILE))
-#     Path.touch(touchfile)
-#     assert Path.exists(touchfile) == True
-#     return touchfile
 
 
 @data_unavail
@@ -72,14 +61,3 @@ def test_read(reader):
             except:
                 print(f"failed test var {var_name}")
                 pass
-
-# @data_unavail
-# def test_remove_additional_file(reader):
-#     # remove temp file
-#     # touchfile = Path.joinpath(reader.data_dir, TMPFILE)
-#     reader = ReadUngridded(DATA_ID)
-#     lowlevel_reader = reader.get_lowlevel_reader(DATA_ID)
-#     touchfile = Path.joinpath(Path(lowlevel_reader.data_dir), Path(TMPFILE))
-#     assert Path.exists(touchfile) == True
-#     Path.unlink(touchfile)
-#     assert Path.exists(touchfile) == False
