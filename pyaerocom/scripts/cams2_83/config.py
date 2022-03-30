@@ -41,9 +41,9 @@ GLOBAL_CONFIG = dict(
     # The size of map used to display the results
     map_zoom="Europe",
     # Options for time
-    freqs=["yearly", "monthly", "daily", "hourly"],  # Possible frequencies
+    freqs=["hourly"],  # Possible frequencies
     periods=[
-        "2019"
+        "2021-2022"
     ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
     main_freq="hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
     # This has to be true for the web interface to show diurnal evaluation
@@ -95,8 +95,8 @@ GLOBAL_CONFIG = dict(
         "dryvelo3",
     ],
     min_num_obs=dict(
-        yearly=dict(monthly=9),
-        monthly=dict(daily=21, weekly=3),
+        # yearly=dict(monthly=9),
+        # monthly=dict(daily=21, weekly=3),
         daily=dict(hourly=18),
     ),
 )
@@ -126,9 +126,10 @@ OBS_CONFIG = dict(
         obs_vars=ReadCAMS2_83.DEFAULT_VARS,
         web_interface_name="EEA-CAMS2-40",
         obs_vert_type="Surface",
-        read_opts_ungridded={
-            "files": [],  # list of fully resolved paths to obs data
-        },
+        read_opts_ungridded=dict(
+            files=[],  # list of fully resolved paths to obs data
+        ),
+        obs_filters=dict(),
     )
 )
 
