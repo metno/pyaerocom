@@ -3,8 +3,7 @@ from pyaerocom.scripts.cli_typer import app
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from unittest import mock
 
-from pyaerocom import const
-from pyaerocom.config import Config
+from pyaerocom import tools
 
 # from pyaerocom import __version__
 
@@ -60,7 +59,15 @@ def test_mock_version():
 #         pickle.dump(tmp_array, f)
 
 
-def test_clearcache(tmp_path):
+@pytest.fixture()
+def mock_cachehandlerungridded():
+    with mock.patch(
+        "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded"
+    ) as mock_CacheHandlerUngridded:
+        yield mock_CacheHandlerUngridded.return_value
+
+
+def test_clearcache(tmp_path, mock_cachehandlerungridded):
     # pyaerocom.const.CACHEDIR
 
     # if not os.listdir(ch.cache_dir):
@@ -77,11 +84,23 @@ def test_clearcache(tmp_path):
 
     assert tmp_dir
 
-    # conf = Config()
-    ch = CacheHandlerUngridded()
+    # LB: Below works
+    # Basic functionality of clearcache CLI command
+    ch = CacheHandlerUngridded(cache_dir=tmp_dir)
     ch.delete_all_cache_files()
-
     assert not os.listdir(tmp_dir)
+
+    # Lb: Upon inspection, idk if we can testing calling the CLI clearchache directly becauseTyper doesn't seem to have a way to invoke() clearcache and then test responding to CL output with new inputs
+    # What we would need is to be able to respond "y" in order to run clearcahce(), but I don't think there is a way and if there is it isn't obvious from from the docs
+    # Bakc up (Which I'm less happy with but works): simply test the functionality within clearcache
+    # mock_cachehandlerungridded.cache_dir.return_value = tmp_dir
+
+    # result = runner.invoke(app, ["clearcache"])
+    # print(result.stdout)
+
+    # assert 0
+    # assert "Cache cleared!" in result.stdout
+    # print(result)
 
     # copy all cahced files into a temporary sub-dir
     # for fp in glob.glob(f"{ch.cache_dir}/*.pkl"):
