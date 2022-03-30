@@ -102,6 +102,8 @@ legacy_tox_ini = """
 envlist = py38, py39, py310, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
+requires =
+    setuptools<=60.9.3
 
 [testenv]
 commands_pre =
@@ -112,14 +114,13 @@ extras =
     test
 
 [testenv:format]
-skip_install = true
 commands =
     pre-commit run --all-files --show-diff-on-failure
 deps =
     pre-commit
 
 [testenv:lint]
-ignore_outcome=True
+ignore_outcome = True
 commands =
     mypy pyaerocom/
     #pylint pyaerocom/
