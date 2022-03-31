@@ -304,14 +304,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         rows[idx][0:10] + "T" + rows[idx][11:19]
                     )
                     # due to the deprecation of the timezone interpretation after numpy 0.11
-                    # we have to add the offset manually
-                    # np.timedelta64 does not accept a float as parameter (but only an integer).
-                    # Since there are time zones with a 30 minute offset, we have to convert the hours
-                    # to a inter containing the offset in minutes
-                    tz_offset = np.timedelta64(
-                        np.int64(np.float64(rows[idx][20:].replace(":", ".")) * 60.0), "m"
-                    )
-                    data_dict[header[idx]][lineidx] = data_dict[header[idx]][lineidx] + tz_offset
+                    # we have to substract the offset manually to get to UTC.
+                    # np.timedelta64 does not accept a float as parameter, only an integer.
+                    # Although there are time zones with a 30 minutes offset, these don't
+                    # exist in Europe, so just consider integer hours here for speed
+                    tz_offset = np.timedelta64(np.int64(rows[idx][20:23]), "h")
+                    data_dict[header[idx]][lineidx] = data_dict[header[idx]][lineidx] - tz_offset
                 else:
                     # data is not a time
                     # sometimes there's no value in the file. Set that to nan
