@@ -1,5 +1,6 @@
 from typer.testing import CliRunner
 from pyaerocom.scripts.cli_typer import app
+
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from unittest import mock
 
@@ -68,14 +69,29 @@ def test_mock_version():
 
 
 def test_mock_cache_dir(tmp_path):
-    with mock.patch.object(
-        pyaerocom.io.cachehandler_ungridded, "cachehandler_ungridded.CacheHandlerUngridded"
+    with mock.patch(
+        "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded"
     ) as MockCacheHandlerUngridded:
-        MockCacheHandlerUngridded.return_value.cache_dir.return_value = tmp_path
-        with CacheHandlerUngridded as MockedCachehandlerUngridded:
-            ch = MockedCacheHandlerUngridded()
-            print()
-            print(f"{ch.cache_dir()=}")
+        instance = MockCacheHandlerUngridded.return_value
+        instance.cache_dir(val=tmp_path)
+
+        instance2 = MockCacheHandlerUngridded()
+
+        print()
+        print("INSTANCE 1:")
+        print(f"{instance.cache_dir=}")
+
+        print()
+        print("INSTANCE 2:")
+        print(f"{instance2.cache_dir=}")
+
+        assert 0
+
+        # MockCacheHandlerUngridded.return_value.cache_dir.return_value = tmp_path
+        # with CacheHandlerUngridded as MockedCachehandlerUngridded:
+        #     ch = MockedCacheHandlerUngridded()
+        #     print()
+        #     print(f"{ch.cache_dir()=}")
 
 
 def test_clearcache(tmp_path, mock_cachehandlerungridded):
@@ -101,11 +117,7 @@ def test_clearcache(tmp_path, mock_cachehandlerungridded):
     # ch.delete_all_cache_files()
     # assert not os.listdir(tmp_dir)
 
-    # Lb: Upon inspection, idk if we can testing calling the CLI clearchache directly becauseTyper doesn't seem to have a way to invoke() clearcache and then test responding to CL output with new inputs
-    # What we would need is to be able to respond "y" in order to run clearcahce(), but I don't think there is a way and if there is it isn't obvious from from the docs
-    # Bakc up (Which I'm less happy with but works): simply test the functionality within clearcache
-
-    mock_cachehandlerungridded.return_value = tmp_dir
+    # mock_cachehandlerungridded.return_value = tmp_dir
     result = runner.invoke(app, ["clearcache"], input="y")
     print(result.stdout)  # Testing
 
