@@ -59,12 +59,23 @@ def test_mock_version():
 #         pickle.dump(tmp_array, f)
 
 
-@pytest.fixture()
-def mock_cachehandlerungridded():
-    with mock.patch(
-        "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded"
-    ) as mock_CacheHandlerUngridded:
-        yield mock_CacheHandlerUngridded.return_value
+# @pytest.fixture()
+# def mock_cachehandlerungridded():
+#     with mock.patch.object(
+#         pyaerocom.io.cachehandler_ungridded, "CacheHandlerUngridded"
+#     ) as mock_CacheHandlerUngridded:
+#         yield mock_CacheHandlerUngridded.return_value
+
+
+def test_mock_cache_dir(tmp_path):
+    with mock.patch.object(
+        pyaerocom.io.cachehandler_ungridded, "cachehandler_ungridded.CacheHandlerUngridded"
+    ) as MockCacheHandlerUngridded:
+        MockCacheHandlerUngridded.return_value.cache_dir.return_value = tmp_path
+        with CacheHandlerUngridded as MockedCachehandlerUngridded:
+            ch = MockedCacheHandlerUngridded()
+            print()
+            print(f"{ch.cache_dir()=}")
 
 
 def test_clearcache(tmp_path, mock_cachehandlerungridded):
@@ -86,19 +97,22 @@ def test_clearcache(tmp_path, mock_cachehandlerungridded):
 
     # LB: Below works
     # Basic functionality of clearcache CLI command
-    ch = CacheHandlerUngridded(cache_dir=tmp_dir)
-    ch.delete_all_cache_files()
-    assert not os.listdir(tmp_dir)
+    # ch = CacheHandlerUngridded(cache_dir=tmp_dir)
+    # ch.delete_all_cache_files()
+    # assert not os.listdir(tmp_dir)
 
     # Lb: Upon inspection, idk if we can testing calling the CLI clearchache directly becauseTyper doesn't seem to have a way to invoke() clearcache and then test responding to CL output with new inputs
     # What we would need is to be able to respond "y" in order to run clearcahce(), but I don't think there is a way and if there is it isn't obvious from from the docs
     # Bakc up (Which I'm less happy with but works): simply test the functionality within clearcache
-    # mock_cachehandlerungridded.cache_dir.return_value = tmp_dir
 
-    # result = runner.invoke(app, ["clearcache"])
-    # print(result.stdout)
+    mock_cachehandlerungridded.return_value = tmp_dir
+    result = runner.invoke(app, ["clearcache"], input="y")
+    print(result.stdout)  # Testing
 
-    # assert 0
+    assert result.exit_code == 0
+    assert not os.listdir(tmp_dir)
+
+    assert 0
     # assert "Cache cleared!" in result.stdout
     # print(result)
 
