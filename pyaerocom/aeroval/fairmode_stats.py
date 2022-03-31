@@ -11,7 +11,7 @@ This module contains methods to cmpute the relevant FAIRMODE statistics.
 """
 
 
-from numpy import isnan, sqrt, isclose
+from numpy import isnan, sqrt, isclose, nan
 
 
 SPECIES = dict(
@@ -39,7 +39,7 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
 
 def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
     if isnan(R) or isnan(obs_std):
-        return np.nan
+        return nan
     assert obs_std >= 0, f"negative {obs_std=}"
     assert -1 <= R <= 1, f"out of range {R=}"
     if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
