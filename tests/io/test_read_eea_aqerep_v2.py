@@ -7,7 +7,6 @@ from ..conftest import data_unavail
 # although the following is not explicitly referenced, it registers the
 # Subset data ids used for testing.
 
-TMPFILE = "#AT_5_48900_2019_timeseries.csv#"
 DATA_ID = "EEA_AQeRep.v2.Subset"
 
 
