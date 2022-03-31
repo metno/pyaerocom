@@ -132,10 +132,10 @@ def runner(
     ana = ExperimentProcessor(stp)
 
     logger.info(f"Running Rest of Statistics")
-    ana.run()
+    ana.run(var_list=["conco3"])
 
-    logger.info(f"Running CAMS2_83 Spesific Statistics")
-    ana_cams2_83.run()
+    # logger.info(f"Running CAMS2_83 Spesific Statistics")
+    # ana_cams2_83.run()
 
 
 @app.command()
