@@ -6,7 +6,7 @@ from unittest import mock
 
 from pyaerocom import tools
 
-# from pyaerocom import __version__
+from pyaerocom import __version__
 
 import pytest
 
@@ -39,7 +39,6 @@ def test_typer_runner():
     print(f"list:\n{result.stdout}")
 
 
-# LB: Rethink this a bit, might be able to just patch() __version__ as "0.0.0"
 def test_mock_version():
     with mock.patch.object(
         pyaerocom, "__version__", "0.0.0"
@@ -88,12 +87,6 @@ def test_mock_cache_dir(tmp_path):
 
         assert 0
 
-        # MockCacheHandlerUngridded.return_value.cache_dir.return_value = tmp_path
-        # with CacheHandlerUngridded as MockedCachehandlerUngridded:
-        #     ch = MockedCacheHandlerUngridded()
-        #     print()
-        #     print(f"{ch.cache_dir()=}")
-
 
 def test_mock_cachehandlerungridded(tmp_path):
     with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
@@ -104,15 +97,6 @@ def test_mock_cachehandlerungridded(tmp_path):
 
 
 def test_clearcache(tmp_path):
-    # pyaerocom.const.CACHEDIR
-
-    # if not os.listdir(ch.cache_dir):
-    #     print("Cache directory is empty")
-    # else:
-    # tmp_cache_dir = tempfile.TemporaryDirectory(dir=const.CACHEDIR)
-    # tmp_dir = tmp_path / "sub"
-    # tmp_dir.mkdir()
-
     # Create a temp pickle file
     tmp_file = tmp_path / "tmp.pkl"
     tmp_array = np.zeros(10)
@@ -123,11 +107,8 @@ def test_clearcache(tmp_path):
     assert os.listdir(tmp_path)
 
     with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
-
         result = runner.invoke(app, ["clearcache"], input="y")
-        # print(result.stdout)  # Testing
-
+        # Check the clearcahce exited correctly
         assert result.exit_code == 0
+        # Check that clearcache actually cleared the cache
         assert not os.listdir(tmp_path)
-
-        # assert 0 # Testing
