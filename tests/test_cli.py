@@ -39,6 +39,7 @@ def test_typer_runner():
     print(f"list:\n{result.stdout}")
 
 
+# LB: Rethink this a bit, might be able to just patch() __version__ as "0.0.0"
 def test_mock_version():
     with mock.patch.object(
         pyaerocom, "__version__", "0.0.0"
@@ -75,7 +76,7 @@ def test_mock_cache_dir(tmp_path):
         instance = MockCacheHandlerUngridded.return_value
         instance.cache_dir(val=tmp_path)
 
-        instance2 = MockCacheHandlerUngridded()
+        instance2 = CacheHandlerUngridded()
 
         print()
         print("INSTANCE 1:")
@@ -94,48 +95,39 @@ def test_mock_cache_dir(tmp_path):
         #     print(f"{ch.cache_dir()=}")
 
 
-def test_clearcache(tmp_path, mock_cachehandlerungridded):
+def test_mock_cachehandlerungridded(tmp_path):
+    with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
+        ch = CacheHandlerUngridded()
+        print()
+        print("BELOW:")
+        print(f"{ch.cache_dir=}")
+
+
+def test_clearcache(tmp_path):
     # pyaerocom.const.CACHEDIR
 
     # if not os.listdir(ch.cache_dir):
     #     print("Cache directory is empty")
     # else:
     # tmp_cache_dir = tempfile.TemporaryDirectory(dir=const.CACHEDIR)
-    tmp_dir = tmp_path / "sub"
-    tmp_dir.mkdir()
-    tmp_file = tmp_dir / "tmp.pkl"
+    # tmp_dir = tmp_path / "sub"
+    # tmp_dir.mkdir()
 
+    # Create a temp pickle file
+    tmp_file = tmp_path / "tmp.pkl"
     tmp_array = np.zeros(10)
     with open(tmp_file, "wb") as f:
         pickle.dump(tmp_array, f)
 
-    assert tmp_dir
+    # Check pytest's tmp_path is non-empty
+    assert os.listdir(tmp_path)
 
-    # LB: Below works
-    # Basic functionality of clearcache CLI command
-    # ch = CacheHandlerUngridded(cache_dir=tmp_dir)
-    # ch.delete_all_cache_files()
-    # assert not os.listdir(tmp_dir)
+    with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
 
-    # mock_cachehandlerungridded.return_value = tmp_dir
-    result = runner.invoke(app, ["clearcache"], input="y")
-    print(result.stdout)  # Testing
+        result = runner.invoke(app, ["clearcache"], input="y")
+        # print(result.stdout)  # Testing
 
-    assert result.exit_code == 0
-    assert not os.listdir(tmp_dir)
+        assert result.exit_code == 0
+        assert not os.listdir(tmp_path)
 
-    assert 0
-    # assert "Cache cleared!" in result.stdout
-    # print(result)
-
-    # copy all cahced files into a temporary sub-dir
-    # for fp in glob.glob(f"{ch.cache_dir}/*.pkl"):
-    # shutil.copy(fp, tmp_cache_dir)
-    #    print(fp)
-    # assert this tmp sub-dir is nonempty
-
-    # assert os.listdir(tmp_cache_dir.name)
-
-    # for fp in pyaerocom.const.CACHEDIR
-    #    os.remove(fp)
-    #    logger.info(f"Deleted {fp}")
+        # assert 0 # Testing
