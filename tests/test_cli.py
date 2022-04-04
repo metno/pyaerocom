@@ -44,53 +44,6 @@ def test_mock_version():
         )  # When version() method is called by CLI code, the __version__ attribute isn't the original string, it's the string we replaced with patch.object()
 
 
-# @pytest.fixture(scope="session")
-# def test_create_file(tmp_path):
-#     tmp_dir = tmp_path / "sub"
-#     tmp_dir.mkdir()
-#     tmp_file = tmp_dir / "tmp.pkl"
-
-#     tmp_array = np.zeros(10)
-#     with open(tmp_file, "wb") as f:
-#         pickle.dump(tmp_array, f)
-
-
-# @pytest.fixture()
-# def mock_cachehandlerungridded():
-#     with mock.patch.object(
-#         pyaerocom.io.cachehandler_ungridded, "CacheHandlerUngridded"
-#     ) as mock_CacheHandlerUngridded:
-#         yield mock_CacheHandlerUngridded.return_value
-
-
-# def test_mock_cache_dir(tmp_path):
-#     with mock.patch(
-#         "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded"
-#     ) as MockCacheHandlerUngridded:
-#         instance = MockCacheHandlerUngridded.return_value
-#         instance.cache_dir(val=tmp_path)
-
-#         instance2 = CacheHandlerUngridded()
-
-#         print()
-#         print("INSTANCE 1:")
-#         print(f"{instance.cache_dir=}")
-
-#         print()
-#         print("INSTANCE 2:")
-#         print(f"{instance2.cache_dir=}")
-
-#         assert 0
-
-
-# def test_mock_cachehandlerungridded(tmp_path):
-#     with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
-#         ch = CacheHandlerUngridded()
-#         print()
-#         print("BELOW:")
-#         print(f"{ch.cache_dir=}")
-
-
 def test_clearcache(tmp_path):
     # Create a temp pickle file
     tmp_file = tmp_path / "tmp.pkl"
@@ -110,8 +63,10 @@ def test_clearcache(tmp_path):
 
 
 def test_browse():
-    result = runner.invoke(app, ["browse"], input="EBAS")
-    assert result.exit_code == 0
+    result = runner.invoke(app, ["browse", "EEA"])
+    print(result.stdout)
+    assert 0
+    # assert result.exit_code == 0
 
 
 def test_ppiaccess():
