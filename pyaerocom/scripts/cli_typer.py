@@ -24,8 +24,8 @@ def _confirm():
 
 
 @app.command()
-def browse(database: str):
-    """Browse database"""
+def browse(database: str = typer.Argument(..., help="Provide database name.")):
+    """Browse database e.g., browse <DATABASE>"""
     print(f"Searching database for matches of {database}")
     print(tools.browse_database(database))
 
@@ -44,7 +44,7 @@ def clearcache():
 
 @app.command()
 def ppiaccess():
-    """Check if MetNO PPi can be accessed"""
+    """Check if MetNO PPI can be accessed"""
     print("True") if const.has_access_lustre else print("False")
 
 

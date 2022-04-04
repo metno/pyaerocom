@@ -8,13 +8,8 @@ from pyaerocom import tools
 
 from pyaerocom import __version__
 
-import pytest
-
-import glob
 import os
 import logging
-import tempfile
-import shutil
 import pickle
 import numpy as np
 
@@ -27,16 +22,16 @@ logger = logging.getLogger(__name__)
 runner = CliRunner()
 
 
-def test_typer_runner():
-    # Test the CLI version arugment
-    result = runner.invoke(app, "version")
-    print()
-    print(f"version: {result.stdout}")
+# def test_typer_runner():
+#     # Test the CLI version arugment
+#     result = runner.invoke(app, "version")
+#     print()
+#     print(f"version: {result.stdout}")
 
-    result = runner.invoke(
-        app, ["browse", "ppiaccess"]
-    )  # LB: Not sure if I want to check clearcache just yet
-    print(f"list:\n{result.stdout}")
+#     result = runner.invoke(
+#         app, ["browse", "ppiaccess"]
+#     )  # LB: Not sure if I want to check clearcache just yet
+#     print(f"list:\n{result.stdout}")
 
 
 def test_mock_version():
@@ -68,32 +63,32 @@ def test_mock_version():
 #         yield mock_CacheHandlerUngridded.return_value
 
 
-def test_mock_cache_dir(tmp_path):
-    with mock.patch(
-        "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded"
-    ) as MockCacheHandlerUngridded:
-        instance = MockCacheHandlerUngridded.return_value
-        instance.cache_dir(val=tmp_path)
+# def test_mock_cache_dir(tmp_path):
+#     with mock.patch(
+#         "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded"
+#     ) as MockCacheHandlerUngridded:
+#         instance = MockCacheHandlerUngridded.return_value
+#         instance.cache_dir(val=tmp_path)
 
-        instance2 = CacheHandlerUngridded()
+#         instance2 = CacheHandlerUngridded()
 
-        print()
-        print("INSTANCE 1:")
-        print(f"{instance.cache_dir=}")
+#         print()
+#         print("INSTANCE 1:")
+#         print(f"{instance.cache_dir=}")
 
-        print()
-        print("INSTANCE 2:")
-        print(f"{instance2.cache_dir=}")
+#         print()
+#         print("INSTANCE 2:")
+#         print(f"{instance2.cache_dir=}")
 
-        assert 0
+#         assert 0
 
 
-def test_mock_cachehandlerungridded(tmp_path):
-    with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
-        ch = CacheHandlerUngridded()
-        print()
-        print("BELOW:")
-        print(f"{ch.cache_dir=}")
+# def test_mock_cachehandlerungridded(tmp_path):
+#     with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
+#         ch = CacheHandlerUngridded()
+#         print()
+#         print("BELOW:")
+#         print(f"{ch.cache_dir=}")
 
 
 def test_clearcache(tmp_path):
@@ -112,3 +107,13 @@ def test_clearcache(tmp_path):
         assert result.exit_code == 0
         # Check that clearcache actually cleared the cache
         assert not os.listdir(tmp_path)
+
+
+def test_browse():
+    result = runner.invoke(app, ["browse"], input="EBAS")
+    assert result.exit_code == 0
+
+
+def test_ppiaccess():
+    result = runner.invoke(app, ["ppiaccess"])
+    assert result.exit_code == 0
