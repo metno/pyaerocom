@@ -12,7 +12,6 @@ This module contains methods to cmpute the relevant FAIRMODE statistics.
 
 from math import isclose, sqrt
 
-
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
     vmro3=dict(UrRV=0.18, RV=120, alpha=0.79),
