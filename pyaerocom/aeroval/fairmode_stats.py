@@ -11,8 +11,7 @@ This module contains methods to cmpute the relevant FAIRMODE statistics.
 """
 
 
-from numpy import isnan, sqrt, isclose, nan
-
+from numpy import isclose, isnan, nan, sqrt
 
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),

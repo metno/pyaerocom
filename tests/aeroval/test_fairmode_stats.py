@@ -1,7 +1,7 @@
 import pytest
+from numpy import nan
 
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
-from numpy import nan
 
 
 @pytest.mark.parametrize(
@@ -64,10 +64,6 @@ from numpy import nan
         ),
     ],
 )
-
-# pytest.mark.xfail
-
-
 def test_compute_fairmode_stats(obs_var: str, stats: dict, n_stats: int):
     # Create a set with all the statistics returned by compute_fairmode_stats(). If adding statistics there, will need to add here.
     valid_stats = {"RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"}
