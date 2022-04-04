@@ -10,7 +10,7 @@ FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together a
 This module contains methods to cmpute the relevant FAIRMODE statistics.
 """
 
-from math import isclose, sqrt
+from numpy import isclose, isnan, nan, sqrt
 
 
 SPECIES = dict(
@@ -37,8 +37,10 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
 
 
 def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
+    if isnan(R) or isnan(obs_std):
+        return nan
     assert obs_std >= 0, f"negative {obs_std=}"
-    assert 0 <= R <= 1, f"out of range {R=}"
+    assert -1 <= R <= 1, f"out of range {R=}"
     if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
         return 1
     a = abs(mod_std - obs_std) / (obs_std * sqrt(2 * (1 - R)))
@@ -56,7 +58,7 @@ def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
 
 
 def fairmode_stats(obs_var: str, stats: dict) -> dict:
-    if obs_var not in SPECIES:
+    if obs_var not in SPECIES or any(isnan(list(stats.values()))):
         return {}
 
     mean = stats["refdata_mean"]
@@ -75,7 +77,7 @@ def fairmode_stats(obs_var: str, stats: dict) -> dict:
     assert isclose(
         rmsu * beta_mqi,
         sqrt((bias) ** 2 + (mod_std - obs_std) ** 2 + (2 * obs_std * mod_std * (1 - R))),
-        rel_tol=1e-5,
+        rtol=1e-5,
     )
 
     fairmode = dict(

@@ -1,4 +1,5 @@
 import pytest
+from numpy import nan
 
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 
@@ -22,6 +23,44 @@ from pyaerocom.aeroval.fairmode_stats import fairmode_stats
             "not_a_species",
             {"refdata_mean": 0, "refdata_std": 1, "data_std": 1, "R": 1, "mb": 0, "rms": 0},
             0,  # if observed variable is not a species then check return an empty dict
+        ),
+        (
+            "vmro3",
+            {
+                "refdata_mean": nan,
+                "refdata_std": nan,
+                "data_std": nan,
+                "R": nan,
+                "mb": nan,
+                "rms": nan,
+            },
+            0,
+        ),
+        pytest.param(
+            "concpm10",
+            {
+                "refdata_mean": 0,
+                "refdata_std": -1,  # Negative std
+                "data_std": 1,
+                "R": 1,
+                "mb": 1,
+                "rms": 1,
+            },
+            0,
+            marks=pytest.mark.xfail,  # We expect this test to fail
+        ),
+        pytest.param(
+            "concpm25",
+            {
+                "refdata_mean": 0,
+                "refdata_std": 1,
+                "data_std": 1,
+                "R": 10,  # Correlation must be in [-1, 1]
+                "mb": 1,
+                "rms": 1,
+            },
+            0,
+            marks=pytest.mark.xfail,  # We expect this test to fail
         ),
     ],
 )
