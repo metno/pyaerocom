@@ -221,7 +221,7 @@ def main():
         VARS_STATVAR_NUM = 2
         VARS_STATVAR = ["concno2", "vmrno2", "vmro3", "concpm25"]
 
-        STATSFIX = ["Jungfraujoch", "Birkenes II", "*Kosetice*", "Troll", 'Melpitz']
+        STATSFIX = ["Jungfraujoch", "Birkenes II", "*Kosetice*", "Troll", "Melpitz"]
 
         all_files = {}
         overlap_found = False
