@@ -603,6 +603,7 @@ class ReadUngridded:
                     # flexible if some post filters are specified for
                     # individual variables...
                     for aux_var in aux_vars[var]:
+                        _data = None
                         _data = self.read_dataset(
                             aux_id,
                             aux_var,
@@ -707,7 +708,14 @@ class ReadUngridded:
             # accessing self._readers[ds] results in a KeyError
             # if ds in self.post_compute or self._readers[ds].SUPPORTS_API_BASED_AUX_FUNS:
             reader = self.get_lowlevel_reader(ds)
-            if ds in self.post_compute or reader.SUPPORTS_API_BASED_AUX_FUNS:
+            # check if one of the variables to read is a calculated variable
+            aux_read_flag = False
+            if reader.SUPPORTS_API_BASED_AUX_FUNS:
+                for var in vars_to_retrieve:
+                    if var in reader.AUX_REQUIRES:
+                        aux_read_flag = True
+
+            if ds in self.post_compute or aux_read_flag:
                 data.append(
                     self.read_dataset_post(
                         ds,
