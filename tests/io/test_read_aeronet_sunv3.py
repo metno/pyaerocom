@@ -59,3 +59,14 @@ def test_read_add_common_meta(reader):
     files = reader.files[2:4]
     data = reader.read("od550aer", files=files, common_meta={"bla": 42})
     assert all("bla" in x for x in data.metadata.values())
+
+
+@data_unavail
+def test_get_od550lt1ang(reader):
+    reader.get_file_list()
+    file = reader.files[-3]
+    data = reader.read_file(file, vars_to_retrieve="od550lt1ang")
+    assert all(x in data for x in ["od550lt1ang"])
+    test_data = reader.read_file(file)
+    test_data = np.where(test_data["ang4487aer"] < 1.0, test_data["od550aer"], np.nan)
+    assert_allclose(np.nanmean(data["od550lt1ang"]), np.nanmean(test_data),rtol=1e-3)

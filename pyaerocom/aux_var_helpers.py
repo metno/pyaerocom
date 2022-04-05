@@ -138,6 +138,35 @@ def calc_od550lt1aer(data):
     )
 
 
+def calc_od550lt1ang(data):
+    """Compute AOD at 550 nm using Angstrom coeff. and 500 nm AOD,
+        that is filtered for angstrom coeff < 1 to get AOD representative
+        of coarse particles.
+
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
+    """
+
+    return _calc_od_helper(
+        data=data,
+        var_name="od550lt1ang",
+        to_lambda=0.55,
+        od_ref="od500aer",
+        lambda_ref=0.50,
+        od_ref_alt="od440aer",
+        lambda_ref_alt=0.44,
+        use_angstrom_coeff="ang4487aer",
+        treshold_angstrom=1.0,
+    )
+
+
 def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
     """Compute Angstrom coefficient based on 2 optical densities
 
@@ -195,6 +224,7 @@ def _calc_od_helper(
     od_ref_alt=None,
     lambda_ref_alt=None,
     use_angstrom_coeff="ang4487aer",
+    treshold_angstrom=None,
 ):
     """Helper method for computing ODs
 
@@ -221,6 +251,9 @@ def _calc_od_helper(
         wavelength corresponding to alternative reference AOD
     use_angstrom_coeff : str
         name of Angstrom coefficient in data, that is used for computation
+    threshold_angstrom : float
+        filter out observations that have angstrom exponent larger than a set
+        threshold.
 
     Returns
     -------
@@ -250,6 +283,7 @@ def _calc_od_helper(
         lambda_ref=lambda_ref,
         angstrom_coeff=data[use_angstrom_coeff],
     )
+
     # optional if available
     if od_ref_alt in data:
         # fill up time steps that are nans with values calculated from the
@@ -263,6 +297,8 @@ def _calc_od_helper(
                 to_lambda=to_lambda, od_ref=ods_alt, lambda_ref=lambda_ref_alt, angstrom_coeff=ang
             )
             result[mask] = replace
+    if treshold_angstrom:
+        result = np.where(data[use_angstrom_coeff] < treshold_angstrom, result, np.nan)
 
     return result
 
