@@ -8,6 +8,7 @@ from ..conftest import data_unavail
 # Subset data ids used for testing.
 
 DATA_ID = "EEA_AQeRep.v2.Subset"
+VARS_TO_TEST = ["concpm10", "ratpm10pm25"]
 
 
 @data_unavail
@@ -36,13 +37,13 @@ def test_read(reader):
     station_id = {}
     # respective mean for a station; index has to be the same as station_id
     station_means = {}
-    # list of tested variables will be extended
-    var_name = "concpm10"
-    station_id[var_name] = ["AT10002", "AT52000"]
-    station_means[var_name] = [17.128, 15.1]
+    station_id["concpm10"] = ["AT10002", "AT52000"]
+    station_means["concpm10"] = [17.128, 15.1]
+    station_id["ratpm10pm25"] = ["LU0109A"]
+    station_means["ratpm10pm25"] = [2.186396]
 
-    var_names_to_test = station_id.keys()
-    for var_name in var_names_to_test:
+    # var_names_to_test = station_id.keys()
+    for var_name in VARS_TO_TEST:
         data = None
         data = reader.read(vars_to_retrieve=[var_name])
         assert isinstance(data, UngriddedData)

@@ -22,9 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 class AccessTestData:
-
     #: That's were the testdata can be downloaded from
-    URL_TESTDATA = "https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.gz.ebas_202201"
+    URL_TESTDATA = "https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.gz.202202"
 
     #: Directory where testdata will be downloaded into
     BASEDIR_DEFAULT = const.OUTPUTDIR
