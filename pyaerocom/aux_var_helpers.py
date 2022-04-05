@@ -694,6 +694,7 @@ def compute_ratpm10pm25(data, outvar_name, concpm10_name, concpm25_name):
     if isinstance(data, pandas.core.frame.DataFrame):
         # this is used if the variable calculation is done via the API
         data[outvar_name] = data[concpm10_name] / data[concpm25_name]
+        data[outvar_name].replace([np.inf, -np.inf], np.nan, inplace=True)
         return data
     else:
         raise NotImplementedError(
