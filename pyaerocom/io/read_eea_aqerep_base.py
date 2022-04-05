@@ -566,10 +566,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         var_name = vars_to_retrieve[0]
         logger.info("Reading EEA data")
         if files is None:
-            if len(self.files) == 0:
-                logger.info("Retrieving file list")
-                files = self.get_file_list(self.FILE_MASKS[var_name])
-            files = self.files
+            logger.info("Retrieving file list")
+            files = self.get_file_list(self.FILE_MASKS[var_name])
 
         if first_file is None:
             first_file = 0
