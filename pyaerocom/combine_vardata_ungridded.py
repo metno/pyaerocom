@@ -23,7 +23,6 @@ def _check_input_data_ids_and_vars(data_ids_and_vars):
 
 
 def _map_same_stations(stats_short, stats_long, match_stats_how, match_stats_tol_km):
-
     long_coords = list(zip(stats_long["latitude"], stats_long["longitude"]))
 
     # index matches and corresponding station name matches
@@ -244,6 +243,9 @@ def _combine_2_sites(
 
             # add_ts.drop(columns=col_names, inplace=True)
             # add_ts.dropna(axis=0, how="all", inplace=True)
+
+            # now also adjust metadata
+            new.ts_type = to_ts_type
 
     if add_ts is not None:
         var_info = {"ts_type": to_ts_type, "units": var_unit_out}
@@ -475,7 +477,6 @@ def combine_vardata_ungridded(
 
     var_short, var_long = short["var_name"], long["var_name"]
     for idx_short, idx_long in zip(_index_short, _index_long):
-
         stat_short = short["stats"][idx_short]
         stat_short.check_var_unit_aerocom(var_short)
         stat_long = long["stats"][idx_long]
