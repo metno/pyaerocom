@@ -63,10 +63,11 @@ def test_clearcache(tmp_path):
 
 
 def test_browse():
-    result = runner.invoke(app, ["browse", "EEA"])
+    result = runner.invoke(
+        app, ["browse", "EARLINET"]
+    )  # EARLINET is an arbitrary choice, but it works
     print(result.stdout)
-    assert 0
-    # assert result.exit_code == 0
+    assert result.exit_code == 0
 
 
 def test_ppiaccess():
