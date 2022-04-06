@@ -10,7 +10,7 @@ from typing import List, Optional
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.aeroval import EvalSetup
+from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
@@ -35,14 +35,14 @@ logger = logging.getLogger(__name__)
 def make_period(
     start_date: datetime,
     end_date: datetime,
-) -> str:
+) -> List[str]:
     start_yr = start_date.year
     end_yr = end_date.year
 
     if start_yr == end_yr:
-        return f"{start_yr}"
+        return [f"{start_yr}"]
 
-    return f"{start_yr}-{end_yr}"
+    return [f"{start_yr}-{end_yr}"]
 
 
 def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
@@ -94,7 +94,7 @@ def make_config(
     cfg = deepcopy(CFG)
     cfg.update(
         model_cfg={
-            f"CAMS2-83-{model}": make_model_entry(
+            f"{model.name}": make_model_entry(
                 start_date,
                 end_date,
                 leap,
@@ -104,7 +104,7 @@ def make_config(
             )
             for model in models
         },
-        periods=[make_period(start_date, end_date)],
+        periods=make_period(start_date, end_date),
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
@@ -126,6 +126,7 @@ def runner(
     cache: str | Path | None,
     *,
     dry_run: bool = False,
+    quiet: bool = False,
 ):
     logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
     if dry_run:
@@ -134,9 +135,19 @@ def runner(
     if cache is not None:
         const.CACHEDIR = cache
 
+    if quiet:
+        const.QUIET = True
+
     stp = EvalSetup(**cfg)
-    ana = CAMS2_83_Processer(stp)
+
+    ana_cams2_83 = CAMS2_83_Processer(stp)
+    ana = ExperimentProcessor(stp)
+
+    logger.info(f"Running Rest of Statistics")
     ana.run()
+
+    # logger.info(f"Running CAMS2_83 Spesific Statistics")
+    # ana_cams2_83.run()
 
 
 @app.command()
@@ -216,4 +227,5 @@ def main(
         start_date, end_date, leap, model_path, obs_path, data_path, coldata_path, model, id, name
     )
 
-    runner(cfg, cache, dry_run=dry_run)
+    quiet = not verbose
+    runner(cfg, cache, dry_run=dry_run, quiet=quiet)

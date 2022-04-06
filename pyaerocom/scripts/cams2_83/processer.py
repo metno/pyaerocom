@@ -10,14 +10,17 @@ logger = logging.getLogger(__name__)
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
     def _run_single_entry(self, model_name, obs_name, var_list):
         col = self.get_colocator(model_name, obs_name)
+        forecast_days = self.cfg.statistics_opts.forecast_days
 
         if self.cfg.processing_opts.only_json:
             files_to_convert = col.get_available_coldata_files(var_list)
         else:
-            model = col.model_id.split(".")[1]
-            for leap in range(4):
-                col.model_id = f"CAMS2-83.{model}.day{leap}"
-                col.model_name = f"CAMS2-83-{model.lower()}-day{leap}"
+            files_to_convert = []
+            for leap in range(forecast_days):
+                model_id = f"CAMS2-83.{model}.day{leap}"
+                model_name = f"CAMS2-83-{model}-day{leap}"
+                col.model_id = model_id
+                col.model_name = model_name
                 col.run(var_list)
 
             files_to_convert = col.files_written
@@ -28,10 +31,9 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 f"computation of json files for {obs_name} /"
                 f"{model_name} combination."
             )
-            return
-
-        engine = CAMS2_83_Engine(self.cfg)
-        engine.run(files_to_convert)
+        else:
+            engine = CAMS2_83_Engine(self.cfg)
+            engine.run(files_to_convert, var_list)
 
     def run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
         if isinstance(var_list, str):

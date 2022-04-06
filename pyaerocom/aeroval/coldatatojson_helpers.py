@@ -843,7 +843,7 @@ def _process_map_and_scat(
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
 
-                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
+                        if use_fairmode and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
 
                             stats["fairmode"] = fairmode_stats(obs_var, stats)
