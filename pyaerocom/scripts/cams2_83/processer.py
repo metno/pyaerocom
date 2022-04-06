@@ -2,7 +2,7 @@ import logging
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 
-from .processer_engine import CAMS2_83_Engine
+from .engine import CAMS2_83_Engine
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,6 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         col = self.get_colocator(model_name, obs_name)
         forecast_days = self.cfg.statistics_opts.forecast_days
 
-        model = col.model_id.split(".")[1]
         if self.cfg.processing_opts.only_json:
             files_to_convert = col.get_available_coldata_files(var_list)
         else:
@@ -23,8 +22,6 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 col.model_id = model_id
                 col.model_name = model_name
                 col.run(var_list)
-
-                # files_to_convert.append(col.files_written)
 
             files_to_convert = col.files_written
 

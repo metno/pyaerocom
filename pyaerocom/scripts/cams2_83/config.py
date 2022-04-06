@@ -1,12 +1,11 @@
 ##################################################
 #        The global configs
 ##################################################
-import os
+from pathlib import Path
 
-import pandas as pd
-
-from pyaerocom.io import cams2_83
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
+from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
 
 GLOBAL_CONFIG = dict(
     # Description of the experiment
@@ -19,8 +18,8 @@ GLOBAL_CONFIG = dict(
     public=True,
     # Locations where to place the results
     # These can be set as the user want, but as here written to use the folder structures we made
-    json_basedir=os.path.abspath("../../data"),
-    coldata_basedir=os.path.abspath("../../coldata"),
+    json_basedir=str(Path("../../data").absolute()),
+    coldata_basedir=str(Path("../../coldata").absolute()),
     # io_aux_file=os.path.abspath("../eval_py/gridded_io_aux.py"),
     # Some infor about the output
     reanalyse_existing=True,
@@ -45,7 +44,7 @@ GLOBAL_CONFIG = dict(
     # Options for time
     freqs=["monthly", "daily", "hourly"],  # Possible frequencies
     periods=[
-        "2019"
+        "2021-2022"
     ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
     main_freq="monthly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
     # This has to be true for the web interface to show diurnal evaluation
@@ -100,10 +99,11 @@ GLOBAL_CONFIG = dict(
         "dryo3",
         "dryvelo3",
     ],
-)
-
-GLOBAL_CONFIG["min_num_obs"] = dict(
-    yearly=dict(monthly=9), monthly=dict(daily=21, weekly=3), daily=dict(hourly=18)
+    min_num_obs=dict(
+        # yearly=dict(monthly=9),
+        # monthly=dict(daily=21, weekly=3),
+        daily=dict(hourly=18),
+    ),
 )
 
 
@@ -204,7 +204,8 @@ OBS_CONFIG["EEA"] = dict(
 ##################################################
 #        Putting it all together
 ##################################################
-CFG = {**GLOBAL_CONFIG}
-
-CFG["model_cfg"] = MODELS_CONFIG
-CFG["obs_cfg"] = OBS_CONFIG
+CFG = dict(
+    model_cfg=MODELS_CONFIG,
+    obs_cfg=OBS_CONFIG,
+    **GLOBAL_CONFIG,
+)
