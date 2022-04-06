@@ -3,7 +3,7 @@ CLI
 
 Documentation of pyaerocom command line interface.
 
-.. argparse::
-   :module: pyaerocom.scripts.cli
-   :func: init_parser
+.. automodule::pyaerocom.scripts.cli
+   :members:
+   :exclude-members: _confirm
    :prog: pya
