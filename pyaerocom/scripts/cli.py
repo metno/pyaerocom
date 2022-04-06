@@ -1,26 +1,11 @@
-from argparse import ArgumentParser
+import typer
 
-from pyaerocom import __version__, const, tools
+from pyaerocom import const, tools
 
-
-def init_parser():
-
-    ap = ArgumentParser(description="pyaerocom command line interface")
-
-    ap.add_argument("-b", "--browse", help="Browse database")
-    ap.add_argument("--clearcache", action="store_true", help="Delete cached data objects")
-    ap.add_argument("--ppiaccess", action="store_true", help="Check if MetNO PPI can be accessed")
-    ap.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s {version}".format(version=__version__),
-        help="Installed version of pyaerocom",
-    )
-
-    return ap
+app = typer.Typer()
 
 
-def confirm():
+def _confirm():
     """
     Ask user to confirm something
 
@@ -35,22 +20,38 @@ def confirm():
     return answer == "y"
 
 
-def main():
-    ap = init_parser()
+@app.command()
+def browse(database: str = typer.Argument(..., help="Provide database name.")):
+    """Browse database e.g., browse <DATABASE>"""
+    print(f"Searching database for matches of {database}")
+    print(tools.browse_database(database))
 
-    args = ap.parse_args()
 
-    if args.browse:
-        print(f"Searching database for matches of {args.browse}")
-        print(tools.browse_database(args.browse))
+@app.command()
+def clearcache():
+    """Delete cached data objects"""
 
-    if args.clearcache:
-        print("Are you sure you want to delete all cached data objects?")
-        if confirm():
-            print("OK then.... here we go!")
-            tools.clear_cache()
-        else:
-            print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
+    print("Are you sure you want to delete all cached data objects?")
+    if _confirm():
+        print("OK then.... here we go!")
+        tools.clear_cache()
+    else:
+        print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
 
-    if args.ppiaccess:
-        print("True") if const.has_access_lustre else print("False")
+
+@app.command()
+def ppiaccess():
+    """Check if MetNO PPI can be accessed"""
+    print("True") if const.has_access_lustre else print("False")
+
+
+@app.command()
+def version():
+    """Installed version of pyaerocom"""
+    from pyaerocom import __version__
+
+    print(__version__)
+
+
+if __name__ == "__main__":
+    app()

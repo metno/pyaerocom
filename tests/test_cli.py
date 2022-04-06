@@ -1,37 +1,15 @@
-from typer.testing import CliRunner
-from pyaerocom.scripts.cli_typer import app
-
-from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+import os
+import pickle
 from unittest import mock
 
-from pyaerocom import tools
-
-from pyaerocom import __version__
-
-import os
-import logging
-import pickle
 import numpy as np
+from typer.testing import CliRunner
 
-# import pytest
+import pyaerocom
+from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.scripts.cli import app
 
-import pyaerocom  # seems extreme. double check example. should be what we are patching
-
-
-logger = logging.getLogger(__name__)
 runner = CliRunner()
-
-
-# def test_typer_runner():
-#     # Test the CLI version arugment
-#     result = runner.invoke(app, "version")
-#     print()
-#     print(f"version: {result.stdout}")
-
-#     result = runner.invoke(
-#         app, ["browse", "ppiaccess"]
-#     )  # LB: Not sure if I want to check clearcache just yet
-#     print(f"list:\n{result.stdout}")
 
 
 def test_mock_version():
@@ -65,7 +43,7 @@ def test_clearcache(tmp_path):
 def test_browse():
     result = runner.invoke(
         app, ["browse", "EARLINET"]
-    )  # EARLINET is an arbitrary choice, but it works
+    )  # EARLINET is an arbitrary choice, but it works. Could think of better choice.
     print(result.stdout)
     assert result.exit_code == 0
 
