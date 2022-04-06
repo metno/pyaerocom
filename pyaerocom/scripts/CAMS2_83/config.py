@@ -14,7 +14,7 @@ GLOBAL_CONFIG = dict(
     exp_id="prototype",
     exp_name="Prototype",
     exp_descr=("Prototype for CAMS2_83 using EEA NRT obs."),
-    exp_pi="Daniel Heinesen, Alvaro Valdebenito, Augustine Mortier, Charlie Negri, Krister Karlsen, Lewis Blake, Michael Gauss",
+    exp_pi="Daniel Heinesen, Alvaro Valdebenito, Augustin Mortier, Charlie Negri, Krister Karlsen, Lewis Blake, Michael Gauss",
     # Whether or not the experiment is visible in the web interface
     public=True,
     # Locations where to place the results
@@ -43,7 +43,7 @@ GLOBAL_CONFIG = dict(
     # The size of map used to display the results
     map_zoom="Europe",
     # Options for time
-    freqs=["yearly", "monthly", "daily", "hourly"],  # Possible frequencies
+    freqs=["monthly", "daily", "hourly"],  # Possible frequencies
     periods=[
         "2019"
     ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
