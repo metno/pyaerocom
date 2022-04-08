@@ -15,6 +15,7 @@ from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
+from pyaerocom.tools import clear_cache
 
 from .config import CFG
 from .processer import CAMS2_83_Processer
@@ -109,9 +110,10 @@ def make_config(
         coldata_basedir=str(coldata_path),
     )
 
-    cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = list(  # type:ignore[index]
-        obs_paths(*date_range(start_date, end_date), root_path=obs_path)
-    )
+    cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
+        str(p) for p in obs_paths(*date_range(start_date, end_date + timedelta(days=4)), root_path=obs_path)
+    ]  # type:ignore[index]
+        
 
     if id is not None:
         cfg["exp_id"] = id
@@ -143,11 +145,14 @@ def runner(
     ana_cams2_83 = CAMS2_83_Processer(stp)
     ana = ExperimentProcessor(stp)
 
+    logging.info(f"Clearing cache at {const.CACHEDIR}")
+    clear_cache()
+
     logger.info(f"Running Rest of Statistics")
     ana.run()
 
-    # logger.info(f"Running CAMS2_83 Spesific Statistics")
-    # ana_cams2_83.run()
+    logger.info(f"Running CAMS2_83 Spesific Statistics")
+    ana_cams2_83.run()
 
 
 @app.command()

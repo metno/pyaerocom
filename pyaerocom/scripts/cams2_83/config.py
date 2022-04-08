@@ -167,9 +167,9 @@ EEA_FILTER = {
 
 species_list = [
     "concno2",
-    # "concco",
+    "concco",
     "conco3",
-    # "concso2",
+    "concso2",
     "concpm10",
     "concpm25",
 ]
@@ -181,7 +181,7 @@ get_ignore_list = (
 
 obs_filters = {
     key: dict(
-        **EEA_FILTER,
+        **BASE_FILTER,
         station_id=get_ignore_list(key),
         negate="station_id",
     )
@@ -193,11 +193,12 @@ OBS_CONFIG = {}
 
 # EEA observatio
 OBS_CONFIG["EEA"] = dict(
-    # obs_id="EEAAQeRep.v2",
-    obs_id="EEAAQeRep.NRT",
+    obs_id="CAMS2_83.NRT",
+    #obs_id="EEAAQeRep.NRT",
     obs_vars=species_list,
-    web_interface_name="EEA-rural",
+    web_interface_name="Obs",
     obs_vert_type="Surface",
+    read_opts_ungridded=dict(files=[], force_caching=True),
     obs_filters=obs_filters,
 )
 
