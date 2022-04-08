@@ -212,7 +212,7 @@ class ReadCAMS2_83:
             raise ValueError(f"The id {id} is not on the correct format")
 
         model, day = match.groups()
-        self.model = model.casefold()
+        self.model = ModelName[model]
         self.forecast_day = int(day)
 
     @property
