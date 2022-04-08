@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from pyaerocom import const
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH, ReadCAMS2_83
 from pyaerocom.io.cams2_83.read_obs import obs_paths as find_obs_paths
 from pyaerocom.io.readungridded import ReadUngridded
@@ -33,7 +34,7 @@ def test_init():
     data = ReadCAMS2_83()
     assert isinstance(data, ReadUngriddedBase)
 
-
-def test_read_ungridded():
-    data = ReadUngridded().read("CAMS2-83.EEA.NRT", "concco")
+@pytest.mark.parametrize("dates", [TEST_DATES])
+def test_read_ungridded(obs_paths: list[Path]):
+    data = ReadUngridded().read(const.CAMS2_83_NRT_NAME, "concco", files=obs_paths)
     assert isinstance(data, UngriddedData)
