@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import chunk
 import logging
+import time
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterator
@@ -8,6 +10,7 @@ from typing import Iterator
 import numpy as np
 import pandas as pd
 
+from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -50,7 +53,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
 
     __version__ = "0.0.0"
     _FILEMASK = ""
-    DATA_ID = "CAMS2-83.EEA.NRT"
+    DATA_ID = const.CAMS2_83_NRT_NAME
     DEFAULT_VARS = list(AEROCOM_NAMES.values())
     PROVIDES_VARIABLES = DEFAULT_VARS
     SUPPORTED_DATASETS = [DATA_ID]
@@ -82,9 +85,15 @@ class ReadCAMS2_83(ReadUngriddedBase):
             files = files[first_file:]
         if last_file is not None:
             files = files[:last_file]
-
+        
+        start = time.time()
         data = list(self.__reader(vars_to_retrieve, files))
-        return UngriddedData.from_station_data(data)
+        end = time.time()
+        print(end - start)
+        
+        ungriddeddata = UngriddedData.from_station_data(data)
+        print(time.time() - end, (time.time() - end)/60.)
+        return ungriddeddata
 
     def read_file(self, filename, vars_to_retrieve=None):
         return self.read(vars_to_retrieve, [filename])
@@ -92,9 +101,10 @@ class ReadCAMS2_83(ReadUngriddedBase):
     @classmethod
     def __reader(cls, vars_to_retrieve: list[str], files: list[str | Path]) -> Iterator[dict]:
         logger.debug(f"reading {cls.DATA_ID} {vars_to_retrieve=} from {files=}")
-        data = pd.concat(read_csv(path) for path in files)
+        data = pd.concat(read_csv(path) for path in files).drop_duplicates(subset=["station", "poll", "time"])
         df: pd.DataFrame
         for station, df in data.groupby("station"):
+            logging.info(f"Reading obs for station {station} and variables {vars_to_retrieve}")
             output = dict(
                 station_id=station,
                 station_name=station,
