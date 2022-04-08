@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import time
 from pathlib import Path
 from reprlib import repr
 from typing import Tuple
@@ -52,8 +53,9 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
         for forecast_hour in range(24 * forecast_days):
+            logger.info(f"Calculating statistics for hour {forecast_hour}")
             leap, hour = divmod(forecast_hour, 24)
-            ds = coldata[leap].data
+            ds = coldata[leap]
             ds = ds.data.sel(time=(ds.time.dt.hour == hour))
             stats = self._get_median_stats_point(ds, use_weights)
             for key in stats_list:
@@ -72,13 +74,18 @@ class CAMS2_83_Engine(ProcessingEngine):
     def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
 
         stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
-        for station, ds in data.groupby("station_name"):
-            stats = ColocatedData(ds).calc_statistics(use_area_weights=use_weights)
+        station_list = data.station_name.data
+        for station in station_list:
+            d = data.sel(station_name=[station])
+            arr = ColocatedData(d)
+            stats = arr.calc_statistics(use_area_weights=use_weights)
             for key in stats_list.keys():
                 stats_list[key].append(stats[key])
+        median_stats = {}
+        for key in stats_list.keys():
+            median_stats[key] = np.nanmedian(np.array(stats_list[key]))
 
-        stats = {key: np.nanmedian(value) for key, value in stats_list.items()}
-        return stats
+        return median_stats
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
