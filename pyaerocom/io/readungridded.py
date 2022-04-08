@@ -365,8 +365,12 @@ class ReadUngridded:
         UngriddedData
             data object
         """
+        force_caching = False
+        if "force_caching" in kwargs:
+            force_caching = kwargs.pop("force_caching")
+            
         _caching = None
-        if len(kwargs) > 0:
+        if len(kwargs) > 0 and not force_caching:
             _caching = const.CACHING
             const.CACHING = False
 
