@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import time
+import warnings
 from pathlib import Path
 from reprlib import repr
 from typing import Tuple
@@ -20,7 +21,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import _add_entry_json, write_json
 from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
-
+warnings.filterwarnings('ignore')
 
 class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
@@ -34,7 +35,6 @@ class CAMS2_83_Engine(ProcessingEngine):
             self.process_coldata(coldata[var])
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
-        use_weights = self.cfg.statistics_opts.weighted_stats
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
@@ -57,7 +57,9 @@ class CAMS2_83_Engine(ProcessingEngine):
             leap, hour = divmod(forecast_hour, 24)
             ds = coldata[leap]
             ds = ds.data.sel(time=(ds.time.dt.hour == hour))
-            stats = self._get_median_stats_point(ds, use_weights)
+            start = time.time()
+            stats = self._get_median_stats_point_vec(ds, use_weights)
+            print(time.time() - start)
             for key in stats_list:
                 stats_list[key].append(stats[key])
 
@@ -86,6 +88,58 @@ class CAMS2_83_Engine(ProcessingEngine):
             median_stats[key] = np.nanmedian(np.array(stats_list[key]))
 
         return median_stats
+
+    def _get_median_stats_point_vec(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
+        stats_list: dict[str, float] = dict(rms=0.0, R=0.0, nmb=0.0, mnmb=0.0, fge=0.0)
+        
+        obsvals = data.data[0]
+        modvals = data.data[1]
+
+        total_mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
+        num_points = np.sum(total_mask, axis=0)
+
+
+        diff = modvals - obsvals
+        diffsquare = diff**2
+        sum_obs = np.nansum(obsvals, axis=0)
+        sum_diff = np.nansum(diff, axis=0)
+        sum_vals = obsvals + modvals
+        
+
+        tmp = diff / sum_vals
+        mask = ~np.isnan(sum_vals)
+        N = np.sum(mask, axis=0)
+
+        nmb = np.where(sum_obs == 0, np.nan, sum_diff / sum_obs)
+
+        mnmb = 2.0 * np.nanmean(tmp, axis=0)
+        fge = 2.0 * np.nanmean(np.abs(tmp), axis=0)
+        rms = np.sqrt(np.nanmean(diffsquare, axis=0))
+
+
+        R = self._pearson_R_vec(obsvals, modvals)
+
+        stats_list["rms"] = np.nanmedian(rms)
+        stats_list["R"] = np.nanmedian(R)
+        stats_list["nmb"] = np.nanmedian(nmb)
+        stats_list["mnmb"] = np.nanmedian(mnmb)
+        stats_list["fge"] = np.nanmedian(fge)
+
+
+        return stats_list
+
+
+    def _pearson_R_vec(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        xmean = np.nanmean(x, axis=0)
+        ymean = np.nanmean(y, axis=0)
+        xm = x - xmean
+        ym = y - ymean
+        normxm = np.sqrt(np.nansum(xm*xm, axis=0))
+        normym = np.sqrt(np.nansum(ym*ym, axis=0))
+
+        r = np.where(normxm*normym == 0.0, np.nan, np.nansum(xm*ym, axis=0)/(normxm*normym))
+
+        return r
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
