@@ -1,25 +1,25 @@
+import pytest
 import os
 import pickle
 from unittest import mock
+from importlib import metadata
 
 import numpy as np
 from typer.testing import CliRunner
 
-import pyaerocom
+# import pyaerocom
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-from pyaerocom.scripts.cli import app
+from pyaerocom.scripts.cli import main
 
 runner = CliRunner()
 
 
-def test_mock_version():
-    with mock.patch.object(
-        pyaerocom, "__version__", "0.0.0"
-    ):  # adding dummy version here as mocking object
-        result = runner.invoke(app, ["version"])
-        assert (
-            result.stdout.rstrip() == "0.0.0"
-        )  # When version() method is called by CLI code, the __version__ attribute isn't the original string, it's the string we replaced with patch.object()
+@pytest.mark.parametrize("command", ("--version", "-V"))
+def test_version(command: str):
+    result = runner.invoke(main, command.split())
+    assert result.exit_code == 0
+    assert "pyaerocom" in result.stdout
+    assert metadata.version("pyaerocom") in result.stdout
 
 
 def test_clearcache(tmp_path):
@@ -33,7 +33,7 @@ def test_clearcache(tmp_path):
     assert os.listdir(tmp_path)
 
     with mock.patch.object(CacheHandlerUngridded, "cache_dir", tmp_path):
-        result = runner.invoke(app, ["clearcache"], input="y")
+        result = runner.invoke(main, ["clearcache"], input="y")
         # Check the clearcahce exited correctly
         assert result.exit_code == 0
         # Check that clearcache actually cleared the cache
@@ -42,12 +42,12 @@ def test_clearcache(tmp_path):
 
 def test_browse():
     result = runner.invoke(
-        app, ["browse", "EARLINET"]
+        main, ["browse", "EARLINET"]
     )  # EARLINET is an arbitrary choice, but it works. Could think of better choice.
     print(result.stdout)
     assert result.exit_code == 0
 
 
 def test_ppiaccess():
-    result = runner.invoke(app, ["ppiaccess"])
+    result = runner.invoke(main, ["ppiaccess"])
     assert result.exit_code == 0

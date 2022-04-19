@@ -1,8 +1,10 @@
-import typer
+# import typer
+from typer import Exit, Option, Typer, Argument, echo
+from typing import Optional
 
-from pyaerocom import const, tools
+from pyaerocom import const, tools, __version__, __package__
 
-app = typer.Typer()
+main = Typer()
 
 
 def _confirm():
@@ -20,14 +22,27 @@ def _confirm():
     return answer == "y"
 
 
-@app.command()
-def browse(database: str = typer.Argument(..., help="Provide database name.")):
+def version_callback(value: bool):  # pragma: no cover
+    if not value:
+        return
+
+    echo(f"{__package__} {__version__}")
+    raise Exit()
+
+
+@main.callback()
+def callback(version: Optional[bool] = Option(None, "--version", "-V", callback=version_callback)):
+    """Pyaerocom Command Line Interface"""
+
+
+@main.command()
+def browse(database: str = Argument(..., help="Provide database name.")):
     """Browse database e.g., browse <DATABASE>"""
     print(f"Searching database for matches of {database}")
     print(tools.browse_database(database))
 
 
-@app.command()
+@main.command()
 def clearcache():
     """Delete cached data objects"""
 
@@ -39,19 +54,11 @@ def clearcache():
         print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
 
 
-@app.command()
+@main.command()
 def ppiaccess():
     """Check if MetNO PPI can be accessed"""
     print("True") if const.has_access_lustre else print("False")
 
 
-@app.command()
-def version():
-    """Installed version of pyaerocom"""
-    from pyaerocom import __version__
-
-    print(__version__)
-
-
 if __name__ == "__main__":
-    app()
+    main()
