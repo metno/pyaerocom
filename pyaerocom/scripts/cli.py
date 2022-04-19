@@ -1,4 +1,3 @@
-# import typer
 from typer import Exit, Option, Typer, Argument, echo
 from typing import Optional
 
