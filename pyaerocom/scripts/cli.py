@@ -1,7 +1,8 @@
-from typer import Exit, Option, Typer, Argument, echo
 from typing import Optional
 
-from pyaerocom import const, tools, __version__, __package__
+from typer import Argument, Exit, Option, Typer, echo
+
+from pyaerocom import __package__, __version__, const, tools
 
 main = Typer()
 

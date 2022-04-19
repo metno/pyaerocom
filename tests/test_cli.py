@@ -1,13 +1,12 @@
-import pytest
 import os
 import pickle
-from unittest import mock
 from importlib import metadata
+from unittest import mock
 
 import numpy as np
+import pytest
 from typer.testing import CliRunner
 
-# import pyaerocom
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.scripts.cli import main
 
