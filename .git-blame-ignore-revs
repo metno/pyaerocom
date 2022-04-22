@@ -1,0 +1,26 @@
+# 2021-10-22: format with black
+29b11af2fea6b952571f3daab93ba6bba68bdb85
+# 2021-10-22: format with isort
+d48318c22231d453418e526b91787c43ede54d64
+# 2021-10-22: run pyupgrade --py38-plus and black
+dbac8ab91616a910364c20cb4aa594e80f1300d6
+# 2021-10-27: format with black and isort
+bd256f14e4315e7b9590221cf2576bf5cef45750
+# 2021-11-02: Merge branch 'main-dev' into lint-on-ci
+3bcad3a2057fc8d62c1b68ebdb232f37edb62f11
+# 2021-11-04: Merge branch 'main-dev' into lint-on-ci
+1a39dc8c32c9923238dac08f79e2b0f3c1a01943
+# 2021-11-05: Merge branch 'main-dev' into lint-on-ci
+5433b288611b5e5bfa5d2c6ef6977c908f379441
+# 2021-11-11: Merge branch 'main-dev' into lint-on-ci
+1e85d02bae3ea8f643dd0cdbbd4d494483c8b076
+# 2021-11-11: combine partial strings
+fe1e0e56fcf5c2346236457d90027ce4d8d5cbb2
+# 2021-11-12: Merge branch 'main-dev' into lint-on-ci
+865f874695aec992b987bb4c6869889a9f09cb65
+# 2021-11-22: Merge branch 'main-dev' into lint-on-ci
+f790df13cfe42792e88f1c9fc0b7ae0d02eeb1d2
+# 2021-11-25: format io.read_mscw_ctm tests
+b33da064f6ca28072d93340f8a9fdbcf219bcbd9
+# 2021-11-26: Merge branch 'main-dev' into lint-on-ci
+9b7b52365480f5e9205012a849708b7ce7e201a5

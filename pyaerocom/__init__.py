@@ -1,11 +1,12 @@
-from ._init_helpers import (_init_supplemental, _init_logger,
-                            LOGLEVELS, change_verbosity)
+# isort:skip_file
+from importlib import metadata
 
-__version__, __dir__ = _init_supplemental()
+from ._logging import change_verbosity
 
-logger, print_log = _init_logger()
+__version__ = metadata.version(__package__)
 
 from .config import Config
+
 # Instantiate default configuration
 const = Config()
 
@@ -15,7 +16,6 @@ from . import plot
 from . import tools
 from . import scripts
 
-
 # Imports
 from . import obs_io
 from . import metastandards
@@ -24,7 +24,8 @@ from . import mathutils
 from . import geodesy
 from . import region_defs
 from . import region
-#from . import vert_coords
+
+# from . import vert_coords
 from . import stationdata
 from . import griddeddata
 from . import ungriddeddata
@@ -34,9 +35,7 @@ from . import combine_vardata_ungridded
 from . import helpers_landsea_masks
 from . import helpers
 from . import trends_helpers
-
 from . import trends_engine
-
 
 # custom toplevel classes
 from .variable import Variable

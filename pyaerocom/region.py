@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 This module contains functionality related to regions in pyaerocom
 """
@@ -7,10 +5,10 @@ import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.helpers_landsea_masks import load_region_mask_xr
-from pyaerocom.region_defs import (REGION_DEFS, # all region definitions
-                                   HTAP_REGIONS, # list of HTAP regions
-                                   OLD_AEROCOM_REGIONS,
-                                   REGION_NAMES) # custom names (dict)
+from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
+from pyaerocom.region_defs import REGION_DEFS  # all region definitions
+from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
+
 
 class Region(BrowseDict):
     """Class specifying a region
@@ -45,10 +43,11 @@ class Region(BrowseDict):
         Note, any attr. values provided by kwargs are preferred over
         potentially defined default attrs. that are imported automatically.
     """
-    def __init__(self, region_id=None,**kwargs):
+
+    def __init__(self, region_id=None, **kwargs):
 
         if region_id is None:
-            region_id = 'WORLD'
+            region_id = "WORLD"
 
         if region_id in REGION_NAMES:
             name = REGION_NAMES[region_id]
@@ -101,8 +100,8 @@ class Region(BrowseDict):
     @property
     def center_coordinate(self):
         """Center coordinate of this region"""
-        latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0])/2
-        lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0])/2
+        latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0]) / 2
+        lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0]) / 2
         return (latc, lonc)
 
     def distance_to_center(self, lat, lon):
@@ -121,11 +120,9 @@ class Region(BrowseDict):
             distance in km
         """
         from pyaerocom.geodesy import calc_distance
+
         cc = self.center_coordinate
-        return calc_distance(lat0=cc[0],
-                             lon0=cc[1],
-                             lat1=lat,
-                             lon1=lon)
+        return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
 
     def contains_coordinate(self, lat, lon):
         """Check if input lat/lon coordinate is contained in region
@@ -153,9 +150,7 @@ class Region(BrowseDict):
 
     def get_mask_data(self):
         if not self.mask_available():
-            raise AttributeError(
-                f'No binary mask data available for region {self.region_id}.'
-                )
+            raise AttributeError(f"No binary mask data available for region {self.region_id}.")
         if self._mask_data is None:
             self._mask_data = load_region_mask_xr(self.region_id)
         return self._mask_data
@@ -163,16 +158,16 @@ class Region(BrowseDict):
     def plot_mask(self, ax, color, alpha=0.2):
 
         mask = self.get_mask_data()
-        #import numpy as np
+        # import numpy as np
         data = mask.data
-        data[data==0] = np.nan
+        data[data == 0] = np.nan
         mask.data = data
 
         mask.plot(ax=ax)
         return ax
 
     def plot_borders(self, ax, color, lw=2):
-        raise NotImplementedError('Coming soon...')
+        raise NotImplementedError("Coming soon...")
 
     def plot(self, ax=None):
         """
@@ -194,20 +189,22 @@ class Region(BrowseDict):
 
         """
         from cartopy.mpl.geoaxes import GeoAxes
+
         from pyaerocom.plot.mapping import init_map
+
         if ax is None:
             ax = init_map()
         elif not isinstance(ax, GeoAxes):
-            raise ValueError('Invalid input for ax: need cartopy GeoAxes..')
+            raise ValueError("Invalid input for ax: need cartopy GeoAxes..")
 
         if self.mask_available():
-            self.plot_mask(ax, color='r')
+            self.plot_mask(ax, color="r")
 
-        ax.set_xlabel('Longitude')
-        ax.set_ylabel('Latitude')
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Latitude")
         name = self.name
-        if not name ==  self.region_id:
-            name += f' (ID={self.region_id})'
+        if not name == self.region_id:
+            name += f" (ID={self.region_id})"
 
         ax.set_title(name)
 
@@ -215,28 +212,30 @@ class Region(BrowseDict):
 
     def __contains__(self, val):
         if not isinstance(val, tuple):
-            raise TypeError('Invalid input, need tuple')
+            raise TypeError("Invalid input, need tuple")
         if not len(val) == 2:
-            raise ValueError('Invalid input: coordinate must contain 2 '
-                             'elements (lat, lon)')
+            raise ValueError("Invalid input: coordinate must contain 2 elements (lat, lon)")
         return self.contains_coordinate(lat=val[0], lon=val[1])
 
     def __repr__(self):
-       return ("Region %s %s" %(self.name, super(Region, self).__repr__()))
+        return f"Region {self.name} {super().__repr__()}"
 
     def __str__(self):
-        s = ("pyaeorocom Region\nName: %s\n"
-             "Longitude range: %s\n"
-             "Latitude range: %s\n"
-             "Longitude range (plots): %s\n"
-             "Latitude range (plots): %s"
-             %(self.name, self.lon_range, self.lat_range,
-               self.lon_range_plot, self.lat_range_plot))
+        s = (
+            "pyaeorocom Region\nName: %s\n"
+            "Longitude range: %s\n"
+            "Latitude range: %s\n"
+            "Longitude range (plots): %s\n"
+            "Latitude range (plots): %s"
+            % (self.name, self.lon_range, self.lat_range, self.lon_range_plot, self.lat_range_plot)
+        )
         return s
+
 
 def all():
     """Wrapper for :func:`get_all_default_region_ids`"""
     return list(REGION_DEFS)
+
 
 def get_all_default_region_ids():
     """Get list containing IDs of all default regions
@@ -247,6 +246,7 @@ def get_all_default_region_ids():
         IDs of all predefined default regions
     """
     return OLD_AEROCOM_REGIONS
+
 
 def _get_regions_helper(reg_ids):
     """
@@ -266,6 +266,7 @@ def _get_regions_helper(reg_ids):
     for reg in reg_ids:
         regs[reg] = Region(reg)
     return regs
+
 
 def get_old_aerocom_default_regions():
     """
@@ -290,6 +291,7 @@ def get_htap_regions():
     """
     return _get_regions_helper(HTAP_REGIONS)
 
+
 def get_all_default_regions():
     """Get dictionary containing all default regions from region.ini file
 
@@ -301,6 +303,7 @@ def get_all_default_regions():
 
     """
     return get_old_aerocom_default_regions()
+
 
 #: ToDO: check how to handle methods properly with HTAP regions...
 def get_regions_coord(lat, lon, regions=None):
@@ -331,13 +334,14 @@ def get_regions_coord(lat, lon, regions=None):
     if regions is None:
         regions = get_all_default_regions()
     for rname, reg in regions.items():
-        if rname == 'WORLD': # always True
+        if rname == "WORLD":  # always True
             continue
         if reg.contains_coordinate(lat, lon):
             matches.append(rname)
     if len(matches) == 0:
-        matches.append('WORLD')
+        matches.append("WORLD")
     return matches
+
 
 def find_closest_region_coord(lat, lon, regions=None):
     """Find region that has it's center closest to input coordinate
@@ -372,27 +376,5 @@ def find_closest_region_coord(lat, lon, regions=None):
         dist = region.distance_to_center(lat, lon)
         if dist < min_dist:
             min_dist = dist
-            best=match
+            best = match
     return best
-
-if __name__=="__main__":
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    import pyaerocom as pya
-    res = {}
-    reg = Region('EUROPE')
-    reg.plot()
-
-# =============================================================================
-#     for reg in pya.region_defs.HTAP_REGIONS:
-#
-#         mask = pya.helpers_landsea_masks.load_region_mask_xr(reg)
-#         res[reg] = info = pya.helpers_landsea_masks.get_lat_lon_range_mask_region(mask)
-#         lonr, latr = info['lon_range'], info['lat_range']
-#
-#
-#         print(f'[{reg}]')
-#         print(f'lon_range={lonr[0]:.3f},{lonr[1]:.3f}')
-#         print(f'lat_range={latr[0]:.3f},{latr[1]:.3f}')
-#         print()
-# =============================================================================

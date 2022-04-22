@@ -1,18 +1,19 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Module containing time resampling functionality
 """
-import numpy as np
+import logging
+
 import pandas as pd
 import xarray as xarr
-from pyaerocom import const
-from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.tstype import TsType
-from pyaerocom.helpers import (resample_time_dataarray,
-                               resample_timeseries, isnumeric)
 
-class TimeResampler(object):
+from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_timeseries
+from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
+
+
+class TimeResampler:
     """Object that can be use to resample timeseries data
 
     It supports hierarchical resampling of :class:`xarray.DataArray` objects
@@ -23,8 +24,10 @@ class TimeResampler(object):
     specified to first required minimum number of hours per day, and minimum
     days per month, to create the output data.
     """
-    AGGRS_UNIT_PRESERVE = ('mean', 'median', 'std', 'max', 'min')
-    DEFAULT_HOW = 'mean'
+
+    AGGRS_UNIT_PRESERVE = ("mean", "median", "std", "max", "min")
+    DEFAULT_HOW = "mean"
+
     def __init__(self, input_data=None):
         self.last_setup = None
         # the following attribute is updated whenever a resampling operation is
@@ -41,7 +44,7 @@ class TimeResampler(object):
     def last_units_preserved(self):
         """Boolean indicating if last resampling operation preserves units"""
         if self._last_units_preserved is None:
-            raise AttributeError('Please call resample first...')
+            raise AttributeError("Please call resample first...")
         return self._last_units_preserved
 
     @property
@@ -52,7 +55,7 @@ class TimeResampler(object):
     @input_data.setter
     def input_data(self, val):
         if not isinstance(val, (pd.Series, xarr.DataArray)):
-            raise ValueError('Invalid input: need Series or DataArray')
+            raise ValueError("Invalid input: need Series or DataArray")
         self._input_data = val
 
     @property
@@ -98,14 +101,16 @@ class TimeResampler(object):
         """
         if isnumeric(min_num_obs):
             if not isinstance(how, str):
-                raise ValueError('Error initialising resampling constraints. '
-                                 'min_num_obs is numeric ({}) and input how '
-                                 'is {} (would need to be string, e.g. mean)'
-                                 .format(min_num_obs, how))
+                raise ValueError(
+                    f"Error initialising resampling constraints. "
+                    f"min_num_obs is numeric ({min_num_obs}) and input how is {how} "
+                    f"(would need to be string, e.g. mean)"
+                )
             return [(to_ts_type.val, int(min_num_obs), how)]
         if not isinstance(min_num_obs, dict):
-            raise ValueError('Invalid input for min_num_obs, need dictionary '
-                             'or integer, got {}'.format(min_num_obs))
+            raise ValueError(
+                f"Invalid input for min_num_obs, need dictionary or integer, got {min_num_obs}"
+            )
 
         base_freqs = TsType.VALID
 
@@ -117,27 +122,26 @@ class TimeResampler(object):
         # loop from next base freq to end base freq, note that min_num_obs as
         # well as input freqs may have multiplication factors, which may
         # require min_num_obs values to be updated accordingly
-        for i in range(start_base+1, stop_base+1):
+        for i in range(start_base + 1, stop_base + 1):
             to_base = TsType(base_freqs[i])
             try:
-                entry = self._get_idx_entry(last_from, to_base,
-                                            min_num_obs, how)
+                entry = self._get_idx_entry(last_from, to_base, min_num_obs, how)
                 idx.append(entry)
                 last_from = to_base
             except (TemporalResolutionError, ValueError):
                 continue
         if len(idx) == 0 or not idx[-1][0] == to_ts_type.val:
             try:
-                last_entry = self._get_idx_entry(last_from, to_ts_type,
-                                            min_num_obs, how)
+                last_entry = self._get_idx_entry(last_from, to_ts_type, min_num_obs, how)
             except (TemporalResolutionError, ValueError):
                 _how = self._get_resample_how(last_from, to_ts_type, how)
                 last_entry = (to_ts_type.val, 0, _how)
             idx.append(last_entry)
         return idx
 
-    def resample(self, to_ts_type, input_data=None, from_ts_type=None,
-                 how=None, min_num_obs=None, **kwargs):
+    def resample(
+        self, to_ts_type, input_data=None, from_ts_type=None, how=None, min_num_obs=None, **kwargs
+    ):
         """Resample input data
 
         Parameters
@@ -171,7 +175,7 @@ class TimeResampler(object):
             resampled data object
         """
         if how is None:
-            how = 'mean'
+            how = "mean"
 
         if how in self.AGGRS_UNIT_PRESERVE:
             self._last_units_preserved = True
@@ -181,13 +185,12 @@ class TimeResampler(object):
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
 
-        if str(from_ts_type) == 'native':
+        if str(from_ts_type) == "native":
             from_ts_type = None
 
         if from_ts_type is None:
             if min_num_obs is not None:
-                const.print_log.warning('setting min_num_obs to None since '
-                                        'from_ts_type is not specified')
+                logger.warning("setting min_num_obs to None since from_ts_type is not specified")
                 min_num_obs = None
         elif isinstance(from_ts_type, str):
             from_ts_type = TsType(from_ts_type)
@@ -195,47 +198,44 @@ class TimeResampler(object):
         if input_data is not None:
             self.input_data = input_data
         if self.input_data is None:
-            raise ValueError('Please provide data (Series or DataArray)')
+            raise ValueError("Please provide data (Series or DataArray)")
 
+        self.last_setup = dict(min_num_obs=min_num_obs, how=how)
 
-        self.last_setup = dict(min_num_obs=min_num_obs,
-                               how=how)
-
-        if from_ts_type is None: # native == unknown
+        if from_ts_type is None:  # native == unknown
             freq = to_ts_type.to_pandas_freq()
             data_out = self.fun(self.input_data, freq=freq, how=how, **kwargs)
         elif to_ts_type > from_ts_type:
-            raise TemporalResolutionError('Cannot resample time-series from {} '
-                                          'to {}'
-                                          .format(from_ts_type, to_ts_type))
+            raise TemporalResolutionError(
+                f"Cannot resample time-series from {from_ts_type} to {to_ts_type}"
+            )
         elif to_ts_type == from_ts_type:
-            const.logger.info('Input time frequency {} equals current frequency '
-                              'of data. Resampling will be applied anyways '
-                              'which will introduce NaN values at missing '
-                              'time stamps'.format(to_ts_type.val))
+            logger.info(
+                f"Input time frequency {to_ts_type.val} equals current frequency of data. "
+                f"Resampling will be applied anyways which will introduce NaN values "
+                f"at missing time stamps"
+            )
 
             freq = to_ts_type.to_pandas_freq()
             self._last_units_preserved = True
-            data_out = self.fun(self.input_data, freq=freq, how='mean',
-                                **kwargs)
+            data_out = self.fun(self.input_data, freq=freq, how="mean", **kwargs)
 
         elif min_num_obs is None:
             freq = to_ts_type.to_pandas_freq()
             if not isinstance(how, str):
-                raise ValueError('Temporal resampling without constraints can '
-                                 'only use string type argument how (e.g. '
-                                 'how=mean). Got {}'.format(how))
+                raise ValueError(
+                    f"Temporal resampling without constraints can only use string type "
+                    f"argument how (e.g. how=mean). Got {how}"
+                )
 
-            data_out = self.fun(self.input_data, freq=freq,
-                                how=how, **kwargs)
+            data_out = self.fun(self.input_data, freq=freq, how=how, **kwargs)
         else:
             _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
             data_out = self.input_data
             aggrs = []
             for to_ts_type, mno, rshow in _idx:
                 freq = TsType(to_ts_type).to_pandas_freq()
-                data_out = self.fun(data_out, freq=freq, how=rshow,
-                                    min_num_obs=mno, **kwargs)
+                data_out = self.fun(data_out, freq=freq, how=rshow, min_num_obs=mno, **kwargs)
                 aggrs.append(rshow)
 
             if all([x in self.AGGRS_UNIT_PRESERVE for x in aggrs]):
@@ -243,18 +243,3 @@ class TimeResampler(object):
             else:
                 self._last_units_preserved = False
         return data_out
-
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    import pyaerocom as pya
-
-    data = pya.io.ReadGridded('AATSR_SU_v4.3').read_var('od550aer', start=2010)
-    mon_iris = data.resample_time('monthly')
-
-    mon_xarr = data.resample_time('monthly',
-                                  min_num_obs=1)
-
-    plt.close('all')
-    data = pya.io.ReadUngridded().read('EBASMC', 'concpm10')
-
-    stats = data.to_station_data_all('concpm10')

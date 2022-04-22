@@ -1,13 +1,13 @@
 import pandas as pd
-
 from cf_units import Unit
+
+from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.variable_helpers import get_variable
 
 #: default frequency for rates variables (e.g. deposition, precip)
-RATES_FREQ_DEFAULT = 'd'
+RATES_FREQ_DEFAULT = "d"
 
 # 1. DEFINITION OF ATOM and MOLECULAR MASSES
 
@@ -37,58 +37,61 @@ HA_TO_SQM = 10000  # hectar to square metre.
 #: Custom unit conversion factors for certain variables
 #: columns: variable -> from unit -> to_unit -> conversion
 #: factor
-UCONV_MUL_FACS = pd.DataFrame([
-
-    ['concso4', 'ug S/m3', 'ug m-3', M_SO4 / M_S],
-    ['concso4pm25', 'ug S/m3', 'ug m-3', M_SO4 / M_S],
-    ['concso4pm10', 'ug S/m3', 'ug m-3', M_SO4 / M_S],
-    ['concso2', 'ug S/m3', 'ug m-3', M_SO2 / M_S],
-    ['concbc', 'ug C/m3', 'ug m-3', 1.0],
-    ['concoa', 'ug C/m3', 'ug m-3', 1.0],
-    ['concoc', 'ug C/m3', 'ug m-3', 1.0],
-    ['conctc', 'ug C/m3', 'ug m-3', 1.0],
-    ['concno2', 'ug N/m3', 'ug m-3', M_NO2 / M_N],
-    ['concno3', 'ug N/m3', 'ug m-3', M_NO3 / M_N],
-    ['concnh3', 'ug N/m3', 'ug m-3', M_NH3 / M_N],
-    ['concnh4', 'ug N/m3', 'ug m-3', M_NH4 / M_N],
-    ['wetso4', 'kg S/ha', 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
-    ['concso4pr', 'mg S/L', 'g m-3', M_SO4 / M_S]
-
-], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
+UCONV_MUL_FACS = pd.DataFrame(
+    [
+        # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
+        # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
+        # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
+        # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
+        ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
+        ["concbc", "ug C/m3", "ug m-3", 1.0],
+        ["concoa", "ug C/m3", "ug m-3", 1.0],
+        ["concoc", "ug C/m3", "ug m-3", 1.0],
+        ["conctc", "ug C/m3", "ug m-3", 1.0],
+        ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
+        # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
+        ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
+        # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
+        ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
+        ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
+    ],
+    columns=["var_name", "from", "to", "fac"],
+).set_index(["var_name", "from"])
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
 UALIASES = {
     # mass concentrations
-    'ug S m-3': 'ug S/m3',
-    'ug C m-3': 'ug C/m3',
-    'ug N m-3': 'ug N/m3',
-    'ugC/m3'  : 'ug C/m3',
+    "ug S m-3": "ug S/m3",
+    "ug C m-3": "ug C/m3",
+    "ug N m-3": "ug N/m3",
+    "ugC/m3": "ug C/m3",
     # deposition rates (implicit)
     ## sulphur species
-    'mgS/m2': 'mg S m-2',
-    'mgSm-2': 'mg S m-2',
+    "mgS/m2": "mg S m-2",
+    "mgSm-2": "mg S m-2",
     ## nitrogen species
-    'mgN/m2': 'mg N m-2',
-    'mgNm-2': 'mg N m-2',
+    "mgN/m2": "mg N m-2",
+    "mgNm-2": "mg N m-2",
     # deposition rates (explicit)
     ## sulphur species
-    'mgS/m2/h': 'mg S m-2 h-1',
-    'mgS/m**2/h': 'mg S m-2 h-1',
-    'mgSm-2h-1': 'mg S m-2 h-1',
-    'mgSm**-2h-1': 'mg S m-2 h-1',
-    'mgS/m2/d': 'mg S m-2 d-1',
+    "mgS/m2/h": "mg S m-2 h-1",
+    "mgS/m**2/h": "mg S m-2 h-1",
+    "mgSm-2h-1": "mg S m-2 h-1",
+    "mgSm**-2h-1": "mg S m-2 h-1",
+    "mgS/m2/d": "mg S m-2 d-1",
     ## nitrogen species
-    'mgN/m2/h': 'mg N m-2 h-1',
-    'mgN/m**2/h': 'mg N m-2 h-1',
-    'mgNm-2h-1': 'mg N m-2 h-1',
-    'mgNm**-2h-1': 'mg N m-2 h-1',
-    'mgN/m2/d': 'mg N m-2 d-1',
+    "mgN/m2/h": "mg N m-2 h-1",
+    "mgN/m**2/h": "mg N m-2 h-1",
+    "mgNm-2h-1": "mg N m-2 h-1",
+    "mgNm**-2h-1": "mg N m-2 h-1",
+    "mgN/m2/d": "mg N m-2 d-1",
     ## others
-    'MM/H': 'mm h-1',
+    "MM/H": "mm h-1",
     # others
-    '/m': 'm-1'
+    "/m": "m-1",
 }
+
 
 def _check_unit_endswith_freq(unit):
     """
@@ -109,11 +112,12 @@ def _check_unit_endswith_freq(unit):
         True if input unit ends with valid frequency string, else False
     """
     if isinstance(unit, Unit):
-        unit =str(unit)
+        unit = str(unit)
     for si_unit in SI_TO_TS_TYPE:
-        if unit.endswith(f'/{si_unit}') or unit.endswith(f'{si_unit}-1'):
+        if unit.endswith(f"/{si_unit}") or unit.endswith(f"{si_unit}-1"):
             return True
     return False
+
 
 def rate_unit_implicit(unit):
     """
@@ -142,6 +146,7 @@ def rate_unit_implicit(unit):
 
     """
     return not _check_unit_endswith_freq(unit)
+
 
 def _unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit
@@ -184,15 +189,16 @@ def _unit_conversion_fac_custom(var_name, from_unit):
         info = UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
         if not isinstance(info, pd.Series):
             raise UnitConversionError(
-                'FATAL: Could not find unique conversion factor in table  '
-                'UCONV_MUL_FACS in units_helpers.py. Please check for '
-                'dulplicate entries')
+                "FATAL: Could not find unique conversion factor in table  "
+                "UCONV_MUL_FACS in units_helpers.py. Please check for "
+                "dulplicate entries"
+            )
     except KeyError:
-        raise UnitConversionError('Failed to convert unit {} (variable {}). '
-                                  'Reason: no custom conversion factor could '
-                                  'be inferred from table '
-                                  'pyaerocom.units_helpers.UCONV_MUL_FACS'
-                                  .format(from_unit, var_name))
+        raise UnitConversionError(
+            f"Failed to convert unit {from_unit} (variable {var_name}). "
+            f"Reason: no custom conversion factor could be inferred from table "
+            f"pyaerocom.units_helpers.UCONV_MUL_FACS"
+        )
     return (info.to, info.fac)
 
 
@@ -227,8 +233,7 @@ def _unit_conversion_fac_si(from_unit, to_unit):
     try:
         return from_unit.convert(1, to_unit)
     except ValueError:
-        raise UnitConversionError(
-            f'Failed to convert unit from {from_unit} to {to_unit}')
+        raise UnitConversionError(f"Failed to convert unit from {from_unit} to {to_unit}")
 
 
 def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
@@ -257,8 +262,7 @@ def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
         return 1.0
     elif var_name is not None and var_name in UCONV_MUL_FACS.index:
         try:
-            from_unit, pre_conv_fac = _unit_conversion_fac_custom(var_name,
-                                                                  from_unit)
+            from_unit, pre_conv_fac = _unit_conversion_fac_custom(var_name, from_unit)
         except UnitConversionError:
             # from_unit is likely not custom but standard... and if not
             # call of unit_conversion_fac_si below will crash
@@ -266,20 +270,23 @@ def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
 
     return _unit_conversion_fac_si(from_unit, to_unit) * pre_conv_fac
 
+
 def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
     try:
-        return _get_unit_conversion_fac_helper(from_unit,to_unit,var_name)
+        return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:
-        if (ts_type is not None and var_name is not None and
-                get_variable(var_name).is_rate and
-                rate_unit_implicit(from_unit)):
+        if (
+            ts_type is not None
+            and var_name is not None
+            and get_variable(var_name).is_rate
+            and rate_unit_implicit(from_unit)
+        ):
             freq_si = TsType(ts_type).to_si()
-            from_unit = f'{from_unit} {freq_si}-1'
-            return _get_unit_conversion_fac_helper(from_unit,to_unit,
-                                                   var_name)
+            from_unit = f"{from_unit} {freq_si}-1"
+            return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
 
-    raise UnitConversionError(f'failed to convert unit from '
-                              f'{from_unit} to {to_unit}')
+    raise UnitConversionError(f"failed to convert unit from {from_unit} to {to_unit}")
+
 
 def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):
     """Convert unit of data

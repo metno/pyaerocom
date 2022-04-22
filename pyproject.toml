@@ -4,48 +4,56 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+log_cli = false
+log_cli_level = "WARNING"
 addopts = "--failed-first"
 testpaths = ["tests"]
 filterwarnings = [
-  "error",
-  "ignore::pytest.PytestUnraisableExceptionWarning",
+    # all warnings are errors
+    "error",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+    # except deprecation and future warnings ouside this packege
+    'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
+    'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+    # and not on this list
+    "ignore:.*please install Basemap:UserWarning:geonum.*:",
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:"
 ]
 
 [tool.coverage.run]
 source = ["pyaerocom"]
 omit = [
-  # not used
-  "pyaerocom/aeroval/utils.py",
-  "pyaerocom/io/read_aeronet_invv2.py",
-  "pyaerocom/io/read_aeronet_sdav2.py",
-  "pyaerocom/io/read_aeronet_sunv2.py",
-  "pyaerocom/io/read_gaw.py",
-  "pyaerocom/io/read_aeolus_l2a_data.py",
-  "pyaerocom/io/read_sentinel5p_data.py",
-  "pyaerocom/io/readsatellitel2base.py",
-  "pyaerocom/vert_coords.py",
+    # not used
+    "pyaerocom/aeroval/utils.py",
+    "pyaerocom/io/read_aeronet_invv2.py",
+    "pyaerocom/io/read_aeronet_sdav2.py",
+    "pyaerocom/io/read_aeronet_sunv2.py",
+    "pyaerocom/io/read_gaw.py",
+    "pyaerocom/io/read_aeolus_l2a_data.py",
+    "pyaerocom/io/read_sentinel5p_data.py",
+    "pyaerocom/io/readsatellitel2base.py",
+    "pyaerocom/vert_coords.py",
 ]
 
 [tool.coverage.report]
 skip_covered = true
 exclude_lines = [
-  "pragma: no cover",
-  "NotImplementedError",
-  "abc.ABC",
-  "if __name__=='__main__':",
-  'if __name__=="__main__":',
-  'if __name__ == "__main__":',
-  "if __name__ == '__main__':",
+    "pragma: no cover",
+    "NotImplementedError",
+    "abc.ABC",
+    'if __name__ == "__main__":',
 ]
 
 [tool.black]
 target-version = ['py38']
+extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
 [tool.isort]
 py_version = "38"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
+extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
@@ -58,6 +66,7 @@ warn_unreachable = true
 show_error_codes = true
 pretty = true
 sqlite_cache = true
+exclude = "pyaerocom-tutorials|_build"
 
 [[tool.mypy.overrides]]
 module = [
@@ -79,3 +88,50 @@ module = [
     "coda",
 ]
 ignore_missing_imports = true
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326"
+
+[tool.pylint.format]
+max-line-length = 99
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39, py310, format, lint, docs
+skip_missing_interpreters = True
+isolated_build = True
+requires =
+    setuptools<=60.9.3
+
+[testenv]
+commands_pre =
+    python --version
+commands =
+    pytest -ra -q {posargs:--cov}
+extras = 
+    test
+
+[testenv:format]
+commands =
+    black --check .
+    isort --check .
+extras = 
+    format
+
+[testenv:lint]
+ignore_outcome = True
+commands =
+    mypy pyaerocom/
+    pylint pyaerocom/
+    pycodestyle pyaerocom/
+    pydocstyle pyaerocom/
+extras = 
+    lint
+
+[testenv:docs]
+commands =
+    sphinx-build {posargs:-T} docs/ docs/_build/html
+extras = 
+    docs
+"""

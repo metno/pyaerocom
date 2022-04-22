@@ -19,5 +19,5 @@ model variables.
 from pyaerocom.io.aux_read_cubes import compute_angstrom_coeff_cubes
 
 FUNS = {
-    'calc_ae'             : compute_angstrom_coeff_cubes,
+    "calc_ae": compute_angstrom_coeff_cubes,
 }

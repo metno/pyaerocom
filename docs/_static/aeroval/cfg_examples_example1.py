@@ -85,30 +85,25 @@ The global setup defines:
     - Web display options (e.g. default map zoom)
     
 """
-import os # needed for specification of path locations below
+import os  # needed for specification of path locations below
+
 GLOB_CFG = dict(
     # PI of experiment
-    exp_pi = 'Jonas Gliß',
-
+    exp_pi="Jonas Gliß",
     # ID of project (will define URL, see below)
-    proj_id = 'examples',
-
+    proj_id="examples",
     # ID of experiment (will define URL, see below)
-    exp_id = 'example1',
-
+    exp_id="example1",
     # These 2 IDs define where the output data is stored relative to the 2
     # output directories below, and they also define the URL link for this
     # project, e.g. for this example, the web URL for this experiment would be:
     #
     # https://aeroval.met.no/evaluation.php?project=examples&exp_name=example1
     #
-
     # Base directory for json output files
-    json_basedir = os.path.abspath('../../data'),
-
+    json_basedir=os.path.abspath("../../data"),
     # Base directory for co-located data output NetCDF files
-    coldata_basedir = os.path.abspath('../../coldata'),
-
+    coldata_basedir=os.path.abspath("../../coldata"),
     # E.g. for this experiment, the co-located data files can be found in:
     #
     # ../../coldata/examples/example1
@@ -129,7 +124,6 @@ GLOB_CFG = dict(
     # AeroVal web server, so it becomes visible at
     #
     # https://aeroval.met.no/evaluation.php?project=examples&exp_name=example1
-
     # Optional: location a python file containing function definitions that
     # combine some iris.Cube instances to compute new variables. This
     # enables flexible computation of new model variables that are not in
@@ -138,49 +132,39 @@ GLOB_CFG = dict(
     # Below in Section 4, this is used to compute clear-sky Angstrom
     # Exponent for NorESM2 model from 440nm and 870nm AOD, which are output
     # by the model.
-    io_aux_file = os.path.abspath('../eval_py/gridded_io_aux.py'),
-
+    io_aux_file=os.path.abspath("../eval_py/gridded_io_aux.py"),
     # Frequencies for which statistical parameters are computed
-    freqs = ['daily', 'monthly', 'yearly'],
-
+    freqs=["daily", "monthly", "yearly"],
     # Main output frequency for AeroVal (some of the AeroVal processing
     # steps are only done for this resolution, since they would create too
     # much output otherwise, such as statistics timeseries or scatter plot in
     # "Overall Evaluation" tab on AeroVal).
     # Note that this frequency needs to be included in previous setting "freqs".
-    main_freq = 'monthly',
-
+    main_freq="monthly",
     # Time periods for which statistical parameters are computed
-    periods = ['2010'],
-
+    periods=["2010"],
     # Whether or not to add seasonal statistics
-    add_seasons = True,
-
+    add_seasons=True,
     # Whether or not to add trends output to the analysis. Trends analysis
     # needs at least 7 years of data, so this is skipped here for this
     # single year experiment
-    add_trends = False,
-
+    add_trends=False,
     # Whether or not to re-colocate existing co-located data files from the
     # input data or not.
     reanalyse_existing=True,
-
     # Name of experiment
-    exp_name = 'AeroVal example 1',
+    exp_name="AeroVal example 1",
     # Description of experiment
-    exp_descr = ('A simple setup evaluating AOD and Angstrom Exponent of 2 '
-                 'models (NorESM2 from AeroCom phase 3 control experiment and '
-                 'CAMS reanalysis dateset) for the year 2010, using AERONET '
-                 'version 3 sun photometer data as well as data from a merged '
-                 'satellite product'),
-
-    public = True,
-
-
-
+    exp_descr=(
+        "A simple setup evaluating AOD and Angstrom Exponent of 2 "
+        "models (NorESM2 from AeroCom phase 3 control experiment and "
+        "CAMS reanalysis dateset) for the year 2010, using AERONET "
+        "version 3 sun photometer data as well as data from a merged "
+        "satellite product"
+    ),
+    public=True,
     # Whether or not maps of the model fields are supposed to be computed
-    add_model_maps = True,
-
+    add_model_maps=True,
 )
 
 """
@@ -203,7 +187,7 @@ DEFAULT_COLOCATION_SETUP = dict(
     # results specified in parameter "freqs" above, since all statistical
     # results (stored in the output json files) are computed based on the
     # co-located NetCDF files.
-    ts_type = 'daily',
+    ts_type="daily",
     # Time resample setup: the following setup will perform resampling
     # from daily to monthly in 2 steps, 1. daily to weekly (requiring at
     # least 5 valid daily values per week) and 2. weekly to monthly,
@@ -216,20 +200,12 @@ DEFAULT_COLOCATION_SETUP = dict(
     # data is in hourly resolution, then this translated to "at least 5
     # hourly values per month", however, if input data is in daily resolution
     # then this translated to "at least 5 daily values per month").
-    min_num_obs = dict(
-        weekly  =   dict(daily=5),
-        monthly =   dict(weekly=3)
-    ),
-
+    min_num_obs=dict(weekly=dict(daily=5), monthly=dict(weekly=3)),
     # How to aggregate the data when resampling (linked with min_num_obs and
     # can be setup in a similar way). This setting defaults to "mean",
     # however, here we use a sligthly more complicated setup that does
     # "median" and is synched with the stepwise min_num_obs regime.
-    resample_how = dict(
-        weekly  =   dict(daily='median'),
-        monthly =   dict(weekly='median')
-    ),
-
+    resample_how=dict(weekly=dict(daily="median"), monthly=dict(weekly="median")),
 )
 
 """
@@ -252,10 +228,7 @@ variables that are provided by each of the datasets that match the search.
 # Define a filter for the AERONET obs dataset that excludes data from
 # stations that start with DRAGON and use only sites that are located
 # between 0 m and 1000 m a.s.l.
-AERONET_SITE_FILTER = dict(
-    station_name='DRAGON*', negate='station_name',
-    altitude=[0, 1000]
-)
+AERONET_SITE_FILTER = dict(station_name="DRAGON*", negate="station_name", altitude=[0, 1000])
 
 # Define a python dictionary containing observation datasets to be used and
 # the associated variables.
@@ -272,17 +245,17 @@ OBS_CFG = {
     # data are provided as CSV files "per site location".
     #
     # This dataset will appear as AERONET in the AeroVal interface.
-    'AERONET'       :   dict(
+    "AERONET": dict(
         # obs_id tells pyaerocom where to find the data
-        obs_id='AeronetSunV3Lev2.daily',
+        obs_id="AeronetSunV3Lev2.daily",
         # Which variables to use from AERONET, here we use total AOD (
         # od550aer) and Angstrom Exponent (ang4487aer).
-        obs_vars=['od550aer', 'ang4487aer'],
+        obs_vars=["od550aer", "ang4487aer"],
         # What vertical type do the variables represent (columnar)
-        obs_vert_type='Column',
+        obs_vert_type="Column",
         # Metadata filters applied to the observations AFTER reading them
         # (as UngriddedData) and BEFORE co-locating them with the models.
-        obs_filters={**AERONET_SITE_FILTER}
+        obs_filters={**AERONET_SITE_FILTER},
     ),
     # 2nd obs entry is a merged satellite AOD dataset, for more info see here:
     # https://acp.copernicus.org/articles/20/2031/2020/
@@ -290,13 +263,13 @@ OBS_CFG = {
     # This dataset will be read by pyaerocom as "GriddedData" as it is
     # provided as gridded NetCDF file (near global coverage).
     #
-    'MERGED-SAT'    :   dict(
+    "MERGED-SAT": dict(
         # ID is linked with data location
-        obs_id='MODIS6.1terra',
+        obs_id="MODIS6.1terra",
         # Which variables to use
-        obs_vars=['od550aer'],
+        obs_vars=["od550aer"],
         # Which vertical code
-        obs_vert_type='Column',
+        obs_vert_type="Column",
         # Since these data are gridded observations with near global
         # coverage, the underlying co-location routine will be
         # gridded OBS / gridded MOD. The following parameter defines to
@@ -304,9 +277,8 @@ OBS_CFG = {
         # for co-location (5 degrees is a good compromise for a global
         # dataset, between spatial resolution and required storage of the
         # output files).
-        regrid_res_deg=5
-    )
-
+        regrid_res_deg=5,
+    ),
 }
 
 
@@ -324,31 +296,29 @@ pya --browse *ECMWF*CAMS*
 """
 MODEL_CFG = {
     # The key "CAMS-REAN" is how this model will be named in AeroVal
-    'CAMS-REAN'     :   dict(
+    "CAMS-REAN": dict(
         # Data ID of model data (tells pyaerocom where the data is located)
-        model_id    =   'ECMWF_CAMS_REAN'
+        model_id="ECMWF_CAMS_REAN"
     ),
     # The key "NorESM2" is how this model will be named in AeroVal
-    'NorESM2'   :   dict(
-            # Data ID of model run (tells pyaerocom where the data is located)
-            model_id='NorESM2-met2010_AP3-CTRL',
-            # if model
-            model_use_vars={
-                # if obs var is od550aer, use od550csaer from the model
-                # (od550csaer refers to clear-sky AOD)
-                'od550aer'  : 'od550csaer',
-                # if obs var is ang4487aer, use ang4487csaer from the model
-                'ang4487aer' : 'ang4487csaer'
-            },
-            model_read_aux={
-                # Clear-sky AE is actually not available from the model so,
-                # it is computed from clear-sky AOD at 440nm and 870 nm.
-                # The function "calc_ae" is defined in "io_aux_file" (see
-                # global setup above).
-                'ang4487csaer'    : dict(
-                            vars_required=['od440csaer', 'od870csaer'],
-                            fun='calc_ae')
-                    },
+    "NorESM2": dict(
+        # Data ID of model run (tells pyaerocom where the data is located)
+        model_id="NorESM2-met2010_AP3-CTRL",
+        # if model
+        model_use_vars={
+            # if obs var is od550aer, use od550csaer from the model
+            # (od550csaer refers to clear-sky AOD)
+            "od550aer": "od550csaer",
+            # if obs var is ang4487aer, use ang4487csaer from the model
+            "ang4487aer": "ang4487csaer",
+        },
+        model_read_aux={
+            # Clear-sky AE is actually not available from the model so,
+            # it is computed from clear-sky AOD at 440nm and 870 nm.
+            # The function "calc_ae" is defined in "io_aux_file" (see
+            # global setup above).
+            "ang4487csaer": dict(vars_required=["od440csaer", "od870csaer"], fun="calc_ae")
+        },
     ),
 }
 
@@ -358,20 +328,21 @@ Section 5: Main script (run analysis)
 -------------------------------------
 """
 # Combine all settings into one dictionary called CFG
-CFG = {**GLOB_CFG,
-       **DEFAULT_COLOCATION_SETUP}
+CFG = {**GLOB_CFG, **DEFAULT_COLOCATION_SETUP}
 
 # Add obs config
-CFG['obs_cfg'] = OBS_CFG
+CFG["obs_cfg"] = OBS_CFG
 # Add model config
-CFG['model_cfg'] = MODEL_CFG
+CFG["model_cfg"] = MODEL_CFG
+
 
 def main():
     """
     Create EvalSetup and pass to ExperimentProcessor and run analysis
     """
     from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-    CFG['raise_exceptions'] = True
+
+    CFG["raise_exceptions"] = True
     stp = EvalSetup(**CFG)
     ana = ExperimentProcessor(stp)
 
@@ -399,9 +370,6 @@ def main():
     # Processing finished.
     ana.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
-
-
-
-

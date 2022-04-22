@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from pyaerocom.region import get_all_default_region_ids
 
 import numpy as np
 from pytest import mark, param
@@ -20,6 +19,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _write_stationdata_json,
     get_stationfile_name,
 )
+from pyaerocom.region import get_all_default_region_ids
 from pyaerocom.region_defs import (
     HTAP_REGIONS,
     HTAP_REGIONS_DEFAULT,

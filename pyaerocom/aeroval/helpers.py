@@ -1,8 +1,8 @@
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.helpers import start_stop_str
 from pyaerocom.colocation_auto import Colocator
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.helpers import start_stop_str
+from pyaerocom.tstype import TsType
 
 
 def check_var_ranges_avail(model_data, var_name):
@@ -35,8 +35,9 @@ def check_var_ranges_avail(model_data, var_name):
             model_data.register_var_glob(delete_existing=True)
         else:
             raise ValueError(
-                f'Mismatch between variable name of input model_data '
-                f'({model_data.var_name_aerocom}) and var_name {var_name}')
+                f"Mismatch between variable name of input model_data "
+                f"({model_data.var_name_aerocom}) and var_name {var_name}"
+            )
 
 
 def _check_statistics_periods(periods: list) -> list:
@@ -62,19 +63,20 @@ def _check_statistics_periods(periods: list) -> list:
     """
     checked = []
     if not isinstance(periods, list):
-        raise ValueError('statistics_periods needs to be a list')
+        raise ValueError("statistics_periods needs to be a list")
     for per in periods:
         if not isinstance(per, str):
-            raise ValueError('All periods need to be strings')
-        spl = [x.strip() for x in per.split('-')]
+            raise ValueError("All periods need to be strings")
+        spl = [x.strip() for x in per.split("-")]
         if len(spl) > 2:
             raise ValueError(
-                f'Invalid value for period ({per}), can be either single '
-                f'years or period of years (e.g. 2000-2010).'
-                )
-        _per = '-'.join([str(int(val)) for val in spl])
+                f"Invalid value for period ({per}), can be either single "
+                f"years or period of years (e.g. 2000-2010)."
+            )
+        _per = "-".join([str(int(val)) for val in spl])
         checked.append(_per)
     return checked
+
 
 def _period_str_to_timeslice(period: str) -> slice:
     """
@@ -95,12 +97,13 @@ def _period_str_to_timeslice(period: str) -> slice:
     slice
         slice containing start and end strings.
     """
-    spl = period.split('-')
+    spl = period.split("-")
     if len(spl) == 1:
-        return slice(spl[0],spl[0])
+        return slice(spl[0], spl[0])
     elif len(spl) == 2:
         return slice(*spl)
     raise ValueError(period)
+
 
 def _get_min_max_year_periods(statistics_periods):
     """Get lowest and highest available year from all periods

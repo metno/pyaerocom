@@ -1,18 +1,24 @@
-import os
+from __future__ import annotations
+
 from configparser import ConfigParser
+from importlib import resources
+from pathlib import Path
 
 from pyaerocom.exceptions import VariableDefinitionError
 
 
-def parse_variables_ini(fpath=None):
+def parse_variables_ini(fpath: str | Path | None = None):
     """Returns instance of ConfigParser to access information"""
-    from pyaerocom import __dir__
-    if fpath is None:
-        fpath = os.path.join(__dir__, "data", "variables.ini")
 
-    if not os.path.exists(fpath):
-        raise FileNotFoundError("FATAL: variables.ini file could not be found "
-                                "at {}".format(fpath))
+    if fpath is None:
+        with resources.path("pyaerocom.data", "variables.ini") as path:
+            fpath = path
+
+    if isinstance(fpath, str):
+        fpath = Path(fpath)
+    if not fpath.exists():
+        raise FileNotFoundError(f"FATAL: variables.ini file could not be found at {fpath}")
+
     parser = ConfigParser()
     parser.read(fpath)
     return parser
@@ -20,17 +26,15 @@ def parse_variables_ini(fpath=None):
 
 def parse_aliases_ini():
     """Returns instance of ConfigParser to access information"""
-    from pyaerocom import __dir__
-    fpath = os.path.join(__dir__, "data", "aliases.ini")
-    if not os.path.exists(fpath):
-        raise FileNotFoundError("FATAL: aliases.ini file could not be found "
-                                "at {}".format(fpath))
+    with resources.path("pyaerocom.data", "aliases.ini") as path:
+        fpath = path
+
     parser = ConfigParser()
     parser.read(fpath)
     return parser
 
 
-def get_emep_variables(parser=None):
+def get_emep_variables(parser: ConfigParser | None = None):
     """Read variable definitions from emep_variables.ini file
 
     Returns
@@ -41,31 +45,35 @@ def get_emep_variables(parser=None):
     if parser is None:
         parser = parse_emep_variables_ini()
     variables = {}
-    items = parser['emep_variables']
+    items = parser["emep_variables"]
     for var_name in items:
-        _variables = [x.strip() for x in items[var_name].strip().split(',')]
+        _variables = [x.strip() for x in items[var_name].strip().split(",")]
         for variable in _variables:
             variables[var_name] = variable
     return variables
 
 
-def parse_emep_variables_ini(fpath=None):
+def parse_emep_variables_ini(fpath: str | Path | None = None):
     """Returns instance of ConfigParser to access information"""
-    from pyaerocom import __dir__
+
     if fpath is None:
-        fpath = os.path.join(__dir__, "data", "emep_variables.ini")
-    if not os.path.exists(fpath):
-        raise FileNotFoundError("FATAL: emep_variables.ini file could not be found "
-                        "at {}".format(fpath))
+        with resources.path("pyaerocom.data", "emep_variables.ini") as path:
+            fpath = path
+
+    if isinstance(fpath, str):
+        fpath = Path(fpath)
+    if not fpath.exists():
+        raise FileNotFoundError(f"FATAL: emep_variables.ini file could not be found at {fpath}")
+
     parser = ConfigParser()
     # added 12.7.21 by jgliss for EMEP trends processing. See here:
     # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
-    parser.optionxform=str
+    parser.optionxform = str
     parser.read(fpath)
     return parser
 
 
-def _read_alias_ini(parser=None):
+def _read_alias_ini(parser: ConfigParser | None = None):
     """Read all alias definitions from aliases.ini file and return as dict
 
     Returns
@@ -77,49 +85,51 @@ def _read_alias_ini(parser=None):
     if parser is None:
         parser = parse_aliases_ini()
     aliases = {}
-    items = parser['aliases']
+    items = parser["aliases"]
     for var_name in items:
-        _aliases = [x.strip() for x in items[var_name].strip().split(',')]
+        _aliases = [x.strip() for x in items[var_name].strip().split(",")]
         for alias in _aliases:
             aliases[alias] = var_name
-    for var_fam, alias_fam in parser['alias_families'].items():
-        if ',' in alias_fam:
-            raise Exception('Found invalid definition of alias family {}: {}. '
-                            'Only one family can be mapped to a variable name'
-                            .format(var_fam, alias_fam))
+    for var_fam, alias_fam in parser["alias_families"].items():
+        if "," in alias_fam:
+            raise Exception(
+                f"Found invalid definition of alias family {var_fam}: {alias_fam}. "
+                f"Only one family can be mapped to a variable name"
+            )
     return aliases
 
 
-def get_aliases(var_name, parser=None):
+def get_aliases(var_name: str, parser: ConfigParser | None = None):
     """Get aliases for a certain variable"""
     if parser is None:
-        from pyaerocom import __dir__
-        file = os.path.join(__dir__, "data", "aliases.ini")
         parser = ConfigParser()
-        parser.read(file)
+        with resources.path("pyaerocom.data", "aliases.ini") as path:
+            parser.read(path)
 
-    info = parser['aliases']
+    info = parser["aliases"]
     aliases = []
     if var_name in info:
-        aliases.extend([a.strip() for a in info[var_name].split(',')])
-    for var_fam, alias_fam in parser['alias_families'].items():
+        aliases.extend([a.strip() for a in info[var_name].split(",")])
+    for var_fam, alias_fam in parser["alias_families"].items():
         if var_name.startswith(var_fam):
             alias = var_name.replace(var_fam, alias_fam)
             aliases.append(alias)
     return aliases
 
 
-def _check_alias_family(var_name, parser):
-    for var_fam, alias_fam in parser['alias_families'].items():
+def _check_alias_family(var_name: str, parser: ConfigParser):
+    for var_fam, alias_fam in parser["alias_families"].items():
         if var_name.startswith(alias_fam):
             var_name_aerocom = var_name.replace(alias_fam, var_fam)
             return var_name_aerocom
-    raise VariableDefinitionError('Input variable could not be identified as '
-                                  'belonging to either of the available alias '
-                                  'variable families')
+    raise VariableDefinitionError(
+        "Input variable could not be identified as "
+        "belonging to either of the available alias "
+        "variable families"
+    )
 
 
-def get_variable(var_name):
+def get_variable(var_name: str):
     """
     Get a certain variable
 
@@ -133,4 +143,5 @@ def get_variable(var_name):
     Variable
     """
     from pyaerocom import const
+
     return const.VARS[var_name]

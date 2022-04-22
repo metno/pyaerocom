@@ -1,67 +1,69 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 29 17:12:54 2020
-
-@author: jonasg
-"""
-
-from pathlib import Path
+import logging
 import os
-import requests
 import tarfile
-
+from pathlib import Path
 from traceback import format_exc
+
+import requests
+
 from pyaerocom import const
-from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
-                          ReadEbas, ReadAirNow, ReadGhost, ReadEEAAQEREP_V2,
-                          ReadEarlinet)
+from pyaerocom.io import (
+    ReadAeronetInvV3,
+    ReadAeronetSdaV3,
+    ReadAeronetSunV3,
+    ReadAirNow,
+    ReadEarlinet,
+    ReadEbas,
+    ReadEEAAQEREP_V2,
+    ReadGhost,
+)
+
+logger = logging.getLogger(__name__)
+
 
 class AccessTestData:
 
     #: That's were the testdata can be downloaded from
-    URL_TESTDATA = 'https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.gz'
+    URL_TESTDATA = "https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.gz.ebas_202201"
 
     #: Directory where testdata will be downloaded into
     BASEDIR_DEFAULT = const.OUTPUTDIR
 
     #: Name of testdata directory
-    TESTDATADIRNAME = 'testdata-minimal'
+    TESTDATADIRNAME = "testdata-minimal"
 
     #: Paths to be added to pya.const. All relative to :attr:`basedir`
     ADD_PATHS = {
-
-        'MODELS'                        : 'modeldata',
-        'OBSERVATIONS'                  : 'obsdata',
-        'CONFIG'                        : 'config',
-        'AeronetSunV3L2Subset.daily'    : 'obsdata/AeronetSunV3Lev2.daily/renamed',
-        'AeronetSDAV3L2Subset.daily'    : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
-        'AeronetInvV3L2Subset.daily'    : 'obsdata/AeronetInvV3Lev2.daily/renamed',
-        'EBASSubset'                    : 'obsdata/EBASMultiColumn',
-        'AirNowSubset'                  : 'obsdata/AirNowSubset',
-        'G.EEA.daily.Subset'            : 'obsdata/GHOST/data/EEA_AQ_eReporting/daily',
-        'G.EEA.hourly.Subset'           : 'obsdata/GHOST/data/EEA_AQ_eReporting/hourly',
-        'G.EBAS.daily.Subset'           : 'obsdata/GHOST/data/EBAS/daily',
-        'G.EBAS.hourly.Subset'          : 'obsdata/GHOST/data/EBAS/hourly',
-        'EEA_AQeRep.v2.Subset'          : 'obsdata/EEA_AQeRep.v2/renamed',
-        'Earlinet-test'                 : 'obsdata/Earlinet'
-
-
+        "MODELS": "modeldata",
+        "OBSERVATIONS": "obsdata",
+        "CONFIG": "config",
+        "AeronetSunV3L2Subset.daily": "obsdata/AeronetSunV3Lev2.daily/renamed",
+        "AeronetSunV3L2Subset.AP": "obsdata/AeronetSunV3Lev2.0.AP/renamed",
+        "AeronetSDAV3L2Subset.daily": "obsdata/AeronetSDAV3Lev2.daily/renamed",
+        "AeronetInvV3L2Subset.daily": "obsdata/AeronetInvV3Lev2.daily/renamed",
+        "EBASSubset": "obsdata/EBASMultiColumn",
+        "AirNowSubset": "obsdata/AirNowSubset",
+        "G.EEA.daily.Subset": "obsdata/GHOST/data/EEA_AQ_eReporting/daily",
+        "G.EEA.hourly.Subset": "obsdata/GHOST/data/EEA_AQ_eReporting/hourly",
+        "G.EBAS.daily.Subset": "obsdata/GHOST/data/EBAS/daily",
+        "G.EBAS.hourly.Subset": "obsdata/GHOST/data/EBAS/hourly",
+        "EEA_AQeRep.v2.Subset": "obsdata/EEA_AQeRep.v2/renamed",
+        "Earlinet-test": "obsdata/Earlinet",
     }
 
     _UNGRIDDED_READERS = {
-        'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
-        'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
-        'AeronetInvV3L2Subset.daily'  : ReadAeronetInvV3,
-        'EBASSubset'                  : ReadEbas,
-        'AirNowSubset'                : ReadAirNow,
-        'G.EEA.daily.Subset'          : ReadGhost,
-        'G.EEA.hourly.Subset'         : ReadGhost,
-        'G.EBAS.daily.Subset'         : ReadGhost,
-        'G.EBAS.hourly.Subset'        : ReadGhost,
-        'EEA_AQeRep.v2.Subset'        : ReadEEAAQEREP_V2,
-        'Earlinet-test'               : ReadEarlinet
-
+        "AeronetSunV3L2Subset.daily": ReadAeronetSunV3,
+        "AeronetSunV3L2Subset.AP": ReadAeronetSunV3,
+        "AeronetSDAV3L2Subset.daily": ReadAeronetSdaV3,
+        "AeronetInvV3L2Subset.daily": ReadAeronetInvV3,
+        "EBASSubset": ReadEbas,
+        "AirNowSubset": ReadAirNow,
+        "G.EEA.daily.Subset": ReadGhost,
+        "G.EEA.hourly.Subset": ReadGhost,
+        "G.EBAS.daily.Subset": ReadGhost,
+        "G.EBAS.hourly.Subset": ReadGhost,
+        "EEA_AQeRep.v2.Subset": ReadEEAAQEREP_V2,
+        "Earlinet-test": ReadEarlinet,
     }
 
     def __init__(self, basedir=None):
@@ -79,7 +81,7 @@ class AccessTestData:
     @basedir.setter
     def basedir(self, val):
         if not os.path.isdir(val):
-            raise ValueError(f'Input basedir {val} is not a directory...')
+            raise ValueError(f"Input basedir {val} is not a directory...")
         self._basedir = val
 
     @property
@@ -103,22 +105,20 @@ class AccessTestData:
         """
         if basedir is not None:
             self.basedir = basedir
-        const.print_log.info(f'Downloading pyaerocom testdata into '
-                             f'{self.basedir}')
+        logger.info(f"Downloading pyaerocom testdata into {self.basedir}")
 
-        download_loc = self.basedir.joinpath(f'{self.TESTDATADIRNAME}.tar.gz')
+        download_loc = self.basedir.joinpath(f"{self.TESTDATADIRNAME}.tar.gz")
 
         try:
             r = requests.get(self.URL_TESTDATA)
-            with open(download_loc, 'wb') as f:
+            with open(download_loc, "wb") as f:
                 f.write(r.content)
 
-            with tarfile.open(download_loc, 'r:gz') as tar:
+            with tarfile.open(download_loc, "r:gz") as tar:
                 tar.extractall(const.OUTPUTDIR)
                 tar.close()
         except Exception:
-            const.print_log.warning('Failed to download testdata. Traceback:\n{}'
-                                    .format(format_exc()))
+            logger.warning(f"Failed to download testdata. Traceback:\n{format_exc()}")
             return False
         finally:
             if download_loc.exists():
@@ -182,7 +182,7 @@ class AccessTestData:
                 if self.download() and self.check_access(add_check_paths):
                     return True
             except Exception as e:
-                const.print_log.warning(f'Failed to access testdata: {e}')
+                logger.warning(f"Failed to access testdata: {e}")
             return False
         return True
 
@@ -195,33 +195,31 @@ class AccessTestData:
             ddir = str(testdatadir.joinpath(relpath))
             if name in self._UNGRIDDED_READERS:
                 if name in const.OBSLOCS_UNGRIDDED and ddir == const.OBSLOCS_UNGRIDDED[name]:
-                    const.print_log.info(f'dataset {name} is already registered')
+                    logger.info(f"dataset {name} is already registered")
                     continue
                 reader = self._UNGRIDDED_READERS[name]
                 try:
-                    const.add_ungridded_obs(name, ddir,
-                                            reader=reader,
-                                            check_read=False)
+                    const.add_ungridded_obs(name, ddir, reader=reader, check_read=False)
                 except Exception as e:
-                    const.print_log.warning(
-                        f'Failed to instantiate testdata since ungridded '
-                        f'dataset {name} at {ddir} could not be registered: {e}')
+                    logger.warning(
+                        f"Failed to instantiate testdata since ungridded "
+                        f"dataset {name} at {ddir} could not be registered: {e}"
+                    )
                     return False
-                const.print_log.info(
-                    f'Adding ungridded dataset {name} located at {ddir}.'
-                    f'Reader: {reader}')
+                logger.info(f"Adding ungridded dataset {name} located at {ddir}. Reader: {reader}")
 
             else:
                 const.add_data_search_dir(ddir)
-                const.print_log.info(f'Adding data search directory {ddir}.')
+                logger.info(f"Adding data search directory {ddir}.")
         return True
+
 
 def initialise():
     td = AccessTestData()
     if td.init():
-        const.print_log.info(f'pyaerocom-testdata is ready to be used. The data '
-                             f'is available at {td.testdatadir}')
+        logger.info(
+            f"pyaerocom-testdata is ready to be used. The data "
+            f"is available at {td.testdatadir}"
+        )
     else:
-        const.print_log.warning('Failed to initiate pyaerocom-testdata')
-if __name__ == '__main__':
-    initialise()
+        logger.warning("Failed to initiate pyaerocom-testdata")

@@ -1,35 +1,30 @@
-
 import numpy as np
 
-from pyaerocom.obs_io import ObsVarCombi
 from pyaerocom._lowlevel_helpers import invalid_input_err_str
-from pyaerocom.geodesy import find_coord_indices_within_distance
-from pyaerocom.stationdata import StationData
-from pyaerocom.helpers import sort_ts_types
 from pyaerocom.colocation import _colocate_site_data_helper
-import os
+from pyaerocom.geodesy import find_coord_indices_within_distance
+from pyaerocom.helpers import sort_ts_types
+from pyaerocom.obs_io import ObsVarCombi
+from pyaerocom.stationdata import StationData
+
 
 def _check_input_data_ids_and_vars(data_ids_and_vars):
     if not isinstance(data_ids_and_vars, (list, tuple)):
-        raise ValueError('Input data_ids_and_vars must be tuple or list')
+        raise ValueError("Input data_ids_and_vars must be tuple or list")
     elif len(data_ids_and_vars) != 2:
-        raise NotImplementedError('Currently, only (and exactly) 2 datasets '
-                                  'can be combined...')
+        raise NotImplementedError("Currently, only (and exactly) 2 datasets can be combined...")
     for item in data_ids_and_vars:
         if not isinstance(item, (list, tuple)):
-            raise ValueError('Each entry in data_ids_and_vars must be tuple or list')
+            raise ValueError("Each entry in data_ids_and_vars must be tuple or list")
         elif len(item) != 3:
-            raise ValueError(
-                'Each entry in data_ids_and_vars needs to contain exactly 3 '
-                'items.')
+            raise ValueError("Each entry in data_ids_and_vars needs to contain exactly 3 items.")
         if not isinstance(item[1], str) or not isinstance(item[2], str):
-            raise ValueError('2nd and 3rd entries (data_id, var_name) in item '
-                             'need to be str')
+            raise ValueError("2nd and 3rd entries (data_id, var_name) in item need to be str")
 
-def _map_same_stations(stats_short, stats_long, match_stats_how,
-                       match_stats_tol_km):
 
-    long_coords = list(zip(stats_long['latitude'], stats_long['longitude']))
+def _map_same_stations(stats_short, stats_long, match_stats_how, match_stats_tol_km):
+
+    long_coords = list(zip(stats_long["latitude"], stats_long["longitude"]))
 
     # index matches and corresponding station name matches
     _index_short = []
@@ -37,38 +32,38 @@ def _map_same_stations(stats_short, stats_long, match_stats_how,
     _statnames_short = []
     _statnames_long = []
 
-    long_sitenames = np.asarray(stats_long['station_name'])
+    long_sitenames = np.asarray(stats_long["station_name"])
 
-    for i, stat in enumerate(stats_short['stats']):
+    for i, stat in enumerate(stats_short["stats"]):
         statname = stat.station_name
-        lat0, lon0 = stats_short['latitude'][i], stats_short['longitude'][i]
+        lat0, lon0 = stats_short["latitude"][i], stats_short["longitude"][i]
 
-        if match_stats_how == 'station_name':
+        if match_stats_how == "station_name":
             # np.where returns tuple, first index contains array with index
             # matches
-            index_matches = np.where(long_sitenames==statname)[0]
+            index_matches = np.where(long_sitenames == statname)[0]
         else:
             index_matches = find_coord_indices_within_distance(
-                latref=lat0,
-                lonref=lon0,
-                latlons=long_coords,
-                radius=match_stats_tol_km)
+                latref=lat0, lonref=lon0, latlons=long_coords, radius=match_stats_tol_km
+            )
 
         # init which default index to use
         use_index = 0
         if len(index_matches) == 0:
             continue
         elif len(index_matches) > 1:
-            if match_stats_how=='station_name':
-                raise Exception('Unexpected error: each station_name should '
-                                'only occur once... (perhaps due to unforeseen '
-                                'API change sometime in the future)')
+            if match_stats_how == "station_name":
+                raise Exception(
+                    "Unexpected error: each station_name should "
+                    "only occur once... (perhaps due to unforeseen "
+                    "API change sometime in the future)"
+                )
             else:
                 # more than one site was found in the surroundings of the
                 # current coordinate. Check and prefer same site name if
                 # possible, else, use closest
                 for j, idx_match in enumerate(index_matches):
-                    if statname == stats_long['station_name'][idx_match]:
+                    if statname == stats_long["station_name"][idx_match]:
                         use_index = j
                         break
 
@@ -76,7 +71,7 @@ def _map_same_stations(stats_short, stats_long, match_stats_how,
 
         # make sure to colocate each site only once
         if idx_long in _index_long:
-            statname_long = stats_long['station_name'][idx_long]
+            statname_long = stats_long["station_name"][idx_long]
             if statname == statname_long:
                 # rare case: the index match in long has already been assigned
                 # to another site in short which does not occur in long
@@ -94,17 +89,28 @@ def _map_same_stations(stats_short, stats_long, match_stats_how,
         _index_short.append(i)
         _index_long.append(idx_long)
         _statnames_short.append(statname)
-        _statnames_long.append(stats_long['station_name'][idx_long])
+        _statnames_long.append(stats_long["station_name"][idx_long])
 
     return (_index_short, _index_long, _statnames_short, _statnames_long)
 
-def _combine_2_sites(stat, var, stat_other, var_other,
-                     merge_how, merge_eval_fun,
-                     match_stats_tol_km, var_name_out,
-                     data_id_out, var_unit_out,
-                     resample_how,
-                     min_num_obs, prefer, merge_info_vars,
-                     add_meta_keys):
+
+def _combine_2_sites(
+    stat,
+    var,
+    stat_other,
+    var_other,
+    merge_how,
+    merge_eval_fun,
+    match_stats_tol_km,
+    var_name_out,
+    data_id_out,
+    var_unit_out,
+    resample_how,
+    min_num_obs,
+    prefer,
+    merge_info_vars,
+    add_meta_keys,
+):
     """Combine two StationData objects for a given merge strategy
 
     Private for now...  details should follow. Until then see
@@ -132,17 +138,18 @@ def _combine_2_sites(stat, var, stat_other, var_other,
 
     new = StationData()
     # add default metadata to new data object
-    meta_first = stat.get_meta(force_single_value=False,
-                               quality_check=False,
-                               add_meta_keys=add_meta_keys)
+    meta_first = stat.get_meta(
+        force_single_value=False, quality_check=False, add_meta_keys=add_meta_keys
+    )
     new.update(meta_first)
 
     new.merge_meta_same_station(
         other=stat_other,
-        check_coords=False, #has already been done
+        check_coords=False,  # has already been done
         inplace=True,
         raise_on_error=True,
-        add_meta_keys=add_meta_keys)
+        add_meta_keys=add_meta_keys,
+    )
 
     tstype = stat.get_var_ts_type(var)
     tstype_other = stat_other.get_var_ts_type(var_other)
@@ -150,15 +157,18 @@ def _combine_2_sites(stat, var, stat_other, var_other,
     to_ts_type = sort_ts_types([tstype, tstype_other])[-1]
 
     df = _colocate_site_data_helper(
-        stat, stat_other,
-        var, var_other,
+        stat,
+        stat_other,
+        var,
+        var_other,
         to_ts_type,
         resample_how=resample_how,
         min_num_obs=min_num_obs,
-        use_climatology_ref=False)
+        use_climatology_ref=False,
+    )
 
     # remove timestamps where both observations are NaN
-    df.dropna(axis=0, how='all', inplace=True)
+    df.dropna(axis=0, how="all", inplace=True)
 
     # NOTE: the dataframe returned by _colocate_site_data_helper has ref as first
     # column and the first input data as 2nd!
@@ -180,14 +190,14 @@ def _combine_2_sites(stat, var, stat_other, var_other,
             _stat = stat_order[j]
             ts = df[colname]
             new[_var] = ts
-            vi = _stat['var_info'][_var]
-            vi['ts_type'] = to_ts_type
-            new['var_info'][_var] = vi
+            vi = _stat["var_info"][_var]
+            vi["ts_type"] = to_ts_type
+            new["var_info"][_var] = vi
 
     add_ts = None
     # Merge timeseries if variables are the same and are supposed to be
     # combined
-    if merge_how=='combine' and var==var_other:
+    if merge_how == "combine" and var == var_other:
         prefer_col = col_names[col_order.index(prefer)]
         dont_prefer = col_names[int(not (col_names.index(prefer_col)))]
         add_ts = df[prefer_col].combine_first(df[dont_prefer])
@@ -195,11 +205,11 @@ def _combine_2_sites(stat, var, stat_other, var_other,
         if var_name_out is None:
             var_name_out = var
 
-    elif merge_how == 'mean':
+    elif merge_how == "mean":
         if var != var_other:
-            raise NotImplementedError('Averaging of site data is only '
-                                      'supported if input variables are the '
-                                      'same...')
+            raise NotImplementedError(
+                "Averaging of site data is only supported if input variables are the same..."
+            )
         # if it made it until here, then both sites have same variables and
         # units
         if var_name_out is None:
@@ -207,47 +217,49 @@ def _combine_2_sites(stat, var, stat_other, var_other,
 
         add_ts = df.mean(axis=1)
 
-    elif merge_how == 'eval':
+    elif merge_how == "eval":
 
         func = merge_eval_fun.replace(col_order[0], col_names[0])
         func = func.replace(col_order[1], col_names[1])
-        if '=' in merge_eval_fun:
+        if "=" in merge_eval_fun:
             # make sure variable name is not in merge_eval_fun anymore, otherwise
             # the eval method will return a DataFrame instead of a Series
-            func = func.split('=')[-1].strip()
+            func = func.split("=")[-1].strip()
         add_ts = df.eval(func)
 
         if var_name_out is None:
             var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace('{};'.format(stat.data_id), '')
-            var_name_out = var_name_out.replace('{};'.format(stat_other.data_id), '')
+            var_name_out = var_name_out.replace(f"{stat.data_id};", "")
+            var_name_out = var_name_out.replace(f"{stat_other.data_id};", "")
 
     if add_ts is not None:
 
-        var_info = {'ts_type'   : to_ts_type,
-                    'units'     : var_unit_out}
+        var_info = {"ts_type": to_ts_type, "units": var_unit_out}
 
         var_info.update(merge_info_vars)
 
-        new['var_info'][var_name_out] = var_info
+        new["var_info"][var_name_out] = var_info
         new[var_name_out] = add_ts
 
     if isinstance(data_id_out, str):
-        new['data_id'] = data_id_out
+        new["data_id"] = data_id_out
 
     return new
 
-def combine_vardata_ungridded(data_ids_and_vars,
-                              match_stats_how='closest',
-                              match_stats_tol_km=1,
-                              merge_how='combine',
-                              merge_eval_fun=None,
-                              var_name_out=None,
-                              data_id_out=None,
-                              var_unit_out=None,
-                              resample_how=None,
-                              min_num_obs=None,
-                              add_meta_keys=None):
+
+def combine_vardata_ungridded(
+    data_ids_and_vars,
+    match_stats_how="closest",
+    match_stats_tol_km=1,
+    merge_how="combine",
+    merge_eval_fun=None,
+    var_name_out=None,
+    data_id_out=None,
+    var_unit_out=None,
+    resample_how=None,
+    min_num_obs=None,
+    add_meta_keys=None,
+):
     """
     Combine and colocate different variables from UngriddedData
 
@@ -360,149 +372,119 @@ def combine_vardata_ungridded(data_ids_and_vars,
 
     """
     if add_meta_keys is None:
-        add_meta_keys=[]
+        add_meta_keys = []
     _check_input_data_ids_and_vars(data_ids_and_vars)
     data1, data_id1, var1 = data_ids_and_vars[0]
     data2, data_id2, var2 = data_ids_and_vars[1]
 
-    if data2 is data1 and var2 == var1 and data_id1==data_id2:
-        raise ValueError('nothing to combine...')
+    if data2 is data1 and var2 == var1 and data_id1 == data_id2:
+        raise ValueError("nothing to combine...")
 
     if not data_id1 in data1.contains_datasets:
-        raise ValueError('No such data ID {} in {}'.format(data_id1, data1))
+        raise ValueError(f"No such data ID {data_id1} in {data1}")
     elif len(data1.contains_datasets) > 1:
         data1 = data1.extract_dataset(data_id1)
 
     if not data_id2 in data2.contains_datasets:
-        raise ValueError('No such data ID {} in {}'.format(data_id2, data2))
+        raise ValueError(f"No such data ID {data_id2} in {data2}")
     elif len(data2.contains_datasets) > 1:
         data2 = data2.extract_dataset(data_id2)
 
     id1 = str(ObsVarCombi(data_id1, var1))
     id2 = str(ObsVarCombi(data_id2, var2))
 
-    data1_stats = data1.to_station_data_all(var1,
-                                            add_meta_keys=add_meta_keys)
-    data1_stats['var_name'] = var1
-    data1_stats['id'] = id1
+    data1_stats = data1.to_station_data_all(var1, add_meta_keys=add_meta_keys)
+    data1_stats["var_name"] = var1
+    data1_stats["id"] = id1
 
-    data2_stats = data2.to_station_data_all(var2,
-                                            add_meta_keys=add_meta_keys)
-    data2_stats['var_name'] = var2
-    data2_stats['id'] = id2
+    data2_stats = data2.to_station_data_all(var2, add_meta_keys=add_meta_keys)
+    data2_stats["var_name"] = var2
+    data2_stats["id"] = id2
 
-
-    if len(data1_stats['latitude']) <= len(data2_stats['latitude']): #
+    if len(data1_stats["latitude"]) <= len(data2_stats["latitude"]):  #
         short = data1_stats
         long = data2_stats
     else:
         short = data2_stats
         long = data1_stats
 
-    match_stats_opts = ['station_name', 'closest']
-
+    match_stats_opts = ["station_name", "closest"]
 
     if not match_stats_how in match_stats_opts:
-        raise ValueError('Invalid input for match_stats_how {}, choose from {}'
-                         .format(match_stats_how, match_stats_opts))
+        raise ValueError(
+            f"Invalid input for match_stats_how {match_stats_how}, choose from {match_stats_opts}"
+        )
 
-    merge_how_opts = ['combine', 'mean', 'eval']
+    merge_how_opts = ["combine", "mean", "eval"]
 
     # if e.g. merge_how is combine and var==var2, then the preferred
     # dataset & variable can be provided via this instance
     prefer = id1
 
     if not merge_how in merge_how_opts:
-        raise ValueError(invalid_input_err_str(
-            'merge_how', merge_how, merge_how_opts))
+        raise ValueError(invalid_input_err_str("merge_how", merge_how, merge_how_opts))
 
-    elif merge_how == 'eval':
+    elif merge_how == "eval":
         if merge_eval_fun is None:
-            raise ValueError('Please specify evaluation function for mode eval')
+            raise ValueError("Please specify evaluation function for mode eval")
         elif not all([x in merge_eval_fun for x in [id1, id2]]):
-            raise ValueError('merge_eval_fun needs to include both input '
-                             'datasets;variables (e.g. {} + {}'
-                             .format(id1, id2))
-        if '=' in merge_eval_fun:
-            spl = merge_eval_fun.split('=')
+            raise ValueError(
+                f"merge_eval_fun needs to include both input "
+                f"datasets;variables (e.g. {id1} + {id2}"
+            )
+        if "=" in merge_eval_fun:
+            spl = merge_eval_fun.split("=")
             if len(spl) > 2:
-                raise ValueError('merge_eval_fun contains more than 1 equality '
-                                 'symbol...')
+                raise ValueError("merge_eval_fun contains more than 1 equality symbol...")
             var_name_out = spl[0].strip()
             merge_eval_fun = spl[1].strip()
 
         elif var_name_out is None:
             var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace('{};'.format(data_id1), '')
-            var_name_out = var_name_out.replace('{};'.format(data_id2), '')
+            var_name_out = var_name_out.replace(f"{data_id1};", "")
+            var_name_out = var_name_out.replace(f"{data_id2};", "")
 
-    merge_info_vars = {'merge_how' : merge_how}
-    if merge_how == 'combine' and var1==var2:
-        merge_info_vars['prefer'] = prefer
-    elif merge_how == 'eval':
-        merge_info_vars['merge_eval_fun'] = merge_eval_fun
+    merge_info_vars = {"merge_how": merge_how}
+    if merge_how == "combine" and var1 == var2:
+        merge_info_vars["prefer"] = prefer
+    elif merge_how == "eval":
+        merge_info_vars["merge_eval_fun"] = merge_eval_fun
 
-    (_index_short,
-     _index_long,
-     _statnames_short,
-     _statnames_long)=_map_same_stations(short, long, match_stats_how,
-                                         match_stats_tol_km)
-
+    (_index_short, _index_long, _statnames_short, _statnames_long) = _map_same_stations(
+        short, long, match_stats_how, match_stats_tol_km
+    )
 
     merged_stats = []
 
-    var_short, var_long = short['var_name'], long['var_name']
+    var_short, var_long = short["var_name"], long["var_name"]
     for idx_short, idx_long in zip(_index_short, _index_long):
 
-        stat_short = short['stats'][idx_short]
+        stat_short = short["stats"][idx_short]
         stat_short.check_var_unit_aerocom(var_short)
-        stat_long = long['stats'][idx_long]
+        stat_long = long["stats"][idx_long]
         stat_long.check_var_unit_aerocom(var_long)
 
         # prepare output StationData object (will contain colocated timeseries
         # of both input variables as well as, additionally retrieved variable,
         # if applicable)
-        new = _combine_2_sites(stat_short, var_short, stat_long, var_long,
-                              merge_how, merge_eval_fun,
-                              match_stats_tol_km, var_name_out,
-                              data_id_out, var_unit_out, resample_how,
-                              min_num_obs, prefer, merge_info_vars,
-                              add_meta_keys)
+        new = _combine_2_sites(
+            stat_short,
+            var_short,
+            stat_long,
+            var_long,
+            merge_how,
+            merge_eval_fun,
+            match_stats_tol_km,
+            var_name_out,
+            data_id_out,
+            var_unit_out,
+            resample_how,
+            min_num_obs,
+            prefer,
+            merge_info_vars,
+            add_meta_keys,
+        )
 
         merged_stats.append(new)
 
     return merged_stats
-
-if __name__=='__main__':
-    import pyaerocom as pya
-
-    OBS_LOCAL = '/home/jonasg/MyPyaerocom/data/obsdata/'
-
-    GHOST_DIR = os.path.join(OBS_LOCAL, 'GHOST/data/EEA_AQ_eReporting/daily')
-
-    filter_post = {'altitude' : [1500, 1700]}
-    # Tests based on whole datasets
-    vmro3 = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                 data_dirs=GHOST_DIR).read(vars_to_retrieve='vmro3',
-                                                          filter_post=filter_post)
-
-                                                          # Tests based on whole datasets
-    vmrno2 = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                  data_dirs=GHOST_DIR).read(vars_to_retrieve='vmrno2',
-                                                           filter_post=filter_post)
-
-
-
-    input_data = [
-        (vmro3, 'GHOST.EEA.daily', 'vmro3'),
-        (vmrno2, 'GHOST.EEA.daily', 'vmrno2')
-    ]
-
-    meta_keys = list(vmro3.metadata[0].keys())
-    fun = 'GHOST.EEA.daily;vmro3+GHOST.EEA.daily;vmrno2'
-    stats_merged = combine_vardata_ungridded(input_data,
-                                             merge_eval_fun=fun,
-                                             var_unit_out='ppt',
-                                             var_name_out='vmrox',
-                                             merge_how='eval',
-                                             add_meta_keys=meta_keys)

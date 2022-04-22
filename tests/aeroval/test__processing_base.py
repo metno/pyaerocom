@@ -1,62 +1,76 @@
-from contextlib import nullcontext as does_not_raise_exception
+from __future__ import annotations
 
 import pytest
 
 from pyaerocom import Colocator, GriddedData, UngriddedData
 from pyaerocom.aeroval import EvalSetup
-from pyaerocom.aeroval import _processing_base as mod
+from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.exceptions import EntryNotAvailable
 
 from .cfg_test_exp1 import CFG
 
-obs_cfg=dict(
-    obs1=dict(obs_id='obs1',obs_vars=['od550aer'], obs_vert_type='Column'),
-    obs2=dict(obs_id='obs2',obs_vars=['od550aer'], obs_vert_type='Column',
-              diurnal_only=True)
-)
-dummy_setup = EvalSetup('bla', 'blub', obs_cfg=obs_cfg)
 
-class TestHasConfig:
-    def test___init__(self):
-        val = mod.HasConfig(dummy_setup)
-        assert isinstance(val.cfg, EvalSetup)
-        assert isinstance(val.exp_output, ExperimentOutput)
+@pytest.fixture(scope="module")
+def setup() -> EvalSetup:
+    obs_cfg = dict(
+        obs1=dict(obs_id="obs1", obs_vars=["od550aer"], obs_vert_type="Column"),
+        obs2=dict(obs_id="obs2", obs_vars=["od550aer"], obs_vert_type="Column", diurnal_only=True),
+    )
+    return EvalSetup("bla", "blub", obs_cfg=obs_cfg)
 
 
-    def test_raise_exceptions(self):
-        assert mod.HasConfig(dummy_setup).raise_exceptions == False
+@pytest.fixture(scope="module")
+def config(setup: EvalSetup) -> HasConfig:
+    return HasConfig(setup)
 
 
-    def test_reanalyse_existing(self):
-        assert mod.HasConfig(dummy_setup).reanalyse_existing == True
+def test_HasConfig_setup(config: HasConfig):
+    assert isinstance(config.cfg, EvalSetup)
+    assert isinstance(config.exp_output, ExperimentOutput)
 
-class TestHasColocator:
-    def test__get_diurnal_only(self):
-        val = mod.HasColocator(dummy_setup)
-        assert val._get_diurnal_only('obs1') == False
-        assert val._get_diurnal_only('obs2') == True
 
-    @pytest.mark.parametrize('args,raises', [
-        (dict(), does_not_raise_exception()),
-        (dict(obs_name='obs1'), does_not_raise_exception()),
-        (dict(obs_name='obs2'), does_not_raise_exception()),
-        (dict(model_name='mod2'), pytest.raises(EntryNotAvailable)),
+def test_HasConfig_raise_exceptions(config: HasConfig):
+    assert config.raise_exceptions == False
 
-    ])
-    def test_get_colocator(self,args,raises):
-        val = mod.HasColocator(dummy_setup)
-        with raises:
-            col = val.get_colocator(**args)
-            assert isinstance(col, Colocator)
 
-class TestDataImporter:
-    def test_read_model_data(self):
-        val = mod.DataImporter(EvalSetup(**CFG))
-        data = val.read_model_data('TM5-AP3-CTRL', 'od550aer')
-        assert isinstance(data, GriddedData)
+def test_HasConfig_reanalyse_existing(config: HasConfig):
+    assert config.reanalyse_existing == True
 
-    def test_read_ungridded_obsdata(self):
-        val = mod.DataImporter(EvalSetup(**CFG))
-        data = val.read_ungridded_obsdata('AERONET-Sun', 'od550aer')
-        assert isinstance(data, UngriddedData)
+
+@pytest.fixture(scope="module")
+def collocator(setup: EvalSetup) -> HasColocator:
+    return HasColocator(setup)
+
+
+def test_HasColocator_get_diurnal_only(collocator: HasColocator):
+    assert collocator._get_diurnal_only("obs1") == False
+    assert collocator._get_diurnal_only("obs2") == True
+
+
+@pytest.mark.parametrize("obs_name", [None, "obs1", "obs2"])
+def test_HasColocator_get_colocator(collocator: HasColocator, obs_name: str | None):
+    col = collocator.get_colocator(obs_name=obs_name)
+    assert isinstance(col, Colocator)
+
+
+def test_HasColocator_get_colocator_error(collocator: HasColocator):
+    with pytest.raises(EntryNotAvailable) as e:
+        collocator.get_colocator(model_name="mod2")
+    assert str(e.value) == "'no such entry mod2'"
+
+
+@pytest.fixture(scope="module")
+def importer() -> DataImporter:
+    setup = EvalSetup(**CFG)
+    return DataImporter(setup)
+
+
+def test_DataImporter_read_model_data(importer: DataImporter):
+    data = importer.read_model_data("TM5-AP3-CTRL", "od550aer")
+    assert isinstance(data, GriddedData)
+
+
+def test_DataImporter_read_ungridded_obsdata(importer: DataImporter):
+    data = importer.read_ungridded_obsdata("AERONET-Sun", "od550aer")
+    assert isinstance(data, UngriddedData)

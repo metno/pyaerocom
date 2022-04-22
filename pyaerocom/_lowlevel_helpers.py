@@ -11,8 +11,9 @@ from pathlib import Path
 import numpy as np
 import simplejson
 
-from pyaerocom import print_log
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
+
+logger = logging.getLogger(__name__)
 
 
 def round_floats(in_data, precision=5):
@@ -34,7 +35,7 @@ def round_floats(in_data, precision=5):
 
     """
 
-    if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64, )):
+    if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64)):
         # np.float64, is an aliase for the Python float, but is mentioned here for completeness
         # note that round and np.round yield different results with the Python round being mathematically correct
         # details are here:
@@ -44,8 +45,9 @@ def round_floats(in_data, precision=5):
     elif isinstance(in_data, (list, tuple)):
         return [round_floats(v, precision=precision) for v in in_data]
     elif isinstance(in_data, dict):
-        return {k:round_floats(v, precision=precision) for k, v in in_data.items()}
+        return {k: round_floats(v, precision=precision) for k, v in in_data.items()}
     return in_data
+
 
 def read_json(file_path):
     """Read json file
@@ -60,7 +62,7 @@ def read_json(file_path):
     dict
         content as dictionary
     """
-    with open(file_path, 'r') as f:
+    with open(file_path) as f:
         data = simplejson.load(f)
     return data
 
@@ -78,8 +80,9 @@ def write_json(data_dict, file_path, **kwargs):
         additional keyword args passed to :func:`simplejson.dumps` (e.g.
         indent, )
     """
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         simplejson.dump(round_floats(data_dict), f, **kwargs)
+
 
 def check_make_json(fp, indent=4):
     """
@@ -104,12 +107,13 @@ def check_make_json(fp, indent=4):
 
     """
     fp = str(fp)
-    if not fp.endswith('.json'):
-        raise ValueError('Input filepath must end with .json')
+    if not fp.endswith(".json"):
+        raise ValueError("Input filepath must end with .json")
     if not os.path.exists(fp):
-        print_log.info(f'Creating empty json file: {fp}')
+        logger.info(f"Creating empty json file: {fp}")
         write_json({}, fp, indent=indent)
     return fp
+
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -129,8 +133,8 @@ def invalid_input_err_str(argname, argval, argopts):
         formatted string that can be parsed to an Exception
     """
 
-    return ('Invalid input for {} ({}), choose from {}'
-            .format(argname, argval, argopts))
+    return f"Invalid input for {argname} ({argval}), choose from {argopts}"
+
 
 def check_dir_access(path, timeout=0.1):
     """Uses multiprocessing approach to check if location can be accessed
@@ -148,6 +152,7 @@ def check_dir_access(path, timeout=0.1):
     if not isinstance(path, str):
         return False
     pool = ThreadPoolExecutor()
+
     def try_ls(testdir, timeout):
         future = pool.submit(os.listdir, testdir)
         try:
@@ -155,7 +160,9 @@ def check_dir_access(path, timeout=0.1):
             return True
         except Exception:
             return False
+
     return try_ls(path, timeout)
+
 
 def check_write_access(path, timeout=0.1):
     """Check if input location provides write access
@@ -175,7 +182,7 @@ def check_write_access(path, timeout=0.1):
     pool = ThreadPoolExecutor()
 
     def _test_write_access(path):
-        test = os.path.join(path, '_tmp')
+        test = os.path.join(path, "_tmp")
         try:
             os.mkdir(test)
             os.rmdir(test)
@@ -189,14 +196,16 @@ def check_write_access(path, timeout=0.1):
             return future.result(timeout)
         except Exception:
             return False
+
     return run_timeout(path, timeout)
+
 
 def _class_name(obj):
     """Returns class name of an object"""
     return type(obj).__name__
 
-class Validator(abc.ABC):
 
+class Validator(abc.ABC):
     def __set_name__(self, owner, name):
         self._name = name
 
@@ -204,7 +213,7 @@ class Validator(abc.ABC):
         try:
             return obj.__dict__[self._name]
         except (AttributeError, KeyError):
-            raise AttributeError('value not set...')
+            raise AttributeError("value not set...")
 
     def __set__(self, obj, val):
         val = self.validate(val)
@@ -214,23 +223,26 @@ class Validator(abc.ABC):
     def validate(self, val):
         pass
 
+
 class TypeValidator(Validator):
     def __init__(self, type):
         self._type = type
 
     def validate(self, val):
         if not isinstance(val, self._type):
-            raise ValueError(f'need instance of {self._type}')
+            raise ValueError(f"need instance of {self._type}")
         return val
+
 
 class StrType(Validator):
     def validate(self, val):
         if not isinstance(val, str):
-            raise ValueError(f'need str, got {val}')
+            raise ValueError(f"need str, got {val}")
         return val
 
+
 class StrWithDefault(Validator):
-    def __init__(self, default : str):
+    def __init__(self, default: str):
         self.default = default
 
     def validate(self, val):
@@ -238,17 +250,20 @@ class StrWithDefault(Validator):
             if val is None:
                 val = self.default
             else:
-                raise ValueError(f'need str or None, got {val}')
+                raise ValueError(f"need str or None, got {val}")
         return val
+
 
 class DictType(Validator):
     def validate(self, val):
         if not isinstance(val, dict):
-            raise ValueError(f'need dict, got {val}')
+            raise ValueError(f"need dict, got {val}")
         return val
+
 
 class FlexList(Validator):
     """list that can be instantated via input str, tuple or list or None"""
+
     def validate(self, val):
         if isinstance(val, str):
             val = [val]
@@ -257,38 +272,42 @@ class FlexList(Validator):
         elif val is None:
             val = []
         elif not isinstance(val, list):
-            raise ValueError(f'failed to convert {val} to list')
+            raise ValueError(f"failed to convert {val} to list")
         return val
+
 
 class EitherOf(Validator):
     _allowed = FlexList()
-    def __init__(self, allowed:list):
+
+    def __init__(self, allowed: list):
         self._allowed = allowed
 
     def validate(self, val):
-        if not any([x==val for x in self._allowed]):
-            raise ValueError(f'invalid value {val}, needs to be either '
-                             f'of {self._allowed}.')
+        if not any([x == val for x in self._allowed]):
+            raise ValueError(f"invalid value {val}, needs to be either of {self._allowed}.")
         return val
+
 
 class ListOfStrings(FlexList):
     def validate(self, val):
         # make sure to have a list
-        val = super(ListOfStrings, self).validate(val)
+        val = super().validate(val)
         # make sure all entries are strings
         if not all([isinstance(x, str) for x in val]):
-            raise ValueError(f'not all items are str type in input list {val}')
+            raise ValueError(f"not all items are str type in input list {val}")
         return val
 
+
 class DictStrKeysListVals(Validator):
-    def validate(self, val):
+    def validate(self, val: dict):
         if not isinstance(val, dict):
-            raise ValueError(f'need dict, got {val}')
-        elif not all([isinstance(x, str) for x in val.keys()]):
-            raise ValueError(f'all keys need to be str type in {val}')
-        elif not all([isinstance(x, list) for x in val.values()]):
-            raise ValueError(f'all values need to be list type in {val}')
+            raise ValueError(f"need dict, got {val}")
+        if any(not isinstance(x, str) for x in val):
+            raise ValueError(f"all keys need to be str type in {val}")
+        if any(not isinstance(x, list) for x in val.values()):
+            raise ValueError(f"all values need to be list type in {val}")
         return val
+
 
 class Loc(abc.ABC):
     """Abstract descriptor representing a path location
@@ -301,12 +320,16 @@ class Loc(abc.ABC):
     - Child classes need to implement :func:`create`
     - value is allowed to be `None` in which case no checks are performed
     """
-    def __init__(self, default=None, assert_exists=False,
-                 auto_create=False, tooltip=None, logger=None):
+
+    def __init__(
+        self, default=None, assert_exists=False, auto_create=False, tooltip=None, logger=None
+    ):
         self.assert_exists = assert_exists
         self.auto_create = auto_create
-        self.tooltip = '' if tooltip is None else tooltip
-        self.logger = logging.getLogger() if logger is None else logger
+        self.tooltip = "" if tooltip is None else tooltip
+        if logger is None:
+            logger = logging.getLogger(f"{__name__}.{type(self).__qualname__}")
+        self.logger = logger
         self.__set__(self, default)
 
     def __set_name__(self, owner, name):
@@ -344,26 +367,29 @@ class Loc(abc.ABC):
     def create(self, value):
         pass
 
-class DirLoc(Loc):
 
+class DirLoc(Loc):
     def create(self, value):
         os.makedirs(value, exist_ok=True)
-        self.logger.info(f'created directory {value}')
+        self.logger.info(f"created directory {value}")
+
 
 class AsciiFileLoc(Loc):
     def create(self, value):
-        self.logger.info(f'create ascii file {value}')
-        open(value, 'w').close()
+        self.logger.info(f"create ascii file {value}")
+        open(value, "w").close()
+
 
 class JSONFile(Loc):
     def create(self, value):
         write_json({}, value)
-        self.logger.info(f'created json file {value}')
+        self.logger.info(f"created json file {value}")
 
     def validate(self, value):
-        value = super(JSONFile, self).validate(value)
-        if value is not None and not value.endswith('json'):
-            raise ValueError('need .json file ending')
+        value = super().validate(value)
+        if value is not None and not value.endswith("json"):
+            raise ValueError("need .json file ending")
+
 
 class BrowseDict(MutableMapping):
     """Dictionary-like object with getattr and setattr options
@@ -371,12 +397,14 @@ class BrowseDict(MutableMapping):
     Extended dictionary that supports dynamic value generation (i.e. if an
     assigned value is callable, it will be executed on demand).
     """
+
     ADD_GLOB = []
     FORBIDDEN_KEYS = []
     #: Keys to be ignored when converting to json
     IGNORE_JSON = []
     MAXLEN_KEYS = 1e2
     SETTER_CONVERT = {}
+
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
@@ -385,7 +413,7 @@ class BrowseDict(MutableMapping):
         return _class_name(self)
 
     def keys(self):
-        return list(self.__dict__.keys()) + self.ADD_GLOB
+        return list(self.__dict__) + self.ADD_GLOB
 
     def _get_glob_vals(self):
         return [getattr(self, x) for x in self.ADD_GLOB]
@@ -411,10 +439,9 @@ class BrowseDict(MutableMapping):
 
         if isinstance(key, str):
             if len(key) > self.MAXLEN_KEYS:
-                raise KeyError(
-                    f'key {key} exceeds max length of {self.MAXLEN_KEYS}')
+                raise KeyError(f"key {key} exceeds max length of {self.MAXLEN_KEYS}")
             if key in self.FORBIDDEN_KEYS:
-                raise KeyError(f'invalid key {key}')
+                raise KeyError(f"invalid key {key}")
         setattr(self, key, val)
 
     def _setitem_checker(self, key, val):
@@ -424,7 +451,7 @@ class BrowseDict(MutableMapping):
         try:
             return getattr(self, key)
         except TypeError:
-            #if key is not str
+            # if key is not str
             return self.__dict__[key]
         except AttributeError as e:
             raise KeyError(e)
@@ -439,9 +466,9 @@ class BrowseDict(MutableMapping):
         return len(self.__dict__)
 
     def __repr__(self):
-        '''echoes class, id, & reproducible representation in the REPL'''
+        """echoes class, id, & reproducible representation in the REPL"""
         _repr = repr(self.__dict__)
-        return f'{_class_name(self)}: {_repr}'
+        return f"{_class_name(self)}: {_repr}"
 
     def to_dict(self):
         out = {}
@@ -463,7 +490,7 @@ class BrowseDict(MutableMapping):
         for key, val in self.items():
             if key in self.IGNORE_JSON:
                 continue
-            if hasattr(val, 'json_repr'):
+            if hasattr(val, "json_repr"):
                 val = val.json_repr()
             output[key] = val
         return output
@@ -491,18 +518,19 @@ class BrowseDict(MutableMapping):
 
         """
         if not isinstance(other, (dict, BrowseDict)):
-            raise ValueError('need dict-like object')
+            raise ValueError("need dict-like object")
         for key, val in other.items():
             if key in self:
                 self[key] = val
             elif key in self.FORBIDDEN_KEYS:
-                raise KeyError(f'invalid key {key}')
+                raise KeyError(f"invalid key {key}")
 
     def pretty_str(self):
         return dict_to_str(self.to_dict())
 
     def __str__(self):
         return str(self.to_dict())
+
 
 class ConstrainedContainer(BrowseDict):
     """Restrictive dict-like class with fixed keys
@@ -531,7 +559,7 @@ class ConstrainedContainer(BrowseDict):
     CRASH_ON_INVALID = True
 
     def __setitem__(self, key, val):
-        super(ConstrainedContainer, self).__setitem__(key, val)
+        super().__setitem__(key, val)
 
     def _invoke_dtype(self, current_tp, val):
         return current_tp(**val)
@@ -551,10 +579,8 @@ class ConstrainedContainer(BrowseDict):
         """
         if not key in dir(self):
             if self.CRASH_ON_INVALID:
-                raise ValueError(f'Invalid key {key}')
-            print_log.warning(
-                f'Invalid key {key} in {self._class_name}. Will be ignored.'
-                )
+                raise ValueError(f"Invalid key {key}")
+            logger.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
             return key, val, False
 
         current = getattr(self, key)
@@ -563,12 +589,13 @@ class ConstrainedContainer(BrowseDict):
 
         if not current is None and not isinstance(val, current_tp):
             raise ValueError(
-                f'Invalid type {type(val)} for key: {key}. Need {current_tp} '
-                f'(Current value: {current})')
+                f"Invalid type {type(val)} for key: {key}. Need {current_tp} "
+                f"(Current value: {current})"
+            )
         return key, val, True
 
-class NestedContainer(BrowseDict):
 
+class NestedContainer(BrowseDict):
     def _occurs_in(self, key) -> list:
         objs = []
         if key in self:
@@ -577,7 +604,7 @@ class NestedContainer(BrowseDict):
             if isinstance(v, (dict, BrowseDict)) and key in v:
                 objs.append(v)
             if len(objs) > 1:
-                print(key, 'is contained in multiple containers ', objs)
+                print(key, "is contained in multiple containers ", objs)
         return objs
 
     def keys_unnested(self) -> list:
@@ -595,12 +622,13 @@ class NestedContainer(BrowseDict):
         for key, val in settings.items():
             to_update = self._occurs_in(key)
             if len(to_update) == 0:
-                raise AttributeError(f'invalid key {key}')
+                raise AttributeError(f"invalid key {key}")
             for obj in to_update:
                 obj[key] = val
 
     def __str__(self):
         return dict_to_str(self)
+
 
 def merge_dicts(dict1, dict2, discard_failing=True):
     """Merge two dictionaries
@@ -623,7 +651,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
     dict
         merged dictionary
     """
-    #make a copy of the first dictionary
+    # make a copy of the first dictionary
     new = dict(**dict1)
     merge_failed = []
     # loop over all entries of second one
@@ -644,14 +672,14 @@ def merge_dicts(dict1, dict2, discard_failing=True):
                     continue
             except:
                 try:
-                    if (this==val).all():
+                    if (this == val).all():
                         continue
                 except:
                     pass
 
             # both values are strings, merge with ';' delim
             if isinstance(this, str) and isinstance(val, str):
-                new[key] = '{};{}'.format(this, val)
+                new[key] = f"{this};{val}"
 
             elif isinstance(this, list) and isinstance(val, list):
                 for item in val:
@@ -665,15 +693,16 @@ def merge_dicts(dict1, dict2, discard_failing=True):
             elif any(isinstance(x, list) for x in (this, val)):
                 if isinstance(this, list):
                     lst = this
-                    check = val #this is not list
+                    check = val  # this is not list
                 else:
                     lst = val
-                    check = this #this is not list
+                    check = this  # this is not list
                 for item in lst:
                     if not type(item) == type(check):
-                        raise ValueError('Cannot merge key {} since items in {} '
-                                         'are of different type, that does not '
-                                         'match {}'.format(key, lst, check))
+                        raise ValueError(
+                            f"Cannot merge key {key} since items in {lst} "
+                            f"are of different type, that does not match {check}"
+                        )
                 lst.append(check)
                 new[key] = lst
 
@@ -684,9 +713,10 @@ def merge_dicts(dict1, dict2, discard_failing=True):
                 merge_failed.append(key)
             else:
                 raise
-    new['merge_failed'] = merge_failed
+    new["merge_failed"] = merge_failed
 
     return new
+
 
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
@@ -695,48 +725,51 @@ def chk_make_subdir(base, name):
         os.mkdir(d)
     return d
 
+
 def check_dirs_exist(*dirs, **add_dirs):
     for d in dirs:
         if not os.path.exists(d):
-            print('Creating dir: {}'.format(d))
+            print(f"Creating dir: {d}")
             os.mkdir(d)
     for k, d in add_dirs.items():
         if not os.path.exists(d):
             os.mkdir(d)
-            print('Creating dir: {} ({})'.format(d, k))
+            print(f"Creating dir: {d} ({k})")
+
 
 def list_to_shortstr(lst, indent=0):
     """Custom function to convert a list into a short string representation"""
+
     def _short_lst_fmt(lin):
         lout = []
         for val in lin:
             try:
                 with ignore_warnings(
-                    True,
                     RuntimeWarning,
                     "divide by zero encountered in log10",
                     "overflow encountered in long_scalars",
                 ):
-                    ndigits = -1*np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
-                lout.append('{:.{}f}'.format(val, ndigits))
+                    ndigits = -1 * np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
+                lout.append(f"{val:.{ndigits}f}")
             except Exception:
                 lout.append(val)
         return lout
-    name_str = f'{type(lst).__name__} ({len(lst)} items): '
-    indentstr = indent*" "
+
+    name_str = f"{type(lst).__name__} ({len(lst)} items): "
+    indentstr = indent * " "
     if len(lst) == 0:
-        return "{}{}[]".format(indentstr, name_str)
+        return f"{indentstr}{name_str}[]"
     elif len(lst) < 6:
         lfmt = _short_lst_fmt(lst)
-        return "{}{}{}".format(indentstr, name_str, lfmt)
-    else: #first 2 and last 2 items
-        lfmt= _short_lst_fmt([lst[0], lst[1], lst[-2], lst[-1]])
-        s = ("{}{}[{}, {}, ..., {}, {}]"
-             .format(indentstr, name_str, lfmt[0], lfmt[1], lfmt[2], lfmt[3]))
+        return f"{indentstr}{name_str}{lfmt}"
+    else:  # first 2 and last 2 items
+        lfmt = _short_lst_fmt([lst[0], lst[1], lst[-2], lst[-1]])
+        s = f"{indentstr}{name_str}[{lfmt[0]}, {lfmt[1]}, ..., {lfmt[2]}, {lfmt[3]}]"
 
     return s
 
-def sort_dict_by_name(d, pref_list : list = None) -> dict:
+
+def sort_dict_by_name(d, pref_list: list = None) -> dict:
     """Sort entries of input dictionary by their names and return ordered
 
     Parameters
@@ -763,6 +796,7 @@ def sort_dict_by_name(d, pref_list : list = None) -> dict:
             s[k] = d[k]
     return s
 
+
 def dict_to_str(dictionary, indent=0, ignore_null=False):
     """Custom function to convert dictionary into string (e.g. for print)
 
@@ -782,47 +816,31 @@ def dict_to_str(dictionary, indent=0, ignore_null=False):
 
     """
     if len(dictionary) == 0:
-        return '{}'
+        return "{}"
     elif len(dictionary) == 1:
-        pre = ind = offs =''
+        pre = ind = offs = ""
     else:
-        pre = '\n'
-        ind = indent*" "
-        offs = ' '
-    s = '{'
+        pre = "\n"
+        ind = indent * " "
+        offs = " "
+    s = "{"
 
     for key, val in dictionary.items():
         if ignore_null and val is None:
             continue
         elif isinstance(val, (dict, BrowseDict)):
-            val = dict_to_str(val, indent+2)
+            val = dict_to_str(val, indent + 2)
         elif isinstance(val, list):
             val = list_to_shortstr(val, indent=indent)
-        elif isinstance(val, np.ndarray) and val.ndim==1:
+        elif isinstance(val, np.ndarray) and val.ndim == 1:
             val = list_to_shortstr(val, indent=indent)
-        s += f'{pre}{ind}{offs}{key}: {val}'
-    s+= pre + ind + '}'
+        s += f"{pre}{ind}{offs}{key}: {val}"
+    s += pre + ind + "}"
     return s
 
-def str_underline(s, indent=0):
+
+def str_underline(title: str, indent: int = 0):
     """Create underlined string"""
-    s = indent*" " + "{}\n".format(s)
-    s+= indent*" " + "{}".format(len(s)*"-")
-    return s
-
-if __name__ == '__main__':
-    d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
-
-    d.update(**{'mypy': 55})
-    class CDict(ConstrainedContainer):
-        def __init__(self):
-            self.bla = 1
-            self.blub = 2
-            self.option = None
-
-    cd = CDict()
-    print(cd)
-    cd['option'] = 42
-    cd['option'] = {}
-
-    cd.update(**{'mypy': 55})
+    length = indent + len(title)
+    underline = "-" * len(title)
+    return f"{title:>{length}}\n{underline:>{length}}"

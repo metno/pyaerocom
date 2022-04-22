@@ -3,31 +3,30 @@ from warnings import warn
 _cmap_lighttheme = "Blues"
 
 DEFAULT_THEME = "light"
-_COLOR_THEMES = dict(light = dict(name="light",
-                                  cmap_map=_cmap_lighttheme,
-                                  cmap_map_div='bwr_r',
-                                  color_coastline ="k"),
-                     dark = dict(name="dark",
-                                 cmap_map="viridis",
-                                 cmap_map_div='PuOr_r',
-                                 color_coastline ="#e6e6e6"))
+_COLOR_THEMES = dict(
+    light=dict(name="light", cmap_map=_cmap_lighttheme, cmap_map_div="bwr_r", color_coastline="k"),
+    dark=dict(name="dark", cmap_map="viridis", cmap_map_div="PuOr_r", color_coastline="#e6e6e6"),
+)
 
 MAP_AXES_ASPECT = 1.5
 FIGSIZE_DEFAULT = (16, 10)
 # text positions for annotations in scatter plots
-SCAT_ANNOT_XYPOS = [(.01, 0.95),
-                    (0.01, 0.90),
-                    (0.3, 0.90),
-                    (0.01, 0.86),
-                    (0.3, 0.86),
-                    (0.01, 0.82),
-                    (0.3, 0.82),
-                    (0.01, 0.78),
-                    (0.3, 0.78),
-                    (0.8, 0.1),
-                    (0.8, 0.06)]
+SCAT_ANNOT_XYPOS = [
+    (0.01, 0.95),
+    (0.01, 0.90),
+    (0.3, 0.90),
+    (0.01, 0.86),
+    (0.3, 0.86),
+    (0.01, 0.82),
+    (0.3, 0.82),
+    (0.01, 0.78),
+    (0.3, 0.78),
+    (0.8, 0.1),
+    (0.8, 0.06),
+]
 
-class ColorTheme(object):
+
+class ColorTheme:
     """Pyaerocom class specifiying plotting color theme
 
     Attributes
@@ -55,8 +54,15 @@ class ColorTheme(object):
     cmap_map : viridis
     color_coastline : #e6e6e6
     """
-    def __init__(self, name="dark", cmap_map=None, color_coastline=None,
-                 cmap_map_div=None, cmap_map_div_shifted=True):
+
+    def __init__(
+        self,
+        name="dark",
+        cmap_map=None,
+        color_coastline=None,
+        cmap_map_div=None,
+        cmap_map_div_shifted=True,
+    ):
         if not name in _COLOR_THEMES:
             warn("Invalid name for color theme, using default theme")
             name = DEFAULT_THEME
@@ -66,7 +72,7 @@ class ColorTheme(object):
         self.cmap_map_div = cmap_map_div
         self.cmap_map_div_shifted = cmap_map_div_shifted
         self.color_coastline = color_coastline
-        self.color_map_text = 'r'
+        self.color_map_text = "r"
 
         self.load_default(name)
 
@@ -85,8 +91,9 @@ class ColorTheme(object):
 
         """
         if not theme_name in _COLOR_THEMES:
-            raise ValueError("Default theme with name %s is not available. "
-                             "Choose from %s" %_COLOR_THEMES)
+            raise ValueError(
+                "Default theme with name %s is not available. Choose from %s" % _COLOR_THEMES
+            )
         self.from_dict(_COLOR_THEMES[theme_name])
 
     def from_dict(self, info_dict):
@@ -123,21 +130,15 @@ class ColorTheme(object):
     def __str__(self):
         s = "pyaerocom ColorTheme"
         for k, v in self.__dict__.items():
-            s += "\n%s : %s" %(k, v)
+            s += f"\n{k} : {v}"
         return s
+
 
 COLOR_THEME = ColorTheme(DEFAULT_THEME)
 
+
 def get_color_theme(theme_name="dark"):
-# Settings for colormap (use perceptually uniform colormaps)
+    # Settings for colormap (use perceptually uniform colormaps)
     if not theme_name in _COLOR_THEMES:
-        raise ValueError("Invalid input for theme_name, choose from %s"
-                         %_COLOR_THEMES)
+        raise ValueError("Invalid input for theme_name, choose from %s" % _COLOR_THEMES)
     return ColorTheme(theme_name)
-
-if __name__=="__main__":
-    print(ColorTheme("dark"))
-    print(ColorTheme("light"))
-
-    import doctest
-    doctest.testmod()

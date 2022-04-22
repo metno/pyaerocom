@@ -1,37 +1,44 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-from collections import OrderedDict as od
-from datetime import datetime
+from __future__ import annotations
+
 import fnmatch
+import logging
+import os
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pandas as pd
 
 from pyaerocom import const
-logger = const.logger
-print_log = const.print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
-from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
-                                  TimeMatchError, DataCoverageError,
-                                  MetaDataError, StationNotFoundError)
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
-from pyaerocom.stationdata import StationData
-from pyaerocom.region import Region
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    DataExtractionError,
+    MetaDataError,
+    StationNotFoundError,
+    TimeMatchError,
+    VarNotAvailableError,
+)
 from pyaerocom.geodesy import get_country_info_coords
+from pyaerocom.helpers import (
+    isnumeric,
+    merge_station_data,
+    same_meta_dict,
+    start_stop,
+    start_stop_str,
+)
+from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import in_range
-from pyaerocom.helpers import (same_meta_dict,
-                               start_stop_str,
-                               start_stop, merge_station_data,
-                               isnumeric)
-
 from pyaerocom.metastandards import STANDARD_META_KEYS
+from pyaerocom.region import Region
+from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
-from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
-                                             get_mask_value)
+logger = logging.getLogger(__name__)
 
-class UngriddedData(object):
+
+class UngriddedData:
     """Class representing point-cloud data (ungridded)
 
     The data is organised in a 2-dimensional numpy array where the first index
@@ -90,8 +97,9 @@ class UngriddedData(object):
         list of additional index column names of 2D datarray.
 
     """
+
     #: version of class (for caching)
-    __version__ = '0.21'
+    __version__ = "0.21"
 
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
@@ -104,20 +112,20 @@ class UngriddedData(object):
     _TIMEINDEX = 1
     _LATINDEX = 2
     _LONINDEX = 3
-    _ALTITUDEINDEX = 4 # altitude of measurement device
+    _ALTITUDEINDEX = 4  # altitude of measurement device
     _VARINDEX = 5
     _DATAINDEX = 6
     _DATAHEIGHTINDEX = 7
-    _DATAERRINDEX = 8 # col where errors can be stored
-    _DATAFLAGINDEX = 9 # can be used to store flags
-    _STOPTIMEINDEX = 10 # can be used to store stop time of acq.
-    _TRASHINDEX = 11 #index where invalid data can be moved to (e.g. when outliers are removed)
+    _DATAERRINDEX = 8  # col where errors can be stored
+    _DATAFLAGINDEX = 9  # can be used to store flags
+    _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
+    _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
     # The following number denotes the kept precision after the decimal dot of
     # the location (e.g denotes lat = 300.12345)
     # used to code lat and long in a single number for a uniqueness test
     _LOCATION_PRECISION = 5
-    _LAT_OFFSET = 90.
+    _LAT_OFFSET = 90.0
 
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
@@ -133,18 +141,18 @@ class UngriddedData(object):
         self._chunksize = num_points
         self._index = self._init_index(add_cols)
 
-        #keep private, this is not supposed to be used by the user
-        self._data = np.full([num_points, self._COLNO], np.nan) 
+        # keep private, this is not supposed to be used by the user
+        self._data = np.full([num_points, self._COLNO], np.nan)
 
-        self.metadata = od()
+        self.metadata = {}
         # single value data revision is deprecated
-        self.data_revision = od()
-        self.meta_idx = od()
-        self.var_idx = od()
+        self.data_revision = {}
+        self.meta_idx = {}
+        self.var_idx = {}
 
         self._idx = -1
 
-        self.filter_hist = od()
+        self.filter_hist = {}
 
     def _get_data_revision_helper(self, data_id):
         """
@@ -167,64 +175,65 @@ class UngriddedData(object):
         """
         rev = None
         for meta in self.metadata.values():
-            if meta['data_id'] == data_id:
+            if meta["data_id"] == data_id:
                 if rev is None:
-                    rev = meta['data_revision']
-                elif not meta['data_revision'] == rev:
-                    raise MetaDataError('Found different data revisions for '
-                                        'dataset {}'.format(data_id))
+                    rev = meta["data_revision"]
+                elif not meta["data_revision"] == rev:
+                    raise MetaDataError(f"Found different data revisions for dataset {data_id}")
         if data_id in self.data_revision:
             if not rev == self.data_revision[data_id]:
-                raise MetaDataError('Found different data revisions for '
-                                    'dataset {}'.format(data_id))
+                raise MetaDataError(f"Found different data revisions for dataset {data_id}")
         self.data_revision[data_id] = rev
         return rev
 
     def _check_index(self):
         """Checks if all indices are assigned correctly"""
-        assert len(self.meta_idx) == len(self.metadata), \
-            'Mismatch len(meta_idx) and len(metadata)'
+        assert len(self.meta_idx) == len(self.metadata), "Mismatch len(meta_idx) and len(metadata)"
 
-        assert sum(self.meta_idx.keys()) == sum(self.metadata.keys()), \
-            'Mismatch between keys of metadata dict and meta_idx dict'
+        assert sum(self.meta_idx) == sum(
+            self.metadata
+        ), "Mismatch between keys of metadata dict and meta_idx dict"
 
         _varnums = self._data[:, self._VARINDEX]
         var_indices = np.unique(_varnums[~np.isnan(_varnums)])
 
-        assert len(var_indices) == len(self.var_idx), \
-            'Mismatch between number of variables in data array and var_idx attr.'
+        assert len(var_indices) == len(
+            self.var_idx
+        ), "Mismatch between number of variables in data array and var_idx attr."
 
-        assert sum(var_indices) == sum(self.var_idx.values()), \
-            'Mismatch between variable indices in data array and var_idx attr.'
+        assert sum(var_indices) == sum(
+            self.var_idx.values()
+        ), "Mismatch between variable indices in data array and var_idx attr."
 
         vars_avail = self.var_idx
 
         for idx, meta in self.metadata.items():
-            if not 'var_info' in meta:
-                if not 'variables' in meta:
-                    raise AttributeError('Need either variables (list) or '
-                                         'var_info (dict) in meta block {}: {}'
-                                         .format(idx, meta))
-                meta['var_info'] = {}
-                for v in meta['variables']:
-                    meta['var_info'][v] = {}
+            if not "var_info" in meta:
+                if not "variables" in meta:
+                    raise AttributeError(
+                        f"Need either variables (list) or var_info (dict) "
+                        f"in meta block {idx}: {meta}"
+                    )
+                meta["var_info"] = {}
+                for v in meta["variables"]:
+                    meta["var_info"][v] = {}
 
             var_idx = self.meta_idx[idx]
             for var, indices in var_idx.items():
                 if len(indices) == 0:
-                    continue # no data assigned for this metadata index
+                    continue  # no data assigned for this metadata index
 
-                assert var in meta['var_info'], \
-                    ('Var {} is indexed in meta_idx[{}] but not in metadata[{}]'
-                     .format(var, idx, idx))
-
+                assert (
+                    var in meta["var_info"]
+                ), f"Var {var} is indexed in meta_idx[{idx}] but not in metadata[{idx}]"
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
-                assert len(var_idx_data) == 1, ('Found multiple variable indices for '
-                          'var {}: {}'.format(var, var_idx_data))
+                assert (
+                    len(var_idx_data) == 1
+                ), f"Found multiple variable indices for var {var}: {var_idx_data}"
                 assert var_idx_data[0] == vars_avail[var], (
-                    f'Mismatch between {var} index assigned in data and '
-                    f'var_idx for {idx} in meta-block'
-                    )
+                    f"Mismatch between {var} index assigned in data and "
+                    f"var_idx for {idx} in meta-block"
+                )
 
     @staticmethod
     def from_station_data(stats, add_meta_keys=None):
@@ -257,11 +266,9 @@ class UngriddedData(object):
         elif isinstance(add_meta_keys, str):
             add_meta_keys = [add_meta_keys]
         elif not isinstance(add_meta_keys, list):
-            raise ValueError(
-                f'Invalid input for add_meta_keys {add_meta_keys}... need list'
-                )
+            raise ValueError(f"Invalid input for add_meta_keys {add_meta_keys}... need list")
         if isinstance(stats, StationData):
-            stats = [StationData]
+            stats = [stats]
         data_obj = UngriddedData(num_points=1000000)
 
         meta_key = 0.0
@@ -275,25 +282,24 @@ class UngriddedData(object):
             if isinstance(stat, dict):
                 stat = StationData(**stat)
             elif not isinstance(stat, StationData):
-                raise ValueError('Need instances of StationData or dicts')
-            metadata[meta_key] = od()
-            metadata[meta_key].update(stat.get_meta(force_single_value=False,
-                                                    quality_check=False,
-                                                    add_none_vals=True))
+                raise ValueError("Need instances of StationData or dicts")
+            metadata[meta_key] = {}
+            metadata[meta_key].update(
+                stat.get_meta(force_single_value=False, quality_check=False, add_none_vals=True)
+            )
             for key in add_meta_keys:
                 try:
                     val = stat[key]
                 except KeyError:
-                    val = 'undefined'
+                    val = "undefined"
 
                 metadata[meta_key][key] = val
 
-
-            metadata[meta_key]['var_info'] = od()
+            metadata[meta_key]["var_info"] = {}
 
             meta_idx[meta_key] = {}
 
-            append_vars = list(stat.var_info.keys())
+            append_vars = list(stat.var_info)
 
             for var in append_vars:
                 if not var in data_obj.var_idx:
@@ -309,33 +315,29 @@ class UngriddedData(object):
                     times = vardata.index
                     values = vardata.values
                 else:
-                    times = stat['dtime']
+                    times = stat["dtime"]
                     values = vardata
                     if not len(times) == len(values):
                         raise ValueError
 
-                times = np.asarray([np.datetime64(x, 's') for x in times])
+                times = np.asarray([np.datetime64(x, "s") for x in times])
                 times = np.float64(times)
 
                 num_times = len(times)
-                #check if size of data object needs to be extended
+                # check if size of data object needs to be extended
                 if (idx + num_times) >= data_obj._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                    # if totnum < data_obj._CHUNKSIZE, then the latter is used
                     data_obj.add_chunk(num_times)
 
                 start = idx
                 stop = start + num_times
 
-                #write common meta info for this station (data lon, lat and
-                #altitude are set to station locations)
-                data_obj._data[start:stop,
-                               data_obj._LATINDEX] = stat['latitude']
-                data_obj._data[start:stop,
-                               data_obj._LONINDEX] = stat['longitude']
-                data_obj._data[start:stop,
-                               data_obj._ALTITUDEINDEX] = stat['altitude']
-                data_obj._data[start:stop,
-                               data_obj._METADATAKEYINDEX] = meta_key
+                # write common meta info for this station (data lon, lat and
+                # altitude are set to station locations)
+                data_obj._data[start:stop, data_obj._LATINDEX] = stat["latitude"]
+                data_obj._data[start:stop, data_obj._LONINDEX] = stat["longitude"]
+                data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = stat["altitude"]
+                data_obj._data[start:stop, data_obj._METADATAKEYINDEX] = meta_key
 
                 # write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = times
@@ -352,9 +354,9 @@ class UngriddedData(object):
                     errs = stat.data_err[var]
                     data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
 
-                var_info = stat['var_info'][var]
-                metadata[meta_key]['var_info'][var] = od()
-                metadata[meta_key]['var_info'][var].update(var_info)
+                var_info = stat["var_info"][var]
+                metadata[meta_key]["var_info"][var] = {}
+                metadata[meta_key]["var_info"][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
                 idx += num_times
@@ -368,28 +370,26 @@ class UngriddedData(object):
 
         return data_obj
 
-    def add_station_data(self, stat, meta_idx=None, data_idx=None,
-                         check_index=False):
-        raise NotImplementedError('Coming at some point')
+    def add_station_data(self, stat, meta_idx=None, data_idx=None, check_index=False):
+        raise NotImplementedError("Coming at some point")
         if meta_idx is None:
             meta_idx = self.last_meta_idx + 1
-        elif meta_idx in self.meta_idx.keys():
-            raise ValueError('Cannot add data at meta block index {}, index '
-                             'already exists'.format(meta_idx))
+        elif meta_idx in self.meta_idx:
+            raise ValueError(
+                f"Cannot add data at meta block index {meta_idx}, index already exists"
+            )
 
         if data_idx is None:
             data_idx = self._data.shape[0]
         elif not np.all(np.isnan(self._data[data_idx, :])):
-            raise ValueError('Cannot add data at data index {}, index '
-                             'already exists'.format(data_idx))
-
+            raise ValueError(f"Cannot add data at data index {data_idx}, index already exists")
 
     @property
     def last_meta_idx(self):
         """
         Index of last metadata block
         """
-        return np.max(list(self.meta_idx.keys()))
+        return np.max(list(self.meta_idx))
 
     @property
     def index(self):
@@ -397,33 +397,36 @@ class UngriddedData(object):
 
     @property
     def first_meta_idx(self):
-        #First available metadata index
-        return list(self.metadata.keys())[0]
+        # First available metadata index
+        return list(self.metadata)[0]
 
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
-        idx = od(meta           = self._METADATAKEYINDEX,
-                 time           = self._TIMEINDEX,
-                 stoptime       = self._STOPTIMEINDEX,
-                 latitude       = self._LATINDEX,
-                 longitude      = self._LONINDEX,
-                 altitude       = self._ALTITUDEINDEX,
-                 varidx         = self._VARINDEX,
-                 data           = self._DATAINDEX,
-                 dataerr        = self._DATAERRINDEX,
-                 dataaltitude   = self._DATAHEIGHTINDEX,
-                 dataflag       = self._DATAFLAGINDEX,
-                 trash          = self._TRASHINDEX)
+        idx = dict(
+            meta=self._METADATAKEYINDEX,
+            time=self._TIMEINDEX,
+            stoptime=self._STOPTIMEINDEX,
+            latitude=self._LATINDEX,
+            longitude=self._LONINDEX,
+            altitude=self._ALTITUDEINDEX,
+            varidx=self._VARINDEX,
+            data=self._DATAINDEX,
+            dataerr=self._DATAERRINDEX,
+            dataaltitude=self._DATAHEIGHTINDEX,
+            dataflag=self._DATAFLAGINDEX,
+            trash=self._TRASHINDEX,
+        )
 
         next_idx = max(idx.values()) + 1
         if add_cols is not None:
             if not isinstance(add_cols, (list, tuple)):
-                raise ValueError('Invalid input for add_cols. Need list or tuple')
+                raise ValueError("Invalid input for add_cols. Need list or tuple")
             for name in add_cols:
                 if name in idx:
-                    raise ValueError('Cannot add new index with name {} since '
-                                     'this index already exists at column '
-                                     'position {}'.format(name, idx[name]))
+                    raise ValueError(
+                        f"Cannot add new index with name {name} since "
+                        f"this index already exists at column position {idx[name]}"
+                    )
                 idx[name] = next_idx
                 next_idx += 1
         return idx
@@ -452,6 +455,7 @@ class UngriddedData(object):
             instance
         """
         from copy import deepcopy
+
         new = UngriddedData()
         new._data = np.copy(self._data)
         new.metadata = deepcopy(self.metadata)
@@ -464,14 +468,14 @@ class UngriddedData(object):
     @property
     def contains_vars(self):
         """List of all variables in this dataset"""
-        return [k for k in self.var_idx.keys()]
+        return list(self.var_idx)
 
     @property
     def contains_datasets(self):
         """List of all datasets in this object"""
         datasets = []
         for info in self.metadata.values():
-            ds = info['data_id']
+            ds = info["data_id"]
             if not ds in datasets:
                 datasets.append(ds)
         return datasets
@@ -482,7 +486,7 @@ class UngriddedData(object):
         instruments = []
         for info in self.metadata.values():
             try:
-                instr = info['instrument_name']
+                instr = info["instrument_name"]
                 if instr is not None and not instr in instruments:
                     instruments.append(instr)
             except Exception:
@@ -517,7 +521,7 @@ class UngriddedData(object):
         vals = []
         for v in self.metadata.values():
             try:
-                vals.append(v['longitude'])
+                vals.append(v["longitude"])
             except Exception:
                 vals.append(np.nan)
         return vals
@@ -532,7 +536,7 @@ class UngriddedData(object):
         vals = []
         for v in self.metadata.values():
             try:
-                vals.append(v['latitude'])
+                vals.append(v["latitude"])
             except Exception:
                 vals.append(np.nan)
         return vals
@@ -547,7 +551,7 @@ class UngriddedData(object):
         vals = []
         for v in self.metadata.values():
             try:
-                vals.append(v['altitude'])
+                vals.append(v["altitude"])
             except Exception:
                 vals.append(np.nan)
         return vals
@@ -562,7 +566,7 @@ class UngriddedData(object):
         vals = []
         for v in self.metadata.values():
             try:
-                vals.append(v['station_name'])
+                vals.append(v["station_name"])
             except Exception:
                 vals.append(np.nan)
         return vals
@@ -598,6 +602,7 @@ class UngriddedData(object):
     def nonunique_station_names(self):
         """List of station names that occur more than once in metadata"""
         import collections
+
         lst = self.station_name
         return [item for item, count in collections.Counter(lst).items() if count > 1]
 
@@ -616,8 +621,8 @@ class UngriddedData(object):
         To see all filters, check out :attr:`filter_hist`
         """
         if not self.is_filtered:
-            raise AttributeError('No filters were applied so far')
-        return self.filter_hist[max(self.filter_hist.keys())]
+            raise AttributeError("No filters were applied so far")
+        return self.filter_hist[max(self.filter_hist)]
 
     def add_chunk(self, size=None):
         """Extend the size of the data array
@@ -633,7 +638,7 @@ class UngriddedData(object):
             size = self._chunksize
         chunk = np.full([size, self._COLNO], np.nan)
         self._data = np.append(self._data, chunk, axis=0)
-        logger.info("adding chunk, new array size ({})".format(self._data.shape))
+        logger.info(f"adding chunk, new array size ({self._data.shape})")
 
     def _find_station_indices_wildcards(self, station_str):
         """Find indices of all metadata blocks matching input station name
@@ -656,12 +661,12 @@ class UngriddedData(object):
         """
         idx = []
         for i, meta in self.metadata.items():
-            if fnmatch.fnmatch(meta['station_name'], station_str):
+            if fnmatch.fnmatch(meta["station_name"], station_str):
                 idx.append(i)
         if len(idx) == 0:
-            raise StationNotFoundError('No station available in UngriddedData '
-                                       'that matches pattern {}'
-                                       .format(station_str))
+            raise StationNotFoundError(
+                f"No station available in UngriddedData that matches pattern {station_str}"
+            )
         return idx
 
     def _find_station_indices(self, station_str):
@@ -685,12 +690,12 @@ class UngriddedData(object):
         """
         idx = []
         for i, meta in self.metadata.items():
-            if meta['station_name'] == station_str:
+            if meta["station_name"] == station_str:
                 idx.append(i)
         if len(idx) == 0:
-            raise StationNotFoundError('No station available in UngriddedData '
-                                       'that matches name {}'
-                                       .format(station_str))
+            raise StationNotFoundError(
+                f"No station available in UngriddedData that matches name {station_str}"
+            )
         return idx
 
     def _get_stat_coords(self):
@@ -698,10 +703,9 @@ class UngriddedData(object):
         coords = []
         for idx, meta in self.metadata.items():
             try:
-                lat, lon = meta['latitude'], meta['longitude']
+                lat, lon = meta["latitude"], meta["longitude"]
             except:
-                const.print_log.warning('Could not retrieve lat lon coord '
-                                        'at meta index {}'.format(idx))
+                logger.warning(f"Could not retrieve lat lon coord at meta index {idx}")
                 continue
             meta_idx.append(idx)
             coords.append((lat, lon))
@@ -736,10 +740,10 @@ class UngriddedData(object):
 
         for i, idx in enumerate(meta_idx):
             meta = self.metadata[idx]
-            if not 'country' in meta or meta['country'] is None:
-                country = info[i]['country']
-                meta['country'] = country
-                meta['country_code'] = info[i]['country_code']
+            if not "country" in meta or meta["country"] is None:
+                country = info[i]["country"]
+                meta["country"] = country
+                meta["country_code"] = info[i]["country_code"]
                 meta_idx_updated.append(idx)
                 countries.append(country)
         return (meta_idx_updated, countries)
@@ -749,22 +753,23 @@ class UngriddedData(object):
         """
         Alphabetically sorted list of country names available
         """
-        #self.check_set_country()
+        # self.check_set_country()
         countries = []
         for idx, meta in self.metadata.items():
             try:
-                countries.append(meta['country'])
+                countries.append(meta["country"])
             except:
-                const.logger.warning('No country information in meta block', idx)
+                logger.warning("No country information in meta block", idx)
         if len(countries) == 0:
-            const.print_log.warning('None of the metadata blocks contains '
-                                    'country information. You may want to '
-                                    'run class method check_set_country first '
-                                    'to automatically assign countries.')
+            logger.warning(
+                "None of the metadata blocks contains "
+                "country information. You may want to "
+                "run class method check_set_country first "
+                "to automatically assign countries."
+            )
         return sorted(dict.fromkeys(countries))
 
-    def find_station_meta_indices(self, station_name_or_pattern,
-                                  allow_wildcards=True):
+    def find_station_meta_indices(self, station_name_or_pattern, allow_wildcards=True):
         """Find indices of all metadata blocks matching input station name
 
         You may also use wildcard pattern as input (e.g. *Potenza*)
@@ -793,13 +798,22 @@ class UngriddedData(object):
         return self._find_station_indices_wildcards(station_name_or_pattern)
 
     # TODO: see docstring
-    def to_station_data(self, meta_idx, vars_to_convert=None, start=None,
-                        stop=None, freq=None,
-                        merge_if_multi=True, merge_pref_attr=None,
-                        merge_sort_by_largest=True, insert_nans=False,
-                        allow_wildcards_station_name=True,
-                        add_meta_keys=None, resample_how=None,
-                        min_num_obs=None):
+    def to_station_data(
+        self,
+        meta_idx,
+        vars_to_convert=None,
+        start=None,
+        stop=None,
+        freq=None,
+        merge_if_multi=True,
+        merge_pref_attr=None,
+        merge_sort_by_largest=True,
+        insert_nans=False,
+        allow_wildcards_station_name=True,
+        add_meta_keys=None,
+        resample_how=None,
+        min_num_obs=None,
+    ):
         """Convert data from one station to :class:`StationData`
 
         Todo
@@ -861,19 +875,17 @@ class UngriddedData(object):
         elif vars_to_convert is None:
             vars_to_convert = self.contains_vars
             if len(vars_to_convert) == 0:
-                raise DataCoverageError('UngriddedData object does not contain '
-                                        'any variables')
+                raise DataCoverageError("UngriddedData object does not contain any variables")
         if start is None and stop is None:
-            start = pd.Timestamp('1970')
-            stop = pd.Timestamp('2200')
+            start = pd.Timestamp("1970")
+            stop = pd.Timestamp("2200")
         else:
             start, stop = start_stop(start, stop)
 
         if isinstance(meta_idx, str):
             # user asks explicitely for station name, find all meta indices
             # that match this station
-            meta_idx = self.find_station_meta_indices(meta_idx,
-                                                      allow_wildcards_station_name)
+            meta_idx = self.find_station_meta_indices(meta_idx, allow_wildcards_station_name)
         if not isinstance(meta_idx, list):
             meta_idx = [meta_idx]
 
@@ -884,26 +896,28 @@ class UngriddedData(object):
 
         for idx in meta_idx:
             try:
-                stat = self._metablock_to_stationdata(idx,
-                                                      vars_to_convert,
-                                                      start, stop,
-                                                      add_meta_keys)
+                stat = self._metablock_to_stationdata(
+                    idx, vars_to_convert, start, stop, add_meta_keys
+                )
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
-                logger.info('Skipping meta index {}. Reason: {}'
-                            .format(idx, repr(e)))
+                logger.info(f"Skipping meta index {idx}. Reason: {repr(e)}")
         if merge_if_multi and len(stats) > 1:
             if len(vars_to_convert) > 1:
-                raise NotImplementedError('Cannot yet merge multiple stations '
-                                          'with multiple variables.')
+                raise NotImplementedError(
+                    "Cannot yet merge multiple stations with multiple variables."
+                )
             if merge_pref_attr is None:
                 merge_pref_attr = self._try_infer_stat_merge_pref_attr(stats)
-            merged = merge_station_data(stats, vars_to_convert,
-                                        pref_attr=merge_pref_attr,
-                                        sort_by_largest=merge_sort_by_largest,
-                                        fill_missing_nan=False,
-                                        resample_how=resample_how,
-                                        min_num_obs=min_num_obs)
+            merged = merge_station_data(
+                stats,
+                vars_to_convert,
+                pref_attr=merge_pref_attr,
+                sort_by_largest=merge_sort_by_largest,
+                fill_missing_nan=False,
+                resample_how=resample_how,
+                min_num_obs=min_num_obs,
+            )
             stats = [merged]
 
         stats_ok = []
@@ -912,10 +926,9 @@ class UngriddedData(object):
                 if not var in stat:
                     continue
                 if freq is not None:
-                    stat.resample_time(var, freq,
-                                       how=resample_how,
-                                       min_num_obs=min_num_obs,
-                                       inplace=True)
+                    stat.resample_time(
+                        var, freq, how=resample_how, min_num_obs=min_num_obs, inplace=True
+                    )
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
                 if np.all(np.isnan(stat[var].values)):
@@ -924,9 +937,10 @@ class UngriddedData(object):
                 stats_ok.append(stat)
 
         if len(stats_ok) == 0:
-            raise DataCoverageError('{} data could not be retrieved for meta '
-                                    ' index (or station name) {}'
-                                    .format(vars_to_convert, meta_idx))
+            raise DataCoverageError(
+                f"{vars_to_convert} data could not be retrieved "
+                f"for meta index (or station name) {meta_idx}"
+            )
         elif len(stats_ok) == 1:
             # return StationData object and not list
             return stats_ok[0]
@@ -948,24 +962,29 @@ class UngriddedData(object):
         data_id = None
         pref_attr = None
         for stat in stats:
-            if not 'data_id' in stat:
+            if not "data_id" in stat:
                 return None
             elif data_id is None:
-                data_id = stat['data_id']
+                data_id = stat["data_id"]
                 from pyaerocom.metastandards import DataSource
-                s = DataSource(data_id=data_id) # reads default data source info that may contain preferred meta attribute
+
+                s = DataSource(
+                    data_id=data_id
+                )  # reads default data source info that may contain preferred meta attribute
                 pref_attr = s.stat_merge_pref_attr
                 if pref_attr is None:
                     return None
-            elif not stat['data_id'] == data_id: #station data objects contain different data sources
+            elif (
+                not stat["data_id"] == data_id
+            ):  # station data objects contain different data sources
                 return None
         return pref_attr
 
     ### TODO: check if both `variables` and `var_info` attrs are required in
     ### metdatda blocks
-    def _metablock_to_stationdata(self, meta_idx, vars_to_convert,
-                                  start=None, stop=None,
-                                  add_meta_keys=None):
+    def _metablock_to_stationdata(
+        self, meta_idx, vars_to_convert, start=None, stop=None, add_meta_keys=None
+    ):
         """Convert one metadata index to StationData (helper method)
 
         See :func:`to_station_data` for input parameters
@@ -981,25 +1000,24 @@ class UngriddedData(object):
         # TODO: make sure in reading classes that data_revision is assigned
         # to each metadata block and not only in self.data_revision
         rev = None
-        if 'data_revision' in meta:
-            rev = meta['data_revision']
+        if "data_revision" in meta:
+            rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta['data_id']]
+                rev = self.data_revision[meta["data_id"]]
             except Exception:
-                logger.warning('Data revision could not be accessed')
+                logger.warning("Data revision could not be accessed")
         sd.data_revision = rev
         try:
-            vars_avail = list(meta['var_info'].keys())
+            vars_avail = list(meta["var_info"])
         except KeyError:
-            if not 'variables' in meta or meta['variables'] in (None, []):
-                raise VarNotAvailableError('Metablock does not contain variable '
-                                           'information')
-            vars_avail = meta['variables']
+            if not "variables" in meta or meta["variables"] in (None, []):
+                raise VarNotAvailableError("Metablock does not contain variable information")
+            vars_avail = meta["variables"]
 
-        for key in (self.STANDARD_META_KEYS + add_meta_keys):
+        for key in self.STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
-                logger.warning(f'skipping protected key: {key}')
+                logger.warning(f"skipping protected key: {key}")
                 continue
             try:
                 sd[key] = meta[key]
@@ -1007,7 +1025,7 @@ class UngriddedData(object):
                 pass
 
         try:
-            sd['ts_type_src'] = meta['ts_type']
+            sd["ts_type_src"] = meta["ts_type"]
         except KeyError:
             pass
 
@@ -1026,8 +1044,9 @@ class UngriddedData(object):
         # find overlapping variables (ignore all other ones)
         vars_avail = np.intersect1d(vars_to_convert, vars_avail)
         if not len(vars_avail) >= 1:
-            raise VarNotAvailableError('None of the input variables matches, '
-                                       'or station does not contain data.')
+            raise VarNotAvailableError(
+                "None of the input variables matches, or station does not contain data."
+            )
         # init helper boolean that is set to True if valid data can be found
         # for at least one of the input variables
         FOUND_ONE = False
@@ -1037,8 +1056,7 @@ class UngriddedData(object):
             var_idx = self.meta_idx[meta_idx][var]
 
             # vector of timestamps corresponding to this variable
-            dtime = self._data[var_idx,
-                               self._TIMEINDEX].astype('datetime64[s]')
+            dtime = self._data[var_idx, self._TIMEINDEX].astype("datetime64[s]")
 
             # get subset
             subset = self._data[var_idx]
@@ -1050,17 +1068,14 @@ class UngriddedData(object):
                 stop = dtime.max()
 
             # create access mask for valid time stamps
-            tmask = np.logical_and(dtime >= start,
-                                   dtime <= stop)
+            tmask = np.logical_and(dtime >= start, dtime <= stop)
 
             # make sure there is some valid data
             if tmask.sum() == 0:
-                logger.info('Ignoring station {}, var {} ({}): '
-                            'no data available in specified time interval '
-                            '{} - {}'.format(sd['station_name'],
-                                             var,
-                                             sd['data_id'],
-                                             start, stop))
+                logger.info(
+                    f"Ignoring station {sd['station_name']}, var {var} ({sd['data_id']}): "
+                    f"no data available in specified time interval {start} - {stop}"
+                )
                 continue
 
             dtime = dtime[tmask]
@@ -1068,13 +1083,14 @@ class UngriddedData(object):
 
             vals = subset[:, self._DATAINDEX]
             if np.all(np.isnan(vals)):
-                logger.warning('Ignoring station {}, var {} ({}):'
-                            'All values are NaN'
-                            .format(sd['station_name'], var, sd['data_id']))
+                logger.warning(
+                    f"Ignoring station {sd['station_name']}, var {var} ({sd['data_id']}): "
+                    f"All values are NaN"
+                )
                 continue
             vals_err = subset[:, self._DATAERRINDEX]
             flagged = subset[:, self._DATAFLAGINDEX]
-            altitude =  subset[:, self._DATAHEIGHTINDEX]
+            altitude = subset[:, self._DATAHEIGHTINDEX]
 
             data = pd.Series(vals, dtime)
             if not data.index.is_monotonic:
@@ -1084,48 +1100,48 @@ class UngriddedData(object):
             if any(~np.isnan(flagged)):
                 sd.data_flagged[var] = flagged
 
-            sd['dtime'] = data.index.values
+            sd["dtime"] = data.index.values
             sd[var] = data
-            sd['var_info'][var] = od()
+            sd["var_info"][var] = {}
             FOUND_ONE = True
             # check if there is information about altitude (then relevant 3D
             # variables and parameters are included too)
-            if 'var_info' in meta:
-                vi = meta['var_info']
+            if "var_info" in meta:
+                vi = meta["var_info"]
             else:
                 vi = {}
             if not np.isnan(altitude).all():
-                if 'altitude' in vi:
-                    sd.var_info['altitude'] = vi['altitude']
+                if "altitude" in vi:
+                    sd.var_info["altitude"] = vi["altitude"]
                 sd.altitude = altitude
             if var in vi:
                 sd.var_info[var].update(vi[var])
 
             if len(data.index) == len(data.index.unique()):
-                sd.var_info[var]['overlap'] = False
+                sd.var_info[var]["overlap"] = False
             else:
-                sd.var_info[var]['overlap'] = True
+                sd.var_info[var]["overlap"] = True
         if not FOUND_ONE:
-            raise DataCoverageError('Could not retrieve any valid data for '
-                                    'station {} and input variables {}'
-                                    .format(sd['station_name'],
-                                            vars_to_convert))
+            raise DataCoverageError(
+                f"Could not retrieve any valid data for station {sd['station_name']} "
+                f"and input variables {vars_to_convert}"
+            )
         return sd
 
     def _generate_station_index(self, by_station_name=True, ignore_index=None):
         """Generates index to loop over station names or metadata block indices"""
         if ignore_index is None:
             if by_station_name:
-                return self.unique_station_names #all station names
-            return list(range(len(self.metadata))) #all meta indices
+                return self.unique_station_names  # all station names
+            return list(range(len(self.metadata)))  # all meta indices
 
         if not by_station_name:
             from pyaerocom.helpers import isnumeric
+
             if isnumeric(ignore_index):
                 ignore_index = [ignore_index]
             if not isinstance(ignore_index, list):
-                raise ValueError('Invalid input for ignore_index, need number '
-                                 'or list')
+                raise ValueError("Invalid input for ignore_index, need number or list")
             return [i for i in range(len(self.metadata)) if not i in ignore_index]
 
         # by station name and ignore certation stations
@@ -1133,8 +1149,7 @@ class UngriddedData(object):
         if isinstance(ignore_index, str):
             ignore_index = [ignore_index]
         if not isinstance(ignore_index, list):
-            raise ValueError('Invalid input for ignore_index, need str or '
-                             'list')
+            raise ValueError("Invalid input for ignore_index, need str or list")
         for stat_name in self.unique_station_names:
             ok = True
             for name_or_pattern in ignore_index:
@@ -1144,9 +1159,16 @@ class UngriddedData(object):
                 _iter.append(stat_name)
         return _iter
 
-    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None,
-                            freq=None, by_station_name=True,
-                            ignore_index=None, **kwargs):
+    def to_station_data_all(
+        self,
+        vars_to_convert=None,
+        start=None,
+        stop=None,
+        freq=None,
+        by_station_name=True,
+        ignore_index=None,
+        **kwargs,
+    ):
         """Convert all data to :class:`StationData` objects
 
         Creates one instance of :class:`StationData` for each metadata block in
@@ -1185,40 +1207,37 @@ class UngriddedData(object):
                 - longitude: list of longitude coordinates
 
         """
-        out_data = {'stats'         : [],
-                    'station_name'  : [],
-                    'latitude'      : [],
-                    'failed'        : [],
-                    'longitude'     : []}
+        out_data = {"stats": [], "station_name": [], "latitude": [], "failed": [], "longitude": []}
 
-        _iter = self._generate_station_index(by_station_name,
-                                             ignore_index)
+        _iter = self._generate_station_index(by_station_name, ignore_index)
         for idx in _iter:
 
             try:
-                data = self.to_station_data(idx, vars_to_convert, start,
-                                            stop, freq,
-                                            merge_if_multi=True,
-                                            allow_wildcards_station_name=False,
-                                            **kwargs)
+                data = self.to_station_data(
+                    idx,
+                    vars_to_convert,
+                    start,
+                    stop,
+                    freq,
+                    merge_if_multi=True,
+                    allow_wildcards_station_name=False,
+                    **kwargs,
+                )
 
-                out_data['latitude'].append(data['latitude'])
-                out_data['longitude'].append(data['longitude'])
-                out_data['station_name'].append(data['station_name'])
-                out_data['stats'].append(data)
+                out_data["latitude"].append(data["latitude"])
+                out_data["longitude"].append(data["longitude"])
+                out_data["station_name"].append(data["station_name"])
+                out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
-            except (VarNotAvailableError, TimeMatchError,
-                    DataCoverageError) as e:
-                logger.warning('Failed to convert to StationData '
-                               'Error: {}'.format(repr(e)))
-                out_data['failed'].append([idx, repr(e)])
+            except (VarNotAvailableError, TimeMatchError, DataCoverageError) as e:
+                logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
+                out_data["failed"].append([idx, repr(e)])
         return out_data
 
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
-    def get_variable_data(self, variables, start=None, stop=None,
-                          ts_type=None, **kwargs):
+    def get_variable_data(self, variables, start=None, stop=None, ts_type=None, **kwargs):
         """Extract all data points of a certain variable
 
         Parameters
@@ -1228,8 +1247,7 @@ class UngriddedData(object):
         """
         if isinstance(variables, str):
             variables = [variables]
-        all_stations = self.to_station_data_all(variables, start, stop,
-                                                freq=ts_type, **kwargs)
+        all_stations = self.to_station_data_all(variables, start, stop, freq=ts_type, **kwargs)
         result = {}
         num_stats = {}
         for var in variables:
@@ -1243,8 +1261,8 @@ class UngriddedData(object):
                         num_stats[var] += 1
                         result[var].extend(stat_data[var])
                     else:
-                        result[var].extend([np.nan]*num_points)
-        result['num_stats'] = num_stats
+                        result[var].extend([np.nan] * num_points)
+        result["num_stats"] = num_stats
         return result
 
     def _check_str_filter_match(self, meta, negate, str_f):
@@ -1263,12 +1281,12 @@ class UngriddedData(object):
 
             # check equality of values
             match = metaval == filterval
-            if match: # direct match found
-                if neg: # key is flagged in negate -> no match
+            if match:  # direct match found
+                if neg:  # key is flagged in negate -> no match
                     return False
-            else: # no direct match found
+            else:  # no direct match found
                 # check wildcard match
-                if '*' in filterval: # no wildcard in
+                if "*" in filterval:  # no wildcard in
                     match = fnmatch.fnmatch(metaval, filterval)
                     if neg:
                         if match:
@@ -1276,7 +1294,7 @@ class UngriddedData(object):
                     else:
                         if not match:
                             return False
-                elif not neg: # no match, no wildcard match and not inverted
+                elif not neg:  # no match, no wildcard match and not inverted
                     return False
         return True
 
@@ -1296,7 +1314,7 @@ class UngriddedData(object):
             neg = metakey in negate
             metaval = meta[metakey]
             match = metaval == filterval
-            if match: # lists are identical
+            if match:  # lists are identical
                 if neg:
                     return False
             else:
@@ -1312,7 +1330,7 @@ class UngriddedData(object):
                     if isinstance(metaval, str):
                         found = False
                         for entry in filterval:
-                            if '*' in entry:
+                            if "*" in entry:
                                 match = fnmatch.fnmatch(metaval, entry)
                                 if match:
                                     found = True
@@ -1363,15 +1381,17 @@ class UngriddedData(object):
 
         """
         # initiate filters that are checked
-        valid_keys = self.metadata[self.first_meta_idx].keys()
+        valid_keys = list(self.metadata[self.first_meta_idx])
         str_f = {}
         list_f = {}
         range_f = {}
         val_f = {}
         for key, val in filter_attributes.items():
             if not key in valid_keys:
-                raise IOError('Invalid input parameter for filtering: {}. '
-                              'Please choose from {}'.format(key, valid_keys))
+                raise OSError(
+                    f"Invalid input parameter for filtering: {key}. "
+                    f"Please choose from {valid_keys}"
+                )
 
             if isinstance(val, str):
                 str_f[key] = val
@@ -1384,8 +1404,7 @@ class UngriddedData(object):
                     try:
                         low, high = float(val[0]), float(val[1])
                         if not low < high:
-                            raise ValueError('First entry needs to be smaller '
-                                             'than 2nd')
+                            raise ValueError("First entry needs to be smaller than 2nd")
                         range_f[key] = [low, high]
                     except Exception as e:
                         list_f[key] = val
@@ -1393,35 +1412,36 @@ class UngriddedData(object):
                     list_f[key] = val
         return (str_f, list_f, range_f, val_f)
 
-    def check_convert_var_units(self, var_name, to_unit=None,
-                                    inplace=True):
+    def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
         obj = self if inplace else self.copy()
-
 
         # get the unit
         if to_unit is None:
-            to_unit = const.VARS[var_name]['units']
+            to_unit = const.VARS[var_name]["units"]
 
         for i, meta in obj.metadata.items():
-            if var_name in meta['var_info']:
+            if var_name in meta["var_info"]:
                 try:
-                    unit = meta['var_info'][var_name]['units']
+                    unit = meta["var_info"][var_name]["units"]
                 except KeyError:
-                    add_str = ''
-                    if 'unit' in meta['var_info'][var_name]:
-                        add_str = ('Corresponding var_info dict contains '
-                                   'attr. "unit", which is deprecated, please '
-                                   'check corresponding reading routine. ')
-                    raise MetaDataError('Failed to access unit information for '
-                                        'variable {} in metadata block {}. {}'
-                                        .format(var_name, i, add_str))
+                    add_str = ""
+                    if "unit" in meta["var_info"][var_name]:
+                        add_str = (
+                            "Corresponding var_info dict contains "
+                            'attr. "unit", which is deprecated, please '
+                            "check corresponding reading routine. "
+                        )
+                    raise MetaDataError(
+                        f"Failed to access unit information for variable {var_name} "
+                        f"in metadata block {i}. {add_str}"
+                    )
                 fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
                     meta_idx = obj.meta_idx[i][var_name]
                     current = obj._data[meta_idx, obj._DATAINDEX]
                     new = current * fac
                     obj._data[meta_idx, obj._DATAINDEX] = new
-                    obj.metadata[i]['var_info'][var_name]['units'] = to_unit
+                    obj.metadata[i]["var_info"][var_name]["units"] = to_unit
 
         return obj
 
@@ -1441,32 +1461,35 @@ class UngriddedData(object):
             if unit information is not accessible for input variable name
         """
         if unit is None:
-            unit = const.VARS[var_name]['units']
+            unit = const.VARS[var_name]["units"]
 
-        units =  []
+        units = []
         for i, meta in self.metadata.items():
-            if var_name in meta['var_info']:
+            if var_name in meta["var_info"]:
                 try:
-                    u = meta['var_info'][var_name]['units']
+                    u = meta["var_info"][var_name]["units"]
                     if not u in units:
                         units.append(u)
                 except KeyError:
-                    add_str = ''
-                    if 'unit' in meta['var_info'][var_name]:
-                        add_str = ('Corresponding var_info dict contains '
-                                   'attr. "unit", which is deprecated, please '
-                                   'check corresponding reading routine. ')
-                    raise MetaDataError('Failed to access unit information for '
-                                        'variable {} in metadata block {}. {}'
-                                        .format(var_name, i, add_str))
-        if len(units) == 0 and str(unit) != '1':
-            raise MetaDataError('Failed to access unit information for '
-                                'variable {}. Expected unit {}'
-                                .format(var_name, unit))
+                    add_str = ""
+                    if "unit" in meta["var_info"][var_name]:
+                        add_str = (
+                            "Corresponding var_info dict contains "
+                            'attr. "unit", which is deprecated, please '
+                            "check corresponding reading routine. "
+                        )
+                    raise MetaDataError(
+                        f"Failed to access unit information for variable {var_name} "
+                        f"in metadata block {i}. {add_str}"
+                    )
+        if len(units) == 0 and str(unit) != "1":
+            raise MetaDataError(
+                f"Failed to access unit information for variable {var_name}. "
+                f"Expected unit {unit}"
+            )
         for u in units:
             if not get_unit_conversion_fac(u, unit, var_name) == 1:
-                raise MetaDataError(
-                    f'Invalid unit {u} detected (expected {unit})')
+                raise MetaDataError(f"Invalid unit {u} detected (expected {unit})")
 
     def set_flags_nan(self, inplace=False):
         """Set all flagged datapoints to NaN
@@ -1489,8 +1512,7 @@ class UngriddedData(object):
         """
 
         if not self.has_flag_data:
-            raise AttributeError('Ungridded data object does not contain '
-                                 'flagged data points')
+            raise AttributeError("Ungridded data object does not contain flagged data points")
         if inplace:
             obj = self
         else:
@@ -1498,12 +1520,13 @@ class UngriddedData(object):
         mask = obj._data[:, obj._DATAFLAGINDEX] == 1
 
         obj._data[mask, obj._DATAINDEX] = np.nan
-        obj._add_to_filter_history('set_flags_nan')
+        obj._add_to_filter_history("set_flags_nan")
         return obj
 
     # TODO: check, confirm and remove Beta version note in docstring
-    def remove_outliers(self, var_name, inplace=False, low=None, high=None,
-                        unit_ref=None, move_to_trash=True):
+    def remove_outliers(
+        self, var_name, inplace=False, low=None, high=None, unit_ref=None, move_to_trash=True
+    ):
         """Method that can be used to remove outliers from data
 
         Parameters
@@ -1552,15 +1575,15 @@ class UngriddedData(object):
 
         if low is None:
             low = const.VARS[var_name].minimum
-            logger.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
+            logger.info(f"Setting {var_name} outlier lower lim: {low:.2f}")
         if high is None:
             high = const.VARS[var_name].maximum
-            logger.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
+            logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
         var_idx = new.var_idx[var_name]
         var_mask = new._data[:, new._VARINDEX] == var_idx
 
-        all_data =  new._data[:, new._DATAINDEX]
-        invalid_mask = np.logical_or(all_data<low, all_data>high)
+        all_data = new._data[:, new._DATAINDEX]
+        invalid_mask = np.logical_or(all_data < low, all_data > high)
 
         mask = invalid_mask * var_mask
         invalid_vals = new._data[mask, new._DATAINDEX]
@@ -1569,18 +1592,20 @@ class UngriddedData(object):
         if move_to_trash:
             # check if trash is empty and put outliers into trash
             trash = new._data[mask, new._TRASHINDEX]
-            if np.isnan(trash).sum() == len(trash): #trash is empty
+            if np.isnan(trash).sum() == len(trash):  # trash is empty
                 new._data[mask, new._TRASHINDEX] = invalid_vals
             else:
-                raise ValueError('Trash is not empty for some of the datapoints. '
-                                 'Please empty trash first using method '
-                                 ':func:`empty_trash` or deactivate input arg '
-                                 ':attr:`move_to_trash`')
+                raise ValueError(
+                    "Trash is not empty for some of the datapoints. "
+                    "Please empty trash first using method "
+                    ":func:`empty_trash` or deactivate input arg "
+                    ":attr:`move_to_trash`"
+                )
 
-        info = ('Removed {} outliers from {} data (range: {}-{}, in trash: {})'
-                .format(len(invalid_vals), var_name, low, high, move_to_trash))
-
-        new._add_to_filter_history(info)
+        new._add_to_filter_history(
+            f"Removed {len(invalid_vals)} outliers from {var_name} data "
+            f"(range: {low}-{high}, in trash: {move_to_trash})"
+        )
         return new
 
     def _add_to_filter_history(self, info):
@@ -1593,7 +1618,7 @@ class UngriddedData(object):
         info
             information to be appended to filter history
         """
-        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
         self.filter_hist[int(time_str)] = info
 
     def empty_trash(self):
@@ -1611,27 +1636,24 @@ class UngriddedData(object):
             altitude -> values) for all stations (keys) where these parameters
             are accessible.
         """
-        d = {'station_name' : [],
-             'latitude'     : [],
-             'longitude'    : [],
-             'altitude'     : []}
+        d = {"station_name": [], "latitude": [], "longitude": [], "altitude": []}
 
         for i, meta in self.metadata.items():
-            if not 'station_name' in meta:
-                print_log.warning('Skipping meta-block {}: station_name is not '
-                                  'defined'.format(i))
+            if not "station_name" in meta:
+                logger.warning(f"Skipping meta-block {i}: station_name is not defined")
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
-                print_log.warning('Skipping meta-block {} (station {}): '
-                                  'one or more of the coordinates is not '
-                                  'defined'.format(i, meta['station_name']))
+                logger.warning(
+                    f"Skipping meta-block {i} (station {meta['station_name']}): "
+                    f"one or more of the coordinates is not defined"
+                )
                 continue
 
-            stat = meta['station_name']
+            stat = meta["station_name"]
 
-            if stat in d['station_name']:
+            if stat in d["station_name"]:
                 continue
-            d['station_name'].append(stat)
+            d["station_name"].append(stat)
             for k in const.STANDARD_COORD_NAMES:
                 d[k].append(meta[k])
         return d
@@ -1661,23 +1683,20 @@ class UngriddedData(object):
         elif isinstance(negate, str):
             negate = [negate]
         elif not isinstance(negate, list):
-            raise ValueError(f'Invalid input for negate {negate}, '
-                             f'need list or str or None')
+            raise ValueError(f"Invalid input for negate {negate}, need list or str or None")
         meta_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
-            if self._check_filter_match(meta,
-                                        negate,
-                                        *filters):
+            if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
-                for var in meta['var_info']:
+                for var in meta["var_info"]:
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
-                        const.print_log.warning('Ignoring variable {} in '
-                                             'meta block {} since no data '
-                                             'could be found'.format(
-                                              var, meta_idx))
+                        logger.warning(
+                            f"Ignoring variable {var} in meta block {meta_idx} "
+                            f"since no data could be found"
+                        )
 
         return (meta_matches, totnum)
 
@@ -1696,8 +1715,7 @@ class UngriddedData(object):
         """
         return self.filter_by_meta(altitude=alt_range)
 
-    def filter_region(self, region_id, check_mask=True,
-                      check_country_meta=False, **kwargs):
+    def filter_region(self, region_id, check_mask=True, check_country_meta=False, **kwargs):
         """Filter object by a certain region
 
         Parameters
@@ -1731,8 +1749,7 @@ class UngriddedData(object):
             return self.apply_region_mask(region_id)
 
         region = Region(region_id)
-        return self.filter_by_meta(longitude=region.lon_range,
-                                   latitude=region.lat_range)
+        return self.filter_by_meta(longitude=region.lon_range, latitude=region.lat_range)
 
     def apply_region_mask(self, region_id=None):
         """
@@ -1744,8 +1761,9 @@ class UngriddedData(object):
             ID of region or IDs of multiple regions to be combined
         """
         if not region_id in const.HTAP_REGIONS:
-            raise ValueError('Invalid input for region_id: {}, choose from: {}'
-                             .format(region_id, const.HTAP_REGIONS))
+            raise ValueError(
+                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
+            )
 
         # 1. find matches -> list of meta indices that are in region
         # 2. Get total number of datapoints -> defines shape of output UngriddedData
@@ -1756,17 +1774,17 @@ class UngriddedData(object):
         meta_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
-            lon, lat = meta['longitude'], meta['latitude']
+            lon, lat = meta["longitude"], meta["latitude"]
 
             mask_val = get_mask_value(lat, lon, mask)
-            if mask_val >= 1: # coordinate is in mask
+            if mask_val >= 1:  # coordinate is in mask
                 meta_matches.append(meta_idx)
-                for var in meta['var_info']:
+                for var in meta["var_info"]:
                     totnum += len(self.meta_idx[meta_idx][var])
 
         new = self._new_from_meta_blocks(meta_matches, totnum)
-        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
-        new.filter_hist[int(time_str)] = 'Applied mask {}'.format(region_id)
+        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
+        new.filter_hist[int(time_str)] = f"Applied mask {region_id}"
         new._check_index()
         return new
 
@@ -1802,22 +1820,22 @@ class UngriddedData(object):
         set_flags_nan = False
         extract_vars = None
         region_id = None
-        if 'remove_outliers' in filter_attributes:
-            remove_outliers = filter_attributes.pop('remove_outliers')
-        if 'set_flags_nan' in filter_attributes:
-            set_flags_nan = filter_attributes.pop('set_flags_nan')
-        if 'var_name' in filter_attributes:
-            extract_vars = filter_attributes.pop('var_name')
+        if "remove_outliers" in filter_attributes:
+            remove_outliers = filter_attributes.pop("remove_outliers")
+        if "set_flags_nan" in filter_attributes:
+            set_flags_nan = filter_attributes.pop("set_flags_nan")
+        if "var_name" in filter_attributes:
+            extract_vars = filter_attributes.pop("var_name")
             if isinstance(extract_vars, str):
                 extract_vars = [extract_vars]
             for var in extract_vars:
                 if not var in data.contains_vars:
-                    raise VarNotAvailableError('No such variable {} in '
-                                               'UngriddedData object. '
-                                               'Available vars: {}'
-                                               .format(var, self.contains_vars))
-        if 'region_id' in filter_attributes:
-            region_id = filter_attributes.pop('region_id')
+                    raise VarNotAvailableError(
+                        f"No such variable {var} in UngriddedData object. "
+                        f"Available vars: {self.contains_vars}"
+                    )
+        if "region_id" in filter_attributes:
+            region_id = filter_attributes.pop("region_id")
 
         if len(filter_attributes) > 0:
             data = data.filter_by_meta(**filter_attributes)
@@ -1830,19 +1848,19 @@ class UngriddedData(object):
                 var_outlier_ranges = {}
 
             for var in data.contains_vars:
-                lower, upper = None, None #uses pyaerocom default specified in variables.ini
+                lower, upper = None, None  # uses pyaerocom default specified in variables.ini
                 if var in var_outlier_ranges:
                     lower, upper = var_outlier_ranges[var]
-                data = data.remove_outliers(var,
-                                            inplace=True,
-                                            low=lower,
-                                            high=upper,
-                                            move_to_trash=False)
+                data = data.remove_outliers(
+                    var, inplace=True, low=lower, high=upper, move_to_trash=False
+                )
         if set_flags_nan:
             if not data.has_flag_data:
-                raise MetaDataError('Cannot apply filter "set_flags_nan" to '
-                                    'UngriddedData object, since it does not '
-                                    'contain flag information')
+                raise MetaDataError(
+                    'Cannot apply filter "set_flags_nan" to '
+                    "UngriddedData object, since it does not "
+                    "contain flag information"
+                )
             data = data.set_flags_nan(inplace=True)
         if region_id:
             data = data.filter_region(region_id)
@@ -1890,22 +1908,22 @@ class UngriddedData(object):
         ...                                     altitude=[0, 1000])
         """
 
-        if 'variables' in filter_attributes:
-            raise NotImplementedError('Cannot yet filter by variables')
+        if "variables" in filter_attributes:
+            raise NotImplementedError("Cannot yet filter by variables")
 
         # separate filters by strin, list, etc.
         filters = self._init_meta_filters(**filter_attributes)
 
         # find all metadata blocks that match the filters
-        meta_matches, totnum_new = self._find_meta_matches(negate,
-                                                           *filters,
-                                                           )
+        meta_matches, totnum_new = self._find_meta_matches(
+            negate,
+            *filters,
+        )
         if len(meta_matches) == len(self.metadata):
-            const.logger.info('Input filters {} result in unchanged data '
-                              'object'.format(filter_attributes))
+            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum_new)
-        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
         new.filter_hist[int(time_str)] = filter_attributes
         return new
 
@@ -1922,23 +1940,22 @@ class UngriddedData(object):
         for meta_idx in meta_indices:
             meta = self.metadata[meta_idx]
             new.metadata[meta_idx_new] = meta
-            new.meta_idx[meta_idx_new] = od()
-            for var in meta['var_info']:
+            new.meta_idx[meta_idx_new] = {}
+            for var in meta["var_info"]:
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
 
                 stop = data_idx_new + totnum
 
                 new._data[data_idx_new:stop, :] = self._data[indices, :]
-                new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-                                                            stop)
+                new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new, stop)
                 new.var_idx[var] = self.var_idx[var]
                 data_idx_new += totnum
 
             meta_idx_new += 1
 
         if meta_idx_new == 0 or data_idx_new == 0:
-            raise DataExtractionError('Filtering results in empty data object')
+            raise DataExtractionError("Filtering results in empty data object")
         new._data = new._data[:data_idx_new]
 
         # write history of filtering applied
@@ -1970,28 +1987,31 @@ class UngriddedData(object):
             obj = self
         else:
             obj = self.copy()
-        meta_new = od()
-        meta_idx_new = od()
+        meta_new = {}
+        meta_idx_new = {}
         for idx, val in obj.meta_idx.items():
             meta = obj.metadata[idx]
-            if not bool(val): # no data assigned with this metadata block
+            if not bool(val):  # no data assigned with this metadata block
                 # sanity check
-                if bool(meta['var_info']):
-                    raise AttributeError('meta_idx {} suggests empty data block '
-                                         'but metadata[{}] contains variable '
-                                         'information')
+                if bool(meta["var_info"]):
+                    raise AttributeError(
+                        "meta_idx {} suggests empty data block "
+                        "but metadata[{}] contains variable "
+                        "information"
+                    )
             else:
                 meta_new[idx] = meta
                 meta_idx_new[idx] = val
         num_removed = len(obj.metadata) - len(meta_new)
         if not bool(meta_new):
-            raise DataCoverageError('UngriddedData object appears to be empty')
-        elif num_removed > 0: # some meta blocks are empty
+            raise DataCoverageError("UngriddedData object appears to be empty")
+        elif num_removed > 0:  # some meta blocks are empty
             obj.metadata = meta_new
             obj.meta_idx = meta_idx_new
 
-        obj._add_to_filter_history('Removed {} metadata blocks that have no '
-                                   'data assigned'.format(num_removed))
+        obj._add_to_filter_history(
+            f"Removed {num_removed} metadata blocks that have no data assigned"
+        )
         obj._check_index()
         return obj
 
@@ -2011,7 +2031,7 @@ class UngriddedData(object):
             new instance of ungridded data containing only data from specified
             input network
         """
-        logger.info('Extracting dataset {} from data object'.format(data_id))
+        logger.info(f"Extracting dataset {data_id} from data object")
         return self.filter_by_meta(data_id=data_id)
 
     def extract_var(self, var_name, check_index=True):
@@ -2035,11 +2055,9 @@ class UngriddedData(object):
             if _var in self.contains_vars:
                 var_name = _var
             else:
-                raise VarNotAvailableError('No such variable {} in data'
-                                           .format(var_name))
+                raise VarNotAvailableError(f"No such variable {var_name} in data")
         elif len(self.contains_vars) == 1:
-            const.print_log.info('Data object is already single variable. '
-                                 'Returning copy')
+            logger.info("Data object is already single variable. Returning copy")
             return self.copy()
 
         var_idx = self.var_idx[var_name]
@@ -2049,8 +2067,10 @@ class UngriddedData(object):
         colnum, rownum = self.shape
 
         if rownum != len(self._init_index()):
-            raise NotImplementedError('Cannot split UngriddedData objects that have '
-                                      'additional columns other than default columns')
+            raise NotImplementedError(
+                "Cannot split UngriddedData objects that have "
+                "additional columns other than default columns"
+            )
 
         subset = UngriddedData(totnum)
 
@@ -2063,12 +2083,12 @@ class UngriddedData(object):
         for midx, didx in self.meta_idx.items():
             if var_name in didx and len(didx[var_name]) > 0:
                 meta_idx += 1
-                meta =  {}
+                meta = {}
                 _meta = self.metadata[midx]
                 meta.update(_meta)
-                meta['var_info'] = od()
-                meta['var_info'][var_name] = _meta['var_info'][var_name]
-                meta['variables'] = [var_name]
+                meta["var_info"] = {}
+                meta["var_info"][var_name] = _meta["var_info"][var_name]
+                meta["variables"] = [var_name]
                 subset.metadata[meta_idx] = meta
 
                 idx = didx[var_name]
@@ -2089,9 +2109,9 @@ class UngriddedData(object):
         if check_index:
             subset._check_index()
         subset.filter_hist.update(self.filter_hist)
-        subset._add_to_filter_history('Created {} single var object from '
-                                      'multivar UngriddedData instance'
-                                      .format(var_name))
+        subset._add_to_filter_history(
+            f"Created {var_name} single var object from multivar UngriddedData instance"
+        )
         return subset
 
     def extract_vars(self, var_names, check_index=True):
@@ -2135,16 +2155,22 @@ class UngriddedData(object):
 
         # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
         self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
-                self._data[:, self._LATINDEX] + self._LAT_OFFSET) * (10 ** self._LOCATION_PRECISION)
+            self._data[:, self._LATINDEX] + self._LAT_OFFSET
+        ) * (10**self._LOCATION_PRECISION)
         return self.coded_loc
 
     def decode_lat_lon_from_float(self):
-        """method to decode lat and lon from a single number calculated by code_lat_lon_in_float
-        """
+        """method to decode lat and lon from a single number calculated by code_lat_lon_in_float"""
 
-        lons = np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION)) / 10 ** self._LOCATION_PRECISION
-        lats = (self.coded_loc - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION)) * 10 ** (
-                2 * self._LOCATION_PRECISION)) / (10 ** self._LOCATION_PRECISION) - self._LAT_OFFSET
+        lons = (
+            np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
+            / 10**self._LOCATION_PRECISION
+        )
+        lats = (
+            self.coded_loc
+            - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
+            * 10 ** (2 * self._LOCATION_PRECISION)
+        ) / (10**self._LOCATION_PRECISION) - self._LAT_OFFSET
 
         return lats, lons
 
@@ -2182,7 +2208,6 @@ class UngriddedData(object):
 
         return same_indices
 
-
     def merge_common_meta(self, ignore_keys=None):
         """Merge all meta entries that are the same
 
@@ -2214,12 +2239,12 @@ class UngriddedData(object):
         new = UngriddedData(num_points=self.shape[0])
         didx = 0
         for i, idx_lst in enumerate(lst_meta_idx):
-            _meta_check = od()
+            _meta_check = {}
             # write metadata of first index that matches
             _meta_check.update(self.metadata[idx_lst[0]])
-            _meta_idx_new = od()
+            _meta_idx_new = {}
             for j, meta_idx in enumerate(idx_lst):
-                if j > 0: # don't check first against first
+                if j > 0:  # don't check first against first
                     meta = self.metadata[meta_idx]
                     merged = merge_dicts(meta, _meta_check)
                     for key in ignore_keys:
@@ -2243,8 +2268,10 @@ class UngriddedData(object):
         new.var_idx.update(self.var_idx)
         new.filter_hist.update(self.filter_hist)
         if not new.shape == sh:
-            raise Exception('FATAL: Mismatch in shape between initial and '
-                            'and final object. Developers: please check')
+            raise Exception(
+                "FATAL: Mismatch in shape between initial and "
+                "and final object. Developers: please check"
+            )
         return new
 
     def merge(self, other, new_obj=True):
@@ -2270,8 +2297,7 @@ class UngriddedData(object):
             if input object is not an instance of :class:`UngriddedData`
         """
         if not isinstance(other, UngriddedData):
-            raise ValueError("Invalid input, need instance of UngriddedData, "
-                             "got: {}".format(type(other)))
+            raise ValueError(f"Invalid input, need instance of UngriddedData, got: {type(other)}")
         if new_obj:
             obj = self.copy()
         else:
@@ -2280,34 +2306,34 @@ class UngriddedData(object):
         if obj.is_empty:
             obj._data = other._data
             obj.metadata = other.metadata
-            #obj.unit = other.unit
+            # obj.unit = other.unit
             obj.data_revision = other.data_revision
             obj.meta_idx = other.meta_idx
             obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
-            meta_offset = max([x for x in obj.metadata.keys()]) + 1
+            meta_offset = max(obj.metadata) + 1
             data_offset = obj.shape[0]
 
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other
                 obj.metadata[meta_idx] = meta_other
-                _idx_map = od()
+                _idx_map = {}
                 for var_name, indices in other.meta_idx[meta_idx_other].items():
                     _idx_map[var_name] = np.asarray(indices) + data_offset
                 obj.meta_idx[meta_idx] = _idx_map
 
             for var, idx in other.var_idx.items():
-                if var in obj.var_idx: #variable already exists in this object
+                if var in obj.var_idx:  # variable already exists in this object
                     if not idx == obj.var_idx[var]:
                         other.change_var_idx(var, obj.var_idx[var])
-                else: # variable does not yet exist
+                else:  # variable does not yet exist
                     idx_exists = [v for v in obj.var_idx.values()]
                     if idx in idx_exists:
                         # variable index is already assigned to another
                         # variable and needs to be changed
-                        new_idx = max(idx_exists)+1
+                        new_idx = max(idx_exists) + 1
                         other.change_var_idx(var, new_idx)
                         obj.var_idx[var] = new_idx
                     else:
@@ -2318,9 +2344,9 @@ class UngriddedData(object):
         obj._check_index()
         return obj
 
-    def colocate_vardata(self, var1, data_id1=None,
-                         var2=None, data_id2=None, other=None,
-                         **kwargs):
+    def colocate_vardata(
+        self, var1, data_id1=None, var2=None, data_id2=None, other=None, **kwargs
+    ):
         if other is None:
             other = self
         if var2 is None:
@@ -2328,24 +2354,26 @@ class UngriddedData(object):
         if data_id1 is None:
             contains = self.contains_datasets
             if len(contains) > 1:
-                raise ValueError('Please provide data_id1 since data object '
-                                 'contains more than 1 dataset...')
+                raise ValueError(
+                    "Please provide data_id1 since data object contains more than 1 dataset..."
+                )
             data_id1 = contains[0]
 
         if data_id2 is None:
             contains = other.contains_datasets
             if len(contains) > 1:
-                raise ValueError('Please provide data_id2 since data object '
-                                 'contains more than 1 dataset...')
+                raise ValueError(
+                    "Please provide data_id2 since data object contains more than 1 dataset..."
+                )
             data_id2 = contains[0]
         if self is other and data_id1 == data_id2 and var1 == var2:
-            raise ValueError('Input combination too unspecific, please provide '
-                             'either another data object, 2 different data IDs '
-                             'or 2 different variable names')
-        input_data = [(self, data_id1, var1),
-                      (other, data_id2, var2)]
-        statlist = combine_vardata_ungridded(input_data,
-                                             **kwargs)
+            raise ValueError(
+                "Input combination too unspecific, please provide "
+                "either another data object, 2 different data IDs "
+                "or 2 different variable names"
+            )
+        input_data = [(self, data_id1, var1), (other, data_id2, var2)]
+        statlist = combine_vardata_ungridded(input_data, **kwargs)
 
         new = UngriddedData.from_station_data(statlist)
         return new
@@ -2379,12 +2407,14 @@ class UngriddedData(object):
             index
         """
         if new_idx in self.var_idx.values():
-            raise ValueError('Fatal: variable index cannot be assigned a new '
-                             'index that is already assigned to one of the '
-                             'variables in this object')
+            raise ValueError(
+                "Fatal: variable index cannot be assigned a new "
+                "index that is already assigned to one of the "
+                "variables in this object"
+            )
         cidx = self.var_idx[var_name]
         self.var_idx[var_name] = new_idx
-        var_indices = np.where(self._data[:, self._VARINDEX]==cidx)
+        var_indices = np.where(self._data[:, self._VARINDEX] == cidx)
         self._data[var_indices, self._VARINDEX] = new_idx
 
     def append(self, other):
@@ -2431,10 +2461,9 @@ class UngriddedData(object):
             if variable name is not available
         """
         if not var_name in self.var_idx:
-            raise AttributeError('Variable {} not available in data'
-                                 .format(var_name))
+            raise AttributeError(f"Variable {var_name} not available in data")
         idx = self.var_idx[var_name]
-        mask = np.where(self._data[:, self._VARINDEX]==idx)[0]
+        mask = np.where(self._data[:, self._VARINDEX] == idx)[0]
         return self._data[mask, self._DATAINDEX]
 
     def num_obs_var_valid(self, var_name):
@@ -2450,11 +2479,15 @@ class UngriddedData(object):
         int
             number of valid observations (all values that are not NaN)
         """
-        raise NotImplementedError('Coming soon')
+        raise NotImplementedError("Coming soon")
 
-    def find_common_stations(self, other, check_vars_available=None,
-                             check_coordinates=True,
-                             max_diff_coords_km=0.1):
+    def find_common_stations(
+        self,
+        other: UngriddedData,
+        check_vars_available=None,
+        check_coordinates: bool = True,
+        max_diff_coords_km: float = 0.1,
+    ) -> dict:
         """Search common stations between two UngriddedData objects
 
         This method loops over all stations that are stored within this
@@ -2482,26 +2515,30 @@ class UngriddedData(object):
 
         Returns
         -------
-        OrderedDict
+        dict
             dictionary where keys are meta_indices of the common station in
             this object and corresponding values are meta indices of the
             station in the other object
 
         """
         if len(self.contains_datasets) > 1:
-            raise NotImplementedError('This data object contains data from '
-                                      'more than one dataset and thus may '
-                                      'include multiple station matches for '
-                                      'each station ID. This method, however '
-                                      'is implemented such, that it checks '
-                                      'only the first match for each station')
+            raise NotImplementedError(
+                "This data object contains data from "
+                "more than one dataset and thus may "
+                "include multiple station matches for "
+                "each station ID. This method, however "
+                "is implemented such, that it checks "
+                "only the first match for each station"
+            )
         elif len(other.contains_datasets) > 1:
-            raise NotImplementedError('Other data object contains data from '
-                                      'more than one dataset and thus may '
-                                      'include multiple station matches for '
-                                      'each station ID. This method, however '
-                                      'is implemented such, that it checks '
-                                      'only the first match for each station')
+            raise NotImplementedError(
+                "Other data object contains data from "
+                "more than one dataset and thus may "
+                "include multiple station matches for "
+                "each station ID. This method, however "
+                "is implemented such, that it checks "
+                "only the first match for each station"
+            )
         _check_vars = False
         if check_vars_available is not None:
             _check_vars = True
@@ -2510,60 +2547,55 @@ class UngriddedData(object):
             elif isinstance(check_vars_available, (tuple, np.ndarray)):
                 check_vars_available = list(check_vars_available)
             if not isinstance(check_vars_available, list):
-                raise ValueError('Invalid input for check_vars_available. Need '
-                                 'str or list-like, got: {}'
-                                 .format(check_vars_available))
-        lat_len = 111.0 #approximate length of latitude degree in km
-        station_map = od()
+                raise ValueError(
+                    f"Invalid input for check_vars_available. "
+                    f"Need str or list-like, got: {check_vars_available}"
+                )
+        lat_len = 111.0  # approximate length of latitude degree in km
+        station_map = {}
         stations_other = other.station_name
         for meta_idx, meta in self.metadata.items():
-            name = meta['station_name']
+            name = meta["station_name"]
             # bool that is used to accelerate things
             ok = True
             if _check_vars:
                 for var in check_vars_available:
                     try:
-                        if not var in meta['variables']:
-                            logger.debug('No {} in data of station {}'
-                                         '({})'.format(var, name,
-                                                       meta['data_id']))
+                        if not var in meta["variables"]:
+                            logger.debug(f"No {var} in data of station {name} ({meta['data_id']})")
                             ok = False
-                    except Exception: # attribute does not exist or is not iterable
+                    except Exception:  # attribute does not exist or is not iterable
                         ok = False
             if ok and name in stations_other:
                 for meta_idx_other, meta_other in other.metadata.items():
-                    if meta_other['station_name'] == name:
+                    if meta_other["station_name"] == name:
                         if _check_vars:
                             for var in check_vars_available:
                                 try:
-                                    if not var in meta_other['variables']:
-                                        logger.debug('No {} in data of station'
-                                                     ' {} ({})'.format(var,
-                                                     name,
-                                                     meta_other['data_id']))
+                                    if not var in meta_other["variables"]:
+                                        logger.debug(
+                                            f"No {var} in data of station {name} ({meta_other['data_id']})"
+                                        )
                                         ok = False
-                                except Exception: # attribute does not exist or is not iterable
+                                except Exception:  # attribute does not exist or is not iterable
                                     ok = False
                         if ok and check_coordinates:
-                            dlat = abs(meta['latitude']-meta_other['latitude'])
-                            dlon = abs(meta['longitude']-meta_other['longitude'])
-                            lon_fac = np.cos(np.deg2rad(meta['latitude']))
-                            #compute distance between both station coords
-                            dist = np.linalg.norm((dlat*lat_len,
-                                                   dlon*lat_len*lon_fac))
+                            dlat = abs(meta["latitude"] - meta_other["latitude"])
+                            dlon = abs(meta["longitude"] - meta_other["longitude"])
+                            lon_fac = np.cos(np.deg2rad(meta["latitude"]))
+                            # compute distance between both station coords
+                            dist = np.linalg.norm((dlat * lat_len, dlon * lat_len * lon_fac))
                             if dist > max_diff_coords_km:
-                                logger.warning('Coordinate of station '
-                                               '{} varies more than {} km '
-                                               'between {} and {} data. '
-                                               'Retrieved distance: {:.2f} km '
-                                               .format(name, max_diff_coords_km,
-                                                       meta['data_id'],
-                                                       meta_other['data_id'],
-                                                       dist))
+                                logger.warning(
+                                    f"Coordinate of station {name} "
+                                    f"varies more than {max_diff_coords_km} km "
+                                    f"between {meta['data_id']} and {meta_other['data_id']} data. "
+                                    f"Retrieved distance: {dist:.2f} km "
+                                )
                                 ok = False
-                        if ok: #match found
+                        if ok:  # match found
                             station_map[meta_idx] = meta_idx_other
-                            logger.debug('Found station match {}'.format(name))
+                            logger.debug(f"Found station match {name}")
                             # no need to further iterate over the rest
                             continue
 
@@ -2571,20 +2603,21 @@ class UngriddedData(object):
 
     # TODO: brute force at the moment, we need to rethink and define how to
     # work with time intervals and perform temporal merging.
-    def find_common_data_points(self, other, var_name, sampling_freq='daily'):
-        if not sampling_freq == 'daily':
-            raise NotImplementedError('Currently only works with daily data')
+    def find_common_data_points(self, other, var_name, sampling_freq="daily"):
+        if not sampling_freq == "daily":
+            raise NotImplementedError("Currently only works with daily data")
         if not isinstance(other, UngriddedData):
-            raise NotImplementedError('So far, common data points can only be '
-                                      'retrieved between two instances of '
-                                      'UngriddedData')
-        #find all stations that are common
-        common = self.find_common_stations(other,
-                                           check_vars_available=var_name,
-                                           check_coordinates=True)
+            raise NotImplementedError(
+                "So far, common data points can only be "
+                "retrieved between two instances of "
+                "UngriddedData"
+            )
+        # find all stations that are common
+        common = self.find_common_stations(
+            other, check_vars_available=var_name, check_coordinates=True
+        )
         if len(common) == 0:
-            raise DataExtractionError('None of the stations in the two '
-                                      'match')
+            raise DataExtractionError("None of the stations in the two match")
         dates = []
         data_this_match = []
         data_other_match = []
@@ -2601,14 +2634,12 @@ class UngriddedData(object):
             data_other = other._data[data_idx_other, other._DATAINDEX]
             # round to daily resolution. looks too complicated, but is much
             # faster than pandas combined with datetime
-            date_nums_this = (dtimes_this.astype('datetime64[s]').
-                              astype('M8[D]').astype(int))
-            date_nums_other = (dtimes_other.astype('datetime64[s]').
-                               astype('M8[D]').astype(int))
+            date_nums_this = dtimes_this.astype("datetime64[s]").astype("M8[D]").astype(int)
+            date_nums_other = dtimes_other.astype("datetime64[s]").astype("M8[D]").astype(int)
 
             # TODO: loop over shorter array
             for idx, datenum in enumerate(date_nums_this):
-                matches = np.where(date_nums_other==datenum)[0]
+                matches = np.where(date_nums_other == datenum)[0]
                 if len(matches) == 1:
                     dates.append(datenum)
                     data_this_match.append(data_this[idx])
@@ -2617,15 +2648,23 @@ class UngriddedData(object):
         return (dates, data_this_match, data_other_match)
 
     def _meta_to_lists(self):
-        meta = {k:[] for k in self.metadata[self.first_meta_idx].keys()}
+        meta = {k: [] for k in self.metadata[self.first_meta_idx]}
         for meta_item in self.metadata.values():
             for k, v in meta.items():
                 v.append(meta_item[k])
         return meta
 
-    def plot_station_timeseries(self, station_name, var_name, start=None,
-                                stop=None, ts_type=None,
-                                insert_nans=True, ax=None, **kwargs):
+    def plot_station_timeseries(
+        self,
+        station_name,
+        var_name,
+        start=None,
+        stop=None,
+        ts_type=None,
+        insert_nans=True,
+        ax=None,
+        **kwargs,
+    ):
         """Plot time series of station and variable
 
         Parameters
@@ -2654,20 +2693,35 @@ class UngriddedData(object):
         """
         if ax is None:
             from pyaerocom.plot.config import FIGSIZE_DEFAULT
+
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
 
-        stat = self.to_station_data(station_name, var_name, start, stop,
-                                    freq=ts_type, merge_if_multi=True,
-                                    insert_nans=insert_nans)
+        stat = self.to_station_data(
+            station_name,
+            var_name,
+            start,
+            stop,
+            freq=ts_type,
+            merge_if_multi=True,
+            insert_nans=insert_nans,
+        )
         ax = stat.plot_timeseries(var_name, ax=ax, **kwargs)
         return ax
 
-    def plot_station_coordinates(self, var_name=None,
-                                 start=None,
-                                 stop=None, ts_type=None, color='r',
-                                 marker='o', markersize=8, fontsize_base=10,
-                                 legend=True, add_title=True,
-                                 **kwargs):
+    def plot_station_coordinates(
+        self,
+        var_name=None,
+        start=None,
+        stop=None,
+        ts_type=None,
+        color="r",
+        marker="o",
+        markersize=8,
+        fontsize_base=10,
+        legend=True,
+        add_title=True,
+        **kwargs,
+    ):
         """Plot station coordinates on a map
 
         All input parameters are optional and may be used to add constraints
@@ -2712,58 +2766,56 @@ class UngriddedData(object):
         from pyaerocom.plot.plotcoordinates import plot_coordinates
 
         if len(self.contains_datasets) > 1:
-            print_log.warning('UngriddedData object contains more than one '
-                              'dataset ({}). Station coordinates will not be '
-                              'distinguishable. You may want to apply a filter '
-                              'first and plot them separately')
+            logger.warning(
+                "UngriddedData object contains more than one "
+                "dataset ({}). Station coordinates will not be "
+                "distinguishable. You may want to apply a filter "
+                "first and plot them separately"
+            )
 
         subset = self
         if var_name is None:
-            info_str = 'AllVars'
+            info_str = "AllVars"
         else:
             if not isinstance(var_name, str):
-                raise ValueError('Can only handle single variable (or all'
-                                 '-> input var_name=None)')
+                raise ValueError("Can only handle single variable (or all -> input var_name=None)")
             elif not var_name in subset.contains_vars:
-                raise ValueError('Input variable {} is not available in dataset '
-                                 .format(var_name))
+                raise ValueError(f"Input variable {var_name} is not available in dataset ")
             info_str = var_name
 
         try:
-            info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
+            info_str += f"_{start_stop_str(start, stop, ts_type)}"
         except Exception:
-            info_str += '_AllTimes'
+            info_str += "_AllTimes"
         if ts_type is not None:
-            info_str += '_{}'.format(ts_type)
+            info_str += f"_{ts_type}"
 
-        if all([x is None for x in (var_name, start, stop)]): #use all stations
+        if all([x is None for x in (var_name, start, stop)]):  # use all stations
             all_meta = subset._meta_to_lists()
-            lons, lats = all_meta['longitude'], all_meta['latitude']
+            lons, lats = all_meta["longitude"], all_meta["latitude"]
 
         else:
-            stat_data = subset.to_station_data_all(var_name, start, stop,
-                                                 ts_type)
+            stat_data = subset.to_station_data_all(var_name, start, stop, ts_type)
 
-            if len(stat_data['stats']) == 0:
-                raise DataCoverageError('No stations could be found for input '
-                                        'specs (var, start, stop, freq)')
-            lons = stat_data['longitude']
-            lats = stat_data['latitude']
-        if not 'label' in kwargs:
-            kwargs['label'] = info_str
+            if len(stat_data["stats"]) == 0:
+                raise DataCoverageError(
+                    "No stations could be found for input specs (var, start, stop, freq)"
+                )
+            lons = stat_data["longitude"]
+            lats = stat_data["latitude"]
+        if not "label" in kwargs:
+            kwargs["label"] = info_str
 
-        ax = plot_coordinates(lons, lats,
-                              color=color, marker=marker,
-                              markersize=markersize,
-                              legend=legend,
-                              **kwargs)
+        ax = plot_coordinates(
+            lons, lats, color=color, marker=marker, markersize=markersize, legend=legend, **kwargs
+        )
 
-        if 'title' in kwargs:
-            title = kwargs['title']
+        if "title" in kwargs:
+            title = kwargs["title"]
         else:
             title = info_str
         if add_title:
-            ax.set_title(title, fontsize=fontsize_base+4)
+            ax.set_title(title, fontsize=fontsize_base + 4)
         return ax
 
     def save_as(self, file_name, save_dir):
@@ -2792,13 +2844,11 @@ class UngriddedData(object):
         from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 
         if not os.path.exists(save_dir):
-            raise FileNotFoundError('Directory does not exist: {}'.format(save_dir))
-        elif not file_name.endswith('.pkl'):
-            raise ValueError('Can only store files as pickle, file_name needs '
-                             'to have format .pkl')
+            raise FileNotFoundError(f"Directory does not exist: {save_dir}")
+        elif not file_name.endswith(".pkl"):
+            raise ValueError("Can only store files as pickle, file_name needs to have format .pkl")
         ch = CacheHandlerUngridded()
-        return ch.write(self, var_or_file_name=file_name,
-                        cache_dir=save_dir)
+        return ch.write(self, var_or_file_name=file_name, cache_dir=save_dir)
 
     @staticmethod
     def from_cache(data_dir, file_name):
@@ -2827,10 +2877,11 @@ class UngriddedData(object):
 
         """
         from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+
         ch = CacheHandlerUngridded()
         if ch.check_and_load(file_name, cache_dir=data_dir):
             return ch.loaded_data[file_name]
-        raise ValueError('Failed to load UngriddedData object')
+        raise ValueError("Failed to load UngriddedData object")
 
     def __contains__(self, key):
         """Check if input key (str) is valid dataset, variable, instrument or
@@ -2848,8 +2899,7 @@ class UngriddedData(object):
         """
 
         if not isinstance(key, str):
-            raise ValueError('Need string (e.g. variable name, station name, '
-                             'instrument name')
+            raise ValueError("Need string (e.g. variable name, station name, instrument name")
         if key in self.contains_datasets:
             return True
         elif key in self.contains_vars:
@@ -2872,22 +2922,24 @@ class UngriddedData(object):
         try:
             return self[self._idx]
         except DataCoverageError:
-            const.print_log.warning('No variable data in metadata block {}. '
-                                    'Returning empty StationData'
-                                    .format(self._idx))
+            logger.warning(
+                f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
+            )
             return StationData()
 
     def __repr__(self):
-        return ('{} <networks: {}; vars: {}; instruments: {};'
-                'No. of metadata units: {}'
-                .format(type(self).__name__,self.contains_datasets,
-                        self.contains_vars, self.contains_instruments,
-                        len(self.metadata)))
+        return "{} <networks: {}; vars: {}; instruments: {}; No. of metadata units: {}".format(
+            type(self).__name__,
+            self.contains_datasets,
+            self.contains_vars,
+            self.contains_instruments,
+            len(self.metadata),
+        )
 
     def __getitem__(self, key):
         if isnumeric(key) or key in self.unique_station_names:
             return self.to_station_data(key, insert_nans=True)
-        raise KeyError('Invalid input key, need metadata index or station name ')
+        raise KeyError("Invalid input key, need metadata index or station name ")
 
     def __and__(self, other):
         """Merge this object with another using the logical ``and`` operator
@@ -2908,27 +2960,27 @@ class UngriddedData(object):
         return self.merge(other, new_obj=True)
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}".format(head, len(head)*"-")
-        s += ('\nContains networks: {}'
-              '\nContains variables: {}'
-              '\nContains instruments: {}'
-              '\nTotal no. of meta-blocks: {}'.format(self.contains_datasets,
-                                                   self.contains_vars,
-                                                   self.contains_instruments,
-                                                   len(self.metadata)))
+        head = f"Pyaerocom {type(self).__name__}"
+        s = (
+            f"\n{head}\n{len(head)*'-'}"
+            f"\nContains networks: {self.contains_datasets}"
+            f"\nContains variables: {self.contains_vars}"
+            f"\nContains instruments: {self.contains_instruments}"
+            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
+        )
         if self.is_filtered:
-            s += '\nFilters that were applied:'
+            s += "\nFilters that were applied:"
             for tstamp, f in self.filter_hist.items():
                 if f:
-                    s += '\n Filter time log: {}'.format(tstamp)
+                    s += f"\n Filter time log: {tstamp}"
                     if isinstance(f, dict):
                         for key, val in f.items():
-                            s += '\n\t{}: {}'.format(key, val)
+                            s += f"\n\t{key}: {val}"
                     else:
-                        s += '\n\t{}'.format(f)
+                        s += f"\n\t{f}"
 
         return s
+
 
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     test = sorted(arr_to_be_reduced)
@@ -2936,20 +2988,5 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     for num in sorted(arr_nominal):
         idx = np.argmin(abs(test - num))
         closest_idx.append(idx)
-        test = test[(idx+1):]
+        test = test[(idx + 1) :]
     return closest_idx
-
-if __name__ == "__main__":
-    import pyaerocom as pya
-
-
-    OBS_LOCAL = '/home/jonasg/MyPyaerocom/data/obsdata/'
-
-    GHOST_EEA_LOCAL = os.path.join(OBS_LOCAL, 'GHOST/data/EEA_AQ_eReporting/daily')
-
-    data = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                data_dirs=GHOST_EEA_LOCAL).read(
-                                    vars_to_retrieve='vmro3')
-
-
-

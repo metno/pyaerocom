@@ -1,36 +1,40 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 General helper methods for the pyaerocom library.
 """
-import numpy as np
+import logging
 import re
-from pyaerocom import const
-from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
-                                   TS_TYPE_TO_PANDAS_FREQ,
-                                   TS_TYPE_TO_NUMPY_FREQ,
-                                   TS_TYPE_TO_SI,
-                                   TS_TYPES)
+
+import numpy as np
 
 from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.time_config import (
+    PANDAS_FREQ_TO_TS_TYPE,
+    TS_TYPE_TO_NUMPY_FREQ,
+    TS_TYPE_TO_PANDAS_FREQ,
+    TS_TYPE_TO_SI,
+    TS_TYPES,
+)
 
-class TsType(object):
+logger = logging.getLogger(__name__)
+
+
+class TsType:
     VALID = TS_TYPES
     VALID_ITER = VALID[:-1]
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
-    TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
+    TO_NUMPY = TS_TYPE_TO_NUMPY_FREQ
     TO_SI = TS_TYPE_TO_SI
 
-    TS_MAX_VALS = {'minutely' : 360, # up to 6hourly
-                   'hourly' : 168, #up to weekly
-                   'daily'  : 180, # up to 6 monthly
-                   'weekly' : 104, # up to ~2yearly
-                   'monthly': 120} # up to 10yearly
+    TS_MAX_VALS = {
+        "minutely": 360,  # up to 6hourly
+        "hourly": 168,  # up to weekly
+        "daily": 180,  # up to 6 monthly
+        "weekly": 104,  # up to ~2yearly
+        "monthly": 120,
+    }  # up to 10yearly
 
-    TSTR_TO_CF = {"hourly"  :  "hours",
-                  "daily"   :  "days",
-                  "monthly" :  "days"}
+    TSTR_TO_CF = {"hourly": "hours", "daily": "days", "monthly": "days"}
 
     TOL_SECS_PERCENT = 5
 
@@ -50,11 +54,12 @@ class TsType(object):
         try:
             value = int(value)
         except Exception:
-            raise ValueError('mulfac needs to be int or convertible to int')
+            raise ValueError("mulfac needs to be int or convertible to int")
         if self.base in self.TS_MAX_VALS and value > self.TS_MAX_VALS[self.base]:
             raise ValueError(
-                f'Multiplication factor exceeds maximum allowed, which is '
-                f'{self.TS_MAX_VALS[self.base]}')
+                f"Multiplication factor exceeds maximum allowed, which is "
+                f"{self.TS_MAX_VALS[self.base]}"
+            )
         self._mulfac = value
 
     @property
@@ -66,14 +71,15 @@ class TsType(object):
     def val(self):
         """Value of frequency (string type), e.g. 3daily"""
         if self._mulfac != 1:
-            return '{}{}'.format(self._mulfac, self._val)
+            return f"{self._mulfac}{self._val}"
         return self._val
 
     @val.setter
     def val(self, val):
         if val is None:
             raise TemporalResolutionError(
-                'Invalid input, please provide valid frequency string...')
+                "Invalid input, please provide valid frequency string..."
+            )
         mulfac = 1
         if val[0].isdigit():
             ivalstr = re.findall(r"\d+", val)[0]
@@ -84,33 +90,33 @@ class TsType(object):
                 val = self._from_pandas(val)
             except TemporalResolutionError:
                 raise TemporalResolutionError(
-                    f'Invalid input for ts_type {val}. Choose from {self.VALID}'
-                    )
+                    f"Invalid input for ts_type {val}. Choose from {self.VALID}"
+                )
         if val in self.TS_MAX_VALS and mulfac != 1:
             if mulfac > self.TS_MAX_VALS[val]:
                 raise TemporalResolutionError(
-                    f'Invalid input for ts_type {val}. Multiplication factor '
-                    f'{mulfac} exceeds maximum allowed for {val}, which is '
-                    f'{self.TS_MAX_VALS[val]}')
+                    f"Invalid input for ts_type {val}. Multiplication factor "
+                    f"{mulfac} exceeds maximum allowed for {val}, which is "
+                    f"{self.TS_MAX_VALS[val]}"
+                )
         self._val = val
         self._mulfac = mulfac
 
     @property
     def datetime64_str(self):
         """Convert ts_type str to datetime64 unit string"""
-        return 'datetime64[{}]'.format(self.to_numpy_freq())
+        return f"datetime64[{self.to_numpy_freq()}]"
 
     @property
     def timedelta64_str(self):
         """Convert ts_type str to datetime64 unit string"""
-        return 'timedelta64[{}]'.format(self.to_numpy_freq())
+        return f"timedelta64[{self.to_numpy_freq()}]"
 
     @property
     def cf_base_unit(self):
         """Convert ts_type str to CF convention time unit"""
         if not self.base in self.TSTR_TO_CF:
-            raise NotImplementedError('Cannot convert {} to CF str'
-                                      .format(self.base))
+            raise NotImplementedError(f"Cannot convert {self.base} to CF str")
         return self.TSTR_TO_CF[self.base]
 
     @property
@@ -123,8 +129,9 @@ class TsType(object):
         defined!
         """
         from cf_units import Unit
+
         cf = self.to_si()
-        total_secs = 1 / Unit('s').convert(1, cf)
+        total_secs = 1 / Unit("s").convert(1, cf)
         return total_secs
 
     @property
@@ -132,7 +139,7 @@ class TsType(object):
         """Tolerance in seconds for current TsType"""
         total_secs = self.num_secs
         frac = self.TOL_SECS_PERCENT / 100
-        return int(np.ceil(frac*total_secs))
+        return int(np.ceil(frac * total_secs))
 
     def to_timedelta64(self):
         """
@@ -147,7 +154,6 @@ class TsType(object):
         """
         return np.timedelta64(1, self.to_numpy_freq())
 
-
     @property
     def next_higher(self):
         """Next lower resolution code"""
@@ -156,8 +162,8 @@ class TsType(object):
 
         idx = self.VALID_ITER.index(self._val)
         if idx == 0:
-            raise IndexError('No higher resolution available than {}'.format(self))
-        return TsType(self.VALID_ITER[idx-1])
+            raise IndexError(f"No higher resolution available than {self}")
+        return TsType(self.VALID_ITER[idx - 1])
 
     @property
     def next_lower(self):
@@ -173,7 +179,7 @@ class TsType(object):
             tst = TsType(self.base)
             tst.mulfac = self.mulfac + 1
             return tst
-        tst = TsType(self.VALID_ITER[idx+1])
+        tst = TsType(self.VALID_ITER[idx + 1])
         if self.mulfac == 1 or self.num_secs < tst.num_secs:
             return tst
         try:
@@ -181,13 +187,11 @@ class TsType(object):
         except:
             maxmul = 10
         numsecs = self.num_secs
-        for mulfac in range(1,maxmul+1):
+        for mulfac in range(1, maxmul + 1):
             tst.mulfac = mulfac
             if numsecs < tst.num_secs:
                 return tst
-        raise TemporalResolutionError(
-            f'Failed to determine next lower resolution for {self}'
-            )
+        raise TemporalResolutionError(f"Failed to determine next lower resolution for {self}")
 
     @staticmethod
     def valid(val):
@@ -199,37 +203,35 @@ class TsType(object):
 
     def to_numpy_freq(self):
         if not self._val in self.TO_NUMPY:
-            raise TemporalResolutionError('numpy frequency not available for {}'
-                                          .format(self._val))
+            raise TemporalResolutionError(f"numpy frequency not available for {self._val}")
         freq = self.TO_NUMPY[self._val]
-        return '{}{}'.format(self.mulfac, freq)
+        return f"{self.mulfac}{freq}"
 
     def to_pandas_freq(self):
         """Convert ts_type to pandas frequency string"""
         if not self._val in self.TO_PANDAS:
-            raise TemporalResolutionError('pandas frequency not available for {}'
-                                          .format(self._val))
+            raise TemporalResolutionError(f"pandas frequency not available for {self._val}")
         freq = self.TO_PANDAS[self._val]
         if self._mulfac == 1:
             return freq
-        return '{}{}'.format(self._mulfac, freq)
+        return f"{self._mulfac}{freq}"
 
     def to_si(self):
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
         if not base in self.TO_SI:
-            raise ValueError(f'Cannot convert ts_type={self} to SI unit string...')
+            raise ValueError(f"Cannot convert ts_type={self} to SI unit string...")
         si = self.TO_SI[base]
-        return si if self.mulfac == 1 else f'({self.mulfac}{si})'
+        return si if self.mulfac == 1 else f"({self.mulfac}{si})"
 
-    def get_min_num_obs(self, to_ts_type : 'TsType', min_num_obs : dict) -> int:
+    def get_min_num_obs(self, to_ts_type: "TsType", min_num_obs: dict) -> int:
         selfstr = self.val
-        if to_ts_type >= self: # should occur rarely
+        if to_ts_type >= self:  # should occur rarely
             if to_ts_type == self:
                 return 0
             raise TemporalResolutionError(
-                f'input ts_type {to_ts_type} is lower resolution than current '
-                f'{self}')
+                f"input ts_type {to_ts_type} is lower resolution than current {self}"
+            )
 
         elif str(to_ts_type) in min_num_obs:
             # output frequency is specified in min_num_obs (note: this may
@@ -239,7 +241,7 @@ class TsType(object):
                 return int(mno[selfstr])
             elif self.mulfac != 1 and self.base in mno:
                 min_num_base = mno[self.base]
-                return int(np.round(min_num_base/self.mulfac))
+                return int(np.round(min_num_base / self.mulfac))
 
         elif to_ts_type.base in min_num_obs:
             mno = min_num_obs[to_ts_type.base]
@@ -249,13 +251,13 @@ class TsType(object):
 
             elif self.mulfac != 1 and self.base in mno:
                 min_num_base = mno[self.base]
-                val =min_num_base/self.mulfac*to_ts_type.mulfac
+                val = min_num_base / self.mulfac * to_ts_type.mulfac
                 val = int(np.round(val))
                 return val
         raise ValueError(
-            f'could not infer min_num_obs value from input dict {min_num_obs} '
-            f'for conversion from {self} to {to_ts_type}')
-
+            f"could not infer min_num_obs value from input dict {min_num_obs} "
+            f"for conversion from {self} to {to_ts_type}"
+        )
 
     def check_match_total_seconds(self, total_seconds):
         """
@@ -274,11 +276,10 @@ class TsType(object):
         try:
             numsecs = self.num_secs
             tolsecs = self.tol_secs
-        except ValueError: #native / undefined
+        except ValueError:  # native / undefined
             return False
-        low, high = numsecs-tolsecs, numsecs+tolsecs
-        if np.logical_and(total_seconds >= low,
-                          total_seconds <= high):
+        low, high = numsecs - tolsecs, numsecs + tolsecs
+        if np.logical_and(total_seconds >= low, total_seconds <= high):
             return True
         return False
 
@@ -320,17 +321,17 @@ class TsType(object):
             if tstype.check_match_total_seconds(total_seconds):
                 dt = total_seconds - tstype.num_secs
                 dts.append(dt)
-                candidates.append(TsType(f'{mulfac}{base}'))
-                if dt == 0 or dt < 0: #current candidate has larger number of seconds than input
+                candidates.append(TsType(f"{mulfac}{base}"))
+                if dt == 0 or dt < 0:  # current candidate has larger number of seconds than input
                     break
 
         if len(candidates) > 0:
             return candidates[np.argmin(np.abs(dts))]
 
         raise TemporalResolutionError(
-            f'Period {total_seconds}s could not be associated with any '
-            f'allowed multiplication factor of base frequency {base}')
-
+            f"Period {total_seconds}s could not be associated with any "
+            f"allowed multiplication factor of base frequency {base}"
+        )
 
     @staticmethod
     def from_total_seconds(total_seconds):
@@ -364,26 +365,21 @@ class TsType(object):
                 candidates_diff.append(diff)
         if len(candidates) > 0:
             # sort by the candidate that has the lowest dt
-            candidates_sorted = [c for _,c in sorted(zip(candidates_diff, candidates))]
+            candidates_sorted = [c for _, c in sorted(zip(candidates_diff, candidates))]
             for base_tst in candidates_sorted:
                 try:
-                    return TsType._try_infer_from_total_seconds(base_tst,
-                                                                total_seconds)
+                    return TsType._try_infer_from_total_seconds(base_tst, total_seconds)
                 except TemporalResolutionError as e:
-                    const.logger.info(e)
+                    logger.info(e)
                     continue
 
         raise TemporalResolutionError(
-            f'failed to infer ts_type based on input dt={total_seconds} s'
-            )
-
-
+            f"failed to infer ts_type based on input dt={total_seconds} s"
+        )
 
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
-            raise TemporalResolutionError('Invalid input: {}, need pandas '
-                                          'frequency string'
-                                          .format(val))
+            raise TemporalResolutionError(f"Invalid input: {val}, need pandas frequency string")
         return self.FROM_PANDAS[val]
 
     def __eq__(self, other):
@@ -416,10 +412,3 @@ class TsType(object):
 
     def __repr__(self):
         return self.val
-
-if __name__=="__main__":
-
-    from pyaerocom.helpers import sort_ts_types
-
-    print(TsType.from_total_seconds(1200))
-    print(TsType.from_total_seconds(31556925*2))

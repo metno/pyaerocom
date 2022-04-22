@@ -1,52 +1,69 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 General helper methods for the pyaerocom library.
 """
-from cf_units import Unit
-from collections import Counter
-from datetime import MINYEAR, datetime, date
-import iris, iris.analysis, iris.cube, iris.coords
+import logging
 import math as ma
+from collections import Counter
+from datetime import MINYEAR, date, datetime
+
+import iris
+import iris.analysis
+import iris.coords
+import iris.cube
 import numpy as np
 import pandas as pd
 import xarray as xr
+from cf_units import Unit
 
-from pyaerocom.exceptions import (LongitudeConstraintError,
-                                  DataCoverageError, MetaDataError,
-                                  DataDimensionError,
-                                  VariableDefinitionError,
-                                  ResamplingError,
-                                  TemporalResolutionError)
-from pyaerocom import logger, const
-from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
-                                   TS_TYPE_TO_PANDAS_FREQ,
-                                   PANDAS_RESAMPLE_OFFSETS,
-                                   TS_TYPE_DATETIME_CONV,
-                                   microsec_units, millisec_units,
-                                   sec_units, min_units, hr_units,
-                                   day_units)
+from pyaerocom import const
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    DataDimensionError,
+    LongitudeConstraintError,
+    MetaDataError,
+    ResamplingError,
+    TemporalResolutionError,
+    VariableDefinitionError,
+)
+from pyaerocom.time_config import (
+    GREGORIAN_BASE,
+    PANDAS_RESAMPLE_OFFSETS,
+    TS_TYPE_DATETIME_CONV,
+    TS_TYPE_SECS,
+    TS_TYPE_TO_PANDAS_FREQ,
+    day_units,
+    hr_units,
+    microsec_units,
+    millisec_units,
+    min_units,
+    sec_units,
+)
 from pyaerocom.tstype import TsType
 
-NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
+logger = logging.getLogger(__name__)
 
-STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
-                   gmean       = iris.analysis.GMEAN,
-                   hmean       = iris.analysis.HMEAN,
-                   max         = iris.analysis.MAX,
-                   mean        = iris.analysis.MEAN,
-                   median      = iris.analysis.MEDIAN,
-                   sum         = iris.analysis.SUM,
-                   nearest     = iris.analysis.Nearest,
-                   linear      = iris.analysis.Linear,
-                   areaweighted= iris.analysis.AreaWeighted)
+NUM_KEYS_META = ["longitude", "latitude", "altitude"]
+
+STR_TO_IRIS = dict(
+    count=iris.analysis.COUNT,
+    gmean=iris.analysis.GMEAN,
+    hmean=iris.analysis.HMEAN,
+    max=iris.analysis.MAX,
+    mean=iris.analysis.MEAN,
+    median=iris.analysis.MEDIAN,
+    sum=iris.analysis.SUM,
+    nearest=iris.analysis.Nearest,
+    linear=iris.analysis.Linear,
+    areaweighted=iris.analysis.AreaWeighted,
+)
+
 
 def varlist_aerocom(varlist):
 
     if isinstance(varlist, str):
         varlist = [varlist]
     elif not isinstance(varlist, list):
-        raise ValueError('Need string or list')
+        raise ValueError("Need string or list")
     output = []
     for var in varlist:
         try:
@@ -54,10 +71,11 @@ def varlist_aerocom(varlist):
             if not _var in output:
                 output.append(_var)
         except VariableDefinitionError as e:
-            const.print_log.warning(repr(e))
+            logger.warning(repr(e))
     if len(output) == 0:
-        raise ValueError('None of the input variables appears to be valid')
+        raise ValueError("None of the input variables appears to be valid")
     return output
+
 
 def delete_all_coords_cube(cube, inplace=True):
     """Delete all coordinates of an iris cube
@@ -85,9 +103,17 @@ def delete_all_coords_cube(cube, inplace=True):
         cube.remove_coord(coord)
     return cube
 
-def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
-                             lon_dimname=None, method='nearest',
-                             new_index_name=None, check_domain=True):
+
+def extract_latlon_dataarray(
+    arr,
+    lat,
+    lon,
+    lat_dimname=None,
+    lon_dimname=None,
+    method="nearest",
+    new_index_name=None,
+    check_domain=True,
+):
     """Extract individual lat / lon coordinates from `DataArray`
 
     Parameters
@@ -118,16 +144,16 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         data at input coordinates
     """
     if lat_dimname is None:
-        lat_dimname = 'lat'
+        lat_dimname = "lat"
     if lon_dimname is None:
-        lon_dimname = 'lon'
-    if not lat_dimname in arr.dims and lat_dimname == 'lat':
-        for alias in const.COORDINFO['lat'].aliases:
+        lon_dimname = "lon"
+    if not lat_dimname in arr.dims and lat_dimname == "lat":
+        for alias in const.COORDINFO["lat"].aliases:
             if alias in arr.dims:
                 lat_dimname = alias
                 break
-    if not lon_dimname in arr.dims and lon_dimname == 'lon':
-        for alias in const.COORDINFO['lon'].aliases:
+    if not lon_dimname in arr.dims and lon_dimname == "lon":
+        for alias in const.COORDINFO["lon"].aliases:
             if alias in arr.dims:
                 lon_dimname = alias
                 break
@@ -147,16 +173,19 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
                 new_lat.append(x)
                 new_lon.append(y)
         if len(new_lat) == 0 and len(new_lon) == 0:
-            raise DataCoverageError('Coordinates not found in dataarray')
+            raise DataCoverageError("Coordinates not found in dataarray")
         lat, lon = new_lat, new_lon
     if new_index_name is None:
-        new_index_name = 'latlon'
-    where = {lat_dimname : xr.DataArray(lat, dims=new_index_name),
-             lon_dimname : xr.DataArray(lon, dims=new_index_name)}
+        new_index_name = "latlon"
+    where = {
+        lat_dimname: xr.DataArray(lat, dims=new_index_name),
+        lon_dimname: xr.DataArray(lon, dims=new_index_name),
+    }
     subset = arr.sel(where, method=method)
-    subset.attrs['lat_dimname'] = lat_dimname
-    subset.attrs['lon_dimname'] = lon_dimname
+    subset.attrs["lat_dimname"] = lat_dimname
+    subset.attrs["lon_dimname"] = lon_dimname
     return subset
+
 
 def lists_to_tuple_list(*lists):
     """Convert input lists (of same length) into list of tuples
@@ -166,12 +195,13 @@ def lists_to_tuple_list(*lists):
     """
     return list(zip(*lists))
 
+
 def tuple_list_to_lists(tuple_list):
     """Convert list with tuples (e.g. (lat, lon)) into multiple lists"""
     return list(map(list, zip(tuple_list)))
 
-def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None,
-                           lon_range=None):
+
+def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None, lon_range=None):
     """Make an empty Cube with given latitude and longitude resolution
 
     Dimensions will be lat, lon
@@ -199,21 +229,17 @@ def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None,
     if lon_range is None:
         lon_range = (-180, 180)
 
-    lons = np.arange(lon_range[0]+lon_res_deg/2, lon_range[1]+lon_res_deg/2,
-                     lon_res_deg)
-    lats = np.arange(lat_range[0]+lat_res_deg/2, lat_range[1]+lat_res_deg/2,
-                     lat_res_deg)
+    lons = np.arange(lon_range[0] + lon_res_deg / 2, lon_range[1] + lon_res_deg / 2, lon_res_deg)
+    lats = np.arange(lat_range[0] + lat_res_deg / 2, lat_range[1] + lat_res_deg / 2, lat_res_deg)
 
     lon_circ = check_coord_circular(lons, modulus=360)
-    latdim = iris.coords.DimCoord(lats, var_name='lat',
-                                  standard_name='latitude',
-                                  circular=False,
-                                  units=Unit('degrees'))
+    latdim = iris.coords.DimCoord(
+        lats, var_name="lat", standard_name="latitude", circular=False, units=Unit("degrees")
+    )
 
-    londim = iris.coords.DimCoord(lons, var_name='lon',
-                                  standard_name='longitude',
-                                  circular=lon_circ,
-                                  units=Unit('degrees'))
+    londim = iris.coords.DimCoord(
+        lons, var_name="lon", standard_name="longitude", circular=lon_circ, units=Unit("degrees")
+    )
 
     latdim.guess_bounds()
     londim.guess_bounds()
@@ -221,9 +247,10 @@ def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None,
 
     dummy.add_dim_coord(latdim, 0)
     dummy.add_dim_coord(londim, 1)
-    dummy.var_name = 'dummy_grid'
+    dummy.var_name = "dummy_grid"
 
     return dummy
+
 
 def check_coord_circular(coord_vals, modulus, rtol=1e-5):
     """Check circularity of coordinate
@@ -251,20 +278,26 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
 
     """
     from pyaerocom import const
+
     if len(coord_vals) < 2:
-        const.print_log.warning('Checking coordinate values for circularity '
-                                'failed since coord array has less than 2 values')
+        logger.warning(
+            "Checking coordinate values for circularity "
+            "failed since coord array has less than 2 values"
+        )
         return False
     step = coord_vals[-1] - coord_vals[-2]
-    tol = step*rtol
+    tol = step * rtol
     diff = coord_vals[-1] - coord_vals[0] + step
     if diff - tol > modulus:
-        raise ValueError('Circularity is given but results in overlap (right '
-                         'end of input array is mapped to a value larger than '
-                         'the first one at the left end of the array).')
+        raise ValueError(
+            "Circularity is given but results in overlap (right "
+            "end of input array is mapped to a value larger than "
+            "the first one at the left end of the array)."
+        )
     if abs(modulus - diff) > tol:
         return False
     return True
+
 
 def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     """Make a cube from a numpy array
@@ -294,30 +327,30 @@ def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
         if input `dims` is specified and results in conflict
     """
     if not isinstance(data, np.ndarray):
-        raise ValueError('Invalid input, need numpy array')
+        raise ValueError("Invalid input, need numpy array")
     cube = iris.cube.Cube(data)
 
-    cube.var_name=var_name
+    cube.var_name = var_name
     cube.units = units
 
     sh = data.shape
     if dims is not None:
         if not len(dims) == data.ndim:
 
-            raise DataDimensionError('Input number of dimensios must match array '
-                                     'dimension number')
+            raise DataDimensionError("Input number of dimensios must match array dimension number")
         for i, dim in enumerate(dims):
             if not isinstance(dim, iris.coords.DimCoord):
-                raise ValueError('Need iris.DimCoord...')
+                raise ValueError("Need iris.DimCoord...")
             elif not len(dim.points) == sh[i]:
-                raise DataDimensionError('Length mismatch between {} dim ({}) and '
-                                         'array dimension {} ({})'
-                                         .format(dim.var_name, len(dim.points),
-                                                 i, sh[i]))
+                raise DataDimensionError(
+                    f"Length mismatch between {dim.var_name} dim ({len(dim.points)}) "
+                    f"and array dimension {i} ({sh[i]})"
+                )
             cube.add_dim_coord(dim, i)
 
     cube.attributes.update(attrs)
     return cube
+
 
 def copy_coords_cube(to_cube, from_cube, inplace=True):
     """Copy all coordinates from one cube to another
@@ -342,10 +375,10 @@ def copy_coords_cube(to_cube, from_cube, inplace=True):
         data object containing coordinates from other object
     """
     if not all([isinstance(x, iris.cube.Cube) for x in [to_cube, from_cube]]):
-        raise ValueError('Invalid input. Need instances of iris.cube.Cube class...')
+        raise ValueError("Invalid input. Need instances of iris.cube.Cube class...")
 
     if not from_cube.shape == to_cube.shape:
-        raise DataDimensionError('Cannot copy coordinates: shape mismatch')
+        raise DataDimensionError("Cannot copy coordinates: shape mismatch")
 
     to_cube = delete_all_coords_cube(to_cube, inplace)
 
@@ -359,8 +392,8 @@ def copy_coords_cube(to_cube, from_cube, inplace=True):
         to_cube.add_aux_factory(aux_fac)
     return to_cube
 
-def infer_time_resolution(time_stamps, dt_tol_percent=5,
-                          minfrac_most_common=0.8):
+
+def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8):
     """Infer time resolution based on input time-stamps
 
     Calculates time difference *dt* between consecutive timestamps provided via
@@ -406,25 +439,25 @@ def infer_time_resolution(time_stamps, dt_tol_percent=5,
         time_stamps = pd.DatetimeIndex(time_stamps)
     vals = time_stamps.values
 
-    dts = (vals[1:] - vals[:-1]).astype('timedelta64[s]').astype(int)
+    dts = (vals[1:] - vals[:-1]).astype("timedelta64[s]").astype(int)
 
     if np.min(dts) < 0:
-        raise TemporalResolutionError(
-            'Nasa Ames file contains neg. meas periods...')
+        raise TemporalResolutionError("Nasa Ames file contains neg. meas periods...")
 
     counts = Counter(dts).most_common()
     most_common_dt, most_common_num = counts[0]
     num_within_tol = most_common_num
-    lower = most_common_dt * (100 - dt_tol_percent)/100
-    upper = most_common_dt * (100 + dt_tol_percent)/100
+    lower = most_common_dt * (100 - dt_tol_percent) / 100
+    upper = most_common_dt * (100 + dt_tol_percent) / 100
     for dt, num in counts[1:]:
         if lower <= dt <= upper:
             num_within_tol += num
     frac_ok = num_within_tol / len(dts)
     if not frac_ok > minfrac_most_common:
-        raise TemporalResolutionError('Failed to infer ts_type')
+        raise TemporalResolutionError("Failed to infer ts_type")
     tst = TsType.from_total_seconds(most_common_dt)
     return str(tst)
+
 
 def seconds_in_periods(timestamps, ts_type):
     """
@@ -452,24 +485,25 @@ def seconds_in_periods(timestamps, ts_type):
     # From here on timestamps should be a numpy array containing pandas Timestamps
 
     seconds_in_day = 86400
-    if ts_type >= TsType('monthly'):
-        if ts_type == TsType('monthly'):
-            days_in_months = np.array([ timestamp.days_in_month for timestamp in timestamps])
+    if ts_type >= TsType("monthly"):
+        if ts_type == TsType("monthly"):
+            days_in_months = np.array([timestamp.days_in_month for timestamp in timestamps])
             seconds = days_in_months * seconds_in_day
             return seconds
-        if ts_type == TsType('daily'):
+        if ts_type == TsType("daily"):
             return seconds_in_day * np.ones_like(timestamps)
-        raise NotImplementedError('Only yearly, monthly and daily frequencies implemented.')
-    elif ts_type == TsType('yearly'):
+        raise NotImplementedError("Only yearly, monthly and daily frequencies implemented.")
+    elif ts_type == TsType("yearly"):
         days_in_year = []
         for ts in timestamps:
             if ts.year % 4 == 0:
-                days_in_year.append(366) #  Leap year
+                days_in_year.append(366)  #  Leap year
             else:
                 days_in_year.append(365)
         seconds = np.array(days_in_year) * seconds_in_day
         return seconds
-    raise TemporalResolutionError('Unknown TsType: {}'.format(ts_type))
+    raise TemporalResolutionError(f"Unknown TsType: {ts_type}")
+
 
 def get_tot_number_of_seconds(ts_type, dtime=None):
     """Get total no. of seconds for a given frequency
@@ -499,20 +533,23 @@ def get_tot_number_of_seconds(ts_type, dtime=None):
 
     ts_tpe = TsType(ts_type)
 
-    if ts_tpe >= TsType('monthly'):
+    if ts_tpe >= TsType("monthly"):
         if dtime is None:
-            raise AttributeError('For frequncies larger than or eq. monthly you' +
-                                 ' need to provide dtime in order to compute the number of second.')
-        if not ts_type == 'monthly':
-            raise NotImplementedError('Can only handle monthly so far...')
+            raise AttributeError(
+                "For frequncies larger than or eq. monthly you"
+                + " need to provide dtime in order to compute the number of second."
+            )
+        if not ts_type == "monthly":
+            raise NotImplementedError("Can only handle monthly so far...")
 
         # find seconds from dtime
         # TODO generalize this
         days_in_month = dtime.dt.daysinmonth
 
-        return days_in_month*24*60*60
+        return days_in_month * 24 * 60 * 60
     else:
         return TS_TYPE_SECS[ts_type]
+
 
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
@@ -531,7 +568,9 @@ def get_standard_name(var_name):
         corresponding standard name
     """
     from pyaerocom import const
+
     return const.VARS[var_name].standard_name
+
 
 def get_standard_unit(var_name):
     """Gets standard unit of AeroCom variable
@@ -550,7 +589,9 @@ def get_standard_unit(var_name):
         corresponding standard unit
     """
     from pyaerocom import const
+
     return const.VARS[var_name].units
+
 
 def get_lowest_resolution(ts_type, *ts_types):
     """Get the lowest resolution from several ts_type codes
@@ -572,14 +613,16 @@ def get_lowest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    #all_ts_types = const.GRID_IO.TS_TYPES
+    # all_ts_types = const.GRID_IO.TS_TYPES
     from pyaerocom.tstype import TsType
+
     lowest = TsType(ts_type)
     for freq in ts_types:
         _temp = TsType(freq)
         if _temp < lowest:
             lowest = _temp
     return lowest.val
+
 
 def sort_ts_types(ts_types):
     """Sort a list of ts_types
@@ -609,13 +652,14 @@ def sort_ts_types(ts_types):
             insert = False
             for i, tt in enumerate(freqs_sorted):
                 if tt < ts_type:
-                    insert=True
+                    insert = True
                     break
             if insert:
                 freqs_sorted.insert(i, ts_type)
             else:
                 freqs_sorted.append(ts_type)
     return [str(tt) for tt in freqs_sorted]
+
 
 def get_highest_resolution(ts_type, *ts_types):
     """Get the highest resolution from several ts_type codes
@@ -641,6 +685,7 @@ def get_highest_resolution(ts_type, *ts_types):
     lst.extend(ts_types)
     return sort_ts_types(lst)[0]
 
+
 def isnumeric(val):
     """Check if input value is numeric
 
@@ -655,9 +700,11 @@ def isnumeric(val):
         True, if input value corresponds to a range, else False.
     """
     from numbers import Number
+
     if isinstance(val, Number):
         return True
     return False
+
 
 def isrange(val):
     """Check if input value corresponds to a range
@@ -690,18 +737,19 @@ def isrange(val):
         return True
     return False
 
+
 def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
     has_errs = False
     is_3d = []
     stats = []
     for stat in statlist:
         if not var_name in stat:
-            raise DataCoverageError('All input stations must contain {} data'
-                                    .format(var_name))
+            raise DataCoverageError(f"All input stations must contain {var_name} data")
         elif pref_attr is not None and not pref_attr in stat:
-            raise MetaDataError('Cannot sort station relevance by attribute {}. '
-                                'At least one of the input stations does not '
-                                'contain this attribute'.format(pref_attr))
+            raise MetaDataError(
+                f"Cannot sort station relevance by attribute {pref_attr}. "
+                f"At least one of the input stations does not contain this attribute"
+            )
         elif not isinstance(stat[var_name], pd.Series):
             stat._to_ts_helper(var_name)
         # this will raise MetaDataError or TemporalResolutionError if there is
@@ -716,16 +764,20 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
         stats.append(stat)
     if np.any(is_3d):
         if not np.all(is_3d):
-            raise ValueError('Merge error: some of the input stations contain '
-                             'altitude info (suggesting profile data), others '
-                             'not.')
+            raise ValueError(
+                "Merge error: some of the input stations contain "
+                "altitude info (suggesting profile data), others "
+                "not."
+            )
         is_3d = True
     else:
         is_3d = False
     return (stats, is_3d, has_errs)
 
-def _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr, add_meta_keys,
-                    resample_how, min_num_obs):
+
+def _merge_stats_2d(
+    stats, var_name, sort_by_largest, pref_attr, add_meta_keys, resample_how, min_num_obs
+):
     if pref_attr is not None:
         stats.sort(key=lambda s: s[pref_attr])
     else:
@@ -737,19 +789,26 @@ def _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr, add_meta_keys,
     # remove first station from the list
     merged = stats.pop(0)
     for i, stat in enumerate(stats):
-        merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys,
-                           resample_how=resample_how,
-                           min_num_obs=min_num_obs)
+        merged.merge_other(
+            stat,
+            var_name,
+            add_meta_keys=add_meta_keys,
+            resample_how=resample_how,
+            min_num_obs=min_num_obs,
+        )
     return merged
+
 
 def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
     dtime = []
     for stat in stats:
         _t = stat[var_name].index.unique()
         if not len(_t) == 1:
-            raise NotImplementedError('So far, merging of profile data '
-                                      'requires that profile values are '
-                                      'sampled at the same time')
+            raise NotImplementedError(
+                "So far, merging of profile data "
+                "requires that profile values are "
+                "sampled at the same time"
+            )
         dtime.append(_t[0])
     tidx = pd.DatetimeIndex(dtime)
 
@@ -763,34 +822,35 @@ def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
         if i == 0:
             merged = stat
         else:
-            merged.merge_meta_same_station(stat,
-                                           add_meta_keys=add_meta_keys)
+            merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
 
-        _data[:, i] = np.interp(vert_grid, stat['altitude'],
-                                stat[var_name].values)
+        _data[:, i] = np.interp(vert_grid, stat["altitude"], stat[var_name].values)
 
         if has_errs:
             try:
-                _data_err[:, i] = np.interp(vert_grid,
-                                            stat['altitude'],
-                                            stat.data_err[var_name])
+                _data_err[:, i] = np.interp(vert_grid, stat["altitude"], stat.data_err[var_name])
             except Exception:
                 pass
-    _coords = {'time'     : tidx,
-               'altitude' : vert_grid}
+    _coords = {"time": tidx, "altitude": vert_grid}
 
-    d = xr.DataArray(data=_data, coords=_coords,
-                  dims=['altitude', 'time'], name=var_name)
-    d = d.sortby('time')
+    d = xr.DataArray(data=_data, coords=_coords, dims=["altitude", "time"], name=var_name)
+    d = d.sortby("time")
     merged[var_name] = d
     merged.dtime = d.time
     merged.altitude = d.altitude
     return merged
 
-def merge_station_data(stats, var_name, pref_attr=None,
-                       sort_by_largest=True, fill_missing_nan=True,
-                       add_meta_keys=None, resample_how=None,
-                       min_num_obs=None):
+
+def merge_station_data(
+    stats,
+    var_name,
+    pref_attr=None,
+    sort_by_largest=True,
+    fill_missing_nan=True,
+    add_meta_keys=None,
+    resample_how=None,
+    min_num_obs=None,
+):
     """Merge multiple StationData objects (from one station) into one instance
 
     Note
@@ -847,29 +907,32 @@ def merge_station_data(stats, var_name, pref_attr=None,
     """
     if isinstance(var_name, list):
         if len(var_name) > 1:
-            raise NotImplementedError('Merging of multivar data not yet possible')
+            raise NotImplementedError("Merging of multivar data not yet possible")
         var_name = var_name[0]
 
-    stats, is_3d, has_errs = _check_stats_merge(stats,var_name,pref_attr,fill_missing_nan)
+    stats, is_3d, has_errs = _check_stats_merge(stats, var_name, pref_attr, fill_missing_nan)
     # ToDo: data_err is not handled at the moment for 2D data, needs r
     # revision and should be done in StationData.merge, also 3D vs 2D
     # should be handled by StationData directly...
     if is_3d:
         merged = _merge_stats_3d(stats, var_name, add_meta_keys, has_errs)
     else:
-        merged = _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr,
-                                 add_meta_keys, resample_how, min_num_obs)
+        merged = _merge_stats_2d(
+            stats, var_name, sort_by_largest, pref_attr, add_meta_keys, resample_how, min_num_obs
+        )
 
     if fill_missing_nan:
         try:
             merged.insert_nans_timeseries(var_name)
         except Exception as e:
-            const.print_log.warning('Could not insert NaNs into timeseries of '
-                                    'variable {} after merging stations. '
-                                    'Reason: {}'.format(var_name, repr(e)))
+            logger.warning(
+                f"Could not insert NaNs into timeseries of variable {var_name} "
+                f"after merging stations. Reason: {repr(e)}"
+            )
 
-    merged['stat_merge_pref_attr'] = pref_attr
+    merged["stat_merge_pref_attr"] = pref_attr
     return merged
+
 
 def _get_pandas_freq_and_loffset(freq):
     """Helper to convert resampling info"""
@@ -879,6 +942,7 @@ def _get_pandas_freq_and_loffset(freq):
     if freq in PANDAS_RESAMPLE_OFFSETS:
         loffset = PANDAS_RESAMPLE_OFFSETS[freq]
     return (freq, loffset)
+
 
 def make_datetime_index(start, stop, freq):
     """Make pandas.DatetimeIndex for input specs
@@ -914,6 +978,7 @@ def make_datetime_index(start, stop, freq):
         idx = idx + pd.Timedelta(loffset)
     return idx
 
+
 def make_datetimeindex_from_year(freq, year):
     """Create pandas datetime index
 
@@ -932,8 +997,8 @@ def make_datetimeindex_from_year(freq, year):
     start, stop = start_stop_from_year(year)
     return make_datetime_index(start, stop, freq)
 
-def calc_climatology(s, start, stop, min_count=None,
-                     set_year=None, resample_how='mean'):
+
+def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how="mean"):
     """Compute climatological timeseries from pandas.Series
 
     Parameters
@@ -967,25 +1032,26 @@ def calc_climatology(s, start, stop, min_count=None,
     sc.dropna(inplace=True)
 
     if len(sc) == 0:
-        raise ValueError('Cropping input time series in climatological '
-                         'interval resulted in empty series')
+        raise ValueError(
+            "Cropping input time series in climatological interval resulted in empty series"
+        )
     if set_year is None:
-        set_year = int(start.year + (stop.year-start.year) / 2) + 1
+        set_year = int(start.year + (stop.year - start.year) / 2) + 1
 
     df = pd.DataFrame(sc)
-    df['month'] = df.index.month
+    df["month"] = df.index.month
 
-    clim = df.groupby('month').agg([resample_how, 'std','count'])
+    clim = df.groupby("month").agg([resample_how, "std", "count"])
 
-    #clim.columns = clim.columns.droplevel(0)
-    clim.columns = ['data', 'std', 'numobs']
-    idx = [np.datetime64('{}-{:02d}-15'.format(set_year, x)) for x in
-           clim.index.values]
+    # clim.columns = clim.columns.droplevel(0)
+    clim.columns = ["data", "std", "numobs"]
+    idx = [np.datetime64(f"{set_year}-{x:02d}-15") for x in clim.index.values]
     clim.set_index(pd.DatetimeIndex(idx), inplace=True)
     if min_count is not None:
-        mask = clim['numobs'] < min_count
-        clim.loc[mask, 'data'] = np.nan
+        mask = clim["numobs"] < min_count
+        clim.loc[mask, "data"] = np.nan
     return clim
+
 
 def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     """Resample a timeseries (pandas.Series)
@@ -1014,9 +1080,9 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         resampled time series object
     """
     if how is None:
-        how = 'mean'
-    elif 'percentile' in how:
-        p = int(how.split('percentile')[0])
+        how = "mean"
+    elif "percentile" in how:
+        p = int(how.split("percentile")[0])
         how = lambda x: np.nanpercentile(x, p)
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
@@ -1025,13 +1091,14 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     data = resampler.agg(how)
     if min_num_obs is not None:
         numobs = resampler.count()
-        #df = resampler.agg([how, 'count'])
+        # df = resampler.agg([how, 'count'])
         invalid = numobs < min_num_obs
         if np.any(invalid):
             data.values[invalid] = np.nan
     if loffset is not None:
         data.index = data.index + pd.Timedelta(loffset)
     return data
+
 
 def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
@@ -1068,40 +1135,39 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
         if time dimension is not available in dataset
     """
     if how is None:
-        how = 'mean'
-    elif 'percentile' in how:
-        raise NotImplementedError('percentile based resampling is not yet '
-                                  'available for xarray based data')
+        how = "mean"
+    elif "percentile" in how:
+        raise NotImplementedError(
+            "percentile based resampling is not yet available for xarray based data"
+        )
 
     if not isinstance(arr, xr.DataArray):
-        raise IOError('Invalid input for arr: need DataArray, got {}'.format(type(arr)))
-    elif not 'time' in arr.dims:
-        raise DataDimensionError('Cannot resample time: input DataArray has '
-                                 'no time dimension')
+        raise OSError(f"Invalid input for arr: need DataArray, got {type(arr)}")
+    elif not "time" in arr.dims:
+        raise DataDimensionError("Cannot resample time: input DataArray has no time dimension")
 
     from pyaerocom.tstype import TsType
 
     to = TsType(freq)
-    pd_freq=to.to_pandas_freq()
+    pd_freq = to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
-        invalid = arr.resample(time=pd_freq).count(dim='time') < min_num_obs
+        invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
     resampler = arr.resample(time=pd_freq, loffset=loffset)
     try:
         aggfun = getattr(resampler, how)
     except AttributeError:
-        raise ResamplingError('Invalid aggregator {} for temporal resampling '
-                              'of DataArray...'.format(how))
-    arr = aggfun(dim='time')
+        raise ResamplingError(f"Invalid aggregator {how} for temporal resampling of DataArray...")
+    arr = aggfun(dim="time")
 
     if invalid is not None:
         arr.data[invalid.data] = np.nan
     return arr
 
-def same_meta_dict(meta1, meta2, ignore_keys=['PI'],
-                   num_keys=NUM_KEYS_META, num_rtol=1e-2):
+
+def same_meta_dict(meta1, meta2, ignore_keys=["PI"], num_keys=NUM_KEYS_META, num_rtol=1e-2):
     """Compare meta dictionaries
 
     Parameters
@@ -1137,6 +1203,7 @@ def same_meta_dict(meta1, meta2, ignore_keys=['PI'],
                 return False
     return True
 
+
 def str_to_iris(key, **kwargs):
     """Mapping function that converts strings into iris analysis objects
 
@@ -1154,12 +1221,15 @@ def str_to_iris(key, **kwargs):
     """
     key = key.lower()
     if not key in STR_TO_IRIS:
-        raise KeyError("No iris.analysis object available for key %s, please "
-                       "choose from %s" %(key, STR_TO_IRIS.keys()))
+        raise KeyError(
+            "No iris.analysis object available for key %s, please "
+            "choose from %s" % (key, STR_TO_IRIS.keys())
+        )
     val = STR_TO_IRIS[key]
     if callable(val):
         return val(**kwargs)
     return val
+
 
 def to_pandas_timestamp(value):
     """Convert input to instance of :class:`pandas.Timestamp`
@@ -1181,12 +1251,11 @@ def to_pandas_timestamp(value):
         try:
             numval = int(value)
             if not 0 <= numval <= 10000:
-                raise ValueError('Could not infer valid year from numerical '
-                                 'time input')
+                raise ValueError("Could not infer valid year from numerical time input")
             return pd.Timestamp(str(numval))
         except Exception as e:
-            raise ValueError('Failed to convert {} to Timestamp: {}'
-                             .format(value, repr(e)))
+            raise ValueError(f"Failed to convert {value} to Timestamp: {repr(e)}")
+
 
 def to_datetime64(value):
     """Convert input value to numpy.datetime64
@@ -1209,8 +1278,8 @@ def to_datetime64(value):
         try:
             return to_pandas_timestamp(value).to_datetime64()
         except Exception as e:
-            raise ValueError('Failed to convert {} to datetime64 object'
-                             'Error: {}'.format(value, repr(e)))
+            raise ValueError(f"Failed to convert {value} to datetime64 objectError: {repr(e)}")
+
 
 def is_year(val):
     """Check if input is / may be year
@@ -1232,19 +1301,20 @@ def is_year(val):
     except Exception:
         return False
 
+
 def _check_climatology_timestamp(t):
     if isnumeric(t) and t == 9999:
-        return pd.Timestamp('1-1-2222')
+        return pd.Timestamp("1-1-2222")
     elif isinstance(t, np.datetime64):
         tstr = str(t)
-        if tstr.startswith('9999'):
-            return pd.Timestamp(tstr.replace('9999', '2222'))
-    elif isinstance(t, str) and '9999' in t:
-        return pd.Timestamp(t.replace('9999', '2222'))
+        if tstr.startswith("9999"):
+            return pd.Timestamp(tstr.replace("9999", "2222"))
+    elif isinstance(t, str) and "9999" in t:
+        return pd.Timestamp(t.replace("9999", "2222"))
     elif isinstance(t, datetime) and t.year == 9999:
         return pd.Timestamp(t.replace(year=2222))
-    raise ValueError('Failed to identify {} as climatological timestamp...'
-                     .format(t))
+    raise ValueError(f"Failed to identify {t} as climatological timestamp...")
+
 
 def start_stop(start, stop=None, stop_sub_sec=True):
     """Create pandas timestamps from input start / stop values
@@ -1282,7 +1352,7 @@ def start_stop(start, stop=None, stop_sub_sec=True):
     isclim = False
     try:
         start = to_pandas_timestamp(start)
-    except pd.errors.OutOfBoundsDatetime: # probably climatology
+    except pd.errors.OutOfBoundsDatetime:  # probably climatology
         start = _check_climatology_timestamp(start)
         isclim = True
 
@@ -1291,7 +1361,7 @@ def start_stop(start, stop=None, stop_sub_sec=True):
             yr = 2222
         else:
             yr = start.year
-        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(yr))
+        stop = to_pandas_timestamp(f"{yr}-12-31 23:59:59")
     else:
         try:
             subt_sec = False
@@ -1299,10 +1369,11 @@ def start_stop(start, stop=None, stop_sub_sec=True):
                 subt_sec = True
             stop = to_pandas_timestamp(stop)
             if subt_sec and stop_sub_sec:
-                stop = stop - pd.Timedelta(1, 's')
+                stop = stop - pd.Timedelta(1, "s")
         except pd.errors.OutOfBoundsDatetime:
             stop = _check_climatology_timestamp(stop)
     return (start, stop)
+
 
 def datetime2str(time, ts_type=None):
     from pyaerocom import const
@@ -1313,9 +1384,10 @@ def datetime2str(time, ts_type=None):
     try:
         time = to_pandas_timestamp(time).strftime(conv)
     except pd.errors.OutOfBoundsDatetime:
-        const.print_log.warning('Failed to convert time {} to string'.format(time))
+        logger.warning(f"Failed to convert time {time} to string")
         pass
     return time
+
 
 def start_stop_str(start, stop=None, ts_type=None):
 
@@ -1326,8 +1398,9 @@ def start_stop_str(start, stop=None, ts_type=None):
     start_str = start.strftime(conv)
     stop_str = stop.strftime(conv)
     if stop_str != start_str:
-        return '{}-{}'.format(start_str, stop_str)
+        return f"{start_str}-{stop_str}"
     return start_str
+
 
 def start_stop_from_year(year):
     """Create start / stop timestamp from year
@@ -1344,9 +1417,10 @@ def start_stop_from_year(year):
     numpy.datetime64
         stop datetime
     """
-    start = np.datetime64(f'{year}-01-01T00:00:00')
-    stop = np.datetime64(f'{year}-12-31T23:59:59')
+    start = np.datetime64(f"{year}-01-01T00:00:00")
+    stop = np.datetime64(f"{year}-12-31T23:59:59")
     return (start, stop)
+
 
 def to_datestring_YYYYMMDD(value):
     """Convert input time to string with format YYYYMMDD
@@ -1368,14 +1442,19 @@ def to_datestring_YYYYMMDD(value):
         if input is not supported
     """
     if isinstance(value, str) and len(value) == 8:
-        logger.info('Input is already string containing 8 chars. Assuming it '
-                    'is in the right format and returning unchanged')
+        logger.info(
+            "Input is already string containing 8 chars. Assuming it "
+            "is in the right format and returning unchanged"
+        )
         return value
     try:
-        return to_pandas_timestamp(value).strftime('%Y%m%d')
+        return to_pandas_timestamp(value).strftime("%Y%m%d")
     except Exception as e:
-        raise ValueError('Invalid input, need str, datetime, numpy.datetime64 '
-                         'or pandas.Timestamp. Error: {}'.format(repr(e)))
+        raise ValueError(
+            f"Invalid input, need str, datetime, numpy.datetime64 or pandas.Timestamp. "
+            f"Error: {repr(e)}"
+        )
+
 
 def cftime_to_datetime64(times, cfunit=None, calendar=None):
     """Convert numerical timestamps with epoch to numpy datetime64
@@ -1418,7 +1497,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     >>> cftime_to_datetime64(10, cfunit_str, "gregorian")
     array(['2018-01-11T00:00:00.000000'], dtype='datetime64[us]')
     """
-    if isinstance(times, iris.coords.DimCoord): #special case
+    if isinstance(times, iris.coords.DimCoord):  # special case
         times, cfunit = times.points, times.units
     try:
         len(times)
@@ -1426,20 +1505,23 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
         times = [times]
     if isinstance(cfunit, str):
         if calendar is None:
-            raise ValueError("Require specification of calendar for "
-                             "conversion into datetime64 objects")
-        cfunit = Unit(cfunit, calendar) #raises Error if calendar is invalid
+            raise ValueError(
+                "Require specification of calendar for conversion into datetime64 objects"
+            )
+        cfunit = Unit(cfunit, calendar)  # raises Error if calendar is invalid
     if not isinstance(cfunit, Unit):
-        raise ValueError("Please provide cfunit either as instance of class "
-                         "cf_units.Unit or as a string")
+        raise ValueError(
+            "Please provide cfunit either as instance of class cf_units.Unit or as a string"
+        )
     calendar = cfunit.calendar
     basedate = cfunit.num2date(0)
-    if ((calendar == 'proleptic_gregorian' and basedate.year >= MINYEAR) or
-        (calendar in ['gregorian','standard'] and basedate > GREGORIAN_BASE)):
+    if (calendar == "proleptic_gregorian" and basedate.year >= MINYEAR) or (
+        calendar in ["gregorian", "standard"] and basedate > GREGORIAN_BASE
+    ):
         # NOTE: changed on 9 July 2018 by jgliss due to error (kernel died)
         # after update of dependencies (cf_units). Attribute name does not
         # work anymore...
-        cfu_str = cfunit.origin #cfunit.name
+        cfu_str = cfunit.origin  # cfunit.name
 
         res = cfu_str.split()[0].lower()
         if res in microsec_units:
@@ -1455,16 +1537,16 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
         elif res in day_units:
             tstr = "D"
         else:
-            raise ValueError('unsupported time units')
+            raise ValueError("unsupported time units")
 
         basedate = np.datetime64(basedate)
-        dt = np.asarray(np.asarray(times), dtype='timedelta64[{}]'.format(tstr))
+        dt = np.asarray(np.asarray(times), dtype=f"timedelta64[{tstr}]")
         return basedate + dt
     else:
         return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])
 
-def get_constraint(lon_range=None, lat_range=None,
-                   time_range=None, meridian_centre=True):
+
+def get_constraint(lon_range=None, lat_range=None, time_range=None, meridian_centre=True):
     """Function that creates an :class:`iris.Constraint` based on input
 
     Note
@@ -1513,6 +1595,7 @@ def get_constraint(lon_range=None, lat_range=None,
             c = c & cadd
     return c
 
+
 def get_lat_rng_constraint(low, high):
     """Create latitude constraint based on input range
 
@@ -1530,6 +1613,7 @@ def get_lat_rng_constraint(low, high):
 
     """
     return iris.Constraint(latitude=lambda v: low <= v <= high)
+
 
 def get_lon_rng_constraint(low, high, meridian_centre=True):
     """Create longitude constraint based on input range
@@ -1562,13 +1646,14 @@ def get_lon_rng_constraint(low, high, meridian_centre=True):
     elif low > high:
         raise ValueError("Left coordinate must exceed right coordinate")
     if meridian_centre:
-        low, high = (low+180)%360-180, (high+180)%360-180
+        low, high = (low + 180) % 360 - 180, (high + 180) % 360 - 180
     else:
-        low, high = low%360, high%360
+        low, high = low % 360, high % 360
     if low > high:
-        msg = ("Cannot crop over right border of longitude range")
+        msg = "Cannot crop over right border of longitude range"
         raise LongitudeConstraintError(msg)
     return iris.Constraint(longitude=lambda v: low <= v <= high)
+
 
 def get_time_rng_constraint(start, stop):
     """Create iris.Constraint for data extraction along time axis
@@ -1593,27 +1678,7 @@ def get_time_rng_constraint(start, stop):
     if not isinstance(stop, pd.Timestamp):
         stop = pd.Timestamp(stop)
 
-    t_lower = iris.time.PartialDateTime(year=start.year,
-                                        month=start.month,
-                                        day=start.day)
-    t_upper = iris.time.PartialDateTime(year=stop.year,
-                                        month=stop.month,
-                                        day=stop.day)
+    t_lower = iris.time.PartialDateTime(year=start.year, month=start.month, day=start.day)
+    t_upper = iris.time.PartialDateTime(year=stop.year, month=stop.month, day=stop.day)
 
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
-
-if __name__=="__main__":
-
-    idx = make_datetime_index(2010, 2011, 'hourly')
-    print(get_lowest_resolution('yearly', 'daily', 'monthly'))
-    print(get_highest_resolution('yearly', 'daily', 'monthly'))
-
-    print(infer_time_resolution([np.datetime64('2010-01-01'),
-                                 np.datetime64('2010-01-02'),
-                                 np.datetime64('2010-01-05'),
-                                 np.datetime64('2010-10-15')]))
-
-    print(varlist_aerocom(['od550aer', 'od550csaer']))
-
-    rng = (30, 60)
-    get_lon_rng_constraint(*rng, False)

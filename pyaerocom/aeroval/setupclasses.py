@@ -1,3 +1,4 @@
+import logging
 import os
 from getpass import getuser
 
@@ -11,16 +12,15 @@ from pyaerocom._lowlevel_helpers import (
     NestedContainer,
     StrType,
     read_json,
-    write_json
+    write_json,
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
-from pyaerocom.aeroval.helpers import (
-    _check_statistics_periods,
-    _get_min_max_year_periods
-)
+from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
+
+logger = logging.getLogger(__name__)
 
 
 class OutputPaths(ConstrainedContainer):
@@ -38,27 +38,32 @@ class OutputPaths(ConstrainedContainer):
     json_basedir : str
 
     """
-    JSON_SUBDIRS = ['map', 'ts', 'ts/diurnal', 'scat', 'hm', 'hm/ts', 'contour']
+
+    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour"]
 
     json_basedir = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, 'aeroval/data'),
+        default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
         assert_exists=True,
         auto_create=True,
-        logger=const.print_log,
-        tooltip='Base directory for json output files')
+        logger=logger,
+        tooltip="Base directory for json output files",
+    )
 
     coldata_basedir = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, 'aeroval/coldata'),
+        default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
         assert_exists=True,
         auto_create=True,
-        logger=const.print_log,
-        tooltip='Base directory for colocated data output files (NetCDF)')
+        logger=logger,
+        tooltip="Base directory for colocated data output files (NetCDF)",
+    )
 
-    ADD_GLOB = ['coldata_basedir', 'json_basedir']
+    ADD_GLOB = ["coldata_basedir", "json_basedir"]
     proj_id = StrType()
     exp_id = StrType()
-    def __init__(self, proj_id:str, exp_id:str,
-                 json_basedir:str=None, coldata_basedir:str=None):
+
+    def __init__(
+        self, proj_id: str, exp_id: str, json_basedir: str = None, coldata_basedir: str = None
+    ):
         self.proj_id = proj_id
         self.exp_id = exp_id
         if coldata_basedir:
@@ -79,16 +84,18 @@ class OutputPaths(ConstrainedContainer):
         out = {}
         base = os.path.join(self.json_basedir, self.proj_id, self.exp_id)
         for subdir in self.JSON_SUBDIRS:
-            loc = self._check_init_dir(os.path.join(base, subdir),
-                                       assert_exists)
+            loc = self._check_init_dir(os.path.join(base, subdir), assert_exists)
             out[subdir] = loc
         return out
 
+
 class ModelMapsSetup(ConstrainedContainer):
-    maps_freq = EitherOf(['monthly', 'yearly'])
+    maps_freq = EitherOf(["monthly", "yearly"])
+
     def __init__(self, **kwargs):
         self.maps_res_deg = 5
         self.update(**kwargs)
+
 
 class StatisticsSetup(ConstrainedContainer):
     """
@@ -136,21 +143,26 @@ class StatisticsSetup(ConstrainedContainer):
         `StatisticsSetup(annual_stats_constrained=True)`
 
     """
+
     MIN_NUM = 1
+
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
         self.add_trends = False
         self.trends_min_yrs = 7
         self.stats_tseries_base_freq = None
+        self.use_fairmode = False
         self.update(**kwargs)
 
+
 class TimeSetup(ConstrainedContainer):
-    DEFAULT_FREQS = ['monthly', 'yearly']
-    SEASONS = ['all', 'DJF', 'MAM', 'JJA', 'SON']
+    DEFAULT_FREQS = ["monthly", "yearly"]
+    SEASONS = ["all", "DJF", "MAM", "JJA", "SON"]
     main_freq = StrType()
     freqs = ListOfStrings()
     periods = ListOfStrings()
+
     def __init__(self, **kwargs):
         self.main_freq = self.DEFAULT_FREQS[0]
         self.freqs = self.DEFAULT_FREQS
@@ -172,7 +184,7 @@ class TimeSetup(ConstrainedContainer):
         """
         if self.add_seasons:
             return self.SEASONS
-        return ['all']
+        return ["all"]
 
     def _get_all_period_strings(self):
         """
@@ -186,17 +198,19 @@ class TimeSetup(ConstrainedContainer):
         output = []
         for per in self.periods:
             for season in self.get_seasons():
-                perstr = f'{per}-{season}'
+                perstr = f"{per}-{season}"
                 output.append(perstr)
         return output
 
+
 class WebDisplaySetup(ConstrainedContainer):
 
-    map_zoom = EitherOf(['World', 'Europe'])
-    regions_how = EitherOf(['default', 'aerocom', 'htap', 'country'])
+    map_zoom = EitherOf(["World", "Europe"])
+    regions_how = EitherOf(["default", "aerocom", "htap", "country"])
+
     def __init__(self, **kwargs):
-        self.regions_how = 'default'
-        self.map_zoom = 'World'
+        self.regions_how = "default"
+        self.map_zoom = "World"
         self.add_model_maps = False
         self.modelorder_from_config = True
         self.obsorder_from_config = True
@@ -204,6 +218,7 @@ class WebDisplaySetup(ConstrainedContainer):
         self.obs_order_menu = []
         self.model_order_menu = []
         self.update(**kwargs)
+
 
 class EvalRunOptions(ConstrainedContainer):
     def __init__(self, **kwargs):
@@ -215,15 +230,17 @@ class EvalRunOptions(ConstrainedContainer):
         self.only_model_maps = False
         self.update(**kwargs)
 
+
 class ProjectInfo(ConstrainedContainer):
-    def __init__(self, proj_id:str):
+    def __init__(self, proj_id: str):
         self.proj_id = proj_id
 
+
 class ExperimentInfo(ConstrainedContainer):
-    def __init__(self, exp_id:str, **kwargs):
+    def __init__(self, exp_id: str, **kwargs):
         self.exp_id = exp_id
-        self.exp_name = ''
-        self.exp_descr = ''
+        self.exp_name = ""
+        self.exp_descr = ""
         self.public = False
         self.exp_pi = getuser()
         self.update(**kwargs)
@@ -235,20 +252,23 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
     This represents the level at which json I/O happens for configuration
     setup files.
     """
-    IGNORE_JSON = ['_aux_funs']
-    ADD_GLOB = ['io_aux_file']
+
+    IGNORE_JSON = ["_aux_funs"]
+    ADD_GLOB = ["io_aux_file"]
     io_aux_file = AsciiFileLoc(
-        default='',
+        default="",
         assert_exists=False,
         auto_create=False,
-        logger=const.print_log,
-        tooltip='.py file containing additional read methods for modeldata')
+        logger=logger,
+        tooltip=".py file containing additional read methods for modeldata",
+    )
     _aux_funs = {}
-    def __init__(self, proj_id:str=None, exp_id:str=None, **kwargs):
+
+    def __init__(self, proj_id: str = None, exp_id: str = None, **kwargs):
         if proj_id is None:
-            proj_id = kwargs['proj_info']['proj_id']
+            proj_id = kwargs["proj_info"]["proj_id"]
         if exp_id is None:
-            exp_id = kwargs['exp_info']['exp_id']
+            exp_id = kwargs["exp_info"]["exp_id"]
 
         self.proj_info = ProjectInfo(proj_id=proj_id)
         self.exp_info = ExperimentInfo(exp_id=exp_id)
@@ -257,14 +277,9 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
         self.modelmaps_opts = ModelMapsSetup()
         self.colocation_opts = ColocationSetup(
-                                    save_coldata=True,
-                                    keep_data=False,
-                                    resample_how='mean'
-                                    )
-        self.statistics_opts = StatisticsSetup(
-                                    weighted_stats=True,
-                                    annual_stats_constrained=False
-                                    )
+            save_coldata=True, keep_data=False, resample_how="mean"
+        )
+        self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
         self.webdisp_opts = WebDisplaySetup()
 
         self.processing_opts = EvalRunOptions()
@@ -295,7 +310,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         """
         str: Savename of config file: cfg_<proj_id>_<exp_id>.json
         """
-        return f'cfg_{self.proj_id}_{self.exp_id}.json'
+        return f"cfg_{self.proj_id}_{self.exp_id}.json"
 
     @property
     def gridded_aux_funs(self):
@@ -336,7 +351,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         cfg = cfg.prep_dict_analysis(self.gridded_aux_funs)
         return cfg
 
-    def to_json(self, outdir:str, ignore_nan:bool=True, indent:int=3) -> None:
+    def to_json(self, outdir: str, ignore_nan: bool = True, indent: int = 3) -> None:
         """
         Save configuration as JSON file
 
@@ -352,44 +367,39 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         """
         filepath = os.path.join(outdir, self.json_filename)
         data = self.json_repr()
-        write_json(data, filepath,
-                   ignore_nan=ignore_nan,
-                   indent=indent)
+        write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
         return filepath
 
     @staticmethod
-    def from_json(filepath:str) -> 'EvalSetup':
+    def from_json(filepath: str) -> "EvalSetup":
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
 
     def _import_aux_funs(self):
 
-         h = ReadAuxHandler(self.io_aux_file)
-         self._aux_funs.update(**h.import_all())
+        h = ReadAuxHandler(self.io_aux_file)
+        self._aux_funs.update(**h.import_all())
 
     def _check_time_config(self):
         periods = self.time_cfg.periods
-        colstart = self.colocation_opts['start']
-        colstop = self.colocation_opts['stop']
+        colstart = self.colocation_opts["start"]
+        colstop = self.colocation_opts["stop"]
 
         if len(periods) == 0:
             if colstart is None:
-                raise AeroValConfigError(
-                    'Either periods or start must be set...'
-                    )
+                raise AeroValConfigError("Either periods or start must be set...")
             per = self.colocation_opts._period_from_start_stop()
             periods = [per]
-            const.print_log.info(
-                f'periods is not set, inferred {per} from start '
-                f'/ stop colocation settings.')
+            logger.info(
+                f"periods is not set, inferred {per} from start / stop colocation settings."
+            )
 
-        self.time_cfg['periods'] = _check_statistics_periods(periods)
+        self.time_cfg["periods"] = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
         if colstart is None:
-            self.colocation_opts['start'] = start
+            self.colocation_opts["start"] = start
         if colstop is None:
-            self.colocation_opts['stop'] = stop + 1 # add 1 year since we want to include stop year
-
-
-
+            self.colocation_opts["stop"] = (
+                stop + 1
+            )  # add 1 year since we want to include stop year

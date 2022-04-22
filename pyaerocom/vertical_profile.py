@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from pyaerocom._lowlevel_helpers import BrowseDict
 
+
 # ToDo: complete docstring
-class VerticalProfile(object):
+class VerticalProfile:
     """Object representing single variable profile data"""
-    def __init__(self, data, altitude, dtime, var_name, data_err, var_unit,
-                 altitude_unit):
+
+    def __init__(self, data, altitude, dtime, var_name, data_err, var_unit, altitude_unit):
 
         self.var_name = var_name
         self.dtime = dtime
@@ -15,11 +17,10 @@ class VerticalProfile(object):
         self.altitude = altitude
 
         self.var_info = BrowseDict()
-        self.var_info['altitude'] = dict(units=altitude_unit)
+        self.var_info["altitude"] = dict(units=altitude_unit)
         self.var_info[self.var_name] = dict(units=var_unit)
 
         assert len(self.data) == len(self.data_err) == len(self.altitude)
-
 
     @property
     def data(self):
@@ -55,28 +56,36 @@ class VerticalProfile(object):
         self._altitude = val
 
     # ToDo: complete docstring
-    def plot(self, plot_errs=True, whole_alt_range=False, rot_xlabels=30,
-             errs_shaded=True, errs_alpha=0.1, add_vertbar_zero=True,
-             figsize=None, ax=None, **kwargs):
-        """Simple plot method for vertical profile
-        """
+    def plot(
+        self,
+        plot_errs=True,
+        whole_alt_range=False,
+        rot_xlabels=30,
+        errs_shaded=True,
+        errs_alpha=0.1,
+        add_vertbar_zero=True,
+        figsize=None,
+        ax=None,
+        **kwargs,
+    ):
+        """Simple plot method for vertical profile"""
         if figsize is None:
             figsize = (4, 8)
         if ax is None:
-            _, ax = plt.subplots(1,1, figsize=figsize)
+            _, ax = plt.subplots(1, 1, figsize=figsize)
 
-        p = ax.plot(self.data, self.altitude, '-x', **kwargs)
+        p = ax.plot(self.data, self.altitude, "-x", **kwargs)
 
         c = p[0].get_color()
         if rot_xlabels:
             for lbl in ax.get_xticklabels():
                 lbl.set_rotation(rot_xlabels)
 
-        unit = self.var_info[self.var_name]['units']
-        aunit = self.var_info['altitude']['units']
+        unit = self.var_info[self.var_name]["units"]
+        aunit = self.var_info["altitude"]["units"]
 
-        xlab = f'{self.var_name} [{unit}]'
-        ylab = f'Altitude [{aunit}]'
+        xlab = f"{self.var_name} [{unit}]"
+        ylab = f"Altitude [{aunit}]"
 
         ax.set_xlabel(xlab)
         ax.set_ylabel(ylab)
@@ -88,16 +97,20 @@ class VerticalProfile(object):
             lower = self.data - self.data_err
             upper = self.data + self.data_err
             if errs_shaded:
-                ax.fill_betweenx(self.altitude, lower, upper,
-                                 color=c, alpha=errs_alpha)
+                ax.fill_betweenx(self.altitude, lower, upper, color=c, alpha=errs_alpha)
             else:
-                ax.errorbar(self.data, self.altitude, xerr=self.data_err,
-                            ls=' ', marker=' ', color='#cccccc')
+                ax.errorbar(
+                    self.data,
+                    self.altitude,
+                    xerr=self.data_err,
+                    ls=" ",
+                    marker=" ",
+                    color="#cccccc",
+                )
         if add_vertbar_zero:
             xl = ax.get_xlim()
             if xl[0] < 0 < xl[1]:
-                ax.plot([0,0], ax.get_ylim(), '--', color='#cccccc')
+                ax.plot([0, 0], ax.get_ylim(), "--", color="#cccccc")
         ax.figure.tight_layout()
 
         return ax
-

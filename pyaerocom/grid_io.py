@@ -1,7 +1,8 @@
 from pyaerocom._lowlevel_helpers import dict_to_str
 from pyaerocom.time_config import TS_TYPES
 
-class GridIO(object):
+
+class GridIO:
     """Global I/O settings for gridded data
 
     This class includes options related to the import of gridded data. This
@@ -61,46 +62,51 @@ class GridIO(object):
         vertical dimension)
 
     """
-    UNITS_ALIASES = {'/m' : 'm-1'}
-    _AEROCOM = {'FILE_TYPE': '.nc',
-                'PERFORM_FMT_CHECKS': True,
-                'DEL_TIME_BOUNDS': True,
-                'SHIFT_LONS': True,
-                'CHECK_TIME_FILENAME': True,
-                'CORRECT_TIME_FILENAME': True,
-                'CHECK_DIM_COORDS': True,
-                'EQUALISE_METADATA': True,
-                'INCLUDE_SUBDIRS': False}
 
-    _DEFAULT = {'FILE_TYPE': '.nc',
-                'PERFORM_FMT_CHECKS': True,
-                'DEL_TIME_BOUNDS': True,
-                'SHIFT_LONS': True,
-                'CHECK_TIME_FILENAME': True,
-                'CORRECT_TIME_FILENAME': True,
-                'CHECK_DIM_COORDS': True,
-                'EQUALISE_METADATA': True,
-                'INCLUDE_SUBDIRS': False}
+    UNITS_ALIASES = {"/m": "m-1"}
+    _AEROCOM = {
+        "FILE_TYPE": ".nc",
+        "PERFORM_FMT_CHECKS": True,
+        "DEL_TIME_BOUNDS": True,
+        "SHIFT_LONS": True,
+        "CHECK_TIME_FILENAME": True,
+        "CORRECT_TIME_FILENAME": True,
+        "CHECK_DIM_COORDS": True,
+        "EQUALISE_METADATA": True,
+        "INCLUDE_SUBDIRS": False,
+    }
+
+    _DEFAULT = {
+        "FILE_TYPE": ".nc",
+        "PERFORM_FMT_CHECKS": True,
+        "DEL_TIME_BOUNDS": True,
+        "SHIFT_LONS": True,
+        "CHECK_TIME_FILENAME": True,
+        "CORRECT_TIME_FILENAME": True,
+        "CHECK_DIM_COORDS": True,
+        "EQUALISE_METADATA": True,
+        "INCLUDE_SUBDIRS": False,
+    }
 
     def __init__(self, **kwargs):
-        self.FILE_TYPE = '.nc'
+        self.FILE_TYPE = ".nc"
         # it is important to keep them in the order from highest to lowest
         # resolution
         self.TS_TYPES = TS_TYPES
 
         self.PERFORM_FMT_CHECKS = True
 
-        #delete time bounds if they exist in netCDF files
+        # delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
-        #shift longitudes to -180 -> 180 repr (if applicable)
+        # shift longitudes to -180 -> 180 repr (if applicable)
         self.SHIFT_LONS = True
 
         self.CHECK_TIME_FILENAME = True
         self.CORRECT_TIME_FILENAME = True
 
         self.CHECK_DIM_COORDS = False
-         # check and update metadata dictionary on Cube load since
-         # iris concatenate of Cubes only works if metadata is equal
+        # check and update metadata dictionary on Cube load since
+        # iris concatenate of Cubes only works if metadata is equal
 
         self.EQUALISE_METADATA = True
 
@@ -145,8 +151,8 @@ class GridIO(object):
         IOError
             if key is not a valid setting
         """
-        if not key in self.__dict__.keys():
-            raise IOError("Could not update IO setting: Invalid key")
+        if not key in self.__dict__:
+            raise OSError("Could not update IO setting: Invalid key")
         self.__dict__[key] = value
 
     def __getitem__(self, key):
@@ -155,12 +161,10 @@ class GridIO(object):
         GridIO["<key>"] => value
 
         """
-        if not key in self.__dict__.keys():
-            raise IOError("Invalid attribute")
+        if not key in self.__dict__:
+            raise OSError("Invalid attribute")
         return self.__dict__[key]
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        return ("\n{}\n{}\n{}".format(head,
-                                      len(head)*"-",
-                                      dict_to_str(self.to_dict())))
+        head = f"Pyaerocom {type(self).__name__}"
+        return "\n{}\n{}\n{}".format(head, len(head) * "-", dict_to_str(self.to_dict()))
