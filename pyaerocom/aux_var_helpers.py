@@ -667,3 +667,29 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         vmr *= conversion_fac
     return vmr
+
+
+def calc_vmro3max(data):
+
+    var_name = "vmro3"
+    new_var_name = "vmro3max"
+    
+    flags = data.data_flagged[var_name]
+
+
+    o3max = data[var_name]
+
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+
+
+    data.var_info[new_var_name] = data.var_info[var_name]
+
+    
+    data.data_flagged[new_var_name] = flags
+    # print(data.var_info)
+    # exit()
+    return o3max
