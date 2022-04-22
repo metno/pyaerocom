@@ -3,7 +3,6 @@ CLI
 
 Documentation of pyaerocom command line interface.
 
-.. automodule::pyaerocom.scripts.cli
-   :members:
-   :exclude-members: _confirm
+.. click:: pyaerocom.scripts.cli:main
    :prog: pya
+   :nested: full

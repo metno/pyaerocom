@@ -63,6 +63,7 @@ extensions = [
     "sphinx.ext.githubpages",
     "nbsphinx",
     "sphinxarg.ext",
+    "sphinx_click",
 ]
 
 intersphinx_mapping = {
