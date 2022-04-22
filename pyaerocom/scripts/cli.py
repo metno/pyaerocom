@@ -22,7 +22,7 @@ def _confirm():
     return answer == "y"
 
 
-def version_callback(value: bool):  # pragma: no cover
+def version_callback(value: bool):
     if not value:
         return
 
