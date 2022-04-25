@@ -111,9 +111,11 @@ def make_config(
     )
 
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
-        str(p) for p in obs_paths(*date_range(start_date, end_date + timedelta(days=4)), root_path=obs_path)
+        str(p)
+        for p in obs_paths(
+            *date_range(start_date, end_date + timedelta(days=4)), root_path=obs_path
+        )
     ]  # type:ignore[index]
-        
 
     if id is not None:
         cfg["exp_id"] = id

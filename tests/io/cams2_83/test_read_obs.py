@@ -34,6 +34,7 @@ def test_init():
     data = ReadCAMS2_83()
     assert isinstance(data, ReadUngriddedBase)
 
+
 @pytest.mark.parametrize("dates", [TEST_DATES])
 def test_read_ungridded(obs_paths: list[Path]):
     data = ReadUngridded().read(const.CAMS2_83_NRT_NAME, "concco", files=obs_paths)

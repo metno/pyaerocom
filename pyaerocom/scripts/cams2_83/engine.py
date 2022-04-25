@@ -21,7 +21,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import _add_entry_json, write_json
 from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
+
 
 class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
@@ -89,22 +90,22 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         return median_stats
 
-    def _get_median_stats_point_vec(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
+    def _get_median_stats_point_vec(
+        self, data: xr.DataArray, use_weights: bool
+    ) -> dict[str, float]:
         stats_list: dict[str, float] = dict(rms=0.0, R=0.0, nmb=0.0, mnmb=0.0, fge=0.0)
-        
+
         obsvals = data.data[0]
         modvals = data.data[1]
 
         total_mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
         num_points = np.sum(total_mask, axis=0)
 
-
         diff = modvals - obsvals
         diffsquare = diff**2
         sum_obs = np.nansum(obsvals, axis=0)
         sum_diff = np.nansum(diff, axis=0)
         sum_vals = obsvals + modvals
-        
 
         tmp = diff / sum_vals
         mask = ~np.isnan(sum_vals)
@@ -116,7 +117,6 @@ class CAMS2_83_Engine(ProcessingEngine):
         fge = 2.0 * np.nanmean(np.abs(tmp), axis=0)
         rms = np.sqrt(np.nanmean(diffsquare, axis=0))
 
-
         R = self._pearson_R_vec(obsvals, modvals)
 
         stats_list["rms"] = np.nanmedian(rms)
@@ -125,19 +125,19 @@ class CAMS2_83_Engine(ProcessingEngine):
         stats_list["mnmb"] = np.nanmedian(mnmb)
         stats_list["fge"] = np.nanmedian(fge)
 
-
         return stats_list
-
 
     def _pearson_R_vec(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         xmean = np.nanmean(x, axis=0)
         ymean = np.nanmean(y, axis=0)
         xm = x - xmean
         ym = y - ymean
-        normxm = np.sqrt(np.nansum(xm*xm, axis=0))
-        normym = np.sqrt(np.nansum(ym*ym, axis=0))
+        normxm = np.sqrt(np.nansum(xm * xm, axis=0))
+        normym = np.sqrt(np.nansum(ym * ym, axis=0))
 
-        r = np.where(normxm*normym == 0.0, np.nan, np.nansum(xm*ym, axis=0)/(normxm*normym))
+        r = np.where(
+            normxm * normym == 0.0, np.nan, np.nansum(xm * ym, axis=0) / (normxm * normym)
+        )
 
         return r
 

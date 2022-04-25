@@ -194,7 +194,7 @@ OBS_CONFIG = {}
 # EEA observatio
 OBS_CONFIG["EEA"] = dict(
     obs_id="CAMS2_83.NRT",
-    #obs_id="EEAAQeRep.NRT",
+    # obs_id="EEAAQeRep.NRT",
     obs_vars=species_list,
     web_interface_name="Obs",
     obs_vert_type="Surface",

@@ -32,7 +32,7 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
     RV = SPECIES[spec]["RV"]
     alpha = SPECIES[spec]["alpha"]
 
-    in_sqrt = (1 - alpha ** 2) * (mean ** 2 + std ** 2) + alpha ** 2 * RV ** 2
+    in_sqrt = (1 - alpha**2) * (mean**2 + std**2) + alpha**2 * RV**2
 
     return UrRV * sqrt(in_sqrt)
 
@@ -50,7 +50,7 @@ def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
 
 def _crms(mod_std: float, obs_std: float, R: float) -> float:
     """Returns the Centered Root Mean Squared Error"""
-    return sqrt(mod_std ** 2 + obs_std ** 2 - 2 * mod_std * obs_std * R)
+    return sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
 
 
 def _mqi(rms: float, rmsu: float, *, beta: float) -> float:

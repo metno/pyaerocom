@@ -85,14 +85,14 @@ class ReadCAMS2_83(ReadUngriddedBase):
             files = files[first_file:]
         if last_file is not None:
             files = files[:last_file]
-        
+
         start = time.time()
         data = list(self.__reader(vars_to_retrieve, files))
         end = time.time()
         print(end - start)
-        
+
         ungriddeddata = UngriddedData.from_station_data(data)
-        print(time.time() - end, (time.time() - end)/60.)
+        print(time.time() - end, (time.time() - end) / 60.0)
         return ungriddeddata
 
     def read_file(self, filename, vars_to_retrieve=None):
@@ -101,7 +101,9 @@ class ReadCAMS2_83(ReadUngriddedBase):
     @classmethod
     def __reader(cls, vars_to_retrieve: list[str], files: list[str | Path]) -> Iterator[dict]:
         logger.debug(f"reading {cls.DATA_ID} {vars_to_retrieve=} from {files=}")
-        data = pd.concat(read_csv(path) for path in files).drop_duplicates(subset=["station", "poll", "time"])
+        data = pd.concat(read_csv(path) for path in files).drop_duplicates(
+            subset=["station", "poll", "time"]
+        )
         df: pd.DataFrame
         for station, df in data.groupby("station"):
             logging.info(f"Reading obs for station {station} and variables {vars_to_retrieve}")
