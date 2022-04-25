@@ -9,20 +9,15 @@ log_cli_level = "WARNING"
 addopts = "--failed-first"
 testpaths = ["tests"]
 filterwarnings = [
-  "error",
-  "ignore::pytest.PytestUnraisableExceptionWarning",
-  # xarray calling importlib.metadata.entry_points on Python 3.10
-  "ignore:SelectableGroups dict interface is deprecated:DeprecationWarning",
-  # xarray calling distutils.version.LooseVersion on Python 3.10
-  "ignore:distutils Version classes are deprecated:DeprecationWarning",
-  # xarray calling index.get_loc on Pandas 1.4.0
-  "ignore:Passing method to Float64Index.get_loc is deprecated:FutureWarning",
-  # numpy calling calling distutils.ccompiler
-  "ignore:The distutils package is deprecated:DeprecationWarning",
-  # numpy calling distutils.sysconfig.customize_compiler on Python 3.10
-  "ignore:The distutils.sysconfig module is deprecated:DeprecationWarning",
-  # tornado calling asyncio.get_event_loop on Python 3.10
-  "ignore:There is no current event loop:DeprecationWarning",
+    # all warnings are errors
+    "error",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+    # except deprecation and future warnings ouside this packege
+    'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
+    'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+    # and not on this list
+    "ignore:.*please install Basemap:UserWarning:geonum.*:",
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:"
 ]
 
 [tool.coverage.run]
@@ -106,6 +101,8 @@ legacy_tox_ini = """
 envlist = py38, py39, py310, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
+requires =
+    setuptools<=60.9.3
 
 [testenv]
 commands_pre =
@@ -116,7 +113,6 @@ extras =
     test
 
 [testenv:format]
-skipsdist=True
 commands =
     black --check .
     isort --check .
@@ -124,8 +120,7 @@ extras =
     format
 
 [testenv:lint]
-skipsdist=True
-ignore_outcome=True
+ignore_outcome = True
 commands =
     mypy pyaerocom/
     pylint pyaerocom/
@@ -135,7 +130,6 @@ extras =
     lint
 
 [testenv:docs]
-skipsdist=True
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 

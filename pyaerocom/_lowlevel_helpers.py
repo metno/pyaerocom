@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import simplejson
 
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 
 logger = logging.getLogger(__name__)
 
@@ -745,7 +745,6 @@ def list_to_shortstr(lst, indent=0):
         for val in lin:
             try:
                 with ignore_warnings(
-                    True,
                     RuntimeWarning,
                     "divide by zero encountered in log10",
                     "overflow encountered in long_scalars",

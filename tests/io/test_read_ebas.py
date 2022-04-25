@@ -226,18 +226,83 @@ def test_NAN_VAL(reader: ReadEbas):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadEbas):
-    PROVIDES_VARIABLES = """
-    DEFAULT sc550aer sc440aer sc700aer sc550dryaer sc440dryaer sc700dryaer sc550lt1aer
-    bsc550aer ac550aer ac550dryaer ac550lt1aer bsc550dryaer scrh acrh concso4 concso2
-    concpm10 concpm25 concso4t concso4c concbc conceqbc conctc concoa concoc concCec
-    concCecpm25 concCoc concCocpm25 concNno3pm10 concNno3pm25 concNhno3 concNtno3
-    concNtnh concss concnh3 concNnh3 concNnh4 concno3 concnh4 concsspm10 concsspm25
-    concno concno2 concNno2 concglyoxal conchcho conco3 concco
-    vmro3 vmrso2 vmrco vmrno2 vmrno vmrglyoxal vmrhcho vmrisop vmrc2h6 vmrc2h4
-    concprcpoxs concprcpoxn concprcprdn
-    wetoxs wetoxn wetrdn pr prmm
-    concpm1 concca concmg conck concso4pm10 concso4pm25
-    """.split()
+    PROVIDES_VARIABLES = [
+        "DEFAULT",
+        "concca",
+        "concmg",
+        "conck",
+        "sc550aer",
+        "sc440aer",
+        "sc700aer",
+        "sc550dryaer",
+        "sc440dryaer",
+        "sc700dryaer",
+        "sc550lt1aer",
+        "bsc550aer",
+        "ac550aer",
+        "ac550dryaer",
+        "ac550lt1aer",
+        "bsc550dryaer",
+        "scrh",
+        "acrh",
+        "concso4",
+        "SO4ugSm3",
+        "concso4pm10",
+        "concso4pm25",
+        "concso2",
+        "vmrso2",
+        "concpm10",
+        "concpm25",
+        "concpm1",
+        "concso4t",
+        "concso4c",
+        "concbc",
+        "conceqbc",
+        "concCec",
+        "concCecpm25",
+        "conctc",
+        "concoa",
+        "concoc",
+        "concCoc",
+        "concCocpm25",
+        "concss",
+        "concsspm10",
+        "concsspm25",
+        "concnh3",
+        "concNnh3",
+        "concno3",
+        "concNno3pm10",
+        "concNno3pm25",
+        "concnh4",
+        "concNnh4",
+        "concNhno3",
+        "concNtno3",
+        "concNtnh",
+        "concno",
+        "concno2",
+        "concNno2",
+        "conchcho",
+        "conco3",
+        "concco",
+        "vmro3",
+        "vmrco",
+        "vmrno2",
+        "vmrno",
+        "vmrisop",
+        "vmrhcho",
+        "vmrglyoxal",
+        "vmrc2h6",
+        "vmrc2h4",
+        "concglyoxal",
+        "concprcpoxs",
+        "concprcpoxn",
+        "concprcprdn",
+        "wetoxs",
+        "wetrdn",
+        "wetoxn",
+        "pr",
+        "prmm",
+    ]
 
     assert sorted(reader.PROVIDES_VARIABLES) == sorted(PROVIDES_VARIABLES)
 
