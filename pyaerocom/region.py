@@ -1,6 +1,8 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
+from typing import Optional
+
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -346,7 +348,7 @@ def get_regions_coord(lat, lon, regions=None):
 def find_closest_region_coord(
     lat: float,
     lon: float,
-    regions: dict | None = None,
+    regions: Optional[dict] = None,
 ) -> list[str]:
     """Finds list of regions sorted by their center closest to input coordinate
 
