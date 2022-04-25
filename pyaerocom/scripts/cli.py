@@ -1,10 +1,12 @@
 from typing import Optional
 
-from typer import Argument, Exit, Option, Typer, echo
+# from typer import Argument, Exit, Option, Typer, echo
+import click
+import typer
 
 from pyaerocom import __package__, __version__, const, tools
 
-main = Typer()
+main = typer.Typer()
 
 
 def _confirm():
@@ -26,17 +28,19 @@ def version_callback(value: bool):
     if not value:
         return
 
-    echo(f"{__package__} {__version__}")
-    raise Exit()
+    typer.echo(f"{__package__} {__version__}")
+    raise typer.Exit()
 
 
 @main.callback()
-def callback(version: Optional[bool] = Option(None, "--version", "-V", callback=version_callback)):
+def callback(
+    version: Optional[bool] = typer.Option(None, "--version", "-V", callback=version_callback)
+):
     """Pyaerocom Command Line Interface"""
 
 
 @main.command()
-def browse(database: str = Argument(..., help="Provide database name.")):
+def browse(database: str = typer.Argument(..., help="Provide database name.")):
     """Browse database e.g., browse <DATABASE>"""
     print(f"Searching database for matches of {database}")
     print(tools.browse_database(database))
