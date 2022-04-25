@@ -285,7 +285,8 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "conco3",
         "concco",
         "vmro3",
-        "vmro3max" "vmrco",
+        "vmro3max",
+        "vmrco",
         "vmrno2",
         "vmrno",
         "vmrisop",
@@ -364,7 +365,12 @@ def test__find_station_matches(reader: ReadEbas):
             "No EBAS data files could be found for stations Bla",
             id="station not found",
         ),
-        pytest.param(42, ValueError, "Need list or string...", id="wrong pattern type",),
+        pytest.param(
+            42,
+            ValueError,
+            "Need list or string...",
+            id="wrong pattern type",
+        ),
     ],
 )
 def test__find_station_matches_error(
@@ -376,7 +382,11 @@ def test__find_station_matches_error(
 
 
 @pytest.mark.parametrize(
-    "vars_to_retrieve,result", [(None, None), (["sconco3"], ["conco3"]),],
+    "vars_to_retrieve,result",
+    [
+        (None, None),
+        (["sconco3"], ["conco3"]),
+    ],
 )
 def test__precheck_vars_to_retrieve(
     reader: ReadEbas, vars_to_retrieve: list[str] | None, result: list[str] | None
@@ -426,7 +436,10 @@ def test__get_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesF
 
 @pytest.mark.parametrize(
     "var,error",
-    [("ac550aer", "Variable ac550aer could not be found in file"), ("sc550dryaer", ""),],
+    [
+        ("ac550aer", "Variable ac550aer could not be found in file"),
+        ("sc550dryaer", ""),
+    ],
 )
 def test__get_var_cols_error(
     reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
@@ -446,7 +459,11 @@ def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesF
 
 @pytest.mark.parametrize(
     "ts_type,tol_percent,num_flagged",
-    [("hourly", 5, 0), ("daily", 5, 8760), ("hourly", 0, 5840),],
+    [
+        ("hourly", 5, 0),
+        ("daily", 5, 8760),
+        ("hourly", 0, 5840),
+    ],
 )
 def test__flag_incorrect_frequencies(
     monkeypatch,
@@ -517,7 +534,11 @@ vmro3_tower_var_info = {
             "conco3",
             dict(var_info=conco3_tower_var_info),
         ),
-        (EBAS_FILEDIR / EBAS_ISSUE_FILES["pm10_tstype"], "concpm10", dict(ts_type="2daily"),),
+        (
+            EBAS_FILEDIR / EBAS_ISSUE_FILES["pm10_tstype"],
+            "concpm10",
+            dict(ts_type="2daily"),
+        ),
         (
             EBAS_FILEDIR / EBAS_FILES["sc550dryaer"]["Jungfraujoch"][0],
             ["sc550aer"],
