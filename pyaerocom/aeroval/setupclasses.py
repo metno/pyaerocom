@@ -152,6 +152,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.add_trends = False
         self.trends_min_yrs = 7
         self.stats_tseries_base_freq = None
+        self.use_fairmode = False
         self.update(**kwargs)
 
 
@@ -216,6 +217,8 @@ class WebDisplaySetup(ConstrainedContainer):
         self.var_order_menu = []
         self.obs_order_menu = []
         self.model_order_menu = []
+        self.hide_charts = []
+        self.hide_pages = []
         self.update(**kwargs)
 
 
@@ -227,6 +230,7 @@ class EvalRunOptions(ConstrainedContainer):
         self.only_colocation = False
         #: If True, process only maps (skip obs evaluation)
         self.only_model_maps = False
+        self.obs_only = False
         self.update(**kwargs)
 
 

@@ -111,6 +111,7 @@ commands_pre =
 commands =
     pytest -ra -q {posargs:--cov}
 extras = 
+    proj-legacy
     test
 
 [testenv:format]
@@ -127,11 +128,13 @@ commands =
     #pycodestyle pyaerocom/
     #pydocstyle pyaerocom/
 extras = 
+    proj-legacy
     lint
 
 [testenv:docs]
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 
+    proj-legacy
     docs
 """

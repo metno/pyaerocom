@@ -80,16 +80,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
 
     #: file masks for the data files
-    FILE_MASKS = {}
-    FILE_MASKS["concso2"] = "**/*_1_*_timeseries.csv*"
-    FILE_MASKS["concpm10"] = "**/*_5_*_timeseries.csv*"
-    FILE_MASKS["conco3"] = "**/*_7_*_timeseries.csv*"
-    FILE_MASKS["vmro3"] = "**/*_7_*_timeseries.csv*"
-    FILE_MASKS["concno2"] = "**/*_8_*_timeseries.csv*"
-    FILE_MASKS["vmrno2"] = "**/*_8_*_timeseries.csv*"
-    FILE_MASKS["concco"] = "**/*_10_*_timeseries.csv*"
-    FILE_MASKS["concno"] = "**/*_38_*_timeseries.csv*"
-    FILE_MASKS["concpm25"] = "**/*_6001_*_timeseries.csv*"
+    FILE_MASKS = dict(
+        concso2="**/??_1_*_timeseries.csv*",
+        concpm10="**/??_5_*_timeseries.csv*",
+        conco3="**/??_7_*_timeseries.csv*",
+        vmro3="**/??_7_*_timeseries.csv*",
+        concno2="**/??_8_*_timeseries.csv*",
+        vmrno2="**/??_8_*_timeseries.csv*",
+        concco="**/??_10_*_timeseries.csv*",
+        concno="**/??_38_*_timeseries.csv*",
+        concpm25="**/??_6001_*_timeseries.csv*",
+    )
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
@@ -300,8 +301,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     # make the time string ISO compliant so that numpy can directly read it
                     # this is not very time string forgiving but fast
                     data_dict[header[idx]][lineidx] = np.datetime64(
-                        rows[idx][0:10] + "T" + rows[idx][11:19] + rows[idx][20:]
+                        rows[idx][0:10] + "T" + rows[idx][11:19]
                     )
+                    # due to the deprecation of the timezone interpretation after numpy 0.11
+                    # we have to substract the offset manually to get to UTC.
+                    # np.timedelta64 does not accept a float as parameter, only an integer.
+                    # Although there are time zones with a 30 minutes offset, these don't
+                    # exist in Europe, so just consider integer hours here for speed
+                    tz_offset = np.timedelta64(np.int64(rows[idx][20:23]), "h")
+                    data_dict[header[idx]][lineidx] = data_dict[header[idx]][lineidx] - tz_offset
                 else:
                     # data is not a time
                     # sometimes there's no value in the file. Set that to nan
@@ -473,7 +481,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         import os
 
         from pyaerocom._lowlevel_helpers import list_to_shortstr
-        from pyaerocom.exceptions import DataSourceError
 
         if pattern is None:
             logger.warning("using default pattern *.* for file search")
