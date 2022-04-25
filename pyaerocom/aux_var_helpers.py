@@ -673,9 +673,8 @@ def calc_vmro3max(data):
 
     var_name = "vmro3"
     new_var_name = "vmro3max"
-    
-    flags = data.data_flagged[var_name]
 
+    flags = data.data_flagged[var_name]
 
     o3max = data[var_name]
 
@@ -685,10 +684,8 @@ def calc_vmro3max(data):
     if not new_var_name in data.var_info:
         data.var_info[new_var_name] = {}
 
-
     data.var_info[new_var_name] = data.var_info[var_name]
 
-    
     data.data_flagged[new_var_name] = flags
     # print(data.var_info)
     # exit()
