@@ -411,9 +411,14 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
         self.time_cfg["periods"] = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
+        start_yr = start.year
+        stop_yr = stop.year
+
+        if stop_yr == start_yr:
+            stop_yr += 1
         if colstart is None:
-            self.colocation_opts["start"] = start
+            self.colocation_opts["start"] = start.strftime("%Y/%m/%d")
         if colstop is None:
-            self.colocation_opts["stop"] = (
-                stop + 1
-            )  # add 1 year since we want to include stop year
+            self.colocation_opts["stop"] = stop.strftime(
+                "%Y/%m/%d"
+            )  # + 1  # add 1 year since we want to include stop year

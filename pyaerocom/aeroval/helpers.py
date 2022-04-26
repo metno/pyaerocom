@@ -1,7 +1,9 @@
+import pandas as pd
+
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.helpers import start_stop_str
+from pyaerocom.helpers import start_stop, start_stop_str, to_pandas_timestamp
 from pyaerocom.tstype import TsType
 
 
@@ -73,7 +75,8 @@ def _check_statistics_periods(periods: list) -> list:
                 f"Invalid value for period ({per}), can be either single "
                 f"years or period of years (e.g. 2000-2010)."
             )
-        _per = "-".join([str(int(val)) for val in spl])
+        # _per = "-".join([str(int(val)) for val in spl])
+        _per = "-".join([to_pandas_timestamp(val).strftime("%Y/%m/%d") for val in spl])
         checked.append(_per)
     return checked
 
@@ -121,10 +124,12 @@ def _get_min_max_year_periods(statistics_periods):
         stop year (may be the same as start year, e.g. if periods suggest
         single year analysis).
     """
-    startyr, stopyr = 1e6, -1e6
+    # startyr, stopyr = 1e16, -1e16
+    startyr, stopyr = start_stop("2100", "1900")
     for per in statistics_periods:
         sl = _period_str_to_timeslice(per)
-        perstart, perstop = int(sl.start), int(sl.stop)
+        # perstart, perstop = sl.start, sl.stop
+        perstart, perstop = start_stop(sl.start, sl.stop)
         if perstart < startyr:
             startyr = perstart
         if perstop > stopyr:

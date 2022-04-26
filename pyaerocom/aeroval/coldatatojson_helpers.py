@@ -851,7 +851,8 @@ def _process_map_and_scat(
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
 
-                            (start, stop) = _get_min_max_year_periods([per])
+                            # (start, stop) = _get_min_max_year_periods([per])
+                            (start, stop) = _start_stop_from_periods(per)
 
                             if stop - start >= trends_min_yrs:
 
@@ -1132,7 +1133,8 @@ def _process_heatmap_data(
                             trends_successful = False
                             if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                (start, stop) = _get_min_max_year_periods([per])
+                                # (start, stop) = _get_min_max_year_periods([per])
+                                (start, stop) = _start_stop_from_periods(per)
 
                                 if stop - start >= trends_min_yrs:
                                     try:
@@ -1354,6 +1356,26 @@ def _init_data_default_frequencies(coldata, to_ts_types):
     return data_arrs
 
 
-def _start_stop_from_periods(periods):
-    start, stop = _get_min_max_year_periods(periods)
-    return start_stop(start, stop + 1)
+def _get_yr_from_date_string(date):
+    if len(date) == 4:
+        return int(date)
+    elif len(date) == 8:
+        return datetime.strptime(date, "%Y%m%d").year
+    else:
+        raise ValueError(f"{date} needs to be a year or a date on format YYYYMMDD")
+
+
+def _start_stop_from_periods(period):
+    yrs = period.split("-")
+    if len(yrs) == 1:
+        start = stop = yrs[0]
+    elif len(yrs) == 2:
+        start = yrs[0]
+        stop = yrs[1]
+    else:
+        raise ValueError(f"{period} needs to be one or two years, sparated by a '-'")
+    # start = _get_yr_from_date_string(start)
+    # stop = _get_yr_from_date_string(stop)
+
+    start, stop = start_stop(start, stop)
+    return start.year, stop.year

@@ -39,6 +39,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
+        periods = self.cfg.time_cfg.periods
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -69,7 +70,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         name = "day0.json"
         filename = Path(out_dirs["conf"]) / name
 
-        results = {"WORLD": {"2021-2022-all": stats_list}}
+        results = {"WORLD": {f"{periods[0]}-all": stats_list}}
         _add_entry_json(
             filename, results, obs_name, var_name_web, vert_code, model.name, model_var
         )
