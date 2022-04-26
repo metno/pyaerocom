@@ -1,27 +1,10 @@
 from typing import Optional
 
-# from typer import Argument, Exit, Option, Typer, echo
-import click
 import typer
 
 from pyaerocom import __package__, __version__, const, tools
 
 main = typer.Typer()
-
-
-def _confirm():
-    """
-    Ask user to confirm something
-
-    Returns
-    -------
-    bool
-        True if user answers yes, else False
-    """
-    answer = ""
-    while answer not in ["y", "n"]:
-        answer = input("[Y/N]? ").lower()
-    return answer == "y"
 
 
 def version_callback(value: bool):
@@ -50,8 +33,8 @@ def browse(database: str = typer.Argument(..., help="Provide database name.")):
 def clearcache():
     """Delete cached data objects"""
 
-    print("Are you sure you want to delete all cached data objects?")
-    if _confirm():
+    delete = typer.confirm("Are you sure you want to delete all cached data objects?")
+    if delete:
         print("OK then.... here we go!")
         tools.clear_cache()
     else:

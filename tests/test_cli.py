@@ -1,8 +1,8 @@
 from importlib import metadata
+from pathlib import Path
 
 import numpy as np
 import pytest
-from pathlib import Path
 from typer.testing import CliRunner
 
 from pyaerocom.scripts.cli import main
