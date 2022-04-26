@@ -19,6 +19,7 @@ dependencies:
   - reverse-geocode
   - tqdm
   - openpyxl
+  - typer >= 0.4.0
 ## testing
   - pytest >= 3
   - pytest-dependency
