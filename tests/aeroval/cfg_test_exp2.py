@@ -18,7 +18,8 @@ OBS_GROUNDBASED = {
         obs_id="AeronetSunV3L2Subset.daily", obs_vars=["od550aer"], obs_vert_type="Column"
     ),
     "AERONET-SDA": dict(
-        obs_id="AERONET-SDA",
+        # obs_id="AERONET-SDA",
+        obs_id="AeronetSDAV3L2Subset.daily",
         obs_vars=["od550csaer"],
         obs_type="ungridded",
         obs_vert_type="Column",
@@ -62,7 +63,7 @@ CFG = dict(
     add_seasons=False,
     model_remove_outliers=False,
     harmonise_units=True,
-    regions_how="country",  #'default',#'country',
+    regions_how="country",  # 'default',#'country',
     annual_stats_constrained=False,
     proj_id="test",
     exp_id="exp2",
