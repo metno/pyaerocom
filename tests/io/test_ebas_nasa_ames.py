@@ -63,7 +63,7 @@ def test_EbasNasaAmesFile_head_fix(filedata):
         vol_num=1,
         vol_totnum=1,
         ref_date=np.datetime64("2019-01-01T00:00:00"),
-        revision_date=np.datetime64("2020-05-26T00:00:00"),
+        revision_date=np.datetime64("2021-05-28T00:00:00"),
         freq=0.041667,
         descr_time_unit="days from file reference point",
         num_cols_dependent=23,

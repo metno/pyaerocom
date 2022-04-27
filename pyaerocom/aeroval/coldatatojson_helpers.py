@@ -13,7 +13,8 @@ import xarray as xr
 from matplotlib.cbook import maxdict
 
 from pyaerocom._lowlevel_helpers import read_json, write_json
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
+from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
@@ -1089,6 +1090,8 @@ def _process_map_and_scat(
     add_trends,
     trends_min_yrs,
     avg_over_trends,
+    use_fairmode,
+    obs_var,
 ):
 
     stats_dummy = _init_stats_dummy()
@@ -1114,6 +1117,11 @@ def _process_map_and_scat(
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
+
+                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
+                            stats["mb"] = np.nanmean(mod_vals - obs_vals)
+
+                            stats["fairmode"] = fairmode_stats(obs_var, stats)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
@@ -1351,7 +1359,7 @@ def _calc_temporal_corr(coldata):
     if np.prod(arr.shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim="time")
-    with ignore_warnings(True, RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):
+    with ignore_warnings(RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 

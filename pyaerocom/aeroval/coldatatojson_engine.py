@@ -102,6 +102,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         min_yrs = self.cfg.statistics_opts.min_yrs
         sequential_yrs = self.cfg.statistics_opts.sequential_yrs
         avg_over_trends = self.cfg.statistics_opts.avg_over_trends
+        use_fairmode = self.cfg.statistics_opts.use_fairmode
 
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
@@ -167,6 +168,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         use_country = True if regions_how == "country" else False
 
         data = _init_data_default_frequencies(coldata, freqs)
+
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
@@ -237,6 +239,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 add_trends,
                 trends_min_yrs,
                 avg_over_trends,
+                use_fairmode,
+                obs_var,
             )
 
             map_name = get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code)

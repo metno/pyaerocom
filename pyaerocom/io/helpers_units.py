@@ -68,10 +68,10 @@ def unitconv_sfc_conc_bck(data, x=2):
 
     mmO = 15.9999  # molar mass oxygen
     mmS = 32.065  # molar mass sulphur
-    mm_compound = (mmS + x * mmO) * 10 ** 3  # *10**3 gives molar mass in micrograms
+    mm_compound = (mmS + x * mmO) * 10**3  # *10**3 gives molar mass in micrograms
 
     nr_molecules = mass_to_nr_molecules(data, mm_compound)
-    weight_s = nr_molecules_to_mass(nr_molecules, mmS * 10 ** 3)  # weigth in ug
+    weight_s = nr_molecules_to_mass(nr_molecules, mmS * 10**3)  # weigth in ug
     return weight_s
 
 
@@ -93,8 +93,8 @@ def unitconv_sfc_conc(data, nr_of_O=2):
 
     """
 
-    mm_s = 32.065 * 10 ** 6  # in units of ug/mol
-    mm_o = nr_of_O * 15.9999 * 10 ** 6  ## in units of ug/mol
+    mm_s = 32.065 * 10**6  # in units of ug/mol
+    mm_o = nr_of_O * 15.9999 * 10**6  ## in units of ug/mol
     nr_molecules = mass_to_nr_molecules(data, mm_s)  # 32.065*10**6) [ug/mol]
     added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o)  # ug
     # added weights in micrograms

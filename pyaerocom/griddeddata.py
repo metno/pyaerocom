@@ -12,7 +12,7 @@ from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
 from pyaerocom import const
-from pyaerocom._warnings_management import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
@@ -689,7 +689,7 @@ class GriddedData:
         )
         return vardef
 
-    @ignore_warnings(True, UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
+    @ignore_warnings(UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
 
@@ -1780,7 +1780,6 @@ class GriddedData:
             data = self._resample_time_iris(to_ts_type)
         return data
 
-    @ignore_warnings(const.FILTER_IRIS_WARNINGS, Warning, "Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         if not self.has_latlon_dims:
@@ -1941,7 +1940,8 @@ class GriddedData:
         if time_range is None:
             return GriddedData(data, **suppl)
         else:
-            if all(isinstance(x, str) for x in time_range):
+            assert len(time_range) == 2
+            if all(isinstance(x, (str, np.datetime64)) for x in time_range):
                 time_range = (pd.Timestamp(time_range[0]), pd.Timestamp(time_range[1]))
             if all(isinstance(x, pd.Timestamp) for x in time_range):
                 logger.info("Cropping along time axis based on Timestamps")
@@ -1954,7 +1954,7 @@ class GriddedData:
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
                 data = data[time_range[0] : time_range[1]]
-            if not data:
+            else:
                 raise DataExtractionError("Failed to apply temporal cropping")
         return GriddedData(data, check_unit=False, convert_unit_on_init=False, **suppl)
 

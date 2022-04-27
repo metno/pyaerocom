@@ -71,7 +71,7 @@ class ReadMscwCtm:
         # "concNtno3": ["conchno3", "concno3f", "concno3c"],
         # "concNtnh": ["concnh3", "concnh4"],
         "concsspm25": ["concssf", "concssc"],
-        "concsspm10": ["concsspm25", "concssc"],
+        "concsspm10": ["cconcssf", "concssc"],
         "concCecpm25": ["concecpm25"],
         "vmrox": ["concno2", "vmro3"],
     }
