@@ -7,7 +7,6 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
-
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
@@ -29,7 +28,6 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
-from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
@@ -150,20 +148,20 @@ def _ensure_gridded_gridded_same_freq(data, data_ref, min_num_obs, resample_how)
 
 
 def colocate_gridded_gridded(
-    data,
-    data_ref,
-    ts_type=None,
-    start=None,
-    stop=None,
-    filter_name=None,
-    regrid_res_deg=None,
-    harmonise_units=True,
-    regrid_scheme="areaweighted",
-    update_baseyear_gridded=None,
-    min_num_obs=None,
-    colocate_time=False,
-    resample_how=None,
-    **kwargs,
+        data,
+        data_ref,
+        ts_type=None,
+        start=None,
+        stop=None,
+        filter_name=None,
+        regrid_res_deg=None,
+        harmonise_units=True,
+        regrid_scheme="areaweighted",
+        update_baseyear_gridded=None,
+        min_num_obs=None,
+        colocate_time=False,
+        resample_how=None,
+        **kwargs,
 ):
     """Colocate 2 gridded data objects
 
@@ -391,7 +389,7 @@ def _check_ts_type(data, ts_type):
 
 
 def _colocate_site_data_helper(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+        stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -450,7 +448,7 @@ def _colocate_site_data_helper(
 
 
 def _colocate_site_data_helper_timecol(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+        stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -573,22 +571,22 @@ def _colocate_site_data_helper_timecol(
 
 
 def colocate_gridded_ungridded(
-    data,
-    data_ref,
-    ts_type=None,
-    start=None,
-    stop=None,
-    filter_name=None,
-    regrid_res_deg=None,
-    harmonise_units=True,
-    regrid_scheme="areaweighted",
-    var_ref=None,
-    update_baseyear_gridded=None,
-    min_num_obs=None,
-    colocate_time=False,
-    use_climatology_ref=False,
-    resample_how=None,
-    **kwargs,
+        data,
+        data_ref,
+        ts_type=None,
+        start=None,
+        stop=None,
+        filter_name=None,
+        regrid_res_deg=None,
+        harmonise_units=True,
+        regrid_scheme="areaweighted",
+        var_ref=None,
+        update_baseyear_gridded=None,
+        min_num_obs=None,
+        colocate_time=False,
+        use_climatology_ref=False,
+        resample_how=None,
+        **kwargs,
 ):
     """Colocate gridded with ungridded data (low level method)
 
@@ -691,7 +689,10 @@ def colocate_gridded_ungridded(
     else:
         var_ref_aerocom = const.VARS[var_ref].var_name_aerocom
 
+    # This does not take aliases at the model side into account!
     if not var_ref in data_ref.contains_vars:
+        # try variable aliases
+        
         raise VarNotAvailableError(
             f"Variable {var_ref} is not available in ungridded "
             f"data (which contains {data_ref.contains_vars})"
