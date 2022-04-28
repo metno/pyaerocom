@@ -19,8 +19,8 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_concNtnh,
     calc_concsspm25,
     calc_conNtno3,
-    calc_vmrox,
     calc_vmrno2,
+    calc_vmrox,
     subtract_dataarrays,
     update_EC_units,
 )
