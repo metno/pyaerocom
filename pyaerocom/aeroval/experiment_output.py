@@ -614,19 +614,6 @@ class ExperimentOutput(ProjectOutput):
 
         muv = mcfg.model_use_vars
         mrv = mcfg.model_rename_vars
-        if not bool(muv):
-            try:
-                o_muv = ocfg.model_use_vars
-                muv = o_muv
-            except:
-                pass
-
-        if not bool(mrv):
-            try:
-                o_mrv = ocfg.model_rename_vars
-                mrv = o_mrv
-            except:
-                pass
 
         mvar_aliases = get_aliases(mod_var)
         for ovar, mvars in mcfg.model_add_vars.items():

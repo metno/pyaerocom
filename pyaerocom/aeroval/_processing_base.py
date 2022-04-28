@@ -114,13 +114,13 @@ class HasColocator(HasConfig):
 
         """
         col = Colocator(**self.cfg.colocation_opts)
-        if model_name:
-            mod_cfg = self.cfg.get_model_entry(model_name)
-            col.import_from(mod_cfg)
         if obs_name:
             obs_cfg = self.cfg.get_obs_entry(obs_name)
             col.import_from(obs_cfg)
             col.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
+        if model_name:
+            mod_cfg = self.cfg.get_model_entry(model_name)
+            col.import_from(mod_cfg)
         outdir = self.cfg.path_manager.get_coldata_dir()
         col.basedir_coldata = outdir
         return col
