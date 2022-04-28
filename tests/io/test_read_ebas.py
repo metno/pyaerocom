@@ -282,6 +282,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "conco3",
         "concco",
         "vmro3",
+        "vmro3max",
         "vmrco",
         "vmrno2",
         "vmrno",
