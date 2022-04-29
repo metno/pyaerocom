@@ -240,3 +240,18 @@ def calc_vmrox(concno2, vmro3):
     vmrox = vmrno2 + vmro3
     vmrox.attrs["units"] = "nmol mol-1"
     return vmrox
+
+
+def calc_vmrno2(concno2):
+
+    vmrno2 = concx_to_vmrx(
+        data=concno2,
+        p_pascal=p0,  # 1013 hPa (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        conc_unit=str(concno2.attrs["units"]),
+        mmol_var=get_molmass("no2"),  # g/mol NO2
+        to_unit="nmol mol-1",
+    )
+
+    vmrno2.attrs["units"] = "nmol mol-1"
+    return vmrno2

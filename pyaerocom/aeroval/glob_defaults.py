@@ -338,6 +338,7 @@ var_web_info = dict(
     concnh4=["NH4", "3D", "Gas concentrations"],
     concno3=["NO3", "3D", "Gas concentrations"],
     vmro3=["O3", "3D", "Volume mixing ratios"],
+    vmro3max=["O3Max", "3D", "Volume mixing ratios"],
     concNtno3=["tNO3", "3D", "Concentration"],
     concNtnh=["tNH4", "3D", "Concentration"],
     concNnh3=["NH3", "3D", "Concentration"],

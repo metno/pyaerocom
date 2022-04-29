@@ -21,6 +21,7 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_conNtnh_emep,
     calc_conNtno3,
     calc_conNtno3_emep,
+    calc_vmrno2,
     calc_vmrox,
     subtract_dataarrays,
     update_EC_units,
@@ -71,9 +72,10 @@ class ReadMscwCtm:
         # "concNtno3": ["conchno3", "concno3f", "concno3c"],
         # "concNtnh": ["concnh3", "concnh4"],
         "concsspm25": ["concssf", "concssc"],
-        "concsspm10": ["cconcssf", "concssc"],
+        "concsspm10": ["concssf", "concssc"],
         "concCecpm25": ["concecpm25"],
         "vmrox": ["concno2", "vmro3"],
+        "vmrno2": ["concno2"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -99,6 +101,7 @@ class ReadMscwCtm:
         "concsspm10": add_dataarrays,
         "concCecpm25": update_EC_units,
         "vmrox": calc_vmrox,
+        "vmrno2": calc_vmrno2,
     }
 
     #: supported filename masks, placeholder is for frequencies
@@ -616,7 +619,7 @@ class ReadMscwCtm:
             return self._read_var_from_file(var_name_aerocom, ts_type)
         elif var_name_aerocom in self.AUX_REQUIRES:
             return self._compute_var(var_name_aerocom, ts_type)
-        raise VarNotAvailableError("Variable {var_name} is not supported")
+        raise VarNotAvailableError(f"Variable {var_name_aerocom} is not supported")
 
     def read_var(self, var_name, ts_type=None, **kwargs):
         """Load data for given variable.
