@@ -71,7 +71,7 @@ class ReadMscwCtm:
         # "concNtno3": ["conchno3", "concno3f", "concno3c"],
         # "concNtnh": ["concnh3", "concnh4"],
         "concsspm25": ["concssf", "concssc"],
-        "concsspm10": ["cconcssf", "concssc"],
+        "concsspm10": ["concssf", "concssc"],
         "concCecpm25": ["concecpm25"],
         "vmrox": ["concno2", "vmro3"],
     }
@@ -616,7 +616,7 @@ class ReadMscwCtm:
             return self._read_var_from_file(var_name_aerocom, ts_type)
         elif var_name_aerocom in self.AUX_REQUIRES:
             return self._compute_var(var_name_aerocom, ts_type)
-        raise VarNotAvailableError("Variable {var_name} is not supported")
+        raise VarNotAvailableError(f"Variable {var_name_aerocom} is not supported")
 
     def read_var(self, var_name, ts_type=None, **kwargs):
         """Load data for given variable.
