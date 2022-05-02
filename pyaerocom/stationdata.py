@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
-
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, dict_to_str, list_to_shortstr, merge_dicts
 from pyaerocom.exceptions import (
@@ -745,8 +744,12 @@ class StationData(StationMetaData):
 
         info = other.var_info[var_name]
         removed = None
+        # flag to signal that this particulat station should be skipped
+        skip_flag = False
         if "overlap" in info and info["overlap"]:
             # raise NotImplementedError("Coming soon...")
+            skip_flag = True
+            return self, skip_flag
             pass
 
         if len(s1) > 0:  # there is data
@@ -782,7 +785,7 @@ class StationData(StationMetaData):
             else:
                 self.overlap[var_name] = removed
 
-        return self
+        return self, skip_flag
 
     def merge_vardata(self, other, var_name, **kwargs):
         """Merge variable data from other object into this object
@@ -837,11 +840,14 @@ class StationData(StationMetaData):
             self.check_var_unit_aerocom(var_name)
             other.check_var_unit_aerocom(var_name)
 
+        skip_flag = False
         if self.check_if_3d(var_name):
             raise NotImplementedError("Coming soon...")
             # return self._merge_vardata_3d(other, var_name)
         else:
-            return self._merge_vardata_2d(other, var_name, **kwargs)
+            ret_data, skip_flag = self._merge_vardata_2d(other, var_name, **kwargs)
+            return ret_data, skip_flag
+            # return self._merge_vardata_2d(other, var_name, **kwargs)
 
     def merge_other(self, other, var_name, add_meta_keys=None, **kwargs):
         """Merge other station data object
@@ -871,10 +877,13 @@ class StationData(StationMetaData):
         StationData
             this object that has merged the other station
         """
-        self.merge_vardata(other, var_name, **kwargs)
-        self.merge_meta_same_station(other, add_meta_keys=add_meta_keys)
+        skip_flag = False
+        ret_data, skip_flag = merge_vardata(other, var_name, **kwargs)
+        if not skip_flag:
+            self.merge_vardata(other, var_name, **kwargs)
+            self.merge_meta_same_station(other, add_meta_keys=add_meta_keys)
 
-        return self
+        return self, skip_flag
 
     def check_dtime(self):
         """Checks if dtime attribute is array or list"""

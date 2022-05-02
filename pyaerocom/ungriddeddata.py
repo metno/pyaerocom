@@ -8,7 +8,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -909,7 +908,7 @@ class UngriddedData:
                 )
             if merge_pref_attr is None:
                 merge_pref_attr = self._try_infer_stat_merge_pref_attr(stats)
-            merged = merge_station_data(
+            merged, skip_flag = merge_station_data(
                 stats,
                 vars_to_convert,
                 pref_attr=merge_pref_attr,
@@ -918,7 +917,11 @@ class UngriddedData:
                 resample_how=resample_how,
                 min_num_obs=min_num_obs,
             )
-            stats = [merged]
+            if not skip_flag:
+                stats = [merged]
+            else:
+                # this staion should be skipped due to merging errors
+                return None, skip_flag
 
         stats_ok = []
         for stat in stats:
@@ -1230,7 +1233,13 @@ class UngriddedData:
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
-            except (VarNotAvailableError, TimeMatchError, DataCoverageError) as e:
+            # except (VarNotAvailableError, TimeMatchError, DataCoverageError) as e:
+            except (
+                VarNotAvailableError,
+                TimeMatchError,
+                DataCoverageError,
+                NotImplementedError,
+            ) as e:
                 logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
         return out_data
@@ -2962,7 +2971,7 @@ class UngriddedData:
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
         s = (
-            f"\n{head}\n{len(head)*'-'}"
+            f"\n{head}\n{len(head) * '-'}"
             f"\nContains networks: {self.contains_datasets}"
             f"\nContains variables: {self.contains_vars}"
             f"\nContains instruments: {self.contains_instruments}"

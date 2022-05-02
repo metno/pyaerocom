@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from cf_units import Unit
-
 from pyaerocom import const
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -61,7 +60,6 @@ STR_TO_IRIS = dict(
 
 
 def varlist_aerocom(varlist):
-
     if isinstance(varlist, str):
         varlist = [varlist]
     elif not isinstance(varlist, list):
@@ -279,7 +277,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         of the array)
 
     """
-    from pyaerocom import const
 
     if len(coord_vals) < 2:
         logger.warning(
@@ -338,7 +335,6 @@ def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     sh = data.shape
     if dims is not None:
         if not len(dims) == data.ndim:
-
             raise DataDimensionError("Input number of dimensios must match array dimension number")
         for i, dim in enumerate(dims):
             if not isinstance(dim, iris.coords.DimCoord):
@@ -499,7 +495,7 @@ def seconds_in_periods(timestamps, ts_type):
         days_in_year = []
         for ts in timestamps:
             if ts.year % 4 == 0:
-                days_in_year.append(366)  #  Leap year
+                days_in_year.append(366)  # Leap year
             else:
                 days_in_year.append(365)
         seconds = np.array(days_in_year) * seconds_in_day
@@ -790,15 +786,28 @@ def _merge_stats_2d(
 
     # remove first station from the list
     merged = stats.pop(0)
+
+    skip_flag = False
     for i, stat in enumerate(stats):
-        merged.merge_other(
+        # test if a station should be skipped due to some problems
+        ret_data, skip_flag = merged.merge_other(
             stat,
             var_name,
             add_meta_keys=add_meta_keys,
             resample_how=resample_how,
             min_num_obs=min_num_obs,
         )
-    return merged
+        if skip_flag:
+            return merged, skip_flag
+        if not skip_flag:
+            merged.merge_other(
+                stat,
+                var_name,
+                add_meta_keys=add_meta_keys,
+                resample_how=resample_how,
+                min_num_obs=min_num_obs,
+            )
+    return merged, skip_flag
 
 
 def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
@@ -916,12 +925,16 @@ def merge_station_data(
     # ToDo: data_err is not handled at the moment for 2D data, needs r
     # revision and should be done in StationData.merge, also 3D vs 2D
     # should be handled by StationData directly...
+    skip_flag = False
+    merged = None
     if is_3d:
         merged = _merge_stats_3d(stats, var_name, add_meta_keys, has_errs)
     else:
-        merged = _merge_stats_2d(
+        ret_data, skip_flag = _merge_stats_2d(
             stats, var_name, sort_by_largest, pref_attr, add_meta_keys, resample_how, min_num_obs
         )
+        if not skip_flag:
+            merged = ret_data
 
     if fill_missing_nan:
         try:
@@ -1378,8 +1391,6 @@ def start_stop(start, stop=None, stop_sub_sec=True):
 
 
 def datetime2str(time, ts_type=None):
-    from pyaerocom import const
-
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)
@@ -1392,7 +1403,6 @@ def datetime2str(time, ts_type=None):
 
 
 def start_stop_str(start, stop=None, ts_type=None):
-
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(start) and stop is None:
         return str(start)
