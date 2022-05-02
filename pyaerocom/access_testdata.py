@@ -5,6 +5,7 @@ from pathlib import Path
 from traceback import format_exc
 
 import requests
+
 from pyaerocom import const
 from pyaerocom.io import (
     ReadAeronetInvV3,
@@ -22,7 +23,9 @@ logger = logging.getLogger(__name__)
 
 class AccessTestData:
     #: That's were the testdata can be downloaded from
-    URL_TESTDATA = "https://pyaerocom-ng.met.no/pyaerocom-suppl/testdata-minimal.tar.gz.ebas_202201"
+    URL_TESTDATA = (
+        "https://pyaerocom-ng.met.no/pyaerocom-suppl/testdata-minimal.tar.gz.ebas_202201"
+    )
 
     #: Directory where testdata will be downloaded into
     BASEDIR_DEFAULT = const.OUTPUTDIR
