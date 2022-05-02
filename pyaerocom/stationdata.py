@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
-
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, dict_to_str, list_to_shortstr, merge_dicts
 from pyaerocom.exceptions import (
@@ -17,7 +16,6 @@ from pyaerocom.exceptions import (
     MetaDataError,
     StationCoordinateError,
     TemporalResolutionError,
-    UnitConversionError,
     VarNotAvailableError,
 )
 from pyaerocom.helpers import calc_climatology, isnumeric, isrange, to_datetime64
@@ -25,7 +23,6 @@ from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
-from pyaerocom.vertical_profile import VerticalProfile
 
 logger = logging.getLogger(__name__)
 
@@ -382,7 +379,7 @@ class StationData(StationMetaData):
         return output
 
     def get_meta(
-        self, force_single_value=True, quality_check=True, add_none_vals=False, add_meta_keys=None
+            self, force_single_value=True, quality_check=True, add_none_vals=False, add_meta_keys=None
     ):
         """Return meta-data as dictionary
 
@@ -549,13 +546,13 @@ class StationData(StationMetaData):
             self._merge_meta_item(key, val)
 
     def merge_meta_same_station(
-        self,
-        other,
-        coord_tol_km=None,
-        check_coords=True,
-        inplace=True,
-        add_meta_keys=None,
-        raise_on_error=False,
+            self,
+            other,
+            coord_tol_km=None,
+            check_coords=True,
+            inplace=True,
+            add_meta_keys=None,
+            raise_on_error=False,
     ):
         """Merge meta information from other object
 
@@ -698,7 +695,7 @@ class StationData(StationMetaData):
             if len(uvals) == 1:  # only one value in altitude array (NOT 3D)
                 return False
             elif (
-                len(uvals[~np.isnan(uvals)]) == 1
+                    len(uvals[~np.isnan(uvals)]) == 1
             ):  # only 2 unique values in altitude array but one is NaN
                 return False
             return True
@@ -748,7 +745,8 @@ class StationData(StationMetaData):
         info = other.var_info[var_name]
         removed = None
         if "overlap" in info and info["overlap"]:
-            raise NotImplementedError("Coming soon...")
+            # raise NotImplementedError("Coming soon...")
+            pass
 
         if len(s1) > 0:  # there is data
             overlap = s0.index.intersection(s1.index)
@@ -979,15 +977,15 @@ class StationData(StationMetaData):
         self[var_name] = d
 
     def calc_climatology(
-        self,
-        var_name,
-        start=None,
-        stop=None,
-        min_num_obs=None,
-        clim_mincount=None,
-        clim_freq=None,
-        set_year=None,
-        resample_how=None,
+            self,
+            var_name,
+            start=None,
+            stop=None,
+            min_num_obs=None,
+            clim_mincount=None,
+            clim_freq=None,
+            set_year=None,
+            resample_how=None,
     ):
         """Calculate climatological timeseries for input variable
 
@@ -1036,7 +1034,7 @@ class StationData(StationMetaData):
                 f"needs to be in monthly resolution or higher (is: {ts_type})"
             )
         if ts_type < TsType(
-            clim_freq
+                clim_freq
         ):  # current resolution is lower than input climatological freq
             supported = list(const.CLIM_MIN_COUNT)
             if str(ts_type) in supported:
@@ -1086,7 +1084,7 @@ class StationData(StationMetaData):
         return new
 
     def resample_time(
-        self, var_name, ts_type, how=None, min_num_obs=None, inplace=False, **kwargs
+            self, var_name, ts_type, how=None, min_num_obs=None, inplace=False, **kwargs
     ):
         """Resample one of the time-series in this object
 
