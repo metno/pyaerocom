@@ -577,6 +577,10 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(obs_statistics_trend)
             else:
                 stats_info.update(statistics_trend)
+
+                if self.cfg.statistics_opts.avg_over_trends:
+                    stats_info.update(statistics_mean_trend)
+                    stats_info.update(statistics_median_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
     def _get_var_name_and_type(self, var_name):
