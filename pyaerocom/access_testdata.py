@@ -5,6 +5,7 @@ from pathlib import Path
 from traceback import format_exc
 
 import requests
+
 from pyaerocom import const
 from pyaerocom.io import (
     ReadAeronetInvV3,
