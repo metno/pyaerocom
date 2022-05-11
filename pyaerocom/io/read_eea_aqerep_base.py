@@ -74,6 +74,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["concpm10"] = "concentration"
     VAR_NAMES_FILE["concpm25"] = "concentration"
     VAR_NAMES_FILE["vmro3"] = "concentration"
+    VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
 
     #: units of variables in files (needs to be defined for each variable supported)
@@ -85,6 +86,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concpm10="**/??_5_*_timeseries.csv*",
         conco3="**/??_7_*_timeseries.csv*",
         vmro3="**/??_7_*_timeseries.csv*",
+        vmro3max="**/??_7_*_timeseries.csv*",
         concno2="**/??_8_*_timeseries.csv*",
         vmrno2="**/??_8_*_timeseries.csv*",
         concco="**/??_10_*_timeseries.csv*",
@@ -97,6 +99,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     CONV_FACTOR["vmro3"] = np.float_(
         0.493
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
+    CONV_FACTOR["vmro3max"] = np.float_(
+        0.493
+    )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
     CONV_FACTOR["vmrno2"] = np.float_(
         0.514
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
@@ -104,6 +109,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # unit of the converted property after the conversion
     CONV_UNIT = {}
     CONV_UNIT["vmro3"] = "ppb"
+    CONV_UNIT["vmro3max"] = "ppb"
     CONV_UNIT["vmrno2"] = "ppb"
 
     #: field name of the start time of the measurement (in lower case)
@@ -165,10 +171,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3": ["conco3"], "vmrno2": ["concno2"]}
+    AUX_REQUIRES = {"vmro3max": ["conco3"], "vmro3": ["conco3"], "vmrno2": ["concno2"]}
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
+        "vmro3max": NotImplementedError(),
         "vmrno2": NotImplementedError(),
     }
 
