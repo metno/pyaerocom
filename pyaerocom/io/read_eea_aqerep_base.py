@@ -76,6 +76,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["vmro3"] = "concentration"
     VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
+    VAR_NAMES_FILE["vmrbenezene"] = "concentration"
 
     #: units of variables in files (needs to be defined for each variable supported)
     VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
@@ -92,6 +93,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concco="**/??_10_*_timeseries.csv*",
         concno="**/??_38_*_timeseries.csv*",
         concpm25="**/??_6001_*_timeseries.csv*",
+        vmrbenzene="**/??_20_*_timeseries.csv*",
     )
 
     # conversion factor between concX and vmrX
@@ -127,6 +129,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_CODES["10"] = "concco"
     VAR_CODES["38"] = "concno"
     VAR_CODES["6001"] = "concpm25"
+    VAR_CODES["20"] = "vmrbenzene"
 
     #: column name that holds the EEA variable code
     VAR_CODE_NAME = "airpollutantcode"
