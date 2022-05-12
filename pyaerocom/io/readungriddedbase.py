@@ -1,15 +1,20 @@
 import abc
-import glob, os
+import glob
 import logging
-import numpy as np
+import os
+import warnings
 from fnmatch import fnmatch
+
+import numpy as np
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import list_to_shortstr
-from pyaerocom.io.helpers import get_obsnetwork_dir
-from pyaerocom import LOGLEVELS
-from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.exceptions import DataSourceError
+from pyaerocom.helpers import varlist_aerocom
+from pyaerocom.io.helpers import get_obsnetwork_dir
+
+logger = logging.getLogger(__name__)
+
 # TODO: Proposal: include attribute ts_type that is by default undefined but
 # may be set to either of the defined
 class ReadUngriddedBase(abc.ABC):
@@ -27,11 +32,12 @@ class ReadUngriddedBase(abc.ABC):
         the computation of the AOD at 550nm and the Angstrom coefficient
         (in 440-870 nm range) from AODs measured at other wavelengths.
     """
+
     #: version of this base class. Please update if you apply changes to this
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.09'
+    __baseversion__ = "0.09"
 
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -44,15 +50,16 @@ class ReadUngriddedBase(abc.ABC):
 
     IGNORE_META_KEYS = []
 
-    _FILEMASK = '*.*'
+    _FILEMASK = "*.*"
 
     def __str__(self):
-        return ("Dataset name: {}\n"
-                "Data directory: {}\n"
-                "Supported variables: {}\n"
-                "Last revision: {}"
-                .format(self.data_id, self.data_dir,
-                        self.PROVIDES_VARIABLES, self.data_revision))
+        return (
+            f"Dataset name: {self.data_id}\n"
+            f"Data directory: {self.data_dir}\n"
+            f"Supported variables: {self.PROVIDES_VARIABLES}\n"
+            f"Last revision: {self.data_revision}"
+        )
+
     def __repr__(self):
         return str(type(self).__name__)
 
@@ -173,8 +180,7 @@ class ReadUngriddedBase(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def read(self, vars_to_retrieve=None, files=[], first_file=None,
-             last_file=None):
+    def read(self, vars_to_retrieve=None, files=[], first_file=None, last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -202,7 +208,7 @@ class ReadUngriddedBase(abc.ABC):
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
     def __init__(self, data_id=None, data_dir=None):
-        self.data = None #object that holds the loaded data
+        self.data = None  # object that holds the loaded data
         self._data_id = None
         self.files = []
         # list that will be updated in read method to store all files that
@@ -220,8 +226,7 @@ class ReadUngriddedBase(abc.ABC):
 
         if data_id is not None:
             if not data_id in self.SUPPORTED_DATASETS:
-                raise AttributeError("Dataset {} not supported by this "
-                                     "interface".format(data_id))
+                raise AttributeError(f"Dataset {data_id} not supported by this interface")
             self._data_id = data_id
 
     @property
@@ -231,13 +236,13 @@ class ReadUngriddedBase(abc.ABC):
 
     @property
     def DATASET_PATH(self):
-        """Wrapper for :attr:`data_dir`.
-        """
-        const.print_log.warning(DeprecationWarning(
-            'WARNING: Attr. DATASET_PATH is deprecated in ungridded readers '
-            'as of pyaerocom v0.11.0. Please use data_dir instead.'
-
-            ))
+        """Wrapper for :attr:`data_dir`."""
+        warnings.warn(
+            "Attr. DATASET_PATH is deprecated in ungridded readers "
+            "as of pyaerocom v0.11.0. Please use data_dir instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.data_dir
 
     @property
@@ -260,7 +265,7 @@ class ReadUngriddedBase(abc.ABC):
         if self._data_dir is None:
             self._data_dir = get_obsnetwork_dir(self.data_id)
         if not os.path.exists(self._data_dir):
-            raise (f'{self._data_dir} does not exist.')
+            raise (f"{self._data_dir} does not exist.")
         return self._data_dir
 
     @property
@@ -275,21 +280,18 @@ class ReadUngriddedBase(abc.ABC):
         Auxiliary variables are those that are not included in original files
         but are computed from other variables during import
         """
-        return list(self.AUX_REQUIRES.keys())
-
-
+        return list(self.AUX_REQUIRES)
 
     @property
     def data_revision(self):
-        """Revision string from file Revision.txt in the main data directory
-        """
-        if '_data_revision' in self.__dict__:
-            return self.__dict__['_data_revision']
-        rev = 'n/d'
+        """Revision string from file Revision.txt in the main data directory"""
+        if "_data_revision" in self.__dict__:
+            return self.__dict__["_data_revision"]
+        rev = "n/d"
         try:
             revision_file = os.path.join(self.data_dir, self.REVISION_FILE)
             if os.path.isfile(revision_file):
-                with open(revision_file, 'rt') as in_file:
+                with open(revision_file) as in_file:
                     rev = in_file.readline().strip()
         except Exception:
             pass
@@ -303,20 +305,16 @@ class ReadUngriddedBase(abc.ABC):
 
     @verbosity_level.setter
     def verbosity_level(self, val):
-        if isinstance(val, str):
-            if not val in LOGLEVELS:
-                raise ValueError("Invalid input for loglevel")
-            val = LOGLEVELS[val]
         self.logger.setLevel(val)
 
     def _add_aux_variables(self):
         """Helper that makes sure all auxiliary variables can be computed"""
-        for var in self.AUX_REQUIRES.keys():
+        for var in self.AUX_REQUIRES:
             if not var in self.AUX_FUNS:
-                raise AttributeError("Fatal: no computation method defined for "
-                                     "auxiliary variable {}. Please specify "
-                                     "method in class header dictionary "
-                                     "AUX_FUNS".format(var))
+                raise AttributeError(
+                    f"Fatal: no computation method defined for auxiliary variable {var}. "
+                    f"Please specify method in class header dictionary AUX_FUNS"
+                )
             if not var in self.PROVIDES_VARIABLES:
                 self.PROVIDES_VARIABLES.append(var)
 
@@ -354,7 +352,7 @@ class ReadUngriddedBase(abc.ABC):
                     if var_req in vars_to_retrieve:
                         idx_var = vars_to_retrieve.index(var)
                         idx_var_req = vars_to_retrieve.index(var_req)
-                        if idx_var < idx_var_req: #wrong order for computation
+                        if idx_var < idx_var_req:  # wrong order for computation
                             vars_to_retrieve[idx_var] = var_req
                             vars_to_retrieve[idx_var_req] = var
                             # break and return that it was changed (i.e repeat
@@ -395,8 +393,10 @@ class ReadUngriddedBase(abc.ABC):
             True, if variable is supported by this interface, else False
 
         """
-        if (var_name in self.PROVIDES_VARIABLES or
-            const.VARS[var_name].var_name_aerocom in self.PROVIDES_VARIABLES):
+        if (
+            var_name in self.PROVIDES_VARIABLES
+            or const.VARS[var_name].var_name_aerocom in self.PROVIDES_VARIABLES
+        ):
             return True
         return False
 
@@ -454,7 +454,7 @@ class ReadUngriddedBase(abc.ABC):
 
         for var in vars_to_retrieve:
             if not var in self.PROVIDES_VARIABLES:
-                raise ValueError("Invalid variable {}".format(var))
+                raise ValueError(f"Invalid variable {var}")
             elif var in self.AUX_REQUIRES:
                 vars_to_compute.append(var)
             else:
@@ -484,8 +484,8 @@ class ReadUngriddedBase(abc.ABC):
         dict
             updated data object now containing also computed variables
         """
-        if not 'var_info' in data:
-            data['var_info'] = {}
+        if not "var_info" in data:
+            data["var_info"] = {}
         for var in vars_to_compute:
             required = self.AUX_REQUIRES[var]
             missing = []
@@ -496,9 +496,9 @@ class ReadUngriddedBase(abc.ABC):
             if len(missing) == 0:
                 data[var] = self.AUX_FUNS[var](data)
                 try:
-                    data['var_info'][var]['computed']=True
+                    data["var_info"][var]["computed"] = True
                 except KeyError:
-                    data['var_info'][var] = {'computed' : True}
+                    data["var_info"][var] = {"computed": True}
 
         return data
 
@@ -524,10 +524,10 @@ class ReadUngriddedBase(abc.ABC):
             if var in data:
                 if var in valid_rng_vars:
                     rng = valid_rng_vars[var]
-                    low, high =  rng[0], rng[1]
+                    low, high = rng[0], rng[1]
                 else:
                     var_info = const.VARS[var]
-                    low, high = var_info['minimum'], var_info['maximum']
+                    low, high = var_info["minimum"], var_info["maximum"]
                 vals = data[var]
                 mask = np.logical_or(vals < low, vals > high)
                 vals[mask] = np.nan
@@ -558,8 +558,7 @@ class ReadUngriddedBase(abc.ABC):
             self.get_file_list()
         files = [f for f in self.files if fnmatch(f, pattern)]
         if not len(files) > 0:
-            raise IOError(f'No files could be detected that match the '
-                          f'pattern {pattern}')
+            raise OSError(f"No files could be detected that match the pattern {pattern}")
         return files
 
     def get_file_list(self, pattern=None):
@@ -584,24 +583,23 @@ class ReadUngriddedBase(abc.ABC):
             if no files can be found
         """
         if isinstance(pattern, str):
-            pattern = (pattern + self._FILEMASK).replace('**', '*')
+            pattern = (pattern + self._FILEMASK).replace("**", "*")
         else:
             pattern = self._FILEMASK
         if pattern is None:
-            const.print_log.warning('_FILEMASK attr. must not be None...'
-                                    'using default pattern *.* for file search')
-            pattern = '*.*'
-        self.logger.info('Fetching data files. This might take a while...')
-        files = sorted(glob.glob(os.path.join(self.data_dir,
-                                              pattern)))
+            logger.warning(
+                "_FILEMASK attr. must not be None...using default pattern *.* for file search"
+            )
+            pattern = "*.*"
+        self.logger.info("Fetching data files. This might take a while...")
+        files = sorted(glob.glob(os.path.join(self.data_dir, pattern)))
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.data_dir))
-            raise DataSourceError('No files could be detected matching file '
-                                  'mask {} in dataset {}, files in folder {}:\n'
-                                  'Files in folder:{}'.format(pattern,
-                                  self.data_id,
-                                  self.data_dir,
-                                  all_str))
+            raise DataSourceError(
+                f"No files could be detected matching file "
+                f"mask {pattern} in dataset {self.data_id}, files in folder {self.data_dir}:\n"
+                f"Files in folder: {all_str}"
+            )
         self.files = files
         return files
 
@@ -630,7 +628,7 @@ class ReadUngriddedBase(abc.ABC):
         IOError
             if no files can be found for this station ID
         """
-        files = self.find_in_file_list('*{}*'.format(station_id_filename))
+        files = self.find_in_file_list(f"*{station_id_filename}*")
         return self.read(files=files, **kwargs)
 
     def read_first_file(self, **kwargs):
@@ -654,37 +652,3 @@ class ReadUngriddedBase(abc.ABC):
         if len(files) == 0:
             files = self.get_file_list()
         return self.read_file(files[0], **kwargs)
-
-if __name__=="__main__":
-
-    class ReadUngriddedImplementationExample(ReadUngriddedBase):
-        _FILEMASK = ".txt"
-        DATA_ID = "Blaaa"
-        __version__ = "0.01"
-        PROVIDES_VARIABLES = ["od550aer"]
-        REVISION_FILE = const.REVISION_FILE
-
-
-        def __init__(self, data_id=None, data_dir=None):
-            super(ReadUngriddedImplementationExample, self).__init__(
-                data_id, data_dir)
-
-        @property
-        def DEFAULT_VARS(self):
-            return self.PROVIDES_VARIABLES
-
-        @property
-        def SUPPORTED_DATASETS(self):
-            return [self.DATA_ID]
-
-        def TS_TYPE(self):
-            raise NotImplementedError
-
-        def read(self):
-            raise NotImplementedError
-
-        def read_file(self):
-            raise NotImplementedError
-
-    c = ReadUngriddedImplementationExample()
-    print(c.data_id)

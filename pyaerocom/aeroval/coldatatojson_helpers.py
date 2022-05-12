@@ -1,45 +1,49 @@
 """
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
+import logging
 import os
-import numpy as np
-import xarray as xr
-import pandas as pd
 from datetime import datetime
-from pyaerocom import const
-from pyaerocom._lowlevel_helpers import read_json, write_json
-from pyaerocom.helpers import start_stop
-from pyaerocom.trends_helpers import _get_season_from_months
-from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
-                                       _get_min_max_year_periods)
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.mathutils import calc_statistics, _init_stats_dummy
-from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import (AeroValConfigError,
-                                  DataCoverageError,
-                                  TemporalResolutionError,
-                                  AeroValTrendsError)
-from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
-from pyaerocom.region import (get_all_default_region_ids,
-                              find_closest_region_coord,
-                              Region)
 
+import numpy as np
+import pandas as pd
+import xarray as xr
+
+from pyaerocom._lowlevel_helpers import read_json, write_json
+from pyaerocom._warnings import ignore_warnings
+from pyaerocom.aeroval.fairmode_stats import fairmode_stats
+from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
+from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.exceptions import (
+    AeroValConfigError,
+    AeroValTrendsError,
+    DataCoverageError,
+    TemporalResolutionError,
+)
+from pyaerocom.helpers import start_stop
+from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
+from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
+from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.trends_engine import TrendsEngine
+from pyaerocom.trends_helpers import _get_season_from_months
+from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 def get_heatmap_filename(ts_type):
-    return f'glob_stats_{ts_type}.json'
+    return f"glob_stats_{ts_type}.json"
+
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
     """Get name of station timeseries file"""
-    return ('{}_{}-{}_{}.json'
-            .format(station_name, obs_name, var_name_web, vert_code))
+    return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
 
-def get_json_mapname(obs_name, var_name_web, model_name, model_var,
-                     vert_code):
+
+def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code):
     """Get name base name of json file"""
-    return ('{}-{}_{}_{}-{}.json'
-            .format(obs_name, var_name_web, vert_code, model_name, model_var))
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}.json"
+
 
 def _write_stationdata_json(ts_data, out_dir):
     """
@@ -57,24 +61,25 @@ def _write_stationdata_json(ts_data, out_dir):
     None.
 
     """
-    filename = get_stationfile_name(ts_data['station_name'],
-                                    ts_data['obs_name'],
-                                    ts_data['var_name_web'],
-                                    ts_data['vert_code'])
+    filename = get_stationfile_name(
+        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
+    )
 
     fp = os.path.join(out_dir, filename)
     if os.path.exists(fp):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data['model_name']] = ts_data
+    current[ts_data["model_name"]] = ts_data
     write_json(current, fp, ignore_nan=True)
+
 
 def _write_site_data(ts_objs, dirloc):
     """Write list of station timeseries files to json"""
     for ts_data in ts_objs:
-        #writes json file
+        # writes json file
         _write_stationdata_json(ts_data, dirloc)
+
 
 def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     """
@@ -98,21 +103,22 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     None.
 
     """
-    filename = get_stationfile_name(ts_data['station_name'],
-                                    ts_data['obs_name'],
-                                    ts_data['var_name_web'],
-                                    ts_data['vert_code'])
+    filename = get_stationfile_name(
+        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
+    )
 
-    fp = os.path.join(out_dirs['ts/diurnal'], filename)
+    fp = os.path.join(out_dirs["ts/diurnal"], filename)
     if os.path.exists(fp):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data['model_name']] = ts_data
+    current[ts_data["model_name"]] = ts_data
     write_json(current, fp, ignore_nan=True)
 
-def _add_entry_json(heatmap_file, result, obs_name, var_name_web, vert_code,
-                            model_name, model_var):
+
+def _add_entry_json(
+    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
+):
     if os.path.exists(heatmap_file):
         current = read_json(heatmap_file)
     else:
@@ -132,6 +138,7 @@ def _add_entry_json(heatmap_file, result, obs_name, var_name_web, vert_code,
     mn[model_var] = result
     write_json(current, heatmap_file, ignore_nan=True)
 
+
 def _prepare_regions_json_helper(region_ids):
     regborders, regs = {}, {}
     for regid in region_ids:
@@ -142,23 +149,27 @@ def _prepare_regions_json_helper(region_ids):
 
         latr = reg.lat_range
         lonr = reg.lon_range
-        if any(x is None for x in (latr, lonr)): 
-            raise ValueError(f'Lat / lon range missing for region {regid}')
-        rinfo['minLat'] = latr[0]
-        rinfo['maxLat'] = latr[1]
-        rinfo['minLon'] = lonr[0]
-        rinfo['maxLon'] = lonr[1]
+        if any(x is None for x in (latr, lonr)):
+            raise ValueError(f"Lat / lon range missing for region {regid}")
+        rinfo["minLat"] = latr[0]
+        rinfo["maxLat"] = latr[1]
+        rinfo["minLon"] = lonr[0]
+        rinfo["maxLon"] = lonr[1]
 
     return (regborders, regs)
+
 
 def _prepare_default_regions_json():
     return _prepare_regions_json_helper(get_all_default_region_ids())
 
+
 def _prepare_aerocom_regions_json():
     return _prepare_regions_json_helper(OLD_AEROCOM_REGIONS)
 
+
 def _prepare_htap_regions_json():
     return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
+
 
 def _prepare_country_regions(region_ids):
     regs = {}
@@ -168,33 +179,35 @@ def _prepare_country_regions(region_ids):
         regs[name] = reg
     return regs
 
+
 def init_regions_web(coldata, regions_how):
     regborders, regs = {}, {}
     regborders_default, regs_default = _prepare_default_regions_json()
-    if regions_how == 'default':
+    if regions_how == "default":
         regborders, regs = regborders_default, regs_default
-    elif regions_how == 'aerocom':
+    elif regions_how == "aerocom":
         regborders, regs = _prepare_aerocom_regions_json()
-    elif regions_how == 'htap':
-        regborders['WORLD'] = regborders_default['WORLD']
-        regs['WORLD'] = regs_default['WORLD']
+    elif regions_how == "htap":
+        regborders["WORLD"] = regborders_default["WORLD"]
+        regs["WORLD"] = regs_default["WORLD"]
         add_borders, add_regs = _prepare_htap_regions_json()
         regborders.update(add_borders)
         regs.update(add_regs)
-    elif regions_how == 'country':
-        regborders['WORLD'] = regborders_default['WORLD']
-        regs['WORLD'] = regs_default['WORLD']
+    elif regions_how == "country":
+        regborders["WORLD"] = regborders_default["WORLD"]
+        regs["WORLD"] = regs_default["WORLD"]
         coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
         regs.update(add_regs)
     else:
-        raise ValueError('Invalid input for regions_how', regions_how)
+        raise ValueError("Invalid input for regions_how", regions_how)
 
     regnames = {}
     for regname, reg in regs.items():
         regnames[reg.region_id] = regname
     return (regborders, regs, regnames)
+
 
 def update_regions_json(region_defs, regions_json):
     """Check current regions.json for experiment and update if needed
@@ -222,51 +235,54 @@ def update_regions_json(region_defs, regions_json):
     write_json(current, regions_json)
     return current
 
+
 def _init_meta_glob(coldata, **kwargs):
     meta = coldata.metadata
 
     # create metadata dictionary that is shared among all timeseries files
     meta_glob = {}
-    NDSTR = 'UNDEFINED'
+    NDSTR = "UNDEFINED"
     try:
-        meta_glob['pyaerocom_version'] = meta['pyaerocom']
+        meta_glob["pyaerocom_version"] = meta["pyaerocom"]
     except KeyError:
-        meta_glob['pyaerocom_version'] = NDSTR
+        meta_glob["pyaerocom_version"] = NDSTR
     try:
-        meta_glob['obs_var'] = meta['var_name'][0]
-        meta_glob['mod_var'] = meta['var_name'][1]
+        meta_glob["obs_var"] = meta["var_name"][0]
+        meta_glob["mod_var"] = meta["var_name"][1]
     except KeyError:
-        meta_glob['obs_var'] = NDSTR
-        meta_glob['mod_var'] = NDSTR
+        meta_glob["obs_var"] = NDSTR
+        meta_glob["mod_var"] = NDSTR
     try:
-        meta_glob['obs_unit'] = meta['var_units'][0]
-        meta_glob['mod_unit'] = meta['var_units'][1]
+        meta_glob["obs_unit"] = meta["var_units"][0]
+        meta_glob["mod_unit"] = meta["var_units"][1]
     except KeyError:
-        meta_glob['obs_unit'] = NDSTR
-        meta_glob['mod_unit'] = NDSTR
+        meta_glob["obs_unit"] = NDSTR
+        meta_glob["mod_unit"] = NDSTR
     try:
-        meta_glob['obs_freq_src'] = meta['ts_type_src'][0]
-        meta_glob['mod_freq_src'] = meta['ts_type_src'][1]
+        meta_glob["obs_freq_src"] = meta["ts_type_src"][0]
+        meta_glob["mod_freq_src"] = meta["ts_type_src"][1]
     except KeyError:
-        meta_glob['obs_freq_src'] = NDSTR
-        meta_glob['mod_freq_src'] = NDSTR
+        meta_glob["obs_freq_src"] = NDSTR
+        meta_glob["mod_freq_src"] = NDSTR
     try:
-        meta_glob['obs_revision'] = meta['revision_ref']
+        meta_glob["obs_revision"] = meta["revision_ref"]
     except KeyError:
-        meta_glob['obs_revision'] = NDSTR
-    meta_glob['processed_utc'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M')
+        meta_glob["obs_revision"] = NDSTR
+    meta_glob["processed_utc"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
     meta_glob.update(kwargs)
     return meta_glob
+
 
 def _init_ts_data(freqs):
     data = {}
     for freq in freqs:
-        data[f'{freq}_date'] = []
-        data[f'{freq}_obs'] = []
-        data[f'{freq}_mod'] = []
+        data[f"{freq}_date"] = []
+        data[f"{freq}_obs"] = []
+        data[f"{freq}_mod"] = []
     return data
 
-def _create_diurnal_weekly_data_object(coldata,resolution):
+
+def _create_diurnal_weekly_data_object(coldata, resolution):
     """
     Private helper functions that creates the data set containing all the
     weekly time series at the specified resolution. Called by
@@ -297,53 +313,77 @@ def _create_diurnal_weekly_data_object(coldata,resolution):
 
     """
     import xarray as xr
-    data = coldata.data
-    if resolution == 'seasonal':
-        seasons = ['DJF','MAM','JJA','SON']
-    elif resolution == 'yearly':
-        seasons = ['year']
+
+    data_allyears = coldata.data
+
+    yearkeys = list(data_allyears.groupby("time.year").groups)
+
+    if resolution == "seasonal":
+        seasons = ["DJF", "MAM", "JJA", "SON"]
+    elif resolution == "yearly":
+        seasons = ["year"]
     else:
-        raise ValueError(f'Invalid resolution. Got {resolution}.')
+        raise ValueError(f"Invalid resolution. Got {resolution}.")
 
+    first = True
+    for yr in yearkeys:
+        data = data_allyears.where(data_allyears["time.year"] == yr, drop=True)
+        for seas in seasons:
+            rep_week_ds = xr.Dataset()
+            if resolution == "seasonal":
+                mon_slice = data.where(data["time.season"] == seas, drop=True)
+            elif resolution == "yearly":
+                mon_slice = data
 
-    for seas in seasons:
-        rep_week_ds = xr.Dataset()
-        if resolution == 'seasonal':
-            mon_slice = data.where(data['time.season']==seas,drop=True)
-        elif resolution == 'yearly':
-            mon_slice = data
+            month_stamp = f"{seas}"
 
-        month_stamp = f'{seas}'
+            for day in range(7):
+                day_slice = mon_slice.where(mon_slice["time.dayofweek"] == day, drop=True)
+                rep_day = day_slice.groupby("time.hour").mean(dim="time")
+                rep_day["hour"] = rep_day.hour / 24 + day + 1
+                if day == 0:
+                    rep_week = rep_day
+                else:
+                    rep_week = xr.concat([rep_week, rep_day], dim="hour")
 
-        for day in range(7):
-            day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
-            rep_day = day_slice.groupby('time.hour').mean(dim='time')
-            rep_day['hour'] = rep_day.hour/24+day+1
-            if day == 0:
-                rep_week = rep_day
+            rep_week = rep_week.rename({"hour": "dummy_time"})
+            month_stamps = np.zeros(rep_week.dummy_time.shape, dtype="<U5")
+            month_stamps[:] = month_stamp
+            rep_week_ds["rep_week"] = rep_week
+            rep_week_ds["month_stamp"] = (("dummy_time"), month_stamps)
+
+            if seas in ["DJF", "year"]:
+                rep_week_full_period = rep_week_ds
             else:
-                rep_week = xr.concat([rep_week,rep_day],dim='hour')
+                rep_week_full_period = xr.concat([rep_week_full_period, rep_week_ds], dim="period")
 
-        rep_week=rep_week.rename({'hour':'dummy_time'})
-        month_stamps = np.zeros(rep_week.dummy_time.shape,dtype='<U5')
-        month_stamps[:] = month_stamp
-        rep_week_ds['rep_week']=rep_week
-        rep_week_ds['month_stamp'] = (('dummy_time'),month_stamps)
-
-        if seas in ['DJF','year']:
-            rep_week_full_period = rep_week_ds
+        if first:
+            output_array = rep_week_full_period
+            # output_array = output_array.expand_dims({'year':[0]},0)
+            first = False
         else:
-            rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
-    return rep_week_full_period
+            output_array = xr.concat([output_array, rep_week_full_period], dim="year")
+
+    try:
+        output_array.year
+    except AttributeError:
+        output_array = output_array.expand_dims({"year": [0]}, 0)
+
+    output_array = output_array.assign(dict(year=np.array(yearkeys)))
+    # output_array.year[:] = np.array(yearkeys)
+
+    return output_array
+
 
 def _get_period_keys(resolution):
-    if resolution == 'seasonal':
-        period_keys = ['DJF','MAM','JJA','SON']
-    elif resolution == 'yearly':
-        period_keys = ['Annual']
+    if resolution == "seasonal":
+        period_keys = ["DJF", "MAM", "JJA", "SON"]
+    elif resolution == "yearly":
+        period_keys = ["Annual"]
     return period_keys
 
-def _process_one_station_weekly(stat_name, i,repw_res, meta_glob, time):
+
+def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
     """
     Processes one station data set for all supported averaging windows into a
     dict of station time series data and metadata.
@@ -372,25 +412,41 @@ def _process_one_station_weekly(stat_name, i,repw_res, meta_glob, time):
 
     """
     has_data = False
-    ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
-    ts_data['station_name'] = stat_name
+
+    years = list(repw_res["seasonal"].year.values)
+    yeardict = {}
+    for year in years:
+        yeardict[f"{year}"] = {}
+
+    ts_data = {
+        "time": time,
+        "seasonal": {"obs": yeardict, "mod": yeardict},
+        "yearly": {"obs": yeardict, "mod": yeardict},
+    }
+    ts_data["station_name"] = stat_name
     ts_data.update(meta_glob)
 
+    for y, year in enumerate(years):
+        for res, repw in repw_res.items():
+            repw = repw.transpose("year", "period", "data_source", "dummy_time", "station_name")
+            obs_vals = repw[y, :, 0, :, i]
+            if (np.isnan(obs_vals)).all().values:
+                continue
+            has_data = True
+            mod_vals = repw[y, :, 1, :, i]
 
-    for res,repw in repw_res.items():
-        obs_vals = repw[:,0, :, i]
-        if (np.isnan(obs_vals)).all().values:
-            continue
-        has_data = True
-        mod_vals = repw[:,1, :, i]
-
-        period_keys = _get_period_keys(res)
-        for period_num,pk in enumerate(period_keys):
-            ts_data[res]['obs'][pk] = obs_vals.sel(period=period_num).values.tolist()
-            ts_data[res]['mod'][pk] = mod_vals.sel(period=period_num).values.tolist()
+            period_keys = _get_period_keys(res)
+            for period_num, pk in enumerate(period_keys):
+                ts_data[res]["obs"][f"{year}"][pk] = obs_vals.sel(
+                    period=period_num
+                ).values.tolist()
+                ts_data[res]["mod"][f"{year}"][pk] = mod_vals.sel(
+                    period=period_num
+                ).values.tolist()
     return ts_data, has_data
 
-def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
+
+def _process_weekly_object_to_station_time_series(repw_res, meta_glob):
     """
     Process the xarray.Datasets objects returned by _create_diurnal_weekly_data_object
     into a dictionary containing station time series data and metadata.
@@ -411,18 +467,17 @@ def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
     """
     ts_objs = []
     dc = 0
-    time = (np.arange(168)/24+1).round(4).tolist()
-    for i, stat_name in enumerate(repw_res['seasonal'].station_name.values):
-        ts_data, has_data = _process_one_station_weekly(stat_name, i, repw_res,
-                                                        meta_glob, time)
+    time = (np.arange(168) / 24 + 1).round(4).tolist()
+    for i, stat_name in enumerate(repw_res["seasonal"].station_name.values):
+        ts_data, has_data = _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time)
 
         if has_data:
             ts_objs.append(ts_data)
-            dc +=1
+            dc += 1
     return ts_objs
 
-def _process_weekly_object_to_country_time_series(repw_res,meta_glob,
-                                                  regions_how,region_ids):
+
+def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_how, region_ids):
     """
     Process the xarray.Dataset objects returned by _create_diurnal_weekly_data_object
     into a dictionary containing country average time series data and metadata.
@@ -451,40 +506,54 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,
 
     """
     ts_objs_reg = []
-    time = (np.arange(168)/24+1).round(4).tolist()
+    time = (np.arange(168) / 24 + 1).round(4).tolist()
 
-    if regions_how != 'country':
-        print('Regional diurnal cycles are only implemented for country regions, skipping...')
+    years = list(repw_res["seasonal"].year.values)
+    yeardict = {}
+    for year in years:
+        yeardict[f"{year}"] = {}
+
+    if regions_how != "country":
+        print("Regional diurnal cycles are only implemented for country regions, skipping...")
         ts_objs_reg = None
     else:
         for regid, regname in region_ids.items():
             ts_data = {
-                'time' : time,
-                'seasonal' : {'obs' : {},'mod' : {}},
-                'yearly' : {'obs' : {},'mod' : {}}
-                }
-            ts_data['station_name'] = regname
+                "time": time,
+                "seasonal": {"obs": yeardict, "mod": yeardict},
+                "yearly": {"obs": yeardict, "mod": yeardict},
+            }
+            ts_data["station_name"] = regname
             ts_data.update(meta_glob)
 
-            for res, repw in repw_res.items():
-                if regid == 'WORLD':
-                    subset = repw
-                else:
-                    subset = repw.where(repw.country == regid)
+            for y, year in enumerate(years):
+                for res, repw in repw_res.items():
+                    repw = repw.transpose(
+                        "year", "period", "data_source", "dummy_time", "station_name"
+                    )
+                    if regid == "WORLD":
+                        subset = repw
+                    else:
+                        subset = repw.where(repw.country == regid)
 
-                avg = subset.mean(dim='station_name')
-                obs_vals = avg[:,0,:]
-                mod_vals = avg[:,1,:]
+                    avg = subset.mean(dim="station_name")
+                    obs_vals = avg[y, :, 0, :]
+                    mod_vals = avg[y, :, 1, :]
 
-                period_keys = _get_period_keys(res)
-                for period_num,pk in enumerate(period_keys):
-                    ts_data[res]['obs'][pk] = obs_vals.sel(period=period_num).values.tolist()
-                    ts_data[res]['mod'][pk] = mod_vals.sel(period=period_num).values.tolist()
+                    period_keys = _get_period_keys(res)
+                    for period_num, pk in enumerate(period_keys):
+                        ts_data[res]["obs"][f"{year}"][pk] = obs_vals.sel(
+                            period=period_num
+                        ).values.tolist()
+                        ts_data[res]["mod"][f"{year}"][pk] = mod_vals.sel(
+                            period=period_num
+                        ).values.tolist()
 
             ts_objs_reg.append(ts_data)
     return ts_objs_reg
 
-def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
+
+def _process_sites_weekly_ts(coldata, regions_how, region_ids, meta_glob):
     """
     Private helper function to process ColocatedData objects into dictionaries
     containing represenative weekly time series with hourly resolution.
@@ -514,18 +583,22 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
         List of dicts containing country time series data and metadata.
 
     """
-    assert coldata.dims == ('data_source', 'time', 'station_name')
+    assert coldata.dims == ("data_source", "time", "station_name")
 
-    repw_res = {'seasonal':_create_diurnal_weekly_data_object(coldata, 'seasonal')['rep_week'],
-                'yearly':_create_diurnal_weekly_data_object(coldata, 'yearly')['rep_week'].expand_dims('period',axis=0),}
+    repw_res = {
+        "seasonal": _create_diurnal_weekly_data_object(coldata, "seasonal")["rep_week"],
+        "yearly": _create_diurnal_weekly_data_object(coldata, "yearly")["rep_week"].expand_dims(
+            "period", axis=0
+        ),
+    }
 
-    ts_objs = _process_weekly_object_to_station_time_series(repw_res,meta_glob)
-    ts_objs_reg = _process_weekly_object_to_country_time_series(repw_res,
-                                                                meta_glob,
-                                                                regions_how,
-                                                                region_ids)
+    ts_objs = _process_weekly_object_to_station_time_series(repw_res, meta_glob)
+    ts_objs_reg = _process_weekly_object_to_country_time_series(
+        repw_res, meta_glob, regions_how, region_ids
+    )
 
-    return (ts_objs,ts_objs_reg)
+    return (ts_objs, ts_objs_reg)
+
 
 def _init_site_coord_arrays(data):
     found = False
@@ -537,14 +610,14 @@ def _init_site_coord_arrays(data):
             sites = cd.data.station_name.values
             lats = cd.data.latitude.values.astype(np.float64)
             lons = cd.data.longitude.values.astype(np.float64)
-            if 'altitude' in cd.data.coords:
+            if "altitude" in cd.data.coords:
                 alts = cd.data.altitude.values.astype(np.float64)
             else:
-                alts = [np.nan]*len(lats)
-            if 'country' in cd.data.coords:
+                alts = [np.nan] * len(lats)
+            if "country" in cd.data.coords:
                 countries = cd.data.country.values
             else:
-                countries = ['UNAVAIL']*len(lats)
+                countries = ["UNAVAIL"] * len(lats)
 
             found = True
         else:
@@ -552,19 +625,20 @@ def _init_site_coord_arrays(data):
         jsdates[freq] = cd.data.jsdate.values.tolist()
     return (sites, lats, lons, alts, countries, jsdates)
 
+
 def _get_stat_regions(lats, lons, regions):
     regs = []
     for (lat, lon) in zip(lats, lons):
-        reg = find_closest_region_coord(lat,lon,regions=regions)
+        reg = find_closest_region_coord(lat, lon, regions=regions)
         regs.append(reg)
     return regs
 
 
 def _process_sites(data, regions, regions_how, meta_glob):
 
-    freqs = list(data.keys())
+    freqs = list(data)
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
-    if regions_how == 'country':
+    if regions_how == "country":
         regs = countries
     else:
         regs = _get_stat_regions(lats, lons, regions)
@@ -576,27 +650,28 @@ def _process_sites(data, regions, regions_how, meta_glob):
     for i, site in enumerate(sites):
         # init empty timeseries data object
         site_meta = {
-            'station_name'  :   str(site),
-            'latitude'      :   lats[i],
-            'longitude'     :   lons[i],
-            'altitude'      :   alts[i],
-            'region'        :   regs[i]}
+            "station_name": str(site),
+            "latitude": lats[i],
+            "longitude": lons[i],
+            "altitude": alts[i],
+            "region": regs[i],
+        }
         ts_data = _init_ts_data(freqs)
         ts_data.update(meta_glob)
         ts_data.update(site_meta)
         has_data = False
         for freq, cd in data.items():
             if cd is not None:
-                assert cd.dims == ('data_source', 'time', 'station_name')
+                assert cd.dims == ("data_source", "time", "station_name")
                 sitedata = cd.data.data[:, :, i]
                 if np.all(np.isnan(sitedata)):
-                    #skip this site, all is NaN
+                    # skip this site, all is NaN
                     continue
-                ts_data[f'{freq}_date'] = jsdates[freq]
-                ts_data[f'{freq}_obs'] = sitedata[0].tolist()
-                ts_data[f'{freq}_mod'] = sitedata[1].tolist()
+                ts_data[f"{freq}_date"] = jsdates[freq]
+                ts_data[f"{freq}_obs"] = sitedata[0].tolist()
+                ts_data[f"{freq}_mod"] = sitedata[1].tolist()
                 has_data = True
-        if has_data: #site is valid
+        if has_data:  # site is valid
             # register ts_data
             ts_objs.append(ts_data)
             # remember site indices in data for faster processing of statistics
@@ -607,15 +682,16 @@ def _process_sites(data, regions, regions_how, meta_glob):
 
     return (ts_objs, map_meta, site_indices)
 
+
 def _get_statistics(obs_vals, mod_vals, min_num):
-    stats = calc_statistics(mod_vals, obs_vals,
-                            min_num_valid=min_num)
+    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num)
     return _prep_stats_json(stats)
+
 
 def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
     Function for generating trends from timeseries
-    
+
     Includes fomatting in a way
     that can be serialized to json. A key, map_var, is added
     for use in the web interface.
@@ -641,7 +717,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     ------
     AeroValTrendsError
         If stop - start is smaller than min_yrs
-    
+
     AeroValError
         If the trend engine returns None
 
@@ -651,12 +727,10 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
         Dicts consiting of the trends data for the obs and mod
     """
 
-
-    if stop-start < min_yrs:
+    if stop - start < min_yrs:
         raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
 
     te = TrendsEngine
-
 
     # The model and observation data are made to pandas times series
     obs_trend_series = obs
@@ -666,15 +740,12 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     season = _get_season_from_months(season)
 
     # Trends are calculated
-    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, 
-                                                                min_yrs, season)
-    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, 
-                                                                min_yrs, season)
+    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, season)
+    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, season)
 
     # Makes pd.Series serializable
     if obs_trend["data"] is None or mod_trend["data"] is None:
-        raise AeroValTrendsError("Trends came back as None",
-                                     obs_trend["data"], mod_trend["data"])
+        raise AeroValTrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
@@ -684,10 +755,11 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     return obs_trend, mod_trend
 
+
 def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     """
-    Function for generating trends from lists of observations 
-    
+    Function for generating trends from lists of observations
+
     This will calculate pandas time series
     from the lists and use that to calculate trends
 
@@ -712,7 +784,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     ------
     AeroValTrendsError
         If stop - start is smaller than min_yrs
-    
+
     AeroValError
         If the trend engine returns None
 
@@ -726,21 +798,27 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     obs_trend_series = pd.Series(obs_vals, time)
     mod_trend_series = pd.Series(mod_vals, time)
 
-    (obs_trend, mod_trend) = _make_trends_from_timeseries(obs_trend_series, 
-                                                    mod_trend_series, freq,
-                                                    season, start, stop, min_yrs)
+    (obs_trend, mod_trend) = _make_trends_from_timeseries(
+        obs_trend_series, mod_trend_series, freq, season, start, stop, min_yrs
+    )
 
     return obs_trend, mod_trend
-        
 
 
+def _process_map_and_scat(
+    data,
+    map_data,
+    site_indices,
+    periods,
+    main_freq,
+    min_num,
+    seasons,
+    add_trends,
+    trends_min_yrs,
+    use_fairmode,
+    obs_var,
+):
 
-def _process_map_and_scat(data, map_data, site_indices, periods,
-                          main_freq, min_num, seasons, 
-                          add_trends, trends_min_yrs):
-
-
-   
     stats_dummy = _init_stats_dummy()
     scat_data = {}
     scat_dummy = [np.nan]
@@ -750,9 +828,7 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
             for season in seasons:
                 if not use_dummy:
                     try:
-                        subset = _select_period_season_coldata(cd,
-                                                               per,
-                                                               season)
+                        subset = _select_period_season_coldata(cd, per, season)
                         jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
@@ -767,21 +843,30 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
 
+                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
+                            stats["mb"] = np.nanmean(mod_vals - obs_vals)
+
+                            stats["fairmode"] = fairmode_stats(obs_var, stats)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
-    
+
                             (start, stop) = _get_min_max_year_periods([per])
 
                             if stop - start >= trends_min_yrs:
-                                
+
                                 try:
                                     time = subset.data.time.values
-                                    (obs_trend, mod_trend) = _make_trends(obs_vals,
-                                                            mod_vals, time, freq, 
-                                                            season, start, stop, 
-                                                            trends_min_yrs)
-
+                                    (obs_trend, mod_trend) = _make_trends(
+                                        obs_vals,
+                                        mod_vals,
+                                        time,
+                                        freq,
+                                        season,
+                                        start,
+                                        stop,
+                                        trends_min_yrs,
+                                    )
 
                                     # The whole trends dicts are placed in the stats dict
                                     stats["obs_trend"] = obs_trend
@@ -789,45 +874,36 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
 
                                 except AeroValTrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                    const.logger.warning(msg)
-                                    
+                                    logger.warning(msg)
 
-
-                            
-
-                          
-
-                    
-
-                    perstr = f'{per}-{season}'
+                    perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
                     if freq == main_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
-                        site = map_stat['station_name']
+                        site = map_stat["station_name"]
                         if not site in scat_data:
                             scat_data[site] = {}
-                            scat_data[site]['latitude'] = map_stat['latitude']
-                            scat_data[site]['longitude'] = map_stat['longitude']
-                            scat_data[site]['altitude'] = map_stat['altitude']
-                            scat_data[site]['region'] = map_stat['region']
+                            scat_data[site]["latitude"] = map_stat["latitude"]
+                            scat_data[site]["longitude"] = map_stat["longitude"]
+                            scat_data[site]["altitude"] = map_stat["altitude"]
+                            scat_data[site]["region"] = map_stat["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
                         else:
                             obs, mod = obs_vals.tolist(), mod_vals.tolist()
-                        scat_data[site][perstr] = {'obs':obs,'mod':mod,
-                                                   'date':jsdate}
-
+                        scat_data[site][perstr] = {"obs": obs, "mod": mod, "date": jsdate}
 
     return (map_data, scat_data)
 
+
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
     ts_objs = []
-    freqs = list(data.keys())
-    check_countries = True if regions_how=='country' else False
+    freqs = list(data)
+    check_countries = True if regions_how == "country" else False
     for regid, regname in region_ids.items():
         ts_data = _init_ts_data(freqs)
-        ts_data['station_name'] = regname
+        ts_data["station_name"] = regname
         ts_data.update(meta_glob)
 
         for freq, cd in data.items():
@@ -835,34 +911,27 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
                 continue
             jsfreq = cd.data.jsdate.values.tolist()
             try:
-                subset = cd.filter_region(regid,
-                                          inplace=False,
-                                          check_country_meta=check_countries)
+                subset = cd.filter_region(regid, inplace=False, check_country_meta=check_countries)
             except DataCoverageError:
-                const.print_log.info(
-                    f'no data in {regid} ({freq}) to compute regional '
-                    f'timeseries'
-                    )
-                ts_data[f'{freq}_date'] = jsfreq
-                ts_data[f'{freq}_obs'] = [np.nan] * len(jsfreq)
-                ts_data[f'{freq}_mod'] = [np.nan] * len(jsfreq)
+                logger.info(f"no data in {regid} ({freq}) to compute regional timeseries")
+                ts_data[f"{freq}_date"] = jsfreq
+                ts_data[f"{freq}_obs"] = [np.nan] * len(jsfreq)
+                ts_data[f"{freq}_mod"] = [np.nan] * len(jsfreq)
                 continue
 
-
             if subset.has_latlon_dims:
-                avg = subset.data.mean(dim=('latitude', 'longitude'))
+                avg = subset.data.mean(dim=("latitude", "longitude"))
             else:
-                avg = subset.data.mean(dim='station_name')
+                avg = subset.data.mean(dim="station_name")
             obs_vals = avg[0].data.tolist()
             mod_vals = avg[1].data.tolist()
-            ts_data[f'{freq}_date'] = jsfreq
-            ts_data[f'{freq}_obs'] = obs_vals
-            ts_data[f'{freq}_mod'] = mod_vals
-         
-
+            ts_data[f"{freq}_date"] = jsfreq
+            ts_data[f"{freq}_obs"] = obs_vals
+            ts_data[f"{freq}_mod"] = mod_vals
 
         ts_objs.append(ts_data)
     return ts_objs
+
 
 def _apply_annual_constraint_helper(coldata, yearly):
     arr_yr = yearly.data
@@ -879,11 +948,12 @@ def _apply_annual_constraint_helper(coldata, yearly):
         # workaround since numpy sometimes throws IndexError if tcond and
         # scond are attempted to be applied directly via
         # coldata.data.data[:,tcond, scond] = np.nan
-        tsel = coldata.data.data[:,tcond]
-        tsel[:,:,scond] = np.nan
-        coldata.data.data[:,tcond] = tsel
+        tsel = coldata.data.data[:, tcond]
+        tsel[:, :, scond] = np.nan
+        coldata.data.data[:, tcond] = tsel
 
     return coldata
+
 
 def _apply_annual_constraint(data):
     """
@@ -909,12 +979,13 @@ def _apply_annual_constraint(data):
 
     """
     output = {}
-    if not 'yearly' in data or data['yearly'] is None:
+    if not "yearly" in data or data["yearly"] is None:
         raise AeroValConfigError(
-            'Cannot apply annual_stats_constrained option. '
+            "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
-            '"statistics_json" in AerocomEvaluation class)')
-    yearly = data['yearly']
+            '"statistics_json" in AerocomEvaluation class)'
+        )
+    yearly = data["yearly"]
     for tst, cd in data.items():
         if cd is None:
             output[tst] = None
@@ -922,20 +993,21 @@ def _apply_annual_constraint(data):
             output[tst] = _apply_annual_constraint_helper(cd, yearly)
     return output
 
+
 def _prep_stats_json(stats):
     for k, v in stats.items():
         try:
-            stats[k] = np.float64(v) # for json encoder...
+            stats[k] = np.float64(v)  # for json encoder...
         except Exception:
             # value is str (e.g. for weighted stats)
             # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
             stats[k] = v
     return stats
 
+
 def _get_extended_stats(coldata, use_weights):
 
     stats = coldata.calc_statistics(use_area_weights=use_weights)
-
 
     # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
     # (stats['R_spatial_mean'],
@@ -944,13 +1016,12 @@ def _get_extended_stats(coldata, use_weights):
     # (stats['R_temporal_mean'],
     #  stats['R_temporal_median']) = _calc_temporal_corr(coldata)
 
-    (stats['R_spatial_mean'],
-     _) = _calc_spatial_corr(coldata, use_weights)
+    (stats["R_spatial_mean"], _) = _calc_spatial_corr(coldata, use_weights)
 
-    (_,
-     stats['R_temporal_median']) = _calc_temporal_corr(coldata)
+    (_, stats["R_temporal_median"]) = _calc_temporal_corr(coldata)
 
     return _prep_stats_json(stats)
+
 
 def _calc_spatial_corr(coldata, use_weights):
     """
@@ -971,15 +1042,10 @@ def _calc_spatial_corr(coldata, use_weights):
         median spatial correlation
 
     """
-    return (coldata.calc_spatial_statistics(
-                                aggr='mean',
-                                use_area_weights=use_weights
-                                )['R'],
-            coldata.calc_spatial_statistics(
-                                aggr='median',
-                                use_area_weights=use_weights
-                                )['R']
-            )
+    return (
+        coldata.calc_spatial_statistics(aggr="mean", use_area_weights=use_weights)["R"],
+        coldata.calc_spatial_statistics(aggr="median", use_area_weights=use_weights)["R"],
+    )
 
 
 def _calc_temporal_corr(coldata):
@@ -1006,12 +1072,14 @@ def _calc_temporal_corr(coldata):
     arr = coldata.data
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
-    obs_ok = arr[0].count(dim='time') > 2
+    obs_ok = arr[0].count(dim="time") > 2
     arr = arr.where(obs_ok, drop=True)
     if np.prod(arr.shape) == 0:
         return np.nan, np.nan
-    corr_time = xr.corr(arr[1], arr[0], dim='time')
-    return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
+    corr_time = xr.corr(arr[1], arr[0], dim="time")
+    with ignore_warnings(RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):
+        return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
+
 
 def _select_period_season_coldata(coldata, period, season):
     tslice = _period_str_to_timeslice(period)
@@ -1019,42 +1087,48 @@ def _select_period_season_coldata(coldata, period, season):
     # also, keep an eye on: https://github.com/pydata/xarray/issues/2799
     arr = coldata.data.sel(time=tslice)
     if len(arr.time) == 0:
-        raise DataCoverageError(f'No data available in period {period}')
-    if season != 'all':
+        raise DataCoverageError(f"No data available in period {period}")
+    if season != "all":
         if not season in arr.season:
-            raise DataCoverageError(f'No data available in {season} in '
-                                    f'period {period}')
-        elif TsType(coldata.ts_type) < 'monthly':
+            raise DataCoverageError(f"No data available in {season} in period {period}")
+        elif TsType(coldata.ts_type) < "monthly":
             raise TemporalResolutionError(
-                'Season selection is only available for monthly or higher  '
-                'resolution data')
-        mask = arr['season'] == season
-        arr = arr.sel(time=arr['time'][mask])
+                "Season selection is only available for monthly or higher resolution data"
+            )
+        mask = arr["season"] == season
+        arr = arr.sel(time=arr["time"][mask])
 
     return ColocatedData(arr)
 
-def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, periods, seasons, 
-                          add_trends, trends_min_yrs):
+
+def _process_heatmap_data(
+    data,
+    region_ids,
+    use_weights,
+    use_country,
+    meta_glob,
+    periods,
+    seasons,
+    add_trends,
+    trends_min_yrs,
+):
 
     output = {}
     stats_dummy = _init_stats_dummy()
-    for freq, coldata in data.items():  
+    for freq, coldata in data.items():
         output[freq] = hm_freq = {}
         use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
             hm_freq[regname] = {}
             for per in periods:
                 for season in seasons:
-                    perstr = f'{per}-{season}'
+                    perstr = f"{per}-{season}"
                     if use_dummy:
                         stats = stats_dummy
                     else:
                         try:
-                            subset = _select_period_season_coldata(coldata,
-                                                                   per,
-                                                                   season)
-                            
+                            subset = _select_period_season_coldata(coldata, per, season)
+
                             trends_successful = False
                             if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
@@ -1062,26 +1136,28 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
 
                                 if stop - start >= trends_min_yrs:
                                     try:
-                                        subset_time_series = subset.get_regional_timeseries(regid)
+                                        subset_time_series = subset.get_regional_timeseries(
+                                            regid, check_country_meta=use_country
+                                        )
 
-                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(  
-                                                    subset_time_series["obs"],
-                                                    subset_time_series["mod"],
-                                                    freq,
-                                                    season,
-                                                    start,
-                                                    stop,
-                                                    trends_min_yrs
-                                                    )
+                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(
+                                            subset_time_series["obs"],
+                                            subset_time_series["mod"],
+                                            freq,
+                                            season,
+                                            start,
+                                            stop,
+                                            trends_min_yrs,
+                                        )
 
                                         trends_successful = True
                                     except AeroValTrendsError as e:
                                         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                        const.logger.warning(msg)
-                                
+                                        logger.warning(msg)
 
-                            subset = subset.filter_region(region_id=regid,
-                                                          check_country_meta=use_country)
+                            subset = subset.filter_region(
+                                region_id=regid, check_country_meta=use_country
+                            )
 
                             stats = _get_extended_stats(subset, use_weights)
 
@@ -1090,13 +1166,13 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                                 stats["obs_trend"] = obs_trend
                                 stats["mod_trend"] = mod_trend
 
-
                         except (DataCoverageError, TemporalResolutionError) as e:
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats
 
     return output
+
 
 def _map_indices(outer_idx, inner_idx):
     """
@@ -1130,7 +1206,7 @@ def _map_indices(outer_idx, inner_idx):
 
     """
     inner_start, inner_stop = inner_idx[0], inner_idx[-1]
-    mapping = np.ones_like(outer_idx)*-1
+    mapping = np.ones_like(outer_idx) * -1
     count = 0
     indata = False
     for i, idx in enumerate(outer_idx):
@@ -1142,12 +1218,11 @@ def _map_indices(outer_idx, inner_idx):
             mapping[i] = count
             # sanity checking, will fail, e.g. if input data is not monotonuos
             assert inner_idx[count] == idx
-            count +=1
+            count += 1
     return mapping.astype(int)
 
-def _process_statistics_timeseries(data, freq, region_ids,
-                                   use_weights, use_country,
-                                   data_freq):
+
+def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_country, data_freq):
     """
     Compute statistics timeseries for input data
 
@@ -1188,14 +1263,16 @@ def _process_statistics_timeseries(data, freq, region_ids,
     # input frequency is lower resolution than output frequency
     if TsType(data_freq) < TsType(freq):
         raise TemporalResolutionError(
-            f'Desired input frequency {data_freq} is lower than desired '
-            f'output frequency {freq}')
+            f"Desired input frequency {data_freq} is lower than desired "
+            f"output frequency {freq}"
+        )
 
     output = {}
     if not data_freq in data or data[data_freq] is None:
         raise TemporalResolutionError(
-            f'failed to compute statistics timeseries, no co-located data '
-            f'available in specified base resolution {data_freq}')
+            f"failed to compute statistics timeseries, no co-located data "
+            f"available in specified base resolution {data_freq}"
+        )
 
     coldata = data[data_freq]
 
@@ -1204,14 +1281,13 @@ def _process_statistics_timeseries(data, freq, region_ids,
     tstr = TsType(freq).to_numpy_freq()
     # list of strings of output timestamps (used below to select the
     # individual periods)
-    to_idx_str = [str(x) for x in to_idx.astype(f'datetime64[{tstr}]')]
+    to_idx_str = [str(x) for x in to_idx.astype(f"datetime64[{tstr}]")]
     jsdate = _get_jsdate(to_idx)
 
     for regid, regname in region_ids.items():
         output[regname] = {}
         try:
-            subset = coldata.filter_region(region_id=regid,
-                                        check_country_meta=use_country)
+            subset = coldata.filter_region(region_id=regid, check_country_meta=use_country)
         except DataCoverageError:
             continue
         for i, js in enumerate(jsdate):
@@ -1225,10 +1301,12 @@ def _process_statistics_timeseries(data, freq, region_ids,
 
     return output
 
+
 def _get_jsdate(nparr):
-    dt = nparr.astype('datetime64[s]')
-    offs = np.datetime64('1970', 's')
-    return (dt-offs).astype(int)*1000
+    dt = nparr.astype("datetime64[s]")
+    offs = np.datetime64("1970", "s")
+    return (dt - offs).astype(int) * 1000
+
 
 def _init_data_default_frequencies(coldata, to_ts_types):
     """
@@ -1264,18 +1342,18 @@ def _init_data_default_frequencies(coldata, to_ts_types):
         elif from_tst == to_tst:
             cd = coldata.copy()
         else:
-            cd = coldata.resample_time(to, settings_from_meta=True,
-                                       inplace=False)
+            cd = coldata.resample_time(to, settings_from_meta=True, inplace=False)
         # add season coordinate for later filtering
         arr = cd.data
-        arr['season'] = arr.time.dt.season
+        arr["season"] = arr.time.dt.season
         jsdates = _get_jsdate(arr.time.values)
-        arr = arr.assign_coords(jsdate=('time', jsdates))
+        arr = arr.assign_coords(jsdate=("time", jsdates))
         cd.data = arr
         data_arrs[to] = cd
 
     return data_arrs
 
+
 def _start_stop_from_periods(periods):
     start, stop = _get_min_max_year_periods(periods)
-    return start_stop(start, stop+1)
+    return start_stop(start, stop + 1)

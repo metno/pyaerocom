@@ -1,8 +1,26 @@
+import glob
+import logging
+import os
+import shutil
+from pathlib import Path
+
+from pyaerocom import const
+from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.helpers import start_stop_str
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation_auto import Colocator
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.helpers import (
+    get_highest_resolution,
+    get_max_period_range,
+    make_dummy_cube,
+    start_stop_str,
+)
+from pyaerocom.io import ReadGridded
+from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 def check_var_ranges_avail(model_data, var_name):
@@ -35,8 +53,9 @@ def check_var_ranges_avail(model_data, var_name):
             model_data.register_var_glob(delete_existing=True)
         else:
             raise ValueError(
-                f'Mismatch between variable name of input model_data '
-                f'({model_data.var_name_aerocom}) and var_name {var_name}')
+                f"Mismatch between variable name of input model_data "
+                f"({model_data.var_name_aerocom}) and var_name {var_name}"
+            )
 
 
 def _check_statistics_periods(periods: list) -> list:
@@ -62,19 +81,20 @@ def _check_statistics_periods(periods: list) -> list:
     """
     checked = []
     if not isinstance(periods, list):
-        raise ValueError('statistics_periods needs to be a list')
+        raise ValueError("statistics_periods needs to be a list")
     for per in periods:
         if not isinstance(per, str):
-            raise ValueError('All periods need to be strings')
-        spl = [x.strip() for x in per.split('-')]
+            raise ValueError("All periods need to be strings")
+        spl = [x.strip() for x in per.split("-")]
         if len(spl) > 2:
             raise ValueError(
-                f'Invalid value for period ({per}), can be either single '
-                f'years or period of years (e.g. 2000-2010).'
-                )
-        _per = '-'.join([str(int(val)) for val in spl])
+                f"Invalid value for period ({per}), can be either single "
+                f"years or period of years (e.g. 2000-2010)."
+            )
+        _per = "-".join([str(int(val)) for val in spl])
         checked.append(_per)
     return checked
+
 
 def _period_str_to_timeslice(period: str) -> slice:
     """
@@ -95,12 +115,13 @@ def _period_str_to_timeslice(period: str) -> slice:
     slice
         slice containing start and end strings.
     """
-    spl = period.split('-')
+    spl = period.split("-")
     if len(spl) == 1:
-        return slice(spl[0],spl[0])
+        return slice(spl[0], spl[0])
     elif len(spl) == 2:
         return slice(*spl)
     raise ValueError(period)
+
 
 def _get_min_max_year_periods(statistics_periods):
     """Get lowest and highest available year from all periods
@@ -127,3 +148,55 @@ def _get_min_max_year_periods(statistics_periods):
         if perstop > stopyr:
             stopyr = perstop
     return startyr, stopyr
+
+
+def make_dummy_model(obs_list: list, cfg) -> str:
+
+    # Sets up variable for the model register
+    tmpdir = const.LOCAL_TMP_DIR
+    const.add_data_search_dir(tmpdir)
+
+    model_id = "dummy_model"
+    outdir = os.path.join(tmpdir, f"{model_id}/renamed")
+
+    os.makedirs(outdir, exist_ok=True)
+
+    # Finds dates and freq to use, so that all observations are covered
+    (start, stop) = get_max_period_range(cfg.time_cfg.periods)
+    freq = get_highest_resolution(*cfg.time_cfg.freqs)
+
+    # Loops over variables in obs
+    for obs in obs_list:
+        for var in cfg.obs_cfg[obs]["obs_vars"]:
+            # Create dummy cube
+
+            dummy_cube = make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
+
+            # Converts cube to GriddedData
+            dummy_grid = GriddedData(dummy_cube)
+
+            # Loop over each year
+            yr_gen = dummy_grid.split_years()
+
+            for dummy_grid_yr in yr_gen:
+                # Add to netcdf
+                yr = dummy_grid_yr.years_avail()[0]
+                vert_code = cfg.obs_cfg[obs]["obs_vert_type"]
+
+                save_name = dummy_grid_yr.aerocom_savename(model_id, var, vert_code, yr, freq)
+                dummy_grid_yr.to_netcdf(outdir, savename=save_name)
+
+    # Add dummy model to cfg
+    cfg.model_cfg["dummy"] = ModelEntry(model_id="dummy_model")
+
+    return model_id
+
+
+def delete_dummy_model(model_id: str) -> None:
+    tmpdir = const.LOCAL_TMP_DIR
+    const.add_data_search_dir(tmpdir)
+
+    renamed = Path(tmpdir) / f"{model_id}/renamed"
+    for path in renamed.glob("*.nc"):
+        print(f"Deleting dummy model {path}")
+        path.unlink()

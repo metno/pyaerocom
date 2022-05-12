@@ -1,137 +1,194 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
 
 import pytest
 
-from pyaerocom.io import ebas_file_index as mod
+from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 
-from ..conftest import EBAS_SQLite_DB, does_not_raise_exception
-
-
-@pytest.mark.parametrize('args,kwargs,raises', [
-    ([],{}, does_not_raise_exception())
-    ])
-def test_EbasSQLRequest___init__(args, kwargs, raises):
-    with raises:
-        mod.EbasSQLRequest(*args, **kwargs)
+from ..conftest import EBAS_SQLite_DB
 
 
-@pytest.mark.parametrize('var,output,raises', [
-    ('bla', "('bla')", does_not_raise_exception()),
-    ({}, None, pytest.raises(ValueError)),
-    (('bla', 'blub'), "('bla', 'blub')", does_not_raise_exception()),
-    (['bla', 'blub'], "('bla', 'blub')", does_not_raise_exception()),
+def test_EbasSQLRequest___init__():
+    EbasSQLRequest()
 
-    ])
-def test_EbasSQLRequest__var2sql(var,output, raises):
-    with raises:
-        req = mod.EbasSQLRequest()
-        _val = req._var2sql(var)
-        assert _val == output
 
-@pytest.mark.parametrize('kwargs,output,raises', [
-    ({}, 'select distinct filename from variable join station on station.station_code=variable.station_code;',
-     does_not_raise_exception()),
-    ({'distinct': False}, 'select filename from variable join station on station.station_code=variable.station_code;',
-     does_not_raise_exception())
-    ])
-def test_EbasSQLRequest_make_file_query_str(kwargs,output,raises):
-    with raises:
-        req = mod.EbasSQLRequest()
-        _val = req.make_file_query_str(**kwargs)
-        assert _val == output
+@pytest.mark.parametrize(
+    "var,output",
+    [
+        ("bla", "('bla')"),
+        (("bla", "blub"), "('bla', 'blub')"),
+        (["bla", "blub"], "('bla', 'blub')"),
+    ],
+)
+def test_EbasSQLRequest__var2sql(var: str | tuple[str] | list[str], output: str):
+    req = EbasSQLRequest()
+    assert req._var2sql(var) == output
 
-@pytest.mark.parametrize('kwargs,output,raises', [
-    ({'altitude_range' : [10,21],
-      'lon_range' : [10, 20],
-      'lat_range' : [10, 20],
-      'start_date': '2010-01-21',
-      'stop_date' : '2010-01-24',
-      'statistics': ['arithmetic_mean', 'median'],
-      'datalevel' : 2
-      }, ("select distinct filename from variable join station on "
-          "station.station_code=variable.station_code where "
-          "station_altitude>10 and station_altitude<21 and "
-          "station_longitude>10 and station_longitude<20 and "
-          "station_latitude>10 and station_latitude<20 and "
-          "first_end < '2010-01-24' and last_start > '2010-01-21' and "
-          "statistics in ('arithmetic_mean', 'median') and datalevel=2;"),
-     does_not_raise_exception()),
-    ({}, 'select distinct filename from variable join station on station.station_code=variable.station_code;',
-     does_not_raise_exception()),
-    ({'distinct': False}, 'select filename from variable join station on station.station_code=variable.station_code;',
-     does_not_raise_exception()),
-    ({'what' : ('filename', 'station_code', 'bla')}, 'select distinct filename,station_code,bla from variable join station on station.station_code=variable.station_code;',
-     does_not_raise_exception()),
-    ])
-def test_EbasSQLRequest_make_query_str(kwargs,output,raises):
-    with raises:
-        req = mod.EbasSQLRequest()
-        _val = req.make_query_str(**kwargs)
-        assert _val == output
+
+def test_EbasSQLRequest__var2sql_error():
+    with pytest.raises(ValueError) as e:
+        EbasSQLRequest()._var2sql({})
+    assert str(e.value) == "Invalid value..."
+
+
+@pytest.mark.parametrize(
+    "kwargs,output",
+    [
+        (
+            {},
+            "select distinct filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
+        ),
+        (
+            {"distinct": False},
+            "select filename from variable join station on station.station_code=variable.station_code and not exists (select * from characteristic where var_id=variable.var_id and ct_type='Fraction');",
+        ),
+    ],
+)
+def test_EbasSQLRequest_make_file_query_str(kwargs: dict, output: str):
+    req = EbasSQLRequest()
+    assert req.make_file_query_str(**kwargs) == output
+
+
+@pytest.mark.parametrize(
+    "kwargs,output",
+    [
+        (
+            {
+                "altitude_range": [10, 21],
+                "lon_range": [10, 20],
+                "lat_range": [10, 20],
+                "start_date": "2010-01-21",
+                "stop_date": "2010-01-24",
+                "statistics": ["arithmetic_mean", "median"],
+                "datalevel": 2,
+            },
+            (
+                "select distinct filename from variable join station on "
+                "station.station_code=variable.station_code where "
+                "station_altitude>10 and station_altitude<21 and "
+                "station_longitude>10 and station_longitude<20 and "
+                "station_latitude>10 and station_latitude<20 and "
+                "first_end < '2010-01-24' and last_start > '2010-01-21' and "
+                "statistics in ('arithmetic_mean', 'median') and datalevel=2;"
+            ),
+        ),
+        (
+            {},
+            "select distinct filename from variable join station on station.station_code=variable.station_code;",
+        ),
+        (
+            {"distinct": False},
+            "select filename from variable join station on station.station_code=variable.station_code;",
+        ),
+        (
+            {"what": ("filename", "station_code", "bla")},
+            "select distinct filename,station_code,bla from variable join station on station.station_code=variable.station_code;",
+        ),
+    ],
+)
+def test_EbasSQLRequest_make_query_str(kwargs: dict, output: str):
+    req = EbasSQLRequest()
+    assert req.make_query_str(**kwargs) == output
+
 
 def test_EbasSQLRequest___str__():
-    assert isinstance(str(mod.EbasSQLRequest()), str)
+    assert isinstance(str(EbasSQLRequest()), str)
 
-@pytest.mark.parametrize('args,kwargs,raises', [
-    ([],{}, does_not_raise_exception())
-    ])
-def test_EbasFileIndex___init__(args, kwargs, raises):
-    with raises:
-        mod.EbasFileIndex(*args, **kwargs)
 
-@pytest.mark.parametrize('dbfile,raises', [
-    (None, pytest.raises(AttributeError))
-    ])
-def test_EbasFileIndex_database_getter(dbfile,raises):
-    with raises:
-        idx = mod.EbasFileIndex(dbfile)
-        assert idx.database == idx._database
+def test_EbasFileIndex___init__():
+    EbasFileIndex()
 
-def test_EbasFileIndex_ALL_STATION_NAMES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_STATION_NAMES
-    assert isinstance(val, list)
 
-def test_EbasFileIndex_ALL_STATION_CODES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_STATION_CODES
-    assert isinstance(val, list)
+def test_EbasFileIndex_database_getter():
+    with pytest.raises(AttributeError) as e:
+        EbasFileIndex().database
+    error = "EBAS SQLite database file could not be located but is needed in EbasFileIndex class"
+    assert str(e.value) == error
 
-def test_EbasFileIndex_ALL_STATISTICS_PARAMS():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_STATISTICS_PARAMS
-    assert isinstance(val, list)
 
-def test_EbasFileIndex_ALL_VARIABLES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_VARIABLES
-    assert isinstance(val, list)
+@pytest.fixture(scope="module")
+def ebas() -> EbasFileIndex:
+    return EbasFileIndex(EBAS_SQLite_DB)
 
-def test_EbasFileIndex_ALL_MATRICES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_MATRICES
-    assert isinstance(val, list)
 
-def test_EbasFileIndex_ALL_INSTRUMENTS():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_INSTRUMENTS
-    assert isinstance(val, list)
+def test_EbasFileIndex_ALL_STATION_NAMES(ebas: EbasFileIndex):
+    assert isinstance(ebas.ALL_STATION_NAMES, list)
 
-def test_EbasFileIndex_get_table_names():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).get_table_names()
-    assert val == ['station', 'variable']
 
-@pytest.mark.parametrize('table,names', [
-    ('station', ['station_code', 'platform_code', 'station_name',
-                 'station_wdca_id', 'station_gaw_name', 'station_gaw_id',
-                 'station_airs_id', 'station_other_ids', 'station_state_code',
-                 'station_landuse', 'station_setting', 'station_gaw_type',
-                 'station_wmo_region', 'station_latitude',
-                 'station_longitude', 'station_altitude']),
-    ('variable', ['station_code', 'matrix', 'comp_name', 'statistics',
-                  'instr_type', 'instr_ref', 'method', 'first_start',
-                  'first_end', 'last_start', 'last_end', 'revdate',
-                  'period', 'resolution', 'datalevel', 'filename'])
+def test_EbasFileIndex_ALL_STATION_CODES(ebas: EbasFileIndex):
+    assert isinstance(ebas.ALL_STATION_CODES, list)
 
-    ])
-def test_EbasFileIndex_get_column_names(table,names):
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).get_table_columns(table)
-    assert val == names
 
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)
+def test_EbasFileIndex_ALL_STATISTICS_PARAMS(ebas: EbasFileIndex):
+    assert isinstance(ebas.ALL_STATISTICS_PARAMS, list)
+
+
+def test_EbasFileIndex_ALL_VARIABLES(ebas: EbasFileIndex):
+    assert isinstance(ebas.ALL_VARIABLES, list)
+
+
+def test_EbasFileIndex_ALL_MATRICES(ebas: EbasFileIndex):
+    assert isinstance(ebas.ALL_MATRICES, list)
+
+
+def test_EbasFileIndex_ALL_INSTRUMENTS(ebas: EbasFileIndex):
+    assert isinstance(ebas.ALL_INSTRUMENTS, list)
+
+
+def test_EbasFileIndex_get_table_names(ebas: EbasFileIndex):
+    # assert ebas.get_table_names() == ["station", "variable"]
+    assert ebas.get_table_names() == ["station", "variable", "characteristic"]
+
+
+table_comulns = dict(
+    station=[
+        "station_code",
+        "platform_code",
+        "station_name",
+        "station_wdca_id",
+        "station_gaw_name",
+        "station_gaw_id",
+        "station_airs_id",
+        "station_other_ids",
+        "station_state_code",
+        "station_landuse",
+        "station_setting",
+        "station_gaw_type",
+        "station_wmo_region",
+        "station_latitude",
+        "station_longitude",
+        "station_altitude",
+    ],
+    variable=[
+        "var_id",
+        "station_code",
+        "matrix",
+        "comp_name",
+        "statistics",
+        "instr_type",
+        "instr_ref",
+        "method",
+        "first_start",
+        "first_end",
+        "last_start",
+        "last_end",
+        "revdate",
+        "period",
+        "resolution",
+        "datalevel",
+        "filename",
+        "vnum",
+    ],
+    characteristic=[
+        "var_id",
+        "ct_type",
+        "datatype",
+        "val_int",
+        "val_dbl",
+        "val_chr",
+    ],
+)
+
+
+@pytest.mark.parametrize("table,column_names", table_comulns.items())
+def test_EbasFileIndex_get_column_names(ebas: EbasFileIndex, table: str, column_names: list[str]):
+    assert ebas.get_table_columns(table) == column_names

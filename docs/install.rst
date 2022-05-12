@@ -23,7 +23,13 @@ Via pip
 This will install the latest released version of pyaerocom and its depencencies.
 **NOTE** this same pacakge as distributed via *conda-forge* (see prev. point).::
 
-	python3 -m pip install pyaerocom
+	# install pyaerocom on machines with Proj8 or newer
+	# e.g. Ubuntu 22.04 LTS (Jammy Jellyfish)
+	python3 -m pip install pyaerocom[proj8]
+
+	# install pyaerocom on machiles with an older version of Proj
+	# e.g. Ubuntu 20.04 LTS (Focal Fossa)
+	python3 -m pip install pyaerocom[proj-legacy]
 
 Or into a new virtual environment (recommended) named *.venv* via::
 
@@ -31,9 +37,16 @@ Or into a new virtual environment (recommended) named *.venv* via::
 	python3 -m venv --prompt pya .venv
 	source .venv/bin/activate
 
-	# update pip and install pyaerocom
+	# update pip
 	pip -m install -U pip
-	pip install pyaerocom
+
+	# install pyaerocom on machines with Proj8 or newer
+	# e.g. Ubuntu 22.04 LTS (Jammy Jellyfish)
+	pip install pyaerocom[proj8]
+
+	# install pyaerocom on machiles with an older version of Proj
+	# e.g. Ubuntu 20.04 LTS (Focal Fossa)
+	pip install pyaerocom[proj-legacy]
 
 
 Install from source into a conda environment
@@ -43,7 +56,7 @@ If you use the *conda* package manager, please make sure to `activate the enviro
 
 Please make sure to install all requirements (see below) before installing pyaerocom from source. You can do that with the provided file pyaerocom_env.yml.
 
-To install pyaerocom from source, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone the `repo <https://github.com/metno/pyaerocom/>`__) and install from the top-level directory (that contains a file *setup.py*) using::
+To install pyaerocom from source, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone the `repo <https://github.com/metno/pyaerocom/>`__) and install from the top-level directory (that contains a file *setup.cfg*) using::
 
 	pip install --no-deps .
 
@@ -64,7 +77,7 @@ A list of requirements is provided in file `pyaerocom_env.yml <https://github.co
 
 Normally, conda will install these requirements along with pyaerocom, however, if you install from source or using pip, you need to install the requirements yourself.
 
-In order to do so, we recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.7 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
+In order to do so, we recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.8 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
 
 With *conda* you can install all requirements (specified in previous section) into a new environment using the *pyaerocom_env.yml* file::
 

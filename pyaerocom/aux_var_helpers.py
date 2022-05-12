@@ -1,5 +1,6 @@
 import cf_units
 import numpy as np
+
 from pyaerocom import const
 from pyaerocom.variable_helpers import get_variable
 
@@ -32,11 +33,13 @@ def calc_ang4487aer(data):
 
 
     """
-    if not all([x in data for x in ['od440aer','od870aer']]):
-        raise AttributeError("Either of the two (or both) required variables "
-                             "(od440aer, od870aer) are not available in data")
-    od440aer, od870aer = data['od440aer'], data['od870aer']
-    return compute_angstrom_coeff(od440aer, od870aer, .44, .87)
+    if not all([x in data for x in ["od440aer", "od870aer"]]):
+        raise AttributeError(
+            "Either of the two (or both) required variables "
+            "(od440aer, od870aer) are not available in data"
+        )
+    od440aer, od870aer = data["od440aer"], data["od870aer"]
+    return compute_angstrom_coeff(od440aer, od870aer, 0.44, 0.87)
 
 
 def calc_od550aer(data):
@@ -52,14 +55,16 @@ def calc_od550aer(data):
     :obj:`float` or :obj:`ndarray`
         AOD(s) at shifted wavelength
     """
-    return _calc_od_helper(data=data,
-                           var_name='od550aer',
-                           to_lambda=.55,
-                           od_ref='od500aer',
-                           lambda_ref=.50,
-                           od_ref_alt='od440aer',
-                           lambda_ref_alt=.44,
-                           use_angstrom_coeff='ang4487aer')
+    return _calc_od_helper(
+        data=data,
+        var_name="od550aer",
+        to_lambda=0.55,
+        od_ref="od500aer",
+        lambda_ref=0.50,
+        od_ref_alt="od440aer",
+        lambda_ref_alt=0.44,
+        use_angstrom_coeff="ang4487aer",
+    )
 
 
 def calc_abs550aer(data):
@@ -75,14 +80,16 @@ def calc_abs550aer(data):
     :obj:`float` or :obj:`ndarray`
         AOD(s) at shifted wavelength
     """
-    return _calc_od_helper(data=data,
-                           var_name='abs550aer',
-                           to_lambda=.55,
-                           od_ref='abs500aer',
-                           lambda_ref=.50,
-                           od_ref_alt='abs440aer',
-                           lambda_ref_alt=.44,
-                           use_angstrom_coeff='angabs4487aer')
+    return _calc_od_helper(
+        data=data,
+        var_name="abs550aer",
+        to_lambda=0.55,
+        od_ref="abs500aer",
+        lambda_ref=0.50,
+        od_ref_alt="abs440aer",
+        lambda_ref_alt=0.44,
+        use_angstrom_coeff="angabs4487aer",
+    )
 
 
 def calc_od550gt1aer(data):
@@ -98,12 +105,14 @@ def calc_od550gt1aer(data):
     float or ndarray
         AOD(s) at shifted wavelength
     """
-    return _calc_od_helper(data=data,
-                           var_name='od550gt1aer',
-                           to_lambda=.55,
-                           od_ref='od500gt1aer',
-                           lambda_ref=.50,
-                           use_angstrom_coeff='ang4487aer')
+    return _calc_od_helper(
+        data=data,
+        var_name="od550gt1aer",
+        to_lambda=0.55,
+        od_ref="od500gt1aer",
+        lambda_ref=0.50,
+        use_angstrom_coeff="ang4487aer",
+    )
 
 
 def calc_od550lt1aer(data):
@@ -119,12 +128,14 @@ def calc_od550lt1aer(data):
     :obj:`float` or :obj:`ndarray`
         AOD(s) at shifted wavelength
     """
-    return _calc_od_helper(data=data,
-                           var_name='od550lt1aer',
-                           to_lambda=.55,
-                           od_ref='od500lt1aer',
-                           lambda_ref=.50,
-                           use_angstrom_coeff='ang4487aer')
+    return _calc_od_helper(
+        data=data,
+        var_name="od550lt1aer",
+        to_lambda=0.55,
+        od_ref="od500lt1aer",
+        lambda_ref=0.50,
+        use_angstrom_coeff="ang4487aer",
+    )
 
 
 def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
@@ -149,8 +160,7 @@ def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
     return -np.log(od1 / od2) / np.log(lambda1 / lambda2)
 
 
-def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref,
-                                 angstrom_coeff):
+def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref, angstrom_coeff):
     """Compute AOD at specified wavelength
 
     Uses Angstrom coefficient and reference AOD to compute the
@@ -176,9 +186,16 @@ def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref,
     return od_ref * (lambda_ref / to_lambda) ** angstrom_coeff
 
 
-def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
-                    od_ref_alt=None, lambda_ref_alt=None,
-                    use_angstrom_coeff='ang4487aer'):
+def _calc_od_helper(
+    data,
+    var_name,
+    to_lambda,
+    od_ref,
+    lambda_ref,
+    od_ref_alt=None,
+    lambda_ref_alt=None,
+    use_angstrom_coeff="ang4487aer",
+):
     """Helper method for computing ODs
 
     Parameters
@@ -218,32 +235,33 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     """
     if not od_ref in data:
         if od_ref_alt is None or not od_ref_alt in data:
-            raise AttributeError('No alternative OD found for computation of '
-                                 '{}'.format(var_name))
-        return compute_od_from_angstromexp(to_lambda=to_lambda,
-                                           od_ref=data[od_ref_alt],
-                                           lambda_ref=lambda_ref_alt,
-                                           angstrom_coeff=data[use_angstrom_coeff])
+            raise AttributeError(f"No alternative OD found for computation of {var_name}")
+        return compute_od_from_angstromexp(
+            to_lambda=to_lambda,
+            od_ref=data[od_ref_alt],
+            lambda_ref=lambda_ref_alt,
+            angstrom_coeff=data[use_angstrom_coeff],
+        )
     elif not use_angstrom_coeff in data:
-        raise AttributeError("Angstrom coefficient (440-870 nm) is not "
-                             "available in provided data")
-    result = compute_od_from_angstromexp(to_lambda=to_lambda,
-                                          od_ref=data[od_ref],
-                                          lambda_ref=lambda_ref,
-                                          angstrom_coeff=data[use_angstrom_coeff])
+        raise AttributeError("Angstrom coefficient (440-870 nm) is not available in provided data")
+    result = compute_od_from_angstromexp(
+        to_lambda=to_lambda,
+        od_ref=data[od_ref],
+        lambda_ref=lambda_ref,
+        angstrom_coeff=data[use_angstrom_coeff],
+    )
     # optional if available
     if od_ref_alt in data:
         # fill up time steps that are nans with values calculated from the
         # alternative wavelength to minimise gaps in the time series
         mask = np.argwhere(np.isnan(result))
 
-        if len(mask) > 0: #there are nans
+        if len(mask) > 0:  # there are nans
             ods_alt = data[od_ref_alt][mask]
             ang = data[use_angstrom_coeff][mask]
-            replace = compute_od_from_angstromexp(to_lambda=to_lambda,
-                                                    od_ref=ods_alt,
-                                                    lambda_ref=lambda_ref_alt,
-                                                    angstrom_coeff=ang)
+            replace = compute_od_from_angstromexp(
+                to_lambda=to_lambda, od_ref=ods_alt, lambda_ref=lambda_ref_alt, angstrom_coeff=ang
+            )
             result[mask] = replace
 
     return result
@@ -263,9 +281,7 @@ def compute_ang4470dryaer_from_dry_scat(data):
     StationData or dict
         extended data object containing angstrom exponent
     """
-    return compute_angstrom_coeff(data['sc440dryaer'],
-                                  data['sc700dryaer'],
-                                  440, 700)
+    return compute_angstrom_coeff(data["sc440dryaer"], data["sc700dryaer"], 440, 700)
 
 
 def compute_sc550dryaer(data):
@@ -284,13 +300,13 @@ def compute_sc550dryaer(data):
         modified data object containing new column sc550dryaer
 
     """
-    rh_max= get_variable('sc550dryaer').dry_rh_max
-    vals, rh_mean = _compute_dry_helper(data, data_colname='sc550aer',
-                               rh_colname='scrh',
-                               rh_max_percent=rh_max)
-    if not 'sc550dryaer' in data.var_info:
-        data.var_info['sc550dryaer'] = {}
-    data.var_info['sc550dryaer']['rh_mean'] = rh_mean
+    rh_max = get_variable("sc550dryaer").dry_rh_max
+    vals, rh_mean = _compute_dry_helper(
+        data, data_colname="sc550aer", rh_colname="scrh", rh_max_percent=rh_max
+    )
+    if not "sc550dryaer" in data.var_info:
+        data.var_info["sc550dryaer"] = {}
+    data.var_info["sc550dryaer"]["rh_mean"] = rh_mean
 
     return vals
 
@@ -311,10 +327,10 @@ def compute_sc440dryaer(data):
         modified data object containing new column sc550dryaer
 
     """
-    rh_max= get_variable('sc440dryaer').dry_rh_max
-    return _compute_dry_helper(data, data_colname='sc440aer',
-                               rh_colname='scrh',
-                               rh_max_percent=rh_max)[0]
+    rh_max = get_variable("sc440dryaer").dry_rh_max
+    return _compute_dry_helper(
+        data, data_colname="sc440aer", rh_colname="scrh", rh_max_percent=rh_max
+    )[0]
 
 
 def compute_sc700dryaer(data):
@@ -333,10 +349,10 @@ def compute_sc700dryaer(data):
         modified data object containing new column sc550dryaer
 
     """
-    rh_max= get_variable('sc700dryaer').dry_rh_max
-    return _compute_dry_helper(data, data_colname='sc700aer',
-                               rh_colname='scrh',
-                               rh_max_percent=rh_max)[0]
+    rh_max = get_variable("sc700dryaer").dry_rh_max
+    return _compute_dry_helper(
+        data, data_colname="sc700aer", rh_colname="scrh", rh_max_percent=rh_max
+    )[0]
 
 
 def compute_ac550dryaer(data):
@@ -355,14 +371,13 @@ def compute_ac550dryaer(data):
         modified data object containing new column sc550dryaer
 
     """
-    rh_max= get_variable('ac550dryaer').dry_rh_max
-    return _compute_dry_helper(data, data_colname='ac550aer',
-                                         rh_colname='acrh',
-                                         rh_max_percent=rh_max)[0]
+    rh_max = get_variable("ac550dryaer").dry_rh_max
+    return _compute_dry_helper(
+        data, data_colname="ac550aer", rh_colname="acrh", rh_max_percent=rh_max
+    )[0]
 
 
-def _compute_dry_helper(data, data_colname, rh_colname,
-                        rh_max_percent=None):
+def _compute_dry_helper(data, data_colname, rh_colname, rh_max_percent=None):
     """Compute new column that contains data where RH is smaller than ...
 
     All values in original data columns are set to NaN, where RH exceeds a
@@ -439,9 +454,9 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
     vars_needed = (concprcp_var, pr_var)
 
     if not all(x in data.data_flagged for x in vars_needed):
-        raise ValueError(f'Need flags for {vars_needed} to compute wet deposition')
+        raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
     from pyaerocom import TsType
-    from pyaerocom.units_helpers import get_unit_conversion_fac, RATES_FREQ_DEFAULT
+    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(concprcp_var))
 
@@ -449,13 +464,13 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
 
     conc_unit = data.get_unit(concprcp_var)
     conc_data = data[concprcp_var]
-    if not conc_unit.endswith('m-3'):
-        raise NotImplementedError('Can only handle concprcp unit ending with m-3')
+    if not conc_unit.endswith("m-3"):
+        raise NotImplementedError("Can only handle concprcp unit ending with m-3")
     concprcp_flags = data.data_flagged[concprcp_var]
 
     pr_unit = data.get_unit(pr_var)
-    if not pr_unit == 'm':
-        data.convert_unit(pr_var, 'm')
+    if not pr_unit == "m":
+        data.convert_unit(pr_var, "m")
     pr_data = data[pr_var]
     pr_flags = data.data_flagged[pr_var]
     # check where precip data is zero (it did not rain!) and for each of
@@ -468,17 +483,17 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
         concprcp_flags[pr_zero] = False
         pr_flags[pr_zero] = False
     wdep = conc_data * pr_data
-    wdep_units = conc_unit.replace('m-3', 'm-2')
+    wdep_units = conc_unit.replace("m-3", "m-2")
 
     if not ival == RATES_FREQ_DEFAULT:
         fac = get_unit_conversion_fac(ival, RATES_FREQ_DEFAULT)
         wdep /= fac
     # in units of ts_type, that is, e.g. kg m-2 d
-    freq_str = f' {RATES_FREQ_DEFAULT}-1'
+    freq_str = f" {RATES_FREQ_DEFAULT}-1"
     wdep_units += freq_str
     if not wdep_var in data.var_info:
         data.var_info[wdep_var] = {}
-    data.var_info[wdep_var]['units'] = wdep_units
+    data.var_info[wdep_var]["units"] = wdep_units
 
     # set flags for wetso4
     wdep_flags = np.zeros(len(wdep)).astype(bool)
@@ -509,8 +524,7 @@ def compute_wetoxs_from_concprcpoxs(data):
         array with wet deposition values
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpoxs',
-                                              'pr')
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxs", "pr")
 
 
 def compute_wetoxn_from_concprcpoxn(data):
@@ -533,8 +547,7 @@ def compute_wetoxn_from_concprcpoxn(data):
         array with wet deposition values
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpoxn',
-                                              'pr')
+    return _compute_wdep_from_concprcp_helper(data, "wetoxn", "concprcpoxn", "pr")
 
 
 def compute_wetrdn_from_concprcprdn(data):
@@ -557,12 +570,10 @@ def compute_wetrdn_from_concprcprdn(data):
         array with wet deposition values
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcprdn',
-                                              'pr')
+    return _compute_wdep_from_concprcp_helper(data, "wetrdn", "concprcprdn", "pr")
 
 
-def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
-                  to_unit=None):
+def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, to_unit=None):
     """
     Convert volume mixing ratio (vmr) to mass concentration
 
@@ -593,24 +604,24 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
     """
     if mmol_air is None:
         from pyaerocom.molmasses import get_molmass
-        mmol_air = get_molmass('air_dry')
 
-    Rspecific = 287.058 # J kg-1 K-1
+        mmol_air = get_molmass("air_dry")
 
-    conversion_fac = 1/cf_units.Unit('mol mol-1').convert(1, vmr_unit)
+    Rspecific = 287.058  # J kg-1 K-1
 
-    airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
-    mulfac = mmol_var / mmol_air * airdensity # kg m-3
-    conc = data * mulfac # kg m-3
+    conversion_fac = 1 / cf_units.Unit("mol mol-1").convert(1, vmr_unit)
+
+    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+    mulfac = mmol_var / mmol_air * airdensity  # kg m-3
+    conc = data * mulfac  # kg m-3
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit('kg m-3').convert(1, to_unit)
+        conversion_fac *= cf_units.Unit("kg m-3").convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         conc *= conversion_fac
     return conc
 
 
-def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
-                  to_unit=None):
+def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, to_unit=None):
     """
     Convert mass concentration to volume mixing ratio (vmr)
 
@@ -641,17 +652,41 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
     """
     if mmol_air is None:
         from pyaerocom.molmasses import get_molmass
-        mmol_air = get_molmass('air_dry')
 
-    Rspecific = 287.058 # J kg-1 K-1
+        mmol_air = get_molmass("air_dry")
 
-    conversion_fac = 1/cf_units.Unit('kg m-3').convert(1, conc_unit)
+    Rspecific = 287.058  # J kg-1 K-1
 
-    airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
-    mulfac = mmol_var / mmol_air * airdensity # kg m-3
-    vmr = data / mulfac # unitless
+    conversion_fac = 1 / cf_units.Unit("kg m-3").convert(1, conc_unit)
+
+    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+    mulfac = mmol_var / mmol_air * airdensity  # kg m-3
+    vmr = data / mulfac  # unitless
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit('mole mole-1').convert(1, to_unit)
+        conversion_fac *= cf_units.Unit("mole mole-1").convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         vmr *= conversion_fac
     return vmr
+
+
+def calc_vmro3max(data):
+
+    var_name = "vmro3"
+    new_var_name = "vmro3max"
+
+    flags = data.data_flagged[var_name]
+
+    o3max = data[var_name]
+
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+
+    data.var_info[new_var_name] = data.var_info[var_name]
+
+    data.data_flagged[new_var_name] = flags
+    # print(data.var_info)
+    # exit()
+    return o3max

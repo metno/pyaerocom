@@ -1,17 +1,18 @@
-import numpy as np
+import logging
 import os
-import pandas as pd
-#from datetime import datetime
-from collections import OrderedDict
+import warnings
 
-from pyaerocom import const
+import numpy as np
+import pandas as pd
+
+from pyaerocom.helpers import get_tot_number_of_seconds
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-#from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
-
 from pyaerocom.units_helpers import convert_unit
-from pyaerocom.helpers import get_tot_number_of_seconds
+
+logger = logging.getLogger(__name__)
+
 
 class ReadAasEtal(ReadUngriddedBase):
     """Read subset of GAW-TAD-EANET data related to Aas et al., 2019
@@ -21,70 +22,72 @@ class ReadAasEtal(ReadUngriddedBase):
     See Also
     ---------
     :class:`ReadUngriddedBase`
-	"""
+    """
+
     # name of files in GawTadSubsetAasEtAl
-    _FILEMASK = '*.csv' # fix
+    _FILEMASK = "*.csv"  # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.09'
+    __version__ = "0.09"
 
-    COL_DELIM = ','
+    COL_DELIM = ","
 
     #: Temporal resoloution
-    TS_TYPE = 'monthly'
+    TS_TYPE = "monthly"
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = 'GAWTADsubsetAasEtAl' #'GAWTADsubsetAasEtAl'
+    DATA_ID = "GAWTADsubsetAasEtAl"  #'GAWTADsubsetAasEtAl'
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
 
     #: value corresponding to invalid measurement
-    #NAN_VAL = -9999.
-    NAN_VAL = -999.
+    # NAN_VAL = -9999.
+    NAN_VAL = -999.0
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     # This contains the mapping between the requested variables and what it is called in the files.
 
     COLNAMES_VARS = {}
-    COLNAMES_VARS['concentration_mgS/L']  = ['concso4pr']
-    COLNAMES_VARS['concentration_ugS/m3'] = ['concso4', 'concso2']
-    COLNAMES_VARS['precip_amount_mm']     = ['pr']
-    COLNAMES_VARS['deposition_kgS/ha']    = ['wetso4']
+    COLNAMES_VARS["concentration_mgS/L"] = ["concso4pr"]
+    COLNAMES_VARS["concentration_ugS/m3"] = ["concso4", "concso2"]
+    COLNAMES_VARS["precip_amount_mm"] = ["pr"]
+    COLNAMES_VARS["deposition_kgS/ha"] = ["wetso4"]
 
     #: Dictionary mapping filenames to available variables in the respective files.
     FILES_CONTAIN = {}
-    FILES_CONTAIN['monthly_so2.csv']        = ['concso2']
-    FILES_CONTAIN['monthly_so4_aero.csv']   = ['concso4']
-    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'concso4pr']
+    FILES_CONTAIN["monthly_so2.csv"] = ["concso2"]
+    FILES_CONTAIN["monthly_so4_aero.csv"] = ["concso4"]
+    FILES_CONTAIN["monthly_so4_precip.csv"] = ["wetso4", "pr", "concso4pr"]
 
     #: Dictionary mapping variable name to hard coded filenames.
     VARS_TO_FILES = {}
-    VARS_TO_FILES['concso2']   = ['monthly_so2.csv']
-    VARS_TO_FILES['concso4']   = ['monthly_so4_aero.csv']
-    VARS_TO_FILES['pr']        = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['wetso4']    = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['concso4pr'] = ['monthly_so4_precip.csv']
+    VARS_TO_FILES["concso2"] = ["monthly_so2.csv"]
+    VARS_TO_FILES["concso4"] = ["monthly_so4_aero.csv"]
+    VARS_TO_FILES["pr"] = ["monthly_so4_precip.csv"]
+    VARS_TO_FILES["wetso4"] = ["monthly_so4_precip.csv"]
+    VARS_TO_FILES["concso4pr"] = ["monthly_so4_precip.csv"]
 
     # (from to unit)
-    UNITCONVERSION = {'concso2':   ('ug S/m3', 'ug m-3'),
-                      'concso4':   ('ug S/m3', 'ug m-3'),
-                      'wetso4':    ('kg S/ha', 'kg m-2'),  #  s-1
-                      'concso4pr': ('mg S/L',   'g m-3')
-                      }
+    UNITCONVERSION = {
+        "concso2": ("ug S/m3", "ug m-3"),
+        "concso4": ("ug S/m3", "ug m-3"),
+        "wetso4": ("kg S/ha", "kg m-2"),  #  s-1
+        "concso4pr": ("mg S/L", "g m-3"),
+    }
 
-# =============================================================================
-#     VAR_UNITS_READ={}
-#     VAR_UNITS_READ['concso2'] = 'ug m-3'
-#     VAR_UNITS_READ['concso4'] = 'ug m-3'
-#     VAR_UNITS_READ['pr']       = 'mm'
-#     VAR_UNITS_READ['wetso4']   = 'kg m-2 s-1'
-#     VAR_UNITS_READ['concso4pr'] = 'g m-3' # Removed sulphur from VAR_UNITS_READ mgS/L
-# =============================================================================
+    # =============================================================================
+    #     VAR_UNITS_READ={}
+    #     VAR_UNITS_READ['concso2'] = 'ug m-3'
+    #     VAR_UNITS_READ['concso4'] = 'ug m-3'
+    #     VAR_UNITS_READ['pr']       = 'mm'
+    #     VAR_UNITS_READ['wetso4']   = 'kg m-2 s-1'
+    #     VAR_UNITS_READ['concso4pr'] = 'g m-3' # Removed sulphur from VAR_UNITS_READ mgS/L
+    # =============================================================================
     #: :obj: `list` of :obj: `str`
     #: List containing all the variables available in this data set.
-    PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
+    PROVIDES_VARIABLES = list(VARS_TO_FILES)
 
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
@@ -95,13 +98,12 @@ class ReadAasEtal(ReadUngriddedBase):
         return self.PROVIDES_VARIABLES
 
     def _get_time_stamps(self, df):
-        tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
-        dates_alt = [tconv(yr, m) for yr, m in
-                     zip(df.year.values, df.month.values)]
+        tconv = lambda yr, m: np.datetime64(f"{yr:04d}-{m:02d}-{1:02d}", "s")
+        dates_alt = [tconv(yr, m) for yr, m in zip(df.year.values, df.month.values)]
         return np.asarray(dates_alt)
 
-    def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
-        """ Read one GawTadSubsetAasEtAl file
+    def read_file(self, filename, vars_to_retrieve):  #  -> List[StationData]:
+        """Read one GawTadSubsetAasEtAl file
 
         ToDo
         ----
@@ -130,22 +132,23 @@ class ReadAasEtal(ReadUngriddedBase):
         df = pd.read_csv(filename, sep=",", low_memory=False)
         # Converting month and year.
 
-        df['dtime'] = self._get_time_stamps(df)
+        df["dtime"] = self._get_time_stamps(df)
 
         # array av numpy.datetime64
-        df.rename(columns= {"Sampler":"instrument_name"}, inplace=True)
-        grouped = df.groupby(by = "station_name")
+        df.rename(columns={"Sampler": "instrument_name"}, inplace=True)
+        grouped = df.groupby(by="station_name")
 
         # Looping over every station:
         for name, station_group in grouped:
-            station_group = station_group.drop_duplicates(subset='dtime',
-                                                          keep='first')  # Drops duplacate rows
+            station_group = station_group.drop_duplicates(
+                subset="dtime", keep="first"
+            )  # Drops duplacate rows
 
-            tvals = station_group['dtime']
+            tvals = station_group["dtime"]
 
             stat = StationData()
             # Meta data
-            stat['station_name'] = name
+            stat["station_name"] = name
 
             stat["filename"] = filename
             stat["data_id"] = self.data_id
@@ -160,58 +163,53 @@ class ReadAasEtal(ReadUngriddedBase):
                     if len(_var) == 0:
                         continue
                     elif len(_var) > 1:
-                        raise IOError('Found multiple matches...')
+                        raise OSError("Found multiple matches...")
                     var = _var[0]
-                    if var in self.UNITCONVERSION.keys():
+                    if var in self.UNITCONVERSION:
                         # Convert units
                         from_unit, to_unit = self.UNITCONVERSION[var]
-                        values = pd.to_numeric(station_group[key],
-                                               errors='coerce').values
-                        stat[var] = convert_unit(data=values,
-                                                 from_unit=from_unit,
-                                                 to_unit=to_unit,
-                                                 var_name=var)
+                        values = pd.to_numeric(station_group[key], errors="coerce").values
+                        stat[var] = convert_unit(
+                            data=values, from_unit=from_unit, to_unit=to_unit, var_name=var
+                        )
 
-                        if var == 'wetso4':
+                        if var == "wetso4":
                             # TODO: quite hard coded...
-                            numsecs = get_tot_number_of_seconds(ts_type=self.TS_TYPE,
-                                                                dtime=tvals)
+                            numsecs = get_tot_number_of_seconds(ts_type=self.TS_TYPE, dtime=tvals)
                             stat[var] = stat[var] / numsecs
 
-                            to_unit = 'kg m-2 s-1'
+                            to_unit = "kg m-2 s-1"
                     else:
-                        to_unit = key.split('_')[-1]
-                        vals = pd.to_numeric(station_group[key],
-                                             errors='coerce').values
+                        to_unit = key.split("_")[-1]
+                        vals = pd.to_numeric(station_group[key], errors="coerce").values
                         # This should only be true for
                         stat[var] = vals
 
-                    stat['var_info'][var] = {'units' : to_unit}
+                    stat["var_info"][var] = {"units": to_unit}
                 else:
-                    if key == 'dtime':
+                    if key == "dtime":
                         stat[key] = station_group[key].values
                     else:
                         # Store the meta data.
                         stat[key] = station_group[key].values[0]
 
-# =============================================================================
-#             # Since no altitude is provided in the files. Geodesy is used to approximate
-#             # altitude based on latitude and longitude.
-#             try:
-#                 s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude,
-#                                                           lon=s.longitude)
-#             except ValueError as e:
-#                 s['altitude'] = np.nan
-#                 from pyaerocom import const
-#                 const.logger.warning('Failed to access altitude for {}'
-#                                      .format(name))
-# =============================================================================
+            # =============================================================================
+            #             # Since no altitude is provided in the files. Geodesy is used to approximate
+            #             # altitude based on latitude and longitude.
+            #             try:
+            #                 s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude,
+            #                                                           lon=s.longitude)
+            #             except ValueError as e:
+            #                 s['altitude'] = np.nan
+            #                 from pyaerocom import const
+            #                 logger.warning(f'Failed to access altitude for {name}')
+            # =============================================================================
             # Added the created station to the station list.
             station_list.append(stat)
         return station_list
 
     def read(self, vars_to_retrieve=None):
-        """ Method that reads list of files as instance of :class:`UngriddedData`
+        """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
         ----------
@@ -241,45 +239,43 @@ class ReadAasEtal(ReadUngriddedBase):
         idx = 0
         varindex = -1
 
-        #assign metadata object
-        metadata = data_obj.metadata # OrderedDict
-        meta_idx = data_obj.meta_idx # OrderedDict
+        # assign metadata object
+        metadata = data_obj.metadata  # dict
+        meta_idx = data_obj.meta_idx  # dict
 
         for file in files:
             filename = os.path.basename(file)
             if not filename in self.FILES_CONTAIN:
-                raise IOError('Invalid file name {}, this should not happen.'
-                              .format(filename))
-            var_matches = [var for var in vars_to_retrieve if var in
-                            self.FILES_CONTAIN[filename]]
+                raise OSError(f"Invalid file name {filename}, this should not happen.")
+            var_matches = [var for var in vars_to_retrieve if var in self.FILES_CONTAIN[filename]]
             if len(var_matches) == 0:
                 continue
             stat_list = self.read_file(file, vars_to_retrieve=var_matches)
             for stat in stat_list:
-                #self.counter += 1
-                metadata[meta_key] = OrderedDict()
+                # self.counter += 1
+                metadata[meta_key] = {}
                 metadata[meta_key].update(stat.get_meta())
                 metadata[meta_key].update(stat.get_station_coords())
-                metadata[meta_key]['data_id'] = self.data_id
-                metadata[meta_key]['ts_type'] = self.TS_TYPE
-                #metadata[meta_key]['variables'] = stat["variables"]
+                metadata[meta_key]["data_id"] = self.data_id
+                metadata[meta_key]["ts_type"] = self.TS_TYPE
+                # metadata[meta_key]['variables'] = stat["variables"]
                 # Is instrumentname
-                if 'instrument_name' in stat and stat['instrument_name'] is not None:
-                    instr = stat['instrument_name']
+                if "instrument_name" in stat and stat["instrument_name"] is not None:
+                    instr = stat["instrument_name"]
                 else:
                     instr = self.INSTRUMENT_NAME
 
-                metadata[meta_key]['instrument_name'] = instr
-                metadata[meta_key]['data_revision'] = self.data_revision
+                metadata[meta_key]["instrument_name"] = instr
+                metadata[meta_key]["data_revision"] = self.data_revision
 
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = OrderedDict()
+                meta_idx[meta_key] = {}
 
-                num_times = len(stat['dtime'])
+                num_times = len(stat["dtime"])
                 num_vars = len(stat["var_info"])
-                temp_vars = list(stat["var_info"].keys())
-                tconv = stat['dtime'].astype('datetime64[s]')
+                temp_vars = list(stat["var_info"])
+                tconv = stat["dtime"].astype("datetime64[s]")
                 times = np.float64(tconv)
                 totnum = num_times * num_vars
 
@@ -287,7 +283,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
 
-                metadata[meta_key]['var_info'] = OrderedDict()
+                metadata[meta_key]["var_info"] = {}
                 for var_count, var in enumerate(temp_vars):
 
                     values = stat[var]
@@ -301,11 +297,11 @@ class ReadAasEtal(ReadUngriddedBase):
                     else:
                         var_idx = data_obj.var_idx[var]
 
-                    metadata[meta_key]['var_info'][var] = stat['var_info'][var]
+                    metadata[meta_key]["var_info"][var] = stat["var_info"][var]
 
-                    data_obj._data[start:stop, data_obj._LATINDEX] = stat['latitude']
-                    data_obj._data[start:stop, data_obj._LONINDEX] = stat['longitude']
-                    data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = stat['altitude']
+                    data_obj._data[start:stop, data_obj._LATINDEX] = stat["latitude"]
+                    data_obj._data[start:stop, data_obj._LONINDEX] = stat["longitude"]
+                    data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = stat["altitude"]
                     data_obj._data[start:stop, data_obj._METADATAKEYINDEX] = meta_key
 
                     # write data to data object
@@ -321,19 +317,20 @@ class ReadAasEtal(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         # sanity check
         data_obj._check_index()
-        self.data = data_obj # initalizing a pointer to it selves
+        self.data = data_obj  # initalizing a pointer to it selves
         return data_obj
+
 
 def _check_line_endings(filename):
     """File that checks all line endings in an ascii file (not in use)"""
     ll = None
     wrong_endings = {}
-    with open(filename, 'r') as f:
+    with open(filename) as f:
         prev = None
         for i, line in enumerate(f.readlines()):
-            spl = line.split(',')
-            if not spl[-1] == '\n':
-                wrong_endings[i+1] = line
+            spl = line.split(",")
+            if not spl[-1] == "\n":
+                wrong_endings[i + 1] = line
             if ll is None:
                 ll = len(spl)
             elif not len(spl) == ll:
@@ -344,15 +341,12 @@ def _check_line_endings(filename):
             prev = spl
     return wrong_endings
 
+
 class ReadSulphurAasEtAl(ReadAasEtal):
     """Old name of :class:`ReadAasEtal`."""
 
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
-        msg = ('You are using an old name for class ReadAasEtal')
-        const.print_log.warning(DeprecationWarning(msg))
-
-if __name__ == "__main__":
-
-     aa = ReadAasEtal('GAWTADsubsetAasEtAl')
-     print(aa.data_id)
+        warnings.warn(
+            "You are using an old name for class ReadAasEtal", DeprecationWarning, stacklevel=2
+        )

@@ -2,13 +2,15 @@
 Mathematical low level utility methods of pyaerocom
 """
 import numpy as np
+from scipy.stats import kendalltau, pearsonr, spearmanr
 
-from scipy.stats import pearsonr, spearmanr, kendalltau
+from pyaerocom._warnings import ignore_warnings
 
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
 ### OTHER FUNCTIONS
+
 
 def is_strictly_monotonic(iter1d) -> bool:
     """
@@ -26,11 +28,13 @@ def is_strictly_monotonic(iter1d) -> bool:
     """
     return True if np.all(np.diff(iter1d) > 0) else False
 
-def make_binlist(vmin:float, vmax:float, num:int=None) -> list:
+
+def make_binlist(vmin: float, vmax: float, num: int = None) -> list:
     """"""
     if num is None:
         num = 8
-    return list(np.linspace(vmin, vmax, num+1))
+    return list(np.linspace(vmin, vmax, num + 1))
+
 
 def weighted_sum(data, weights):
     """Compute weighted sum using numpy dot product
@@ -48,6 +52,7 @@ def weighted_sum(data, weights):
         weighted sum of values in input array
     """
     return np.dot(data, weights)
+
 
 def sum(data, weights=None):
     """Summing operation with option to perform weighted sum
@@ -68,6 +73,7 @@ def sum(data, weights=None):
         return np.sum(data)
     return weighted_sum(data, weights)
 
+
 def weighted_mean(data, weights):
     """Compute weighted mean
 
@@ -84,6 +90,7 @@ def weighted_mean(data, weights):
         weighted mean of data array
     """
     return np.sum(data * weights) / np.sum(weights)
+
 
 def weighted_cov(ref_data, data, weights):
     """Compute weighted covariance
@@ -105,6 +112,7 @@ def weighted_cov(ref_data, data, weights):
     avgx = weighted_mean(ref_data, weights)
     avgy = weighted_mean(data, weights)
     return np.sum(weights * (ref_data - avgx) * (data - avgy)) / np.sum(weights)
+
 
 def weighted_corr(ref_data, data, weights):
     """Compute weighted correlation
@@ -130,6 +138,10 @@ def weighted_corr(ref_data, data, weights):
     wsigmaxy = np.sqrt(wcovxx * wcovyy)
     return wcovxy / wsigmaxy
 
+
+@ignore_warnings(
+    RuntimeWarning, "invalid value encountered in double_scalars", "An input array is constant"
+)
 def corr(ref_data, data, weights=None):
     """Compute correlation coefficient
 
@@ -151,6 +163,7 @@ def corr(ref_data, data, weights=None):
         return pearsonr(ref_data, data)[0]
     return weighted_corr(ref_data, data, weights)
 
+
 def _nanmean_and_std(data):
     """
     Calculate mean and std for input data (may contain NaN's')
@@ -169,11 +182,14 @@ def _nanmean_and_std(data):
 
     """
     if np.all(np.isnan(data)):
-        return (np.nan,np.nan)
+        return (np.nan, np.nan)
     return (np.nanmean(data), np.nanstd(data))
 
-def calc_statistics(data, ref_data, lowlim=None, highlim=None,
-                    min_num_valid=1, weights=None):
+
+@ignore_warnings(
+    RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
+)
+def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None):
     """Calc statistical properties from two data arrays
 
     Calculates the following statistical properties based on the two provided
@@ -225,7 +241,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     ref_data = np.asarray(ref_data)
 
     if not data.ndim == 1 or not ref_data.ndim == 1:
-        raise ValueError('Invalid input. Data arrays must be one dimensional')
+        raise ValueError("Invalid input. Data arrays must be one dimensional")
 
     result = {}
 
@@ -236,41 +252,41 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
 
     weighted = False if weights is None else True
 
-    result['totnum'] = float(len(mask))
-    result['num_valid'] = float(num_points)
+    result["totnum"] = float(len(mask))
+    result["num_valid"] = float(num_points)
     ref_mean, ref_std = _nanmean_and_std(ref_data)
     data_mean, data_std = _nanmean_and_std(data)
-    result['refdata_mean'] = ref_mean
-    result['refdata_std'] = ref_std
-    result['data_mean'] = data_mean
-    result['data_std'] = data_std
-    result['weighted'] = weighted
+    result["refdata_mean"] = ref_mean
+    result["refdata_std"] = ref_std
+    result["data_mean"] = data_mean
+    result["data_std"] = data_std
+    result["weighted"] = weighted
 
     if not num_points >= min_num_valid:
         if lowlim is not None:
-            valid = np.logical_and(data>lowlim, ref_data>lowlim)
+            valid = np.logical_and(data > lowlim, ref_data > lowlim)
             data = data[valid]
             ref_data = ref_data[valid]
         if highlim is not None:
-            valid = np.logical_and(data<highlim, ref_data<highlim)
+            valid = np.logical_and(data < highlim, ref_data < highlim)
             data = data[valid]
             ref_data = ref_data[valid]
 
-        result['rms'] = np.nan
-        result['nmb'] = np.nan
-        result['mnmb'] = np.nan
-        result['fge'] = np.nan
-        result['R'] = np.nan
-        result['R_spearman'] = np.nan
+        result["rms"] = np.nan
+        result["nmb"] = np.nan
+        result["mnmb"] = np.nan
+        result["fge"] = np.nan
+        result["R"] = np.nan
+        result["R_spearman"] = np.nan
 
         return result
 
     if lowlim is not None:
-        valid = np.logical_and(data>lowlim, ref_data>lowlim)
+        valid = np.logical_and(data > lowlim, ref_data > lowlim)
         data = data[valid]
         ref_data = ref_data[valid]
     if highlim is not None:
-        valid = np.logical_and(data<highlim, ref_data<highlim)
+        valid = np.logical_and(data < highlim, ref_data < highlim)
         data = data[valid]
         ref_data = ref_data[valid]
 
@@ -281,20 +297,21 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     if weights is not None:
         weights = weights[mask]
         weights = weights / weights.max()
-        result['NOTE'] = ('Weights were not applied to FGE and kendall and '
-                          'spearman corr (not implemented)')
+        result[
+            "NOTE"
+        ] = "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
 
-    result['rms'] = np.sqrt(np.average(diffsquare, weights=weights))
+    result["rms"] = np.sqrt(np.average(diffsquare, weights=weights))
 
     # NO implementation to apply weights yet ...
     if num_points > 1:
-        result['R'] = corr(data, ref_data, weights)
-        result['R_spearman'] = spearmanr(data, ref_data)[0]
-        result['R_kendall'] = kendalltau(data, ref_data)[0]
+        result["R"] = corr(data, ref_data, weights)
+        result["R_spearman"] = spearmanr(data, ref_data)[0]
+        result["R_kendall"] = kendalltau(data, ref_data)[0]
     else:
-        result['R'] = np.nan
-        result['R_spearman'] = np.nan
-        result['R_kendall'] = np.nan
+        result["R"] = np.nan
+        result["R_spearman"] = np.nan
+        result["R_kendall"] = np.nan
 
     sum_diff = sum(difference, weights=weights)
     sum_refdata = sum(ref_data, weights=weights)
@@ -307,7 +324,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     else:
         nmb = sum_diff / sum_refdata
 
-    sum_data_refdata = (data + ref_data)
+    sum_data_refdata = data + ref_data
     # for MNMB, and FGE: don't divide by 0 ...
     mask = ~np.isnan(sum_data_refdata)
     num_points = mask.sum()
@@ -318,18 +335,20 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         tmp = difference[mask] / sum_data_refdata[mask]
         if weights is not None:
             weights = weights[mask]
-        mnmb = 2. / num_points * sum(tmp, weights=weights)
-        fge = 2. / num_points * sum(np.abs(tmp), weights=weights)
+        mnmb = 2.0 / num_points * sum(tmp, weights=weights)
+        fge = 2.0 / num_points * sum(np.abs(tmp), weights=weights)
 
-    result['nmb'] = nmb
-    result['mnmb'] = mnmb
-    result['fge'] = fge
+    result["nmb"] = nmb
+    result["mnmb"] = mnmb
+    result["fge"] = fge
 
     return result
+
 
 def closest_index(num_array, value):
     """Returns index in number array that is closest to input value"""
     return np.argmin(np.abs(np.asarray(num_array) - value))
+
 
 def numbers_in_str(input_string):
     """This method finds all numbers in a string
@@ -355,7 +374,7 @@ def numbers_in_str(input_string):
     [42, 100]
     """
     numbers = []
-    IN_NUM=False
+    IN_NUM = False
     c_num = None
     for char in input_string:
         try:
@@ -368,7 +387,7 @@ def numbers_in_str(input_string):
         except Exception:
             if IN_NUM:
                 numbers.append(c_num)
-            IN_NUM=False
+            IN_NUM = False
     if IN_NUM:
         numbers.append(c_num)
     return numbers
@@ -394,6 +413,7 @@ def exponent(num):
     3
     """
     return np.floor(np.log10(abs(np.asarray(num)))).astype(int)
+
 
 def range_magnitude(low, high):
     """Returns magnitude of value range
@@ -423,45 +443,6 @@ def range_magnitude(low, high):
     """
     return exponent(high) - exponent(low)
 
-if __name__ == "__main__":
-    #import doctest
-    exp = exponent(23)
-    #print(numbers_in_str('Bla42Blub100'))
-    #run tests in all docstrings
-    #doctest.testmod()
-
-    mod = np.ones(20)
-    obs = np.ones(20)
-    weights = np.ones(20)
-
-    weights[10] = 100
-
-    mod[10] = 10
-    obs[10] = 10
-
-    c1 = calc_statistics(mod, obs)
-    c2 = calc_statistics(mod, obs, weights=weights)
-
-    assert c1['nmb'] == 0
-    assert c1['mnmb'] == 0
-    assert c1['R'] == 1
-
-    assert c2['nmb'] == 0
-    assert c2['mnmb'] == 0
-    assert c2['R'] == 1
-
-    obs[10] = 9
-
-    c1 = calc_statistics(mod, obs)
-    c2 = calc_statistics(mod, obs, weights=weights)
-
-    wm = weighted_mean(mod, weights)
-
-    print(wm)
-
-    wcov = weighted_cov(obs, mod, weights)
-    print(wcov)
-
 
 def estimate_value_range(vmin, vmax, extend_percent=0):
     """
@@ -487,7 +468,7 @@ def estimate_value_range(vmin, vmax, extend_percent=0):
 
     """
     if not vmax > vmin:
-        raise ValueError('vmax needs to exceed vmin')
+        raise ValueError("vmax needs to exceed vmin")
     # extent value range by +/- 5%
     offs = (vmax - vmin) * extend_percent * 0.01
     vmin, vmax = vmin - offs, vmax + offs
@@ -508,7 +489,7 @@ def _init_stats_dummy():
     for k in calc_statistics([1], [1]):
         stats_dummy[k] = np.nan
 
-    #Test to make sure these variables are defined even when yearly and season != all
+    # Test to make sure these variables are defined even when yearly and season != all
     stats_dummy["R_spatial_mean"] = np.nan
     stats_dummy["R_spatial_median"] = np.nan
     stats_dummy["R_temporal_mean"] = np.nan

@@ -1,16 +1,18 @@
 import fnmatch
+import logging
 import os
 from configparser import ConfigParser
 
 from cf_units import Unit
 
-from pyaerocom import logger
-from pyaerocom.variable import Variable
 from pyaerocom.exceptions import VariableDefinitionError
-from pyaerocom.variable_helpers import parse_variables_ini, parse_aliases_ini
+from pyaerocom.variable import Variable
+from pyaerocom.variable_helpers import parse_aliases_ini, parse_variables_ini
+
+logger = logging.getLogger(__name__)
 
 
-class VarCollection(object):
+class VarCollection:
     """Variable access class based on variables.ini file"""
 
     def __init__(self, var_ini):
@@ -36,26 +38,21 @@ class VarCollection(object):
         aliases.ini.
         """
         if self._all_vars is None:
-            all_vars = [k for k in self._cfg_parser.keys()]
-            all_vars.extend(self._vars_added.keys())
-            self._all_vars = all_vars
+            self._all_vars = list(self._cfg_parser) + list(self._vars_added)
         return self._all_vars
-
 
     @property
     def var_ini(self):
         """Config file specifying variable information"""
         return self._var_ini
 
-
     @var_ini.setter
     def var_ini(self, var_ini):
         if not isinstance(var_ini, str):
-            raise ValueError(f'Invalid input for var_ini, need str')
+            raise ValueError(f"Invalid input for var_ini, need str")
         elif not os.path.exists(var_ini):
-            raise FileNotFoundError(f'File {var_ini} does not exist')
+            raise FileNotFoundError(f"File {var_ini} does not exist")
         self._var_ini = var_ini
-
 
     def add_var(self, var):
         """Add a new variable to this collection
@@ -78,23 +75,19 @@ class VarCollection(object):
         None
         """
         if not isinstance(var.var_name, str):
-            raise ValueError('Attr. var_name needs to be assigned to input '
-                             'variable')
+            raise ValueError("Attr. var_name needs to be assigned to input variable")
         if var.var_name in self.all_vars:
-            raise VariableDefinitionError(f'variable with name {var.var_name} '
-                                          f'is already defined')
+            raise VariableDefinitionError(f"variable with name {var.var_name} is already defined")
         if not isinstance(var, Variable):
-            raise ValueError('Can only add instances of Variable class...')
+            raise ValueError("Can only add instances of Variable class...")
         if not isinstance(var.units, str):
             if not isinstance(var.units, Unit):
-                raise ValueError('Please assign a unit to the new input '
-                                 'variable')
+                raise ValueError("Please assign a unit to the new input variable")
             var.units = str(var.units)
         self._all_vars.append(var.var_name)
         self._vars_added[var.var_name] = var
 
-
-    def delete_variable(self, var_name:str) -> None:
+    def delete_variable(self, var_name: str) -> None:
         """
         Remove input variable from this collection
 
@@ -114,14 +107,14 @@ class VarCollection(object):
 
         """
         all_vars = self.all_vars
-        matches = [i for i, x in enumerate(all_vars) if x==var_name]
+        matches = [i for i, x in enumerate(all_vars) if x == var_name]
         if len(matches) == 0:
+            raise VariableDefinitionError(f"No such variable {var_name} in VarCollection")
+        elif len(matches) > 1:
             raise VariableDefinitionError(
-                f'No such variable {var_name} in VarCollection')
-        elif len(matches) >1:
-            raise VariableDefinitionError(
-                f'FATAL: found multiple matches for variable {var_name} in '
-                f'VarCollection. Please check variables.ini')
+                f"FATAL: found multiple matches for variable {var_name} in "
+                f"VarCollection. Please check variables.ini"
+            )
         all_vars.pop(matches[0])
         self._all_vars == all_vars
         if var_name in self._vars_added:
@@ -152,8 +145,8 @@ class VarCollection(object):
         var = Variable(var_name, cfg=self._cfg_parser)
         if not var.var_name_aerocom in self:
             raise VariableDefinitionError(
-                'Error (VarCollection): input variable '
-                '{} is not supported'.format(var_name))
+                f"Error (VarCollection): input variable {var_name} is not supported"
+            )
         return var
 
     def find(self, search_pattern):
@@ -178,8 +171,9 @@ class VarCollection(object):
         for var in self:
             if fnmatch.fnmatch(var.var_name, search_pattern):
                 matches.append(var.var_name)
-            elif (isinstance(var.standard_name, str) and
-                  fnmatch.fnmatch(var.standard_name, search_pattern)):
+            elif isinstance(var.standard_name, str) and fnmatch.fnmatch(
+                var.standard_name, search_pattern
+            ):
                 matches.append(var.var_name)
         return matches
 
@@ -210,7 +204,7 @@ class VarCollection(object):
         return self.get_var(var_name)
 
     def __repr__(self):
-        return f'VarCollection ({len(self)} entries)'
+        return f"VarCollection ({len(self)} entries)"
 
     def __str__(self):
         return repr(self)

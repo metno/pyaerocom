@@ -1,7 +1,9 @@
 import numpy as np
+
 from pyaerocom import region
 
-class Filter(object):
+
+class Filter:
     """Class that can be used to filter gridded and ungridded data objects
 
     Note
@@ -15,19 +17,21 @@ class Filter(object):
     Include also temporal filtering and other filter options (e.g. variable,
     etc.)
     """
+
     #: dictionary specifying altitude filters
-    ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for
-                        'noMOUNTAINS'   :   [-1e6, 1e3]} # 1000 m upper limit
+    ALTITUDE_FILTERS = {
+        "wMOUNTAINS": None,  # reserve namespace for
+        "noMOUNTAINS": [-1e6, 1e3],
+    }  # 1000 m upper limit
 
-    LAND_OCN_FILTERS = ['LAND', 'OCN'] # these are HTAP filters
+    LAND_OCN_FILTERS = ["LAND", "OCN"]  # these are HTAP filters
 
-    NO_REGION_FILTER_NAME = 'WORLD'
-    NO_ALTITUDE_FILTER_NAME = 'wMOUNTAINS'
+    NO_REGION_FILTER_NAME = "WORLD"
+    NO_ALTITUDE_FILTER_NAME = "wMOUNTAINS"
 
-    _DELIM = '-'
+    _DELIM = "-"
 
-    def __init__(self, name=None, region=None, altitude_filter=None,
-                 land_ocn=None, **kwargs):
+    def __init__(self, name=None, region=None, altitude_filter=None, land_ocn=None, **kwargs):
         # default name (i.e. corresponds to no filtering)
         self._name = None
 
@@ -36,8 +40,7 @@ class Filter(object):
         if name is not None:
             self.name = name
         else:
-            self.name = '{}-{}'.format(self.NO_REGION_FILTER_NAME,
-                                       self.NO_ALTITUDE_FILTER_NAME)
+            self.name = f"{self.NO_REGION_FILTER_NAME}-{self.NO_ALTITUDE_FILTER_NAME}"
 
     @property
     def name(self):
@@ -55,15 +58,14 @@ class Filter(object):
     def _check_name_valid(self, val):
         if not isinstance(val, list):
             if not isinstance(val, str):
-                raise ValueError('Need list or string as input for name attr '
-                                 'got {}'.format(val))
+                raise ValueError(f"Need list or string as input for name attr got {val}")
             spl = val.split(self._DELIM)
         else:
             spl = val
         # make sure there are no duplicate strings in the name
         spl = list(np.unique(spl))
         if len(spl) > 3:
-            raise ValueError('Filter name must not exceed 3 specifications')
+            raise ValueError("Filter name must not exceed 3 specifications")
         reg = None
         alt_filter = None
         landsea = None
@@ -71,29 +73,28 @@ class Filter(object):
             if entry in self.valid_regions:
                 if entry in self.LAND_OCN_FILTERS:
                     if landsea is not None:
-                        raise ValueError('Filter name must only contain one '
-                                         'landsea specification')
+                        raise ValueError("Filter name must only contain one landsea specification")
                     landsea = entry
                 else:
                     if reg is not None:
-                        raise ValueError('Only one region may be specified')
+                        raise ValueError("Only one region may be specified")
                     reg = entry
 
             elif entry in self.valid_alt_filter_codes:
                 if alt_filter is not None:
-                    raise ValueError('Only one altitude filter can be specified')
+                    raise ValueError("Only one altitude filter can be specified")
                 alt_filter = entry
             else:
-                raise ValueError('Invalid input for filter name {}'.format(entry))
+                raise ValueError(f"Invalid input for filter name {entry}")
         if reg is None:
-            reg = 'WORLD'
+            reg = "WORLD"
         if alt_filter is None:
-            alt_filter = 'wMOUNTAINS'
+            alt_filter = "wMOUNTAINS"
 
         lst = [reg, alt_filter]
         if landsea is not None:
             lst.append(landsea)
-        return '{}'.format(self._DELIM).join(lst)
+        return f"{self._DELIM}".join(lst)
 
     @property
     def spl(self):
@@ -130,16 +131,17 @@ class Filter(object):
     def from_list(self, lst):
         """Set filter name based on input list"""
         if not isinstance(lst, list):
-            raise TypeError('Invalid input, need list...')
+            raise TypeError("Invalid input, need list...")
         if len(lst) > 3:
-            raise ValueError('Maximum length 3 of individual filter entries '
-                             'exceeded for input {}'.format(lst))
-        self.name = '-'.join(lst)
+            raise ValueError(
+                f"Maximum length 3 of individual filter entries exceeded for input {lst}"
+            )
+        self.name = "-".join(lst)
 
     @property
     def valid_alt_filter_codes(self):
         """Valid codes for altitude filters"""
-        return list(self.ALTITUDE_FILTERS.keys())
+        return list(self.ALTITUDE_FILTERS)
 
     @property
     def valid_land_sea_filter_codes(self):
@@ -157,11 +159,13 @@ class Filter(object):
 
     def to_dict(self):
         """Convert filter to dictionary"""
-        return {'region'    :   self.region_name,
-                'lon_range' :   self.lon_range,
-                'lat_range' :   self.lat_range,
-                'alt_range' :   self.alt_range,
-                'land_sea'  :   self.land_ocn}
+        return {
+            "region": self.region_name,
+            "lon_range": self.lon_range,
+            "lat_range": self.lat_range,
+            "alt_range": self.alt_range,
+            "land_sea": self.land_ocn,
+        }
 
     def apply(self, data_obj):
         """Apply filter to data object

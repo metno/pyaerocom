@@ -1,17 +1,23 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-from collections import OrderedDict as od
-from datetime import datetime
+import logging
+
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom.time_config import TS_TYPES
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.mathutils import numbers_in_str
+from pyaerocom import const
+from pyaerocom.exceptions import (
+    AeronetReadError,
+    MetaDataError,
+    StationCoordinateError,
+    VariableNotFoundError,
+)
 from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.exceptions import MetaDataError, VariableNotFoundError
-from pyaerocom import const, print_log
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.mathutils import numbers_in_str
+from pyaerocom.time_config import TS_TYPES
+from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
+
 
 class ReadAeronetBase(ReadUngriddedBase):
     """TEMPLATE: Abstract base class template for reading of Aeronet data
@@ -19,10 +25,11 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
-    __baseversion__ = '0.12_' + ReadUngriddedBase.__baseversion__
+
+    __baseversion__ = "0.14_" + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
-    COL_DELIM = ','
+    COL_DELIM = ","
 
     #: dictionary assigning temporal resolution flags for supported datasets
     #: that are provided in a defined temporal resolution. Key is the name
@@ -46,14 +53,14 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
 
-    META_NAMES_FILE_ALT = {},
+    META_NAMES_FILE_ALT = ({},)
 
     #: name of measurement instrument
-    INSTRUMENT_NAME = 'sun_photometer'
+    INSTRUMENT_NAME = "sun_photometer"
 
     #: Default data unit that is assigned to all variables that are not
     #: specified in UNITS dictionary (cf. :attr:`UNITS`)
-    DEFAULT_UNIT = '1'
+    DEFAULT_UNIT = "1"
 
     #: Variable specific units, only required for variables that deviate from
     #: :attr:`DEFAULT_UNIT` (is irrelevant for all variables that are
@@ -61,14 +68,14 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: are dimensionless as specified in :attr:`DEFAULT_UNIT`)
     UNITS = {}
 
-    IGNORE_META_KEYS = ['date', 'time', 'day_of_year']
+    IGNORE_META_KEYS = ["date", "time", "day_of_year"]
+
     def __init__(self, data_id=None, data_dir=None):
-        super(ReadAeronetBase, self).__init__(data_id=data_id,
-                                              data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
 
         # dictionary that contains information about the file columns
         # is written in method _update_col_index
-        self._col_index = od()
+        self._col_index = {}
 
         # header string referring to the content in attr. col_index. Is
         # updated whenever the former is updated (i.e. when method
@@ -82,12 +89,12 @@ class ReadAeronetBase(ReadUngriddedBase):
         self._alt_var_cols = {}
 
     def _ts_type_from_data_id(self):
-        if '.' in self.data_id:
-            ts_type = self.data_id.split('.')[-1]
+        if "." in self.data_id:
+            ts_type = self.data_id.split(".")[-1]
             if ts_type in TS_TYPES:
                 self.TS_TYPES[self.data_id] = ts_type
                 return ts_type
-        raise AttributeError('Failed to retrieve ts_type from data_id')
+        raise AttributeError("Failed to retrieve ts_type from data_id")
 
     @property
     def TS_TYPE(self):
@@ -98,7 +105,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             try:
                 return self._ts_type_from_data_id()
             except AttributeError:
-                return 'undefined'
+                return "undefined"
 
     @property
     def col_index(self):
@@ -149,13 +156,13 @@ class ReadAeronetBase(ReadUngriddedBase):
         nums = numbers_in_str(colname)
         if len(nums) == 1:
             if low <= int(nums[0]) <= high:
-                self.logger.debug('Succesfully extracted wavelength {} nm '
-                                 'from column name {}'.format(nums[0], colname))
+                self.logger.debug(
+                    f"Succesfully extracted wavelength {nums[0]} nm from column name {colname}"
+                )
                 return nums[0]
-        raise ValueError('Failed to extract wavelength from colname {}'
-                         .format(colname))
+        raise ValueError(f"Failed to extract wavelength from colname {colname}")
 
-    def _update_col_index(self, col_index_str, use_all_possible=False):
+    def _update_col_index(self, col_index_str):
         """Update file column information for fast access during read_file
 
         Note
@@ -167,10 +174,6 @@ class ReadAeronetBase(ReadUngriddedBase):
         ----------
         col_index_str : str
             header string of data table in files
-        use_all_possible : bool
-            if True, than all available variables belonging to either of the
-            variable families that are specified in :attr:`VAR_PATTERNS_FILE`
-            are identified from the file header.
 
         Returns
         -------
@@ -184,17 +187,14 @@ class ReadAeronetBase(ReadUngriddedBase):
             if one of the specified meta data columns does not exist in data
         """
         cols = col_index_str.strip().split(self.COL_DELIM)
-        mapping = od()
+        mapping = {}
         for idx, info_str in enumerate(cols):
             if info_str in mapping:
-                mapping[info_str] = 'MULTI'
+                mapping[info_str] = "MULTI"
             else:
                 mapping[info_str] = idx
 
-        if use_all_possible:
-            col_index = self._find_vars_pattern_based(mapping)
-        else:
-            col_index = self._find_vars_name_based(mapping, cols)
+        col_index = self._find_vars_name_based(mapping, cols)
         self._col_index = col_index
         self._last_col_index_str = col_index_str
         self._last_col_order = cols
@@ -209,41 +209,12 @@ class ReadAeronetBase(ReadUngriddedBase):
                 for alt_name in alt_names:
                     if alt_name in mapping:
                         return alt_name
-        raise MetaDataError("Required meta-information string {} could "
-                            "not be found in file header".format(val))
-
-    def _find_vars_pattern_based(self, mapping):
-        raise NotImplementedError('Coming soon... maybe... if needed')
-        col_index = od()
-        # find meta indices
-        for key, val in self.META_NAMES_FILE.items():
-            if not val in mapping:
-                val = self._check_alternative_colnames(val, mapping)
-            col_index[key] = mapping[val]
-        p = self.VAR_PATTERNS_FILE
-
-        for pattern, aerocom_name in self.VAR_PATTERNS_FILE.items():
-            if not '*' in aerocom_name:
-                raise ValueError('Invalid entry in search pattern for Aerocom '
-                                 'var pattern {} (search key {}): Aerocom var '
-                                 'pattern must require * (which is used to '
-                                 'replace identified value from search group '
-                                 'in file header'
-                                 .format(aerocom_name, pattern))
-            if '*' in pattern:
-                import fnmatch
-
-# =============================================================================
-#             for col_name, idx in mapping.items():
-#                 result = re.match(pattern, col_name)
-#                 if result is not None:
-#                     if len(result.groups()) != 1:
-#                         raise Exception('Found more than one match')
-# =============================================================================
-        return col_index
+        raise MetaDataError(
+            f"Required meta-information string {val} could not be found in file header"
+        )
 
     def _find_vars_name_based(self, mapping, cols):
-        col_index = od()
+        col_index = {}
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
             if not val in mapping:
@@ -264,9 +235,10 @@ class ReadAeronetBase(ReadUngriddedBase):
                         idx = self._search_var_wavelength_tol(var, cols)
                         col_index[var] = idx
                     except Exception as e:
-                        self.logger.info('Failed to infer data column of '
-                                         'variable {} within wavelength tolerance '
-                                         'range.Error:\n{}'.format(var, repr(e)))
+                        self.logger.info(
+                            f"Failed to infer data column of variable {var} "
+                            f"within wavelength tolerance range. Error:\n{repr(e)}"
+                        )
         return col_index
 
     def _search_var_wavelength_tol(self, var, cols):
@@ -278,18 +250,16 @@ class ReadAeronetBase(ReadUngriddedBase):
         tol = var_info.obs_wavelength_tol_nm
         low, high = wvl - tol, wvl + tol
         if wvl is None:
-            raise AttributeError('Variable {} does not contain '
-                                 'wavelength information'.format(var))
+            raise AttributeError(f"Variable {var} does not contain wavelength information")
 
         # variable information exists and contains wavelength info
         wvl_str = self.infer_wavelength_colname(colname)
-        check_mask = colname.replace(wvl_str, '')
+        check_mask = colname.replace(wvl_str, "")
         if not wvl == float(wvl_str):
-            raise ValueError('Wavelength mismatch between '
-                             'pyaerocom Variable {} and '
-                             'wavelength inferred from '
-                             'Aeronet column name {}'.
-                             format(var, colname))
+            raise ValueError(
+                f"Wavelength mismatch between pyaerocom Variable {var} and "
+                f"wavelength inferred from Aeronet column name {colname}"
+            )
 
         # it is possible to extract wavelength from column
         # name and the extracted number corresponds to
@@ -306,7 +276,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             else:
                 wvl_col = float(wvl_str_col)
                 if low <= wvl_col <= high:
-                    mask = col.replace(wvl_str_col, '')
+                    mask = col.replace(wvl_str_col, "")
                     if check_mask == mask:
                         diff = abs(wvl_col - wvl)
                         if diff < wvl_diff_min:
@@ -316,16 +286,24 @@ class ReadAeronetBase(ReadUngriddedBase):
                             if not col in self._alt_var_cols[var]:
                                 self._alt_var_cols[var].append(col)
                             return i
-        raise VariableNotFoundError('Did not find an alternative data column '
-                                    'for variable {} within allowed wavelength '
-                                    'tolerance range of +/- {} nm.'
-                                    .format(var, tol))
+        raise VariableNotFoundError(
+            f"Did not find an alternative data column for variable {var} "
+            f"within allowed wavelength tolerance range of +/- {tol} nm."
+        )
+
     def print_all_columns(self):
         for col in self._last_col_order:
             print(col)
 
-    def read(self, vars_to_retrieve=None, files=None, first_file=None,
-             last_file=None, file_pattern=None, common_meta=None):
+    def read(
+        self,
+        vars_to_retrieve=None,
+        files=None,
+        first_file=None,
+        last_file=None,
+        file_pattern=None,
+        common_meta=None,
+    ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -382,54 +360,68 @@ class ReadAeronetBase(ReadUngriddedBase):
         meta_key = 0.0
         idx = 0
 
-        #assign metadata object
+        # assign metadata object
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
         num_vars = len(vars_to_retrieve)
         num_files = len(files)
-        print_log.info('Reading AERONET data')
+        logger.info("Reading AERONET data")
+        skipped = 0
         for i in tqdm(range(num_files)):
-
             _file = files[i]
-            station_data = self.read_file(_file,
-                                          vars_to_retrieve=vars_to_retrieve)
+            try:
+                station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            except AeronetReadError as e:
+                self.logger.warning(f"\n{repr(e)}.")
+                skipped += 1
+                continue
+
+            try:
+                statmeta = station_data.get_meta()
+            except StationCoordinateError as e:
+                stat = station_data.station_name
+                if isinstance(stat, (list, np.ndarray)):
+                    stat = stat[0]
+                logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
+                skipped += 1
+                continue
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            meta = od()
-            meta['var_info'] = od()
-            meta.update(station_data.get_meta())
-            #metadata[meta_key].update(station_data.get_station_coords())
-            meta['data_id'] = self.data_id
-            meta['ts_type'] = self.TS_TYPE
-            #meta['variables'] = vars_to_retrieve
-            if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
-                instr = station_data['instrument_name']
+            meta = {}
+            meta["var_info"] = {}
+            meta.update(statmeta)
+
+            meta["data_id"] = self.data_id
+            meta["ts_type"] = self.TS_TYPE
+            # meta['variables'] = vars_to_retrieve
+            if "instrument_name" in station_data and station_data["instrument_name"] is not None:
+                instr = station_data["instrument_name"]
             else:
                 instr = self.INSTRUMENT_NAME
-            meta['instrument_name'] = instr
-            meta['data_revision'] = self.data_revision
-            meta['filename'] = _file
+            meta["instrument_name"] = instr
+            meta["data_revision"] = self.data_revision
+            meta["filename"] = _file
 
             meta.update(**common_meta)
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            meta_idx[meta_key] = od()
+            meta_idx[meta_key] = {}
 
-            num_times = len(station_data['dtime'])
+            num_times = len(station_data["dtime"])
 
-            #access array containing time stamps
+            # access array containing time stamps
             # TODO: check using index instead (even though not a problem here
             # since all Aerocom data files are of type timeseries)
-            times = np.float64(station_data['dtime'])
+            times = np.float64(station_data["dtime"])
 
             totnum = num_times * num_vars
 
-            #check if size of data object needs to be extended
+            # check if size of data object needs to be extended
             if (idx + totnum) >= data_obj._ROWNO:
-                #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                # if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
 
             for var_idx, var in enumerate(vars_to_retrieve):
@@ -437,16 +429,12 @@ class ReadAeronetBase(ReadUngriddedBase):
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
-                #write common meta info for this station (data lon, lat and
-                #altitude are set to station locations)
-                data_obj._data[start:stop,
-                               data_obj._LATINDEX] = station_data['latitude']
-                data_obj._data[start:stop,
-                               data_obj._LONINDEX] = station_data['longitude']
-                data_obj._data[start:stop,
-                               data_obj._ALTITUDEINDEX] = station_data['altitude']
-                data_obj._data[start:stop,
-                               data_obj._METADATAKEYINDEX] = meta_key
+                # write common meta info for this station (data lon, lat and
+                # altitude are set to station locations)
+                data_obj._data[start:stop, data_obj._LATINDEX] = station_data["latitude"]
+                data_obj._data[start:stop, data_obj._LONINDEX] = station_data["longitude"]
+                data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = station_data["altitude"]
+                data_obj._data[start:stop, data_obj._METADATAKEYINDEX] = meta_key
 
                 # write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = times
@@ -455,63 +443,34 @@ class ReadAeronetBase(ReadUngriddedBase):
 
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
-                if var in station_data['var_info']:
-                    if 'units' in station_data['var_info'][var]:
-                        u = station_data['var_info'][var]['units']
-                    elif 'unit' in station_data['var_info'][var]:
+                if var in station_data["var_info"]:
+                    if "units" in station_data["var_info"][var]:
+                        u = station_data["var_info"][var]["units"]
+                    elif "unit" in station_data["var_info"][var]:
                         from pyaerocom.exceptions import MetaDataError
-                        raise MetaDataError('Metadata attr unit is deprecated, '
-                                            'please use units')
+
+                        raise MetaDataError("Metadata attr unit is deprecated, please use units")
                     else:
                         u = self.DEFAULT_UNIT
                 elif var in self.UNITS:
                     u = self.UNITS[var]
                 else:
                     u = self.DEFAULT_UNIT
-                meta['var_info'][var] = od(units=u)
+                meta["var_info"][var] = dict(units=u)
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
             idx += totnum
             metadata[meta_key] = meta
-            meta_key = meta_key + 1.
+            meta_key = meta_key + 1.0
 
+        if skipped:
+            logger.warning(
+                f"{skipped} out of {len(files)} files have been skipped (for "
+                f"details see output)."
+            )
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        #data_obj.data_revision[self.data_id] = self.data_revision
+        # data_obj.data_revision[self.data_id] = self.data_revision
         self.data = data_obj
         return data_obj
-
-if __name__=="__main__":
-    class ReadUngriddedImplementationExample(ReadUngriddedBase):
-        _FILEMASK = ".txt"
-        DATA_ID = "Blaaa"
-        __version__ = "0.01"
-        PROVIDES_VARIABLES = ["od550aer"]
-        REVISION_FILE = const.REVISION_FILE
-
-
-        def __init__(self, data_id=None, data_dir=None):
-            super(ReadUngriddedImplementationExample, self).__init__(
-                    data_id, data_dir)
-
-        @property
-        def DEFAULT_VARS(self):
-            return self.PROVIDES_VARIABLES
-
-        @property
-        def SUPPORTED_DATASETS(self):
-            return [self.DATA_ID]
-
-        @property
-        def TS_TYPE(self):
-            raise NotImplementedError
-
-        def read(self):
-            raise NotImplementedError
-
-        def read_file(self):
-            raise NotImplementedError
-
-    c = ReadUngriddedImplementationExample()
-

@@ -8,14 +8,20 @@ http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html
 Note
 ----
 UNDER DEVELOPMENT -> NOT READY YET
-
 """
 
+import logging
+
 from pyaerocom import const
-from pyaerocom.exceptions import (CoordinateNameError,
-                                  VariableNotFoundError,
-                                  VariableDefinitionError,
-                                  DataDimensionError)
+from pyaerocom.exceptions import (
+    CoordinateNameError,
+    DataDimensionError,
+    VariableDefinitionError,
+    VariableNotFoundError,
+)
+
+logger = logging.getLogger(__name__)
+
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
     """Convert atmosphere sigma coordinate to pressure in Pa
@@ -49,9 +55,9 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
         try:
             ptop = float(ptop)
         except Exception as e:
-            raise ValueError('Invalid input for ptop. Need floating point\n'
-                             'Error: {}'.format(repr(e)))
+            raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
     return ptop + sigma * (ps - ptop)
+
 
 def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0=None):
     """Convert atmosphere_hybrid_sigma_pressure_coordinate to  pressure in Pa
@@ -88,10 +94,11 @@ def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0=None):
 
     """
     if not len(a) == len(b):
-        raise ValueError('Invalid input: a and b must have the same length')
+        raise ValueError("Invalid input: a and b must have the same length")
     if p0 is None:
-        return a + b*ps
-    return a*p0 + b*ps
+        return a + b * ps
+    return a * p0 + b * ps
+
 
 def geopotentialheight2altitude(geopotential_height):
     """Convert geopotential height in m to altitude in m
@@ -111,11 +118,14 @@ def geopotentialheight2altitude(geopotential_height):
     Computed altitude levels
     """
 
-    const.print_log.warning('Conversion method of geopotential height to '
-                            'altitude is not yet implemented and returns the '
-                            'input values. The introduced error is small at '
-                            'tropospheric altitudes')
+    logger.warning(
+        "Conversion method of geopotential height to "
+        "altitude is not yet implemented and returns the "
+        "input values. The introduced error is small at "
+        "tropospheric altitudes"
+    )
     return geopotential_height
+
 
 def pressure2altitude(p, *args, **kwargs):
     """General formula to convert atm. pressure to altitude
@@ -154,9 +164,11 @@ def pressure2altitude(p, *args, **kwargs):
     altitudes in m corresponding to input pressure levels in defined atmosphere
     """
     if not const.GEONUM_AVAILABLE:
-        raise ModuleNotFoundError('Feature disabled: need geonum library')
+        raise ModuleNotFoundError("Feature disabled: need geonum library")
     from geonum import atmosphere as atm
+
     return atm.pressure2altitude(p, *args, **kwargs)
+
 
 def is_supported(standard_name):
     """Checks if input coordinate standard name is supported by pyaerocom
@@ -173,45 +185,41 @@ def is_supported(standard_name):
     """
     return True if standard_name in VerticalCoordinate.REGISTERED else False
 
-class VerticalCoordinate(object):
+
+class VerticalCoordinate:
 
     NAMES_SUPPORTED = {
-    'altitude'                                      : 'z',
-    'air_pressure'                                  : 'pres',
-    'geopotential_height'                           : 'gph',
-    'atmosphere_sigma_coordinate'                   : 'asc',
-    'atmosphere_hybrid_sigma_pressure_coordinate'   : 'ahspc',
+        "altitude": "z",
+        "air_pressure": "pres",
+        "geopotential_height": "gph",
+        "atmosphere_sigma_coordinate": "asc",
+        "atmosphere_hybrid_sigma_pressure_coordinate": "ahspc",
     }
 
     STANDARD_NAMES = dict(map(reversed, NAMES_SUPPORTED.items()))
 
-    NAMES_NOT_SUPPORTED = ['model_level_number']
+    NAMES_NOT_SUPPORTED = ["model_level_number"]
 
     #: registered names
     REGISTERED = list(NAMES_SUPPORTED) + NAMES_NOT_SUPPORTED
 
     CONVERSION_METHODS = {
-    'asc'   :   atmosphere_sigma_coordinate_to_pressure,
-    'ahspc' :   atmosphere_hybrid_sigma_pressure_coordinate_to_pressure,
-    'gph'   :   geopotentialheight2altitude
+        "asc": atmosphere_sigma_coordinate_to_pressure,
+        "ahspc": atmosphere_hybrid_sigma_pressure_coordinate_to_pressure,
+        "gph": geopotentialheight2altitude,
     }
 
     CONVERSION_REQUIRES = {
-
-    'asc'   :   ['sigma', 'ps', 'ptop'],
-    'ahspc' :   ['a', 'b', 'ps', 'p0'],
-    'gph'   :   []
+        "asc": ["sigma", "ps", "ptop"],
+        "ahspc": ["a", "b", "ps", "p0"],
+        "gph": [],
     }
 
-    FUNS_YIELD = {
-    'asc'   :   'air_pressure',
-    'ahspc' :   'air_pressure',
-    'gph'   :   'altitude'
-    }
+    FUNS_YIELD = {"asc": "air_pressure", "ahspc": "air_pressure", "gph": "altitude"}
 
     _LEV_INCREASES_WITH_ALT = dict(
-        atmosphere_sigma_coordinate=False,
-        atmosphere_hybrid_sigma_pressure_coordinate=False)
+        atmosphere_sigma_coordinate=False, atmosphere_hybrid_sigma_pressure_coordinate=False
+    )
 
     def __init__(self, name=None):
         self.var_name = None
@@ -228,8 +236,7 @@ class VerticalCoordinate(object):
         elif name in self.NAMES_NOT_SUPPORTED:
             self.standard_name = name
         else:
-            raise ValueError('Invalid name for vertical coordinate: {}'
-                             .format(name))
+            raise ValueError(f"Invalid name for vertical coordinate: {name}")
 
     @property
     def fun(self):
@@ -257,9 +264,10 @@ class VerticalCoordinate(object):
         if not self.var_name in self._LEV_INCREASES_WITH_ALT:
             if self.standard_name in self._LEV_INCREASES_WITH_ALT:
                 return self._LEV_INCREASES_WITH_ALT[self.standard_name]
-            raise ValueError('Failed to access information '
-                             'lev_increases_with_alt for vertical coordinate {}'
-                             .format(self.var_name))
+            raise ValueError(
+                f"Failed to access information lev_increases_with_alt "
+                f"for vertical coordinate {self.var_name}"
+            )
         return self._LEV_INCREASES_WITH_ALT[self.var_name]
 
     def calc_pressure(self, lev, **kwargs):
@@ -282,11 +290,10 @@ class VerticalCoordinate(object):
 
         if not self.var_name in self.NAMES_SUPPORTED:
 
-            raise CoordinateNameError('Variable {} cannot be converted to '
-                                      'pressure levels. Conversion is only '
-                                      'possible for supported variables:\n{}'
-                                      .format(self.var_name,
-                                              self.vars_supported_str))
+            raise CoordinateNameError(
+                f"Variable {self.var_name} cannot be converted to pressure levels. "
+                f"Conversion is only possible for supported variables:\n{self.vars_supported_str}"
+            )
 
         coord_values = kwargs.pop(self.var_name)
         return self.fun(coord_values, **kwargs)
@@ -294,6 +301,7 @@ class VerticalCoordinate(object):
     @property
     def vars_supported_str(self):
         from pyaerocom._lowlevel_helpers import dict_to_str
+
         return dict_to_str(self.NAMES_SUPPORTED)
 
     def pressure2altitude(self, p, **kwargs):
@@ -307,33 +315,33 @@ class VerticalCoordinate(object):
         Returns
         -------
         """
-        raise NotImplementedError('Coming soon...')
-        #pressure2altitude(p, **kwargs)
+        raise NotImplementedError("Coming soon...")
+        # pressure2altitude(p, **kwargs)
         return
 
-class AltitudeAccess(object):
+
+class AltitudeAccess:
 
     #: Additional variable names (in AEROCOM convention) that are used
     #: to search for additional files that can be used to access or compute
     #: the altitude levels at each grid point
-    ADD_FILE_VARS = ['z', 'z3d', 'pres', 'deltaz3d']
+    ADD_FILE_VARS = ["z", "z3d", "pres", "deltaz3d"]
 
     #: Additional variables that are required to compute altitude levels
-    ADD_FILE_REQ = {'deltaz3d' : ['ps']}
+    ADD_FILE_REQ = {"deltaz3d": ["ps"]}
 
-    ADD_FILE_OPT = {'pres'  :   ['temp']}
+    ADD_FILE_OPT = {"pres": ["temp"]}
 
     def __init__(self, gridded_data):
-        from pyaerocom import logger
         from pyaerocom.griddeddata import GriddedData
+
         if not isinstance(gridded_data, GriddedData):
-            raise ValueError('Invalid input: require instance of GriddedData '
-                             'class')
+            raise ValueError("Invalid input: require instance of GriddedData class")
         if not gridded_data.has_latlon_dims:
-            raise NotImplementedError('Altitude access requires latitude and '
-                                      'longitude dimensions to be available '
-                                      'in  input GriddedData: {}'
-                                      .format(gridded_data.short_str()))
+            raise NotImplementedError(
+                f"Altitude access requires latitude and longitude dimensions to be available "
+                f"in input GriddedData: {gridded_data.short_str()}"
+            )
         self.data_obj = gridded_data
         self._subset1d = None
         self._checked_and_failed = []
@@ -390,8 +398,9 @@ class AltitudeAccess(object):
 
         d = self.data_obj
         if not d.has_latlon_dims:
-            raise DataDimensionError('Gridded data object needs both latitude '
-                                     'and longitude dimensions')
+            raise DataDimensionError(
+                "Gridded data object needs both latitude and longitude dimensions"
+            )
         try:
             d.check_dimcoords_tseries()
         except DataDimensionError:
@@ -404,10 +413,10 @@ class AltitudeAccess(object):
                 test_coord[dim_coord] = d[dim_coord].points[0]
         subset = d.sel(**test_coord)
         if not subset.ndim == 1:
-            raise DataDimensionError('Something went wrong with extraction of '
-                                     '1D subset at coordinate {}. Resulting '
-                                     'data object has {} dimensions instead'
-                                     .format(test_coord, subset.ndim))
+            raise DataDimensionError(
+                f"Something went wrong with extraction of 1D subset at coordinate {test_coord}. "
+                f"Resulting data object has {subset.ndim} dimensions instead"
+            )
         self._subset1d = subset
         return subset
 
@@ -443,8 +452,7 @@ class AltitudeAccess(object):
             try:
                 coord_info = const.COORDINFO[coord]
             except VariableDefinitionError:
-                raise CoordinateNameError('Coordinate {} is not supported by '
-                                          'pyaerocom.'.format(coord))
+                raise CoordinateNameError(f"Coordinate {coord} is not supported by pyaerocom.")
             # 1. check if coordinate is assigned in data object directly
             d._update_coord_info()
             if coord in d._coord_var_names:
@@ -452,7 +460,7 @@ class AltitudeAccess(object):
             else:
                 try:
                     self[coord] = d.search_other(coord)
-                    print('Adding coord {}'.format(coord))
+                    print(f"Adding coord {coord}")
                 except Exception:
                     all_ok = False
         return all_ok
@@ -547,12 +555,14 @@ class AltitudeAccess(object):
         subset._update_coord_info()
         cstd_name = coord.standard_name
         if not subset[cstd_name].ndim == 1:
-            raise DataDimensionError('Unexpected error: dimension of variable '
-                                     '{} should be 1'.format(cstd_name))
+            raise DataDimensionError(
+                f"Unexpected error: dimension of variable {cstd_name} should be 1"
+            )
         raise NotImplementedError
 
     def get_altitude(self, latitude, longitude):
         raise NotImplementedError
+
 
 # =============================================================================
 #     ### ToDo: CHECK IF THE FOLLOWING METHODS WILL BE REQUIRED
@@ -624,8 +634,7 @@ class AltitudeAccess(object):
 #             if _var in r.vars:
 #                 return r.read_var(_var, start=d.start, stop=d.stop,
 #                                   ts_type=d.ts_type, flex_ts_type=False)
-#         raise VariableNotFoundError('Auxiliary variable {} could not be found'
-#                                     .format(add_var_name))
+#         raise VariableNotFoundError(f'Auxiliary variable {add_var_name} could not be found')
 #
 #     def _check_coord_conversion(self, add_var_data, add_var_data_req,
 #                                 add_var_data_opt):
@@ -652,71 +661,4 @@ class AltitudeAccess(object):
 #             elif add_var_data.standard_name == 'geopotential_height':
 #                 self._check_coord_conversion(add_var_data, add_var_data_req,
 #                                              add_var_data_opt)
-# =============================================================================
-
-if __name__ == '__main__':
-    import pyaerocom as pya
-
-# =============================================================================
-#     # has pressure field directly
-#     reader0 = pya.io.ReadGridded('GISS-MATRIX_GLOFIR0p5')
-#
-#     d0 = reader0.read_var('ec550aer',
-#                           vert_which='ModelLevel',
-#                           start=2008)
-#
-#     d0.altitude_access.check_altitude_access()
-# =============================================================================
-    #d0.reorder_dimensions_tseries()
-    #d0 = d0[0]
-
-    #subset = d0.sel(latitude=30, longitude=15)
-
-    #p = d0['air_pressure']
-
-    reader1 = pya.io.ReadGridded('ECHAM6-SALSA_CTRL2016-PD')
-
-    d1 = reader1.read_var('od550aer3d',
-                          vert_which='ModelLevel',
-                          start=2010)
-
-    aac1 = d1.altitude_access
-    aac1.check_altitude_access()
-# =============================================================================
-#     reader2 = pya.io.ReadGridded('OsloCTM3v1.01')
-#
-#     d2 = reader2.read_var('ec550aer',
-#                           vert_which='ModelLevel',
-#                           start=2010)
-#     d2['lon']
-#     aac2 = d2.altitude_access
-#
-#     subset2 = aac2.extract_1D_subset_from_data()
-#
-#
-#     #print(subset1)
-#     print(subset2)
-# =============================================================================
-
-# =============================================================================
-#     import numpy as np
-#     import pyaerocom as pya
-#
-#     pya.change_verbosity('warning')
-#     c = VerticalCoordinate('pressure')
-#
-#     arr = np.linspace(1013*100, 100*100, 100)
-#     print(arr)
-#
-#     print(c.calc_altitude(p=arr))
-#
-#
-#     r = pya.io.ReadGridded('CAM5.3-Oslo_AP3-CTRL2016-PD')
-#     print(r)
-#     data = r.read_var('ec5503Daer')
-#
-#     acc = AltitudeAccess(data)
-#     acc.find_and_import_auxvars()
-#
-#
 # =============================================================================

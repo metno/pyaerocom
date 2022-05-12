@@ -1,49 +1,51 @@
-from argparse import ArgumentParser
-from pyaerocom import const, tools
+from typing import Optional
 
-def init_parser():
+import typer
 
-    ap = ArgumentParser(description='pyaerocom command line interface')
+from pyaerocom import __package__, __version__, const, tools
 
-    ap.add_argument('-b', '--browse', help='Browse database')
-    ap.add_argument('--clearcache', action='store_true',
-                    help='Delete cached data objects')
-    ap.add_argument('--ppiaccess', action='store_true',
-                    help='Check if MetNO PPI can be accessed')
+main = typer.Typer()
 
-    return ap
 
-def confirm():
-    """
-    Ask user to confirm something
+def version_callback(value: bool):
+    if not value:
+        return
 
-    Returns
-    -------
-    bool
-        True if user answers yes, else False
-    """
-    answer = ""
-    while answer not in ["y", "n"]:
-        answer = input("[Y/N]? ").lower()
-    return answer == 'y'
+    typer.echo(f"{__package__} {__version__}")
+    raise typer.Exit()
 
-def main():
-    ap = init_parser()
 
-    args = ap.parse_args()
+@main.callback()
+def callback(
+    version: Optional[bool] = typer.Option(None, "--version", "-V", callback=version_callback)
+):
+    """Pyaerocom Command Line Interface"""
 
-    if args.browse:
-        print('Searching database for matches of {}'.format(args.browse))
-        print(tools.browse_database(args.browse))
 
-    if args.clearcache:
-        print('Are you sure you want to delete all cached data objects?')
-        if confirm():
-            print('OK then.... here we go!')
-            tools.clear_cache()
-        else:
-            print('Wise decision, pyaerocom will handle it for you '
-                  'automatically anyways ;P')
+@main.command()
+def browse(database: str = typer.Argument(..., help="Provide database name.")):
+    """Browse database e.g., browse <DATABASE>"""
+    print(f"Searching database for matches of {database}")
+    print(tools.browse_database(database))
 
-    if args.ppiaccess:
-        print('True') if const.has_access_lustre else print('False')
+
+@main.command()
+def clearcache():
+    """Delete cached data objects"""
+
+    delete = typer.confirm("Are you sure you want to delete all cached data objects?")
+    if delete:
+        print("OK then.... here we go!")
+        tools.clear_cache()
+    else:
+        print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
+
+
+@main.command()
+def ppiaccess():
+    """Check if MetNO PPI can be accessed"""
+    print("True") if const.has_access_lustre else print("False")
+
+
+if __name__ == "__main__":
+    main()

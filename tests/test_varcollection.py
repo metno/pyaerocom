@@ -1,122 +1,137 @@
+from importlib import resources
+
 import pytest
-import os
-from pyaerocom import __dir__ as pyadir
+
+from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.varcollection import VarCollection
 from pyaerocom.variable import Variable
-import pyaerocom.varcollection as mod
-from .conftest import does_not_raise_exception
 
-VAR_INI = os.path.join(pyadir, 'data', 'variables.ini')
-
-def test_invalid_entries():
-    col = mod.VarCollection(VAR_INI)
-    invalid = []
-    for var in col.all_vars:
-        if '_' in var:
-            invalid.append(var)
-
-    assert len(invalid) == 0
-
-def test_VAR_INI_exists():
-    assert os.path.exists(VAR_INI)
 
 def test_VARS_is_VarCollection():
-    from pyaerocom import const
-    assert isinstance(const.VARS, mod.VarCollection)
+    assert isinstance(const.VARS, VarCollection)
 
-@pytest.mark.parametrize('var_ini,raises', [
-    (None, pytest.raises(ValueError)),
-    ('/bla/blub', pytest.raises(FileNotFoundError)),
-    (VAR_INI, does_not_raise_exception())
-])
-def test_VarCollection___init__(var_ini,raises):
-    with raises:
-        col = mod.VarCollection(var_ini)
 
-@pytest.mark.parametrize('var_name,raises', [
-    ('concpm10gt1', does_not_raise_exception()),
-    ('concpm10', pytest.raises(VariableDefinitionError)),
-])
-def test_VarCollection_add_var(var_name,raises):
-    var = Variable(var_name=var_name, units='ug m-3')
-    col = mod.VarCollection(VAR_INI)
-    with raises:
-        col.add_var(var)
-        all_vars = col.all_vars
-        assert var.var_name in all_vars
+@pytest.fixture()
+def collection() -> VarCollection:
+    with resources.path("pyaerocom.data", "variables.ini") as path:
+        assert path.exists()
+        return VarCollection(str(path))
 
-@pytest.mark.parametrize('var_name,raises', [
-    ('concpm10gt1', pytest.raises(VariableDefinitionError)),
-    ('concpm10', does_not_raise_exception()),
-])
-def test_VarCollection_delete_var(var_name,raises):
-    var = Variable(var_name=var_name, units='ug m-3')
-    col = mod.VarCollection(VAR_INI)
-    with raises:
-        col.delete_variable(var.var_name)
-        assert var.var_name not in col.all_vars
 
-@pytest.mark.parametrize('var,raises', [
-    ('bla', pytest.raises(VariableDefinitionError)),
-    ('blablub42', does_not_raise_exception()),
-    ('od550aer', does_not_raise_exception()),
-])
-def test_VarCollection_get_var(var,raises):
-    col = mod.VarCollection(VAR_INI)
-    add = Variable(var_name='blablub42')
-    col.add_var(add)
-    with raises:
-        result = col.get_var(var)
-        assert isinstance(result, Variable)
+def test_invalid_entries(collection: VarCollection):
+    invalid = ("_" in var for var in collection.all_vars)
+    assert sum(invalid) == 0
 
-@pytest.mark.parametrize('search_pattern,num,raises', [
-    ('*blaaaaaaa*', 0, does_not_raise_exception()),
-    ('dep*', 0, does_not_raise_exception()),
-    ('od*', 25, does_not_raise_exception()),
-    ('conc*', 70, does_not_raise_exception()),
-])
-def test_VarCollection_find(search_pattern,num,raises):
-    col = mod.VarCollection(VAR_INI)
-    with raises:
-        result = col.find(search_pattern)
-        assert len(result) == num
 
-def test_VarCollection_delete_var_MULTIDEF():
-    var = Variable(var_name='concpm10', units='ug m-3')
-    col = mod.VarCollection(VAR_INI)
-    col.all_vars.append('concpm10')
-    with pytest.raises(VariableDefinitionError):
-        col.delete_variable(var.var_name)
+@pytest.mark.parametrize(
+    "var_ini,exception,error",
+    [
+        pytest.param(None, ValueError, "Invalid input for var_ini, need str", id="ValueError"),
+        pytest.param(
+            "/bla/blub", FileNotFoundError, "File /bla/blub does not exist", id="FileNotFoundError"
+        ),
+    ],
+)
+def test_VarCollection___init___error(var_ini, exception, error: str):
+    with pytest.raises(exception) as e:
+        VarCollection(var_ini)
+    assert str(e.value) == error
 
-def test_VarCollection___dir__():
-    col = mod.VarCollection(VAR_INI)
-    result = dir(col)
-    all_vars = col.all_vars
+
+def test_VarCollection_add_var(collection: VarCollection):
+    var = Variable(var_name="concpm10gt1", units="ug m-3")
+    collection.add_var(var)
+    assert var.var_name in collection.all_vars
+
+
+def test_VarCollection_add_var_error(collection: VarCollection):
+    var = Variable(var_name="concpm10", units="ug m-3")
+    with pytest.raises(VariableDefinitionError) as e:
+        collection.add_var(var)
+    assert str(e.value) == f"variable with name {var.var_name} is already defined"
+
+
+def test_VarCollection_delete_var(collection: VarCollection):
+    var = Variable(var_name="concpm10", units="ug m-3")
+    collection.delete_variable(var.var_name)
+    assert var.var_name not in collection.all_vars
+
+
+def test_VarCollection_delete_var_error(collection: VarCollection):
+    var = Variable(var_name="concpm10gt1", units="ug m-3")
+    with pytest.raises(VariableDefinitionError) as e:
+        collection.delete_variable(var.var_name)
+    assert str(e.value) == f"No such variable {var.var_name} in VarCollection"
+
+
+@pytest.mark.parametrize("var_name", ["blablub42", "od550aer"])
+def test_VarCollection_get_var(collection: VarCollection, var_name: str):
+    collection.add_var(Variable(var_name="blablub42"))
+    assert isinstance(collection.get_var(var_name), Variable)
+
+
+def test_VarCollection_get_var_error(collection: VarCollection):
+    var_name = "bla"
+    with pytest.raises(VariableDefinitionError) as e:
+        collection.get_var(var_name)
+    assert str(e.value) == f"Error (VarCollection): input variable {var_name} is not supported"
+
+
+@pytest.mark.parametrize(
+    "search_pattern,num",
+    [
+        ("*blaaaaaaa*", 0),
+        ("dep*", 0),
+        ("od*", 25),
+        ("conc*", 71),
+    ],
+)
+def test_VarCollection_find(collection: VarCollection, search_pattern: str, num: int):
+    result = collection.find(search_pattern)
+    assert len(result) == num
+
+
+def test_VarCollection_delete_var_MULTIDEF(collection: VarCollection):
+    var_name = "concpm10"
+    collection.all_vars.append(var_name)
+    with pytest.raises(VariableDefinitionError) as e:
+        collection.delete_variable(var_name)
+    assert f"found multiple matches for variable {var_name} in VarCollection" in str(e.value)
+
+
+def test_VarCollection___dir__(collection: VarCollection):
+    result = dir(collection)
+    all_vars = collection.all_vars
 
     assert len(result) == len(all_vars)
     assert result == sorted(all_vars)
 
-@pytest.mark.parametrize('var,result', [
-    ('blablub', False),
-    ('od550aer', True)
-])
-def test_VarCollection___contains__(var,result):
-    col = mod.VarCollection(VAR_INI)
-    val = var in col
-    assert val==result
 
-def test_VarCollection___len__():
-    col = mod.VarCollection(VAR_INI)
-    assert len(col) > 0
+@pytest.mark.parametrize("var_name,found", [("blablub", False), ("od550aer", True)])
+def test_VarCollection___contains__(collection: VarCollection, var_name: str, found: bool):
+    assert (var_name in collection) == found
 
-def test_VarCollection___getitem__():
-    col = mod.VarCollection(VAR_INI)
-    assert isinstance(col['od550aer'], Variable)
-    with pytest.raises(VariableDefinitionError):
-        col['blaaaa']
 
-def test_VarCollection___repr__():
-    assert repr(mod.VarCollection(VAR_INI)).startswith('VarCollection')
+def test_VarCollection___len__(collection: VarCollection):
+    assert len(collection) > 0
 
-def test_VarCollection___str__():
-    assert str(mod.VarCollection(VAR_INI)).startswith('VarCollection')
+
+def test_VarCollection___getitem__(collection: VarCollection):
+    assert isinstance(collection["od550aer"], Variable)
+
+
+def test_VarCollection___getitem___error(collection: VarCollection):
+    var_name = "blaaaa"
+    assert var_name not in collection
+    with pytest.raises(VariableDefinitionError) as e:
+        collection[var_name]
+    assert str(e.value).endswith(f"input variable {var_name} is not supported")
+
+
+def test_VarCollection___repr__(collection: VarCollection):
+    assert repr(collection).startswith("VarCollection")
+
+
+def test_VarCollection___str__(collection: VarCollection):
+    assert str(collection).startswith("VarCollection")

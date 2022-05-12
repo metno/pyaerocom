@@ -1,20 +1,20 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 High level I/O utility methods for pyaerocom
 """
 
+from pyaerocom import change_verbosity, const
 from pyaerocom.io.aerocom_browser import AerocomBrowser
 from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom.io.readungridded import ReadUngridded
-from pyaerocom import const, change_verbosity
+
 
 def get_ungridded_reader(obs_id):
 
     for reader in ReadUngridded.SUPPORTED_READERS:
         if obs_id in reader.SUPPORTED_DATASETS:
             return reader
-    raise ValueError('No ungridded reader found that supports {}'.format(obs_id))
+    raise ValueError(f"No ungridded reader found that supports {obs_id}")
+
 
 def browse_database(model_or_obs, verbose=False):
     """Browse Aerocom database using model or obs ID (or wildcard)
@@ -48,19 +48,20 @@ def browse_database(model_or_obs, verbose=False):
 
     """
     if not verbose:
-        change_verbosity('critical')
+        change_verbosity("critical")
     else:
-        change_verbosity('debug')
+        change_verbosity("debug")
     browser = AerocomBrowser()
     matches = browser.find_matches(model_or_obs)
     if len(matches) == 0:
-        print('No match could be found for {}'.format(model_or_obs))
+        print(f"No match could be found for {model_or_obs}")
         return
     elif len(matches) > 20:
-        print('Found more than 20 matches for input pattern {}:\n\n'
-              'Matches: {}\n\n'
-              'To receive more detailed information, please specify search ID '
-              'more accurately'.format(model_or_obs, matches))
+        print(
+            f"Found more than 20 matches for input pattern {model_or_obs}:\n\n"
+            f"Matches: {matches}\n\n"
+            f"To receive more detailed information, please specify search ID more accurately"
+        )
         return
     for match in matches:
         try:
@@ -70,16 +71,5 @@ def browse_database(model_or_obs, verbose=False):
                 reader = ReadGridded(match)
             print(reader)
         except Exception as e:
-            print('Reading failed for {}. Error: {}'.format(match,
-                  repr(e)))
+            print(f"Reading failed for {match}. Error: {repr(e)}")
     return matches
-
-if __name__=='__main__':
-
-    obs_id = 'AATSR*'
-
-    browse_database('AATSR_SU*')
-
-    browse_database('AATSR*ORAC*v4*')
-
-    browse_database(obs_id)

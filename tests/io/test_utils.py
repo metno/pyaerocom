@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 High level I/O utility methods for pyaerocom
 """
@@ -18,17 +16,21 @@ from ..conftest import lustre_unavail
 def name(obj):
     return obj.__name__
 
+
 TESTDATA = [
-    ('EBASMC', ReadEbas),
-    ('AeronetSunV3Lev2.daily', ReadAeronetSunV3),
-    ('AeronetSDAV3Lev2.daily', ReadAeronetSdaV3),
-    ('AeronetInvV3Lev2.daily', ReadAeronetInvV3),
-    ('GAWTADsubsetAasEtAl', ReadAasEtal)
+    ("EBASMC", ReadEbas),
+    ("AeronetSunV3Lev2.daily", ReadAeronetSunV3),
+    ("AeronetSDAV3Lev2.daily", ReadAeronetSdaV3),
+    ("AeronetInvV3Lev2.daily", ReadAeronetInvV3),
+    ("GAWTADsubsetAasEtAl", ReadAasEtal),
 ]
-@pytest.mark.parametrize(('obs_id,reader'), TESTDATA)
+
+
+@pytest.mark.parametrize(("obs_id,reader"), TESTDATA)
 def test_get_ungridded_reader(obs_id, reader):
     assert name(utils.get_ungridded_reader(obs_id)) == name(reader)
 
+
 @lustre_unavail
 def test_browse_database():
-    assert 'TM5-met2010_AP3-CTRL2019' in utils.browse_database('*TM5*CTRL*')
+    assert "TM5-met2010_AP3-CTRL2019" in utils.browse_database("*TM5*CTRL*")
