@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 TESTDATA_NAME = "testdata-minimal"
 
 #: That's were the testdata can be downloaded from
-TESTDATA_URL = f"https://pyaerocom.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.ebas_202201"
+TESTDATA_URL = f"https://pyaerocom-ng.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.ebas_202201"
 
 #: Directory where testdata will be downloaded into
 TESTDATA_ROOT = Path(const.OUTPUTDIR) / TESTDATA_NAME
