@@ -16,7 +16,7 @@ SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
     vmro3=dict(UrRV=0.18, RV=120, alpha=0.79),
     concpm10=dict(UrRV=0.28, RV=50, alpha=0.13),
-    concpm25=dict(UrRV=0.28, RV=25, alpha=0.3),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.3),
 )
 
 
