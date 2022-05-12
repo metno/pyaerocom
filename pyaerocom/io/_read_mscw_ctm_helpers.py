@@ -223,3 +223,11 @@ def calc_vmrno2(concno2):
 
     vmrno2.attrs["units"] = "nmol mol-1"
     return vmrno2
+
+
+def calc_ebcfrac(concecbb, concecff):
+
+    ebcfrac = concecbb / (concecbb + concecff)
+
+    ebcfrac.attrs["units"] = "1"
+    return ebcfrac

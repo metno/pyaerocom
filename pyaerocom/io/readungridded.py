@@ -23,6 +23,7 @@ from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from pyaerocom.io.read_gaw import ReadGAW
 from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
+from pyaerocom.io.read_nilu_pmf import ReadNILUPMF
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
@@ -59,6 +60,7 @@ class ReadUngridded:
         ReadMarcoPolo,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        ReadNILUPMF,
     ]
 
     DONOTCACHE_NAME = "DONOTCACHE"

@@ -19,6 +19,7 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_concNtnh,
     calc_concsspm25,
     calc_conNtno3,
+    calc_ebcfrac,
     calc_vmrno2,
     calc_vmrox,
     subtract_dataarrays,
@@ -72,6 +73,8 @@ class ReadMscwCtm:
         "concCecpm25": ["concecpm25"],
         "vmrox": ["concno2", "vmro3"],
         "vmrno2": ["concno2"],
+        "concebc": ["concecbb", "concecff"],
+        "ebcfrac": ["concecbb", "concecff"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -96,6 +99,8 @@ class ReadMscwCtm:
         "concCecpm25": update_EC_units,
         "vmrox": calc_vmrox,
         "vmrno2": calc_vmrno2,
+        "concebc": add_dataarrays,
+        "ebcfrac": calc_ebcfrac,
     }
 
     #: supported filename masks, placeholder is for frequencies
@@ -687,10 +692,10 @@ class ReadMscwCtm:
             if len(filedata) == 1:
                 data = filedata[list(filedata)[0]][emep_var]
             else:
-                if ts_type == "hourly":
-                    raise ValueError(
-                        f"ts_type {ts_type} can not be hourly when using multiple years"
-                    )
+                # if ts_type == "hourly":
+                #     raise ValueError(
+                #         f"ts_type {ts_type} can not be hourly when using multiple years"
+                #     )
                 data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
 
         except KeyError:
