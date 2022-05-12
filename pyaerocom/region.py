@@ -373,17 +373,3 @@ def find_closest_region_coord(
     matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
 
     return matches
-
-    # if len(matches) == 1:
-    #     return matches[0], matches
-
-    # min_dist = 1e6
-    # best = None
-    # for match in matches:
-    #     region = regions[match]
-    #     dist = region.distance_to_center(lat, lon)
-    #     if dist < min_dist:
-    #         min_dist = dist
-    #         best = match
-
-    # return best, matches
