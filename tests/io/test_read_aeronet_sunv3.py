@@ -66,7 +66,7 @@ def test_get_od550lt1ang(reader):
     reader.get_file_list()
     file = reader.files[-3]
     data = reader.read_file(file, vars_to_retrieve="od550lt1ang")
-    assert all(x in data for x in ["od550lt1ang"])
+    assert "od550lt1ang" in data
     test_data = reader.read_file(file)
     test_data = np.where(test_data["ang4487aer"] < 1.0, test_data["od550aer"], np.nan)
-    assert_allclose(np.nanmean(data["od550lt1ang"]), np.nanmean(test_data),rtol=1e-3)
+    assert_allclose(np.nanmean(data["od550lt1ang"]), np.nanmean(test_data), rtol=1e-3)
