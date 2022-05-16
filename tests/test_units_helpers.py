@@ -3,7 +3,6 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
-
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.units_helpers import (
     _check_unit_endswith_freq,
@@ -55,6 +54,8 @@ def test__unit_conversion_fac_si(from_unit: str, to_unit: str, result: float):
         ("concbc", "ug C/m3", "ug m-3", 1),
         ("concoa", "ug C/m3", "ug m-3", 1),
         ("concoc", "ug C/m3", "ug m-3", 1),
+        ("concpm25", "ug m-3", "1", 1),
+        ("concpm10", "ug m-3", "1", 1),
         ("wetso4", "kg S/ha", "kg m-2", 0.0003),
         ("concso4pr", "mg S/L", "g m-3", 2.995821),
     ],
@@ -116,7 +117,7 @@ def test_convert_unit(from_unit: str, to_unit: str, var_name: str, result: float
     ],
 )
 def test_get_unit_conversion_fac(
-    from_unit: str, to_unit: str, var_name: str | None, ts_type: str | None, result: float
+        from_unit: str, to_unit: str, var_name: str | None, ts_type: str | None, result: float
 ):
     conversion_fac = get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type)
     assert_allclose(conversion_fac, result, rtol=1e-3)
