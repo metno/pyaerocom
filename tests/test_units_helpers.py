@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
+
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.units_helpers import (
     _check_unit_endswith_freq,
@@ -117,7 +118,7 @@ def test_convert_unit(from_unit: str, to_unit: str, var_name: str, result: float
     ],
 )
 def test_get_unit_conversion_fac(
-        from_unit: str, to_unit: str, var_name: str | None, ts_type: str | None, result: float
+    from_unit: str, to_unit: str, var_name: str | None, ts_type: str | None, result: float
 ):
     conversion_fac = get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type)
     assert_allclose(conversion_fac, result, rtol=1e-3)
