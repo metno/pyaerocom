@@ -10,7 +10,7 @@ pyaerocom
 
 **Tutorials:** https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/index.html
 
-**AeroCom:** https://aeroval.met.no
+**AeroCom:** https://aerocom.met.no
 
 **AeroVal** evaluation portal: https://aeroval.met.no/
 
