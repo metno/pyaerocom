@@ -21,8 +21,10 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_conNtnh_emep,
     calc_conNtno3,
     calc_conNtno3_emep,
+    calc_ebcfrac,
     calc_vmrno2,
     calc_vmrox,
+    identity,
     subtract_dataarrays,
     update_EC_units,
 )
@@ -73,9 +75,16 @@ class ReadMscwCtm:
         # "concNtnh": ["concnh3", "concnh4"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concssf", "concssc"],
-        "concCecpm25": ["concecpm25"],
         "vmrox": ["concno2", "vmro3"],
         "vmrno2": ["concno2"],
+        "concecpm25": ["concecFine"],
+        "concecpm10": ["concecFine", "concecCoarse"],
+        "concCecpm10": ["concecpm10"],
+        "concCecpm25": ["concecpm25"],
+        "concCocpm25": ["concCocFine"],
+        "concCocpm10": ["concCocFine", "concCocCoarse"],
+        "concebc": ["concecbb", "concecff"],
+        "ebcfrac": ["concecbb", "concecff"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -99,9 +108,16 @@ class ReadMscwCtm:
         # "concNtnh": calc_concNtnh,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
+        "concecpm25": identity,
+        "concecpm10": add_dataarrays,
         "concCecpm25": update_EC_units,
+        "concCecpm10": update_EC_units,
+        "concCocpm25": identity,
+        "concCocpm10": add_dataarrays,
         "vmrox": calc_vmrox,
         "vmrno2": calc_vmrno2,
+        "concebc": add_dataarrays,
+        "ebcfrac": calc_ebcfrac,
     }
 
     #: supported filename masks, placeholder is for frequencies
