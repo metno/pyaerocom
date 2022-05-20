@@ -1,9 +1,11 @@
+import enum
 import fnmatch
 import glob
 import logging
 import os
 import re
 from datetime import datetime, timedelta
+from email.quoprimime import header_check
 from typing import List, Optional
 
 import numpy as np
@@ -49,6 +51,225 @@ from pyaerocom.units_helpers import get_unit_conversion_fac
 logger = logging.getLogger(__name__)
 
 
+class ECOCLevoFile:
+
+    CONV_STR = lambda self, l: str(l.strip())
+    CONV_PI = lambda self, l: "; ".join([x.strip() for x in l.split(";")])
+    CONV_MULTIINT = lambda self, l: [int(x) for x in l.strip().split()]
+    CONV_MULTIFLOAT = lambda self, l: [float(x) for x in l.strip().split()]
+    CONV_INT = lambda self, l: int(l.strip())
+    CONV_FLOAT = lambda self, l: float(l.strip())
+    _STARTDATE_FMT = "%Y%m%d%H%M%S"
+
+    # Flags
+
+    ALLOWED_FLAGS = [0, 147, 780]  # 147 and 780 are for zero/negative values
+
+    meta_data = {
+        "pi": "",
+        "station_name": "",
+        "station_code": "",
+        "units": {"EC": "", "OC": "", "levoglucosan": ""},
+        "start_date": "",
+        "dtime": [],
+        "revision_date": "",
+        "station_latitude": -1,
+        "station_longitude": -1,
+        "station_altitude": -1,
+        "missing_val": [],
+        "resolution_code": "1h",
+        "data_level": 2,
+        "variables": ["EC", "OC", "levoglucosan"],
+        "matrix": "",
+        "station_classification": "",
+        "area_classification": "",
+    }
+
+    data = {}
+
+    def __init__(self, file: str, sites_file: str) -> None:
+        self.file = file
+        self.sites_file = sites_file
+
+        self._read_sites_file()
+
+    def read_file(self):
+        with open(self.file, encoding="latin-1") as f:
+            [nb_header, _] = [int(i) for i in f.readline().split()]
+            full_file = f.read().split("\n")
+
+            header = full_file[: nb_header - 2]
+
+            data = full_file[nb_header - 2 :]
+
+        self._read_header(header)
+        self._read_data(data)
+        self._change_meta_data_matrix()
+
+    def _read_sites_file(self):
+        df = pd.read_excel(self.sites_file)
+
+        self.sites_df = df
+
+    def _read_data(self, data):
+
+        self.data["header"] = data[0].split()[2:]
+        data = [[float(i) for i in d.split()] for d in data[1:]]
+        for i, d in enumerate(data):
+            if len(d) == 0:
+                data.pop(i)
+        data = np.array(data)
+
+        time = [
+            pd.Timestamp(self.meta_data["start_date"] + timedelta(days=i))
+            .round("60min")
+            .to_pydatetime()
+            for i in data[:, 0]
+        ]
+
+        data = data[:, 2:]
+
+        s = data.shape
+        new_data = np.zeros((s[0], 3))
+        flag_data = np.zeros((s[0], 3), dtype=np.int16)
+
+        self.meta_data["missing_val"] = np.array(
+            [
+                self.meta_data["missing_val"][self.data["header"].index(i)]
+                for i in ["EC", "OC", "levoglucosan"]
+            ]
+        )
+        for i, d in enumerate(data):
+            new_data[i, 0] = d[self.data["header"].index("EC")]
+            new_data[i, 1] = d[self.data["header"].index("OC")]
+            new_data[i, 2] = d[self.data["header"].index("levoglucosan")]
+
+            flag_data[i, 0] = d[self.data["header"].index("EC_flag")] * 100
+            flag_data[i, 1] = d[self.data["header"].index("OC_flag")] * 100
+            flag_data[i, 2] = d[self.data["header"].index("levoglucosan_flag")] * 100
+
+            tmp = new_data[i, :]
+
+            tmp = np.where(np.isclose(tmp, self.meta_data["missing_val"]), np.nan, tmp)
+
+            if np.isnan(tmp).any() or np.sum(np.isin(flag_data[i], self.ALLOWED_FLAGS)) != 3:
+                tmp = np.ones_like(tmp) * np.nan
+            new_data[i, :] = tmp
+
+        self.data["header"] = ["EC", "OC", "levoglucosan"]
+
+        new_time = pd.date_range(time[0], time[-1], freq="d")
+
+        new_nan_data = np.ones((len(new_time), 3)) * np.nan
+
+        for i, t in enumerate(new_time):
+            if t in time:
+                new_nan_data[i, :] = new_data[time.index(t), :]
+
+        self.data["data"] = new_data  # new_nan_data
+
+        self.data["time"] = time
+
+        self.meta_data["dtime"] = np.array([t.timestamp() for t in time])
+
+    def _read_header(self, header: List[str]):
+
+        header_dict = self._scrub_header(header)
+        units = self._get_units(header)
+
+        self.meta_data["pi"] = self.CONV_PI(header[0])
+        self.meta_data["station_name"] = self.CONV_STR(header_dict["Station name"])
+        self.meta_data["station_code"] = self.CONV_STR(header_dict["Station code"])
+
+        self.meta_data["area_classification"] = self._get_station_area_classification(
+            self.meta_data["station_code"]
+        )
+
+        self.meta_data["units"]["OC"] = self.CONV_STR(units["elemental_carbon"])
+        self.meta_data["units"]["EC"] = self.CONV_STR(units["organic_carbon"])
+        self.meta_data["units"]["levoglucosan"] = self.CONV_STR(units["levoglucosan"])
+
+        self.meta_data["station_latitude"] = self.CONV_FLOAT(header_dict["Station latitude"])
+        self.meta_data["station_longitude"] = self.CONV_FLOAT(header_dict["Station longitude"])
+
+        self.meta_data["resolution_code"] = self.CONV_STR(header_dict["Sample duration"])
+        self.meta_data["matrix"] = self.CONV_STR(header_dict["Matrix"])
+
+        alt = header_dict["Station altitude"].strip()
+
+        if alt == "":
+            self.meta_data["station_altitude"] = np.nan
+        else:
+            self.meta_data["station_altitude"] = self.CONV_FLOAT(alt[:-1])
+
+        # self.meta_data["start_date"] = datetime.strptime(
+        #     header_dict["Startdate"], self._STARTDATE_FMT
+        # )
+
+        self.meta_data["start_date"] = datetime.strptime("".join(header[5].split()[:3]), "%Y%m%d")
+
+        self.meta_data["revision_date"] = datetime.strptime(
+            header_dict["Revision date"], self._STARTDATE_FMT
+        )
+
+        self.meta_data["missing_val"] = np.array(self.CONV_MULTIFLOAT(header[10]))[1:]
+
+    def _scrub_header(self, header: List[str]) -> dict[str, str]:
+        header_dict = {}
+        for line in header:
+            words = line.split(":")
+            if len(words) > 1:
+                header_dict[words[0]] = words[1].strip()
+
+        return header_dict
+
+    def _get_units(self, header) -> dict[str, str]:
+        units = {}
+        for line in header:
+            words = line.split(",")
+            if words[0] in ["levoglucosan", "organic_carbon", "elemental_carbon"]:
+                units[words[0]] = words[1]
+        return units
+
+    def _get_station_area_classification(self, station_id):
+        station_dict = {
+            "R": "rural",
+            "U": "urban",
+            "A": "urban",
+            "I": "urban",
+            "B": "urban",
+            "G": "mountain",
+            "C": "suburban",
+            "K": "traffic",
+        }
+        return station_dict[station_id[-1]]
+
+    def _change_meta_data_matrix(self):
+
+        if self.meta_data["matrix"] == "pm10":
+            matrix = "pm10"
+
+        elif (
+            self.meta_data["matrix"] == "pm25"
+            or self.meta_data["matrix"] == "pm1"
+            or self.meta_data["matrix"] == ""
+        ):
+            matrix = "pm25"
+
+        else:
+            raise ValueError(
+                f"{self.meta_data['matrix']} needs to be pm10 or pm25 for {self.file}"
+            )
+        self.data["header"] = [f"EC_{matrix}", f"OC_{matrix}", "levoglucosan"]
+        self.meta_data["variables"] = [f"EC_{matrix}", f"OC_{matrix}", "levoglucosan"]
+        units = self.meta_data.pop("units")
+        self.meta_data["units"] = {
+            f"EC_{matrix}": units["EC"],
+            f"OC_{matrix}": units["OC"],
+            "levoglucosan": units["levoglucosan"],
+        }
+
+
 class ECFile:
 
     _HEAD_ROWS_MANDATORY = [0, 5, 8, 9, 10, 11]
@@ -76,7 +297,8 @@ class ECFile:
         "resolution_code": "1h",
         "data_level": 3,
         "variables": ["eBC_bb", "eBC_ff", "EBC", "Fraction"],
-        "matrix": "aerosol",
+        "matrix": "pm25",
+        "area_classification": "",
     }
 
     data = {}
@@ -239,7 +461,7 @@ class ReadNILUPMF(ReadUngriddedBase):
     DATA_ID = const.NILU_PMF_NAME
 
     #: File mask
-    _FILEMASK = "*.nas"
+    _FILEMASK = "**/*.nas"
 
     #: Name of subdirectory containing data files (relative to
     #: :attr:`data_dir`)
@@ -283,8 +505,10 @@ class ReadNILUPMF(ReadUngriddedBase):
         concecbb="eBC_ff",
         concebc="EBC",
         ebcfrac="Fraction",
-        concoc="OC",
-        concec="EC",
+        concCocpm25="OC_pm25",
+        concCocpm10="OC_pm10",
+        concCecpm25="EC_pm25",
+        concCecpm10="EC_pm10",
         conclevoglucosan="levoglucosan",
     )
 
@@ -293,8 +517,10 @@ class ReadNILUPMF(ReadUngriddedBase):
         eBC_ff="concecff",
         EBC="concebc",
         Fraction="ebcfrac",
-        OC="concoc",
-        EC="concec",
+        OC_pm10="concCocpm10",
+        OC_pm25="concCocpm25",
+        EC_pm25="concCecpm25",
+        EC_pm10="concCecpm10",
         levoglucosan="conclevoglucosan",
     )
 
@@ -466,9 +692,11 @@ class ReadNILUPMF(ReadUngriddedBase):
         logger.info(f"Reading NILU data from {self.file_dir}")
         num_files = len(files)
         for i in tqdm(range(num_files)):
-            _file = files[i]
 
+            _file = files[i]
             station_data = self.read_file(_file)
+            # if station_data["station_id"][-1] not in ["R", "U"]:
+            #     continue
 
             # try:
             #     station_data = self.read_file(_file)
@@ -499,6 +727,9 @@ class ReadNILUPMF(ReadUngriddedBase):
 
             metadata[meta_key]["data_revision"] = self.data_revision
             metadata[meta_key]["var_info"] = {}
+            metadata[meta_key]["area_classification"] = self._get_station_area_classification(
+                station_data["station_id"]
+            )
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = {}
@@ -598,7 +829,10 @@ class ReadNILUPMF(ReadUngriddedBase):
         # else:
         #     vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
 
-        file_reader = ECFile
+        if "levoglucosan" in filename:
+            file_reader = ECOCLevoFile
+        else:
+            file_reader = ECFile
 
         file = file_reader(
             filename,
@@ -711,6 +945,8 @@ class ReadNILUPMF(ReadUngriddedBase):
         data_out["meas_height"] = meas_height
         data_out["station_altitude"] = altitude
 
+        data_out["area_classification"] = meta["area_classification"]
+
         # data_out["instrument_name"] = meta["instrument_name"]
         # data_out["instrument_type"] = meta["instrument_type"]
 
@@ -779,10 +1015,27 @@ class ReadNILUPMF(ReadUngriddedBase):
             self._loaded_aerocom_vars[var_name] = const.VARS[var_name]
         return self._loaded_aerocom_vars[var_name]
 
+    def _get_station_area_classification(self, station_id):
+        if station_id == "":
+            return ""
+        station_dict = {
+            "R": "rural",
+            "U": "urban",
+            "A": "urban",
+            "I": "urban",
+            "B": "urban",
+            "G": "mountain",
+            "C": "suburban",
+            "K": "traffic",
+            "": "",
+        }
+        return station_dict[station_id[-1]]
+
 
 if __name__ == "__main__":
-    path = "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/nilu_pmf/EIMPs_winter2017-2018_data/EIMPs_winter2017_2018_absorption_PMF"
+    path = "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/nilu_pmf/EIMPs_winter2017-2018_data/EIMPs_winter2017_2018_ECOC_Levo"
     sites_file = "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/nilu_pmf/EIMPs_winter2017-2018_data/Sites_EBC-campaign.xlsx"
     for file in glob.glob(f"{path}/*.nas"):
-        ecfile = ECFile(file, sites_file)
+        print(file)
+        ecfile = ECOCLevoFile(file, sites_file)
         ecfile.read_file()

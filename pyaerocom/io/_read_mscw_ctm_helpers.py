@@ -28,6 +28,10 @@ def add_dataarrays(*arrs):
     return result
 
 
+def identity(arr):
+    return arr
+
+
 def subtract_dataarrays(*arrs):
     """
     Subtract a bunch of :class:`xarray.DataArray` instances from an array
@@ -144,8 +148,12 @@ def calc_concNtnh(concnh3, concnh4):
 
 # ToDo: add docstring
 def update_EC_units(concecpm25):
-    concCecpm25 = concecpm25
+    M_C = 12.011
+
+    concCecpm25 = concecpm25.copy(deep=True)
+
     concCecpm25.attrs["units"] = "ug C m-3"
+    concCecpm25.attrs["var_name"] = "concCecpm25"
 
     return concCecpm25
 
