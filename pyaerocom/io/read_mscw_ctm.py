@@ -444,15 +444,44 @@ class ReadMscwCtm:
         """Variables provided by this dataset"""
         return list(self.var_map) + list(self.AUX_REQUIRES)
 
+    # def open_file(self):
+    #     """
+    #     Open current netcdf file
+
+    #     Returns
+    #     -------
+    #     dict(xarray.Dataset)
+    #         Dict with years as keys and Datasets as items
+
+    #     """
+    #     fps = self.filepaths
+    #     ds = {}
+
+    #     yrs = self._get_yrs_from_filepaths()
+
+    #     ts_type = self.ts_type_from_filename(self.filename)
+    #     fps = self._clean_filepaths(fps, yrs, ts_type)
+
+    #     for i, fp in enumerate(fps):
+    #         if not os.path.split(fp)[-1] == self.filename:
+    #             continue
+
+    #         logger.info(f"Opening {fp}")
+    #         tmp_ds = xr.open_dataset(fp)
+
+    #         ds[yrs[i]] = tmp_ds
+
+    #     self._filedata = ds
+
+    #     return ds
+
     def open_file(self):
         """
         Open current netcdf file
-
         Returns
         -------
         dict(xarray.Dataset)
             Dict with years as keys and Datasets as items
-
         """
         fps = self.filepaths
         ds = {}
@@ -461,15 +490,8 @@ class ReadMscwCtm:
 
         ts_type = self.ts_type_from_filename(self.filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
-
-        for i, fp in enumerate(fps):
-            if not os.path.split(fp)[-1] == self.filename:
-                continue
-
-            logger.info(f"Opening {fp}")
-            tmp_ds = xr.open_dataset(fp)
-
-            ds[yrs[i]] = tmp_ds
+        logger.info(f"Opening {fps}")
+        ds = xr.open_mfdataset(fps)
 
         self._filedata = ds
 
@@ -701,15 +723,15 @@ class ReadMscwCtm:
 
         try:
             filedata = self.filedata
-
-            if len(filedata) == 1:
-                data = filedata[list(filedata)[0]][emep_var]
-            else:
-                # if ts_type == "hourly":
-                #     raise ValueError(
-                #         f"ts_type {ts_type} can not be hourly when using multiple years"
-                #     )
-                data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
+            data = filedata[emep_var]
+            # if len(filedata) == 1:
+            #     data = filedata[list(filedata)[0]][emep_var]
+            # else:
+            #     # if ts_type == "hourly":
+            #     #     raise ValueError(
+            #     #         f"ts_type {ts_type} can not be hourly when using multiple years"
+            #     #     )
+            #     data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
 
         except KeyError:
             raise VarNotAvailableError(

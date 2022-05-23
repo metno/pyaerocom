@@ -91,7 +91,7 @@ class ECOCLevoFile:
         self.file = file
         self.sites_file = sites_file
 
-        self._read_sites_file()
+        # self._read_sites_file()
 
     def read_file(self):
         with open(self.file, encoding="latin-1") as f:
@@ -312,8 +312,8 @@ class ECFile:
     def __init__(self, file: str, sites_file: str) -> None:
         self.file = file
         self.sites_file = sites_file
-        self._read_fastit()
-        self._read_sites_file()
+        # self._read_fastit()
+        # self._read_sites_file()
 
     def _read_fastit(self):
         path = "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/nilu_pmf/EIMPs_winter2017-2018_data/fasit.txt"
@@ -325,7 +325,7 @@ class ECFile:
 
     def read_file(self):
         with open(self.file) as f:
-            [nb_header, _] = [int(i) for i in f.readline().split(",")]
+            [nb_header, _] = [int(i) for i in f.readline().split()]
             full_file = f.read().split("\n")
 
             header = full_file[: nb_header - 2]
@@ -342,7 +342,7 @@ class ECFile:
 
     def _read_data(self, data):
 
-        self.data["header"] = "Babs_bb   Babs_ff    eBC_ff    eBC_bb".split()
+        self.data["header"] = data[0].split()[2:]
         # "Babs_bb   Babs_ff    eBC_ff    eBC_bb".split()  # data[0].split()[2:]
 
         data = [[float(i) for i in d.split()] for d in data[1:]]
@@ -406,14 +406,15 @@ class ECFile:
 
     def _read_header(self, header: List[str]):
         self.meta_data["pi"] = self.CONV_PI(header[0])
-        self.meta_data["station_name"] = self.CONV_STR(header[17].split(":")[1])
+        self.meta_data["station_name"] = self.CONV_STR(header[18].split(":")[1])
+        self.meta_data["station_code"] = self.CONV_STR(header[17].split(":")[1])
         self.meta_data["units"]["eBC_bb"] = self.CONV_STR(header[14].split(",")[1])
         self.meta_data["units"]["eBC_ff"] = self.CONV_STR(header[15].split(",")[1])
         self.meta_data["units"]["EBC"] = self.meta_data["units"]["eBC_ff"]
 
-        self.meta_data["station_latitude"] = self.CONV_FLOAT(header[18].split(":")[1])
-        self.meta_data["station_longitude"] = self.CONV_FLOAT(header[19].split(":")[1])
-        self.meta_data["station_altitude"] = self.CONV_FLOAT(header[20].split(":")[1].strip()[:-1])
+        self.meta_data["station_latitude"] = self.CONV_FLOAT(header[19].split(":")[1])
+        self.meta_data["station_longitude"] = self.CONV_FLOAT(header[20].split(":")[1])
+        self.meta_data["station_altitude"] = self.CONV_FLOAT(header[21].split(":")[1].strip()[:-1])
 
         # lon_filtered = self.sites_df.loc[abs(self.sites_df["long"] - self.meta_data["lon"]) < 0.01]
 
@@ -692,7 +693,6 @@ class ReadNILUPMF(ReadUngriddedBase):
         logger.info(f"Reading NILU data from {self.file_dir}")
         num_files = len(files)
         for i in tqdm(range(num_files)):
-
             _file = files[i]
             station_data = self.read_file(_file)
             # if station_data["station_id"][-1] not in ["R", "U"]:
@@ -906,6 +906,7 @@ class ReadNILUPMF(ReadUngriddedBase):
         data_out["station_id"] = meta["station_code"]
         data_out["set_type_code"] = "Surface"
         data_out["station_name"] = name
+
         # if name in self.MERGE_STATIONS:
         #     data_out["station_name"] = self.MERGE_STATIONS[name]
         #     data_out["station_name_orig"] = name
