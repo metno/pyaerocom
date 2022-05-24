@@ -70,6 +70,9 @@ class Config:
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = "EBASMC"
 
+    #: NILU PMF
+    NILU_PMF_NAME = "NILU_PMF"
+
     #: EEA nmea
     EEA_NAME = "EEAAQeRep"
 

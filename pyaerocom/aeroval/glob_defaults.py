@@ -360,4 +360,7 @@ var_web_info = dict(
     vmrno2=["NO2", "3D", "Volume mixing ratios"],
     concco=["CO", "3D", "Particle concentration"],
     prmm=["Precipitation", "3D", "Precipitation"],
+    conclevoglucosan=["Levoglucosan", "3D", "Particle concentration"],
+    concCecpm10=["EC_PM10", "3D", "Particle concentration"],
+    concCocpm10=["OC_PM10", "3D", "Particle concentration"],
 )
