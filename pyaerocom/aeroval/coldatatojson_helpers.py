@@ -826,8 +826,8 @@ def _process_map_and_scat(
     scat_data = {}
     scat_dummy = [np.nan]
     for freq, cd in data.items():
-        use_dummy = True if cd is None else False
         for per in periods:
+            use_dummy = True if cd is None else False
             for season in seasons:
                 if not use_dummy:
                     try:
