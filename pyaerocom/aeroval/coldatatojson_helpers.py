@@ -827,8 +827,8 @@ def _process_map_and_scat(
     scat_dummy = [np.nan]
     for freq, cd in data.items():
         for per in periods:
-            use_dummy = True if cd is None else False
             for season in seasons:
+                use_dummy = True if cd is None else False
                 if not use_dummy:
                     try:
                         subset = _select_period_season_coldata(cd, per, season)
