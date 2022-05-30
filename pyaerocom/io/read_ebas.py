@@ -10,6 +10,7 @@ from tqdm import tqdm
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
+    calc_vmro3max,
     compute_ac550dryaer,
     compute_ang4470dryaer_from_dry_scat,
     compute_sc440dryaer,
@@ -231,6 +232,7 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxs": ["concprcpoxs", "pr"],
         "wetoxn": ["concprcpoxn", "pr"],
         "wetrdn": ["concprcprdn", "pr"],
+        "vmro3max": ["vmro3"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -250,6 +252,7 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxs": compute_wetoxs_from_concprcpoxs,
         "wetoxn": compute_wetoxn_from_concprcpoxn,
         "wetrdn": compute_wetrdn_from_concprcprdn,
+        "vmro3max": calc_vmro3max,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid

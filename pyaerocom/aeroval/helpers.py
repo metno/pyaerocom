@@ -1,10 +1,30 @@
+import glob
+import logging
+import os
+import shutil
+from pathlib import Path
+
 import pandas as pd
 
+from pyaerocom import const
+from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.helpers import start_stop, start_stop_str, to_pandas_timestamp
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.helpers import (
+    get_highest_resolution,
+    get_max_period_range,
+    make_dummy_cube,
+    start_stop,
+    start_stop_str,
+    to_pandas_timestamp,
+)
+from pyaerocom.io import ReadGridded
 from pyaerocom.tstype import TsType
+
+logger = logging.getLogger(__name__)
 
 
 def check_var_ranges_avail(model_data, var_name):
@@ -135,3 +155,55 @@ def _get_min_max_year_periods(statistics_periods):
         if perstop > stopyr:
             stopyr = perstop
     return startyr, stopyr
+
+
+def make_dummy_model(obs_list: list, cfg) -> str:
+
+    # Sets up variable for the model register
+    tmpdir = const.LOCAL_TMP_DIR
+    const.add_data_search_dir(tmpdir)
+
+    model_id = "dummy_model"
+    outdir = os.path.join(tmpdir, f"{model_id}/renamed")
+
+    os.makedirs(outdir, exist_ok=True)
+
+    # Finds dates and freq to use, so that all observations are covered
+    (start, stop) = get_max_period_range(cfg.time_cfg.periods)
+    freq = get_highest_resolution(*cfg.time_cfg.freqs)
+
+    # Loops over variables in obs
+    for obs in obs_list:
+        for var in cfg.obs_cfg[obs]["obs_vars"]:
+            # Create dummy cube
+
+            dummy_cube = make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
+
+            # Converts cube to GriddedData
+            dummy_grid = GriddedData(dummy_cube)
+
+            # Loop over each year
+            yr_gen = dummy_grid.split_years()
+
+            for dummy_grid_yr in yr_gen:
+                # Add to netcdf
+                yr = dummy_grid_yr.years_avail()[0]
+                vert_code = cfg.obs_cfg[obs]["obs_vert_type"]
+
+                save_name = dummy_grid_yr.aerocom_savename(model_id, var, vert_code, yr, freq)
+                dummy_grid_yr.to_netcdf(outdir, savename=save_name)
+
+    # Add dummy model to cfg
+    cfg.model_cfg["dummy"] = ModelEntry(model_id="dummy_model")
+
+    return model_id
+
+
+def delete_dummy_model(model_id: str) -> None:
+    tmpdir = const.LOCAL_TMP_DIR
+    const.add_data_search_dir(tmpdir)
+
+    renamed = Path(tmpdir) / f"{model_id}/renamed"
+    for path in renamed.glob("*.nc"):
+        print(f"Deleting dummy model {path}")
+        path.unlink()

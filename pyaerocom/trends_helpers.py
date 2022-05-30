@@ -158,7 +158,7 @@ def _find_area(lat, lon, regions_dict=None):
     """
     from pyaerocom.region import find_closest_region_coord
 
-    reg = find_closest_region_coord(lat, lon)
+    reg = find_closest_region_coord(lat, lon)[0]
     if regions_dict is not None and reg in regions_dict:
         return regions_dict[reg]
     return reg

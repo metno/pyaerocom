@@ -13,12 +13,13 @@ This module contains methods to cmpute the relevant FAIRMODE statistics.
 from math import isclose, sqrt
 
 import numpy as np
+from numpy import isclose, isnan, nan, sqrt
 
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
     conco3=dict(UrRV=0.18, RV=120, alpha=0.79),
     concpm10=dict(UrRV=0.28, RV=50, alpha=0.13),
-    concpm25=dict(UrRV=0.28, RV=25, alpha=0.3),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.3),
 )
 
 
@@ -38,8 +39,8 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
 
 
 def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
-    if np.isnan(R) or np.isnan(obs_std):
-        return np.nan
+    if isnan(R) or isnan(obs_std):
+        return nan
     assert obs_std >= 0, f"negative {obs_std=}"
     assert -1 <= R <= 1, f"out of range {R=}"
     if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
@@ -59,7 +60,7 @@ def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
 
 
 def fairmode_stats(obs_var: str, stats: dict) -> dict:
-    if obs_var not in SPECIES:
+    if obs_var not in SPECIES or any(isnan(list(stats.values()))):
         return {}
 
     mean = stats["refdata_mean"]
@@ -75,11 +76,11 @@ def fairmode_stats(obs_var: str, stats: dict) -> dict:
     beta_mqi = _mqi(rms, rmsu, beta=1)
 
     # Check that fairmode staistics are computed as expected by checking MQI (Model Quality Indicator) for beta = 1
-    # assert isclose(
-    #     rmsu * beta_mqi,
-    #     sqrt((bias) ** 2 + (mod_std - obs_std) ** 2 + (2 * obs_std * mod_std * (1 - R))),
-    #     rel_tol=1e-5,
-    # )
+    assert isclose(
+        rmsu * beta_mqi,
+        sqrt((bias) ** 2 + (mod_std - obs_std) ** 2 + (2 * obs_std * mod_std * (1 - R))),
+        rtol=1e-5,
+    )
 
     fairmode = dict(
         RMSU=rmsu,
