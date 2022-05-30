@@ -54,6 +54,8 @@ def test__unit_conversion_fac_si(from_unit: str, to_unit: str, result: float):
         ("concbc", "ug C/m3", "ug m-3", 1),
         ("concoa", "ug C/m3", "ug m-3", 1),
         ("concoc", "ug C/m3", "ug m-3", 1),
+        ("concpm25", "ug m-3", "1", 1),
+        ("concpm10", "ug m-3", "1", 1),
         ("wetso4", "kg S/ha", "kg m-2", 0.0003),
         ("concso4pr", "mg S/L", "g m-3", 2.995821),
     ],
