@@ -3,13 +3,13 @@
 channels:
   - conda-forge
 dependencies:
-  - iris >=3.1.0
+  - iris >=3.2.0
   - xarray >=0.16.0
-  - cartopy >=0.16.0
+  - cartopy >=0.20.0
   - matplotlib >=3.0.1
   - scipy >=1.1.0
   - pandas >=1.3.0
-  - numpy >= 0.12.0
+  - numpy >=0.12.0
   - seaborn >=0.8.0
   - dask
   - geonum
@@ -19,11 +19,12 @@ dependencies:
   - reverse-geocode
   - tqdm
   - openpyxl
-  - typer >= 0.4.0
+  - typer >=0.4.0
 ## testing
-  - pytest >= 3
+  - pytest >=6.0
   - pytest-dependency
   - pytest-cov
+  - packaging
   - pip
   - pip:
     - geojsoncontour
