@@ -113,7 +113,17 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     if not (0 <= day <= data.run.days):
         raise ValueError(f"{data} has no day #{day}")
     date = data.date + timedelta(days=day)
-    ds = ds.sel(time=f"{date:%F}", level=0.0)
+
+    select_date = date + timedelta(days=day)
+
+    dateselect = pd.date_range(select_date, select_date + timedelta(hours=23), freq="h")
+    try:
+        ds = ds.sel(time=dateselect)
+    except:
+        ds = ds.interp(time=dateselect)
+        ds = ds.sel(time=dateselect)
+
+    ds = ds.sel(level=0.0)
     ds.time.attrs["long_name"] = "time"
     ds.time.attrs["standard_name"] = "time"
 
@@ -454,7 +464,6 @@ class ReadCAMS2_83:
             convert_unit_on_init=True,
         )
         gridded.metadata["data_id"] = self.data_id
-
         return gridded
 
 
