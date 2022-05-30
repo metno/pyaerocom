@@ -11,7 +11,7 @@ GLOBAL_CONFIG = dict(
     # Description of the experiment
     proj_id="cams2-83",
     exp_id="prototype",
-    exp_name="Prototype",
+    exp_name="Prototype-daily",
     exp_descr=("Prototype for CAMS2_83 using EEA NRT obs."),
     exp_pi="Daniel Heinesen, Alvaro Valdebenito, Augustin Mortier, Charlie Negri, Krister Karlsen, Lewis Blake, Michael Gauss",
     # Whether or not the experiment is visible in the web interface
@@ -42,11 +42,11 @@ GLOBAL_CONFIG = dict(
     # The size of map used to display the results
     map_zoom="Europe",
     # Options for time
-    freqs=["monthly", "daily", "hourly"],  # Possible frequencies
+    freqs=["hourly"],  # Possible frequencies
     periods=[
         "2021-2022"
     ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
-    main_freq="monthly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
+    main_freq="hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
     # This has to be true for the web interface to show diurnal evaluation
     use_diurnal=False,
     # O3 is special, since we want to look at daily max
@@ -62,7 +62,7 @@ GLOBAL_CONFIG = dict(
     regions_how="country",
     annual_stats_constrained=False,
     weighted_stats=False,
-    forecast_evaluation=True,
+    forecast_evaluation=False,
     forecast_days=4,
     use_fairmode=True,
     # This is just the order at which the different species will be shown in the web interface

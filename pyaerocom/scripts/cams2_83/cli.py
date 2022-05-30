@@ -113,7 +113,7 @@ def make_config(
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
         str(p)
         for p in obs_paths(
-            *date_range(start_date, end_date + timedelta(days=4)), root_path=obs_path
+            *date_range(start_date, end_date + timedelta(days=0)), root_path=obs_path
         )
     ]  # type:ignore[index]
 
@@ -137,7 +137,7 @@ def runner(
         return
 
     if cache is not None:
-        const.CACHEDIR = cache
+        const.CACHEDIR = str(cache)
 
     if quiet:
         const.QUIET = True
@@ -153,8 +153,8 @@ def runner(
     logger.info(f"Running Rest of Statistics")
     ana.run()
 
-    logger.info(f"Running CAMS2_83 Spesific Statistics")
-    ana_cams2_83.run()
+    # logger.info(f"Running CAMS2_83 Spesific Statistics")
+    # ana_cams2_83.run()
 
 
 @app.command()
