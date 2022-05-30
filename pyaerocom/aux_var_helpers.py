@@ -679,7 +679,6 @@ def calc_vmro3max(data):
     o3max = data[var_name]
 
     units = data.var_info[var_name]["units"]
-    # data.var_info[new_var_name]["units"] = units
 
     if not new_var_name in data.var_info:
         data.var_info[new_var_name] = {}
@@ -687,6 +686,5 @@ def calc_vmro3max(data):
     data.var_info[new_var_name] = data.var_info[var_name]
 
     data.data_flagged[new_var_name] = flags
-    # print(data.var_info)
-    # exit()
+
     return o3max
