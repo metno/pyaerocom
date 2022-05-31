@@ -6,6 +6,7 @@ from numpy.testing import assert_allclose
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
@@ -22,7 +23,7 @@ default_setup = {
     "ts_type": "monthly",
     "start": None,
     "stop": None,
-    "filter_name": "WORLD-wMOUNTAINS",
+    "filter_name": f"{ALL_REGION_NAME}-wMOUNTAINS",
     "basedir_coldata": COL_OUT_DEFAULT,
     "save_coldata": False,
     "obs_name": None,
@@ -182,12 +183,12 @@ def test_Colocator__coldata_savename():
     col = Colocator(raise_exceptions=True)
     col.obs_name = "obs"
     col.model_name = "model"
-    col.filter_name = "WORLD"
+    col.filter_name = ALL_REGION_NAME
     col.start = 2015
     col._check_set_start_stop()
     savename = col._coldata_savename("od550aer", "od550ss", "daily")
     assert isinstance(savename, str)
-    n = "od550ss_od550aer_MOD-model_REF-obs_20150101_20151231_daily_WORLD.nc"
+    n = f"od550ss_od550aer_MOD-model_REF-obs_20150101_20151231_daily_{ALL_REGION_NAME}.nc"
     assert savename == n
 
 
@@ -315,8 +316,8 @@ def test_Colocator_run_gridded_ungridded_error(tm5_aero_stp, update, error):
 
 
 def test_colocator_filter_name():
-    col = Colocator(filter_name="WORLD")
-    assert col.filter_name == "WORLD"
+    col = Colocator(filter_name=ALL_REGION_NAME)
+    assert col.filter_name == ALL_REGION_NAME
 
 
 def test_colocator_read_ungridded():

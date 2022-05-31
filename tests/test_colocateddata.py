@@ -11,6 +11,7 @@ from numpy.testing import assert_allclose
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError, MetaDataError
 
 from .conftest import CHECK_PATHS, TESTDATADIR
@@ -333,7 +334,7 @@ def test_ColocatedData_plot_scatter(coldata, which):
 
 
 def test_meta_access_filename():
-    name = "od550bc_ang4487aer_MOD-AEROCOM-MEDIAN_REF-42AeronET_20000101_20201231_monthly_WORLD-noMOUNTAINS.nc"
+    name = f"od550bc_ang4487aer_MOD-AEROCOM-MEDIAN_REF-42AeronET_20000101_20201231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
 
     meta = {
         "model_var": "od550bc",
@@ -343,7 +344,7 @@ def test_meta_access_filename():
         "start": "20000101",
         "stop": "20201231",
         "ts_type": "monthly",
-        "filter_name": "WORLD-noMOUNTAINS",
+        "filter_name": f"{ALL_REGION_NAME}-noMOUNTAINS",
     }
 
     _meta = ColocatedData.get_meta_from_filename(name)
@@ -361,7 +362,7 @@ def test_read_colocated_data(coldata_tm5_aeronet):
     "region_id,latrange,lonrange,numst",
     [
         ("RBU", (29.45, 66.26), (22, -170), 2),  # crosses lon=180 border
-        ("WORLD", (-90, 90), (-180, 180), 8),
+        (ALL_REGION_NAME, (-90, 90), (-180, 180), 8),
         ("NHEMISPHERE", (0, 90), (-180, 180), 5),
         ("EUROPE", (40, 72), (-10, 40), 2),
         ("OCN", (-90, 90), (-180, 180), 8),
@@ -450,15 +451,15 @@ def test_ColocatedData_filter_region_error(coldata):
     [
         (
             "tm5_aeronet",
-            "od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_WORLD-noMOUNTAINS.nc",
+            f"od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc",
         ),
         (
             "fake_3d_hr",
-            "vmro3_vmro3_MOD-fakemod_REF-fakeobs_20180110_20180117_hourly_WORLD-wMOUNTAINS.nc",
+            f"vmro3_vmro3_MOD-fakemod_REF-fakeobs_20180110_20180117_hourly_{ALL_REGION_NAME}-wMOUNTAINS.nc",
         ),
         (
             "fake_3d",
-            "concpm10_concpm10_MOD-fakemod_REF-fakeobs_20000115_20191215_monthly_WORLD-wMOUNTAINS.nc",
+            f"concpm10_concpm10_MOD-fakemod_REF-fakeobs_20000115_20191215_monthly_{ALL_REGION_NAME}-wMOUNTAINS.nc",
         ),
     ],
 )

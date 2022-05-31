@@ -22,7 +22,6 @@ from pyaerocom.varcollection import VarCollection
 logger = logging.getLogger(__name__)
 
 
-
 class Config:
     """Class containing relevant paths for read and write routines
 
