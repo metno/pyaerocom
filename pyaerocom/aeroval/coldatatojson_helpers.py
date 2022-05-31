@@ -4,6 +4,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from datetime import datetime
+from nbformat import current_nbformat_minor
 
 import numpy as np
 import pandas as pd
@@ -33,6 +34,10 @@ logger = logging.getLogger(__name__)
 
 def get_heatmap_filename(ts_type):
     return f"glob_stats_{ts_type}.json"
+
+
+def get_timeseries_file_name(obs_name, var_name_web, vert_code):
+    return f"{obs_name}-{var_name_web}-{vert_code}.json"  # Agreed with Augustin to split ts files over observation and network
 
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
@@ -116,7 +121,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     write_json(current, fp, ignore_nan=True)
 
 
-def _add_entry_json(
+def _add_hm_entry_json(
     heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
@@ -137,6 +142,18 @@ def _add_entry_json(
     mn = ovc[model_name]
     mn[model_var] = result
     write_json(current, heatmap_file, ignore_nan=True)
+
+
+def _add_ts_entry_json(ts_file, result, model_name, model_var):
+    if os.path.exists(ts_file):
+        current = read_json(ts_file)
+    else:
+        current = {}
+    if not model_name in current:
+        current[model_name] = {}
+    mn = current[model_name]
+    mn[model_var] = result
+    write_json(current, ts_file, ignore_nan=True)
 
 
 def _prepare_regions_json_helper(region_ids):

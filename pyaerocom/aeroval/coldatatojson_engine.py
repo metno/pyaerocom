@@ -6,7 +6,8 @@ from pyaerocom import ColocatedData
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_entry_json,
+    _add_ts_entry_json,
+    _add_hm_entry_json,
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -19,6 +20,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _write_site_data,
     _write_stationdata_json,
     get_heatmap_filename,
+    get_timeseries_file_name,
     get_json_mapname,
     init_regions_web,
     update_regions_json,
@@ -178,10 +180,30 @@ class ColdataToJsonEngine(ProcessingEngine):
             except TemporalResolutionError:
                 stats_ts = {}
 
-            ts_file = os.path.join(out_dirs["hm/ts"], "stats_ts.json")
-            _add_entry_json(
-                ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
-            )
+            # LB: Look through the species, observations, and vertical code
+            # Write each to a json file
+            # for ts_data in stats_ts.items():
+            # var_names_web = stats_ts[data].keys()
+            for var_name_web in stats_ts[data]:
+                for obs_name in stats_ts[data][var_name_web]:
+                    for vert_code in stats_ts[data][var_name_web]:
+                        fname = get_timeseries_file_name(obs_name, var_name_web, vert_code)
+                        ts_file = os.path.join(out_dirs["hm/ts"], fname)
+                        _add_ts_entry_json(
+                            ts_file,
+                            stats_ts[data][var_name_web][vert_code],
+                            obs_name,
+                            var_name_web,
+                            vert_code,
+                            model_name,
+                            model_var,
+                        )
+
+            # LB: Below is the old way of doing it
+            # ts_file = os.path.join(out_dirs["hm/ts"], "stats_ts.json")
+            # _add_ts_entry_json(
+            #     ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
+            # )
 
             logger.info("Processing heatmap data for all regions")
             hm_all = _process_heatmap_data(
@@ -201,7 +223,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
                 hm_file = os.path.join(out_dirs["hm"], fname)
 
-                _add_entry_json(
+                _add_hm_entry_json(
                     hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
                 )
 
