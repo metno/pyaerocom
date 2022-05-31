@@ -8,8 +8,7 @@ import pytest
 
 import pyaerocom.config as testmod
 from pyaerocom import const
-from pyaerocom.config import Config
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config import ALL_REGION_NAME, Config
 
 from .conftest import lustre_avail
 

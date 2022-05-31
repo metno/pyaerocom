@@ -16,7 +16,7 @@ from pyaerocom._lowlevel_helpers import (
 )
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
-from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS, ALL_REGION_NAME
+from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
 
 logger = logging.getLogger(__name__)

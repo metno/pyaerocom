@@ -1,8 +1,9 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
 import os
 
-from ._outbase import AEROVAL_OUT
 from pyaerocom.config import ALL_REGION_NAME
+
+from ._outbase import AEROVAL_OUT
 
 MODELS = {
     "TM5-AP3-CTRL": dict(

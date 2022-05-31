@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.filter import Filter
 
 from .conftest import data_unavail
-from pyaerocom.config import ALL_REGION_NAME
 
 
 # TODO: use mark.parametrize for first 2 test functions and call test_Filter
