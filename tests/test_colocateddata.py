@@ -466,7 +466,6 @@ def test_ColocatedData_filter_region_error(coldata):
 )
 def test_ColocatedData_to_netcdf(coldata, tmp_path: Path, which: str, filename: str):
     path = tmp_path / filename
-    breakpoint()
     assert not path.exists()
     file = coldata[which].to_netcdf(tmp_path)
     assert path == Path(file)
