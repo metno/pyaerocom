@@ -1,6 +1,7 @@
 import numpy as np
 
 from pyaerocom import region
+from pyaerocom.config import ALL_REGION_NAME
 
 
 class Filter:
@@ -26,7 +27,7 @@ class Filter:
 
     LAND_OCN_FILTERS = ["LAND", "OCN"]  # these are HTAP filters
 
-    NO_REGION_FILTER_NAME = "WORLD"
+    NO_REGION_FILTER_NAME = ALL_REGION_NAME
     NO_ALTITUDE_FILTER_NAME = "wMOUNTAINS"
 
     _DELIM = "-"
@@ -87,7 +88,7 @@ class Filter:
             else:
                 raise ValueError(f"Invalid input for filter name {entry}")
         if reg is None:
-            reg = "WORLD"
+            reg = ALL_REGION_NAME
         if alt_filter is None:
             alt_filter = "wMOUNTAINS"
 

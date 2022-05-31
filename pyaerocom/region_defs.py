@@ -3,8 +3,11 @@ Definitions of rectangular regions used in pyaerocom
 
 NOTE: replaces former regions.ini in pyaerocom/data dir
 """
+
+from pyaerocom.config import ALL_REGION_NAME
+
 _AEROCOM_DEFS = {
-    "WORLD": {
+    ALL_REGION_NAME: {
         "lat_range": [-90, 90],
         "lon_range": [-180, 180],
         "lon_range_plot": [-180, 180],

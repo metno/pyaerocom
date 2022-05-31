@@ -4,6 +4,7 @@ import os
 from configparser import ConfigParser
 from importlib import resources
 from pathlib import Path
+from typing import Final
 
 import numpy as np
 
@@ -20,6 +21,9 @@ from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
 
 logger = logging.getLogger(__name__)
+
+#: Name of region containing absolute all valid data points (WORLD in old aerocom notation)
+ALL_REGION_NAME: Final = "ALL"
 
 
 class Config:
@@ -105,7 +109,7 @@ class Config:
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
-    DEFAULT_REG_FILTER = "WORLD-wMOUNTAINS"
+    DEFAULT_REG_FILTER = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations
