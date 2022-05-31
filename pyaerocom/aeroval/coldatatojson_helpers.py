@@ -635,7 +635,6 @@ def _get_stat_regions(lats, lons, regions):
 
 
 def _process_sites(data, regions, regions_how, meta_glob):
-
     freqs = list(data)
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
@@ -821,14 +820,13 @@ def _process_map_and_scat(
     use_fairmode,
     obs_var,
 ):
-
     stats_dummy = _init_stats_dummy()
     scat_data = {}
     scat_dummy = [np.nan]
     for freq, cd in data.items():
-        use_dummy = True if cd is None else False
         for per in periods:
             for season in seasons:
+                use_dummy = cd is None
                 if not use_dummy:
                     try:
                         subset = _select_period_season_coldata(cd, per, season)
@@ -1009,7 +1007,6 @@ def _prep_stats_json(stats):
 
 
 def _get_extended_stats(coldata, use_weights):
-
     stats = coldata.calc_statistics(use_area_weights=use_weights)
 
     # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
@@ -1115,7 +1112,6 @@ def _process_heatmap_data(
     add_trends,
     trends_min_yrs,
 ):
-
     output = {}
     stats_dummy = _init_stats_dummy()
     for freq, coldata in data.items():
