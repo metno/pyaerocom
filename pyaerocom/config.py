@@ -4,7 +4,6 @@ import os
 from configparser import ConfigParser
 from importlib import resources
 from pathlib import Path
-from typing import Final
 
 import numpy as np
 
@@ -17,13 +16,11 @@ from pyaerocom._lowlevel_helpers import (
 )
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
-from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
+from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS, ALL_REGION_NAME
 from pyaerocom.varcollection import VarCollection
 
 logger = logging.getLogger(__name__)
 
-#: Name of region containing absolute all valid data points (WORLD in old aerocom notation)
-ALL_REGION_NAME: Final = "ALL"
 
 
 class Config:
