@@ -8,7 +8,6 @@ from cf_units import Unit
 from numpy.testing import assert_allclose
 
 from pyaerocom import GriddedData, const, helpers
-from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     _colocate_site_data_helper,
@@ -17,6 +16,7 @@ from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
 )
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.io import ReadMscwCtm
 
 from ._conftest_helpers import create_fake_station_data
@@ -139,15 +139,26 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     "addargs,ts_type,shape,obsmean,modmean",
     [
         (
-            dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+            dict(
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
+                min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
+            ),
             "monthly",
             (2, 12, 8),
             0.315930,
             0.275671,
         ),
-        (dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS"), "monthly", (2, 12, 8), 0.316924, 0.275671),
         (
-            dict(filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+            dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS"),
+            "monthly",
+            (2, 12, 8),
+            0.316924,
+            0.275671,
+        ),
+        (
+            dict(
+                filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE
+            ),
             "monthly",
             (2, 12, 11),
             0.269707,

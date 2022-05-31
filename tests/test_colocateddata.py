@@ -451,7 +451,8 @@ def test_ColocatedData_filter_region_error(coldata):
     [
         (
             "tm5_aeronet",
-            f"od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc",
+            # f"od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc",
+            f"od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_WORLD-noMOUNTAINS.nc",
         ),
         (
             "fake_3d_hr",
@@ -465,6 +466,7 @@ def test_ColocatedData_filter_region_error(coldata):
 )
 def test_ColocatedData_to_netcdf(coldata, tmp_path: Path, which: str, filename: str):
     path = tmp_path / filename
+    breakpoint()
     assert not path.exists()
     file = coldata[which].to_netcdf(tmp_path)
     assert path == Path(file)
