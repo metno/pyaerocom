@@ -4,7 +4,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from datetime import datetime
-from nbformat import current_nbformat_minor
+#from nbformat import current_nbformat_minor
 
 import numpy as np
 import pandas as pd
@@ -142,18 +142,6 @@ def _add_hm_entry_json(
     mn = ovc[model_name]
     mn[model_var] = result
     write_json(current, heatmap_file, ignore_nan=True)
-
-
-def _add_ts_entry_json(ts_file, result, model_name, model_var):
-    if os.path.exists(ts_file):
-        current = read_json(ts_file)
-    else:
-        current = {}
-    if not model_name in current:
-        current[model_name] = {}
-    mn = current[model_name]
-    mn[model_var] = result
-    write_json(current, ts_file, ignore_nan=True)
 
 
 def _prepare_regions_json_helper(region_ids):
