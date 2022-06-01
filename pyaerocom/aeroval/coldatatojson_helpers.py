@@ -1120,7 +1120,7 @@ def _process_heatmap_data(
             hm_freq[regname] = {}
             for per in periods:
                 for season in seasons:
-                    use_dummy = cd is None
+                    use_dummy = coldata is None
                     perstr = f"{per}-{season}"
                     if use_dummy:
                         stats = stats_dummy
