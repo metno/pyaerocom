@@ -8,17 +8,16 @@ import pytest
 from numpy.testing import assert_allclose
 
 from pyaerocom import ColocatedData, TsType
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _get_jsdate,
-    _init_data_default_frequencies,
-    _make_trends,
-    _process_statistics_timeseries,
-    get_heatmap_filename,
-    get_timeseries_file_name,
-    get_json_mapname,
-    get_stationfile_name,
-)
-from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
+from pyaerocom.aeroval.coldatatojson_helpers import (_get_jsdate,
+                                                     _init_data_default_frequencies,
+                                                     _make_trends,
+                                                     _process_statistics_timeseries,
+                                                     get_heatmap_filename,
+                                                     get_json_mapname,
+                                                     get_stationfile_name,
+                                                     get_timeseries_file_name)
+from pyaerocom.exceptions import (AeroValTrendsError, TemporalResolutionError,
+                                  UnknownRegion)
 
 
 def test_get_heatmap_filename():

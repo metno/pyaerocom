@@ -5,8 +5,6 @@ import logging
 import os
 from datetime import datetime
 
-# from nbformat import current_nbformat_minor
-
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -14,21 +12,23 @@ import xarray as xr
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
-from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
+from pyaerocom.aeroval.helpers import (_get_min_max_year_periods,
+                                       _period_str_to_timeslice)
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.exceptions import (
-    AeroValConfigError,
-    AeroValTrendsError,
-    DataCoverageError,
-    TemporalResolutionError,
-)
+from pyaerocom.exceptions import (AeroValConfigError, AeroValTrendsError,
+                                  DataCoverageError, TemporalResolutionError)
 from pyaerocom.helpers import start_stop
 from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
-from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
+from pyaerocom.region import (Region, find_closest_region_coord,
+                              get_all_default_region_ids)
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.tstype import TsType
+
+# from nbformat import current_nbformat_minor
+
+
 
 logger = logging.getLogger(__name__)
 
