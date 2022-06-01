@@ -12,7 +12,7 @@ def test_load_berlin():
     dataset = ReadAeronetInvV3()
     files = dataset.find_in_file_list("*Berlin*")
     assert len(files) == 1
-    assert Path(files[0]).name == "19930101_20190914_Berlin_FUB.all"
+    assert Path(files[0]).name == "19930101_20220416_Berlin_FUB.all"
     data = dataset.read_file(files[0], vars_to_retrieve=["abs550aer"])
 
     test_vars = ["abs440aer", "angabs4487aer", "abs550aer"]
@@ -28,7 +28,5 @@ def test_load_berlin():
 
     first_vals = [np.nanmean(data[var]) for var in test_vars]
 
-    # minal = [0.014629, 0.908436, 0.012112] before 20/03/2020
-    # minal = [0.014570, 0.908349, 0.012069] before 05/12/2020
-    nominal = [0.014370, 0.896759, 0.011945]
+    nominal = [0.014609, 0.876344, 0.012291]
     assert first_vals == pytest.approx(nominal, rel=TEST_RTOL)

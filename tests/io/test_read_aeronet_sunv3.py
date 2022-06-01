@@ -6,6 +6,7 @@ import pytest
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from tests.conftest import lustre_unavail
 
 
 @pytest.fixture(scope="module")
@@ -51,7 +52,7 @@ def test_read_add_common_meta(reader):
     assert all("bla" in x for x in data.metadata.values())
 
 
-@data_unavail
+@lustre_unavail
 def test_get_od550lt1ang(reader):
     reader.get_file_list()
     file = reader.files[-3]
@@ -59,4 +60,4 @@ def test_get_od550lt1ang(reader):
     assert "od550lt1ang" in data
     test_data = reader.read_file(file)
     test_data = np.where(test_data["ang4487aer"] < 1.0, test_data["od550aer"], np.nan)
-    assert_allclose(np.nanmean(data["od550lt1ang"]), np.nanmean(test_data), rtol=1e-3)
+    assert np.nanmean(data["od550lt1ang"]) == pytest.approx(np.nanmean(test_data), rel=1e-3)

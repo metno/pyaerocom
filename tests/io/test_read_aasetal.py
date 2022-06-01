@@ -10,6 +10,7 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from pyaerocom import const
+from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
@@ -74,6 +75,7 @@ def aasetal_data() -> UngriddedData:
 
 
 @lustre_unavail
+@pytest.mark.xfail(raises=UnitConversionError)
 def test_aasetal_data(aasetal_data: UngriddedData):
     data = aasetal_data
     assert len(data.station_name) == 890
@@ -103,6 +105,7 @@ def test_aasetal_data(aasetal_data: UngriddedData):
 
 
 @lustre_unavail
+@pytest.mark.xfail(raises=UnitConversionError)
 def test_aasetal_data_correct_units(aasetal_data: UngriddedData):
 
     tested = []
@@ -140,6 +143,7 @@ testdata = [
 
 @lustre_unavail
 @pytest.mark.parametrize("filenum,station_name,colname,var_name", testdata)
+@pytest.mark.xfail(raises=UnitConversionError)
 def test_reading_routines(
     aasetal_data: UngriddedData, data_paths: list[Path], filenum, station_name, colname, var_name
 ):
