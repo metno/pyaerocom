@@ -24,6 +24,7 @@ from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, Un
 def test_get_heatmap_filename():
     assert get_heatmap_filename("daily") == "glob_stats_daily.json"
 
+
 def test_get_timeseries_filename():
     assert get_timeseries_file_name("obs1", "var1", "vert1") == "obs1-var1-vert1.json"
 
