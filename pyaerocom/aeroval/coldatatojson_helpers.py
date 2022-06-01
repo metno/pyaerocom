@@ -8,7 +8,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import xarray as xr
-
 from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
@@ -117,7 +116,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
 
 
 def _add_entry_json(
-    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
+        heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
         current = read_json(heatmap_file)
@@ -808,17 +807,17 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data,
-    map_data,
-    site_indices,
-    periods,
-    main_freq,
-    min_num,
-    seasons,
-    add_trends,
-    trends_min_yrs,
-    use_fairmode,
-    obs_var,
+        data,
+        map_data,
+        site_indices,
+        periods,
+        main_freq,
+        min_num,
+        seasons,
+        add_trends,
+        trends_min_yrs,
+        use_fairmode,
+        obs_var,
 ):
     stats_dummy = _init_stats_dummy()
     scat_data = {}
@@ -1102,25 +1101,25 @@ def _select_period_season_coldata(coldata, period, season):
 
 
 def _process_heatmap_data(
-    data,
-    region_ids,
-    use_weights,
-    use_country,
-    meta_glob,
-    periods,
-    seasons,
-    add_trends,
-    trends_min_yrs,
+        data,
+        region_ids,
+        use_weights,
+        use_country,
+        meta_glob,
+        periods,
+        seasons,
+        add_trends,
+        trends_min_yrs,
 ):
     output = {}
     stats_dummy = _init_stats_dummy()
     for freq, coldata in data.items():
         output[freq] = hm_freq = {}
-        use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
             hm_freq[regname] = {}
             for per in periods:
                 for season in seasons:
+                    use_dummy = cd is None
                     perstr = f"{per}-{season}"
                     if use_dummy:
                         stats = stats_dummy
