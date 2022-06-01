@@ -4,7 +4,6 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from datetime import datetime
-#from nbformat import current_nbformat_minor
 
 import numpy as np
 import pandas as pd
@@ -37,7 +36,7 @@ def get_heatmap_filename(ts_type):
 
 
 def get_timeseries_file_name(obs_name, var_name_web, vert_code):
-    return f"{obs_name}-{var_name_web}-{vert_code}.json"  # Agreed with Augustin to split ts files over observation and network
+    return f"{obs_name}-{var_name_web}-{vert_code}.json"
 
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
