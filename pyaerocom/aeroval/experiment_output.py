@@ -4,6 +4,7 @@ import os
 import shutil
 
 from pyaerocom import const
+from pyaerocom import __version__
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
     StrType,
@@ -65,6 +66,7 @@ class ProjectOutput:
     def _add_entry_experiments_json(self, exp_id, data):
         fp = self.experiments_file
         current = read_json(fp)
+        data["pyaerocom_version"] = __version__
         current[exp_id] = data
         write_json(current, self.experiments_file, indent=4)
 
