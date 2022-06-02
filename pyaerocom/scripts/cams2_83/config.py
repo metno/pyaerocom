@@ -42,7 +42,7 @@ GLOBAL_CONFIG = dict(
     # The size of map used to display the results
     map_zoom="Europe",
     # Options for time
-    freqs=["hourly"],  # Possible frequencies
+    freqs=["hourly", "daily"],  # Possible frequencies
     periods=[
         "2021-2022"
     ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
@@ -62,7 +62,7 @@ GLOBAL_CONFIG = dict(
     regions_how="country",
     annual_stats_constrained=False,
     weighted_stats=False,
-    forecast_evaluation=False,
+    forecast_evaluation=True,
     forecast_days=4,
     use_fairmode=True,
     # This is just the order at which the different species will be shown in the web interface
