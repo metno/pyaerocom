@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from datetime import date, datetime, timedelta
+from enum import Enum
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
@@ -31,6 +32,55 @@ TODO:
 
 app = typer.Typer(add_completion=False)
 logger = logging.getLogger(__name__)
+
+
+class Eval_Type(str, Enum):
+    SEASON = "season"
+    WEEK = "week"
+    DAY = "day"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+def check_dates_from_eval(
+    eval_type: Eval_Type | None, start_date: datetime, end_date: datetime
+) -> None:
+    if eval_type == "day" and start_date != end_date:
+        raise ValueError(
+            f"For single day, start and stop must be the same and not {start_date}-{end_date}"
+        )
+    elif eval_type == "week" and (end_date - start_date).days < 7:
+        raise ValueError(
+            f"For week, more than 7 days must be given. Only {(end_date-start_date).days} days were given"
+        )
+
+
+def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
+    if eval_type is None:
+        return {}
+
+    if eval_type == "season":
+        return dict(
+            freqs=["hourly", "daily"],
+            ts_type="hourly",
+            main_freq="daily",
+            forecast_evaluation=True,
+        )
+    elif eval_type == "week":
+        return dict(
+            freqs=["hourly", "daily"],
+            ts_type="hourly",
+            main_freq="hourly",
+            forecast_evaluation=False,
+        )
+    elif eval_type == "day":
+        return dict(
+            freqs=["hourly"],
+            ts_type="hourly",
+            main_freq="hourly",
+            forecast_evaluation=False,
+        )
 
 
 def make_period(
@@ -85,6 +135,7 @@ def make_config(
     models: List[ModelName],
     id: str | None,
     name: str | None,
+    eval_type: Eval_Type | None,
 ) -> dict:
 
     logger.info("Making the configuration")
@@ -109,6 +160,8 @@ def make_config(
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
+    check_dates_from_eval(eval_type, start_date, end_date)
+    cfg.update(update_freqs_from_eval_type(eval_type))
 
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
         str(p)
@@ -128,6 +181,7 @@ def make_config(
 def runner(
     cfg: dict,
     cache: str | Path | None,
+    eval_type: Eval_Type | None,
     *,
     dry_run: bool = False,
     quiet: bool = False,
@@ -152,9 +206,9 @@ def runner(
 
     logger.info(f"Running Rest of Statistics")
     ana.run()
-
-    # logger.info(f"Running CAMS2_83 Spesific Statistics")
-    # ana_cams2_83.run()
+    if eval_type == "season":
+        logger.info(f"Running CAMS2_83 Spesific Statistics")
+        ana_cams2_83.run()
 
 
 @app.command()
@@ -224,6 +278,12 @@ def main(
         "-n",
         help="Will only make and print the config without running the evaluation",
     ),
+    eval_type: Optional[Eval_Type] = typer.Option(
+        None,
+        "--eval-type",
+        "-e",
+        help="Type of evaluation.",
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
 
@@ -231,8 +291,18 @@ def main(
         change_verbosity(logging.INFO)
 
     cfg = make_config(
-        start_date, end_date, leap, model_path, obs_path, data_path, coldata_path, model, id, name
+        start_date,
+        end_date,
+        leap,
+        model_path,
+        obs_path,
+        data_path,
+        coldata_path,
+        model,
+        id,
+        name,
+        eval_type,
     )
 
     quiet = not verbose
-    runner(cfg, cache, dry_run=dry_run, quiet=quiet)
+    runner(cfg, cache, eval_type, dry_run=dry_run, quiet=quiet)

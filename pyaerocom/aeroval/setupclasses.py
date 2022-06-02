@@ -423,6 +423,8 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
         if start == stop and isinstance(start, pd.Timestamp):
             stop = start + timedelta(hours=23)
+        elif isinstance(start, pd.Timestamp):
+            stop = stop + timedelta(hours=23)
 
         if stop_yr == start_yr:
             stop_yr += 1
