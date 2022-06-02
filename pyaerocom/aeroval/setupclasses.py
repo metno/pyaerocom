@@ -2,8 +2,7 @@ import logging
 import os
 from getpass import getuser
 
-from pyaerocom import const
-from pyaerocom import __version__
+from pyaerocom import __version__, const
 from pyaerocom._lowlevel_helpers import (
     AsciiFileLoc,
     ConstrainedContainer,
