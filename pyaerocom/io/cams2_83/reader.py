@@ -113,10 +113,15 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     if not (0 <= day <= data.run.days):
         raise ValueError(f"{data} has no day #{day}")
     date = data.date + timedelta(days=day)
+    first_date = data.date
 
-    select_date = date + timedelta(days=day)
+    select_date = datetime(date.year, date.month, date.day, 0, 0, 0)
 
     dateselect = pd.date_range(select_date, select_date + timedelta(hours=23), freq="h")
+
+    if isinstance(ds.time.data[0], np.timedelta64):
+        ds = ds.assign_coords(time=np.datetime64(first_date) + ds.time.data)
+
     try:
         ds = ds.sel(time=dateselect)
     except:
