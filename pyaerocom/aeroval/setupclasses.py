@@ -1,6 +1,9 @@
 import logging
 import os
+from datetime import timedelta
 from getpass import getuser
+
+import pandas as pd
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
@@ -417,11 +420,14 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         start_yr = start.year
         stop_yr = stop.year
 
+        if start == stop and isinstance(start, pd.Timestamp):
+            stop = start + timedelta(hours=23)
+
         if stop_yr == start_yr:
             stop_yr += 1
         if colstart is None:
-            self.colocation_opts["start"] = start.strftime("%Y/%m/%d")
+            self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
         if colstop is None:
             self.colocation_opts["stop"] = stop.strftime(
-                "%Y/%m/%d"
+                "%Y/%m/%d %H:%M:%S"
             )  # + 1  # add 1 year since we want to include stop year
