@@ -120,7 +120,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     write_json(current, fp, ignore_nan=True)
 
 
-def _add_hm_entry_json(
+def _add_heatmap_entry_json(
     heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
