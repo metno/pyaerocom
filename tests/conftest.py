@@ -13,6 +13,7 @@ from packaging.version import Version
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
 from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
 
@@ -42,7 +43,7 @@ CHECK_PATHS = {
     "tm5": "modeldata/TM5-met2010_CTRL-TEST/renamed",
     "tm5aod": "modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
     "emep": "modeldata/EMEP_2017",
-    "coldata_tm5_aeronet": "coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc",
+    f"coldata_tm5_aeronet": f"coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc",
 }
 
 TEST_VARS_AERONET = ["od550aer", "ang4487aer"]
@@ -172,7 +173,7 @@ def coldata_tm5_aeronet():
 @pytest.fixture(scope="session")
 def coldata_tm5_tm5():
     fpath = tda.testdatadir.joinpath(
-        "coldata/od550aer_REF-TM5_AP3-CTRL2016_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc"
+        f"coldata/od550aer_REF-TM5_AP3-CTRL2016_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
     )
     return _load_coldata_tm5_aeronet_from_scratch(fpath)
 

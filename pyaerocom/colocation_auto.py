@@ -18,6 +18,7 @@ from pyaerocom.colocation import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
     get_lowest_resolution,
@@ -94,7 +95,7 @@ class ColocationSetup(BrowseDict):
         name of filter to be applied. If None, no filter is used
         (to be precise, if None, then
          :attr:`pyaerocom.const.DEFAULT_REG_FILTER` is used which should
-         default to `WORLD-wMOUNTAINS`, that is, no filtering).
+         default to `ALL-wMOUNTAINS`, that is, no filtering).
     basedir_coldata : str
         Base directory for storing of colocated data files.
     save_coldata : bool
@@ -322,7 +323,7 @@ class ColocationSetup(BrowseDict):
         self.stop = stop
 
         # crashes if input filter name is invalid
-        self.filter_name = "WORLD-wMOUNTAINS"
+        self.filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
         if basedir_coldata is not None:
             basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)

@@ -14,6 +14,7 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import (
     AeroValConfigError,
     AeroValTrendsError,
@@ -188,14 +189,14 @@ def init_regions_web(coldata, regions_how):
     elif regions_how == "aerocom":
         regborders, regs = _prepare_aerocom_regions_json()
     elif regions_how == "htap":
-        regborders["WORLD"] = regborders_default["WORLD"]
-        regs["WORLD"] = regs_default["WORLD"]
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         add_borders, add_regs = _prepare_htap_regions_json()
         regborders.update(add_borders)
         regs.update(add_regs)
     elif regions_how == "country":
-        regborders["WORLD"] = regborders_default["WORLD"]
-        regs["WORLD"] = regs_default["WORLD"]
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
@@ -531,7 +532,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
                     repw = repw.transpose(
                         "year", "period", "data_source", "dummy_time", "station_name"
                     )
-                    if regid == "WORLD":
+                    if regid == ALL_REGION_NAME:
                         subset = repw
                     else:
                         subset = repw.where(repw.country == regid)

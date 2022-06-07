@@ -191,9 +191,9 @@ def colocate_gridded_gridded(
         :class:`GriddedData` object is used
     filter_name : str, optional
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
-        details). If None, then it is set to 'WORLD-wMOUNTAINS', which
+        details). If None, then it is set to 'ALL-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
-        Use WORLD-noMOUNTAINS to exclude mountain sites.
+        Use ALL-noMOUNTAINS to exclude mountain sites.
     regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         objects will be regridded in lon / lat dimension to the input
@@ -620,9 +620,9 @@ def colocate_gridded_ungridded(
         :class:`GriddedData` object is used
     filter_name : str
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
-        details). If None, then it is set to 'WORLD-wMOUNTAINS', which
+        details). If None, then it is set to 'ALL-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
-        Use WORLD-noMOUNTAINS to exclude mountain sites.
+        Use ALL-noMOUNTAINS to exclude mountain sites.
     regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         object will be regridded in lon / lat dimension to the input

@@ -5,6 +5,8 @@ AeroCom PhaseIII optical properties experiment
 
 from collections import ChainMap
 
+from pyaerocom.config import ALL_REGION_NAME
+
 # Used below in some of the obsconfig entries to speed up when ran locally
 OBS_ACCESS: dict = {}
 
@@ -133,7 +135,7 @@ CAMS84_CONFIG = dict(
     # occurred will be written into the logfiles)
     raise_exceptions=False,
     # Regional filter for analysis
-    filter_name="WORLD-wMOUNTAINS",
+    filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
     ts_type="daily",
     map_zoom="World",
