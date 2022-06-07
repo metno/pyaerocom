@@ -62,7 +62,7 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
 
     if eval_type == "season":
         return dict(
-            freqs=["hourly", "daily"],
+            freqs=["daily", "monthly"],
             ts_type="hourly",
             main_freq="daily",
             forecast_evaluation=True,
@@ -162,11 +162,11 @@ def make_config(
     )
     check_dates_from_eval(eval_type, start_date, end_date)
     cfg.update(update_freqs_from_eval_type(eval_type))
-
+    extra_obs_days = 4 if eval_type == "season" else 0
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
         str(p)
         for p in obs_paths(
-            *date_range(start_date, end_date + timedelta(days=0)), root_path=obs_path
+            *date_range(start_date, end_date + timedelta(days=extra_obs_days)), root_path=obs_path
         )
     ]  # type:ignore[index]
 
