@@ -1116,11 +1116,11 @@ def _process_heatmap_data(
     stats_dummy = _init_stats_dummy()
     for freq, coldata in data.items():
         output[freq] = hm_freq = {}
-        use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
             hm_freq[regname] = {}
             for per in periods:
                 for season in seasons:
+                    use_dummy = coldata is None
                     perstr = f"{per}-{season}"
                     if use_dummy:
                         stats = stats_dummy
