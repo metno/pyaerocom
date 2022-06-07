@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class Eval_Type(str, Enum):
+    LONG = "long"
     SEASON = "season"
     WEEK = "week"
     DAY = "day"
@@ -60,9 +61,16 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
     if eval_type is None:
         return {}
 
-    if eval_type == "season":
+    if eval_type == "long":
         return dict(
             freqs=["daily", "monthly"],
+            ts_type="hourly",
+            main_freq="daily",
+            forecast_evaluation=True,
+        )
+    elif eval_type == "season":
+        return dict(
+            freqs=["daily", "hourly"],
             ts_type="hourly",
             main_freq="daily",
             forecast_evaluation=True,
@@ -81,6 +89,8 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
             main_freq="hourly",
             forecast_evaluation=False,
         )
+    else:
+        return {}
 
 
 def make_period(
@@ -162,7 +172,10 @@ def make_config(
     )
     check_dates_from_eval(eval_type, start_date, end_date)
     cfg.update(update_freqs_from_eval_type(eval_type))
-    extra_obs_days = 4 if eval_type == "season" else 0
+    if eval_type == "season" or eval_type == "long":
+        extra_obs_days = 4
+    else:
+        extra_obs_days = 0
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
         str(p)
         for p in obs_paths(
@@ -206,7 +219,7 @@ def runner(
 
     logger.info(f"Running Rest of Statistics")
     ana.run()
-    if eval_type == "season":
+    if eval_type == "season" or eval_type == "long":
         logger.info(f"Running CAMS2_83 Spesific Statistics")
         ana_cams2_83.run()
 
