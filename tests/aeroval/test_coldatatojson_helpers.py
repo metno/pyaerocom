@@ -7,7 +7,7 @@ import numpy as np
 from pytest import mark, param
 
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_entry_json,
+    _add_heatmap_entry_json,
     _init_stats_dummy,
     _prepare_aerocom_regions_json,
     _prepare_country_regions,
@@ -85,20 +85,20 @@ def test__write_diurnal_week_stationdata_json(tmp_path: Path):
     assert data["model1"] == data["model2"]
 
 
-def test__add_entry_json(tmp_path: Path):
+def test__add_heatmap_entry_json(tmp_path: Path):
     path = tmp_path / "add_entry.json"
     assert not path.exists()
 
     result = dict(value=None)
     obs, obs_var, vert, model, model_var = "obs", "obs_var", "Column", "model", "model_var"
-    _add_entry_json(path, result, obs, obs_var, vert, model, model_var)
+    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var)
     assert path.exists()
 
     data = json.loads(path.read_text())
     assert data[obs_var][obs][vert][model][model_var] == result
 
     result.update(value=42.0)
-    _add_entry_json(path, result, obs, obs_var, vert, model, model_var)
+    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var)
 
     data = json.loads(path.read_text())
     assert data[obs_var][obs][vert][model][model_var] == result
