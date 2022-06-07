@@ -6,23 +6,25 @@ parallelisation for aeroval processing
 
 # some ideas what to use
 import argparse
-
-# import glob
 import os
-
-
-# import sys
+from importlib.machinery import SourceFileLoader
+import copy
 
 
 def main():
+    default_cfg_var = "CFG"
     parser = argparse.ArgumentParser(
-        description="command line interface to aeroval parallelisation\n\n\n"
+        description="command line interface to aeroval parallelisation.\n"
+        "aeroval config has to to be in the variable CFG for now!\n\n"
     )
     parser.add_argument("--file", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
+    parser.add_argument("--outdir", help="output directory")
     parser.add_argument(
-        "--outdir", help="output directory; the filename will be extended with the string '.nc'"
+        "--cfgvar",
+        help=f"variable that holds the aeroval config in the file(s) provided. Defaults to {default_cfg_var}",
+        default=default_cfg_var,
     )
     parser.add_argument(
         "--tempdir",
@@ -31,6 +33,7 @@ def main():
     )
 
     args = parser.parse_args()
+    options = {}
     if args.file:
         options["files"] = args.file
     if args.verbose:
@@ -43,6 +46,24 @@ def main():
 
     if args.tempdir:
         options["tempdir"] = args.tempdir
+    if args.cfgvar:
+        options["cfgvar"] = args.cfgvar
+
+    for _file in options["files"]:
+        # read aeroval config file
+        foo = SourceFileLoader("bla", _file).load_module()
+        # does unfortunately not work since a module is not subscriptable
+        # CFG = foo[options["cfgvar"]]
+        # stick to the name CFG for the aeroval configuration for now
+        cfg = copy.deepcopy(foo.CFG)
+        for _model in cfg["model_cfg"]:
+            out_cfg = copy.deepcopy(cfg)
+            out_cfg.pop("model_cfg", None)
+            out_cfg.pop("obs_cfg", None)
+            for _obs_network in cfg["obs_cfg"]:
+                out_cfg["model_cfg"] = cfg["model_cfg"][_model]
+                out_cfg["obs_cfg"] = cfg["obs_cfg"][_obs_network]
+                print(out_cfg)
 
 
 if __name__ == "__main__":
