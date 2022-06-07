@@ -36,6 +36,10 @@ def get_heatmap_filename(ts_type):
     return f"glob_stats_{ts_type}.json"
 
 
+def get_timeseries_file_name(obs_name, var_name_web, vert_code):
+    return f"{obs_name}-{var_name_web}-{vert_code}.json"
+
+
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
     """Get name of station timeseries file"""
     return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
@@ -117,7 +121,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     write_json(current, fp, ignore_nan=True)
 
 
-def _add_entry_json(
+def _add_heatmap_entry_json(
     heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
