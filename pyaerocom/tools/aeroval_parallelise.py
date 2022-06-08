@@ -6,13 +6,24 @@ parallelisation for aeroval processing
 
 # some ideas what to use
 import argparse
-import os
-from importlib.machinery import SourceFileLoader
 import copy
+import os
+import pathlib
+from getpass import getuser
+from importlib.machinery import SourceFileLoader
+from socket import gethostname
+from uuid import uuid4
+from tempfile import mkdtemp
+import simplejson as json
 
 
 def main():
     default_cfg_var = "CFG"
+    run_uuid = uuid4()
+    hostname = gethostname()
+    user = getuser()
+    tmp_dir = "/tmp"
+
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
         "aeroval config has to to be in the variable CFG for now!\n\n"
@@ -28,8 +39,8 @@ def main():
     )
     parser.add_argument(
         "--tempdir",
-        help="directory for temporary files",
-        default=os.path.join(os.environ["HOME"], "tmp"),
+        help=f"directory for temporary files; defaults to {tmp_dir}",
+        default=tmp_dir,
     )
 
     args = parser.parse_args()
@@ -52,10 +63,12 @@ def main():
     for _file in options["files"]:
         # read aeroval config file
         foo = SourceFileLoader("bla", _file).load_module()
-        # does unfortunately not work since a module is not subscriptable
+        # the following line does unfortunately not work since a module is not subscriptable
         # CFG = foo[options["cfgvar"]]
         # stick to the name CFG for the aeroval configuration for now
         cfg = copy.deepcopy(foo.CFG)
+        # create tmp dir
+        tempdir = mkdtemp(dir=options["tempdir"])
         for _model in cfg["model_cfg"]:
             out_cfg = copy.deepcopy(cfg)
             out_cfg.pop("model_cfg", None)
@@ -63,6 +76,12 @@ def main():
             for _obs_network in cfg["obs_cfg"]:
                 out_cfg["model_cfg"] = cfg["model_cfg"][_model]
                 out_cfg["obs_cfg"] = cfg["obs_cfg"][_obs_network]
+                cfg_file = pathlib.PurePosixPath(_file).stem
+                outfile = pathlib.PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
+                print(f"writing file {outfile}")
+                with open(outfile, 'w', encoding='utf-8') as j:
+                    json.dump(out_cfg, j, ensure_ascii=False, indent=4)
+
                 print(out_cfg)
 
 
