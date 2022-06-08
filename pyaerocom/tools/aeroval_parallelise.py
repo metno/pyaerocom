@@ -12,8 +12,9 @@ import pathlib
 from getpass import getuser
 from importlib.machinery import SourceFileLoader
 from socket import gethostname
-from uuid import uuid4
 from tempfile import mkdtemp
+from uuid import uuid4
+
 import simplejson as json
 
 
@@ -70,6 +71,8 @@ def main():
         cfg = copy.deepcopy(foo.CFG)
         # create tmp dir
         tempdir = mkdtemp(dir=options["tempdir"])
+        # index for temporary data directories
+        dir_idx = 1
         for _model in cfg["model_cfg"]:
             out_cfg = copy.deepcopy(cfg)
             out_cfg.pop("model_cfg", None)
@@ -79,13 +82,24 @@ def main():
             for _obs_network in cfg["obs_cfg"]:
                 out_cfg["obs_cfg"] = {}
                 out_cfg["obs_cfg"][_obs_network] = cfg["obs_cfg"][_obs_network]
+                # adjust json_basedir and coldata_basedir so that the different runs
+                # do not influence each other
+                out_cfg[
+                    "json_basedir"
+                ] = f"{out_cfg['json_basedir']}/{pathlib.PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
+                out_cfg[
+                    "coldata_basedir"
+                ] = f"{out_cfg['coldata_basedir']}/{pathlib.PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
                 cfg_file = pathlib.PurePosixPath(_file).stem
-                outfile = pathlib.PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
+                outfile = pathlib.PurePosixPath(tempdir).joinpath(
+                    f"cfg_file_{_model}_{_obs_network}.json"
+                )
                 print(f"writing file {outfile}")
-                with open(outfile, 'w', encoding='utf-8') as j:
+                with open(outfile, "w", encoding="utf-8") as j:
                     json.dump(out_cfg, j, ensure_ascii=False, indent=4)
-
-                print(out_cfg)
+                dir_idx += 1
+                if options["verbose"]:
+                    print(out_cfg)
 
 
 if __name__ == "__main__":
