@@ -36,7 +36,9 @@ def main():
     for _file in options["files"]:
         with open(_file, "r") as infile:
             CFG = json.load(infile)
-        stp = EvalSetup(**CFG,)
+        stp = EvalSetup(
+            **CFG,
+        )
         ana = ExperimentProcessor(stp)
         if not options["dryrun"]:
             res = ana.run()
