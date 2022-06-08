@@ -28,7 +28,7 @@ def main():
         description="command line interface to aeroval parallelisation.\n"
         "aeroval config has to to be in the variable CFG for now!\n\n"
     )
-    parser.add_argument("--file", help="file(s) to read", nargs="+")
+    parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
     parser.add_argument("--outdir", help="output directory")
@@ -45,8 +45,8 @@ def main():
 
     args = parser.parse_args()
     options = {}
-    if args.file:
-        options["files"] = args.file
+    if args.files:
+        options["files"] = args.files
     if args.verbose:
         options["verbose"] = True
     else:
@@ -57,6 +57,7 @@ def main():
 
     if args.tempdir:
         options["tempdir"] = args.tempdir
+
     if args.cfgvar:
         options["cfgvar"] = args.cfgvar
 
@@ -73,9 +74,11 @@ def main():
             out_cfg = copy.deepcopy(cfg)
             out_cfg.pop("model_cfg", None)
             out_cfg.pop("obs_cfg", None)
+            out_cfg["model_cfg"] = {}
+            out_cfg["model_cfg"][_model] = cfg["model_cfg"][_model]
             for _obs_network in cfg["obs_cfg"]:
-                out_cfg["model_cfg"] = cfg["model_cfg"][_model]
-                out_cfg["obs_cfg"] = cfg["obs_cfg"][_obs_network]
+                out_cfg["obs_cfg"] = {}
+                out_cfg["obs_cfg"][_obs_network] = cfg["obs_cfg"][_obs_network]
                 cfg_file = pathlib.PurePosixPath(_file).stem
                 outfile = pathlib.PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
                 print(f"writing file {outfile}")
