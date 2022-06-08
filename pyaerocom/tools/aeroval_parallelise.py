@@ -2,6 +2,10 @@
 """
 parallelisation for aeroval processing
 
+- create several aeroval config files from one input config
+  (per model and per obs network for now)
+- submit these configs to the GridEngine queue
+
 """
 
 # some ideas what to use
@@ -25,6 +29,10 @@ def main():
     user = getuser()
     tmp_dir = "/tmp"
 
+    JSON_RUNSCRIPT = (
+        "/home/jang/data/Python3/pyaerocom_new/pyaerocom/tools/aeroval_run_json_cfg.py"
+    )
+
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
         "aeroval config has to to be in the variable CFG for now!\n\n"
@@ -33,6 +41,12 @@ def main():
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
     parser.add_argument("--outdir", help="output directory")
+    parser.add_argument("--subdry", help="dryrun for submission to queue",action="store_true")
+    parser.add_argument(
+        "--jsonrunscript",
+        help=f"script to run json config files; defaults to {JSON_RUNSCRIPT}",
+        default=JSON_RUNSCRIPT,
+    )
     parser.add_argument(
         "--cfgvar",
         help=f"variable that holds the aeroval config in the file(s) provided. Defaults to {default_cfg_var}",
@@ -48,10 +62,19 @@ def main():
     options = {}
     if args.files:
         options["files"] = args.files
+
+    if args.jsonrunscript:
+        options["jsonrunscript"] = args.jsonrunscript
+
     if args.verbose:
         options["verbose"] = True
     else:
         options["verbose"] = False
+
+    if args.subdry:
+        options["subdry"] = True
+    else:
+        options["subdry"] = False
 
     if args.outdir:
         options["outdir"] = args.outdir
@@ -62,6 +85,8 @@ def main():
     if args.cfgvar:
         options["cfgvar"] = args.cfgvar
 
+    # these are the directories that need to be submitted to the queue
+    runfiles = []
     for _file in options["files"]:
         # read aeroval config file
         foo = SourceFileLoader("bla", _file).load_module()
@@ -98,8 +123,17 @@ def main():
                 with open(outfile, "w", encoding="utf-8") as j:
                     json.dump(out_cfg, j, ensure_ascii=False, indent=4)
                 dir_idx += 1
+                runfiles.append(outfile)
                 if options["verbose"]:
                     print(out_cfg)
+
+    if options["subdry"]:
+        # just print the to be run files
+        for _runfile in runfiles:
+            print(f"{_runfile}")
+        pass
+    else:
+        pass
 
 
 if __name__ == "__main__":
