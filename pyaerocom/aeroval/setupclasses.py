@@ -93,6 +93,13 @@ class OutputPaths(ConstrainedContainer):
         return out
 
 
+class DBSetup(ConstrainedContainer):
+    def __init__(self, **kwargs):
+        self.use_influxdb = False
+        self.influx_config_file = ""
+        self.influx_config_setup = "default"
+
+
 class ModelMapsSetup(ConstrainedContainer):
     maps_freq = EitherOf(["monthly", "yearly"])
 
@@ -303,6 +310,8 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.processing_opts = EvalRunOptions()
 
         self.cams2_83_cfg = CAMS2_83Setup()
+
+        self.db_cfg = DBSetup()
 
         self.obs_cfg = ObsCollection()
         self.model_cfg = ModelCollection()
