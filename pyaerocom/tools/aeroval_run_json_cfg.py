@@ -4,9 +4,6 @@ small helper program to read a aeroval config from a json file
 
 """
 import argparse
-import os
-import pathlib
-import sys
 
 import simplejson as json
 
