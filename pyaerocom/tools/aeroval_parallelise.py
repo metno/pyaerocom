@@ -13,12 +13,13 @@ import argparse
 import copy
 import os
 import pathlib
+from datetime import datetime
 from getpass import getuser
 from importlib.machinery import SourceFileLoader
+from pathlib import Path, PurePath, PurePosixPath
 from socket import gethostname
 from tempfile import mkdtemp
 from uuid import uuid4
-
 
 import simplejson as json
 
@@ -34,15 +35,23 @@ QSUB_NAME = "/usr/bin/qsub"
 # qsub submission host
 QSUB_HOST = "ppi-clogin-a1.met.no"
 # directory, where the files will bew transferred before they are run
-QSUB_DIR = f"/tmp/{USER}/qsub.{RUN_UUID}/"
+QSUB_DIR = f"/tmp/{USER}"
 # user name on the qsub host
 QSUB_USER = USER
 # queue name
 QSUB_QUEUE_NAME = "research-el7.q"
+# log directory
+QSUB_LOG_DIR = "/lustre/storeA/project/aerocom/logs/aeroval_logs/"
+
+# some copy constants
+REMOTE_CP_COMMAND = ["scp", "-v"]
+
+# script start time
+START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
 # assume that the script to run the aeroval json file is in the same directory as this script
-JSON_RUNSCRIPT = pathlib.PurePath(pathlib.PurePath(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
+JSON_RUNSCRIPT = PurePath(PurePath(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
 
 
 def prep_files(options):
@@ -76,12 +85,12 @@ def prep_files(options):
                 # do not influence each other
                 out_cfg[
                     "json_basedir"
-                ] = f"{out_cfg['json_basedir']}/{pathlib.PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
+                ] = f"{out_cfg['json_basedir']}/{PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
                 out_cfg[
                     "coldata_basedir"
-                ] = f"{out_cfg['coldata_basedir']}/{pathlib.PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
-                cfg_file = pathlib.PurePosixPath(_file).stem
-                outfile = pathlib.PurePosixPath(tempdir).joinpath(
+                ] = f"{out_cfg['coldata_basedir']}/{PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
+                cfg_file = PurePosixPath(_file).stem
+                outfile = PurePosixPath(tempdir).joinpath(
                     f"cfg_file_{_model}_{_obs_network}.json"
                 )
                 print(f"writing file {outfile}")
@@ -95,40 +104,43 @@ def prep_files(options):
     return runfiles
 
 
-def run_queue(
-    runfiles,
-    qsub_host=QSUB_HOST,
-    qsub_cmd=QSUB_NAME,
-    qsub_dir=QSUB_DIR,
-    qsub_user=QSUB_USER,
-    qsub_queue=QSUB_QUEUE_NAME,
+def get_runfile_str_arr(
+    file,
+    queue_name=QSUB_QUEUE_NAME,
+    script_name=None,
+    wd=QSUB_DIR,
+    mail=f"{QSUB_USER}@met.no",
+    logdir=QSUB_LOG_DIR,
+    date=START_TIME,
 ):
-    """submit runfiles to the remote cluster"""
-
-    # to enable test usage, import fabric only here
-    from fabric import Connection
-    import subprocess
-
+    """create list of strings with runfile for gridengine"""
     # create runfile
     runfile_arr = []
     runfile_arr.append("#!/bin/bash -l")
     runfile_arr.append("#$ -S /bin/bash")
-    runfile_arr.append("#$ -N AEROVAL_NAME")
-    runfile_arr.append("#$ -q research-el7.q")
+    # runfile_arr.append("#$ -N AEROVAL_NAME")
+    runfile_arr.append(f"#$ -N {PurePath(file).stem}")
+    # runfile_arr.append("#$ -q research-el7.q")
+    runfile_arr.append(f"#$ -q {queue_name}")
     runfile_arr.append("#$ -pe shmem-1 1")
-    runfile_arr.append("#$ -wd /home/UUSER/data/aeroval-local-web/pyaerocom_config/config_files")
+    # runfile_arr.append("#$ -wd /home/UUSER/data/aeroval-local-web/pyaerocom_config/config_files")
+    runfile_arr.append(f"#$ -wd {PurePath(file).parent}")
     runfile_arr.append("#$ -l h_rt=96:00:00")
     runfile_arr.append("#$ -l s_rt=96:00:00")
-    runfile_arr.append("#$ -M UUSER@met.no")
+    # runfile_arr.append("#$ -M UUSER@met.no")
+    if mail is not None:
+        runfile_arr.append(f"#$ -M {mail}")
     runfile_arr.append("#$ -m abe")
     runfile_arr.append("#$ -l h_vmem=64G")
     runfile_arr.append("#$ -shell y")
     runfile_arr.append("#$ -j y")
-    runfile_arr.append("#$ -o /lustre/storeA/project/aerocom/logs/aeroval_logs/")
-    runfile_arr.append("#$ -e /lustre/storeA/project/aerocom/logs/aeroval_logs/")
+    # runfile_arr.append("#$ -o /lustre/storeA/project/aerocom/logs/aeroval_logs/")
+    # runfile_arr.append("#$ -e /lustre/storeA/project/aerocom/logs/aeroval_logs/")
+    runfile_arr.append(f"#$ -o {logdir}/")
+    runfile_arr.append(f"#$ -e {logdir}/")
 
-    runfile_arr.append('logdir="/lustre/storeA/project/aerocom/logs/aeroval_logs"')
-    runfile_arr.append("date=$(date '+%Y%m%d_%H%M%S')")
+    runfile_arr.append(f"logdir='{logdir}/'")
+    runfile_arr.append(f"date={date}")
     runfile_arr.append('logfile="${logdir}/${USER}.${date}.${JOB_NAME}.${JOB_ID}_log.txt"')
     runfile_arr.append(
         "__conda_setup=\"$('/modules/centos7/user-apps/aerocom/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)\""
@@ -154,9 +166,58 @@ def run_queue(
     runfile_arr.append("pwd >> ${logfile} 2>&1")
     runfile_arr.append('echo "starting SUBMITFILE ..." >> ${logfile}')
     runfile_arr.append("python SUBMITFILE >> ${logfile} 2>&1")
+    return runfile_arr
+
+
+def run_queue(
+    runfiles,
+    qsub_host=QSUB_HOST,
+    qsub_cmd=QSUB_NAME,
+    qsub_dir=QSUB_DIR,
+    qsub_user=QSUB_USER,
+    qsub_queue=QSUB_QUEUE_NAME,
+):
+    """submit runfiles to the remote cluster"""
+
+    # to enable test usage, import fabric only here
+    import subprocess
+
+    from fabric import Connection
+
+    qsub_tmp_dir = Path.joinpath(PurePath(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
+
+    localhost_flag = False
+    if "localhost" in qsub_host:
+        localhost_flag = True
 
     for _file in runfiles:
-        pass
+        # copy runfiles to qsub host if qsub host is not localhost
+        if not localhost_flag:
+            # create tmp dir on qsub host; retain some parts
+            host_str = f"{QSUB_USER}@{QSUB_HOST}"
+            cmd_arr = ['ssh', host_str, 'mkdir', '-p', qsub_tmp_dir]
+            sh_result = subprocess.run(cmd_arr, capture_output=True)
+            if sh_result.returncode != 0:
+                continue
+
+            host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
+            cmd_arr = [*REMOTE_CP_COMMAND, _file, host_str]
+            sh_result = subprocess.run(cmd_arr, capture_output=True)
+            if sh_result.returncode != 0:
+                continue
+
+            # create runfile and copy that to the qsub host
+            dummy_arr = get_runfile_str_arr(_file)
+            qsub_run_file_name = _file.with_name(f"{_file.stem}{'.run'}")
+            with open(qsub_run_file_name, 'w') as f:
+                [f.writelines(_line) for _line in dummy_arr]
+
+
+        else:
+            # script is run on the qsub host
+            # scripts exist already
+            pass
+
         # copy runfile to qsub host (subprocess.run)
         # create submission file (create locally, copy to qsub host (fabric)
         # create tmp directory on submission host (fabric)
@@ -227,7 +288,7 @@ def main():
             print(f"{_runfile}")
         pass
     else:
-        pass
+        run_queue(runfiles)
 
 
 if __name__ == "__main__":
