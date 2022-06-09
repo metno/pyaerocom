@@ -1,3 +1,5 @@
+from pyaerocom.config import ALL_REGION_NAME
+
 MODELS = {"TM5-AP3-CTRL": dict(model_id="TM5-met2010_CTRL-TEST")}
 
 OBS_GROUNDBASED = {
@@ -19,7 +21,7 @@ CFG = dict(
     only_model_maps=False,
     clear_existing_json=False,
     # Regional filter for analysis
-    filter_name="WORLD-wMOUNTAINS",
+    filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
     ts_type="daily",
     map_zoom="World",

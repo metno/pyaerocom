@@ -15,6 +15,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_heatmap_filename,
     get_json_mapname,
     get_stationfile_name,
+    get_timeseries_file_name,
 )
 from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
@@ -22,6 +23,10 @@ from tests.fixtures.collocated_data import COLDATA
 
 def test_get_heatmap_filename():
     assert get_heatmap_filename("daily") == "glob_stats_daily.json"
+
+
+def test_get_timeseries_filename():
+    assert get_timeseries_file_name("obs1", "var1", "vert1") == "obs1-var1-vert1.json"
 
 
 def test_get_stationfile_name():

@@ -13,6 +13,7 @@ from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
 )
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32
@@ -133,15 +134,26 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     "addargs,ts_type,shape,obsmean,modmean",
     [
         (
-            dict(filter_name="WORLD-noMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+            dict(
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
+                min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
+            ),
             "monthly",
             (2, 12, 8),
             0.315930,
             0.275671,
         ),
-        (dict(filter_name="WORLD-noMOUNTAINS"), "monthly", (2, 12, 8), 0.316924, 0.275671),
         (
-            dict(filter_name="WORLD-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+            dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS"),
+            "monthly",
+            (2, 12, 8),
+            0.316924,
+            0.275671,
+        ),
+        (
+            dict(
+                filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE
+            ),
             "monthly",
             (2, 12, 11),
             0.269707,
@@ -149,7 +161,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         ),
         (
             dict(
-                filter_name="WORLD-noMOUNTAINS",
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
                 use_climatology_ref=True,
                 min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
@@ -160,7 +172,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         ),
         pytest.param(
             dict(
-                filter_name="WORLD-noMOUNTAINS",
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
                 regrid_res_deg=30,
                 min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
@@ -172,7 +184,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
             marks=[need_iris_32],
         ),
         (
-            dict(filter_name="WORLD-noMOUNTAINS", ts_type="yearly"),
+            dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS", ts_type="yearly"),
             "yearly",
             (2, 1, 8),
             0.417676,

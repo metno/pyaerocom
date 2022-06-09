@@ -6,6 +6,7 @@ from typing import List, Optional
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers_landsea_masks import load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
@@ -49,7 +50,7 @@ class Region(BrowseDict):
     def __init__(self, region_id=None, **kwargs):
 
         if region_id is None:
-            region_id = "WORLD"
+            region_id = ALL_REGION_NAME
 
         if region_id in REGION_NAMES:
             name = REGION_NAMES[region_id]
@@ -336,12 +337,12 @@ def get_regions_coord(lat, lon, regions=None):
     if regions is None:
         regions = get_all_default_regions()
     for rname, reg in regions.items():
-        if rname == "WORLD":  # always True
+        if rname == ALL_REGION_NAME:  # always True
             continue
         if reg.contains_coordinate(lat, lon):
             matches.append(rname)
     if len(matches) == 0:
-        matches.append("WORLD")
+        matches.append(ALL_REGION_NAME)
     return matches
 
 

@@ -4,16 +4,17 @@ import pytest
 import xarray as xr
 
 from pyaerocom import ColocatedData, Filter
+from pyaerocom.config import ALL_REGION_NAME
 
 from .data_access import TestData
 
-CHECK_PATHS = "coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc"
+CHECK_PATHS = f"coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
 EXAMPLE_FILE = TestData(CHECK_PATHS).path
 
 
 def _create_fake_coldata_3d():
     var = "concpm10"
-    filter_name = "WORLD-wMOUNTAINS"
+    filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
     regfilter = Filter(name=filter_name)
 
     dtime = pd.date_range("2000-01-01", "2019-12-31", freq="MS") + np.timedelta64(14, "D")
@@ -98,7 +99,7 @@ def _create_fake_coldata_3d():
 
 def _create_fake_trends_coldata_3d():
     var = "concpm10"
-    filter_name = "WORLD-wMOUNTAINS"
+    filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
     regfilter = Filter(name=filter_name)
 
     dtime = pd.date_range("2000-01-01", "2019-12-31", freq="MS") + np.timedelta64(14, "D")
@@ -168,7 +169,7 @@ def _create_fake_trends_coldata_3d():
 
 def _create_fake_coldata_3d_hourly():
     var = "vmro3"
-    filter_name = "WORLD-wMOUNTAINS"
+    filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
     regfilter = Filter(name=filter_name)
 
     dtime = pd.date_range("2018-01-10T00:00:00", "2018-01-17T23:59:00", freq="h")

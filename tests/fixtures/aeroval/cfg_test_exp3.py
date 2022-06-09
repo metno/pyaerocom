@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pyaerocom.config import ALL_REGION_NAME
+
 from .common import add_dummy_model_data
 
 YEAR = "2007"
@@ -51,7 +53,7 @@ CFG = dict(
     only_model_maps=False,
     clear_existing_json=False,
     # Regional filter for analysis
-    filter_name="WORLD-wMOUNTAINS",
+    filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
     ts_type="monthly",
     map_zoom="World",
