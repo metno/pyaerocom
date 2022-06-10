@@ -11,8 +11,6 @@ parallelisation for aeroval processing
 # some ideas what to use
 import argparse
 import copy
-import os
-import pathlib
 from datetime import datetime
 from getpass import getuser
 from importlib.machinery import SourceFileLoader
@@ -48,7 +46,6 @@ REMOTE_CP_COMMAND = ["scp", "-v"]
 
 # script start time
 START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
-
 
 # assume that the script to run the aeroval json file is in the same directory as this script
 JSON_RUNSCRIPT = PurePath(PurePath(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
@@ -90,9 +87,7 @@ def prep_files(options):
                     "coldata_basedir"
                 ] = f"{out_cfg['coldata_basedir']}/{PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
                 cfg_file = PurePosixPath(_file).stem
-                outfile = PurePosixPath(tempdir).joinpath(
-                    f"cfg_file_{_model}_{_obs_network}.json"
-                )
+                outfile = PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
                 print(f"writing file {outfile}")
                 with open(outfile, "w", encoding="utf-8") as j:
                     json.dump(out_cfg, j, ensure_ascii=False, indent=4)
@@ -105,13 +100,13 @@ def prep_files(options):
 
 
 def get_runfile_str_arr(
-    file,
-    queue_name=QSUB_QUEUE_NAME,
-    script_name=None,
-    wd=QSUB_DIR,
-    mail=f"{QSUB_USER}@met.no",
-    logdir=QSUB_LOG_DIR,
-    date=START_TIME,
+        file,
+        queue_name=QSUB_QUEUE_NAME,
+        script_name=None,
+        wd=QSUB_DIR,
+        mail=f"{QSUB_USER}@met.no",
+        logdir=QSUB_LOG_DIR,
+        date=START_TIME,
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
@@ -131,7 +126,7 @@ def get_runfile_str_arr(
     if mail is not None:
         runfile_arr.append(f"#$ -M {mail}")
     runfile_arr.append("#$ -m abe")
-    runfile_arr.append("#$ -l h_vmem=64G")
+    runfile_arr.append("#$ -l h_vmem=20G")
     runfile_arr.append("#$ -shell y")
     runfile_arr.append("#$ -j y")
     # runfile_arr.append("#$ -o /lustre/storeA/project/aerocom/logs/aeroval_logs/")
@@ -170,19 +165,18 @@ def get_runfile_str_arr(
 
 
 def run_queue(
-    runfiles,
-    qsub_host=QSUB_HOST,
-    qsub_cmd=QSUB_NAME,
-    qsub_dir=QSUB_DIR,
-    qsub_user=QSUB_USER,
-    qsub_queue=QSUB_QUEUE_NAME,
+        runfiles,
+        qsub_host=QSUB_HOST,
+        qsub_cmd=QSUB_NAME,
+        qsub_dir=QSUB_DIR,
+        qsub_user=QSUB_USER,
+        qsub_queue=QSUB_QUEUE_NAME,
+        submit_flag=False,
 ):
     """submit runfiles to the remote cluster"""
 
     # to enable test usage, import fabric only here
     import subprocess
-
-    from fabric import Connection
 
     qsub_tmp_dir = Path.joinpath(PurePath(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
 
@@ -195,23 +189,56 @@ def run_queue(
         if not localhost_flag:
             # create tmp dir on qsub host; retain some parts
             host_str = f"{QSUB_USER}@{QSUB_HOST}"
-            cmd_arr = ['ssh', host_str, 'mkdir', '-p', qsub_tmp_dir]
+            cmd_arr = ["ssh", host_str, "mkdir", "-p", qsub_tmp_dir]
+            print(f"running command {' '.join(map(str, cmd_arr))}...")
             sh_result = subprocess.run(cmd_arr, capture_output=True)
             if sh_result.returncode != 0:
                 continue
+            else:
+                print("success...")
 
+            # copy aeroval config file to qsub host
             host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
             cmd_arr = [*REMOTE_CP_COMMAND, _file, host_str]
+            print(f"running command {' '.join(map(str, cmd_arr))}...")
             sh_result = subprocess.run(cmd_arr, capture_output=True)
             if sh_result.returncode != 0:
                 continue
+            else:
+                print("success...")
 
             # create runfile and copy that to the qsub host
             dummy_arr = get_runfile_str_arr(_file)
             qsub_run_file_name = _file.with_name(f"{_file.stem}{'.run'}")
-            with open(qsub_run_file_name, 'w') as f:
-                [f.writelines(_line) for _line in dummy_arr]
+            print(f"writing file {qsub_run_file_name}")
+            with open(qsub_run_file_name, "w") as f:
+                f.write("\n".join(dummy_arr))
 
+            # copy runfile to qsub host
+            host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
+            cmd_arr = [*REMOTE_CP_COMMAND, qsub_run_file_name, host_str]
+            print(f"running command {' '.join(map(str, cmd_arr))}...")
+            sh_result = subprocess.run(cmd_arr, capture_output=True)
+            if sh_result.returncode != 0:
+                continue
+            else:
+                print("success...")
+
+            host_str = f"{QSUB_USER}@{QSUB_HOST}"
+            remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
+            cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", "qsub", qsub_run_file_name]
+            if submit_flag:
+                print(f"running command {' '.join(map(str, cmd_arr))}...")
+                sh_result = subprocess.run(cmd_arr, capture_output=True)
+                if sh_result.returncode != 0:
+                    continue
+                else:
+                    print("success...")
+            else:
+                print(f"qsub files created and copied to {qsub_host}.")
+                print(
+                    f"you can start the job with the command: qsub {qsub_run_file_name} on the host {qsub_host}."
+                )
 
         else:
             # script is run on the qsub host
@@ -229,13 +256,19 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
-        "aeroval config has to to be in the variable CFG for now!\n\n"
+                    "aeroval config has to to be in the variable CFG for now!\n\n"
     )
     parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
     parser.add_argument("--outdir", help="output directory")
     parser.add_argument("--subdry", help="dryrun for submission to queue", action="store_true")
+    parser.add_argument(
+        "--createjobfiles",
+        help="create all that is necessary to submit the jobs to the queue, but do not start the jobs. ",
+        action="store_true",
+        default=False
+    )
     parser.add_argument(
         "--jsonrunscript",
         help=f"script to run json config files; defaults to {JSON_RUNSCRIPT}",
@@ -265,6 +298,11 @@ def main():
     else:
         options["verbose"] = False
 
+    if args.createjobfiles:
+        options["createjobfiles"] = True
+    else:
+        options["createjobfiles"] = False
+
     if args.subdry:
         options["subdry"] = True
     else:
@@ -288,7 +326,7 @@ def main():
             print(f"{_runfile}")
         pass
     else:
-        run_queue(runfiles)
+        run_queue(runfiles, submit_flag=(not options["createjobfiles"]))
 
 
 if __name__ == "__main__":
