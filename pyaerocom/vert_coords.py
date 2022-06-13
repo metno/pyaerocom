@@ -12,6 +12,8 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 import logging
 
+from geonum import atmosphere as atm
+
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
@@ -163,10 +165,6 @@ def pressure2altitude(p, *args, **kwargs):
     -------
     altitudes in m corresponding to input pressure levels in defined atmosphere
     """
-    if not const.GEONUM_AVAILABLE:
-        raise ModuleNotFoundError("Feature disabled: need geonum library")
-    from geonum import atmosphere as atm
-
     return atm.pressure2altitude(p, *args, **kwargs)
 
 

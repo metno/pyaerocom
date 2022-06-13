@@ -42,7 +42,7 @@ def test_ColorTheme_to_dict():
     }
 
 
-def test_ColorTheme_to_dict():
+def test_ColorTheme_to_dict_items():
     value = ColorTheme("dark").to_dict()
 
     theme = ColorTheme()

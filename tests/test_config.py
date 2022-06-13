@@ -1,31 +1,28 @@
 import getpass
-import os
 import tempfile
 from importlib import resources
 from pathlib import Path
+from typing import Type
 
 import pytest
 
 import pyaerocom.config as testmod
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME, Config
-
-from .conftest import lustre_avail
+from pyaerocom.grid_io import GridIO
+from pyaerocom.varcollection import VarCollection
+from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
 
-_TEMPDIR = tempfile.mkdtemp()
-CFG_FILE_WRONG = os.path.join(_TEMPDIR, "paths.txt")
+TMP_PATH = Path(tempfile.mkdtemp())
+CFG_FILE_WRONG = TMP_PATH / "paths.txt"
+CFG_FILE_WRONG.write_text("")
 
-LOCAL_DB_DIR = os.path.join(_TEMPDIR, "data")
-os.makedirs(os.path.join(LOCAL_DB_DIR, "modeldata"))
-os.makedirs(os.path.join(LOCAL_DB_DIR, "obsdata"))
-open(CFG_FILE_WRONG, "w").close()
-
-
-def test_CFG_FILE_EXISTS():
-    assert resources.is_resource("pyaerocom.data", "paths.ini")
-    assert os.path.exists(CFG_FILE)
+LOCAL_DB_DIR = TMP_PATH / "data"
+LOCAL_DB_DIR.mkdir()
+(LOCAL_DB_DIR / "modeldata").mkdir()
+(LOCAL_DB_DIR / "obsdata").mkdir()
 
 
 with resources.path("pyaerocom.data", "paths.ini") as path:
@@ -33,15 +30,15 @@ with resources.path("pyaerocom.data", "paths.ini") as path:
 
 
 def test_CFG_FILE_EXISTS():
-    assert os.path.exists(CFG_FILE)
+    assert resources.is_resource("pyaerocom.data", "paths.ini")
 
 
 def test_CFG_FILE_WRONG_EXISTS():
-    assert os.path.exists(CFG_FILE_WRONG)
+    assert CFG_FILE_WRONG.exists()
 
 
 def test_LOCAL_DB_DIR_EXISTS():
-    assert os.path.exists(LOCAL_DB_DIR)
+    assert LOCAL_DB_DIR.exists()
 
 
 @pytest.fixture(scope="module")
@@ -67,15 +64,26 @@ def test_Config___init__(config_file, try_infer_environment):
 
 
 @pytest.mark.parametrize(
-    "config_file,exception",
+    "config_file,exception,error",
     [
-        (CFG_FILE_WRONG, ValueError),
-        (f"/home/{USER}/blaaaa.ini", FileNotFoundError),
+        pytest.param(
+            str(CFG_FILE_WRONG),
+            ValueError,
+            "Need path to an ini file for input config_file",
+            id="wrong file extension",
+        ),
+        pytest.param(
+            f"/home/{USER}/blaaaa.ini",
+            FileNotFoundError,
+            f"input config file does not exist /home/{USER}/blaaaa.ini",
+            id="no such file",
+        ),
     ],
 )
-def test_Config___init___error(config_file, exception):
-    with pytest.raises(exception):
+def test_Config___init___error(config_file: str, exception: Type[Exception], error: str):
+    with pytest.raises(exception) as e:
         testmod.Config(config_file, False)
+    assert str(e.value) == error
 
 
 def test_Config__infer_config_from_basedir():
@@ -297,45 +305,23 @@ def test_empty_init(empty_cfg):
 
 
 def test_default_config_HOMEDIR():
-    assert const.HOMEDIR == os.path.expanduser("~") + "/"
+    assert Path(const.HOMEDIR) == Path("~").expanduser()
+    assert const.HOMEDIR.endswith("/")
 
 
 def test_default_config():
     cfg = Config()
-    home = os.path.abspath(cfg.HOMEDIR)
 
-    mkpath = lambda basepath, relpath: os.path.abspath(os.path.join(basepath, relpath))
-
-    mypydir = mkpath(home, "MyPyaerocom")
-    assert cfg.OUTPUTDIR == mypydir
-    assert cfg._outputdir == mypydir
-
-    assert cfg.CACHEDIR == mkpath(mypydir, f"_cache/{USER}")
-
-    check = mkpath(mypydir, "colocated_data")
-    assert cfg.COLOCATEDDATADIR == check
-    # now this should be assigned
-    assert cfg._colocateddatadir == check
-
-    check = mkpath(mypydir, "filtermasks")
-    assert cfg.FILTERMASKKDIR == check
-    # now this should be assigned
-    assert cfg._filtermaskdir == check
-
-    check = mkpath(mypydir, "tmp")
-    assert cfg.LOCAL_TMP_DIR == check
-    # now this should be assigned
-    assert cfg._local_tmp_dir == check
-
-    check = mkpath(mypydir, "data")
-    assert cfg.DOWNLOAD_DATADIR == check
-    # now this should be assigned
-    assert cfg._downloaddatadir == check
+    mypydir = Path(cfg.HOMEDIR).resolve() / "MyPyaerocom"
+    assert Path(cfg.OUTPUTDIR) == Path(cfg._outputdir) == mypydir
+    assert Path(cfg.CACHEDIR) == mypydir / f"_cache/{USER}"
+    assert Path(cfg.COLOCATEDDATADIR) == Path(cfg._colocateddatadir) == mypydir / "colocated_data"
+    assert Path(cfg.FILTERMASKKDIR) == Path(cfg._filtermaskdir) == mypydir / "filtermasks"
+    assert Path(cfg.LOCAL_TMP_DIR) == Path(cfg._local_tmp_dir) == mypydir / "tmp"
+    assert Path(cfg.DOWNLOAD_DATADIR) == Path(cfg._downloaddatadir) == mypydir / "data"
 
     assert cfg._caching_active
     assert cfg.CACHING
-
-    from pyaerocom.varcollection import VarCollection
 
     assert isinstance(cfg.VARS, VarCollection)
     assert cfg.VARS is cfg.VAR_PARAM
@@ -347,7 +333,5 @@ def test_default_config():
     assert cfg.DATA_SEARCH_DIRS is cfg._search_dirs
 
     assert cfg.WRITE_FILEIO_ERR_LOG
-
-    from pyaerocom.grid_io import GridIO
 
     assert isinstance(cfg.GRID_IO, GridIO)

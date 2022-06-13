@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
-
-from ..conftest import EBAS_SQLite_DB
+from tests.fixtures.ebas import EBAS_FILEDIR
 
 
 def test_EbasSQLRequest___init__():
@@ -103,11 +104,6 @@ def test_EbasFileIndex_database_getter():
         EbasFileIndex().database
     error = "EBAS SQLite database file could not be located but is needed in EbasFileIndex class"
     assert str(e.value) == error
-
-
-@pytest.fixture(scope="module")
-def ebas() -> EbasFileIndex:
-    return EbasFileIndex(EBAS_SQLite_DB)
 
 
 def test_EbasFileIndex_ALL_STATION_NAMES(ebas: EbasFileIndex):

@@ -1,9 +1,4 @@
-### Very simple setup to make sure the basic stuff works in AeroVal
-import os
-
 from pyaerocom.config import ALL_REGION_NAME
-
-from ._outbase import AEROVAL_OUT
 
 MODELS = {
     "TM5-AP3-CTRL": dict(
@@ -40,8 +35,8 @@ OBS_GROUNDBASED = {
 CFG = dict(
     model_cfg=MODELS,
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=os.path.join(AEROVAL_OUT, "data"),
-    coldata_basedir=os.path.join(AEROVAL_OUT, "coldata"),
+    json_basedir="PATH_TO_AEROVAL_OUT/data",
+    coldata_basedir="PATH_TO_AEROVAL_OUT/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,
