@@ -76,7 +76,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["vmro3"] = "concentration"
     VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
-    VAR_NAMES_FILE["vmrbenezene"] = "concentration"
+    VAR_NAMES_FILE["vmrbenzene"] = "concentration"
 
     #: units of variables in files (needs to be defined for each variable supported)
     VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
@@ -107,13 +107,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     CONV_FACTOR["vmrno2"] = np.float_(
         0.514
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
+    # CONV_FACTOR["vmrbenzene"] = np.float_(
+    #     0.313
+    # ) 
+
 
     # unit of the converted property after the conversion
     CONV_UNIT = {}
     CONV_UNIT["vmro3"] = "ppb"
     CONV_UNIT["vmro3max"] = "ppb"
     CONV_UNIT["vmrno2"] = "ppb"
-
+    CONV_UNIT["vmrbenzene"] = "ppb"
     #: field name of the start time of the measurement (in lower case)
     START_TIME_NAME = "datetimebegin"
 

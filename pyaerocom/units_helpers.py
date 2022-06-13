@@ -54,6 +54,8 @@ UCONV_MUL_FACS = pd.DataFrame(
         # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
         ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
         ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
+        ["vmrbenzene", "ug m-3", "ppb", 1/3.2430], # Source (EC): https://uk-air.defra.gov.uk/assets/documents/reports/cat06/0502160851_Conversion_Factors_Between_ppb_and.pdf
+
     ],
     columns=["var_name", "from", "to", "fac"],
 ).set_index(["var_name", "from"])
