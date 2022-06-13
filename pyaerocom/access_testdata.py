@@ -26,7 +26,6 @@ class AccessTestData:
 
     URL_TESTDATA = "https://pyaerocom-ng.met.no/pyaerocom-suppl/testdata-minimal.tar.gz.20220602"
 
-
     #: Directory where testdata will be downloaded into
     BASEDIR_DEFAULT = const.OUTPUTDIR
 
