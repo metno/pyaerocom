@@ -33,7 +33,9 @@ QSUB_NAME = "/usr/bin/qsub"
 # qsub submission host
 QSUB_HOST = "ppi-clogin-a1.met.no"
 # directory, where the files will bew transferred before they are run
-QSUB_DIR = f"/tmp/{USER}"
+# QSUB_DIR = f"/tmp/{USER}"
+QSUB_DIR = f"/lustre/storeA/users/{USER}/submission_scripts"
+
 # user name on the qsub host
 QSUB_USER = USER
 # queue name
@@ -64,7 +66,8 @@ def prep_files(options):
         # the following line does unfortunately not work since a module is not subscriptable
         # CFG = foo[options["cfgvar"]]
         # stick to the name CFG for the aeroval configuration for now
-        cfg = copy.deepcopy(foo.CFG)
+        # cfg = copy.deepcopy(foo.CFG)
+        cfg = copy.deepcopy(getattr(foo, options["cfgvar"]))
         # create tmp dir
         tempdir = mkdtemp(dir=options["tempdir"])
         # index for temporary data directories
@@ -103,13 +106,23 @@ def get_runfile_str_arr(
         file,
         queue_name=QSUB_QUEUE_NAME,
         script_name=None,
-        wd=QSUB_DIR,
+        # wd=QSUB_DIR,
+        wd=None,
         mail=f"{QSUB_USER}@met.no",
         logdir=QSUB_LOG_DIR,
         date=START_TIME,
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
+
+    if wd is None:
+        wd = PurePath(file).parent
+
+    if script_name is None:
+        script_name = str(file.with_name(f"{file.stem}{'.run'}"))
+    elif isinstance(script_name, PurePath):
+        script_name = str(script_name)
+
     runfile_arr = []
     runfile_arr.append("#!/bin/bash -l")
     runfile_arr.append("#$ -S /bin/bash")
@@ -119,7 +132,7 @@ def get_runfile_str_arr(
     runfile_arr.append(f"#$ -q {queue_name}")
     runfile_arr.append("#$ -pe shmem-1 1")
     # runfile_arr.append("#$ -wd /home/UUSER/data/aeroval-local-web/pyaerocom_config/config_files")
-    runfile_arr.append(f"#$ -wd {PurePath(file).parent}")
+    runfile_arr.append(f"#$ -wd {wd}")
     runfile_arr.append("#$ -l h_rt=96:00:00")
     runfile_arr.append("#$ -l s_rt=96:00:00")
     # runfile_arr.append("#$ -M UUSER@met.no")
@@ -159,8 +172,13 @@ def get_runfile_str_arr(
     runfile_arr.append("set -x")
     runfile_arr.append("python --version >> ${logfile} 2>&1")
     runfile_arr.append("pwd >> ${logfile} 2>&1")
-    runfile_arr.append('echo "starting SUBMITFILE ..." >> ${logfile}')
-    runfile_arr.append("python SUBMITFILE >> ${logfile} 2>&1")
+    runfile_arr.append('echo "starting FILE ..." >> ${logfile}'.replace("FILE", script_name))
+    runfile_arr.append(
+        "JSON_RUNSCRIPT FILE >> ${logfile} 2>&1".replace(
+            "JSON_RUNSCRIPT", str(JSON_RUNSCRIPT)
+        ).replace("FILE", script_name)
+    )
+    runfile_arr.append("")
     return runfile_arr
 
 
@@ -208,8 +226,11 @@ def run_queue(
                 print("success...")
 
             # create runfile and copy that to the qsub host
-            dummy_arr = get_runfile_str_arr(_file)
             qsub_run_file_name = _file.with_name(f"{_file.stem}{'.run'}")
+            remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
+            dummy_arr = get_runfile_str_arr(
+                _file, wd=qsub_tmp_dir, script_name=remote_qsub_run_file_name
+            )
             print(f"writing file {qsub_run_file_name}")
             with open(qsub_run_file_name, "w") as f:
                 f.write("\n".join(dummy_arr))
@@ -224,9 +245,22 @@ def run_queue(
             else:
                 print("success...")
 
-            host_str = f"{QSUB_USER}@{QSUB_HOST}"
+            # run qsub
+            # unfortunatly qsub can't be run directly for some reason
+            host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
+            # qsub_start_file_name = Path.joinpath(qsub_tmp_dir, f"{qsub_run_file_name.name}.sh")
+            qsub_start_file_name = _file.with_name(f"{_file.stem}{'.sh'}")
             remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
-            cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", "qsub", qsub_run_file_name]
+            remote_qsub_start_file_name = Path.joinpath(qsub_tmp_dir, qsub_start_file_name.name)
+            # this does not work:
+            # cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", "qsub", remote_qsub_run_file_name]
+            start_script_arr = []
+            start_script_arr.append("#!/bin/bash -l")
+            start_script_arr.append(f"qsub {remote_qsub_run_file_name}")
+            start_script_arr.append("")
+            with open(qsub_start_file_name, "w") as f:
+                f.write("\n".join(start_script_arr))
+            cmd_arr = [*REMOTE_CP_COMMAND, qsub_start_file_name, host_str]
             if submit_flag:
                 print(f"running command {' '.join(map(str, cmd_arr))}...")
                 sh_result = subprocess.run(cmd_arr, capture_output=True)
@@ -234,10 +268,23 @@ def run_queue(
                     continue
                 else:
                     print("success...")
+
+                host_str = f"{QSUB_USER}@{QSUB_HOST}"
+                cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", remote_qsub_start_file_name]
+                print(f"running command {' '.join(map(str, cmd_arr))}...")
+                sh_result = subprocess.run(cmd_arr, capture_output=True)
+                if sh_result.returncode != 0:
+                    print(f"return code: {sh_result.returncode}")
+                    print(f"{sh_result.stderr}")
+                    continue
+                else:
+                    print("success...")
+                    print(f"{sh_result.stdout}")
+
             else:
                 print(f"qsub files created and copied to {qsub_host}.")
                 print(
-                    f"you can start the job with the command: qsub {qsub_run_file_name} on the host {qsub_host}."
+                    f"you can start the job with the command: qsub {remote_qsub_run_file_name} on the host {qsub_host}."
                 )
 
         else:
@@ -267,7 +314,7 @@ def main():
         "--createjobfiles",
         help="create all that is necessary to submit the jobs to the queue, but do not start the jobs. ",
         action="store_true",
-        default=False
+        default=False,
     )
     parser.add_argument(
         "--jsonrunscript",
