@@ -8,7 +8,7 @@ import pytest
 
 import pyaerocom.config as testmod
 from pyaerocom import const
-from pyaerocom.config import Config
+from pyaerocom.config import ALL_REGION_NAME, Config
 
 from .conftest import lustre_avail
 
@@ -156,7 +156,7 @@ def test_empty_class_header(empty_cfg):
     assert cfg.STANDARD_COORD_NAMES == ["latitude", "longitude", "altitude"]
     assert cfg.DEFAULT_VERT_GRID_DEF == dict(lower=0, upper=15000, step=250)
     assert cfg.RH_MAX_PERCENT_DRY == 40
-    assert cfg.DEFAULT_REG_FILTER == "WORLD-wMOUNTAINS"
+    assert cfg.DEFAULT_REG_FILTER == f"{ALL_REGION_NAME}-wMOUNTAINS"
     assert cfg.OBS_MIN_NUM_RESAMPLE == dict(
         yearly=dict(monthly=3),
         monthly=dict(daily=7),
@@ -180,7 +180,7 @@ def test_empty_class_header(empty_cfg):
     assert cfg.AEOLUS_NAME == "AeolusL2A"
 
     assert cfg.OLD_AEROCOM_REGIONS == [
-        "WORLD",
+        ALL_REGION_NAME,
         "ASIA",
         "AUSTRALIA",
         "CHINA",

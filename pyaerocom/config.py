@@ -16,7 +16,7 @@ from pyaerocom._lowlevel_helpers import (
 )
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
-from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
+from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
 
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ class Config:
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
-    DEFAULT_REG_FILTER = "WORLD-wMOUNTAINS"
+    DEFAULT_REG_FILTER = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations

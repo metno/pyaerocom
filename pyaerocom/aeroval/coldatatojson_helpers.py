@@ -14,6 +14,7 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import (
     AeroValConfigError,
     AeroValTrendsError,
@@ -33,6 +34,10 @@ logger = logging.getLogger(__name__)
 
 def get_heatmap_filename(ts_type):
     return f"glob_stats_{ts_type}.json"
+
+
+def get_timeseries_file_name(obs_name, var_name_web, vert_code):
+    return f"{obs_name}-{var_name_web}-{vert_code}.json"
 
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
@@ -116,7 +121,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     write_json(current, fp, ignore_nan=True)
 
 
-def _add_entry_json(
+def _add_heatmap_entry_json(
     heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
@@ -188,14 +193,14 @@ def init_regions_web(coldata, regions_how):
     elif regions_how == "aerocom":
         regborders, regs = _prepare_aerocom_regions_json()
     elif regions_how == "htap":
-        regborders["WORLD"] = regborders_default["WORLD"]
-        regs["WORLD"] = regs_default["WORLD"]
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         add_borders, add_regs = _prepare_htap_regions_json()
         regborders.update(add_borders)
         regs.update(add_regs)
     elif regions_how == "country":
-        regborders["WORLD"] = regborders_default["WORLD"]
-        regs["WORLD"] = regs_default["WORLD"]
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
@@ -531,7 +536,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
                     repw = repw.transpose(
                         "year", "period", "data_source", "dummy_time", "station_name"
                     )
-                    if regid == "WORLD":
+                    if regid == ALL_REGION_NAME:
                         subset = repw
                     else:
                         subset = repw.where(repw.country == regid)
@@ -635,7 +640,6 @@ def _get_stat_regions(lats, lons, regions):
 
 
 def _process_sites(data, regions, regions_how, meta_glob):
-
     freqs = list(data)
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
@@ -654,8 +658,11 @@ def _process_sites(data, regions, regions_how, meta_glob):
             "latitude": lats[i],
             "longitude": lons[i],
             "altitude": alts[i],
-            "region": regs[i],
         }
+        if regions_how == "country":
+            site_meta["region"] = [regs[i]]
+        else:
+            site_meta["region"] = regs[i]
         ts_data = _init_ts_data(freqs)
         ts_data.update(meta_glob)
         ts_data.update(site_meta)
@@ -818,14 +825,13 @@ def _process_map_and_scat(
     use_fairmode,
     obs_var,
 ):
-
     stats_dummy = _init_stats_dummy()
     scat_data = {}
     scat_dummy = [np.nan]
     for freq, cd in data.items():
-        use_dummy = True if cd is None else False
         for per in periods:
             for season in seasons:
+                use_dummy = cd is None
                 if not use_dummy:
                     try:
                         subset = _select_period_season_coldata(cd, per, season)
@@ -1006,7 +1012,6 @@ def _prep_stats_json(stats):
 
 
 def _get_extended_stats(coldata, use_weights):
-
     stats = coldata.calc_statistics(use_area_weights=use_weights)
 
     # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
@@ -1112,16 +1117,15 @@ def _process_heatmap_data(
     add_trends,
     trends_min_yrs,
 ):
-
     output = {}
     stats_dummy = _init_stats_dummy()
     for freq, coldata in data.items():
         output[freq] = hm_freq = {}
-        use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
             hm_freq[regname] = {}
             for per in periods:
                 for season in seasons:
+                    use_dummy = coldata is None
                     perstr = f"{per}-{season}"
                     if use_dummy:
                         stats = stats_dummy

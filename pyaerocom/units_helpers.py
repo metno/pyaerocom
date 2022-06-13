@@ -48,6 +48,10 @@ UCONV_MUL_FACS = pd.DataFrame(
         ["concoa", "ug C/m3", "ug m-3", 1.0],
         ["concoc", "ug C/m3", "ug m-3", 1.0],
         ["conctc", "ug C/m3", "ug m-3", 1.0],
+        # a little hacky for ratpm10pm25...
+        # ["ratpm10pm25", "ug m-3", "1", 1.0],
+        ["concpm25", "ug m-3", "1", 1.0],
+        ["concpm10", "ug m-3", "1", 1.0],
         ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
         # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
         ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],

@@ -38,7 +38,7 @@ Or into a new virtual environment (recommended) named *.venv* via::
 	source .venv/bin/activate
 
 	# update pip
-	pip -m install -U pip
+	python3 -m pip install -U pip
 
 	# install pyaerocom on machines with Proj8 or newer
 	# e.g. Ubuntu 22.04 LTS (Jammy Jellyfish)

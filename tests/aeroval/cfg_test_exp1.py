@@ -1,6 +1,8 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
 import os
 
+from pyaerocom.config import ALL_REGION_NAME
+
 from ._outbase import AEROVAL_OUT
 
 MODELS = {"TM5-AP3-CTRL": dict(model_id="TM5-met2010_CTRL-TEST")}
@@ -24,7 +26,7 @@ CFG = dict(
     only_model_maps=False,
     clear_existing_json=False,
     # Regional filter for analysis
-    filter_name="WORLD-wMOUNTAINS",
+    filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
     ts_type="daily",
     map_zoom="World",

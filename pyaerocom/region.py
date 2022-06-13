@@ -1,9 +1,12 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
+from typing import List, Optional
+
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers_landsea_masks import load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
@@ -47,7 +50,7 @@ class Region(BrowseDict):
     def __init__(self, region_id=None, **kwargs):
 
         if region_id is None:
-            region_id = "WORLD"
+            region_id = ALL_REGION_NAME
 
         if region_id in REGION_NAMES:
             name = REGION_NAMES[region_id]
@@ -334,17 +337,21 @@ def get_regions_coord(lat, lon, regions=None):
     if regions is None:
         regions = get_all_default_regions()
     for rname, reg in regions.items():
-        if rname == "WORLD":  # always True
+        if rname == ALL_REGION_NAME:  # always True
             continue
         if reg.contains_coordinate(lat, lon):
             matches.append(rname)
     if len(matches) == 0:
-        matches.append("WORLD")
+        matches.append(ALL_REGION_NAME)
     return matches
 
 
-def find_closest_region_coord(lat, lon, regions=None):
-    """Find region that has it's center closest to input coordinate
+def find_closest_region_coord(
+    lat: float,
+    lon: float,
+    regions: Optional[dict] = None,
+) -> List[str]:
+    """Finds list of regions sorted by their center closest to input coordinate
 
     Parameters
     ----------
@@ -358,23 +365,12 @@ def find_closest_region_coord(lat, lon, regions=None):
 
     Returns
     -------
-    str
-        region ID of identified region
+    list[str]
+        sorted list of region IDs of identified regions
     """
     if regions is None:
         regions = get_all_default_regions()
-
     matches = get_regions_coord(lat, lon, regions)
+    matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
 
-    if len(matches) == 1:
-        return matches[0]
-
-    min_dist = 1e6
-    best = None
-    for match in matches:
-        region = regions[match]
-        dist = region.distance_to_center(lat, lon)
-        if dist < min_dist:
-            min_dist = dist
-            best = match
-    return best
+    return matches
