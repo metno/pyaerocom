@@ -14,7 +14,7 @@ import copy
 from datetime import datetime
 from getpass import getuser
 from importlib.machinery import SourceFileLoader
-from pathlib import Path, PurePath, PurePosixPath
+from pathlib import Path, PurePosixPath
 from socket import gethostname
 from tempfile import mkdtemp
 from uuid import uuid4
@@ -50,7 +50,7 @@ REMOTE_CP_COMMAND = ["scp", "-v"]
 START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # assume that the script to run the aeroval json file is in the same directory as this script
-# JSON_RUNSCRIPT = PurePath(PurePath(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
+# JSON_RUNSCRIPT = Path(Path(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
 JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
 
 
@@ -86,10 +86,10 @@ def prep_files(options):
                 # do not influence each other
                 out_cfg[
                     "json_basedir"
-                ] = f"{out_cfg['json_basedir']}/{PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
+                ] = f"{out_cfg['json_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
                 out_cfg[
                     "coldata_basedir"
-                ] = f"{out_cfg['coldata_basedir']}/{PurePath(tempdir).parts[-1]}.{dir_idx:04d}"
+                ] = f"{out_cfg['coldata_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
                 cfg_file = PurePosixPath(_file).stem
                 outfile = PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
                 print(f"writing file {outfile}")
@@ -117,18 +117,18 @@ def get_runfile_str_arr(
     # create runfile
 
     if wd is None:
-        wd = PurePath(file).parent
+        wd = Path(file).parent
 
     if script_name is None:
         script_name = str(file.with_name(f"{file.stem}{'.run'}"))
-    elif isinstance(script_name, PurePath):
+    elif isinstance(script_name, Path):
         script_name = str(script_name)
 
     runfile_arr = []
     runfile_arr.append("#!/bin/bash -l")
     runfile_arr.append("#$ -S /bin/bash")
     # runfile_arr.append("#$ -N AEROVAL_NAME")
-    runfile_arr.append(f"#$ -N {PurePath(file).stem}")
+    runfile_arr.append(f"#$ -N {Path(file).stem}")
     # runfile_arr.append("#$ -q research-el7.q")
     runfile_arr.append(f"#$ -q {queue_name}")
     runfile_arr.append("#$ -pe shmem-1 1")
@@ -192,12 +192,19 @@ def run_queue(
     qsub_queue=QSUB_QUEUE_NAME,
     submit_flag=False,
 ):
-    """submit runfiles to the remote cluster"""
+    """submit runfiles to the remote cluster
+
+    # copy runfile to qsub host (subprocess.run)
+    # create submission file (create locally, copy to qsub host (fabric)
+    # create tmp directory on submission host (fabric)
+    # submit submission file to queue (fabric)
+
+    """
 
     # to enable test usage, import fabric only here
     import subprocess
 
-    qsub_tmp_dir = Path.joinpath(PurePath(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
+    qsub_tmp_dir = Path.joinpath(Path(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
 
     localhost_flag = False
     if "localhost" in qsub_host:
@@ -226,8 +233,7 @@ def run_queue(
                 continue
             else:
                 print("success...")
-
-            # create runfile and copy that to the qsub host
+            # create qsub runfile and copy that to the qsub host
             qsub_run_file_name = _file.with_name(f"{_file.stem}{'.run'}")
             remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
             remote_json_file = Path.joinpath(qsub_tmp_dir, _file.name)
@@ -249,14 +255,15 @@ def run_queue(
                 print("success...")
 
             # run qsub
-            # unfortunatly qsub can't be run directly for some reason
+            # unfortunatly qsub can't be run directly for some reason (likely security)
+            # create a script with the qsub call and start that
             host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
-            # qsub_start_file_name = Path.joinpath(qsub_tmp_dir, f"{qsub_run_file_name.name}.sh")
             qsub_start_file_name = _file.with_name(f"{_file.stem}{'.sh'}")
             remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
             remote_qsub_start_file_name = Path.joinpath(qsub_tmp_dir, qsub_start_file_name.name)
             # this does not work:
             # cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", "qsub", remote_qsub_run_file_name]
+            # use bash script as workaround
             start_script_arr = []
             start_script_arr.append("#!/bin/bash -l")
             start_script_arr.append(f"qsub {remote_qsub_run_file_name}")
@@ -295,10 +302,116 @@ def run_queue(
             # scripts exist already
             pass
 
-        # copy runfile to qsub host (subprocess.run)
-        # create submission file (create locally, copy to qsub host (fabric)
-        # create tmp directory on submission host (fabric)
-        # submit submission file to queue (fabric)
+
+def combine_output(options):
+    """combine the json files of the parallelised outputs to a single target directory (experiment)"""
+    import shutil
+
+    # create outdir
+
+    EXP_FILES_TO_COMBINE = [
+        "menu.json",
+        "ranges.json",
+        "regions.json",
+        "statistics.json",
+        "hm/glob_stats_daily.json",
+        "hm/glob_stats_monthly.json",
+    ]
+    EXP_FILES_TO_EXCLUDE = [""]
+    try:
+        Path.mkdir(options["outdir"], exist_ok=False)
+    except FileExistsError:
+        pass
+
+    for idx, combinedir in enumerate(options["files"]):
+        # tmp dirs look like this: tmpggb7k02d.0001, tmpggb7k02d.0002
+        # create common assembly directory
+        # assemble the data
+        # move the experiment to the target directory
+        print(f"input dir: {combinedir}")
+        # {experiment_name}/experiments.json: files are identical over one parallelisation run
+        if idx == 0:
+            # copy first directory to options['outdir']
+            for dir_idx, dir in enumerate(Path(combinedir).iterdir()):
+                if dir_idx == 0:
+                    # there should be only one directory!
+                    first_dir = dir
+                    # there should be only one sub directory, the experiment name
+                    # use the first directory found for that
+                    exp_dir = [child for child in dir.iterdir() if Path.is_dir(child)][0]
+                shutil.copytree(dir, options["outdir"], dirs_exist_ok=True)
+        else:
+            # workdir: combinedir/<model_dir>
+            # cfg_testing_IASI.json  contour  hm  map  menu.json  ranges.json  regions.json  scat  statistics.json  ts
+
+            out_target_dir = Path.joinpath(options["outdir"], exp_dir.name)
+            inpath = Path(combinedir).joinpath(*list(exp_dir.parts[-2:]))
+            inpath_dir_len = len(inpath.parts)
+            for file_idx, _file in enumerate(sorted(inpath.glob("**/*.json"))):
+                # determine if file is in inpath or below
+                tmp = _file.parts[inpath_dir_len:]
+                if len(tmp) == 1:
+                    cmp_file = tmp[0]
+                else:
+                    cmp_file = Path.joinpath(Path(*list(tmp)))
+
+                if _file not in EXP_FILES_TO_EXCLUDE:
+                    if str(cmp_file) in EXP_FILES_TO_COMBINE:
+                        outfile = out_target_dir.joinpath(cmp_file)
+                        infiles = [_file, outfile]
+                        print(f"writing combined json file {outfile}...")
+                        combine_json_files(infiles, outfile)
+                    else:
+                        # skip some files for now
+                        print(f"file {_file} excluded for now")
+                        continue
+                    # copy file
+                    outfile = out_target_dir.joinpath(_file.name)
+                    print(f"copying {_file} to {outfile}...")
+
+                    shutil.copy2(_file, outfile)
+
+        pass
+
+
+def combine_json_files(infiles, outfile):
+    """small helper to ingest infile into outfile"""
+    import json
+
+    result = {}
+    for infile in infiles:
+        with open(infile, "r") as inhandle:
+            # result.update(json.load(inhandle))
+            result = dict_merge(result, json.load(inhandle))
+
+    with open(outfile, "w") as outhandle:
+        json.dump(result, outhandle, ensure_ascii=False, indent=4)
+
+
+def dict_merge(dct, merge_dct):
+    """Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
+    updating only top-level keys, dict_merge recurses down into dicts nested
+    to an arbitrary depth, updating keys. The ``merge_dct`` is merged into
+    ``dct``.
+    :param dct: dict onto which the merge is executed
+    :param merge_dct: dct merged into dct
+    :return: dct
+    """
+    if dct is None:
+        dct = merge_dct.copy()
+    else:
+        for k, v in merge_dct.items():
+            print(f"{k}")
+
+            if k in dct:
+                if isinstance(dct[k], dict) and isinstance(merge_dct[k], dict):
+                    dict_merge(dct[k], merge_dct[k])
+                else:
+                    dct[k] = merge_dct[k]
+            else:
+                dct[k] = merge_dct[k]
+
+    return dct
 
 
 def main():
@@ -311,7 +424,7 @@ def main():
     parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
-    parser.add_argument("--outdir", help="output directory")
+    parser.add_argument("-o", "--outdir", help="output directory for experiment assembly")
     parser.add_argument("--subdry", help="dryrun for submission to queue", action="store_true")
     parser.add_argument(
         "--createjobfiles",
@@ -334,11 +447,17 @@ def main():
         help=f"directory for temporary files; defaults to {TMP_DIR}",
         default=TMP_DIR,
     )
+    parser.add_argument("-c", "--combinedirs", help="output directory", action="store_true")
 
     args = parser.parse_args()
     options = {}
     if args.files:
         options["files"] = args.files
+
+    if args.combinedirs:
+        options["combinedirs"] = True
+    else:
+        options["combinedirs"] = False
 
     if args.jsonrunscript:
         options["jsonrunscript"] = args.jsonrunscript
@@ -359,24 +478,27 @@ def main():
         options["subdry"] = False
 
     if args.outdir:
-        options["outdir"] = args.outdir
+        options["outdir"] = Path(args.outdir)
 
     if args.tempdir:
-        options["tempdir"] = args.tempdir
+        options["tempdir"] = Path(args.tempdir)
 
     if args.cfgvar:
         options["cfgvar"] = args.cfgvar
 
-    # these are the files that need to be submitted to the queue
-    runfiles = prep_files(options)
+    if not options["combinedirs"]:
+        # these are the files that need to be submitted to the queue
+        runfiles = prep_files(options)
+        if options["subdry"]:
+            # just print the to be run files
+            for _runfile in runfiles:
+                print(f"{_runfile}")
+            pass
+        else:
+            run_queue(runfiles, submit_flag=(not options["createjobfiles"]))
 
-    if options["subdry"]:
-        # just print the to be run files
-        for _runfile in runfiles:
-            print(f"{_runfile}")
-        pass
     else:
-        run_queue(runfiles, submit_flag=(not options["createjobfiles"]))
+        result = combine_output(options)
 
 
 if __name__ == "__main__":
