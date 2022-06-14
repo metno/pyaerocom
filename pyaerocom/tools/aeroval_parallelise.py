@@ -33,7 +33,7 @@ QSUB_NAME = "/usr/bin/qsub"
 # qsub submission host
 QSUB_HOST = "ppi-clogin-a1.met.no"
 # directory, where the files will bew transferred before they are run
-# QSUB_DIR = f"/tmp/{USER}"
+# Needs to be on Lustre or home since /tmp is not shared between machines
 QSUB_DIR = f"/lustre/storeA/users/{USER}/submission_scripts"
 
 # user name on the qsub host
@@ -50,7 +50,8 @@ REMOTE_CP_COMMAND = ["scp", "-v"]
 START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # assume that the script to run the aeroval json file is in the same directory as this script
-JSON_RUNSCRIPT = PurePath(PurePath(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
+# JSON_RUNSCRIPT = PurePath(PurePath(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
+JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
 
 
 def prep_files(options):
@@ -103,14 +104,14 @@ def prep_files(options):
 
 
 def get_runfile_str_arr(
-        file,
-        queue_name=QSUB_QUEUE_NAME,
-        script_name=None,
-        # wd=QSUB_DIR,
-        wd=None,
-        mail=f"{QSUB_USER}@met.no",
-        logdir=QSUB_LOG_DIR,
-        date=START_TIME,
+    file,
+    queue_name=QSUB_QUEUE_NAME,
+    script_name=None,
+    # wd=QSUB_DIR,
+    wd=None,
+    mail=f"{QSUB_USER}@met.no",
+    logdir=QSUB_LOG_DIR,
+    date=START_TIME,
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
@@ -172,24 +173,24 @@ def get_runfile_str_arr(
     runfile_arr.append("set -x")
     runfile_arr.append("python --version >> ${logfile} 2>&1")
     runfile_arr.append("pwd >> ${logfile} 2>&1")
-    runfile_arr.append('echo "starting FILE ..." >> ${logfile}'.replace("FILE", script_name))
+    runfile_arr.append('echo "starting FILE ..." >> ${logfile}'.replace("FILE", str(file)))
     runfile_arr.append(
         "JSON_RUNSCRIPT FILE >> ${logfile} 2>&1".replace(
             "JSON_RUNSCRIPT", str(JSON_RUNSCRIPT)
-        ).replace("FILE", script_name)
+        ).replace("FILE", str(file))
     )
     runfile_arr.append("")
     return runfile_arr
 
 
 def run_queue(
-        runfiles,
-        qsub_host=QSUB_HOST,
-        qsub_cmd=QSUB_NAME,
-        qsub_dir=QSUB_DIR,
-        qsub_user=QSUB_USER,
-        qsub_queue=QSUB_QUEUE_NAME,
-        submit_flag=False,
+    runfiles,
+    qsub_host=QSUB_HOST,
+    qsub_cmd=QSUB_NAME,
+    qsub_dir=QSUB_DIR,
+    qsub_user=QSUB_USER,
+    qsub_queue=QSUB_QUEUE_NAME,
+    submit_flag=False,
 ):
     """submit runfiles to the remote cluster"""
 
@@ -202,18 +203,19 @@ def run_queue(
     if "localhost" in qsub_host:
         localhost_flag = True
 
-    for _file in runfiles:
+    for idx, _file in enumerate(runfiles):
         # copy runfiles to qsub host if qsub host is not localhost
         if not localhost_flag:
             # create tmp dir on qsub host; retain some parts
             host_str = f"{QSUB_USER}@{QSUB_HOST}"
-            cmd_arr = ["ssh", host_str, "mkdir", "-p", qsub_tmp_dir]
-            print(f"running command {' '.join(map(str, cmd_arr))}...")
-            sh_result = subprocess.run(cmd_arr, capture_output=True)
-            if sh_result.returncode != 0:
-                continue
-            else:
-                print("success...")
+            if idx == 0:
+                cmd_arr = ["ssh", host_str, "mkdir", "-p", qsub_tmp_dir]
+                print(f"running command {' '.join(map(str, cmd_arr))}...")
+                sh_result = subprocess.run(cmd_arr, capture_output=True)
+                if sh_result.returncode != 0:
+                    continue
+                else:
+                    print("success...")
 
             # copy aeroval config file to qsub host
             host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
@@ -228,8 +230,9 @@ def run_queue(
             # create runfile and copy that to the qsub host
             qsub_run_file_name = _file.with_name(f"{_file.stem}{'.run'}")
             remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
+            remote_json_file = Path.joinpath(qsub_tmp_dir, _file.name)
             dummy_arr = get_runfile_str_arr(
-                _file, wd=qsub_tmp_dir, script_name=remote_qsub_run_file_name
+                remote_json_file, wd=qsub_tmp_dir, script_name=remote_qsub_run_file_name
             )
             print(f"writing file {qsub_run_file_name}")
             with open(qsub_run_file_name, "w") as f:
@@ -303,7 +306,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
-                    "aeroval config has to to be in the variable CFG for now!\n\n"
+        "aeroval config has to to be in the variable CFG for now!\n\n"
     )
     parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
