@@ -4,8 +4,6 @@ import pytest
 
 from pyaerocom import utils
 
-from .conftest import data_unavail
-
 
 def test_print_file(tmp_path: Path, capsys):
     path = tmp_path / "file.txt"
@@ -31,7 +29,6 @@ def test_print_file_error(tmp_path: Path):
     assert str(e.value) == f"{folder} is not a file"
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "kwargs,tabshape",
     [
@@ -59,7 +56,6 @@ def test_create_varinfo_table(kwargs, tabshape):
     assert df.shape == tabshape
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "kwargs,error",
     [

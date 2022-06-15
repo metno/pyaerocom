@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
+from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550lt1ang
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
@@ -30,7 +30,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     _FILEMASK = "*.lev*"
 
     #: version log of this class (for caching)
-    __version__ = "0.09_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.10_" + ReadAeronetBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
@@ -91,11 +91,16 @@ class ReadAeronetSunV3(ReadAeronetBase):
     AUX_REQUIRES = {
         "ang44&87aer": ["od440aer", "od870aer"],
         "od550aer": ["od440aer", "od500aer", "ang4487aer"],
+        "od550lt1ang": ["od440aer", "od500aer", "ang4487aer"],
     }
 
     #: Functions that are used to compute additional variables (i.e. one
     #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {"ang44&87aer": calc_ang4487aer, "od550aer": calc_od550aer}
+    AUX_FUNS = {
+        "ang44&87aer": calc_ang4487aer,
+        "od550aer": calc_od550aer,
+        "od550lt1ang": calc_od550lt1ang,
+    }
 
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of

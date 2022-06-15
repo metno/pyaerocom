@@ -17,6 +17,7 @@ import xarray as xr
 from cf_units import Unit
 
 from pyaerocom import const
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
@@ -1233,6 +1234,7 @@ def str_to_iris(key, **kwargs):
     return val
 
 
+@ignore_warnings(UserWarning, r"Parsing .* in DD/MM/YYYY format")
 def to_pandas_timestamp(value):
     """Convert input to instance of :class:`pandas.Timestamp`
 

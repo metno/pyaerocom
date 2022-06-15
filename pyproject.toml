@@ -7,6 +7,7 @@ minversion = "6.0"
 log_cli = false
 log_cli_level = "WARNING"
 addopts = "--failed-first"
+xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
     # all warnings are errors
@@ -115,19 +116,17 @@ extras =
 
 [testenv:format]
 commands =
-    black --check .
-    isort --check .
-extras = 
-    proj-legacy
-    format
+    pre-commit run --all-files --show-diff-on-failure
+deps =
+    pre-commit
 
 [testenv:lint]
 ignore_outcome = True
 commands =
     mypy pyaerocom/
-    pylint pyaerocom/
-    pycodestyle pyaerocom/
-    pydocstyle pyaerocom/
+    #pylint pyaerocom/
+    #pycodestyle pyaerocom/
+    #pydocstyle pyaerocom/
 extras = 
     proj-legacy
     lint

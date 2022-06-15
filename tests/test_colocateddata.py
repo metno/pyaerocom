@@ -7,15 +7,12 @@ import numpy as np
 import pytest
 import xarray as xr
 from matplotlib.axes import Axes
-from numpy.testing import assert_allclose
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError, MetaDataError
-
-from .conftest import CHECK_PATHS, TESTDATADIR
-
-EXAMPLE_FILE = TESTDATADIR / CHECK_PATHS["coldata_tm5_aeronet"]
+from tests.fixtures.collocated_data import EXAMPLE_FILE
 
 
 @pytest.mark.parametrize("data", [EXAMPLE_FILE, str(EXAMPLE_FILE), np.ones((2, 3, 4))])
@@ -50,125 +47,132 @@ def test_ColocatedData_data_error():
         col.data = "Blaaa"
 
 
-def test_ColocatedData_data_source(coldata):
-    ds = coldata["tm5_aeronet"].data_source
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_data_source(coldata: ColocatedData):
+    ds = coldata.data_source
     assert isinstance(ds, xr.DataArray)
     assert len(ds) == 2
 
 
-def test_ColocatedData_data_source_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_data_source_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].data_source
+        coldata.data_source
     assert str(e.value).endswith("has no attribute 'data_source'")
 
 
-def test_ColocatedData_var_name(coldata):
-    cd = coldata["tm5_aeronet"]
-    assert isinstance(cd.var_name, list)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_var_name(coldata: ColocatedData):
+    assert isinstance(coldata.var_name, list)
 
 
-def test_ColocatedData_var_name_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_var_name_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].var_name
+        coldata.var_name
     assert str(e.value).endswith("has no attribute 'var_name'")
 
 
-def test_ColocatedData_latitude(coldata):
-    cd = coldata["tm5_aeronet"]
-    assert isinstance(cd.latitude, xr.DataArray)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_latitude(coldata: ColocatedData):
+    assert isinstance(coldata.latitude, xr.DataArray)
 
 
-def test_ColocatedData_latitude_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_latitude_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].latitude
+        coldata.latitude
     assert str(e.value).endswith("does not include latitude coordinate")
 
 
-def test_ColocatedData_longitude(coldata):
-    cd = coldata["tm5_aeronet"]
-    assert isinstance(cd.longitude, xr.DataArray)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_longitude(coldata: ColocatedData):
+    assert isinstance(coldata.longitude, xr.DataArray)
 
 
-def test_ColocatedData_longitude_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_longitude_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].longitude
+        coldata.longitude
     assert str(e.value).endswith("does not include longitude coordinate")
 
 
-def test_ColocatedData_time(coldata):
-    cd = coldata["tm5_aeronet"]
-    assert isinstance(cd.time, xr.DataArray)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_time(coldata: ColocatedData):
+    assert isinstance(coldata.time, xr.DataArray)
 
 
-def test_ColocatedData_time_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_time_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].time
+        coldata.time
     assert str(e.value).endswith("does not include time coordinate")
 
 
 @pytest.mark.parametrize(
-    "which,lat_range",
+    "coldataset,lat_range",
     [
         ("tm5_aeronet", (-43.2, 43.9)),
         ("fake_4d", (30, 50)),
     ],
 )
-def test_ColocatedData_lat_range(coldata, which: str, lat_range: tuple[float, float]):
-    cd_lat_range = coldata[which].lat_range
-    assert len(cd_lat_range) == len(lat_range) == 2
-    assert_allclose(cd_lat_range, lat_range, rtol=1e-1)
+def test_ColocatedData_lat_range(coldata: ColocatedData, lat_range: tuple[float, float]):
+    assert coldata.lat_range == pytest.approx(lat_range, rel=1e-1)
 
 
-def test_ColocatedData_lat_range_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_lat_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].lat_range
+        coldata.lat_range
     assert str(e.value).endswith("does not include latitude coordinate")
 
 
 @pytest.mark.parametrize(
-    "which,lon_range",
+    "coldataset,lon_range",
     [
         ("tm5_aeronet", (-65.3, 121.5)),
         ("fake_4d", (10, 20)),
     ],
 )
-def test_ColocatedData_lon_range(coldata, which: str, lon_range: tuple[float, float]):
-    cd_lon_range = coldata[which].lon_range
-    assert len(cd_lon_range) == len(lon_range) == 2
-    assert_allclose(cd_lon_range, lon_range, rtol=1e-1)
+def test_ColocatedData_lon_range(coldata: ColocatedData, lon_range: tuple[float, float]):
+    assert coldata.lon_range == pytest.approx(lon_range, rel=1e-1)
 
 
-def test_ColocatedData_lon_range_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_lon_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
-        coldata["fake_nodims"].lon_range
+        coldata.lon_range
     assert str(e.value).endswith("does not include longitude coordinate")
 
 
-def test_ColocatedData_ts_type(coldata):
-    cd = coldata["tm5_aeronet"]
-    assert isinstance(cd.ts_type, str)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_ts_type(coldata: ColocatedData):
+    assert isinstance(coldata.ts_type, str)
 
 
-def test_ColocatedData_ts_type_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_ts_type_error(coldata: ColocatedData):
     with pytest.raises(ValueError) as e:
-        coldata["fake_nodims"].ts_type
+        coldata.ts_type
     assert str(e.value).endswith("does not contain information about temporal resolution")
 
 
-def test_ColocatedData_units(coldata):
-    units = coldata["tm5_aeronet"].units
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
+def test_ColocatedData_units(coldata: ColocatedData):
+    units = coldata.units
     assert isinstance(units, list)
     assert bool(units) and all(isinstance(x, str) for x in units)
 
 
-def test_ColocatedData_units_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_units_error(coldata: ColocatedData):
     with pytest.raises(KeyError) as e:
-        coldata["fake_nodims"].units
+        coldata.units
     assert "units" in str(e.value)
 
 
 @pytest.mark.parametrize(
-    "which,num_coords",
+    "coldataset,num_coords",
     [
         ("fake_4d", 6),
         ("fake_5d", 4),
@@ -176,123 +180,124 @@ def test_ColocatedData_units_error(coldata):
         ("fake_3d", 4),
     ],
 )
-def test_ColocatedData_num_coords(coldata, which: str, num_coords: int):
-    assert coldata[which].num_coords == num_coords
+def test_ColocatedData_num_coords(coldata: ColocatedData, num_coords: int):
+    assert coldata.num_coords == num_coords
 
 
-def test_ColocatedData_num_coords_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_num_coords_error(coldata: ColocatedData):
     with pytest.raises(DataDimensionError) as e:
-        coldata["fake_nodims"].num_coords
+        coldata.num_coords
     assert str(e.value).startswith("Need dimension")
 
 
 @pytest.mark.parametrize(
-    "which,num_coords_with_data",
+    "coldataset,num_coords_with_data",
     [
         ("tm5_aeronet", 8),
         ("fake_3d", 4),
         ("fake_4d", 5),
     ],
 )
-def test_ColocatedData_num_coords_with_data(coldata, which: str, num_coords_with_data: int):
-    assert coldata[which].num_coords_with_data == num_coords_with_data
+def test_ColocatedData_num_coords_with_data(coldata: ColocatedData, num_coords_with_data: int):
+    assert coldata.num_coords_with_data == num_coords_with_data
 
 
 @pytest.mark.parametrize(
-    "which,error",
+    "coldataset,error",
     [
         ("fake_5d", "please reduce dimensionality"),
         ("fake_nodims", "Need dimension"),
     ],
 )
-def test_ColocatedData_num_coords_with_data_error(coldata, which: str, error: str):
+def test_ColocatedData_num_coords_with_data_error(coldata: ColocatedData, error: str):
     with pytest.raises(DataDimensionError) as e:
-        coldata[which].num_coords_with_data
+        coldata.num_coords_with_data
     assert error in str(e.value)
 
 
 @pytest.mark.parametrize(
-    "which,num_coords",
+    "coldataset,num_coords",
     [
         ("tm5_aeronet", 8),
         ("fake_4d", 5),
     ],
 )
-def test_ColocatedData_get_coords_valid_obs(coldata, which: str, num_coords: int):
-    coords_valid_obs = coldata[which].get_coords_valid_obs()
+def test_ColocatedData_get_coords_valid_obs(coldata: ColocatedData, num_coords: int):
+    coords_valid_obs = coldata.get_coords_valid_obs()
     assert isinstance(coords_valid_obs, list)
     assert len(coords_valid_obs) == 2
     assert all(len(coord) == num_coords for coord in coords_valid_obs)
 
 
-def test_ColocatedData_get_coords_valid_obs_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_get_coords_valid_obs_error(coldata: ColocatedData):
     with pytest.raises(ValueError) as e:
-        coldata["fake_nodims"].get_coords_valid_obs()
+        coldata.get_coords_valid_obs()
     assert str(e.value).startswith("'time' not found in array dimensions")
 
 
 @pytest.mark.parametrize(
-    "which,args,chk",
+    "coldataset,use_area_weights,chk",
     [
-        ("fake_5d", {}, {"num_coords_with_data": np.nan, "num_coords_tot": 4, "totnum": 36}),
-        ("tm5_aeronet", {}, {"nmb": -0.129, "R": 0.853}),
+        ("fake_5d", False, {"num_coords_with_data": np.nan, "num_coords_tot": 4, "totnum": 36}),
+        ("tm5_aeronet", False, {"nmb": -0.129, "R": 0.853}),
         # has random numbers in it so nmb, R check is risky with rtol=1e-2
-        ("fake_3d", {}, {"num_coords_with_data": 4}),
-        ("fake_4d", {}, {"nmb": 0}),
-        ("fake_4d", {"use_area_weights": True}, {"nmb": 0}),
+        ("fake_3d", False, {"num_coords_with_data": 4}),
+        ("fake_4d", False, {"nmb": 0}),
+        ("fake_4d", True, {"nmb": 0}),
     ],
 )
-def test_ColocatedData_calc_statistics(coldata, which: str, args: dict, chk: dict):
-    output = coldata[which].calc_statistics(**args)
+def test_ColocatedData_calc_statistics(coldata: ColocatedData, use_area_weights: bool, chk: dict):
+    output = coldata.calc_statistics(use_area_weights=use_area_weights)
     assert isinstance(output, dict)
     for key, val in chk.items():
-        assert key in output
-        assert_allclose(output[key], val, rtol=1e-2)
+        assert output[key] == pytest.approx(val, rel=1e-2, nan_ok=True)
 
 
-def test_ColocatedData_calc_statistics_error(coldata):
+@pytest.mark.parametrize("coldataset", ["fake_nodims"])
+def test_ColocatedData_calc_statistics_error(coldata: ColocatedData):
     with pytest.raises(DataDimensionError) as e:
-        coldata["fake_nodims"].calc_statistics()
+        coldata.calc_statistics()
     assert str(e.value).startswith("Need dimension")
 
 
 @pytest.mark.parametrize(
-    "which,args,statistics",
+    "coldataset,aggr,statistics",
     [
-        ("fake_5d", {}, {}),
-        ("tm5_aeronet", {}, {"nmb": -0.065, "R": 0.679}),
-        ("fake_3d", {}, {}),
-        ("fake_4d", {}, {"nmb": 0}),
-        ("tm5_aeronet", {"aggr": "median"}, {"nmb": -0.0136, "R": 0.851}),
+        ("tm5_aeronet", None, {"nmb": -0.065, "R": 0.679}),
+        ("fake_3d", None, {}),
+        ("fake_4d", None, {"nmb": 0}),
+        ("fake_5d", None, {}),
+        ("tm5_aeronet", "median", {"nmb": -0.0136, "R": 0.851}),
     ],
 )
 def test_ColocatedData_calc_temporal_statistics(
-    coldata, which: str, args: dict, statistics: dict[str, float]
+    coldata: ColocatedData, aggr: str | None, statistics: dict[str, float]
 ):
-    temporal_statistics = coldata[which].calc_temporal_statistics(**args)
+    temporal_statistics = coldata.calc_temporal_statistics(aggr=aggr)
     assert isinstance(temporal_statistics, dict)
     for key, val in statistics.items():
-        assert key in temporal_statistics
-        assert_allclose(temporal_statistics[key], val, rtol=1e-2)
+        assert temporal_statistics[key] == pytest.approx(val, rel=1e-2)
 
 
 @pytest.mark.parametrize(
-    "which,args,exception,error",
+    "coldataset,aggr,exception,error",
     [
-        ("fake_nodims", {}, DataDimensionError, "Need dimension"),
-        ("tm5_aeronet", {"aggr": "max"}, ValueError, "So far only mean and median are supported"),
+        ("fake_nodims", None, DataDimensionError, "Need dimension"),
+        ("tm5_aeronet", "max", ValueError, "So far only mean and median are supported"),
     ],
 )
 def test_ColocatedData_calc_temporal_statistics_error(
-    coldata, which: str, args: dict, exception: Type[Exception], error: str
+    coldata: ColocatedData, aggr: str | None, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
-        coldata[which].calc_temporal_statistics(**args)
+        coldata.calc_temporal_statistics(aggr=aggr)
     assert str(e.value).startswith(error)
 
 
 @pytest.mark.parametrize(
-    "which,args,statistics",
+    "coldataset,args,statistics",
     [
         ("tm5_aeronet", {}, {"nmb": -0.304, "R": 0.893}),
         ("fake_3d", {}, {}),
@@ -302,38 +307,39 @@ def test_ColocatedData_calc_temporal_statistics_error(
     ],
 )
 def test_ColocatedData_calc_spatial_statistics(
-    coldata, which: str, args: dict, statistics: dict[str, float]
+    coldata: ColocatedData, args: dict, statistics: dict[str, float]
 ):
-    spatial_statistics = coldata[which].calc_spatial_statistics(**args)
+    spatial_statistics = coldata.calc_spatial_statistics(**args)
     assert isinstance(spatial_statistics, dict)
     for key, val in statistics.items():
-        assert key in spatial_statistics
-        assert_allclose(spatial_statistics[key], val, rtol=1e-2)
+        assert spatial_statistics[key] == pytest.approx(val, rel=1e-2)
 
 
 @pytest.mark.parametrize(
-    "which,args,exception,error",
+    "coldataset,aggr,exception,error",
     [
-        ("fake_nodims", {}, DataDimensionError, "Need dimension"),
-        ("tm5_aeronet", {"aggr": "max"}, ValueError, "So far only mean and median are supported"),
+        ("fake_nodims", None, DataDimensionError, "Need dimension"),
+        ("tm5_aeronet", "max", ValueError, "So far only mean and median are supported"),
     ],
 )
 def test_ColocatedData_calc_spatial_statistics_error(
-    coldata, which: str, args: dict, exception: Type[Exception], error: str
+    coldata: ColocatedData, aggr: str | None, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
-        coldata[which].calc_spatial_statistics(**args)
+        coldata.calc_spatial_statistics(aggr=aggr)
     assert str(e.value).startswith(error)
 
 
-@pytest.mark.parametrize("which", ["fake_5d", "fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"])
-def test_ColocatedData_plot_scatter(coldata, which):
-    plot = coldata[which].plot_scatter()
+@pytest.mark.parametrize(
+    "coldataset", ["fake_5d", "fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"]
+)
+def test_ColocatedData_plot_scatter(coldata: ColocatedData):
+    plot = coldata.plot_scatter()
     assert isinstance(plot, Axes)
 
 
 def test_meta_access_filename():
-    name = "od550bc_ang4487aer_MOD-AEROCOM-MEDIAN_REF-42AeronET_20000101_20201231_monthly_WORLD-noMOUNTAINS.nc"
+    name = f"od550bc_ang4487aer_MOD-AEROCOM-MEDIAN_REF-42AeronET_20000101_20201231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
 
     meta = {
         "model_var": "od550bc",
@@ -343,7 +349,7 @@ def test_meta_access_filename():
         "start": "20000101",
         "stop": "20201231",
         "ts_type": "monthly",
-        "filter_name": "WORLD-noMOUNTAINS",
+        "filter_name": f"{ALL_REGION_NAME}-noMOUNTAINS",
     }
 
     _meta = ColocatedData.get_meta_from_filename(name)
@@ -361,7 +367,7 @@ def test_read_colocated_data(coldata_tm5_aeronet):
     "region_id,latrange,lonrange,numst",
     [
         ("RBU", (29.45, 66.26), (22, -170), 2),  # crosses lon=180 border
-        ("WORLD", (-90, 90), (-180, 180), 8),
+        (ALL_REGION_NAME, (-90, 90), (-180, 180), 8),
         ("NHEMISPHERE", (0, 90), (-180, 180), 5),
         ("EUROPE", (40, 72), (-10, 40), 2),
         ("OCN", (-90, 90), (-180, 180), 8),
@@ -402,7 +408,7 @@ def test_apply_latlon_filter_error(coldata_tm5_aeronet, region_id: str):
 
 
 @pytest.mark.parametrize(
-    "which,region_id,check_country_meta,latrange,lonrange,numst",
+    "coldataset,region_id,check_country_meta,latrange,lonrange,numst",
     [
         ("fake_4d", "EUROPE", False, (40, 72), (-10, 40), 4),
         ("tm5_aeronet", "NHEMISPHERE", False, (0, 90), (-180, 180), 5),
@@ -412,20 +418,18 @@ def test_apply_latlon_filter_error(coldata_tm5_aeronet, region_id: str):
     ],
 )
 def test_ColocatedData_filter_region(
-    coldata,
-    which: str,
+    coldata: ColocatedData,
     region_id: str,
     check_country_meta: bool,
     latrange: tuple[float, float],
     lonrange: tuple[float, float],
     numst: int,
 ):
-    cd = coldata[which]
+    coldata = coldata
     if check_country_meta:
-        cd = cd.copy()
-        cd.check_set_countries()
+        coldata.check_set_countries()
 
-    filtered = cd.filter_region(region_id=region_id, check_country_meta=check_country_meta)
+    filtered = coldata.filter_region(region_id=region_id, check_country_meta=check_country_meta)
     lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
     assert lats.min() >= latrange[0]
     assert lats.max() <= latrange[1]
@@ -434,52 +438,52 @@ def test_ColocatedData_filter_region(
     assert filtered.num_coords == numst
 
 
-def test_ColocatedData_filter_region_error(coldata):
-    cd = coldata["fake_4d"].copy()
+@pytest.mark.parametrize("coldataset", ["fake_4d"])
+def test_ColocatedData_filter_region_error(coldata: ColocatedData):
     with pytest.raises(DataDimensionError) as e:
-        cd.check_set_countries()
+        coldata.check_set_countries()
     assert str(e.value).startswith("Countries cannot be assigned")
 
     with pytest.raises(MetaDataError) as e:
-        cd.filter_region(region_id="France", check_country_meta=True)
+        coldata.filter_region(region_id="France", check_country_meta=True)
     assert str(e.value).startswith("No country information available")
 
 
 @pytest.mark.parametrize(
-    "which,filename",
+    "coldataset,filename",
     [
         (
             "tm5_aeronet",
-            "od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_WORLD-noMOUNTAINS.nc",
+            f"od550aer_od550aer_MOD-TM5_AP3-CTRL2016_REF-AeronetSunV3L2Subset.daily_20100115_20101215_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc",
         ),
         (
             "fake_3d_hr",
-            "vmro3_vmro3_MOD-fakemod_REF-fakeobs_20180110_20180117_hourly_WORLD-wMOUNTAINS.nc",
+            f"vmro3_vmro3_MOD-fakemod_REF-fakeobs_20180110_20180117_hourly_{ALL_REGION_NAME}-wMOUNTAINS.nc",
         ),
         (
             "fake_3d",
-            "concpm10_concpm10_MOD-fakemod_REF-fakeobs_20000115_20191215_monthly_WORLD-wMOUNTAINS.nc",
+            f"concpm10_concpm10_MOD-fakemod_REF-fakeobs_20000115_20191215_monthly_{ALL_REGION_NAME}-wMOUNTAINS.nc",
         ),
     ],
 )
-def test_ColocatedData_to_netcdf(coldata, tmp_path: Path, which: str, filename: str):
+def test_ColocatedData_to_netcdf(coldata: ColocatedData, tmp_path: Path, filename: str):
     path = tmp_path / filename
     assert not path.exists()
-    file = coldata[which].to_netcdf(tmp_path)
+    file = coldata.to_netcdf(tmp_path)
     assert path == Path(file)
     assert path.exists()
 
 
-@pytest.mark.parametrize("which", ["tm5_aeronet", "fake_3d_hr", "fake_3d"])
-def test_ColocatedData_read_netcdf(coldata, tmp_path: Path, which: str):
-    file = coldata[which].to_netcdf(tmp_path)
+@pytest.mark.parametrize("coldataset", ["tm5_aeronet", "fake_3d_hr", "fake_3d"])
+def test_ColocatedData_read_netcdf(coldata: ColocatedData, tmp_path: Path):
+    file = coldata.to_netcdf(tmp_path)
     assert Path(file).exists()
     cd = ColocatedData().read_netcdf(file)
     assert isinstance(cd, ColocatedData)
 
 
 @pytest.mark.parametrize(
-    "which,args,mean",
+    "coldataset,args,mean",
     [
         ("tm5_aeronet", dict(to_ts_type="yearly"), 0.336),
         ("tm5_aeronet", dict(to_ts_type="yearly", min_num_obs=14), np.nan),
@@ -487,16 +491,9 @@ def test_ColocatedData_read_netcdf(coldata, tmp_path: Path, which: str):
         ("tm5_aeronet", dict(to_ts_type="yearly", colocate_time=True), 0.363),
     ],
 )
-def test_ColocatedData_resample_time(coldata, which: str, args: dict, mean):
-    cd = coldata[which]
-    resampled = cd.resample_time(**args)
-    if args.get("inplace"):
-        assert resampled is cd
-    else:
-        assert resampled is not cd
+def test_ColocatedData_resample_time(coldata: ColocatedData, args: dict, mean):
+    resampled = coldata.resample_time(**args)
+    assert (resampled is coldata) == args.get("inplace", False)
 
     resampled_mean = resampled.data.mean().data
-    if np.isnan(mean):
-        assert np.isnan(resampled_mean)
-    else:
-        assert_allclose(resampled_mean, mean, atol=1e-3)
+    assert resampled_mean == pytest.approx(mean, abs=1e-3, nan_ok=True)

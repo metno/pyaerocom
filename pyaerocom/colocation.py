@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
+from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
@@ -191,9 +192,9 @@ def colocate_gridded_gridded(
         :class:`GriddedData` object is used
     filter_name : str, optional
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
-        details). If None, then it is set to 'WORLD-wMOUNTAINS', which
+        details). If None, then it is set to 'ALL-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
-        Use WORLD-noMOUNTAINS to exclude mountain sites.
+        Use ALL-noMOUNTAINS to exclude mountain sites.
     regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         objects will be regridded in lon / lat dimension to the input
@@ -620,9 +621,9 @@ def colocate_gridded_ungridded(
         :class:`GriddedData` object is used
     filter_name : str
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
-        details). If None, then it is set to 'WORLD-wMOUNTAINS', which
+        details). If None, then it is set to 'ALL-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
-        Use WORLD-noMOUNTAINS to exclude mountain sites.
+        Use ALL-noMOUNTAINS to exclude mountain sites.
     regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         object will be regridded in lon / lat dimension to the input
@@ -962,7 +963,6 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     if not inplace:
         coldata = coldata.copy()
     temp = xr.open_dataset(const.ERA5_SURFTEMP_FILE)["t2m"]
-    from geonum.atmosphere import pressure
 
     arr = coldata.data
 

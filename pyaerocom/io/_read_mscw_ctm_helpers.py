@@ -2,7 +2,6 @@ from geonum.atmosphere import T0_STD, p0
 
 from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
-from pyaerocom.units_helpers import get_unit_conversion_fac
 
 
 def add_dataarrays(*arrs):

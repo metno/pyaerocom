@@ -3,8 +3,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom.io import ReadGAW
-
-from ..conftest import TEST_RTOL, broken_test, lustre_unavail
+from tests.conftest import TEST_RTOL, lustre_unavail
 
 
 def _make_data():
@@ -19,7 +18,7 @@ def data_vmrdms_ams_cvo():
 
 
 @lustre_unavail
-@broken_test
+@pytest.mark.xfail(reason="wrong data.shape")
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
@@ -34,15 +33,15 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     assert_allclose(unique_coords, [-37.8, 16.848, -24.871, 77.53, 10.0, 65.0], rtol=TEST_RTOL)
 
     vals = data._data[:, data.index["data"]]
-    check = [np.nanmean(vals), np.nanstd(vals), np.nanmax(vals), np.nanmin(vals)]
-    print(check)
-    # assert_allclose(vals,
-    #                    [174.8499921813917, 233.0328306938496, 2807.6, 0.0],
-    #                   rtol=TEST_RTOL)
+    assert_allclose(
+        [vals.nanmean(), vals.nanstd(), vals.nanmax(), vals.nanmin],
+        [174.8499921813917, 233.0328306938496, 2807.6, 0.0],
+        rtol=TEST_RTOL,
+    )
 
 
 @lustre_unavail
-@broken_test
+@pytest.mark.xfail(reason='stat["vmrdms"] are 1e12 off')
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0)
 
@@ -50,23 +49,19 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
     assert "vmrdms" in keys
     assert "var_info" in keys
 
-    assert_array_equal(
-        [stat.dtime.min(), stat.dtime.max()],
-        [
-            np.datetime64("1987-03-01T00:00:00.000000000"),
-            np.datetime64("2008-12-31T00:00:00.000000000"),
-        ],
+    assert stat.dtime.min() == np.datetime64("1987-03-01T00:00:00.000000000")
+    assert stat.dtime.max() == np.datetime64("2008-12-31T00:00:00.000000000")
+
+    assert stat["instrument_name"] == "unknown"
+    assert stat["ts_type"] == "daily"
+    assert stat["filename"] == "ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat"
+
+    vmrdms = stat["vmrdms"]
+    assert_allclose(
+        [vmrdms.mean(), vmrdms.std(), vmrdms.max(), vmrdms.min()],
+        [185.6800736155262, 237.1293922258991, 2807.6, 5.1],
+        rtol=TEST_RTOL,
     )
-
-    vals = [stat["instrument_name"], stat["ts_type"], stat["filename"]]
-
-    assert_array_equal(
-        vals, ["unknown", "daily", "ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat"]
-    )
-
-    d = stat["vmrdms"]
-    vals = [d.mean(), d.std(), d.max(), d.min()]
-    assert_allclose(vals, [185.6800736155262, 237.1293922258991, 2807.6, 5.1], rtol=TEST_RTOL)
 
 
 @lustre_unavail

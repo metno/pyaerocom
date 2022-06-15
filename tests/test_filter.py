@@ -1,9 +1,8 @@
 import numpy as np
 import pytest
 
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.filter import Filter
-
-from .conftest import data_unavail
 
 
 # TODO: use mark.parametrize for first 2 test functions and call test_Filter
@@ -13,14 +12,13 @@ def test_Filter_init():
 
 
 def test_filter_attributes():
-    f = Filter("WORLD-noMOUNTAINS-LAND")
+    f = Filter(f"{ALL_REGION_NAME}-noMOUNTAINS-LAND")
     assert f.land_ocn == "LAND"
-    assert f.region_name == "WORLD"
-    assert f.name == "WORLD-noMOUNTAINS-LAND"
+    assert f.region_name == ALL_REGION_NAME
+    assert f.name == f"{ALL_REGION_NAME}-noMOUNTAINS-LAND"
     assert not f.region.is_htap()
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "filter_name, mean",
     [
@@ -38,12 +36,11 @@ def test_filter_griddeddata(data_tm5, filter_name, mean):
     f = Filter(filter_name)  # europe only land
 
     subset = f.apply(model)
-    np.testing.assert_allclose(np.nanmean(subset.cube.data), mean)
+    assert np.nanmean(subset.cube.data) == pytest.approx(mean)
 
 
-@data_unavail
 @pytest.mark.parametrize(
-    "filter_name,num_sites", [("WORLD-wMOUNTAINS", 22), ("OCN", 8), ("EUROPE", 7)]
+    "filter_name,num_sites", [(f"{ALL_REGION_NAME}-wMOUNTAINS", 22), ("OCN", 8), ("EUROPE", 7)]
 )
 def test_filter_ungriddeddata(aeronetsunv3lev2_subset, filter_name, num_sites):
 

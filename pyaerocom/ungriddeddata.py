@@ -1230,7 +1230,12 @@ class UngriddedData:
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
-            except (VarNotAvailableError, TimeMatchError, DataCoverageError) as e:
+            except (
+                VarNotAvailableError,
+                TimeMatchError,
+                DataCoverageError,
+                NotImplementedError,
+            ) as e:
                 logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
         return out_data
