@@ -72,6 +72,7 @@ class ReadMscwCtm:
         "concCecpm25": ["concecpm25"],
         "vmrox": ["concno2", "vmro3"],
         "vmrno2": ["concno2"],
+        #"concbenzene": ["vmrbenezene"],
     }
 
     # Functions that are used to compute additional variables (i.e. one

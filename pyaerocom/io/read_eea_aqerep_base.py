@@ -76,6 +76,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["vmro3"] = "concentration"
     VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
+    VAR_NAMES_FILE["concbenzene"] = "concentration"
     VAR_NAMES_FILE["vmrbenzene"] = "concentration"
 
     #: units of variables in files (needs to be defined for each variable supported)
@@ -93,6 +94,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concco="**/??_10_*_timeseries.csv*",
         concno="**/??_38_*_timeseries.csv*",
         concpm25="**/??_6001_*_timeseries.csv*",
+        concbenzene="**/??_20_*_timeseries.csv*",
         vmrbenzene="**/??_20_*_timeseries.csv*",
     )
 
@@ -107,9 +109,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     CONV_FACTOR["vmrno2"] = np.float_(
         0.514
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
-    # CONV_FACTOR["vmrbenzene"] = np.float_(
-    #     0.313
-    # ) 
+    CONV_FACTOR["vmrbenzene"] = np.float_(
+        1./3.2430
+    ) 
 
 
     # unit of the converted property after the conversion
@@ -133,7 +135,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_CODES["10"] = "concco"
     VAR_CODES["38"] = "concno"
     VAR_CODES["6001"] = "concpm25"
-    VAR_CODES["20"] = "vmrbenzene"
+    VAR_CODES["20"] = "concbenzene"
 
     #: column name that holds the EEA variable code
     VAR_CODE_NAME = "airpollutantcode"
@@ -178,12 +180,13 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3max": ["conco3"], "vmro3": ["conco3"], "vmrno2": ["concno2"]}
+    AUX_REQUIRES = {"vmro3max": ["conco3"], "vmro3": ["conco3"], "vmrno2": ["concno2"], "vmrbenzene": ["concbenzene"]}
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmro3max": NotImplementedError(),
         "vmrno2": NotImplementedError(),
+        "vmrbenzene": NotImplementedError(),
     }
 
     def __init__(self, data_id=None, data_dir=None):
