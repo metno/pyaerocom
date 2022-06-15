@@ -10,13 +10,15 @@ parallelisation for aeroval processing
 
 # some ideas what to use
 import argparse
-import copy
+from copy import deepcopy
 from datetime import datetime
+from fnmatch import fnmatch
 from getpass import getuser
 from importlib.machinery import SourceFileLoader
 from pathlib import Path, PurePosixPath
 from socket import gethostname
 from tempfile import mkdtemp
+from typing import Union
 from uuid import uuid4
 
 import simplejson as json
@@ -52,6 +54,22 @@ START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
 # assume that the script to run the aeroval json file is in the same directory as this script
 # JSON_RUNSCRIPT = Path(Path(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
 JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
+
+# some constants for the merge operation
+# files not noted here will be copied
+# list of file masks to merge
+# list of file masks not to touch
+MERGE_EXP_FILES_TO_COMBINE = [
+    "ts/*.json",
+    "hm/ts/*-*-*.json",
+    "menu.json",
+    "ranges.json",
+    "regions.json",
+    "statistics.json",
+    "hm/glob_stats_daily.json",
+    "hm/glob_stats_monthly.json",
+]
+MERGE_EXP_FILES_TO_EXCLUDE = ["cfg_*.json"]
 
 
 def prep_files(options):
@@ -184,13 +202,13 @@ def get_runfile_str_arr(
 
 
 def run_queue(
-    runfiles,
-    qsub_host=QSUB_HOST,
-    qsub_cmd=QSUB_NAME,
-    qsub_dir=QSUB_DIR,
-    qsub_user=QSUB_USER,
-    qsub_queue=QSUB_QUEUE_NAME,
-    submit_flag=False,
+    runfiles: list[str],
+    qsub_host: str = QSUB_HOST,
+    qsub_cmd: str = QSUB_NAME,
+    qsub_dir: str = QSUB_DIR,
+    qsub_user: str = QSUB_USER,
+    qsub_queue: str = QSUB_QUEUE_NAME,
+    submit_flag: bool = False,
 ):
     """submit runfiles to the remote cluster
 
@@ -303,21 +321,11 @@ def run_queue(
             pass
 
 
-def combine_output(options):
+def combine_output(options: dict):
     """combine the json files of the parallelised outputs to a single target directory (experiment)"""
     import shutil
 
     # create outdir
-
-    EXP_FILES_TO_COMBINE = [
-        "menu.json",
-        "ranges.json",
-        "regions.json",
-        "statistics.json",
-        "hm/glob_stats_daily.json",
-        "hm/glob_stats_monthly.json",
-    ]
-    EXP_FILES_TO_EXCLUDE = [""]
     try:
         Path.mkdir(options["outdir"], exist_ok=False)
     except FileExistsError:
@@ -339,6 +347,7 @@ def combine_output(options):
                     # there should be only one sub directory, the experiment name
                     # use the first directory found for that
                     exp_dir = [child for child in dir.iterdir() if Path.is_dir(child)][0]
+                    dir_idx += 1
                 shutil.copytree(dir, options["outdir"], dirs_exist_ok=True)
         else:
             # workdir: combinedir/<model_dir>
@@ -355,40 +364,53 @@ def combine_output(options):
                 else:
                     cmp_file = Path.joinpath(Path(*list(tmp)))
 
-                if _file not in EXP_FILES_TO_EXCLUDE:
-                    if str(cmp_file) in EXP_FILES_TO_COMBINE:
+                if not match_file(cmp_file, MERGE_EXP_FILES_TO_EXCLUDE):
+                    if match_file(cmp_file, MERGE_EXP_FILES_TO_COMBINE):
+                        # combine files
                         outfile = out_target_dir.joinpath(cmp_file)
-                        infiles = [_file, outfile]
-                        print(f"writing combined json file {outfile}...")
-                        combine_json_files(infiles, outfile)
-                    else:
-                        # skip some files for now
-                        print(f"file {_file} excluded for now")
-                        continue
-                    # copy file
-                    outfile = out_target_dir.joinpath(_file.name)
-                    print(f"copying {_file} to {outfile}...")
+                        if outfile.exists():
+                            infiles = [_file, outfile]
+                            print(f"writing combined json file {outfile}...")
+                            combine_json_files(infiles, outfile)
+                        else:
+                            # copy file
+                            print(
+                                f"non-existing outfile for merge. Copying {_file} to {outfile}..."
+                            )
+                            shutil.copy2(_file, outfile)
 
-                    shutil.copy2(_file, outfile)
+                    else:
+                        # copy file
+                        outfile = out_target_dir.joinpath(_file.name)
+                        print(f"copying {_file} to {outfile}...")
+                        shutil.copy2(_file, outfile)
+
+                else:
+                    # skip some files for now
+                    print(f"file {_file} excluded for now")
+                    continue
 
         pass
 
 
-def combine_json_files(infiles, outfile):
+def combine_json_files(infiles: list[str], outfile: str) -> dict:
     """small helper to ingest infile into outfile"""
-    import json
 
     result = {}
     for infile in infiles:
-        with open(infile, "r") as inhandle:
-            # result.update(json.load(inhandle))
-            result = dict_merge(result, json.load(inhandle))
+        # the target file might not exist e.g. due to missing model data at station location
+        try:
+            with open(infile, "r") as inhandle:
+                # result.update(json.load(inhandle))
+                result = dict_merge(result, json.load(inhandle))
+        except FileNotFoundError:
+            result = json.load(inhandle)
 
     with open(outfile, "w") as outhandle:
         json.dump(result, outhandle, ensure_ascii=False, indent=4)
 
 
-def dict_merge(dct, merge_dct):
+def dict_merge(dct: Union[None, dict], merge_dct: dict):
     """Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
     updating only top-level keys, dict_merge recurses down into dicts nested
     to an arbitrary depth, updating keys. The ``merge_dct`` is merged into
@@ -398,20 +420,33 @@ def dict_merge(dct, merge_dct):
     :return: dct
     """
     if dct is None:
-        dct = merge_dct.copy()
+        dct = deepcopy(merge_dct)
     else:
         for k, v in merge_dct.items():
-            print(f"{k}")
-
             if k in dct:
                 if isinstance(dct[k], dict) and isinstance(merge_dct[k], dict):
                     dict_merge(dct[k], merge_dct[k])
                 else:
-                    dct[k] = merge_dct[k]
+                    dct[k] = deepcopy(merge_dct[k])
             else:
-                dct[k] = merge_dct[k]
+                dct[k] = deepcopy(merge_dct[k])
 
     return dct
+
+
+def match_file(
+    file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
+) -> bool:
+    """small hekper that matches a filename agains a list if wildcards"""
+    if isinstance(file_mask_array, str):
+        file_mask_array = [file_mask_array]
+
+    ret_val = False
+    for _file_mask in file_mask_array:
+        if fnmatch(file, _file_mask):
+            ret_val = True
+            break
+    return ret_val
 
 
 def main():
