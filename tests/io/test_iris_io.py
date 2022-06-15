@@ -17,15 +17,13 @@ from pyaerocom.exceptions import (
     UnresolvableTimeDefinitionError,
 )
 from pyaerocom.io import FileConventionRead, iris_io
+from tests.fixtures.aeroval import make_dummy_cube_3D_daily
+from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
+from tests.fixtures.tm5 import TM5_DATA_PATH
 
-from .._conftest_helpers import make_dummy_cube_3D_daily
-from ..conftest import TESTDATADIR
-
-TM5_DIR = TESTDATADIR / "modeldata/TM5-met2010_CTRL-TEST/renamed"
-TM5_FILE1 = TM5_DIR / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
-TM5_FILE2 = TM5_DIR / "aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_2010_daily.nc"
-
-EMEP_FILE = TESTDATADIR / "modeldata/EMEP_2017/Base_month.nc"
+TM5_FILE1 = TM5_DATA_PATH / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
+TM5_FILE2 = TM5_DATA_PATH / "aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_2010_daily.nc"
+EMEP_FILE = EMEP_DATA_PATH / "Base_month.nc"
 
 aod_cube = load(str(TM5_FILE1))[0]
 

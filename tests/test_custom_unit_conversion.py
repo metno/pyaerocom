@@ -1,19 +1,16 @@
-from cf_units import Unit
-from numpy.testing import assert_allclose
+import pytest
 
-import pyaerocom as pya
+from pyaerocom.helpers import make_dummy_cube_latlon
 
-u = Unit("kg/m2/s")
-test_cases = {"kg h-1": ["kg s-1", 1 / 3600]}
 
-for unit, (to, val) in test_cases.items():
-
-    cube = pya.helpers.make_dummy_cube_latlon()
-
+def test_convert_units():
+    cube = make_dummy_cube_latlon()
     assert (cube.data == 1).all()
-    cube.units = unit
-    cube.convert_units(to)
-    assert_allclose(cube.data.mean(), val, rtol=1e-3)
+
+    cube.units = "kg h-1"
+    cube.convert_units("kg s-1")
+    assert cube.data.mean() == pytest.approx(1 / 3600)
+
 
 # =============================================================================
 #

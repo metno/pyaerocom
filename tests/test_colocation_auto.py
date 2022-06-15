@@ -1,20 +1,17 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedData
+from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
+from tests.fixtures.data_access import TEST_DATA
 
-from .conftest import data_unavail, tda
-
-HOME = os.path.expanduser("~")
-COL_OUT_DEFAULT = os.path.join(HOME, "MyPyaerocom/colocated_data")
+COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 
 default_setup = {
     "model_id": None,
@@ -63,7 +60,6 @@ default_setup = {
 }
 
 
-@data_unavail
 @pytest.fixture(scope="function")
 def tm5_aero_stp():
     return dict(
@@ -82,11 +78,11 @@ def col():
 
 
 @pytest.mark.parametrize("stp,should_be", [(ColocationSetup(), default_setup)])
-def test_colocation_setup(stp, should_be):
+def test_colocation_setup(stp: ColocationSetup, should_be: dict):
     for key, val in should_be.items():
         assert key in stp
         if key == "basedir_coldata":
-            assert os.path.samefile(val, stp["basedir_coldata"])
+            assert Path(val) == Path(stp["basedir_coldata"])
         else:
             assert val == stp[key], key
 
@@ -165,10 +161,10 @@ def test_Colocator_model_add_vars(tm5_aero_stp):
     assert coldata.var_name == ["od550aer", "abs550aer"]
 
 
-def test_Colocator_init_basedir_coldata(tmpdir):
-    basedir = os.path.join(tmpdir, "basedir")
-    Colocator(raise_exceptions=True, basedir_coldata=basedir)
-    assert os.path.isdir(basedir)
+def test_Colocator_init_basedir_coldata(tmp_path: Path):
+    base_path = tmp_path / "basedir"
+    Colocator(raise_exceptions=True, basedir_coldata=base_path)
+    assert base_path.is_dir()
 
 
 def test_Colocator__infer_start_stop_yr_from_model_reader():
@@ -192,20 +188,20 @@ def test_Colocator__coldata_savename():
     assert savename == n
 
 
-def test_Colocator_basedir_coldata(tmpdir):
-    basedir = os.path.join(tmpdir, "test")
+def test_Colocator_basedir_coldata(tmp_path: Path):
+    base_path = tmp_path / "test"
     col = Colocator(raise_exceptions=True)
-    col.basedir_coldata = basedir
-    assert not os.path.isdir(basedir)
+    col.basedir_coldata = base_path
+    assert not base_path.is_dir()
 
 
-def test_Colocator_update_basedir_coldata(tmpdir):
+def test_Colocator_update_basedir_coldata(tmp_path: Path):
     col = Colocator(raise_exceptions=True)
 
-    basedir = os.path.join(tmpdir, "basedir")
-    assert not os.path.isdir(basedir)
-    col.update(basedir_coldata=basedir)
-    assert os.path.isdir(basedir)
+    base_path = tmp_path / "basedir"
+    assert not base_path.is_dir()
+    col.update(basedir_coldata=base_path)
+    assert base_path.is_dir()
 
 
 @pytest.mark.parametrize(
@@ -286,8 +282,8 @@ def test_Colocator_run_gridded_ungridded(
     mod_clim_used = any("9999" in x for x in coldata.metadata["from_files"])
     assert stp.model_use_climatology == mod_clim_used
 
-    assert_allclose(np.nanmean(coldata.data[0].values), mean_obs, atol=0.01)
-    assert_allclose(np.nanmean(coldata.data[1].values), mean_mod, atol=0.01)
+    assert np.nanmean(coldata.data[0].values) == pytest.approx(mean_obs, abs=0.01)
+    assert np.nanmean(coldata.data[1].values) == pytest.approx(mean_mod, abs=0.01)
 
 
 @pytest.mark.parametrize(
@@ -373,7 +369,6 @@ def test_colocator__find_var_matches_model_add_vars():
     assert var_matches == {"abs550aer": ovar, ovar: ovar}
 
 
-@data_unavail
 def test_colocator_instantiate_gridded_reader(path_emep):
     col = Colocator(gridded_reader_id={"model": "ReadMscwCtm", "obs": "ReadGridded"})
     col.filepath = path_emep["daily"]
@@ -384,7 +379,6 @@ def test_colocator_instantiate_gridded_reader(path_emep):
     assert r.data_id == model_id
 
 
-@data_unavail
 def test_colocator_instantiate_gridded_reader_model_data_dir(path_emep):
     col = Colocator(gridded_reader_id={"model": "ReadMscwCtm", "obs": "ReadGridded"})
     model_data_dir = path_emep["data_dir"]
@@ -419,8 +413,7 @@ def test_colocator_with_obs_data_dir_ungridded():
     col.obs_vars = "od550aer"
     col.ts_type = "monthly"
 
-    aeronet_loc = tda.ADD_PATHS["AeronetSunV3L2Subset.daily"]
-    col.obs_data_dir = tda.testdatadir.joinpath(aeronet_loc)
+    col.obs_data_dir = TEST_DATA["AeronetSunV3L2Subset.daily"].path
 
     data = col.run()
     assert len(data) == 1
@@ -438,8 +431,7 @@ def test_colocator_with_model_data_dir_ungridded():
     col.obs_vars = "od550aer"
     col.ts_type = "monthly"
 
-    model_dir = "modeldata/TM5-met2010_CTRL-TEST/renamed"
-    col.model_data_dir = tda.testdatadir.joinpath(model_dir)
+    col.model_data_dir = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
 
     data = col.run()
     assert len(data) == 1
@@ -457,8 +449,8 @@ def test_colocator_with_obs_data_dir_gridded():
     col.obs_vars = "od550aer"
     col.ts_type = "monthly"
 
-    obs_dir = "modeldata/TM5-met2010_CTRL-TEST/renamed"
-    col.obs_data_dir = str(tda.testdatadir.joinpath(obs_dir))
+    obs_dir = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
+    col.obs_data_dir = str(obs_dir)
 
     data = col.run()
     assert len(data) == 1

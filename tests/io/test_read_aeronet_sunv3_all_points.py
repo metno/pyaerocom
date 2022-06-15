@@ -1,31 +1,26 @@
-import os
+from pathlib import Path
 
 import pytest
 
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
-from ..conftest import data_unavail
 
-
-@data_unavail
 @pytest.fixture(scope="module")
 def reader():
     return ReadAeronetSunV3("AeronetSunV3L2Subset.AP")
 
 
-@data_unavail
 def test_get_file_list(reader):
     assert len(reader.get_file_list()) >= 2
 
 
-@data_unavail
 def test_read_file(reader):
     from pyaerocom.stationdata import StationData
 
     reader.get_file_list()
     file = reader.files[0]
-    assert os.path.basename(file) == "19930101_20211120_Karlsruhe.lev20.gz"
+    assert Path(file).name == "19930101_20211120_Karlsruhe.lev20.gz"
     data = reader.read_file(file)
     assert isinstance(data, StationData)
     assert data.latitude[0] == pytest.approx(49.09, 0.01)
@@ -34,7 +29,6 @@ def test_read_file(reader):
     assert all(x in data for x in ["od550aer", "ang4487aer"])
 
 
-@data_unavail
 def test_read_add_common_meta(reader):
     reader.get_file_list()
     files = reader.files[0]

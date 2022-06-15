@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
+from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
@@ -962,7 +963,6 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     if not inplace:
         coldata = coldata.copy()
     temp = xr.open_dataset(const.ERA5_SURFTEMP_FILE)["t2m"]
-    from geonum.atmosphere import pressure
 
     arr = coldata.data
 
