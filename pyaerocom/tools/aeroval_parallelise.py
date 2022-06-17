@@ -20,6 +20,8 @@ from socket import gethostname
 from tempfile import mkdtemp
 from typing import Union
 from uuid import uuid4
+from  multiprocessing import Process
+from threading import Thread
 
 import simplejson as json
 
@@ -61,15 +63,18 @@ JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
 # list of file masks not to touch
 MERGE_EXP_FILES_TO_COMBINE = [
     "ts/*.json",
-    "hm/ts/*-*-*.json",
+    "hm/ts/*.json",
     "menu.json",
     "ranges.json",
     "regions.json",
     "statistics.json",
     "hm/glob_stats_daily.json",
     "hm/glob_stats_monthly.json",
+    "cfg_*.json",
 ]
-MERGE_EXP_FILES_TO_EXCLUDE = ["cfg_*.json"]
+MERGE_EXP_FILES_TO_EXCLUDE = []
+# the config file need to be merged and have a special name
+MERGE_EXP_CFG_FILES = ["cfg_*.json"]
 
 
 def prep_files(options):
@@ -86,13 +91,13 @@ def prep_files(options):
         # CFG = foo[options["cfgvar"]]
         # stick to the name CFG for the aeroval configuration for now
         # cfg = copy.deepcopy(foo.CFG)
-        cfg = copy.deepcopy(getattr(foo, options["cfgvar"]))
+        cfg = deepcopy(getattr(foo, options["cfgvar"]))
         # create tmp dir
         tempdir = mkdtemp(dir=options["tempdir"])
         # index for temporary data directories
         dir_idx = 1
         for _model in cfg["model_cfg"]:
-            out_cfg = copy.deepcopy(cfg)
+            out_cfg = deepcopy(cfg)
             out_cfg.pop("model_cfg", None)
             out_cfg.pop("obs_cfg", None)
             out_cfg["model_cfg"] = {}
@@ -341,19 +346,21 @@ def combine_output(options: dict):
         if idx == 0:
             # copy first directory to options['outdir']
             for dir_idx, dir in enumerate(Path(combinedir).iterdir()):
+                # there should be just one directory. Use the 1st only anyway
                 if dir_idx == 0:
-                    # there should be only one directory!
-                    first_dir = dir
-                    # there should be only one sub directory, the experiment name
-                    # use the first directory found for that
                     exp_dir = [child for child in dir.iterdir() if Path.is_dir(child)][0]
-                    dir_idx += 1
-                shutil.copytree(dir, options["outdir"], dirs_exist_ok=True)
+                    shutil.copytree(dir, options["outdir"], dirs_exist_ok=True)
+                    # adjust config file name to cfg_<project_name>_<experiment_name>.json
+                    cfg_file = exp_dir.joinpath(f"cfg_{exp_dir.parts[-2]}_{exp_dir.parts[-1]}.json")
+                    if cfg_file.exists():
+                        new_cfg_file = exp_dir.joinpath(f"cfg_{options['outdir'].parts[-1]}_{exp_dir.parts[-1]}.json")
+                        cfg_file.rename(new_cfg_file)
+                else:
+                    pass
+                    # There's something wrong with the directory structure!
         else:
             # workdir: combinedir/<model_dir>
             # cfg_testing_IASI.json  contour  hm  map  menu.json  ranges.json  regions.json  scat  statistics.json  ts
-
-            out_target_dir = Path.joinpath(options["outdir"], exp_dir.name)
             inpath = Path(combinedir).joinpath(*list(exp_dir.parts[-2:]))
             inpath_dir_len = len(inpath.parts)
             for file_idx, _file in enumerate(sorted(inpath.glob("**/*.json"))):
@@ -364,7 +371,39 @@ def combine_output(options: dict):
                 else:
                     cmp_file = Path.joinpath(Path(*list(tmp)))
 
-                if not match_file(cmp_file, MERGE_EXP_FILES_TO_EXCLUDE):
+                out_target_dir = Path.joinpath(options["outdir"], exp_dir.name)
+                if match_file(cmp_file, MERGE_EXP_FILES_TO_EXCLUDE):
+                    # skip some files for now
+                    print(f"file {_file} excluded for now")
+                    continue
+                elif match_file(cmp_file, MERGE_EXP_CFG_FILES):
+                    # special treatment for the experiment configuration
+                    # file names need to be adjusted
+                    cfg_file = inpath.joinpath(f"cfg_{inpath.parts[-2]}_{inpath.parts[-1]}.json")
+                    outfile = out_target_dir.joinpath(f"cfg_{options['outdir'].parts[-1]}_{inpath.parts[-1]}.json")
+                    if outfile.exists():
+                        # sould always fire since we handle the 1st directory above
+                        infiles = [cfg_file, outfile]
+                        print(f"writing combined json file {outfile}...")
+                        combine_json_files(infiles, outfile)
+                        # TODO:
+                        #  probably Adjust {
+                        #   "proj_info": {
+                        #     "proj_id": "testing"
+                        #   },
+                        # and
+                        #   "path_manager": {
+                        # "proj_id": "testing",
+                        # "exp_id": "IASI",
+                        # "json_basedir": "/home/jang/data/aeroval-local-web/data/tmpggb7k02d.0001",
+                        # "coldata_basedir": "/home/jang/data/aeroval-local-web/coldata/tmpggb7k02d.0001"
+                        # },
+                        # (should be options['outdir'].parts[-1])
+                    else:
+                        # copy
+                        pass
+
+                else:
                     if match_file(cmp_file, MERGE_EXP_FILES_TO_COMBINE):
                         # combine files
                         outfile = out_target_dir.joinpath(cmp_file)
@@ -378,17 +417,13 @@ def combine_output(options: dict):
                                 f"non-existing outfile for merge. Copying {_file} to {outfile}..."
                             )
                             shutil.copy2(_file, outfile)
-
                     else:
                         # copy file
-                        outfile = out_target_dir.joinpath(_file.name)
+                        outfile = out_target_dir.joinpath(cmp_file)
                         print(f"copying {_file} to {outfile}...")
                         shutil.copy2(_file, outfile)
 
-                else:
-                    # skip some files for now
-                    print(f"file {_file} excluded for now")
-                    continue
+
 
         pass
 
