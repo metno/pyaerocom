@@ -1,8 +1,8 @@
 import pytest
 
 from pyaerocom.io import ReadUngridded
-
-from ..conftest import data_unavail
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 # although the following is not explicitly referenced, it registers the
 # Subset data ids used for testing.
@@ -10,13 +10,11 @@ from ..conftest import data_unavail
 DATA_ID = "EEA_AQeRep.v2.Subset"
 
 
-@data_unavail
 @pytest.fixture(scope="module")
 def reader():
     return ReadUngridded(DATA_ID)
 
 
-@data_unavail
 def test_get_file_list(reader):
     # at this point that is the base directory without recursive search
     # so this returns only Revision.txt and metadata.csv
@@ -25,11 +23,7 @@ def test_get_file_list(reader):
     assert len(lowlevel_reader.get_file_list()) >= 2
 
 
-@data_unavail
 def test_read(reader):
-    from pyaerocom.stationdata import StationData
-    from pyaerocom.ungriddeddata import UngriddedData
-
     # special station codes to test
     # not sure if these are really needed
     # station ids to test

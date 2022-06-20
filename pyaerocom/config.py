@@ -504,23 +504,6 @@ class Config:
         return False
 
     @property
-    def GEONUM_AVAILABLE(self):
-        """
-        Boolean specifying if geonum library is installed
-
-        Returns
-        -------
-        bool
-
-        """
-        try:
-            import geonum
-
-            return True
-        except ModuleNotFoundError:
-            return False
-
-    @property
     def EBAS_FLAGS_FILE(self):
         """Location of CSV file specifying meaning of EBAS flags"""
         with resources.path("pyaerocom.data", "ebas_flags.csv") as path:

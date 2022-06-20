@@ -21,9 +21,11 @@ Main features
 - Reading routines for many ground based observation databases, such as:
 
 	- `AERONET <https://aeronet.gsfc.nasa.gov/>`_ Sun, SDA and Inversion products.
-	- `EBAS database <http://ebas.nilu.no/>`__.
-	- `GHOST` dataset (see e.g., `Petetin et al., 2020 <https://acp.copernicus.org/articles/20/11119/2020/acp-20-11119-2020.html>`_ for more information).
-	- `EARLINET Lidar network <https://www.earlinet.org/index.php?id=earlinet_homepage>`__.
+	- `EBAS database </>`__.
+	- `EEA Air Quality e-Reporting (AQ e-Reporting) <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`__.
+	- `AirNow <https://www.airnow.gov/about-the-data/>`__.
+	- `MarcoPolo <https://www.knmi.nl/kennis-en-datacentrum/project/marcopolo>`__.
+	- `GHOST` (Globally Harmonised Observational Surface Treatment) (see e.g., `Petetin et al., 2020 <https://acp.copernicus.org/articles/20/11119/2020/acp-20-11119-2020.html>`_ for more information).
 
 - Reading routines for level 3 gridded satellite observations, such as:
 

@@ -1,43 +1,50 @@
-import os
+from __future__ import annotations
 
-from ._outbase import ADD_MODELS_DIR, AEROVAL_OUT
+from pathlib import Path
 
-YEAR = "2007"
 from pyaerocom.config import ALL_REGION_NAME
 
-from .._conftest_helpers import add_dummy_model_data
+from .common import add_dummy_model_data
 
-# create some fake model data
-add_dummy_model_data(
-    "vmrno2",
-    "nmole mole-1",
-    "monthly",
-    "Surface",
-    year=YEAR,
-    lat_range=(-90, 90),
-    lon_range=(-180, 180),
-    tmpdir=ADD_MODELS_DIR,
-)
-MODEL_DIR = add_dummy_model_data(
-    "vmro3",
-    "nmole mole-1",
-    "monthly",
-    "Surface",
-    year=YEAR,
-    lat_range=(-90, 90),
-    lon_range=(-180, 180),
-    tmpdir=ADD_MODELS_DIR,
-)
+YEAR = "2007"
 
-MODELS = {"DUMMY": dict(model_id="DUMMY-MODEL", model_data_dir=MODEL_DIR)}
+
+def fake_model_data(tmp_path: str | Path) -> dict:
+    add_dummy_model_data(
+        "vmrno2",
+        "nmole mole-1",
+        "monthly",
+        "Surface",
+        year=YEAR,
+        lat_range=(-90, 90),
+        lon_range=(-180, 180),
+        tmp_path=tmp_path,
+    )
+    model_data_dir = add_dummy_model_data(
+        "vmro3",
+        "nmole mole-1",
+        "monthly",
+        "Surface",
+        year=YEAR,
+        lat_range=(-90, 90),
+        lon_range=(-180, 180),
+        tmp_path=tmp_path,
+    )
+    return dict(
+        DUMMY=dict(
+            model_id="DUMMY-MODEL",
+            model_data_dir=model_data_dir,
+        )
+    )
+
 
 OBS_GROUNDBASED = {"EBAS": dict(obs_id="EBASSubset", obs_vars=["vmro3"], obs_vert_type="Surface")}
 
 CFG = dict(
-    model_cfg=MODELS,
+    model_cfg=dict(),  # fake_model_data("PATH_TO_MODEL_DATA"),
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir=os.path.join(AEROVAL_OUT, "data"),
-    coldata_basedir=os.path.join(AEROVAL_OUT, "coldata"),
+    json_basedir="PATH_TO_AEROVAL_OUT/data",
+    coldata_basedir="PATH_TO_AEROVAL_OUT/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

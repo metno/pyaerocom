@@ -6,9 +6,7 @@ from pytest import mark, param, raises
 
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
-
-from ..conftest import broken_test
-from .cams84 import CAMS84_CONFIG
+from tests.fixtures.aeroval import CAMS84_CONFIG
 
 
 def test_evalsetup_args():
@@ -112,7 +110,16 @@ def test_HasConfig():
 
 @mark.parametrize(
     "model",
-    [None, param("IFS-CTRL", marks=[broken_test, mark.dependency(name="HasColocator::model")])],
+    [
+        None,
+        param(
+            "IFS-CTRL",
+            marks=[
+                mark.xfail(reason="broken test", raises=KeyError),
+                mark.dependency(name="HasColocator::model"),
+            ],
+        ),
+    ],
 )
 @mark.parametrize(
     "obs",

@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom.mathutils import (
     _nanmean_and_std,
@@ -45,16 +44,7 @@ def test_exponent(inputval, desired):
     ],
 )
 def test__nanmean_and_std(data, expected):
-    mean, std = _nanmean_and_std(data)
-    mean_, std_ = expected
-    if np.isnan(mean_):
-        assert np.isnan(mean)
-    else:
-        assert_allclose(mean, mean_, atol=0.001, rtol=1e-2)
-    if np.isnan(std_):
-        assert np.isnan(std)
-    else:
-        assert_allclose(std, std_, atol=0.001, rtol=1e-2)
+    assert _nanmean_and_std(data) == pytest.approx(expected, abs=0.001, rel=1e-2, nan_ok=True)
 
 
 perfect_stats_num1_mean1 = {
@@ -157,7 +147,7 @@ def test_calc_statistics(data, ref_data, expected):
     assert len(stats) == len(expected)
     for key, val in expected.items():
         assert key in stats
-        assert_allclose(stats[key], val, atol=0.02, rtol=0.01)
+        assert stats[key] == pytest.approx(val, abs=0.02, rel=0.01, nan_ok=True)
 
 
 def test_calc_statistics_error():
@@ -176,7 +166,7 @@ def test_calc_statistics_error():
 )
 def test_estimate_value_range(vmin, vmax, extend_percent, result):
     vals = estimate_value_range(vmin, vmax, extend_percent)
-    assert_allclose(vals, result, rtol=1e-3)
+    assert vals == pytest.approx(result, rel=1e-3)
 
 
 def test_estimate_value_range_error():
