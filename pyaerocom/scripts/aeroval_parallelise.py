@@ -20,8 +20,6 @@ from socket import gethostname
 from tempfile import mkdtemp
 from typing import Union
 from uuid import uuid4
-from  multiprocessing import Process
-from threading import Thread
 
 import simplejson as json
 
@@ -30,6 +28,7 @@ RUN_UUID = uuid4()
 HOSTNAME = gethostname()
 USER = getuser()
 TMP_DIR = "/tmp"
+# TMP_DIR = f"/home/{USER}/data/aeroval-local-web/data"
 
 JSON_RUNSCRIPT_NAME = "aeroval_run_json_cfg.py"
 # qsub binary
@@ -68,8 +67,7 @@ MERGE_EXP_FILES_TO_COMBINE = [
     "ranges.json",
     "regions.json",
     "statistics.json",
-    "hm/glob_stats_daily.json",
-    "hm/glob_stats_monthly.json",
+    "hm/glob_stats_*.json",
     "cfg_*.json",
 ]
 MERGE_EXP_FILES_TO_EXCLUDE = []
@@ -89,8 +87,7 @@ def prep_files(options):
         foo = SourceFileLoader("bla", _file).load_module()
         # the following line does unfortunately not work since a module is not subscriptable
         # CFG = foo[options["cfgvar"]]
-        # stick to the name CFG for the aeroval configuration for now
-        # cfg = copy.deepcopy(foo.CFG)
+        # use getattr instead
         cfg = deepcopy(getattr(foo, options["cfgvar"]))
         # create tmp dir
         tempdir = mkdtemp(dir=options["tempdir"])
@@ -127,14 +124,14 @@ def prep_files(options):
 
 
 def get_runfile_str_arr(
-    file,
-    queue_name=QSUB_QUEUE_NAME,
-    script_name=None,
-    # wd=QSUB_DIR,
-    wd=None,
-    mail=f"{QSUB_USER}@met.no",
-    logdir=QSUB_LOG_DIR,
-    date=START_TIME,
+        file,
+        queue_name=QSUB_QUEUE_NAME,
+        script_name=None,
+        # wd=QSUB_DIR,
+        wd=None,
+        mail=f"{QSUB_USER}@met.no",
+        logdir=QSUB_LOG_DIR,
+        date=START_TIME,
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
@@ -207,13 +204,14 @@ def get_runfile_str_arr(
 
 
 def run_queue(
-    runfiles: list[str],
-    qsub_host: str = QSUB_HOST,
-    qsub_cmd: str = QSUB_NAME,
-    qsub_dir: str = QSUB_DIR,
-    qsub_user: str = QSUB_USER,
-    qsub_queue: str = QSUB_QUEUE_NAME,
-    submit_flag: bool = False,
+        runfiles: list[str],
+        qsub_host: str = QSUB_HOST,
+        qsub_cmd: str = QSUB_NAME,
+        qsub_dir: str = QSUB_DIR,
+        qsub_user: str = QSUB_USER,
+        qsub_queue: str = QSUB_QUEUE_NAME,
+        submit_flag: bool = False,
+        options: dict = {},
 ):
     """submit runfiles to the remote cluster
 
@@ -246,6 +244,18 @@ def run_queue(
                     continue
                 else:
                     print("success...")
+
+            # make some adjustments to the config file
+            # e.g. adjust the json_basedir and the coldata_basedir entries
+            if 'json_basedir' in options:
+                pass
+            else:
+                pass
+
+            if 'coldata_basedir' in options:
+                pass
+            else:
+                pass
 
             # copy aeroval config file to qsub host
             host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
@@ -321,7 +331,7 @@ def run_queue(
                 )
 
         else:
-            # script is run on the qsub host
+            # script is run on localhost
             # scripts exist already
             pass
 
@@ -423,8 +433,6 @@ def combine_output(options: dict):
                         print(f"copying {_file} to {outfile}...")
                         shutil.copy2(_file, outfile)
 
-
-
         pass
 
 
@@ -470,7 +478,7 @@ def dict_merge(dct: Union[None, dict], merge_dct: dict):
 
 
 def match_file(
-    file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
+        file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
 ) -> bool:
     """small hekper that matches a filename agains a list if wildcards"""
     if isinstance(file_mask_array, str):
@@ -489,7 +497,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
-        "aeroval config has to to be in the variable CFG for now!\n\n"
+                    "aeroval config has to to be in the variable CFG for now!\n\n"
     )
     parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
@@ -515,6 +523,11 @@ def main():
     parser.add_argument(
         "--tempdir",
         help=f"directory for temporary files; defaults to {TMP_DIR}",
+        default=TMP_DIR,
+    )
+    parser.add_argument(
+        "--remotetempdir",
+        help=f"directory for temporary files on qsub node; defaults to {TMP_DIR}",
         default=TMP_DIR,
     )
     parser.add_argument("-c", "--combinedirs", help="output directory", action="store_true")
@@ -553,11 +566,14 @@ def main():
     if args.tempdir:
         options["tempdir"] = Path(args.tempdir)
 
+    if args.remotetempdir:
+        options["remotetempdir"] = Path(args.remotetempdir)
+
     if args.cfgvar:
         options["cfgvar"] = args.cfgvar
 
     if not options["combinedirs"]:
-        # these are the files that need to be submitted to the queue
+        # create file for the queue
         runfiles = prep_files(options)
         if options["subdry"]:
             # just print the to be run files
