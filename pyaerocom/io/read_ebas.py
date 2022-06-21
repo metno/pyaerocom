@@ -145,7 +145,7 @@ class ReadEbasOptions(BrowseDict):
         self.convert_units = True
         self.try_convert_vmr_conc = True
 
-        self.ensure_correct_freq = True
+        self.ensure_correct_freq = False
         self.freq_from_start_stop_meas = True
         self.freq_min_cov = 0.0
 

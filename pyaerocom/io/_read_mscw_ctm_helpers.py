@@ -222,3 +222,39 @@ def calc_vmrno2(concno2):
 
     vmrno2.attrs["units"] = "nmol mol-1"
     return vmrno2
+
+
+def identity(arr):
+    return arr
+
+
+def calc_conNtno3_emep(*arrs):
+    if len(arrs) > 1:
+        raise ValueError("Should only be given 1 array")
+
+    M_N = 14.006
+    M_O = 15.999
+
+    fac = M_N / (M_N + 3 * M_O)
+
+    concNtno3 = arrs[0].copy(deep=True)
+    concNtno3 = concNtno3 * fac
+    concNtno3.attrs["units"] = "ug N m-3"
+
+    return concNtno3
+
+
+def calc_conNtnh_emep(*arrs):
+    if len(arrs) > 1:
+        raise ValueError("Should only be given 1 array")
+
+    M_N = 14.006
+    M_H = 1.007
+
+    fac = M_N / (M_H * 4 + M_N)
+
+    conNtnh = arrs[0].copy(deep=True)
+    conNtnh = conNtnh * fac
+    conNtnh.attrs["units"] = "ug N m-3"
+
+    return conNtnh
