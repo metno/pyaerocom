@@ -38,7 +38,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.07"
+    __version__ = "0.08"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
@@ -367,16 +367,33 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
 
+        # Sometimes the times in the data files are not ordered in time which causes problems when doing
+        # time interpolations later on. Make sure that the data is ordered in time
+        diff_unsorted = (
+            data_dict[self.START_TIME_NAME][1:lineidx]
+            - data_dict[self.START_TIME_NAME][: lineidx - 1]
+        )
+        sort_flag = False
+        # just assume hourly data for now
+        time_diff = np.timedelta64(30, "m")
+        if np.min(diff_unsorted) < 0:
+            # data needs to be sorted
+            ordered_idx = np.argsort(data_dict[self.START_TIME_NAME][:lineidx])
+            data_out["dtime"] = data_dict[self.START_TIME_NAME][ordered_idx] + time_diff
+            sort_flag = True
+        else:
+            data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
+
         for key, value in data_dict.items():
             # adjust the variable name to aerocom standard
             if key != self.VAR_NAMES_FILE[aerocom_var_name]:
                 data_out[key] = value[:lineidx]
             else:
-                data_out[aerocom_var_name] = value[:lineidx]
+                if sort_flag:
+                    data_out[aerocom_var_name] = value[:lineidx][ordered_idx]
+                else:
+                    data_out[aerocom_var_name] = value[:lineidx]
 
-        # just assume hourly data for now
-        time_diff = np.timedelta64(30, "m")
-        data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
         # convert data vectors to pandas.Series (if attribute
         # vars_as_series=True)
         if vars_as_series:
