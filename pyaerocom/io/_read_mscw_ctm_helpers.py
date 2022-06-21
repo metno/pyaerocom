@@ -258,3 +258,11 @@ def calc_conNtnh_emep(*arrs):
     conNtnh.attrs["units"] = "ug N m-3"
 
     return conNtnh
+
+
+def calc_concso4t(concso4, concss):
+    factor = 0.007
+    concso4t = concso4 + factor * concss
+    concso4t.attrs["units"] = "ug m-3"
+
+    return concso4t
