@@ -342,6 +342,8 @@ def combine_output(options: dict):
 
     # create outdir
     try:
+        # remove files first
+        shutil.rmtree(options["outdir"])
         Path.mkdir(options["outdir"], exist_ok=False)
     except FileExistsError:
         pass
@@ -351,6 +353,7 @@ def combine_output(options: dict):
         # create common assembly directory
         # assemble the data
         # move the experiment to the target directory
+
         print(f"input dir: {combinedir}")
         # {experiment_name}/experiments.json: files are identical over one parallelisation run
         if idx == 0:
@@ -359,12 +362,16 @@ def combine_output(options: dict):
                 # there should be just one directory. Use the 1st only anyway
                 if dir_idx == 0:
                     exp_dir = [child for child in dir.iterdir() if Path.is_dir(child)][0]
+
                     shutil.copytree(dir, options["outdir"], dirs_exist_ok=True)
+                    out_target_dir = Path.joinpath(options["outdir"], exp_dir.name)
                     # adjust config file name to cfg_<project_name>_<experiment_name>.json
-                    cfg_file = exp_dir.joinpath(f"cfg_{exp_dir.parts[-2]}_{exp_dir.parts[-1]}.json")
+                    cfg_file = out_target_dir.joinpath(f"cfg_{exp_dir.parts[-2]}_{exp_dir.parts[-1]}.json")
                     if cfg_file.exists():
-                        new_cfg_file = exp_dir.joinpath(f"cfg_{options['outdir'].parts[-1]}_{exp_dir.parts[-1]}.json")
+                        new_cfg_file = out_target_dir.joinpath(
+                            f"cfg_{options['outdir'].parts[-1]}_{exp_dir.parts[-1]}.json")
                         cfg_file.rename(new_cfg_file)
+                        # TODO: adjust some parts of the config file to the new project name
                 else:
                     pass
                     # There's something wrong with the directory structure!
@@ -373,7 +380,7 @@ def combine_output(options: dict):
             # cfg_testing_IASI.json  contour  hm  map  menu.json  ranges.json  regions.json  scat  statistics.json  ts
             inpath = Path(combinedir).joinpath(*list(exp_dir.parts[-2:]))
             inpath_dir_len = len(inpath.parts)
-            for file_idx, _file in enumerate(sorted(inpath.glob("**/*.json"))):
+            for file_idx, _file in enumerate(sorted(inpath.glob("**/*.*json"))):
                 # determine if file is in inpath or below
                 tmp = _file.parts[inpath_dir_len:]
                 if len(tmp) == 1:
