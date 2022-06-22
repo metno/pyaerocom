@@ -207,8 +207,8 @@ def tuple_list_to_lists(tuple_list):
 def make_dummy_cube_latlon(
     lat_res_deg: float = 2,
     lon_res_deg: float = 3,
-    lat_range: list[float] = (-90, 90),
-    lon_range: list[float] = (-180, 180),
+    lat_range: list[float] | tuple[float, float] = (-90, 90),
+    lon_range: list[float] | tuple[float, float] = (-180, 180),
 ):
     """Make an empty Cube with given latitude and longitude resolution
 
@@ -234,7 +234,7 @@ def make_dummy_cube_latlon(
     """
 
     # Accept lists for lat_range and lon_range, but make sure correct length
-    assert len(lat_range) == 2 and len(lon_range) == 2
+    assert len(lat_range) == len(lon_range) == 2
 
     lons = np.arange(
         lon_range[0] + (lon_res_deg / 2), lon_range[1] + (lon_res_deg / 2), lon_res_deg
