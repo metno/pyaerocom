@@ -6,7 +6,7 @@ import logging
 import math as ma
 from collections import Counter
 from datetime import MINYEAR, date, datetime
-from typing import Optional, Union, Tuple, List # 3.9 onward can use generic types
+from typing import Optional, Sequence # 3.9 onward can use generic types
 
 import iris
 import iris.analysis
@@ -208,8 +208,8 @@ def tuple_list_to_lists(tuple_list):
 def make_dummy_cube_latlon(
     lat_res_deg: float = 2,
     lon_res_deg: float = 3,
-    lat_range: Optional[Union[Tuple[float, float], List[float, float]]] = None,
-    lon_range: Optional[Union[Tuple[float, float], List[float, float]]] = None,
+    lat_range: Optional[Sequence[float]] = None,
+    lon_range: Optional[Sequence[float]] = None,
 ):
     """Make an empty Cube with given latitude and longitude resolution
 
