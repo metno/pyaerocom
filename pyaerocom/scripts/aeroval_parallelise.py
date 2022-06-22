@@ -18,6 +18,7 @@ from importlib.machinery import SourceFileLoader
 from pathlib import Path, PurePosixPath
 from socket import gethostname
 from tempfile import mkdtemp
+from threading import Thread
 from typing import Union
 from uuid import uuid4
 
@@ -124,14 +125,14 @@ def prep_files(options):
 
 
 def get_runfile_str_arr(
-        file,
-        queue_name=QSUB_QUEUE_NAME,
-        script_name=None,
-        # wd=QSUB_DIR,
-        wd=None,
-        mail=f"{QSUB_USER}@met.no",
-        logdir=QSUB_LOG_DIR,
-        date=START_TIME,
+    file,
+    queue_name=QSUB_QUEUE_NAME,
+    script_name=None,
+    # wd=QSUB_DIR,
+    wd=None,
+    mail=f"{QSUB_USER}@met.no",
+    logdir=QSUB_LOG_DIR,
+    date=START_TIME,
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
@@ -204,14 +205,14 @@ def get_runfile_str_arr(
 
 
 def run_queue(
-        runfiles: list[str],
-        qsub_host: str = QSUB_HOST,
-        qsub_cmd: str = QSUB_NAME,
-        qsub_dir: str = QSUB_DIR,
-        qsub_user: str = QSUB_USER,
-        qsub_queue: str = QSUB_QUEUE_NAME,
-        submit_flag: bool = False,
-        options: dict = {},
+    runfiles: list[str],
+    qsub_host: str = QSUB_HOST,
+    qsub_cmd: str = QSUB_NAME,
+    qsub_dir: str = QSUB_DIR,
+    qsub_user: str = QSUB_USER,
+    qsub_queue: str = QSUB_QUEUE_NAME,
+    submit_flag: bool = False,
+    options: dict = {},
 ):
     """submit runfiles to the remote cluster
 
@@ -247,12 +248,12 @@ def run_queue(
 
             # make some adjustments to the config file
             # e.g. adjust the json_basedir and the coldata_basedir entries
-            if 'json_basedir' in options:
+            if "json_basedir" in options:
                 pass
             else:
                 pass
 
-            if 'coldata_basedir' in options:
+            if "coldata_basedir" in options:
                 pass
             else:
                 pass
@@ -366,10 +367,13 @@ def combine_output(options: dict):
                     shutil.copytree(dir, options["outdir"], dirs_exist_ok=True)
                     out_target_dir = Path.joinpath(options["outdir"], exp_dir.name)
                     # adjust config file name to cfg_<project_name>_<experiment_name>.json
-                    cfg_file = out_target_dir.joinpath(f"cfg_{exp_dir.parts[-2]}_{exp_dir.parts[-1]}.json")
+                    cfg_file = out_target_dir.joinpath(
+                        f"cfg_{exp_dir.parts[-2]}_{exp_dir.parts[-1]}.json"
+                    )
                     if cfg_file.exists():
                         new_cfg_file = out_target_dir.joinpath(
-                            f"cfg_{options['outdir'].parts[-1]}_{exp_dir.parts[-1]}.json")
+                            f"cfg_{options['outdir'].parts[-1]}_{exp_dir.parts[-1]}.json"
+                        )
                         cfg_file.rename(new_cfg_file)
                         # TODO: adjust some parts of the config file to the new project name
                 else:
@@ -397,12 +401,16 @@ def combine_output(options: dict):
                     # special treatment for the experiment configuration
                     # file names need to be adjusted
                     cfg_file = inpath.joinpath(f"cfg_{inpath.parts[-2]}_{inpath.parts[-1]}.json")
-                    outfile = out_target_dir.joinpath(f"cfg_{options['outdir'].parts[-1]}_{inpath.parts[-1]}.json")
+                    outfile = out_target_dir.joinpath(
+                        f"cfg_{options['outdir'].parts[-1]}_{inpath.parts[-1]}.json"
+                    )
                     if outfile.exists():
                         # sould always fire since we handle the 1st directory above
                         infiles = [cfg_file, outfile]
                         print(f"writing combined json file {outfile}...")
-                        combine_json_files(infiles, outfile)
+                        t = Thread(target=combine_json_files, args=(infiles, outfile))
+                        t.start()
+                        # combine_json_files(infiles, outfile)
                         # TODO:
                         #  probably Adjust {
                         #   "proj_info": {
@@ -485,7 +493,7 @@ def dict_merge(dct: Union[None, dict], merge_dct: dict):
 
 
 def match_file(
-        file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
+    file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
 ) -> bool:
     """small hekper that matches a filename agains a list if wildcards"""
     if isinstance(file_mask_array, str):
@@ -504,7 +512,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
-                    "aeroval config has to to be in the variable CFG for now!\n\n"
+        "aeroval config has to to be in the variable CFG for now!\n\n"
     )
     parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
