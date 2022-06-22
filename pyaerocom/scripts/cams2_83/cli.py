@@ -97,13 +97,28 @@ def make_period(
     start_date: datetime,
     end_date: datetime,
 ) -> List[str]:
-    start_yr = start_date.strftime("%Y%m%d")  # .year
-    end_yr = end_date.strftime("%Y%m%d")  # .year
+    start_yr = start_date.year
+    end_yr = end_date.year
+    start_dt = start_date.strftime("%Y%m%d")  # .year
+    end_dt = end_date.strftime("%Y%m%d")  # .year
 
-    if start_yr == end_yr:
-        return [f"{start_yr}"]
+    if start_dt == end_dt:
+        return [f"{start_dt}"]
+    
+    periods = [f"{start_dt}-{end_dt}"]
+    if end_yr == start_yr:
+        return periods
+    
+    periods.append(f"{start_dt}-{start_yr}1231") # append first year portion
+    
+    if (end_yr - start_yr) >= 2 : # append full years in between if any
+        for y in range(start_yr+1,end_yr):
+            periods.append(f"{y}0101-{y}1231")
+ 
+    periods.append(f"{end_yr}0101-{end_dt}") # append last year portion
 
-    return [f"{start_yr}-{end_yr}"]
+    return periods
+
 
 
 def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
