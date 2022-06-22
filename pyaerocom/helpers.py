@@ -207,8 +207,8 @@ def tuple_list_to_lists(tuple_list):
 def make_dummy_cube_latlon(
     lat_res_deg: float = 2,
     lon_res_deg: float = 3,
-    lat_range: list[float] | None = (-90, 90),
-    lon_range: list[float] | None = (-180, 180),
+    lat_range: list[float] = (-90, 90),
+    lon_range: list[float] = (-180, 180),
 ):
     """Make an empty Cube with given latitude and longitude resolution
 
