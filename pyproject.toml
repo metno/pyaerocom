@@ -18,7 +18,7 @@ filterwarnings = [
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
     # and not on this list
     "ignore:.*please install Basemap:UserWarning:geonum.*:",
-    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:"
 ]
 
 [tool.coverage.run]
@@ -102,6 +102,8 @@ legacy_tox_ini = """
 envlist = py38, py39, py310, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
+requires =
+    setuptools<=60.9.3
 
 [testenv]
 commands_pre =
@@ -109,7 +111,7 @@ commands_pre =
 commands =
     pytest -ra -q {posargs:--cov}
 extras = 
-    proj8
+    proj-legacy
     test
 
 [testenv:format]
@@ -122,14 +124,17 @@ deps =
 ignore_outcome = True
 commands =
     mypy pyaerocom/
+    #pylint pyaerocom/
+    #pycodestyle pyaerocom/
+    #pydocstyle pyaerocom/
 extras = 
-    proj8
+    proj-legacy
     lint
 
 [testenv:docs]
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 
-    proj8
+    proj-legacy
     docs
 """
