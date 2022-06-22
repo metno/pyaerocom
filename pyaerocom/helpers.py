@@ -6,7 +6,7 @@ import logging
 import math as ma
 from collections import Counter
 from datetime import MINYEAR, date, datetime
-from typing import Optional
+from typing import Optional, Tuple
 
 import iris
 import iris.analysis
@@ -205,7 +205,7 @@ def tuple_list_to_lists(tuple_list):
     return list(map(list, zip(tuple_list)))
 
 
-def make_dummy_cube_latlon(lat_res_deg: float = 2, lon_res_deg: float = 3, lat_range: Optional[tuple(float, float)] = None, lon_range: Optional[tuple(float, float)] = None):
+def make_dummy_cube_latlon(lat_res_deg: float = 2, lon_res_deg: float = 3, lat_range: Optional[Tuple[float,float]] = None, lon_range: Optional[Tuple[float,float]] = None):
     """Make an empty Cube with given latitude and longitude resolution
 
     Dimensions will be lat, lon
@@ -228,12 +228,11 @@ def make_dummy_cube_latlon(lat_res_deg: float = 2, lon_res_deg: float = 3, lat_r
     Cube
         dummy cube in input resolution
     """
+
     if lat_range is None:
         lat_range = (-90, 90)
     if lon_range is None:
         lon_range = (-180, 180)
-
-    breakpoint()
     
     lons = np.arange(lon_range[0] + (lon_res_deg / 2), lon_range[1] + (lon_res_deg / 2), lon_res_deg)
     lats = np.arange(lat_range[0] + (lat_res_deg / 2), lat_range[1] + (lat_res_deg / 2), lat_res_deg)
@@ -1713,14 +1712,14 @@ def make_dummy_cube(
     days_since_start = np.arange(len(times))
     unit = get_variable(var_name).units
 
-    lat_range = (-180, 180)
-    lon_range = (-90, 90)
-    lat_res_deg = 90
-    lon_res_deg = 45
+    lat_range = (-90, 90)
+    lon_range = (-180, 180)
+    lat_res_deg = 45
+    lon_res_deg = 90
     time_unit = Unit(startstr, calendar="gregorian")
 
-    lons = np.arange(lon_range[0] + lon_res_deg / 2, lon_range[1] + lon_res_deg / 2, lon_res_deg)
-    lats = np.arange(lat_range[0] + lat_res_deg / 2, lat_range[1] + lat_res_deg / 2, lat_res_deg)
+    lons = np.arange(lon_range[0] + (lon_res_deg / 2), lon_range[1] + (lon_res_deg / 2), lon_res_deg)
+    lats = np.arange(lat_range[0] + (lat_res_deg / 2), lat_range[1] + (lat_res_deg / 2), lat_res_deg)
 
     latdim = iris.coords.DimCoord(
         lats,
