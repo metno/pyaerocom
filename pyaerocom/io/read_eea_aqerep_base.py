@@ -376,7 +376,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         sort_flag = False
         # just assume hourly data for now
         time_diff = np.timedelta64(30, "m")
-        if np.min(diff_unsorted) < 0:
+        # np.min needs an array and fails with ValueError when a scalar is supplied
+        # this is the case for a single line file
+        try:
+            min_diff = np.min(diff_unsorted)
+        except ValueError:
+            min_diff = 0
+
+        if min_diff < 0:
             # data needs to be sorted
             ordered_idx = np.argsort(data_dict[self.START_TIME_NAME][:lineidx])
             data_out["dtime"] = data_dict[self.START_TIME_NAME][ordered_idx] + time_diff
