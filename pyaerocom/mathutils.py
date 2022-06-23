@@ -187,7 +187,7 @@ def _nanmean_and_std(data):
 
 
 @ignore_warnings(
-    RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
+    RuntimeWarning, "An input array is constant", "invalid value encountered in .*divide"
 )
 def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None):
     """Calc statistical properties from two data arrays
