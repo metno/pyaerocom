@@ -250,3 +250,14 @@ def test_extract_latlon_dataarray_no_matches_error(lat, lon):
 def test_seconds_in_periods(date, ts_type, days):
     seconds = timedelta(days=days) / timedelta(seconds=1)
     assert helpers.seconds_in_periods(np.datetime64(date), ts_type) == seconds
+
+
+def test_make_dummy_cube():
+    cube = helpers.make_dummy_cube("concpm10")
+    data = xr.DataArray.from_iris(cube)
+    # First coordinate does not exist in the dataarray.
+    lat = [90, -67.5, 22.2]
+    lon = [180, -135.0, 45.0]
+    subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
+    assert isinstance(subset, xr.DataArray)
+    assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) - 1
