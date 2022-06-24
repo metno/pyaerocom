@@ -261,4 +261,5 @@ def test_make_dummy_cube():
     lon = [180, -135.0, 45.0]
     subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert isinstance(subset, xr.DataArray)
-    assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) - 1
+    assert len(subset.lat) == len(lat) - 1
+    assert len(subset.lon) == len(lon) - 1
