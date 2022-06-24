@@ -256,7 +256,6 @@ def test_make_dummy_cube():
     # make a dummy cube of an arbitrary variable name over one year
     cube = helpers.make_dummy_cube("concpm10", start_yr=2020, stop_yr=2021)
     data = xr.DataArray.from_iris(cube)
-    breakpoint()
     # First coordinate does not exist in the dataarray.
     lat = [90, -67.5, 22.2]
     lon = [180, -135.0, 45.0]
