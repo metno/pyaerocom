@@ -209,7 +209,8 @@ def test_extract_latlon_dataarray():
     lon = [1, 15, 18]
     subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert isinstance(subset, xr.DataArray)
-    assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) - 1
+    assert len(subset.lat) == len(lat) - 1
+    assert len(subset.lon) == len(lon) - 1
 
 
 def test_extract_latlon_dataarray_no_matches():

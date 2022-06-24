@@ -27,7 +27,9 @@ def test_is_within_radius_km():
 
 
 @pytest.mark.xfail(
-    reason="fails in CI when geonum can not download 'srtm' data", raises=FileNotFoundError
+    reason="fails in CI when geonum can not download 'srtm' data",
+    raises=FileNotFoundError,
+    strict=False,
 )
 def test_srtm_altitude():
     assert geodesy.get_topo_altitude(TEST_LAT, TEST_LON) == pytest.approx(207)
