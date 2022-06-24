@@ -75,7 +75,6 @@ jobs:
         path: |
           ~/.cache/pip
           ~/.cache/srtm
-          ~/.cache/geonum
           .tox
         key: ${{ runner.os }}-tox-${{ matrix.python-version }}-${{ hashFiles('setup.cfg', '') }}
     - name: Install Tox
