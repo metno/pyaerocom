@@ -7,15 +7,17 @@ from typing import NamedTuple
 
 
 class ModelName(str, Enum):
-    EMEP = "emep"
+    CHIMERE = "chimere"
     DEHM = "dehm"
+    EMEP = "emep"
     EURAD = "euradim"
     GEMAQ = "gemaq"
     LOTOS = "lotos"
     MATCH = "match"
-    SILAM = "silam"
+    MINNI = "minni"
     MOCAGE = "mocage"
-    CHIMERE = "chimere"
+    MONARCH = "monarch"
+    SILAM = "silam"
     ENSEMBLE = "ensemble"
 
     def __str__(self) -> str:
