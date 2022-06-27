@@ -309,3 +309,16 @@ def calc_concso4t(concso4, concss):
     concso4t.attrs["units"] = "ug m-3"
 
     return concso4t
+
+
+def calc_concNno(concno):
+    M_N = 14.006
+    M_O = 15.999
+
+    fac = M_N / (M_N + M_O)
+
+    concno = concno.copy(deep=True)
+    concNno = concno * fac
+    concNno.attrs["units"] = "ug N m-3"
+
+    return concNno

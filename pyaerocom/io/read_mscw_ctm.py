@@ -14,6 +14,7 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     calc_concNhno3,
     calc_concNnh3,
     calc_concNnh4,
+    calc_concNno,
     calc_concNno3pm10,
     calc_concNno3pm25,
     calc_concNtnh,
@@ -86,6 +87,7 @@ class ReadMscwCtm:
         "concCocpm25": ["concCocFine"],
         "concCocpm10": ["concCocFine", "concCocCoarse"],
         "concso4t": ["concso4", "concss"],
+        "concNno": ["concno"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -119,6 +121,7 @@ class ReadMscwCtm:
         "concCocpm25": identity,
         "concCocpm10": add_dataarrays,
         "concso4t": calc_concso4t,
+        "concNno": calc_concNno,
     }
 
     #: supported filename masks, placeholder is for frequencies

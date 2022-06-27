@@ -252,4 +252,5 @@ var_web_info = dict(
     concco=["CO", "3D", "Particle concentration"],
     concso4t=["SO4 total", "3D", "Particle concentration"],
     concso4c=["SO4 sea salt corrected", "3D", "Particle concentration"],
+    concNno=["NO", "3D", "Concentration"],
 )

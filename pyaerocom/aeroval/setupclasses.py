@@ -284,7 +284,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.colocation_opts = ColocationSetup(
             save_coldata=True, keep_data=False, resample_how="mean"
         )
-        self.statistics_opts = StatistisSetup(weighted_stats=True, annual_stats_constrained=False)
+        self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
         self.webdisp_opts = WebDisplaySetup()
 
         self.processing_opts = EvalRunOptions()
