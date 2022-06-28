@@ -25,7 +25,7 @@ def test_contains_coordinate(region_name, lat, lon):
         ("EAS", 0, 0),
         ("MCA", 51.5072, 0.1276),
         ("MDE", 10.4806, -66.9036),
-        ("SEA", 33.9249, 18.4241),
+        ("SEA", -33.9249, 18.4241),
     ],
 )
 def test_does_not_contain_coordinate(region_name, lat, lon):
