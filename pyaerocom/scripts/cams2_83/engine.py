@@ -23,6 +23,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     init_regions_web,
     write_json,
 )
+from pyaerocom.exceptions import DataCoverageError
 from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
@@ -87,12 +88,18 @@ class CAMS2_83_Engine(ProcessingEngine):
                             f"Season {season} is not available for {per} and will be skipped"
                         )
                         continue
-                    subset = [
-                        _select_period_season_coldata(col, per, season).filter_region(
-                            regid, check_country_meta=use_country
-                        )
-                        for col in coldata
-                    ]
+
+                    try:
+                        subset = [
+                            _select_period_season_coldata(col, per, season).filter_region(
+                                regid, check_country_meta=use_country
+                            )
+                            for col in coldata
+                        ]
+                    except DataCoverageError as e:
+                        logger.info(f"Skipping forecast plot due to error {str(e)}")
+                        continue
+
                     for forecast_hour in range(24 * forecast_days):
                         logger.info(f"Calculating statistics for hour {forecast_hour}")
                         leap, hour = divmod(forecast_hour, 24)
@@ -108,7 +115,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
-        name = "forecast.json"
+        name = "day0.json"
         filename = Path(out_dirs["conf"]) / name
 
         _add_entry_json(
