@@ -17,7 +17,12 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import _add_entry_json, write_json
+from pyaerocom.aeroval.coldatatojson_helpers import (
+    _add_entry_json,
+    _select_period_season_coldata,
+    init_regions_web,
+    write_json,
+)
 from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
@@ -52,25 +57,60 @@ class CAMS2_83_Engine(ProcessingEngine):
         obs_name = coldata[0].obs_name
         mcfg = self.cfg.model_cfg.get_entry(model.name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
+        seasons = self.cfg.time_cfg.get_seasons()
 
-        stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
-        for forecast_hour in range(24 * forecast_days):
-            logger.info(f"Calculating statistics for hour {forecast_hour}")
-            leap, hour = divmod(forecast_hour, 24)
-            ds = coldata[leap]
-            ds = ds.data.sel(time=(ds.time.dt.hour == hour))
-            start = time.time()
-            stats = self._get_median_stats_point_vec(ds, use_weights)
-            print(time.time() - start)
-            for key in stats_list:
-                stats_list[key].append(stats[key])
+        # for i in range(1, forecast_days):
+        #     coldata[i].data["country"] = coldata[0].data["country"]
 
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+        regions_how = "country"
+        use_country = True
+        for i in range(forecast_days):
+            coldata[i].data["season"] = coldata[i].data.time.dt.season
+            (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
 
-        name = "day0.json"
+        results = {}
+
+        # seasons = [s for s in seasons if s in coldata[0].data["season"].data] + ["all"]
+
+        for regid, regname in regnames.items():
+            results[regname] = {}
+            for per in periods:
+                for season in seasons:
+                    perstr = f"{per}-{season}"
+
+                    stats_list: dict[str, list[float]] = dict(
+                        rms=[], R=[], nmb=[], mnmb=[], fge=[]
+                    )
+                    logger.info(f"Making subset for {regid}, {per} and {season}")
+                    if season not in coldata[0].data["season"].data and season is not "all":
+                        logger.info(
+                            f"Season {season} is not available for {per} and will be skipped"
+                        )
+                        continue
+                    subset = [
+                        _select_period_season_coldata(col, per, season).filter_region(
+                            regid, check_country_meta=use_country
+                        )
+                        for col in coldata
+                    ]
+                    for forecast_hour in range(24 * forecast_days):
+                        logger.info(f"Calculating statistics for hour {forecast_hour}")
+                        leap, hour = divmod(forecast_hour, 24)
+                        ds = subset[leap]
+                        ds = ds.data.sel(time=(ds.time.dt.hour == hour))
+                        start = time.time()
+                        stats = self._get_median_stats_point_vec(ds, use_weights)
+                        print(time.time() - start)
+                        for key in stats_list:
+                            stats_list[key].append(stats[key])
+
+                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+
+                    results[f"{regname}"][f"{perstr}"] = stats_list
+
+        name = "forecast.json"
         filename = Path(out_dirs["conf"]) / name
 
-        results = {"WORLD": {f"{periods[0]}-all": stats_list}}
         _add_entry_json(
             filename, results, obs_name, var_name_web, vert_code, model.name, model_var
         )
