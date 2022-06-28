@@ -253,4 +253,8 @@ var_web_info = dict(
     concso4t=["SO4 total", "3D", "Particle concentration"],
     concso4c=["SO4 sea salt corrected", "3D", "Particle concentration"],
     concNno=["NO", "3D", "Concentration"],
+    concnh4coarse=["NH4 PM10", "3D", "Gas concentrations"],
+    concnh4fine=["NH4 PM2.5", "3D", "Gas concentrations"],
+    concso4coarse=["SO4 PM10", "3D", "Particle concentration"],
+    concso4fine=["SO4 PM2.5", "3D", "Particle concentration"],
 )
