@@ -70,7 +70,7 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
         )
     elif eval_type == "season":
         return dict(
-            freqs=["daily", "hourly"],
+            freqs=["daily", "monthly"],
             ts_type="hourly",
             main_freq="daily",
             forecast_evaluation=True,
@@ -104,21 +104,20 @@ def make_period(
 
     if start_dt == end_dt:
         return [f"{start_dt}"]
-    
+
     periods = [f"{start_dt}-{end_dt}"]
     if end_yr == start_yr:
         return periods
-    
-    periods.append(f"{start_dt}-{start_yr}1231") # append first year portion
-    
-    if (end_yr - start_yr) >= 2 : # append full years in between if any
-        for y in range(start_yr+1,end_yr):
+
+    periods.append(f"{start_dt}-{start_yr}1231")  # append first year portion
+
+    if (end_yr - start_yr) >= 2:  # append full years in between if any
+        for y in range(start_yr + 1, end_yr):
             periods.append(f"{y}0101-{y}1231")
- 
-    periods.append(f"{end_yr}0101-{end_dt}") # append last year portion
+
+    periods.append(f"{end_yr}0101-{end_dt}")  # append last year portion
 
     return periods
-
 
 
 def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
