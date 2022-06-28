@@ -142,8 +142,23 @@ class Region(BrowseDict):
         bool
             True if coordinate is contained in this region, False if not
         """
-        lat_ok = self.lat_range[0] <= lat <= self.lat_range[1]
-        lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
+
+        lat_lb = self.lat_range[0]
+        lat_ub = self.lat_range[1]
+        lon_lb = self.lon_range[0]
+        lon_ub = self.lon_range[1]
+        # latitude bounding boxes should always be defined with the southern most boundary less than the northernmost
+        lat_ok = lat_lb <= lat <= lat_ub
+        # if the longitude bounding box has a lowerbound less than the upperbound
+        if lon_lb < lon_ub:
+            # it suffices to check that lon is between these values
+            lon_ok = lon_lb <= lon <= lon_ub
+        # if the longitude lowerbound has a value lessthan the upperbound
+        elif lon_ub < lon_lb:
+            # lon is contained in the bounding box in two cases
+            lon_ok = lon < lon_ub or lon > lon_lb
+        else:
+            lon_ok = False  # safeguard
         return lat_ok * lon_ok
 
     def mask_available(self):
