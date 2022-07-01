@@ -116,7 +116,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
             name = f"{regname}_{obs_name}-{var_name_web}_{vert_code}.json"
-            filename = Path(out_dirs["conf"]) / name
+            filename = Path(out_dirs["forecast"]) / name
 
             _add_entry_json(
                 filename,
