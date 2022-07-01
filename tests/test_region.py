@@ -1,6 +1,6 @@
 import pytest
 
-from pyaerocom.region import Region
+from pyaerocom.region import Region, get_regions_coord
 
 
 @pytest.mark.parametrize(
@@ -31,3 +31,17 @@ def test_contains_coordinate(region_name, lat, lon):
 def test_does_not_contain_coordinate(region_name, lat, lon):
     reg = Region(region_name)
     assert not reg.contains_coordinate(lat, lon)
+
+
+# This test needs work because Region() can accept almost any key in region_defs.py and they are not consistent.
+# NAF, NAFRICA, N Africa, for example. Running in a debugger exposes the inconsistencies
+@pytest.mark.parametrize(
+    "region_name, lat, lon",
+    [
+        ("EUROPE", 48.864716, 2.349014),
+        ("NAFRICA", 30.033333, 31.233334),
+    ],
+)
+def test_get_regions_coord(region_name, lat, lon):
+    reg = Region(region_name)
+    assert reg.name == get_regions_coord(lat, lon)[0]
