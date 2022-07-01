@@ -4,6 +4,7 @@ This module contains functionality related to regions in pyaerocom
 from typing import List, Optional
 
 import numpy as np
+from global_land_mask import globe
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
@@ -325,7 +326,7 @@ def get_all_default_regions():
 
 #: ToDO: check how to handle methods properly with HTAP regions...
 def get_regions_coord(lat, lon, regions=None):
-    """Get all regions that contain input coordinate
+    """Get the region that contains an input coordinate
 
     Note
     ----
@@ -351,11 +352,15 @@ def get_regions_coord(lat, lon, regions=None):
     matches = []
     if regions is None:
         regions = get_all_default_regions()
-    for rname, reg in regions.items():
-        if rname == ALL_REGION_NAME:  # always True
-            continue
-        if reg.contains_coordinate(lat, lon):
-            matches.append(rname)
+    if globe.is_ocean(lat, lon):
+        matches.append("OCN")
+    else:
+        for rname, reg in regions.items():
+            if rname == ALL_REGION_NAME:  # always True
+                continue
+            if reg.contains_coordinate(lat, lon):
+                if reg != "OCN":
+                    matches.append(rname)
     if len(matches) == 0:
         matches.append(ALL_REGION_NAME)
     return matches
