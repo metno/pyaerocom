@@ -17,8 +17,8 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
+from pyaerocom.aeroval.coldatatojson_helpers import _add_heatmap_entry_json as _add_entry_json
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_entry_json,
     _select_period_season_coldata,
     init_regions_web,
     write_json,
@@ -115,12 +115,18 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
-        name = "day0.json"
-        filename = Path(out_dirs["conf"]) / name
+            name = f"{regname}-{model.name}-{obs_name}-{var_name_web}.json"
+            filename = Path(out_dirs["conf"]) / name
 
-        _add_entry_json(
-            filename, results, obs_name, var_name_web, vert_code, model.name, model_var
-        )
+            _add_entry_json(
+                filename,
+                results[regname],
+                obs_name,
+                var_name_web,
+                vert_code,
+                model.name,
+                model_var,
+            )
 
     def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
 

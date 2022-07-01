@@ -8,6 +8,7 @@ from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
 
+import pandas as pd
 import typer
 
 from pyaerocom import change_verbosity, const
@@ -93,6 +94,38 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
         return {}
 
 
+def get_seasons_in_period(start_date: datetime, end_date: datetime) -> List[str]:
+    seasons = ["DJF", "DJF", "MAM", "MAM", "MAM", "JJA", "JJA", "JJA", "SON", "SON", "SON", "DJF"]
+    get_season = lambda date: seasons[date.month - 1]
+    daterange = pd.date_range(start_date, end_date, freq="d")
+
+    periods = []
+    prev_date = daterange[0]
+    start_period = daterange[0]
+    prev_season = get_season(prev_date)
+    for date in daterange[1:]:
+        if get_season(date) == prev_season:
+            prev_date = date
+        else:
+            periods.append(
+                f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}-{pd.to_datetime(str(prev_date)).strftime('%Y%m%d')}"
+            )
+            prev_date = date
+            prev_season = get_season(date)
+            start_period = date
+
+    else:
+
+        if start_period == daterange[-1]:
+            periods.append(f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}")
+        else:
+            periods.append(
+                f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}-{pd.to_datetime(str(daterange[-1])).strftime('%Y%m%d')}"
+            )
+
+    return periods
+
+
 def make_period(
     start_date: datetime,
     end_date: datetime,
@@ -102,20 +135,26 @@ def make_period(
     start_dt = start_date.strftime("%Y%m%d")  # .year
     end_dt = end_date.strftime("%Y%m%d")  # .year
 
+    season_periods = get_seasons_in_period(start_date, end_date)
+
     if start_dt == end_dt:
         return [f"{start_dt}"]
 
     periods = [f"{start_dt}-{end_dt}"]
-    if end_yr == start_yr:
-        return periods
 
-    periods.append(f"{start_dt}-{start_yr}1231")  # append first year portion
+    if periods != season_periods:
+        periods += season_periods
 
-    if (end_yr - start_yr) >= 2:  # append full years in between if any
-        for y in range(start_yr + 1, end_yr):
-            periods.append(f"{y}0101-{y}1231")
+    # if end_yr == start_yr:
+    #     return periods
 
-    periods.append(f"{end_yr}0101-{end_dt}")  # append last year portion
+    # periods.append(f"{start_dt}-{start_yr}1231")  # append first year portion
+
+    # if (end_yr - start_yr) >= 2:  # append full years in between if any
+    #     for y in range(start_yr + 1, end_yr):
+    #         periods.append(f"{y}0101-{y}1231")
+
+    # periods.append(f"{end_yr}0101-{end_dt}")  # append last year portion
 
     return periods
 

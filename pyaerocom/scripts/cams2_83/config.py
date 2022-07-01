@@ -36,7 +36,7 @@ GLOBAL_CONFIG = dict(
     # cams2_83_model=ModelName.EMEP,
     # cams2_83_dateshift=0,
     # Regional filter for analysis
-    filter_name="WORLD-wMOUNTAINS",
+    filter_name="ALL-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
     ts_type="hourly",
     # The size of map used to display the results
