@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io.read_airnow import ReadAirNow
@@ -210,15 +209,15 @@ def test__init_station_metadata(reader: ReadAirNow):
     station = stations["000010101"]
     assert station["station_name"] == "Duckworth and Ordinance"
     assert station["station_id"] == "000010101"
-    assert_allclose(station["latitude"], 47.568, rtol=1e-3)
-    assert_allclose(station["longitude"], -52.702, rtol=1e-3)
+    assert station["latitude"] == pytest.approx(47.568, rel=1e-3)
+    assert station["longitude"] == pytest.approx(-52.702, rel=1e-3)
     assert station["altitude"] == 7
 
     station = stations["160550006"]
     assert station["station_name"] == "Coeur D Alene - Teom"
     assert station["station_id"] == "160550006"
-    assert_allclose(station["latitude"], 47.682, rtol=1e-3)
-    assert_allclose(station["longitude"], -116.766, rtol=1e-3)
+    assert station["latitude"] == pytest.approx(47.682, rel=1e-3)
+    assert station["longitude"] == pytest.approx(-116.766, rel=1e-3)
     assert station["altitude"] == 665
 
 

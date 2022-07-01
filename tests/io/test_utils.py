@@ -9,8 +9,7 @@ from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_ebas import ReadEbas
-
-from ..conftest import lustre_unavail
+from tests.conftest import lustre_unavail
 
 
 def name(obj):

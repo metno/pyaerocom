@@ -6,7 +6,7 @@ from pyaerocom import ColocatedData
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_entry_json,
+    _add_heatmap_entry_json,
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -20,6 +20,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _write_stationdata_json,
     get_heatmap_filename,
     get_json_mapname,
+    get_timeseries_file_name,
     init_regions_web,
     update_regions_json,
 )
@@ -179,8 +180,9 @@ class ColdataToJsonEngine(ProcessingEngine):
             except TemporalResolutionError:
                 stats_ts = {}
 
-            ts_file = os.path.join(out_dirs["hm/ts"], "stats_ts.json")
-            _add_entry_json(
+            fname = get_timeseries_file_name(obs_name, var_name_web, vert_code)
+            ts_file = os.path.join(out_dirs["hm/ts"], fname)
+            _add_heatmap_entry_json(
                 ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
@@ -202,7 +204,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
                 hm_file = os.path.join(out_dirs["hm"], fname)
 
-                _add_entry_json(
+                _add_heatmap_entry_json(
                     hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
                 )
 

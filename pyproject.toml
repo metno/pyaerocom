@@ -7,6 +7,7 @@ minversion = "6.0"
 log_cli = false
 log_cli_level = "WARNING"
 addopts = "--failed-first"
+xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
     # all warnings are errors
@@ -17,7 +18,7 @@ filterwarnings = [
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
     # and not on this list
     "ignore:.*please install Basemap:UserWarning:geonum.*:",
-    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:"
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",
 ]
 
 [tool.coverage.run]
@@ -105,6 +106,8 @@ requires =
     setuptools<=60.9.3
 
 [testenv]
+install_command = 
+    python -m pip install {opts} {packages} --use-deprecated=legacy-resolver
 commands_pre =
     python --version
 commands =
@@ -115,19 +118,14 @@ extras =
 
 [testenv:format]
 commands =
-    black --check .
-    isort --check .
-extras = 
-    proj-legacy
-    format
+    pre-commit run --all-files --show-diff-on-failure
+deps =
+    pre-commit
 
 [testenv:lint]
 ignore_outcome = True
 commands =
     mypy pyaerocom/
-    pylint pyaerocom/
-    pycodestyle pyaerocom/
-    pydocstyle pyaerocom/
 extras = 
     proj-legacy
     lint

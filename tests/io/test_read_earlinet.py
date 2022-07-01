@@ -4,12 +4,10 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom import VerticalProfile, const
 from pyaerocom.io.read_earlinet import ReadEarlinet
-
-from ..conftest import TEST_RTOL
+from tests.conftest import TEST_RTOL
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Earlinet-test"]
 TEST_FILES: list[str] = [
@@ -63,14 +61,14 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     assert len(ec532aer.data) == 253
     assert np.sum(np.isnan(ec532aer.data)) == 216
 
-    assert_allclose(np.nanmean(ec532aer.data), 4.463068618148296, rtol=TEST_RTOL)
-    assert_allclose(np.nanstd(ec532aer.data), 1.8529271228530515, rtol=TEST_RTOL)
+    assert np.nanmean(ec532aer.data) == pytest.approx(4.463068618148296, rel=TEST_RTOL)
+    assert np.nanstd(ec532aer.data) == pytest.approx(1.8529271228530515, rel=TEST_RTOL)
 
-    assert_allclose(np.nanmean(ec532aer.data_err), 4.49097234883772, rtol=TEST_RTOL)
-    assert_allclose(np.nanstd(ec532aer.data_err), 0.8332285038985179, rtol=TEST_RTOL)
+    assert np.nanmean(ec532aer.data_err) == pytest.approx(4.49097234883772, rel=TEST_RTOL)
+    assert np.nanstd(ec532aer.data_err) == pytest.approx(0.8332285038985179, rel=TEST_RTOL)
 
-    assert_allclose(np.min(ec532aer.altitude), 331.29290771484375, rtol=TEST_RTOL)
-    assert_allclose(np.max(ec532aer.altitude), 7862.52490234375, rtol=TEST_RTOL)
+    assert np.min(ec532aer.altitude) == pytest.approx(331.29290771484375, rel=TEST_RTOL)
+    assert np.max(ec532aer.altitude) == pytest.approx(7862.52490234375, rel=TEST_RTOL)
 
 
 @pytest.mark.parametrize(
@@ -96,15 +94,14 @@ def test_ReadEarlinet_read():
     assert len(data.metadata) == 5
     assert data.shape == (786, 12)
 
-    assert_allclose(np.nanmin(data._data[:, data._DATAINDEX]), -0.440742, rtol=TEST_RTOL)
-    assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 24.793547, rtol=TEST_RTOL)
-    assert_allclose(np.nanmax(data._data[:, data._DATAINDEX]), 167.90787, rtol=TEST_RTOL)
+    assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(-0.440742, rel=TEST_RTOL)
+    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(24.793547, rel=TEST_RTOL)
+    assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(167.90787, rel=TEST_RTOL)
 
     merged = data.to_station_data("Evora", freq="monthly")
-
-    assert_allclose(np.nanmin(merged.ec532aer), 0.220322, rtol=TEST_RTOL)
-    assert_allclose(np.nanmean(merged.ec532aer), 23.093238, rtol=TEST_RTOL)
-    assert_allclose(np.nanmax(merged.ec532aer), 111.478665, rtol=TEST_RTOL)
+    assert np.nanmin(merged.ec532aer) == pytest.approx(0.220322, rel=TEST_RTOL)
+    assert np.nanmean(merged.ec532aer) == pytest.approx(23.093238, rel=TEST_RTOL)
+    assert np.nanmax(merged.ec532aer) == pytest.approx(111.478665, rel=TEST_RTOL)
 
 
 @pytest.mark.parametrize(

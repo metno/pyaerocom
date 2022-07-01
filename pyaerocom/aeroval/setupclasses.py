@@ -2,7 +2,7 @@ import logging
 import os
 from getpass import getuser
 
-from pyaerocom import const
+from pyaerocom import __version__, const
 from pyaerocom._lowlevel_helpers import (
     AsciiFileLoc,
     ConstrainedContainer,
@@ -258,6 +258,7 @@ class ExperimentInfo(ConstrainedContainer):
         self.exp_descr = ""
         self.public = False
         self.exp_pi = getuser()
+        self.pyaerocom_version = __version__
         self.update(**kwargs)
 
 

@@ -1,13 +1,12 @@
-import os
+import string
+from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
-
-from .conftest import FAKE_STATION_DATA, data_unavail, rg_unavail
+from tests.fixtures.stations import FAKE_STATION_DATA
 
 
 @pytest.fixture(scope="module")
@@ -16,24 +15,20 @@ def ungridded_empty():
 
 
 def test_init_shape(ungridded_empty):
-    assert_array_equal(ungridded_empty.shape, (1000000, 12))
+    assert ungridded_empty.shape == (1000000, 12)
 
 
 def test_init_add_cols():
     d1 = UngriddedData(num_points=2, add_cols=["bla", "blub"])
-    assert_array_equal(d1.shape, (2, 14))
+    assert d1.shape == (2, 14)
 
 
 def test_add_chunk(ungridded_empty):
-
     ungridded_empty.add_chunk(111002)
-
-    assert_array_equal(ungridded_empty.shape, (2000000, 12))
+    assert ungridded_empty.shape == (2000000, 12)
 
 
 def test_coordinate_access():
-    import string
-
     d = UngriddedData()
 
     stat_names = list(string.ascii_lowercase)
@@ -50,33 +45,25 @@ def test_coordinate_access():
             altitude=alts[i],
         )
 
-    assert_array_equal(d.station_name, stat_names)
-    assert_array_equal(d.latitude, lats)
-    assert_array_equal(d.longitude, lons)
-    assert_array_equal(d.altitude, alts)
+    assert d.station_name == stat_names
+    assert all(d.latitude == lats)
+    assert all(d.longitude == lons)
+    assert all(d.altitude == alts)
 
-    case_ok = False
-    try:
+    with pytest.raises(DataCoverageError):
         d.to_station_data("a")
-    except DataCoverageError:
-        case_ok = True
-
-    assert case_ok
 
     c = d.station_coordinates
-    assert_array_equal(c["station_name"], stat_names)
-    assert_array_equal(c["latitude"], lats)
-    assert_array_equal(c["longitude"], lons)
-    assert_array_equal(c["altitude"], alts)
+    assert c["station_name"] == stat_names
+    assert all(c["latitude"] == lats)
+    assert all(c["longitude"] == lons)
+    assert all(c["altitude"] == alts)
 
 
-@data_unavail
 def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
 
 
-@data_unavail
-@rg_unavail
 @pytest.mark.dependency
 def test_check_set_country(aeronetsunv3lev2_subset):
     idx, countries = aeronetsunv3lev2_subset.check_set_country()
@@ -208,18 +195,13 @@ def test_filter_by_meta(aeronetsunv3lev2_subset, args, sitenames):
     assert sorted(sitenames) == stats
 
 
-def test_save_as(aeronetsunv3lev2_subset, tempdir):
-    fp = aeronetsunv3lev2_subset.save_as(
-        file_name="ungridded_aeronet_subset.pkl", save_dir=tempdir
-    )
-
-    assert os.path.exists(fp)
-
-
-def test_from_cache(aeronetsunv3lev2_subset, tempdir):
-    reloaded = UngriddedData.from_cache(data_dir=tempdir, file_name="ungridded_aeronet_subset.pkl")
-
-    assert reloaded.shape == aeronetsunv3lev2_subset.shape
+def test_cache_reload(aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path):
+    path = tmp_path / "ungridded_aeronet_subset.pkl"
+    file = aeronetsunv3lev2_subset.save_as(file_name=path.name, save_dir=path.parent)
+    assert Path(file) == path
+    assert path.exists()
+    data = UngriddedData.from_cache(data_dir=path.parent, file_name=path.name)
+    assert data.shape == aeronetsunv3lev2_subset.shape
 
 
 def test_check_unit(data_scat_jungfraujoch):
@@ -230,7 +212,7 @@ def test_check_unit(data_scat_jungfraujoch):
         data_scat_jungfraujoch.check_unit("sc550aer", unit="m-1")
 
 
-@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
 def test_check_convert_var_units(data_scat_jungfraujoch):
 
     out = data_scat_jungfraujoch.check_convert_var_units("sc550aer", "m-1", inplace=False)
@@ -246,10 +228,9 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
             data1 = out._data[idx, data_idx]
 
             ratio = np.divide(data1, data0)  # [~nans]
-
             ratio = ratio[~np.isnan(ratio)]
-
-            assert_allclose(actual=[ratio.mean(), ratio.std()], desired=[fac, 0], atol=1e-20)
+            assert ratio.mean() == pytest.approx(fac)
+            assert ratio.std() == pytest.approx(0)
 
 
 def test_from_single_station_data():
@@ -257,4 +238,4 @@ def test_from_single_station_data():
     d = ungriddeddata.UngriddedData.from_station_data(stat)
     data0 = stat.ec550aer
     data1 = d.all_datapoints_var("ec550aer")
-    assert_allclose(data0, data1, atol=1e-20)
+    assert data0 == pytest.approx(data1, abs=1e-20)

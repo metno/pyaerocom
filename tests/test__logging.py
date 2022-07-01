@@ -7,10 +7,10 @@ import pytest
 from pyaerocom._logging import LOGGING_CONFIG, change_verbosity
 
 
-def get_level_value(logger: logging.Logger) -> int:
+def get_level_value(logger: logging.Logger | None) -> int:
     """logging level of the first applicable StreamHandler"""
 
-    while logger:
+    while logger is not None:
         if not logger.hasHandlers():
             return logger.getEffectiveLevel()
         for handler in logger.handlers:
@@ -84,7 +84,7 @@ def test_change_verbosity(level: str | int, test_logger: logging.Logger):
     ],
 )
 @pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
-def test_change_verbosity(level: str | int, error: str, test_logger: logging.Logger):
+def test_change_verbosity_error(level: str | int, error: str, test_logger: logging.Logger):
     with pytest.raises(ValueError) as e:
         change_verbosity(level)
     assert str(e.value).startswith(error)

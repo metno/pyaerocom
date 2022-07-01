@@ -1,11 +1,8 @@
-import os
-
 import iris
 import numpy as np
 import pandas as pd
 import pytest
 from cf_units import Unit
-from numpy.testing import assert_allclose
 
 from pyaerocom import GriddedData, const, helpers
 from pyaerocom.colocateddata import ColocatedData
@@ -16,10 +13,11 @@ from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
 )
+from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io import ReadMscwCtm
-
-from ._conftest_helpers import create_fake_station_data
-from .conftest import TEST_RTOL, data_unavail, need_iris_32
+from tests.conftest import TEST_RTOL, need_iris_32
+from tests.fixtures.stations import create_fake_station_data
 
 
 def test__regrid_gridded(data_tm5):
@@ -120,9 +118,8 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
 
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 9483
-    means = [np.nanmean(df["data"]), np.nanmean(df["ref"])]
-    should_be = [0.31171085422102346, 0.07752743643132792]
-    assert_allclose(means, should_be, rtol=1e-5)
+    assert df["data"].mean() == pytest.approx(0.31171085422102346, rel=TEST_RTOL)
+    assert df["ref"].mean() == pytest.approx(0.07752743643132792, rel=TEST_RTOL)
 
 
 def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
@@ -133,20 +130,30 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     assert coldata.metadata["var_name"] == ["od550aer", "od550bc"]
 
 
-@data_unavail
 @pytest.mark.parametrize(
     "addargs,ts_type,shape,obsmean,modmean",
     [
         (
-            dict(filter_name="WORLD-noMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+            dict(
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
+                min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
+            ),
             "monthly",
             (2, 12, 8),
             0.315930,
             0.275671,
         ),
-        (dict(filter_name="WORLD-noMOUNTAINS"), "monthly", (2, 12, 8), 0.316924, 0.275671),
         (
-            dict(filter_name="WORLD-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+            dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS"),
+            "monthly",
+            (2, 12, 8),
+            0.316924,
+            0.275671,
+        ),
+        (
+            dict(
+                filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE
+            ),
             "monthly",
             (2, 12, 11),
             0.269707,
@@ -154,7 +161,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         ),
         (
             dict(
-                filter_name="WORLD-noMOUNTAINS",
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
                 use_climatology_ref=True,
                 min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
@@ -165,7 +172,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         ),
         pytest.param(
             dict(
-                filter_name="WORLD-noMOUNTAINS",
+                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
                 regrid_res_deg=30,
                 min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
@@ -177,7 +184,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
             marks=[need_iris_32],
         ),
         (
-            dict(filter_name="WORLD-noMOUNTAINS", ts_type="yearly"),
+            dict(filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS", ts_type="yearly"),
             "yearly",
             (2, 1, 8),
             0.417676,
@@ -195,12 +202,10 @@ def test_colocate_gridded_ungridded(
     assert coldata.ts_type == ts_type
     assert coldata.shape == shape
 
-    means = [np.nanmean(coldata.data.data[0]), np.nanmean(coldata.data.data[1])]
+    assert np.nanmean(coldata.data.data[0]) == pytest.approx(obsmean, rel=TEST_RTOL)
+    assert np.nanmean(coldata.data.data[1]) == pytest.approx(modmean, rel=TEST_RTOL)
 
-    assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
 
-
-@data_unavail
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     times = [1, 2]
     time_unit = Unit("days since 2010-1-1 0:0:0")
@@ -223,7 +228,6 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     assert coldata.shape == (2, 2, 2)
 
 
-@data_unavail
 def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data = data_tm5.copy()
     data.var_name = "Blaaa"
@@ -232,16 +236,15 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
     assert coldata.metadata["var_name"] == ["od550aer", "Blaaa"]
 
 
-@data_unavail
 def test_colocate_gridded_gridded_same(data_tm5):
     coldata = colocate_gridded_gridded(data_tm5, data_tm5)
 
     assert isinstance(coldata, ColocatedData)
     stats = coldata.calc_statistics()
     # check mean value
-    assert_allclose(stats["data_mean"], 0.09825691)
+    assert stats["data_mean"] == pytest.approx(0.09825691)
     # check that mean value is same as in input GriddedData object
-    assert_allclose(stats["data_mean"], data_tm5.mean(areaweighted=False))
+    assert stats["data_mean"] == pytest.approx(data_tm5.mean(areaweighted=False))
     assert stats["refdata_mean"] == stats["data_mean"]
     assert stats["nmb"] == 0
     assert stats["mnmb"] == 0
@@ -249,16 +252,14 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats["R_spearman"] == 1
 
 
-@data_unavail
+@pytest.mark.xfail(raises=UnresolvableTimeDefinitionError)
 def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
-    # tempfix
-    with pytest.raises(ValueError):
-        filepath = path_emep["monthly"]
-        r = ReadMscwCtm(data_dir=os.path.split(path_emep["monthly"])[0])
-        data_emep = r.read_var("concpm10", ts_type="monthly")
+    reader = ReadMscwCtm(data_dir=path_emep["data_dir"])
+    data_emep = reader.read_var("concpm10", ts_type="monthly")
 
-        # Change units and year to match TM5 data
-        data_emep.change_base_year(2010)
-        data_emep.units = "1"
-        col = colocate_gridded_gridded(data_emep, data_tm5)
-        assert isinstance(col, ColocatedData)
+    # Change units and year to match TM5 data
+    data_emep.change_base_year(2010)
+    data_emep.units = "1"
+
+    col = colocate_gridded_gridded(data_emep, data_tm5)
+    assert isinstance(col, ColocatedData)

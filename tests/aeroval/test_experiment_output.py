@@ -10,15 +10,14 @@ from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
-
-from ..conftest import geojson_unavail
-from .cfg_test_exp1 import CFG as cfgexp1
+from tests.conftest import geojson_unavail
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
 
 
 @pytest.fixture()
 def dummy_expout(tmp_path: Path) -> ExperimentOutput:
+    """ExperimentOutput instance"""
     setup = EvalSetup(proj_id="proj", exp_id="exp", json_basedir=str(tmp_path))
     return ExperimentOutput(setup)
 
@@ -248,8 +247,9 @@ def test_ExperimentOutput__get_cmap_info(dummy_expout: ExperimentOutput, var, va
 ### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
 
 
-def test_ExperimentOutput_delete_experiment_data_CFG1():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_ExperimentOutput_delete_experiment_data_CFG1(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.webdisp_opts.regions_how = "htap"
     cfg.webdisp_opts.add_model_maps = False
     cfg.statistics_opts.add_trends = False
@@ -263,8 +263,9 @@ def test_ExperimentOutput_delete_experiment_data_CFG1():
 
 
 @geojson_unavail
-def test_Experiment_Output_clean_json_files_CFG1():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_clean_json_files_CFG1(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     proc = ExperimentProcessor(cfg)
     proc.run()
     modified = proc.exp_output.clean_json_files()
@@ -272,8 +273,9 @@ def test_Experiment_Output_clean_json_files_CFG1():
 
 
 @geojson_unavail
-def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
     proc = ExperimentProcessor(cfg)
     proc.run()
@@ -283,8 +285,9 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
 
 
 @geojson_unavail
-def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.obs_cfg["obs1"] = cfg.obs_cfg["AERONET-Sun"]
     proc = ExperimentProcessor(cfg)
     proc.run()

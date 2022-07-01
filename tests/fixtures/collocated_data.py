@@ -1,185 +1,20 @@
-import os
-
 import numpy as np
 import pandas as pd
+import pytest
 import xarray as xr
 
-from pyaerocom import ColocatedData, Filter, StationData
+from pyaerocom import ColocatedData, Filter
+from pyaerocom.config import ALL_REGION_NAME
 
+from .data_access import TestData
 
-def _load_coldata_tm5_aeronet_from_scratch(file_path):
-    from xarray import open_dataarray
-
-    from pyaerocom import ColocatedData
-
-    arr = open_dataarray(file_path)
-    if "_min_num_obs" in arr.attrs:
-        info = {}
-        for val in arr.attrs["_min_num_obs"].split(";")[:-1]:
-            to, fr, num = val.split(",")
-            if not to in info:
-                info[to] = {}
-            if not fr in info[to]:
-                info[to][fr] = {}
-            info[to][fr] = int(num)
-        arr.attrs["min_num_obs"] = info
-    cd = ColocatedData()
-    cd.data = arr
-    return cd
-
-
-def create_fake_station_data(addvars, varinfo, varvals, start, stop, freq, meta):
-    if isinstance(addvars, str):
-        addvars = [addvars]
-    stat = StationData()
-    stat.update(**meta)
-    dtime = pd.date_range(start, stop, freq=freq).values
-    stat["dtime"] = dtime
-    for var in addvars:
-        if var in varinfo:
-            stat.var_info[var] = varinfo[var]
-        if isinstance(varvals, dict):
-            val = varvals[var]
-        else:
-            val = varvals
-        stat[var] = np.ones(len(dtime)) * val
-    return stat
-
-
-def create_fake_stationdata_list():
-    stats = [
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "ug m-3"}},
-            10,
-            "2010-01-01",
-            "2010-12-31",
-            "d",
-            {
-                "awesomeness": 10,
-                "data_revision": 20120101,
-                "ts_type": "daily",
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # overlaps with first one
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "ug m-3"}},
-            20,
-            "2010-06-01",
-            "2011-12-31",
-            "d",
-            {
-                "awesomeness": 12,
-                "data_revision": 20110101,
-                "ts_type": "daily",
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # monthly, but missing ts_type and wrong unit
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "mole mole-1"}},
-            20,
-            "2014-01-01",
-            "2015-12-31",
-            "3MS",
-            {
-                "awesomeness": 2,
-                "data_revision": 20140101,
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # invalid ts_type
-        create_fake_station_data(
-            "concpm10",
-            {"concpm10": {"units": "ug m-3"}},
-            20,
-            "1850",
-            "2020",
-            "1000d",
-            {
-                "awesomeness": 15,
-                "data_revision": 20130101,
-                "ts_type": "1000daily",
-                "latitude": 42.001,
-                "longitude": 20,
-                "altitude": 0.1,
-                "station_name": "FakeSite",
-            },
-        ),
-        # new variable and monthly
-        create_fake_station_data(
-            "od550aer",
-            {"od550aer": {"units": "1"}},
-            1,
-            "2005",
-            "2012",
-            "MS",
-            {
-                "awesomeness": 42,
-                "data_revision": 20200101,
-                "ts_type": "monthly",
-                "latitude": 22.001,
-                "longitude": 10,
-                "altitude": 99,
-                "station_name": "FakeSite",
-            },
-        ),
-        create_fake_station_data(
-            "od550aer",
-            {"od550aer": {"units": "1"}},
-            0.1,
-            "2008",
-            "2009",
-            "60d",
-            {
-                "awesomeness": 46,
-                "data_revision": 20200101,
-                "ts_type": "60daily",
-                "latitude": 22.001,
-                "longitude": 10,
-                "altitude": 100,
-                "station_name": "FakeSite2",
-            },
-        ),
-    ]
-
-    stat_werr = create_fake_station_data(
-        "od550aer",
-        {"od550aer": {"units": "1"}},
-        0.2,
-        "2010",
-        "2016",
-        "10d",
-        {
-            "awesomeness": 30,
-            "data_revision": 20200101,
-            "ts_type": "10daily",
-            "latitude": 22.001,
-            "longitude": 10,
-            "altitude": 100,
-            "station_name": "FakeSite2",
-        },
-    )
-    stat_werr.data_err["od550aer"] = np.ones(len(stat_werr.dtime)) * 9999
-    stats.append(stat_werr)
-    return stats
+CHECK_PATHS = f"coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
+EXAMPLE_FILE = TestData(CHECK_PATHS).path
 
 
 def _create_fake_coldata_3d():
     var = "concpm10"
-    filter_name = "WORLD-wMOUNTAINS"
+    filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
     regfilter = Filter(name=filter_name)
 
     dtime = pd.date_range("2000-01-01", "2019-12-31", freq="MS") + np.timedelta64(14, "D")
@@ -264,7 +99,7 @@ def _create_fake_coldata_3d():
 
 def _create_fake_trends_coldata_3d():
     var = "concpm10"
-    filter_name = "WORLD-wMOUNTAINS"
+    filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
     regfilter = Filter(name=filter_name)
 
     dtime = pd.date_range("2000-01-01", "2019-12-31", freq="MS") + np.timedelta64(14, "D")
@@ -334,7 +169,7 @@ def _create_fake_trends_coldata_3d():
 
 def _create_fake_coldata_3d_hourly():
     var = "vmro3"
-    filter_name = "WORLD-wMOUNTAINS"
+    filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
     regfilter = Filter(name=filter_name)
 
     dtime = pd.date_range("2018-01-10T00:00:00", "2018-01-17T23:59:00", freq="h")
@@ -437,95 +272,18 @@ def _create_fake_coldata_5d():
     return cd
 
 
-def _create_fake_MSCWCtm_data(numval=1, tst=None):
-    if tst is None:
-        tst = "monthly"
-    from pyaerocom import TsType
-
-    tbase = TsType(tst).cf_base_unit
-
-    _lats_fake = np.linspace(30, 82, 10)
-    _lons_fake = np.linspace(-25, 90, 15)
-    # _time_fake = pd.date_range('2019-01','2019-06', freq=pd_freq)
-    _time_fake = np.arange(10)
-    timeattrs = {"units": f"{tbase} since 2000-01-01", "calendar": "gregorian"}
-    sh = (len(_time_fake), len(_lats_fake), len(_lons_fake))
-    _data_fake = numval * np.ones(sh)
-
-    coords = {"time": ("time", _time_fake, timeattrs), "lat": _lats_fake, "lon": _lons_fake}
-
-    dims = ["time", "lat", "lon"]
-
-    arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
-
-    return arr
+COLDATA = dict(
+    tm5_aeronet=lambda: ColocatedData(str(EXAMPLE_FILE)),
+    fake_nodims=lambda: ColocatedData(np.ones((2, 1, 1))),
+    fake_3d=_create_fake_coldata_3d,
+    fake_4d=_create_fake_coldata_4d,
+    fake_5d=_create_fake_coldata_5d,
+    fake_3d_hr=_create_fake_coldata_3d_hourly,
+    fake_3d_trends=_create_fake_trends_coldata_3d,
+)
 
 
-import iris
-from cf_units import Unit
-
-
-def make_dummy_cube_3D_daily(
-    year=2010, daynum=365, lat_range=None, lon_range=None, value=1, dtype=float
-):
-    if lat_range is None:
-        lat_range = (-30, 30)
-    if lon_range is None:
-        lon_range = (-10, 10)
-    lat_res_deg = lon_res_deg = 5
-    times = np.arange(daynum)
-    startstr = f"days since {year}-01-01 00:00"
-    time_unit = Unit(startstr, calendar="gregorian")
-
-    lons = np.arange(lon_range[0] + lon_res_deg / 2, lon_range[1] + lon_res_deg / 2, lon_res_deg)
-    lats = np.arange(lat_range[0] + lat_res_deg / 2, lat_range[1] + lat_res_deg / 2, lat_res_deg)
-
-    latdim = iris.coords.DimCoord(
-        lats, var_name="lat", standard_name="latitude", circular=False, units=Unit("degrees")
-    )
-
-    londim = iris.coords.DimCoord(
-        lons, var_name="lon", standard_name="longitude", circular=False, units=Unit("degrees")
-    )
-
-    timedim = iris.coords.DimCoord(times, var_name="time", standard_name="time", units=time_unit)
-
-    latdim.guess_bounds()
-    londim.guess_bounds()
-    vals = np.ones((len(times), len(lats), len(lons))) * value
-    dummy = iris.cube.Cube(vals, units="1")
-
-    dummy.add_dim_coord(latdim, 1)
-    dummy.add_dim_coord(londim, 2)
-    dummy.add_dim_coord(timedim, 0)
-    dummy.var_name = "dummy_grid"
-
-    dummy.data = dummy.data.astype(dtype)
-    dummy.attributes["ts_type"] = "daily"
-    for coord in dummy.coords():
-        coord.points = coord.points.astype(dtype)
-    return dummy
-
-
-def make_griddeddata(var_name, units, ts_type, vert_code, name, **kwargs):
-    cube = make_dummy_cube_3D_daily(**kwargs)
-    cube.var_name = var_name
-    cube.units = units
-    from pyaerocom import GriddedData
-
-    data = GriddedData(cube)
-    data.metadata["data_id"] = name
-    data.metadata["vert_code"] = vert_code
-    if ts_type != "daily":
-        data = data.resample_time(ts_type)
-    return data
-
-
-def add_dummy_model_data(var_name, units, ts_type, vert_code, tmpdir, name=None, **kwargs):
-    if name is None:
-        name = "DUMMY-MODEL"
-    outdir = os.path.join(tmpdir, name, "renamed")
-    os.makedirs(outdir, exist_ok=True)
-    data = make_griddeddata(var_name, units, ts_type, vert_code, name=name, **kwargs)
-    data.to_netcdf(out_dir=outdir)
-    return outdir
+@pytest.fixture
+def coldata(coldataset: str) -> ColocatedData:
+    """dispatch ColocatedData depending on coldataset"""
+    return COLDATA[coldataset]()
