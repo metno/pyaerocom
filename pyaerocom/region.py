@@ -4,14 +4,14 @@ This module contains functionality related to regions in pyaerocom
 from typing import List, Optional
 
 import numpy as np
-from global_land_mask import globe
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.helpers_landsea_masks import load_region_mask_xr
+from pyaerocom.helpers_landsea_masks import load_region_mask_xr, get_mask_value
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
+from copy import deepcopy
 
 
 class Region(BrowseDict):
@@ -352,15 +352,20 @@ def get_regions_coord(lat, lon, regions=None):
     matches = []
     if regions is None:
         regions = get_all_default_regions()
-    if globe.is_ocean(lat, lon):
+    ocean_mask = load_region_mask_xr("OCN")
+    if get_mask_value(lat, lon, ocean_mask):
         matches.append("OCN")
+        return matches
     else:
-        for rname, reg in regions.items():
+        land_regions = deepcopy(regions)
+        land_regions.pop("OCN")
+        for rname in land_regions:
             if rname == ALL_REGION_NAME:  # always True
                 continue
-            if reg.contains_coordinate(lat, lon):
-                if reg != "OCN":
-                    matches.append(rname)
+            # if reg.contains_coordinate(lat, lon)
+            mask = load_region_mask_xr(rname)
+            if get_mask_value(lat, lon, mask):
+                matches.append(rname)
     if len(matches) == 0:
         matches.append(ALL_REGION_NAME)
     return matches
