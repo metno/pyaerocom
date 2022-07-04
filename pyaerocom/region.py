@@ -362,7 +362,6 @@ def get_regions_coord(lat, lon, regions=None):
         for rname in land_regions:
             if rname == ALL_REGION_NAME:  # always True
                 continue
-            # if reg.contains_coordinate(lat, lon)
             mask = load_region_mask_xr(rname)
             if get_mask_value(lat, lon, mask):
                 matches.append(rname)
