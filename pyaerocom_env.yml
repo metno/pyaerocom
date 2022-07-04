@@ -20,7 +20,6 @@ dependencies:
   - tqdm
   - openpyxl
   - typer >=0.4.0
-  - global-land-mask
 ## testing
   - pytest >=6.0
   - pytest-dependency
