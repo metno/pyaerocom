@@ -1,27 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 
 import pyaerocom as pya
+from tests.fixtures.data_access import TestData
+from tests.fixtures.tm5 import CHECK_PATHS
 
 plt.close("all")
 
-from pathlib import Path
 
-import pyaerocom.testdata_access as td
-from pyaerocom.conftest import CHECK_PATHS
+OUTBASE = TestData("coldata").path
+OUTBASE.mkdir(exist_ok=True)
 
-tda = td.TestDataAccess()
-
-TESTDATADIR = Path(tda.testdatadir)
-
-OUTBASE = TESTDATADIR.joinpath("coldata")
-
-if not OUTBASE.exists():
-    OUTBASE.mkdir()
-
-fpath = TESTDATADIR.joinpath(CHECK_PATHS["tm5aod"])
+fpath = TestData(CHECK_PATHS.tm5aod).path
 if not fpath.exists():
     raise Exception("Unexpected error, please debug")
 mod = pya.GriddedData(fpath)

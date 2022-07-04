@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Goal
+Minimal Aeronet subset for testing purposes
 """
 
 import os
@@ -12,11 +11,10 @@ from pathlib import Path
 import numpy as np
 
 import pyaerocom as pya
+from tests.fixtures.data_access import TestData
 
-OUTBASE = Path(pya.const._TESTDATADIR).joinpath("obsdata")
-
-if not OUTBASE.exists():
-    OUTBASE.mkdir()
+OUTBASE = TestData("obsdata").path
+OUTBASE.mkdir(exist_ok=True)
 
 MIN_NUM_VALID = 300
 
@@ -36,8 +34,9 @@ filters = [
 ]
 
 revision_files = {}
-if __name__ == "__main__":
 
+
+def main():
     loaded = {}
     for name, varlist in NETWORKS.items():
         reader = pya.io.ReadUngridded()
@@ -125,3 +124,7 @@ if __name__ == "__main__":
                 len(filelist), name, os.path.dirname(filelist[0])
             )
         )
+
+
+if __name__ == "__main__":
+    main()

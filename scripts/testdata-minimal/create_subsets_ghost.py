@@ -1,27 +1,22 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Create minimal testdataset for GHOST reader
-
-Created on Fri Feb 26 09:17:09 2021
-
-@author: jonasg
 """
-import os
+from pathlib import Path
 
 import matplotlib.pyplot as plt
-
-plt.close("all")
 import xarray as xr
 
 import pyaerocom as pya
+from tests.fixtures.data_access import TestData
 
-path_in = os.path.join(pya.const.OUTPUTDIR, "data/obsdata/GHOST/data")
+plt.close("all")
 
-path_out = os.path.join(pya.const.OUTPUTDIR, "testdata-minimal/obsdata/GHOST/data")
+path_in = Path(pya.const.OUTPUTDIR) / "data/obsdata/GHOST/data"
+path_out = TestData("obsdata/GHOST/data").path
 
-assert os.path.exists(path_in)
-assert os.path.exists(path_out)
+assert path_in.is_dir(), f"missing {path_in}"
+assert path_out.is_dir(), f"missing {path_out}"
 
 datasets = ["EEA_AQ_eReporting", "EBAS"]
 
@@ -32,36 +27,35 @@ datesfiles = ["201810", "201911", "201912"]
 
 filename = lambda var, date: f"{var}_{date}.nc"
 
-files_out = []
 for dsname in datasets:
     for freq in freqs:
-        indir = os.path.join(path_in, dsname, freq)
-        assert os.path.exists(indir)
-        outdir = os.path.join(path_out, dsname, freq)
-        os.makedirs(outdir, exist_ok=True)
-        assert os.path.exists(outdir)
+        indir = path_in / dsname / freq
+        assert indir.is_dir(), f"missing {indir}"
+
+        outdir = path_out / dsname / freq
+        outdir.mkdir(exist_ok=True)
         for var in varis:
             if var == "pm10":
                 dates = datesfiles
                 numst = 3
-
                 numts = None if freq == "daily" else 3
-
             else:
-                dates = [datesfiles[0]]
+                dates = datesfiles[0:1]
                 numst = 1
                 numts = 3
             for date in dates:
-                dir_in = os.path.join(indir, var)
-                dir_out = os.path.join(outdir, var)
-                os.makedirs(dir_out, exist_ok=True)
-                assert os.path.exists(dir_in)
+                dir_in = indir / var
+                assert dir_in.is_dir(), f"missing {dir_in}"
+
+                dir_out = outdir / var
+                dir_out.mkdir(exist_ok=True)
+
                 fname = filename(var, date)
-                file_in = os.path.join(dir_in, fname)
-                file_out = os.path.join(dir_out, fname)
+                file_in = dir_in / fname
+                file_out = dir_out / fname
                 print(file_in)
                 print(file_out)
-                assert os.path.exists(file_in)
+                assert file_in.exists, f"missing {file_in}"
 
                 ds = xr.open_dataset(file_in)
                 subset = ds.isel(station=slice(0, numst))

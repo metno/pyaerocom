@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""simple script to generate a small enough test data set for the EBAS obs network
+"""
+Simple script to generate a small enough test data set for the EBAS obs network
 Works only if the user has access to the standard EBAS data path at Met Norway
 """
 
@@ -12,40 +11,21 @@ from pathlib import Path
 import simplejson
 
 import pyaerocom as pya
+from tests.fixtures.data_access import TestData
 
-# import pyaerocom.access_testdata as td
-from pyaerocom.access_testdata import AccessTestData
+OUTBASE = TestData("testdata-minimal/obsdata/EBASMultiColumn").path
+SCRIPT_BASE_DIR = TestData("testdata-minimal/scripts").path
 
-# from getpass import getuser
-#
-# if getuser() == 'jonasg':
-#     ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
-#     assert os.path.exists(ebas_local)
-# else:
-#     ebas_local=None
-
-
-tda = AccessTestData()
-
-TESTDATADIR = tda.basedir
-
-OUTBASE = Path(TESTDATADIR).joinpath("testdata-minimal/obsdata/EBASMultiColumn")
-SCRIPT_BASE_DIR = Path(TESTDATADIR).joinpath("testdata-minimal/scripts")
-
-FILES_DEST = OUTBASE.joinpath("data")
+FILES_DEST = OUTBASE / "data"
 
 UPDATE = True
 UPDATE_EXISTING = False
 SEARCH_PROBLEM_FILES = False
 NAME = "EBASMC"
 
-# if ebas_local is not None:
-#     FILES_SRC = ebas_local
-# else:
 EBAS_BASE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/"
-assert os.path.exists(EBAS_BASE_DIR)
-
-JSON_FILE = SCRIPT_BASE_DIR.joinpath("ebas_files.json")
+assert Path(EBAS_BASE_DIR).is_dir(), f"missing {EBAS_BASE_DIR}"
+JSON_FILE = SCRIPT_BASE_DIR / "ebas_files.json"
 
 # ------------------------------------------------------------
 # add some files with known problems
