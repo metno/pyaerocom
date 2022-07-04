@@ -10,6 +10,7 @@ from typing import List, Optional
 
 import pandas as pd
 import typer
+from dateutil.relativedelta import relativedelta
 
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
@@ -126,6 +127,47 @@ def get_seasons_in_period(start_date: datetime, end_date: datetime) -> List[str]
     return periods
 
 
+def get_years_starting_in_november(start_date: datetime, end_date: datetime) -> List[str]:
+    periods = []
+
+    start_yr = start_date.year
+    end_yr = end_date.year
+
+    found_last_yr = False
+
+    prev_date = start_date
+    new_yr = datetime(start_yr, 11, 1, 00, 00, 00)
+
+    if new_yr > start_date:
+        periods.append(
+            f"{start_date.strftime('%Y%m%d')}-{(new_yr-timedelta(days=1)).strftime('%Y%m%d')}"
+        )
+        prev_date = new_yr
+        new_yr += relativedelta(years=1)
+    else:
+        if end_date < new_yr + relativedelta(years=1):
+            return []
+        periods.append(
+            f"{start_date.strftime('%Y%m%d')}-{(new_yr+relativedelta(years=1)-timedelta(days=1)).strftime('%Y%m%d')}"
+        )
+
+        prev_date = new_yr + relativedelta(years=1)
+        new_yr += relativedelta(years=2)
+
+    for i in range(end_yr - start_yr):
+        if new_yr < end_date:
+            periods.append(
+                f"{prev_date.strftime('%Y%m%d')}-{(new_yr-timedelta(days=1)).strftime('%Y%m%d')}"
+            )
+            prev_date = new_yr
+            new_yr += relativedelta(years=1)
+        else:
+            periods.append(f"{prev_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}")
+            break
+
+    return periods
+
+
 def make_period(
     start_date: datetime,
     end_date: datetime,
@@ -137,13 +179,15 @@ def make_period(
 
     season_periods = get_seasons_in_period(start_date, end_date)
 
+    nov_periods = get_years_starting_in_november(start_date, end_date)
+
     if start_dt == end_dt:
         return [f"{start_dt}"]
 
     periods = [f"{start_dt}-{end_dt}"]
 
     if periods != season_periods:
-        periods += season_periods
+        periods += nov_periods  # season_periods
 
     # if end_yr == start_yr:
     #     return periods
@@ -155,7 +199,6 @@ def make_period(
     #         periods.append(f"{y}0101-{y}1231")
 
     # periods.append(f"{end_yr}0101-{end_dt}")  # append last year portion
-
     return periods
 
 
