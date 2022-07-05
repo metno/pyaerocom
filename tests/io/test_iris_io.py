@@ -61,6 +61,30 @@ aod_cube_nounit = aod_cube.copy()
 aod_cube_nounit.units = ""
 
 
+@pytest.fixture(scope="session")
+def fake_file(tmp_path_factory) -> Path:
+    """empty/invalid NetCDF file"""
+    path: Path = tmp_path_factory.mktemp("test_iris_io") / "invalid.nc"
+    path.write_bytes(b"")
+    return path
+
+
+@pytest.fixture()
+def file_path(file: str, path_emep: dict[str, Path], fake_file: Path) -> Path:
+    """dispatch TM5/EMEP/Empty file path"""
+    files = dict(tm5=TM5_FILE, emep=path_emep["monthly"], empty=fake_file)
+    try:
+        return files[file.casefold()]
+    except KeyError:
+        raise ValueError(f"Unknown {file=}") from None
+
+
+@pytest.fixture()
+def file_paths(file_path: Path) -> list[Path]:
+    """dispatch TM5/EMEP/Empty file path"""
+    return [file_path]
+
+
 def test_check_time_coord():
     iris_io.check_time_coord(aod_cube, "monthly", 2010)
 
@@ -175,15 +199,6 @@ def test__cube_quality_check_error():
     assert str(e.value) == error
 
 
-@pytest.fixture()
-def file_path(file: str, path_emep: dict[str, Path]) -> Path:
-    files = dict(tm5=TM5_FILE, emep=path_emep["monthly"])
-    try:
-        return files[file.casefold()]
-    except KeyError:
-        raise ValueError(f"Unknown {file=}") from None
-
-
 @pytest.mark.parametrize(
     "file,var_name",
     [
@@ -194,23 +209,6 @@ def file_path(file: str, path_emep: dict[str, Path]) -> Path:
 def test_load_cube_custom(file_path: Path, var_name: str | None):
     cube = iris_io.load_cube_custom(file_path, var_name)
     assert isinstance(cube, Cube)
-
-
-@pytest.fixture()
-def fake_file(tmp_path: Path) -> Path:
-    path = tmp_path / "test_iris_io/invalid.nc"
-    path.parent.mkdir()
-    path.write_bytes(b"")
-    return path
-
-
-@pytest.fixture()
-def broken_file(file: str, fake_file: Path, path_emep: dict[str, Path]) -> Path:
-    files = dict(empty=fake_file, emep=path_emep["monthly"])
-    try:
-        return files[file.casefold()]
-    except KeyError:
-        raise ValueError(f"Unsupported {file=}") from None
 
 
 @pytest.mark.parametrize(
@@ -240,16 +238,11 @@ def broken_file(file: str, fake_file: Path, path_emep: dict[str, Path]) -> Path:
     ],
 )
 def test_load_cube_custom_error(
-    broken_file: Path, var_name: str | None, exception: Type[Exception], error: str
+    file_path: Path, var_name: str | None, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
-        iris_io.load_cube_custom(broken_file, var_name)
+        iris_io.load_cube_custom(file_path, var_name)
     assert str(e.value).startswith(error)
-
-
-@pytest.fixture()
-def file_paths(file_path: Path) -> list[Path]:
-    return [file_path]
 
 
 @pytest.mark.parametrize(
