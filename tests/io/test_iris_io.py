@@ -63,7 +63,7 @@ aod_cube_only_longname_dims.coord("time").long_name = "time"
 aod_cube_nounit = aod_cube.copy()
 aod_cube_nounit.units = ""
 
-FAKE_FILE = Path(tempfile.gettempdir()) / "test_iris_io/invalid.nc"
+FAKE_FILE = Path(tempfile.mkdtemp()) / "test_iris_io/invalid.nc"
 FAKE_FILE.parent.mkdir(exist_ok=True, parents=True)
 FAKE_FILE.write_text("")
 
