@@ -19,10 +19,15 @@ TMP_PATH = Path(tempfile.mkdtemp())
 CFG_FILE_WRONG = TMP_PATH / "paths.txt"
 CFG_FILE_WRONG.write_text("")
 
-LOCAL_DB_DIR = TMP_PATH / "data"
-LOCAL_DB_DIR.mkdir()
-(LOCAL_DB_DIR / "modeldata").mkdir()
-(LOCAL_DB_DIR / "obsdata").mkdir()
+
+@pytest.fixture()
+def local_db(tmp_path: Path) -> Path:
+    """temporary path to DB file structure"""
+    path = tmp_path / "data"
+    (path / "modeldata").mkdir(parents=True)
+    (path / "obsdata").mkdir()
+    assert path.is_dir()
+    return path
 
 
 with resources.path("pyaerocom.data", "paths.ini") as path:
@@ -35,10 +40,6 @@ def test_CFG_FILE_EXISTS():
 
 def test_CFG_FILE_WRONG_EXISTS():
     assert CFG_FILE_WRONG.exists()
-
-
-def test_LOCAL_DB_DIR_EXISTS():
-    assert LOCAL_DB_DIR.exists()
 
 
 @pytest.fixture(scope="module")
@@ -86,9 +87,9 @@ def test_Config___init___error(config_file: str, exception: Type[Exception], err
     assert str(e.value) == error
 
 
-def test_Config__infer_config_from_basedir():
+def test_Config__infer_config_from_basedir(local_db: Path):
     cfg = testmod.Config(try_infer_environment=False)
-    res = cfg._infer_config_from_basedir(LOCAL_DB_DIR)
+    res = cfg._infer_config_from_basedir(local_db)
     assert res[1] == "local-db"
 
 
