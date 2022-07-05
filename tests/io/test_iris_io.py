@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from typing import Type
 
@@ -61,10 +60,6 @@ aod_cube_only_longname_dims.coord("time").long_name = "time"
 
 aod_cube_nounit = aod_cube.copy()
 aod_cube_nounit.units = ""
-
-FAKE_FILE = Path(tempfile.mkdtemp()) / "test_iris_io/invalid.nc"
-FAKE_FILE.parent.mkdir(exist_ok=True, parents=True)
-FAKE_FILE.write_text("")
 
 
 def test_check_time_coord():
@@ -193,25 +188,41 @@ def test_load_cube_custom(file, var_name):
     assert isinstance(cube, Cube)
 
 
+@pytest.fixture()
+def fake_file(tmp_path: Path) -> Path:
+    path = tmp_path / "test_iris_io/invalid.nc"
+    path.parent.mkdir()
+    path.write_bytes(b"")
+    return path
+
+
+@pytest.fixture()
+def broken_file(file: str, fake_file: Path) -> Path:
+    files = dict(empty=fake_file, emep=EMEP_FILE)
+    if file.casefold() not in files:
+        raise ValueError(f"Unsupported {file=}")
+    return files[file.casefold()]
+
+
 @pytest.mark.parametrize(
     "file,var_name,exception,error",
     [
         pytest.param(
-            FAKE_FILE,
+            "empty",
             None,
             TranslationError,
             "The file appears empty or incomplete",
             id="enpty file",
         ),
         pytest.param(
-            EMEP_FILE,
+            "EMEP",
             None,
             NetcdfError,
             "Could not load single cube from",
             id="no cube",
         ),
         pytest.param(
-            EMEP_FILE,
+            "EMEP",
             "od550aer",
             NetcdfError,
             "Variable od550aer not available in file",
@@ -220,10 +231,10 @@ def test_load_cube_custom(file, var_name):
     ],
 )
 def test_load_cube_custom_error(
-    file: Path | str, var_name: str | None, exception: Type[Exception], error: str
+    broken_file: Path, var_name: str | None, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
-        iris_io.load_cube_custom(file, var_name)
+        iris_io.load_cube_custom(broken_file, var_name)
     assert str(e.value).startswith(error)
 
 
