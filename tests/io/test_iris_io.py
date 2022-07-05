@@ -18,13 +18,11 @@ from pyaerocom.exceptions import (
 from pyaerocom.io import FileConventionRead, iris_io
 from tests.fixtures.aeroval import make_dummy_cube_3D_daily
 from tests.fixtures.data_access import DataForTests
-from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
 from tests.fixtures.tm5 import CHECK_PATHS
 
-TM5_FILE1 = DataForTests(CHECK_PATHS.tm5aod).path
-EMEP_FILE = EMEP_DATA_PATH / "Base_month.nc"
+TM5_FILE = DataForTests(CHECK_PATHS.tm5aod).path
 
-aod_cube = load(str(TM5_FILE1))[0]
+aod_cube = load(str(TM5_FILE))[0]
 
 aod_cube_notime = aod_cube.copy()
 aod_cube_notime.remove_coord("time")
@@ -177,15 +175,24 @@ def test__cube_quality_check_error():
     assert str(e.value) == error
 
 
+@pytest.fixture()
+def file_path(file: str, path_emep: dict[str, Path]) -> Path:
+    files = dict(tm5=TM5_FILE, emep=path_emep["monthly"])
+    try:
+        return files[file.casefold()]
+    except KeyError:
+        raise ValueError(f"Unknown {file=}") from None
+
+
 @pytest.mark.parametrize(
     "file,var_name",
     [
-        (TM5_FILE1, None),
-        (EMEP_FILE, "SURF_ug_NO2"),
+        ("tm5", None),
+        ("emep", "SURF_ug_NO2"),
     ],
 )
-def test_load_cube_custom(file, var_name):
-    cube = iris_io.load_cube_custom(file, var_name)
+def test_load_cube_custom(file_path: Path, var_name: str | None):
+    cube = iris_io.load_cube_custom(file_path, var_name)
     assert isinstance(cube, Cube)
 
 
@@ -240,15 +247,20 @@ def test_load_cube_custom_error(
     assert str(e.value).startswith(error)
 
 
+@pytest.fixture()
+def file_paths(file_path: Path) -> list[Path]:
+    return [file_path]
+
+
 @pytest.mark.parametrize(
-    "files,num_loaded",
+    "file,num_loaded",
     [
-        ([TM5_FILE1], 1),
-        ([EMEP_FILE], 0),
+        ("tm5", 1),
+        ("emep", 0),
     ],
 )
-def test_load_cubes_custom(files: list[Path], num_loaded: int):
-    result = iris_io.load_cubes_custom(files)
+def test_load_cubes_custom(file_paths: list[Path], num_loaded: int):
+    result = iris_io.load_cubes_custom(file_paths)
     assert isinstance(result, tuple) and len(result) == 2
     assert all(isinstance(res, list) for res in result)
     assert all(len(res) == num_loaded for res in result)
