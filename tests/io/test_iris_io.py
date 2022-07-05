@@ -17,10 +17,11 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import FileConventionRead, iris_io
 from tests.fixtures.aeroval import make_dummy_cube_3D_daily
+from tests.fixtures.data_access import DataForTests
 from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
-from tests.fixtures.tm5 import TM5_DATA_PATH
+from tests.fixtures.tm5 import CHECK_PATHS
 
-TM5_FILE1 = TM5_DATA_PATH / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
+TM5_FILE1 = DataForTests(CHECK_PATHS.tm5aod).path
 EMEP_FILE = EMEP_DATA_PATH / "Base_month.nc"
 
 aod_cube = load(str(TM5_FILE1))[0]
@@ -197,11 +198,12 @@ def fake_file(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def broken_file(file: str, fake_file: Path) -> Path:
-    files = dict(empty=fake_file, emep=EMEP_FILE)
-    if file.casefold() not in files:
-        raise ValueError(f"Unsupported {file=}")
-    return files[file.casefold()]
+def broken_file(file: str, fake_file: Path, path_emep: dict[str, Path]) -> Path:
+    files = dict(empty=fake_file, emep=path_emep["monthly"])
+    try:
+        return files[file.casefold()]
+    except KeyError:
+        raise ValueError(f"Unsupported {file=}") from None
 
 
 @pytest.mark.parametrize(
@@ -245,7 +247,7 @@ def test_load_cube_custom_error(
         ([EMEP_FILE], 0),
     ],
 )
-def test_load_cubes_custom(files, num_loaded):
+def test_load_cubes_custom(files: list[Path], num_loaded: int):
     result = iris_io.load_cubes_custom(files)
     assert isinstance(result, tuple) and len(result) == 2
     assert all(isinstance(res, list) for res in result)
