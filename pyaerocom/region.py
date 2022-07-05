@@ -351,13 +351,14 @@ def get_regions_coord(lat, lon, regions=None):
     if regions is None:
         regions = get_all_default_regions()
     ocean_mask = load_region_mask_xr("OCN")
+    on_ocean = get_mask_value(lat, lon, ocean_mask)
     for rname, reg in regions.items():
         if rname == ALL_REGION_NAME:  # always True for ALL_REGION_NAME
             continue
         # OCN needs special handling determined by the rname, not hardcoded to return OCN b/c of HTAP issues
-        if reg.contains_coordinate(lat, lon) and not get_mask_value(lat, lon, ocean_mask):
+        if reg.contains_coordinate(lat, lon) and not on_ocean:
             matches.append(rname)
-        if rname == "OCN" and get_mask_value(lat, lon, ocean_mask):
+        if rname == "OCN" and on_ocean:
             matches.append(rname)
     if len(matches) == 0:
         matches.append(ALL_REGION_NAME)
