@@ -111,7 +111,7 @@ install_command =
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov}
+    pytest -ra -q -n4 {posargs:--cov}
 extras = 
     proj-legacy
     test
