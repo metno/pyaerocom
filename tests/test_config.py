@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import getpass
 import tempfile
 from importlib import resources
@@ -15,9 +17,24 @@ from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
 
-TMP_PATH = Path(tempfile.mkdtemp())
-CFG_FILE_WRONG = TMP_PATH / "paths.txt"
-CFG_FILE_WRONG.write_text("")
+
+@pytest.fixture()
+def config_file(file: str | None, tmp_path: Path) -> str | None:
+    if file is None:
+        return None
+
+    if file.casefold() == "default":
+        assert resources.is_resource("pyaerocom.data", "paths.ini")
+        with resources.path("pyaerocom.data", "paths.ini") as path:
+            return str(path)
+
+    if file.casefold() == "wrong_suffix":
+        path = tmp_path / "paths.txt"
+        path.write_text("")
+        assert path.exists()
+        return str(path)
+
+    return file
 
 
 @pytest.fixture()
@@ -28,18 +45,6 @@ def local_db(tmp_path: Path) -> Path:
     (path / "obsdata").mkdir()
     assert path.is_dir()
     return path
-
-
-with resources.path("pyaerocom.data", "paths.ini") as path:
-    CFG_FILE = str(path)
-
-
-def test_CFG_FILE_EXISTS():
-    assert resources.is_resource("pyaerocom.data", "paths.ini")
-
-
-def test_CFG_FILE_WRONG_EXISTS():
-    assert CFG_FILE_WRONG.exists()
 
 
 @pytest.fixture(scope="module")
@@ -53,22 +58,22 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 
 
 @pytest.mark.parametrize(
-    "config_file,try_infer_environment",
+    "file,try_infer_environment",
     [
         (None, False),
         (None, True),
-        (CFG_FILE, False),
+        ("default", False),
     ],
 )
-def test_Config___init__(config_file, try_infer_environment):
+def test_Config___init__(config_file: str, try_infer_environment: bool):
     testmod.Config(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
-    "config_file,exception,error",
+    "file,exception,error",
     [
         pytest.param(
-            str(CFG_FILE_WRONG),
+            "wrong_suffix",
             ValueError,
             "Need path to an ini file for input config_file",
             id="wrong file extension",
