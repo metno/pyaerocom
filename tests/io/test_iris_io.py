@@ -22,7 +22,6 @@ from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
 from tests.fixtures.tm5 import TM5_DATA_PATH
 
 TM5_FILE1 = TM5_DATA_PATH / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
-TM5_FILE2 = TM5_DATA_PATH / "aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_2010_daily.nc"
 EMEP_FILE = EMEP_DATA_PATH / "Base_month.nc"
 
 aod_cube = load(str(TM5_FILE1))[0]
