@@ -212,7 +212,7 @@ def test_check_unit(data_scat_jungfraujoch):
         data_scat_jungfraujoch.check_unit("sc550aer", unit="m-1")
 
 
-@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
 def test_check_convert_var_units(data_scat_jungfraujoch):
 
     out = data_scat_jungfraujoch.check_convert_var_units("sc550aer", "m-1", inplace=False)
