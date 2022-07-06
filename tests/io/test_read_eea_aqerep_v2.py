@@ -2,6 +2,7 @@ import pytest
 
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from tests.conftest import TEST_RTOL
 
 # Subset data id used for testing.
 DATA_ID = "EEA_AQeRep.v2.Subset"
@@ -30,8 +31,18 @@ def test_read(reader):
     var_name = "concpm10"
     # station #3 has in time unordered data
     # station #4 has just one time step
-    station_id[var_name] = ["AT10002", "AT52000", "AT90TAB", "AT4S418", ]
-    station_means[var_name] = [17.128, 15.1, 26.968, 77.098, ]
+    station_id[var_name] = [
+        "AT10002",
+        "AT52000",
+        "AT90TAB",
+        "AT4S418",
+    ]
+    station_means[var_name] = [
+        17.128,
+        15.1,
+        26.968,
+        77.098,
+    ]
 
     var_names_to_test = station_id.keys()
     for var_name in var_names_to_test:
@@ -43,14 +54,12 @@ def test_read(reader):
             print(statid)
             try:
                 stat_data = data[statid]
-                # It makes no
-                # sense to test this for every station
+                # It makes no sense to test this for every station
                 if stat_idx == 1:
                     assert isinstance(stat_data, StationData)
-                    breakpoint()
 
                 assert stat_data[var_name].mean() == pytest.approx(
-                    station_means[var_name][stat_idx], 0.01
+                    station_means[var_name][stat_idx], TEST_RTOL
                 )
             except:
                 print(f"failed test var {var_name}")
