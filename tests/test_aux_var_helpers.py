@@ -167,5 +167,8 @@ def test_vmrx_to_concx(
 )
 def test_calc_abs550aer(data, expected_result):
     result = calc_abs550aer(data=data)
-    breakpoint()
     assert result == pytest.approx(expected_result, rel=1e-4)
+
+
+def test_calc_od550lt1ang():
+    data = dict(od500aer=0.1, ang4487aer=1, abs440aer=1, angabs4487aer=1)
