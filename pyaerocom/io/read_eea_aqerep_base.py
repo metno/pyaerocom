@@ -527,7 +527,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             #                                                   self.data_id,
             #                                                   self.data_dir,
             #                                                   all_str))
-        #self.files = files
+        # self.files = files
         return files
 
     def get_station_coords(self, meta_key):
