@@ -1,7 +1,6 @@
 import pytest
 
 from pyaerocom.io import ReadEEAAQEREP_V2
-# from pyaerocom.ungriddeddata import UngriddedData
 
 
 @pytest.fixture(scope="session")
