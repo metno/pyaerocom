@@ -369,10 +369,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         # Sometimes the times in the data files are not ordered in time which causes problems when doing
         # time interpolations later on. Make sure that the data is ordered in time
-        diff_unsorted = (
-            data_dict[self.START_TIME_NAME][1:lineidx]
-            - data_dict[self.START_TIME_NAME][: lineidx - 1]
-        )
+        diff_unsorted = np.diff(data_dict[self.START_TIME_NAME])
         sort_flag = False
         # just assume hourly data for now
         time_diff = np.timedelta64(30, "m")
