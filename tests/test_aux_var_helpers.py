@@ -9,6 +9,7 @@ from pyaerocom.aux_var_helpers import (
     calc_od550aer,
     calc_od550gt1aer,
     calc_od550lt1aer,
+    calc_abs550aer,
     compute_angstrom_coeff,
     compute_od_from_angstromexp,
     vmrx_to_concx,
@@ -148,3 +149,23 @@ def test_vmrx_to_concx(
 ):
     val = vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit)
     assert val == pytest.approx(desired, rel=1e-4)
+
+@pytest.mark.parametrize(
+    "data,expected_result",
+    [
+        pytest.param(
+            dict(od500aer=0.1, ang4487aer=1, abs440aer=1, angabs4487aer=1),
+            0.7999999999999999,
+        ),
+
+        pytest.param(
+            dict(od500aer=0.1, ang4487aer=1, abs440aer=1, angabs4487aer=0),
+            1,
+        ),
+
+    ],
+)
+def test_calc_abs550aer(data, expected_result):
+    result = calc_abs550aer(data=data)
+    breakpoint()
+    assert result == pytest.approx(expected_result, rel=1e-4)
