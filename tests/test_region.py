@@ -57,9 +57,7 @@ def test_get_regions_coord(region_name, lat, lon):
     ],
 )
 def test_get_regions_coord_with_supplied_regions_dict(region_name, lat, lon):
-    oceans = Region("OCN")
-    sam = Region("SAM")
-    asia = Region("ASIA")
-    regions = {"OCN": oceans, "SAM": sam, "ASIA": asia}
+    oceans, sam, asia = Region("OCN"), Region("SAM"), Region("ASIA")
+    candidate_regions = {"OCN": oceans, "SAM": sam, "ASIA": asia}
     reg = Region(region_name)
-    assert reg.region_id in get_regions_coord(lat, lon, regions)
+    assert reg.region_id in get_regions_coord(lat, lon, candidate_regions)
