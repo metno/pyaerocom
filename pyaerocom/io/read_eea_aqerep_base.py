@@ -524,7 +524,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             #                                                   self.data_id,
             #                                                   self.data_dir,
             #                                                   all_str))
-        # self.files = files
         return files
 
     def get_station_coords(self, meta_key):
@@ -584,7 +583,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             if len(self.files) == 0:
                 logger.info("Retrieving file list")
                 files = self.get_file_list(self.FILE_MASKS[var_name])
-            # files = self.files
 
         if first_file is None:
             first_file = 0
