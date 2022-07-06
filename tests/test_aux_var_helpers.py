@@ -150,6 +150,7 @@ def test_vmrx_to_concx(
     val = vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit)
     assert val == pytest.approx(desired, rel=1e-4)
 
+
 @pytest.mark.parametrize(
     "data,expected_result",
     [
@@ -157,12 +158,10 @@ def test_vmrx_to_concx(
             dict(od500aer=0.1, ang4487aer=1, abs440aer=1, angabs4487aer=1),
             0.7999999999999999,
         ),
-
         pytest.param(
             dict(od500aer=0.1, ang4487aer=1, abs440aer=1, angabs4487aer=0),
             1,
         ),
-
     ],
 )
 def test_calc_abs550aer(data, expected_result):
@@ -170,5 +169,17 @@ def test_calc_abs550aer(data, expected_result):
     assert result == pytest.approx(expected_result, rel=1e-4)
 
 
-def test_calc_od550lt1ang():
-    data = dict(od500aer=0.1, ang4487aer=1, abs440aer=1, angabs4487aer=1)
+def test__calc_od_helper_no_od_refs():
+    data = dict(od500aer=0.1, ang4487aer=1)
+    with pytest.raises(AttributeError) as attempt:
+        _calc_od_helper(
+            data=data,
+            var_name="od550lt1ang",
+            to_lambda=0.55,
+            od_ref=None,  # "od500aer",
+            lambda_ref=0.50,
+            lambda_ref_alt=0.44,
+            use_angstrom_coeff="ang4487aer",
+            treshold_angstrom=1.0,
+        )
+    assert attempt.type is AttributeError
