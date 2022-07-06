@@ -85,11 +85,19 @@ def prep_files(options):
 
     for _file in options["files"]:
         # read aeroval config file
-        foo = SourceFileLoader("bla", _file).load_module()
-        # the following line does unfortunately not work since a module is not subscriptable
-        # CFG = foo[options["cfgvar"]]
-        # use getattr instead
-        cfg = deepcopy(getattr(foo, options["cfgvar"]))
+        if fnmatch(_file, '*.py'):
+            foo = SourceFileLoader("bla", _file).load_module()
+            # the following line does unfortunately not work since a module is not subscriptable
+            # CFG = foo[options["cfgvar"]]
+            # use getattr instead
+            cfg = deepcopy(getattr(foo, options["cfgvar"]))
+
+        elif fnmatch(_file, '*.json'):
+            cfg = json.load(_file)
+        else:
+            print(f"skipping file {_file} due to wrong file extension")
+            continue
+
         # create tmp dir
         tempdir = mkdtemp(dir=options["tempdir"])
         # index for temporary data directories
