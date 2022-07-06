@@ -185,15 +185,15 @@ def test_calc_abs550aer(data, expected_result):
 )
 def test__calc_od_helper_raise_error(od_ref, use_angstrom_coeff):
     data = dict(od500aer=0.1, ang4487aer=1)
-    with pytest.raises(AttributeError) as attempt:
+    with pytest.raises(AttributeError) as e:
         _calc_od_helper(
             data=data,
             var_name="od550lt1ang",
             to_lambda=0.55,
-            od_ref=od_ref,  # "od500aer",
+            od_ref=od_ref,
             lambda_ref=0.50,
             lambda_ref_alt=0.44,
-            use_angstrom_coeff=use_angstrom_coeff, #"ang4487aer",
+            use_angstrom_coeff=use_angstrom_coeff,
             treshold_angstrom=1.0,
         )
-    assert attempt.type is AttributeError
+    assert e.type is AttributeError
