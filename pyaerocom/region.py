@@ -7,7 +7,7 @@ import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.helpers_landsea_masks import load_region_mask_xr
+from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
@@ -142,8 +142,23 @@ class Region(BrowseDict):
         bool
             True if coordinate is contained in this region, False if not
         """
-        lat_ok = self.lat_range[0] <= lat <= self.lat_range[1]
-        lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
+
+        lat_lb = self.lat_range[0]
+        lat_ub = self.lat_range[1]
+        lon_lb = self.lon_range[0]
+        lon_ub = self.lon_range[1]
+        # latitude bounding boxes should always be defined with the southern most boundary less than the northernmost
+        lat_ok = lat_lb <= lat <= lat_ub
+        # if the longitude bounding box has a lowerbound less than the upperbound
+        if lon_lb < lon_ub:
+            # it suffices to check that lon is between these values
+            lon_ok = lon_lb <= lon <= lon_ub
+        # if the longitude lowerbound has a value lessthan the upperbound
+        elif lon_ub < lon_lb:
+            # lon is contained in the bounding box in two cases
+            lon_ok = lon < lon_ub or lon > lon_lb
+        else:
+            lon_ok = False  # safeguard
         return lat_ok * lon_ok
 
     def mask_available(self):
@@ -310,7 +325,7 @@ def get_all_default_regions():
 
 #: ToDO: check how to handle methods properly with HTAP regions...
 def get_regions_coord(lat, lon, regions=None):
-    """Get all regions that contain input coordinate
+    """Get the region that contains an input coordinate
 
     Note
     ----
@@ -332,14 +347,18 @@ def get_regions_coord(lat, lon, regions=None):
     list
         list of regions that contain this coordinate
     """
-
     matches = []
     if regions is None:
         regions = get_all_default_regions()
+    ocean_mask = load_region_mask_xr("OCN")
+    on_ocean = get_mask_value(lat, lon, ocean_mask)
     for rname, reg in regions.items():
-        if rname == ALL_REGION_NAME:  # always True
+        if rname == ALL_REGION_NAME:  # always True for ALL_REGION_NAME
             continue
-        if reg.contains_coordinate(lat, lon):
+        # OCN needs special handling determined by the rname, not hardcoded to return OCN b/c of HTAP issues
+        if reg.contains_coordinate(lat, lon) and not on_ocean:
+            matches.append(rname)
+        if rname == "OCN" and on_ocean:
             matches.append(rname)
     if len(matches) == 0:
         matches.append(ALL_REGION_NAME)
