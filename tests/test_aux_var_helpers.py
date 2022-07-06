@@ -169,17 +169,31 @@ def test_calc_abs550aer(data, expected_result):
     assert result == pytest.approx(expected_result, rel=1e-4)
 
 
-def test__calc_od_helper_no_od_refs():
+
+@pytest.mark.parametrize(
+    "od_ref, use_angstrom_coeff",
+    [
+        pytest.param(
+            None,
+            "ang4487aer"
+        ),
+        pytest.param(
+            "od500aer",
+            None
+        ),
+    ],
+)
+def test__calc_od_helper_raise_error(od_ref, use_angstrom_coeff):
     data = dict(od500aer=0.1, ang4487aer=1)
     with pytest.raises(AttributeError) as attempt:
         _calc_od_helper(
             data=data,
             var_name="od550lt1ang",
             to_lambda=0.55,
-            od_ref=None,  # "od500aer",
+            od_ref=od_ref,  # "od500aer",
             lambda_ref=0.50,
             lambda_ref_alt=0.44,
-            use_angstrom_coeff="ang4487aer",
+            use_angstrom_coeff=use_angstrom_coeff, #"ang4487aer",
             treshold_angstrom=1.0,
         )
     assert attempt.type is AttributeError
