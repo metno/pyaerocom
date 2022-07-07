@@ -1,5 +1,6 @@
 import pytest
 
+from pyaerocom.io import ReadEEAAQEREP_V2
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from tests.conftest import TEST_RTOL
@@ -9,8 +10,8 @@ DATA_ID = "EEA_AQeRep.v2.Subset"
 
 
 @pytest.fixture(scope="module")
-def reader(eea_v2_subset_reader):
-    return eea_v2_subset_reader
+def reader():
+    return ReadEEAAQEREP_V2(DATA_ID)
 
 
 def test_get_file_list(reader):
@@ -51,16 +52,11 @@ def test_read(reader):
         assert isinstance(data, UngriddedData)
 
         for stat_idx, statid in enumerate(station_id[var_name]):
-            print(statid)
-            try:
-                stat_data = data[statid]
-                # It makes no sense to test this for every station
-                if stat_idx == 1:
-                    assert isinstance(stat_data, StationData)
+            stat_data = data[statid]
+            # It makes no sense to test this for every station
+            if stat_idx == 1:
+                assert isinstance(stat_data, StationData)
 
-                assert stat_data[var_name].mean() == pytest.approx(
-                    station_means[var_name][stat_idx], TEST_RTOL
-                )
-            except:
-                print(f"failed test var {var_name}")
-                pass
+            assert stat_data[var_name].mean() == pytest.approx(
+                station_means[var_name][stat_idx], TEST_RTOL
+            )
