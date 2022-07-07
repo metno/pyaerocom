@@ -23,7 +23,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     init_regions_web,
     write_json,
 )
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             )
                             for col in coldata
                         ]
-                    except DataCoverageError as e:
+                    except (DataCoverageError, UnknownRegion) as e:
                         logger.info(f"Skipping forecast plot due to error {str(e)}")
                         continue
 
