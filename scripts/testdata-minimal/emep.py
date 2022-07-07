@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 from pathlib import Path
 
+import typer
 import xarray as xr
 
 from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
@@ -36,11 +36,8 @@ def atomic_write(ds: xr.Dataset, path: Path, **kwargs) -> None:
         tmp.unlink(missing_ok=True)
 
 
-def main():
+def main(emep_path: Path = typer.Argument(SRC_DATA_PATH, exists=True, dir_okay=True)):
+    """minimal EMEP dataset"""
     for path in PATHS:
-        ds = xr.open_dataset(SRC_DATA_PATH / path.name)[VARIABLES].pipe(reduce_dims)
+        ds = xr.open_dataset(emep_path / path.name)[VARIABLES].pipe(reduce_dims)
         atomic_write(ds, path)
-
-
-if __name__ == "__main__":
-    main()

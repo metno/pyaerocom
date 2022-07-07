@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Simple script to generate a small enough test data set for the EBAS obs network
 Works only if the user has access to the standard EBAS data path at Met Norway
@@ -6,15 +5,17 @@ Works only if the user has access to the standard EBAS data path at Met Norway
 
 import os
 import shutil
+from importlib import resources
 from pathlib import Path
 
 import simplejson
+import typer
 
 import pyaerocom as pya
-from tests.fixtures.data_access import TestData
+from tests.fixtures.data_access import DataForTests
 
-OUTBASE = TestData("testdata-minimal/obsdata/EBASMultiColumn").path
-SCRIPT_BASE_DIR = TestData("testdata-minimal/scripts").path
+OUTBASE = DataForTests("obsdata/EBASMultiColumn").path
+SCRIPT_BASE_DIR = DataForTests("scripts").path
 
 FILES_DEST = OUTBASE / "data"
 
@@ -24,7 +25,6 @@ SEARCH_PROBLEM_FILES = False
 NAME = "EBASMC"
 
 EBAS_BASE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/"
-assert Path(EBAS_BASE_DIR).is_dir(), f"missing {EBAS_BASE_DIR}"
 JSON_FILE = SCRIPT_BASE_DIR / "ebas_files.json"
 
 # ------------------------------------------------------------
@@ -53,9 +53,10 @@ def check_outdated(filedir):
     files_invalid = []
     files_valid = []
 
-    with open(JSON_FILE, "r") as f:
+    with resources.path(__package__, JSON_FILE.name) as path:
+        shutil.copy(path, JSON_FILE)
 
-        data = simplejson.load(f)
+    data = simplejson.loads(JSON_FILE.read_text())
 
     for var, stats in data.items():
         for stat, files in stats.items():
@@ -135,12 +136,11 @@ def get_files_var_statnum(data, var, statnum):
     return files
 
 
-def main():
+def main(ebas_path: Path = typer.Argument(EBAS_BASE_DIR, exists=True, dir_okay=True)):
+    """minimal EBAS dataset"""
 
-    # reader = pya.io.ReadUngridded(NAME, data_dir=EBAS_BASE_DIR)
-    reader = pya.io.ReadUngridded(
-        NAME,
-    )
+    # reader = pya.io.ReadUngridded(NAME, data_dir=ebas_path)
+    reader = pya.io.ReadUngridded(NAME)
     r_lowlev = reader.get_lowlevel_reader(NAME)
 
     # r_lowlev._dataset_path = ebas_local
@@ -226,7 +226,7 @@ def main():
             print("NOTHING WILL BE COPIED TO TEST DATA")
         else:
 
-            src = Path(EBAS_BASE_DIR).joinpath("data")
+            src = ebas_path / "data"
             print(f"updating test data @ {r_lowlev.DATASET_PATH}")
 
             # copy revision file

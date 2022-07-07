@@ -9,7 +9,26 @@ they are included in the main pyaerocom gihub repository anyway.
 The minimal test data created from these scripts will usually go to the subdirectory `~/MyPyaerocom/testdata-minimal`
 Example model and observation data can be found in sub-directories `modeldata` and `obsdata`, respectively.
 
-At this time only `create_subset_ebas.py` is running with the latest version of pyaerocom.
+``` bash
+python -m scripts.testdata-minimal --help
+```
+
+``` man
+Usage: python -m scripts.testdata-minimal [OPTIONS] COMMAND [ARGS]...
+
+  Crete minimal test datasets for pyaerocom
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  Aeronet    minimal Aeronet dataset
+  Colocated  collocated data example
+  EBAS       minimal EBAS dataset
+  EMEP       minimal EMEP dataset
+  GHOST      minimal GHOST dataset
+  TM5        minimal TM5 dataset
+```
 
 ## Data usage guidelines
 

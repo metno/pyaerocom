@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Minimal Aeronet subset for testing purposes
 """
@@ -9,12 +8,10 @@ from functools import reduce
 from pathlib import Path
 
 import numpy as np
+import typer
 
 import pyaerocom as pya
-from tests.fixtures.data_access import TestData
-
-OUTBASE = TestData("obsdata").path
-OUTBASE.mkdir(exist_ok=True)
+from tests.fixtures.data_access import DataForTests
 
 MIN_NUM_VALID = 300
 
@@ -36,7 +33,11 @@ filters = [
 revision_files = {}
 
 
-def main():
+def main(
+    out_path: Path = typer.Argument(DataForTests("obsdata").path, exists=True, dir_okay=True)
+):
+    """minimal Aeronet dataset"""
+
     loaded = {}
     for name, varlist in NETWORKS.items():
         reader = pya.io.ReadUngridded()
@@ -94,7 +95,7 @@ def main():
 
     for name, data in loaded.items():
         data_id = IDS[name]
-        outdir = OUTBASE.joinpath(data_id)
+        outdir = out_path / data_id
         # make sure to remove old data
         if outdir.exists():
             print("REMOVING EXISTING DATA FOR {}".format(data_id))
@@ -124,7 +125,3 @@ def main():
                 len(filelist), name, os.path.dirname(filelist[0])
             )
         )
-
-
-if __name__ == "__main__":
-    main()

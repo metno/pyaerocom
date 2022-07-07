@@ -1,11 +1,13 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 from pathlib import Path
 
+import typer
 import xarray as xr
 
 from tests.fixtures.tm5 import TM5_DATA_PATH
+
+from .emep import atomic_write
 
 SRC_DATA_PATH = Path("/lustre/storeA/project/aerocom/aerocom-users-database")
 SRC_DATA_PATH /= "AEROCOM-PHASE-III-2019/TM5-met2010_AP3-CTRL2019/renamed"
@@ -23,21 +25,8 @@ def reduce_dims(ds: xr.Dataset) -> xr.Dataset:
     return ds.isel(lon=LON, lat=LAT)
 
 
-def atomic_write(ds: xr.Dataset, path: Path, **kwargs) -> None:
-    """write dataset to a netcdf file atomically"""
-    tmp = path.with_suffix(".tmp")
-    try:
-        ds.to_netcdf(tmp, **kwargs)
-        tmp.rename(path)
-    finally:
-        tmp.unlink(missing_ok=True)
-
-
-def main():
+def main(tm5_path: Path = typer.Argument(SRC_DATA_PATH, exists=True, dir_okay=True)):
+    """minimal TM5 dataset"""
     for path in PATHS:
-        ds = xr.open_dataset(SRC_DATA_PATH / path.name).pipe(reduce_dims)
+        ds = xr.open_dataset(tm5_path / path.name).pipe(reduce_dims)
         atomic_write(ds, path)
-
-
-if __name__ == "__main__":
-    main()
