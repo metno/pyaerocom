@@ -16,7 +16,7 @@ path_out = TestData("obsdata/GHOST/data").path
 assert path_in.is_dir(), f"missing {path_in}"
 assert path_out.is_dir(), f"missing {path_out}"
 
-datasets = ["EEA_AQ_eReporting", "EBAS"]
+datasets = ["EBAS"]
 
 freqs = ["hourly", "daily"]
 
