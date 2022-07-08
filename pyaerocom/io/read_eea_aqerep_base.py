@@ -583,6 +583,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             logger.info("Retrieving file list")
             files = self.get_file_list(self.FILE_MASKS[var_name])
 
+
         if first_file is None:
             first_file = 0
         if last_file is None:
@@ -696,5 +697,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         self._metadata = None
+        self.files = files
 
         return data_obj
