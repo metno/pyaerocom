@@ -10,10 +10,10 @@ from pyaerocom.io.ebas_file_index import EbasFileIndex
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.read_ebas import ReadEbas
 
-from .data_access import TestData
+from .data_access import DataForTests
 
-EBAS_FILEDIR = TestData("obsdata/EBASMultiColumn/data").path
-ebas_info_file = TestData("scripts/ebas_files.json").path
+EBAS_FILEDIR = DataForTests("obsdata/EBASMultiColumn/data").path
+ebas_info_file = DataForTests("scripts/ebas_files.json").path
 assert ebas_info_file.exists()
 EBAS_FILES = simplejson.loads(ebas_info_file.read_text())
 for sites in EBAS_FILES.values():
