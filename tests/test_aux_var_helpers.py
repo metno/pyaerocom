@@ -169,18 +169,11 @@ def test_calc_abs550aer(data, expected_result):
     assert result == pytest.approx(expected_result, rel=1e-4)
 
 
-
 @pytest.mark.parametrize(
     "od_ref, use_angstrom_coeff",
     [
-        pytest.param(
-            None,
-            "ang4487aer"
-        ),
-        pytest.param(
-            "od500aer",
-            None
-        ),
+        pytest.param(None, "ang4487aer"),
+        pytest.param("od500aer", None),
     ],
 )
 def test__calc_od_helper_raise_error(od_ref, use_angstrom_coeff):
