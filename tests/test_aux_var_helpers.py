@@ -5,11 +5,11 @@ import pytest
 
 from pyaerocom.aux_var_helpers import (
     _calc_od_helper,
+    calc_abs550aer,
     calc_ang4487aer,
     calc_od550aer,
     calc_od550gt1aer,
     calc_od550lt1aer,
-    calc_abs550aer,
     compute_angstrom_coeff,
     compute_od_from_angstromexp,
     vmrx_to_concx,
