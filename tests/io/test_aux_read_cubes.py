@@ -13,6 +13,9 @@ from pyaerocom.io.aux_read_cubes import (
     multiply_cubes,
     rho_from_ts_ps,
     subtract_cubes,
+    conc_from_vmr,
+    conc_from_vmr_STP,
+    mmr_to_vmr_cube,
 )
 
 
@@ -22,7 +25,6 @@ def simple_cube():
     longitude = DimCoord(np.linspace(45, 360, 8), standard_name="longitude", units="degrees")
     cube = Cube(np.ones((4, 8), np.float32), dim_coords_and_dims=[(latitude, 0), (longitude, 1)])
     return cube
-
 
 def test_add_cubes(simple_cube):
     cube1, cube2 = simple_cube, simple_cube
@@ -69,3 +71,46 @@ def test_mmr_from_vmr(simple_cube, var_name, expected_result):
     cube.var_name = var_name
     mmr_cube = mmr_from_vmr(cube)
     assert np.all(mmr_cube.data == pytest.approx(expected_result, rel=1e-4))
+
+@pytest.mark.parametrize(
+    "var_name, expected_result",
+    [
+        ("air_dry", 287.058), 
+        ("o3", 475.70956), 
+        ("glyox", 575.1725)
+    ],
+)
+def test_conc_from_vmr(simple_cube, var_name, expected_result):
+    cube, ts, ps = simple_cube, simple_cube, simple_cube
+    cube.var_name = var_name
+    conc_cube = conc_from_vmr(cube, ts, ps)
+    assert np.all(conc_cube.data == pytest.approx(expected_result, rel=1e-4))
+
+@pytest.mark.parametrize(
+    "var_name, expected_result",
+    [
+        ("air_dry", 0.8302862), 
+        ("o3", 1.3759416), 
+        ("glyox", 1.6636281)
+    ],
+)
+def test_conc_from_vmr_STP(simple_cube, var_name, expected_result):
+    cube = simple_cube
+    cube.var_name = var_name
+    conc_cube = conc_from_vmr_STP(cube)
+    assert np.all(conc_cube.data == pytest.approx(expected_result, rel=1e-4))
+
+@pytest.mark.parametrize(
+    "var_name, units, expected_result",
+    [
+        ("mmro3", "kg kg-1", 6.0343123e+08), 
+        ("mmrso4", "kg kg-1",3.0152717e+08), 
+        # ("glyox", , 1.6636281)
+    ],
+)
+def test_mmr_to_vmr_cube(simple_cube, var_name, units, expected_result):
+    cube = simple_cube
+    cube.var_name = var_name
+    cube.units = units
+    vmr_cube = mmr_to_vmr_cube(cube)
+    assert np.all(vmr_cube.data == pytest.approx(expected_result, rel=1e-4))
