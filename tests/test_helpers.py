@@ -209,7 +209,8 @@ def test_extract_latlon_dataarray():
     lon = [1, 15, 18]
     subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert isinstance(subset, xr.DataArray)
-    assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) - 1
+    assert len(subset.lat) == len(lat) - 1
+    assert len(subset.lon) == len(lon) - 1
 
 
 def test_extract_latlon_dataarray_no_matches():
@@ -250,3 +251,16 @@ def test_extract_latlon_dataarray_no_matches_error(lat, lon):
 def test_seconds_in_periods(date, ts_type, days):
     seconds = timedelta(days=days) / timedelta(seconds=1)
     assert helpers.seconds_in_periods(np.datetime64(date), ts_type) == seconds
+
+
+def test_make_dummy_cube():
+    # make a dummy cube of an arbitrary variable name over one year
+    cube = helpers.make_dummy_cube("concpm10", start_yr=2020, stop_yr=2021)
+    data = xr.DataArray.from_iris(cube)
+    # First coordinate does not exist in the dataarray.
+    lat = [90, -67.5, 22.2]
+    lon = [180, -135.0, 45.0]
+    subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
+    assert isinstance(subset, xr.DataArray)
+    assert len(subset.lat) == len(lat) - 1
+    assert len(subset.lon) == len(lon) - 1
