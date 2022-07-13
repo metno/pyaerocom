@@ -25,7 +25,8 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     update_EC_units,
 )
 from pyaerocom.units_helpers import UALIASES
-from pyaerocom.variable_helpers import get_emep_variables
+
+from .variables import emep_variables
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +131,7 @@ class ReadMscwCtm:
         self._file_mask = self.FILE_MASKS[0]
         self._files = None
 
-        self.var_map = get_emep_variables()
+        self.var_map = emep_variables()
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
