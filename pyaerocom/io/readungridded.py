@@ -1,7 +1,13 @@
 import logging
 import os
+import sys
 import warnings
 from pathlib import Path
+
+if sys.version_info >= (3, 10):  # pragma: no cover
+    from importlib import metadata
+else:  # pragma: no cover
+    import importlib_metadata as metadata
 
 from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -22,7 +28,6 @@ from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
-from pyaerocom.plugins.gaw.reader import ReadGAW
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
@@ -52,7 +57,6 @@ class ReadUngridded:
         ReadAeronetSunV3,
         ReadEarlinet,
         ReadEbas,
-        ReadGAW,
         ReadAasEtal,
         ReadGhost,
         ReadAirNow,
@@ -60,6 +64,9 @@ class ReadUngridded:
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
     ]
+    SUPPORTED_READERS.extend(
+        ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
+    )
 
     DONOTCACHE_NAME = "DONOTCACHE"
 
