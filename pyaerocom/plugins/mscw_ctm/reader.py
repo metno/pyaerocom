@@ -11,7 +11,7 @@ from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
 
-from ._reader_helpers import (
+from .additional_variables import (
     add_dataarrays,
     calc_concNhno3,
     calc_concNnh3,
@@ -26,7 +26,7 @@ from ._reader_helpers import (
     subtract_dataarrays,
     update_EC_units,
 )
-from .variables import emep_variables
+from .model_variables import emep_variables
 
 logger = logging.getLogger(__name__)
 
