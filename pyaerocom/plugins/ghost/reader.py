@@ -17,7 +17,7 @@ from pyaerocom.molmasses import get_molmass
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
-from .meta_keys import GHOST_META_KEYS
+from .meta_keys import ghost_meta_keys
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,7 @@ class ReadGhost(ReadUngriddedBase):
     }
 
     #: List of GHOST metadata keys
-    META_KEYS = GHOST_META_KEYS
+    META_KEYS = ghost_meta_keys()
 
     #: Names of flag variables in GHOST NetCDF files
     FLAG_VARS = ["flag", "qa"]

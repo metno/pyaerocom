@@ -1,12 +1,9 @@
-"""
-Metadata keys from GHOST that only depend on station dimension
+# Metadata keys from GHOST that only depend on station dimension
+#
+# THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
+# PROVIDED BY BSC
 
-THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
-PROVIDED BY BSC
-"""
-from pyaerocom.plugins.ghost.meta_keys import ghost_meta_keys
-
-desired_keys = [
+ghost_meta_keys = [
     "EDGAR_v4.3.2_annual_average_BC_emissions",
     "EDGAR_v4.3.2_annual_average_CO_emissions",
     "EDGAR_v4.3.2_annual_average_NH3_emissions",
@@ -150,7 +147,3 @@ desired_keys = [
     "street_width",
     "terrain",
 ]
-
-
-def test_ghost_meta_keys():
-    assert sorted(ghost_meta_keys()) == sorted(desired_keys)
