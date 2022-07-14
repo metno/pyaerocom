@@ -80,6 +80,7 @@ ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
 
 [project.entry-points."pyaerocom.ungridded"]
 ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
+ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
 
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]
