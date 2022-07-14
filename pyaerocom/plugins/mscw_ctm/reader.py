@@ -9,7 +9,9 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io._read_mscw_ctm_helpers import (
+from pyaerocom.units_helpers import UALIASES
+
+from ._reader_helpers import (
     add_dataarrays,
     calc_concNhno3,
     calc_concNnh3,
@@ -24,8 +26,6 @@ from pyaerocom.io._read_mscw_ctm_helpers import (
     subtract_dataarrays,
     update_EC_units,
 )
-from pyaerocom.units_helpers import UALIASES
-
 from .variables import emep_variables
 
 logger = logging.getLogger(__name__)

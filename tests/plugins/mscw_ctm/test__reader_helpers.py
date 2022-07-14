@@ -1,4 +1,4 @@
-from pyaerocom.io._read_mscw_ctm_helpers import (
+from pyaerocom.plugins.mscw_ctm._reader_helpers import (
     calc_concNhno3,
     calc_concNnh3,
     calc_concNnh4,
