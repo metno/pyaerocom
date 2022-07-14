@@ -12,11 +12,12 @@ from pyaerocom import const
 from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
+
+from .meta_keys import GHOST_META_KEYS
 
 logger = logging.getLogger(__name__)
 
