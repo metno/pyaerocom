@@ -1,26 +1,17 @@
 from __future__ import annotations
 
-from configparser import ConfigParser
+import sys
 from importlib import resources
 
-VARS_INI = "emep_variables.ini"
+if sys.version_info >= (3, 11):  # pragma: no cover
+    import tomllib
+else:  # pragma: no cover
+    import tomli as tomllib
+
+_VARIABLES = "emep_variables.toml"
 
 
-def __parser():
-    """Returns instance of ConfigParser to access information"""
-
-    parser = ConfigParser()
-    # added 12.7.21 by jgliss for EMEP trends processing. See here:
-    # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
-    parser.optionxform = str
-
-    assert resources.is_resource(__package__, VARS_INI), f"{VARS_INI} not found in {__package__}"
-    with resources.path(__package__, "emep_variables.ini") as path:
-        parser.read(path)
-    return parser
-
-
-def emep_variables():
+def emep_variables() -> dict[str, str]:
     """Read variable definitions from emep_variables.ini file
 
     Returns
@@ -28,10 +19,6 @@ def emep_variables():
     dict
         keys are AEROCOM standard names of variable, values are EMEP variables
     """
-    parser = __parser()
-    variables = {}
-    for key, value in parser["emep_variables"].items():
-        _variables = (x.strip() for x in value.strip().split(","))
-        for variable in _variables:
-            variables[key] = variable
-    return variables
+    assert resources.is_resource(__package__, _VARIABLES), f"{_VARIABLES} missing in {__package__}"
+    variables = tomllib.loads(resources.read_text(__package__, _VARIABLES))
+    return variables["emep_variables"]
