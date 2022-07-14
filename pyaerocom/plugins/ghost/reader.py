@@ -7,65 +7,17 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-import pyaerocom as pya
-from pyaerocom import const
-from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
+from .additional_variables import vmr_to_ghost_stations
 from .meta_keys import ghost_meta_keys
 
 logger = logging.getLogger(__name__)
-
-
-def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
-    """
-    Convert VMR data to mass concentration for list of GHOST StationData objects
-
-    Note
-    ----
-    This is a private function used in :class:`ReadGhost` and is not supposed
-    to be used directly.
-
-    Parameters
-    ----------
-    data : list
-        list of :class:`StationData` objects containing VMR data (e.g. vmrno2)
-    mconcvar : str
-        Name of mass concentration variable (e.g. concno2)
-    vmrvar : str
-        Name of VMR variable (e.g. vmrno2)
-
-    Returns
-    -------
-    data : list
-        list of modified :class:`StationData` objects that include computed
-        mass concentrations in addition to VMR data.
-
-    """
-    for stat in data:
-        vmrdata = stat[vmrvar]
-        meta = stat["meta"]
-        p = meta["network_provided_volume_standard_pressure"]
-        T = meta["network_provided_volume_standard_temperature"]
-        mmol_var = get_molmass(vmrvar)
-        unit_var = meta["var_info"][vmrvar]["units"]
-        to_unit = const.VARS[mconcvar].units
-        conc = vmrx_to_concx(
-            vmrdata, p_pascal=p, T_kelvin=T, mmol_var=mmol_var, vmr_unit=unit_var, to_unit=to_unit
-        )
-        stat[mconcvar] = conc
-        vi = {}
-        vi.update(meta["var_info"][vmrvar])
-        vi["computed"] = True
-        vi["units"] = to_unit
-        meta["var_info"][mconcvar] = vi
-
-    return data
 
 
 class ReadGhost(ReadUngriddedBase):
@@ -167,11 +119,11 @@ class ReadGhost(ReadUngriddedBase):
     }
 
     AUX_FUNS = {
-        "concco": _vmr_to_conc_ghost_stats,
-        "concno": _vmr_to_conc_ghost_stats,
-        "concno2": _vmr_to_conc_ghost_stats,
-        "conco3": _vmr_to_conc_ghost_stats,
-        "concso2": _vmr_to_conc_ghost_stats,
+        "concco": vmr_to_ghost_stations,
+        "concno": vmr_to_ghost_stations,
+        "concno2": vmr_to_ghost_stations,
+        "conco3": vmr_to_ghost_stations,
+        "concso2": vmr_to_ghost_stations,
     }
 
     CONVERT_UNITS_META = {
@@ -431,7 +383,7 @@ class ReadGhost(ReadUngriddedBase):
         for idx in ds.station.values:
 
             stat = {}
-            meta = pya.metastandards.StationMetaData()
+            meta = StationMetaData()
             meta["ts_type"] = self.TS_TYPE
             stat["time"] = tvals
             stat["meta"] = meta
