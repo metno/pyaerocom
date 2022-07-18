@@ -26,8 +26,9 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded, ReadMscwCtm, ReadUngridded
+from pyaerocom.io import ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
 
 logger = logging.getLogger(__name__)
 
