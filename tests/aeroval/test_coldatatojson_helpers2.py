@@ -26,7 +26,7 @@ def test_get_heatmap_filename():
 
 
 def test_get_timeseries_filename():
-    assert get_timeseries_file_name("reg1","obs1", "var1", "vert1") == "reg1-obs1-var1-vert1.json"
+    assert get_timeseries_file_name("reg1", "obs1", "var1", "vert1") == "reg1-obs1-var1-vert1.json"
 
 
 def test_get_stationfile_name():

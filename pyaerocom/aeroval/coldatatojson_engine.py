@@ -178,14 +178,14 @@ class ColdataToJsonEngine(ProcessingEngine):
                         use_country=use_country,
                         data_freq=input_freq,
                     )
-                    
+
                 except TemporalResolutionError:
                     stats_ts = {}
 
                 fname = get_timeseries_file_name(reg, obs_name, var_name_web, vert_code)
                 ts_file = os.path.join(out_dirs["hm/ts"], fname)
                 _add_heatmap_entry_json(
-                ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
+                    ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
                 )
 
             logger.info("Processing heatmap data for all regions")
