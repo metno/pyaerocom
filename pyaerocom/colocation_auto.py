@@ -4,9 +4,15 @@ Classes and methods to perform high-level colocation.
 import glob
 import logging
 import os
+import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+
+if sys.version_info >= (3, 10):  # pragma: no cover
+    from importlib import metadata
+else:  # pragma: no cover
+    import importlib_metadata as metadata
 
 import pandas as pd
 
@@ -28,7 +34,6 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.io import ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
-from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
 
 logger = logging.getLogger(__name__)
 
@@ -497,7 +502,10 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm}
+    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded}
+    SUPPORTED_GRIDDED_READERS.update(
+        {ep.name: ep.load() for ep in metadata.entry_points(group="pyaerocom.gridded")}
+    )
 
     STATUS_CODES = {
         1: "SUCCESS",

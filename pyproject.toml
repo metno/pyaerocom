@@ -75,6 +75,9 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
 
+[project.entry-points."pyaerocom.gridded"]
+ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
+
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]
 exclude = [
