@@ -36,8 +36,8 @@ def get_heatmap_filename(ts_type):
     return f"glob_stats_{ts_type}.json"
 
 
-def get_timeseries_file_name(obs_name, var_name_web, vert_code):
-    return f"{obs_name}-{var_name_web}-{vert_code}.json"
+def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
+    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
 
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):

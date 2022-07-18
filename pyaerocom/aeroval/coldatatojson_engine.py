@@ -167,23 +167,26 @@ class ColdataToJsonEngine(ProcessingEngine):
         if not diurnal_only:
             logger.info("Processing statistics timeseries for all regions")
             input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
-            try:
-                stats_ts = _process_statistics_timeseries(
-                    data=data,
-                    freq=main_freq,
-                    region_ids=regnames,
-                    use_weights=use_weights,
-                    use_country=use_country,
-                    data_freq=input_freq,
-                )
-            except TemporalResolutionError:
-                stats_ts = {}
+            
+            for region in regnames:
+                try:
+                    stats_ts = _process_statistics_timeseries(
+                        data=data,
+                        freq=main_freq,
+                        region_ids=region,
+                        use_weights=use_weights,
+                        use_country=use_country,
+                        data_freq=input_freq,
+                    )
+                    
+                except TemporalResolutionError:
+                    stats_ts = {}
 
-            fname = get_timeseries_file_name(obs_name, var_name_web, vert_code)
-            ts_file = os.path.join(out_dirs["hm/ts"], fname)
-            _add_heatmap_entry_json(
+                fname = get_timeseries_file_name(region, obs_name, var_name_web, vert_code)
+                ts_file = os.path.join(out_dirs["hm/ts"], fname)
+                _add_heatmap_entry_json(
                 ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
-            )
+                )
 
             logger.info("Processing heatmap data for all regions")
             hm_all = _process_heatmap_data(
