@@ -26,7 +26,7 @@ CHK_CFG2 = {
     ],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
-    "hm/ts": 21,  # ["AERONET-Sun-od550aer-Column.json", "AERONET-SDA-od550aer-Column.json"],
+    "hm/ts": 21, # number of .json files in subdir
     "scat": [
         "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
         "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
@@ -39,7 +39,7 @@ CHK_CFG4 = {
     "map": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
-    "hm/ts": 10,  # ["SDA-and-Sun-od550aer-Column.json"],
+    "hm/ts": 10,  # number of .json files in subdir
     "scat": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
     "ts": 21,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
