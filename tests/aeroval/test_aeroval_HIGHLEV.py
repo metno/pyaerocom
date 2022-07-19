@@ -26,7 +26,7 @@ CHK_CFG2 = {
     ],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
-    "hm/ts": 21, # number of .json files in subdir
+    "hm/ts": 21,  # number of .json files in subdir
     "scat": [
         "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
         "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
