@@ -623,19 +623,3 @@ def test_read_error(reader: ReadEbas, ebas_files: list[Path]):
     with pytest.raises(DataCoverageError) as e:
         reader.read("ac550aer", files=ebas_files)
     assert str(e.value) == "UngriddedData object appears to be empty"
-
-
-@pytest.mark.parametrize(
-    "vars_to_retrieve,file_vars",
-    [
-        ("conco3", "conco3"),
-        ("concpm10", "concpm10"),
-    ]
-)
-def test_variable_values(reader: ReadEbas, vars_to_retrieve: list[str] | str, ebas_files: list[Path] | None):
-    data = reader.read(vars_to_retrieve, files=ebas_files)
-    data_col_idx = data.index["data"] 
-    data.set_flags_nan
-    in_valid_range = (data._data[:, data_col_idx] >= 0) & (data._data[:, data_col_idx] <= 10e10)
-    is_nan = np.isnan(data._data[:, data_col_idx])
-    #assert np.all(is_nan | in_valid_range) # in theory this should work, but there are some negative values?
