@@ -4,7 +4,7 @@ import pytest
 from scipy.constants import Avogadro
 
 
-from pyaerocom.io.helpers_units import mass_to_nr_molecules, nr_molecules_to_mass, unitconv_sfc_conc_bck, unitconv_sfc_conc, unitconv_wet_depo_bck
+from pyaerocom.io.helpers_units import mass_to_nr_molecules, nr_molecules_to_mass, unitconv_sfc_conc_bck, unitconv_sfc_conc, unitconv_wet_depo_bck, unitconv_wet_depo_from_emep
 
 
 
@@ -43,10 +43,12 @@ def test_unitconv_sfc_conc(dummy_data):
     assert np.all(result == pytest.approx(1.99796663, 1e-4))
 
 def test_unitconv_wet_depo_bck(dummy_data):
-    #time = pd.date_range("2018-01-01", periods=len(dummy_data), freq="M")
-    #time = pd.Series(len(dummy_data) , index=pd.date_range("2000", freq="M", periods=len(dummy_data)), dtype=np.datetime64)
-    # time = pd.date_range("2000", freq="M", periods=len(dummy_data))
-    # breakpoint()
-    # res = unitconv_wet_depo_bck(dummy_data, time)
-    pass
+    time = pd.Series(pd.date_range(start="2000-01-01", periods = len(dummy_data), freq = "M")) 
+    result = unitconv_wet_depo_bck(dummy_data, time)
+    assert len(result) == len(dummy_data) # sufficent to check length b/c wet depo will change month-to-month
+
+def test_unitconv_wet_depo_from_emep(dummy_data):
+    time = pd.Series(pd.date_range(start="2000-01-01", periods = len(dummy_data), freq = "M")) 
+    result = unitconv_wet_depo_from_emep(dummy_data, time)
+    assert len(result) == len(dummy_data) # sufficent to check length b/c wet depo will change month-to-month
 
