@@ -1378,7 +1378,6 @@ class ReadEbas(ReadUngriddedBase):
                     else:
                         raise
 
-
         if len(data_out["var_info"]) == 0:
             raise EbasFileError(
                 f"All data columns of specified input variables are NaN in {filename}"
@@ -1390,7 +1389,6 @@ class ReadEbas(ReadUngriddedBase):
 
         if self.readopts_default.ensure_correct_freq:
             self._flag_incorrect_frequencies(data_out)
-
 
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
@@ -1697,7 +1695,7 @@ class ReadEbas(ReadUngriddedBase):
         # neg = np.where(data._data[:, data._DATAINDEX ] < 0)
         # neg_bool = (data._data[:, data._DATAINDEX ] < 0)
         # # this loop is to remove the negative rows from the metadata
-        # # data.meta_idx is indected by 0.0, 1.0, ... 
+        # # data.meta_idx is indected by 0.0, 1.0, ...
         # for i in data.meta_idx:
         #     # typically only one, but incase there are more lop through
         #     for species in data.meta_idx[i]:
