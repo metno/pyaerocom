@@ -1,16 +1,22 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 from __future__ import annotations
 
+from importlib.metadata import metadata
 from typing import Type
 
 import numpy as np
 import pytest
+import xarray
+from pyexpat.errors import XML_ERROR_PARAM_ENTITY_REF
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
+    _create_diurnal_weekly_data_object,
     _get_jsdate,
     _init_data_default_frequencies,
+    _init_meta_glob,
     _make_trends,
+    _prepare_default_regions_json,
     _process_statistics_timeseries,
     get_heatmap_filename,
     get_json_mapname,
@@ -218,3 +224,32 @@ def test__make_trends_error(
     with pytest.raises(exception) as e:
         _make_trends(obs_val, mod_val, time, freq, season, 2010, 2015, min_yrs)
     assert str(e.value) == error
+
+
+@pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
+def test__init_meta_glob(coldata: ColocatedData):
+    # test the functionality of __init_meta_glob when there are KeyErrors. Other cases already covered
+    no_meta_coldata = coldata.copy()
+    no_meta_coldata.data.attrs = {}
+    res = _init_meta_glob(no_meta_coldata)
+    res.pop("processed_utc")
+    assert np.all(value == "UNDEFINED" for value in res.values())
+
+
+@pytest.mark.parametrize(
+    "resolution",
+    [
+        ("yearly"),
+        ("seasonal"),
+        ("cat"),
+    ],
+)
+@pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
+def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution):
+    try:
+        obj = _create_diurnal_weekly_data_object(coldata, resolution)
+        assert isinstance(obj, xarray.Dataset)
+    except:
+        with pytest.raises(ValueError) as e:
+            _create_diurnal_weekly_data_object(coldata, resolution)
+        assert e.type is ValueError
