@@ -13,10 +13,10 @@ from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _create_diurnal_weekly_data_object,
     _get_jsdate,
+    _get_period_keys,
     _init_data_default_frequencies,
     _init_meta_glob,
     _make_trends,
-    _prepare_default_regions_json,
     _process_statistics_timeseries,
     get_heatmap_filename,
     get_json_mapname,
@@ -245,7 +245,7 @@ def test__init_meta_glob(coldata: ColocatedData):
     ],
 )
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
-def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution):
+def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: str):
     try:
         obj = _create_diurnal_weekly_data_object(coldata, resolution)
         assert isinstance(obj, xarray.Dataset)
@@ -253,3 +253,15 @@ def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution):
         with pytest.raises(ValueError) as e:
             _create_diurnal_weekly_data_object(coldata, resolution)
         assert e.type is ValueError
+
+
+@pytest.mark.parametrize(
+    "resolution",
+    [
+        ("seasonal"),
+        ("yearly"),
+    ],
+)
+def test__get_period_keys(resolution: str):
+    res = _get_period_keys(resolution)
+    assert np.all(isinstance(item, str) for item in res)
