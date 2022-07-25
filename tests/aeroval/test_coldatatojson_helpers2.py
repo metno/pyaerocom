@@ -17,6 +17,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _init_data_default_frequencies,
     _init_meta_glob,
     _make_trends,
+    _map_indices,
     _process_statistics_timeseries,
     get_heatmap_filename,
     get_json_mapname,
@@ -24,6 +25,12 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_timeseries_file_name,
 )
 from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
+from pyaerocom.region_defs import (
+    HTAP_REGIONS,
+    HTAP_REGIONS_DEFAULT,
+    OLD_AEROCOM_REGIONS,
+    OTHER_REGIONS,
+)
 from tests.fixtures.collocated_data import COLDATA
 
 
@@ -265,3 +272,15 @@ def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: 
 def test__get_period_keys(resolution: str):
     res = _get_period_keys(resolution)
     assert np.all(isinstance(item, str) for item in res)
+
+
+def test__map_indices():
+    outer_idx = [2010, 2011, 2012, 2013, 2014, 2015]
+    inner_idx = [2011, 2012]
+    out = _map_indices(outer_idx, inner_idx)
+    assert isinstance(out, np.ndarray)
+    assert len(out) == len(outer_idx)
+
+
+def test__apply_annual_constraint_helper(coldata: ColocatedData):
+    pass
