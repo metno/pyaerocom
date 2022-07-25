@@ -280,7 +280,3 @@ def test__map_indices():
     out = _map_indices(outer_idx, inner_idx)
     assert isinstance(out, np.ndarray)
     assert len(out) == len(outer_idx)
-
-
-def test__apply_annual_constraint_helper(coldata: ColocatedData):
-    pass
