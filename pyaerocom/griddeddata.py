@@ -1960,7 +1960,7 @@ class GriddedData:
     # processing methods that exist in the Cube class and that work on the
     # Cube and return a Cube instance. These may be expanded (e.g. for
     # instance what they accept as input
-    def aerocom_filename(self, at_stations=False):
+    def aerocom_filename(self, at_stations=False):  # pragma: no cover
         """Filename of data following Aerocom 3 conventions
 
         Parameters
