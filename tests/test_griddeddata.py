@@ -381,3 +381,18 @@ def test_GriddedData__check_invalid_unit_alias(
     data = GriddedData(fake_dataset_path, var_name=var_name, check_unit=False)
     data._check_invalid_unit_alias()
     assert data.units == data_unit
+
+
+def test_mean_at_coords(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    mean = data.mean_at_coords(latitude=data.lat.points, longitude=data.lon.points)
+    assert isinstance(mean, np.floating)
+
+
+def test__coords_to_iris_sample_points(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    assert len(data._coords_to_iris_sample_points()) == 0
+    points = data._coords_to_iris_sample_points(coords=(data.lat, data.lon))
+    assert isinstance(points, list)
+    assert points[0][1][0].shape == data.lat.shape
+    assert points[0][1][1].shape == data.lon.shape
