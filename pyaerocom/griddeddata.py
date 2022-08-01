@@ -2337,7 +2337,9 @@ class GriddedData:
 
         return GriddedData(data_crop, **self.metadata)
 
-    def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs):
+    def quickplot_map(
+        self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs
+    ):  # pragma: no cover
         """Make a quick plot onto a map
 
         Parameters
