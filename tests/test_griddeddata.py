@@ -396,3 +396,54 @@ def test__coords_to_iris_sample_points(data_tm5: GriddedData):
     assert isinstance(points, list)
     assert points[0][1][0].shape == data.lat.shape
     assert points[0][1][1].shape == data.lon.shape
+
+
+def test_extract_surface_level_wrong_dim(
+    data_tm5: GriddedData,
+):  # can only currently test the exception gets raised b/c don't have a good 4D testing dataset
+    data = data_tm5.copy()
+    with pytest.raises(DataDimensionError) as e:
+        data.extract_surface_level()
+    assert e.type is DataDimensionError
+
+
+def test__infer_index_surface_level_wrong_dim(
+    data_tm5: GriddedData,
+):  # can only currently test the exception gets raised b/c don't have a good 4D testing dataset
+    data = data_tm5.copy()
+    with pytest.raises(DataDimensionError) as e:
+        data._infer_index_surface_level()
+    assert e.type is DataDimensionError
+
+
+def test_find_closest_index_empty(
+    data_tm5: GriddedData,
+):  # can't find a place where called in codebase but doesn't seem to be depricated
+    empty = data_tm5.find_closest_index()
+    assert len(empty) == 0
+
+
+def test_remove_outliers(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data.remove_outliers(inplace=False)
+    assert data.shape == new.shape
+    assert data.metadata["outliers_removed"]
+
+
+def test__resample_time_iris(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data._resample_time_iris("yearly")
+    assert new.ts_type == "yearly"
+
+
+def test_get_area_weighted_timeseries(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data.get_area_weighted_timeseries("EUROPE")
+    assert new.region
+
+
+# def test_extract(data_tm5: GriddedData):
+#     data = data_tm5.copy()
+#     breakpoint()
+#     sub = data.extract(iris.Constraint(grid_latitude=0.))
+#     pass
