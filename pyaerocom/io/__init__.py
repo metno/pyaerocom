@@ -1,16 +1,7 @@
 # isort:skip_file
 import logging
-from importlib import metadata
 
 logger = logging.getLogger(__name__)
-
-
-def __package_installed(name: str) -> bool:
-    try:
-        metadata.version(name)
-    except ModuleNotFoundError:
-        return False
-    return True
 
 
 from .aerocom_browser import AerocomBrowser
@@ -39,11 +30,5 @@ from .read_ebas import ReadEbas
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from .read_marcopolo import ReadMarcoPolo
-
-# coda and geopy libraries are needed to read l2 data of the supported satellites
-# Aeolus and Sentinel5P
-if __package_installed("geopy") and __package_installed("coda"):
-    from .read_aeolus_l2a_data import ReadL2Data
-    from .read_sentinel5p_data import ReadL2Data
 
 from . import helpers_units
