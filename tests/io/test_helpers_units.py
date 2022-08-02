@@ -66,3 +66,9 @@ def test_unitconv_wet_depo_from_emep(dummy_data):
     assert len(result) == len(
         dummy_data
     )  # sufficent to check length b/c wet depo will change month-to-month
+
+
+def test_unitconv_wet_depo_from_emep_time_not_pandas_series(dummy_data):
+    time = pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M")
+    result = unitconv_wet_depo_from_emep(dummy_data, time)
+    assert len(result) == len(dummy_data)
