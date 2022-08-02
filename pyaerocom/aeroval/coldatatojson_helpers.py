@@ -1079,7 +1079,8 @@ def _calc_temporal_corr(coldata):
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
     obs_ok = arr[0].count(dim="time") > 2
-    arr = arr.where(obs_ok, drop=True)
+    arr[0] = arr[0].where(obs_ok, drop=True)
+    arr[1] = arr[1].where(obs_ok, drop=True)
     if np.prod(arr.shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim="time")
