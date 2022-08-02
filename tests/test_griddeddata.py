@@ -427,7 +427,7 @@ def test_remove_outliers(data_tm5: GriddedData):
     data = data_tm5.copy()
     new = data.remove_outliers(inplace=False)
     assert data.shape == new.shape
-    assert data.metadata["outliers_removed"]
+    assert new.metadata["outliers_removed"]
 
 
 def test__resample_time_iris(data_tm5: GriddedData):
@@ -445,5 +445,5 @@ def test_get_area_weighted_timeseries(data_tm5: GriddedData):
 # def test_extract(data_tm5: GriddedData):
 #     data = data_tm5.copy()
 #     breakpoint()
-#     sub = data.extract(iris.Constraint(grid_latitude=0.))
+#     sub = data.extract(iris.Constraint(grid_latitude=0.0))
 #     pass
