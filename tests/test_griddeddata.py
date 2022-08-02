@@ -15,6 +15,7 @@ from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
     DataSearchError,
+    LongitudeConstraintError,
     VariableDefinitionError,
     VariableNotFoundError,
 )
@@ -446,3 +447,10 @@ def test_extract(data_tm5: GriddedData):
     data = data_tm5.copy()
     sub = data.extract(iris.Constraint(latitude=0.0))
     assert len(sub.shape) < len(data.shape)
+
+
+def test_intersection(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data.intersection(longitude=(-70, 35))
+    assert new.shape[0:1] == data.shape[0:1]
+    assert new.shape[2] < data.shape[2]
