@@ -122,10 +122,8 @@ omit = [
     "pyaerocom/io/read_aeronet_invv2.py",
     "pyaerocom/io/read_aeronet_sdav2.py",
     "pyaerocom/io/read_aeronet_sunv2.py",
-    "pyaerocom/io/read_gaw.py",
-    "pyaerocom/io/read_aeolus_l2a_data.py",
-    "pyaerocom/io/read_sentinel5p_data.py",
-    "pyaerocom/io/readsatellitel2base.py",
+    "pyaerocom/plugins/gaw/*",
+    "pyaerocom/extras/satellite_l2/*",
     "pyaerocom/vert_coords.py",
 ]
 
