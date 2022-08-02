@@ -200,7 +200,7 @@ class ReadMscwCtm:
 
             try:
                 yr = re.search(r".*(20\d\d).*", fp).group(1)
-            except:
+            except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {fp}")
 
             yrs.append(yr)
@@ -234,7 +234,7 @@ class ReadMscwCtm:
             yrs_dir = ddir.split(os.sep)[-1]
             try:
                 yr = re.search(r".*(20\d\d).*", yrs_dir).group(1)
-            except:
+            except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {yrs_dir}")
 
             if int(yr) not in yrs:
@@ -287,7 +287,7 @@ class ReadMscwCtm:
         """
         Name of netcdf file
         """
-        if not isinstance(val, str):
+        if not isinstance(val, str):  # pragma: no cover
             raise ValueError("needs str")
         elif val == self._filename:
             return
@@ -299,7 +299,7 @@ class ReadMscwCtm:
         """
         Path to data file
         """
-        if self.data_dir is None and self._filepaths is None:
+        if self.data_dir is None and self._filepaths is None:  # pragma: no cover
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         return self._filepath
 
@@ -318,13 +318,13 @@ class ReadMscwCtm:
         """
         Path to data file
         """
-        if self.data_dir is None and self._filepaths is None:
+        if self.data_dir is None and self._filepaths is None:  # pragma: no cover
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         return self._filepaths
 
     @filepaths.setter
     def filepaths(self, value):
-        if not isinstance(value, list):
+        if not isinstance(value, list):  # pragma: no cover
             raise ValueError("needs to be list of strings")
         self._filepaths = value
 
@@ -590,7 +590,9 @@ class ReadMscwCtm:
             return self._read_var_from_file(var_name_aerocom, ts_type)
         elif var_name_aerocom in self.AUX_REQUIRES:
             return self._compute_var(var_name_aerocom, ts_type)
-        raise VarNotAvailableError(f"Variable {var_name_aerocom} is not supported")
+        raise VarNotAvailableError(
+            f"Variable {var_name_aerocom} is not supported"
+        )  # pragma: no cover
 
     def read_var(self, var_name, ts_type=None, **kwargs):
         """Load data for given variable.
@@ -612,9 +614,9 @@ class ReadMscwCtm:
         var = const.VARS[var_name]
         var_name_aerocom = var.var_name_aerocom
 
-        if self.data_dir is None:
+        if self.data_dir is None:  # pragma: no cover
             raise ValueError("data_dir must be set before reading.")
-        elif self.filename is None and ts_type is None:
+        elif self.filename is None and ts_type is None:  # pragma: no cover
             raise ValueError("please specify ts_type")
         elif ts_type is not None:
             # filename and ts_type are set. update filename if ts_type suggests
@@ -628,8 +630,8 @@ class ReadMscwCtm:
             arr.attrs["units"] = UALIASES[arr.units]
         try:
             cube = arr.to_iris()
-        except MemoryError as e:
-            raise NotImplementedError(f"BAAAM: {e}")
+        except MemoryError as e:  # pragma: no cover
+            raise NotImplementedError from e
 
         if ts_type == "hourly":
             cube.coord("time").convert_units("hours since 1900-01-01")
