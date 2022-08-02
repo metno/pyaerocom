@@ -1,47 +1,16 @@
 # isort:skip_file
 import logging
+from importlib import metadata
 
 logger = logging.getLogger(__name__)
 
 
-def geopy_available():
-    """Helper method that checks if geopy library is available
-
-    Required for import of ReadAeolusL2aData
-
-    Returns
-    -------
-    bool
-        True, if library is available, else False
-    """
+def __package_installed(name: str) -> bool:
     try:
-        import geopy
-
-        return True
+        metadata.version(name)
     except ModuleNotFoundError:
-        logger.warning("geopy library is not available. Aeolus data read not enabled")
-    return False
-
-
-def coda_available():
-    """Helper method that checks if coda library is available
-
-    Required for import of ReadAeolusL2aData and ReadSentinel5pL2Data
-
-    Returns
-    -------
-    bool
-        True, if library is available, else False
-    """
-    try:
-        import coda
-
-        return True
-    except ModuleNotFoundError:
-        logger.warning(
-            "coda library is not available. Sentinel5P and Aeolus data read not enabled"
-        )
-    return False
+        return False
+    return True
 
 
 from .aerocom_browser import AerocomBrowser
@@ -71,9 +40,9 @@ from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from .read_marcopolo import ReadMarcoPolo
 
-if geopy_available() and coda_available():
-    # the coda and geopy libraries are needed to read l2 data of the supported satellites
-    # Aeolus and Sentinel5P
+# coda and geopy libraries are needed to read l2 data of the supported satellites
+# Aeolus and Sentinel5P
+if __package_installed("geopy") and __package_installed("coda"):
     from .read_aeolus_l2a_data import ReadL2Data
     from .read_sentinel5p_data import ReadL2Data
 
