@@ -442,8 +442,7 @@ def test_get_area_weighted_timeseries(data_tm5: GriddedData):
     assert new.region
 
 
-# def test_extract(data_tm5: GriddedData):
-#     data = data_tm5.copy()
-#     breakpoint()
-#     sub = data.extract(iris.Constraint(grid_latitude=0.0))
-#     pass
+def test_extract(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    sub = data.extract(iris.Constraint(latitude=0.0))
+    assert len(sub.shape) < len(data.shape)
