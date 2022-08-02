@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+from pathlib import Path
 
 import cf_units
 import numpy as np
@@ -243,7 +244,7 @@ class ReadGhost(ReadUngriddedBase):
 
             _dir = os.path.join(self.data_dir, var)
             _files = glob.glob(f"{_dir}/{pattern}")
-            if len(_files) == 0:
+            if not _files:  # pragma: no cover
                 raise DataSourceError(f"Could not find any data files for {var}")
             files.extend(_files)
 
@@ -286,7 +287,7 @@ class ReadGhost(ReadUngriddedBase):
     def _ts_type_from_data_dir(self):
         try:
             freq = str(TsType(os.path.basename(self.data_dir)))
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             freq = "undefined"
         self.TS_TYPES[self.data_id] = freq
         return freq
@@ -340,9 +341,9 @@ class ReadGhost(ReadUngriddedBase):
 
         ds = xr.open_dataset(filename)
 
-        if not all(x in ds.dims for x in ["station", "time"]):
+        if not {"station", "time"}.issubset(ds.dims):  # pragma: no cover
             raise AttributeError("Missing dimensions")
-        if not "station_name" in ds:
+        if not "station_name" in ds:  # pragma: no cover
             raise AttributeError("No variable station_name found")
 
         stats = []
@@ -354,10 +355,8 @@ class ReadGhost(ReadUngriddedBase):
         for meta_key in self.META_KEYS:
             try:
                 meta_glob[meta_key] = ds[meta_key].values
-            except KeyError:
-                logger.warning(
-                    f"No such metadata key in GHOST data file: {os.path.basename(filename)}"
-                )
+            except KeyError:  # pragma: no cover
+                logger.warning(f"No such metadata key in GHOST data file: {Path(filename).name}")
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs["units"]
