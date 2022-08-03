@@ -2672,7 +2672,7 @@ class UngriddedData:
         insert_nans=True,
         ax=None,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot time series of station and variable
 
         Parameters
