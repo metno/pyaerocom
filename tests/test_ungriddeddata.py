@@ -239,3 +239,38 @@ def test_from_single_station_data():
     data0 = stat.ec550aer
     data1 = d.all_datapoints_var("ec550aer")
     assert data0 == pytest.approx(data1, abs=1e-20)
+
+
+def test_last_meta_idx(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.last_meta_idx, (np.ndarray, np.generic))
+
+
+def test_has_flag_data(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.has_flag_data, (np.bool_, bool))
+
+
+def test_is_filtered(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.is_filtered, (np.bool_, bool))
+
+
+def test_available_meta_keys(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.available_meta_keys, list)
+    assert np.all(isinstance(key, str) for key in aeronetsunv3lev2_subset.available_meta_keys)
+
+
+def test_nonunique_station_names(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.nonunique_station_names, list)
+
+
+def test_set_flags_nan_error(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    with pytest.raises(AttributeError) as e:
+        data = data.data.set_flags_nan(inplace=True)
+    assert e.type is AttributeError
+
+
+def test_remove_outliers(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    assert not data.filter_hist
+    new = data.remove_outliers(var_name="od550aer", low=0, high=0)
+    assert new.filter_hist
