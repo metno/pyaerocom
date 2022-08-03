@@ -1,11 +1,12 @@
 import string
+from asyncio.proactor_events import _ProactorBaseWritePipeTransport
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from pyaerocom import UngriddedData, ungriddeddata
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import DataCoverageError, VariableDefinitionError
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
@@ -274,3 +275,21 @@ def test_remove_outliers(aeronetsunv3lev2_subset: UngriddedData):
     assert not data.filter_hist
     new = data.remove_outliers(var_name="od550aer", low=0, high=0)
     assert new.filter_hist
+
+
+def test_extract_var(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    od = data.extract_var("od550aer")
+    assert not data.is_filtered
+    assert od.is_filtered
+    assert od.shape[0] < data.shape[0]
+    with pytest.raises(VariableDefinitionError) as e:
+        data.extract_var("nope")
+    assert e.type is VariableDefinitionError
+
+
+def test_find_common_stations(aeronetsunv3lev2_subset: UngriddedData):
+    data1 = aeronetsunv3lev2_subset.copy()
+    data2 = aeronetsunv3lev2_subset.copy()
+    station_map = data1.find_common_stations(other=data2)
+    assert np.all(key == station_map[key] for key in station_map)
