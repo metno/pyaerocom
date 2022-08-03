@@ -2729,7 +2729,7 @@ class UngriddedData:
         legend=True,
         add_title=True,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot station coordinates on a map
 
         All input parameters are optional and may be used to add constraints
