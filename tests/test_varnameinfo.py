@@ -23,16 +23,21 @@ def test_varnameinfo(var_name, contains_numbers, contains_wavelength_nm, is_wave
 
 @pytest.mark.parametrize(
     "var_name, vert_code",
-    [("concpm10", None), ("wetoxn", "Surface"), ("od550aer", "Column")],
+    [("wetoxn", "Surface"), ("od550aer", "Column")],
 )
 def test_get_default_vert_code(var_name, vert_code):
     var_name_info = VarNameInfo(var_name)
-    try:
-        assert var_name_info.get_default_vert_code() == vert_code
-    except:
-        with pytest.raises(ValueError) as e:
-            var_name_info.get_default_vert_code()
-        assert e.type is ValueError
+    assert var_name_info.get_default_vert_code() == vert_code
+
+
+@pytest.mark.parametrize(
+    "var_name",
+    [("concpm10")],
+)
+def test_get_default_vert_code_error(var_name):
+    var_name_info = VarNameInfo(var_name)
+    with pytest.raises(ValueError):
+        var_name_info.get_default_vert_code()
 
 
 @pytest.mark.parametrize(
@@ -69,9 +74,8 @@ def test_wavelength_nm(var_name, wavelength):
 )
 def test_wavelength_nm_errors(var_name):
     var_name_info = VarNameInfo(var_name)
-    with pytest.raises(VariableDefinitionError) as e:
+    with pytest.raises(VariableDefinitionError):
         var_name_info.wavelength_nm()
-    assert e.type is VariableDefinitionError
 
 
 @pytest.mark.parametrize(

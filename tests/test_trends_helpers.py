@@ -22,11 +22,9 @@ def test__init_trends_result_dict():
     assert len(result.keys()) == 14
 
 
-def test__get_season_from_months_wrong():
-    not_a_season = "cat"
-    with pytest.raises(ValueError) as e:
-        result = _get_season_from_months(not_a_season)
-    assert e.type is ValueError
+def test__get_season_from_months_error():
+    with pytest.raises(ValueError):
+        _get_season_from_months(months="cat")
 
 
 @pytest.mark.parametrize(
@@ -37,18 +35,17 @@ def test__get_season_from_months_wrong():
         ("autumn", 2022),
         ("winter", 2022),
         ("all", 2022),
-        ("cat", 2022),
     ],
 )
 def test__mid_season(season, year):
-    try:
-        res = _mid_season(season, year)
-        assert isinstance(res, np.datetime64)
-        assert "15" in str(res)
-    except:
-        with pytest.raises(ValueError) as e:
-            res = _mid_season(season, year)
-        assert e.type is ValueError
+    res = _mid_season(season, year)
+    assert isinstance(res, np.datetime64)
+    assert "15" in str(res)
+
+
+def test__mid_season_error():
+    with pytest.raises(ValueError):
+        _mid_season(seas="cat", yr=2022)
 
 
 @pytest.mark.parametrize(
@@ -59,18 +56,17 @@ def test__mid_season(season, year):
         ("autumn", 2022),
         ("winter", 2022),
         ("all", 2022),
-        ("cat", 2022),
     ],
 )
 def test__start_season(season, year):
-    try:
-        res = _start_season(season, year)
-        assert isinstance(res, str)
-        assert "01" in res
-    except:
-        with pytest.raises(ValueError) as e:
-            res = _start_season(season, year)
-        assert e.type is ValueError
+    res = _start_season(season, year)
+    assert isinstance(res, str)
+    assert "01" in res
+
+
+def test__start_season_error():
+    with pytest.raises(ValueError):
+        _start_season("cat", 2022)
 
 
 @pytest.mark.parametrize(
@@ -81,18 +77,17 @@ def test__start_season(season, year):
         ("autumn", 2022),
         ("winter", 2022),
         ("all", 2022),
-        ("cat", 2022),
     ],
 )
 def test__end_season(season, year):
-    try:
-        res = _end_season(season, year)
-        assert isinstance(res, str)
-        assert "01" in res
-    except:
-        with pytest.raises(ValueError) as e:
-            res = _end_season(season, year)
-        assert e.type is ValueError
+    res = _end_season(season, year)
+    assert isinstance(res, str)
+    assert "01" in res
+
+
+def test__end_season_error():
+    with pytest.raises(ValueError):
+        _end_season(seas="cat", yr=2022)
 
 
 @pytest.mark.parametrize(
@@ -112,11 +107,11 @@ def test__years_from_periodstr():
     period = "1990-2010"
     res = _years_from_periodstr(period)
     assert len(res) == 2
-    assert np.all(isinstance(item, int) for item in res)
+    assert all(isinstance(item, int) for item in res)
 
 
 def test__start_stop_period():
     period = "1990-2010"
     res = _start_stop_period(period)
     assert len(res) == 2
-    assert np.all(isinstance(item, date) for item in res)
+    assert all(isinstance(item, date) for item in res)

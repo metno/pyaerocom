@@ -78,7 +78,7 @@ def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
     return f"aerocom3_{data_id}_{var_name}_{vert_code}_{year}_{ts_type}.nc"
 
 
-def _print_read_info(i, mod, tot_num, last_t, name, logger):  # pragma : no cover
+def _print_read_info(i, mod, tot_num, last_t, name, logger):  # pragma: no cover
     """Helper for displaying standardised output in reading classes
 
     Not to be used directly

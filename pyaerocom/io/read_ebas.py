@@ -1691,18 +1691,6 @@ class ReadEbas(ReadUngriddedBase):
 
         data.clear_meta_no_data()
 
-        # # remove negative values. EBAS species appear to be positive valued only
-        # neg = np.where(data._data[:, data._DATAINDEX ] < 0)
-        # neg_bool = (data._data[:, data._DATAINDEX ] < 0)
-        # # this loop is to remove the negative rows from the metadata
-        # # data.meta_idx is indected by 0.0, 1.0, ...
-        # for i in data.meta_idx:
-        #     # typically only one, but incase there are more lop through
-        #     for species in data.meta_idx[i]:
-        #         data.meta_idx[i][species] = np.intersect1d(data.meta_idx[i][species], neg)
-        # # the data, unlike the metadata, is a flat file, so can remove all at once
-        # data._data = data._data[~neg_bool,:]
-
         return data
 
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):

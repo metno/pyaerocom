@@ -1,5 +1,4 @@
 import string
-from asyncio.proactor_events import _ProactorBaseWritePipeTransport
 from pathlib import Path
 
 import numpy as np
@@ -256,7 +255,7 @@ def test_is_filtered(aeronetsunv3lev2_subset: UngriddedData):
 
 def test_available_meta_keys(aeronetsunv3lev2_subset: UngriddedData):
     assert isinstance(aeronetsunv3lev2_subset.available_meta_keys, list)
-    assert np.all(isinstance(key, str) for key in aeronetsunv3lev2_subset.available_meta_keys)
+    assert all(isinstance(key, str) for key in aeronetsunv3lev2_subset.available_meta_keys)
 
 
 def test_nonunique_station_names(aeronetsunv3lev2_subset: UngriddedData):
@@ -265,9 +264,8 @@ def test_nonunique_station_names(aeronetsunv3lev2_subset: UngriddedData):
 
 def test_set_flags_nan_error(aeronetsunv3lev2_subset: UngriddedData):
     data = aeronetsunv3lev2_subset.copy()
-    with pytest.raises(AttributeError) as e:
+    with pytest.raises(AttributeError):
         data = data.data.set_flags_nan(inplace=True)
-    assert e.type is AttributeError
 
 
 def test_remove_outliers(aeronetsunv3lev2_subset: UngriddedData):
@@ -283,13 +281,16 @@ def test_extract_var(aeronetsunv3lev2_subset: UngriddedData):
     assert not data.is_filtered
     assert od.is_filtered
     assert od.shape[0] < data.shape[0]
-    with pytest.raises(VariableDefinitionError) as e:
+
+
+def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
-    assert e.type is VariableDefinitionError
 
 
 def test_find_common_stations(aeronetsunv3lev2_subset: UngriddedData):
     data1 = aeronetsunv3lev2_subset.copy()
     data2 = aeronetsunv3lev2_subset.copy()
     station_map = data1.find_common_stations(other=data2)
-    assert np.all(key == station_map[key] for key in station_map)
+    assert station_map == {key: key for key in station_map}

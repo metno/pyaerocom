@@ -1,7 +1,6 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 from __future__ import annotations
 
-from importlib.metadata import metadata
 from typing import Type
 
 import numpy as np
