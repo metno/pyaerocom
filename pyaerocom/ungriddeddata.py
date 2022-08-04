@@ -370,20 +370,21 @@ class UngriddedData:
 
         return data_obj
 
-    def add_station_data(self, stat, meta_idx=None, data_idx=None, check_index=False):
+    def add_station_data(
+        self, stat, meta_idx=None, data_idx=None, check_index=False
+    ):  # pragma: no cover
         raise NotImplementedError("Coming at some point")
-        # Do not remove below. Keep until implemented, but should not count against coverage.
-        # if meta_idx is None:
-        #     meta_idx = self.last_meta_idx + 1
-        # elif meta_idx in self.meta_idx:
-        #     raise ValueError(
-        #         f"Cannot add data at meta block index {meta_idx}, index already exists"
-        #     )
+        if meta_idx is None:
+            meta_idx = self.last_meta_idx + 1
+        elif meta_idx in self.meta_idx:
+            raise ValueError(
+                f"Cannot add data at meta block index {meta_idx}, index already exists"
+            )
 
-        # if data_idx is None:
-        #     data_idx = self._data.shape[0]
-        # elif not np.all(np.isnan(self._data[data_idx, :])):
-        #     raise ValueError(f"Cannot add data at data index {data_idx}, index already exists")
+        if data_idx is None:
+            data_idx = self._data.shape[0]
+        elif not np.all(np.isnan(self._data[data_idx, :])):
+            raise ValueError(f"Cannot add data at data index {data_idx}, index already exists")
 
     @property
     def last_meta_idx(self):
