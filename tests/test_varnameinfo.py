@@ -30,12 +30,8 @@ def test_get_default_vert_code(var_name, vert_code):
     assert var_name_info.get_default_vert_code() == vert_code
 
 
-@pytest.mark.parametrize(
-    "var_name",
-    [("concpm10")],
-)
-def test_get_default_vert_code_error(var_name):
-    var_name_info = VarNameInfo(var_name)
+def test_get_default_vert_code_error():
+    var_name_info = VarNameInfo("concpm10")
     with pytest.raises(ValueError):
         var_name_info.get_default_vert_code()
 
