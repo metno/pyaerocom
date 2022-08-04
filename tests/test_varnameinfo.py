@@ -18,7 +18,7 @@ def test_varnameinfo(var_name, contains_numbers, contains_wavelength_nm, is_wave
     assert var_name_info.contains_numbers == contains_numbers
     assert var_name_info.contains_wavelength_nm == contains_wavelength_nm
     assert var_name_info.is_wavelength_dependent == is_wavelength_dependent
-    assert isinstance(var_name_info.__str__(), str)
+    assert isinstance(str(var_name_info), str)
 
 
 @pytest.mark.parametrize(
