@@ -13,7 +13,7 @@ CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
     "contour": ["od550aer_TM5-AP3-CTRL.geojson", "od550aer_TM5-AP3-CTRL.json"],
     "hm": ["glob_stats_daily.json", "glob_stats_monthly.json", "glob_stats_yearly.json"],
-    "hm/ts": ["AERONET-Sun-od550aer-Column.json"],
+    "hm/ts": 10,  # number of .json files in sub dir
     "scat": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
     "ts": 11,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
@@ -26,7 +26,7 @@ CHK_CFG2 = {
     ],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
-    "hm/ts": ["AERONET-Sun-od550aer-Column.json", "AERONET-SDA-od550aer-Column.json"],
+    "hm/ts": 21,  # number of .json files in subdir
     "scat": [
         "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
         "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
@@ -39,7 +39,7 @@ CHK_CFG4 = {
     "map": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
-    "hm/ts": ["SDA-and-Sun-od550aer-Column.json"],
+    "hm/ts": 10,  # number of .json files in subdir
     "scat": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
     "ts": 21,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
@@ -56,6 +56,7 @@ CHK_CFG4 = {
     ],
 )
 def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
+
     cfg = EvalSetup(**eval_config)
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)
