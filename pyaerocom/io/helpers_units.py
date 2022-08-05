@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.constants import Avogadro
 
 
@@ -196,10 +197,9 @@ def unitconv_wet_depo_from_emep(data, time, ts_type="monthly"):
         data in units of ugSOx/m3
 
     """
-    # TODO add if time is not of correct pandas series convert
-    # numpy ndarray to pandas series. Much better than having to remeber that
-    # the only thing thats a åandas seies.
-    # If time
+
+    if not isinstance(time, pd.Series):
+        time = pd.Series(time)
 
     mm_so4 = 0.001 * 32.065 + 0.001 * 15.999 * 4  # in kg/mol
     mm_s = 0.001 * 32.065  # kg/mol
