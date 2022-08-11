@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from typing import Type
 
@@ -18,65 +17,88 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import FileConventionRead, iris_io
 from tests.fixtures.aeroval import make_dummy_cube_3D_daily
-from tests.fixtures.mscw_ctm import EMEP_DATA_PATH
-from tests.fixtures.tm5 import TM5_DATA_PATH
+from tests.fixtures.data_access import DataForTests
+from tests.fixtures.tm5 import CHECK_PATHS
 
-TM5_FILE1 = TM5_DATA_PATH / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
-TM5_FILE2 = TM5_DATA_PATH / "aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_2010_daily.nc"
-EMEP_FILE = EMEP_DATA_PATH / "Base_month.nc"
-
-aod_cube = load(str(TM5_FILE1))[0]
-
-aod_cube_notime = aod_cube.copy()
-aod_cube_notime.remove_coord("time")
-
-aod_cube_wrongtime = aod_cube.copy()
-tc = aod_cube_wrongtime.coord("time")
-pts = list(tc._values_dm._real_array)
-pts.append(70000)
-tc._values_dm._real_array = np.asarray(pts)
-
-aod_cube_wrongtime2 = aod_cube.copy()
-tc = aod_cube_wrongtime2.coord("time")
-pts = list(tc._values_dm._real_array)
-pts[-1] = 70000
-tc._values_dm._real_array = np.asarray(pts)
-
-aod_cube_wrongtime3 = aod_cube.copy()
-tc = aod_cube_wrongtime3.coord("time")
-aod_cube_wrongtime3.remove_coord("time")
+TM5_FILE = DataForTests(CHECK_PATHS.tm5aod).path
 
 
-aod_cube_only_longname_dims = aod_cube.copy()
-aod_cube_only_longname_dims.coord("longitude").standard_name = None
-aod_cube_only_longname_dims.coord("longitude").var_name = None
-aod_cube_only_longname_dims.coord("longitude").long_name = "lon"
+@pytest.fixture()
+def cube(defect: Cube | str | None) -> Cube:
+    """TM5 AOD cube, with optional deffects"""
+    cube: Cube = load(str(TM5_FILE))[0]
 
-aod_cube_only_longname_dims.coord("latitude").standard_name = None
-aod_cube_only_longname_dims.coord("latitude").var_name = None
-aod_cube_only_longname_dims.coord("latitude").long_name = "lat"
+    if defect == "notime":
+        cube.remove_coord("time")
 
-aod_cube_only_longname_dims.coord("time").standard_name = None
-aod_cube_only_longname_dims.coord("time").var_name = None
-aod_cube_only_longname_dims.coord("time").long_name = "time"
+    if defect == "wrongtime":
+        time = cube.coord("time")
+        pts = list(time._values_dm._real_array)
+        pts.append(70000)
+        time._values_dm._real_array = np.asarray(pts)
 
-aod_cube_nounit = aod_cube.copy()
-aod_cube_nounit.units = ""
+    if defect == "wrongtime2":
+        time = cube.coord("time")
+        pts = list(time._values_dm._real_array)
+        pts[-1] = 70000
+        time._values_dm._real_array = np.asarray(pts)
 
-FAKE_FILE = Path(tempfile.gettempdir()) / "test_iris_io/invalid.nc"
-FAKE_FILE.parent.mkdir(exist_ok=True, parents=True)
-FAKE_FILE.write_text("")
+    if defect == "wrongtime3":
+        cube.remove_coord("time")
+
+    if defect == "only_longname_dims":
+        cube.coord("longitude").standard_name = None
+        cube.coord("longitude").var_name = None
+        cube.coord("longitude").long_name = "lon"
+
+        cube.coord("latitude").standard_name = None
+        cube.coord("latitude").var_name = None
+        cube.coord("latitude").long_name = "lat"
+
+        cube.coord("time").standard_name = None
+        cube.coord("time").var_name = None
+        cube.coord("time").long_name = "time"
+
+    if defect == "nounit":
+        cube.units = ""
+
+    return cube
 
 
-def test_check_time_coord():
-    iris_io.check_time_coord(aod_cube, "monthly", 2010)
+@pytest.fixture(scope="session")
+def fake_file(tmp_path_factory) -> Path:
+    """empty/invalid NetCDF file"""
+    path: Path = tmp_path_factory.mktemp("test_iris_io") / "invalid.nc"
+    path.write_bytes(b"")
+    return path
+
+
+@pytest.fixture()
+def file_path(file: str, path_emep: dict[str, Path], fake_file: Path) -> Path:
+    """dispatch TM5/EMEP/Empty file path"""
+    files = dict(tm5=TM5_FILE, emep=path_emep["monthly"], empty=fake_file)
+    try:
+        return files[file.casefold()]
+    except KeyError:
+        raise ValueError(f"Unknown {file=}") from None
+
+
+@pytest.fixture()
+def file_paths(file_path: Path) -> list[Path]:
+    """dispatch TM5/EMEP/Empty file path"""
+    return [file_path]
+
+
+@pytest.mark.parametrize("defect", [None])
+def test_check_time_coord(cube: Cube):
+    iris_io.check_time_coord(cube, "monthly", 2010)
 
 
 @pytest.mark.parametrize(
-    "cube,ts_type,year,exception,error",
+    "defect,ts_type,year,exception,error",
     [
         pytest.param(
-            aod_cube_notime,
+            "notime",
             "monthly",
             2010,
             AttributeError,
@@ -84,7 +106,7 @@ def test_check_time_coord():
             id="no time dimension",
         ),
         pytest.param(
-            aod_cube,
+            None,
             "blaa",
             2010,
             TemporalResolutionError,
@@ -92,7 +114,7 @@ def test_check_time_coord():
             id="wrong ts_type",
         ),
         pytest.param(
-            aod_cube,
+            None,
             "daily",
             2010,
             UnresolvableTimeDefinitionError,
@@ -100,7 +122,7 @@ def test_check_time_coord():
             id="daily from monthly",
         ),
         pytest.param(
-            aod_cube,
+            None,
             "daily",
             2012,
             UnresolvableTimeDefinitionError,
@@ -108,7 +130,7 @@ def test_check_time_coord():
             id="daily from monthly",
         ),
         pytest.param(
-            aod_cube,
+            None,
             "monthly",
             2008,
             ValueError,
@@ -118,66 +140,73 @@ def test_check_time_coord():
     ],
 )
 def test_check_time_coord_error(
-    cube: CubeList, ts_type: str, year: int, exception: Type[Exception], error: str
+    cube: Cube, ts_type: str, year: int, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         iris_io.check_time_coord(cube, ts_type, year)
     assert str(e.value) == error
 
 
-def test_get_dim_names_cube():
-    assert iris_io.get_dim_names_cube(aod_cube) == ["time", "latitude", "longitude"]
+@pytest.mark.parametrize("defect", [None])
+def test_get_dim_names_cube(cube: Cube):
+    assert iris_io.get_dim_names_cube(cube) == ["time", "latitude", "longitude"]
 
 
-def test_get_dimnames_cube():
-    assert iris_io.get_coord_names_cube(aod_cube) == ["time", "latitude", "longitude"]
+@pytest.mark.parametrize("defect", [None])
+def test_get_dimnames_cube(cube: Cube):
+    assert iris_io.get_coord_names_cube(cube) == ["time", "latitude", "longitude"]
 
 
 @pytest.mark.parametrize(
-    "cube,file,file_convention",
+    "defect,file_convention,coords",
     [
-        (
-            aod_cube_notime,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
+        pytest.param(
             None,
-        ),
-        (
-            aod_cube_wrongtime2,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             None,
+            ["time", "latitude", "longitude"],
+            id="TM5",
         ),
-        (
-            aod_cube,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
+        pytest.param(
             None,
-        ),
-        (
-            aod_cube,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
             FileConventionRead("aerocom2"),
+            ["time", "latitude", "longitude"],
+            id="TM5 AeroCom2",
         ),
-        (
-            aod_cube_nounit,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
+        pytest.param(
+            "notime",
             None,
+            ["time", "latitude", "longitude"],
+            id="NoTime",
         ),
-        (
-            aod_cube_notime,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
+        pytest.param(
+            "notime",
             FileConventionRead("aerocom2"),
+            ["latitude", "longitude"],  # no time can be infered under aerocom2
+            id="NoTime AeroCom2",
+        ),
+        pytest.param(
+            "wrongtime2",
+            None,
+            ["time", "latitude", "longitude"],
+            id="WrongTime",
+        ),
+        pytest.param(
+            "nounit",
+            None,
+            ["time", "latitude", "longitude"],
+            id="WrongUnit",
         ),
     ],
 )
-def test__cube_quality_check(cube, file, file_convention):
-    cube = iris_io._cube_quality_check(cube, file, file_convention)
-    assert [c.name() for c in cube.dim_coords] == ["time", "latitude", "longitude"]
+def test__cube_quality_check(cube: Cube, file_convention, coords: list[str]):
+    cube = iris_io._cube_quality_check(cube, TM5_FILE.name, file_convention)
+    assert [c.name() for c in cube.dim_coords] == coords
 
 
-def test__cube_quality_check_error():
+@pytest.mark.parametrize("defect", ["wrongtime"])
+def test__cube_quality_check_error(cube: Cube):
     with pytest.raises(UnresolvableTimeDefinitionError) as e:
-        iris_io._cube_quality_check(
-            aod_cube_wrongtime, "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
-        )
+        iris_io._cube_quality_check(cube, TM5_FILE.name)
     error = "UnresolvableTimeDefinitionError('Expected 12 timestamps but data has 13')"
     assert str(e.value) == error
 
@@ -185,12 +214,12 @@ def test__cube_quality_check_error():
 @pytest.mark.parametrize(
     "file,var_name",
     [
-        (TM5_FILE1, None),
-        (EMEP_FILE, "SURF_ug_NO2"),
+        ("tm5", None),
+        ("emep", "SURF_ug_NO2"),
     ],
 )
-def test_load_cube_custom(file, var_name):
-    cube = iris_io.load_cube_custom(file, var_name)
+def test_load_cube_custom(file_path: Path, var_name: str | None):
+    cube = iris_io.load_cube_custom(file_path, var_name)
     assert isinstance(cube, Cube)
 
 
@@ -198,21 +227,21 @@ def test_load_cube_custom(file, var_name):
     "file,var_name,exception,error",
     [
         pytest.param(
-            FAKE_FILE,
+            "empty",
             None,
             TranslationError,
             "The file appears empty or incomplete",
             id="enpty file",
         ),
         pytest.param(
-            EMEP_FILE,
+            "EMEP",
             None,
             NetcdfError,
             "Could not load single cube from",
             id="no cube",
         ),
         pytest.param(
-            EMEP_FILE,
+            "EMEP",
             "od550aer",
             NetcdfError,
             "Variable od550aer not available in file",
@@ -221,67 +250,56 @@ def test_load_cube_custom(file, var_name):
     ],
 )
 def test_load_cube_custom_error(
-    file: Path | str, var_name: str | None, exception: Type[Exception], error: str
+    file_path: Path, var_name: str | None, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
-        iris_io.load_cube_custom(file, var_name)
+        iris_io.load_cube_custom(file_path, var_name)
     assert str(e.value).startswith(error)
 
 
 @pytest.mark.parametrize(
-    "files,num_loaded",
+    "file,num_loaded",
     [
-        ([TM5_FILE1], 1),
-        ([EMEP_FILE], 0),
+        ("tm5", 1),
+        ("emep", 0),
     ],
 )
-def test_load_cubes_custom(files, num_loaded):
-    result = iris_io.load_cubes_custom(files)
+def test_load_cubes_custom(file_paths: list[Path], num_loaded: int):
+    result = iris_io.load_cubes_custom(file_paths)
     assert isinstance(result, tuple) and len(result) == 2
     assert all(isinstance(res, list) for res in result)
     assert all(len(res) == num_loaded for res in result)
 
 
-def test_check_dim_coord_names_cube():
-    iris_io.check_dim_coord_names_cube(aod_cube_only_longname_dims)
+@pytest.mark.parametrize("defect", ["only_longname_dims"])
+def test_check_dim_coord_names_cube(cube: Cube):
+    iris_io.check_dim_coord_names_cube(cube)
 
 
-@pytest.mark.parametrize(
-    "cube,file",
-    [
-        (
-            aod_cube_wrongtime3,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_daily.nc",
-        ),
-        (
-            aod_cube,
-            "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc",
-        ),
-    ],
-)
-def test__check_correct_time_dim(cube: CubeList, file: str):
-    cube = iris_io._check_correct_time_dim(cube, file)
+@pytest.mark.parametrize("defect", ["wrongtime3", None])
+def test__check_correct_time_dim(cube: Cube):
+    cube = iris_io._check_correct_time_dim(cube, TM5_FILE.name)
     assert isinstance(cube, Cube)
 
 
 @pytest.mark.parametrize(
-    "cube,file,error",
+    "defect,file,error",
     [
         pytest.param(
-            aod_cube,
+            None,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_-1_monthly.nc",
             "Invalid year -1 in filename aerocom3_TM5_AP3-CTRL2016_od550aer_Column_-1_monthly.nc",
             id="year=-1",
         ),
         pytest.param(
-            aod_cube,
+            None,
             "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_20001_monthly.nc",
             "Invalid year 20001 in filename aerocom3_TM5_AP3-CTRL2016_od550aer_Column_20001_monthly.nc",
             id="year=20001",
         ),
     ],
 )
-def test__check_correct_time_dim_error(cube: CubeList, file: str, error: str):
+def test__check_correct_time_dim_error(cube: Cube, file: str, error: str):
     with pytest.raises(FileConventionError) as e:
         iris_io._check_correct_time_dim(cube, file)
     assert str(e.value) == error
