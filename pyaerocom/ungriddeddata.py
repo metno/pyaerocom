@@ -35,6 +35,8 @@ from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
+from .tstype import TsType
+
 logger = logging.getLogger(__name__)
 
 
@@ -901,6 +903,15 @@ class UngriddedData:
                 stat = self._metablock_to_stationdata(
                     idx, vars_to_convert, start, stop, add_meta_keys
                 )
+                if freq is not None:
+                    if "ts_type" in stat["var_info"][vars_to_convert[0]].keys():
+                        if TsType(stat["var_info"][vars_to_convert[0]]["ts_type"]) < TsType(freq):
+                            continue
+                    elif "ts_type" in stat.keys():
+                        if TsType(stat["ts_type"]) < TsType(freq):
+                            continue
+                    else:
+                        raise KeyError("Could not find ts_type in stat")
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
                 logger.info(f"Skipping meta index {idx}. Reason: {repr(e)}")
