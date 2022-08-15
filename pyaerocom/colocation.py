@@ -723,6 +723,9 @@ def colocate_gridded_ungridded(
     if regrid_res_deg is not None:
         data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
 
+    # Special ts_typs for which all stations with ts_type< are removed
+    reduce_station_data_ts_type = ts_type
+
     ts_type_src_data = data.ts_type
     ts_type, ts_type_data = _check_ts_type(data, ts_type)
     if not colocate_time and ts_type < ts_type_data:
@@ -751,7 +754,12 @@ def colocate_gridded_ungridded(
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = data_ref.to_station_data_all(
-        vars_to_convert=var_ref, start=obs_start, stop=obs_stop, by_station_name=True, **kwargs
+        vars_to_convert=var_ref,
+        start=obs_start,
+        stop=obs_stop,
+        by_station_name=True,
+        freq=reduce_station_data_ts_type,
+        **kwargs,
     )
 
     obs_stat_data = all_stats["stats"]
