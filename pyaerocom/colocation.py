@@ -758,7 +758,7 @@ def colocate_gridded_ungridded(
         start=obs_start,
         stop=obs_stop,
         by_station_name=True,
-        freq=reduce_station_data_ts_type,
+        ts_type_preferred=reduce_station_data_ts_type,
         **kwargs,
     )
 
