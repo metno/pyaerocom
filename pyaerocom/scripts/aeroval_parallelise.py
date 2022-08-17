@@ -49,6 +49,7 @@ QSUB_LOG_DIR = "/lustre/storeA/project/aerocom/logs/aeroval_logs/"
 
 # some copy constants
 REMOTE_CP_COMMAND = ["scp", "-v"]
+CP_COMMAND = ["cp", "-v"]
 
 # script start time
 START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -133,14 +134,14 @@ def prep_files(options):
 
 
 def get_runfile_str_arr(
-    file,
-    queue_name=QSUB_QUEUE_NAME,
-    script_name=None,
-    # wd=QSUB_DIR,
-    wd=None,
-    mail=f"{QSUB_USER}@met.no",
-    logdir=QSUB_LOG_DIR,
-    date=START_TIME,
+        file,
+        queue_name=QSUB_QUEUE_NAME,
+        script_name=None,
+        # wd=QSUB_DIR,
+        wd=None,
+        mail=f"{QSUB_USER}@met.no",
+        logdir=QSUB_LOG_DIR,
+        date=START_TIME,
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
@@ -213,14 +214,14 @@ def get_runfile_str_arr(
 
 
 def run_queue(
-    runfiles: list[str],
-    qsub_host: str = QSUB_HOST,
-    qsub_cmd: str = QSUB_NAME,
-    qsub_dir: str = QSUB_DIR,
-    qsub_user: str = QSUB_USER,
-    qsub_queue: str = QSUB_QUEUE_NAME,
-    submit_flag: bool = False,
-    options: dict = {},
+        runfiles: list[str],
+        qsub_host: str = QSUB_HOST,
+        qsub_cmd: str = QSUB_NAME,
+        qsub_dir: str = QSUB_DIR,
+        qsub_user: str = QSUB_USER,
+        qsub_queue: str = QSUB_QUEUE_NAME,
+        submit_flag: bool = False,
+        options: dict = {},
 ):
     """submit runfiles to the remote cluster
 
@@ -341,8 +342,103 @@ def run_queue(
 
         else:
             # script is run on localhost
-            # scripts exist already
-            pass
+            # scripts exist already, but in /tmp where the queue nodes can't read them
+            # copy to submission directories
+            # create tmp dir on qsub host; retain some parts
+            # host_str = f"{QSUB_USER}@{QSUB_HOST}"
+            if idx == 0:
+                cmd_arr = ["mkdir", "-p", qsub_tmp_dir]
+                print(f"running command {' '.join(map(str, cmd_arr))}...")
+                sh_result = subprocess.run(cmd_arr, capture_output=True)
+                if sh_result.returncode != 0:
+                    continue
+                else:
+                    print("success...")
+
+            # make some adjustments to the config file
+            # e.g. adjust the json_basedir and the coldata_basedir entries
+            if "json_basedir" in options:
+                pass
+            else:
+                pass
+
+            if "coldata_basedir" in options:
+                pass
+            else:
+                pass
+
+            # copy aeroval config file to qsub host
+            host_str = f"{qsub_tmp_dir}/"
+            cmd_arr = [*CP_COMMAND, _file, host_str]
+            print(f"running command {' '.join(map(str, cmd_arr))}...")
+            sh_result = subprocess.run(cmd_arr, capture_output=True)
+            if sh_result.returncode != 0:
+                continue
+            else:
+                print("success...")
+            # create qsub runfile and copy that to the qsub host
+            qsub_run_file_name = _file.with_name(f"{_file.stem}{'.run'}")
+            remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
+            remote_json_file = Path.joinpath(qsub_tmp_dir, _file.name)
+            dummy_arr = get_runfile_str_arr(
+                remote_json_file, wd=qsub_tmp_dir, script_name=remote_qsub_run_file_name
+            )
+            print(f"writing file {qsub_run_file_name}")
+            with open(qsub_run_file_name, "w") as f:
+                f.write("\n".join(dummy_arr))
+
+            # copy runfile to qsub host
+            host_str = f"{qsub_tmp_dir}/"
+            cmd_arr = [*CP_COMMAND, qsub_run_file_name, host_str]
+            print(f"running command {' '.join(map(str, cmd_arr))}...")
+            sh_result = subprocess.run(cmd_arr, capture_output=True)
+            if sh_result.returncode != 0:
+                continue
+            else:
+                print("success...")
+
+            # run qsub
+            # unfortunatly qsub can't be run directly for some reason (likely security)
+            # create a script with the qsub call and start that
+            host_str = f"{qsub_tmp_dir}/"
+            qsub_start_file_name = _file.with_name(f"{_file.stem}{'.sh'}")
+            remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
+            remote_qsub_start_file_name = Path.joinpath(qsub_tmp_dir, qsub_start_file_name.name)
+            # this does not work:
+            # cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", "qsub", remote_qsub_run_file_name]
+            # use bash script as workaround
+            start_script_arr = []
+            start_script_arr.append("#!/bin/bash -l")
+            start_script_arr.append(f"qsub {remote_qsub_run_file_name}")
+            start_script_arr.append("")
+            with open(qsub_start_file_name, "w") as f:
+                f.write("\n".join(start_script_arr))
+            cmd_arr = [*CP_COMMAND, qsub_start_file_name, host_str]
+            if submit_flag:
+                print(f"running command {' '.join(map(str, cmd_arr))}...")
+                sh_result = subprocess.run(cmd_arr, capture_output=True)
+                if sh_result.returncode != 0:
+                    continue
+                else:
+                    print("success...")
+
+                host_str = f"{QSUB_USER}@{QSUB_HOST}"
+                cmd_arr = ["/usr/bin/bash", "-l", remote_qsub_start_file_name]
+                print(f"running command {' '.join(map(str, cmd_arr))}...")
+                sh_result = subprocess.run(cmd_arr, capture_output=True)
+                if sh_result.returncode != 0:
+                    print(f"return code: {sh_result.returncode}")
+                    print(f"{sh_result.stderr}")
+                    continue
+                else:
+                    print("success...")
+                    print(f"{sh_result.stdout}")
+
+            else:
+                print(f"qsub files created on localhost.")
+                print(
+                    f"you can start the job with the command: qsub {remote_qsub_run_file_name} on the host {qsub_host}."
+                )
 
 
 def combine_output(options: dict):
@@ -501,7 +597,7 @@ def dict_merge(dct: Union[None, dict], merge_dct: dict):
 
 
 def match_file(
-    file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
+        file: str, file_mask_array: Union[str, list[str]] = MERGE_EXP_FILES_TO_COMBINE
 ) -> bool:
     """small hekper that matches a filename agains a list if wildcards"""
     if isinstance(file_mask_array, str):
@@ -520,7 +616,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="command line interface to aeroval parallelisation.\n"
-        "aeroval config has to to be in the variable CFG for now!\n\n"
+                    "aeroval config has to to be in the variable CFG for now!\n\n"
     )
     parser.add_argument("files", help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
