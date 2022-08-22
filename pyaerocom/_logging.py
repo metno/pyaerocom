@@ -18,7 +18,7 @@ from logging.config import fileConfig
 
 LOGGING_CONFIG = dict(
     # root logger
-    file_name=os.getenv("PYAEROCOM_LOG_FILE", "pyaerocom.log"),
+    file_name=os.getenv("PYAEROCOM_LOG_FILE", default="pyaerocom.log"),
     file_days="14",
     file_level="DEBUG",
     # pyaerocom logger
