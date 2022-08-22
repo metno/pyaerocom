@@ -75,6 +75,8 @@ MERGE_EXP_FILES_TO_COMBINE = [
 MERGE_EXP_FILES_TO_EXCLUDE = []
 # the config file need to be merged and have a special name
 MERGE_EXP_CFG_FILES = ["cfg_*.json"]
+# Name of conda env to use for running the aeroval analysis
+CONDA_ENV = "pyadev-applied"
 
 
 def prep_files(options):
@@ -142,6 +144,7 @@ def get_runfile_str_arr(
         mail=f"{QSUB_USER}@met.no",
         logdir=QSUB_LOG_DIR,
         date=START_TIME,
+        conda_env='pyadev-applied',
 ):
     """create list of strings with runfile for gridengine"""
     # create runfile
@@ -197,7 +200,7 @@ def get_runfile_str_arr(
     runfile_arr.append("module load aerocom/anaconda3-stable >> ${logfile} 2>&1")
     runfile_arr.append("module list >> ${logfile} 2>&1")
 
-    runfile_arr.append("conda activate pyadev-applied >> ${logfile} 2>&1")
+    runfile_arr.append(f"conda activate ${conda_env} >> ${logfile} 2>&1")
     runfile_arr.append("conda env list >> ${logfile} 2>&1")
 
     runfile_arr.append("set -x")
@@ -238,6 +241,7 @@ def run_queue(
     qsub_tmp_dir = Path.joinpath(Path(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
 
     localhost_flag = False
+    # TODO add local machine name
     if "localhost" in qsub_host:
         localhost_flag = True
 
@@ -448,7 +452,10 @@ def combine_output(options: dict):
     # create outdir
     try:
         # remove files first
-        shutil.rmtree(options["outdir"])
+        try:
+            shutil.rmtree(options["outdir"])
+        except FileNotFoundError:
+            pass
         Path.mkdir(options["outdir"], exist_ok=False)
     except FileExistsError:
         pass
@@ -622,6 +629,7 @@ def main():
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
     parser.add_argument("-o", "--outdir", help="output directory for experiment assembly")
+    parser.add_argument("-e", "--env", help="output directory for experiment assembly")
     parser.add_argument("--subdry", help="dryrun for submission to queue", action="store_true")
     parser.add_argument(
         "--createjobfiles",
@@ -682,6 +690,9 @@ def main():
     if args.outdir:
         options["outdir"] = Path(args.outdir)
 
+    if args.env:
+        options["conda_env_name"] = args.env
+
     if args.tempdir:
         options["tempdir"] = Path(args.tempdir)
 
@@ -700,7 +711,7 @@ def main():
                 print(f"{_runfile}")
             pass
         else:
-            run_queue(runfiles, submit_flag=(not options["createjobfiles"]))
+            run_queue(runfiles, submit_flag=(not options["createjobfiles"]), options=options)
 
     else:
         result = combine_output(options)
