@@ -36,13 +36,18 @@ def vmr_to_ghost_stations(
     for stat in data:
         vmrdata = stat[vmrvar]
         meta = stat["meta"]
-        p = meta["network_provided_volume_standard_pressure"]
-        T = meta["network_provided_volume_standard_temperature"]
+        p_pascal = meta["network_provided_volume_standard_pressure"]
+        T_kelvin = meta["network_provided_volume_standard_temperature"]
         mmol_var = get_molmass(vmrvar)
         unit_var = meta["var_info"][vmrvar]["units"]
         to_unit = const.VARS[mconcvar].units
         conc = vmrx_to_concx(
-            vmrdata, p_pascal=p, T_kelvin=T, mmol_var=mmol_var, vmr_unit=unit_var, to_unit=to_unit
+            vmrdata,
+            p_pascal=p_pascal,
+            T_kelvin=T_kelvin,
+            mmol_var=mmol_var,
+            vmr_unit=unit_var,
+            to_unit=to_unit,
         )
         stat[mconcvar] = conc
         vi = {}
