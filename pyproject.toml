@@ -23,9 +23,7 @@ requires-python = ">=3.8"
 dependencies = [
     'importlib-metadata>=3.6; python_version < "3.10"',
     'tomli>=2.0.1; python_version < "3.11"',
-    # scitools-iris>=3.1.0,!=3.2.*
     "xarray>=0.16.0",
-    # cartopy>=0.16.0,!=0.20.* # cartopy-0.20+ fails to install on CI
     "matplotlib>=3.0.1",
     "scipy>=1.1.0",
     "pandas>=0.23.0",
