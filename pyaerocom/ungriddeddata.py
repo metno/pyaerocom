@@ -1236,6 +1236,7 @@ class UngriddedData:
                     freq,
                     merge_if_multi=True,
                     allow_wildcards_station_name=False,
+                    ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
 
