@@ -10,6 +10,7 @@ parallelisation for aeroval processing
 
 # some ideas what to use
 import argparse
+import sys
 from copy import deepcopy
 from datetime import datetime
 from fnmatch import fnmatch
@@ -103,6 +104,18 @@ def prep_files(options):
 
         # create tmp dir
         tempdir = mkdtemp(dir=options["tempdir"])
+
+        # make some adjustments to the config file
+        # e.g. adjust the json_basedir and the coldata_basedir entries
+        if "json_basedir" in options:
+            cfg['json_basedir'] = options['json_basedir']
+
+        if "coldata_basedir" in options:
+            cfg['coldata_basedir'] = options['coldata_basedir']
+
+        if "io_aux_file" in options:
+            cfg['io_aux_file'] = options['io_aux_file']
+
         # index for temporary data directories
         dir_idx = 1
         for _model in cfg["model_cfg"]:
@@ -200,7 +213,7 @@ def get_runfile_str_arr(
     runfile_arr.append("module load aerocom/anaconda3-stable >> ${logfile} 2>&1")
     runfile_arr.append("module list >> ${logfile} 2>&1")
 
-    runfile_arr.append(f"conda activate ${conda_env} >> ${logfile} 2>&1")
+    runfile_arr.append(f"conda activate {conda_env} >> ${{logfile}} 2>&1")
     runfile_arr.append("conda env list >> ${logfile} 2>&1")
 
     runfile_arr.append("set -x")
@@ -236,13 +249,13 @@ def run_queue(
     """
 
     # to enable test usage, import fabric only here
+    import platform
     import subprocess
 
     qsub_tmp_dir = Path.joinpath(Path(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
 
     localhost_flag = False
-    # TODO add local machine name
-    if "localhost" in qsub_host:
+    if "localhost" in qsub_host or platform.node() in qsub_host:
         localhost_flag = True
 
     for idx, _file in enumerate(runfiles):
@@ -258,18 +271,6 @@ def run_queue(
                     continue
                 else:
                     print("success...")
-
-            # make some adjustments to the config file
-            # e.g. adjust the json_basedir and the coldata_basedir entries
-            if "json_basedir" in options:
-                pass
-            else:
-                pass
-
-            if "coldata_basedir" in options:
-                pass
-            else:
-                pass
 
             # copy aeroval config file to qsub host
             host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
@@ -622,21 +623,16 @@ def main():
     """main program"""
 
     parser = argparse.ArgumentParser(
-        description="command line interface to aeroval parallelisation.\n"
-                    "aeroval config has to to be in the variable CFG for now!\n\n"
+        description="command line interface to aeroval parallelisation.",
+        # epilog="aeroval config has to to be in the variable CFG for now!"
     )
-    parser.add_argument("files", help="file(s) to read", nargs="+")
+    parser.add_argument("files", help="file(s) to read, directories to combine (if -c switch is used)", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
-    parser.add_argument("-o", "--outdir", help="output directory for experiment assembly")
-    parser.add_argument("-e", "--env", help="output directory for experiment assembly")
-    parser.add_argument("--subdry", help="dryrun for submission to queue", action="store_true")
-    parser.add_argument(
-        "--createjobfiles",
-        help="create all that is necessary to submit the jobs to the queue, but do not start the jobs. ",
-        action="store_true",
-        default=False,
-    )
+    parser.add_argument("-e", "--env", help="conda env used to run the aeroval analysis")
+    parser.add_argument("--subdry",
+                        help="dryrun for submission to queue (all files created and copied, but no submission)",
+                        action="store_true")
     parser.add_argument(
         "--jsonrunscript",
         help=f"script to run json config files; defaults to {JSON_RUNSCRIPT}",
@@ -657,17 +653,18 @@ def main():
         help=f"directory for temporary files on qsub node; defaults to {TMP_DIR}",
         default=TMP_DIR,
     )
-    parser.add_argument("-c", "--combinedirs", help="output directory", action="store_true")
+    parser.add_argument("--json_basedir", help="set json_basedir in the config manually", )
+    parser.add_argument("--coldata_basedir", help="set coldata_basedir in the configuration manually",
+                        )
+    parser.add_argument("--io_aux_file", help="set io_aux_file in the configuration file manually", )
+
+    parser.add_argument("-c", "--combinedirs", help="combine the output of a parallel runs", action="store_true")
+    parser.add_argument("-o", "--outdir", help="output directory for experiment assembly")
 
     args = parser.parse_args()
     options = {}
     if args.files:
         options["files"] = args.files
-
-    if args.combinedirs:
-        options["combinedirs"] = True
-    else:
-        options["combinedirs"] = False
 
     if args.jsonrunscript:
         options["jsonrunscript"] = args.jsonrunscript
@@ -677,18 +674,10 @@ def main():
     else:
         options["verbose"] = False
 
-    if args.createjobfiles:
-        options["createjobfiles"] = True
-    else:
-        options["createjobfiles"] = False
-
     if args.subdry:
         options["subdry"] = True
     else:
         options["subdry"] = False
-
-    if args.outdir:
-        options["outdir"] = Path(args.outdir)
 
     if args.env:
         options["conda_env_name"] = args.env
@@ -702,16 +691,40 @@ def main():
     if args.cfgvar:
         options["cfgvar"] = args.cfgvar
 
+    if args.json_basedir:
+        options["json_basedir"] = args.json_basedir
+
+    if args.coldata_basedir:
+        options["coldata_basedir"] = args.coldata_basedir
+
+    if args.io_aux_file:
+        options["io_aux_file"] = args.io_aux_file
+
+    if args.combinedirs:
+        options["combinedirs"] = True
+    else:
+        options["combinedirs"] = False
+
+    if args.outdir:
+        options["outdir"] = Path(args.outdir)
+
+    # make sure that if -c switch is given also the -o option is there
+    if options['combinedirs'] and 'outdir' not in options:
+        error_str = """Error: -c switch given but no output directory defined. 
+Please add an output directory using the -o switch."""
+        print(error_str)
+        sys.exit(1)
+
     if not options["combinedirs"]:
         # create file for the queue
         runfiles = prep_files(options)
-        if options["subdry"]:
+        if options["subdry"] and options['verbose']:
             # just print the to be run files
             for _runfile in runfiles:
-                print(f"{_runfile}")
+                print(f"created {_runfile}")
             pass
         else:
-            run_queue(runfiles, submit_flag=(not options["createjobfiles"]), options=options)
+            run_queue(runfiles, submit_flag=(not options["subdry"]), options=options)
 
     else:
         result = combine_output(options)
