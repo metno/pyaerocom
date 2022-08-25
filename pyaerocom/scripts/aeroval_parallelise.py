@@ -254,13 +254,13 @@ def run_queue(
 
     qsub_tmp_dir = Path.joinpath(Path(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
 
-    localhost_flag = False
-    if "localhost" in qsub_host or platform.node() in qsub_host:
-        localhost_flag = True
+    # localhost_flag = False
+    # if "localhost" in qsub_host or platform.node() in qsub_host:
+    #     localhost_flag = True
 
     for idx, _file in enumerate(runfiles):
         # copy runfiles to qsub host if qsub host is not localhost
-        if not localhost_flag:
+        if not options["localhost"]:
             # create tmp dir on qsub host; retain some parts
             host_str = f"{QSUB_USER}@{QSUB_HOST}"
             if idx == 0:
@@ -346,7 +346,7 @@ def run_queue(
                 )
 
         else:
-            # script is run on localhost
+            # localhost flag is set
             # scripts exist already, but in /tmp where the queue nodes can't read them
             # copy to submission directories
             # create tmp dir on qsub host; retain some parts
@@ -359,18 +359,6 @@ def run_queue(
                     continue
                 else:
                     print("success...")
-
-            # make some adjustments to the config file
-            # e.g. adjust the json_basedir and the coldata_basedir entries
-            if "json_basedir" in options:
-                pass
-            else:
-                pass
-
-            if "coldata_basedir" in options:
-                pass
-            else:
-                pass
 
             # copy aeroval config file to qsub host
             host_str = f"{qsub_tmp_dir}/"
@@ -658,6 +646,7 @@ def main():
                         )
     parser.add_argument("--io_aux_file", help="set io_aux_file in the configuration file manually", )
 
+    parser.add_argument("-l", "--localhost", help="start queue submission on localhost", action="store_true")
     parser.add_argument("-c", "--combinedirs", help="combine the output of a parallel runs", action="store_true")
     parser.add_argument("-o", "--outdir", help="output directory for experiment assembly")
 
@@ -705,6 +694,11 @@ def main():
     else:
         options["combinedirs"] = False
 
+    if args.localhost:
+        options["localhost"] = True
+    else:
+        options["localhost"] = False
+
     if args.outdir:
         options["outdir"] = Path(args.outdir)
 
@@ -714,6 +708,10 @@ def main():
 Please add an output directory using the -o switch."""
         print(error_str)
         sys.exit(1)
+
+    if options['localhost']:
+        info_str = "INFO: starting queue submission on localhost (-l flag is set)."
+        print(info_str)
 
     if not options["combinedirs"]:
         # create file for the queue
