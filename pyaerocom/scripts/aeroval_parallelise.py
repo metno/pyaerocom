@@ -249,7 +249,6 @@ def run_queue(
     """
 
     # to enable test usage, import fabric only here
-    import platform
     import subprocess
 
     qsub_tmp_dir = Path.joinpath(Path(qsub_dir), f"qsub.{runfiles[0].parts[-2]}")
@@ -609,17 +608,48 @@ def match_file(
 
 def main():
     """main program"""
-
+    colors = {
+        'PURPLE': '\033[95m',
+        'CYAN': '\033[96m',
+        'BOLD': '\033[1m',
+        'UNDERLINE': '\033[4m',
+        'END': '\033[0m'}
+    # DARKCYAN = '\033[36m'
+    # BLUE = '\033[94m'
+    # GREEN = '\033[92m'
+    # YELLOW = '\033[93m'
+    # RED = '\033[91m'
+    script_name = Path(sys.argv[0]).name
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description="command line interface to aeroval parallelisation.",
-        # epilog="aeroval config has to to be in the variable CFG for now!"
+        epilog=f"""{colors['BOLD']}Example usages:{colors['END']}
+
+{colors['UNDERLINE']}run script on qsub host and do not submit jobs to queue:{colors['END']}
+    {script_name} --noqsub -l <cfg-file>
+
+{colors['UNDERLINE']}run script on workstation, set directory of aeroval files and submit to queue via qsub host:{colors['END']}
+   {script_name}  --remotetempdir <directory for aeroval files> <cfg-file>
+   
+   Note that the directory for aeroval files needs to be on a common file system for all cluster machines.
+   
+{colors['UNDERLINE']}set data directories and submit to queue:{colors['END']}
+    {script_name} --json_basedir /tmp/data --coldata_basedir /tmp/coldata --io_aux_file /tmp/gridded_io_aux.py <cfg-file>
+
+{colors['UNDERLINE']}assemble aeroval data after a parallel run has been finished: (runs always on the local machine){colors['END']}
+    {script_name} -c -o <output directory> <input directories>
+    {script_name} -c -o ${{HOME}}/tmp ${{HOME}}/tmpt39n2gp_*
+    
+"""
     )
     parser.add_argument("files", help="file(s) to read, directories to combine (if -c switch is used)", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity", action="store_true")
 
-    parser.add_argument("-e", "--env", help="conda env used to run the aeroval analysis")
-    parser.add_argument("--subdry",
-                        help="dryrun for submission to queue (all files created and copied, but no submission)",
+    parser.add_argument("-e", "--env", help=f"conda env used to run the aeroval analysis; defaults to {CONDA_ENV}")
+    parser.add_argument("--queue", help=f"queue name to submit the jobs to; defaults to {QSUB_QUEUE_NAME}")
+    parser.add_argument("--queue_user", help=f"queue user; defaults to {QSUB_USER}")
+    parser.add_argument("--noqsub",
+                        help="do not submit to queue (all files created and copied, but no submission)",
                         action="store_true")
     parser.add_argument(
         "--jsonrunscript",
@@ -663,13 +693,21 @@ def main():
     else:
         options["verbose"] = False
 
-    if args.subdry:
-        options["subdry"] = True
+    if args.noqsub:
+        options["noqsub"] = True
     else:
-        options["subdry"] = False
+        options["noqsub"] = False
 
+    parser.add_argument("--queue", help=f"queue name to submit the jobs to; defaults to {QSUB_QUEUE_NAME}")
+    parser.add_argument("--queue_user", help=f"queue user; defaults to {QSUB_USER}")
     if args.env:
         options["conda_env_name"] = args.env
+
+    if args.queue:
+        QSUB_QUEUE_NAME = args.queue
+
+    if args.queue_user:
+        QSUB_USER = args.queue_user
 
     if args.tempdir:
         options["tempdir"] = Path(args.tempdir)
@@ -716,13 +754,13 @@ Please add an output directory using the -o switch."""
     if not options["combinedirs"]:
         # create file for the queue
         runfiles = prep_files(options)
-        if options["subdry"] and options['verbose']:
+        if options["noqsub"] and options['verbose']:
             # just print the to be run files
             for _runfile in runfiles:
                 print(f"created {_runfile}")
             pass
         else:
-            run_queue(runfiles, submit_flag=(not options["subdry"]), options=options)
+            run_queue(runfiles, submit_flag=(not options["noqsub"]), options=options)
 
     else:
         result = combine_output(options)
