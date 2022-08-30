@@ -62,7 +62,7 @@ JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
 # some constants for the merge operation
 # files not noted here will be copied
 # list of file masks to merge
-# list of file masks not to touch
+
 MERGE_EXP_FILES_TO_COMBINE = [
     "ts/*.json",
     "hm/ts/*.json",
@@ -73,6 +73,7 @@ MERGE_EXP_FILES_TO_COMBINE = [
     "hm/glob_stats_*.json",
     "cfg_*.json",
 ]
+# list of file masks not to touch
 MERGE_EXP_FILES_TO_EXCLUDE = []
 # the config file need to be merged and have a special name
 MERGE_EXP_CFG_FILES = ["cfg_*.json"]
@@ -261,7 +262,7 @@ def run_queue(
         # copy runfiles to qsub host if qsub host is not localhost
         if not options["localhost"]:
             # create tmp dir on qsub host; retain some parts
-            host_str = f"{QSUB_USER}@{QSUB_HOST}"
+            host_str = f"{qsub_user}@{qsub_host}"
             if idx == 0:
                 cmd_arr = ["ssh", host_str, "mkdir", "-p", qsub_tmp_dir]
                 print(f"running command {' '.join(map(str, cmd_arr))}...")
@@ -272,7 +273,7 @@ def run_queue(
                     print("success...")
 
             # copy aeroval config file to qsub host
-            host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
+            host_str = f"{qsub_user}@{qsub_host}:{qsub_tmp_dir}/"
             cmd_arr = [*REMOTE_CP_COMMAND, _file, host_str]
             print(f"running command {' '.join(map(str, cmd_arr))}...")
             sh_result = subprocess.run(cmd_arr, capture_output=True)
@@ -292,7 +293,7 @@ def run_queue(
                 f.write("\n".join(dummy_arr))
 
             # copy runfile to qsub host
-            host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
+            host_str = f"{qsub_user}@{qsub_host}:{qsub_tmp_dir}/"
             cmd_arr = [*REMOTE_CP_COMMAND, qsub_run_file_name, host_str]
             print(f"running command {' '.join(map(str, cmd_arr))}...")
             sh_result = subprocess.run(cmd_arr, capture_output=True)
@@ -304,7 +305,7 @@ def run_queue(
             # run qsub
             # unfortunatly qsub can't be run directly for some reason (likely security)
             # create a script with the qsub call and start that
-            host_str = f"{QSUB_USER}@{QSUB_HOST}:{qsub_tmp_dir}/"
+            host_str = f"{qsub_user}@{qsub_host}:{qsub_tmp_dir}/"
             qsub_start_file_name = _file.with_name(f"{_file.stem}{'.sh'}")
             remote_qsub_run_file_name = Path.joinpath(qsub_tmp_dir, qsub_run_file_name.name)
             remote_qsub_start_file_name = Path.joinpath(qsub_tmp_dir, qsub_start_file_name.name)
@@ -326,7 +327,7 @@ def run_queue(
                 else:
                     print("success...")
 
-                host_str = f"{QSUB_USER}@{QSUB_HOST}"
+                host_str = f"{qsub_user}@{qsub_host}"
                 cmd_arr = ["ssh", host_str, "/usr/bin/bash", "-l", remote_qsub_start_file_name]
                 print(f"running command {' '.join(map(str, cmd_arr))}...")
                 sh_result = subprocess.run(cmd_arr, capture_output=True)
@@ -349,7 +350,7 @@ def run_queue(
             # scripts exist already, but in /tmp where the queue nodes can't read them
             # copy to submission directories
             # create tmp dir on qsub host; retain some parts
-            # host_str = f"{QSUB_USER}@{QSUB_HOST}"
+            # host_str = f"{qsub_user}@{qsub_host}"
             if idx == 0:
                 cmd_arr = ["mkdir", "-p", qsub_tmp_dir]
                 print(f"running command {' '.join(map(str, cmd_arr))}...")
@@ -414,7 +415,7 @@ def run_queue(
                 else:
                     print("success...")
 
-                host_str = f"{QSUB_USER}@{QSUB_HOST}"
+                host_str = f"{sub_user}@{qsub_host}"
                 cmd_arr = ["/usr/bin/bash", "-l", remote_qsub_start_file_name]
                 print(f"running command {' '.join(map(str, cmd_arr))}...")
                 sh_result = subprocess.run(cmd_arr, capture_output=True)
@@ -608,6 +609,7 @@ def match_file(
 
 def main():
     """main program"""
+
     colors = {
         'PURPLE': '\033[95m',
         'CYAN': '\033[96m',
@@ -647,7 +649,7 @@ def main():
 
     parser.add_argument("-e", "--env", help=f"conda env used to run the aeroval analysis; defaults to {CONDA_ENV}")
     parser.add_argument("--queue", help=f"queue name to submit the jobs to; defaults to {QSUB_QUEUE_NAME}")
-    parser.add_argument("--queue_user", help=f"queue user; defaults to {QSUB_USER}")
+    parser.add_argument("--queue-user", help=f"queue user; defaults to {QSUB_USER}")
     parser.add_argument("--noqsub",
                         help="do not submit to queue (all files created and copied, but no submission)",
                         action="store_true")
@@ -698,16 +700,18 @@ def main():
     else:
         options["noqsub"] = False
 
-    parser.add_argument("--queue", help=f"queue name to submit the jobs to; defaults to {QSUB_QUEUE_NAME}")
-    parser.add_argument("--queue_user", help=f"queue user; defaults to {QSUB_USER}")
     if args.env:
         options["conda_env_name"] = args.env
 
     if args.queue:
-        QSUB_QUEUE_NAME = args.queue
+        options['qsub_queue_name'] = args.queue
+    else:
+        options['qsub_queue_name'] = QSUB_QUEUE_NAME
 
     if args.queue_user:
-        QSUB_USER = args.queue_user
+        options['qsub_user'] = args.queue_user
+    else:
+        options['qsub_user'] = QSUB_USER
 
     if args.tempdir:
         options["tempdir"] = Path(args.tempdir)
