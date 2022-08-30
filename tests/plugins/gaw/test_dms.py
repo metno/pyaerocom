@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
-from pyaerocom.io import ReadGAW
+from pyaerocom.plugins.gaw.reader import ReadGAW
 from tests.conftest import TEST_RTOL, lustre_unavail
 
 

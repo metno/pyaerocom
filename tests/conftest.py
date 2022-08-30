@@ -34,15 +34,16 @@ etopo1_unavail = pytest.mark.skipif(
 )
 
 
-try:
-    import geojsoncontour
+def __package_installed(name: str) -> bool:
+    try:
+        metadata.version(name)
+    except ModuleNotFoundError:
+        return False
+    return True
 
-    geojson_avail = True
-except ModuleNotFoundError:
-    geojson_avail = False
 
 geojson_unavail = pytest.mark.xfail(
-    not geojson_avail,
+    not __package_installed("geojsoncontour"),
     reason="geojsoncontour might not be avaiable on a conda environment",
     raises=ModuleNotFoundError,
 )
