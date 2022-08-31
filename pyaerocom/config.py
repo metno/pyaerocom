@@ -84,6 +84,9 @@ class Config:
     #: MarcoPolo name
     MARCO_POLO_NAME = 'MarcoPolo'
 
+    #: AirNow name
+    AIR_NOW_NAME = 'AirNow'
+
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = "GAWTADsubsetAasEtAl"
 
