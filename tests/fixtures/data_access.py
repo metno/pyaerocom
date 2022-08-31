@@ -14,6 +14,7 @@ import requests
 
 from pyaerocom import const, io
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.plugins.ghost.reader import ReadGhost
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +56,10 @@ TEST_DATA: dict[str, DataForTests] = {
     ),
     "EBASSubset": DataForTests("obsdata/EBASMultiColumn", io.ReadEbas),
     "AirNowSubset": DataForTests("obsdata/AirNowSubset", io.ReadAirNow),
-    "G.EEA.daily.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/daily", io.ReadGhost),
-    "G.EEA.hourly.Subset": DataForTests(
-        "obsdata/GHOST/data/EEA_AQ_eReporting/hourly", io.ReadGhost
-    ),
-    "G.EBAS.daily.Subset": DataForTests("obsdata/GHOST/data/EBAS/daily", io.ReadGhost),
-    "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", io.ReadGhost),
+    "G.EEA.daily.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/daily", ReadGhost),
+    "G.EEA.hourly.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/hourly", ReadGhost),
+    "G.EBAS.daily.Subset": DataForTests("obsdata/GHOST/data/EBAS/daily", ReadGhost),
+    "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", ReadGhost),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
 }

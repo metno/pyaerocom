@@ -10,8 +10,9 @@ import geopy.distance
 import numpy as np
 
 from pyaerocom import const
-from pyaerocom.io.readsatellitel2base import ReadL2DataBase
 from pyaerocom.ungriddeddata import UngriddedData
+
+from .base_reader import ReadL2DataBase
 
 
 class ReadL2Data(ReadL2DataBase):

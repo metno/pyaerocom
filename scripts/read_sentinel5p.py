@@ -9,7 +9,7 @@ import sys
 
 import numpy as np
 
-from pyaerocom.io.read_sentinel5p_data import ReadL2Data
+from pyaerocom.extras.satellite_l2.sentinel5p import ReadL2Data
 
 default_topo_file = "/lustre/storeB/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc"
 # default_gridded_out_file = './gridded.nc'

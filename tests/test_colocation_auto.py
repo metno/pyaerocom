@@ -7,8 +7,8 @@ from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
-from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
+from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
 from tests.fixtures.data_access import TEST_DATA
 
 COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
