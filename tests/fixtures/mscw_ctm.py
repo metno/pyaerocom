@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -31,7 +32,7 @@ def create_fake_MSCWCtm_data(numval=1, tst=None):
 
     _lats_fake = np.linspace(30, 82, 10)
     _lons_fake = np.linspace(-25, 90, 15)
-    # _time_fake = pd.date_range('2019-01','2019-06', freq=pd_freq)
+    # _time_fake = pd.date_range("2019-01", "2019-06", freq=TsType(tst).to_pandas_freq())
     _time_fake = np.arange(10)
     timeattrs = {"units": f"{tbase} since 2000-01-01", "calendar": "gregorian"}
     sh = (len(_time_fake), len(_lats_fake), len(_lons_fake))

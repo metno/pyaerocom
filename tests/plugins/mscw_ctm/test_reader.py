@@ -111,6 +111,17 @@ VAR_MAP = {
     "dryoxn": "DDEP_OXN_m2Grid",
     "dryoxs": "DDEP_SOX_m2Grid",
     "dryrdn": "DDEP_RDN_m2Grid",
+    "concCocCoarse": "SURF_ugC_PM_OMCOARSE",
+    "concCocFine": "SURF_ugC_PM_OM25",
+    "concecCoarse": "SURF_ug_ECCOARSE",
+    "concecFine": "SURF_ug_ECFINE",
+    "concnh4coarse": "SURF_ug_NH4_F",
+    "concnh4fine": "SURF_ug_NH4_F",
+    "concoxn": "SURF_ugN_OXN",
+    "concso4c": "SURF_ug_SO4",
+    "concso4coarse": "SURF_ug_SO4",
+    "concso4fine": "SURF_ug_SO4",
+    "vmrno": "SURF_ppb_NO",
 }
 
 
@@ -324,7 +335,7 @@ def test_ReadMscwCtm_open_file(data_dir: str):
         reader.open_file()
     reader.data_dir = data_dir
     data = reader.open_file()
-    assert isinstance(data["2017"], xr.Dataset)
+    assert isinstance(data, xr.Dataset)
     assert reader._filedata is data
 
 
