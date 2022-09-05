@@ -372,7 +372,9 @@ class UngriddedData:
 
         return data_obj
 
-    def add_station_data(self, stat, meta_idx=None, data_idx=None, check_index=False):
+    def add_station_data(
+        self, stat, meta_idx=None, data_idx=None, check_index=False
+    ):  # pragma: no cover
         raise NotImplementedError("Coming at some point")
         if meta_idx is None:
             meta_idx = self.last_meta_idx + 1
@@ -1258,7 +1260,9 @@ class UngriddedData:
 
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
-    def get_variable_data(self, variables, start=None, stop=None, ts_type=None, **kwargs):
+    def get_variable_data(
+        self, variables, start=None, stop=None, ts_type=None, **kwargs
+    ):  # pragma: no cover
         """Extract all data points of a certain variable
 
         Parameters
@@ -2685,7 +2689,7 @@ class UngriddedData:
         insert_nans=True,
         ax=None,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot time series of station and variable
 
         Parameters
@@ -2742,7 +2746,7 @@ class UngriddedData:
         legend=True,
         add_title=True,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot station coordinates on a map
 
         All input parameters are optional and may be used to add constraints
