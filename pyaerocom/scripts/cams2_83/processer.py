@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
-    def _run_single_entry(self, model_name, obs_name, var_list):
+    def _run_single_entry(self, model_name, obs_name, var_list, analysis=False):
         col = self.get_colocator(model_name, obs_name)
         forecast_days = self.cfg.statistics_opts.forecast_days
 
@@ -17,9 +17,10 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         else:
             files_to_convert = []
             for leap in range(forecast_days):
+                runtype = "AN" if analysis else "FC"
                 model = col.model_id.split(".")[1]
-                model_id = f"CAMS2-83.{model}.day{leap}"
-                model_name = f"CAMS2-83-{model}-day{leap}"
+                model_id = f"CAMS2-83.{model}.day{leap}.{runtype}"
+                model_name = f"CAMS2-83-{model}-day{leap}-{runtype}"
                 col.model_id = model_id
                 col.model_name = model_name
                 col.run(var_list)
@@ -36,7 +37,14 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             engine = CAMS2_83_Engine(self.cfg)
             engine.run(files_to_convert, var_list)
 
-    def run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
+    def run(
+        self,
+        model_name=None,
+        obs_name=None,
+        var_list=None,
+        update_interface=True,
+        analysis=False,
+    ):
         if isinstance(var_list, str):
             var_list = [var_list]
 
@@ -49,7 +57,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:
                 for model_name in model_list:
-                    self._run_single_entry(model_name, obs_name, var_list)
+                    self._run_single_entry(model_name, obs_name, var_list, analysis)
 
         if update_interface:
             self.update_interface()

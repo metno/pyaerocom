@@ -14,7 +14,7 @@ from dateutil.relativedelta import relativedelta
 
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
@@ -219,9 +219,10 @@ def make_model_entry(
     model_path: Path,
     obs_path: Path,
     model: ModelName,
+    runtype: str,
 ) -> dict:
     return dict(
-        model_id=f"CAMS2-83.{model.name}.day{leap}",
+        model_id=f"CAMS2-83.{model.name}.day{leap}.{runtype}",
         model_data_dir=str(model_path.resolve()),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
@@ -242,12 +243,18 @@ def make_config(
     id: str | None,
     name: str | None,
     eval_type: Eval_Type | None,
+    analysis: bool,
 ) -> dict:
 
     logger.info("Making the configuration")
 
     if not models:
         models = list(ModelName)
+
+    if analysis:
+        runtype = "AN"
+    else:
+        runtype = "FC"
 
     cfg = deepcopy(CFG)
     cfg.update(
@@ -259,6 +266,7 @@ def make_config(
                 model_path,
                 obs_path,
                 model,
+                runtype=runtype,
             )
             for model in models
         },
@@ -279,6 +287,9 @@ def make_config(
         )
     ]  # type:ignore[index]
 
+    if analysis:
+        cfg["forecast_days"] = 1
+
     if id is not None:
         cfg["exp_id"] = id
     if name is not None:
@@ -292,6 +303,7 @@ def runner(
     cache: str | Path | None,
     eval_type: Eval_Type | None,
     *,
+    analysis: bool = False,
     dry_run: bool = False,
     quiet: bool = False,
 ):
@@ -317,7 +329,7 @@ def runner(
     ana.run()
     if eval_type == "season" or eval_type == "long":
         logger.info(f"Running CAMS2_83 Spesific Statistics")
-        ana_cams2_83.run()
+        ana_cams2_83.run(analysis=analysis)
 
 
 @app.command()
@@ -379,6 +391,10 @@ def main(
         None,
         help="Experiment name. If none are given, the name from the default config is used",
     ),
+    analysis: bool = typer.Option(
+        False,
+        help="Sets the flag which tells the code to use the analysis model data. If false, the forecast model data is used",
+    ),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
@@ -413,7 +429,8 @@ def main(
         id,
         name,
         eval_type,
+        analysis,
     )
 
     quiet = not verbose
-    runner(cfg, cache, eval_type, dry_run=dry_run, quiet=quiet)
+    runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet)
