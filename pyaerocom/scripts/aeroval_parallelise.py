@@ -132,10 +132,10 @@ def prep_files(options):
                 # do not influence each other
                 out_cfg[
                     "json_basedir"
-                ] = f"{out_cfg['json_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
+                ] = f"{cfg['json_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
                 out_cfg[
                     "coldata_basedir"
-                ] = f"{out_cfg['coldata_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
+                ] = f"{cfg['coldata_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
                 cfg_file = PurePosixPath(_file).stem
                 outfile = PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
                 print(f"writing file {outfile}")
