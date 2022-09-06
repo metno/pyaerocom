@@ -57,33 +57,6 @@ def __model_path(
     return ModelData(name, run, date, root_path).path
 
 
-# def _model_path(
-#     name: str | ModelName,
-#     date: str | date | datetime,
-#     *,
-#     run: str | RunType = RunType.FC,
-#     root_path: str | Path = DATA_FOLDER_PATH,
-# ) -> Path:
-#     if not isinstance(name, ModelName):
-#         name = ModelName[name]
-#     if isinstance(date, str):
-#         date = datetime.strptime(date, "%Y%m%d").date()
-
-#     if isinstance(root_path, str):
-#         root_path = Path(root_path)
-#     if isinstance(date, datetime):
-#         date = date.date()
-#     if not isinstance(run, RunType):
-#         run = RunType[run]
-#     return ModelData(name, run, date, root_path).path
-
-
-# def get_cams2_83_vars(var_name):
-#     if not var_name in CAMS2_83_vars.keys():
-#         raise ValueError(f"{var_name} is not a valide variable for CAMS2-83")
-#     return CAMS2_83_vars[var_name]
-
-
 def model_paths(
     model: str | ModelName,
     *dates: datetime | date | str,
@@ -179,6 +152,8 @@ class ReadCAMS2_83:
         self._data_id: str | None = None
         self._daterange: pd.DatetimeIndex | None = None
 
+        self._run_type: RunType = RunType.FC
+
         if data_dir is not None:
             if isinstance(data_dir, str):
                 data_dir = Path(data_dir)
@@ -222,13 +197,29 @@ class ReadCAMS2_83:
 
         self._data_id = val
 
-        match = re.match(r"^CAMS2-83\.(.*)\.day(\d)$", val)
+        match = re.match(r"^CAMS2-83\.(.*)\.day(\d)\.(FC|AN)$", val)
         if match is None:
-            raise ValueError(f"The id {id} is not on the correct format")
+            raise ValueError(f"The id {val} is not on the correct format")
 
-        model, day = match.groups()
+        model, day, run_type = match.groups()
+        self.run_type = RunType[run_type]
         self.model = ModelName[model]
         self.forecast_day = int(day)
+
+    @property
+    def run_type(self):
+        if self._run_type is None:
+            raise AttributeError(f"run_type needs to be set before accessing")
+        return self._run_type
+
+    @run_type.setter
+    def run_type(self, val):
+        if val is None:
+            raise AttributeError(f"run_type cannot be set as None")
+        elif type(val) != RunType:
+            raise AttributeError(f"run_type cannot be set as {type(val)}, but must be a RunType")
+
+        self._run_type = val
 
     @property
     def filepaths(self) -> list[Path]:
@@ -238,7 +229,11 @@ class ReadCAMS2_83:
         if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
-            paths = list(model_paths(self.model, *self.daterange, root_path=self.data_dir))
+            paths = list(
+                model_paths(
+                    self.model, *self.daterange, root_path=self.data_dir, run=self.run_type
+                )
+            )
             if not paths:
                 raise ValueError(f"no files found for {self.model}")
             self._filepaths = paths
@@ -289,125 +284,6 @@ class ReadCAMS2_83:
 
         self._daterange = parse_daterange(dates)
         self._filedata = None
-
-    # @property
-    # def date(self) -> int:
-    #     if self._date is None:
-    #         raise ValueError("Date is not set")
-    #     return self._date
-
-    # @date.setter
-    # def date(self, val: int):
-    #     if not isinstance(val, int) or val < 0 or val > 3:
-    #         raise TypeError(f"Date {val} is not a int between 0 and 3")
-    #     self._date = val
-
-    # def _parse_daterange(self, val):
-    #     if isinstance(val, pd.DatetimeIndex):
-    #         return val
-    #     daterange = pd.date_range(val[0], val[-1], freq="d")
-    #     return daterange
-
-    # def _get_model_dateshift_from_id(self, id):
-    #     words = id.split(".")
-
-    #     if len(words) != 3:
-    #         raise ValueError(f"The id {id} is not on the correct format")
-
-    #     model = words[1]
-    #     if not words[2].startswith("day"):
-    #         raise ValueError(f"The day {words[2]} needs to be on the format 'day[0-3]'")
-    #     dateshift = int(re.search(r"day(\d)", words[2]).group(1))
-
-    #     self.model = ModelName[model]
-    #     self.date = dateshift
-
-    # def _load_var(self, var_name_aerocom: str, ts_type: str) -> xr.DataArray:
-    #     """
-    #     Load variable data as :class:`xarray.DataArray`.
-
-    #     This combines both, variables that can be read directly and auxiliary
-    #     variables that are computed.
-
-    #     Parameters
-    #     ----------
-    #     var_name_aerocom : str
-    #         variable name
-    #     ts_type : str
-    #         desired frequency
-
-    #     Raises
-    #     ------
-    #     VarNotAvailableError
-    #         if input variable is not available
-
-    #     Returns
-    #     -------
-    #     xarray.DataArray
-    #         loaded data
-
-    #     """
-    #     data = self.filedata[var_name_aerocom]
-
-    #     old_lon = data.longitude.data
-    #     old_lon = np.where(old_lon > 180, old_lon - 360, old_lon)
-    #     data["longitude"] = old_lon
-
-    #     data.attrs["long_name"] = var_name_aerocom
-    #     data.time.attrs["long_name"] = "time"
-    #     data.time.attrs["standard_name"] = "time"
-
-    #     data.longitude.attrs["long_name"] = "longitude"
-    #     data.longitude.attrs["standard_name"] = "longitude"
-    #     data.longitude.attrs["units"] = "degrees_east"
-
-    #     data.latitude.attrs["long_name"] = "latitude"
-    #     data.latitude.attrs["standard_name"] = "latitude"
-    #     data.latitude.attrs["units"] = "degrees_north"
-    #     return data
-
-    # def _find_all_files(self):
-    #     model = self.model
-    #     daterange = self.daterange
-
-    #     filepaths = []
-
-    #     for date in daterange:
-    #         location = _model_path(model, date, root_path=self.data_dir)
-    #         # location = find_model_path(model, date, self.data_dir)
-    #         if not os.path.isfile(location):
-    #             print(f"Could not find {location} . Skipping file")
-    #         else:
-    #             filepaths.append(location)
-
-    #     if len(filepaths) == 0:
-    #         raise ValueError(f"Could not find any data to read for {self.model}")
-
-    #     self.filepaths = filepaths
-    #     return filepaths
-
-    # def _select_date(self, ds: xr.Dataset) -> xr.Dataset:
-
-    #     # forecast_date = ds.attrs["FORECAST"]
-    #     # forecast_date = re.search(r"Europe, (\d*)\+\[0H_96H\]", forecast_date).group(1)
-    #     # forecast_date = datetime.strptime(forecast_date, "%Y%m%d")
-
-    #     fd = ModelData.frompath(ds.encoding["source"]).date
-
-    #     forecast_date = datetime(fd.year, fd.month, fd.day, 0, 0, 0)
-    #     select_date = forecast_date + timedelta(days=self.date)
-
-    #     dateselect = date_range(select_date, select_date + timedelta(hours=23), freq="h")
-    #     try:
-    #         ds = ds.sel(time=dateselect)
-    #     except:
-    #         ds = ds.interp(time=dateselect)
-    #         ds = ds.sel(time=dateselect)
-
-    #     ds = ds.sel(level=0.0)
-    #     ds.time.attrs["long_name"] = "time"
-    #     ds.time.attrs["standard_name"] = "time"
-    #     return ds
 
     @property
     def forecast_day(self) -> int:
@@ -475,13 +351,15 @@ class ReadCAMS2_83:
 if __name__ == "__main__":
     from time import perf_counter
 
-    data_dir = DATA_FOLDER_PATH
-    data_id = "CAMS2-83.EMEP.day0"
+    data_dir = str(DATA_FOLDER_PATH)
+    data_id = "CAMS2-83.EMEP.day0.AN"
     reader = ReadCAMS2_83(data_dir=data_dir, data_id=data_id)
-    dates = ("2021-12-01", "2021-12-04")
+    reader.daterange = ("2021-12-01", "2021-12-04")
+    print(reader.filepaths)
+    # dates = ("2021-12-01", "2021-12-04")
 
-    seconds = -perf_counter()
-    print(reader.read_var("concno2", ts_type="hourly", daterange=dates))
+    # seconds = -perf_counter()
+    # print(reader.read_var("concno2", ts_type="hourly", daterange=dates))
 
-    seconds += perf_counter()
-    print(timedelta(seconds=int(seconds)))
+    # seconds += perf_counter()
+    # print(timedelta(seconds=int(seconds)))
