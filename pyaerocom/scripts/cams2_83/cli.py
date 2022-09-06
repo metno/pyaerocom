@@ -366,6 +366,8 @@ def main(
     ),
     model: List[ModelName] = typer.Option(
         [],
+        "--model",
+        "-m",
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
