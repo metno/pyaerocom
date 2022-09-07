@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from pyaerocom import ColocatedData, Filter
+from pyaerocom import ColocatedData2D, Filter
 from pyaerocom.config import ALL_REGION_NAME
 
 from .data_access import DataForTests
@@ -92,7 +92,7 @@ def _create_fake_coldata_3d():
     }
 
     dims = ["data_source", "time", "station_name"]
-    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var, attrs=meta)
+    cd = ColocatedData2D(data=data, coords=coords, dims=dims, name=var, attrs=meta)
 
     return cd
 
@@ -162,7 +162,7 @@ def _create_fake_trends_coldata_3d():
     }
 
     dims = ["data_source", "time", "station_name"]
-    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var, attrs=meta)
+    cd = ColocatedData2D(data=data, coords=coords, dims=dims, name=var, attrs=meta)
 
     return cd
 
@@ -217,7 +217,7 @@ def _create_fake_coldata_3d_hourly():
     }
 
     dims = ["data_source", "time", "station_name"]
-    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var, attrs=meta)
+    cd = ColocatedData2D(data=data, coords=coords, dims=dims, name=var, attrs=meta)
 
     return cd
 
@@ -246,7 +246,7 @@ def _create_fake_coldata_4d():
     _data_fake[0, :, 1, 1] = np.nan
     _data_fake[0, 0, 0, 0] = np.nan
     meta = {"ts_type": "monthly"}
-    return ColocatedData(data=_data_fake, coords=coords, dims=dims, attrs=meta)
+    return ColocatedData2D(data=_data_fake, coords=coords, dims=dims, attrs=meta)
 
 
 def _create_fake_coldata_5d():
@@ -267,14 +267,14 @@ def _create_fake_coldata_5d():
     dims = ["data_source", "time", "latitude", "longitude", "wvl"]
     # set all NaN in one obs coordinate
     arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
-    cd = ColocatedData(np.ones((2, 2, 2)))
+    cd = ColocatedData2D(np.ones((2, 2, 2)))
     cd.data = arr
     return cd
 
 
 COLDATA = dict(
-    tm5_aeronet=lambda: ColocatedData(str(EXAMPLE_FILE)),
-    fake_nodims=lambda: ColocatedData(np.ones((2, 1, 1))),
+    tm5_aeronet=lambda: ColocatedData2D(str(EXAMPLE_FILE)),
+    fake_nodims=lambda: ColocatedData2D(np.ones((2, 1, 1))),
     fake_3d=_create_fake_coldata_3d,
     fake_4d=_create_fake_coldata_4d,
     fake_5d=_create_fake_coldata_5d,
@@ -284,6 +284,6 @@ COLDATA = dict(
 
 
 @pytest.fixture
-def coldata(coldataset: str) -> ColocatedData:
-    """dispatch ColocatedData depending on coldataset"""
+def coldata(coldataset: str) -> ColocatedData2D:
+    """dispatch ColocatedData2D depending on coldataset"""
     return COLDATA[coldataset]()

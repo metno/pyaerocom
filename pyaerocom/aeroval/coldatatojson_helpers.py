@@ -13,7 +13,7 @@ from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocateddata2d import ColocatedData2D
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import (
     AeroValConfigError,
@@ -1107,7 +1107,7 @@ def _select_period_season_coldata(coldata, period, season):
         mask = arr["season"] == season
         arr = arr.sel(time=arr["time"][mask])
 
-    return ColocatedData(arr)
+    return ColocatedData2D(arr)
 
 
 def _process_heatmap_data(
@@ -1301,7 +1301,7 @@ def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_coun
         for i, js in enumerate(jsdate):
             per = to_idx_str[i]
             try:
-                arr = ColocatedData(subset.data.sel(time=per))
+                arr = ColocatedData2D(subset.data.sel(time=per))
                 stats = arr.calc_statistics(use_area_weights=use_weights)
                 output[regname][str(js)] = _prep_stats_json(stats)
             except DataCoverageError:

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 from xarray import open_dataarray
 
-from pyaerocom import ColocatedData
+from pyaerocom import ColocatedData2D
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.griddeddata import GriddedData
 
@@ -30,7 +30,7 @@ def data_tm5() -> GriddedData:
     return data
 
 
-def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData:
+def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData2D:
 
     arr = open_dataarray(path)
     if "_min_num_obs" in arr.attrs:
@@ -43,18 +43,18 @@ def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData:
                 info[to][fr] = {}
             info[to][fr] = int(num)
         arr.attrs["min_num_obs"] = info
-    cd = ColocatedData()
+    cd = ColocatedData2D()
     cd.data = arr
     return cd
 
 
 @pytest.fixture(scope="session")
-def coldata_tm5_aeronet() -> ColocatedData:
+def coldata_tm5_aeronet() -> ColocatedData2D:
     path = DataForTests(CHECK_PATHS.coldata_tm5_aeronet).path
     return load_coldata_tm5_aeronet_from_scratch(path)
 
 
 @pytest.fixture(scope="session")
-def coldata_tm5_tm5() -> ColocatedData:
+def coldata_tm5_tm5() -> ColocatedData2D:
     path = DataForTests(CHECK_PATHS.tm5_tm5).path
     return load_coldata_tm5_aeronet_from_scratch(path)

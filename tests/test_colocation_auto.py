@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
+from pyaerocom import ColocatedData2D, GriddedData, UngriddedData, const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
@@ -227,7 +227,7 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
     col.run()
     var = col.obs_vars[0]
     coldata = col.data[var][var]
-    assert isinstance(coldata, ColocatedData)
+    assert isinstance(coldata, ColocatedData2D)
     assert coldata.ndim == 4
 
 
@@ -418,7 +418,7 @@ def test_colocator_with_obs_data_dir_ungridded():
     data = col.run()
     assert len(data) == 1
     cd = data["od550aer"]["od550aer"]
-    assert isinstance(cd, ColocatedData)
+    assert isinstance(cd, ColocatedData2D)
     assert cd.ts_type == "monthly"
     assert str(cd.start) == "2010-01-15T00:00:00.000000000"
     assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
@@ -436,7 +436,7 @@ def test_colocator_with_model_data_dir_ungridded():
     data = col.run()
     assert len(data) == 1
     cd = data["od550aer"]["od550aer"]
-    assert isinstance(cd, ColocatedData)
+    assert isinstance(cd, ColocatedData2D)
     assert cd.ts_type == "monthly"
     assert str(cd.start) == "2010-01-15T00:00:00.000000000"
     assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
@@ -455,7 +455,7 @@ def test_colocator_with_obs_data_dir_gridded():
     data = col.run()
     assert len(data) == 1
     cd = data["od550aer"]["od550aer"]
-    assert isinstance(cd, ColocatedData)
+    assert isinstance(cd, ColocatedData2D)
     assert cd.ts_type == "monthly"
     assert str(cd.start) == "2010-01-15T12:00:00.000000000"
     assert str(cd.stop) == "2010-12-15T12:00:00.000000000"

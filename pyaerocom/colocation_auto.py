@@ -18,7 +18,7 @@ import pandas as pd
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocateddata2d import ColocatedData2D
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
@@ -852,7 +852,7 @@ class Colocator(ColocationSetup):
         all_files = self.get_nc_files_in_coldatadir()
         for file in all_files:
             try:
-                meta = ColocatedData.get_meta_from_filename(file)
+                meta = ColocatedData2D.get_meta_from_filename(file)
             except Exception:
                 continue
             candidate = check_meta_match(
@@ -1332,7 +1332,7 @@ class Colocator(ColocationSetup):
 
     def _coldata_savename(self, obs_var, mod_var, ts_type):
         """Get filename of colocated data file for saving"""
-        name = ColocatedData._aerocom_savename(
+        name = ColocatedData2D._aerocom_savename(
             obs_var=obs_var,
             obs_id=self.get_obs_name(),
             mod_var=mod_var,

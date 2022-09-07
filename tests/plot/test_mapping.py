@@ -8,7 +8,7 @@ import pytest
 from matplotlib.figure import Figure
 
 from pyaerocom import GriddedData
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocateddata2d import ColocatedData2D
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import ColorTheme, get_color_theme
@@ -227,12 +227,12 @@ def test_plot_map_aerocom_error():
         plot_map_aerocom(42, ALL_REGION_NAME)
 
 
-def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet: ColocatedData):
+def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet: ColocatedData2D):
     val = plot_nmb_map_colocateddata(coldata_tm5_aeronet)
     assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
 
 
-def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
+def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData2D):
     val = plot_nmb_map_colocateddata(coldata_tm5_tm5)
     assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
 
@@ -255,7 +255,7 @@ def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
     ],
 )
 def test_plot_nmb_map_colocateddataFAIL(
-    coldata: ColocatedData, exception: Type[Exception], error: str
+    coldata: ColocatedData2D, exception: Type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         plot_nmb_map_colocateddata(coldata)

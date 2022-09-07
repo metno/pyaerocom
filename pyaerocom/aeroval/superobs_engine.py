@@ -6,7 +6,7 @@ import xarray as xr
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocateddata2d import ColocatedData2D
 from pyaerocom.helpers import get_lowest_resolution
 
 logger = logging.getLogger(__name__)
@@ -106,13 +106,13 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
             darrs.append(self._get_dataarray(fp, to_freq, obs_name))
 
         merged = xr.concat(darrs, dim="station_name")
-        coldata = ColocatedData(merged)
+        coldata = ColocatedData2D(merged)
         engine = ColdataToJsonEngine(self.cfg)
         engine.process_coldata(coldata)
 
     def _get_dataarray(self, fp, to_freq, obs_name):
         """Get dataarray needed for combination to superobs"""
-        data = ColocatedData(fp)
+        data = ColocatedData2D(fp)
         if data.ts_type != to_freq:
             data.resample_time(to_ts_type=to_freq, settings_from_meta=True, inplace=True)
         arr = data.data
@@ -141,7 +141,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
                 f"{model_name}, {obs_name}, {var_name}: {cdf}..."
             )
         fp = cdf[0]
-        meta = ColocatedData.get_meta_from_filename(fp)
+        meta = ColocatedData2D.get_meta_from_filename(fp)
         ts_type = meta["ts_type"]
         vert_code = self.cfg.obs_cfg.get_entry(obs_name)["obs_vert_type"]
         return (fp, ts_type, vert_code)

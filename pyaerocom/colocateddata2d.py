@@ -1,33 +1,30 @@
 import logging
-import os
-import warnings
-from ast import literal_eval
-from pathlib import Path
 
 import numpy as np
-import pandas as pd
-import xarray
 
-from pyaerocom import const
+# from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.exceptions import (
-    CoordinateError,
-    DataCoverageError,
+from pyaerocom.exceptions import (  # CoordinateError,; DataCoverageError,; DataSourceError,; MetaDataError,; NetcdfError,; UnknownRegion,; VarNotAvailableError,
     DataDimensionError,
-    DataSourceError,
-    MetaDataError,
-    NetcdfError,
-    UnknownRegion,
-    VarNotAvailableError,
 )
 from pyaerocom.geodesy import get_country_info_coords
-from pyaerocom.helpers import to_datestring_YYYYMMDD
-from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
+
+# from pyaerocom.helpers import to_datestring_YYYYMMDD
+# from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.plot.plotscatter import plot_scatter
-from pyaerocom.region import Region
-from pyaerocom.region_defs import REGION_DEFS
-from pyaerocom.time_resampler import TimeResampler
+
+# import os
+# import warnings
+# from ast import literal_eval
+# from pathlib import Path
+
+# import pandas as pd
+# import xarray
+
+# from pyaerocom.region import Region
+# from pyaerocom.region_defs import REGION_DEFS
+# from pyaerocom.time_resampler import TimeResampler
 
 logger = logging.getLogger(__name__)
 
@@ -37,64 +34,8 @@ class ColocatedData2D(ColocatedData):
     Class derived from ColocatedData which represents 2D colcated data. Everything specific to the 2D case will be put here
     """
 
-    def __init__(self, data=None, **kwargs):
-        super().__init__(data, **kwargs)
-
-    @property
-    def num_coords_with_data(self):
-        """Number of lat/lon coordinate pairs that contain at least one datapoint
-
-        Note
-        ----
-        Occurrence of valid data is only checked for obsdata (first index in
-        data_source dimension).
-        """
-        obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
-        dims = obj.dims
-        if not "station_name" in dims:
-            raise DataDimensionError("Need dimension station_name")
-        obs = obj.data[0]
-        if len(dims) > 3:  # additional dimensions
-            default_dims = ("data_source", "time", "station_name")
-            add_dims = tuple(x for x in dims if not x in default_dims)
-            raise DataDimensionError(
-                f"Can only unambiguously retrieve no of coords with obs data "
-                f"for colocated data with dims {default_dims}, please reduce "
-                f"dimensionality first by selecting or aggregating additional "
-                f"dimensions: {add_dims}"
-            )
-
-        if "time" in dims:
-            val = (obs.count(dim="time") > 0).data.sum()
-        else:
-            val = (~np.isnan(obs.data)).sum()
-        return val
-
-    def flatten_latlondim_station_name(self):
-        """Stack (flatten) lat / lon dimension into new dimension station_name
-
-        Returns
-        -------
-        ColocatedData
-            new colocated data object with dimension station_name and lat lon
-            arrays as additional coordinates
-        """
-        if not self.has_latlon_dims:
-            raise DataDimensionError("Need latitude and longitude dimensions")
-
-        newdims = []
-        for dim in self.dims:
-            if dim == "latitude":
-                newdims.append("station_name")
-            elif dim == "longitude":
-                continue
-            else:
-                newdims.append(dim)
-
-        arr = self.stack(station_name=["latitude", "longitude"], inplace=False).data
-
-        arr = arr.transpose(*newdims)
-        return ColocatedData(arr)
+    # def __init__(self, data=None, **kwargs):
+    #     super().__init__(data, **kwargs)
 
     def get_coords_valid_obs(self):
         """
@@ -121,29 +62,6 @@ class ColocatedData2D(ColocatedData):
             lons = list(obs.longitude[~invalid].values)
             coords = (lats, lons)
         return list(coords)
-
-    def _iter_stats(self):
-        """Create a list that can be used to iterate over station dimension
-
-        Returns
-        -------
-        list
-            list containing 3-element tuples, one for each site i, comprising
-            (latitude[i], longitude[i], station_name[i]).
-        """
-        if not "station_name" in self.data.dims:
-            raise AttributeError(
-                "ColocatedData object has no dimension station_name. Consider stacking..."
-            )
-        if "latitude" in self.dims and "longitude" in self.dims:
-            raise AttributeError(
-                "Cannot init station iter index since latitude and longitude are othorgonal"
-            )
-        lats = self.data.latitude.values
-        lons = self.data.longitude.values
-        stats = self.data.station_name.values
-
-        return list(zip(lats, lons, stats))
 
     def _get_stat_coords(self):
         """
@@ -232,52 +150,6 @@ class ColocatedData2D(ColocatedData):
         )
         coldata.data = arr
         return coldata
-
-    def calc_statistics(self, use_area_weights=False, **kwargs):
-        """Calculate statistics from model and obs data
-
-        Calculate standard statistics for model assessment. This is done by
-        taking all model and obs data points in this object as input for
-        :func:`pyaerocom.mathutils.calc_statistics`. For instance, if the
-        object is 3D with dimensions `data_source` (obs, model), `time` (e.g.
-        12 monthly values) and `station_name` (e.g. 4 sites), then the input
-        arrays for model and obs into
-        :func:`pyaerocom.mathutils.calc_statistics` will be each of size
-        12x4.
-
-        See also :func:`calc_temporal_statistics` and
-        :func:`calc_spatial_statistics`.
-
-        Parameters
-        ----------
-        use_area_weights : bool
-            if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
-            the coordinate cell sizes. Defaults to False.
-        **kwargs
-            additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
-
-        Returns
-        -------
-        dict
-            dictionary containing statistical parameters
-        """
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
-            kwargs["weights"] = self.area_weights[0].flatten()
-
-        nc = self.num_coords
-        try:
-            ncd = self.num_coords_with_data
-        except DataDimensionError:
-            ncd = np.nan
-        obsvals = self.data.values[0].flatten()
-        modvals = self.data.values[1].flatten()
-        stats = calc_statistics(modvals, obsvals, **kwargs)
-
-        stats["num_coords_tot"] = nc
-        stats["num_coords_with_data"] = ncd
-        return stats
 
     def calc_temporal_statistics(self, aggr=None, **kwargs):
         """Calculate *temporal* statistics from model and obs data

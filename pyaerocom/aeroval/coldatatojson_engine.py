@@ -2,7 +2,7 @@ import logging
 import os
 from time import time
 
-from pyaerocom import ColocatedData
+from pyaerocom import ColocatedData2D
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -49,12 +49,12 @@ class ColdataToJsonEngine(ProcessingEngine):
         converted = []
         for file in files:
             logger.info(f"Processing: {file}")
-            coldata = ColocatedData(file)
+            coldata = ColocatedData2D(file)
             self.process_coldata(coldata)
             converted.append(file)
         return converted
 
-    def process_coldata(self, coldata: ColocatedData):
+    def process_coldata(self, coldata: ColocatedData2D):
         """
         Creates all json files for one ColocatedData object
 
@@ -110,7 +110,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         elif "altitude" in coldata.data.dims:
             raise NotImplementedError("Cannot yet handle profile data")
 
-        elif not isinstance(coldata, ColocatedData):
+        elif not isinstance(coldata, ColocatedData2D):
             raise ValueError(f"Need ColocatedData object, got {type(coldata)}")
 
         elif coldata.has_latlon_dims and regions_how == "country":

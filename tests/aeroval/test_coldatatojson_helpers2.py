@@ -8,7 +8,7 @@ import pytest
 import xarray
 from pyexpat.errors import XML_ERROR_PARAM_ENTITY_REF
 
-from pyaerocom import ColocatedData, TsType
+from pyaerocom import ColocatedData2D, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _create_diurnal_weekly_data_object,
     _get_jsdate,
@@ -59,7 +59,7 @@ def test_get_json_mapname():
     ],
 )
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
-def test__init_data_default_frequencies(coldata: ColocatedData, to_ts_types: str):
+def test__init_data_default_frequencies(coldata: ColocatedData2D, to_ts_types: str):
     result = _init_data_default_frequencies(coldata, to_ts_types)
     assert len(result) == len(to_ts_types)
 
@@ -68,7 +68,7 @@ def test__init_data_default_frequencies(coldata: ColocatedData, to_ts_types: str
         if TsType(freq) > tst:
             assert val is None
         else:
-            assert isinstance(val, ColocatedData)
+            assert isinstance(val, ColocatedData2D)
             assert val.ts_type == freq
 
 
@@ -165,7 +165,7 @@ def test__process_statistics_timeseries_error(
 )
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
 def test__make_trends(
-    coldata: ColocatedData,
+    coldata: ColocatedData2D,
     freq: str,
     season: str,
     start: int,
@@ -217,7 +217,7 @@ def test__make_trends(
 )
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
 def test__make_trends_error(
-    coldata: ColocatedData,
+    coldata: ColocatedData2D,
     freq: str,
     season: str,
     min_yrs: int,
@@ -233,7 +233,7 @@ def test__make_trends_error(
 
 
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
-def test__init_meta_glob(coldata: ColocatedData):
+def test__init_meta_glob(coldata: ColocatedData2D):
     # test the functionality of __init_meta_glob when there are KeyErrors. Other cases already covered
     no_meta_coldata = coldata.copy()
     no_meta_coldata.data.attrs = {}
@@ -251,7 +251,7 @@ def test__init_meta_glob(coldata: ColocatedData):
     ],
 )
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
-def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: str):
+def test__create_diurnal_weekly_data_object(coldata: ColocatedData2D, resolution: str):
     try:
         obj = _create_diurnal_weekly_data_object(coldata, resolution)
         assert isinstance(obj, xarray.Dataset)

@@ -5,7 +5,7 @@ import pytest
 from cf_units import Unit
 
 from pyaerocom import GriddedData, const, helpers
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocateddata2d import ColocatedData2D
 from pyaerocom.colocation import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,
@@ -198,7 +198,7 @@ def test_colocate_gridded_ungridded(
 
     coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, **addargs)
 
-    assert isinstance(coldata, ColocatedData)
+    assert isinstance(coldata, ColocatedData2D)
     assert coldata.ts_type == ts_type
     assert coldata.shape == shape
 
@@ -224,7 +224,7 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     gridded.units = Unit("1")
 
     coldata = colocate_gridded_ungridded(gridded, aeronetsunv3lev2_subset, colocate_time=False)
-    assert isinstance(coldata, ColocatedData)
+    assert isinstance(coldata, ColocatedData2D)
     assert coldata.shape == (2, 2, 2)
 
 
@@ -239,7 +239,7 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
 def test_colocate_gridded_gridded_same(data_tm5):
     coldata = colocate_gridded_gridded(data_tm5, data_tm5)
 
-    assert isinstance(coldata, ColocatedData)
+    assert isinstance(coldata, ColocatedData2D)
     stats = coldata.calc_statistics()
     # check mean value
     assert stats["data_mean"] == pytest.approx(0.09825691)
@@ -262,4 +262,4 @@ def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
     data_emep.units = "1"
 
     col = colocate_gridded_gridded(data_emep, data_tm5)
-    assert isinstance(col, ColocatedData)
+    assert isinstance(col, ColocatedData2D)

@@ -11,7 +11,7 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocateddata2d import ColocatedData2D
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -330,7 +330,7 @@ def colocate_gridded_gridded(
 
     dims = ["data_source", "time", "latitude", "longitude"]
 
-    coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
+    coldata = ColocatedData2D(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
 
     # add correct units for lat / lon dimensions
     coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
@@ -889,7 +889,7 @@ def colocate_gridded_ungridded(
             # resolution of obsdata is too low
             logger.warning(
                 f"{var_ref} data from site {obs_stat.station_name} will "
-                f"not be added to ColocatedData. Reason: {e}"
+                f"not be added to ColocatedData2D. Reason: {e}"
             )
     try:
         revision = data_ref.data_revision[dataset_ref]
@@ -933,7 +933,7 @@ def colocate_gridded_ungridded(
     }
 
     dims = ["data_source", "time", "station_name"]
-    coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
+    coldata = ColocatedData2D(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
 
     # add correct units for lat / lon dimensions
     coldata.latitude.attrs["standard_name"] = data.latitude.standard_name

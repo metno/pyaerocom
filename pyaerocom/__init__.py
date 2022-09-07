@@ -45,7 +45,10 @@ from .stationdata import StationData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
 from .filter import Filter
-from .colocateddata import ColocatedData
+
+# from .colocateddata import ColocatedData
+from .colocateddata2d import ColocatedData2D
+from .colocateddata3d import ColocatedData3D
 from .colocation_auto import ColocationSetup, Colocator
 from .tstype import TsType
 from .time_resampler import TimeResampler
