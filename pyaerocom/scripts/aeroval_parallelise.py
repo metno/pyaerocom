@@ -36,7 +36,7 @@ JSON_RUNSCRIPT_NAME = "aeroval_run_json_cfg.py"
 # qsub binary
 QSUB_NAME = "/usr/bin/qsub"
 # qsub submission host
-QSUB_HOST = "ppi-clogin-a1.met.no"
+QSUB_HOST = "ppi-clogin-b1.met.no"
 # directory, where the files will bew transferred before they are run
 # Needs to be on Lustre or home since /tmp is not shared between machines
 QSUB_DIR = f"/lustre/storeA/users/{USER}/submission_scripts"
@@ -59,6 +59,9 @@ START_TIME = datetime.now().strftime("%Y%m%d_%H%M%S")
 # JSON_RUNSCRIPT = Path(Path(__file__).parent).joinpath(JSON_RUNSCRIPT_NAME)
 JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
 
+# match for aeroval config file
+AEROVAL_CONFIG_FILE_MASK = "cfg_*.json"
+
 # some constants for the merge operation
 # files not noted here will be copied
 # list of file masks to merge
@@ -71,7 +74,7 @@ MERGE_EXP_FILES_TO_COMBINE = [
     "regions.json",
     "statistics.json",
     "hm/glob_stats_*.json",
-    "cfg_*.json",
+    AEROVAL_CONFIG_FILE_MASK,
 ]
 # list of file masks not to touch
 MERGE_EXP_FILES_TO_EXCLUDE = []
@@ -119,25 +122,63 @@ def prep_files(options):
 
         # index for temporary data directories
         dir_idx = 1
+
+        # determine if one of the obs is a superobs
+        # if yes, we need to run the parts of the superobs together with
+        # superobs
+        # in that case we parallelise the model only for now
+        no_superobs_flag = True
+        out_cfg = deepcopy(cfg)
+        for _obs in out_cfg["obs_cfg"]:
+            try:
+                if out_cfg["obs_cfg"][_obs]['is_superobs']:
+                    no_superobs_flag = False
+                    #store the obs needed for superobs
+                    superobs_obs = out_cfg["obs_cfg"][_obs]['obs_id']
+            except:
+                pass
+
         for _model in cfg["model_cfg"]:
             out_cfg = deepcopy(cfg)
             out_cfg.pop("model_cfg", None)
-            out_cfg.pop("obs_cfg", None)
             out_cfg["model_cfg"] = {}
             out_cfg["model_cfg"][_model] = cfg["model_cfg"][_model]
-            for _obs_network in cfg["obs_cfg"]:
-                out_cfg["obs_cfg"] = {}
-                out_cfg["obs_cfg"][_obs_network] = cfg["obs_cfg"][_obs_network]
+
+
+            if no_superobs_flag:
+                out_cfg.pop("obs_cfg", None)
+                for _obs_network in cfg["obs_cfg"]:
+                    out_cfg["obs_cfg"] = {}
+                    out_cfg["obs_cfg"][_obs_network] = cfg["obs_cfg"][_obs_network]
+                    # adjust json_basedir and coldata_basedir so that the different runs
+                    # do not influence each other
+                    out_cfg[
+                        "json_basedir"
+                    ] = f"{cfg['json_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
+                    out_cfg[
+                        "coldata_basedir"
+                    ] = f"{cfg['coldata_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
+                    cfg_file = Path(_file).stem
+                    outfile = Path(tempdir).joinpath(f"{cfg_file}_{_model}_{_obs_network}.json")
+                    print(f"writing file {outfile}")
+                    with open(outfile, "w", encoding="utf-8") as j:
+                        json.dump(out_cfg, j, ensure_ascii=False, indent=4)
+                    dir_idx += 1
+                    runfiles.append(outfile)
+                    if options["verbose"]:
+                        print(out_cfg)
+            else:
                 # adjust json_basedir and coldata_basedir so that the different runs
                 # do not influence each other
+                _obs_network = 'allobs'
                 out_cfg[
                     "json_basedir"
                 ] = f"{cfg['json_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
                 out_cfg[
                     "coldata_basedir"
                 ] = f"{cfg['coldata_basedir']}/{Path(tempdir).parts[-1]}.{dir_idx:04d}"
-                cfg_file = PurePosixPath(_file).stem
-                outfile = PurePosixPath(tempdir).joinpath(f"cfg_file_{_model}_{_obs_network}.json")
+                cfg_file = Path(_file).stem
+                outfile = Path(tempdir).joinpath(f"{cfg_file}_{_model}_{_obs_network}.json")
                 print(f"writing file {outfile}")
                 with open(outfile, "w", encoding="utf-8") as j:
                     json.dump(out_cfg, j, ensure_ascii=False, indent=4)
@@ -145,6 +186,7 @@ def prep_files(options):
                 runfiles.append(outfile)
                 if options["verbose"]:
                     print(out_cfg)
+
 
     return runfiles
 
@@ -430,7 +472,7 @@ def run_queue(
             else:
                 print(f"qsub files created on localhost.")
                 print(
-                    f"you can start the job with the command: qsub {remote_qsub_run_file_name} on the host {qsub_host}."
+                    f"you can start the job with the command: qsub {remote_qsub_run_file_name}."
                 )
 
 
@@ -449,7 +491,7 @@ def combine_output(options: dict):
     except FileExistsError:
         pass
 
-    for idx, combinedir in enumerate(options["files"]):
+    for idx, combinedir in enumerate(sorted(options["files"])):
         # tmp dirs look like this: tmpggb7k02d.0001, tmpggb7k02d.0002
         # create common assembly directory
         # assemble the data
@@ -476,6 +518,9 @@ def combine_output(options: dict):
                         )
                         cfg_file.rename(new_cfg_file)
                         # TODO: adjust some parts of the config file to the new project name
+                        # read config file to restore the right order of variables and models in the visualisation
+                        with open(cfg_file, "r") as inhandle:
+                            aeroval_config = json.load(inhandle)
                 else:
                     pass
                     # There's something wrong with the directory structure!
@@ -493,6 +538,7 @@ def combine_output(options: dict):
                     cmp_file = Path.joinpath(Path(*list(tmp)))
 
                 out_target_dir = Path.joinpath(options["outdir"], exp_dir.name)
+
                 if match_file(cmp_file, MERGE_EXP_FILES_TO_EXCLUDE):
                     # skip some files for now
                     print(f"file {_file} excluded for now")
@@ -547,6 +593,11 @@ def combine_output(options: dict):
                         outfile = out_target_dir.joinpath(cmp_file)
                         print(f"copying {_file} to {outfile}...")
                         shutil.copy2(_file, outfile)
+
+            # reorder menu.json according to config initial config file (
+            # webdisp_opts['var_order_menu'] and webdisp_opts['model_order_menu']
+            # the model order is unfortunately usually coming from the order in the config file
+            # (model_cfg[<model_names>]
 
         pass
 
@@ -653,6 +704,9 @@ def main():
     parser.add_argument("--noqsub",
                         help="do not submit to queue (all files created and copied, but no submission)",
                         action="store_true")
+    # parser.add_argument("--noobsnetparallelisation",
+    #                     help="don't pa",
+    #                     action="store_true")
     parser.add_argument(
         "--jsonrunscript",
         help=f"script to run json config files; defaults to {JSON_RUNSCRIPT}",
