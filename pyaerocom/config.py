@@ -88,6 +88,9 @@ class Config:
     #: DMS
     DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
 
+    #: IPC Forests
+    IPCFORESTS_NAME = "IPCFOREST"
+
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
