@@ -16,7 +16,7 @@ from datetime import datetime
 from fnmatch import fnmatch
 from getpass import getuser
 from importlib.machinery import SourceFileLoader
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from socket import gethostname
 from tempfile import mkdtemp
 from threading import Thread
@@ -133,7 +133,7 @@ def prep_files(options):
             try:
                 if out_cfg["obs_cfg"][_obs]['is_superobs']:
                     no_superobs_flag = False
-                    #store the obs needed for superobs
+                    # store the obs needed for superobs
                     superobs_obs = out_cfg["obs_cfg"][_obs]['obs_id']
             except:
                 pass
@@ -143,7 +143,6 @@ def prep_files(options):
             out_cfg.pop("model_cfg", None)
             out_cfg["model_cfg"] = {}
             out_cfg["model_cfg"][_model] = cfg["model_cfg"][_model]
-
 
             if no_superobs_flag:
                 out_cfg.pop("obs_cfg", None)
@@ -186,7 +185,6 @@ def prep_files(options):
                 runfiles.append(outfile)
                 if options["verbose"]:
                     print(out_cfg)
-
 
     return runfiles
 
@@ -519,7 +517,7 @@ def combine_output(options: dict):
                         cfg_file.rename(new_cfg_file)
                         # TODO: adjust some parts of the config file to the new project name
                         # read config file to restore the right order of variables and models in the visualisation
-                        with open(cfg_file, "r") as inhandle:
+                        with open(new_cfg_file, "r") as inhandle:
                             aeroval_config = json.load(inhandle)
                 else:
                     pass
@@ -658,6 +656,42 @@ def match_file(
     return ret_val
 
 
+def adjust_menujson(menujson_file, config_file, cfgvar):
+    """helper to adjust the menu.json file according to a given aeroval config file"""
+    # load aeroval config file
+    # load menu.json
+    # adjust menu.json
+
+    pass
+    # read aeroval configuration file
+    if fnmatch(config_file, "*.py"):
+        foo = SourceFileLoader("bla", config_file).load_module()
+        # the following line does unfortunately not work since a module is not subscriptable
+        # CFG = foo[options["cfgvar"]]
+        # use getattr instead
+        cfg = deepcopy(getattr(foo, cfgvar))
+
+    elif fnmatch(config_file, "*.json"):
+        with open(infile, "r") as inhandle:
+            cfg = json.load(inhandle)
+    else:
+        msg = f"""Error: {config_file} has to be either a Python file or a json file.
+exiting now..."""
+        print(msg)
+        sys.exit(1)
+
+    try:
+        with open(menujson_file, "r") as inhandle:
+            menu_json_dict = json.load(inhandle)
+    except:
+        sys.exit(1)
+
+    print('halt')
+    # cfg['model_cfg']
+    # cfg['model_cfg'].keys()
+    # menu_json_dict["od550aer"]["obs"]["AeronetL1.5-d"]["Column"]
+
+
 def main():
     """main program"""
 
@@ -692,6 +726,11 @@ def main():
 {colors['UNDERLINE']}assemble aeroval data after a parallel run has been finished: (runs always on the local machine){colors['END']}
     {script_name} -c -o <output directory> <input directories>
     {script_name} -c -o ${{HOME}}/tmp ${{HOME}}/tmpt39n2gp_*
+
+{colors['UNDERLINE']}adjust menu entries of an aeroval experiment to the one given in a aeroval config file:{colors['END']}
+    {script_name} --adjustmenujson <aeroval-cfg-file> <path to menu.json>
+    {script_name} --adjustmenujson  /tmp/config/cfg_cams2-82_IFS_beta.py /tmp/data/testmerge_all/IFS-beta/menu.json
+
     
 """
     )
@@ -733,11 +772,26 @@ def main():
     parser.add_argument("--io_aux_file", help="set io_aux_file in the configuration file manually", )
 
     parser.add_argument("-l", "--localhost", help="start queue submission on localhost", action="store_true")
-    parser.add_argument("-c", "--combinedirs", help="combine the output of a parallel runs", action="store_true")
-    parser.add_argument("-o", "--outdir", help="output directory for experiment assembly")
+
+    group_assembly = parser.add_argument_group('data assembly:', 'options for assembly of parallisations output')
+    group_assembly.add_argument("-o", "--outdir", help="output directory for experiment assembly")
+    group_assembly.add_argument("-c", "--combinedirs", help="combine the output of a parallel runs",
+                                action="store_true")
+    group_menujson = parser.add_argument_group('adjust menu.json',
+                                               'options to change existing order of variables and models')
+    group_menujson.add_argument("--adjustmenujson",
+                                help=" <aeroval cfgfile> <path to menu.json>; adjust order of menu.json to aeroval config file",
+                                action="store_true")
+    # group_menujson.add_argument("--adjustmenujson", help="adjust order of menu.json to aeroval config file", nargs=2,
+    #                             metavar=("<aeroval cfgfile>", "<path to menu.json>"))
 
     args = parser.parse_args()
     options = {}
+    if args.adjustmenujson:
+        options["adjustmenujson"] = True
+    else:
+        options["adjustmenujson"] = False
+
     if args.files:
         options["files"] = args.files
 
@@ -809,7 +863,7 @@ Please add an output directory using the -o switch."""
         info_str = "INFO: starting queue submission on localhost (-l flag is set)."
         print(info_str)
 
-    if not options["combinedirs"]:
+    if not options["combinedirs"] and not options['adjustmenujson']:
         # create file for the queue
         runfiles = prep_files(options)
         if options["noqsub"] and options['verbose']:
@@ -820,6 +874,9 @@ Please add an output directory using the -o switch."""
         else:
             run_queue(runfiles, submit_flag=(not options["noqsub"]), options=options)
 
+    elif options['adjustmenujson']:
+        # adjust menu.json
+        adjust_menujson(options['files'][1], options['files'][0], options['cfgvar'])
     else:
         result = combine_output(options)
 
