@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class ReadIPCForest(ReadUngriddedBase):
 
     #: version log of this class (for caching)
-    __version__ = "0.15_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.16_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
@@ -63,7 +63,7 @@ class ReadIPCForest(ReadUngriddedBase):
         "wetrdn": "mg N m-2 d-1",
     }
 
-    DEP_TYPES_TO_USE = ["Throughfall", "Bulk deposition", "Wet-only deposition"]
+    DEP_TYPES_TO_USE = ["Throughfall", "Bulk", "Wet-only"]
 
     def __init__(self, data_id=None, data_dir=None):
         super().__init__(data_id, data_dir)
@@ -170,7 +170,11 @@ class ReadIPCForest(ReadUngriddedBase):
                 plot_code = int(words[3])
                 sampler_code = int(words[9])
 
-                if self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE:
+                # 8 is the code for "do not use"
+                if (
+                    self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
+                    or sampler_code == 8
+                ):
                     continue
 
                 sampler_type = self.metadata.deposition_type[sampler_code]
@@ -259,11 +263,12 @@ class ReadIPCForest(ReadUngriddedBase):
                 station_data.ts_type = station.ts_type
                 station_data.ts_type_src = station.ts_type
                 station_data.station_name = station.station_name
+                station_data._append_meta_item("sampler_type", station.sampler_type)
 
                 station_data.data_id = self.data_id
 
                 station_datas.append(station_data)
-        return UngriddedData.from_station_data(station_datas)
+        return UngriddedData.from_station_data(station_datas, add_meta_keys="sampler_type")
 
     def _get_species_conc(self, conc_str: str) -> float:
         return float(conc_str) if conc_str != "" else np.nan

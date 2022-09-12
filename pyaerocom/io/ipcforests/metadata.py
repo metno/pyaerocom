@@ -6,13 +6,13 @@ from pandas import date_range
 
 DEP_TYPE = {
     1: "Throughfall",
-    2: "Bulk deposition",
-    3: "Wet-only deposition",
+    2: "Bulk",
+    3: "Wet-only",
     4: "Stemflow",
     5: "Fog",
-    6: "Frozen fog (rime)",
+    6: "Frozen fog",
     9: "Other",
-    8: "Through also - do not use",
+    8: "do not use",
 }
 
 COUNTRY_CODES = {
