@@ -2,15 +2,17 @@ import fnmatch
 import logging
 import os
 import re
+from datetime import datetime
 from statistics import quantiles
+from typing import Tuple
 
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
-from metadata import MetadataReader, Station
 from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.io.ipcforests.metadata import MetadataReader, Station
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.stationdata import StationData
@@ -23,7 +25,7 @@ logger = logging.getLogger(__name__)
 class ReadIPCForest(ReadUngriddedBase):
 
     #: version log of this class (for caching)
-    __version__ = "0.1_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.15_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
@@ -55,14 +57,37 @@ class ReadIPCForest(ReadUngriddedBase):
         "wetrdn": 17,
     }
 
+    UNITS = {
+        "wetoxs": "mg S m-2 d-1",
+        "wetoxn": "mg N m-2 d-1",
+        "wetrdn": "mg N m-2 d-1",
+    }
+
+    DEP_TYPES_TO_USE = ["Throughfall", "Bulk deposition", "Wet-only deposition"]
+
     def __init__(self, data_id=None, data_dir=None):
         super().__init__(data_id, data_dir)
 
         self.metadata = None
-        # self.data_dir = data_dir
+
+        self._file_dir = None
 
         if data_dir is not None:
             self.metadata = MetadataReader(data_dir)
+
+    @property
+    def file_dir(self):
+        """Directory containing EBAS NASA Ames files"""
+        if self._file_dir is not None:
+            return self._file_dir
+        return os.path.join(self.data_dir)
+
+    @file_dir.setter
+    def file_dir(self, val):
+        if not isinstance(val, str) or not os.path.exists(val):
+            raise FileNotFoundError("Input directory does not exist")
+
+        self._file_dir = val
 
     def read(self, vars_to_retrieve=None, files=[], first_file=None, last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
@@ -87,8 +112,11 @@ class ReadIPCForest(ReadUngriddedBase):
         UngriddedData
             instance of ungridded data object containing data from all files.
         """
-        ...
+        data = self.read_file(self.data_dir + self._FILEMASK, vars_to_retrieve)
 
+        return data
+
+    @property
     def PROVIDES_VARIABLES(self):
         """List of variables that are provided by this dataset
 
@@ -96,11 +124,12 @@ class ReadIPCForest(ReadUngriddedBase):
         ----
         May be implemented as global constant in header
         """
-        pass
+        return list(self.VAR_POSITION.keys())
 
+    @property
     def DEFAULT_VARS(self):
         """List containing default variables to read"""
-        pass
+        return list(self.VAR_POSITION.keys())
 
     def read_file(self, filename, vars_to_retrieve=None):
         """Read single file
@@ -123,7 +152,13 @@ class ReadIPCForest(ReadUngriddedBase):
         """
         stations: dict[str, dict[str, Station]] = {}
         if self.metadata is None:
-            raise ValueError(f"Metadata is not read yet")
+            if self.data_dir is None:
+                raise ValueError(f"Data Dir is not read yet")
+
+            self.metadata = MetadataReader(self.data_dir)
+
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.PROVIDES_VARIABLES
 
         with open(filename, "r") as f:
             f.readline()
@@ -135,10 +170,17 @@ class ReadIPCForest(ReadUngriddedBase):
                 plot_code = int(words[3])
                 sampler_code = int(words[9])
 
+                if self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE:
+                    continue
+
+                sampler_type = self.metadata.deposition_type[sampler_code]
+
                 period = int(words[6])
+                start = words[4]
+                stop = words[5]
 
                 quantity = words[47]
-                if quantity == "" or quantity == "0":
+                if quantity == "":  # or quantity == "0":
                     continue
                 else:
                     quantity = float(quantity)
@@ -163,26 +205,12 @@ class ReadIPCForest(ReadUngriddedBase):
                         f"Year {year} can't be found for {country_code=}, {plot_code=}, {sampler_code=}. Only years found are {self.metadata.plots.plots[country_code][plot_code][sampler_code].survey_years.keys()}"
                     )
                     continue
-
-                try:
-
-                    days = self.metadata.plots.get_days(
-                        year, country_code, plot_code, sampler_code
-                    )
-                except ValueError as e:
-                    logger.warning(repr(e))
-                    continue
-
-                try:
-                    dtime = self.metadata.plots.get_date(
-                        year, country_code, plot_code, sampler_code, period
-                    )
-                except ValueError:
-                    continue
-
-                ts_type = self.metadata.plots.get_ts_type(
-                    year, country_code, plot_code, sampler_code
+                days, dtime, ts_type = self._get_days_date_ts_type(
+                    year, country_code, plot_code, sampler_code, period, start, stop
                 )
+
+                if days is None or dtime is None or ts_type is None:
+                    continue
                 station_name = Station.get_station_name(country_code, plot_code, sampler_code)
 
                 if station_name not in stations:
@@ -195,13 +223,13 @@ class ReadIPCForest(ReadUngriddedBase):
                         country_code, plot_code, sampler_code, lat, lon, alt, partner_code, ts_type
                     )
 
-                for species in self.VAR_POSITION:
+                for species in vars_to_retrieve:
                     conc = self._get_species_conc(words[self.VAR_POSITION[species]])
 
-                    conc *= 1e-6 * quantity / days
+                    conc *= quantity / days
 
                     stations[station_name][ts_type].add_measurement(
-                        species, dtime, conc, "mg m-2 d-1"
+                        species, dtime, conc, self.UNITS[species]
                     )
 
         station_datas = []
@@ -232,13 +260,70 @@ class ReadIPCForest(ReadUngriddedBase):
                 station_data.ts_type_src = station.ts_type
                 station_data.station_name = station.station_name
 
-                station_datas.append(station_data)
+                station_data.data_id = self.data_id
 
-        breakpoint()
+                station_datas.append(station_data)
         return UngriddedData.from_station_data(station_datas)
 
     def _get_species_conc(self, conc_str: str) -> float:
         return float(conc_str) if conc_str != "" else np.nan
+
+    def _get_days_date_ts_type(
+        self,
+        year: int,
+        country_code: int,
+        plot_code: int,
+        sampler_code: int,
+        period: int,
+        start: str | datetime,
+        stop: str | datetime,
+    ) -> Tuple[float | None, datetime | None, str | None]:
+
+        if start != "" and stop != "":
+            if isinstance(start, str):
+                start = datetime.strptime(start, "%Y-%m-%d")
+            if isinstance(stop, str):
+                stop = datetime.strptime(stop, "%Y-%m-%d")
+
+            if (stop - start).days <= 0:
+                return None, None, None
+
+            return (stop - start).days, start, self._get_tstype(start, stop)
+
+        if self.metadata is None:
+            raise ValueError(f"Metadata is not read yet")
+
+        try:
+
+            days = self.metadata.plots.get_days(year, country_code, plot_code, sampler_code)
+        except ValueError as e:
+            logger.warning(repr(e))
+            return None, None, None
+
+        if days == 0:
+            return None, None, None
+
+        try:
+            dtime = self.metadata.plots.get_date(
+                year, country_code, plot_code, sampler_code, period
+            )
+        except ValueError:
+            return None, None, None
+
+        ts_type = self.metadata.plots.get_ts_type(year, country_code, plot_code, sampler_code)
+
+        return days, dtime, ts_type
+
+    def _get_tstype(self, start: datetime, stop: datetime) -> str:
+
+        days = (stop - start).days
+
+        if days >= 26:
+            return "monthly"
+        elif days >= 6:
+            return "weekly"
+        else:
+            return "daily"
 
 
 if __name__ == "__main__":

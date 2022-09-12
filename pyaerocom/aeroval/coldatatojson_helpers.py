@@ -1078,10 +1078,12 @@ def _calc_temporal_corr(coldata):
     arr = coldata.data
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
-    obs_ok = arr[0].count(dim="time") > 2
-    arr[0] = arr[0].where(obs_ok, drop=True)
-    arr[1] = arr[1].where(obs_ok, drop=True)
-    if np.prod(arr.shape) == 0:
+    obs_ok = coldata.data[0].count(dim="time") > 2
+    arr = []
+    arr.append(coldata.data[0].where(obs_ok, drop=True))
+    arr.append(coldata.data[1].where(obs_ok, drop=True))
+
+    if np.prod(arr[0].shape) == 0 or np.prod(arr[1].shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim="time")
     with ignore_warnings(RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):

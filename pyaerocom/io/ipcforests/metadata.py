@@ -4,6 +4,17 @@ from typing import Tuple
 import pandas as pd
 from pandas import date_range
 
+DEP_TYPE = {
+    1: "Throughfall",
+    2: "Bulk deposition",
+    3: "Wet-only deposition",
+    4: "Stemflow",
+    5: "Fog",
+    6: "Frozen fog (rime)",
+    9: "Other",
+    8: "Through also - do not use",
+}
+
 COUNTRY_CODES = {
     1: "FR",
     2: "BE",
@@ -113,6 +124,8 @@ class Station:
         self.partner_code = partner_code
         self.ts_type = ts_type
 
+        self.sampler_type = DEP_TYPE[self.sampler_code]
+
         self.data: dict[str, list[float]] = {}
         self.dtime: dict[str, list[datetime]] = {}
 
@@ -135,6 +148,7 @@ class Station:
             ts_type=self.ts_type,
             ts_type_src=self.ts_type,
             units=unit,
+            sampler_type=self.sampler_type,
         )
 
     def add_measurement(self, species: str, time: datetime, measurement: float, unit: str) -> None:
@@ -282,12 +296,32 @@ class Plots:
 
     def get_position(
         self, year: int, country_code: int, plot_code: int, sampler_code: int
-    ) -> Tuple[str, str, int]:
-        lat = self.plots[country_code][plot_code][sampler_code].lat
-        lon = self.plots[country_code][plot_code][sampler_code].lon
+    ) -> Tuple[float, float, int]:
+        lat = self._coord_to_desimal(self.plots[country_code][plot_code][sampler_code].lat)
+        lon = self._coord_to_desimal(self.plots[country_code][plot_code][sampler_code].lon)
         alt = self.plots[country_code][plot_code][sampler_code].alt
 
         return lat, lon, alt
+
+    def _coord_to_desimal(self, coord: str) -> float:
+        sign = 1
+        if "-" in coord:
+            sign = -1
+            coord = coord[1:]
+
+        if coord == "0":
+            return 0
+
+        coord = coord[:-2]
+        if len(coord) >= 2:
+            minute = int(coord[-2:])
+            coord = coord[:-2]
+        else:
+            return sign * ((int(coord) / 60.0))
+
+        degree = int(coord)
+
+        return sign * (degree + (minute / 60.0))
 
 
 class MetadataReader:
@@ -300,6 +334,8 @@ class MetadataReader:
 
         self.plots = Plots(self.dir + "/dp_pld.csv")
         self.plots.read_file(self.altitudes)
+
+        self.deposition_type = DEP_TYPE
 
     def _get_altitude_dir(self) -> dict[str, int]:
         altitudes = {}

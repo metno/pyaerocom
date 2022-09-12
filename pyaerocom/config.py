@@ -35,6 +35,9 @@ class Config:
     # default names of the different obs networks
     # might get overwritten from paths.ini see func read_config
 
+    #: IPC Forests
+    IPCFORESTS_NAME = "IPCFORESTS"
+
     #: Aeronet Sun V2 access names
     AERONET_SUN_V2L15_AOD_DAILY_NAME = "AeronetSunV2Lev1.5.daily"
     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = "AeronetSun_2.0_NRT"
@@ -87,9 +90,6 @@ class Config:
 
     #: DMS
     DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
-
-    #: IPC Forests
-    IPCFORESTS_NAME = "IPCFOREST"
 
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
