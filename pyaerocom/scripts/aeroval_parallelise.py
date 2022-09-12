@@ -613,7 +613,7 @@ def combine_json_files(infiles: list[str], outfile: str) -> dict:
         except FileNotFoundError:
             result = json.load(inhandle)
 
-    with open(outfile, "w") as outhandle:
+    with open(outfile, "w", encoding="utf-8") as outhandle:
         json.dump(result, outhandle, ensure_ascii=False, indent=4)
 
 
@@ -662,7 +662,6 @@ def adjust_menujson(menujson_file, config_file, cfgvar):
     # load menu.json
     # adjust menu.json
 
-    pass
     # read aeroval configuration file
     if fnmatch(config_file, "*.py"):
         foo = SourceFileLoader("bla", config_file).load_module()
@@ -686,10 +685,29 @@ exiting now..."""
     except:
         sys.exit(1)
 
-    print('halt')
-    # cfg['model_cfg']
-    # cfg['model_cfg'].keys()
-    # menu_json_dict["od550aer"]["obs"]["AeronetL1.5-d"]["Column"]
+    # adust variable oder 1st, then model order
+    # variable order is in cfg['var_order_menu']
+    # model order is the one from cfg['model_cfg']
+    menu_json_out_dict = {}
+    for _var in cfg['var_order_menu']:
+        menu_json_out_dict[_var] = deepcopy(menu_json_dict[_var])
+        # now adjust the order of menu_json_out_dict[_var]["obs"][<obsnetwork>]['Column'|'Surface'].keys()
+        obs_networks_present = menu_json_out_dict[_var]["obs"].keys()
+        for obs_networks_present in menu_json_out_dict[_var]["obs"]:
+            for obs_vert_type in menu_json_out_dict[_var]["obs"][obs_networks_present]:
+                current_obs_order_dict = deepcopy(menu_json_out_dict[_var]["obs"][obs_networks_present][obs_vert_type])
+                menu_json_out_dict[_var]["obs"][obs_networks_present][obs_vert_type] = {}
+                for _model in cfg['model_cfg']:
+                    # not all the model necessaryly provide all variables
+                    try:
+                        menu_json_out_dict[_var]["obs"][obs_networks_present][obs_vert_type][_model] = \
+                            current_obs_order_dict[_model]
+                    except KeyError:
+                        pass
+
+    with open(menujson_file, "w", encoding="utf-8") as outhandle:
+        json.dump(menu_json_out_dict, outhandle, ensure_ascii=False, indent=4)
+    print(f"updated {menujson_file}")
 
 
 def main():
