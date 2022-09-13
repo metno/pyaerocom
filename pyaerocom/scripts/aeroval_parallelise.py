@@ -62,6 +62,11 @@ JSON_RUNSCRIPT = JSON_RUNSCRIPT_NAME
 # match for aeroval config file
 AEROVAL_CONFIG_FILE_MASK = "cfg_*.json"
 
+# match for heatmap files; the results of them are displayed according to their order
+# in the file. Unfortunately the parallesation mixes that up, so we need to reorder them after
+# the assembly of the data data files
+AEROVAL_HEATMAP_FILES_MASK = "hm/glob_stats_*.json"
+
 # some constants for the merge operation
 # files not noted here will be copied
 # list of file masks to merge
@@ -73,7 +78,7 @@ MERGE_EXP_FILES_TO_COMBINE = [
     "ranges.json",
     "regions.json",
     "statistics.json",
-    "hm/glob_stats_*.json",
+    AEROVAL_HEATMAP_FILES_MASK,
     AEROVAL_CONFIG_FILE_MASK,
 ]
 # list of file masks not to touch
@@ -656,11 +661,10 @@ def match_file(
     return ret_val
 
 
-def adjust_menujson(menujson_file, config_file, cfgvar):
-    """helper to adjust the menu.json file according to a given aeroval config file"""
-    # load aeroval config file
-    # load menu.json
-    # adjust menu.json
+def read_config_var(config_file: str, cfgvar: str) -> dict:
+    """method to read the aeroval config file
+
+    returns the config variable"""
 
     # read aeroval configuration file
     if fnmatch(config_file, "*.py"):
@@ -678,7 +682,17 @@ def adjust_menujson(menujson_file, config_file, cfgvar):
 exiting now..."""
         print(msg)
         sys.exit(1)
+    return cfg
 
+
+def adjust_menujson(menujson_file: str, cfg: str = None, config_file: str = None, cfgvar: str = None) -> None:
+    """helper to adjust the menu.json file according to a given aeroval config file"""
+    # load aeroval config file
+    # load menu.json
+    # adjust menu.json
+
+    if cfg is None:
+        cfg = read_config_var(config_file, cfgvar)
     try:
         with open(menujson_file, "r") as inhandle:
             menu_json_dict = json.load(inhandle)
@@ -708,6 +722,48 @@ exiting now..."""
     with open(menujson_file, "w", encoding="utf-8") as outhandle:
         json.dump(menu_json_out_dict, outhandle, ensure_ascii=False, indent=4)
     print(f"updated {menujson_file}")
+
+
+def adjust_heatmapfile(heatmap_files: list[str], cfg: dict = None, config_file: str = None, cfgvar: str = None) -> None:
+    """helper to adjust the menu.json file according to a given aeroval config file"""
+    # load aeroval config file
+    # load menu.json
+    # adjust menu.json
+
+    if cfg is None:
+        cfg = read_config_var(config_file, cfgvar)
+
+    for heatmap_file in heatmap_files:
+        try:
+            with open(heatmap_file, "r") as inhandle:
+                heatmap_dict = json.load(inhandle)
+        except:
+            msg = f"Error: {heatmap_file} not found! Skipping"
+            continue
+
+        # adust variable oder 1st, then model order
+        # variable order is in cfg['var_order_menu']
+        # model order is the one from cfg['model_cfg']
+        heatmap_out_dict = {}
+        for _var in cfg['var_order_menu']:
+            heatmap_out_dict[_var] = deepcopy(heatmap_dict[_var])
+            # now adjust the order of heatmap_out_dict[_var][<obsnetwork>]['Column'|'Surface'].keys()
+            for obs_networks_present in heatmap_out_dict[_var]:
+                for obs_vert_type in heatmap_out_dict[_var][obs_networks_present]:
+                    current_obs_order_dict = deepcopy(heatmap_out_dict[_var][obs_networks_present][obs_vert_type])
+                    heatmap_out_dict[_var][obs_networks_present][obs_vert_type] = {}
+
+                    for _model in cfg['model_cfg']:
+                        # not all the model necessaryly provide all variables
+                        try:
+                            heatmap_out_dict[_var][obs_networks_present][obs_vert_type][_model] = \
+                                current_obs_order_dict[_model]
+                        except KeyError:
+                            pass
+
+        with open(heatmap_file, "w", encoding="utf-8") as outhandle:
+            json.dump(heatmap_out_dict, outhandle, ensure_ascii=False, indent=4)
+        print(f"updated {heatmap_file}")
 
 
 def main():
@@ -748,6 +804,10 @@ def main():
 {colors['UNDERLINE']}adjust menu entries of an aeroval experiment to the one given in a aeroval config file:{colors['END']}
     {script_name} --adjustmenujson <aeroval-cfg-file> <path to menu.json>
     {script_name} --adjustmenujson  /tmp/config/cfg_cams2-82_IFS_beta.py /tmp/data/testmerge_all/IFS-beta/menu.json
+
+{colors['UNDERLINE']}adjust heatmap entries of an aeroval experiment to the one given in a aeroval config file:{colors['END']}
+    {script_name} --adjustheatmap <aeroval-cfg-file> <path to glob_stats_*.json>
+    {script_name} --adjustheatmap  /tmp/config/cfg_cams2-82_IFS_beta.py /tmp/data/testmerge_all/IFS-beta/hm/glob_stats_daily.json
 
     
 """
@@ -795,10 +855,13 @@ def main():
     group_assembly.add_argument("-o", "--outdir", help="output directory for experiment assembly")
     group_assembly.add_argument("-c", "--combinedirs", help="combine the output of a parallel runs",
                                 action="store_true")
-    group_menujson = parser.add_argument_group('adjust menu.json',
+    group_menujson = parser.add_argument_group('adjust variable and model order',
                                                'options to change existing order of variables and models')
     group_menujson.add_argument("--adjustmenujson",
                                 help=" <aeroval cfgfile> <path to menu.json>; adjust order of menu.json to aeroval config file",
+                                action="store_true")
+    group_menujson.add_argument("--adjustheatmap",
+                                help=" <aeroval cfgfile> <path to glob_*_monthly.json>; adjust order of menu.json to aeroval config file",
                                 action="store_true")
     # group_menujson.add_argument("--adjustmenujson", help="adjust order of menu.json to aeroval config file", nargs=2,
     #                             metavar=("<aeroval cfgfile>", "<path to menu.json>"))
@@ -809,6 +872,11 @@ def main():
         options["adjustmenujson"] = True
     else:
         options["adjustmenujson"] = False
+
+    if args.adjustheatmap:
+        options["adjustheatmap"] = True
+    else:
+        options["adjustheatmap"] = False
 
     if args.files:
         options["files"] = args.files
@@ -881,7 +949,7 @@ Please add an output directory using the -o switch."""
         info_str = "INFO: starting queue submission on localhost (-l flag is set)."
         print(info_str)
 
-    if not options["combinedirs"] and not options['adjustmenujson']:
+    if not options["combinedirs"] and not options['adjustmenujson'] and not options['adjustheatmap']:
         # create file for the queue
         runfiles = prep_files(options)
         if options["noqsub"] and options['verbose']:
@@ -894,7 +962,12 @@ Please add an output directory using the -o switch."""
 
     elif options['adjustmenujson']:
         # adjust menu.json
-        adjust_menujson(options['files'][1], options['files'][0], options['cfgvar'])
+        adjust_menujson(options['files'][1], config_file=options['files'][0], cfgvar=options['cfgvar'])
+
+    elif options["adjustheatmap"]:
+        # adjust heatmap file
+        adjust_heatmapfile(options['files'][1:], config_file=options['files'][0], cfgvar=options['cfgvar'])
+
     else:
         result = combine_output(options)
 
