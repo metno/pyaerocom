@@ -36,8 +36,8 @@ def get_heatmap_filename(ts_type):
     return f"glob_stats_{ts_type}.json"
 
 
-def get_timeseries_file_name(obs_name, var_name_web, vert_code):
-    return f"{obs_name}-{var_name_web}-{vert_code}.json"
+def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
+    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
 
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
@@ -1074,12 +1074,15 @@ def _calc_temporal_corr(coldata):
         return np.nan, np.nan
     elif coldata.has_latlon_dims:
         coldata = coldata.flatten_latlondim_station_name()
-    arr = coldata.data
+
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
-    obs_ok = arr[0].count(dim="time") > 2
-    arr = arr.where(obs_ok, drop=True)
-    if np.prod(arr.shape) == 0:
+    obs_ok = coldata.data[0].count(dim="time") > 2
+    arr = []
+    arr.append(coldata.data[0].where(obs_ok, drop=True))
+    arr.append(coldata.data[1].where(obs_ok, drop=True))
+
+    if np.prod(arr[0].shape) == 0 or np.prod(arr[1].shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim="time")
     with ignore_warnings(RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):

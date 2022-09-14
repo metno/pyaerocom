@@ -2,7 +2,11 @@ Example configuration files for AeroVal
 =======================================
 
 This section provides some example setup files for AeroVal evaluations with
-detailed explanations of the setup parameters.
+detailed explanations of the setup parameters. A configuration could be run as the following:: 
+    
+    python cfg_example1.py
+
+The code blocks below are the Python configuruation files *cfg_examples_example1.py* and *sample_gridded_io_aux.py*.
 
 Example 1
 ---------
@@ -15,6 +19,5 @@ Example IO aux file for model reading
 -------------------------------------
 
 .. literalinclude:: _static/aeroval/sample_gridded_io_aux.py
-
 
 

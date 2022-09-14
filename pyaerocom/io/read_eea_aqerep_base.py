@@ -38,7 +38,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.07"
+    __version__ = "0.08"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
@@ -377,16 +377,37 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
 
+        # Sometimes the times in the data files are not ordered in time which causes problems when doing
+        # time interpolations later on. Make sure that the data is ordered in time
+        diff_unsorted = np.diff(data_dict[self.START_TIME_NAME])
+        sort_flag = False
+        # just assume hourly data for now
+        time_diff = np.timedelta64(30, "m")
+        # np.min needs an array and fails with ValueError when a scalar is supplied
+        # this is the case for a single line file
+        try:
+            min_diff = np.min(diff_unsorted)
+        except ValueError:
+            min_diff = 0
+
+        if min_diff < 0:
+            # data needs to be sorted
+            ordered_idx = np.argsort(data_dict[self.START_TIME_NAME][:lineidx])
+            data_out["dtime"] = data_dict[self.START_TIME_NAME][ordered_idx] + time_diff
+            sort_flag = True
+        else:
+            data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
+
         for key, value in data_dict.items():
             # adjust the variable name to aerocom standard
             if key != self.VAR_NAMES_FILE[aerocom_var_name]:
                 data_out[key] = value[:lineidx]
             else:
-                data_out[aerocom_var_name] = value[:lineidx]
+                if sort_flag:
+                    data_out[aerocom_var_name] = value[:lineidx][ordered_idx]
+                else:
+                    data_out[aerocom_var_name] = value[:lineidx]
 
-        # just assume hourly data for now
-        time_diff = np.timedelta64(30, "m")
-        data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
         # convert data vectors to pandas.Series (if attribute
         # vars_as_series=True)
         if vars_as_series:
@@ -513,7 +534,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             #                                                   self.data_id,
             #                                                   self.data_dir,
             #                                                   all_str))
-        self.files = files
         return files
 
     def get_station_coords(self, meta_key):
@@ -570,10 +590,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         var_name = vars_to_retrieve[0]
         logger.info("Reading EEA data")
         if files is None:
-            if len(self.files) == 0:
-                logger.info("Retrieving file list")
-                files = self.get_file_list(self.FILE_MASKS[var_name])
-            files = self.files
+            logger.info("Retrieving file list")
+            files = self.get_file_list(self.FILE_MASKS[var_name])
 
         if first_file is None:
             first_file = 0
@@ -688,5 +706,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         self._metadata = None
+        self.files = files
 
         return data_obj

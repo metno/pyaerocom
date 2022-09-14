@@ -1,10 +1,11 @@
+import xarray as xr
 from geonum.atmosphere import T0_STD, p0
 
 from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
 
-def add_dataarrays(*arrs):
+def add_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
     """
     Add a bunch of :class:`xarray.DataArray` instances
 
@@ -19,7 +20,7 @@ def add_dataarrays(*arrs):
         Added array
 
     """
-    if not len(arrs) > 1:
+    if not len(arrs) > 1:  # pragma: no cover
         raise ValueError("Need at least 2 input arrays to add")
     result = arrs[0].copy(deep=True)
     for arr in arrs[1:]:
@@ -27,7 +28,7 @@ def add_dataarrays(*arrs):
     return result
 
 
-def subtract_dataarrays(*arrs):
+def subtract_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
     """
     Subtract a bunch of :class:`xarray.DataArray` instances from an array
 
@@ -44,7 +45,7 @@ def subtract_dataarrays(*arrs):
         Diff array (all additional ones are subtracted from first array)
 
     """
-    if not len(arrs) > 1:
+    if not len(arrs) > 1:  # pragma: no cover
         raise ValueError("Need at least 2 input arrays to add")
     result = arrs[0].copy(deep=True)
     for arr in arrs[1:]:
@@ -52,8 +53,8 @@ def subtract_dataarrays(*arrs):
     return result
 
 
-def calc_concNhno3(*arrs):
-    if len(arrs) > 1:
+def calc_concNhno3(*arrs: xr.DataArray) -> xr.DataArray:
+    if len(arrs) > 1:  # pragma: no cover
         raise ValueError("Shoul only be given 1 array")
 
     M_N = 14.006
@@ -68,7 +69,7 @@ def calc_concNhno3(*arrs):
 
 
 # ToDo: add docstring
-def calc_concNno3pm10(concno3f, concno3c):
+def calc_concNno3pm10(concno3f: xr.DataArray, concno3c: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_O = 15.999
 
@@ -81,7 +82,9 @@ def calc_concNno3pm10(concno3f, concno3c):
 
 
 # ToDo: add docstring
-def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction=0.134):
+def calc_concNno3pm25(
+    concno3f: xr.DataArray, concno3c: xr.DataArray, fine_from_coarse_fraction: float = 0.134
+) -> xr.DataArray:
     M_N = 14.006
     M_O = 15.999
 
@@ -94,7 +97,9 @@ def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction=0.134):
 
 
 # ToDo: add docstring
-def calc_conNtno3(conchno3, concno3f, concno3c):
+def calc_conNtno3(
+    conchno3: xr.DataArray, concno3f: xr.DataArray, concno3c: xr.DataArray
+) -> xr.DataArray:
     concNhno3 = calc_concNhno3(conchno3)
     concNno3pm10 = calc_concNno3pm10(concno3f, concno3c)
 
@@ -104,8 +109,8 @@ def calc_conNtno3(conchno3, concno3f, concno3c):
 
 
 # ToDo: add docstring
-def calc_concNnh3(*arrs):
-    if len(arrs) > 1:
+def calc_concNnh3(*arrs: xr.DataArray) -> xr.DataArray:
+    if len(arrs) > 1:  # pragma: no cover
         raise ValueError("Shoul only be given 1 array")
 
     M_N = 14.006
@@ -118,8 +123,8 @@ def calc_concNnh3(*arrs):
 
 
 # ToDo: add docstring
-def calc_concNnh4(*arrs):
-    if len(arrs) > 1:
+def calc_concNnh4(*arrs: xr.DataArray) -> xr.DataArray:
+    if len(arrs) > 1:  # pragma: no cover
         raise ValueError("Shoul only be given 1 array")
 
     M_N = 14.006
@@ -132,7 +137,7 @@ def calc_concNnh4(*arrs):
 
 
 # ToDo: add docstring
-def calc_concNtnh(concnh3, concnh4):
+def calc_concNtnh(concnh3: xr.DataArray, concnh4: xr.DataArray) -> xr.DataArray:
     concNnh3 = calc_concNnh3(concnh3)
     concNnh4 = calc_concNnh4(concnh4)
 
@@ -142,14 +147,16 @@ def calc_concNtnh(concnh3, concnh4):
 
 
 # ToDo: add docstring
-def update_EC_units(concecpm25):
+def update_EC_units(concecpm25: xr.DataArray) -> xr.DataArray:
     concCecpm25 = concecpm25
     concCecpm25.attrs["units"] = "ug C m-3"
 
     return concCecpm25
 
 
-def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
+def calc_concsspm25(
+    concssf: xr.DataArray, concssc: xr.DataArray, coarse_fraction: float = 0.13
+) -> xr.DataArray:
     """
     Calculate PM2.5 seasalt
 
@@ -175,7 +182,7 @@ def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
     return concsspm25
 
 
-def calc_vmrox(concno2, vmro3):
+def calc_vmrox(concno2: xr.DataArray, vmro3: xr.DataArray) -> xr.DataArray:
     """
     Calculate OX VMR from NO2 concentration and O3 VMR
 
@@ -209,7 +216,7 @@ def calc_vmrox(concno2, vmro3):
     return vmrox
 
 
-def calc_vmrno2(concno2):
+def calc_vmrno2(concno2: xr.DataArray) -> xr.DataArray:
 
     vmrno2 = concx_to_vmrx(
         data=concno2,

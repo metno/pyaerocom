@@ -1447,44 +1447,6 @@ class GriddedData:
                 return 0
             return last_lev_idx
 
-    def to_time_series_single_coord(self, latitude, longitude):
-        """Make time series dictionary of single location using neirest coordinate
-
-        Todo
-        ----
-        Crop before extraction
-
-        Parameters
-        ----------
-        latitude : float
-            latitude of coordinate
-        longitude : float
-            longitude of coordinate
-
-        Returns
-        -------
-        dict
-            dictionary containing results
-        """
-        raise NameError(DeprecationWarning("This method is deprecated since version 0.8.0"))
-
-    # =============================================================================
-    #         self.check_dimcoords_tseries()
-    #         if not self.ndim == 3:
-    #             raise DataDimensionError('So far, timeseries can only be extracted '
-    #                                      'from 3 dimensional data...')
-    #         lons = self.longitude.points
-    #         lats = self.latitude.points
-    #         lon_idx = np.argmin(np.abs(lons - longitude))
-    #         lat_idx = np.argmin(np.abs(lats - latitude))
-    #         times = self.time_stamps()
-    #         data = self.grid.data[:, lat_idx, lon_idx]
-    #         return {'latitude'      : latitude,
-    #                 'longitude'     : longitude,
-    #                 'name'          : self.name,
-    #                 self.var_name   : pd.Series(data, times)}
-    # =============================================================================
-
     def _closest_time_idx(self, t):
         """Find closest index to input in time dimension"""
         t = self.time.units.date2num(to_pandas_timestamp(t))
@@ -1998,7 +1960,7 @@ class GriddedData:
     # processing methods that exist in the Cube class and that work on the
     # Cube and return a Cube instance. These may be expanded (e.g. for
     # instance what they accept as input
-    def aerocom_filename(self, at_stations=False):
+    def aerocom_filename(self, at_stations=False):  # pragma: no cover
         """Filename of data following Aerocom 3 conventions
 
         Parameters
@@ -2375,7 +2337,9 @@ class GriddedData:
 
         return GriddedData(data_crop, **self.metadata)
 
-    def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs):
+    def quickplot_map(
+        self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs
+    ):  # pragma: no cover
         """Make a quick plot onto a map
 
         Parameters

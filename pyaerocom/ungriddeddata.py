@@ -35,6 +35,8 @@ from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
+from .tstype import TsType
+
 logger = logging.getLogger(__name__)
 
 
@@ -370,7 +372,9 @@ class UngriddedData:
 
         return data_obj
 
-    def add_station_data(self, stat, meta_idx=None, data_idx=None, check_index=False):
+    def add_station_data(
+        self, stat, meta_idx=None, data_idx=None, check_index=False
+    ):  # pragma: no cover
         raise NotImplementedError("Coming at some point")
         if meta_idx is None:
             meta_idx = self.last_meta_idx + 1
@@ -805,6 +809,7 @@ class UngriddedData:
         start=None,
         stop=None,
         freq=None,
+        ts_type_preferred=None,
         merge_if_multi=True,
         merge_pref_attr=None,
         merge_sort_by_largest=True,
@@ -899,6 +904,17 @@ class UngriddedData:
                 stat = self._metablock_to_stationdata(
                     idx, vars_to_convert, start, stop, add_meta_keys
                 )
+                if ts_type_preferred is not None:
+                    if "ts_type" in stat["var_info"][vars_to_convert[0]].keys():
+                        if TsType(stat["var_info"][vars_to_convert[0]]["ts_type"]) < TsType(
+                            ts_type_preferred
+                        ):
+                            continue
+                    elif "ts_type" in stat.keys():
+                        if TsType(stat["ts_type"]) < TsType(ts_type_preferred):
+                            continue
+                    else:
+                        raise KeyError("Could not find ts_type in stat")
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
                 logger.info(f"Skipping meta index {idx}. Reason: {repr(e)}")
@@ -1165,6 +1181,7 @@ class UngriddedData:
         start=None,
         stop=None,
         freq=None,
+        ts_type_preferred=None,
         by_station_name=True,
         ignore_index=None,
         **kwargs,
@@ -1221,6 +1238,7 @@ class UngriddedData:
                     freq,
                     merge_if_multi=True,
                     allow_wildcards_station_name=False,
+                    ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
 
@@ -1242,7 +1260,9 @@ class UngriddedData:
 
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
-    def get_variable_data(self, variables, start=None, stop=None, ts_type=None, **kwargs):
+    def get_variable_data(
+        self, variables, start=None, stop=None, ts_type=None, **kwargs
+    ):  # pragma: no cover
         """Extract all data points of a certain variable
 
         Parameters
@@ -2669,7 +2689,7 @@ class UngriddedData:
         insert_nans=True,
         ax=None,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot time series of station and variable
 
         Parameters
@@ -2726,7 +2746,7 @@ class UngriddedData:
         legend=True,
         add_title=True,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot station coordinates on a map
 
         All input parameters are optional and may be used to add constraints
