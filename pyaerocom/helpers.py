@@ -1716,7 +1716,7 @@ def make_dummy_cube(
     stop_str = f"{stop_yr}-12-31 00:00"
     times = pd.date_range(start_str, stop_str, freq=TS_TYPE_TO_PANDAS_FREQ[freq])
 
-    days_since_start = np.arange(len(times))
+    days_since_start = (times - times[0]).days
     unit = get_variable(var_name).units
 
     lat_range = (-90, 90)
@@ -1767,5 +1767,4 @@ def make_dummy_cube(
     dummy.data = dummy.data.astype(dtype)
     for coord in dummy.coords():
         coord.points = coord.points.astype(dtype)
-
     return dummy
