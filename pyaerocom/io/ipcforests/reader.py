@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class ReadIPCForest(ReadUngriddedBase):
 
     #: version log of this class (for caching)
-    __version__ = "0.16_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.17_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
@@ -55,12 +55,21 @@ class ReadIPCForest(ReadUngriddedBase):
         "wetoxs": 20,
         "wetoxn": 19,
         "wetrdn": 17,
+        "wetna": 16,
     }
 
     UNITS = {
         "wetoxs": "mg S m-2 d-1",
         "wetoxn": "mg N m-2 d-1",
         "wetrdn": "mg N m-2 d-1",
+        "wetna": "mg m-2 d-1",
+    }
+
+    SEASALT_CORRECTION = {
+        "wetoxs": {
+            "ion": "wetna",
+            "ratio": 0.120,
+        }
     }
 
     DEP_TYPES_TO_USE = ["Throughfall", "Bulk", "Wet-only"]
@@ -230,6 +239,20 @@ class ReadIPCForest(ReadUngriddedBase):
                 for species in vars_to_retrieve:
                     conc = self._get_species_conc(words[self.VAR_POSITION[species]])
 
+                    # Sea-salt correction
+                    if species in self.SEASALT_CORRECTION:
+                        ion_name = self.SEASALT_CORRECTION[species]["ion"]
+                        if ion_name not in self.VAR_POSITION:
+                            raise ValueError(
+                                f"Could not do sea salt correction for {species} with {ion_name}"
+                            )
+
+                        ion_conc = self._get_species_conc(words[self.VAR_POSITION[ion_name]])
+                        ratio = self.SEASALT_CORRECTION[species]["ratio"]
+
+                        conc -= ion_conc * ratio
+
+                    # Unit correction
                     conc *= quantity / days
 
                     stations[station_name][ts_type].add_measurement(
