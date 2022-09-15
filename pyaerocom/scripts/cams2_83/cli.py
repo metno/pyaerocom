@@ -283,7 +283,9 @@ def make_config(
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
         str(p)
         for p in obs_paths(
-            *date_range(start_date, end_date + timedelta(days=extra_obs_days)), root_path=obs_path
+            *date_range(start_date, end_date + timedelta(days=extra_obs_days)),
+            root_path=obs_path,
+            analysis=analysis,
         )
     ]  # type:ignore[index]
 

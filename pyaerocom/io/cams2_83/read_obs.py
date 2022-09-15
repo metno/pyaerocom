@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 def obs_paths(
     *dates: datetime | date | str,
     root_path: Path | str = DATA_FOLDER_PATH,
+    analysis: bool = False,
 ) -> Iterator[Path]:
     for date in dates:
         if isinstance(date, str):
@@ -41,8 +42,11 @@ def obs_paths(
             date = date.date()
         if isinstance(root_path, str):
             root_path = Path(root_path)
-
-        path = root_path / date.strftime("%Y%m/obsmacc4verif_%Y%m%d.csv")
+        if analysis:
+            filename = "%Y%m/obsmacc4verifana_%Y%m%d.csv"
+        else:
+            filename = "%Y%m/obsmacc4verif_%Y%m%d.csv"
+        path = root_path / date.strftime(filename)
         if not path.is_file():
             logger.warning(f"Could not find {path.name}. Skipping {date}")
             continue
