@@ -1767,5 +1767,4 @@ def make_dummy_cube(
     dummy.data = dummy.data.astype(dtype)
     for coord in dummy.coords():
         coord.points = coord.points.astype(dtype)
-    breakpoint()
     return dummy
