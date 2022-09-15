@@ -95,6 +95,8 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     if isinstance(ds.time.data[0], np.timedelta64):
         ds = ds.assign_coords(time=np.datetime64(first_date) + ds.time.data)
 
+    if len(ds.time.data) < 2:
+        return xr.Dataset()
     try:
         ds = ds.sel(time=dateselect)
     except:

@@ -30,7 +30,7 @@ GLOBAL_CONFIG = dict(
     clear_existing_json=False,
     # if True, the analysis will stop whenever an error occurs (else, errors that
     # occurred will be written into the logfiles)
-    raise_exceptions=False,
+    raise_exceptions=True,
     # options for CAMS2-83
     use_cams2_83=True,
     # cams2_83_model=ModelName.EMEP,
@@ -55,7 +55,7 @@ GLOBAL_CONFIG = dict(
     # Assorted options, more info can be found in 'cfg_examples_examples1.py'
     # zeros_to_nan=False,
     zeros_to_nan=True,
-    colocate_time=True,
+    colocate_time=False,
     obs_remove_outliers=False,
     model_remove_outliers=False,
     harmonise_units=True,
