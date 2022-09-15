@@ -98,12 +98,47 @@ COUNTRIES = {
 }
 
 
-class Variables:
-    def __init__(self) -> None:
-        pass
-
-
 class Station:
+    """Holds information for a singe IPC Forest station. The same station with different ts_types
+    are treated as seperate stations at this level
+
+    Parameters
+    ----------
+    country_code : int
+        int representing the country where the station is found
+    plot_code : int
+        The number of the station
+    sampler_code : int
+        int representing the type of sampler
+    lat : str
+        latitude
+    lon : str
+        longitude
+    alt: int
+        altitude
+    partner_code : int
+        number of the institude doing the measurement. Mostly used for metadata
+    ts_type : str
+        ts_type of the station
+
+    Attributes
+    ----------
+    sampler_type : str
+        The type of wetdep measurement
+    data : dict[str, list[float]]
+        dictionary holding a list of measurements for each species
+    dtime : dict[str, list[datetime]]
+        dictionary holding a list of timesteps for each species
+    country : str
+        name of country
+    station_name : str
+        name of station
+    var_info : dict[str, dict[str, str | list[float]]]
+        dict holder metadata for each species, used by StationData
+
+
+    """
+
     def __init__(
         self,
         country_code: int,
@@ -141,9 +176,39 @@ class Station:
         plot_code: int,
         sampler_code: int,
     ) -> str:
+        """
+        Generates the station name based on country code, plot code and sampler code. Static method
+        that can be used without initiating the class
+
+        Parameters
+        ----------
+        country_code : int
+            int representing the country where the station is found
+        plot_code : int
+            The number of the station
+        sampler_code : int
+            int representing the type of sampler
+
+        Returns
+        -------
+        str
+            station name
+
+        """
         return f"{COUNTRY_CODES[country_code]}-{plot_code}-{sampler_code}"
 
     def _add_species_to_var_info(self, species: str, unit: str) -> None:
+        """
+        Makes the var_info dict that is used later by StationData
+
+        Parameters
+        ----------
+        species : str
+            name of species
+        unit : str
+            unit
+
+        """
         self.var_info[species] = dict(
             ts_type=self.ts_type,
             ts_type_src=self.ts_type,
@@ -152,6 +217,23 @@ class Station:
         )
 
     def add_measurement(self, species: str, time: datetime, measurement: float, unit: str) -> None:
+
+        """
+        Adds a single measurement to the data and time lists. If it is the first measurement,
+        a new var_info is created
+
+        Parameters
+        ----------
+        species : str
+            name of species
+        time : datetime
+            The timestamp of the measurement
+        measurement : float
+            The value of the measure ment
+        unit : str
+            unit
+
+        """
         if species not in self.var_info:
             self._add_species_to_var_info(species, unit)
         if species not in self.dtime:
@@ -162,29 +244,94 @@ class Station:
         self.data[species].append(measurement)
 
     def get_timeseries(self, species: str) -> pd.Series:
+        """
+        Combines the data and timestamps of a given species to a pandas timeseries
+
+        Parameters
+        ----------
+         species : str
+            name of species
+
+        Returns
+        -------
+        pd.Series
+            Timeseries of the measurements of a given species for station
+
+        """
         return pd.Series(self.data[species], index=self.dtime[species])
 
 
 class SurveyYear:
+    """
+    Holds information about the start and stop dates, as well
+    as the number of periods for a single year at a single station
+
+
+    Parameters
+    ----------
+    year: int
+        The year
+    start: datetime
+        start date
+    stop: datetime
+        end date
+    periods: int
+        number of periods in the survey year
+
+    Attributes
+    ----------
+    days : float
+        The number of days in each period
+    ts_type : str
+        The ts_type for the survey year
+
+
+    """
+
     def __init__(self, year: int, start: datetime, stop: datetime, periods: int) -> None:
         self.year = year
         self.start = start
         self.stop = stop
         self.periods = periods
 
-        self.daterange = date_range(start, stop, periods)
+        # self.daterange = date_range(start, stop, periods)
         self.days = (self.stop - self.start).days / self.periods
 
         self.ts_type = self._get_tstype()
 
     def get_date(self, period: int) -> datetime:
-        if period > self.periods or period <= 0:
+        """
+        Finds the date used to make each period in the year.
+        For now the function returns the first date in the period
 
+        Parameters
+        ----------
+        period : int
+            Which period to find the date for
+
+        Returns
+        -------
+        float
+            The first date in the period
+
+        Raises
+        ------
+        ValueError
+            If the period is not within the range of periods in the year
+        """
+        if period > self.periods or period <= 0:
             raise ValueError(f"The period {period} needs to be in the range 1-{self.periods}")
         return self.start + timedelta(days=self.days * (period - 1))
-        # return self.daterange[period - 1]
 
     def _get_tstype(self) -> str:
+        """
+        Returns the ts_type by calling the static method
+
+        Returns
+        -------
+        str
+            the ts_type of the survey year
+        """
 
         return SurveyYear.get_tstype(self.days)
 
