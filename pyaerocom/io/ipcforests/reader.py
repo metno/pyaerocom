@@ -1,9 +1,6 @@
-import fnmatch
 import logging
 import os
-import re
 from datetime import datetime
-from statistics import quantiles
 from typing import Tuple
 
 import numpy as np
@@ -12,11 +9,9 @@ from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.io.ipcforests.metadata import MetadataReader, Station
+from pyaerocom.io.ipcforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.molmasses import get_molmass
 from pyaerocom.stationdata import StationData
-from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
@@ -25,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ReadIPCForest(ReadUngriddedBase):
 
     #: version log of this class (for caching)
-    __version__ = "0.17_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.18_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
@@ -346,12 +341,7 @@ class ReadIPCForest(ReadUngriddedBase):
 
         days = (stop - start).days
 
-        if days >= 26:
-            return "monthly"
-        elif days >= 6:
-            return "weekly"
-        else:
-            return "daily"
+        return SurveyYear.get_tstype(days)
 
 
 if __name__ == "__main__":

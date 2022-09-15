@@ -186,11 +186,15 @@ class SurveyYear:
 
     def _get_tstype(self) -> str:
 
-        days = (self.stop - self.start).days / self.periods
+        return SurveyYear.get_tstype(self.days)
 
-        if self.days >= 26:
+    @staticmethod
+    def get_tstype(days: float) -> str:
+        if days >= 26:
             return "monthly"
-        elif self.days >= 6:
+        elif days >= 12:
+            return "2weekly"
+        elif days >= 6:
             return "weekly"
         else:
             return "daily"
