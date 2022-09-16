@@ -766,6 +766,47 @@ def adjust_heatmapfile(heatmap_files: list[str], cfg: dict = None, config_file: 
         print(f"updated {heatmap_file}")
 
 
+def adjust_hm_ts_file(ts_files: list[str], cfg: dict = None, config_file: str = None, cfgvar: str = None) -> None:
+    """helper to adjust the hm/ts/*.json files according to a given aeroval config file"""
+    # load aeroval config file
+    # load json file(s)
+    # adjust model order
+
+    if cfg is None:
+        cfg = read_config_var(config_file, cfgvar)
+
+    for _file in ts_files:
+        try:
+            with open(_file, "r") as inhandle:
+                heatmap_dict = json.load(inhandle)
+        except:
+            msg = f"Error: {_file} not found! Skipping"
+            continue
+
+        # adust variable oder 1st, then model order
+        # variable order is in cfg['var_order_menu']
+        # model order is the one from cfg['model_cfg']
+        heatmap_out_dict = {}
+        for _var in heatmap_dict:
+            heatmap_out_dict[_var] = deepcopy(heatmap_dict[_var])
+            # now adjust the order of heatmap_out_dict[_var][<obsnetwork>]['Column'|'Surface'].keys()
+            for obs_networks_present in heatmap_out_dict[_var]:
+                for obs_vert_type in heatmap_out_dict[_var][obs_networks_present]:
+                    current_obs_order_dict = deepcopy(heatmap_out_dict[_var][obs_networks_present][obs_vert_type])
+                    heatmap_out_dict[_var][obs_networks_present][obs_vert_type] = {}
+
+                    for _model in cfg['model_cfg']:
+                        # not all the model necessaryly provide all variables
+                        try:
+                            heatmap_out_dict[_var][obs_networks_present][obs_vert_type][_model] = \
+                                current_obs_order_dict[_model]
+                        except KeyError:
+                            pass
+
+        with open(_file, "w", encoding="utf-8") as outhandle:
+            json.dump(heatmap_out_dict, outhandle, ensure_ascii=False, indent=4)
+        print(f"updated {_file}")
+
 def main():
     """main program"""
 
