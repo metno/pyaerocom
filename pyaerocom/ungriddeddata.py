@@ -8,6 +8,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -15,10 +16,10 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
     MetaDataError,
+    StationCoordinateError,
     StationNotFoundError,
     TimeMatchError,
     VarNotAvailableError,
-    StationCoordinateError,
 )
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import (
@@ -226,11 +227,11 @@ class UngriddedData:
                     continue  # no data assigned for this metadata index
 
                 assert (
-                        var in meta["var_info"]
+                    var in meta["var_info"]
                 ), f"Var {var} is indexed in meta_idx[{idx}] but not in metadata[{idx}]"
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
                 assert (
-                        len(var_idx_data) == 1
+                    len(var_idx_data) == 1
                 ), f"Found multiple variable indices for var {var}: {var_idx_data}"
                 assert var_idx_data[0] == vars_avail[var], (
                     f"Mismatch between {var} index assigned in data and "
@@ -373,7 +374,7 @@ class UngriddedData:
         return data_obj
 
     def add_station_data(
-            self, stat, meta_idx=None, data_idx=None, check_index=False
+        self, stat, meta_idx=None, data_idx=None, check_index=False
     ):  # pragma: no cover
         raise NotImplementedError("Coming at some point")
         if meta_idx is None:
@@ -803,21 +804,21 @@ class UngriddedData:
 
     # TODO: see docstring
     def to_station_data(
-            self,
-            meta_idx,
-            vars_to_convert=None,
-            start=None,
-            stop=None,
-            freq=None,
-            ts_type_preferred=None,
-            merge_if_multi=True,
-            merge_pref_attr=None,
-            merge_sort_by_largest=True,
-            insert_nans=False,
-            allow_wildcards_station_name=True,
-            add_meta_keys=None,
-            resample_how=None,
-            min_num_obs=None,
+        self,
+        meta_idx,
+        vars_to_convert=None,
+        start=None,
+        stop=None,
+        freq=None,
+        ts_type_preferred=None,
+        merge_if_multi=True,
+        merge_pref_attr=None,
+        merge_sort_by_largest=True,
+        insert_nans=False,
+        allow_wildcards_station_name=True,
+        add_meta_keys=None,
+        resample_how=None,
+        min_num_obs=None,
     ):
         """Convert data from one station to :class:`StationData`
 
@@ -907,7 +908,7 @@ class UngriddedData:
                 if ts_type_preferred is not None:
                     if "ts_type" in stat["var_info"][vars_to_convert[0]].keys():
                         if TsType(stat["var_info"][vars_to_convert[0]]["ts_type"]) < TsType(
-                                ts_type_preferred
+                            ts_type_preferred
                         ):
                             continue
                     elif "ts_type" in stat.keys():
@@ -991,7 +992,7 @@ class UngriddedData:
                 if pref_attr is None:
                     return None
             elif (
-                    not stat["data_id"] == data_id
+                not stat["data_id"] == data_id
             ):  # station data objects contain different data sources
                 return None
         return pref_attr
@@ -999,7 +1000,7 @@ class UngriddedData:
     ### TODO: check if both `variables` and `var_info` attrs are required in
     ### metdatda blocks
     def _metablock_to_stationdata(
-            self, meta_idx, vars_to_convert, start=None, stop=None, add_meta_keys=None
+        self, meta_idx, vars_to_convert, start=None, stop=None, add_meta_keys=None
     ):
         """Convert one metadata index to StationData (helper method)
 
@@ -1176,15 +1177,15 @@ class UngriddedData:
         return _iter
 
     def to_station_data_all(
-            self,
-            vars_to_convert=None,
-            start=None,
-            stop=None,
-            freq=None,
-            ts_type_preferred=None,
-            by_station_name=True,
-            ignore_index=None,
-            **kwargs,
+        self,
+        vars_to_convert=None,
+        start=None,
+        stop=None,
+        freq=None,
+        ts_type_preferred=None,
+        by_station_name=True,
+        ignore_index=None,
+        **kwargs,
     ):
         """Convert all data to :class:`StationData` objects
 
@@ -1249,11 +1250,11 @@ class UngriddedData:
 
             # catch the exceptions that are acceptable
             except (
-                    VarNotAvailableError,
-                    TimeMatchError,
-                    DataCoverageError,
-                    NotImplementedError,
-                    StationCoordinateError,
+                VarNotAvailableError,
+                TimeMatchError,
+                DataCoverageError,
+                NotImplementedError,
+                StationCoordinateError,
             ) as e:
                 logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
@@ -1262,7 +1263,7 @@ class UngriddedData:
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
     def get_variable_data(
-            self, variables, start=None, stop=None, ts_type=None, **kwargs
+        self, variables, start=None, stop=None, ts_type=None, **kwargs
     ):  # pragma: no cover
         """Extract all data points of a certain variable
 
@@ -1551,7 +1552,7 @@ class UngriddedData:
 
     # TODO: check, confirm and remove Beta version note in docstring
     def remove_outliers(
-            self, var_name, inplace=False, low=None, high=None, unit_ref=None, move_to_trash=True
+        self, var_name, inplace=False, low=None, high=None, unit_ref=None, move_to_trash=True
     ):
         """Method that can be used to remove outliers from data
 
@@ -2181,22 +2182,22 @@ class UngriddedData:
 
         # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
         self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
-                self._data[:, self._LATINDEX] + self._LAT_OFFSET
-        ) * (10 ** self._LOCATION_PRECISION)
+            self._data[:, self._LATINDEX] + self._LAT_OFFSET
+        ) * (10**self._LOCATION_PRECISION)
         return self.coded_loc
 
     def decode_lat_lon_from_float(self):
         """method to decode lat and lon from a single number calculated by code_lat_lon_in_float"""
 
         lons = (
-                np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-                / 10 ** self._LOCATION_PRECISION
+            np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
+            / 10**self._LOCATION_PRECISION
         )
         lats = (
-                       self.coded_loc
-                       - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-                       * 10 ** (2 * self._LOCATION_PRECISION)
-               ) / (10 ** self._LOCATION_PRECISION) - self._LAT_OFFSET
+            self.coded_loc
+            - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
+            * 10 ** (2 * self._LOCATION_PRECISION)
+        ) / (10**self._LOCATION_PRECISION) - self._LAT_OFFSET
 
         return lats, lons
 
@@ -2371,7 +2372,7 @@ class UngriddedData:
         return obj
 
     def colocate_vardata(
-            self, var1, data_id1=None, var2=None, data_id2=None, other=None, **kwargs
+        self, var1, data_id1=None, var2=None, data_id2=None, other=None, **kwargs
     ):
         if other is None:
             other = self
@@ -2508,11 +2509,11 @@ class UngriddedData:
         raise NotImplementedError("Coming soon")
 
     def find_common_stations(
-            self,
-            other: UngriddedData,
-            check_vars_available=None,
-            check_coordinates: bool = True,
-            max_diff_coords_km: float = 0.1,
+        self,
+        other: UngriddedData,
+        check_vars_available=None,
+        check_coordinates: bool = True,
+        max_diff_coords_km: float = 0.1,
     ) -> dict:
         """Search common stations between two UngriddedData objects
 
@@ -2681,15 +2682,15 @@ class UngriddedData:
         return meta
 
     def plot_station_timeseries(
-            self,
-            station_name,
-            var_name,
-            start=None,
-            stop=None,
-            ts_type=None,
-            insert_nans=True,
-            ax=None,
-            **kwargs,
+        self,
+        station_name,
+        var_name,
+        start=None,
+        stop=None,
+        ts_type=None,
+        insert_nans=True,
+        ax=None,
+        **kwargs,
     ):  # pragma: no cover
         """Plot time series of station and variable
 
@@ -2735,18 +2736,18 @@ class UngriddedData:
         return ax
 
     def plot_station_coordinates(
-            self,
-            var_name=None,
-            start=None,
-            stop=None,
-            ts_type=None,
-            color="r",
-            marker="o",
-            markersize=8,
-            fontsize_base=10,
-            legend=True,
-            add_title=True,
-            **kwargs,
+        self,
+        var_name=None,
+        start=None,
+        stop=None,
+        ts_type=None,
+        color="r",
+        marker="o",
+        markersize=8,
+        fontsize_base=10,
+        legend=True,
+        add_title=True,
+        **kwargs,
     ):  # pragma: no cover
         """Plot station coordinates on a map
 
@@ -3014,5 +3015,5 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     for num in sorted(arr_nominal):
         idx = np.argmin(abs(test - num))
         closest_idx.append(idx)
-        test = test[(idx + 1):]
+        test = test[(idx + 1) :]
     return closest_idx
