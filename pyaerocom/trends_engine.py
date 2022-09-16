@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.cm import get_cmap
+from matplotlib import colormaps
+
+# from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
@@ -18,7 +20,8 @@ from pyaerocom.trends_helpers import (
 class TrendsEngine:
     """Trend computation engine (does not need to be instantiated)"""
 
-    CMAP = get_cmap("bwr")
+    # CMAP = get_cmap("bwr")
+    CMAP = colormaps["bwr"]
     NORM = Normalize(-10, 10)
 
     @staticmethod
@@ -207,7 +210,6 @@ class TrendPlotter:  # pragma: no cover
             ax.plot(self.monthly, label="monthly", c="#4d4d4d")
         ax.plot(self.get_yearly(season), " ok", label="yearly")
         if period in self.periods_avail:
-
             (s_data, s_period, td, tp, tdstr, tpstr) = self._get_trend_data(season, period)
 
             ax.plot(s_data, "-", color=self.get_trend_color(td), label="trend", lw=2)
