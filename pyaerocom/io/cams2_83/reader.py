@@ -9,7 +9,9 @@ from typing import Iterator
 import numpy as np
 import pandas as pd
 import xarray as xr
+from tqdm import tqdm
 
+from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
 from pyaerocom.units_helpers import UALIASES
@@ -32,6 +34,9 @@ AEROCOM_NAMES = dict(
 
 
 DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
+
+
+DEBUG = True
 
 
 logger = logging.getLogger(__name__)
@@ -95,8 +100,8 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     if isinstance(ds.time.data[0], np.timedelta64):
         ds = ds.assign_coords(time=np.datetime64(first_date) + ds.time.data)
 
-    if len(ds.time.data) < 2:
-        return xr.Dataset()
+    # if len(ds.time.data) < 2:
+    #     return xr.Dataset()
     try:
         ds = ds.sel(time=dateselect)
     except:
@@ -129,11 +134,33 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
 
 
 def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
+    paths = check_files(paths)
+
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day)
 
     ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False)
     return ds.pipe(fix_coord).pipe(fix_names)
+
+
+def check_files(paths: list[Path]) -> list[Path]:
+    if not DEBUG:
+        return paths
+
+    new_paths: list[Path] = []
+
+    for p in tqdm(paths, disable=const.QUIET):
+        try:
+            ds = xr.open_dataset(p)
+            if len(ds.time.data) < 2:
+                logger.warning(f"To few timestamps in {p}. Skipping file")
+                continue
+
+            new_paths.append(p)
+        except OSError:
+            logger.warning(f"Error when opening {p}. Skipping file")
+
+    return new_paths
 
 
 class ReadCAMS2_83:
