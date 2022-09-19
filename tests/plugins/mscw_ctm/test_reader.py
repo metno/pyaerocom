@@ -450,14 +450,12 @@ M_NO3 = M_N + M_O * 3
             {"concno3c": 1, "concno3f": 1, "concno3": 2},
         ),
         (
-            {"concno3c": "ug m-3", "concno3f": "ug m-3", "conchno3": "ug m-3"},
+            {"concoxn": "ug m-3"},
             "day",
             ["concNtno3"],
             {
-                "concno3c": 1,
-                "concno3f": 1,
-                "conchno3": 1,
-                "concNtno3": 2 * M_N / M_NO3 + M_N / M_HNO3,
+                "concoxn": 1,
+                "concNtno3": M_N / (M_N + 3 * M_O),
             },
         ),
         ({"wetoxs": "mg S m-2 d-1"}, "day", None, {"wetoxs": 1}),
