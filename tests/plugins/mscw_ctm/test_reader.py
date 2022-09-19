@@ -402,13 +402,13 @@ def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[s
     root = tmp_path / "emep"
     frequencies = freq if isinstance(freq, list) else [freq]
     for freq in frequencies:
-        ds = xr.Dataset()
-        for var_name, units in vars_and_units.items():
-            var_name = varmap[var_name]
-            ds[var_name] = create_fake_MSCWCtm_data(tst=reader.FREQ_CODES[freq])
-            ds[var_name].attrs.update(units=units, var_name=var_name)
-
         for year in ["2017", "2018", "2019", "2015", "2018", "2013"]:
+            ds = xr.Dataset()
+            for var_name, units in vars_and_units.items():
+                var_name = varmap[var_name]
+                ds[var_name] = create_fake_MSCWCtm_data(year=year, tst=reader.FREQ_CODES[freq])
+                ds[var_name].attrs.update(units=units, var_name=var_name)
+
             path = root / str(year) / f"Base_{freq}.nc"
             path.parent.mkdir(exist_ok=True, parents=True)
             ds.to_netcdf(path)
