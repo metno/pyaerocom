@@ -100,6 +100,9 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     if isinstance(ds.time.data[0], np.timedelta64):
         ds = ds.assign_coords(time=np.datetime64(first_date) + ds.time.data)
 
+    if len(set(np.array(ds.time))) != len(np.array(ds.time)):
+        ds = ds.assign_coords(time=dateselect)
+
     # if len(ds.time.data) < 2:
     #     return xr.Dataset()
     try:
@@ -155,6 +158,13 @@ def check_files(paths: list[Path]) -> list[Path]:
             if len(ds.time.data) < 2:
                 logger.warning(f"To few timestamps in {p}. Skipping file")
                 continue
+
+            if len(set(np.array(ds.time))) != len(np.array(ds.time)):
+                if len(np.array(ds.time)) != 24:
+                    logger.warning(
+                        f"Ambiguous time dimension: Duplicate timestamps in {p}, with less that 24 step. Skipping file"
+                    )
+                    continue
 
             new_paths.append(p)
         except OSError:
