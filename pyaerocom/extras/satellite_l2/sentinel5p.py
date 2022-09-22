@@ -69,8 +69,9 @@ class ReadL2Data(ReadL2DataBase):
         self.rads_in_array_flag = False
         # these are the variable specific attributes written into a netcdf file
         self._TIME_OFFSET_NAME = "delta_time"
-        self._NO2NAME = "tcolno2"
-        self._O3NAME = "tcolo3"
+        self._NO2NAME = "tcolno2" # Jan's gridded product
+        self._O3NAME = "tcolo3" # Also jan's gridded product
+        self._O3PROFILENAME = "ozone_profile" # e.g., in the TROPOMI Ozone Profile L2 product
         self._QANAME = "qa_index"
         self._SCANLINENAME = "scanline"
         self._GROUNDPIXELNAME = "ground_pixel"
@@ -107,6 +108,7 @@ class ReadL2Data(ReadL2DataBase):
         self.INDEX_DICT.update({self._TIME_OFFSET_NAME: self._TIME_OFFSET_INDEX})
         self.INDEX_DICT.update({self._NO2NAME: self._DATAINDEX01})
         self.INDEX_DICT.update({self._O3NAME: self._DATAINDEX01})
+        self.INDEX_DICT.update({self._O3PROFILENAME: self._DATAINDEX01}) # LB: Again, not really sure what's going on here 
         self.INDEX_DICT.update({self._QANAME: self._QAINDEX})
         self.INDEX_DICT.update({self._LATBOUNDSNAME: self._LATBOUNDINDEX})
         self.INDEX_DICT.update({self._LONBOUNDSNAME: self._LONBOUNDINDEX})
@@ -132,6 +134,8 @@ class ReadL2Data(ReadL2DataBase):
         self.QUALITY_FLAGS.update({self._NO2NAME: 0.75})
         # QUALITY_FLAGS.update({_NO2NAME: 0.5}) #cloudy
         self.QUALITY_FLAGS.update({self._O3NAME: 0.7})
+        self.QUALITY_FLAGS.update({self._O3PROFILENAME: 0.75}) # 0.8 and above is considered good per documentation, may need to handle better
+
 
         self.CODA_READ_PARAMETERS[self._NO2NAME] = {}
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"] = {}
@@ -142,7 +146,18 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._O3NAME]["vars"] = {}
         self.CODA_READ_PARAMETERS[self._O3NAME]["time_offset"] = np.float_(24.0 * 60.0 * 60.0)
 
-        # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
+        # LB: I don't really understand below just yet but include for now
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME] = {}
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"] = {}
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["vars"] = {}
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["time_offset"] = np.float_(24.0 * 60.0 * 60.0)
+
+
+        # LB: Can all of these be part of a plugin?? I don't see it being practical to do this for every variable
+
+        ## _NO2NAME
+
+        # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc' # Why not use time_utc? Ask Jan.
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._TIME_NAME] = "PRODUCT/time"
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
             self._TIME_OFFSET_NAME
@@ -169,6 +184,8 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
             self._NO2NAME
         ] = "PRODUCT/nitrogendioxide_tropospheric_column"
+
+        ## _O3NAME
 
         self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._TIME_NAME] = "PRODUCT/time"
         self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
@@ -197,7 +214,40 @@ class ReadL2Data(ReadL2DataBase):
             self._O3NAME
         ] = "PRODUCT/ozone_total_vertical_column"
 
+        ## _O3PROFILENAME (LB)
+
+
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][self._TIME_NAME] = "PRODUCT/time"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._TIME_OFFSET_NAME
+        ] = "PRODUCT/delta_time"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._LATITUDENAME
+        ] = "PRODUCT/latitude"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._LONGITUDENAME
+        ] = "PRODUCT/longitude"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._ALTITUDENAME
+        ] = "PRODUCT/altitude"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._LONBOUNDSNAME
+        ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._LATBOUNDSNAME
+        ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._SCANLINENAME
+        ] = "PRODUCT/scanline"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][
+            self._GROUNDPIXELNAME
+        ] = "PRODUCT/ground_pixel"
+
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["metadata"][self._QANAME] = "PRODUCT/qa_value"
+        self.CODA_READ_PARAMETERS[self._O3PROFILENAME]["vars"][self._O3PROFILENAME] = "PRODUCT/ozone_profile"
+
         ####################################
+        ## _NO2NAME
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]["_FillValue"] = np.nan
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME][
@@ -224,6 +274,7 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"]["units"] = "1"
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"]["coordinates"] = "longitude latitude"
 
+        ## _O3NAME
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"]["_FillValue"] = np.nan
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"][
@@ -259,10 +310,13 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["units"] = "1"
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["coordinates"] = "longitude latitude"
 
+        # LB: Why are these attributes begin hardcoded? Can I read them in from the netcdf metadata?
+        # LB: See if I can ignore for now, or until can be dealt with maybe with a plugin architecture
+
         if read_averaging_kernel:
             # reading the averaging kernel needs some more data fields
-            self._AVERAGINGKERNELNAME = "avg_kernel"
-            self._AVERAGINGKERNELSIZE = 34
+            self._AVERAGINGKERNELNAME = "avg_kernel" # note this is not universal. can also be called averaging_kernel, as is the case with ozone_profile, but need to locate it. Not in product?
+            self._AVERAGINGKERNELSIZE = 34 # hæ?
             self._AVERAGINGKERNELINDEX = self._LONBOUNDINDEX + self._LONBOUNDSSIZE + 1
             self._GROUNDPRESSURENAME = "p0"
             self._GROUNDPRESSUREINDEX = self._AVERAGINGKERNELINDEX + self._AVERAGINGKERNELSIZE
@@ -590,13 +644,15 @@ class ReadL2Data(ReadL2DataBase):
             # return as one multidimensional numpy array that can be put into self.data directly
             # (column wise because the column numbers do not match)
             index_pointer = 0
+
+            self._ROWNO = file_data[self._LATITUDENAME].shape[1] # LB: This is just an inference based on below. Was not previoulsy defined, testing my guess
+
             data = np.empty([self._ROWNO, colno], dtype=np.float_)
             # loop over the times
             for idx, _time in enumerate(file_data[self._TIME_OFFSET_NAME]):
                 # loop over the number of ground pixels
                 for _index in range(file_data[self._LATITUDENAME].shape[1]):
                     # check first if the quality flag requirement is met
-
                     if (
                         apply_quality_flag
                         and file_data[self._QANAME][idx, _index]

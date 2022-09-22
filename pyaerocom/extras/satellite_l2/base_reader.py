@@ -3,7 +3,7 @@ base class for satellite level2 data reading conversion
 """
 import logging
 
-import geopy
+import geopy  # Can't locate import
 import numpy as np
 
 from pyaerocom import const
@@ -121,7 +121,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         # max distance between point on the earth's surface for a match
         # in meters
         self.MAX_DISTANCE = 50000.0
-        self.EARTH_RADIUS = geopy.distance.EARTH_RADIUS
+        self.EARTH_RADIUS = 6372.795 # km, from source code of geopy which is not a pyaerocom dependency (currently) #geopy.distance.EARTH_RADIUS
         self.NANVAL_META = -1.0e-6
         self.NANVAL_DATA = -1.0e6
 
@@ -872,131 +872,131 @@ class ReadL2DataBase(ReadUngriddedBase):
 
     ###################################################################################
 
-    def plot_map(
-        self, gridded_data, plotfilename, bbox=None, himalaya_flag=None, title=None, vars=None
-    ):
-        """small routine to plot gridded_data for debugging purposes
+    # def plot_map(
+    #     self, gridded_data, plotfilename, bbox=None, himalaya_flag=None, title=None, vars=None
+    # ):
+    #     """small routine to plot gridded_data for debugging purposes
 
-        This method should not be used by a user as it is not using the gridded data object at this time
+    #     This method should not be used by a user as it is not using the gridded data object at this time
 
-        >>> import matplotlib.pyplot as plt
-        >>> from mpl_toolkits.basemap import Basemap
-        >>> lats=obj.data[:,obj._LATINDEX]
-        >>> lons=obj.data[:,obj._LONINDEX]
-        >>> m = Basemap(projection='merc',lon_0=0)
-        >>> x, y = m(lons,lats)
-        >>> m.drawmapboundary(fill_color='#99ffff')
-        >>> m.fillcontinents(color='#cc9966',lake_color='#99ffff')
-        >>> m.scatter(x,y,3,marker='o',color='k')
-        >>> plt.show()
+    #     >>> import matplotlib.pyplot as plt
+    #     >>> from mpl_toolkits.basemap import Basemap
+    #     >>> lats=obj.data[:,obj._LATINDEX]
+    #     >>> lons=obj.data[:,obj._LONINDEX]
+    #     >>> m = Basemap(projection='merc',lon_0=0)
+    #     >>> x, y = m(lons,lats)
+    #     >>> m.drawmapboundary(fill_color='#99ffff')
+    #     >>> m.fillcontinents(color='#cc9966',lake_color='#99ffff')
+    #     >>> m.scatter(x,y,3,marker='o',color='k')
+    #     >>> plt.show()
 
-        >>> infile='/lustre/storeB/project/fou/kl/vals5p/aerocom/Sentinel5P/renamed/aerocom.Sentinel5P.daily.sconcno2.2018.nc'
-        >>> import xarray as xr
-        >>> import cartopy.crs as ccrs
-        >>> import matplotlib.pyplot as plt
-        >>> import numpy as np
-        >>> ds=xr.open_dataset(infile)
-        >>> ds['sconcno2'].data[ds['sconcno2'] < 0.]=np.nan
-        >>> mean_data = ds['sconcno2'].mean(axis=0)
+    #     >>> infile='/lustre/storeB/project/fou/kl/vals5p/aerocom/Sentinel5P/renamed/aerocom.Sentinel5P.daily.sconcno2.2018.nc'
+    #     >>> import xarray as xr
+    #     >>> import cartopy.crs as ccrs
+    #     >>> import matplotlib.pyplot as plt
+    #     >>> import numpy as np
+    #     >>> ds=xr.open_dataset(infile)
+    #     >>> ds['sconcno2'].data[ds['sconcno2'] < 0.]=np.nan
+    #     >>> mean_data = ds['sconcno2'].mean(axis=0)
 
-        >>> from matplotlib.colors import LogNorm
+    #     >>> from matplotlib.colors import LogNorm
 
-        >>> fig = plt.figure(figsize=(10, 6))
-        >>> ax = fig.add_subplot(111, projection=ccrs.Robinson(), aspect='auto')
-        >>> plot=mean_data.plot.pcolormesh(ax=ax, cmap='jet', transform=ccrs.PlateCarree(), robust=True, levels=16)
-        >>> ax.coastlines()
-        >>> ax.set_global()
+    #     >>> fig = plt.figure(figsize=(10, 6))
+    #     >>> ax = fig.add_subplot(111, projection=ccrs.Robinson(), aspect='auto')
+    #     >>> plot=mean_data.plot.pcolormesh(ax=ax, cmap='jet', transform=ccrs.PlateCarree(), robust=True, levels=16)
+    #     >>> ax.coastlines()
+    #     >>> ax.set_global()
 
-        """
+    #     """
 
-        import matplotlib.pyplot as plt
-        import numpy as np
-        from mpl_toolkits.basemap import Basemap
+    #     import matplotlib.pyplot as plt
+    #     import numpy as np
+    #     from mpl_toolkits.basemap import Basemap
 
-        # positions of some peaks:
-        # Everest: 27.988056, 86.925278
-        # K2: 35.8825, 76.513333
-        # Kangchenjunga: 27.7025, 88.146667
-        # Lhotse: 27.961667, 86.933333
-        # Makalu: 27.889167, 87.088611
-        # Cho Oyu: 28.094167, 86.660833
-        # Dhaulagiri: 28.698333, 83.4875
-        # Manaslu: 28.549444, 84.561944
-        # Nanga Parbat: 35.2375, 74.589167
-        # Annapurna Massif: 28.596111, 83.820278
-        # Gasherbrum I: 35.724444, 76.696389
-        # Broad Peak: 35.811667, 76.565
-        # Gasherbrum II:35.758333, 76.653333
-        # Shishapangma:28.352222, 85.779722
-        himalaya_data = {}
-        himalaya_data["Everest"] = (27.988056, 86.925278)
-        himalaya_data["K2"] = (35.8825, 76.513333)
-        himalaya_data["Kangchenjunga"] = (27.7025, 88.146667)
-        himalaya_data["Lhotse"] = (27.961667, 86.933333)
-        himalaya_data["Makalu"] = (27.889167, 87.088611)
-        himalaya_data["Cho Oyu"] = (28.094167, 86.660833)
-        himalaya_data["Dhaulagiri"] = (28.698333, 83.4875)
-        himalaya_data["Manaslu"] = (28.549444, 84.561944)
-        himalaya_data["Nanga Parbat"] = (35.2375, 74.589167)
-        himalaya_data["Annapurna Massif"] = (28.596111, 83.820278)
-        himalaya_data["Gasherbrum I"] = (35.724444, 76.696389)
-        himalaya_data["Broad Peak"] = (35.811667, 76.565)
-        himalaya_data["Gasherbrum II"] = (35.758333, 76.653333)
-        himalaya_data["Shishapangma"] = (28.352222, 85.779722)
-        if bbox:
-            lat_low = bbox[0]
-            lat_high = bbox[1]
-            lon_low = bbox[2]
-            lon_high = bbox[3]
-        else:
-            lat_low = -90.0
-            lat_high = 90.0
-            lon_low = -180.0
-            lon_high = 180.0
+    #     # positions of some peaks:
+    #     # Everest: 27.988056, 86.925278
+    #     # K2: 35.8825, 76.513333
+    #     # Kangchenjunga: 27.7025, 88.146667
+    #     # Lhotse: 27.961667, 86.933333
+    #     # Makalu: 27.889167, 87.088611
+    #     # Cho Oyu: 28.094167, 86.660833
+    #     # Dhaulagiri: 28.698333, 83.4875
+    #     # Manaslu: 28.549444, 84.561944
+    #     # Nanga Parbat: 35.2375, 74.589167
+    #     # Annapurna Massif: 28.596111, 83.820278
+    #     # Gasherbrum I: 35.724444, 76.696389
+    #     # Broad Peak: 35.811667, 76.565
+    #     # Gasherbrum II:35.758333, 76.653333
+    #     # Shishapangma:28.352222, 85.779722
+    #     himalaya_data = {}
+    #     himalaya_data["Everest"] = (27.988056, 86.925278)
+    #     himalaya_data["K2"] = (35.8825, 76.513333)
+    #     himalaya_data["Kangchenjunga"] = (27.7025, 88.146667)
+    #     himalaya_data["Lhotse"] = (27.961667, 86.933333)
+    #     himalaya_data["Makalu"] = (27.889167, 87.088611)
+    #     himalaya_data["Cho Oyu"] = (28.094167, 86.660833)
+    #     himalaya_data["Dhaulagiri"] = (28.698333, 83.4875)
+    #     himalaya_data["Manaslu"] = (28.549444, 84.561944)
+    #     himalaya_data["Nanga Parbat"] = (35.2375, 74.589167)
+    #     himalaya_data["Annapurna Massif"] = (28.596111, 83.820278)
+    #     himalaya_data["Gasherbrum I"] = (35.724444, 76.696389)
+    #     himalaya_data["Broad Peak"] = (35.811667, 76.565)
+    #     himalaya_data["Gasherbrum II"] = (35.758333, 76.653333)
+    #     himalaya_data["Shishapangma"] = (28.352222, 85.779722)
+    #     if bbox:
+    #         lat_low = bbox[0]
+    #         lat_high = bbox[1]
+    #         lon_low = bbox[2]
+    #         lon_high = bbox[3]
+    #     else:
+    #         lat_low = -90.0
+    #         lat_high = 90.0
+    #         lon_low = -180.0
+    #         lon_high = 180.0
 
-        for var in vars:
-            lats = gridded_data["latitude"]
-            lons = gridded_data["longitude"]
+    #     for var in vars:
+    #         lats = gridded_data["latitude"]
+    #         lons = gridded_data["longitude"]
 
-            m = Basemap(
-                projection="cyl",
-                llcrnrlat=lat_low,
-                urcrnrlat=lat_high,
-                llcrnrlon=lon_low,
-                urcrnrlon=lon_high,
-                resolution="c",
-                fix_aspect=False,
-            )
+    #         m = Basemap(
+    #             projection="cyl",
+    #             llcrnrlat=lat_low,
+    #             urcrnrlat=lat_high,
+    #             llcrnrlon=lon_low,
+    #             urcrnrlon=lon_high,
+    #             resolution="c",
+    #             fix_aspect=False,
+    #         )
 
-            x, y = m(lons, lats)
-            # m.drawmapboundary(fill_color='#99ffff')
-            # m.fillcontinents(color='#cc9966', lake_color='#99ffff')
-            # plot = m.scatter(x, y, 4, marker='o', color='r', )
-            # plot = iplt.pcolormesh(time_sub_cube[:, :], cmap = colormap, vmin=0., vmax=max(colorbar_levels))
+    #         x, y = m(lons, lats)
+    #         # m.drawmapboundary(fill_color='#99ffff')
+    #         # m.fillcontinents(color='#cc9966', lake_color='#99ffff')
+    #         # plot = m.scatter(x, y, 4, marker='o', color='r', )
+    #         # plot = iplt.pcolormesh(time_sub_cube[:, :], cmap = colormap, vmin=0., vmax=max(colorbar_levels))
 
-            my_cmap = plt.get_cmap("rainbow")
-            my_cmap.set_under("white")
-            cs = m.pcolormesh(x, y, gridded_data[var]["mean"], cmap=my_cmap)
-            m.colorbar(cs, extend="min")
+    #         my_cmap = plt.get_cmap("rainbow")
+    #         my_cmap.set_under("white")
+    #         cs = m.pcolormesh(x, y, gridded_data[var]["mean"], cmap=my_cmap)
+    #         m.colorbar(cs, extend="min")
 
-            m.drawmeridians(np.arange(-180, 220, 40), labels=[0, 0, 0, 1], fontsize=10)
-            m.drawparallels(np.arange(-90, 120, 30), labels=[1, 1, 0, 0], fontsize=10)
-            # axis = plt.axis([LatsToPlot.min(), LatsToPlot.max(), LonsToPlot.min(), LonsToPlot.max()])
-            # ax = plot.axes
-            m.drawcoastlines()
-            # m.etopo()
-            # m.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 1500, verbose= True)
-            # m.arcgisimage(service='World_Shaded_Relief', xpixels = 1500, verbose= True)
-            if bbox is not None:
-                m.drawcountries()
-                # m.drawrivers()
+    #         m.drawmeridians(np.arange(-180, 220, 40), labels=[0, 0, 0, 1], fontsize=10)
+    #         m.drawparallels(np.arange(-90, 120, 30), labels=[1, 1, 0, 0], fontsize=10)
+    #         # axis = plt.axis([LatsToPlot.min(), LatsToPlot.max(), LonsToPlot.min(), LonsToPlot.max()])
+    #         # ax = plot.axes
+    #         m.drawcoastlines()
+    #         # m.etopo()
+    #         # m.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 1500, verbose= True)
+    #         # m.arcgisimage(service='World_Shaded_Relief', xpixels = 1500, verbose= True)
+    #         if bbox is not None:
+    #             m.drawcountries()
+    #             # m.drawrivers()
 
-            if himalaya_flag:
-                for peak in himalaya_data:
-                    x, y = m(himalaya_data[peak][1], himalaya_data[peak][0])
-                    plot = m.plot(x, y, 4, marker=".", color="b")
+    #         if himalaya_flag:
+    #             for peak in himalaya_data:
+    #                 x, y = m(himalaya_data[peak][1], himalaya_data[peak][0])
+    #                 plot = m.plot(x, y, 4, marker=".", color="b")
 
-            if title:
-                plt.title(title, fontsize="small")
-            plt.savefig(plotfilename, dpi=300)
-            plt.close()
+    #         if title:
+    #             plt.title(title, fontsize="small")
+    #         plt.savefig(plotfilename, dpi=300)
+    #         plt.close()
