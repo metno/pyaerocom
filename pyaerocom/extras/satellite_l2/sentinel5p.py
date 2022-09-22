@@ -739,7 +739,9 @@ class ReadL2Data(ReadL2DataBase):
             except:
                 pass
 
-            obj.logger.info(f"writing file {netcdf_filename}...")
+            #LB : obj not defined. Need to uncomment back in later
+
+            #obj.logger.info(f"writing file {netcdf_filename}...")
             # compress the main variables
             encoding = {}
             if self._NO2NAME in ds:
@@ -751,7 +753,7 @@ class ReadL2Data(ReadL2DataBase):
             # encoding[self._O3NAME] = {'zlib': True,'complevel': 5}
             ds.to_netcdf(netcdf_filename, encoding=encoding)
             # ds.to_netcdf(netcdf_filename)
-            obj.logger.info(f"file {netcdf_filename} written")
+            #obj.logger.info(f"file {netcdf_filename} written")
         else:
             # call super class
             super().to_netcdf_simple(
