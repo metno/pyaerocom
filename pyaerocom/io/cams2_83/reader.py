@@ -9,7 +9,11 @@ from typing import Iterator
 import numpy as np
 import pandas as pd
 import xarray as xr
+
 from tqdm import tqdm
+from multiprocessing import Process, SimpleQueue
+import subprocess
+import netCDF4
 
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
@@ -153,6 +157,14 @@ def check_files(paths: list[Path]) -> list[Path]:
     new_paths: list[Path] = []
 
     for p in tqdm(paths, disable=const.QUIET):
+
+        command = ["python", "-c", f"from netCDF4 import Dataset; Dataset('{p}')"]
+        # command = ["python", "-c", f"import xarray as xr; xr.open_dataset('{p}')"]
+        output = subprocess.run(command, capture_output=True)
+        if "NetCDF: HDF error" in str(output.stderr):
+            logger.warning(f"Error when opening {p}. Skipping file")
+            continue
+
         try:
             ds = xr.open_dataset(p)
             if len(ds.time.data) < 2:
@@ -167,6 +179,7 @@ def check_files(paths: list[Path]) -> list[Path]:
                     continue
 
             new_paths.append(p)
+            ds.close()
         except OSError:
             logger.warning(f"Error when opening {p}. Skipping file")
 
