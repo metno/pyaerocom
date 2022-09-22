@@ -219,6 +219,7 @@ class WebDisplaySetup(ConstrainedContainer):
         self.model_order_menu = []
         self.hide_charts = []
         self.hide_pages = []
+        self.ts_annotations = {}
         self.update(**kwargs)
 
 
