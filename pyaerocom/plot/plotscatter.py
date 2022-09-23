@@ -20,29 +20,29 @@ def plot_scatter(x_vals, y_vals, **kwargs):
 
 
 def plot_scatter_aerocom(
-        x_vals,
-        y_vals,
-        var_name=None,
-        var_name_ref=None,
-        x_name=None,
-        y_name=None,
-        start=None,
-        stop=None,
-        ts_type=None,
-        unit=None,
-        stations_ok=None,
-        filter_name=None,
-        lowlim_stats=None,
-        highlim_stats=None,
-        loglog=None,
-        ax=None,
-        figsize=None,
-        fontsize_base=11,
-        fontsize_annot=None,
-        marker=None,
-        color=None,
-        alpha=0.5,
-        **kwargs,
+    x_vals,
+    y_vals,
+    var_name=None,
+    var_name_ref=None,
+    x_name=None,
+    y_name=None,
+    start=None,
+    stop=None,
+    ts_type=None,
+    unit=None,
+    stations_ok=None,
+    filter_name=None,
+    lowlim_stats=None,
+    highlim_stats=None,
+    loglog=None,
+    ax=None,
+    figsize=None,
+    fontsize_base=11,
+    fontsize_annot=None,
+    marker=None,
+    color=None,
+    alpha=0.5,
+    **kwargs,
 ):
     """Method that performs a scatter plot of data in AEROCOM format
 
@@ -164,13 +164,15 @@ def plot_scatter_aerocom(
         xlim[0] = low
         ylim[0] = low
     with ignore_warnings(
-            # UserWarning, "Attempted to set non-positive left xlim on a log-scaled axis"
-            UserWarning, "Attempt to set non-positive xlim on a log-scaled axis will be ignored."
+        # UserWarning, "Attempted to set non-positive left xlim on a log-scaled axis"
+        UserWarning,
+        "Attempt to set non-positive xlim on a log-scaled axis will be ignored.",
     ):
         ax.set_xlim(xlim)
     with ignore_warnings(
-            # UserWarning, "Attempted to set non-positive bottom ylim on a log-scaled axis"
-            UserWarning, "Attempt to set non-positive ylim on a log-scaled axis will be ignored."
+        # UserWarning, "Attempted to set non-positive bottom ylim on a log-scaled axis"
+        UserWarning,
+        "Attempt to set non-positive ylim on a log-scaled axis will be ignored.",
     ):
         ax.set_ylim(ylim)
     xlbl = f"{x_name}"
