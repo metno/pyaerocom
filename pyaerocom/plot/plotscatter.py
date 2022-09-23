@@ -163,16 +163,16 @@ def plot_scatter_aerocom(
             low = 10 ** (float(exponent(abs(low)) - 1))
         xlim[0] = low
         ylim[0] = low
+    # there's several UserWarning to ignore...
+    # just ignore all of them here for now
     with ignore_warnings(
         # UserWarning, "Attempted to set non-positive left xlim on a log-scaled axis"
-        UserWarning,
-        "Attempt to set non-positive xlim on a log-scaled axis will be ignored.",
+        UserWarning
     ):
         ax.set_xlim(xlim)
     with ignore_warnings(
         # UserWarning, "Attempted to set non-positive bottom ylim on a log-scaled axis"
         UserWarning,
-        "Attempt to set non-positive ylim on a log-scaled axis will be ignored.",
     ):
         ax.set_ylim(ylim)
     xlbl = f"{x_name}"
