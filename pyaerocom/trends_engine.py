@@ -1,7 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 # from matplotlib.cm import get_cmap
+from matplotlib import colormaps
 from matplotlib.colors import Normalize
+from scipy.stats import kendalltau
+from scipy.stats.mstats import theilslopes
+
 from pyaerocom.trends_helpers import (
     _compute_trend_error,
     _get_yearly,
@@ -10,8 +15,6 @@ from pyaerocom.trends_helpers import (
     _start_season,
     _start_stop_period,
 )
-from scipy.stats import kendalltau
-from scipy.stats.mstats import theilslopes
 
 
 class TrendsEngine:
@@ -23,7 +26,7 @@ class TrendsEngine:
 
     @staticmethod
     def compute_trend(
-            data, ts_type, start_year, stop_year, min_num_yrs, season=None, slope_confidence=None
+        data, ts_type, start_year, stop_year, min_num_yrs, season=None, slope_confidence=None
     ):
         """
         Compute trend
