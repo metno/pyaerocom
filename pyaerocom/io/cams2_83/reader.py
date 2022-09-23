@@ -80,9 +80,7 @@ def model_paths(
         yield path
 
 
-def parse_daterange(
-    dates: pd.DatetimeIndex | list[datetime] | tuple[datetime, datetime]
-) -> pd.DatetimeIndex:
+def parse_daterange(dates: pd.DatetimeIndex | list[datetime] | tuple[datetime, datetime]) -> pd.DatetimeIndex:
     if isinstance(dates, pd.DatetimeIndex):
         return dates
     if len(dates) != 2:
@@ -127,9 +125,7 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
 def fix_coord(ds: xr.Dataset) -> xr.Dataset:
     lon = ds.longitude.data
     ds["longitude"] = np.where(lon > 180, lon - 360, lon)
-    ds.longitude.attrs.update(
-        long_name="longitude", standard_name="longitude", units="degrees_east"
-    )
+    ds.longitude.attrs.update(long_name="longitude", standard_name="longitude", units="degrees_east")
     ds.latitude.attrs.update(long_name="latitude", standard_name="latitude", units="degrees_north")
     return ds
 
@@ -157,11 +153,16 @@ def check_files(paths: list[Path]) -> list[Path]:
     new_paths: list[Path] = []
 
     for p in tqdm(paths, disable=const.QUIET):
+        import signal
 
         command = ["python", "-c", f"from netCDF4 import Dataset; Dataset('{p}')"]
         # command = ["python", "-c", f"import xarray as xr; xr.open_dataset('{p}')"]
+        # command = ["python", "-c", f"import signal; import os; signal.raise_signal(signal.SIGSEGV) "]
+        # command = ["python", "--version"]
+
         output = subprocess.run(command, capture_output=True)
-        if "NetCDF: HDF error" in str(output.stderr):
+        # print(str(output))
+        if output.returncode == -signal.SIGSEGV or "NetCDF: HDF error" in str(output.stderr):
             logger.warning(f"Error when opening {p}. Skipping file")
             continue
 
@@ -281,11 +282,7 @@ class ReadCAMS2_83:
         if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
-            paths = list(
-                model_paths(
-                    self.model, *self.daterange, root_path=self.data_dir, run=self.run_type
-                )
-            )
+            paths = list(model_paths(self.model, *self.daterange, root_path=self.data_dir, run=self.run_type))
             if not paths:
                 raise ValueError(f"no files found for {self.model}")
             self._filepaths = paths
