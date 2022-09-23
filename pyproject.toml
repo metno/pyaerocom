@@ -105,6 +105,7 @@ filterwarnings = [
     "error",
     "ignore::pytest.PytestUnraisableExceptionWarning",
     # except deprecation and future warnings ouside this packege
+    'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
     # and not on this list
