@@ -1110,7 +1110,7 @@ class UngriddedData:
             altitude = subset[:, self._DATAHEIGHTINDEX]
 
             data = pd.Series(vals, dtime)
-            if not data.index.is_monotonic:
+            if not data.index.is_monotonic_increasing:
                 data = data.sort_index()
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
