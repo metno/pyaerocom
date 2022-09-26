@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ReadIPCForest(ReadUngriddedBase):
 
     #: version log of this class (for caching)
-    __version__ = "0.18_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.2_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
@@ -50,24 +50,35 @@ class ReadIPCForest(ReadUngriddedBase):
         "wetoxs": 20,
         "wetoxn": 19,
         "wetrdn": 17,
+        "depoxs": 20,
+        "depoxn": 19,
+        "deprdn": 17,
         "wetna": 16,
+        "wetcl": 18,
     }
 
     UNITS = {
         "wetoxs": "mg S m-2 d-1",
         "wetoxn": "mg N m-2 d-1",
         "wetrdn": "mg N m-2 d-1",
+        "depoxs": "mg S m-2 d-1",
+        "depoxn": "mg N m-2 d-1",
+        "deprdn": "mg N m-2 d-1",
         "wetna": "mg m-2 d-1",
     }
 
     SEASALT_CORRECTION = {
-        "wetoxs": {
-            "ion": "wetna",
-            "ratio": 0.120,
-        }
+        "wetoxs": 0.3338,
+        "depoxs": 0.3338,
+    }
+    SEASALT_FACTORS = {
+        "wetna": 0.120,
+        "wetcl": 0.103,
     }
 
     DEP_TYPES_TO_USE = ["Throughfall", "Bulk", "Wet-only"]
+
+    QUALITY_LIMIT = 0.5
 
     def __init__(self, data_id=None, data_dir=None):
         super().__init__(data_id, data_dir)
@@ -173,6 +184,7 @@ class ReadIPCForest(ReadUngriddedBase):
                 partner_code = int(words[2])
                 plot_code = int(words[3])
                 sampler_code = int(words[9])
+                q_flag = int(words[44]) if words[44] != "" else 0
 
                 # 8 is the code for "do not use"
                 if (
@@ -232,26 +244,36 @@ class ReadIPCForest(ReadUngriddedBase):
                     )
 
                 for species in vars_to_retrieve:
-                    conc = self._get_species_conc(words[self.VAR_POSITION[species]])
+                    conc = self._get_species_conc(words[self.VAR_POSITION[species]], species)
 
                     # Sea-salt correction
+                    # The factor self.SEASALT_CORRECTION[species] is the factor use to go from mg/L to mg S/L (for sulpher)
                     if species in self.SEASALT_CORRECTION:
-                        ion_name = self.SEASALT_CORRECTION[species]["ion"]
-                        if ion_name not in self.VAR_POSITION:
-                            raise ValueError(
-                                f"Could not do sea salt correction for {species} with {ion_name}"
+
+                        na_factor = (
+                            self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
+                            * self.SEASALT_FACTORS["wetna"]
+                            * self.SEASALT_CORRECTION[species]
+                        )
+                        cl_factor = (
+                            self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
+                            * self.SEASALT_FACTORS["wetcl"]
+                            * self.SEASALT_CORRECTION[species]
+                        )
+                        seasalt_correction = min(na_factor, cl_factor)
+
+                        if seasalt_correction > conc and conc > 0:
+                            logger.warning(
+                                f"Seasalt correction {seasalt_correction} is larger than concentration {conc} for {species}"
                             )
-
-                        ion_conc = self._get_species_conc(words[self.VAR_POSITION[ion_name]])
-                        ratio = self.SEASALT_CORRECTION[species]["ratio"]
-
-                        conc -= ion_conc * ratio
+                        if conc > 0:
+                            conc -= seasalt_correction
 
                     # Unit correction
                     conc *= quantity / days
 
                     stations[station_name][ts_type].add_measurement(
-                        species, dtime, conc, self.UNITS[species]
+                        species, dtime, conc, self.UNITS[species], q_flag
                     )
 
         station_datas = []
@@ -261,7 +283,12 @@ class ReadIPCForest(ReadUngriddedBase):
                 station_data = StationData()
                 station_data.var_info = BrowseDict(**station.var_info)
                 for species in station.data.keys():
-                    station_data[species] = station.data[species]
+                    station_data[species] = self._clean_data_with_flags(
+                        station.data[species],
+                        station.dtime[species],
+                        station.flags[species],
+                        species,
+                    )
                     station_data.dtime = station.dtime[species]
 
                 station_data.country = station.country
@@ -288,8 +315,12 @@ class ReadIPCForest(ReadUngriddedBase):
                 station_datas.append(station_data)
         return UngriddedData.from_station_data(station_datas, add_meta_keys="sampler_type")
 
-    def _get_species_conc(self, conc_str: str) -> float:
-        return float(conc_str) if conc_str != "" else np.nan
+    def _get_species_conc(self, conc_str: str, species: str) -> float:
+        conc = float(conc_str) if conc_str != "" else np.nan
+        if conc == -1:
+            logger.warning(f"Value for {species} found to be {conc}")
+            conc = np.nan
+        return conc
 
     def _get_days_date_ts_type(
         self,
@@ -342,6 +373,28 @@ class ReadIPCForest(ReadUngriddedBase):
         days = (stop - start).days
 
         return SurveyYear.get_tstype(days)
+
+    def _clean_data_with_flags(
+        self,
+        data: list[float],
+        time: list[datetime],
+        flags: list[int],
+        species: str,
+    ) -> list[float]:
+
+        data_array = np.array(data)
+        flags_array = np.array(flags)
+        years = np.array([i.year for i in time])
+        for year in range(1984, 2019):
+            yr_flags = flags_array[np.where(years == year)]
+            quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
+            if quality < self.QUALITY_LIMIT:
+                logger.warning(
+                    f"Quailty of {quality} found for {species} in year {year}. Setting data this year to NaN"
+                )
+                data_array[np.where(years == year)] = np.nan
+
+        return list(data_array)
 
 
 if __name__ == "__main__":

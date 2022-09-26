@@ -248,4 +248,7 @@ var_web_info = dict(
     vmrco=["CO", "3D", "Volume mixing ratios"],
     vmrno2=["NO2", "3D", "Volume mixing ratios"],
     concco=["CO", "3D", "Particle concentration"],
+    depoxs=["TotDepOXS", "3D", "Total Deposition"],
+    depoxn=["TotDepOXN", "3D", "Total Deposition"],
+    deprdn=["TotDepRDN", "3D", "Total Deposition"],
 )

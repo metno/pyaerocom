@@ -56,6 +56,9 @@ class ReadMscwCtm:
     # by the original data but computed on import)
     AUX_REQUIRES = {
         "depso4": ["dryso4", "wetso4"],
+        "depoxs": ["dryoxs", "wetoxs"],
+        "depoxn": ["dryoxn", "wetoxn"],
+        "deprdn": ["dryrdn", "wetrdn"],
         "concbc": ["concbcf", "concbcc"],
         "concno3": ["concno3c", "concno3f"],
         "concoa": ["concoac", "concoaf"],
@@ -80,6 +83,9 @@ class ReadMscwCtm:
     # not iris.cube.Cube instance
     AUX_FUNS = {
         "depso4": add_dataarrays,
+        "depoxs": add_dataarrays,
+        "depoxn": add_dataarrays,
+        "deprdn": add_dataarrays,
         "concbc": add_dataarrays,
         "concno3": add_dataarrays,
         "concoa": add_dataarrays,

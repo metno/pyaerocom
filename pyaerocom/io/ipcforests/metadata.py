@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Tuple
 
+import numpy as np
 import pandas as pd
 from pandas import date_range
 
@@ -162,6 +163,7 @@ class Station:
         self.sampler_type = DEP_TYPE[self.sampler_code]
 
         self.data: dict[str, list[float]] = {}
+        self.flags: dict[str, list[int]] = {}
         self.dtime: dict[str, list[datetime]] = {}
 
         self.country = COUNTRIES[country_code]
@@ -216,7 +218,9 @@ class Station:
             sampler_type=self.sampler_type,
         )
 
-    def add_measurement(self, species: str, time: datetime, measurement: float, unit: str) -> None:
+    def add_measurement(
+        self, species: str, time: datetime, measurement: float, unit: str, flag: int
+    ) -> None:
 
         """
         Adds a single measurement to the data and time lists. If it is the first measurement,
@@ -239,11 +243,13 @@ class Station:
         if species not in self.dtime:
             self.dtime[species] = []
             self.data[species] = []
+            self.flags[species] = []
 
         self.dtime[species].append(time)
         self.data[species].append(measurement)
+        self.flags[species].append(flag)
 
-    def get_timeseries(self, species: str) -> pd.Series:
+    def get_timeseries(self, species: str, quality_limit: float = 0.5) -> pd.Series:
         """
         Combines the data and timestamps of a given species to a pandas timeseries
 
@@ -258,7 +264,13 @@ class Station:
             Timeseries of the measurements of a given species for station
 
         """
-        return pd.Series(self.data[species], index=self.dtime[species])
+        flags = np.array(self.flags[species])
+        quality = np.sum(flags[np.where(flags == 0)]) / len(flags)
+        breakpoint()
+        if quality >= quality_limit:
+            return pd.Series(self.data[species], index=self.dtime[species])
+        else:
+            return pd.Series(np.ones_like(self.data[species]) * np.nan, index=self.dtime[species])
 
 
 class SurveyYear:
