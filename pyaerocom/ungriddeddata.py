@@ -35,6 +35,8 @@ from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
+from .tstype import TsType
+
 logger = logging.getLogger(__name__)
 
 
@@ -807,6 +809,7 @@ class UngriddedData:
         start=None,
         stop=None,
         freq=None,
+        ts_type_preferred=None,
         merge_if_multi=True,
         merge_pref_attr=None,
         merge_sort_by_largest=True,
@@ -901,6 +904,17 @@ class UngriddedData:
                 stat = self._metablock_to_stationdata(
                     idx, vars_to_convert, start, stop, add_meta_keys
                 )
+                if ts_type_preferred is not None:
+                    if "ts_type" in stat["var_info"][vars_to_convert[0]].keys():
+                        if TsType(stat["var_info"][vars_to_convert[0]]["ts_type"]) < TsType(
+                            ts_type_preferred
+                        ):
+                            continue
+                    elif "ts_type" in stat.keys():
+                        if TsType(stat["ts_type"]) < TsType(ts_type_preferred):
+                            continue
+                    else:
+                        raise KeyError("Could not find ts_type in stat")
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
                 logger.info(f"Skipping meta index {idx}. Reason: {repr(e)}")
@@ -1095,7 +1109,7 @@ class UngriddedData:
             altitude = subset[:, self._DATAHEIGHTINDEX]
 
             data = pd.Series(vals, dtime)
-            if not data.index.is_monotonic:
+            if not data.index.is_monotonic_increasing:
                 data = data.sort_index()
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
@@ -1167,6 +1181,7 @@ class UngriddedData:
         start=None,
         stop=None,
         freq=None,
+        ts_type_preferred=None,
         by_station_name=True,
         ignore_index=None,
         **kwargs,
@@ -1223,6 +1238,7 @@ class UngriddedData:
                     freq,
                     merge_if_multi=True,
                     allow_wildcards_station_name=False,
+                    ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
 

@@ -37,8 +37,7 @@ def get_heatmap_filename(ts_type):
 
 
 def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
-    reg = region.replace(" ", "_")
-    return f"{reg}-{obs_name}-{var_name_web}-{vert_code}.json"
+    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
 
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
@@ -1075,7 +1074,7 @@ def _calc_temporal_corr(coldata):
         return np.nan, np.nan
     elif coldata.has_latlon_dims:
         coldata = coldata.flatten_latlondim_station_name()
-    arr = coldata.data
+
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
     obs_ok = coldata.data[0].count(dim="time") > 2
