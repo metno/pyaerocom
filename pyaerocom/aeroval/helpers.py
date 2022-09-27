@@ -90,14 +90,22 @@ def _check_statistics_periods(periods: list) -> list:
         if not isinstance(per, str):
             raise ValueError("All periods need to be strings")
         spl = [x.strip() for x in per.split("-")]
+        if len(spl) == 2:
+            if len(spl[0]) != len(spl[1]):
+                raise ValueError(f"{spl[0]} not on the same format as {spl[1]}")
+
         if len(spl) > 2:
             raise ValueError(
                 f"Invalid value for period ({per}), can be either single "
                 f"years or period of years (e.g. 2000-2010)."
             )
-        # _per = "-".join([str(int(val)) for val in spl])
-        _per = "-".join([to_pandas_timestamp(val).strftime("%Y/%m/%d") for val in spl])
+        years = True if len(spl[0]) == 4 else False
+        if years:
+            _per = "-".join([str(int(val)) for val in spl])
+        else:
+            _per = "-".join([to_pandas_timestamp(val).strftime("%Y/%m/%d") for val in spl])
         checked.append(_per)
+
     return checked
 
 
@@ -155,6 +163,29 @@ def _get_min_max_year_periods(statistics_periods):
         if perstop > stopyr:
             stopyr = perstop
     return startyr, stopyr
+
+
+def check_if_year(periods: list[str]) -> bool:
+    """
+    Checks if the periods in the periods list are years or dates
+    """
+    years = []
+    for per in periods:
+        spl = [x.strip() for x in per.split("-")]
+        if len(spl) == 2:
+            if len(spl[0]) != len(spl[1]):
+                raise ValueError(f"{spl[0]} not on the same format as {spl[1]}")
+
+        if len(spl) > 2:
+            raise ValueError(
+                f"Invalid value for period ({per}), can be either single "
+                f"years or period of years (e.g. 2000-2010)."
+            )
+        years.append(True if len(spl[0]) == 4 else False)
+
+    if len(set(years)) != 1:
+        raise ValueError(f"Found mix of years and dates in {periods}")
+    return list(set(years))[0]
 
 
 def make_dummy_model(obs_list: list, cfg) -> str:

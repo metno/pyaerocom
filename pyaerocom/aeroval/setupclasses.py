@@ -19,7 +19,11 @@ from pyaerocom._lowlevel_helpers import (
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
-from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
+from pyaerocom.aeroval.helpers import (
+    _check_statistics_periods,
+    _get_min_max_year_periods,
+    check_if_year,
+)
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 from pyaerocom.io.cams2_83.models import ModelName
@@ -420,17 +424,26 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         start, stop = _get_min_max_year_periods(periods)
         start_yr = start.year
         stop_yr = stop.year
+        years = check_if_year(periods)
+        if not years:
 
-        if start == stop and isinstance(start, pd.Timestamp):
-            stop = start + timedelta(hours=23)
-        elif isinstance(start, pd.Timestamp):
-            stop = stop + timedelta(hours=23)
+            if start == stop and isinstance(start, pd.Timestamp):
+                stop = start + timedelta(hours=23)
+            elif isinstance(start, pd.Timestamp):
+                stop = stop + timedelta(hours=23)
 
-        if stop_yr == start_yr:
-            stop_yr += 1
-        if colstart is None:
-            self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
-        if colstop is None:
-            self.colocation_opts["stop"] = stop.strftime(
-                "%Y/%m/%d %H:%M:%S"
-            )  # + 1  # add 1 year since we want to include stop year
+            if stop_yr == start_yr:
+                stop_yr += 1
+            if colstart is None:
+                self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
+            if colstop is None:
+                self.colocation_opts["stop"] = stop.strftime(
+                    "%Y/%m/%d %H:%M:%S"
+                )  # + 1  # add 1 year since we want to include stop year
+        else:
+            if colstart is None:
+                self.colocation_opts["start"] = start_yr
+            if colstop is None:
+                self.colocation_opts["stop"] = (
+                    stop_yr + 1
+                )  # add 1 year since we want to include stop year

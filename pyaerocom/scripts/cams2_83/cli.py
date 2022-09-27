@@ -202,6 +202,17 @@ def make_period(
     return periods
 
 
+def make_period_ys(
+    start_date: datetime,
+    end_date: datetime,
+) -> List[str]:
+    start_yr = start_date.year
+    end_yr = end_date.year
+    periods = [f"{start_yr}-{end_yr}"]
+    periods += [str(yr) for yr in range(start_yr, end_yr + 1)]
+    return periods
+
+
 def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
     if isinstance(start_date, datetime):
         start_date = start_date.date()
@@ -256,6 +267,11 @@ def make_config(
     else:
         runtype = "FC"
 
+    if eval_type == "long":
+        periods = make_period_ys(start_date, end_date)
+    else:
+        periods = make_period(start_date, end_date)
+
     cfg = deepcopy(CFG)
     cfg.update(
         model_cfg={
@@ -270,7 +286,7 @@ def make_config(
             )
             for model in models
         },
-        periods=make_period(start_date, end_date),
+        periods=periods,
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
