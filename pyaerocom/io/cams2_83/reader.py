@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+import subprocess
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterator
@@ -9,11 +10,7 @@ from typing import Iterator
 import numpy as np
 import pandas as pd
 import xarray as xr
-
 from tqdm import tqdm
-from multiprocessing import Process, SimpleQueue
-import subprocess
-import netCDF4
 
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
@@ -80,7 +77,9 @@ def model_paths(
         yield path
 
 
-def parse_daterange(dates: pd.DatetimeIndex | list[datetime] | tuple[datetime, datetime]) -> pd.DatetimeIndex:
+def parse_daterange(
+    dates: pd.DatetimeIndex | list[datetime] | tuple[datetime, datetime]
+) -> pd.DatetimeIndex:
     if isinstance(dates, pd.DatetimeIndex):
         return dates
     if len(dates) != 2:
@@ -100,9 +99,11 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     dateselect = pd.date_range(select_date, select_date + timedelta(hours=23), freq="h")
 
     if isinstance(ds.time.data[0], np.timedelta64):
+        logger.debug(f"Changing time dimension for {ds.encoding['source']}")
         ds = ds.assign_coords(time=np.datetime64(first_date) + ds.time.data)
 
     if len(set(np.array(ds.time))) != len(np.array(ds.time)):
+        logger.debug(f"Changing time dimension for {ds.encoding['source']}")
         ds = ds.assign_coords(time=dateselect)
 
     # if len(ds.time.data) < 2:
@@ -110,6 +111,7 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     try:
         ds = ds.sel(time=dateselect)
     except:
+        logger.debug(f"Interpolating NaNs for {ds.encoding['source']}")
         ds = ds.interp(time=dateselect)
         ds = ds.sel(time=dateselect)
 
@@ -125,7 +127,9 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
 def fix_coord(ds: xr.Dataset) -> xr.Dataset:
     lon = ds.longitude.data
     ds["longitude"] = np.where(lon > 180, lon - 360, lon)
-    ds.longitude.attrs.update(long_name="longitude", standard_name="longitude", units="degrees_east")
+    ds.longitude.attrs.update(
+        long_name="longitude", standard_name="longitude", units="degrees_east"
+    )
     ds.latitude.attrs.update(long_name="latitude", standard_name="latitude", units="degrees_north")
     return ds
 
@@ -170,6 +174,10 @@ def check_files(paths: list[Path]) -> list[Path]:
             ds = xr.open_dataset(p)
             if len(ds.time.data) < 2:
                 logger.warning(f"To few timestamps in {p}. Skipping file")
+                continue
+            nb_vars = len([i for i in ds.data_vars])
+            if nb_vars < 6:
+                logger.warning(f"Found only {nb_vars} variables for {p}. Skipping file")
                 continue
 
             if len(set(np.array(ds.time))) != len(np.array(ds.time)):
@@ -282,7 +290,11 @@ class ReadCAMS2_83:
         if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
-            paths = list(model_paths(self.model, *self.daterange, root_path=self.data_dir, run=self.run_type))
+            paths = list(
+                model_paths(
+                    self.model, *self.daterange, root_path=self.data_dir, run=self.run_type
+                )
+            )
             if not paths:
                 raise ValueError(f"no files found for {self.model}")
             self._filepaths = paths
