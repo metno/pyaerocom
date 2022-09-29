@@ -33,6 +33,24 @@ AEROCOM_NAMES = dict(
     so2_conc="concso2",
 )
 
+FULL_NAMES = dict(
+    co_conc="mass_concentration_of_carbon_monoxide_in_air",
+    no2_conc="Nitrogen Dioxide",
+    o3_conc="Ozone",
+    pm10_conc="PM10 Aerosol",
+    pm2p5_conc="PM2.5 Aerosol",
+    so2_conc="Sulphur Dioxide",
+)
+
+STANDARD_NAMES = dict(
+    co_conc="Carbon Monoxide",
+    no2_conc="mass_concentration_of_nitrogen_dioxide_in_air",
+    o3_conc="mass_concentration_of_ozone_in_air",
+    pm10_conc="mass_concentration_of_pm10_ambient_aerosol_in_air",
+    pm2p5_conc="mass_concentration_of_pm2p5_ambient_aerosol_in_air",
+    so2_conc="mass_concentration_of_sulfur_dioxide_in_air",
+)
+
 
 DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_83/model")
 
@@ -140,11 +158,37 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
     return ds.rename(AEROCOM_NAMES)
 
 
+def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
+    """
+    TODO: Check if all variables are there. If not:
+    make the rest of the variables, filled with nans.
+    Log an error when this is done
+
+    Might not be possible...
+    """
+    vars_list = [i for i in ds.data_vars]
+    nb_vars = len(vars_list)
+    if nb_vars < 6:
+        logger.warning(f"Found only {vars_list}. Filling the rest with NaNs")
+
+        dummy_var = ds[vars_list[0]]
+        dummy_var_name = vars_list[0]
+        for species in AEROCOM_NAMES:
+            if species not in vars_list:
+
+                ds = ds.assign(**{species: dummy_var * np.nan})
+                attrs = ds[dummy_var_name].attrs
+                attrs["species"] = FULL_NAMES[species]
+                attrs["standard_name"] = STANDARD_NAMES[species]
+                ds[species] = ds[species].assign_attrs(attrs)
+    return ds
+
+
 def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     paths = check_files(paths)
 
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
-        return ds.pipe(forecast_day, day=day)
+        return ds.pipe(forecast_day, day=day).pipe(fix_missing_vars)
 
     ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False)
     return ds.pipe(fix_coord).pipe(fix_names)
@@ -175,10 +219,10 @@ def check_files(paths: list[Path]) -> list[Path]:
             if len(ds.time.data) < 2:
                 logger.warning(f"To few timestamps in {p}. Skipping file")
                 continue
-            nb_vars = len([i for i in ds.data_vars])
-            if nb_vars < 6:
-                logger.warning(f"Found only {nb_vars} variables for {p}. Skipping file")
-                continue
+            # nb_vars = len([i for i in ds.data_vars])
+            # if nb_vars < 6:
+            #     logger.warning(f"Found only {nb_vars} variables for {p}. Skipping file")
+            #     continue
 
             if len(set(np.array(ds.time))) != len(np.array(ds.time)):
                 if len(np.array(ds.time)) != 24:
