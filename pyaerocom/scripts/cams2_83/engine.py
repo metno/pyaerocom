@@ -35,11 +35,14 @@ class CAMS2_83_Engine(ProcessingEngine):
         logger.info(f"Processing: {repr(files)}")
         coldata = [ColocatedData(file) for file in files]
         coldata, found_vars = self._sort_coldata(coldata)
+        start = time.time()
         if var_list is None:
             var_list = list(found_vars)
         for var in var_list:
             logger.info(f"Processing Component: {var}")
             self.process_coldata(coldata[var])
+
+        logger.info(f"Time for wierd plot: {time.time() - start} sec")
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
@@ -75,6 +78,14 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         for regid, regname in regnames.items():
             results[regname] = {}
+            logger.info(f"Creating subset for {regname}")
+            try:
+                subset_region = [
+                    col.filter_region(regid, check_country_meta=use_country) for col in coldata
+                ]
+            except (DataCoverageError, UnknownRegion) as e:
+                logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
+                continue
             for per in periods:
                 for season in seasons:
                     perstr = f"{per}-{season}"
@@ -91,23 +102,21 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     try:
                         subset = [
-                            _select_period_season_coldata(col, per, season).filter_region(
-                                regid, check_country_meta=use_country
-                            )
-                            for col in coldata
+                            _select_period_season_coldata(col, per, season)
+                            for col in subset_region
                         ]
                     except (DataCoverageError, UnknownRegion) as e:
                         logger.info(f"Skipping forecast plot due to error {str(e)}")
                         continue
 
                     for forecast_hour in range(24 * forecast_days):
-                        logger.info(f"Calculating statistics for hour {forecast_hour}")
+                        logger.debug(f"Calculating statistics for hour {forecast_hour}")
                         leap, hour = divmod(forecast_hour, 24)
                         ds = subset[leap]
                         ds = ds.data.sel(time=(ds.time.dt.hour == hour))
                         start = time.time()
                         stats = self._get_median_stats_point_vec(ds, use_weights)
-                        print(time.time() - start)
+                        logger.debug(time.time() - start)
                         for key in stats_list:
                             stats_list[key].append(stats[key])
 
