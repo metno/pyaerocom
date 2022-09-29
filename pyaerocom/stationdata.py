@@ -261,7 +261,7 @@ class StationData(StationMetaData):
 
         self[var_name] = data
         self.var_info[var_name]["units"] = to_unit
-        logger.info(
+        logger.debug(
             f"Successfully converted unit of variable {var_name} in {self.station_name} "
             f"from {unit} to {to_unit}"
         )
