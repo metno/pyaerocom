@@ -67,6 +67,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
+        "forecast": True,
     },
     "mnmb": {
         "name": "MNMB",
@@ -75,6 +76,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
+        "forecast": True,
     },
     "R": {
         "name": "R",
@@ -83,6 +85,7 @@ statistics_defaults = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "forecast": True,
     },
     "R_spearman": {
         "name": "R Spearman",
@@ -99,6 +102,7 @@ statistics_defaults = {
         "colmap": "reverseColmap(RdYlGn)",
         "unit": "1",
         "decimals": 2,
+        "forecast": True,
     },
     "nrms": {
         "name": "NRMSE",
@@ -115,6 +119,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "forecast": True,
     },
     "data_mean": {
         "name": "Mean-Mod",
@@ -144,6 +149,7 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": False,
     },
     "R_temporal_median": {
         "name": "R-Temporal",
@@ -153,6 +159,7 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": False,
     },
 }
 
