@@ -327,12 +327,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
             lineidx += 1
         # if the first line in the file was empty
-        if data_dict["unitofmeasurement"] is "":
+        if data_dict["unitofmeasurement"] == "":
             # with loss of generality get the unitofmeasurement from the last row column 12 (which should be a kept header)
             data_dict["unitofmeasurement"] = rows[12]
             unit_in_file = data_dict["unitofmeasurement"]
 
-        if unit_in_file is "":
+        if unit_in_file == "":
             raise EEAv2FileError(
                 f"Unit of Measurment could not be inferred from EEA file {filename}"
             )
