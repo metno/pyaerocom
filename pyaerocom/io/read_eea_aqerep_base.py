@@ -372,8 +372,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
         data_out["variables"] = [aerocom_var_name]
         data_out["var_info"][aerocom_var_name] = {}
-        if unit == "unknown":
-            breakpoint()
         data_out["var_info"][aerocom_var_name]["units"] = unit
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
