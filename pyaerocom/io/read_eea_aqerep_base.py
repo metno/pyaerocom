@@ -326,8 +326,16 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         data_dict[header[idx]][lineidx] = np.nan
 
             lineidx += 1
+        # if the first line in the file was empty
+        if data_dict["unitofmeasurement"] is "":
+            # with loss of generality get the unitofmeasurement from the last row column 12 (which should be a kept header)
+            data_dict["unitofmeasurement"] = rows[12]
+            unit_in_file = data_dict["unitofmeasurement"]
 
-        unit_in_file = data_dict["unitofmeasurement"]
+        if unit_in_file is "":
+            raise EEAv2FileError(
+                f"Unit of Measurment could not be inferred from EEA file {filename}"
+            )
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
         if var_name in self.AUX_REQUIRES:
             unit_in_file = self.CONV_UNIT[var_name]
@@ -363,6 +371,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
         data_out["variables"] = [aerocom_var_name]
         data_out["var_info"][aerocom_var_name] = {}
+        if unit == "unknown":
+            breakpoint()
         data_out["var_info"][aerocom_var_name]["units"] = unit
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
