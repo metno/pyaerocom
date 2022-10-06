@@ -156,7 +156,7 @@ def test_opts(reader: ReadEbas):
         keep_aux_vars=False,
         convert_units=True,
         try_convert_vmr_conc=True,
-        ensure_correct_freq=True,
+        ensure_correct_freq=False,
         freq_from_start_stop_meas=True,
         freq_min_cov=0.0,
     )
@@ -300,6 +300,16 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "wetoxn",
         "pr",
         "prmm",
+        "concnh4fine",
+        "concCocpm10",
+        "concNno",
+        "concCecpm10",
+        "concno3pm10",
+        "concSso2",
+        "concso4fine",
+        "concso4coarse",
+        "concnh4coarse",
+        "concno3pm25",
     ]
 
     assert sorted(reader.PROVIDES_VARIABLES) == sorted(PROVIDES_VARIABLES)

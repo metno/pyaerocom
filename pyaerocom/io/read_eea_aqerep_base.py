@@ -77,8 +77,18 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
 
+    VAR_NAMES_FILE["concSso2"] = "concentration"
+    VAR_NAMES_FILE["concNno"] = "concentration"
+    VAR_NAMES_FILE["concNno2"] = "concentration"
+
     #: units of variables in files (needs to be defined for each variable supported)
-    VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
+    VAR_UNITS_FILE = {
+        "µg/m3": "ug m-3",
+        "mg/m3": "mg m-3",
+        "µgS/m3": "ug S m-3",
+        "µgN/m3": "ug N m-3",
+        "ppb": "ppb",
+    }
 
     #: file masks for the data files
     FILE_MASKS = dict(
@@ -92,10 +102,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concco="**/??_10_*_timeseries.csv*",
         concno="**/??_38_*_timeseries.csv*",
         concpm25="**/??_6001_*_timeseries.csv*",
+        concSso2="**/??_1_*_timeseries.csv*",
+        concNno2="**/??_8_*_timeseries.csv*",
+        concNno="**/??_38_*_timeseries.csv*",
     )
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
+
+    CONV_FACTOR["concSso2"] = np.float_(0.50052292274792)
+    CONV_FACTOR["concNno2"] = np.float_(0.3044517868011477)
+    CONV_FACTOR["concNno"] = np.float_(0.466788868521913)
     CONV_FACTOR["vmro3"] = np.float_(
         0.493
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
@@ -108,6 +125,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
     # unit of the converted property after the conversion
     CONV_UNIT = {}
+    CONV_UNIT["concSso2"] = "µgS/m3"
+    CONV_UNIT["concNno2"] = "µgN/m3"
+    CONV_UNIT["concNno"] = "µgN/m3"
     CONV_UNIT["vmro3"] = "ppb"
     CONV_UNIT["vmro3max"] = "ppb"
     CONV_UNIT["vmrno2"] = "ppb"
@@ -171,12 +191,22 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3max": ["conco3"], "vmro3": ["conco3"], "vmrno2": ["concno2"]}
+    AUX_REQUIRES = {
+        "vmro3max": ["conco3"],
+        "vmro3": ["conco3"],
+        "vmrno2": ["concno2"],
+        "concNno2": ["concno2"],
+        "concNno": ["concno"],
+        "concSso2": ["concso2"],
+    }
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmro3max": NotImplementedError(),
         "vmrno2": NotImplementedError(),
+        "concNno2": NotImplementedError(),
+        "concNno": NotImplementedError(),
+        "concSso2": NotImplementedError(),
     }
 
     def __init__(self, data_id=None, data_dir=None):
