@@ -33,7 +33,7 @@ class FileConventionRead:
 
     _io_opts = const
     AEROCOM3_VERT_INFO = {
-        "2d": ["surface", "column", "modellevel"],
+        "2d": ["surface", "column", "modellevel", "2d"],
         "3d": ["modellevelatstations"],
     }
 
@@ -158,6 +158,7 @@ class FileConventionRead:
             )
         try:
             # include vars for the surface
+
             if spl[self.vert_pos].lower() in self.AEROCOM3_VERT_INFO["2d"]:
                 info["var_name"] = spl[self.var_pos]
             # also include 3d vars that provide station based data

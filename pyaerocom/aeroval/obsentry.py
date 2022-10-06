@@ -51,7 +51,7 @@ class ObsEntry(BrowseDict):
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
     """
 
-    SUPPORTED_VERT_CODES = ["Column", "Profile", "Surface"]
+    SUPPORTED_VERT_CODES = ["Column", "Profile", "Surface", "2D"]
     ALT_NAMES_VERT_CODES = dict(ModelLevel="Profile")
 
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS

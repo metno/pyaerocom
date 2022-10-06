@@ -292,7 +292,7 @@ class ColocationSetup(BrowseDict):
     #: file for ec550aer at the surface ('*ec550aer*Surface*.nc'), then, the
     #: colocation routine will look for '*ec550aer*ModelLevel*.nc' and if this
     #: exists, it will load it and extract the surface level.
-    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel"}
+    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel", "2D": "2D"}
 
     #: do not raise Exception if invalid item is attempted to be assigned
     #: (Overwritten from base class)

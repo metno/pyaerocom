@@ -167,7 +167,7 @@ class ReadGridded:
 
     _data_dir = ""
 
-    VERT_ALT = {"Surface": "ModelLevel"}
+    VERT_ALT = {"Surface": "ModelLevel", "2D": "2D"}
 
     def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3"):
 
