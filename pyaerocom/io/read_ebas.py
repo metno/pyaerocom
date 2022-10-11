@@ -16,9 +16,12 @@ from pyaerocom.aux_var_helpers import (
     compute_sc440dryaer,
     compute_sc550dryaer,
     compute_sc700dryaer,
+    compute_wetnh4_from_concprcpnh4,
+    compute_wetno3_from_concprcpno3,
     compute_wetoxn_from_concprcpoxn,
     compute_wetoxs_from_concprcpoxs,
     compute_wetrdn_from_concprcprdn,
+    compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
     vmrx_to_concx,
 )
@@ -145,7 +148,7 @@ class ReadEbasOptions(BrowseDict):
         self.convert_units = True
         self.try_convert_vmr_conc = True
 
-        self.ensure_correct_freq = True
+        self.ensure_correct_freq = False
         self.freq_from_start_stop_meas = True
         self.freq_min_cov = 0.0
 
@@ -232,6 +235,9 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxs": ["concprcpoxs", "pr"],
         "wetoxn": ["concprcpoxn", "pr"],
         "wetrdn": ["concprcprdn", "pr"],
+        "wetso4": ["concprcpso4", "pr"],
+        "wetno3": ["concprcpno3", "pr"],
+        "wetnh4": ["concprcpnh4", "pr"],
         "vmro3max": ["vmro3"],
     }
 
@@ -252,6 +258,9 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxs": compute_wetoxs_from_concprcpoxs,
         "wetoxn": compute_wetoxn_from_concprcpoxn,
         "wetrdn": compute_wetrdn_from_concprcprdn,
+        "wetnh4": compute_wetnh4_from_concprcpnh4,
+        "wetno3": compute_wetno3_from_concprcpno3,
+        "wetso4": compute_wetso4_from_concprcpso4,
         "vmro3max": calc_vmro3max,
     }
 

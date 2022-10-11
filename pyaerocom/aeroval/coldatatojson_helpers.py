@@ -3,6 +3,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 import logging
 import os
+from copy import deepcopy
 from datetime import datetime
 
 import numpy as np
@@ -554,7 +555,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
                             period=period_num
                         ).values.tolist()
 
-            ts_objs_reg.append(ts_data)
+            ts_objs_reg.append(deepcopy(ts_data))
     return ts_objs_reg
 
 

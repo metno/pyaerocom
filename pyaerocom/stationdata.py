@@ -66,7 +66,7 @@ class StationData(StationMetaData):
     #: maximum numerical distance between coordinates associated with this
     #: station
     # _COORD_MAX_VAR = 0.1 #km
-    _COORD_MAX_VAR = 1.0  # km
+    _COORD_MAX_VAR = 5.0  # km
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
     VALID_TS_TYPES = const.GRID_IO.TS_TYPES

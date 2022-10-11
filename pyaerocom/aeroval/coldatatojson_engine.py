@@ -100,6 +100,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
         use_fairmode = self.cfg.statistics_opts.use_fairmode
+        use_diurnal = self.cfg.statistics_opts.use_diurnal
 
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
@@ -246,7 +247,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             outfile_scat = os.path.join(out_dirs["scat"], map_name)
             write_json(scat_data, outfile_scat, ignore_nan=True)
 
-        if coldata.ts_type == "hourly":
+        if coldata.ts_type == "hourly" and use_diurnal:
             logger.info("Processing diurnal profiles")
             (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
                 coldata, regions_how, regnames, meta_glob

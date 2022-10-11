@@ -56,6 +56,10 @@ class ReadIPCForest(ReadUngriddedBase):
         "depoxs": 20,
         "depoxn": 19,
         "deprdn": 17,
+        "wetso4": 20,
+        "wetno3": 19,
+        "wetnh4": 17,
+        "wetno2": 41,
         "wetna": 16,
         "wetcl": 18,
     }
@@ -70,11 +74,16 @@ class ReadIPCForest(ReadUngriddedBase):
         "depoxs": "mg S m-2 d-1",
         "depoxn": "mg N m-2 d-1",
         "deprdn": "mg N m-2 d-1",
+        "wetso4": "mg S m-2 d-1",
+        "wetno3": "mg N m-2 d-1",
+        "wetnh4": "mg N m-2 d-1",
+        "wetno2": "mg N m-2 d-1",
         "wetna": "mg m-2 d-1",
     }
 
     SEASALT_CORRECTION = {
         "wetoxs": 0.3338,
+        "wetso4": 0.3338,
         "depoxs": 0.3338,
     }
     SEASALT_FACTORS = {

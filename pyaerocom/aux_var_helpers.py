@@ -609,6 +609,18 @@ def compute_wetrdn_from_concprcprdn(data):
     return _compute_wdep_from_concprcp_helper(data, "wetrdn", "concprcprdn", "pr")
 
 
+def compute_wetnh4_from_concprcpnh4(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetnh4", "concprcpnh4", "pr")
+
+
+def compute_wetno3_from_concprcpno3(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetno3", "concprcpno3", "pr")
+
+
+def compute_wetso4_from_concprcpso4(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetso4", "concprcpso4", "pr")
+
+
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, to_unit=None):
     """
     Convert volume mixing ratio (vmr) to mass concentration

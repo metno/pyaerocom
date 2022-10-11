@@ -16,13 +16,24 @@ from .additional_variables import (
     calc_concNhno3,
     calc_concNnh3,
     calc_concNnh4,
+    calc_concNno,
+    calc_concNno2,
     calc_concNno3pm10,
     calc_concNno3pm25,
+    calc_concno3pm10,
+    calc_concno3pm25,
     calc_concNtnh,
+    calc_concso4t,
+    calc_concSso2,
     calc_concsspm25,
+    calc_conNtnh_emep,
     calc_conNtno3,
+    calc_conNtno3_emep,
     calc_vmrno2,
+    calc_vmro3,
     calc_vmrox,
+    calc_vmrox_from_conc,
+    identity,
     subtract_dataarrays,
     update_EC_units,
 )
@@ -69,13 +80,28 @@ class ReadMscwCtm:
         "concNnh4": ["concnh4"],
         "concNno3pm10": ["concno3f", "concno3c"],
         "concNno3pm25": ["concno3f", "concno3c"],
-        "concNtno3": ["conchno3", "concno3f", "concno3c"],
-        "concNtnh": ["concnh3", "concnh4"],
+        "concno3pm10": ["concno3f", "concno3c"],
+        "concno3pm25": ["concno3f", "concno3c"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concssf", "concssc"],
-        "concCecpm25": ["concecpm25"],
-        "vmrox": ["concno2", "vmro3"],
+        # "vmrox": ["concno2", "vmro3"],
+        "vmrox": ["concno2", "conco3"],
         "vmrno2": ["concno2"],
+        "concNtno3": ["concoxn"],
+        "concNtnh": ["concrdn"],
+        # "concNtno3": ["conchno3", "concno3f", "concno3c"],
+        # "concNtnh": ["concnh3", "concnh4"],
+        "concecpm25": ["concecFine"],
+        "concecpm10": ["concecFine", "concecCoarse"],
+        "concCecpm10": ["concecpm10"],
+        "concCecpm25": ["concecpm25"],
+        "concCocpm25": ["concCocFine"],
+        "concCocpm10": ["concCocFine", "concCocCoarse"],
+        "concso4t": ["concso4", "concss"],
+        "concNno": ["concno"],
+        "concNno2": ["concno2"],
+        "concSso2": ["concso2"],
+        "vmro3": ["conco3"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -96,13 +122,28 @@ class ReadMscwCtm:
         "concNnh4": calc_concNnh4,
         "concNno3pm10": calc_concNno3pm10,
         "concNno3pm25": calc_concNno3pm25,
-        "concNtno3": calc_conNtno3,
-        "concNtnh": calc_concNtnh,
+        "concno3pm10": calc_concno3pm10,
+        "concno3pm25": calc_concno3pm25,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
-        "concCecpm25": update_EC_units,
-        "vmrox": calc_vmrox,
+        # "vmrox": calc_vmrox,
+        "vmrox": calc_vmrox_from_conc,
         "vmrno2": calc_vmrno2,
+        "concNtno3": calc_conNtno3_emep,
+        "concNtnh": calc_conNtnh_emep,
+        # "concNtno3": calc_conNtno3,
+        # "concNtnh": calc_concNtnh,
+        "concecpm25": identity,
+        "concecpm10": add_dataarrays,
+        "concCecpm25": update_EC_units,
+        "concCecpm10": update_EC_units,
+        "concCocpm25": identity,
+        "concCocpm10": add_dataarrays,
+        "concso4t": calc_concso4t,
+        "concNno": calc_concNno,
+        "concNno2": calc_concNno2,
+        "concSso2": calc_concSso2,
+        "vmro3": calc_vmro3,
     }
 
     #: supported filename masks, placeholder is for frequencies
@@ -450,15 +491,10 @@ class ReadMscwCtm:
 
         ts_type = self.ts_type_from_filename(self.filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
-
-        for i, fp in enumerate(fps):
-            if not os.path.split(fp)[-1] == self.filename:
-                continue
-
-            logger.info(f"Opening {fp}")
-            tmp_ds = xr.open_dataset(fp)
-
-            ds[yrs[i]] = tmp_ds
+        if len(fps) > 1 and ts_type == "hourly":
+            raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
+        logger.info(f"Opening {fps}")
+        ds = xr.open_mfdataset(fps)
 
         self._filedata = ds
 
@@ -692,15 +728,7 @@ class ReadMscwCtm:
 
         try:
             filedata = self.filedata
-
-            if len(filedata) == 1:
-                data = filedata[list(filedata)[0]][emep_var]
-            else:
-                if ts_type == "hourly":
-                    raise ValueError(
-                        f"ts_type {ts_type} can not be hourly when using multiple years"
-                    )
-                data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
+            data = filedata[emep_var]
 
         except KeyError:
             raise VarNotAvailableError(
