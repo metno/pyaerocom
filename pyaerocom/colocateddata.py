@@ -526,10 +526,12 @@ class ColocatedData:
             colocate_time = self.metadata["colocate_time"]
 
         # if colocate time is activated, remove datapoints from model, where
-        # there is no observation
+        # there is no observation, or vice versa
         if colocate_time:
             mask = np.isnan(col.data[0]).data
+            mask_model = np.isnan(col.data[1]).data
             col.data.data[1][mask] = np.nan
+            col.data.data[0][mask_model] = np.nan
 
         res = TimeResampler(col.data)
         data_arr = res.resample(

@@ -1756,7 +1756,9 @@ def make_dummy_cube(
 
     latdim.guess_bounds()
     londim.guess_bounds()
-    dummy = iris.cube.Cube(np.ones((len(times), len(lats), len(lons))), units=unit)
+
+    data = np.ones((len(times), len(lats), len(lons)))
+    dummy = iris.cube.Cube(data, units=unit)
 
     dummy.add_dim_coord(latdim, 1)
     dummy.add_dim_coord(londim, 2)
