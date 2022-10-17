@@ -137,6 +137,24 @@ statistics_defaults = {
         "unit": "1",
         "decimals": 2,
     },
+    "num_valid": {
+        "name": "Nb. Obs",
+        "longname": "Number of Valid Observations",
+        "scale": None,
+        "colmap": None,
+        "overall_only": True,
+        "unit": "1",
+        "decimals": 0,
+    },
+    "num_coords_with_data": {
+        "name": "Nb. Stations",
+        "longname": "Number of Stations with data",
+        "scale": None,
+        "colmap": None,
+        "overall_only": True,
+        "unit": "1",
+        "decimals": 0,
+    },
 }
 
 # Default information for additional statistical parameters
