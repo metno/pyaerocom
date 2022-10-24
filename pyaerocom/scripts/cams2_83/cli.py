@@ -4,6 +4,7 @@ import logging
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from enum import Enum
+from multiprocessing import Pool, cpu_count
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
@@ -14,13 +15,14 @@ from dateutil.relativedelta import relativedelta
 
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+from pyaerocom.io import ReadUngridded
 from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 from pyaerocom.tools import clear_cache
 
-from .config import CFG
+from .config import CFG, obs_filters, species_list
 from .processer import CAMS2_83_Processer
 
 """
@@ -316,6 +318,31 @@ def make_config(
     return cfg
 
 
+def read_observations(data: list) -> None:
+    logger.info(f"Running {data[0]}")
+    cache = data[2]
+    if cache is not None:
+        const.CACHEDIR = str(cache)
+
+    reader = ReadUngridded()
+
+    reader.read(
+        data_ids="CAMS2_83.NRT",
+        vars_to_retrieve=data[0],
+        files=data[1],
+        force_caching=True,
+    )
+
+    logger.info(f"Finished {data[0]}")
+
+
+def run_forecast(data: list) -> None:
+    species = data[0]
+    ana_cams2_83 = data[1]
+    analysis = data[2]
+    ana_cams2_83.run(analysis=analysis, var_list=species)
+
+
 def runner(
     cfg: dict,
     cache: str | Path | None,
@@ -324,6 +351,7 @@ def runner(
     analysis: bool = False,
     dry_run: bool = False,
     quiet: bool = False,
+    pool: int = 1,
 ):
     logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
     if dry_run:
@@ -340,14 +368,32 @@ def runner(
     ana_cams2_83 = CAMS2_83_Processer(stp)
     ana = ExperimentProcessor(stp)
 
+    import time
+
+    start = time.time()
+
     logging.info(f"Clearing cache at {const.CACHEDIR}")
     clear_cache()
+
+    if pool > 1:
+        logger.info(f"Running observation reading with pool {pool}")
+        files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
+        pool_data = [[s, files, cache] for s in species_list]
+        p = Pool(pool)
+        p.map(read_observations, pool_data)
 
     logger.info(f"Running Rest of Statistics")
     ana.run()
     if eval_type == "season" or eval_type == "long":
         logger.info(f"Running CAMS2_83 Spesific Statistics")
-        ana_cams2_83.run(analysis=analysis)
+        if pool > 1:
+            logger.info(f"Making forecast plot with pool {pool}")
+            pool_data = [[s, ana_cams2_83, analysis] for s in species_list]
+            p = Pool(pool)
+            p.map(run_forecast, pool_data)
+        else:
+            ana_cams2_83.run(analysis=analysis)
+    print(f"Long run: {time.time() - start} sec")
 
 
 @app.command()
@@ -429,11 +475,23 @@ def main(
         "-e",
         help="Type of evaluation.",
     ),
+    pool: int = typer.Option(
+        1,
+        "--pool",
+        "-p",
+        help="Number of CPUs to be used for reading OBS and creating forecast plots",
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
 
     if verbose or dry_run:
         change_verbosity(logging.INFO)
+
+    if pool > cpu_count():
+        logger.warning(
+            f"The given pool {pool} is larger than the maximum CPU count {cpu_count()}. Using that instead"
+        )
+        pool = cpu_count()
 
     cfg = make_config(
         start_date,
@@ -451,4 +509,4 @@ def main(
     )
 
     quiet = not verbose
-    runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet)
+    runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)

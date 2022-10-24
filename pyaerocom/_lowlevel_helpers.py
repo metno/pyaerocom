@@ -179,25 +179,27 @@ def check_write_access(path, timeout=0.1):
         # not a path
         return False
 
-    pool = ThreadPoolExecutor()
+    return os.access(path, os.W_OK)
 
-    def _test_write_access(path):
-        test = os.path.join(path, "_tmp")
-        try:
-            os.mkdir(test)
-            os.rmdir(test)
-            return True
-        except Exception:
-            return False
+    # pool = ThreadPoolExecutor()
 
-    def run_timeout(path, timeout):
-        future = pool.submit(_test_write_access, path)
-        try:
-            return future.result(timeout)
-        except Exception:
-            return False
+    # def _test_write_access(path):
+    #     test = os.path.join(path, "_tmp")
+    #     try:
+    #         os.mkdir(test)
+    #         os.rmdir(test)
+    #         return True
+    #     except Exception:
+    #         return False
 
-    return run_timeout(path, timeout)
+    # def run_timeout(path, timeout):
+    #     future = pool.submit(_test_write_access, path)
+    #     try:
+    #         return future.result(timeout)
+    #     except Exception:
+    #         return False
+
+    # return run_timeout(path, timeout)
 
 
 def _class_name(obj):
