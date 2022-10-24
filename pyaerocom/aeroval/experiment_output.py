@@ -307,25 +307,28 @@ class ExperimentOutput(ProjectOutput):
             name of model variable
         """
         spl = os.path.basename(filename).split(".json")[0].split("_")
-        if len(spl) != 3:
+        if len(spl) != 4:
             raise ValueError(
                 f"invalid map filename: {filename}. Must "
-                f"contain exactly 2 underscores _ to separate "
-                f"obsinfo, vertical and model info"
+                f"contain exactly 3 underscores _ to separate "
+                f"obsinfo, vertical, model info, and periods"
             )
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
+        per = spl[3]
 
         mspl = modinfo.split("-")
         mvar = mspl[-1]
         mname = "-".join(mspl[:-1])
 
+        breakpoint()
+
         ospl = obsinfo.split("-")
-        ovar = ospl[-2]
-        oper = ospl[-1]
-        oname = "-".join(ospl[:-2])
-        return (oname, ovar, oper, vert_code, mname, mvar)
+        ovar = ospl[-1]
+        oname = "-".join(ospl[:-1])
+
+        return (oname, ovar, vert_code, mname, mvar, per)
 
     def _results_summary(self):
         res = [[], [], [], [], [], []]
@@ -336,7 +339,7 @@ class ExperimentOutput(ProjectOutput):
             for i, entry in enumerate(item):
                 res[i].append(entry)
         output = {}
-        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar"]):
+        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar", "per"]):
             output[name] = list(set(res[i]))
         return output
 
@@ -356,9 +359,14 @@ class ExperimentOutput(ProjectOutput):
         vert_codes = self.cfg.obs_cfg.all_vert_types
         for file in mapfiles:
             try:
-                (obs_name, obs_var, oper, vert_code, mod_name, mod_var) = self._info_from_map_file(
-                    file
-                )
+                (
+                    obs_name,
+                    obs_var,
+                    vert_code,
+                    mod_name,
+                    mod_var,
+                    period,
+                ) = self._info_from_map_file(file)
             except Exception as e:
                 logger.warning(
                     f"FATAL: invalid file convention for map json file:"
