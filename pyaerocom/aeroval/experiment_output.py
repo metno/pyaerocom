@@ -322,12 +322,13 @@ class ExperimentOutput(ProjectOutput):
         mname = "-".join(mspl[:-1])
 
         ospl = obsinfo.split("-")
-        ovar = ospl[-1]
-        oname = "-".join(ospl[:-1])
-        return (oname, ovar, vert_code, mname, mvar)
+        ovar = ospl[-2]
+        oper = ospl[-1]
+        oname = "-".join(ospl[:-2])
+        return (oname, ovar, oper, vert_code, mname, mvar)
 
     def _results_summary(self):
-        res = [[], [], [], [], []]
+        res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
         tab = []
         for file in files:
@@ -355,7 +356,9 @@ class ExperimentOutput(ProjectOutput):
         vert_codes = self.cfg.obs_cfg.all_vert_types
         for file in mapfiles:
             try:
-                (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
+                (obs_name, obs_var, oper, vert_code, mod_name, mod_var) = self._info_from_map_file(
+                    file
+                )
             except Exception as e:
                 logger.warning(
                     f"FATAL: invalid file convention for map json file:"
@@ -731,7 +734,9 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         files = self._get_json_output_files("map")
         for file in files:
-            (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
+            (obs_name, obs_var, oper, vert_code, mod_name, mod_var) = self._info_from_map_file(
+                file
+            )
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
 
