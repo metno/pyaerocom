@@ -322,8 +322,6 @@ class ExperimentOutput(ProjectOutput):
         mvar = mspl[-1]
         mname = "-".join(mspl[:-1])
 
-        breakpoint()
-
         ospl = obsinfo.split("-")
         ovar = ospl[-1]
         oname = "-".join(ospl[:-1])
