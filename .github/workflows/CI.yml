@@ -78,6 +78,7 @@ jobs:
       run: sudo apt install libhdf5-mpich-dev libnetcdf-dev
     - name: Cache pip and tox
       uses: actions/cache@v3
+      if: ${{ ! startsWith(matrix.python-version, '3.11') }}
       with:
         path: |
           ~/.cache/pip
