@@ -323,3 +323,11 @@ def mmr_to_vmr_cube(data):
     cube.units = "nmole mole-1"
     cube.var_name = vmrvar
     return cube
+
+
+def compute_sspm25(concssfine, concsscoarse):
+    mult_fun = CUBE_MATHS["multiply"]
+    concssfine, concsscoarse = _check_input_iscube(concssfine, concsscoarse)
+    concssfine, concsscoarse = _check_same_units(concssfine, concsscoarse)
+
+    return add_cubes(concssfine, mult_fun(concsscoarse, 0.16))

@@ -27,6 +27,7 @@ from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_read_cubes import (
     add_cubes,
     compute_angstrom_coeff_cubes,
+    compute_sspm25,
     divide_cubes,
     mmr_from_vmr,
     multiply_cubes,
@@ -123,6 +124,8 @@ class ReadGridded:
         "concprcpoxn": ("wetoxn", "pr"),
         "concprcpoxs": ("wetoxs", "pr"),
         "concprcprdn": ("wetrdn", "pr"),
+        "concsspm10": ("concss25", "concsscoarse"),
+        "concsspm25": ("concss25", "concsscoarse"),
     }
 
     AUX_ALT_VARS = {
@@ -146,7 +149,9 @@ class ReadGridded:
         "concno3": add_cubes,
         "concprcpoxn": compute_concprcp_from_pr_and_wetdep,
         "concprcpoxs": compute_concprcp_from_pr_and_wetdep,
-        "concprcprdn": compute_concprcp_from_pr_and_wetdep
+        "concprcprdn": compute_concprcp_from_pr_and_wetdep,
+        "concsspm10": add_cubes,
+        "concsspm25": compute_sspm25,
         #'mec550*'      :    divide_cubes,
         #'tau*'         :    lifetime_from_load_and_dep
     }
@@ -167,7 +172,7 @@ class ReadGridded:
 
     _data_dir = ""
 
-    VERT_ALT = {"Surface": "ModelLevel", "2D": "2D"}
+    VERT_ALT = {"Surface": "ModelLevel"}  # , "2D": "2D"}
 
     def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3"):
 
