@@ -16,6 +16,7 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
+    statistics_obs_only,
     statistics_trend,
     var_ranges_defaults,
     var_web_info,
@@ -572,8 +573,11 @@ class ExperimentOutput(ProjectOutput):
         write_json(ranges, self.var_ranges_file, indent=4)
 
     def _create_statistics_json(self):
-        stats_info = statistics_defaults
-        stats_info.update(extended_statistics)
+        if self.cfg.statistics_opts.obs_only_stats:
+            stats_info = statistics_obs_only
+        else:
+            stats_info = statistics_defaults
+            stats_info.update(extended_statistics)
         if self.cfg.statistics_opts.add_trends:
             if self.cfg.processing_opts.obs_only:
                 obs_statistics_trend = {

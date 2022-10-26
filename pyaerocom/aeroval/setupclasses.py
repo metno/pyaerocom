@@ -154,6 +154,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.stats_tseries_base_freq = None
         self.use_fairmode = False
         self.use_diurnal = False
+        self.obs_only_stats = False
         self.update(**kwargs)
 
 
