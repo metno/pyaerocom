@@ -190,7 +190,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, format, lint, docs
+envlist = py38, py39, py310, py311, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =
