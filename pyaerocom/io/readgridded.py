@@ -27,8 +27,14 @@ from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, 
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_components_fun import (
     calc_concNhno3_from_vmr,
+    calc_concNnh3_from_vmr,
+    calc_concNnh4,
+    calc_concNno3pm10,
+    calc_concNno3pm25,
     calc_concno3pm10,
     calc_concno3pm25,
+    calc_concNtnh,
+    calc_concNtno3,
     calc_sspm25,
     vmr_to_conc,
 )
@@ -135,7 +141,13 @@ class ReadGridded:
         "concsspm25": ("concss25", "concsscoarse"),
         "concno3pm10": ("concno3f", "concno3c"),
         "concno3pm25": ("concno3f", "concno3c"),
+        "concNno3pm10": ("concno3f", "concno3c"),
+        "concNno3pm25": ("concno3f", "concno3c"),
         "concNhno3": ("vmrhno3",),
+        "concNtno3": ("concno3f", "concno3c", "vmrhno3"),
+        "concNnh3": ("vmrnh3",),
+        "concNnh4": ("concnh4",),
+        "concNtnh": ("concnh4", "vmrnh3"),
     }
 
     AUX_ALT_VARS = {
@@ -164,7 +176,13 @@ class ReadGridded:
         "concsspm25": calc_sspm25,
         "concno3pm10": calc_concno3pm10,
         "concno3pm25": calc_concno3pm25,
+        "concNno3pm10": calc_concNno3pm10,
+        "concNno3pm25": calc_concNno3pm25,
         "concNhno3": calc_concNhno3_from_vmr,
+        "concNtno3": calc_concNtno3,
+        "concNnh3": calc_concNnh3_from_vmr,
+        "concNnh4": calc_concNnh4,
+        "concNtnh": calc_concNtnh,
         #'mec550*'      :    divide_cubes,
         #'tau*'         :    lifetime_from_load_and_dep
     }

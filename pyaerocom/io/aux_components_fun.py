@@ -97,6 +97,35 @@ def calc_concNhno3_from_vmr(data):
     )
 
 
+def calc_concNnh3_from_vmr(data):
+
+    return vmr_to_conc(
+        data, vmr_unit="nmol mol-1", var_name="nh3", to_unit="ug m-3", component_unit="N"
+    )
+
+
+def convert_to_ugN(data, var_name):
+    mult_fun = CUBE_MATHS["multiply"]
+    data = _check_input_iscube(data)[0]
+    mmol_var = get_molmass(var_name)
+
+    component_mass = single_component_mass["n"]
+    component_unit_fac = component_mass / mmol_var
+    unit = data.units
+    unit_conversion = cf_units.Unit(str(unit)).convert(1, "ug m-3")
+    if not np.isclose(unit_conversion, 1, rtol=1e-7):
+        data = mult_fun(data, unit_conversion)
+
+    data = mult_fun(data, component_unit_fac)
+    data.units = "ug N m-3"
+
+    return data
+
+
+def calc_concNnh4(concnh4):
+    return convert_to_ugN(concnh4, "nh4")
+
+
 def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.134):
     mult_fun = CUBE_MATHS["multiply"]
     concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
@@ -105,10 +134,37 @@ def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.13
 
 
 def calc_concno3pm10(concno3f, concno3c):
-    mult_fun = CUBE_MATHS["multiply"]
     concno3pm10 = add_cubes(concno3f, concno3c)
 
     return concno3pm10
+
+
+def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.134):
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+
+    fac = M_N / (M_H + M_N + M_O * 3)
+    mult_fun = CUBE_MATHS["multiply"]
+    concno3f, concno3c = _check_input_iscube(concno3f, concno3c)
+    concno3f, concno3c = _check_same_units(concno3f, concno3c)
+    concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
+    concno3pm25.units = "ug N m-3"
+    return mult_fun(concno3pm25, fac)
+
+
+def calc_concNno3pm10(concno3f, concno3c):
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+
+    fac = M_N / (M_H + M_N + M_O * 3)
+    mult_fun = CUBE_MATHS["multiply"]
+    concno3f, concno3c = _check_input_iscube(concno3f, concno3c)
+    concno3f, concno3c = _check_same_units(concno3f, concno3c)
+    concno3pm10 = add_cubes(concno3f, concno3c)
+    concno3pm10.units = "ug N m-3"
+    return mult_fun(concno3pm10, fac)
 
 
 def calc_sspm25(concssfine, concsscoarse):
@@ -117,3 +173,20 @@ def calc_sspm25(concssfine, concsscoarse):
     concssfine, concsscoarse = _check_same_units(concssfine, concsscoarse)
 
     return add_cubes(concssfine, mult_fun(concsscoarse, 0.16))
+
+
+def calc_concNtno3(concno3f, concno3c, vmrhno3):
+    concno3f, concno3c, vmrhno3 = _check_input_iscube(concno3f, concno3c, vmrhno3)
+    concno3f, concno3c = _check_same_units(concno3f, concno3c)
+    concNhno3 = calc_concNhno3_from_vmr(vmrhno3)
+    concNno3pm10 = calc_concNno3pm10(concno3f, concno3c)
+
+    return add_cubes(concNhno3, concNno3pm10)
+
+
+def calc_concNtnh(concnh4, vmrnh3):
+    concNnh3 = calc_concNnh3_from_vmr(vmrnh3)
+    concNnh4 = calc_concNnh4(concnh4)
+    concNnh3, concNnh4 = _check_same_units(concNnh3, concNnh4)
+
+    return add_cubes(concNnh3, concNnh4)

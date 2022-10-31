@@ -234,6 +234,11 @@ var_web_info = dict(
     vmrox=["OX", "3D", "Gas volume mixing ratio"],
     concco=["CO", "3D", "Particle concentration"],
     vmrco=["CO", "3D", "Volume mixing ratios"],
+    vmrc2h2=["Ethyne", "3D", "Volume mixing ratios"],
+    vmrc2h4=["Ethylene", "3D", "Volume mixing ratios"],
+    vmrc2h6=["Ethane", "3D", "Volume mixing ratios"],
+    vmrhcho=["Formaldehyde", "3D", "Volume mixing ratios"],
+    vmrisop=["Isoprene", "3D", "Volume mixing ratios"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
     concpm25=["PM2.5", "3D", "Particle concentrations"],
@@ -257,6 +262,7 @@ var_web_info = dict(
     concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
     concCecpm10=["EC PM10", "3D", "Particle concentration"],
     concCocpm10=["OC PM10", "3D", "Particle concentration"],
+    concCoc25=["OC PM2.5", "3D", "Particle concentration"],
     # Depositions
     drysox=["DryOXS", "3D", "Deposition"],
     dryoxs=["FakeDryOXS", "3D", "Deposition"],
