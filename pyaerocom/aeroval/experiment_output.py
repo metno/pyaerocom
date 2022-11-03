@@ -740,9 +740,7 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         files = self._get_json_output_files("map")
         for file in files:
-            (obs_name, obs_var, oper, vert_code, mod_name, mod_var) = self._info_from_map_file(
-                file
-            )
+            (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(file)
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
 
