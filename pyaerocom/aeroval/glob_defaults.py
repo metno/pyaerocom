@@ -185,6 +185,17 @@ statistics_trend = {
         "decimals": 1,
     },
 }
+# If doing an obs_only experiement, the only statistics which make sense relate just to the observations
+statistics_obs_only = {
+    "refdata_mean": {
+        "name": "Mean-Obs",
+        "longname": "Observation Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
+    },
+}
 
 #: Mapping of pyaerocom variable names to web naming conventions
 var_web_info = dict(
