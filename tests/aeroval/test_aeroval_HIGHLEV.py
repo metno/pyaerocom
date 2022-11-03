@@ -10,37 +10,37 @@ from pyaerocom.aeroval.setupclasses import EvalSetup
 from tests.conftest import geojson_unavail
 
 CHK_CFG1 = {
-    "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
     "contour": ["od550aer_TM5-AP3-CTRL.geojson", "od550aer_TM5-AP3-CTRL.json"],
     "hm": ["glob_stats_daily.json", "glob_stats_monthly.json", "glob_stats_yearly.json"],
     "hm/ts": 10,  # number of .json files in sub dir
-    "scat": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "scat": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
     "ts": 11,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
 }
 
 CHK_CFG2 = {
     "map": [
-        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
-        "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
+        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
+        "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
     ],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
     "hm/ts": 21,  # number of .json files in subdir
     "scat": [
-        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
-        "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json",
+        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
+        "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
     ],
     "ts": 40,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
 }
 
 CHK_CFG4 = {
-    "map": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "map": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
     "hm/ts": 10,  # number of .json files in subdir
-    "scat": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json"],
+    "scat": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
     "ts": 21,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
 }

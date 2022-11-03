@@ -153,6 +153,8 @@ class StatisticsSetup(ConstrainedContainer):
         self.trends_min_yrs = 7
         self.stats_tseries_base_freq = None
         self.use_fairmode = False
+        self.use_diurnal = False
+        self.obs_only_stats = False
         self.update(**kwargs)
 
 
@@ -219,6 +221,7 @@ class WebDisplaySetup(ConstrainedContainer):
         self.model_order_menu = []
         self.hide_charts = []
         self.hide_pages = []
+        self.ts_annotations = {}
         self.update(**kwargs)
 
 

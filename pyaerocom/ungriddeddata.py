@@ -16,6 +16,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
     MetaDataError,
+    StationCoordinateError,
     StationNotFoundError,
     TimeMatchError,
     VarNotAvailableError,
@@ -1109,7 +1110,7 @@ class UngriddedData:
             altitude = subset[:, self._DATAHEIGHTINDEX]
 
             data = pd.Series(vals, dtime)
-            if not data.index.is_monotonic:
+            if not data.index.is_monotonic_increasing:
                 data = data.sort_index()
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
@@ -1253,6 +1254,7 @@ class UngriddedData:
                 TimeMatchError,
                 DataCoverageError,
                 NotImplementedError,
+                StationCoordinateError,
             ) as e:
                 logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
@@ -2987,7 +2989,7 @@ class UngriddedData:
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
         s = (
-            f"\n{head}\n{len(head)*'-'}"
+            f"\n{head}\n{len(head) * '-'}"
             f"\nContains networks: {self.contains_datasets}"
             f"\nContains variables: {self.contains_vars}"
             f"\nContains instruments: {self.contains_instruments}"

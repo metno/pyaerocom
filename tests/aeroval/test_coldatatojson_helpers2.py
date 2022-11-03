@@ -47,8 +47,8 @@ def test_get_stationfile_name():
 
 
 def test_get_json_mapname():
-    json = get_json_mapname("obs1", "var1", "mod1", "var1", "Column")
-    assert json == "obs1-var1_Column_mod1-var1.json"
+    json = get_json_mapname("obs1", "var1", "mod1", "var1", "Column", "period")
+    assert json == "obs1-var1_Column_mod1-var1_period.json"
 
 
 @pytest.mark.parametrize(

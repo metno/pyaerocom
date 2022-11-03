@@ -167,16 +167,17 @@ def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout: ExperimentOutp
 
 def test_ExperimentOutput__info_from_map_file():
     output = ExperimentOutput._info_from_map_file(
-        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer.json"
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer_2010.json"
     )
-    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer")
+
+    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer", "2010")
 
 
 @pytest.mark.parametrize(
     "filename",
     [
         "blaaaa",
-        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer.json",
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer_2010.json",  # has four underscores
     ],
 )
 def test_ExperimentOutput__info_from_map_file_error(filename: str):
@@ -184,12 +185,12 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
         ExperimentOutput._info_from_map_file(filename)
     assert str(e.value) == (
         f"invalid map filename: {filename}. "
-        "Must contain exactly 2 underscores _ to separate obsinfo, vertical and model info"
+        "Must contain exactly 3 underscores _ to separate obsinfo, vertical, model info, and periods"
     )
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
-    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[])
+    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[], per=[])
 
 
 def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout: ExperimentOutput):

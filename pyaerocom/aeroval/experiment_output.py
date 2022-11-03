@@ -16,6 +16,7 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
+    statistics_obs_only,
     statistics_trend,
     var_ranges_defaults,
     var_web_info,
@@ -307,15 +308,16 @@ class ExperimentOutput(ProjectOutput):
             name of model variable
         """
         spl = os.path.basename(filename).split(".json")[0].split("_")
-        if len(spl) != 3:
+        if len(spl) != 4:
             raise ValueError(
                 f"invalid map filename: {filename}. Must "
-                f"contain exactly 2 underscores _ to separate "
-                f"obsinfo, vertical and model info"
+                f"contain exactly 3 underscores _ to separate "
+                f"obsinfo, vertical, model info, and periods"
             )
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
+        per = spl[3]
 
         mspl = modinfo.split("-")
         mvar = mspl[-1]
@@ -324,10 +326,11 @@ class ExperimentOutput(ProjectOutput):
         ospl = obsinfo.split("-")
         ovar = ospl[-1]
         oname = "-".join(ospl[:-1])
-        return (oname, ovar, vert_code, mname, mvar)
+
+        return (oname, ovar, vert_code, mname, mvar, per)
 
     def _results_summary(self):
-        res = [[], [], [], [], []]
+        res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
         tab = []
         for file in files:
@@ -335,7 +338,7 @@ class ExperimentOutput(ProjectOutput):
             for i, entry in enumerate(item):
                 res[i].append(entry)
         output = {}
-        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar"]):
+        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar", "per"]):
             output[name] = list(set(res[i]))
         return output
 
@@ -355,7 +358,14 @@ class ExperimentOutput(ProjectOutput):
         vert_codes = self.cfg.obs_cfg.all_vert_types
         for file in mapfiles:
             try:
-                (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
+                (
+                    obs_name,
+                    obs_var,
+                    vert_code,
+                    mod_name,
+                    mod_var,
+                    period,
+                ) = self._info_from_map_file(file)
             except Exception as e:
                 logger.warning(
                     f"FATAL: invalid file convention for map json file:"
@@ -563,8 +573,11 @@ class ExperimentOutput(ProjectOutput):
         write_json(ranges, self.var_ranges_file, indent=4)
 
     def _create_statistics_json(self):
-        stats_info = statistics_defaults
-        stats_info.update(extended_statistics)
+        if self.cfg.statistics_opts.obs_only_stats:
+            stats_info = statistics_obs_only
+        else:
+            stats_info = statistics_defaults
+            stats_info.update(extended_statistics)
         if self.cfg.statistics_opts.add_trends:
             if self.cfg.processing_opts.obs_only:
                 obs_statistics_trend = {
@@ -731,7 +744,7 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         files = self._get_json_output_files("map")
         for file in files:
-            (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
+            (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(file)
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
 

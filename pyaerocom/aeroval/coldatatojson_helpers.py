@@ -3,6 +3,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 import logging
 import os
+from copy import deepcopy
 from datetime import datetime
 
 import numpy as np
@@ -45,9 +46,9 @@ def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
     return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
 
 
-def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code):
+def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
     """Get name base name of json file"""
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}.json"
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{period}.json"
 
 
 def _write_stationdata_json(ts_data, out_dir):
@@ -554,7 +555,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
                             period=period_num
                         ).values.tolist()
 
-            ts_objs_reg.append(ts_data)
+            ts_objs_reg.append(deepcopy(ts_data))
     return ts_objs_reg
 
 

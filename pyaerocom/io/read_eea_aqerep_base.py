@@ -79,8 +79,18 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["concbenzene"] = "concentration"
     VAR_NAMES_FILE["vmrbenzene"] = "concentration"
 
+    VAR_NAMES_FILE["concSso2"] = "concentration"
+    VAR_NAMES_FILE["concNno"] = "concentration"
+    VAR_NAMES_FILE["concNno2"] = "concentration"
+
     #: units of variables in files (needs to be defined for each variable supported)
-    VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
+    VAR_UNITS_FILE = {
+        "µg/m3": "ug m-3",
+        "mg/m3": "mg m-3",
+        "µgS/m3": "ug S m-3",
+        "µgN/m3": "ug N m-3",
+        "ppb": "ppb",
+    }
 
     #: file masks for the data files
     FILE_MASKS = dict(
@@ -96,10 +106,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concpm25="**/??_6001_*_timeseries.csv*",
         concbenzene="**/??_20_*_timeseries.csv*",
         vmrbenzene="**/??_20_*_timeseries.csv*",
+        concSso2="**/??_1_*_timeseries.csv*",
+        concNno2="**/??_8_*_timeseries.csv*",
+        concNno="**/??_38_*_timeseries.csv*",
     )
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
+
+    CONV_FACTOR["concSso2"] = np.float_(0.50052292274792)
+    CONV_FACTOR["concNno2"] = np.float_(0.3044517868011477)
+    CONV_FACTOR["concNno"] = np.float_(0.466788868521913)
     CONV_FACTOR["vmro3"] = np.float_(
         0.493
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
@@ -109,13 +126,13 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     CONV_FACTOR["vmrno2"] = np.float_(
         0.514
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
-    CONV_FACTOR["vmrbenzene"] = np.float_(
-        1./3.2430
-    ) 
-
+    CONV_FACTOR["vmrbenzene"] = np.float_(1.0 / 3.2430)
 
     # unit of the converted property after the conversion
     CONV_UNIT = {}
+    CONV_UNIT["concSso2"] = "µgS/m3"
+    CONV_UNIT["concNno2"] = "µgN/m3"
+    CONV_UNIT["concNno"] = "µgN/m3"
     CONV_UNIT["vmro3"] = "ppb"
     CONV_UNIT["vmro3max"] = "ppb"
     CONV_UNIT["vmrno2"] = "ppb"
@@ -180,13 +197,24 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3max": ["conco3"], "vmro3": ["conco3"], "vmrno2": ["concno2"], "vmrbenzene": ["concbenzene"]}
+    AUX_REQUIRES = {
+        "vmro3max": ["conco3"],
+        "vmro3": ["conco3"],
+        "vmrno2": ["concno2"],
+        "concNno2": ["concno2"],
+        "concNno": ["concno"],
+        "concSso2": ["concso2"],
+        "vmrbenzene": ["concbenzene"],
+    }
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmro3max": NotImplementedError(),
         "vmrno2": NotImplementedError(),
         "vmrbenzene": NotImplementedError(),
+        "concNno2": NotImplementedError(),
+        "concNno": NotImplementedError(),
+        "concSso2": NotImplementedError(),
     }
 
     def __init__(self, data_id=None, data_dir=None):
@@ -336,6 +364,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         data_dict[header[idx]][lineidx] = np.nan
 
             lineidx += 1
+        # if the first line in the file was empty
+        if data_dict["unitofmeasurement"] == "":
+            if rows[12] == "":
+                raise EEAv2FileError(
+                    f"Unit of Measurment could not be inferred from EEA file {filename}"
+                )
+            else:
+                # with loss of generality get the unitofmeasurement from the last row column 12 (which should be a kept header)
+                data_dict["unitofmeasurement"] = rows[12]
 
         unit_in_file = data_dict["unitofmeasurement"]
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES

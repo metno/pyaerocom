@@ -100,6 +100,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
         use_fairmode = self.cfg.statistics_opts.use_fairmode
+        use_diurnal = self.cfg.statistics_opts.use_diurnal
 
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
@@ -224,29 +225,34 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             _write_site_data(ts_objs, out_dirs["ts"])
 
-            map_data, scat_data = _process_map_and_scat(
-                data,
-                map_meta,
-                site_indices,
-                periods,
-                main_freq,
-                stats_min_num,
-                seasons,
-                add_trends,
-                trends_min_yrs,
-                use_fairmode,
-                obs_var,
-            )
+            logger.info("Processing map and scat data by period")
+            for period in periods:
+                # compute map_data and scat_data just for this period
+                map_data, scat_data = _process_map_and_scat(
+                    data,
+                    map_meta,
+                    site_indices,
+                    [period],
+                    main_freq,
+                    stats_min_num,
+                    seasons,
+                    add_trends,
+                    trends_min_yrs,
+                    use_fairmode,
+                    obs_var,
+                )
 
-            map_name = get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code)
+                # the files in /map and /scat will be split up according to their time period as well
+                map_name = get_json_mapname(
+                    obs_name, var_name_web, model_name, model_var, vert_code, period
+                )
+                outfile_map = os.path.join(out_dirs["map"], map_name)
+                write_json(map_data, outfile_map, ignore_nan=True)
 
-            outfile_map = os.path.join(out_dirs["map"], map_name)
-            write_json(map_data, outfile_map, ignore_nan=True)
+                outfile_scat = os.path.join(out_dirs["scat"], map_name)
+                write_json(scat_data, outfile_scat, ignore_nan=True)
 
-            outfile_scat = os.path.join(out_dirs["scat"], map_name)
-            write_json(scat_data, outfile_scat, ignore_nan=True)
-
-        if coldata.ts_type == "hourly":
+        if coldata.ts_type == "hourly" and use_diurnal:
             logger.info("Processing diurnal profiles")
             (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
                 coldata, regions_how, regnames, meta_glob
