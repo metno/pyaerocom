@@ -271,7 +271,6 @@ var_web_info = dict(
     vmrox=["OX", "3D", "Gas volume mixing ratio"],
     concco=["CO", "3D", "Particle concentration"],
     vmrco=["CO", "3D", "Volume mixing ratios"],
-    concNnh4=["NH4", "3D", "Gas concentrations"],
     vmrhcho=["HCHO (Formaldehyde)", "3D", "Volume mixing ratios"],
     vmrisop=["C5H8 (Isoprene)", "3D", "Volume mixing ratios"],
     vmrc2h6=["C2H6 (Ethane)", "3D", "Volume mixing ratios"],
@@ -315,5 +314,4 @@ var_web_info = dict(
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
-
 )
