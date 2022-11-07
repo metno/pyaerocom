@@ -1,10 +1,10 @@
 import logging
 from configparser import ConfigParser
-from importlib import resources
 
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.data import resources
 
 logger = logging.getLogger(__name__)
 

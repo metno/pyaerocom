@@ -2,7 +2,6 @@ import getpass
 import logging
 import os
 from configparser import ConfigParser
-from importlib import resources
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +13,7 @@ from pyaerocom._lowlevel_helpers import (
     chk_make_subdir,
     list_to_shortstr,
 )
+from pyaerocom.data import resources
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
 from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
