@@ -22,14 +22,15 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     'importlib-metadata>=3.6; python_version < "3.10"',
+    'importlib-resources>=5.10; python_version < "3.11"',
     'tomli>=2.0.1; python_version < "3.11"',
     "xarray>=0.16.0",
     "scipy>=1.1.0",
     "pandas>=0.23.0",
     "seaborn>=0.8.0",
     "geonum",
-    "LatLon23",                                          # required by geonum
-    "SRTM.py",                                           # required by geonum
+    "LatLon23",                                           # required by geonum
+    "SRTM.py",                                            # required by geonum
     "numpy>=0.12.0",
     "simplejson",
     "requests",
@@ -37,7 +38,7 @@ dependencies = [
     "tqdm",
     "openpyxl",
     "geojsoncontour",
-    'cf-units!=3.0.1.post0; python_version == "3.10.*"', # https://github.com/SciTools/cf-units/issues/218
+    'cf-units!=3.0.1.post0; python_version == "3.10.*"',  # https://github.com/SciTools/cf-units/issues/218
     "typer>=0.4.0",
 ]
 

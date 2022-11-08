@@ -7,13 +7,13 @@ import logging
 import os
 import shutil
 from datetime import datetime
-from importlib import resources
 from pathlib import Path
 from time import time
 
 import simplejson as json
 
 from pyaerocom import const
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
 
