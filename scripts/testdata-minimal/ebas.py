@@ -1,51 +1,31 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""simple script to generate a small enough test data set for the EBAS obs network
+"""
+Simple script to generate a small enough test data set for the EBAS obs network
 Works only if the user has access to the standard EBAS data path at Met Norway
 """
 
 import os
 import shutil
+from importlib import resources
 from pathlib import Path
 
 import simplejson
+import typer
 
 import pyaerocom as pya
+from tests.fixtures.data_access import DataForTests
 
-# import pyaerocom.access_testdata as td
-from pyaerocom.access_testdata import AccessTestData
+OUTBASE = DataForTests("obsdata/EBASMultiColumn").path
+SCRIPT_BASE_DIR = DataForTests("scripts").path
 
-# from getpass import getuser
-#
-# if getuser() == 'jonasg':
-#     ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
-#     assert os.path.exists(ebas_local)
-# else:
-#     ebas_local=None
-
-
-tda = AccessTestData()
-
-TESTDATADIR = tda.basedir
-
-OUTBASE = Path(TESTDATADIR).joinpath("testdata-minimal/obsdata/EBASMultiColumn")
-SCRIPT_BASE_DIR = Path(TESTDATADIR).joinpath("testdata-minimal/scripts")
-
-FILES_DEST = OUTBASE.joinpath("data")
+FILES_DEST = OUTBASE / "data"
 
 UPDATE = True
 UPDATE_EXISTING = False
 SEARCH_PROBLEM_FILES = False
 NAME = "EBASMC"
 
-# if ebas_local is not None:
-#     FILES_SRC = ebas_local
-# else:
 EBAS_BASE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/"
-assert os.path.exists(EBAS_BASE_DIR)
-
-JSON_FILE = SCRIPT_BASE_DIR.joinpath("ebas_files.json")
+JSON_FILE = SCRIPT_BASE_DIR / "ebas_files.json"
 
 # ------------------------------------------------------------
 # add some files with known problems
@@ -73,9 +53,10 @@ def check_outdated(filedir):
     files_invalid = []
     files_valid = []
 
-    with open(JSON_FILE, "r") as f:
+    with resources.path(__package__, JSON_FILE.name) as path:
+        shutil.copy(path, JSON_FILE)
 
-        data = simplejson.load(f)
+    data = simplejson.loads(JSON_FILE.read_text())
 
     for var, stats in data.items():
         for stat, files in stats.items():
@@ -155,12 +136,11 @@ def get_files_var_statnum(data, var, statnum):
     return files
 
 
-def main():
+def main(ebas_path: Path = typer.Argument(EBAS_BASE_DIR, exists=True, dir_okay=True)):
+    """minimal EBAS dataset"""
 
-    # reader = pya.io.ReadUngridded(NAME, data_dir=EBAS_BASE_DIR)
-    reader = pya.io.ReadUngridded(
-        NAME,
-    )
+    # reader = pya.io.ReadUngridded(NAME, data_dir=ebas_path)
+    reader = pya.io.ReadUngridded(NAME)
     r_lowlev = reader.get_lowlevel_reader(NAME)
 
     # r_lowlev._dataset_path = ebas_local
@@ -246,7 +226,7 @@ def main():
             print("NOTHING WILL BE COPIED TO TEST DATA")
         else:
 
-            src = Path(EBAS_BASE_DIR).joinpath("data")
+            src = ebas_path / "data"
             print(f"updating test data @ {r_lowlev.DATASET_PATH}")
 
             # copy revision file
