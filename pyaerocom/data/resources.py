@@ -9,7 +9,8 @@ from typing import ContextManager
 if sys.version_info >= (3, 11):
     from importlib import resources
 else:
-    import importlib_resources as resources
+    # import importlib_resources as resources
+    from importlib import resources
 
 
 def path(package: str, resource: str) -> ContextManager[Path]:
