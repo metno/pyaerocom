@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 # from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.plugins.harp.aux_vars import _conc_to_vmr_marcopolo_stats, _conc_to_vmr_single_value
 from pyaerocom.plugins.harp.station import Station
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -72,10 +73,10 @@ class ReadHARP(ReadUngriddedBase):
     }
 
     #: field name of the start time of the measurement (in lower case)
-    START_TIME_NAME = "datetimebegin"
+    START_TIME_NAME = "datetime_start"
 
     #: filed name of the end time of the measurement (in lower case)
-    END_TIME_NAME = "datetimeend"
+    END_TIME_NAME = "datetime_stop"
 
     #: column name that holds the EEA variable code
     VAR_CODE_NAME = "airpollutantcode"
@@ -84,6 +85,19 @@ class ReadHARP(ReadUngriddedBase):
     INSTRUMENT_NAME = "unknown"
 
     DATA_PRODUCT = ""
+
+    #: Variables that are computed (cannot be read directly)
+    AUX_REQUIRES = {"vmro3": ["conco3"], "vmro3max": ["conco3"], "vmrno2": ["concno2"]}
+
+    #: functions used to convert variables that are computed
+    AUX_FUNS = {
+        "vmro3": _conc_to_vmr_single_value,
+        "vmro3max": _conc_to_vmr_single_value,
+        "vmrno2": _conc_to_vmr_single_value,
+    }
+
+    #: units of computed variables
+    AUX_UNITS = {"vmro3": "ppb", "vmro3max": "ppb", "vmrno2": "ppb"}
 
     VAR_MAPPING = {
         "concco": "CO_density",
@@ -98,7 +112,7 @@ class ReadHARP(ReadUngriddedBase):
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None:
             raise ValueError(
-                f"For MiniCOD data_dir needs to be set to the folder where the data is found"
+                f"For HARP data_dir needs to be set to the folder where the data is found"
             )
         super().__init__(data_id=data_id, data_dir=data_dir)
 
@@ -136,7 +150,7 @@ class ReadHARP(ReadUngriddedBase):
     @property
     def DEFAULT_VARS(self):
         """List of default variables"""
-        return ["conco3"]
+        return list(self.VAR_MAPPING.keys())
 
     @property
     def DATASET_NAME(self):
@@ -145,7 +159,7 @@ class ReadHARP(ReadUngriddedBase):
 
     @property
     def PROVIDES_VARIABLES(self) -> List[str]:
-        return list(self.VAR_MAPPING.keys())
+        return list(self.VAR_MAPPING.keys()) + list(self.AUX_REQUIRES.keys())
 
     def _get_station_data(self, data: pd.DataFrame) -> StationData:
         sd = StationData()
@@ -178,13 +192,13 @@ class ReadHARP(ReadUngriddedBase):
         self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
     ):
         if vars_to_retrieve is None:
-            vars_to_retrieve = self.PROVIDES_VARIABLES
+            vars_to_retrieve = self.DEFAULT_VARS
 
         for var in vars_to_retrieve:
             if var not in self.PROVIDES_VARIABLES:
                 raise ValueError(f"The variable {var} is not supported")
 
-        stations: List[Station] = []
+        stations: List[StationData] = []
 
         for stationname in tqdm(self.STATIONS):
             f = self.STATIONS[stationname][0]
@@ -199,8 +213,12 @@ class ReadHARP(ReadUngriddedBase):
 
                 for s in vars_to_retrieve:
                     try:
-                        measurements = data[self.VAR_MAPPING[s]].data
-                        unit = data[self.VAR_MAPPING[s]].units
+                        if s in self.AUX_REQUIRES:
+                            read_s = self.AUX_REQUIRES[s][0]
+                        else:
+                            read_s = s
+                        measurements = data[self.VAR_MAPPING[read_s]].data
+                        unit = data[self.VAR_MAPPING[read_s]].units
                     except:
                         print(f"Could not find {s} in {f}. Skipping file")
                         logger.info(f"Could not find {s} in {f}. Skipping file")
@@ -208,7 +226,14 @@ class ReadHARP(ReadUngriddedBase):
 
                     time = self._get_time(data)
                     for t, m in zip(time, measurements):
-                        station.add_measurement(s, unit, m, t)
+                        if s in self.AUX_REQUIRES:
+                            new_m = _conc_to_vmr_single_value(
+                                m, self.AUX_REQUIRES[s], self.AUX_UNITS[s], unit
+                            )
+                            new_unit = self.AUX_UNITS[s]
+                            station.add_measurement(s, new_unit, new_m, t)
+                        else:
+                            station.add_measurement(s, unit, m, t)
 
             stations.append(
                 station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[stationname])
@@ -220,8 +245,11 @@ class ReadHARP(ReadUngriddedBase):
 
 
 if __name__ == "__main__":
+    import cProfile
+
     FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/CHINA_MP_NRT/HARP_EXAMPLE_DATA/download/JJA-2022/HARP2/nobackup/users/tsikerde/China_grounddata/HARP/"
     reader = ReadHARP(data_dir=FILE_DIR)
-    data = reader.read()
+    # cProfile.run("data = reader.read()")
+    data = reader.read(vars_to_retrieve=["vmro3max"])
 
     breakpoint()
