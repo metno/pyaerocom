@@ -1,3 +1,4 @@
+import glob
 from importlib.metadata import metadata
 from socket import gethostname
 
@@ -11,11 +12,7 @@ else:  # probably on PPI
     obs_file_path = "/lustre/storeB/users/lewisb/data/TROPOMI/CopernicusHub/O3_Profiles/"
 
 
-obs_test_files = []
-obs_test_files.append(
-    obs_file_path
-    + "S5P_OFFL_L2__O3__PR_20211231T010540_20211231T024709_21844_02_020301_20220101T165013.nc"
-)
+obs_test_files = glob.glob(f"{obs_file_path}*.nc")
 
 breakpoint()
 

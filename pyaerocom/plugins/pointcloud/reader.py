@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 # from pyaerocom.exceptions import DataDimensionError
 
 # defines the interface of what we want to fill. here we fill
-from pointclouddata import PointCloudData
-from tropomi_variables import tropomi_variables
+from pyaerocom.pointclouddata import PointCloudData
+
+from .tropomi_variables import tropomi_variables
 
 
 class ReadPointCloud:

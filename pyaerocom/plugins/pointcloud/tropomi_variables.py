@@ -17,13 +17,10 @@ def tropomi_variables() -> dict[str, str]:
     Returns
     -------
     dict
-        keys are AEROCOM standard names of variable, values are EMEP variables
+        keys are AEROCOM standard names of variable, values are TROPOMI variables
     """
-    # LB: Commented out lines below for testing since __package__ is empty. Reintroudce line in pyaerocom
-    #assert resources.is_resource(__package__, _VARIABLES), f"{_VARIABLES} missing in {__package__}"
-    #variables = tomllib.loads(resources.read_text(__package__, _VARIABLES))
-    
-    # temporary workaround for testing
-    with open(_VARIABLES, "rb") as f:
-        variables = tomllib.load(f)
+
+    assert resources.is_resource(__package__, _VARIABLES), f"{_VARIABLES} missing in {__package__}"
+    variables = tomllib.loads(resources.read_text(__package__, _VARIABLES))
+
     return variables["tropomi_variables"]
