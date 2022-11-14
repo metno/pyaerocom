@@ -34,6 +34,16 @@ class ReadPointCloud:
     #: Version log of this class (for caching)
     __version__ = "0.01"
 
+    # Sticking this in a dict is just an idea, may be a better waty of doing this.
+    _COLUMN_ORDER = {
+        "TIME_IDX": 0,
+        "LONGITUDE_IDX": 1,
+        "LATITUDE_IDX": 2,
+        "ALTITUDE_IDX": 3,
+        "OBSERVATION_IDX": 4,
+        "QA_FLAG_IDX": 5,
+    }
+
     _FILEMASK = "*.nc"  # use eventually to just read in nc files in data_dir
 
     def __init__(self, data_id: str = None, data_dir: str = None, num_files_to_read_in=1):
@@ -143,8 +153,8 @@ class ReadPointCloud:
         return self.var_map[self.data_id]
 
     @property
-    def columns_ordered(self):
-        """Order of the columns in the in final data array"""
+    def _columns_ordered(self):
+        """Order of the columns in the in final data array. Not intended to be modified after the obs_name is determined."""
         return ["time_utc", "longitude", "latitude", "altitude", self.obs_name, "qa_value"]
 
     @property

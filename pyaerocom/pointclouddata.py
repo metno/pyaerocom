@@ -50,7 +50,8 @@ class PointCloudData:
         ----
         Currently only supports instances of :class:`ReadPoinrCloud`.
         """
-        from readpointcloud import ReadPointCloud
+        # LB: If I don't put this here, get a circular import error
+        from pyaerocom.plugins.pointcloud.reader import ReadPointCloud
 
         if not isinstance(self._reader, ReadPointCloud):
             self._reader = ReadPointCloud  # previous argument: self.data_id
@@ -58,7 +59,9 @@ class PointCloudData:
 
     @reader.setter
     def reader(self, val):
-        from readpointcloud import ReadPointCloud
+
+        # LB: If I don't put this here, get a circular import error
+        from pyaerocom.plugins.pointcloud.reader import ReadPointCloud
 
         if not isinstance(val, ReadPointCloud):
             raise ValueError(

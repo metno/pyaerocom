@@ -14,8 +14,6 @@ else:  # probably on PPI
 
 obs_test_files = glob.glob(f"{obs_file_path}*.nc")
 
-breakpoint()
-
 
 def test_read_netcdf_file_group_product():
     reader = ReadPointCloud()
