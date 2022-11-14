@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+  - cron:  '0 12 1 * *'  # 12:00, first day of the month
 
 jobs:
   lint:
@@ -8,9 +12,9 @@ jobs:
     env:
       PYTHON: 3.8
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PYTHON }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
     - name: Python info
@@ -33,9 +37,9 @@ jobs:
     env:
       PYTHON: 3.8
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PYTHON }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
     - name: Python info
@@ -56,11 +60,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, '3.10']
+        python-version: [3.8, 3.9, '3.10', '3.11']
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Python info
@@ -71,6 +75,7 @@ jobs:
       run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
     - name: Cache pip and tox
       uses: actions/cache@v3
+      if: ${{ ! startsWith(matrix.python-version, '3.11') }}
       with:
         path: |
           ~/.cache/pip
@@ -82,6 +87,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox
     - name: Run test
+      continue-on-error: ${{ startsWith(matrix.python-version, '3.11') }}
       run: tox -e py
 
   conda:
@@ -89,12 +95,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, '3.10']
+        python-version: [3.8, 3.9, '3.10', '3.11']
     defaults:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: conda-incubator/setup-miniconda@v2
       with:
@@ -110,8 +116,10 @@ jobs:
     - name: Install pyaerocom
       run: python -m pip install . --no-deps
     - name: Run pytest
+      continue-on-error: ${{ startsWith(matrix.python-version, '3.11') }}
       run: pytest --cov=pyaerocom/ --cov-report xml
     - name: Upload coverage to Codecov
+      if: ${{ ! startsWith(matrix.python-version, '3.11') }}
       uses: codecov/codecov-action@v2
       with:
           file: ./coverage.xml

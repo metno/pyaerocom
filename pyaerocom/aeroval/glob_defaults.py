@@ -54,6 +54,7 @@ var_ranges_defaults = {
     "wetoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "wetoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "wetrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
+    "prmm": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40], "colmap": "coolwarm"},
     "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
@@ -68,6 +69,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
+        "forecast": True,
     },
     "mnmb": {
         "name": "MNMB",
@@ -76,6 +78,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
+        "forecast": True,
     },
     "R": {
         "name": "R",
@@ -84,6 +87,7 @@ statistics_defaults = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "forecast": True,
     },
     "R_spearman": {
         "name": "R Spearman",
@@ -100,6 +104,7 @@ statistics_defaults = {
         "colmap": "reverseColmap(RdYlGn)",
         "unit": "1",
         "decimals": 2,
+        "forecast": True,
     },
     "nrms": {
         "name": "NRMSE",
@@ -116,6 +121,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "forecast": True,
     },
     "data_mean": {
         "name": "Mean-Mod",
@@ -133,6 +139,24 @@ statistics_defaults = {
         "unit": "1",
         "decimals": 2,
     },
+    "num_valid": {
+        "name": "Nb. Obs",
+        "longname": "Number of Valid Observations",
+        "scale": None,
+        "colmap": None,
+        "overall_only": True,
+        "unit": "1",
+        "decimals": 0,
+    },
+    "num_coords_with_data": {
+        "name": "Nb. Stations",
+        "longname": "Number of Stations with data",
+        "scale": None,
+        "colmap": None,
+        "overall_only": True,
+        "unit": "1",
+        "decimals": 0,
+    },
 }
 
 # Default information for additional statistical parameters
@@ -145,6 +169,7 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": False,
     },
     "R_temporal_median": {
         "name": "R-Temporal",
@@ -154,6 +179,7 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": False,
     },
 }
 
@@ -182,6 +208,17 @@ statistics_trend = {
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+    },
+}
+# If doing an obs_only experiement, the only statistics which make sense relate just to the observations
+statistics_obs_only = {
+    "refdata_mean": {
+        "name": "Mean-Obs",
+        "longname": "Observation Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
     },
 }
 

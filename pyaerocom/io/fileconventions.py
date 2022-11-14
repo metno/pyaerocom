@@ -1,8 +1,8 @@
 from configparser import ConfigParser
-from importlib import resources
 from os.path import basename, splitext
 
 from pyaerocom import const
+from pyaerocom.data import resources
 from pyaerocom.exceptions import FileConventionError
 from pyaerocom.tstype import TsType
 

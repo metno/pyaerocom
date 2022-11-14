@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from configparser import ConfigParser
-from importlib import resources
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io import EbasSQLRequest
 
