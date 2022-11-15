@@ -369,7 +369,6 @@ class ColocationSetup(BrowseDict):
         self.model_use_climatology = False
 
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
-        self.projection_parameters = {}
 
         self.flex_ts_type = True
 
@@ -800,7 +799,6 @@ class Colocator(ColocationSetup):
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
             try:
-                breakpoint()
                 coldata = self._run_helper(mod_var, obs_var)
                 if not mod_var in data_out:
                     data_out[mod_var] = {}
