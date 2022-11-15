@@ -369,6 +369,7 @@ class ColocationSetup(BrowseDict):
         self.model_use_climatology = False
 
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
+        self.projection_parameters = None
 
         self.flex_ts_type = True
 

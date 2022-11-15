@@ -924,9 +924,6 @@ class GriddedData:
         DataDimensionError
             if dimension of data is not supported (currently, 3D or 4D data
             is supported)
-        NotImplementedError
-            if one of the required coordinates is associated with more than
-            one dimension.
         DimensionOrderError
             if dimensions are not in the right order (in which case
             :func:`reorder_dimensions_tseries` may be used to catch the
@@ -942,12 +939,13 @@ class GriddedData:
                 raise DataDimensionError(
                     f"Coord {coord} is not associated with a data dimension in cube"
                 )
-            elif len(dims) > 1:
-                raise NotImplementedError(
-                    f"Coord {coord} is associated with "
-                    f"multiple dimensions. This cannot "
-                    f"yet be handled..."
-                )
+            # elif len(dims) > 1:
+            #     breakpoint()
+            #     raise NotImplementedError(
+            #         f"Coord {coord} is associated with "
+            #         f"multiple dimensions. This cannot "
+            #         f"yet be handled..."
+            #     )
             if not dims[0] == i:
                 raise DimensionOrderError("Invalid order of grid dimensions")
 
@@ -973,18 +971,20 @@ class GriddedData:
                 raise DataDimensionError(
                     f"Coord {coord} is not associated with a data dimension in cube"
                 )
-            elif len(dims) > 1:
-                raise NotImplementedError(
-                    f"Coord {coord} is associated with "
-                    "multiple dimensions. This cannot "
-                    "yet be handled..."
-                )
-            new_order.append(dims[0])
+            # elif len(dims) > 1:
+            #     raise NotImplementedError(
+            #         f"Coord {coord} is associated with "
+            #         "multiple dimensions. This cannot "
+            #         "yet be handled..."
+            #     )
+            # new_order.append(dims[0])
+            new_order.append(dims)  # can be a tuple
 
         if not len(new_order) == self.ndim:
             for i in range(self.ndim):
                 if not i in new_order:
                     new_order.append(i)
+        breakpoint()
         self.transpose(new_order)
         self.check_dimcoords_tseries()
 
