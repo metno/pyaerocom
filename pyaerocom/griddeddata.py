@@ -114,6 +114,7 @@ class GriddedData:
     _GRID_IO = const.GRID_IO
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ["time", "latitude", "longitude"]
+    PROJ_COORDS_ORDER_TSERIES = ["time", "projection_y_coordinate", "projection_x_coordinate"]
     _MAX_SIZE_GB = 64  # maximum file size for in-memory operations
 
     SUPPORTED_VERT_SCHEMES = ["mean", "max", "min", "surface", "altitude", "profile"]
@@ -578,6 +579,11 @@ class GriddedData:
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return "time" in self.dimcoord_names
 
+    @property
+    def has_projection_coordinates(self):
+        """ "Boolean specifying if data has projection coordinates"""
+        return any("proj" in coord for coord in self.coord_names)
+
     def infer_ts_type(self):
         """Try to infer sampling frequency from time dimension data
 
@@ -933,6 +939,7 @@ class GriddedData:
             raise DataDimensionError("Time series extraction requires at least 3 dimensions")
         # list of coordinates needed for timeseries extraction.
         needed = self.COORDS_ORDER_TSERIES
+
         for i, coord in enumerate(needed):
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
@@ -941,11 +948,12 @@ class GriddedData:
                 )
             # elif len(dims) > 1:
             #     breakpoint()
-            #     raise NotImplementedError(
-            #         f"Coord {coord} is associated with "
-            #         f"multiple dimensions. This cannot "
-            #         f"yet be handled..."
-            #     )
+            #     # raise NotImplementedError(
+            #     #     f"Coord {coord} is associated with "
+            #     #     f"multiple dimensions. This cannot "
+            #     #     f"yet be handled..."
+            #     # )
+
             if not dims[0] == i:
                 raise DimensionOrderError("Invalid order of grid dimensions")
 
@@ -964,6 +972,7 @@ class GriddedData:
         # list of coordinates needed for timeseries extraction.
         needed = self.COORDS_ORDER_TSERIES
         new_order = []
+        breakpoint()
         # coord_names = [c.name() for c in self.grid.dim_coords]
         for coord in needed:
             dims = self.cube.coord_dims(coord)
@@ -977,14 +986,23 @@ class GriddedData:
             #         "multiple dimensions. This cannot "
             #         "yet be handled..."
             #     )
-            # new_order.append(dims[0])
-            new_order.append(dims)  # can be a tuple
+
+            # Think can work as a workaround to get the correct dimensions
+            # if len(dims) == 1:
+            # See if old method can work
+            new_order.append(dims[0])
+            # elif len(dims) == 2:
+            #    new_order.append(dims[1])
+            # else:
+            #     raise NotImplementedError(
+            #         f"Coord {coord} is associated with dimensions greater than two. This cannot be handled."
+            #     )
 
         if not len(new_order) == self.ndim:
             for i in range(self.ndim):
                 if not i in new_order:
                     new_order.append(i)
-        breakpoint()
+
         self.transpose(new_order)
         self.check_dimcoords_tseries()
 
@@ -1133,9 +1151,11 @@ class GriddedData:
         else:
             collapse_scalar = True
         try:
+            breakpoint()
             self.check_dimcoords_tseries()
         except DimensionOrderError:
             self.reorder_dimensions_tseries()
+
         pinfo = False
         if np.prod(self.shape) > 5913000:  # (shape of 2x2 deg, daily data)
             pinfo = True
