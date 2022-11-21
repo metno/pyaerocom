@@ -582,6 +582,7 @@ class GriddedData:
     @property
     def has_projection_coordinates(self):
         """ "Boolean specifying if data has projection coordinates"""
+        """LB: note the implementation details here need to be checked"""
         return any("proj" in coord for coord in self.coord_names)
 
     def infer_ts_type(self):

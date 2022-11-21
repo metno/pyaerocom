@@ -69,6 +69,7 @@ class ColocationSetup(BrowseDict):
     4-dimensional,  with dimensions `data_source` (index 0: obs, index 1:
     model), `time` and `latitude` and `longitude`.
 
+    3. LB (WIP): gridded (in projection coordinates) with either gridded or ungridded.
 
 
     Attributes
@@ -369,7 +370,7 @@ class ColocationSetup(BrowseDict):
         self.model_use_climatology = False
 
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
-        self.projection_parameters = None
+        self.model_has_projection_coordinates = False
 
         self.flex_ts_type = True
 
@@ -699,6 +700,7 @@ class Colocator(ColocationSetup):
         self._check_add_model_read_aux(model_var)
         mdata = self._read_gridded(var_name=model_var, is_model=True)
         self._loaded_model_data[model_var] = mdata
+        self.model_has_projection_coordinates = mdata.has_projection_coordinates
         return mdata
 
     def get_obs_data(self, obs_var):
@@ -1362,6 +1364,10 @@ class Colocator(ColocationSetup):
             function the performs co-location operation
 
         """
+        if self.model_has_projection_coordinates:
+            raise NotImplementedError(
+                "Need to implement a different function for colocation in terms of projections"
+            )
         if self.obs_is_ungridded:
             return colocate_gridded_ungridded
         else:
