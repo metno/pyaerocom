@@ -22,6 +22,12 @@ class Station:
 
         self.measurements[species].add_measurement(data, time, unit)
 
+    def add_series(self, species: str, unit: str, ts: pd.Series) -> None:
+        if species not in self.measurements:
+            self.measurements[species] = Measurement(species, unit)
+
+        self.measurements[species].add_series(ts)
+
     def to_stationdata(self, data_id: str, dataset: str, filename: str | List[str]) -> StationData:
         data_out = StationData()
         data_out.data_id = data_id
@@ -67,6 +73,8 @@ class Measurement:
         self.data: List[float] = []
         self.time: List[np.datetime64] = []
 
+        self.timeseries: pd.Series
+
     def add_measurement(self, data: float, time: np.datetime64, unit: str) -> None:
         if unit != self.unit:
             raise ValueError(f"Unit {unit} is not the same {self.unit}")
@@ -74,4 +82,9 @@ class Measurement:
         self.time.append(time)
 
     def to_pandas(self) -> pd.Series:
+        if self.timeseries is not None:
+            return self.timeseries
         return pd.Series(self.data, self.time)
+
+    def add_series(self, ts: pd.Series):
+        self.timeseries = ts

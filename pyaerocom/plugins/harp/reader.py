@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 from datetime import datetime
 from functools import cached_property
 from glob import glob
@@ -13,7 +14,11 @@ from tqdm import tqdm
 
 # from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.plugins.harp.aux_vars import _conc_to_vmr_marcopolo_stats, _conc_to_vmr_single_value
+from pyaerocom.plugins.harp.aux_vars import (
+    _conc_to_vmr,
+    _conc_to_vmr_marcopolo_stats,
+    _conc_to_vmr_single_value,
+)
 from pyaerocom.plugins.harp.station import Station
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -36,7 +41,7 @@ ALLOWED_FREQS = {
     "yearly",
 }
 
-FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/CHINA_MP_NRT/HARP_EXAMPLE_DATA/download/JJA-2022/HARP2/nobackup/users/tsikerde/China_grounddata/HARP/"
+FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download/"
 
 
 class ReadHARP(ReadUngriddedBase):
@@ -107,7 +112,7 @@ class ReadHARP(ReadUngriddedBase):
         "concpm25": "PM2p5_density",
         "concso2": "SO2_density",
     }
-    PATTERN = "MEP-surface-rd-*.nc"
+    PATTERN = "mep-rd-*.nc"
 
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None:
@@ -131,7 +136,7 @@ class ReadHARP(ReadUngriddedBase):
     @cached_property
     def STATIONS(self):
         stations = {}
-        station_pattern = "MEP-surface-rd-(.*A)-.*.nc"
+        station_pattern = "mep-rd-(.*A)-.*.nc"
         found_files = self.FOUND_FILES
         for file in found_files:
             filename = Path(file).name
@@ -177,12 +182,12 @@ class ReadHARP(ReadUngriddedBase):
             logger.debug(f"Skipping file {filename}")
             return None
 
-    def _get_time(self, data: xr.Dataset) -> List[np.datetime64]:
+    def _get_time(self, data: xr.Dataset) -> np.ndarray:
 
-        start = data["datetime_start"].data
-        end = data["datetime_stop"].data
+        start = np.array(data["datetime_start"])
+        end = np.array(data["datetime_stop"])
 
-        return list(start)
+        return start
 
     def read_file(self, filename: str, vars_to_retrieve: List[str]) -> xr.Dataset:
         """Reads data for a single year for one component"""
@@ -201,15 +206,73 @@ class ReadHARP(ReadUngriddedBase):
         stations: List[StationData] = []
 
         for stationname in tqdm(self.STATIONS):
+            print(f"Reading station {stationname}")
+            start_time = time.time()
+            data = xr.open_mfdataset(
+                self.STATIONS[stationname],
+                concat_dim="time",
+                combine="nested",
+                parallel=True,
+            )
+            print(f"After reading df {time.time()-start_time}")
+            lat = float(data["latitude"][0])
+            lon = float(data["longitude"][0])
+            alt = float(data["altitude"][0])
+            station = Station(stationname, lat, lon, alt)
+            print(f"After making Station {time.time()-start_time}")
+            times = self._get_time(data)
+            print(f"After getting times {time.time()-start_time}")
+            for s in vars_to_retrieve:
+                if s in self.AUX_REQUIRES:
+                    read_s = self.AUX_REQUIRES[s][0]
+                else:
+                    read_s = s
+                measurements = np.array(data[self.VAR_MAPPING[read_s]])
+                unit = data[self.VAR_MAPPING[read_s]].units
+
+                if s in self.AUX_REQUIRES:
+                    measurements = _conc_to_vmr(
+                        measurements, self.AUX_REQUIRES[s], self.AUX_UNITS[s], unit
+                    )
+                    unit = self.AUX_UNITS[s]
+
+                ts = pd.Series(measurements, times)
+                station.add_series(s, unit, ts)
+            print(f"After creating series {time.time()-start_time}")
+            stations.append(
+                station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[stationname])
+            )
+
+        return UngriddedData.from_station_data(
+            stations
+        )  # , add_meta_keys=list(set(metadata_headers)))
+
+
+"""
+    def read(
+        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
+    ):
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+
+        for var in vars_to_retrieve:
+            if var not in self.PROVIDES_VARIABLES:
+                raise ValueError(f"The variable {var} is not supported")
+
+        stations: List[StationData] = []
+
+        for stationname in self.STATIONS:
             f = self.STATIONS[stationname][0]
 
             data = self.read_file(f, vars_to_retrieve)
-            lat = float(data["latitude"])
+            lat = float(data["latitude"][0])
             lon = float(data["longitude"])
             alt = float(data["altitude"])
             station = Station(stationname, lat, lon, alt)
-
-            for f in self.STATIONS[stationname]:
+            breakpoint()
+            print(f"Reading station {stationname}")
+            for f in tqdm(self.STATIONS[stationname]):
+                data = self.read_file(f, vars_to_retrieve)
 
                 for s in vars_to_retrieve:
                     try:
@@ -243,13 +306,13 @@ class ReadHARP(ReadUngriddedBase):
             stations
         )  # , add_meta_keys=list(set(metadata_headers)))
 
+"""
 
 if __name__ == "__main__":
     import cProfile
 
-    FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/CHINA_MP_NRT/HARP_EXAMPLE_DATA/download/JJA-2022/HARP2/nobackup/users/tsikerde/China_grounddata/HARP/"
+    FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download/"
     reader = ReadHARP(data_dir=FILE_DIR)
     # cProfile.run("data = reader.read()")
+    # breakpoint()
     data = reader.read(vars_to_retrieve=["vmro3max"])
-
-    breakpoint()

@@ -31,6 +31,27 @@ def _conc_to_vmr_single_value(
     )
 
 
+def _conc_to_vmr(data, to_var, to_unit, from_unit, p_pascal=None, T_kelvin=None, mmol_air=None):
+    if p_pascal is None:
+        p_pascal = P_STD
+    if T_kelvin is None:
+        T_kelvin = T_STD
+    if mmol_air is None:
+        mmol_air = get_molmass("air_dry")
+
+    mmol_var = get_molmass(to_var[0])
+
+    return concx_to_vmrx(
+        data,
+        p_pascal=p_pascal,
+        T_kelvin=T_kelvin,
+        mmol_var=mmol_var,
+        mmol_air=mmol_air,
+        conc_unit=from_unit,
+        to_unit=to_unit,
+    )
+
+
 def _conc_to_vmr_marcopolo_stats(
     data, to_var, from_var, p_pascal=None, T_kelvin=None, mmol_air=None
 ):
