@@ -738,3 +738,13 @@ def calc_vmro3max(data):
     # print(data.var_info)
     # exit()
     return o3max
+
+
+def identity(data):
+    return data
+
+
+def make_fake_drydep_from_O3(data):
+    var_name = "vmro3"
+    data.var_info[var_name]["units"] = "mg m-2 d-1"
+    return data

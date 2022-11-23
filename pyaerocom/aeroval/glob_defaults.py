@@ -58,6 +58,21 @@ var_ranges_defaults = {
     "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
+    "fakedryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "fakedrypm10": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "fakedrypm25": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "fakedryoxs": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
+        "colmap": "coolwarm",
+    },
+    "fakedryoxn": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
+        "colmap": "coolwarm",
+    },
+    "fakedryrdn": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
+        "colmap": "coolwarm",
+    },
 }
 
 #: Default information for statistical parameters
@@ -214,6 +229,18 @@ statistics_trend = {
 statistics_obs_only = {
     "refdata_mean": {
         "name": "Mean-Obs",
+        "longname": "Model Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
+    },
+}
+
+# For experiments where only model data is interesting, as with fake drydep
+statistics_model_only = {
+    "data_mean": {
+        "name": "Mean-Mod",
         "longname": "Observation Mean",
         "scale": None,
         "colmap": "coolwarm",
@@ -250,6 +277,7 @@ var_web_info = dict(
     concNno=["NO", "3D", "Concentration"],
     concno2=["NO2", "3D", "Gas concentrations"],
     concNno2=["NO2", "3D", "Gas concentrations"],
+    vmrno=["NO", "3D", "Volume mixing ratios"],
     vmrno2=["NO2", "3D", "Volume mixing ratios"],
     concno3=["NO3", "3D", "Gas concentrations"],
     conctno3=["tNO3", "3D", "Concentration"],
@@ -312,4 +340,22 @@ var_web_info = dict(
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
+    # Fake drydep
+    fakedryoxs=["FakeDryOXS", "3D", "Deposition"],
+    fakedryso2=["FakeDrySO2", "3D", "Deposition"],
+    fakedryso4=["FakeDrySO4", "3D", "Deposition"],
+    fakedryoxn=["FakeDryOXN", "3D", "Deposition"],
+    fakedryno2=["FakeDryNO2", "3D", "Deposition"],
+    fakedryno2no2=["FakeDryNO2NO2", "3D", "Deposition"],
+    fakedryhono=["FakeDryHONO", "3D", "Deposition"],
+    fakedryn2o5=["FakeDryN2O5", "3D", "Deposition"],
+    fakedryhno3=["FakeDryHNO3", "3D", "Deposition"],
+    fakedryno3c=["FakeDryNO3Coarse", "3D", "Deposition"],
+    fakedryno3f=["FakeDryNO3Fine", "3D", "Deposition"],
+    fakedryrdn=["FakeDryRDN", "3D", "Deposition"],
+    fakedrynh3=["FakeDryNH3", "3D", "Deposition"],
+    fakedrynh4=["FakeDryNH4", "3D", "Deposition"],
+    fakedryo3=["FakeDryO3", "3D", "Deposition"],
+    fakedrypm10=["FakeDryPM10", "3D", "Deposition"],
+    fakedrypm25=["FakeDryPM2.5", "3D", "Deposition"],
 )
