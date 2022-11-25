@@ -973,7 +973,7 @@ class GriddedData:
         # list of coordinates needed for timeseries extraction.
         needed = self.COORDS_ORDER_TSERIES
         new_order = []
-        breakpoint()
+        breakpoint()  # LB: Keep for now...
         # coord_names = [c.name() for c in self.grid.dim_coords]
         for coord in needed:
             dims = self.cube.coord_dims(coord)
@@ -1152,7 +1152,6 @@ class GriddedData:
         else:
             collapse_scalar = True
         try:
-            breakpoint()
             self.check_dimcoords_tseries()
         except DimensionOrderError:
             self.reorder_dimensions_tseries()

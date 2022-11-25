@@ -55,7 +55,7 @@ class ModelEntry(BrowseDict):
         self.model_add_vars = {}
         self.model_rename_vars = {}
         self.model_read_aux = {}
-        self.projection_parameters = {}
+        self.model_projection_parameters = {}  # LB: Check to see if still need this
 
         self.update(**kwargs)
 

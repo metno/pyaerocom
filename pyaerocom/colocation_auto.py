@@ -22,6 +22,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
+    colocate_gridded_ungridded_in_projection,
     correct_model_stp_coldata,
 )
 from pyaerocom.config import ALL_REGION_NAME
@@ -371,6 +372,7 @@ class ColocationSetup(BrowseDict):
 
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
         self.model_has_projection_coordinates = False
+        self.model_projection_parameters = {}  # provided by the user in the cfg
 
         self.flex_ts_type = True
 
@@ -1365,9 +1367,7 @@ class Colocator(ColocationSetup):
 
         """
         if self.model_has_projection_coordinates:
-            raise NotImplementedError(
-                "Need to implement a different function for colocation in terms of projections"
-            )
+            return colocate_gridded_ungridded_in_projection  # Think need to return this function before am able to get the projection paramters from the model cfg
         if self.obs_is_ungridded:
             return colocate_gridded_ungridded
         else:
@@ -1405,6 +1405,10 @@ class Colocator(ColocationSetup):
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
             args.update(ts_type=ts_type)
+
+        if self.model_has_projection_coordinates:
+            args.update(model_projection_parameters=self.model_projection_parameters)
+
         return args
 
     def _check_dimensionality(self, args):
@@ -1452,6 +1456,7 @@ class Colocator(ColocationSetup):
         return coldata
 
     def _print_coloc_info(self, var_matches):
+        # LB: Note this function could be causing logging issues. key errors. huge mess while debugging
         if not var_matches:
             logger.info("Nothing to colocate")
             return
