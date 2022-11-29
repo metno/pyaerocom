@@ -2,15 +2,13 @@
 Compatibility layer between importlib.resources for Python 3.11 and older versions
 """
 import sys
-from contextlib import contextmanager
 from pathlib import Path
 from typing import ContextManager
 
 if sys.version_info >= (3, 11):
     from importlib import resources
 else:
-    # import importlib_resources as resources
-    from importlib import resources
+    import importlib_resources as resources
 
 
 def path(package: str, resource: str) -> ContextManager[Path]:
