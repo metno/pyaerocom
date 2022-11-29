@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from pyaerocom import StationData
+from pyaerocom.stationdata import StationData
 
 
 class Station:
