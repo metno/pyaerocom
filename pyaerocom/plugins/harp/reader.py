@@ -14,25 +14,28 @@ from tqdm import tqdm
 
 # from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.plugins.harp.aux_vars import (
-    _conc_to_vmr,
-    _conc_to_vmr_marcopolo_stats,
-    _conc_to_vmr_single_value,
-)
-from pyaerocom.plugins.harp.station import Station
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
+from .aux_vars import _conc_to_vmr, _conc_to_vmr_marcopolo_stats, _conc_to_vmr_single_value
+from .station import Station
+
 logger = logging.getLogger(__name__)
 
-COLUMNS = "country, stationname, stationcode, latitude, longitude, altitude, timestamp, pollutant, unit, frequency, value".split(
-    ","
+COLUMNS = (
+    "country",
+    "stationname",
+    "stationcode",
+    "latitude",
+    "longitude",
+    "altitude",
+    "timestamp",
+    "pollutant",
+    "unit",
+    "frequency",
+    "value",
 )
-
-
 METADATA_INDEX_START = 11
-
-
 ALLOWED_FREQS = {
     "minutly",
     "hourly",
@@ -40,8 +43,6 @@ ALLOWED_FREQS = {
     "monthly",
     "yearly",
 }
-
-FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download/"
 
 
 class ReadHARP(ReadUngriddedBase):
@@ -172,15 +173,13 @@ class ReadHARP(ReadUngriddedBase):
         return sd
 
     def _get_stationname(self, filename: str) -> str | None:
-        station_pattern = "MEP-surface-rd-(.*A)-.*.nc"
-        try:
-            stationname = re.search(station_pattern, filename).group(1)
-            return stationname
+        regex = re.compile("MEP-surface-rd-(.*A)-.*.nc")
+        if (match := regex.search(filename)) is not None:
+            return match.group(1)
 
-        except:
-            print(f"Skipping file {filename}")
-            logger.debug(f"Skipping file {filename}")
-            return None
+        print(f"Skipping file {filename}")
+        logger.debug(f"Skipping file {filename}")
+        return None
 
     def _get_time(self, data: xr.Dataset) -> np.ndarray:
 
@@ -309,10 +308,6 @@ class ReadHARP(ReadUngriddedBase):
 """
 
 if __name__ == "__main__":
-    import cProfile
-
     FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download/"
     reader = ReadHARP(data_dir=FILE_DIR)
-    # cProfile.run("data = reader.read()")
-    # breakpoint()
     data = reader.read(vars_to_retrieve=["vmro3max"])
