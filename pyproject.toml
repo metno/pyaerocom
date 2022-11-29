@@ -206,7 +206,8 @@ commands_pre =
 commands =
     pytest -ra -q {posargs:--cov}
 extras = 
-    proj-legacy
+    py{,38,38,39,10}: proj-legacy
+    py311: proj8
     test
 
 [testenv:format]
