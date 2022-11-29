@@ -1,11 +1,11 @@
+from __future__ import annotations
+
 import logging
 import re
 import time
-from datetime import datetime
 from functools import cached_property
 from glob import glob
 from pathlib import Path
-from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -163,7 +163,7 @@ class ReadHARP(ReadUngriddedBase):
         return self.data_id
 
     @property
-    def PROVIDES_VARIABLES(self) -> List[str]:
+    def PROVIDES_VARIABLES(self) -> list[str]:
         return list(self.VAR_MAPPING.keys()) + list(self.AUX_REQUIRES.keys())
 
     def _get_station_data(self, data: pd.DataFrame) -> StationData:
@@ -189,7 +189,7 @@ class ReadHARP(ReadUngriddedBase):
 
         return start
 
-    def read_file(self, filename: str, vars_to_retrieve: List[str]) -> xr.Dataset:
+    def read_file(self, filename: str, vars_to_retrieve: list[str]) -> xr.Dataset:
         """Reads data for a single year for one component"""
         return xr.open_dataset(filename)
 
@@ -203,7 +203,7 @@ class ReadHARP(ReadUngriddedBase):
             if var not in self.PROVIDES_VARIABLES:
                 raise ValueError(f"The variable {var} is not supported")
 
-        stations: List[StationData] = []
+        stations: list[StationData] = []
 
         for stationname in tqdm(self.STATIONS):
             print(f"Reading station {stationname}")

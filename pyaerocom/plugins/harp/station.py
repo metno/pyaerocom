@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import List
+from __future__ import annotations
 
 import numpy as np
 import pandas as pd
@@ -28,7 +27,7 @@ class Station:
 
         self.measurements[species].add_series(ts)
 
-    def to_stationdata(self, data_id: str, dataset: str, filename: str | List[str]) -> StationData:
+    def to_stationdata(self, data_id: str, dataset: str, filename: str | list[str]) -> StationData:
         data_out = StationData()
         data_out.data_id = data_id
         data_out.dataset_name = dataset
@@ -57,7 +56,7 @@ class Station:
             data_out[s] = self.measurements[s].to_pandas()
         return data_out
 
-    def _get_unique_times(self) -> List[np.datetime64]:
+    def _get_unique_times(self) -> list[np.datetime64]:
         times = []
         for s in self.measurements:
             times += self.measurements[s].time
@@ -70,8 +69,8 @@ class Measurement:
         self.speciesname = speciesname
         self.unit = unit
 
-        self.data: List[float] = []
-        self.time: List[np.datetime64] = []
+        self.data: list[float] = []
+        self.time: list[np.datetime64] = []
 
         self.timeseries: pd.Series
 
