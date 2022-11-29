@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from configparser import ConfigParser
-from importlib import resources
 from pathlib import Path
 
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError
 
 

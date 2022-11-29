@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import sys
-from importlib import resources
+
+from pyaerocom.data import resources
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     import tomllib

@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import logging
 import os
-from importlib import resources
 from logging.config import fileConfig
+
+from pyaerocom.data import resources
 
 LOGGING_CONFIG = dict(
     # root logger

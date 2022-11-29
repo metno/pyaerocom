@@ -1,8 +1,7 @@
-from importlib import resources
-
 import pytest
 
 from pyaerocom import const
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.varcollection import VarCollection
 from pyaerocom.variable import Variable

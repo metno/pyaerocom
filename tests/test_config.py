@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import getpass
 import tempfile
-from importlib import resources
 from pathlib import Path
 from typing import Type
 
@@ -11,6 +10,7 @@ import pytest
 import pyaerocom.config as testmod
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME, Config
+from pyaerocom.data import resources
 from pyaerocom.grid_io import GridIO
 from pyaerocom.varcollection import VarCollection
 from tests.conftest import lustre_avail
