@@ -209,6 +209,8 @@ extras =
     py{,38,38,39,10}: proj-legacy
     py311: proj8
     test
+setenv =
+    UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 
 [testenv:format]
 commands =
