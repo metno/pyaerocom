@@ -50,7 +50,6 @@ def test_read(reader):
     for var_name in var_names_to_test:
         data = None
         data = reader.read(vars_to_retrieve=[var_name])
-        breakpoint()
         assert isinstance(data, UngriddedData)
 
         for stat_idx, statid in enumerate(station_id[var_name]):
