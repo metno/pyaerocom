@@ -12,7 +12,9 @@ def test_load_berlin():
     dataset = ReadAeronetInvV3()
     files = dataset.find_in_file_list("*Berlin*")
     assert len(files) == 1
-    assert Path(files[0]).name == "19930101_20220416_Berlin_FUB.all"
+    assert (
+        Path(files[0]).name == "19930101_20221022_Berlin_FUB.all"
+    )  # old file name: "19930101_20220416_Berlin_FUB.all"
     data = dataset.read_file(files[0], vars_to_retrieve=["abs550aer"])
 
     test_vars = ["abs440aer", "angabs4487aer", "abs550aer"]
