@@ -340,4 +340,6 @@ var_web_info = dict(
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
+    # Temperature
+    ts=["Surface Temperature", "2D", "Temperature"],
 )
