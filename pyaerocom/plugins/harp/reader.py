@@ -212,6 +212,7 @@ class ReadHARP(ReadUngriddedBase):
                 concat_dim="time",
                 combine="nested",
                 parallel=True,
+                autoclose=True,
             )
             print(f"After reading df {time.time()-start_time}")
             lat = float(data["latitude"][0])
@@ -306,8 +307,3 @@ class ReadHARP(ReadUngriddedBase):
         )  # , add_meta_keys=list(set(metadata_headers)))
 
 """
-
-if __name__ == "__main__":
-    FILE_DIR = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download/"
-    reader = ReadHARP(data_dir=FILE_DIR)
-    data = reader.read(vars_to_retrieve=["vmro3max"])
