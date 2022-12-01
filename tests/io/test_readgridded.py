@@ -193,7 +193,9 @@ def test_file_info(reader_reanalysis: ReadGridded):
 
 @lustre_unavail
 def test_years_available(reader_reanalysis: ReadGridded):
-    years = list(range(2003, 2022)) + [9999]
+    years = list(range(2003, 2023)) + [
+        9999
+    ]  # go up to 2023 because 2022 is now available. Will likely need to be updated in the future
     assert reader_reanalysis.years_avail == years
 
 

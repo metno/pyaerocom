@@ -5,6 +5,7 @@ import pytest
 from pyaerocom import UngriddedData
 from pyaerocom.io import ReadAeronetSunV3
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from tests.conftest import lustre_avail
 
 
 @pytest.fixture(scope="module")
@@ -12,6 +13,7 @@ def cache_handler():
     return CacheHandlerUngridded()
 
 
+@lustre_avail
 def test_cache_dir(cache_handler: CacheHandlerUngridded):
     cache_path = Path(cache_handler.cache_dir)
     comps = cache_path.parts
