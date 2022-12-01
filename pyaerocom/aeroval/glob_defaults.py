@@ -261,6 +261,7 @@ statistics_obs_only = {
 }
 
 #: Mapping of pyaerocom variable names to web naming conventions
+## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
 var_web_info = dict(
     od550aer=["AOD", "2D", "Optical properties"],
     od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
@@ -342,5 +343,5 @@ var_web_info = dict(
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
     # Temperature
-    ts=["Surface Temperature", "2D", "Temperature"],
+    ts=["Surface Temperature", "3D", "Temperature"],
 )
