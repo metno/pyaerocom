@@ -28,6 +28,6 @@ def test_STATIONS(reader: ReadHARP):
     assert reader.STATIONS.keys() >= set(STATION_NAMES), f"missing known station names"
 
 
-@pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {FILE_DIR}")
+@pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
 def test_read(reader: ReadHARP):
     data = reader.read(vars_to_retrieve=["vmro3max"])

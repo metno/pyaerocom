@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 import re
 import time
+from collections import defaultdict
 from functools import cached_property
-from glob import glob
 from pathlib import Path
 
 import numpy as np
@@ -58,7 +58,7 @@ class ReadHARP(ReadUngriddedBase):
     """
 
     #: Mask for identifying datafiles
-    _FILEMASK = "*.nc"
+    _FILEMASK = "mep-rd-*.nc"
 
     #: Version log of this class (for caching)
     __version__ = "0.01"
@@ -113,7 +113,8 @@ class ReadHARP(ReadUngriddedBase):
         "concpm25": "PM2p5_density",
         "concso2": "SO2_density",
     }
-    PATTERN = "mep-rd-*.nc"
+
+    STATION_REGEX = re.compile("mep-rd-(.*A)-.*.nc")
 
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None:
@@ -122,36 +123,28 @@ class ReadHARP(ReadUngriddedBase):
             )
         super().__init__(data_id=data_id, data_dir=data_dir)
 
-        self._found_files = None
-        self.FOUND_FILES
+    @cached_property
+    def FOUND_FILES(self) -> list[Path]:
+        paths = sorted(Path(self.data_dir).rglob(self._FILEMASK))
+        logger.debug(f"found {len(paths)} files")
+        return paths
 
     @cached_property
-    def FOUND_FILES(self):
-        found_files = []
-        for file in glob(self.data_dir + "/**/" + self.PATTERN, recursive=True):
-            found_files.append(file)
+    def STATIONS(self) -> dict[str, list[str]]:
+        stations = defaultdict(list)
+        for path in self.FOUND_FILES:
+            if (name := self._station_name(path)) is None:
+                logger.debug(f"Skipping {path.name}")
+                continue
 
-        self._found_files = found_files
-        return found_files
-
-    @cached_property
-    def STATIONS(self):
-        stations = {}
-        station_pattern = "mep-rd-(.*A)-.*.nc"
-        found_files = self.FOUND_FILES
-        for file in found_files:
-            filename = Path(file).name
-            try:
-                stationname = re.search(station_pattern, filename).group(1)
-                if stationname not in stations:
-                    stations[stationname] = []
-
-                stations[stationname].append(file)
-            except:
-                print(f"Skipping file {filename}")
-                logger.debug(f"Skipping file {filename}")
+            stations[name].append(str(path))
 
         return stations
+
+    @classmethod
+    def _station_name(cls, path: Path) -> str | None:
+        match = cls.STATION_REGEX.search(path.name)
+        return match.group(1) if match else None
 
     @property
     def DEFAULT_VARS(self):
@@ -171,15 +164,6 @@ class ReadHARP(ReadUngriddedBase):
         sd = StationData()
 
         return sd
-
-    def _get_stationname(self, filename: str) -> str | None:
-        regex = re.compile("MEP-surface-rd-(.*A)-.*.nc")
-        if (match := regex.search(filename)) is not None:
-            return match.group(1)
-
-        print(f"Skipping file {filename}")
-        logger.debug(f"Skipping file {filename}")
-        return None
 
     def _get_time(self, data: xr.Dataset) -> np.ndarray:
 
