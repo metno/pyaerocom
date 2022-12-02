@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from collections import defaultdict
-from functools import cached_property
+from functools import cached_property, lru_cache
 from pathlib import Path
 from typing import Iterable
 
@@ -123,21 +123,27 @@ class ReadHARP(ReadUngriddedBase):
             )
         super().__init__(data_id=data_id, data_dir=data_dir)
 
-    @cached_property
-    def FOUND_FILES(self) -> list[Path]:
-        paths = sorted(Path(self.data_dir).rglob(self._FILEMASK))
-        logger.debug(f"found {len(paths)} files")
-        return paths
+        self.files = sorted(map(str, self.FOUND_FILES))
 
     @cached_property
-    def STATIONS(self) -> dict[str, list[str]]:
+    def FOUND_FILES(self) -> tuple[Path, ...]:
+        paths = sorted(Path(self.data_dir).rglob(self._FILEMASK))
+        logger.debug(f"found {len(paths)} files")
+        return tuple(paths)
+
+    @lru_cache()
+    def stations(self, files: tuple[str | Path, ...] | None = None) -> dict[str, list[Path]]:
+        if not files:
+            files = self.FOUND_FILES
         stations = defaultdict(list)
-        for path in self.FOUND_FILES:
+        for path in files:
+            if not isinstance(path, Path):
+                path = Path(path)
             if (name := self._station_name(path)) is None:
                 logger.debug(f"Skipping {path.name}")
                 continue
 
-            stations[name].append(str(path))
+            stations[name].append(path)
 
         return stations
 
@@ -190,27 +196,21 @@ class ReadHARP(ReadUngriddedBase):
             unsupported = set(vars_to_retrieve) - set(self.PROVIDES_VARIABLES)
             raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
 
-        if files is not None:
-            raise NotImplementedError(
-                f"{self.__class__.__qualname__}.read(files=...) not yet implemented"
-            )
+        if files is not None and not isinstance(files, tuple):
+            files = tuple(files)
 
-        if first_file is not None:
-            raise NotImplementedError(
-                f"{self.__class__.__qualname__}.first_file(files=...) not yet implemented"
-            )
+        if files is not None and first_file is not None:
+            files = files[first_file:]
 
-        if last_file is not None:
-            raise NotImplementedError(
-                f"{self.__class__.__qualname__}.last_file(files=...) not yet implemented"
-            )
+        if files is not None and last_file is not None:
+            files = files[:last_file]
 
         stations: list[StationData] = []
 
-        for name in tqdm(self.STATIONS):
+        for name, paths in tqdm(self.stations(files).items()):
             logger.debug(f"Reading station {name}")
             data = xr.open_mfdataset(
-                self.STATIONS[name],
+                paths,
                 concat_dim="time",
                 combine="nested",
                 parallel=True,
@@ -240,8 +240,6 @@ class ReadHARP(ReadUngriddedBase):
                 ts = pd.Series(measurements, times)
                 station.add_series(s, unit, ts)
 
-            stations.append(
-                station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[name])
-            )
+            stations.append(station.to_stationdata(self.DATA_ID, self.DATASET_NAME, paths))
 
         return UngriddedData.from_station_data(stations)

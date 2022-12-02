@@ -11,8 +11,11 @@ LUSTRE_PATH = Path("/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/
 
 STATION_NAMES = ("1478A", "2706A", "3377A")
 
+VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
+VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
 
-@pytest.fixture()
+
+@pytest.fixture(scope="module")
 def reader() -> ReadHARP:
     if not LUSTRE_PATH.is_dir():  # pragma: no cover
         pytest.fail(f"needs {LUSTRE_PATH}")
@@ -20,8 +23,8 @@ def reader() -> ReadHARP:
 
 
 @pytest.fixture()
-def station_files(reader: ReadHARP, station: str) -> list[str]:
-    files = reader.STATIONS.get(station)
+def station_files(reader: ReadHARP, station: str) -> list[Path]:
+    files = reader.stations().get(station)
     assert files, f"no files for {station}"
     return files
 
@@ -31,8 +34,12 @@ def test_DATASET_NAME(reader: ReadHARP):
 
 
 def test_DEFAULT_VARS(reader: ReadHARP):
-    default = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
-    assert set(reader.DEFAULT_VARS) >= default
+    assert set(reader.DEFAULT_VARS) >= VARS_DEFAULT
+
+
+def test_files(reader: ReadHARP):
+    assert reader.files, "no stations files found"
+    assert len(reader.files) >= 167482, "found less files than expected"
 
 
 def test_FOUND_FILES(reader: ReadHARP):
@@ -40,23 +47,20 @@ def test_FOUND_FILES(reader: ReadHARP):
     assert len(reader.FOUND_FILES) >= 167482, "found less files than expected"
 
 
-def test_STATIONS(reader: ReadHARP):
-    assert reader.STATIONS, f"no stations found"
-    assert all(reader.STATIONS.values()), f"stations without files"
-    assert reader.STATIONS.keys() >= set(STATION_NAMES), f"missing known station names"
+@pytest.mark.parametrize("station", STATION_NAMES)
+def test_stations(reader: ReadHARP, station: str):
+    assert reader.stations()[station], f"no {station} station files"
 
 
 def test_PROVIDES_VARIABLES(reader: ReadHARP):
-    default = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
-    aux = {"vmro3", "vmro3max", "vmrno2"}
-    return set(reader.PROVIDES_VARIABLES) >= (default | aux)  # union
+    return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
 @pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
-@pytest.mark.xfail(raises=NotImplementedError)
 @pytest.mark.parametrize("station", STATION_NAMES)
 def test_read_file(reader: ReadHARP, station_files: list[str]):
     data = reader.read_file(station_files[-1])
+    assert set(data.contains_vars) == VARS_DEFAULT
 
 
 def test_read_file_error(reader: ReadHARP):
@@ -67,10 +71,10 @@ def test_read_file_error(reader: ReadHARP):
 
 
 @pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
-@pytest.mark.xfail(raises=NotImplementedError)
 @pytest.mark.parametrize("station", STATION_NAMES)
 def test_read(reader: ReadHARP, station_files: list[str]):
-    data = reader.read(["vmro3max"], station_files)
+    data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=1)
+    assert set(data.contains_vars) == VARS_PROVIDED
 
 
 def test_read_error(reader: ReadHARP):
