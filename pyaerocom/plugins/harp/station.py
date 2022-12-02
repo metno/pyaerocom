@@ -7,7 +7,7 @@ from pyaerocom.stationdata import StationData
 
 
 class Station:
-    def __init__(self, stationname, lat, lon, alt) -> None:
+    def __init__(self, stationname: str, lat: float, lon: float, alt: float) -> None:
         self.stationname = stationname
         self.lat = lat
         self.lon = lon
@@ -72,7 +72,7 @@ class Measurement:
         self.data: list[float] = []
         self.time: list[np.datetime64] = []
 
-        self.timeseries: pd.Series
+        self.timeseries: pd.Series | None = None
 
     def add_measurement(self, data: float, time: np.datetime64, unit: str) -> None:
         if unit != self.unit:
@@ -86,4 +86,5 @@ class Measurement:
         return pd.Series(self.data, self.time)
 
     def add_series(self, ts: pd.Series):
+        assert self.timeseries is None, "overwriting time series"
         self.timeseries = ts
