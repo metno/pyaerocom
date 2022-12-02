@@ -233,6 +233,6 @@ class ReadHARP(ReadUngriddedBase):
                 ts = pd.Series(measurements, times)
                 station.add_series(var, unit, ts)
 
-            stations.append(station.to_stationdata(self.DATA_ID, self.DATASET_NAME, paths))
+            stations.append(station.to_stationdata(self.DATA_ID, self.DATASET_NAME))
 
         return UngriddedData.from_station_data(stations)

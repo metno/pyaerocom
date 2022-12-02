@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from itertools import chain
+from typing import Iterable, Iterator, NamedTuple
+
 import numpy as np
 import pandas as pd
 
@@ -7,33 +10,28 @@ from pyaerocom.stationdata import StationData
 
 
 class Station:
-    def __init__(self, stationname: str, lat: float, lon: float, alt: float) -> None:
-        self.stationname = stationname
+    def __init__(self, station_name: str, lat: float, lon: float, alt: float) -> None:
+        self.station_name = station_name
         self.lat = lat
         self.lon = lon
         self.alt = alt
-
-        self.measurements: dict[str, Measurement] = {}
-
-    def add_measurement(self, species: str, unit: str, data: float, time: np.datetime64) -> None:
-        if species not in self.measurements:
-            self.measurements[species] = Measurement(species, unit)
-
-        self.measurements[species].add_measurement(data, time, unit)
+        self.measurements: list[Measurement] = []
 
     def add_series(self, species: str, unit: str, ts: pd.Series) -> None:
-        if species not in self.measurements:
-            self.measurements[species] = Measurement(species, unit)
+        assert species not in set(self.species), f"{species} already included"
+        assert not ts.empty, f"{species} is empty"
+        self.measurements.append(Measurement(species, unit, ts))
 
-        self.measurements[species].add_series(ts)
+    @property
+    def species(self) -> Iterator[str]:
+        return (obs.species for obs in self.measurements)
 
-    def to_stationdata(self, data_id: str, dataset: str, filename: str | list[str]) -> StationData:
+    def to_stationdata(self, data_id: str, dataset: str) -> StationData:
         data_out = StationData()
         data_out.data_id = data_id
         data_out.dataset_name = dataset
-        data_out.station_id = self.stationname
-        data_out.station_name = self.stationname
-        data_out.filename = filename
+        data_out.station_id = self.station_name
+        data_out.station_name = self.station_name
 
         data_out.station_coords = {
             "latitude": self.lat,
@@ -45,46 +43,27 @@ class Station:
         data_out.altitude = self.alt
 
         data_out.ts_type = "hourly"
-        # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
-        data_out["variables"] = list(self.measurements.keys())
-        for s in self.measurements:
-            data_out["var_info"][s] = {}
-            data_out["var_info"][s]["units"] = self.measurements[s].unit
+        # what happens when different measurements have different time steps?
+        data_out["dtime"] = self.unique_times
+        assert data_out["dtime"], "no time"
 
-            data_out["dtime"] = self._get_unique_times()
+        for obs in self.measurements:
+            data_out[obs.species] = obs.timeseries
+            data_out["var_info"][obs.species] = {"units": obs.unit}
 
-            data_out[s] = self.measurements[s].to_pandas()
         return data_out
 
-    def _get_unique_times(self) -> list[np.datetime64]:
-        times = []
-        for s in self.measurements:
-            times += self.measurements[s].time
-
-        return sorted(list(set(times)))
+    @property
+    def unique_times(self) -> list[np.datetime64]:
+        times = chain.from_iterable(obs.time for obs in self.measurements)
+        return sorted(set(times))
 
 
-class Measurement:
-    def __init__(self, speciesname: str, unit: str) -> None:
-        self.speciesname = speciesname
-        self.unit = unit
+class Measurement(NamedTuple):
+    species: str
+    unit: str
+    timeseries: pd.Series
 
-        self.data: list[float] = []
-        self.time: list[np.datetime64] = []
-
-        self.timeseries: pd.Series | None = None
-
-    def add_measurement(self, data: float, time: np.datetime64, unit: str) -> None:
-        if unit != self.unit:
-            raise ValueError(f"Unit {unit} is not the same {self.unit}")
-        self.data.append(data)
-        self.time.append(time)
-
-    def to_pandas(self) -> pd.Series:
-        if self.timeseries is not None:
-            return self.timeseries
-        return pd.Series(self.data, self.time)
-
-    def add_series(self, ts: pd.Series):
-        assert self.timeseries is None, "overwriting time series"
-        self.timeseries = ts
+    @property
+    def time(self) -> Iterable[np.datetime64]:
+        return self.timeseries.index

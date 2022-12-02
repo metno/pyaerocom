@@ -73,7 +73,7 @@ def test_read_file_error(reader: ReadHARP):
 @pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
 @pytest.mark.parametrize("station", STATION_NAMES)
 def test_read(reader: ReadHARP, station_files: list[str]):
-    data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=1)
+    data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=5)
     assert set(data.contains_vars) == VARS_PROVIDED
 
 
