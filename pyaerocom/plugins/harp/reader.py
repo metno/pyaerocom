@@ -17,7 +17,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
-from .aux_vars import _conc_to_vmr, _conc_to_vmr_marcopolo_stats, _conc_to_vmr_single_value
+from .aux_vars import conc_to_vmr
 from .station import Station
 
 logger = logging.getLogger(__name__)
@@ -73,10 +73,7 @@ class ReadHARP(ReadUngriddedBase):
     TS_TYPE = "variable"
 
     #: sampling frequencies found in data files
-    TS_TYPES_FILE = {
-        "hour": "hourly",
-        "day": "daily",
-    }
+    TS_TYPES_FILE = {"hour": "hourly", "day": "daily"}
 
     #: field name of the start time of the measurement (in lower case)
     START_TIME_NAME = "datetime_start"
@@ -96,11 +93,7 @@ class ReadHARP(ReadUngriddedBase):
     AUX_REQUIRES = {"vmro3": ["conco3"], "vmro3max": ["conco3"], "vmrno2": ["concno2"]}
 
     #: functions used to convert variables that are computed
-    AUX_FUNS = {
-        "vmro3": _conc_to_vmr_single_value,
-        "vmro3max": _conc_to_vmr_single_value,
-        "vmrno2": _conc_to_vmr_single_value,
-    }
+    AUX_FUNS = {"vmro3": conc_to_vmr, "vmro3max": conc_to_vmr, "vmrno2": conc_to_vmr}
 
     #: units of computed variables
     AUX_UNITS = {"vmro3": "ppb", "vmro3max": "ppb", "vmrno2": "ppb"}
@@ -209,13 +202,7 @@ class ReadHARP(ReadUngriddedBase):
 
         for name, paths in tqdm(self.stations(files).items()):
             logger.debug(f"Reading station {name}")
-            data = xr.open_mfdataset(
-                paths,
-                concat_dim="time",
-                combine="nested",
-                parallel=True,
-                autoclose=True,
-            )
+            data = xr.open_mfdataset(paths, concat_dim="time", combine="nested", parallel=True)
 
             lat = float(data["latitude"][0])
             lon = float(data["longitude"][0])
@@ -223,22 +210,28 @@ class ReadHARP(ReadUngriddedBase):
             station = Station(name, lat, lon, alt)
 
             times = self._station_time(data)
-            for s in vars_to_retrieve:
-                if s in self.AUX_REQUIRES:
-                    read_s = self.AUX_REQUIRES[s][0]
-                else:
-                    read_s = s
-                measurements = np.array(data[self.VAR_MAPPING[read_s]])
-                unit = data[self.VAR_MAPPING[read_s]].units
-
-                if s in self.AUX_REQUIRES:
-                    measurements = _conc_to_vmr(
-                        measurements, self.AUX_REQUIRES[s], self.AUX_UNITS[s], unit
+            for var in vars_to_retrieve:
+                if var in self.VAR_MAPPING:
+                    aux = self.VAR_MAPPING[var]
+                    measurements = data[aux].values
+                    unit = data[aux].units
+                elif var in self.AUX_REQUIRES:
+                    if len(self.AUX_REQUIRES[var]) != 1:
+                        raise NotImplementedError(f"Unsupported {self.AUX_REQUIRES[var]}-->{var}")
+                    aux = self.AUX_REQUIRES[var][0]
+                    aux = self.VAR_MAPPING[aux]
+                    measurements = self.AUX_FUNS[var](
+                        data[aux].values,
+                        self.AUX_REQUIRES[var],
+                        self.AUX_UNITS[var],
+                        data[aux].units,
                     )
-                    unit = self.AUX_UNITS[s]
+                    unit = self.AUX_UNITS[var]
+                else:  # should never get here
+                    raise NotImplementedError(f"Unsupported {var}")
 
                 ts = pd.Series(measurements, times)
-                station.add_series(s, unit, ts)
+                station.add_series(var, unit, ts)
 
             stations.append(station.to_stationdata(self.DATA_ID, self.DATASET_NAME, paths))
 
