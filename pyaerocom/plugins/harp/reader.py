@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import logging
 import re
-import time
 from collections import defaultdict
 from functools import cached_property
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -165,40 +165,64 @@ class ReadHARP(ReadUngriddedBase):
     def _station_time(cls, data: xr.Dataset) -> np.ndarray:
         return data[cls.START_TIME_NAME].values
 
-    def read_file(self, filename: str, vars_to_retrieve: list[str]) -> xr.Dataset:
+    def read_file(
+        self, filename: str | Path, vars_to_retrieve: Iterable[str] | None = None
+    ) -> UngriddedData:
         """Reads data for a single year for one component"""
-        return xr.open_dataset(filename)
+        if not isinstance(filename, Path):
+            filename = Path(filename)
+        if not filename.is_file():
+            raise ValueError(f"missing {filename}")
+        return self.read(vars_to_retrieve, (filename,))
 
     def read(
-        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
-    ):
+        self,
+        vars_to_retrieve: Iterable[str] | None = None,
+        files: Iterable[str | Path] | None = None,
+        first_file: int | None = None,
+        last_file: int | None = None,
+        metadatafile=None,
+    ) -> UngriddedData:
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
 
-        for var in vars_to_retrieve:
-            if var not in self.PROVIDES_VARIABLES:
-                raise ValueError(f"The variable {var} is not supported")
+        if not set(vars_to_retrieve) <= set(self.PROVIDES_VARIABLES):
+            unsupported = set(vars_to_retrieve) - set(self.PROVIDES_VARIABLES)
+            raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
+
+        if files is not None:
+            raise NotImplementedError(
+                f"{self.__class__.__qualname__}.read(files=...) not yet implemented"
+            )
+
+        if first_file is not None:
+            raise NotImplementedError(
+                f"{self.__class__.__qualname__}.first_file(files=...) not yet implemented"
+            )
+
+        if last_file is not None:
+            raise NotImplementedError(
+                f"{self.__class__.__qualname__}.last_file(files=...) not yet implemented"
+            )
 
         stations: list[StationData] = []
 
-        for stationname in tqdm(self.STATIONS):
-            print(f"Reading station {stationname}")
-            start_time = time.time()
+        for name in tqdm(self.STATIONS):
+            logger.debug(f"Reading station {name}")
             data = xr.open_mfdataset(
-                self.STATIONS[stationname],
+                self.STATIONS[name],
                 concat_dim="time",
                 combine="nested",
                 parallel=True,
                 autoclose=True,
             )
-            print(f"After reading df {time.time()-start_time}")
+
             lat = float(data["latitude"][0])
             lon = float(data["longitude"][0])
             alt = float(data["altitude"][0])
-            station = Station(stationname, lat, lon, alt)
-            print(f"After making Station {time.time()-start_time}")
+            station = Station(name, lat, lon, alt)
+
             times = self._station_time(data)
-            print(f"After getting times {time.time()-start_time}")
             for s in vars_to_retrieve:
                 if s in self.AUX_REQUIRES:
                     read_s = self.AUX_REQUIRES[s][0]
@@ -215,9 +239,9 @@ class ReadHARP(ReadUngriddedBase):
 
                 ts = pd.Series(measurements, times)
                 station.add_series(s, unit, ts)
-            print(f"After creating series {time.time()-start_time}")
+
             stations.append(
-                station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[stationname])
+                station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[name])
             )
 
         return UngriddedData.from_station_data(stations)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -15,6 +17,13 @@ def reader() -> ReadHARP:
     if not LUSTRE_PATH.is_dir():  # pragma: no cover
         pytest.fail(f"needs {LUSTRE_PATH}")
     return ReadHARP(data_dir=str(LUSTRE_PATH))
+
+
+@pytest.fixture()
+def station_files(reader: ReadHARP, station: str) -> list[str]:
+    files = reader.STATIONS.get(station)
+    assert files, f"no files for {station}"
+    return files
 
 
 def test_DATASET_NAME(reader: ReadHARP):
@@ -44,5 +53,28 @@ def test_PROVIDES_VARIABLES(reader: ReadHARP):
 
 
 @pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
-def test_read(reader: ReadHARP):
-    data = reader.read(vars_to_retrieve=["vmro3max"])
+@pytest.mark.xfail(raises=NotImplementedError)
+@pytest.mark.parametrize("station", STATION_NAMES)
+def test_read_file(reader: ReadHARP, station_files: list[str]):
+    data = reader.read_file(station_files[-1])
+
+
+def test_read_file_error(reader: ReadHARP):
+    bad_station_file = "not-a-file.nc"
+    with pytest.raises(ValueError) as e:
+        reader.read_file(bad_station_file)
+    assert str(e.value) == f"missing {bad_station_file}"
+
+
+@pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
+@pytest.mark.xfail(raises=NotImplementedError)
+@pytest.mark.parametrize("station", STATION_NAMES)
+def test_read(reader: ReadHARP, station_files: list[str]):
+    data = reader.read(["vmro3max"], station_files)
+
+
+def test_read_error(reader: ReadHARP):
+    bad_variable_name = "not-a-variable"
+    with pytest.raises(ValueError) as e:
+        reader.read((bad_variable_name,))
+    assert str(e.value) == f"Unsupported variables: {bad_variable_name}"
