@@ -161,17 +161,9 @@ class ReadHARP(ReadUngriddedBase):
     def PROVIDES_VARIABLES(self) -> list[str]:
         return list(self.VAR_MAPPING) + list(self.AUX_REQUIRES)
 
-    def _get_station_data(self, data: pd.DataFrame) -> StationData:
-        sd = StationData()
-
-        return sd
-
-    def _get_time(self, data: xr.Dataset) -> np.ndarray:
-
-        start = np.array(data["datetime_start"])
-        end = np.array(data["datetime_stop"])
-
-        return start
+    @classmethod
+    def _station_time(cls, data: xr.Dataset) -> np.ndarray:
+        return data[cls.START_TIME_NAME].values
 
     def read_file(self, filename: str, vars_to_retrieve: list[str]) -> xr.Dataset:
         """Reads data for a single year for one component"""
@@ -205,7 +197,7 @@ class ReadHARP(ReadUngriddedBase):
             alt = float(data["altitude"][0])
             station = Station(stationname, lat, lon, alt)
             print(f"After making Station {time.time()-start_time}")
-            times = self._get_time(data)
+            times = self._station_time(data)
             print(f"After getting times {time.time()-start_time}")
             for s in vars_to_retrieve:
                 if s in self.AUX_REQUIRES:
@@ -228,67 +220,4 @@ class ReadHARP(ReadUngriddedBase):
                 station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[stationname])
             )
 
-        return UngriddedData.from_station_data(
-            stations
-        )  # , add_meta_keys=list(set(metadata_headers)))
-
-
-"""
-    def read(
-        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
-    ):
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-
-        for var in vars_to_retrieve:
-            if var not in self.PROVIDES_VARIABLES:
-                raise ValueError(f"The variable {var} is not supported")
-
-        stations: List[StationData] = []
-
-        for stationname in self.STATIONS:
-            f = self.STATIONS[stationname][0]
-
-            data = self.read_file(f, vars_to_retrieve)
-            lat = float(data["latitude"][0])
-            lon = float(data["longitude"])
-            alt = float(data["altitude"])
-            station = Station(stationname, lat, lon, alt)
-            breakpoint()
-            print(f"Reading station {stationname}")
-            for f in tqdm(self.STATIONS[stationname]):
-                data = self.read_file(f, vars_to_retrieve)
-
-                for s in vars_to_retrieve:
-                    try:
-                        if s in self.AUX_REQUIRES:
-                            read_s = self.AUX_REQUIRES[s][0]
-                        else:
-                            read_s = s
-                        measurements = data[self.VAR_MAPPING[read_s]].data
-                        unit = data[self.VAR_MAPPING[read_s]].units
-                    except:
-                        print(f"Could not find {s} in {f}. Skipping file")
-                        logger.info(f"Could not find {s} in {f}. Skipping file")
-                        continue
-
-                    time = self._get_time(data)
-                    for t, m in zip(time, measurements):
-                        if s in self.AUX_REQUIRES:
-                            new_m = _conc_to_vmr_single_value(
-                                m, self.AUX_REQUIRES[s], self.AUX_UNITS[s], unit
-                            )
-                            new_unit = self.AUX_UNITS[s]
-                            station.add_measurement(s, new_unit, new_m, t)
-                        else:
-                            station.add_measurement(s, unit, m, t)
-
-            stations.append(
-                station.to_stationdata(self.DATA_ID, self.DATASET_NAME, self.STATIONS[stationname])
-            )
-
-        return UngriddedData.from_station_data(
-            stations
-        )  # , add_meta_keys=list(set(metadata_headers)))
-
-"""
+        return UngriddedData.from_station_data(stations)
