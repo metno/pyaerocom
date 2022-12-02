@@ -147,18 +147,19 @@ class ReadHARP(ReadUngriddedBase):
         return match.group(1) if match else None
 
     @property
-    def DEFAULT_VARS(self):
+    def DEFAULT_VARS(self) -> list[str]:
         """List of default variables"""
-        return list(self.VAR_MAPPING.keys())
+        return list(self.VAR_MAPPING)
 
     @property
-    def DATASET_NAME(self):
+    def DATASET_NAME(self) -> str:
         """Name of the dataset"""
-        return self.data_id
+        assert self.data_id is not None, f"missing {self}.data_id"
+        return str(self.data_id)
 
     @property
     def PROVIDES_VARIABLES(self) -> list[str]:
-        return list(self.VAR_MAPPING.keys()) + list(self.AUX_REQUIRES.keys())
+        return list(self.VAR_MAPPING) + list(self.AUX_REQUIRES)
 
     def _get_station_data(self, data: pd.DataFrame) -> StationData:
         sd = StationData()
