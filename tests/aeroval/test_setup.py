@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from pytest import mark, param, raises
+import pytest
 
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
@@ -24,25 +24,25 @@ def test_evalsetup_kwargs():
 
 
 def test_evalsetup_missing_arguments():
-    with raises((KeyError, ValueError)):
+    with pytest.raises((KeyError, ValueError)):
         EvalSetup()
 
-    with raises((KeyError, ValueError)):
+    with pytest.raises((KeyError, ValueError)):
         EvalSetup("project")
 
-    with raises((KeyError, ValueError)):
+    with pytest.raises((KeyError, ValueError)):
         EvalSetup(proj_id="project")
 
-    with raises((KeyError, ValueError)):
+    with pytest.raises((KeyError, ValueError)):
         EvalSetup(exp_id="experiment")
 
 
-@mark.parametrize(
+@pytest.mark.parametrize(
     "keys",
     [
-        param(("model_cfg",), id="cams84 models"),
-        param(("obs_cfg",), id="cams84 obs"),
-        param(
+        pytest.param(("model_cfg",), id="cams84 models"),
+        pytest.param(("obs_cfg",), id="cams84 obs"),
+        pytest.param(
             (
                 "reanalyse_existing",
                 "only_json",
@@ -53,12 +53,12 @@ def test_evalsetup_missing_arguments():
             ),
             id="bool options",
         ),
-        param(
+        pytest.param(
             ("json_basedir", "coldata_basedir", "io_aux_file"),
             id="IO paths",
         ),
-        param(("filter_name",), id="regional filter"),
-        param(
+        pytest.param(("filter_name",), id="regional filter"),
+        pytest.param(
             (
                 "ts_type",
                 "map_zoom",
@@ -71,11 +71,11 @@ def test_evalsetup_missing_arguments():
             ),
             id="colocation options",
         ),
-        param(
+        pytest.param(
             ("obs_remove_outliers", "model_remove_outliers"),
             id="outlier options",
         ),
-        param(
+        pytest.param(
             (
                 "harmonise_units",
                 "regions_how",
@@ -85,7 +85,7 @@ def test_evalsetup_missing_arguments():
             ),
             id="other options",
         ),
-        param(
+        pytest.param(
             ("exp_name", "exp_descr", "exp_pi"),
             id="experiment description",
         ),
@@ -108,22 +108,25 @@ def test_HasConfig():
     assert config.reanalyse_existing == CAMS84_CONFIG["reanalyse_existing"]
 
 
-@mark.parametrize(
+@pytest.mark.parametrize(
     "model",
     [
         None,
-        param(
+        pytest.param(
             "IFS-CTRL",
             marks=[
-                mark.xfail(reason="broken test", raises=KeyError),
-                mark.dependency(name="HasColocator::model"),
+                pytest.mark.xfail(reason="broken test", raises=KeyError),
+                pytest.mark.dependency(name="HasColocator::model"),
             ],
         ),
     ],
 )
-@mark.parametrize(
+@pytest.mark.parametrize(
     "obs",
-    [None, param("EEA-NRT-rural", marks=[mark.dependency(name="HasColocator::obs")])],
+    [
+        None,
+        pytest.param("EEA-NRT-rural", marks=[pytest.mark.dependency(name="HasColocator::obs")]),
+    ],
 )
 def test_HasColocator(model: str | None, obs: str | None):
     setup = EvalSetup(**CAMS84_CONFIG)
@@ -131,19 +134,21 @@ def test_HasColocator(model: str | None, obs: str | None):
     assert config.get_colocator(model_name=model, obs_name=obs)
 
 
-@mark.parametrize(
-    "model", [param("IFS-CTRL", marks=mark.dependency(depends="HasColocator::model"))]
+@pytest.mark.parametrize(
+    "model",
+    [pytest.param("IFS-CTRL", marks=pytest.mark.dependency(depends="HasColocator::model"))],
 )
-@mark.parametrize("var", ["vmro3", "vmrno2"])
+@pytest.mark.parametrize("var", ["vmro3", "vmrno2"])
 def test_DataImporter_read_model_data(model: str, var: str):
     setup = EvalSetup(**CAMS84_CONFIG)
     assert DataImporter(setup).read_model_data(model, var)
 
 
-@mark.parametrize(
-    "obs", [param("EEA-NRT-rural", marks=mark.dependency(depends="HasColocator::obs"))]
+@pytest.mark.parametrize(
+    "obs",
+    [pytest.param("EEA-NRT-rural", marks=pytest.mark.dependency(depends="HasColocator::obs"))],
 )
-@mark.parametrize("var", ["vmro3", "vmrno2"])
+@pytest.mark.parametrize("var", ["vmro3", "vmrno2"])
 def test_DataImporter_read_ungridded_obsdata(obs: str, var: str):
     setup = EvalSetup(**CAMS84_CONFIG)
     assert DataImporter(setup).read_ungridded_obsdata(obs, var)
