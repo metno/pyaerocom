@@ -97,7 +97,11 @@ def test_evalsetup_cams84(keys: Iterable[str]):
     config = {k: CAMS84_CONFIG[k] for k in keys}
     assert config
 
-    setup = EvalSetup(proj_id=CAMS84_CONFIG["proj_id"], exp_id=CAMS84_CONFIG["exp_id"], **config)  # type: ignore
+    setup = EvalSetup(
+        proj_id=CAMS84_CONFIG["proj_id"],  # type:ignore[arg-type]
+        exp_id=CAMS84_CONFIG["exp_id"],  # type:ignore[arg-type]
+        **config,
+    )
     assert setup
 
 
@@ -129,7 +133,7 @@ def test_HasConfig():
     ],
 )
 def test_HasColocator(model: str | None, obs: str | None):
-    setup = EvalSetup(**CAMS84_CONFIG)
+    setup = EvalSetup(**CAMS84_CONFIG)  # type:ignore[arg-type]
     config = HasColocator(setup)
     assert config.get_colocator(model_name=model, obs_name=obs)
 
@@ -140,7 +144,7 @@ def test_HasColocator(model: str | None, obs: str | None):
 )
 @pytest.mark.parametrize("var", ["vmro3", "vmrno2"])
 def test_DataImporter_read_model_data(model: str, var: str):
-    setup = EvalSetup(**CAMS84_CONFIG)
+    setup = EvalSetup(**CAMS84_CONFIG)  # type:ignore[arg-type]
     assert DataImporter(setup).read_model_data(model, var)
 
 
@@ -150,5 +154,5 @@ def test_DataImporter_read_model_data(model: str, var: str):
 )
 @pytest.mark.parametrize("var", ["vmro3", "vmrno2"])
 def test_DataImporter_read_ungridded_obsdata(obs: str, var: str):
-    setup = EvalSetup(**CAMS84_CONFIG)
+    setup = EvalSetup(**CAMS84_CONFIG)  # type:ignore[arg-type]
     assert DataImporter(setup).read_ungridded_obsdata(obs, var)
