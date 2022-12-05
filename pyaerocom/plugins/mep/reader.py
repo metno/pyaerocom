@@ -7,7 +7,6 @@ from functools import cached_property, lru_cache
 from pathlib import Path
 from typing import Iterable
 
-import numpy as np
 import pandas as pd
 import xarray as xr
 from tqdm import tqdm
@@ -16,7 +15,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
-from .aux_vars import conc_to_vmr
+from .aux_vars import vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
 from .station import Station
 
 logger = logging.getLogger(__name__)
@@ -81,14 +80,12 @@ class ReadMEP(ReadUngriddedBase):
 
     DATA_PRODUCT = ""
 
-    #: Variables that are computed (cannot be read directly)
-    AUX_REQUIRES = {"vmro3": ["conco3"], "vmro3max": ["conco3"], "vmrno2": ["concno2"]}
-
     #: functions used to convert variables that are computed
-    AUX_FUNS = {"vmro3": conc_to_vmr, "vmro3max": conc_to_vmr, "vmrno2": conc_to_vmr}
-
-    #: units of computed variables
-    AUX_UNITS = {"vmro3": "ppb", "vmro3max": "ppb", "vmrno2": "ppb"}
+    AUX_FUNS = {
+        "vmro3": vmro3_from_ds,
+        "vmro3max": vmro3max_from_ds,
+        "vmrno2": vmrno2_from_ds,
+    }
 
     VAR_MAPPING = {
         "concco": "CO_density",
@@ -150,11 +147,7 @@ class ReadMEP(ReadUngriddedBase):
 
     @property
     def PROVIDES_VARIABLES(self) -> list[str]:
-        return list(self.VAR_MAPPING) + list(self.AUX_REQUIRES)
-
-    @classmethod
-    def _station_time(cls, data: xr.Dataset) -> np.ndarray:
-        return data[cls.START_TIME_NAME].values
+        return list(self.VAR_MAPPING) + list(self.AUX_FUNS)
 
     def read_file(
         self, filename: str | Path, vars_to_retrieve: Iterable[str] | None = None
@@ -194,38 +187,27 @@ class ReadMEP(ReadUngriddedBase):
 
         for name, paths in tqdm(self.stations(files).items()):
             logger.debug(f"Reading station {name}")
-            data = xr.open_mfdataset(paths, concat_dim="time", combine="nested", parallel=True)
+            ds = self._read_dataset(paths)
 
-            lat = float(data["latitude"][0])
-            lon = float(data["longitude"][0])
-            alt = float(data["altitude"][0])
+            lat = float(ds["latitude"][0])
+            lon = float(ds["longitude"][0])
+            alt = float(ds["altitude"][0])
             station = Station(name, lat, lon, alt)
 
-            times = self._station_time(data)
+            time = ds[self.START_TIME_NAME].values
             for var in vars_to_retrieve:
-                if var in self.VAR_MAPPING:
-                    name = self.VAR_MAPPING[var]
-                    measurements = data[name].values
-                    unit = data[name].units
-                elif var in self.AUX_REQUIRES:
-                    if len(self.AUX_REQUIRES[var]) != 1:
-                        raise NotImplementedError(f"Unsupported {self.AUX_REQUIRES[var]}-->{var}")
-                    name = self.VAR_MAPPING[self.AUX_REQUIRES[var][0]]
-                    measurements = self.AUX_FUNS[var](
-                        data[name].values,
-                        self.AUX_REQUIRES[var],
-                        self.AUX_UNITS[var],
-                        data[name].units,
-                    )
-                    unit = self.AUX_UNITS[var]
-                else:
-                    # should never get here, as it would have triggered a `ValueError("Unsupported variables...")`
-                    # on a guarding clause at the top of the method
+                if var not in ds.data_vars:
                     raise NotImplementedError(f"Unsupported {var}")
 
-                ts = pd.Series(measurements, times)
-                station.add_series(var, unit, ts)
+                ts = pd.Series(ds[var].values, time)
+                station.add_series(var, ds[var].units, ts)
 
             stations.append(station.to_stationdata(self.DATA_ID, self.DATASET_NAME))
 
         return UngriddedData.from_station_data(stations)
+
+    @classmethod
+    def _read_dataset(cls, paths: list[Path]) -> xr.Dataset:
+        ds = xr.open_mfdataset(paths, concat_dim="time", combine="nested", parallel=True)
+        ds = ds.rename({v: k for k, v in cls.VAR_MAPPING.items()})
+        return ds.assign(**{name: func(ds) for name, func in cls.AUX_FUNS.items()})
