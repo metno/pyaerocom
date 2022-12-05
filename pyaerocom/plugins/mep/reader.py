@@ -45,7 +45,7 @@ ALLOWED_FREQS = {
 }
 
 
-class ReadHARP(ReadUngriddedBase):
+class ReadMEP(ReadUngriddedBase):
     """Class for reading MiniCOD data
 
     Extended class derived from  low-level base class
@@ -64,7 +64,7 @@ class ReadHARP(ReadUngriddedBase):
     __version__ = "0.01"
 
     #: Name of the dataset (OBS_ID)
-    DATA_ID = "HARP"  # change this since we added more vars?
+    DATA_ID = "MEP"  # change this since we added more vars?
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -112,7 +112,7 @@ class ReadHARP(ReadUngriddedBase):
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None:
             raise ValueError(
-                f"For HARP data_dir needs to be set to the folder where the data is found"
+                f"Needs {self.__class__.__qualname__}(data_dir='path to the data folder')"
             )
         super().__init__(data_id=data_id, data_dir=data_dir)
 
