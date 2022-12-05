@@ -12,7 +12,6 @@ import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 
-# from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -37,7 +36,6 @@ COLUMNS = (
 )
 METADATA_INDEX_START = 11
 ALLOWED_FREQS = {
-    "minutly",
     "hourly",
     "daily",
     "monthly",
@@ -46,10 +44,7 @@ ALLOWED_FREQS = {
 
 
 class ReadMEP(ReadUngriddedBase):
-    """Class for reading MiniCOD data
-
-    Extended class derived from  low-level base class
-    :class:`ReadUngriddedBase` that contains some more functionality.
+    """Class for reading MEP observations (formerly MarcoPolo)
 
     Note
     ----
@@ -80,9 +75,6 @@ class ReadMEP(ReadUngriddedBase):
 
     #: filed name of the end time of the measurement (in lower case)
     END_TIME_NAME = "datetime_stop"
-
-    #: column name that holds the EEA variable code
-    VAR_CODE_NAME = "airpollutantcode"
 
     #: there's no general instrument name in the data
     INSTRUMENT_NAME = "unknown"
@@ -212,22 +204,23 @@ class ReadMEP(ReadUngriddedBase):
             times = self._station_time(data)
             for var in vars_to_retrieve:
                 if var in self.VAR_MAPPING:
-                    aux = self.VAR_MAPPING[var]
-                    measurements = data[aux].values
-                    unit = data[aux].units
+                    name = self.VAR_MAPPING[var]
+                    measurements = data[name].values
+                    unit = data[name].units
                 elif var in self.AUX_REQUIRES:
                     if len(self.AUX_REQUIRES[var]) != 1:
                         raise NotImplementedError(f"Unsupported {self.AUX_REQUIRES[var]}-->{var}")
-                    aux = self.AUX_REQUIRES[var][0]
-                    aux = self.VAR_MAPPING[aux]
+                    name = self.VAR_MAPPING[self.AUX_REQUIRES[var][0]]
                     measurements = self.AUX_FUNS[var](
-                        data[aux].values,
+                        data[name].values,
                         self.AUX_REQUIRES[var],
                         self.AUX_UNITS[var],
-                        data[aux].units,
+                        data[name].units,
                     )
                     unit = self.AUX_UNITS[var]
-                else:  # should never get here
+                else:
+                    # should never get here, as it would have triggered a `ValueError("Unsupported variables...")`
+                    # on a guarding clause at the top of the method
                     raise NotImplementedError(f"Unsupported {var}")
 
                 ts = pd.Series(measurements, times)
