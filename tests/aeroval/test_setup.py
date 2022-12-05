@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Iterable
 
 import pytest
@@ -7,6 +9,14 @@ import pytest
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 from tests.fixtures.aeroval import CAMS84_CONFIG
+
+
+@pytest.fixture()
+def aeroval_path(tmp_path: Path) -> None:
+    """temporary path for aeroval outputs"""
+    path: Path = tmp_path / "aeroval/aeroval1"
+    path.mkdir(parents=True)
+    os.chdir(path)
 
 
 def test_evalsetup_args():
@@ -91,7 +101,7 @@ def test_evalsetup_missing_arguments():
         ),
     ],
 )
-def test_evalsetup_cams84(keys: Iterable[str]):
+def test_evalsetup_cams84(keys: Iterable[str], aeroval_path):
     assert all(k in CAMS84_CONFIG for k in keys)
 
     config = {k: CAMS84_CONFIG[k] for k in keys}
