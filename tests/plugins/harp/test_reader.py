@@ -15,6 +15,11 @@ VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"
 VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
 
 
+pytestmark = pytest.mark.xfail(
+    not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}"
+)
+
+
 @pytest.fixture(scope="module")
 def reader() -> ReadHARP:
     if not LUSTRE_PATH.is_dir():  # pragma: no cover
@@ -56,7 +61,6 @@ def test_PROVIDES_VARIABLES(reader: ReadHARP):
     return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
-@pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
 @pytest.mark.parametrize("station", STATION_NAMES)
 def test_read_file(reader: ReadHARP, station_files: list[str]):
     data = reader.read_file(station_files[-1])
@@ -70,7 +74,6 @@ def test_read_file_error(reader: ReadHARP):
     assert str(e.value) == f"missing {bad_station_file}"
 
 
-@pytest.mark.xfail(not const.has_access_lustre, reason=f"needs access to {LUSTRE_PATH}")
 @pytest.mark.parametrize("station", STATION_NAMES)
 def test_read(reader: ReadHARP, station_files: list[str]):
     data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=5)
