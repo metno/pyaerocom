@@ -947,14 +947,15 @@ class GriddedData:
                 raise DataDimensionError(
                     f"Coord {coord} is not associated with a data dimension in cube"
                 )
-            # elif len(dims) > 1:
-            #     breakpoint()
-            #     # raise NotImplementedError(
-            #     #     f"Coord {coord} is associated with "
-            #     #     f"multiple dimensions. This cannot "
-            #     #     f"yet be handled..."
-            #     # )
-
+            elif len(dims) > 1:
+                if self.has_projection_coordinates:
+                    next
+                else:
+                    raise NotImplementedError(
+                        f"Coord {coord} is associated with "
+                        f"multiple dimensions without projected coordinates."
+                        f" This cannot yet be handled..."
+                    )
             if not dims[0] == i:
                 raise DimensionOrderError("Invalid order of grid dimensions")
 
