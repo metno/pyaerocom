@@ -7,7 +7,6 @@ from functools import cached_property, lru_cache
 from pathlib import Path
 from typing import Iterable
 
-import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 
@@ -16,7 +15,6 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
 from .aux_vars import vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
-from .station import Station
 
 logger = logging.getLogger(__name__)
 
@@ -170,8 +168,7 @@ class ReadMEP(ReadUngriddedBase):
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
 
-        if not set(vars_to_retrieve) <= set(self.PROVIDES_VARIABLES):
-            unsupported = set(vars_to_retrieve) - set(self.PROVIDES_VARIABLES)
+        if unsupported := set(vars_to_retrieve) - set(self.PROVIDES_VARIABLES):
             raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
 
         if files is not None and not isinstance(files, tuple):
@@ -185,29 +182,44 @@ class ReadMEP(ReadUngriddedBase):
 
         stations: list[StationData] = []
 
-        for name, paths in tqdm(self.stations(files).items()):
-            logger.debug(f"Reading station {name}")
-            ds = self._read_dataset(paths)
-
-            lat = float(ds["latitude"][0])
-            lon = float(ds["longitude"][0])
-            alt = float(ds["altitude"][0])
-            station = Station(name, lat, lon, alt)
-
-            time = ds[self.START_TIME_NAME].values
-            for var in vars_to_retrieve:
-                if var not in ds.data_vars:
-                    raise NotImplementedError(f"Unsupported {var}")
-
-                ts = pd.Series(ds[var].values, time)
-                station.add_series(var, ds[var].units, ts)
-
-            stations.append(station.to_stationdata(self.DATA_ID, self.DATASET_NAME))
+        for station_name, paths in tqdm(self.stations(files).items()):
+            logger.debug(f"Reading station {station_name}")
+            ds = self._read_dataset(paths)[vars_to_retrieve]
+            stations.append(self.to_stationdata(ds, station_name))
 
         return UngriddedData.from_station_data(stations)
 
+    def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
+        ds = xr.open_mfdataset(sorted(paths), concat_dim="time", combine="nested", parallel=True)
+        ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
+        ds = ds.assign(
+            time=ds[self.START_TIME_NAME],
+            **{name: func(ds) for name, func in self.AUX_FUNS.items()},
+        )
+        return ds.set_coords(("latitude", "longitude", "altitude"))
+
     @classmethod
-    def _read_dataset(cls, paths: list[Path]) -> xr.Dataset:
-        ds = xr.open_mfdataset(paths, concat_dim="time", combine="nested", parallel=True)
-        ds = ds.rename({v: k for k, v in cls.VAR_MAPPING.items()})
-        return ds.assign(**{name: func(ds) for name, func in cls.AUX_FUNS.items()})
+    def to_stationdata(cls, ds: xr.Dataset, station_name: str) -> StationData:
+        station = StationData()
+        station.data_id = cls.DATA_ID
+        station.dataset_name = cls.DATASET_NAME
+        station.station_id = station_name
+        station.station_name = station_name
+        station.latitude = float(ds["latitude"][0])
+        station.longitude = float(ds["longitude"][0])
+        station.altitude = float(ds["altitude"][0])
+
+        station.station_coords = {
+            "latitude": station.latitude,
+            "longitude": station.longitude,
+            "altitude": station.altitude,
+        }
+
+        station.ts_type = "hourly"
+        station["dtime"] = ds["time"].values
+
+        for var in ds.data_vars:
+            station[var] = ds[var].to_series()
+            station["var_info"][var] = {"units": ds[var].units}
+
+        return station
