@@ -1073,10 +1073,61 @@ def colocate_gridded_ungridded_in_projection(
     model_projection_parameters=None,
     **kwargs,
 ):
+
+    """Colocate gridded with ungridded data, but in projected coordinates (low level method)
+
+    This function will transform the observations (ungridded) into the (i,j) space of the projection and then do colocation there.
+
+
+    """
     if not model_projection_parameters:
         raise Exception(
             "User must provide model_projection_paramters to colocate data in projected coordinates"
         )
-    raise NotImplementedError(
-        "Need to implement eventually after getting model_projection_parameters"
-    )
+
+    if filter_name is None:
+        filter_name = const.DEFAULT_REG_FILTER
+
+    # LB: This needs to be generalized for projected data in which case len(dims) > 1
+    # Proceed any try to figure out what :func:`to_time_series` expects
+
+    # try:
+    #   data.check_dimcoords_tseries()
+    # except DimensionOrderError:
+    #     data.reorder_dimensions_tseries()
+
+    var, var_aerocom = _resolve_var_name(data)
+    if var_ref is None:
+        var_ref = var_aerocom
+        var_ref_aerocom = var_aerocom
+    else:
+        var_ref_aerocom = const.VARS[var_ref].var_name_aerocom
+
+    if not var_ref in data_ref.contains_vars:
+        raise VarNotAvailableError(
+            f"Variable {var_ref} is not available in ungridded "
+            f"data (which contains {data_ref.contains_vars})"
+        )
+    elif len(data_ref.contains_datasets) > 1:
+        raise AttributeError(
+            f"Colocation can only be performed with ungridded data objects "
+            f"that only contain a single dataset (input data contains: "
+            f"{data_ref.contains_datasets}. Use method `extract_dataset` of "
+            f"UngriddedData object to extract single datasets."
+        )
+
+    dataset_ref = data_ref.contains_datasets[0]
+
+    if update_baseyear_gridded is not None:
+        # update time dimension in gridded data
+        data.base_year = update_baseyear_gridded
+
+    breakpoint()
+    # apply region filter to data
+    regfilter = Filter(name=filter_name)
+    data_ref = regfilter.apply(data_ref)
+    data = regfilter.apply(data)
+    # LB: filtering seems to work?
+    breakpoint()
+
+    raise NotImplementedError("Colocation in projected coordinates is currently a WIP.")
