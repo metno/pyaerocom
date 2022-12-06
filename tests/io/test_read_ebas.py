@@ -223,7 +223,7 @@ def test_NAN_VAL(reader: ReadEbas):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadEbas):
-    PROVIDES_VARIABLES = [
+    PROVIDES_VARIABLES = {
         "DEFAULT",
         "concca",
         "concmg",
@@ -242,6 +242,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "bsc550dryaer",
         "scrh",
         "acrh",
+        "ts",
         "concso4",
         "SO4ugSm3",
         "concso4pm10",
@@ -310,9 +311,9 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "concso4coarse",
         "concnh4coarse",
         "concno3pm25",
-    ]
+    }
 
-    assert sorted(reader.PROVIDES_VARIABLES) == sorted(PROVIDES_VARIABLES)
+    assert set(reader.PROVIDES_VARIABLES) == (PROVIDES_VARIABLES)
 
 
 def test_sqlite_database_file(reader: ReadEbas):
@@ -456,10 +457,11 @@ def test__get_var_cols_error(reader: ReadEbas, filedata: EbasNasaAmesFile, var: 
 
 
 def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
-    vars_to_read = ["sc550aer", "scrh"]
+    vars_to_read = ["sc550aer", "scrh", "ts"]
     columns = reader.find_var_cols(vars_to_read, filedata)
     assert columns["sc550aer"] == 17
     assert columns["scrh"] == 3
+    assert columns["ts"] == 4
 
 
 @pytest.mark.parametrize(
