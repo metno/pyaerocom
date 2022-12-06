@@ -114,6 +114,7 @@ class ReadMEP(ReadUngriddedBase):
     def stations(self, files: tuple[str | Path, ...] | None = None) -> dict[str, list[Path]]:
         if not files:
             files = self.FOUND_FILES
+
         stations = defaultdict(list)
         for path in files:
             if not isinstance(path, Path):
@@ -121,9 +122,9 @@ class ReadMEP(ReadUngriddedBase):
             if (name := self._station_name(path)) is None:
                 logger.debug(f"Skipping {path.name}")
                 continue
-
             stations[name].append(path)
 
+        logger.debug(f"found {len(stations)} stations")
         return stations
 
     @classmethod
@@ -139,7 +140,6 @@ class ReadMEP(ReadUngriddedBase):
     @property
     def DATASET_NAME(self) -> str:
         """Name of the dataset"""
-        assert self.data_id is not None, f"missing {self}.data_id"
         return str(self.data_id)
 
     @property
