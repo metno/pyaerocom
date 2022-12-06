@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Iterable
 
 import xarray as xr
-from tqdm import tqdm
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -182,7 +181,7 @@ class ReadMEP(ReadUngriddedBase):
 
         stations: list[StationData] = []
 
-        for station_name, paths in tqdm(self.stations(files).items()):
+        for station_name, paths in self.stations(files).items():
             logger.debug(f"Reading station {station_name}")
             ds = self._read_dataset(paths)[vars_to_retrieve]
             stations.append(self.to_stationdata(ds, station_name))
