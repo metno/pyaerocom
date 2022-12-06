@@ -1122,12 +1122,22 @@ def colocate_gridded_ungridded_in_projection(
         # update time dimension in gridded data
         data.base_year = update_baseyear_gridded
 
-    breakpoint()
     # apply region filter to data
     regfilter = Filter(name=filter_name)
     data_ref = regfilter.apply(data_ref)
     data = regfilter.apply(data)
     # LB: filtering seems to work?
+
+    # check time overlap and crop model data if needed
+    start, stop = _check_time_ival(data, start, stop)
+    data = data.crop(time_range=(start, stop))
+
+    breakpoint()
+
+    # LB: Not obvious this is going to work in projected coordinates.
+    if regrid_res_deg is not None:
+        data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
+
     breakpoint()
 
     raise NotImplementedError("Colocation in projected coordinates is currently a WIP.")
