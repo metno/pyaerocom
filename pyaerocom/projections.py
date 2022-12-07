@@ -60,7 +60,7 @@ class Projection:
         self._projection_parameters = projection_parameters
 
     def conversion_function(self, *args):
-        return self.SUPPORTED_PROJECTION_MAP[self._projection_name](*args)
+        return self.SUPPORTED_PROJECTION_MAP[self.projection_name](*args)
 
     def _convert_to_lambert_coords(
         self, longitudes: np.ndarray = None, latitudes: np.ndarray = None
