@@ -28,6 +28,7 @@ from pyaerocom.helpers import (
     make_datetime_index,
     to_pandas_timestamp,
 )
+from pyaerocom.projections import Projection
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
@@ -1132,12 +1133,57 @@ def colocate_gridded_ungridded_in_projection(
     start, stop = _check_time_ival(data, start, stop)
     data = data.crop(time_range=(start, stop))
 
-    breakpoint()
-
-    # LB: Not obvious this is going to work in projected coordinates.
+    # LB: Not obvious this is going to work in projected coordinates, but I think it should be fine
     if regrid_res_deg is not None:
         data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
 
-    breakpoint()
+    # Special ts_typs for which all stations with ts_type< are removed
+    reduce_station_data_ts_type = ts_type
+
+    ts_type_src_data = data.ts_type
+    ts_type, ts_type_data = _check_ts_type(data, ts_type)
+    if not colocate_time and ts_type < ts_type_data:
+        data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
+        ts_type_data = ts_type
+
+    if use_climatology_ref:
+        col_freq = "monthly"
+        obs_start = const.CLIM_START
+        obs_stop = const.CLIM_STOP
+    else:
+        col_freq = str(ts_type)
+        obs_start = start
+        obs_stop = stop
+
+    # colocation frequency
+    col_tst = TsType(col_freq)
+
+    latitude = data.latitude.points
+    longitude = data.longitude.points
+    lat_range = [np.min(latitude), np.max(latitude)]
+    lon_range = [np.min(longitude), np.max(longitude)]
+    # use only sites that are within model domain
+    data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+
+    # get timeseries from all stations in provided time resolution
+    # (time resampling is done below in main loop)
+    all_stats = data_ref.to_station_data_all(
+        vars_to_convert=var_ref,
+        start=obs_start,
+        stop=obs_stop,
+        by_station_name=True,
+        ts_type_preferred=reduce_station_data_ts_type,
+        **kwargs,
+    )
+
+    obs_stat_data = all_stats["stats"]
+    ungridded_lons = all_stats["longitude"]
+    ungridded_lats = all_stats["latitude"]
+
+    # projection = Projection(model_projection_parameters)
+
+    # ungridded_lons_i, ungridded_lats_j = projection.conversion_function(
+    #     latitudes=ungridded_lats, longtidues=ungridded_lons
+    # )
 
     raise NotImplementedError("Colocation in projected coordinates is currently a WIP.")
