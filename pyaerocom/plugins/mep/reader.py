@@ -189,13 +189,29 @@ class ReadMEP(ReadUngriddedBase):
         return UngriddedData.from_station_data(stations)
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
-        ds = xr.open_mfdataset(sorted(paths), concat_dim="time", combine="nested", parallel=True)
+        ds = xr.open_mfdataset(
+            sorted(paths), concat_dim="time", combine="nested", parallel=True, decode_cf=True
+        )
         ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
         ds = ds.assign(
-            time=ds[self.START_TIME_NAME],
+            time=self._dataset_time(ds),
             **{name: func(ds) for name, func in self.AUX_FUNS.items()},
         )
         return ds.set_coords(("latitude", "longitude", "altitude"))
+
+    @classmethod
+    def _dataset_time(cls, ds: xr.Dataset) -> xr.DataArray:
+        # can not add ds["datetime_start"] and ds["datetime_start"], as both are of type datetime[ns]
+        time = ds[cls.START_TIME_NAME] + (ds[cls.END_TIME_NAME] - ds[cls.START_TIME_NAME]) / 2
+        return xr.Variable(
+            "time",
+            time,
+            dict(
+                long_name="time at middle of the period",
+                units=ds[cls.START_TIME_NAME].encoding["units"],
+            ),
+            ds[cls.START_TIME_NAME].encoding,
+        )
 
     @classmethod
     def to_stationdata(cls, ds: xr.Dataset, station_name: str) -> StationData:
