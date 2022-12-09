@@ -62,11 +62,11 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, '3.10']
         experimental: [false]
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         include:
           - python-version: '3.11'
             experimental: true        
-            os: 'ubuntu-22.04'
+            os: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
