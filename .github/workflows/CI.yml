@@ -33,7 +33,7 @@ jobs:
       run: tox -e lint
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       PYTHON: 3.8
     steps:
