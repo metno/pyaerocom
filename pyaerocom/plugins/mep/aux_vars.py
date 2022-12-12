@@ -1,28 +1,30 @@
+import xarray as xr
 from geonum import atmosphere as atm
 
 from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
-P_STD = atm.p0  # standard atmosphere pressure
-T_STD = atm.T0_STD  # standard atmosphere temperature
 
-
-def conc_to_vmr(data, to_var, to_unit, from_unit, p_pascal=None, T_kelvin=None, mmol_air=None):
-    if p_pascal is None:
-        p_pascal = P_STD
-    if T_kelvin is None:
-        T_kelvin = T_STD
-    if mmol_air is None:
-        mmol_air = get_molmass("air_dry")
-
-    mmol_var = get_molmass(to_var[0])
-
-    return concx_to_vmrx(
-        data,
-        p_pascal=p_pascal,
-        T_kelvin=T_kelvin,
-        mmol_var=mmol_var,
-        mmol_air=mmol_air,
-        conc_unit=from_unit,
-        to_unit=to_unit,
+def conc_to_vmr(da: xr.DataArray, *, vmr: str, units: str = "ppb") -> xr.DataArray:
+    data = concx_to_vmrx(
+        da.values,
+        p_pascal=atm.p0,  # standard atmosphere pressure
+        T_kelvin=atm.T0_STD,  # standard atmosphere temperature
+        mmol_var=get_molmass(da.name),
+        mmol_air=get_molmass("air_dry"),
+        conc_unit=da.units,
+        to_unit=units,
     )
+    return xr.DataArray(data, da.coords, da.dims, name=vmr, attrs={"units": units})
+
+
+def vmro3_from_ds(ds: xr.Dataset) -> xr.DataArray:
+    return conc_to_vmr(ds["conco3"], vmr="vmro3")
+
+
+def vmro3max_from_ds(ds: xr.Dataset) -> xr.DataArray:
+    return conc_to_vmr(ds["conco3"], vmr="vmro3max")
+
+
+def vmrno2_from_ds(ds: xr.Dataset) -> xr.DataArray:
+    return conc_to_vmr(ds["concno2"], vmr="vmrno2")
