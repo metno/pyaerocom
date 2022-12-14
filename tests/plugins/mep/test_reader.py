@@ -36,7 +36,7 @@ def test_reader_error():
 
 @needs_mep_path
 def test_DATASET_NAME(reader: ReadMEP):
-    assert reader.DATASET_NAME == "MEP"
+    assert reader.DATASET_NAME == "MEP_HARP"
 
 
 @needs_mep_path
