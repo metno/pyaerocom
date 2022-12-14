@@ -55,7 +55,7 @@ class ReadMEP(ReadUngriddedBase):
     __version__ = "0.01"
 
     #: Name of the dataset (OBS_ID)
-    DATA_ID = "MEP"  # change this since we added more vars?
+    DATA_ID = "MEP_HARP"
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
