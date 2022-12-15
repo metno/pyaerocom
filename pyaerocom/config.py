@@ -85,7 +85,7 @@ class Config:
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = "GAWTADsubsetAasEtAl"
 
-    #: MEP name (LB: Not sure if this is the right approach considering plug-in architecture)
+    #: MEP name
     MEP_NAME = "MEP"
 
     #: DMS
@@ -882,7 +882,6 @@ class Config:
                 loc = loc.replace("${HOME}", homedir)
 
             self.OBSLOCS_UNGRIDDED[name] = loc
-        breakpoint()
 
     def _init_output_folders_from_cfg(self, cr):
         cfg = cr["outputfolders"]

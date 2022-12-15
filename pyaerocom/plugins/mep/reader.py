@@ -9,6 +9,7 @@ from typing import Iterable
 
 import xarray as xr
 
+from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -95,13 +96,8 @@ class ReadMEP(ReadUngriddedBase):
 
     STATION_REGEX = re.compile("mep-rd-(.*A)-.*.nc")
 
-    def __init__(self, data_id=None, data_dir=None):
-        if data_dir is None:
-            raise ValueError(
-                f"Needs {self.__class__.__qualname__}(data_dir='path to the data folder')"
-            )
+    def __init__(self, data_id=const.MEP_NAME, data_dir=const.OBSLOCS_UNGRIDDED[const.MEP_NAME]):
         super().__init__(data_id=data_id, data_dir=data_dir)
-
         self.files = sorted(map(str, self.FOUND_FILES))
 
     @cached_property
