@@ -53,7 +53,7 @@ class ReadMEP(ReadUngriddedBase):
     _FILEMASK = "mep-rd-*.nc"
 
     #: Version log of this class (for caching)
-    __version__ = "0.01"
+    __version__ = "0.02"
 
     #: Name of the dataset (OBS_ID)
     DATA_ID = "MEP"
