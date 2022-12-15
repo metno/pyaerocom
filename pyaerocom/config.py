@@ -85,11 +85,11 @@ class Config:
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = "GAWTADsubsetAasEtAl"
 
-    #: MEP name
-    MEP_NAME = "MEP"
-
     #: DMS
     DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
+
+    #: MEP name
+    MEP_NAME = "MEP"
 
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
