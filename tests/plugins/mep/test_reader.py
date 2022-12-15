@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pytest
 
+from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
+from tests.conftest import lustre_avail, lustre_unavail
 
 MEP_PATH = Path("/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download")
 
@@ -29,7 +31,8 @@ def station_files(station: str) -> list[Path]:
     return files
 
 
-def test_reader_error():
+@lustre_avail
+def test_reader_error_no_lustre():
     with pytest.raises(ValueError) as e:
         ReadMEP(data_dir=None)
 
@@ -95,3 +98,8 @@ def test_read_error(reader: ReadMEP):
     with pytest.raises(ValueError) as e:
         reader.read((bad_variable_name,))
     assert str(e.value) == f"Unsupported variables: {bad_variable_name}"
+
+
+@lustre_unavail
+def test_reader_gives_correct_mep_path(reader: ReadMEP):
+    assert str(MEP_PATH) == reader.data_dir
