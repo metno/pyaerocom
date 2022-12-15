@@ -96,12 +96,7 @@ class ReadMEP(ReadUngriddedBase):
 
     STATION_REGEX = re.compile("mep-rd-(.*A)-.*.nc")
 
-    def __init__(self, data_id=None, data_dir=None):
-        if data_dir is None and const.has_access_lustre:
-            data_dir = const.OBSLOCS_UNGRIDDED[
-                const.MEP_NAME
-            ]  # putting this as the default crashes CI on GitHub
-        # Below needs some thinking because it will crash PyAeroval when not run at MetNO. Base API should work fine though
+    def __init__(self, data_id=const.MEP_NAME, data_dir=const.OBSLOCS_UNGRIDDED[const.MEP_NAME]):
         if data_dir is None:
             raise ValueError(
                 f"Needs {self.__class__.__qualname__}(data_dir='path to the data folder')"
