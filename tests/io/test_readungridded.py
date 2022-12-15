@@ -14,7 +14,7 @@ def test_invalid_init_data_dirs():
 def test_supported():
     supported_datasets = ReadUngridded().supported_datasets
     assert len(supported_datasets) >= 17
-    datasets = (
+    datasets = {
         "AeronetInvV3Lev2.daily",
         "AeronetInvV3Lev1.5.daily",
         "AeronetInvV3L2Subset.daily",
@@ -42,8 +42,8 @@ def test_supported():
         "GHOST.EBAS.monthly",
         "GHOST.EBAS.hourly",
         "GHOST.EBAS.daily",
-    )
-    assert all(dataset in supported_datasets for dataset in datasets)
+    }
+    assert datasets <= set(supported_datasets)
 
 
 @pytest.mark.parametrize("data_ids", [None, "Blaaaaaa"])

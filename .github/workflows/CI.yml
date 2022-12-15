@@ -33,7 +33,7 @@ jobs:
       run: tox -e lint
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       PYTHON: 3.8
     steps:
@@ -62,11 +62,11 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, '3.10']
         experimental: [false]
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         include:
           - python-version: '3.11'
             experimental: true        
-            os: 'ubuntu-22.04'
+            os: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -87,7 +87,7 @@ jobs:
           ~/.cache/pip
           ~/.cache/srtm
           .tox
-        key: ${{ runner.os }}-tox-${{ matrix.python-version }}-${{ hashFiles('setup.cfg', 'pyproject.toml') }}
+        key: ${{ matrix.os }}-tox-${{ matrix.python-version }}-${{ hashFiles('setup.cfg', 'pyproject.toml') }}
     - name: Install Tox
       run: |
         python -m pip install --upgrade pip
