@@ -753,6 +753,7 @@ def colocate_gridded_ungridded(
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
+    breakpoint()
     all_stats = data_ref.to_station_data_all(
         vars_to_convert=var_ref,
         start=obs_start,
@@ -795,14 +796,14 @@ def colocate_gridded_ungridded(
 
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
+
         # Add coordinates to arrays required for xarray.DataArray below
         lons[i] = obs_stat.longitude
         lats[i] = obs_stat.latitude
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
-
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
-        # introduced for EBAS were the original data frequency is not constant
+        # introduced for EBAS where the original data frequency is not constant
         # but can vary from site to site)
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat["ts_type_src"]
@@ -864,6 +865,7 @@ def colocate_gridded_ungridded(
                     min_num_obs=min_num_obs,
                     use_climatology_ref=use_climatology_ref,
                 )
+            breakpoint()  # this point both the ref and data are NaN, so things have broken.
 
             # this try/except block was introduced on 23/2/2021 as temporary fix from
             # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
@@ -903,6 +905,7 @@ def colocate_gridded_ungridded(
 
     files = [os.path.basename(x) for x in data.from_files]
 
+    breakpoint()
     meta = {
         "data_source": [dataset_ref, data.data_id],
         "var_name": [var_ref_aerocom, var_aerocom],
@@ -941,7 +944,7 @@ def colocate_gridded_ungridded(
 
     coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
     coldata.longitude.attrs["units"] = str(data.longitude.units)
-
+    breakpoint()
     return coldata
 
 
