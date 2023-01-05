@@ -533,6 +533,7 @@ def _colocate_site_data_helper_timecol(
     # which will merge the time index
     merged = pd.concat([stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"])
 
+    breakpoint()
     # Interpolate the model to the times of the observations
     # (for non-standard coltst it could be that 'resample_time'
     # has placed the model and observations at different time stamps)
@@ -540,7 +541,7 @@ def _colocate_site_data_helper_timecol(
     # Set to NaN at times when observations were NaN originally
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
-    # LB: This is where the problem is. Don't think it accounts for observation-only experiement where all data is NaN.
+    # LB: This is where the problem is. Don't think it accounts for observation-only experiement where all data is NaN. What about prmm?
     # due to interpolation some model values may be NaN, where there is obs
     merged.loc[merged.data.isnull()] = np.nan
     # Ensure the whole timespan of the model is kept in "merged"
