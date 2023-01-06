@@ -379,8 +379,11 @@ def runner(
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
         pool_data = [[s, files, cache] for s in species_list]
-        p = Pool(pool)
-        p.map(read_observations, pool_data)
+        try:
+          p = Pool(pool)
+          p.map(read_observations, pool_data)
+        except Exception as e:
+          p.close()
 
     logger.info(f"Running Rest of Statistics")
     ana.run()
