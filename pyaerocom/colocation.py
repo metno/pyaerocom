@@ -503,7 +503,6 @@ def _colocate_site_data_helper_timecol(
             "colocate_time=True is not available yet ..."
         )
 
-    breakpoint()
     grid_tst = stat_data.get_var_ts_type(var)
     obs_tst = stat_data_ref.get_var_ts_type(var_ref)
     coltst = TsType(get_lowest_resolution(grid_tst, obs_tst))
@@ -532,8 +531,6 @@ def _colocate_site_data_helper_timecol(
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
     # which will merge the time index
     merged = pd.concat([stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"])
-
-    breakpoint()
     # Interpolate the model to the times of the observations
     # (for non-standard coltst it could be that 'resample_time'
     # has placed the model and observations at different time stamps)
@@ -541,9 +538,9 @@ def _colocate_site_data_helper_timecol(
     # Set to NaN at times when observations were NaN originally
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
-    # LB: This is where the problem is. Don't think it accounts for observation-only experiement where all data is NaN. What about prmm?
     # due to interpolation some model values may be NaN, where there is obs
-    merged.loc[merged.data.isnull()] = np.nan
+    if stat_data.data_id is not "dummy_model":  # Do not apply in the case of a dummy_model
+        merged.loc[merged.data.isnull()] = np.nan
     # Ensure the whole timespan of the model is kept in "merged"
     stat_data[var].name = "tmp"
     merged = pd.concat([merged, stat_data[var]], axis=1)
@@ -756,7 +753,6 @@ def colocate_gridded_ungridded(
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
-    breakpoint()
     all_stats = data_ref.to_station_data_all(
         vars_to_convert=var_ref,
         start=obs_start,
@@ -868,7 +864,6 @@ def colocate_gridded_ungridded(
                     min_num_obs=min_num_obs,
                     use_climatology_ref=use_climatology_ref,
                 )
-            breakpoint()
 
             # this try/except block was introduced on 23/2/2021 as temporary fix from
             # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
