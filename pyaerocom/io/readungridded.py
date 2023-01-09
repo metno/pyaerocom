@@ -91,32 +91,6 @@ class ReadUngridded:
             const.CACHING = False
 
     @property
-    def data_id(self):
-        """
-        Helper that returns obs data ID in case only 1 data ID is assigned
-
-        Note
-        ----
-        This is, for instance, used in :class:`Colocator` which allows only
-        1 dataset to be processed at a time. Indeed, only in rare use cases
-        one would load multiple ungridded datasets at a time.
-
-        Raises
-        ------
-        AttributeError
-            if :attr:`data_ids` does not contain exactly 1 item.
-
-        Returns
-        -------
-        str
-            data ID
-        """
-        ids = self.data_ids
-        if len(ids) != 1:
-            raise AttributeError("None or more than one data ID are assigned")
-        return ids[0]
-
-    @property
     def data_dirs(self):
         """
         dict: Data directory(ies) for dataset(s) to read (keys are data IDs)

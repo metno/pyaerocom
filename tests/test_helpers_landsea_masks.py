@@ -5,6 +5,7 @@ import xarray as xr
 
 import pyaerocom.helpers_landsea_masks as lsm
 from pyaerocom import const
+from tests.conftest import lustre_avail
 
 TEST_REGIONS = const.HTAP_REGIONS[:2]
 
@@ -33,6 +34,7 @@ def test_availabe_region_masks():
     ]
 
 
+@lustre_avail
 def test_download_htap_masks():
     paths = [Path(mask) for mask in lsm.download_htap_masks(TEST_REGIONS)]
     assert bool(paths)
