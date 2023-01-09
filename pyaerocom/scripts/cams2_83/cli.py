@@ -379,11 +379,8 @@ def runner(
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
         pool_data = [[s, files, cache] for s in species_list]
-        try:
-          p = Pool(pool)
-          p.map(read_observations, pool_data)
-        except Exception as e:
-          p.close()
+        with Pool(pool) as p:
+            p.map(read_observations, pool_data)
 
     logger.info(f"Running Rest of Statistics")
     ana.run()
@@ -392,8 +389,8 @@ def runner(
         if pool > 1:
             logger.info(f"Making forecast plot with pool {pool}")
             pool_data = [[s, ana_cams2_83, analysis] for s in species_list]
-            p = Pool(pool)
-            p.map(run_forecast, pool_data)
+            with Pool(pool) as p:
+                p.map(run_forecast, pool_data)
         else:
             ana_cams2_83.run(analysis=analysis)
     print(f"Long run: {time.time() - start} sec")
