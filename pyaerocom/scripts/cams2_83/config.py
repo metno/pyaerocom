@@ -12,8 +12,8 @@ GLOBAL_CONFIG = dict(
     proj_id="cams2-83",
     exp_id="prototype",
     exp_name="Prototype-daily",
-    exp_descr=("Prototype for CAMS2_83 using EEA NRT obs."),
-    exp_pi="Daniel Heinesen, Alvaro Valdebenito, Augustin Mortier, Charlie Negri, Krister Karlsen, Lewis Blake, Michael Gauss",
+    exp_descr=("Evaluation using EEA NRT obs."),
+    exp_pi="Augustin Mortier (augustinm@met.no), Michael Gauss (michaelg@met.no)",
     # Whether or not the experiment is visible in the web interface
     public=True,
     # Locations where to place the results

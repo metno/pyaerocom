@@ -255,6 +255,7 @@ def make_config(
     models: List[ModelName],
     id: str | None,
     name: str | None,
+    description: str | None,
     eval_type: Eval_Type | None,
     analysis: bool,
 ) -> dict:
@@ -314,6 +315,8 @@ def make_config(
         cfg["exp_id"] = id
     if name is not None:
         cfg["exp_name"] = name
+    if description is not None:
+        cfg["exp_descr"] = description
 
     return cfg
 
@@ -455,6 +458,10 @@ def main(
         None,
         help="Experiment name. If none are given, the name from the default config is used",
     ),
+    description: Optional[str] = typer.Option(
+        None,
+        help="Experiment description. If none given, the description from the default config is used",
+    ),
     analysis: bool = typer.Option(
         False,
         help="Sets the flag which tells the code to use the analysis model data. If false, the forecast model data is used",
@@ -504,6 +511,7 @@ def main(
         model,
         id,
         name,
+        description,
         eval_type,
         analysis,
     )
