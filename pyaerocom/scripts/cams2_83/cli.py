@@ -391,6 +391,7 @@ def runner(
 
     logger.info(f"Running Rest of Statistics")
     ana.run()
+    print("Done Running Rest of Statistics")
     if eval_type == "season" or eval_type == "long":
         logger.info(f"Running CAMS2_83 Spesific Statistics")
         if pool > 1:
