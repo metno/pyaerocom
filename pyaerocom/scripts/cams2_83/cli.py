@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from enum import Enum
-from multiprocessing import Pool, cpu_count
+from multiprocessing import cpu_count
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
@@ -339,11 +340,9 @@ def read_observations(data: list) -> None:
     logger.info(f"Finished {data[0]}")
 
 
-def run_forecast(data: list) -> None:
-    species = data[0]
-    ana_cams2_83 = data[1]
-    analysis = data[2]
-    ana_cams2_83.run(analysis=analysis, var_list=species)
+def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
+    ana_cams2_83 = CAMS2_83_Processer(stp)
+    ana_cams2_83.run(analysis=analysis, var_list=specie)
 
 
 def runner(
@@ -368,9 +367,6 @@ def runner(
 
     stp = EvalSetup(**cfg)
 
-    ana_cams2_83 = CAMS2_83_Processer(stp)
-    ana = ExperimentProcessor(stp)
-
     import time
 
     start = time.time()
@@ -382,29 +378,26 @@ def runner(
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
         pool_data = [[s, files, cache] for s in species_list]
-        with Pool(pool) as p:
-            try:
-                p.map(read_observations, pool_data)
-            except Exception as e:
-                print(e)
-                p.terminate()
+        with ProcessPoolExecutor(max_workers=pool) as executor:
+            executor.map(read_observations, pool_data)
 
     logger.info(f"Running Rest of Statistics")
-    ana.run()
+    ExperimentProcessor(stp).run()
     print("Done Running Rest of Statistics")
-    if eval_type == "season" or eval_type == "long":
+    if eval_type in {"season", "long"}:
         logger.info(f"Running CAMS2_83 Spesific Statistics")
         if pool > 1:
             logger.info(f"Making forecast plot with pool {pool}")
-            pool_data = [[s, ana_cams2_83, analysis] for s in species_list]
-            with Pool(pool) as p:
-                try:
-                    p.map(run_forecast, pool_data)
-                except Exception as e:
-                    print(e)
-                    p.terminate()
+            with ProcessPoolExecutor(max_workers=pool) as executor:
+                futures = [
+                    executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
+                    for specie in species_list
+                ]
+            for future in as_completed(futures):
+                future.result()
+
         else:
-            ana_cams2_83.run(analysis=analysis)
+            CAMS2_83_Processer(stp).run(analysis=analysis)
     print(f"Long run: {time.time() - start} sec")
 
 
