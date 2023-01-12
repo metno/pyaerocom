@@ -5,7 +5,6 @@ from configparser import ConfigParser
 from pathlib import Path
 
 import numpy as np
-
 from pyaerocom import obs_io
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
@@ -585,14 +584,14 @@ class Config:
             self._check_obsreader(obs_id, data_dir, reader)
 
     def add_ungridded_post_dataset(
-        self,
-        obs_id,
-        obs_vars,
-        obs_aux_requires,
-        obs_merge_how,
-        obs_aux_funs=None,
-        obs_aux_units=None,
-        **kwargs,
+            self,
+            obs_id,
+            obs_vars,
+            obs_aux_requires,
+            obs_merge_how,
+            obs_aux_funs=None,
+            obs_aux_units=None,
+            **kwargs,
     ):
         """
         Register new ungridded dataset
@@ -719,7 +718,7 @@ class Config:
         self.read_config(self.last_config_file, keep_basedirs)
 
     def read_config(
-        self, config_file, basedir=None, init_obslocs_ungridded=False, init_data_search_dirs=False
+            self, config_file, basedir=None, init_obslocs_ungridded=False, init_data_search_dirs=False
     ):
         """
         Import paths from one of the config ini files
