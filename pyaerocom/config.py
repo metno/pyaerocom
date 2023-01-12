@@ -266,11 +266,8 @@ class Config:
         elif loc in self._rejected_access:
             return False
 
-        if timeout is None:
-            timeout = self.SERVER_CHECK_TIMEOUT
-
         logger.info(f"Checking access to: {loc}")
-        if check_dir_access(loc, timeout=timeout):
+        if check_dir_access(loc):
             self._confirmed_access.append(loc)
             return True
         self._rejected_access.append(loc)
