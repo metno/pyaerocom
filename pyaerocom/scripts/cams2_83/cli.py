@@ -322,9 +322,24 @@ def make_config(
     return cfg
 
 
-def read_observations(data: list) -> None:
-    logger.info(f"Running {data[0]}")
-    cache = data[2]
+#def read_observations(data: list) -> None:
+def read_observations(specie: str, *, files: List, cache: str | Path | None) -> None:
+    #logger.info(f"Running {data[0]}")
+    #cache = data[2]
+    #if cache is not None:
+    #    const.CACHEDIR = str(cache)
+
+    #reader = ReadUngridded()
+
+    #reader.read(
+    #    data_ids="CAMS2_83.NRT",
+    #    vars_to_retrieve=data[0],
+    #    files=data[1],
+    #    force_caching=True,
+    #)
+
+    #logger.info(f"Finished {data[0]}")
+    logger.info(f"Running {specie}")
     if cache is not None:
         const.CACHEDIR = str(cache)
 
@@ -332,12 +347,12 @@ def read_observations(data: list) -> None:
 
     reader.read(
         data_ids="CAMS2_83.NRT",
-        vars_to_retrieve=data[0],
-        files=data[1],
+        vars_to_retrieve=specie,
+        files=files,
         force_caching=True,
     )
 
-    logger.info(f"Finished {data[0]}")
+    logger.info(f"Finished {specie}")
 
 
 def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
@@ -377,9 +392,16 @@ def runner(
     if pool > 1:
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
-        pool_data = [[s, files, cache] for s in species_list]
+        #pool_data = [[s, files, cache] for s in species_list]
         with ProcessPoolExecutor(max_workers=pool) as executor:
-            executor.map(read_observations, pool_data)
+            futures = [
+                executor.submit(read_observations,specie,files=files,cache=cache)
+                for specie in species_list
+            ]
+            #executor.map(read_observations, pool_data)
+        for future in as_completed(futures):
+            future.result()
+
 
     logger.info(f"Running Rest of Statistics")
     ExperimentProcessor(stp).run()
@@ -395,7 +417,6 @@ def runner(
                 ]
             for future in as_completed(futures):
                 future.result()
-
         else:
             CAMS2_83_Processer(stp).run(analysis=analysis)
     print(f"Long run: {time.time() - start} sec")
