@@ -95,6 +95,7 @@ var_ranges_defaults = {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
         "colmap": "coolwarm",
     },
+    "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
 }
 
 #: Default information for statistical parameters
@@ -260,6 +261,7 @@ statistics_obs_only = {
 }
 
 #: Mapping of pyaerocom variable names to web naming conventions
+## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
 var_web_info = dict(
     od550aer=["AOD", "2D", "Optical properties"],
     od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
@@ -340,4 +342,6 @@ var_web_info = dict(
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
+    # Temperature
+    ts=["Surface Temperature", "3D", "Temperature"],
 )
