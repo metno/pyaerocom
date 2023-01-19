@@ -7,6 +7,8 @@ from typing import NamedTuple
 
 
 class ModelName(str, Enum):
+
+    ENSEMBLE = "ensemble"
     CHIMERE = "chimere"
     DEHM = "dehm"
     EMEP = "emep"
@@ -18,7 +20,6 @@ class ModelName(str, Enum):
     MOCAGE = "mocage"
     MONARCH = "monarch"
     SILAM = "silam"
-    ENSEMBLE = "ensemble"
 
     def __str__(self) -> str:
         return self.value
