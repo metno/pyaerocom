@@ -182,7 +182,7 @@ class Config:
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = {}
-    _DB_SEARCH_SUBDIRS["lustre/storeA/project"] = "metno"
+    _DB_SEARCH_SUBDIRS["lustre/storeB/project"] = "metno"
     _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
     _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
 
@@ -267,11 +267,8 @@ class Config:
         elif loc in self._rejected_access:
             return False
 
-        if timeout is None:
-            timeout = self.SERVER_CHECK_TIMEOUT
-
         logger.info(f"Checking access to: {loc}")
-        if check_dir_access(loc, timeout=timeout):
+        if check_dir_access(loc):
             self._confirmed_access.append(loc)
             return True
         self._rejected_access.append(loc)
