@@ -102,11 +102,11 @@ class UngriddedData:
     """
 
     #: version of class (for caching)
-    __version__ = "0.21"
+    __version__ = "0.22"
 
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
-    _CHUNKSIZE = 1000000
+    _CHUNKSIZE = 10000000
 
     #: The following indices specify what the individual rows of the datarray
     #: are reserved for. These may be expanded when creating an instance of
@@ -272,7 +272,7 @@ class UngriddedData:
             raise ValueError(f"Invalid input for add_meta_keys {add_meta_keys}... need list")
         if isinstance(stats, StationData):
             stats = [stats]
-        data_obj = UngriddedData(num_points=1000000)
+        data_obj = UngriddedData()
 
         meta_key = 0.0
         idx = 0
