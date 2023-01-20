@@ -259,6 +259,7 @@ def make_config(
     description: str | None,
     eval_type: Eval_Type | None,
     analysis: bool,
+    addmap: bool, 
 ) -> dict:
 
     logger.info("Making the configuration")
@@ -318,6 +319,8 @@ def make_config(
         cfg["exp_name"] = name
     if description is not None:
         cfg["exp_descr"] = description
+    if addmap:
+        cfg["add_model_maps"]=True
 
     return cfg
 
@@ -489,6 +492,10 @@ def main(
         False,
         help="Sets the flag which tells the code to use the analysis model data. If false, the forecast model data is used",
     ),
+    addmap: bool = typer.Option(
+        False,
+        help="Sets the flag which tells the code to set add_model_maps=True. Option is set to False otherwise",
+    ),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
@@ -537,6 +544,7 @@ def main(
         description,
         eval_type,
         analysis,
+        addmap,
     )
 
     quiet = not verbose
