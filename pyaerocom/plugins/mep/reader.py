@@ -96,6 +96,12 @@ class ReadMEP(ReadUngriddedBase):
 
     STATION_REGEX = re.compile("mep-rd-(.*A)-.*.nc")
 
+    DEFAULT_VARS = list(VAR_MAPPING)
+
+    DATASET_NAME = DATA_ID
+
+    PROVIDES_VARIABLES = list(VAR_MAPPING) + list(AUX_FUNS)
+
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None and const.has_access_lustre:
             data_dir = const.OBSLOCS_UNGRIDDED[
@@ -137,19 +143,19 @@ class ReadMEP(ReadUngriddedBase):
         match = cls.STATION_REGEX.search(path.name)
         return match.group(1) if match else None
 
-    @property
-    def DEFAULT_VARS(self) -> list[str]:
-        """List of default variables"""
-        return list(self.VAR_MAPPING)
+    # @property
+    # def DEFAULT_VARS(self) -> list[str]:
+    #     """List of default variables"""
+    #     return list(self.VAR_MAPPING)
 
-    @property
-    def DATASET_NAME(self) -> str:
-        """Name of the dataset"""
-        return str(self.data_id)
+    # @property
+    # def DATASET_NAME(self) -> str:
+    #     """Name of the dataset"""
+    #     return str(self.data_id)
 
-    @property
-    def PROVIDES_VARIABLES(self) -> list[str]:
-        return list(self.VAR_MAPPING) + list(self.AUX_FUNS)
+    # @property
+    # def PROVIDES_VARIABLES(self) -> list[str]:
+    #     return list(self.VAR_MAPPING) + list(self.AUX_FUNS)
 
     def read_file(
         self, filename: str | Path, vars_to_retrieve: Iterable[str] | None = None
