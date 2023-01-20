@@ -2,6 +2,10 @@ import logging
 from traceback import format_exc
 
 import iris
+import iris.analysis
+import iris.analysis.maths
+import iris.cube
+import iris.util
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import merge_dicts
