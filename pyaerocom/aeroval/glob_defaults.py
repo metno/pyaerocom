@@ -95,6 +95,7 @@ var_ranges_defaults = {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
         "colmap": "coolwarm",
     },
+    "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
     "fakedryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
     "fakedrypm10": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
     "fakedrypm25": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
@@ -287,6 +288,7 @@ statistics_model_only = {
 }
 
 #: Mapping of pyaerocom variable names to web naming conventions
+## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
 var_web_info = dict(
     od550aer=["AOD", "2D", "Optical properties"],
     od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
@@ -377,6 +379,8 @@ var_web_info = dict(
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
+    # Temperature
+    ts=["Surface Temperature", "3D", "Temperature"],
     # Fake drydep
     fakedryoxs=["FakeDryOXS", "3D", "Deposition"],
     fakedryso2=["FakeDrySO2", "3D", "Deposition"],

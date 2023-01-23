@@ -531,7 +531,6 @@ def _colocate_site_data_helper_timecol(
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
     # which will merge the time index
     merged = pd.concat([stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"])
-
     # Interpolate the model to the times of the observations
     # (for non-standard coltst it could be that 'resample_time'
     # has placed the model and observations at different time stamps)
@@ -540,7 +539,8 @@ def _colocate_site_data_helper_timecol(
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
     # due to interpolation some model values may be NaN, where there is obs
-    merged.loc[merged.data.isnull()] = np.nan
+    if stat_data.data_id != "dummy_model":
+        merged.loc[merged.data.isnull()] = np.nan  # Do not apply in the case of a dummy_model
     # Ensure the whole timespan of the model is kept in "merged"
     stat_data[var].name = "tmp"
     merged = pd.concat([merged, stat_data[var]], axis=1)
