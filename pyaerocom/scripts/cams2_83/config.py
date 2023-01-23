@@ -30,7 +30,7 @@ GLOBAL_CONFIG = dict(
     clear_existing_json=False,
     # if True, the analysis will stop whenever an error occurs (else, errors that
     # occurred will be written into the logfiles)
-    raise_exceptions=True,
+    raise_exceptions=False,
     # options for CAMS2-83
     use_cams2_83=True,
     # cams2_83_model=ModelName.EMEP,
