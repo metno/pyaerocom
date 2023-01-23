@@ -182,7 +182,7 @@ class Config:
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = {}
-    _DB_SEARCH_SUBDIRS["lustre/storeA/project"] = "metno"
+    _DB_SEARCH_SUBDIRS["lustre/storeB/project"] = "metno"
     _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
     _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
 
