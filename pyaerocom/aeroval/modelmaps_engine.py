@@ -4,19 +4,16 @@ import os
 from pyaerocom import GriddedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.helpers import check_var_ranges_avail
-from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
-from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.exceptions import (
-    DataCoverageError,
-    DataDimensionError,
-    TemporalResolutionError,
-    VariableDefinitionError,
-    VarNotAvailableError,
-)
-from pyaerocom.helpers import isnumeric
-
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
+from pyaerocom.aeroval.helpers import check_var_ranges_avail
+from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
+                                                 griddeddata_to_jsondict)
+from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.exceptions import (DataCoverageError, DataDimensionError,
+                                  TemporalResolutionError,
+                                  VariableDefinitionError,
+                                  VarNotAvailableError)
+from pyaerocom.helpers import isnumeric
 
 logger = logging.getLogger(__name__)
 
@@ -124,10 +121,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         """
         data = self.read_model_data(model_name, var)
         check_var_ranges_avail(data, var)
-        
+
         if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
-            varinfo = VarinfoWeb(var,cmap=cmapinfo['colmap'],cmap_bins=cmapinfo['scale']) 
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:
             varinfo = VarinfoWeb(var)
 
