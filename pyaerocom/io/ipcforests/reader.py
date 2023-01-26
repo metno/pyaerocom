@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 from datetime import datetime
 from typing import Tuple
 
 import numpy as np
-from geonum.atmosphere import T0_STD, p0
 from tqdm import tqdm
 
 from pyaerocom import const
@@ -18,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 class ReadIPCForest(ReadUngriddedBase):
-
     #: version log of this class (for caching)
     __version__ = "0.2_" + ReadUngriddedBase.__baseversion__
 

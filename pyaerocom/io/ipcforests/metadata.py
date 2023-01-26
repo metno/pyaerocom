@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
-from pandas import date_range
 
 DEP_TYPE = {
     1: "Throughfall",
