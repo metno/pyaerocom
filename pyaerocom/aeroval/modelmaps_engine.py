@@ -6,13 +6,15 @@ from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
-from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
-                                                 griddeddata_to_jsondict)
+from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.exceptions import (DataCoverageError, DataDimensionError,
-                                  TemporalResolutionError,
-                                  VariableDefinitionError,
-                                  VarNotAvailableError)
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    DataDimensionError,
+    TemporalResolutionError,
+    VariableDefinitionError,
+    VarNotAvailableError,
+)
 from pyaerocom.helpers import isnumeric
 
 logger = logging.getLogger(__name__)
