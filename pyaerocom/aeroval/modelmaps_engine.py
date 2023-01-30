@@ -143,8 +143,20 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
-        freq = self.cfg.time_cfg.main_freq
+        mainfreq = self.cfg.time_cfg.main_freq
+        allfreqs = self.cfg.time_cfg.freqs
         tst = TsType(data.ts_type)
+        allfreqs = [TsType(fq) for fq in freqs]  # convert them into TsType objects
+        allfreqs.sort(
+            reverse=True
+        )  # sort them from least coarse to coarsest, e.g. [hourly, daily, monthly]
+        coarsestfreq = allfreqs[-1]
+
+        if mainfreq < coarsestfreq:
+            freq = mainfreq
+        else:
+            freq = coarsestfreq
+
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
