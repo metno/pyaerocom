@@ -6,13 +6,15 @@ from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
-from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
-                                                 griddeddata_to_jsondict)
+from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.exceptions import (DataCoverageError, DataDimensionError,
-                                  TemporalResolutionError,
-                                  VariableDefinitionError,
-                                  VarNotAvailableError)
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    DataDimensionError,
+    TemporalResolutionError,
+    VariableDefinitionError,
+    VarNotAvailableError,
+)
 from pyaerocom.helpers import isnumeric
 
 logger = logging.getLogger(__name__)
@@ -141,8 +143,20 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
-        freq = self.cfg.time_cfg.main_freq
+        mainfreq = self.cfg.time_cfg.main_freq
+        allfreqs = self.cfg.time_cfg.freqs
         tst = TsType(data.ts_type)
+        allfreqs = [TsType(fq) for fq in freqs]  # convert them into TsType objects
+        allfreqs.sort(
+            reverse=True
+        )  # sort them from least coarse to coarsest, e.g. [hourly, daily, monthly]
+        coarsestfreq = allfreqs[-1]
+
+        if mainfreq < coarsestfreq:
+            freq = mainfreq
+        else:
+            freq = coarsestfreq
+
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
