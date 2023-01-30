@@ -64,6 +64,7 @@ UCONV_MUL_FACS = pd.DataFrame(
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
+
 UALIASES = {
     # mass concentrations
     "ug S m-3": "ug S/m3",
@@ -80,6 +81,7 @@ UALIASES = {
     # deposition rates (explicit)
     ## sulphur species
     "mgS/m2/h": "mg S m-2 h-1",
+    "mg/m2/h": "mg m-2 h-1",
     "mgS/m**2/h": "mg S m-2 h-1",
     "mgSm-2h-1": "mg S m-2 h-1",
     "mgSm**-2h-1": "mg S m-2 h-1",
@@ -280,10 +282,10 @@ def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
         return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:
         if (
-            ts_type is not None
-            and var_name is not None
-            and get_variable(var_name).is_rate
-            and rate_unit_implicit(from_unit)
+                ts_type is not None
+                and var_name is not None
+                and get_variable(var_name).is_rate
+                and rate_unit_implicit(from_unit)
         ):
             freq_si = TsType(ts_type).to_si()
             from_unit = f"{from_unit} {freq_si}-1"
