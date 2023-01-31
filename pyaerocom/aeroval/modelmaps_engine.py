@@ -150,7 +150,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            data = data.resample_time(freq)
+            data = data.resample_time(str(freq))
 
         data.check_unit()
         # first calcualate and save geojson with contour levels
