@@ -81,10 +81,10 @@ var_ranges_defaults = {
         "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
         "colmap": "coolwarm",
     },
-    "wetoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
+    "wetoxs": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "wetoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "wetrdn": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25],
+        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
         "colmap": "coolwarm",
     },
     "prmm": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
@@ -101,20 +101,51 @@ var_ranges_defaults = {
     },
     "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
     "fakedryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
-    "fakedrypm10": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
-    "fakedrypm25": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "fakedrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "fakedrypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "fakedryno2": {"scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], "colmap": "coolwarm"},
+    "fakedryhono": {"scale": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], "colmap": "coolwarm"},
+    "fakedryn2o5": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "fakedryhno3": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "fakedryno3c": {
+        "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
+        "colmap": "coolwarm",
+    },
+    "fakedryno3f": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "fakedrynh3": {
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
+        "colmap": "coolwarm",
+    },
+    "fakedrynh4": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "fakedryso2": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "fakedryso4": {
+        "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
+        "colmap": "coolwarm",
+    },
     "fakedryoxs": {
         "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "colmap": "coolwarm",
     },
     "fakedryoxn": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
         "colmap": "coolwarm",
     },
     "fakedryrdn": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
         "colmap": "coolwarm",
     },
+    "depoxs": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "deprdn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
 }
 
 #: Default information for statistical parameters
