@@ -210,8 +210,8 @@ class ReadIPCForest(ReadUngriddedBase):
 
                 # 8 is the code for "do not use"
                 if (
-                    self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
-                    or sampler_code == 8
+                        self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
+                        or sampler_code == 8
                 ):
                     continue
 
@@ -273,14 +273,14 @@ class ReadIPCForest(ReadUngriddedBase):
                     if species in self.SEASALT_CORRECTION:
 
                         na_factor = (
-                            self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
-                            * self.SEASALT_FACTORS["wetna"]
-                            * self.SEASALT_CORRECTION[species]
+                                self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
+                                * self.SEASALT_FACTORS["wetna"]
+                                * self.SEASALT_CORRECTION[species]
                         )
                         cl_factor = (
-                            self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
-                            * self.SEASALT_FACTORS["wetcl"]
-                            * self.SEASALT_CORRECTION[species]
+                                self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
+                                * self.SEASALT_FACTORS["wetcl"]
+                                * self.SEASALT_CORRECTION[species]
                         )
                         seasalt_correction = min(na_factor, cl_factor)
 
@@ -345,14 +345,14 @@ class ReadIPCForest(ReadUngriddedBase):
         return conc
 
     def _get_days_date_ts_type(
-        self,
-        year: int,
-        country_code: int,
-        plot_code: int,
-        sampler_code: int,
-        period: int,
-        start: str | datetime,
-        stop: str | datetime,
+            self,
+            year: int,
+            country_code: int,
+            plot_code: int,
+            sampler_code: int,
+            period: int,
+            start: str | datetime,
+            stop: str | datetime,
     ) -> Tuple[float | None, datetime | None, str | None]:
 
         if start != "" and stop != "":
@@ -397,11 +397,11 @@ class ReadIPCForest(ReadUngriddedBase):
         return SurveyYear.get_tstype(days)
 
     def _clean_data_with_flags(
-        self,
-        data: list[float],
-        time: list[datetime],
-        flags: list[int],
-        species: str,
+            self,
+            data: list[float],
+            time: list[datetime],
+            flags: list[int],
+            species: str,
     ) -> list[float]:
 
         data_array = np.array(data)

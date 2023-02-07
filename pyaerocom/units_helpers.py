@@ -39,6 +39,8 @@ HA_TO_SQM = 10000  # hectar to square metre.
 #: factor
 UCONV_MUL_FACS = pd.DataFrame(
     [
+        # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
+        # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
         # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
         # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
         # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
@@ -282,10 +284,10 @@ def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
         return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:
         if (
-            ts_type is not None
-            and var_name is not None
-            and get_variable(var_name).is_rate
-            and rate_unit_implicit(from_unit)
+                ts_type is not None
+                and var_name is not None
+                and get_variable(var_name).is_rate
+                and rate_unit_implicit(from_unit)
         ):
             freq_si = TsType(ts_type).to_si()
             from_unit = f"{from_unit} {freq_si}-1"
