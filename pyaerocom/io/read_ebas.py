@@ -25,6 +25,7 @@ from pyaerocom.aux_var_helpers import (
     concx_to_vmrx,
     identity,
     make_fake_drydep_from_O3,
+    make_fake_wetdep_from_O3,
     vmrx_to_concx,
 )
 from pyaerocom.exceptions import (
@@ -263,6 +264,28 @@ class ReadEbas(ReadUngriddedBase):
         "fakedryo3": ["vmro3"],
         "fakedrypm10": ["concprcpoxs", "pr"],
         "fakedrypm25": ["concprcpoxs", "pr"],
+        # Fake wetdep
+        # Suphar based
+        "fakewetoxs": ["concprcpoxs", "pr"],
+        "fakewetso2": ["concprcpoxs", "pr"],
+        "fakewetso4": ["concprcpoxs", "pr"],
+        # Oxidized nitrogen based
+        "fakewetoxn": ["concprcpoxn", "pr"],
+        "fakewetno2": ["concprcpoxn", "pr"],
+        "fakewetno2no2": ["concprcpoxn", "pr"],
+        "fakewethono": ["concprcpoxn", "pr"],
+        "fakewetn2o5": ["concprcpoxn", "pr"],
+        "fakewethno3": ["concprcpoxn", "pr"],
+        "fakewetno3c": ["concprcpoxn", "pr"],
+        "fakewetno3f": ["concprcpoxn", "pr"],
+        # Reduced nitrogen based
+        "fakewetrdn": ["concprcprdn", "pr"],
+        "fakewetnh3": ["concprcprdn", "pr"],
+        "fakewetnh4": ["concprcprdn", "pr"],
+        # Other
+        "fakeweto3": ["vmro3"],
+        "fakewetpm10": ["concprcpoxs", "pr"],
+        "fakewetpm25": ["concprcpoxs", "pr"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -308,6 +331,28 @@ class ReadEbas(ReadUngriddedBase):
         "fakedryo3": make_fake_drydep_from_O3,
         "fakedrypm10": compute_wetoxs_from_concprcpoxs,
         "fakedrypm25": compute_wetoxs_from_concprcpoxs,
+        # Fake wet dep
+        # Suphar based
+        "fakewetoxs": compute_wetoxs_from_concprcpoxs,
+        "fakewetso2": compute_wetoxs_from_concprcpoxs,
+        "fakewetso4": compute_wetoxs_from_concprcpoxs,
+        # Oxidized nitrogen based
+        "fakewetoxn": compute_wetoxn_from_concprcpoxn,
+        "fakewetno2": compute_wetoxn_from_concprcpoxn,
+        "fakewetno2no2": compute_wetoxn_from_concprcpoxn,
+        "fakewethono": compute_wetoxn_from_concprcpoxn,
+        "fakewetn2o5": compute_wetoxn_from_concprcpoxn,
+        "fakewethno3": compute_wetoxn_from_concprcpoxn,
+        "fakewetno3c": compute_wetoxn_from_concprcpoxn,
+        "fakewetno3f": compute_wetoxn_from_concprcpoxn,
+        # Reduced nitrogen based
+        "fakewetrdn": compute_wetrdn_from_concprcprdn,
+        "fakewetnh3": compute_wetrdn_from_concprcprdn,
+        "fakewetnh4": compute_wetrdn_from_concprcprdn,
+        # Other
+        "fakeweto3": make_fake_wetdep_from_O3,
+        "fakewetpm10": compute_wetoxs_from_concprcpoxs,
+        "fakewetpm25": compute_wetoxs_from_concprcpoxs,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid

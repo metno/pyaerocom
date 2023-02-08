@@ -718,6 +718,7 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
 
 def calc_vmro3max(data):
+
     var_name = "vmro3"
     new_var_name = "vmro3max"
 
@@ -759,6 +760,28 @@ def make_fake_drydep_from_O3(data):
     if not new_var_name in data.var_info:
         data.var_info[new_var_name] = {}
     data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+def make_fake_wetdep_from_O3(data):
+    # sort of prototype to add a compted variable
+    # one has to extend the data structures of the station data object
+    # 'right', but has to return just the data array
+    # That concept is a bit confusing (why not do everything in data here?)
+    var_name = "vmro3"
+    new_var_name = "fakeweto3"
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
 
     data.data_flagged[new_var_name] = flags
     return new_var_data
