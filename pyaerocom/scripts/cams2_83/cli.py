@@ -259,6 +259,7 @@ def make_config(
     description: str | None,
     eval_type: Eval_Type | None,
     analysis: bool,
+    onlymap: bool,
     addmap: bool, 
 ) -> dict:
 
@@ -321,6 +322,9 @@ def make_config(
         cfg["exp_descr"] = description
     if addmap:
         cfg["add_model_maps"]=True
+    if onlymap:
+        cfg["add_model_maps"]=True
+        cfg["only_model_maps"]=True
 
     return cfg
 
@@ -496,6 +500,10 @@ def main(
         False,
         help="Sets the flag which tells the code to set add_model_maps=True. Option is set to False otherwise",
     ),
+    onlymap: bool = typer.Option(
+         False,
+         help="Sets the flag which tells the code to set add_model_maps=True and only_model_maps=True. Option is set to False otherwise",
+     ),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
@@ -544,6 +552,7 @@ def main(
         description,
         eval_type,
         analysis,
+        onlymap,
         addmap,
     )
 
