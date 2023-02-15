@@ -2,7 +2,7 @@ import logging
 import os
 from time import time
 
-from pyaerocom import ColocatedData
+from pyaerocom import ColocatedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -225,6 +225,9 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             _write_site_data(ts_objs, out_dirs["ts"])
 
+            scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+            scatter_freq = str(min(freq, main_freq))
+
             logger.info("Processing map and scat data by period")
             for period in periods:
                 # compute map_data and scat_data just for this period
@@ -233,7 +236,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     map_meta,
                     site_indices,
                     [period],
-                    main_freq,
+                    scatter_freq,
                     stats_min_num,
                     seasons,
                     add_trends,
