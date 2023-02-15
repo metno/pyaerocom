@@ -121,7 +121,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
         elif not main_freq in freqs:
             raise AeroValConfigError(
-                f"Scatter plot frequency {main_freq} is not in experiment frequencies: {freqs}"
+                f"main_freq {main_freq} is not in experiment frequencies: {freqs}"
             )
         if self.cfg.statistics_opts.stats_tseries_base_freq is not None:
             if not self.cfg.statistics_opts.stats_tseries_base_freq in freqs:
@@ -227,7 +227,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             
             scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-            scatter_freq = str(min(freq, main_freq))
+            scatter_freq = str(min(scatter_freq, main_freq))
 
             map_data, scat_data = _process_map_and_scat(
                 data,
