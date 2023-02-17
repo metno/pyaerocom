@@ -1561,13 +1561,18 @@ class GriddedData:
         GriddedData
             modified data object
         """
+        # define obj
+        obj = self if inplace else self.copy()
+        # Important: only remove outliers if model is not a dummy model
+        if self.data_id == "dummy_model":
+            return obj
+
         if low is None:
             low = self.var_info.minimum
             logger.info(f"Setting {self.var_name} outlier lower lim: {low:.2f}")
         if high is None:
             high = self.var_info.maximum
             logger.info(f"Setting {self.var_name} outlier upper lim: {high:.2f}")
-        obj = self if inplace else self.copy()
         obj._ensure_is_masked_array()
 
         data = obj.grid.data
