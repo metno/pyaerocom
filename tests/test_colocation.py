@@ -104,7 +104,7 @@ def test__colocate_site_data_helper_timecol(
         min_num_obs,
         use_climatology_ref,
     )
-
+    breakpoint()
     assert isinstance(result, pd.DataFrame)
     assert result.data.isnull().sum() == result.ref.isnull().sum()
     assert len(result) - result.data.isnull().sum() == num_valid
