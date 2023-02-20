@@ -1561,7 +1561,6 @@ class GriddedData:
         GriddedData
             modified data object
         """
-
         if low is None:
             low = self.var_info.minimum
             logger.info(f"Setting {self.var_name} outlier lower lim: {low:.2f}")
