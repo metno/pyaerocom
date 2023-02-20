@@ -538,6 +538,9 @@ def _colocate_site_data_helper_timecol(
     # Set to NaN at times when observations were NaN originally
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
+    # due to interpolation some model values may be NaN, where there is obs
+    if stat_data.data_id != "dummy_model":
+        merged.loc[merged.data.isnull()] = np.nan  # Do not apply in the case of a dummy_model
     # Ensure the whole timespan of the model is kept in "merged"
     stat_data[var].name = "tmp"
     merged = pd.concat([merged, stat_data[var]], axis=1)
