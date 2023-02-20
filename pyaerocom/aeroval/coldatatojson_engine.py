@@ -226,7 +226,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             _write_site_data(ts_objs, out_dirs["ts"])
 
             scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-            scatter_freq = str(min(scatter_freq, main_freq))
+            scatter_freq = min(scatter_freq, main_freq)
 
             logger.info("Processing map and scat data by period")
             for period in periods:
@@ -236,7 +236,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     map_meta,
                     site_indices,
                     [period],
-                    scatter_freq,
+                    str(scatter_freq),
                     stats_min_num,
                     seasons,
                     add_trends,
