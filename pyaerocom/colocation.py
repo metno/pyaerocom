@@ -539,6 +539,7 @@ def _colocate_site_data_helper_timecol(
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
     # due to interpolation some model values may be NaN, where there is obs
+    merged.loc[merged.data.isnull()] = np.nan
     # Ensure the whole timespan of the model is kept in "merged"
     stat_data[var].name = "tmp"
     merged = pd.concat([merged, stat_data[var]], axis=1)
