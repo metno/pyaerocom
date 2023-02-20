@@ -98,9 +98,10 @@ def test__get_min_max_year_periods_error():
         _get_min_max_year_periods(["2005-2004-23", "2000", "1999-2021"])
     assert str(e.value) == "2005-2004-23"
 
+
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_make_dummy_model(eval_config: dict):
     cfg = EvalSetup(**eval_config)
     assert cfg.obs_cfg["AERONET-Sun"]
-    model_id =  make_dummy_model(["AERONET-Sun"], cfg)
+    model_id = make_dummy_model(["AERONET-Sun"], cfg)
     assert model_id == "dummy_model"
