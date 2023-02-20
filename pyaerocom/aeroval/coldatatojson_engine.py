@@ -227,14 +227,14 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             
             scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-            scatter_freq = str(min(scatter_freq, main_freq))
+            scatter_freq = min(scatter_freq, main_freq)
 
             map_data, scat_data = _process_map_and_scat(
                 data,
                 map_meta,
                 site_indices,
                 periods,
-                scatter_freq,
+                str(scatter_freq),
                 stats_min_num,
                 seasons,
                 add_trends,
