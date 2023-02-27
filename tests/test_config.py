@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import getpass
-import tempfile
 from pathlib import Path
 from typing import Type
 
-import pytest
-
 import pyaerocom.config as testmod
+import pytest
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME, Config
 from pyaerocom.data import resources
@@ -262,7 +260,7 @@ def test_empty_class_header(empty_cfg):
         assert cfg._coords_info_file == str(path)
 
     dbdirs = {
-        "lustre/storeA/project": "metno",
+        "lustre/storeB/project": "metno",
         "metno/aerocom_users_database": "users-db",
         "MyPyaerocom/data": "local-db",
     }
