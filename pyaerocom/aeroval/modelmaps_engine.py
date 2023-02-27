@@ -4,6 +4,7 @@ import os
 from pyaerocom import GriddedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
+from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -122,7 +123,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         """
         data = self.read_model_data(model_name, var)
         check_var_ranges_avail(data, var)
-        varinfo = VarinfoWeb(var)
+
+        if var in var_ranges_defaults:
+            cmapinfo = var_ranges_defaults[var]
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+        else:
+            varinfo = VarinfoWeb(var)
 
         data = self._check_dimensions(data)
 
@@ -137,12 +143,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
-        freq = self.cfg.time_cfg.main_freq
+        freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+        freq = min(freq, self.cfg.time_cfg.main_freq)
         tst = TsType(data.ts_type)
+
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            data = data.resample_time(freq)
+            data = data.resample_time(str(freq))
 
         data.check_unit()
         # first calcualate and save geojson with contour levels

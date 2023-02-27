@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import getpass
-import tempfile
 from pathlib import Path
 from typing import Type
 
@@ -263,7 +262,7 @@ def test_empty_class_header(empty_cfg):
         assert cfg._coords_info_file == str(path)
 
     dbdirs = {
-        "lustre/storeA/project": "metno",
+        "lustre/storeB/project": "metno",
         "metno/aerocom_users_database": "users-db",
         "MyPyaerocom/data": "local-db",
     }
