@@ -175,6 +175,9 @@ def make_dummy_model(obs_list: list, cfg) -> str:
             # Converts cube to GriddedData
             dummy_grid = GriddedData(dummy_cube)
 
+            # Set the value to be the mean of acceptable values to prevent incorrect outlier removal
+            dummy_grid.data *= (dummy_grid.var_info.minimum + dummy_grid.var_info.maximum) / 2
+
             # Loop over each year
             yr_gen = dummy_grid.split_years()
 
