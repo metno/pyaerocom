@@ -7,7 +7,9 @@ from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,
     check_var_ranges_avail,
+    make_dummy_model,
 )
+from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.griddeddata import GriddedData
 
@@ -95,3 +97,11 @@ def test__get_min_max_year_periods_error():
     with pytest.raises(ValueError) as e:
         _get_min_max_year_periods(["2005-2004-23", "2000", "1999-2021"])
     assert str(e.value) == "2005-2004-23"
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_make_dummy_model(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
+    assert cfg.obs_cfg["AERONET-Sun"]
+    model_id = make_dummy_model(["AERONET-Sun"], cfg)
+    assert model_id == "dummy_model"

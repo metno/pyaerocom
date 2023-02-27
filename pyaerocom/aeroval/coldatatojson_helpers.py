@@ -818,7 +818,7 @@ def _process_map_and_scat(
     map_data,
     site_indices,
     periods,
-    main_freq,
+    scatter_freq,
     min_num,
     seasons,
     add_trends,
@@ -885,7 +885,7 @@ def _process_map_and_scat(
 
                     perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
-                    if freq == main_freq:
+                    if freq == scatter_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
                         site = map_stat["station_name"]
