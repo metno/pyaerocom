@@ -4,8 +4,9 @@ import getpass
 from pathlib import Path
 from typing import Type
 
-import pyaerocom.config as testmod
 import pytest
+
+import pyaerocom.config as testmod
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME, Config
 from pyaerocom.data import resources
