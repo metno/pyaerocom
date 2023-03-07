@@ -343,6 +343,7 @@ var_web_info = dict(
     dryoxs=["FakeDryOXS", "3D", "Deposition"],
     dryoxn=["FakeDryOXN", "3D", "Deposition"],
     dryrdn=["FakeDryRDN", "3D", "Deposition"],
+    depdust=["total dust dep", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
