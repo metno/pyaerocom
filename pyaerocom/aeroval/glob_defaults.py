@@ -91,7 +91,10 @@ var_ranges_defaults = {
     "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "depdust": {"scale": [0.0, 6.25, 12.5, 18.75, 25.0, 31.25, 37.5, 43.75, 50.0], "colmap": "coolwarm"},
+    "depdust": {
+        "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
+        "colmap": "coolwarm",
+    },
     "vmrco": {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
         "colmap": "coolwarm",
