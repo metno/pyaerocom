@@ -91,7 +91,7 @@ var_ranges_defaults = {
     "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "depdust": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
+    "depdust": {"scale": [0, 3.75, 7.5, 11.25, 15, 18.75, 22.5, 26.25, 30], "colmap": "coolwarm"},
     "vmrco": {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
         "colmap": "coolwarm",
@@ -343,7 +343,7 @@ var_web_info = dict(
     dryoxs=["FakeDryOXS", "3D", "Deposition"],
     dryoxn=["FakeDryOXN", "3D", "Deposition"],
     dryrdn=["FakeDryRDN", "3D", "Deposition"],
-    depdust=["total dust dep", "3D", "Deposition"],
+    depdust=["TotDustDep", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
