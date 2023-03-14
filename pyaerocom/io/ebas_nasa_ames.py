@@ -679,7 +679,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     logger.debug("REACHED DATA BLOCK")
                 elif lc >= END_VAR_DEF + 2:
                     try:
-                        name, val = line.split(":")
+                        name, val = line.split(
+                            ":", 1
+                        )  # Adding maxpslit=1 incase colon appears in url
                         key = name.strip().lower().replace(" ", "_")
                         self.meta[key] = val.strip()
                     except Exception as e:

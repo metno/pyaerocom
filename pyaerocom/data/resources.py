@@ -2,7 +2,6 @@
 Compatibility layer between importlib.resources for Python 3.11 and older versions
 """
 import sys
-from contextlib import contextmanager
 from pathlib import Path
 from typing import ContextManager
 

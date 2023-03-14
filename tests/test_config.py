@@ -315,6 +315,7 @@ def test_default_config_HOMEDIR():
     assert const.HOMEDIR.endswith("/")
 
 
+@lustre_avail
 def test_default_config():
     cfg = Config()
 
