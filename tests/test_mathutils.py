@@ -119,7 +119,7 @@ sin_signal = np.sin(idx)
                 "R_spearman": np.nan,
                 "R_kendall": np.nan,
                 "nmb": -1,
-                "mb": 0,  # Temporary until figure out correct values
+                "mb": 0,
                 "mab": 0,
                 "mnmb": -2,
                 "fge": 2,
@@ -141,7 +141,7 @@ sin_signal = np.sin(idx)
                 "R_spearman": 1.0,
                 "R_kendall": 1.0,
                 "nmb": 0,
-                "mb": 0,  # Temporary until figure out correct values
+                "mb": 0,
                 "mab": 0,
                 "mnmb": np.nan,
                 "fge": np.nan,
