@@ -344,8 +344,8 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
             weights = weights[mask]
         mnmb = 2.0 / num_points * sum(tmp, weights=weights)
         fge = 2.0 / num_points * sum(np.abs(tmp), weights=weights)
-        mb = 1 / num_points * sum(difference[mask])
-        mab = 1 / num_points * sum(np.abs(difference[mask]))
+        mb = sum(difference[mask]) / num_points
+        mab = sum(np.abs(difference[mask])) / num_points
 
     result["nmb"] = nmb
     result["mnmb"] = mnmb
