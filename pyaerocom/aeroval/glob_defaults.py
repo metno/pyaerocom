@@ -95,6 +95,18 @@ var_ranges_defaults = {
         "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         "colmap": "coolwarm",
     },
+    "drydust": {
+        "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
+        "colmap": "coolwarm",
+    },
+    "wetdust": {
+        "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
+        "colmap": "coolwarm",
+    },
+    "concdust": {
+        "scale": [0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0],
+        "colmap": "coolwarm",
+    },
     "vmrco": {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
         "colmap": "coolwarm",
@@ -341,12 +353,15 @@ var_web_info = dict(
     concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
     concCecpm10=["EC PM10", "3D", "Particle concentration"],
     concCocpm10=["OC PM10", "3D", "Particle concentration"],
+    concdust=["Dust", "3D", "Particle concentration"],
     # Depositions
     drysox=["DryOXS", "3D", "Deposition"],
     dryoxs=["FakeDryOXS", "3D", "Deposition"],
     dryoxn=["FakeDryOXN", "3D", "Deposition"],
     dryrdn=["FakeDryRDN", "3D", "Deposition"],
     depdust=["TotDustDep", "3D", "Deposition"],
+    drydust=["DryDustDep", "3D", "Deposition"],
+    wetdust=["WetDustDep", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
