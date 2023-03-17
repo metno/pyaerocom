@@ -104,7 +104,7 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "concdust": {
-        "scale": [0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0],
+        "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         "colmap": "coolwarm",
     },
     "vmrco": {
@@ -353,7 +353,7 @@ var_web_info = dict(
     concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
     concCecpm10=["EC PM10", "3D", "Particle concentration"],
     concCocpm10=["OC PM10", "3D", "Particle concentration"],
-    concdust=["Dust", "3D", "Particle concentration"],
+    concdust=["Dust concentration", "3D", "Particle concentration"],
     # Depositions
     drysox=["DryOXS", "3D", "Deposition"],
     dryoxs=["FakeDryOXS", "3D", "Deposition"],
