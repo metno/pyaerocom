@@ -13,7 +13,6 @@ from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-
 from .aux_vars import vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
 
 logger = logging.getLogger(__name__)
@@ -56,7 +55,7 @@ class ReadMEP(ReadUngriddedBase):
     __version__ = "0.02"
 
     #: Name of the dataset (OBS_ID)
-    DATA_ID = "MEP"
+    DATA_ID = const.MEP_NAME
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -103,15 +102,18 @@ class ReadMEP(ReadUngriddedBase):
     PROVIDES_VARIABLES = list(VAR_MAPPING) + list(AUX_FUNS)
 
     def __init__(self, data_id=None, data_dir=None):
-        if data_dir is None and const.has_access_lustre:
-            data_dir = const.OBSLOCS_UNGRIDDED[
-                const.MEP_NAME
-            ]  # putting this as the default crashes CI on GitHub
-        # Below needs some thinking because it will crash PyAeroval when not run at MetNO. Base API should work fine though
         if data_dir is None:
-            raise ValueError(
-                f"Needs {self.__class__.__qualname__}(data_dir='path to the data folder')"
-            )
+            data_dir = const.OBSLOCS_UNGRIDDED[const.MEP_NAME]
+
+        # if data_dir is None and const.has_access_lustre:
+        #     data_dir = const.OBSLOCS_UNGRIDDED[
+        #         const.MEP_NAME
+        #     ]  # putting this as the default crashes CI on GitHub
+        # Below needs some thinking because it will crash PyAeroval when not run at MetNO. Base API should work fine though
+        # if data_dir is None:
+        #     raise ValueError(
+        #         f"Needs {self.__class__.__qualname__}(data_dir='path to the data folder')"
+        #     )
         super().__init__(data_id=data_id, data_dir=data_dir)
         self.files = sorted(map(str, self.FOUND_FILES))
 
@@ -142,20 +144,6 @@ class ReadMEP(ReadUngriddedBase):
     def _station_name(cls, path: Path) -> str | None:
         match = cls.STATION_REGEX.search(path.name)
         return match.group(1) if match else None
-
-    # @property
-    # def DEFAULT_VARS(self) -> list[str]:
-    #     """List of default variables"""
-    #     return list(self.VAR_MAPPING)
-
-    # @property
-    # def DATASET_NAME(self) -> str:
-    #     """Name of the dataset"""
-    #     return str(self.data_id)
-
-    # @property
-    # def PROVIDES_VARIABLES(self) -> list[str]:
-    #     return list(self.VAR_MAPPING) + list(self.AUX_FUNS)
 
     def read_file(
         self, filename: str | Path, vars_to_retrieve: Iterable[str] | None = None
