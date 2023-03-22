@@ -8,13 +8,11 @@ from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
 from tests.conftest import lustre_avail, lustre_unavail
 
-MEP_PATH = Path("/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MEP/download")
-
+MEP_PATH = Path(const.OBSLOCS_UNGRIDDED[const.MEP_NAME])
 STATION_NAMES = ("1478A", "2706A", "3377A")
 
 VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
 VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
-
 
 needs_mep_path = pytest.mark.xfail(not MEP_PATH.is_dir(), reason=f"needs access to {MEP_PATH}")
 
@@ -50,13 +48,13 @@ def test_DEFAULT_VARS(reader: ReadMEP):
 @needs_mep_path
 def test_files(reader: ReadMEP):
     assert reader.files, "no stations files found"
-    assert len(reader.files) >= 167482, "found less files than expected"
+    assert len(reader.files) >= 2028, "found less files than expected"
 
 
 @needs_mep_path
 def test_FOUND_FILES(reader: ReadMEP):
     assert reader.FOUND_FILES, "no stations files found"
-    assert len(reader.FOUND_FILES) >= 167482, "found less files than expected"
+    assert len(reader.FOUND_FILES) >= 2028, "found less files than expected"
 
 
 @pytest.mark.parametrize("station", STATION_NAMES)
