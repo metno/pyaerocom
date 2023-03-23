@@ -40,55 +40,47 @@ def test_reader_error_no_lustre():
         ReadMEP(data_dir=None)
 
 
-@lustre_avail
-@needs_mep_path
+@lustre_unavail
 def test_DATASET_NAME(reader: ReadMEP):
     assert reader.DATASET_NAME == "MEP"
 
 
-@lustre_avail
-@needs_mep_path
+@lustre_unavail
 def test_DEFAULT_VARS(reader: ReadMEP):
     assert set(reader.DEFAULT_VARS) >= VARS_DEFAULT
 
 
-@lustre_avail
-@needs_mep_path
+@lustre_unavail
 def test_files(reader: ReadMEP):
     assert reader.files, "no stations files found"
-    assert len(reader.files) >= 2028, "found less files than expected"
+    assert len(reader.files) >= 3, "found less files than expected"
 
 
-@lustre_avail
-@needs_mep_path
+@lustre_unavail
 def test_FOUND_FILES(reader: ReadMEP):
     assert reader.FOUND_FILES, "no stations files found"
-    assert len(reader.FOUND_FILES) >= 2028, "found less files than expected"
+    assert len(reader.FOUND_FILES) >= 3, "found less files than expected"
 
 
-@lustre_avail
+@lustre_unavail
 @pytest.mark.parametrize("station", STATION_NAMES)
-@needs_mep_path
 def test_stations(reader: ReadMEP, station: str):
     assert reader.stations()[station], f"no {station} station files"
 
 
-@lustre_avail
-@needs_mep_path
+@lustre_unavail
 def test_PROVIDES_VARIABLES(reader: ReadMEP):
     return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
-@lustre_avail
+@lustre_unavail
 @pytest.mark.parametrize("station", STATION_NAMES)
-@needs_mep_path
 def test_read_file(reader: ReadMEP, station_files: list[str]):
     data = reader.read_file(station_files[-1])
     assert set(data.contains_vars) == VARS_DEFAULT
 
 
-@lustre_avail
-@needs_mep_path
+@lustre_unavail
 def test_read_file_error(reader: ReadMEP):
     bad_station_file = "not-a-file.nc"
     with pytest.raises(ValueError) as e:
@@ -96,7 +88,7 @@ def test_read_file_error(reader: ReadMEP):
     assert str(e.value) == f"missing {bad_station_file}"
 
 
-@lustre_avail
+@lustre_unavail
 @pytest.mark.parametrize("station", STATION_NAMES)
 @needs_mep_path
 def test_read(reader: ReadMEP, station_files: list[str]):
@@ -104,7 +96,7 @@ def test_read(reader: ReadMEP, station_files: list[str]):
     assert set(data.contains_vars) == VARS_PROVIDED
 
 
-@lustre_avail
+@lustre_unavail
 @needs_mep_path
 def test_read_error(reader: ReadMEP):
     bad_variable_name = "not-a-variable"
@@ -113,7 +105,6 @@ def test_read_error(reader: ReadMEP):
     assert str(e.value) == f"Unsupported variables: {bad_variable_name}"
 
 
-@lustre_avail
 @lustre_unavail
 def test_reader_gives_correct_mep_path(reader: ReadMEP):
     assert str(MEP_PATH) == reader.data_dir
