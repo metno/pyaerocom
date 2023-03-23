@@ -37,7 +37,7 @@ def station_files(station: str) -> list[Path]:
 @lustre_avail
 def test_reader_error_no_lustre():
     with pytest.raises(ValueError) as e:
-        ReadMEP(data_dir=None)
+        ReadMEP(data_dir=MEP_PATH)
 
 
 @lustre_unavail
@@ -90,14 +90,12 @@ def test_read_file_error(reader: ReadMEP):
 
 @lustre_unavail
 @pytest.mark.parametrize("station", STATION_NAMES)
-@needs_mep_path
 def test_read(reader: ReadMEP, station_files: list[str]):
     data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=5)
     assert set(data.contains_vars) == VARS_PROVIDED
 
 
 @lustre_unavail
-@needs_mep_path
 def test_read_error(reader: ReadMEP):
     bad_variable_name = "not-a-variable"
     with pytest.raises(ValueError) as e:
