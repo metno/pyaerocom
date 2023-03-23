@@ -284,10 +284,10 @@ def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
         return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:
         if (
-                ts_type is not None
-                and var_name is not None
-                and get_variable(var_name).is_rate
-                and rate_unit_implicit(from_unit)
+            ts_type is not None
+            and var_name is not None
+            and get_variable(var_name).is_rate
+            and rate_unit_implicit(from_unit)
         ):
             freq_si = TsType(ts_type).to_si()
             from_unit = f"{from_unit} {freq_si}-1"

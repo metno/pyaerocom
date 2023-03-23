@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from pathlib import Path
 
 import numpy as np
+
 from pyaerocom import obs_io
 from pyaerocom._lowlevel_helpers import (
     check_dir_access,
