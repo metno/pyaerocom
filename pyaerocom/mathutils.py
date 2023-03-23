@@ -201,6 +201,8 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
         - RMS (Root mean square) -> rms
         - NMB (Normalised mean bias) -> nmb
         - MNMB (Modified normalised mean bias) -> mnmb
+        - MB (Mean Bias) -> mb
+        - MAB (Mean Absolute Bias) -> mab
         - FGE (Fractional gross error) -> fge
         - R (Pearson correlation coefficient) -> R
         - R_spearman (Spearman corr. coeff) -> R_spearman
@@ -319,10 +321,13 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     if sum_refdata == 0:
         if sum_diff == 0:
             nmb = 0
+            mb = 0
         else:
             nmb = np.nan
+            mb = np.nan
     else:
         nmb = sum_diff / sum_refdata
+        mb = sum_diff
 
     sum_data_refdata = data + ref_data
     # for MNMB, and FGE: don't divide by 0 ...
@@ -331,16 +336,22 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     if num_points == 0:
         mnmb = np.nan
         fge = np.nan
+        mb = np.nan
+        mab = np.nan
     else:
         tmp = difference[mask] / sum_data_refdata[mask]
         if weights is not None:
             weights = weights[mask]
         mnmb = 2.0 / num_points * sum(tmp, weights=weights)
         fge = 2.0 / num_points * sum(np.abs(tmp), weights=weights)
+        mb = sum(difference[mask]) / num_points
+        mab = sum(np.abs(difference[mask])) / num_points
 
     result["nmb"] = nmb
     result["mnmb"] = mnmb
     result["fge"] = fge
+    result["mb"] = mb
+    result["mab"] = mab
 
     return result
 
