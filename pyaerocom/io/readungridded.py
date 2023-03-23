@@ -14,7 +14,6 @@ from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
 from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
@@ -28,6 +27,7 @@ from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
+from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
