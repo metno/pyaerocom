@@ -10,8 +10,10 @@ from tests.conftest import lustre_avail, lustre_unavail
 
 try:
     MEP_PATH = Path(const.OBSLOCS_UNGRIDDED[const.MEP_NAME])
+    needs_mep_path = MEP_PATH.is_dir()
 except KeyError:
     pytest.mark.skip(reason=f"MEP path not initialised due to non existence in CI")
+    needs_mep_path = False
 
 STATION_NAMES = ("1478A", "2706A", "3377A")
 
@@ -19,7 +21,7 @@ VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"
 VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
 
 # needs_mep_path = pytest.mark.xfail(not MEP_PATH.is_dir(), reason=f"needs access to {MEP_PATH}")
-needs_mep_path = MEP_PATH.is_dir()
+
 
 @pytest.fixture(scope="module")
 def reader() -> ReadMEP:
