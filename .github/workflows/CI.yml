@@ -21,6 +21,8 @@ jobs:
       run: |
         which python
         python --version
+    - name: Update apt IPs
+      run: sudo apt update
     - name: Install system pacakges
       run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
     - name: Install Tox
@@ -46,9 +48,7 @@ jobs:
       run: |
         which python
         python --version
-    - name: Update apt IPs
-      run: sudo apt update
-    - name: Install system pacakges
+    - name: Install system packages
       run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin pandoc
     - name: Install Tox
       run: |
@@ -79,7 +79,9 @@ jobs:
       run: |
         which python
         python --version
-    - name: Install system pacakges
+    - name: Update apt IPs
+      run: sudo apt update
+    - name: Install system packages
       run: sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
     - name: Cache pip and tox
       uses: actions/cache@v3
