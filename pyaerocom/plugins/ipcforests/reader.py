@@ -419,9 +419,3 @@ class ReadIPCForest(ReadUngriddedBase):
         return list(data_array)
 
 
-if __name__ == "__main__":
-    reader = ReadIPCForest(
-        data_dir="/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/ipc-forests/dep"
-    )
-    filename = "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/ipc-forests/dep/dp_dem.csv"
-    data = reader.read_file(filename)
