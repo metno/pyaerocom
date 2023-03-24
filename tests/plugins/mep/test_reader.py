@@ -19,7 +19,6 @@ VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"
 VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
 
 
-
 @lustre_unavail
 @pytest.fixture(scope="module")
 def reader() -> ReadMEP:
