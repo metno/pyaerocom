@@ -8,7 +8,6 @@ from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
 from tests.conftest import lustre_unavail
 
-# MEP_PATH = Path("/tmp/nopath")
 try:
     MEP_PATH = Path(const.OBSLOCS_UNGRIDDED[const.MEP_NAME])
 except KeyError:
@@ -19,7 +18,6 @@ STATION_NAMES = ("1478A", "2706A", "3377A")
 VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
 VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
 
-# needs_mep_path = pytest.mark.xfail(not MEP_PATH.is_dir(), reason=f"needs access to {MEP_PATH}")
 
 
 @lustre_unavail
