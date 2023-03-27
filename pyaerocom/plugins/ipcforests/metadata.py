@@ -510,11 +510,3 @@ class MetadataReader:
                 altitudes[words[0]] = int(words[4]) + (int(words[5]) - int(words[4])) // 2
 
         return altitudes
-
-
-if __name__ == "__main__":
-    metadata = MetadataReader(
-        "/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/obs/ipc-forests/dep"
-    )
-    breakpoint()
-    # print(metadata.altitudes)
