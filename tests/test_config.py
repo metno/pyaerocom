@@ -124,7 +124,9 @@ def test_Config_has_access_users_database():
         ("users-db", None, False, False, 0),
     ],
 )
-def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, data_searchdirno):
+def test_Config_read_config(
+    cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, data_searchdirno
+):
     cfg = testmod.Config(try_infer_environment=False)
     cfg_file = cfg._config_files[cfg_id]
     assert Path(cfg_file).exists()
