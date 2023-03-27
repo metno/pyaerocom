@@ -417,5 +417,3 @@ class ReadIPCForest(ReadUngriddedBase):
                 data_array[np.where(years == year)] = np.nan
 
         return list(data_array)
-
-
