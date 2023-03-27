@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Tuple
 
 import numpy as np
@@ -85,6 +86,8 @@ class ReadIPCForest(ReadUngriddedBase):
         "wetnh4": "mg N m-2 d-1",
         "wetno2": "mg N m-2 d-1",
         "wetna": "mg m-2 d-1",
+        # unverified
+        "wetcl": "mg m-2 d-1",
     }
 
     SEASALT_CORRECTION = {
@@ -108,6 +111,7 @@ class ReadIPCForest(ReadUngriddedBase):
         self.metadata = None
 
         self._file_dir = None
+        self.files = None
 
         if data_dir is not None:
             self.metadata = MetadataReader(data_dir)
@@ -149,7 +153,8 @@ class ReadIPCForest(ReadUngriddedBase):
         UngriddedData
             instance of ungridded data object containing data from all files.
         """
-        data = self.read_file(self.data_dir + self._FILEMASK, vars_to_retrieve)
+        self.files = Path(self.data_dir).joinpath(self._FILEMASK)
+        data = self.read_file(str(self.files), vars_to_retrieve, last_line=None)
 
         return data
 
@@ -168,7 +173,7 @@ class ReadIPCForest(ReadUngriddedBase):
         """List containing default variables to read"""
         return list(self.VAR_POSITION.keys())
 
-    def read_file(self, filename, vars_to_retrieve=None):
+    def read_file(self, filename, vars_to_retrieve=None, last_line=None):
         """Read single file
 
         Parameters
@@ -178,6 +183,9 @@ class ReadIPCForest(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list` or similar, optional,
             list containing variable IDs that are supposed to be read. If None,
             all variables in :attr:`PROVIDES_VARIABLES` are loaded
+        last_line : int
+            last line number to read
+            Used to speed up testing
 
         Returns
         -------
@@ -197,8 +205,10 @@ class ReadIPCForest(ReadUngriddedBase):
         if vars_to_retrieve is None:
             vars_to_retrieve = self.PROVIDES_VARIABLES
 
+        lineno = 0
         with open(filename, "r") as f:
             f.readline()
+
             for line_nr, line in tqdm(enumerate(f)):
                 words = line.split(";")
                 year = int(words[0])
@@ -210,8 +220,8 @@ class ReadIPCForest(ReadUngriddedBase):
 
                 # 8 is the code for "do not use"
                 if (
-                    self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
-                    or sampler_code == 8
+                        self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
+                        or sampler_code == 8
                 ):
                     continue
 
@@ -273,14 +283,14 @@ class ReadIPCForest(ReadUngriddedBase):
                     if species in self.SEASALT_CORRECTION:
 
                         na_factor = (
-                            self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
-                            * self.SEASALT_FACTORS["wetna"]
-                            * self.SEASALT_CORRECTION[species]
+                                self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
+                                * self.SEASALT_FACTORS["wetna"]
+                                * self.SEASALT_CORRECTION[species]
                         )
                         cl_factor = (
-                            self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
-                            * self.SEASALT_FACTORS["wetcl"]
-                            * self.SEASALT_CORRECTION[species]
+                                self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
+                                * self.SEASALT_FACTORS["wetcl"]
+                                * self.SEASALT_CORRECTION[species]
                         )
                         seasalt_correction = min(na_factor, cl_factor)
 
@@ -345,14 +355,14 @@ class ReadIPCForest(ReadUngriddedBase):
         return conc
 
     def _get_days_date_ts_type(
-        self,
-        year: int,
-        country_code: int,
-        plot_code: int,
-        sampler_code: int,
-        period: int,
-        start: str | datetime,
-        stop: str | datetime,
+            self,
+            year: int,
+            country_code: int,
+            plot_code: int,
+            sampler_code: int,
+            period: int,
+            start: str | datetime,
+            stop: str | datetime,
     ) -> Tuple[float | None, datetime | None, str | None]:
 
         if start != "" and stop != "":
@@ -397,11 +407,11 @@ class ReadIPCForest(ReadUngriddedBase):
         return SurveyYear.get_tstype(days)
 
     def _clean_data_with_flags(
-        self,
-        data: list[float],
-        time: list[datetime],
-        flags: list[int],
-        species: str,
+            self,
+            data: list[float],
+            time: list[datetime],
+            flags: list[int],
+            species: str,
     ) -> list[float]:
 
         data_array = np.array(data)
