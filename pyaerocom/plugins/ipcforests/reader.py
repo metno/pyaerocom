@@ -105,6 +105,9 @@ class ReadIPCForest(ReadUngriddedBase):
 
     QUALITY_LIMIT = 0.5
 
+    MIN_YEAR = 1984
+    MAX_YEAR = 2019
+
     def __init__(self, data_id=None, data_dir=None):
         super().__init__(data_id, data_dir)
 
@@ -154,7 +157,10 @@ class ReadIPCForest(ReadUngriddedBase):
             instance of ungridded data object containing data from all files.
         """
         self.files = Path(self.data_dir).joinpath(self._FILEMASK)
-        data = self.read_file(str(self.files), vars_to_retrieve, last_line=None)
+        data = self.read_file(
+            str(self.files),
+            vars_to_retrieve,
+        )
 
         return data
 
@@ -205,7 +211,6 @@ class ReadIPCForest(ReadUngriddedBase):
         if vars_to_retrieve is None:
             vars_to_retrieve = self.PROVIDES_VARIABLES
 
-        lineno = 0
         with open(filename, "r") as f:
             f.readline()
 
@@ -417,13 +422,20 @@ class ReadIPCForest(ReadUngriddedBase):
         data_array = np.array(data)
         flags_array = np.array(flags)
         years = np.array([i.year for i in time])
-        for year in range(1984, 2019):
+
+        for year in range(self.MIN_YEAR, self.MAX_YEAR):
             yr_flags = flags_array[np.where(years == year)]
-            quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
-            if quality < self.QUALITY_LIMIT:
-                logger.warning(
-                    f"Quailty of {quality} found for {species} in year {year}. Setting data this year to NaN"
-                )
-                data_array[np.where(years == year)] = np.nan
+            # yr_flags can have 0 length
+            try:
+                quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
+                if quality < self.QUALITY_LIMIT:
+                    logger.warning(
+                        f"Quailty of {quality} found for {species} in year {year}. Setting data this year to NaN"
+                    )
+                    data_array[np.where(years == year)] = np.nan
+
+            except RuntimeWarning:
+                # yr_flags has 0 length
+                logger.warning(f"No data for species {species} in year {year}.")
 
         return list(data_array)
