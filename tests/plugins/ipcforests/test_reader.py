@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
-from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
 from pyaerocom.plugins.ipcforests.metadata import MetadataReader as ReadIPCForestMeta
+from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
 from tests.conftest import lustre_unavail
 
 try:
@@ -23,15 +23,18 @@ STATION_NAMES = ("DE-604-2", "NO-7-2", "UK-718-2")
 VARS_DEFAULT = {"wetoxn"}
 VARS_PROVIDED = VARS_DEFAULT
 
+
 @lustre_unavail
 @pytest.fixture(scope="module")
 def reader() -> ReadIPCForest:
     return ReadIPCForest(data_dir=str(IPC_PATH))
 
+
 @lustre_unavail
 @pytest.fixture(scope="module")
 def meta_reader() -> ReadIPCForestMeta:
     return ReadIPCForestMeta(str(IPC_PATH))
+
 
 @lustre_unavail
 @pytest.fixture()
@@ -41,6 +44,7 @@ def station_files(station: str) -> list[Path]:
     # assert files, f"no files for {station}"
     assert files
     return files
+
 
 @lustre_unavail
 def test_DATASET_NAME(reader: ReadIPCForest):
@@ -71,10 +75,14 @@ def test_read_file(
 
 
 @lustre_unavail
-def test_read_station(reader: ReadIPCForest,):
+def test_read_station(
+    reader: ReadIPCForest,
+):
     # IPCForest reader does not support partial read of stations at this time
     # not easy to implement due to being a single file dataset
-    data = reader.read(vars_to_retrieve=VARS_DEFAULT, )
+    data = reader.read(
+        vars_to_retrieve=VARS_DEFAULT,
+    )
     for station in STATION_NAMES:
         assert station in data.unique_station_names
 
