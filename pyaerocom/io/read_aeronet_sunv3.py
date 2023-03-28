@@ -114,7 +114,6 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550oa": calc_od550aer,
         "proxyod550so4": calc_od550aer,
         "proxyod550ss": calc_od550aer,
-
     }
 
     #: List of variables that are provided by this dataset (will be extended
