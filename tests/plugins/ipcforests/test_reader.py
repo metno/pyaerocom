@@ -68,7 +68,9 @@ def test_PROVIDES_VARIABLES(reader: ReadIPCForest):
 
 @lustre_unavail
 # @pytest.mark.parametrize("station", STATION_NAMES)
-def test_read_file(reader: ReadIPCForest, ):
+def test_read_file(
+    reader: ReadIPCForest,
+):
     data = reader.read(vars_to_retrieve=VARS_DEFAULT)
     assert set(data.contains_vars) == VARS_DEFAULT
 
