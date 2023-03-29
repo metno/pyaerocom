@@ -24,8 +24,8 @@ from pyaerocom.aux_var_helpers import (
     compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
     identity,
-    make_fake_drydep_from_O3,
-    make_fake_wetdep_from_O3,
+    make_proxy_drydep_from_O3,
+    make_proxy_wetdep_from_O3,
     vmrx_to_concx,
 )
 from pyaerocom.exceptions import (
@@ -133,7 +133,6 @@ class ReadEbasOptions(BrowseDict):
     _FILTER_IDS = ["prefer_statistics", "wavelength_tol_nm"]
 
     def __init__(self, **args):
-
         self.prefer_statistics = ["arithmetic mean", "median"]
         self.ignore_statistics = ["percentile:15.87", "percentile:84.13"]
 
@@ -242,50 +241,50 @@ class ReadEbas(ReadUngriddedBase):
         "wetno3": ["concprcpno3", "pr"],
         "wetnh4": ["concprcpnh4", "pr"],
         "vmro3max": ["vmro3"],
-        # Fake drydep
+        # proxy drydep
         # Suphar based
-        "fakedryoxs": ["concprcpoxs", "pr"],
-        "fakedryso2": ["concprcpoxs", "pr"],
-        "fakedryso4": ["concprcpoxs", "pr"],
+        "proxydryoxs": ["concprcpoxs", "pr"],
+        "proxydryso2": ["concprcpoxs", "pr"],
+        "proxydryso4": ["concprcpoxs", "pr"],
         # Oxidized nitrogen based
-        "fakedryoxn": ["concprcpoxn", "pr"],
-        "fakedryno2": ["concprcpoxn", "pr"],
-        "fakedryno2no2": ["concprcpoxn", "pr"],
-        "fakedryhono": ["concprcpoxn", "pr"],
-        "fakedryn2o5": ["concprcpoxn", "pr"],
-        "fakedryhno3": ["concprcpoxn", "pr"],
-        "fakedryno3c": ["concprcpoxn", "pr"],
-        "fakedryno3f": ["concprcpoxn", "pr"],
+        "proxydryoxn": ["concprcpoxn", "pr"],
+        "proxydryno2": ["concprcpoxn", "pr"],
+        "proxydryno2no2": ["concprcpoxn", "pr"],
+        "proxydryhono": ["concprcpoxn", "pr"],
+        "proxydryn2o5": ["concprcpoxn", "pr"],
+        "proxydryhno3": ["concprcpoxn", "pr"],
+        "proxydryno3c": ["concprcpoxn", "pr"],
+        "proxydryno3f": ["concprcpoxn", "pr"],
         # Reduced nitrogen based
-        "fakedryrdn": ["concprcprdn", "pr"],
-        "fakedrynh3": ["concprcprdn", "pr"],
-        "fakedrynh4": ["concprcprdn", "pr"],
+        "proxydryrdn": ["concprcprdn", "pr"],
+        "proxydrynh3": ["concprcprdn", "pr"],
+        "proxydrynh4": ["concprcprdn", "pr"],
         # Other
-        "fakedryo3": ["vmro3"],
-        "fakedrypm10": ["concprcpoxs", "pr"],
-        "fakedrypm25": ["concprcpoxs", "pr"],
-        # Fake wetdep
+        "proxydryo3": ["vmro3"],
+        "proxydrypm10": ["concprcpoxs", "pr"],
+        "proxydrypm25": ["concprcpoxs", "pr"],
+        # proxy wetdep
         # Suphar based
-        "fakewetoxs": ["concprcpoxs", "pr"],
-        "fakewetso2": ["concprcpoxs", "pr"],
-        "fakewetso4": ["concprcpoxs", "pr"],
+        "proxywetoxs": ["concprcpoxs", "pr"],
+        "proxywetso2": ["concprcpoxs", "pr"],
+        "proxywetso4": ["concprcpoxs", "pr"],
         # Oxidized nitrogen based
-        "fakewetoxn": ["concprcpoxn", "pr"],
-        "fakewetno2": ["concprcpoxn", "pr"],
-        "fakewetno2no2": ["concprcpoxn", "pr"],
-        "fakewethono": ["concprcpoxn", "pr"],
-        "fakewetn2o5": ["concprcpoxn", "pr"],
-        "fakewethno3": ["concprcpoxn", "pr"],
-        "fakewetno3c": ["concprcpoxn", "pr"],
-        "fakewetno3f": ["concprcpoxn", "pr"],
+        "proxywetoxn": ["concprcpoxn", "pr"],
+        "proxywetno2": ["concprcpoxn", "pr"],
+        "proxywetno2no2": ["concprcpoxn", "pr"],
+        "proxywethono": ["concprcpoxn", "pr"],
+        "proxywetn2o5": ["concprcpoxn", "pr"],
+        "proxywethno3": ["concprcpoxn", "pr"],
+        "proxywetno3c": ["concprcpoxn", "pr"],
+        "proxywetno3f": ["concprcpoxn", "pr"],
         # Reduced nitrogen based
-        "fakewetrdn": ["concprcprdn", "pr"],
-        "fakewetnh3": ["concprcprdn", "pr"],
-        "fakewetnh4": ["concprcprdn", "pr"],
+        "proxywetrdn": ["concprcprdn", "pr"],
+        "proxywetnh3": ["concprcprdn", "pr"],
+        "proxywetnh4": ["concprcprdn", "pr"],
         # Other
-        "fakeweto3": ["vmro3"],
-        "fakewetpm10": ["concprcpoxs", "pr"],
-        "fakewetpm25": ["concprcpoxs", "pr"],
+        "proxyweto3": ["vmro3"],
+        "proxywetpm10": ["concprcpoxs", "pr"],
+        "proxywetpm25": ["concprcpoxs", "pr"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -309,50 +308,50 @@ class ReadEbas(ReadUngriddedBase):
         "wetno3": compute_wetno3_from_concprcpno3,
         "wetso4": compute_wetso4_from_concprcpso4,
         "vmro3max": calc_vmro3max,
-        # Fake dry dep
+        # proxy dry dep
         # Suphar based
-        "fakedryoxs": compute_wetoxs_from_concprcpoxs,
-        "fakedryso2": compute_wetoxs_from_concprcpoxs,
-        "fakedryso4": compute_wetoxs_from_concprcpoxs,
+        "proxydryoxs": compute_wetoxs_from_concprcpoxs,
+        "proxydryso2": compute_wetoxs_from_concprcpoxs,
+        "proxydryso4": compute_wetoxs_from_concprcpoxs,
         # Oxidized nitrogen based
-        "fakedryoxn": compute_wetoxn_from_concprcpoxn,
-        "fakedryno2": compute_wetoxn_from_concprcpoxn,
-        "fakedryno2no2": compute_wetoxn_from_concprcpoxn,
-        "fakedryhono": compute_wetoxn_from_concprcpoxn,
-        "fakedryn2o5": compute_wetoxn_from_concprcpoxn,
-        "fakedryhno3": compute_wetoxn_from_concprcpoxn,
-        "fakedryno3c": compute_wetoxn_from_concprcpoxn,
-        "fakedryno3f": compute_wetoxn_from_concprcpoxn,
+        "proxydryoxn": compute_wetoxn_from_concprcpoxn,
+        "proxydryno2": compute_wetoxn_from_concprcpoxn,
+        "proxydryno2no2": compute_wetoxn_from_concprcpoxn,
+        "proxydryhono": compute_wetoxn_from_concprcpoxn,
+        "proxydryn2o5": compute_wetoxn_from_concprcpoxn,
+        "proxydryhno3": compute_wetoxn_from_concprcpoxn,
+        "proxydryno3c": compute_wetoxn_from_concprcpoxn,
+        "proxydryno3f": compute_wetoxn_from_concprcpoxn,
         # Reduced nitrogen based
-        "fakedryrdn": compute_wetrdn_from_concprcprdn,
-        "fakedrynh3": compute_wetrdn_from_concprcprdn,
-        "fakedrynh4": compute_wetrdn_from_concprcprdn,
+        "proxydryrdn": compute_wetrdn_from_concprcprdn,
+        "proxydrynh3": compute_wetrdn_from_concprcprdn,
+        "proxydrynh4": compute_wetrdn_from_concprcprdn,
         # Other
-        "fakedryo3": make_fake_drydep_from_O3,
-        "fakedrypm10": compute_wetoxs_from_concprcpoxs,
-        "fakedrypm25": compute_wetoxs_from_concprcpoxs,
-        # Fake wet dep
+        "proxydryo3": make_proxy_drydep_from_O3,
+        "proxydrypm10": compute_wetoxs_from_concprcpoxs,
+        "proxydrypm25": compute_wetoxs_from_concprcpoxs,
+        # proxy wet dep
         # Suphar based
-        "fakewetoxs": compute_wetoxs_from_concprcpoxs,
-        "fakewetso2": compute_wetoxs_from_concprcpoxs,
-        "fakewetso4": compute_wetoxs_from_concprcpoxs,
+        "proxywetoxs": compute_wetoxs_from_concprcpoxs,
+        "proxywetso2": compute_wetoxs_from_concprcpoxs,
+        "proxywetso4": compute_wetoxs_from_concprcpoxs,
         # Oxidized nitrogen based
-        "fakewetoxn": compute_wetoxn_from_concprcpoxn,
-        "fakewetno2": compute_wetoxn_from_concprcpoxn,
-        "fakewetno2no2": compute_wetoxn_from_concprcpoxn,
-        "fakewethono": compute_wetoxn_from_concprcpoxn,
-        "fakewetn2o5": compute_wetoxn_from_concprcpoxn,
-        "fakewethno3": compute_wetoxn_from_concprcpoxn,
-        "fakewetno3c": compute_wetoxn_from_concprcpoxn,
-        "fakewetno3f": compute_wetoxn_from_concprcpoxn,
+        "proxywetoxn": compute_wetoxn_from_concprcpoxn,
+        "proxywetno2": compute_wetoxn_from_concprcpoxn,
+        "proxywetno2no2": compute_wetoxn_from_concprcpoxn,
+        "proxywethono": compute_wetoxn_from_concprcpoxn,
+        "proxywetn2o5": compute_wetoxn_from_concprcpoxn,
+        "proxywethno3": compute_wetoxn_from_concprcpoxn,
+        "proxywetno3c": compute_wetoxn_from_concprcpoxn,
+        "proxywetno3f": compute_wetoxn_from_concprcpoxn,
         # Reduced nitrogen based
-        "fakewetrdn": compute_wetrdn_from_concprcprdn,
-        "fakewetnh3": compute_wetrdn_from_concprcprdn,
-        "fakewetnh4": compute_wetrdn_from_concprcprdn,
+        "proxywetrdn": compute_wetrdn_from_concprcprdn,
+        "proxywetnh3": compute_wetrdn_from_concprcprdn,
+        "proxywetnh4": compute_wetrdn_from_concprcprdn,
         # Other
-        "fakeweto3": make_fake_wetdep_from_O3,
-        "fakewetpm10": compute_wetoxs_from_concprcpoxs,
-        "fakewetpm25": compute_wetoxs_from_concprcpoxs,
+        "proxyweto3": make_proxy_wetdep_from_O3,
+        "proxywetpm10": compute_wetoxs_from_concprcpoxs,
+        "proxywetpm25": compute_wetoxs_from_concprcpoxs,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid
@@ -387,7 +386,6 @@ class ReadEbas(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     def __init__(self, data_id=None, data_dir=None):
-
         super().__init__(data_id=data_id, data_dir=data_dir)
 
         self._opts = {"default": ReadEbasOptions()}
@@ -1523,7 +1521,6 @@ class ReadEbas(ReadUngriddedBase):
             )
 
     def _flag_incorrect_frequencies(self, filedata):
-
         # time diffs in units of s for each measurement
         dt = (filedata.stop_meas - filedata.start_meas).astype(float)
         # frequency in file (supposedly)
