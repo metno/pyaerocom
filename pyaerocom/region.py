@@ -48,7 +48,6 @@ class Region(BrowseDict):
     """
 
     def __init__(self, region_id=None, **kwargs):
-
         if region_id is None:
             region_id = ALL_REGION_NAME
 
@@ -174,7 +173,6 @@ class Region(BrowseDict):
         return self._mask_data
 
     def plot_mask(self, ax, color, alpha=0.2):
-
         mask = self.get_mask_data()
         # import numpy as np
         data = mask.data

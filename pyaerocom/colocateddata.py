@@ -1715,7 +1715,7 @@ class ColocatedData:
 
             drop_idx = []
             nstats = len(arr.station_name)
-            for (lat, lon, stat) in data._iter_stats():
+            for lat, lon, stat in data._iter_stats():
                 if get_mask_value(lat, lon, mask) < 1:
                     drop_idx.append(stat)
 

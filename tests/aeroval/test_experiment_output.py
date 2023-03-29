@@ -310,7 +310,6 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
 def test_ExperimentOutput_reorder_experiments(
     dummy_expout: ExperimentOutput, add_names, order, result
 ):
-
     path = Path(dummy_expout.experiments_file)
 
     data = dict().fromkeys(add_names, dict(public=True))

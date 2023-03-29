@@ -151,7 +151,6 @@ def _get_min_max_year_periods(statistics_periods):
 
 
 def make_dummy_model(obs_list: list, cfg) -> str:
-
     # Sets up variable for the model register
     tmpdir = const.LOCAL_TMP_DIR
     const.add_data_search_dir(tmpdir)

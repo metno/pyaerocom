@@ -9,7 +9,6 @@ class VerticalProfile:
     """Object representing single variable profile data"""
 
     def __init__(self, data, altitude, dtime, var_name, data_err, var_unit, altitude_unit):
-
         self.var_name = var_name
         self.dtime = dtime
         self.data = data
@@ -93,7 +92,6 @@ class VerticalProfile:
         if whole_alt_range:
             ax.set_ylim([np.min([0, self.altitude.min()]), self.altitude.max()])
         if plot_errs:
-
             lower = self.data - self.data_err
             upper = self.data + self.data_err
             if errs_shaded:

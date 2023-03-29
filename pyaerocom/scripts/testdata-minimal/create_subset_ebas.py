@@ -74,7 +74,6 @@ def check_outdated(filedir):
     files_valid = []
 
     with open(JSON_FILE, "r") as f:
-
         data = simplejson.load(f)
 
     for var, stats in data.items():
@@ -156,7 +155,6 @@ def get_files_var_statnum(data, var, statnum):
 
 
 def main():
-
     # reader = pya.io.ReadUngridded(NAME, data_dir=EBAS_BASE_DIR)
     reader = pya.io.ReadUngridded(
         NAME,
@@ -245,7 +243,6 @@ def main():
         if not UPDATE:
             print("NOTHING WILL BE COPIED TO TEST DATA")
         else:
-
             src = Path(EBAS_BASE_DIR).joinpath("data")
             print(f"updating test data @ {r_lowlev.DATASET_PATH}")
 

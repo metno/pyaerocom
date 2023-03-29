@@ -71,7 +71,6 @@ class ReadUngridded:
     DONOTCACHE_NAME = "DONOTCACHE"
 
     def __init__(self, data_ids=None, ignore_cache=False, data_dirs=None):
-
         # will be assigned in setter method of data_ids
         self._data_ids = []
         self._data_dirs = {}
@@ -387,7 +386,6 @@ class ReadUngridded:
 
         data_read = None
         if len(vars_to_read) > 0:
-
             _loglevel = logger.level
             logger.setLevel(logging.INFO)
             data_read = reader.read(vars_to_read, **kwargs)
@@ -529,7 +527,6 @@ class ReadUngridded:
                     for aux_var in aux_vars:
                         input_data_ids_vars.append((aux_data, aux_id, aux_var))
                 else:
-
                     # read variables individually, so filter_post is more
                     # flexible if some post filters are specified for
                     # individual variables...

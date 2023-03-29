@@ -195,7 +195,6 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 def test_colocate_gridded_ungridded(
     data_tm5, aeronetsunv3lev2_subset, addargs, ts_type, shape, obsmean, modmean
 ):
-
     coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, **addargs)
 
     assert isinstance(coldata, ColocatedData)

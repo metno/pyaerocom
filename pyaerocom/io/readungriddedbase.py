@@ -15,6 +15,7 @@ from pyaerocom.io.helpers import get_obsnetwork_dir
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: Proposal: include attribute ts_type that is by default undefined but
 # may be set to either of the defined
 class ReadUngriddedBase(abc.ABC):

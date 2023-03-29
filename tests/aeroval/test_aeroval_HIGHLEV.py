@@ -56,7 +56,6 @@ CHK_CFG4 = {
     ],
 )
 def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
-
     cfg = EvalSetup(**eval_config)
     proc = ExperimentProcessor(cfg)
     proc.exp_output.delete_experiment_data(also_coldata=True)

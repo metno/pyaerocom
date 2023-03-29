@@ -243,7 +243,6 @@ class ReadIPCForest(ReadUngriddedBase):
                     quantity = float(quantity)
 
                 try:
-
                     self.metadata.plots.plots[country_code]
                     self.metadata.plots.plots[country_code][plot_code]
                     self.metadata.plots.plots[country_code][plot_code][sampler_code]
@@ -286,7 +285,6 @@ class ReadIPCForest(ReadUngriddedBase):
                     # Sea-salt correction
                     # The factor self.SEASALT_CORRECTION[species] is the factor use to go from mg/L to mg S/L (for sulpher)
                     if species in self.SEASALT_CORRECTION:
-
                         na_factor = (
                             self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
                             * self.SEASALT_FACTORS["wetna"]
@@ -369,7 +367,6 @@ class ReadIPCForest(ReadUngriddedBase):
         start: str | datetime,
         stop: str | datetime,
     ) -> Tuple[float | None, datetime | None, str | None]:
-
         if start != "" and stop != "":
             if isinstance(start, str):
                 start = datetime.strptime(start, "%Y-%m-%d")
@@ -385,7 +382,6 @@ class ReadIPCForest(ReadUngriddedBase):
             raise ValueError(f"Metadata is not read yet")
 
         try:
-
             days = self.metadata.plots.get_days(year, country_code, plot_code, sampler_code)
         except ValueError as e:
             logger.warning(repr(e))
@@ -406,7 +402,6 @@ class ReadIPCForest(ReadUngriddedBase):
         return days, dtime, ts_type
 
     def _get_tstype(self, start: datetime, stop: datetime) -> str:
-
         days = (stop - start).days
 
         return SurveyYear.get_tstype(days)
@@ -418,7 +413,6 @@ class ReadIPCForest(ReadUngriddedBase):
         flags: list[int],
         species: str,
     ) -> list[float]:
-
         data_array = np.array(data)
         flags_array = np.array(flags)
         years = np.array([i.year for i in time])

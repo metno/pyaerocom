@@ -207,7 +207,6 @@ class TrendPlotter:  # pragma: no cover
             ax.plot(self.monthly, label="monthly", c="#4d4d4d")
         ax.plot(self.get_yearly(season), " ok", label="yearly")
         if period in self.periods_avail:
-
             (s_data, s_period, td, tp, tdstr, tpstr) = self._get_trend_data(season, period)
 
             ax.plot(s_data, "-", color=self.get_trend_color(td), label="trend", lw=2)

@@ -222,7 +222,6 @@ class Station:
     def add_measurement(
         self, species: str, time: datetime, measurement: float, unit: str, flag: int
     ) -> None:
-
         """
         Adds a single measurement to the data and time lists. If it is the first measurement,
         a new var_info is created

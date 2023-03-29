@@ -378,7 +378,6 @@ class Variable:
 
     @property
     def var_name_info(self):
-
         return VarNameInfo(self.var_name)
 
     @property

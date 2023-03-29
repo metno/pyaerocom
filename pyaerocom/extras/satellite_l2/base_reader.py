@@ -307,7 +307,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         # and extract the files with supported suffixes to const.CACHEDIR
         non_archive_files = []
         for idx, _file in enumerate(sorted(files)):
-
             self.logger.info(f"file: {_file}")
             suffix = pathlib.Path(_file).suffix
             if suffix in self.SUPPORTED_ARCHIVE_SUFFIXES:
@@ -496,7 +495,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         data_to_write=None,
         gridded=False,
     ):
-
         """method to store the file contents in a very basic netcdf file
 
         Parameters:

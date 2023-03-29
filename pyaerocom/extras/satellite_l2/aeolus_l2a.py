@@ -1339,7 +1339,6 @@ class ReadL2Data(ReadL2DataBase):
         data_to_write=None,
         gridded=False,
     ):
-
         """method to store the file contents in a very basic netcdf file
 
         Parameters:
@@ -2397,7 +2396,6 @@ class ReadL2Data(ReadL2DataBase):
                         interpolated = f(target_heights)
                         out_arr[time_step_idx, :] = interpolated
                     except ValueError:
-
                         # this happens when height_data and var_data have only one entry
                         # set out_arr[time_step_idx,:] to NaN in this case for now
                         # breakpoint()
@@ -2724,7 +2722,6 @@ class ReadL2Data(ReadL2DataBase):
                         interpolated = f(target_heights)
                         out_arr[time_step_idx, :] = interpolated
                     except ValueError:
-
                         # this happens when height_data and var_data have only one entry
                         # set out_arr[time_step_idx,:] to NaN in this case for now
                         # breakpoint()
@@ -3089,7 +3086,6 @@ class ReadL2Data(ReadL2DataBase):
         if levelno is None or levelno == 1 or levelno == 0:
             super()._to_grid_grid_init(gridtype=gridtype, vars=vars, init_time=init_time)
         else:
-
             import time
 
             start_time = time.perf_counter()
