@@ -15,7 +15,7 @@ def ungridded_empty():
 
 
 def test_init_shape(ungridded_empty):
-    assert ungridded_empty.shape == (1000000, 12)
+    assert ungridded_empty.shape == (10000000, 12)
 
 
 def test_init_add_cols():
@@ -25,7 +25,7 @@ def test_init_add_cols():
 
 def test_add_chunk(ungridded_empty):
     ungridded_empty.add_chunk(111002)
-    assert ungridded_empty.shape == (2000000, 12)
+    assert ungridded_empty.shape == (20000000, 12)
 
 
 def test_coordinate_access():
