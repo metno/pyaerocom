@@ -4,6 +4,8 @@ import os
 import shutil
 from pathlib import Path
 
+import numpy as np
+
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -19,6 +21,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.io import ReadGridded
 from pyaerocom.tstype import TsType
+from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +179,12 @@ def make_dummy_model(obs_list: list, cfg) -> str:
             dummy_grid = GriddedData(dummy_cube)
 
             # Set the value to be the mean of acceptable values to prevent incorrect outlier removal
-            dummy_grid.data *= (dummy_grid.var_info.minimum + dummy_grid.var_info.maximum) / 2
+            # This needs some care though because the defaults are (currently) -inf and inf, which leads to erroneous removal
+            if not (
+                dummy_grid.var_info.minimum == Variable.VMIN_DEFAULT
+                or dummy_grid.var_info.maximum == Variable.VMAX_DEFAULT
+            ):
+                dummy_grid.data *= (dummy_grid.var_info.minimum + dummy_grid.var_info.maximum) / 2
 
             # Loop over each year
             yr_gen = dummy_grid.split_years()
