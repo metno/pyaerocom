@@ -15,7 +15,7 @@ from .data_access import DataForTests
 EBAS_FILEDIR = DataForTests("obsdata/EBASMultiColumn/data").path
 ebas_info_file = DataForTests("scripts/ebas_files.json").path
 assert ebas_info_file.exists()
-EBAS_FILES = simplejson.loads(ebas_info_file.read_text())
+EBAS_FILES = simplejson.loads(ebas_info_file.read_text(), allow_nan=True)
 for sites in EBAS_FILES.values():
     for files in sites.values():
         for file in files:
