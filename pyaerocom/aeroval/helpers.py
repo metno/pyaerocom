@@ -180,9 +180,10 @@ def make_dummy_model(obs_list: list, cfg) -> str:
 
             # Set the value to be the mean of acceptable values to prevent incorrect outlier removal
             # This needs some care though because the defaults are (currently) -inf and inf, which leads to erroneous removal
+            breakpoint()
             if not (
-                dummy_grid.var_info.minimum == Variable.VMIN_DEFAULT
-                or dummy_grid.var_info.maximum == Variable.VMAX_DEFAULT
+                dummy_grid.var_info.minimum == Variable().VMIN_DEFAULT
+                or dummy_grid.var_info.maximum == Variable().VMAX_DEFAULT
             ):
                 dummy_grid.data *= (dummy_grid.var_info.minimum + dummy_grid.var_info.maximum) / 2
 
