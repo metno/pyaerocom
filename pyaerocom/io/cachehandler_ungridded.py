@@ -12,6 +12,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: Write data attribute list contains_vars in header of pickled file and
 # check if variables match the request
 class CacheHandlerUngridded:
@@ -140,7 +141,6 @@ class CacheHandlerUngridded:
         return os.path.join(cache_dir, var_or_file_name)
 
     def _check_pkl_head_vs_database(self, in_handle):
-
         current = self.cache_meta_info()
 
         head = pickle.load(in_handle)

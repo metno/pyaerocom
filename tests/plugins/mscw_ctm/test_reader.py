@@ -395,7 +395,6 @@ def test_ReadEMEP__init__():
 
 
 def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]) -> Path:
-
     reader = ReadMscwCtm()
     varmap = reader.var_map
 

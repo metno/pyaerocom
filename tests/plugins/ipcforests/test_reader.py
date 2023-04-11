@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
+from pyaerocom.plugins.ipcforests.metadata import MetadataReader as ReadIPCForestMeta
 from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
 from tests.conftest import lustre_unavail
 
@@ -30,6 +31,12 @@ def reader() -> ReadIPCForest:
 
 
 @lustre_unavail
+@pytest.fixture(scope="module")
+def meta_reader() -> ReadIPCForestMeta:
+    return ReadIPCForestMeta(str(IPC_PATH))
+
+
+@lustre_unavail
 @pytest.fixture()
 def station_files(station: str) -> list[Path]:
     p = IPC_PATH.glob("dp_dem.csv")
@@ -49,16 +56,9 @@ def test_DEFAULT_VARS(reader: ReadIPCForest):
     assert set(reader.DEFAULT_VARS) >= VARS_DEFAULT
 
 
-# @lustre_unavail
-# def test_FOUND_FILES(reader: ReadIPCForest):
-#     assert reader.FOUND_FILES, "no stations files found"
-#     assert len(reader.FOUND_FILES) >= 3, "found less files than expected"
-
-
-# @lustre_unavail
-# @pytest.mark.parametrize("station", STATION_NAMES)
-# def test_stations(reader: ReadIPCForest, station: str):
-#     assert reader.stations()[station], f"no {station} station files"
+@lustre_unavail
+def test_METADATA(meta_reader: ReadIPCForestMeta):
+    assert len(meta_reader.deposition_type) >= 3, "found less deposition types than expected"
 
 
 @lustre_unavail
@@ -67,17 +67,24 @@ def test_PROVIDES_VARIABLES(reader: ReadIPCForest):
 
 
 @lustre_unavail
-# @pytest.mark.parametrize("station", STATION_NAMES)
-def test_read_file(reader: ReadIPCForest, ):
+def test_read_file(
+    reader: ReadIPCForest,
+):
     data = reader.read(vars_to_retrieve=VARS_DEFAULT)
     assert set(data.contains_vars) == VARS_DEFAULT
 
 
-# @lustre_unavail
-# @pytest.mark.parametrize("station", STATION_NAMES)
-# def test_read(reader: ReadIPCForest, station_files: list[str]):
-#     data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=5)
-#     assert set(data.contains_vars) == VARS_PROVIDED
+@lustre_unavail
+def test_read_station(
+    reader: ReadIPCForest,
+):
+    # IPCForest reader does not support partial read of stations at this time
+    # not easy to implement due to being a single file dataset
+    data = reader.read(
+        vars_to_retrieve=VARS_DEFAULT,
+    )
+    for station in STATION_NAMES:
+        assert station in data.unique_station_names
 
 
 @lustre_unavail

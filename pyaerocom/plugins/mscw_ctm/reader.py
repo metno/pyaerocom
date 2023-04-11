@@ -244,7 +244,6 @@ class ReadMscwCtm:
         fps = self.filepaths
         yrs = []
         for fp in fps:
-
             try:
                 yr = re.search(r".*(20\d\d).*", fp).group(1)
             except:  # pragma: no cover

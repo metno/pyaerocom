@@ -81,7 +81,6 @@ def test_init_map(kwargs: dict):
     ],
 )
 def test_init_map_error(kwargs: dict, error: str):
-
     with pytest.raises(ValueError) as e:
         init_map(**kwargs)
     assert str(e.value) == error

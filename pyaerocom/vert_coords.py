@@ -185,7 +185,6 @@ def is_supported(standard_name):
 
 
 class VerticalCoordinate:
-
     NAMES_SUPPORTED = {
         "altitude": "z",
         "air_pressure": "pres",
@@ -287,7 +286,6 @@ class VerticalCoordinate:
         """
 
         if not self.var_name in self.NAMES_SUPPORTED:
-
             raise CoordinateNameError(
                 f"Variable {self.var_name} cannot be converted to pressure levels. "
                 f"Conversion is only possible for supported variables:\n{self.vars_supported_str}"
@@ -319,7 +317,6 @@ class VerticalCoordinate:
 
 
 class AltitudeAccess:
-
     #: Additional variable names (in AEROCOM convention) that are used
     #: to search for additional files that can be used to access or compute
     #: the altitude levels at each grid point
@@ -479,7 +476,6 @@ class AltitudeAccess:
 
     # ToDo: check alias names
     def _check_var_in_data_obj(self, var_name):
-
         c = VerticalCoordinate(var_name)
 
         if c.var_name in self.data_obj:
@@ -515,7 +511,6 @@ class AltitudeAccess:
         return False
 
     def _check_altitude_access_helper(self, coord_name, **coord_info):
-
         cstd_name = const.COORDINFO[coord_name].standard_name
 
         if not self.search_aux_coords(coord_name):

@@ -100,46 +100,49 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
-    "fakedryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
-    "fakedrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "fakedrypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "fakedryno2": {"scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], "colmap": "coolwarm"},
-    "fakedryhono": {"scale": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], "colmap": "coolwarm"},
-    "fakedryn2o5": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
-    "fakedryhno3": {
+    "proxydryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "proxydrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "proxydrypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "proxydryno2": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
-    "fakedryno3c": {
+    "proxydryhono": {"scale": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], "colmap": "coolwarm"},
+    "proxydryn2o5": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "proxydryhno3": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "proxydryno3c": {
         "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
         "colmap": "coolwarm",
     },
-    "fakedryno3f": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
-    "fakedrynh3": {
+    "proxydryno3f": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "proxydrynh3": {
         "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
         "colmap": "coolwarm",
     },
-    "fakedrynh4": {
+    "proxydrynh4": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
-    "fakedryso2": {
+    "proxydryso2": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
-    "fakedryso4": {
+    "proxydryso4": {
         "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
         "colmap": "coolwarm",
     },
-    "fakedryoxs": {
+    "proxydryoxs": {
         "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "colmap": "coolwarm",
     },
-    "fakedryoxn": {
+    "proxydryoxn": {
         "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
         "colmap": "coolwarm",
     },
-    "fakedryrdn": {
+    "proxydryrdn": {
         "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
         "colmap": "coolwarm",
     },
@@ -328,7 +331,7 @@ statistics_obs_only = {
     },
 }
 
-# For experiments where only model data is interesting, as with fake drydep
+# For experiments where only model data is interesting, as with proxy drydep
 statistics_model_only = {
     "data_mean": {
         "name": "Mean-Mod",
@@ -422,9 +425,9 @@ var_web_info = dict(
     concCoc25=["OC PM2.5", "3D", "Particle concentration"],
     # Depositions
     drysox=["DryOXS", "3D", "Deposition"],
-    dryoxs=["FakeDryOXS", "3D", "Deposition"],
-    dryoxn=["FakeDryOXN", "3D", "Deposition"],
-    dryrdn=["FakeDryRDN", "3D", "Deposition"],
+    dryoxs=["proxyDryOXS", "3D", "Deposition"],
+    dryoxn=["proxyDryOXN", "3D", "Deposition"],
+    dryrdn=["proxyDryRDN", "3D", "Deposition"],
     depoxs=["TotDepOXS", "3D", "Total Deposition"],
     depoxn=["TotDepOXN", "3D", "Total Deposition"],
     deprdn=["TotDepRDN", "3D", "Total Deposition"],
@@ -434,22 +437,22 @@ var_web_info = dict(
     prmm=["Precipitation", "3D", "Deposition"],
     # Temperature
     ts=["Surface Temperature", "3D", "Temperature"],
-    # Fake drydep
-    fakedryoxs=["FakeDryOXS", "3D", "Deposition"],
-    fakedryso2=["FakeDrySO2", "3D", "Deposition"],
-    fakedryso4=["FakeDrySO4", "3D", "Deposition"],
-    fakedryoxn=["FakeDryOXN", "3D", "Deposition"],
-    fakedryno2=["FakeDryNO2", "3D", "Deposition"],
-    fakedryno2no2=["FakeDryNO2NO2", "3D", "Deposition"],
-    fakedryhono=["FakeDryHONO", "3D", "Deposition"],
-    fakedryn2o5=["FakeDryN2O5", "3D", "Deposition"],
-    fakedryhno3=["FakeDryHNO3", "3D", "Deposition"],
-    fakedryno3c=["FakeDryNO3Coarse", "3D", "Deposition"],
-    fakedryno3f=["FakeDryNO3Fine", "3D", "Deposition"],
-    fakedryrdn=["FakeDryRDN", "3D", "Deposition"],
-    fakedrynh3=["FakeDryNH3", "3D", "Deposition"],
-    fakedrynh4=["FakeDryNH4", "3D", "Deposition"],
-    fakedryo3=["FakeDryO3", "3D", "Deposition"],
-    fakedrypm10=["FakeDryPM10", "3D", "Deposition"],
-    fakedrypm25=["FakeDryPM2.5", "3D", "Deposition"],
+    # proxy drydep
+    proxydryoxs=["proxyDryOXS", "3D", "Deposition"],
+    proxydryso2=["proxyDrySO2", "3D", "Deposition"],
+    proxydryso4=["proxyDrySO4", "3D", "Deposition"],
+    proxydryoxn=["proxyDryOXN", "3D", "Deposition"],
+    proxydryno2=["proxyDryNO2", "3D", "Deposition"],
+    proxydryno2no2=["proxyDryNO2NO2", "3D", "Deposition"],
+    proxydryhono=["proxyDryHONO", "3D", "Deposition"],
+    proxydryn2o5=["proxyDryN2O5", "3D", "Deposition"],
+    proxydryhno3=["proxyDryHNO3", "3D", "Deposition"],
+    proxydryno3c=["proxyDryNO3Coarse", "3D", "Deposition"],
+    proxydryno3f=["proxyDryNO3Fine", "3D", "Deposition"],
+    proxydryrdn=["proxyDryRDN", "3D", "Deposition"],
+    proxydrynh3=["proxyDryNH3", "3D", "Deposition"],
+    proxydrynh4=["proxyDryNH4", "3D", "Deposition"],
+    proxydryo3=["proxyDryO3", "3D", "Deposition"],
+    proxydrypm10=["proxyDryPM10", "3D", "Deposition"],
+    proxydrypm25=["proxyDryPM2.5", "3D", "Deposition"],
 )

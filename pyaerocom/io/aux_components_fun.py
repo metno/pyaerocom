@@ -91,14 +91,12 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
 
 
 def calc_concNhno3_from_vmr(data):
-
     return vmr_to_conc(
         data, vmr_unit="nmol mol-1", var_name="hno3", to_unit="ug m-3", component_unit="N"
     )
 
 
 def calc_concNnh3_from_vmr(data):
-
     return vmr_to_conc(
         data, vmr_unit="nmol mol-1", var_name="nh3", to_unit="ug m-3", component_unit="N"
     )

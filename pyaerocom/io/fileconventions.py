@@ -48,7 +48,6 @@ class FileConventionRead:
         data_id_pos=None,
         from_file=None,
     ):
-
         self.name = name
         self.file_sep = file_sep
 

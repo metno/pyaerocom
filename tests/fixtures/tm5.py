@@ -31,7 +31,6 @@ def data_tm5() -> GriddedData:
 
 
 def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData:
-
     arr = open_dataarray(path)
     if "_min_num_obs" in arr.attrs:
         info = {}

@@ -319,7 +319,6 @@ class ColocationSetup(BrowseDict):
         save_coldata=False,
         **kwargs,
     ):
-
         self.model_id = model_id
         self.obs_id = obs_id
         self.obs_vars = obs_vars
@@ -1029,7 +1028,6 @@ class Colocator(ColocationSetup):
         return reader
 
     def _check_add_model_read_aux(self, model_var):
-
         if not model_var in self.model_read_aux:
             return False
         info = self.model_read_aux[model_var]
@@ -1078,7 +1076,6 @@ class Colocator(ColocationSetup):
             self.obs_vars = avail
 
     def _print_processing_status(self):
-
         mname = self.get_model_name()
         oname = self.get_obs_name()
         logger.info(f"Colocation processing status for {mname} vs. {oname}")
@@ -1168,7 +1165,6 @@ class Colocator(ColocationSetup):
         return tst
 
     def _read_gridded(self, var_name, is_model):
-
         start, stop = self.start, self.stop
         ts_type_read = self._get_ts_type_read(var_name, is_model)
         kwargs = {}
@@ -1367,7 +1363,6 @@ class Colocator(ColocationSetup):
             return colocate_gridded_gridded
 
     def _prepare_colocation_args(self, model_var, obs_var):
-
         model_data = self.get_model_data(model_var)
         obs_data = self.get_obs_data(obs_var)
         rshow = self._eval_resample_how(model_var, obs_var)

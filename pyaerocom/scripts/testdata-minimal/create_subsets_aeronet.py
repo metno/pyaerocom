@@ -37,7 +37,6 @@ filters = [
 
 revision_files = {}
 if __name__ == "__main__":
-
     loaded = {}
     for name, varlist in NETWORKS.items():
         reader = pya.io.ReadUngridded()
@@ -48,12 +47,11 @@ if __name__ == "__main__":
 
     use_stats = []
 
-    for (attr, val, maxnum) in filters:
+    for attr, val, maxnum in filters:
         subsets = {}
         statnames = []
 
         for name, data in loaded.items():
-
             subset = data.apply_filters(**{attr: val})
 
             subsets[name] = subset

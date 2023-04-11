@@ -35,7 +35,6 @@ class AuxInfoUngridded:
     def __init__(
         self, data_id, vars_supported, aux_requires, aux_merge_how, aux_funs=None, aux_units=None
     ):
-
         self.data_id = data_id
         self.vars_supported = vars_supported
 

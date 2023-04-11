@@ -83,7 +83,6 @@ class StationData(StationMetaData):
     ]
 
     def __init__(self, **meta_info):
-
         self.dtime = []
 
         self.var_info = BrowseDict()
@@ -720,7 +719,6 @@ class StationData(StationMetaData):
         return ts_type
 
     def _update_var_timeinfo(self):
-
         for var, info in self.var_info.items():
             data = self[var]
             if not isinstance(data, pd.Series):

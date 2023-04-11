@@ -137,7 +137,6 @@ class UngriddedData:
         return self._data.shape[0]
 
     def __init__(self, num_points=None, add_cols=None):
-
         if num_points is None:
             num_points = self._CHUNKSIZE
 
@@ -1068,7 +1067,6 @@ class UngriddedData:
         # for at least one of the input variables
         FOUND_ONE = False
         for var in vars_avail:
-
             # get indices of this variable
             var_idx = self.meta_idx[meta_idx][var]
 
@@ -1229,7 +1227,6 @@ class UngriddedData:
 
         _iter = self._generate_station_index(by_station_name, ignore_index)
         for idx in _iter:
-
             try:
                 data = self.to_station_data(
                     idx,
@@ -2232,7 +2229,6 @@ class UngriddedData:
         for meta_key, meta in self.metadata.items():
             found = False
             for idx, meta_reg in enumerate(meta_registered):
-
                 if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
                     same_indices[idx].append(meta_key)
                     found = True

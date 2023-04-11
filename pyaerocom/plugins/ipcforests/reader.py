@@ -105,6 +105,9 @@ class ReadIPCForest(ReadUngriddedBase):
 
     QUALITY_LIMIT = 0.5
 
+    MIN_YEAR = 1984
+    MAX_YEAR = 2019
+
     def __init__(self, data_id=None, data_dir=None):
         super().__init__(data_id, data_dir)
 
@@ -154,7 +157,10 @@ class ReadIPCForest(ReadUngriddedBase):
             instance of ungridded data object containing data from all files.
         """
         self.files = Path(self.data_dir).joinpath(self._FILEMASK)
-        data = self.read_file(str(self.files), vars_to_retrieve, last_line=None)
+        data = self.read_file(
+            str(self.files),
+            vars_to_retrieve,
+        )
 
         return data
 
@@ -205,7 +211,6 @@ class ReadIPCForest(ReadUngriddedBase):
         if vars_to_retrieve is None:
             vars_to_retrieve = self.PROVIDES_VARIABLES
 
-        lineno = 0
         with open(filename, "r") as f:
             f.readline()
 
@@ -220,8 +225,8 @@ class ReadIPCForest(ReadUngriddedBase):
 
                 # 8 is the code for "do not use"
                 if (
-                        self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
-                        or sampler_code == 8
+                    self.metadata.deposition_type[sampler_code] not in self.DEP_TYPES_TO_USE
+                    or sampler_code == 8
                 ):
                     continue
 
@@ -238,7 +243,6 @@ class ReadIPCForest(ReadUngriddedBase):
                     quantity = float(quantity)
 
                 try:
-
                     self.metadata.plots.plots[country_code]
                     self.metadata.plots.plots[country_code][plot_code]
                     self.metadata.plots.plots[country_code][plot_code][sampler_code]
@@ -281,16 +285,15 @@ class ReadIPCForest(ReadUngriddedBase):
                     # Sea-salt correction
                     # The factor self.SEASALT_CORRECTION[species] is the factor use to go from mg/L to mg S/L (for sulpher)
                     if species in self.SEASALT_CORRECTION:
-
                         na_factor = (
-                                self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
-                                * self.SEASALT_FACTORS["wetna"]
-                                * self.SEASALT_CORRECTION[species]
+                            self._get_species_conc(words[self.VAR_POSITION["wetna"]], "wetna")
+                            * self.SEASALT_FACTORS["wetna"]
+                            * self.SEASALT_CORRECTION[species]
                         )
                         cl_factor = (
-                                self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
-                                * self.SEASALT_FACTORS["wetcl"]
-                                * self.SEASALT_CORRECTION[species]
+                            self._get_species_conc(words[self.VAR_POSITION["wetcl"]], "wetcl")
+                            * self.SEASALT_FACTORS["wetcl"]
+                            * self.SEASALT_CORRECTION[species]
                         )
                         seasalt_correction = min(na_factor, cl_factor)
 
@@ -355,16 +358,15 @@ class ReadIPCForest(ReadUngriddedBase):
         return conc
 
     def _get_days_date_ts_type(
-            self,
-            year: int,
-            country_code: int,
-            plot_code: int,
-            sampler_code: int,
-            period: int,
-            start: str | datetime,
-            stop: str | datetime,
+        self,
+        year: int,
+        country_code: int,
+        plot_code: int,
+        sampler_code: int,
+        period: int,
+        start: str | datetime,
+        stop: str | datetime,
     ) -> Tuple[float | None, datetime | None, str | None]:
-
         if start != "" and stop != "":
             if isinstance(start, str):
                 start = datetime.strptime(start, "%Y-%m-%d")
@@ -380,7 +382,6 @@ class ReadIPCForest(ReadUngriddedBase):
             raise ValueError(f"Metadata is not read yet")
 
         try:
-
             days = self.metadata.plots.get_days(year, country_code, plot_code, sampler_code)
         except ValueError as e:
             logger.warning(repr(e))
@@ -401,29 +402,34 @@ class ReadIPCForest(ReadUngriddedBase):
         return days, dtime, ts_type
 
     def _get_tstype(self, start: datetime, stop: datetime) -> str:
-
         days = (stop - start).days
 
         return SurveyYear.get_tstype(days)
 
     def _clean_data_with_flags(
-            self,
-            data: list[float],
-            time: list[datetime],
-            flags: list[int],
-            species: str,
+        self,
+        data: list[float],
+        time: list[datetime],
+        flags: list[int],
+        species: str,
     ) -> list[float]:
-
         data_array = np.array(data)
         flags_array = np.array(flags)
         years = np.array([i.year for i in time])
-        for year in range(1984, 2019):
+
+        for year in range(self.MIN_YEAR, self.MAX_YEAR):
             yr_flags = flags_array[np.where(years == year)]
-            quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
-            if quality < self.QUALITY_LIMIT:
-                logger.warning(
-                    f"Quailty of {quality} found for {species} in year {year}. Setting data this year to NaN"
-                )
-                data_array[np.where(years == year)] = np.nan
+            # yr_flags can have 0 length
+            try:
+                quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
+                if quality < self.QUALITY_LIMIT:
+                    logger.warning(
+                        f"Quailty of {quality} found for {species} in year {year}. Setting data this year to NaN"
+                    )
+                    data_array[np.where(years == year)] = np.nan
+
+            except RuntimeWarning:
+                # yr_flags has 0 length
+                logger.warning(f"No data for species {species} in year {year}.")
 
         return list(data_array)

@@ -198,7 +198,6 @@ class ReadMarcoPolo(ReadUngriddedBase):
     def _make_station_data(
         self, var, var_stats_unique, stat_ids, var_stats, var_dtime, var_values, stat_meta
     ):
-
         units = self.VAR_UNITS
         stats = []
         for stat_id in var_stats_unique:
@@ -226,7 +225,6 @@ class ReadMarcoPolo(ReadUngriddedBase):
         return stats
 
     def _read_files(self, files, vars_to_retrieve):
-
         filecols = self.FILE_COLS
 
         stat_meta = self._init_station_metadata()
@@ -291,7 +289,6 @@ class ReadMarcoPolo(ReadUngriddedBase):
         raise NotImplementedError("Not needed for these data since the format is unsuitable...")
 
     def compute_additional_vars(self, statlist_from_file, vars_to_compute):
-
         for var in vars_to_compute:
             fun = self.AUX_FUNS[var]
             requires = self.AUX_REQUIRES[var]
