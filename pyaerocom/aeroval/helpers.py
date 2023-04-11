@@ -168,6 +168,7 @@ def make_dummy_model(obs_list: list, cfg) -> str:
     (start, stop) = get_max_period_range(cfg.time_cfg.periods)
     freq = get_highest_resolution(*cfg.time_cfg.freqs)
 
+    tmp_var_obj = Variable()
     # Loops over variables in obs
     for obs in obs_list:
         for var in cfg.obs_cfg[obs]["obs_vars"]:
@@ -180,10 +181,10 @@ def make_dummy_model(obs_list: list, cfg) -> str:
 
             # Set the value to be the mean of acceptable values to prevent incorrect outlier removal
             # This needs some care though because the defaults are (currently) -inf and inf, which leads to erroneous removal
-            breakpoint()
+
             if not (
-                dummy_grid.var_info.minimum == Variable().VMIN_DEFAULT
-                or dummy_grid.var_info.maximum == Variable().VMAX_DEFAULT
+                dummy_grid.var_info.minimum == tmp_var_obj.VMIN_DEFAULT
+                or dummy_grid.var_info.maximum == tmp_var_obj.VMAX_DEFAULT
             ):
                 dummy_grid.data *= (dummy_grid.var_info.minimum + dummy_grid.var_info.maximum) / 2
 
