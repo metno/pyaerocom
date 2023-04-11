@@ -2,7 +2,6 @@ import fnmatch
 import logging
 import os
 import warnings
-from functools import partial
 from glob import glob
 from pathlib import Path
 
@@ -36,7 +35,6 @@ from pyaerocom.io.aux_components_fun import (
     calc_concNtnh,
     calc_concNtno3,
     calc_sspm25,
-    vmr_to_conc,
 )
 from pyaerocom.io.aux_read_cubes import (
     add_cubes,
@@ -183,8 +181,8 @@ class ReadGridded:
         "concNnh3": calc_concNnh3_from_vmr,
         "concNnh4": calc_concNnh4,
         "concNtnh": calc_concNtnh,
-        #'mec550*'      :    divide_cubes,
-        #'tau*'         :    lifetime_from_load_and_dep
+        # 'mec550*'      :    divide_cubes,
+        # 'tau*'         :    lifetime_from_load_and_dep
     }
 
     #: Additional arguments passed to computation methods for auxiliary data
@@ -203,7 +201,7 @@ class ReadGridded:
 
     _data_dir = ""
 
-    VERT_ALT = {"Surface": "ModelLevel"}  # , "2D": "2D"}
+    VERT_ALT = {"Surface": "ModelLevel"}
 
     def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3"):
 
@@ -2244,7 +2242,7 @@ class ReadGridded:
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
         s = (
-            f"\n{head}\n{len(head)*'-'}\n"
+            f"\n{head}\n{len(head) * '-'}\n"
             f"Data ID: {self.data_id}\n"
             f"Data directory: {self.data_dir}\n"
             f"Available experiments: {self.experiments}\n"
