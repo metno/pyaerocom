@@ -385,7 +385,7 @@ def _get_period_keys(resolution):
     if resolution == "seasonal":
         period_keys = ["DJF", "MAM", "JJA", "SON"]
     elif resolution == "yearly":
-        period_keys = ["Annual"]
+        period_keys = ["All"]
     return period_keys
 
 
@@ -426,8 +426,8 @@ def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
 
     ts_data = {
         "time": time,
-        "seasonal": {"obs": yeardict, "mod": yeardict},
-        "yearly": {"obs": yeardict, "mod": yeardict},
+        "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+        "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
     }
     ts_data["station_name"] = stat_name
     ts_data.update(meta_glob)
@@ -526,8 +526,8 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
         for regid, regname in region_ids.items():
             ts_data = {
                 "time": time,
-                "seasonal": {"obs": yeardict, "mod": yeardict},
-                "yearly": {"obs": yeardict, "mod": yeardict},
+                "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+                "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
             }
             ts_data["station_name"] = regname
             ts_data.update(meta_glob)
