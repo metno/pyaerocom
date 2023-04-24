@@ -26,7 +26,7 @@ dependencies = [
     'tomli>=2.0.1; python_version < "3.11"',
     "xarray>=0.16.0,<2023.3.0",
     "scipy>=1.1.0",
-    "pandas>=0.23.0",
+    "pandas>=0.23.0,<2",
     "seaborn>=0.8.0",
     "geonum",
     "LatLon23",                                           # required by geonum
