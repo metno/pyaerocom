@@ -79,6 +79,7 @@ def write_json(data_dict, file_path, **kwargs):
         additional keyword args passed to :func:`simplejson.dumps` (e.g.
         indent, )
     """
+    kwargs.update(ignore_nan=True)
     with open(file_path, "w") as f:
         simplejson.dump(round_floats(data_dict), f, allow_nan=True, **kwargs)
 
