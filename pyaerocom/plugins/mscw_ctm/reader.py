@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import re
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -238,7 +239,6 @@ class ReadMscwCtm:
         fps = self.filepaths
         yrs = []
         for fp in fps:
-
             try:
                 yr = re.search(r".*(20\d\d).*", fp).group(1)
             except:  # pragma: no cover
@@ -764,5 +764,10 @@ class ReadEMEP(ReadMscwCtm):
     """Old name of :class:`ReadMscwCtm`."""
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "You are using a deprecated name ReadEMEP for class ReadMscwCtm, "
+            "please use ReadMscwCtm instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(*args, **kwargs)
-        print("You are using a deprecated name ReadEMEP for class ReadMscwCtm")
