@@ -102,7 +102,7 @@ exclude = [
 minversion = "6.0"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = "--failed-first"
+addopts = "--failed-first --import-mode=append"
 xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
