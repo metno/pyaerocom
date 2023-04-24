@@ -165,6 +165,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         #: files that were actually excluded from reading
         self.excluded_files = []
+        
 
     def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
@@ -188,6 +189,7 @@ class ReadEarlinet(ReadUngriddedBase):
         StationData
             dict-like object containing results
         """
+        breakpoint()
         if read_err is None:  # use default setting
             read_err = self.READ_ERR
         if isinstance(vars_to_retrieve, str):
@@ -429,6 +431,7 @@ class ReadEarlinet(ReadUngriddedBase):
         UngriddedData
             data object
         """
+        breakpoint()
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -441,13 +444,17 @@ class ReadEarlinet(ReadUngriddedBase):
             if len(self.files) == 0:
                 self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
+        
+        # LB: turn files into a list becauase I suspect there may be a bug if you don't do this
+        if isinstance(files, str):
+            files = [files]
 
         if first_file is None:
             first_file = 0
         if last_file is None:
             last_file = len(files)
 
-        files = files[first_file:last_file]
+        files = files[first_file: last_file + 1] # LB: think need to +1 here in order to actually get desired subset
 
         self.read_failed = []
 
