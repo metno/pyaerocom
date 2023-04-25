@@ -42,65 +42,71 @@ class ReadEarlinet(ReadUngriddedBase):
     _MAX_VAL_NAN = 1e6
 
     #: variable name of altitude in files
-    ALTITUDE_ID = "Altitude"
+    ALTITUDE_ID = "altitude"
 
     #: temporal resolution
     TS_TYPE = "native"
 
     #: dictionary specifying the file search patterns for each variable
+    # VAR_PATTERNS_FILE = {
+    #     "ec532aer": "*.e532",
+    #     "ec355aer": "*.e355",
+    #     "bsc532aer": "*.b532",
+    #     "bsc355aer": "*.b355",
+    #     "bsc1064aer": "*.b1064",
+    #     "zdust": "*.e*",
+    # }
+
     VAR_PATTERNS_FILE = {
-        "ec532aer": "*.e532",
-        "ec355aer": "*.e355",
-        "bsc532aer": "*.b532",
-        "bsc355aer": "*.b355",
-        "bsc1064aer": "*.b1064",
-        "zdust": "*.e*",
+        "ec532aer": "_Lev02_e0532",
+        "ec355aer": "_Lev2_e0355",
+        "bsc532aer": "_Lev02_b0532",
+        "bsc355aer": "_Lev02_b0355",
+        "bsc1064aer": "_Lev02_b1064",
+        # "zdust": "*.e*", # not sure if EARLINET has this anymore
     }
 
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
     VAR_NAMES_FILE = {
-        "ec532aer": "Extinction",
-        "ec355aer": "Extinction",
-        "ec1064aer": "Extinction",
-        "bsc532aer": "Backscatter",
-        "bsc355aer": "Backscatter",
-        "bsc1064aer": "Backscatter",
-        "zdust": "DustLayerHeight",
+        "ec532aer": "extinction",
+        "ec355aer": "extinction",
+        "ec1064aer": "extinction",
+        "bsc532aer": "backscatter",
+        "bsc355aer": "backscatter",
+        "bsc1064aer": "backscatter",
+        "zdust": "DustLayerHeight",  # not sure if EARLINET has this anymore
     }
 
-    #: metadata names that are supposed to be imported
     META_NAMES_FILE = dict(
-        location="Location",
-        start_date="StartDate",
-        start_utc="StartTime_UT",
-        stop_utc="StopTime_UT",
-        longitude="Longitude_degrees_east",
-        latitude="Latitude_degrees_north",
-        wavelength_emis="EmissionWavelength_nm",
-        wavelength_det="DetectionWavelength_nm",
-        res_raw_m="ResolutionRaw_meter",
-        zenith_ang_deg="ZenithAngle_degrees",
-        instrument_name="System",
-        comments="Comments",
-        shots_avg="ShotsAveraged",
-        detection_mode="DetectionMode",
-        res_eval="ResolutionEvaluated",
-        input_params="InputParameters",
-        altitude="Altitude_meter_asl",
-        eval_method="EvaluationMethod",
+        location="location",
+        # start_date="StartDate",
+        start_utc="measurement_start_datetime",
+        stop_utc="measurement_stop_datetime",
+        # longitude="longitude",
+        # latitude="latitude",
+        wavelength_emis="wavelength",
+        # wavelength_det="DetectionWavelength_nm",
+        # res_raw_m="ResolutionRaw_meter",
+        zenith_angle="zenith_angle",
+        instrument_name="system",
+        comment="comment",
+        shots="shots",  # accumualted shots, NOT averaged like previous version
+        # detection_mode="DetectionMode",
+        # res_eval="ResolutionEvaluated",
+        # input_params="InputParameters",
+        # altitude="altitude",
+        eval_method="backscatter_evaluation_method",
     )
-
     #: metadata keys that are needed for reading (must be values in
     #: :attr:`META_NAMES_FILE`)
     META_NEEDED = [
-        "Location",
-        "StartDate",
-        "StartTime_UT",
-        "StopTime_UT",
-        "Longitude_degrees_east",
-        "Latitude_degrees_north",
-        "Altitude_meter_asl",
+        "location",
+        "measurement_start_datetime",
+        "measurement_start_datetime",
+        # "longitude",
+        # "latitude",
+        # "altitude",  # there is also station_altitude. do we need that?
     ]
 
     #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to
@@ -108,27 +114,28 @@ class ReadEarlinet(ReadUngriddedBase):
     #: to be inserted into :class:`UngriddedData` object created in :func:`read`
     KEEP_ADD_META = [
         "location",
-        "wavelength_emis",
-        "wavelength_det",
+        "wavelength",
         "res_raw_m",
-        "zenith_ang_deg",
-        "comments",
-        "shots_avg",
-        "detection_mode",
-        "res_eval",
-        "input_params",
-        "eval_method",
+        "zenith_angle",
+        "comment",
+        "shots",
+        "backscatter_evaluation_method",
     ]
 
     #: Attribute access names for unit reading of variable data
     VAR_UNIT_NAMES = dict(
-        Extinction=["ExtinctionUnits", "units"],
-        Backscatter=["BackscatterUnits", "units"],
-        DustLayerHeight=["units"],
-        Altitude="units",
+        extinction=["units"],
+        backscatter=["units"],
+        dustlayerheight=[
+            "units"
+        ],  # LB: guessing about this one now. need to check later about dust
+        altitude="units",
     )
     #: Variable names of uncertainty data
-    ERR_VARNAMES = dict(ec532aer="ErrorExtinction", ec355aer="ErrorExtinction")
+    ERR_VARNAMES = dict(
+        ec532aer="error_extinction",
+        ec355aer="error_extinction",
+    )
 
     #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
     READ_ERR = True
@@ -165,9 +172,10 @@ class ReadEarlinet(ReadUngriddedBase):
 
         #: files that were actually excluded from reading
         self.excluded_files = []
-        
 
-    def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
+    def read_file(
+        self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True
+    ):
         """Read EARLINET file and return it as instance of :class:`StationData`
 
         Parameters
@@ -189,7 +197,6 @@ class ReadEarlinet(ReadUngriddedBase):
         StationData
             dict-like object containing results
         """
-        breakpoint()
         if read_err is None:  # use default setting
             read_err = self.READ_ERR
         if isinstance(vars_to_retrieve, str):
@@ -199,7 +206,8 @@ class ReadEarlinet(ReadUngriddedBase):
             if (
                 var in self.VAR_PATTERNS_FILE
             ):  # make sure to only read what is supported by this file
-                if fnmatch.fnmatch(filename, self.VAR_PATTERNS_FILE[var]):
+                # if fnmatch.fnmatch(filename, self.VAR_PATTERNS_FILE[var]): # LB: old
+                if self.VAR_PATTERNS_FILE[var] in filename:
                     _vars.append(var)
             elif var in self.AUX_REQUIRES:
                 _vars.append(var)
@@ -211,7 +219,9 @@ class ReadEarlinet(ReadUngriddedBase):
 
         # create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out["station_id"] = filename.split("/")[-2]
+        data_out["station_id"] = filename.split("/")[-1].split("_")[
+            2
+        ]  # loss of generality but should work. can also get from reading file if needed: data_in.station_ID
         data_out["data_id"] = self.data_id
         data_out["ts_type"] = self.TS_TYPE
 
@@ -227,6 +237,19 @@ class ReadEarlinet(ReadUngriddedBase):
 
         data_in = xarray.open_dataset(filename)
 
+        # LB: below is my way of getting the coords since no longer in metadata
+        # Put also just in the attributes. not sure why appears twice
+        data_out["station_coords"]["longitude"] = data_out["latitude"] = data_in[
+            "longitude"
+        ].values
+        data_out["station_coords"]["latitude"] = data_out["longitude"] = data_in[
+            "latitude"
+        ].values
+        data_out["altitude"] = data_in[
+            "altitude"
+        ].values  # Note altitude is an array for the data, station altitude is different
+        data_out["station_coords"]["altitude"] = data_in.station_altitude
+
         for k, v in self.META_NAMES_FILE.items():
             if v in self.META_NEEDED:
                 _meta = data_in.attrs[v]
@@ -237,25 +260,10 @@ class ReadEarlinet(ReadUngriddedBase):
                     _meta = None
             data_out[k] = _meta
 
-        data_out["station_name"] = re.split(r"\s|,", data_out["location"])[0].strip()
+        data_out["station_name"] = data_in.attrs["station_ID"]  # LB: define as such
 
-        str_dummy = str(data_in.StartDate)
-        year, month, day = str_dummy[0:4], str_dummy[4:6], str_dummy[6:8]
-
-        str_dummy = str(data_in.StartTime_UT).zfill(6)
-        hours, minutes, seconds = str_dummy[0:2], str_dummy[2:4], str_dummy[4:6]
-
-        datestring = "-".join([year, month, day])
-        startstring = "T".join([datestring, ":".join([hours, minutes, seconds])])
-
-        dtime = np.datetime64(startstring)
-
-        str_dummy = str(data_in.StopTime_UT).zfill(6)
-        hours, minutes, seconds = str_dummy[0:2], str_dummy[2:4], str_dummy[4:6]
-
-        stopstring = "T".join([datestring, ":".join([hours, minutes, seconds])])
-
-        stop = np.datetime64(stopstring)
+        dtime = np.datetime64(str(data_in.measurement_start_datetime))
+        stop = np.datetime64(str(data_in.measurement_stop_datetime))
 
         # in case measurement goes over midnight into a new day
         if stop < dtime:
@@ -281,7 +289,7 @@ class ReadEarlinet(ReadUngriddedBase):
             # xarray.DataArray
             arr = data_in.variables[netcdf_var_name]
             # the actual data as numpy array (or float if 0-D data, e.g. zdust)
-            val = np.float64(arr)
+            val = np.squeeze(np.float64(arr))  # squeeze to 1D array
 
             # CONVERT UNIT
             unit = None
@@ -291,7 +299,9 @@ class ReadEarlinet(ReadUngriddedBase):
                 if u in arr.attrs:
                     unit = arr.attrs[u]
             if unit is None:
-                raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
+                raise DataUnitError(
+                    f"Unit of {var} could not be accessed in file {filename}"
+                )
             unit_fac = None
             try:
                 to_unit = self._var_info[var].units
@@ -318,7 +328,9 @@ class ReadEarlinet(ReadUngriddedBase):
             # 1D variable
             if var == "zdust":
                 if not val.ndim == 0:
-                    raise ValueError("Fatal: dust layer height data must be single value")
+                    raise ValueError(
+                        "Fatal: dust layer height data must be single value"
+                    )
 
                 if unit_ok and info.minimum < val < info.maximum:
                     logger.warning(f"zdust value {val} out of range, setting to NaN")
@@ -344,7 +356,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 wvlg = var_info[var].wavelength_nm
                 wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
 
-                if not wvlg == data_in.attrs[wvlg_str]:
+                if not wvlg == float(data_in[wvlg_str]):
                     self.logger.info("No wavelength match")
                     continue
 
@@ -385,6 +397,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     var_unit=unit,
                     altitude_unit=alt_unit,
                 )
+
                 # Write everything into profile
                 data_out[var] = profile
 
@@ -431,7 +444,7 @@ class ReadEarlinet(ReadUngriddedBase):
         UngriddedData
             data object
         """
-        breakpoint()
+
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -444,7 +457,7 @@ class ReadEarlinet(ReadUngriddedBase):
             if len(self.files) == 0:
                 self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
-        
+
         # LB: turn files into a list becauase I suspect there may be a bug if you don't do this
         if isinstance(files, str):
             files = [files]
@@ -454,7 +467,9 @@ class ReadEarlinet(ReadUngriddedBase):
         if last_file is None:
             last_file = len(files)
 
-        files = files[first_file: last_file + 1] # LB: think need to +1 here in order to actually get desired subset
+        files = files[
+            first_file : last_file + 1
+        ]  # LB: think need to +1 here in order to actually get desired subset
 
         self.read_failed = []
 
