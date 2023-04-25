@@ -59,7 +59,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
     VAR_PATTERNS_FILE = {
         "ec532aer": "_Lev02_e0532",
-        "ec355aer": "_Lev2_e0355",
+        "ec355aer": "_Lev02_e0355",
         "bsc532aer": "_Lev02_b0532",
         "bsc355aer": "_Lev02_b0355",
         "bsc1064aer": "_Lev02_b1064",
@@ -80,11 +80,8 @@ class ReadEarlinet(ReadUngriddedBase):
 
     META_NAMES_FILE = dict(
         location="location",
-        # start_date="StartDate",
         start_utc="measurement_start_datetime",
         stop_utc="measurement_stop_datetime",
-        # longitude="longitude",
-        # latitude="latitude",
         wavelength_emis="wavelength",
         # wavelength_det="DetectionWavelength_nm",
         # res_raw_m="ResolutionRaw_meter",
@@ -92,6 +89,10 @@ class ReadEarlinet(ReadUngriddedBase):
         instrument_name="system",
         comment="comment",
         shots="shots",  # accumualted shots, NOT averaged like previous version
+        PI="PI",
+        dataset_name="title",
+        station_name="station_ID",
+        website="references",
         # detection_mode="DetectionMode",
         # res_eval="ResolutionEvaluated",
         # input_params="InputParameters",
@@ -104,9 +105,6 @@ class ReadEarlinet(ReadUngriddedBase):
         "location",
         "measurement_start_datetime",
         "measurement_start_datetime",
-        # "longitude",
-        # "latitude",
-        # "altitude",  # there is also station_altitude. do we need that?
     ]
 
     #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to
@@ -115,7 +113,6 @@ class ReadEarlinet(ReadUngriddedBase):
     KEEP_ADD_META = [
         "location",
         "wavelength",
-        "res_raw_m",
         "zenith_angle",
         "comment",
         "shots",
@@ -239,16 +236,16 @@ class ReadEarlinet(ReadUngriddedBase):
 
         # LB: below is my way of getting the coords since no longer in metadata
         # Put also just in the attributes. not sure why appears twice
-        data_out["station_coords"]["longitude"] = data_out["latitude"] = data_in[
-            "longitude"
-        ].values
-        data_out["station_coords"]["latitude"] = data_out["longitude"] = data_in[
-            "latitude"
-        ].values
-        data_out["altitude"] = data_in[
-            "altitude"
-        ].values  # Note altitude is an array for the data, station altitude is different
-        data_out["station_coords"]["altitude"] = data_in.station_altitude
+        data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
+            data_in["longitude"].values
+        )
+        data_out["station_coords"]["latitude"] = data_out["latitude"] = np.float64(
+            data_in["latitude"].values
+        )
+        data_out["altitude"] = np.float64(
+            data_in["altitude"].values
+        )  # Note altitude is an array for the data, station altitude is different
+        data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
 
         for k, v in self.META_NAMES_FILE.items():
             if v in self.META_NEEDED:
@@ -260,7 +257,15 @@ class ReadEarlinet(ReadUngriddedBase):
                     _meta = None
             data_out[k] = _meta
 
-        data_out["station_name"] = data_in.attrs["station_ID"]  # LB: define as such
+        breakpoint()
+
+        # Lb: think about shots and wavelength. not in attrs
+
+        # fill extra metadata which is expected but must be hacked
+        data_out["filename"] = filename
+        if "Lev02" in filename:
+            data_out["data_level"] = 2
+        data_out["country"] = data_in.attrs["location"].split(", ")[1]
 
         dtime = np.datetime64(str(data_in.measurement_start_datetime))
         stop = np.datetime64(str(data_in.measurement_stop_datetime))
@@ -500,6 +505,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     read_err=read_err,
                     remove_outliers=remove_outliers,
                 )
+                breakpoint()
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
                     self.logger.info(
                         f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
