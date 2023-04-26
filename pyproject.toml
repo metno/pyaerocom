@@ -132,6 +132,7 @@ omit = [
 ]
 
 [tool.coverage.report]
+fail_under = 75
 skip_covered = true
 exclude_lines = [
     "pragma: no cover",
@@ -207,7 +208,7 @@ install_command =
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov}
+    pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras = 
     py{,38,38,39,10}: proj-legacy
     py311: proj8
