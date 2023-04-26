@@ -82,22 +82,20 @@ class ReadEarlinet(ReadUngriddedBase):
         location="location",
         start_utc="measurement_start_datetime",
         stop_utc="measurement_stop_datetime",
-        wavelength_emis="wavelength",
         # wavelength_det="DetectionWavelength_nm",
         # res_raw_m="ResolutionRaw_meter",
-        zenith_angle="zenith_angle",
         instrument_name="system",
         comment="comment",
-        shots="shots",  # accumualted shots, NOT averaged like previous version
         PI="PI",
         dataset_name="title",
         station_name="station_ID",
         website="references",
+        wavelength_emis="wavelength",
         # detection_mode="DetectionMode",
         # res_eval="ResolutionEvaluated",
         # input_params="InputParameters",
         # altitude="altitude",
-        eval_method="backscatter_evaluation_method",
+        # eval_method="backscatter_evaluation_method",
     )
     #: metadata keys that are needed for reading (must be values in
     #: :attr:`META_NAMES_FILE`)
@@ -170,9 +168,7 @@ class ReadEarlinet(ReadUngriddedBase):
         #: files that were actually excluded from reading
         self.excluded_files = []
 
-    def read_file(
-        self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True
-    ):
+    def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
 
         Parameters
@@ -247,6 +243,7 @@ class ReadEarlinet(ReadUngriddedBase):
         )  # Note altitude is an array for the data, station altitude is different
         data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
 
+        # get intersection of metadaa in ddataa_out and data_in
         for k, v in self.META_NAMES_FILE.items():
             if v in self.META_NEEDED:
                 _meta = data_in.attrs[v]
@@ -257,11 +254,10 @@ class ReadEarlinet(ReadUngriddedBase):
                     _meta = None
             data_out[k] = _meta
 
-        breakpoint()
-
-        # Lb: think about shots and wavelength. not in attrs
-
-        # fill extra metadata which is expected but must be hacked
+        # get metadata expected in StationData but not in data_in's metadata
+        data_out["wavelength_emis"] = data_in["wavelength"]
+        data_out["shots"] = np.float64(data_in["shots"])
+        data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
         data_out["filename"] = filename
         if "Lev02" in filename:
             data_out["data_level"] = 2
@@ -304,9 +300,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 if u in arr.attrs:
                     unit = arr.attrs[u]
             if unit is None:
-                raise DataUnitError(
-                    f"Unit of {var} could not be accessed in file {filename}"
-                )
+                raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
             unit_fac = None
             try:
                 to_unit = self._var_info[var].units
@@ -333,9 +327,7 @@ class ReadEarlinet(ReadUngriddedBase):
             # 1D variable
             if var == "zdust":
                 if not val.ndim == 0:
-                    raise ValueError(
-                        "Fatal: dust layer height data must be single value"
-                    )
+                    raise ValueError("Fatal: dust layer height data must be single value")
 
                 if unit_ok and info.minimum < val < info.maximum:
                     logger.warning(f"zdust value {val} out of range, setting to NaN")
@@ -505,7 +497,6 @@ class ReadEarlinet(ReadUngriddedBase):
                     read_err=read_err,
                     remove_outliers=remove_outliers,
                 )
-                breakpoint()
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
                     self.logger.info(
                         f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
@@ -568,9 +559,15 @@ class ReadEarlinet(ReadUngriddedBase):
                         data_obj.add_chunk(add)
 
                     # write common meta info for this station
-                    data_obj._data[idx:stop, col_idx["latitude"]] = stat["latitude"]
-                    data_obj._data[idx:stop, col_idx["longitude"]] = stat["longitude"]
-                    data_obj._data[idx:stop, col_idx["altitude"]] = stat["altitude"]
+                    data_obj._data[idx:stop, col_idx["latitude"]] = stat["station_coords"][
+                        "latitude"
+                    ]
+                    data_obj._data[idx:stop, col_idx["longitude"]] = stat["station_coords"][
+                        "longitude"
+                    ]
+                    data_obj._data[idx:stop, col_idx["altitude"]] = stat["station_coords"][
+                        "altitude"
+                    ]
                     data_obj._data[idx:stop, col_idx["meta"]] = meta_key
 
                     # write data to data object
