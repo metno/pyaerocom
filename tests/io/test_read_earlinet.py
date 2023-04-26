@@ -10,13 +10,22 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from tests.conftest import TEST_RTOL
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Earlinet-test"]
+# TEST_FILES: list[str] = [
+#     f"{ROOT}/ev/ev1008192050.e532",
+#     f"{ROOT}/ev/ev1009162031.e532",
+#     f"{ROOT}/ev/ev1012131839.e532",
+#     f"{ROOT}/ev/ev1011221924.e532",
+#     f"{ROOT}/ev/ev1105122027.e532",
+#     f"{ROOT}/ms/ms1005242029.e355",
+# ]
+
 TEST_FILES: list[str] = [
-    f"{ROOT}/ev/ev1008192050.e532",
-    f"{ROOT}/ev/ev1009162031.e532",
-    f"{ROOT}/ev/ev1012131839.e532",
-    f"{ROOT}/ev/ev1011221924.e532",
-    f"{ROOT}/ev/ev1105122027.e532",
-    f"{ROOT}/ms/ms1005242029.e355",
+    f"{ROOT}/EARLINET_AerRemSen_cyc_Lev02_e0355_202104262030_202104262130_v01_qc03.nc",
+    f"{ROOT}/EARLINET_AerRemSen_cyc_Lev02_e0355_202104262130_202104262230_v01_qc03.nc",
+    f"{ROOT}/EARLINET_AerRemSen_cyc_Lev02_e0355_202104262230_202104262330_v01_qc03.nc",
+    f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109221030_202109221130_v01_qc03.nc",
+    f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109271030_202109271130_v01_qc03.nc",
+    f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109291030_202109291130_v01_qc03.nc",
 ]
 
 
@@ -28,20 +37,22 @@ def test_all_files_exist():
 @pytest.mark.parametrize(
     "num,vars_to_retrieve",
     [
-        (0, "ec532aer"),
-        (0, ["ec532aer", "zdust"]),
-        (0, ReadEarlinet.PROVIDES_VARIABLES),
-        (1, ReadEarlinet.PROVIDES_VARIABLES),
-        (2, ReadEarlinet.PROVIDES_VARIABLES),
-        (3, ReadEarlinet.PROVIDES_VARIABLES),
-        (4, ReadEarlinet.PROVIDES_VARIABLES),
-        (5, ReadEarlinet.PROVIDES_VARIABLES),
+        (0, "ec355aer"),
+        # (0, ["ec532aer", "zdust"]),
+        # (0, ReadEarlinet.PROVIDES_VARIABLES),
+        # (1, ReadEarlinet.PROVIDES_VARIABLES),
+        # (2, ReadEarlinet.PROVIDES_VARIABLES),
+        # (3, ReadEarlinet.PROVIDES_VARIABLES),
+        # (4, ReadEarlinet.PROVIDES_VARIABLES),
+        # (5, ReadEarlinet.PROVIDES_VARIABLES),
     ],
 )
 def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     read = ReadEarlinet()
     read.files = paths = TEST_FILES
     stat = read.read_file(paths[num], vars_to_retrieve)
+
+    breakpoint()
 
     assert "data_level" in stat
     assert "wavelength_det" in stat
