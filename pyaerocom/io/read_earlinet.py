@@ -320,7 +320,7 @@ class ReadEarlinet(ReadUngriddedBase):
             if read_err and var in self.ERR_VARNAMES:
                 err_name = self.ERR_VARNAMES[var]
                 if err_name in data_in.variables:
-                    err = np.float64(data_in.variables[err_name])
+                    err = np.squeeze(np.float64(data_in.variables[err_name]))
                     if unit_ok:
                         err *= unit_fac
                     err_read = True
@@ -648,6 +648,7 @@ class ReadEarlinet(ReadUngriddedBase):
         list
             list containing file paths
         """
+        breakpoint()
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -674,6 +675,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
             patterns.append(_pattern)
 
+        # LB: think about how to structure Earlinet data before considering implementation details
         matches = []
         for root, dirnames, files in os.walk(self.data_dir):
             paths = [os.path.join(root, f) for f in files]
