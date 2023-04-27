@@ -10,22 +10,10 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from tests.conftest import TEST_RTOL
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Earlinet-test"]
-# TEST_FILES: list[str] = [
-#     f"{ROOT}/ev/ev1008192050.e532",
-#     f"{ROOT}/ev/ev1009162031.e532",
-#     f"{ROOT}/ev/ev1012131839.e532",
-#     f"{ROOT}/ev/ev1011221924.e532",
-#     f"{ROOT}/ev/ev1105122027.e532",
-#     f"{ROOT}/ms/ms1005242029.e355",
-# ]
 
 TEST_FILES: list[str] = [
     f"{ROOT}/EARLINET_AerRemSen_cyc_Lev02_e0355_202104262030_202104262130_v01_qc03.nc",
-    f"{ROOT}/EARLINET_AerRemSen_cyc_Lev02_e0355_202104262130_202104262230_v01_qc03.nc",
-    f"{ROOT}/EARLINET_AerRemSen_cyc_Lev02_e0355_202104262230_202104262330_v01_qc03.nc",
     f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109221030_202109221130_v01_qc03.nc",
-    f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109271030_202109271130_v01_qc03.nc",
-    f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109291030_202109291130_v01_qc03.nc",
 ]
 
 
@@ -38,13 +26,9 @@ def test_all_files_exist():
     "num,vars_to_retrieve",
     [
         (0, "ec355aer"),
-        # (0, ["ec532aer", "zdust"]),
-        # (0, ReadEarlinet.PROVIDES_VARIABLES),
-        # (1, ReadEarlinet.PROVIDES_VARIABLES),
-        # (2, ReadEarlinet.PROVIDES_VARIABLES),
-        # (3, ReadEarlinet.PROVIDES_VARIABLES),
-        # (4, ReadEarlinet.PROVIDES_VARIABLES),
-        # (5, ReadEarlinet.PROVIDES_VARIABLES),
+        (1, "bsc532aer"),
+        (0, ReadEarlinet.PROVIDES_VARIABLES),
+        (1, ReadEarlinet.PROVIDES_VARIABLES),
     ],
 )
 def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
@@ -52,34 +36,32 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     read.files = paths = TEST_FILES
     stat = read.read_file(paths[num], vars_to_retrieve)
 
-    breakpoint()
-
     assert "data_level" in stat
-    assert "wavelength_det" in stat
+    assert "wavelength_emis" in stat
     assert "has_zdust" in stat
-    assert "eval_method" in stat
+    assert "location" in stat
 
     if num != 0:
         return
 
-    assert "ec532aer" in stat.var_info
-    assert stat.var_info["ec532aer"]["unit_ok"]
-    assert stat.var_info["ec532aer"]["err_read"]
-    assert stat.var_info["ec532aer"]["outliers_removed"]
+    assert "ec355aer" in stat.var_info
+    assert stat.var_info["ec355aer"]["unit_ok"]
+    assert stat.var_info["ec355aer"]["err_read"]
+    assert stat.var_info["ec355aer"]["outliers_removed"]
 
-    ec532aer = stat.ec532aer
-    assert isinstance(ec532aer, VerticalProfile)
-    assert len(ec532aer.data) == 253
-    assert np.sum(np.isnan(ec532aer.data)) == 216
+    ec355aer = stat.ec355aer
+    assert isinstance(ec355aer, VerticalProfile)
+    assert len(ec355aer.data) == 164
+    assert np.sum(np.isnan(ec355aer.data)) == 0
 
-    assert np.nanmean(ec532aer.data) == pytest.approx(4.463068618148296, rel=TEST_RTOL)
-    assert np.nanstd(ec532aer.data) == pytest.approx(1.8529271228530515, rel=TEST_RTOL)
+    assert np.nanmean(ec355aer.data) == pytest.approx(24.95260001522142, rel=TEST_RTOL)
+    assert np.nanstd(ec355aer.data) == pytest.approx(32.95176956505217, rel=TEST_RTOL)
 
-    assert np.nanmean(ec532aer.data_err) == pytest.approx(4.49097234883772, rel=TEST_RTOL)
-    assert np.nanstd(ec532aer.data_err) == pytest.approx(0.8332285038985179, rel=TEST_RTOL)
+    assert np.nanmean(ec355aer.data_err) == pytest.approx(3.9197741510787574, rel=TEST_RTOL)
+    assert np.nanstd(ec355aer.data_err) == pytest.approx(2.084773348362552, rel=TEST_RTOL)
 
-    assert np.min(ec532aer.altitude) == pytest.approx(331.29290771484375, rel=TEST_RTOL)
-    assert np.max(ec532aer.altitude) == pytest.approx(7862.52490234375, rel=TEST_RTOL)
+    assert np.min(ec355aer.altitude) == pytest.approx(935.4610692253234, rel=TEST_RTOL)
+    assert np.max(ec355aer.altitude) == pytest.approx(10678.245216562595, rel=TEST_RTOL)
 
 
 @pytest.mark.parametrize(
@@ -127,6 +109,8 @@ def test_ReadEarlinet_read():
         (None, "*xy*", 0),
     ],
 )
+
+# Needs some consideration of how we store the data
 def test_ReadEarlinet_get_file_list(
     vars_to_retrieve: list[str] | None, pattern: str | None, num: int
 ):
