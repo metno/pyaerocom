@@ -4,6 +4,7 @@ import os
 import re
 
 import numpy as np
+import pandas as pd
 import xarray
 
 from pyaerocom import const
@@ -263,8 +264,10 @@ class ReadEarlinet(ReadUngriddedBase):
             data_out["data_level"] = 2
         data_out["country"] = data_in.attrs["location"].split(", ")[1]
 
-        dtime = np.datetime64(str(data_in.measurement_start_datetime))
-        stop = np.datetime64(str(data_in.measurement_stop_datetime))
+        breakpoint()
+
+        dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy()
+        stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy()
 
         # in case measurement goes over midnight into a new day
         if stop < dtime:
