@@ -264,8 +264,6 @@ class ReadEarlinet(ReadUngriddedBase):
             data_out["data_level"] = 2
         data_out["country"] = data_in.attrs["location"].split(", ")[1]
 
-        breakpoint()
-
         dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy()
         stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy()
 
