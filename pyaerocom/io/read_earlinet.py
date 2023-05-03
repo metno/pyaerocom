@@ -648,7 +648,6 @@ class ReadEarlinet(ReadUngriddedBase):
         list
             list containing file paths
         """
-        breakpoint()
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -677,12 +676,12 @@ class ReadEarlinet(ReadUngriddedBase):
 
         # LB: think about how to structure Earlinet data before considering implementation details
         matches = []
-        for root, dirnames, files in os.walk(self.data_dir):
+        for root, dirnames, files in os.walk(self.data_dir, topdown=True):
             paths = [os.path.join(root, f) for f in files]
             for _pattern in patterns:
                 for path in paths:
                     file = os.path.basename(path)
-                    if not fnmatch.fnmatch(file, _pattern):
+                    if not _pattern in file:
                         continue
                     elif file in exclude:
                         self.excluded_files.append(path)
