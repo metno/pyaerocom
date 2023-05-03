@@ -82,15 +82,15 @@ def test_ReadEarlinet_read_file_error(vars_to_retrieve: str, error: str):
 def test_ReadEarlinet_read():
     read = ReadEarlinet()
     read.files = TEST_FILES
-    data = read.read(vars_to_retrieve="ec532aer")
+    data = read.read(vars_to_retrieve="ec355aer")
 
-    assert len(data.metadata) == 5
-    assert data.shape == (786, 12)
+    assert len(data.metadata) == 1
+    assert data.shape == (164, 12)
 
-    assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(-0.440742, rel=TEST_RTOL)
-    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(24.793547, rel=TEST_RTOL)
-    assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(167.90787, rel=TEST_RTOL)
-
+    assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(-2.188435098876817, rel=TEST_RTOL)
+    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(24.95260001522142, rel=TEST_RTOL)
+    assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(160.84047083963125, rel=TEST_RTOL)
+    breakpoint()
     merged = data.to_station_data("Evora", freq="monthly")
     assert np.nanmin(merged.ec532aer) == pytest.approx(0.220322, rel=TEST_RTOL)
     assert np.nanmean(merged.ec532aer) == pytest.approx(23.093238, rel=TEST_RTOL)
