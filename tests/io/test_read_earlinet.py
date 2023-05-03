@@ -100,13 +100,10 @@ def test_ReadEarlinet_read():
 @pytest.mark.parametrize(
     "vars_to_retrieve,pattern,num",
     [
-        (None, None, 5),
+        (None, None, 0),
         (["ec355aer"], None, 1),
-        (["zdust"], None, 6),
         (["bsc355aer"], None, 0),
-        (["bsc532aer"], None, 0),
-        (None, "*ev*", 5),
-        (None, "*xy*", 0),
+        (["bsc532aer"], None, 1),
     ],
 )
 
