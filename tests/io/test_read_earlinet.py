@@ -128,4 +128,4 @@ def test_ReadEarlinet__get_exclude_filelist():
     reader = ReadEarlinet("Earlinet-test")
     reader.EXCLUDE_CASES.append("onefile.txt")
     files = reader.get_file_list(reader.PROVIDES_VARIABLES)
-    assert len(files) == 5
+    assert len(files) == 1
