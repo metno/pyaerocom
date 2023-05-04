@@ -90,11 +90,12 @@ def test_ReadEarlinet_read():
     assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(-2.188435098876817, rel=TEST_RTOL)
     assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(24.95260001522142, rel=TEST_RTOL)
     assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(160.84047083963125, rel=TEST_RTOL)
-    breakpoint()
-    merged = data.to_station_data("Evora", freq="monthly")
-    assert np.nanmin(merged.ec532aer) == pytest.approx(0.220322, rel=TEST_RTOL)
-    assert np.nanmean(merged.ec532aer) == pytest.approx(23.093238, rel=TEST_RTOL)
-    assert np.nanmax(merged.ec532aer) == pytest.approx(111.478665, rel=TEST_RTOL)
+    
+    merged = data.to_station_data(0)
+    # same values as above because only one meta_idx
+    assert np.nanmin(merged.ec355aer) == pytest.approx(-2.188435098876817, rel=TEST_RTOL)
+    assert np.nanmean(merged.ec355aer) == pytest.approx(24.95260001522142, rel=TEST_RTOL)
+    assert np.nanmax(merged.ec355aer) == pytest.approx(160.84047083963125, rel=TEST_RTOL)
 
 
 @pytest.mark.parametrize(
