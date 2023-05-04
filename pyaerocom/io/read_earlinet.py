@@ -89,7 +89,7 @@ class ReadEarlinet(ReadUngriddedBase):
         comment="comment",
         PI="PI",
         dataset_name="title",
-        station_name="station_ID",
+        #station_name="station_ID",
         website="references",
         wavelength_emis="wavelength",
         # detection_mode="DetectionMode",
@@ -262,10 +262,11 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out["filename"] = filename
         if "Lev02" in filename:
             data_out["data_level"] = 2
+        data_out["station_name"] = data_in.attrs["location"].split(", ")[0]
         data_out["country"] = data_in.attrs["location"].split(", ")[1]
-
-        dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy()
-        stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy()
+        
+        dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy().astype("datetime64[s]")
+        stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy().astype("datetime64[s]")
 
         # in case measurement goes over midnight into a new day
         if stop < dtime:
@@ -402,7 +403,6 @@ class ReadEarlinet(ReadUngriddedBase):
             data_out["var_info"][var].update(
                 unit_ok=unit_ok, err_read=err_read, outliers_removed=outliers_removed
             )
-
         return data_out
 
     def read(
