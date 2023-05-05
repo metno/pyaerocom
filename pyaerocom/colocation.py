@@ -748,6 +748,8 @@ def colocate_gridded_ungridded(
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     # use only sites that are within model domain
+    breakpoint()
+    # LB: Issue happens below
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
 
     # get timeseries from all stations in provided time resolution

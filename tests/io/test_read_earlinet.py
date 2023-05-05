@@ -35,6 +35,7 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     read = ReadEarlinet()
     read.files = paths = TEST_FILES
     stat = read.read_file(paths[num], vars_to_retrieve)
+    
 
     assert "data_level" in stat
     assert "wavelength_emis" in stat

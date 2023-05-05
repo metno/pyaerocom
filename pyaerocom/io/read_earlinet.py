@@ -35,7 +35,7 @@ class ReadEarlinet(ReadUngriddedBase):
     SUPPORTED_DATASETS = [const.EARLINET_NAME]
 
     #: default variables for read method
-    DEFAULT_VARS = ["ec532aer"]
+    DEFAULT_VARS = ["bsc532aer", "ec532aer"]
 
     #: all data values that exceed this number will be set to NaN on read. This
     #: is because iris, xarray, etc. assign a FILL VALUE of the order of e36
@@ -95,7 +95,7 @@ class ReadEarlinet(ReadUngriddedBase):
         # detection_mode="DetectionMode",
         # res_eval="ResolutionEvaluated",
         # input_params="InputParameters",
-        # altitude="altitude",
+        altitude="altitude",
         # eval_method="backscatter_evaluation_method",
     )
     #: metadata keys that are needed for reading (must be values in
@@ -229,7 +229,7 @@ class ReadEarlinet(ReadUngriddedBase):
         # Iterate over the lines of the file
         self.logger.debug(f"Reading file {filename}")
 
-        data_in = xarray.open_dataset(filename)
+        data_in = xarray.open_dataset(filename, engine = "netcdf4")
 
         # LB: below is my way of getting the coords since no longer in metadata
         # Put also just in the attributes. not sure why appears twice
@@ -262,8 +262,10 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out["filename"] = filename
         if "Lev02" in filename:
             data_out["data_level"] = 2
-        data_out["station_name"] = data_in.attrs["location"].split(", ")[0]
-        data_out["country"] = data_in.attrs["location"].split(", ")[1]
+        loc_split = data_in.attrs["location"].split(", ")
+        data_out["station_name"] = loc_split[0]
+        if len(loc_split) > 1:
+            data_out["country"] = loc_split[1]
         
         dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy().astype("datetime64[s]")
         stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy().astype("datetime64[s]")

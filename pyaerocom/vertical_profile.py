@@ -30,6 +30,7 @@ class VerticalProfile:
         self.var_info = BrowseDict()
         self.var_info["altitude"] = dict(units=altitude_unit)
         self.var_info[self.var_name] = dict(units=var_unit)
+        #self.var_info[self.var_name]["altitude"] = dict(units=altitude_unit)
 
         if hasattr(self.data_err, "__len__"):
             assert len(self.data) == len(self.data_err) == len(self.altitude)
