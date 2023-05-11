@@ -125,18 +125,18 @@ statistics_defaults = {
     "mb": {
         "name": "Mean Bias",
         "longname": "Mean Bias",
-        "scale": None,
+        "scale": [-150, -100, -50 ,0, 50, 100, 150], # percentage scale to be multiplied by IQR
         "colmap": "bwr",
-        "unit": "1",
+        "unit": "var",
         "decimals": 1,
         "forecast": True,
     },
     "mab": {
         "name": "MAB",
         "longname": "Mean Absolute Bias",
-        "scale": None,
+        "scale": [-150, -100, -50 ,0, 50, 100, 150], # percentage scale to be multiplied by IQR
         "colmap": "bwr",
-        "unit": "1",
+        "unit": "var",
         "decimals": 1,
         "forecast": True,
     },
