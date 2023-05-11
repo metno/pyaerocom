@@ -1053,3 +1053,24 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     coldata.data.attrs["Model_STP_corr"] = True
     coldata.data.attrs["Model_STP_corr_info"] = info_str
     return coldata
+
+
+def colocate_vertical_profile_gridded(
+    data,
+    data_ref,
+    ts_type=None,
+    start=None,
+    stop=None,
+    filter_name=None,
+    regrid_res_deg=None,
+    harmonise_units=True,
+    regrid_scheme="areaweighted",
+    var_ref=None,
+    update_baseyear_gridded=None,
+    min_num_obs=None,
+    colocate_time=False,
+    use_climatology_ref=False,
+    resample_how=None,
+    **kwargs,
+):
+    pass

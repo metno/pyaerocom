@@ -89,7 +89,7 @@ class ReadEarlinet(ReadUngriddedBase):
         comment="comment",
         PI="PI",
         dataset_name="title",
-        #station_name="station_ID",
+        # station_name="station_ID",
         website="references",
         wavelength_emis="wavelength",
         # detection_mode="DetectionMode",
@@ -229,7 +229,7 @@ class ReadEarlinet(ReadUngriddedBase):
         # Iterate over the lines of the file
         self.logger.debug(f"Reading file {filename}")
 
-        data_in = xarray.open_dataset(filename, engine = "netcdf4")
+        data_in = xarray.open_dataset(filename, engine="netcdf4")
 
         # LB: below is my way of getting the coords since no longer in metadata
         # Put also just in the attributes. not sure why appears twice
@@ -266,7 +266,7 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out["station_name"] = loc_split[0]
         if len(loc_split) > 1:
             data_out["country"] = loc_split[1]
-        
+
         dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy().astype("datetime64[s]")
         stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy().astype("datetime64[s]")
 
@@ -283,6 +283,7 @@ class ReadEarlinet(ReadUngriddedBase):
             err_read = False
             unit_ok = False
             outliers_removed = False
+            has_altitude = False
 
             netcdf_var_name = self.VAR_NAMES_FILE[var]
             # check if the desired variable is in the file
@@ -374,6 +375,7 @@ class ReadEarlinet(ReadUngriddedBase):
                         alt_unit = to_alt_unit
                     except Exception as e:
                         self.logger.warning(f"Failed to convert unit: {repr(e)}")
+                has_altitude = True
 
                 # remove outliers from data, if applicable
                 if remove_outliers and unit_ok:
@@ -403,8 +405,12 @@ class ReadEarlinet(ReadUngriddedBase):
                 data_out[var] = profile
 
             data_out["var_info"][var].update(
-                unit_ok=unit_ok, err_read=err_read, outliers_removed=outliers_removed
+                unit_ok=unit_ok,
+                err_read=err_read,
+                outliers_removed=outliers_removed,
+                has_altitute=has_altitude,
             )
+            # LB: update data_out["var_info"] with altitude info
         return data_out
 
     def read(
