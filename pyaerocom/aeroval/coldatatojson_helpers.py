@@ -323,22 +323,23 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
 
     yearkeys = list(data_allyears.groupby("time.year").groups)
 
-    if resolution == "seasonal":
-        seasons = ["DJF", "MAM", "JJA", "SON"]
-    elif resolution == "yearly":
-        seasons = ["year"]
-    else:
-        raise ValueError(f"Invalid resolution. Got {resolution}.")
+    # if resolution == "seasonal":
+    #     seasons = ["DJF", "MAM", "JJA", "SON"]
+    # elif resolution == "yearly":
+    #     seasons = ["year"]
+    # else:
+    #     raise ValueError(f"Invalid resolution. Got {resolution}.")
+    seasons = _get_period_keys(resolution)
 
     first = True
     for yr in yearkeys:
         data = data_allyears.where(data_allyears["time.year"] == yr, drop=True)
         for seas in seasons:
             rep_week_ds = xr.Dataset()
-            if resolution == "seasonal":
-                mon_slice = data.where(data["time.season"] == seas, drop=True)
-            elif resolution == "yearly":
+            if seas == "All":
                 mon_slice = data
+            else:
+                mon_slice = data.where(data["time.season"] == seas, drop=True)
 
             month_stamp = f"{seas}"
 
@@ -357,10 +358,14 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
             rep_week_ds["rep_week"] = rep_week
             rep_week_ds["month_stamp"] = (("dummy_time"), month_stamps)
 
-            if seas in ["DJF", "year"]:
-                rep_week_full_period = rep_week_ds
-            else:
+            try:
                 rep_week_full_period = xr.concat([rep_week_full_period, rep_week_ds], dim="period")
+            except:
+                rep_week_full_period = rep_week_ds
+            # if seas in ["DJF", "year"]:
+            #     rep_week_full_period = rep_week_ds
+            # else:
+            #     rep_week_full_period = xr.concat([rep_week_full_period, rep_week_ds], dim="period")
 
         if first:
             output_array = rep_week_full_period
@@ -381,10 +386,11 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
 
 
 def _get_period_keys(resolution):
-    if resolution == "seasonal":
-        period_keys = ["DJF", "MAM", "JJA", "SON"]
-    elif resolution == "yearly":
-        period_keys = ["All"]
+    period_keys = ["All", "DJF", "MAM", "JJA", "SON"]
+    # if resolution == "seasonal":
+    #     period_keys = ["DJF", "MAM", "JJA", "SON"]
+    # elif resolution == "yearly":
+    #     period_keys = ["All"]
     return period_keys
 
 
@@ -425,9 +431,13 @@ def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
 
     ts_data = {
         "time": time,
-        "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
-        "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+        "obs": deepcopy(yeardict), "mod": deepcopy(yeardict),
     }
+    # ts_data = {
+    #     "time": time,
+    #     "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+    #     "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+    # }
     ts_data["station_name"] = stat_name
     ts_data.update(meta_glob)
 
@@ -523,10 +533,14 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
         ts_objs_reg = None
     else:
         for regid, regname in region_ids.items():
+            # ts_data = {
+            #     "time": time,
+            #     "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+            #     "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+            # }
             ts_data = {
                 "time": time,
-                "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
-                "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+                "obs": deepcopy(yeardict), "mod": deepcopy(yeardict),
             }
             ts_data["station_name"] = regname
             ts_data.update(meta_glob)
