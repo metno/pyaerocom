@@ -444,12 +444,12 @@ class UngriddedData:
     def has_flag_data(self):
         """Boolean specifying whether this object contains flag data"""
         return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
-    
+
     @property
     def is_vertical_profile(self):
         """Boolean specifying whether is vertical profile"""
         return self._is_vertical_profile
-    
+
     @is_vertical_profile.setter
     def is_vertical_profile(self, value):
         """Time dimension of data"""

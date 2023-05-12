@@ -569,7 +569,7 @@ class Colocator(ColocationSetup):
         bool: True if obs_id refers to an ungridded observation, else False
         """
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
-    
+
     # @property
     # def obs_is_3d(self):
     #     """

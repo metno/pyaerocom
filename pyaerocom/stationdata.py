@@ -435,7 +435,7 @@ class StationData(StationMetaData):
                 # this has been handled above
                 continue
             if self[key] is None and not add_none_vals:
-                #logger.info(f"No metadata available for key {key}")
+                # logger.info(f"No metadata available for key {key}")
                 continue
 
             val = self[key]
