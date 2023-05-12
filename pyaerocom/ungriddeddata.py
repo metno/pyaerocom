@@ -452,7 +452,8 @@ class UngriddedData:
 
     @is_vertical_profile.setter
     def is_vertical_profile(self, value):
-        """Time dimension of data"""
+        """Boolean specifying whether is vertical profile"""
+        breakpoint() # not being set during ReadEarlinet
         self._is_vertical_profile = value
 
     def copy(self):
