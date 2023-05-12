@@ -1051,7 +1051,6 @@ class UngriddedData:
                 sd.station_coords[ck] = meta[ck]
             except KeyError:
                 pass
-        breakpoint()
         # if no input variables are provided, use the ones that are available
         # for this metadata block
         if vars_to_convert is None:
@@ -1717,6 +1716,8 @@ class UngriddedData:
                 # Either need to skip on this case
                 # or find out why altitude is not included like var is
                 for var in meta["var_info"]:
+                    if var == "altitude":
+                        continue
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
@@ -1940,7 +1941,7 @@ class UngriddedData:
 
         # separate filters by strin, list, etc.
         filters = self._init_meta_filters(**filter_attributes)
-        breakpoint()
+
         # find all metadata blocks that match the filters
         meta_matches, totnum_new = self._find_meta_matches(
             negate,
@@ -1969,6 +1970,8 @@ class UngriddedData:
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = {}
             for var in meta["var_info"]:
+                if var == "altitude":
+                    continue
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
 
