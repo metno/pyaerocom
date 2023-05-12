@@ -155,6 +155,7 @@ class UngriddedData:
         self._idx = -1
 
         self.filter_hist = {}
+        self._is_vertical_profile = False
 
     def _get_data_revision_helper(self, data_id):
         """
@@ -443,6 +444,16 @@ class UngriddedData:
     def has_flag_data(self):
         """Boolean specifying whether this object contains flag data"""
         return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
+    
+    @property
+    def is_vertical_profile(self):
+        """Boolean specifying whether is vertical profile"""
+        return self._is_vertical_profile
+    
+    @is_vertical_profile.setter
+    def is_vertical_profile(self, value):
+        """Time dimension of data"""
+        self._is_vertical_profile = value
 
     def copy(self):
         """Make a copy of this object

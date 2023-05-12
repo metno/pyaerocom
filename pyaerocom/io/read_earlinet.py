@@ -482,6 +482,8 @@ class ReadEarlinet(ReadUngriddedBase):
         self.read_failed = []
 
         data_obj = UngriddedData()
+        breakpoint()
+        data_obj.is_vertical_profile = True
         col_idx = data_obj.index
         meta_key = -1.0
         idx = 0

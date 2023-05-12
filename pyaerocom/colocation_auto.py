@@ -570,13 +570,13 @@ class Colocator(ColocationSetup):
         """
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
     
-    @proprty
-    def obs_is_3d(self):
-        """
-        bool: True if obs_id refers to an 3d observation (e.g., VerticalProfile), else False
-        """
-        breakpoint()
-        pass
+    # @property
+    # def obs_is_3d(self):
+    #     """
+    #     bool: True if obs_id refers to an 3d observation (e.g., VerticalProfile), else False
+    #     """
+    #     breakpoint()
+    #     pass
 
     @property
     def model_reader(self):
@@ -932,6 +932,7 @@ class Colocator(ColocationSetup):
             obs_data.remove_outliers(
                 var_name, low=low, high=high, inplace=True, move_to_trash=False
             )
+        breakpoint()
         return obs_data
 
     def _check_obs_filters(self):
