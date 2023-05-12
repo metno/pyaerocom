@@ -24,6 +24,7 @@ from pyaerocom.colocation import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
+from pyaerocom.colocation_3d import colocate_vertical_profile_gridded
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
@@ -349,6 +350,7 @@ class ColocationSetup(BrowseDict):
         self.obs_vert_type = None
         self.obs_ts_type_read = None
         self.obs_filters = {}
+        self.obs_is_3d = False
 
         self.read_opts_ungridded = {}
 
@@ -567,6 +569,14 @@ class Colocator(ColocationSetup):
         bool: True if obs_id refers to an ungridded observation, else False
         """
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
+    
+    @proprty
+    def obs_is_3d(self):
+        """
+        bool: True if obs_id refers to an 3d observation (e.g., VerticalProfile), else False
+        """
+        breakpoint()
+        pass
 
     @property
     def model_reader(self):
