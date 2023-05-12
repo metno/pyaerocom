@@ -125,7 +125,7 @@ statistics_defaults = {
     "mb": {
         "name": "Mean Bias",
         "longname": "Mean Bias",
-        "scale": [-1.5, -1, -0.5, 0, 0.5, 1, 1.5], # factor to be multiplied by IQR
+        "scale": [-0.2, -0.15, -0.1, -0.5, 0, 0.5, 0.1, 0.15, 0.2], # factor to be multiplied by range of data
         "colmap": "bwr",
         "unit": "var",
         "decimals": 1,
@@ -134,7 +134,7 @@ statistics_defaults = {
     "mab": {
         "name": "MAB",
         "longname": "Mean Absolute Bias",
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5], # factor to be multiplied by IQR
+        "scale":  [0, 0.5, 0.1, 0.15, 0.2], # factor to be multiplied by range of data
         "colmap": "bwr",
         "unit": "var",
         "decimals": 1,
