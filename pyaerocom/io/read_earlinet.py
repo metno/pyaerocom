@@ -46,7 +46,9 @@ class ReadEarlinet(ReadUngriddedBase):
     ALTITUDE_ID = "altitude"
 
     #: temporal resolution
-    TS_TYPE = "native"
+    # Note: This is an approximation based on the fact that MOST of the data appears to be collected
+    # at an hourly reoslution. Some files are a little less, but typically this is the case
+    TS_TYPE = "hourly"
 
     #: dictionary specifying the file search patterns for each variable
     # VAR_PATTERNS_FILE = {
