@@ -102,7 +102,7 @@ exclude = [
 minversion = "6.0"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = "--failed-first --import-mode=append"
+addopts = "--failed-first"
 xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
@@ -132,6 +132,7 @@ omit = [
 ]
 
 [tool.coverage.report]
+fail_under = 75
 skip_covered = true
 exclude_lines = [
     "pragma: no cover",
@@ -202,15 +203,12 @@ requires =
     cython > 0.29.15 
 
 [testenv]
-install_command = 
-    python -m pip install {opts} {packages} --use-deprecated=legacy-resolver
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov}
+    pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras = 
-    py{,38,38,39,10}: proj-legacy
-    py311: proj8
+    proj8
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
