@@ -125,18 +125,34 @@ statistics_defaults = {
     "mb": {
         "name": "Mean Bias",
         "longname": "Mean Bias",
-        "scale": None,
+        "scale": [
+            -0.15,
+            -0.1,
+            -0.05,
+            0,
+            0.05,
+            0.1,
+            0.15,
+        ],  # factor to be multiplied by range of data
         "colmap": "bwr",
-        "unit": "%",
+        "unit": "var",
         "decimals": 1,
         "forecast": True,
     },
     "mab": {
         "name": "MAB",
         "longname": "Mean Absolute Bias",
-        "scale": None,
+        "scale": [
+            0,
+            0.025,
+            0.05,
+            0.075,
+            0.1,
+            0.125,
+            0.15,
+        ],  # factor to be multiplied by range of data
         "colmap": "bwr",
-        "unit": "%",
+        "unit": "var",
         "decimals": 1,
         "forecast": True,
     },
