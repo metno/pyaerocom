@@ -273,9 +273,9 @@ def colocate_gridded_gridded(
 
     # 1. match model data with potential input start / stop and update if
     # applicable
-    start, stop = _check_time_ival(data, start, stop)
+    start, stop = check_time_ival(data, start, stop)
     # 2. narrow it down with obsdata availability, if applicable
-    start, stop = _check_time_ival(data_ref, start, stop)
+    start, stop = check_time_ival(data_ref, start, stop)
 
     data = data.crop(time_range=(start, stop))
     data_ref = data_ref.crop(time_range=(start, stop))
@@ -350,7 +350,7 @@ def colocate_gridded_gridded(
     return coldata
 
 
-def _check_time_ival(data, start, stop):
+def check_time_ival(data, start, stop):
     # get start / stop of gridded data as pandas.Timestamp
     data_start = to_pandas_timestamp(data.start)
     data_stop = to_pandas_timestamp(data.stop)
@@ -377,7 +377,7 @@ def _check_time_ival(data, start, stop):
     return start, stop
 
 
-def _check_ts_type(data, ts_type):
+def check_ts_type(data, ts_type):
     ts_type_data = TsType(data.ts_type)
     if ts_type is None:
         ts_type = ts_type_data
@@ -716,7 +716,7 @@ def colocate_gridded_ungridded(
     data = regfilter.apply(data)
 
     # check time overlap and crop model data if needed
-    start, stop = _check_time_ival(data, start, stop)
+    start, stop = check_time_ival(data, start, stop)
     data = data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
@@ -726,7 +726,7 @@ def colocate_gridded_ungridded(
     reduce_station_data_ts_type = ts_type
 
     ts_type_src_data = data.ts_type
-    ts_type, ts_type_data = _check_ts_type(data, ts_type)
+    ts_type, ts_type_data = check_ts_type(data, ts_type)
     if not colocate_time and ts_type < ts_type_data:
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
