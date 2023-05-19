@@ -75,7 +75,7 @@ def check_outdated(filedir):
 
     with open(JSON_FILE, "r") as f:
 
-        data = simplejson.load(f)
+        data = simplejson.load(f, allow_nan=True)
 
     for var, stats in data.items():
         for stat, files in stats.items():
@@ -213,7 +213,7 @@ def main():
         infofile = JSON_FILE
         if os.path.exists(infofile):
             with open(infofile, "r") as f:
-                current_files = simplejson.load(f)
+                current_files = simplejson.load(f, allow_nan=True)
         else:
             current_files = {}
 
@@ -281,7 +281,7 @@ def main():
 
             print(f"re-writing {JSON_FILE}")
             with open(JSON_FILE, "w") as f:
-                simplejson.dump(all_files, f)
+                simplejson.dump(all_files, f, allow_nan=True)
 
 
 if __name__ == "__main__":

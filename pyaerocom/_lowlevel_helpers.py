@@ -62,7 +62,7 @@ def read_json(file_path):
         content as dictionary
     """
     with open(file_path) as f:
-        data = simplejson.load(f)
+        data = simplejson.load(f, allow_nan=True)
     return data
 
 
@@ -79,8 +79,9 @@ def write_json(data_dict, file_path, **kwargs):
         additional keyword args passed to :func:`simplejson.dumps` (e.g.
         indent, )
     """
+    kwargs.update(ignore_nan=True)
     with open(file_path, "w") as f:
-        simplejson.dump(round_floats(data_dict), f, **kwargs)
+        simplejson.dump(round_floats(data_dict), f, allow_nan=True, **kwargs)
 
 
 def check_make_json(fp, indent=4):

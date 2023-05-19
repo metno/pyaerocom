@@ -24,9 +24,9 @@ dependencies = [
     'importlib-metadata>=3.6; python_version < "3.10"',
     'importlib-resources>=5.10; python_version < "3.11"',
     'tomli>=2.0.1; python_version < "3.11"',
-    "xarray>=0.16.0,<2023.3.0",
+    "xarray>=0.16.0,<2022.11.0",
     "scipy>=1.1.0",
-    "pandas>=0.23.0",
+    "pandas>=0.23.0,<2",
     "seaborn>=0.8.0",
     "geonum",
     "LatLon23",                                           # required by geonum
@@ -132,6 +132,7 @@ omit = [
 ]
 
 [tool.coverage.report]
+fail_under = 75
 skip_covered = true
 exclude_lines = [
     "pragma: no cover",
@@ -202,15 +203,12 @@ requires =
     cython > 0.29.15 
 
 [testenv]
-install_command = 
-    python -m pip install {opts} {packages} --use-deprecated=legacy-resolver
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov}
+    pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras = 
-    py{,38,38,39,10}: proj-legacy
-    py311: proj8
+    proj8
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
