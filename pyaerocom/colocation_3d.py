@@ -32,7 +32,7 @@ from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
-from pyaerocom.colocation import _resolve_var_name
+from pyaerocom.colocation import resolve_var_name, check_time_ival, check_ts_type
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def colocate_vertical_profile_gridded(
     except DimensionOrderError:
         data.reorder_dimensions_tseries()
 
-    var, var_aerocom = _resolve_var_name(data)
+    var, var_aerocom = resolve_var_name(data)
     if var_ref is None:
         var_ref = var_aerocom
         var_ref_aerocom = var_aerocom
@@ -98,7 +98,7 @@ def colocate_vertical_profile_gridded(
     data = regfilter.apply(data)
 
     # check time overlap and crop model data if needed
-    start, stop = _check_time_ival(data, start, stop)
+    start, stop = check_time_ival(data, start, stop)
     data = data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
@@ -108,7 +108,7 @@ def colocate_vertical_profile_gridded(
     reduce_station_data_ts_type = ts_type
 
     ts_type_src_data = data.ts_type
-    ts_type, ts_type_data = _check_ts_type(data, ts_type)
+    ts_type, ts_type_data = check_ts_type(data, ts_type)
     if not colocate_time and ts_type < ts_type_data:
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
@@ -136,6 +136,7 @@ def colocate_vertical_profile_gridded(
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
+    # LB: Looks like data altitudes are in there (e.g., all_stats["stats"][0]["altitude"])
     all_stats = data_ref.to_station_data_all(
         vars_to_convert=var_ref,
         start=obs_start,
@@ -175,5 +176,58 @@ def colocate_vertical_profile_gridded(
         data_unit = str(data.units)
     else:
         data_unit = None
+        
+    breakpoint()
+    
+    
+    # loop over all stations and append to colocated data object
+    for i, obs_stat in enumerate(obs_stat_data):
+        # Add coordinates to arrays required for xarray.DataArray below
+        lons[i] = obs_stat.longitude
+        lats[i] = obs_stat.latitude
+        alts[i] = obs_stat.altitude
+        station_names[i] = obs_stat.station_name
+
+        # ToDo: consider removing to keep ts_type_src_ref (this was probably
+        # introduced for EBAS were the original data frequency is not constant
+        # but can vary from site to site)
+        if ts_type_src_ref is None:
+            ts_type_src_ref = obs_stat["ts_type_src"]
+        elif obs_stat["ts_type_src"] != ts_type_src_ref:
+            spl = ts_type_src_ref.split(";")
+            if not obs_stat["ts_type_src"] in spl:
+                spl.append(obs_stat["ts_type_src"])
+            ts_type_src_ref = ";".join(spl)
+
+        if data_ref_unit is None:
+            try:
+                data_ref_unit = obs_stat["var_info"][var_ref]["units"]
+            except KeyError as e:  # variable information or unit is not defined
+                logger.exception(repr(e))
+        try:
+            unit = obs_stat["var_info"][var_ref]["units"]
+        except Exception:
+            unit = None
+        if not unit == data_ref_unit:
+            raise ValueError(
+                f"Cannot perform colocation. "
+                f"Ungridded data object contains different units ({var_ref})"
+            )
+        # get observations (Note: the index of the observation time series
+        # is already in the specified frequency format, and thus, does not
+        # need to be updated, for details (or if errors occur), cf.
+        # UngriddedData.to_station_data, where the conversion happens)
+
+        # get model station data
+        grid_stat = grid_stat_data[i]
+        if harmonise_units:
+            grid_unit = grid_stat.get_unit(var)
+            obs_unit = obs_stat.get_unit(var_ref)
+            if not grid_unit == obs_unit:
+                grid_stat.convert_unit(var, obs_unit)
+            if data_unit is None:
+                data_unit = obs_unit
+
+    
 
     return
