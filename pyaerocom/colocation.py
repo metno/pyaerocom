@@ -35,7 +35,7 @@ from pyaerocom.variable import Variable
 logger = logging.getLogger(__name__)
 
 
-def _resolve_var_name(data):
+def resolve_var_name(data):
     """
     Check variable name of `GriddedData` against AeroCom default
 
@@ -288,8 +288,8 @@ def colocate_gridded_gridded(
     files_ref = [os.path.basename(x) for x in data_ref.from_files]
     files = [os.path.basename(x) for x in data.from_files]
 
-    var, var_aerocom = _resolve_var_name(data)
-    var_ref, var_ref_aerocom = _resolve_var_name(data_ref)
+    var, var_aerocom = resolve_var_name(data)
+    var_ref, var_ref_aerocom = resolve_var_name(data_ref)
     meta = {
         "data_source": [data_ref.data_id, data.data_id],
         "var_name": [var_ref_aerocom, var_aerocom],
@@ -684,7 +684,7 @@ def colocate_gridded_ungridded(
     except DimensionOrderError:
         data.reorder_dimensions_tseries()
 
-    var, var_aerocom = _resolve_var_name(data)
+    var, var_aerocom = resolve_var_name(data)
     if var_ref is None:
         var_ref = var_aerocom
         var_ref_aerocom = var_aerocom
@@ -748,7 +748,7 @@ def colocate_gridded_ungridded(
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     # use only sites that are within model domain
-    breakpoint()
+    
     # LB: filter_by_meta wipes is_vertical_profile
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
 
