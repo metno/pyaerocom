@@ -55,7 +55,6 @@ def colocate_vertical_profile_gridded(
     resample_how=None,
     **kwargs,
 ):
-    
     """
     TODO: Fill in docstring
     """
@@ -130,7 +129,7 @@ def colocate_vertical_profile_gridded(
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     # use only sites that are within model domain
-    
+
     # LB: filter_by_meta wipes is_vertical_profile
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
 
@@ -176,10 +175,9 @@ def colocate_vertical_profile_gridded(
         data_unit = str(data.units)
     else:
         data_unit = None
-        
+
     breakpoint()
-    
-    
+
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
@@ -228,6 +226,57 @@ def colocate_vertical_profile_gridded(
             if data_unit is None:
                 data_unit = obs_unit
 
-    
+        # LB: Up to here seems good testing below
+
+        try:
+            if colocate_time:
+                _df = _colocate_site_data_helper_timecol(
+                    stat_data=grid_stat,
+                    stat_data_ref=obs_stat,
+                    var=var,
+                    var_ref=var_ref,
+                    ts_type=col_freq,
+                    resample_how=resample_how,
+                    min_num_obs=min_num_obs,
+                    use_climatology_ref=use_climatology_ref,
+                )
+            else:
+                _df = _colocate_site_data_helper(
+                    stat_data=grid_stat,
+                    stat_data_ref=obs_stat,
+                    var=var,
+                    var_ref=var_ref,
+                    ts_type=col_freq,
+                    resample_how=resample_how,
+                    min_num_obs=min_num_obs,
+                    use_climatology_ref=use_climatology_ref,
+                )
+
+            # this try/except block was introduced on 23/2/2021 as temporary fix from
+            # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
+            # can end up resulting in incorrect number of timestamps after resampling
+            # (the error was discovered using EBASMC, concpm10, 2019 and colocation
+            # frequency monthly)
+            try:
+                # assign the unified timeseries data to the colocated data array
+                arr[0, :, i] = _df["ref"].values
+                arr[1, :, i] = _df["data"].values
+            except ValueError:
+                try:
+                    mask = _df.index.intersection(time_idx)
+                    _df = _df.loc[mask]
+                    arr[0, :, i] = _df["ref"].values
+                    arr[1, :, i] = _df["data"].values
+                except ValueError as e:
+                    logger.warning(
+                        f"Failed to colocate time for station {obs_stat.station_name}. "
+                        f"This station will be skipped (error: {e})"
+                    )
+        except TemporalResolutionError as e:
+            # resolution of obsdata is too low
+            logger.warning(
+                f"{var_ref} data from site {obs_stat.station_name} will "
+                f"not be added to ColocatedData. Reason: {e}"
+            )
 
     return
