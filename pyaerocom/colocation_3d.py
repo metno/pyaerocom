@@ -53,4 +53,4 @@ def colocate_vertical_profile_gridded(
     resample_how=None,
     **kwargs,
 ):
-    pass
+    breakpoint()
