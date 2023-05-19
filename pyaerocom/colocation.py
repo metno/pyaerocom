@@ -749,7 +749,7 @@ def colocate_gridded_ungridded(
     lon_range = [np.min(longitude), np.max(longitude)]
     # use only sites that are within model domain
     breakpoint()
-    # LB: Issue happens below
+    # LB: filter_by_meta wipes is_vertical_profile
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
 
     # get timeseries from all stations in provided time resolution

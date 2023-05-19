@@ -350,7 +350,7 @@ class ColocationSetup(BrowseDict):
         self.obs_vert_type = None
         self.obs_ts_type_read = None
         self.obs_filters = {}
-        self.obs_is_3d = False
+        self._obs_is_vertical_profile = False
 
         self.read_opts_ungridded = {}
 
@@ -1367,15 +1367,25 @@ class Colocator(ColocationSetup):
             function the performs co-location operation
 
         """
+
         breakpoint()
+        if self.obs_is_vertical_profile:
+            breakpoint()
+
         if self.obs_is_ungridded:
             return colocate_gridded_ungridded
         else:
             return colocate_gridded_gridded
 
-    def _prepare_colocation_args(self, model_var, obs_var):
+    def _prepare_colocation_args(self, model_var: str, obs_var: str):
         model_data = self.get_model_data(model_var)
-        obs_data = self.get_obs_data(obs_var)
+        obs_data = self.get_obs_data(
+            obs_var
+        )  # LB: is_vertical_profile still being passed correctly
+
+        if getattr(obs_data, "is_vertical_profile", None):
+            self.obs_is_vertical_profile = obs_data.is_vertical_profile
+
         rshow = self._eval_resample_how(model_var, obs_var)
 
         if self.model_use_climatology:
@@ -1430,7 +1440,7 @@ class Colocator(ColocationSetup):
                 )
         return args
 
-    def _run_helper(self, model_var, obs_var):
+    def _run_helper(self, model_var: str, obs_var: str):
         logger.info(f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})")
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
