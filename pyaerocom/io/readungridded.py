@@ -69,7 +69,6 @@ class ReadUngridded:
     DONOTCACHE_NAME = "DONOTCACHE"
 
     def __init__(self, data_ids=None, ignore_cache=False, data_dirs=None):
-
         # will be assigned in setter method of data_ids
         self._data_ids = []
         self._data_dirs = {}
@@ -385,7 +384,6 @@ class ReadUngridded:
 
         data_read = None
         if len(vars_to_read) > 0:
-
             _loglevel = logger.level
             logger.setLevel(logging.INFO)
             data_read = reader.read(vars_to_read, **kwargs)
@@ -420,6 +418,12 @@ class ReadUngridded:
         if filter_post:
             filters = self._eval_filter_post(filter_post, data_id, vars_available)
             data_out = data_out.apply_filters(**filters)
+
+        # Check to see if this reader is for a VerticalProfile
+        # It is currently only allowed that a reader can be for a VerticalProfile, not a species
+        if getattr(reader, "is_vertical_profile", None):
+            data_out.is_vertical_profile = reader.is_vertical_profile
+
         return data_out
 
     def _eval_filter_post(self, filter_post, data_id, vars_available):
@@ -527,7 +531,6 @@ class ReadUngridded:
                     for aux_var in aux_vars:
                         input_data_ids_vars.append((aux_data, aux_id, aux_var))
                 else:
-
                     # read variables individually, so filter_post is more
                     # flexible if some post filters are specified for
                     # individual variables...
@@ -643,15 +646,17 @@ class ReadUngridded:
                     )
                 )
             else:
-                data.append(
-                    self.read_dataset(
-                        ds,
-                        vars_to_retrieve,
-                        only_cached=only_cached,
-                        filter_post=filter_post,
-                        **kwargs,
-                    )
+                data_to_append = self.read_dataset(
+                    ds,
+                    vars_to_retrieve,
+                    only_cached=only_cached,
+                    filter_post=filter_post,
+                    **kwargs,
                 )
+                data.append(data_to_append)
+                # LB: This is a guess rn because need to figure out more about UngriddedData containing more than 1 variable. If it does we have an issue
+                if getattr(data_to_append, "is_vertical_profile", None):
+                    data.is_vertical_profile = data_to_append.is_vertical_profile
 
             logger.info(f"Successfully imported {ds} data")
         return data

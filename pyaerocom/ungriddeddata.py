@@ -452,8 +452,7 @@ class UngriddedData:
 
     @is_vertical_profile.setter
     def is_vertical_profile(self, value):
-        """Boolean specifying whether is vertical profile"""
-        breakpoint() # not being set during ReadEarlinet
+        """Boolean specifying whether is vertical profile. Note must be set in ReadUngridded based on the reader because the instance of class used during reading is not the same as the instance used later in the workflow"""
         self._is_vertical_profile = value
 
     def copy(self):

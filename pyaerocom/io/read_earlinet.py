@@ -171,6 +171,9 @@ class ReadEarlinet(ReadUngriddedBase):
         #: files that were actually excluded from reading
         self.excluded_files = []
 
+        #Lb: testing putting attr here
+        self.is_vertical_profile = True
+
     def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
 

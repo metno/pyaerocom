@@ -932,7 +932,6 @@ class Colocator(ColocationSetup):
             obs_data.remove_outliers(
                 var_name, low=low, high=high, inplace=True, move_to_trash=False
             )
-        breakpoint()
         return obs_data
 
     def _check_obs_filters(self):
