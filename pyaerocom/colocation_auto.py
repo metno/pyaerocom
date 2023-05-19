@@ -570,13 +570,16 @@ class Colocator(ColocationSetup):
         """
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
 
-    # @property
-    # def obs_is_3d(self):
-    #     """
-    #     bool: True if obs_id refers to an 3d observation (e.g., VerticalProfile), else False
-    #     """
-    #     breakpoint()
-    #     pass
+    @property
+    def obs_is_vertical_profile(self):
+        """
+        bool: True if obs_id refers to a VerticalProfile, else False
+        """
+        return self._obs_is_vertical_profile
+
+    @obs_is_vertical_profile.setter
+    def obs_is_vertical_profile(self, value):
+        self._obs_is_vertical_profile = value
 
     @property
     def model_reader(self):
@@ -1368,10 +1371,8 @@ class Colocator(ColocationSetup):
 
         """
 
-        breakpoint()
         if self.obs_is_vertical_profile:
-            breakpoint()
-
+            return colocate_vertical_profile_gridded
         if self.obs_is_ungridded:
             return colocate_gridded_ungridded
         else:
