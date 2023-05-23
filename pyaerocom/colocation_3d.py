@@ -32,7 +32,12 @@ from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
-from pyaerocom.colocation import resolve_var_name, check_time_ival, check_ts_type
+from pyaerocom.colocation import (
+    resolve_var_name,
+    check_time_ival,
+    check_ts_type,
+    _colocate_site_data_helper,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +58,7 @@ def colocate_vertical_profile_gridded(
     colocate_time=False,
     use_climatology_ref=False,
     resample_how=None,
+    colocation_layer_limits=None,
     **kwargs,
 ):
     """
@@ -241,6 +247,7 @@ def colocate_vertical_profile_gridded(
                     use_climatology_ref=use_climatology_ref,
                 )
             else:
+                breakpoint()
                 _df = _colocate_site_data_helper(
                     stat_data=grid_stat,
                     stat_data_ref=obs_stat,

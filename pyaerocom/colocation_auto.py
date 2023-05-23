@@ -351,6 +351,7 @@ class ColocationSetup(BrowseDict):
         self.obs_ts_type_read = None
         self.obs_filters = {}
         self._obs_is_vertical_profile = False
+        self.colocation_layer_limits = None
 
         self.read_opts_ungridded = {}
 
@@ -1415,6 +1416,8 @@ class Colocator(ColocationSetup):
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
             args.update(ts_type=ts_type)
+        if self.obs_is_vertical_profile:
+            args.update(colocation_layer_limits=self.colocation_layer_limits)
         return args
 
     def _check_dimensionality(self, args):

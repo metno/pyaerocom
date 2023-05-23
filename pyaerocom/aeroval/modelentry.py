@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from pyaerocom._lowlevel_helpers import BrowseDict, DictStrKeysListVals, DictType, StrType
+from pyaerocom._lowlevel_helpers import BrowseDict, DictStrKeysListVals, DictType, StrType, FlexList
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
 
 
@@ -46,6 +46,7 @@ class ModelEntry(BrowseDict):
     model_add_vars = DictStrKeysListVals()
     model_read_aux = DictType()
     model_rename_vars = DictType()
+    colocation_layer_limits = FlexList()
 
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
@@ -54,7 +55,8 @@ class ModelEntry(BrowseDict):
         self.model_add_vars = {}
         self.model_rename_vars = {}
         self.model_read_aux = {}
-
+        self.colocation_layer_limts = None
+        
         self.update(**kwargs)
 
     @property
