@@ -184,6 +184,7 @@ def colocate_vertical_profile_gridded(
 
     breakpoint()
 
+    list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
@@ -192,98 +193,99 @@ def colocate_vertical_profile_gridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
 
-        # ToDo: consider removing to keep ts_type_src_ref (this was probably
-        # introduced for EBAS were the original data frequency is not constant
-        # but can vary from site to site)
-        if ts_type_src_ref is None:
-            ts_type_src_ref = obs_stat["ts_type_src"]
-        elif obs_stat["ts_type_src"] != ts_type_src_ref:
-            spl = ts_type_src_ref.split(";")
-            if not obs_stat["ts_type_src"] in spl:
-                spl.append(obs_stat["ts_type_src"])
-            ts_type_src_ref = ";".join(spl)
+        for vertical_layer_limit in colocation_layer_limts:
+            # ToDo: consider removing to keep ts_type_src_ref (this was probably
+            # introduced for EBAS were the original data frequency is not constant
+            # but can vary from site to site)
+            if ts_type_src_ref is None:
+                ts_type_src_ref = obs_stat["ts_type_src"]
+            elif obs_stat["ts_type_src"] != ts_type_src_ref:
+                spl = ts_type_src_ref.split(";")
+                if not obs_stat["ts_type_src"] in spl:
+                    spl.append(obs_stat["ts_type_src"])
+                ts_type_src_ref = ";".join(spl)
 
-        if data_ref_unit is None:
-            try:
-                data_ref_unit = obs_stat["var_info"][var_ref]["units"]
-            except KeyError as e:  # variable information or unit is not defined
-                logger.exception(repr(e))
-        try:
-            unit = obs_stat["var_info"][var_ref]["units"]
-        except Exception:
-            unit = None
-        if not unit == data_ref_unit:
-            raise ValueError(
-                f"Cannot perform colocation. "
-                f"Ungridded data object contains different units ({var_ref})"
-            )
-        # get observations (Note: the index of the observation time series
-        # is already in the specified frequency format, and thus, does not
-        # need to be updated, for details (or if errors occur), cf.
-        # UngriddedData.to_station_data, where the conversion happens)
-
-        # get model station data
-        grid_stat = grid_stat_data[i]
-        if harmonise_units:
-            grid_unit = grid_stat.get_unit(var)
-            obs_unit = obs_stat.get_unit(var_ref)
-            if not grid_unit == obs_unit:
-                grid_stat.convert_unit(var, obs_unit)
-            if data_unit is None:
-                data_unit = obs_unit
-
-        # LB: Up to here seems good testing below
-
-        try:
-            if colocate_time:
-                _df = _colocate_site_data_helper_timecol(
-                    stat_data=grid_stat,
-                    stat_data_ref=obs_stat,
-                    var=var,
-                    var_ref=var_ref,
-                    ts_type=col_freq,
-                    resample_how=resample_how,
-                    min_num_obs=min_num_obs,
-                    use_climatology_ref=use_climatology_ref,
-                )
-            else:
-                breakpoint()
-                _df = _colocate_site_data_helper(
-                    stat_data=grid_stat,
-                    stat_data_ref=obs_stat,
-                    var=var,
-                    var_ref=var_ref,
-                    ts_type=col_freq,
-                    resample_how=resample_how,
-                    min_num_obs=min_num_obs,
-                    use_climatology_ref=use_climatology_ref,
-                )
-
-            # this try/except block was introduced on 23/2/2021 as temporary fix from
-            # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
-            # can end up resulting in incorrect number of timestamps after resampling
-            # (the error was discovered using EBASMC, concpm10, 2019 and colocation
-            # frequency monthly)
-            try:
-                # assign the unified timeseries data to the colocated data array
-                arr[0, :, i] = _df["ref"].values
-                arr[1, :, i] = _df["data"].values
-            except ValueError:
+            if data_ref_unit is None:
                 try:
-                    mask = _df.index.intersection(time_idx)
-                    _df = _df.loc[mask]
+                    data_ref_unit = obs_stat["var_info"][var_ref]["units"]
+                except KeyError as e:  # variable information or unit is not defined
+                    logger.exception(repr(e))
+            try:
+                unit = obs_stat["var_info"][var_ref]["units"]
+            except Exception:
+                unit = None
+            if not unit == data_ref_unit:
+                raise ValueError(
+                    f"Cannot perform colocation. "
+                    f"Ungridded data object contains different units ({var_ref})"
+                )
+            # get observations (Note: the index of the observation time series
+            # is already in the specified frequency format, and thus, does not
+            # need to be updated, for details (or if errors occur), cf.
+            # UngriddedData.to_station_data, where the conversion happens)
+
+            # get model station data
+            grid_stat = grid_stat_data[i]
+            if harmonise_units:
+                grid_unit = grid_stat.get_unit(var)
+                obs_unit = obs_stat.get_unit(var_ref)
+                if not grid_unit == obs_unit:
+                    grid_stat.convert_unit(var, obs_unit)
+                if data_unit is None:
+                    data_unit = obs_unit
+
+            # LB: Up to here seems good testing below
+
+            try:
+                if colocate_time:
+                    _df = _colocate_site_data_helper_timecol(
+                        stat_data=grid_stat,
+                        stat_data_ref=obs_stat,
+                        var=var,
+                        var_ref=var_ref,
+                        ts_type=col_freq,
+                        resample_how=resample_how,
+                        min_num_obs=min_num_obs,
+                        use_climatology_ref=use_climatology_ref,
+                    )
+                else:
+                    breakpoint()
+                    _df = _colocate_site_data_helper(
+                        stat_data=grid_stat,
+                        stat_data_ref=obs_stat,
+                        var=var,
+                        var_ref=var_ref,
+                        ts_type=col_freq,
+                        resample_how=resample_how,
+                        min_num_obs=min_num_obs,
+                        use_climatology_ref=use_climatology_ref,
+                    )
+
+                # this try/except block was introduced on 23/2/2021 as temporary fix from
+                # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
+                # can end up resulting in incorrect number of timestamps after resampling
+                # (the error was discovered using EBASMC, concpm10, 2019 and colocation
+                # frequency monthly)
+                try:
+                    # assign the unified timeseries data to the colocated data array
                     arr[0, :, i] = _df["ref"].values
                     arr[1, :, i] = _df["data"].values
-                except ValueError as e:
-                    logger.warning(
-                        f"Failed to colocate time for station {obs_stat.station_name}. "
-                        f"This station will be skipped (error: {e})"
-                    )
-        except TemporalResolutionError as e:
-            # resolution of obsdata is too low
-            logger.warning(
-                f"{var_ref} data from site {obs_stat.station_name} will "
-                f"not be added to ColocatedData. Reason: {e}"
-            )
+                except ValueError:
+                    try:
+                        mask = _df.index.intersection(time_idx)
+                        _df = _df.loc[mask]
+                        arr[0, :, i] = _df["ref"].values
+                        arr[1, :, i] = _df["data"].values
+                    except ValueError as e:
+                        logger.warning(
+                            f"Failed to colocate time for station {obs_stat.station_name}. "
+                            f"This station will be skipped (error: {e})"
+                        )
+            except TemporalResolutionError as e:
+                # resolution of obsdata is too low
+                logger.warning(
+                    f"{var_ref} data from site {obs_stat.station_name} will "
+                    f"not be added to ColocatedData. Reason: {e}"
+                )
 
     return
