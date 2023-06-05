@@ -3,7 +3,7 @@
 channels:
   - conda-forge
 dependencies:
-  - iris >=3.2.0
+  - iris >=3.2.0,<=3.4.1
   - xarray >=0.16.0,<2022.11.0
   - cartopy >=0.20.0
   - matplotlib-base >=3.0.1
