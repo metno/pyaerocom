@@ -625,7 +625,7 @@ class ExperimentOutput(ProjectOutput):
         model_only = False
         try: 
             model_only = const.VARS[var].model_only
-        except VariableDefinitionError:
+        except AttributeError:
             pass
         return {"type": tp, "cat": cat, "name": name, "longname": lname, "obs": {}, "model_only": model_only}
 
