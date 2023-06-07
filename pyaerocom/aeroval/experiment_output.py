@@ -621,7 +621,13 @@ class ExperimentOutput(ProjectOutput):
             lname = const.VARS[var].description
         except VariableDefinitionError:
             lname = "UNDEFINED"
-        return {"type": tp, "cat": cat, "name": name, "longname": lname, "obs": {}}
+        # if a variable only comes from the model, set model_only=True in variables.ini. Picked up here and written to menu.json
+        model_only = False
+        try: 
+            model_only = const.VARS[var].model_only
+        except VariableDefinitionError:
+            pass
+        return {"type": tp, "cat": cat, "name": name, "longname": lname, "obs": {}, "model_only": model_only}
 
     def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
 
