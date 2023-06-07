@@ -26,6 +26,7 @@ from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
+import configparser
 
 logger = logging.getLogger(__name__)
 
@@ -621,10 +622,10 @@ class ExperimentOutput(ProjectOutput):
             lname = const.VARS[var].description
         except VariableDefinitionError:
             lname = "UNDEFINED"
-        # if a variable only comes from the model, set model_only=True in variables.ini. Picked up here and written to menu.json
-        model_only = False
+        # if a variable only comes from the model, only want o use it on maps.php for example. Picked up here and written to menu.json
+        only_use_in = []
         try:
-            model_only = const.VARS[var].model_only
+            only_use_in = const.VARS[var].only_use_in
         except AttributeError:
             pass
         return {
@@ -633,7 +634,7 @@ class ExperimentOutput(ProjectOutput):
             "name": name,
             "longname": lname,
             "obs": {},
-            "model_only": model_only,
+            "only_use_in": only_use_in,
         }
 
     def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
