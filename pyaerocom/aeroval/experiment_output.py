@@ -621,7 +621,20 @@ class ExperimentOutput(ProjectOutput):
             lname = const.VARS[var].description
         except VariableDefinitionError:
             lname = "UNDEFINED"
-        return {"type": tp, "cat": cat, "name": name, "longname": lname, "obs": {}}
+        # if a variable only comes from the model, only want o use it on maps.php for example. Picked up here and written to menu.json
+        only_use_in = []
+        try:
+            only_use_in = const.VARS[var].only_use_in
+        except AttributeError:
+            pass
+        return {
+            "type": tp,
+            "cat": cat,
+            "name": name,
+            "longname": lname,
+            "obs": {},
+            "only_use_in": only_use_in,
+        }
 
     def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
 
