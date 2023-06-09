@@ -80,7 +80,7 @@ def test_EbasNasaAmesFile_head_fix(filedata):
 def test_EbasNasaAmesFile_head_fix_error(filedata):
     with pytest.raises(AttributeError) as e:
         filedata.head_fix = "Blaaaaaaaaaaaaaaa"
-    assert str(e.value).startswith("can't set attribute")
+    assert str(e.value).startswith("can't set attribute") or "object has no setter" in str(e.value)
 
 
 def test_EbasNasaAmesFile_data(filedata):
