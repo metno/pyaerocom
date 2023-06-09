@@ -62,7 +62,7 @@ proj-legacy = [
     # cartopy 0.19 incompatible with matplotlib 2.0
     "shapely<2.0.0",
 ]
-proj8 = ["cartopy>=0.20", "scitools-iris>=3.2,~3.5.0", "matplotlib>=3.6.0"]
+proj8 = ["cartopy>=0.20", "scitools-iris>=3.2,!=3.5.0", "matplotlib>=3.6.0"]
 docs = [
     "sphinx>=4.2.0",
     "sphinxcontrib-napoleon",
