@@ -624,7 +624,8 @@ class ExperimentOutput(ProjectOutput):
         # if a variable only comes from the model, only want o use it on maps.php for example. Picked up here and written to menu.json
         only_use_in = []
         try:
-            only_use_in = const.VARS[var].only_use_in
+            # Comes in as a string. split() here breaks up based on space and returns either just the element in a list or the components of the string in a list
+            only_use_in = const.VARS[var].only_use_in.split(" ")
         except AttributeError:
             pass
         return {
