@@ -621,6 +621,7 @@ class ExperimentOutput(ProjectOutput):
             "type": tp,
             "cat": cat,
             "name": name,
+            "obs": {}
         }
         try:
             lname = const.VARS[var].description
