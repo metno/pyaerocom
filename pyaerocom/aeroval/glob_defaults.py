@@ -323,6 +323,13 @@ var_web_info = dict(
     conco3=["O3", "3D", "Gas concentrations"],
     concno310=["NO3_PM10", "3D", "Particle concentration"],
     concno325=["NO3_PM25", "3D", "Particle concentration"],
+    proxyod550bc=["OD (Black Carbon)", "2D", "Optical properties"],
+    proxyod550dust=["OD (Dust)", "2D", "Optical properties"],
+    proxyod550oa=["OD (Organic Matter)", "2D", "Optical properties"],
+    proxyod550so4=["OD (SO4)", "2D", "Optical properties"],
+    proxyod550ss=["OD (Sea Salt)", "2D", "Optical properties"],
+    proxyod550nh4=["OD (NH4)", "2D", "Optical properties"],
+    proxyod550no3=["OD (NO3)", "2D", "Optical properties"],
     # Gases
     concNno=["NO", "3D", "Concentration"],
     concno2=["NO2", "3D", "Gas concentrations"],
