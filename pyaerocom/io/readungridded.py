@@ -57,7 +57,6 @@ class ReadUngridded:
         ReadEbas,
         ReadAasEtal,
         ReadAirNow,
-        ReadMarcoPolo,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
     ]
