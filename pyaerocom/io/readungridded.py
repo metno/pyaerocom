@@ -26,7 +26,6 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.io.read_marcopolo import ReadMarcoPolo
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
