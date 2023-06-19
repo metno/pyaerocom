@@ -15,6 +15,7 @@ from .read_aasetal import ReadAasEtal
 # read base classes
 from .readgridded import ReadGridded
 from .readungriddedbase import ReadUngriddedBase
+from .readungridded import ReadUngridded
 
 # Pyaerocom reading interface classes
 from .read_aeronet_invv2 import ReadAeronetInvV2
