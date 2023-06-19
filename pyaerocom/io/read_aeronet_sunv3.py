@@ -167,10 +167,10 @@ class ReadAeronetSunV3(ReadAeronetBase):
             f_out.close()
 
         try:
-            with open(filename, "rt") as in_file:
+            with open(filename) as in_file:
                 lines = in_file.readlines()
         except UnicodeDecodeError:
-            with open(filename, "rt", encoding="ISO-8859-1") as in_file:
+            with open(filename, encoding="ISO-8859-1") as in_file:
                 lines = in_file.readlines()
         except OSError:
             # faulty gzip file, but also the gzip class raises some exceptions

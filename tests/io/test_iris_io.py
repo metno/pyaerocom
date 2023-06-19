@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import numpy as np
 import pytest
@@ -140,7 +139,7 @@ def test_check_time_coord(cube: Cube):
     ],
 )
 def test_check_time_coord_error(
-    cube: Cube, ts_type: str, year: int, exception: Type[Exception], error: str
+    cube: Cube, ts_type: str, year: int, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         iris_io.check_time_coord(cube, ts_type, year)
@@ -250,7 +249,7 @@ def test_load_cube_custom(file_path: Path, var_name: str | None):
     ],
 )
 def test_load_cube_custom_error(
-    file_path: Path, var_name: str | None, exception: Type[Exception], error: str
+    file_path: Path, var_name: str | None, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         iris_io.load_cube_custom(file_path, var_name)

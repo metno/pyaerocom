@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import getpass
 from pathlib import Path
-from typing import Type
 
 import pytest
 
@@ -85,7 +84,7 @@ def test_Config___init__(config_file: str, try_infer_environment: bool):
         ),
     ],
 )
-def test_Config___init___error(config_file: str, exception: Type[Exception], error: str):
+def test_Config___init___error(config_file: str, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         testmod.Config(config_file, False)
     assert str(e.value) == error

@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pytest
 
@@ -80,7 +82,10 @@ def test_EbasNasaAmesFile_head_fix(filedata):
 def test_EbasNasaAmesFile_head_fix_error(filedata):
     with pytest.raises(AttributeError) as e:
         filedata.head_fix = "Blaaaaaaaaaaaaaaa"
-    assert str(e.value).startswith("can't set attribute") or "object has no setter" in str(e.value)
+    if sys.version_info < (3, 11):
+        assert str(e.value).startswith("can't set attribute")
+    else:
+        assert str(e.value).endswith("object has no setter")
 
 
 def test_EbasNasaAmesFile_data(filedata):

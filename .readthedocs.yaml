@@ -11,7 +11,7 @@ formats:
   - pdf
 
 build:
-  os: ubuntu-20.04
+  os: ubuntu-22.04
   apt_packages:
     - libudunits2-dev
     - libgeos-dev
@@ -19,12 +19,12 @@ build:
     - proj-data
     - proj-bin
   tools:
-    python: "3.8"
+    python: "3.9"
 
 python:
   install:
     - method: pip
       path: .
       extra_requirements:
-        - proj-legacy
+        - proj8
         - docs

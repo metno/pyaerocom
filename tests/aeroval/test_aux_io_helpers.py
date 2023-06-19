@@ -1,6 +1,5 @@
 from pathlib import Path
 from textwrap import dedent
-from typing import List
 
 from pytest import mark, param, raises
 
@@ -46,7 +45,7 @@ def test_ReadAuxHandler_empty(tmp_path: Path):
         param("func", ["last"], {"func": lambda: True}, id="func as last arg"),
     ],
 )
-def test_check_aux_info(fun, vars_required: List[str], funcs: dict):
+def test_check_aux_info(fun, vars_required: list[str], funcs: dict):
     aux = check_aux_info(fun, vars_required, funcs)
     assert aux["fun"] is funcs.get(fun, fun)
     assert aux["vars_required"] == vars_required
@@ -65,7 +64,7 @@ def test_check_aux_info(fun, vars_required: List[str], funcs: dict):
         ),
     ],
 )
-def test_check_aux_info_error(fun, vars_required: List[str], funcs: dict, error: str):
+def test_check_aux_info_error(fun, vars_required: list[str], funcs: dict, error: str):
     with raises(ValueError) as e:
         check_aux_info(fun, vars_required, funcs)
 
