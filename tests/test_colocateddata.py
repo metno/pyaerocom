@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import numpy as np
 import pytest
@@ -30,7 +29,7 @@ def test_ColocatedData__init__(data: Path | str | ArrayLike):
         ({}, ValueError),
     ],
 )
-def test_ColocatedData__init___error(data, exception: Type[Exception]):
+def test_ColocatedData__init___error(data, exception: type[Exception]):
     with pytest.raises(exception):
         ColocatedData(data=data).data
 
@@ -289,7 +288,7 @@ def test_ColocatedData_calc_temporal_statistics(
     ],
 )
 def test_ColocatedData_calc_temporal_statistics_error(
-    coldata: ColocatedData, aggr: str | None, exception: Type[Exception], error: str
+    coldata: ColocatedData, aggr: str | None, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         coldata.calc_temporal_statistics(aggr=aggr)
@@ -323,7 +322,7 @@ def test_ColocatedData_calc_spatial_statistics(
     ],
 )
 def test_ColocatedData_calc_spatial_statistics_error(
-    coldata: ColocatedData, aggr: str | None, exception: Type[Exception], error: str
+    coldata: ColocatedData, aggr: str | None, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         coldata.calc_spatial_statistics(aggr=aggr)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import pytest
 
@@ -45,7 +44,7 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
         ),
     ],
 )
-def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], error: str):
+def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         ProjectOutput(proj_id, json_basedir)
     assert str(e.value) == error
@@ -310,7 +309,6 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
 def test_ExperimentOutput_reorder_experiments(
     dummy_expout: ExperimentOutput, add_names, order, result
 ):
-
     path = Path(dummy_expout.experiments_file)
 
     data = dict().fromkeys(add_names, dict(public=True))

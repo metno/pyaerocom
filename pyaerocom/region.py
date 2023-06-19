@@ -1,7 +1,7 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
-from typing import List, Optional
+from __future__ import annotations
 
 import numpy as np
 
@@ -48,7 +48,6 @@ class Region(BrowseDict):
     """
 
     def __init__(self, region_id=None, **kwargs):
-
         if region_id is None:
             region_id = ALL_REGION_NAME
 
@@ -174,7 +173,6 @@ class Region(BrowseDict):
         return self._mask_data
 
     def plot_mask(self, ax, color, alpha=0.2):
-
         mask = self.get_mask_data()
         # import numpy as np
         data = mask.data
@@ -368,8 +366,8 @@ def get_regions_coord(lat, lon, regions=None):
 def find_closest_region_coord(
     lat: float,
     lon: float,
-    regions: Optional[dict] = None,
-) -> List[str]:
+    regions: dict | None = None,
+) -> list[str]:
     """Finds list of regions sorted by their center closest to input coordinate
 
     Parameters

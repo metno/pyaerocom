@@ -147,14 +147,14 @@ extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
 [tool.isort]
-py_version = "38"
+py_version = "39"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
 extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_unused_configs = true
 warn_unused_ignores = true
 warn_no_return = true
@@ -195,7 +195,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, py311, format, lint, docs
+envlist = py39, py310, py311, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =

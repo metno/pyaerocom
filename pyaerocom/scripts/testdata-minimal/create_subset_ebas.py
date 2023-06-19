@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """simple script to generate a small enough test data set for the EBAS obs network
 Works only if the user has access to the standard EBAS data path at Met Norway
@@ -73,7 +72,7 @@ def check_outdated(filedir):
     files_invalid = []
     files_valid = []
 
-    with open(JSON_FILE, "r") as f:
+    with open(JSON_FILE) as f:
 
         data = simplejson.load(f, allow_nan=True)
 
@@ -212,7 +211,7 @@ def main():
     else:
         infofile = JSON_FILE
         if os.path.exists(infofile):
-            with open(infofile, "r") as f:
+            with open(infofile) as f:
                 current_files = simplejson.load(f, allow_nan=True)
         else:
             current_files = {}

@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import tarfile
 from pathlib import Path
-from typing import NamedTuple, Type
+from typing import NamedTuple
 
 import requests
 
@@ -31,7 +31,7 @@ TESTDATA_ROOT = Path(const.OUTPUTDIR) / TESTDATA_NAME
 
 class DataForTests(NamedTuple):
     relpath: str
-    reader: Type[ReadUngriddedBase] | None = None
+    reader: type[ReadUngriddedBase] | None = None
 
     @property
     def path(self) -> Path:

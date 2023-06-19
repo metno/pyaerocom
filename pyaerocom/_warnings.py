@@ -1,12 +1,9 @@
-from __future__ import annotations
-
 import warnings
 from contextlib import contextmanager
-from typing import Type
 
 
 @contextmanager
-def ignore_warnings(category: Type[Warning], *messages: str):
+def ignore_warnings(category: type[Warning], *messages: str):
     """
     Ignore particular warnings with a decorator or context manager
 
