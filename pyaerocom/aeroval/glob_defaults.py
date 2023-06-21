@@ -137,7 +137,6 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "var",
         "decimals": 1,
-        "forecast": True,
     },
     "mab": {
         "name": "MAB",
@@ -154,7 +153,6 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "var",
         "decimals": 1,
-        "forecast": True,
     },
     "R": {
         "name": "R",
