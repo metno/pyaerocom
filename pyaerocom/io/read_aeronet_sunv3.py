@@ -30,7 +30,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     _FILEMASK = "*.lev*"
 
     #: version log of this class (for caching)
-    __version__ = "0.11_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.12_" + ReadAeronetBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
@@ -99,6 +99,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550oa": ["od440aer", "od500aer", "ang4487aer"],
         "proxyod550so4": ["od440aer", "od500aer", "ang4487aer"],
         "proxyod550ss": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550no3": ["od440aer", "od500aer", "ang4487aer"],
     }
 
     #: Functions that are used to compute additional variables (i.e. one
@@ -114,6 +115,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550oa": calc_od550aer,
         "proxyod550so4": calc_od550aer,
         "proxyod550ss": calc_od550aer,
+        "proxyod550no3": calc_od550aer,
     }
 
     #: List of variables that are provided by this dataset (will be extended
@@ -165,10 +167,10 @@ class ReadAeronetSunV3(ReadAeronetBase):
             f_out.close()
 
         try:
-            with open(filename, "rt") as in_file:
+            with open(filename) as in_file:
                 lines = in_file.readlines()
         except UnicodeDecodeError:
-            with open(filename, "rt", encoding="ISO-8859-1") as in_file:
+            with open(filename, encoding="ISO-8859-1") as in_file:
                 lines = in_file.readlines()
         except OSError:
             # faulty gzip file, but also the gzip class raises some exceptions

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Type
-
 import cartopy.mpl.geoaxes
 import numpy as np
 import pytest
@@ -198,7 +196,7 @@ class Fake4D(GriddedData):
 )
 @pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
 def test_plot_griddeddata_on_map_error(
-    gridded_data: GriddedData, kwargs: dict, exception: Type[Exception], error: str
+    gridded_data: GriddedData, kwargs: dict, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         plot_griddeddata_on_map(gridded_data, **kwargs)
@@ -254,7 +252,7 @@ def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
     ],
 )
 def test_plot_nmb_map_colocateddataFAIL(
-    coldata: ColocatedData, exception: Type[Exception], error: str
+    coldata: ColocatedData, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         plot_nmb_map_colocateddata(coldata)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import pytest
 
@@ -45,7 +44,7 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
         ),
     ],
 )
-def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], error: str):
+def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         ProjectOutput(proj_id, json_basedir)
     assert str(e.value) == error

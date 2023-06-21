@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import numpy as np
 import pytest
@@ -429,7 +428,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-    reader: ReadEbas, val, exception: Type[Exception], error: str
+    reader: ReadEbas, val, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -476,7 +475,7 @@ def test_get_ebas_var(reader: ReadEbas):
     ],
 )
 def test_get_ebas_var_error(
-    reader: ReadEbas, var_name: str, exception: Type[Exception], error: str
+    reader: ReadEbas, var_name: str, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader.get_ebas_var(var_name)
@@ -620,7 +619,7 @@ def test_read_file_error(
     reader: ReadEbas,
     ebas_issue_files: Path,
     vars_to_retrieve: str,
-    exception: Type[Exception],
+    exception: type[Exception],
     error: str,
 ):
     with pytest.raises(exception) as e:

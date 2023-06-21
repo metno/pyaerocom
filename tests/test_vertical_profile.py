@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Type
-
 import pytest
 
 from pyaerocom.vertical_profile import VerticalProfile
@@ -45,7 +43,7 @@ def vertical_profile() -> VerticalProfile:
         ),
     ],
 )
-def test_VerticalProfile_error(kwargs: dict, exception: Type[Exception], error: str):
+def test_VerticalProfile_error(kwargs: dict, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         VerticalProfile(**kwargs)
     assert str(e.value).endswith(error)

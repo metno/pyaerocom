@@ -9,9 +9,9 @@ authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
@@ -19,7 +19,7 @@ classifiers = [
     "Intended Audience :: Education",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     'importlib-metadata>=3.6; python_version < "3.10"',
     'importlib-resources>=5.10; python_version < "3.11"',
@@ -62,7 +62,7 @@ proj-legacy = [
     # cartopy 0.19 incompatible with matplotlib 2.0
     "shapely<2.0.0",
 ]
-proj8 = ["cartopy>=0.20", "scitools-iris>=3.2", "matplotlib>=3.6.0"]
+proj8 = ["cartopy>=0.20", "scitools-iris>=3.2,!=3.5.0", "matplotlib>=3.6.0"]
 docs = [
     "sphinx>=4.2.0",
     "sphinxcontrib-napoleon",
@@ -147,14 +147,14 @@ extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
 [tool.isort]
-py_version = "38"
+py_version = "39"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
 extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_unused_configs = true
 warn_unused_ignores = true
 warn_no_return = true
@@ -195,7 +195,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, py311, format, lint, docs
+envlist = py39, py310, py311, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -224,13 +224,13 @@ ignore_outcome = True
 commands =
     mypy pyaerocom/
 extras = 
-    proj-legacy
+    proj8
     lint
 
 [testenv:docs]
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 
-    proj-legacy
+    proj8
     docs
 """

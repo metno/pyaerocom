@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Type
 
 import cf_units
 import pytest
@@ -220,7 +219,7 @@ def test_ReadMscwCtm_read_var(var_name: str, ts_type: str, data_dir: str):
     ],
 )
 def test_ReadMscwCtm_read_var_error(
-    var_name: str, ts_type: str, exception: Type[Exception], error: str, data_dir: str
+    var_name: str, ts_type: str, exception: type[Exception], error: str, data_dir: str
 ):
     reader = ReadMscwCtm(data_dir=data_dir)
     with pytest.raises(exception) as e:

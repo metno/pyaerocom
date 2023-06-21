@@ -619,11 +619,21 @@ class ExperimentOutput(ProjectOutput):
 
     def _init_menu_entry(self, var: str) -> dict:
         name, tp, cat = self._get_var_name_and_type(var)
+        out = {"type": tp, "cat": cat, "name": name, "obs": {}}
         try:
             lname = const.VARS[var].description
         except VariableDefinitionError:
             lname = "UNDEFINED"
-        return {"type": tp, "cat": cat, "name": name, "longname": lname, "obs": {}}
+
+        out["longname"] = lname
+        try:
+            # Comes in as a string. split() here breaks up based on space and returns either just the element in a list or the components of the string in a list
+            only_use_in = const.VARS[var].only_use_in.split(" ")
+            # only return only_use_in if key exists, otherwise do not
+            out["only_use_in"] = only_use_in
+        except AttributeError:
+            pass
+        return out
 
     def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
         muv = mcfg.model_use_vars

@@ -29,6 +29,5 @@ from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from .read_marcopolo import ReadMarcoPolo
 
 from . import helpers_units
