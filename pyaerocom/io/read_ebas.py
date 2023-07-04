@@ -23,7 +23,6 @@ from pyaerocom.aux_var_helpers import (
     compute_wetrdn_from_concprcprdn,
     compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
-    identity,
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
@@ -212,7 +211,7 @@ class ReadEbas(ReadUngriddedBase):
         "Vavihill": "Hallahus",
         "Virolahti II": "Virolahti III",
     }
-    #'Trollhaugen'    : 'Troll'}
+    # 'Trollhaugen'    : 'Troll'}
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {
         "1mn": "minutely",
@@ -235,6 +234,8 @@ class ReadEbas(ReadUngriddedBase):
         "ac550dryaer": ["ac550aer", "acrh"],
         "ang4470dryaer": ["sc440dryaer", "sc700dryaer"],
         "wetoxs": ["concprcpoxs", "pr"],
+        "wetoxsc": ["concprcpoxsc", "pr"],
+        "wetoxst": ["concprcpoxst", "pr"],
         "wetoxn": ["concprcpoxn", "pr"],
         "wetrdn": ["concprcprdn", "pr"],
         "wetso4": ["concprcpso4", "pr"],
@@ -302,6 +303,8 @@ class ReadEbas(ReadUngriddedBase):
         "ac550dryaer": compute_ac550dryaer,
         "ang4470dryaer": compute_ang4470dryaer_from_dry_scat,
         "wetoxs": compute_wetoxs_from_concprcpoxs,
+        "wetoxsc": compute_wetoxs_from_concprcpoxsc,
+        "wetoxst": compute_wetoxs_from_concprcpoxst,
         "wetoxn": compute_wetoxn_from_concprcpoxn,
         "wetrdn": compute_wetrdn_from_concprcprdn,
         "wetnh4": compute_wetnh4_from_concprcpnh4,
@@ -1383,7 +1386,7 @@ class ReadEbas(ReadUngriddedBase):
         return self._loaded_ebas_vars[var_name]
 
     def read_file(
-        self, filename, vars_to_retrieve=None, _vars_to_read=None, _vars_to_compute=None
+            self, filename, vars_to_retrieve=None, _vars_to_read=None, _vars_to_compute=None
     ):
         """Read EBAS NASA Ames file
 
@@ -1541,9 +1544,9 @@ class ReadEbas(ReadUngriddedBase):
             opts = self.get_read_opts(var)
             if opts.freq_min_cov > frac_valid:
                 raise TemporalSamplingError(
-                    f"Only {frac_valid*100:.2f}% of measuerements are in "
+                    f"Only {frac_valid * 100:.2f}% of measuerements are in "
                     f"{tst} resolution. Minimum requirement for {var} is "
-                    f"{opts.freq_min_cov*100:.2f}%"
+                    f"{opts.freq_min_cov * 100:.2f}%"
                 )
             if not var in filedata.data_flagged:
                 filedata.data_flagged[var] = np.zeros(num).astype(bool)
@@ -1728,7 +1731,7 @@ class ReadEbas(ReadUngriddedBase):
         return vars_to_retrieve + add
 
     def read(
-        self, vars_to_retrieve=None, first_file=None, last_file=None, files=None, **constraints
+            self, vars_to_retrieve=None, first_file=None, last_file=None, files=None, **constraints
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
@@ -1825,10 +1828,10 @@ class ReadEbas(ReadUngriddedBase):
                 station_data = self.read_file(_file, vars_to_retrieve=contains)
 
             except (
-                NotInFileError,
-                EbasFileError,
-                TemporalResolutionError,
-                TemporalSamplingError,
+                    NotInFileError,
+                    EbasFileError,
+                    TemporalResolutionError,
+                    TemporalSamplingError,
             ) as e:
                 self.files_failed.append(_file)
                 self.logger.warning(

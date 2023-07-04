@@ -216,15 +216,15 @@ def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref, angstrom_coeff):
 
 
 def _calc_od_helper(
-    data,
-    var_name,
-    to_lambda,
-    od_ref,
-    lambda_ref,
-    od_ref_alt=None,
-    lambda_ref_alt=None,
-    use_angstrom_coeff="ang4487aer",
-    treshold_angstrom=None,
+        data,
+        var_name,
+        to_lambda,
+        od_ref,
+        lambda_ref,
+        od_ref_alt=None,
+        lambda_ref_alt=None,
+        use_angstrom_coeff="ang4487aer",
+        treshold_angstrom=None,
 ):
     """Helper method for computing ODs
 
@@ -561,6 +561,52 @@ def compute_wetoxs_from_concprcpoxs(data):
 
     """
     return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxs", "pr")
+
+
+def compute_wetoxs_from_concprcpoxst(data):
+    """Compute wdep from conc in precip and precip data
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxst", "pr")
+
+
+def compute_wetoxs_from_concprcpoxsc(data):
+    """Compute wdep from conc in precip and precip data
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxsc", "pr")
 
 
 def compute_wetoxn_from_concprcpoxn(data):
