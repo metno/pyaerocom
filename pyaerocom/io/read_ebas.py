@@ -20,6 +20,8 @@ from pyaerocom.aux_var_helpers import (
     compute_wetno3_from_concprcpno3,
     compute_wetoxn_from_concprcpoxn,
     compute_wetoxs_from_concprcpoxs,
+    compute_wetoxs_from_concprcpoxsc,
+    compute_wetoxs_from_concprcpoxst,
     compute_wetrdn_from_concprcprdn,
     compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
@@ -1386,7 +1388,7 @@ class ReadEbas(ReadUngriddedBase):
         return self._loaded_ebas_vars[var_name]
 
     def read_file(
-            self, filename, vars_to_retrieve=None, _vars_to_read=None, _vars_to_compute=None
+        self, filename, vars_to_retrieve=None, _vars_to_read=None, _vars_to_compute=None
     ):
         """Read EBAS NASA Ames file
 
@@ -1731,7 +1733,7 @@ class ReadEbas(ReadUngriddedBase):
         return vars_to_retrieve + add
 
     def read(
-            self, vars_to_retrieve=None, first_file=None, last_file=None, files=None, **constraints
+        self, vars_to_retrieve=None, first_file=None, last_file=None, files=None, **constraints
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
@@ -1828,10 +1830,10 @@ class ReadEbas(ReadUngriddedBase):
                 station_data = self.read_file(_file, vars_to_retrieve=contains)
 
             except (
-                    NotInFileError,
-                    EbasFileError,
-                    TemporalResolutionError,
-                    TemporalSamplingError,
+                NotInFileError,
+                EbasFileError,
+                TemporalResolutionError,
+                TemporalSamplingError,
             ) as e:
                 self.files_failed.append(_file)
                 self.logger.warning(
