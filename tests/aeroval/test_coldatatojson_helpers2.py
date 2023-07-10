@@ -1,8 +1,6 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 from __future__ import annotations
 
-from typing import Type
-
 import numpy as np
 import pytest
 import xarray
@@ -145,7 +143,7 @@ def test__process_statistics_timeseries_error(
     freq: str,
     region_ids: dict[str, str],
     data_freq: str,
-    exception: Type[Exception],
+    exception: type[Exception],
     error: str,
 ):
     with pytest.raises(exception) as e:
@@ -221,7 +219,7 @@ def test__make_trends_error(
     freq: str,
     season: str,
     min_yrs: int,
-    exception: Type[Exception],
+    exception: type[Exception],
     error: str,
 ):
     obs_val = coldata.data.data[0, :, 0]

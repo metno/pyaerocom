@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from configparser import ConfigParser
-from typing import Type
 
 import pytest
 
@@ -261,7 +260,7 @@ def test_make_sql_request(info: EbasVarInfo, constraints: dict):
         ),
     ],
 )
-def test_make_sql_request_error(info: EbasVarInfo, exception: Type[Exception], error: str):
+def test_make_sql_request_error(info: EbasVarInfo, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         info.make_sql_request()
     assert str(e.value).startswith(error)
