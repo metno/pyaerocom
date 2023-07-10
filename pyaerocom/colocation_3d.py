@@ -198,7 +198,7 @@ def colocate_vertical_profile_gridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
 
-        for vertical_layer_limit in colocation_layer_limits:
+        for vertical_layer in colocation_layer_limits:
             # ToDo: consider removing to keep ts_type_src_ref (this was probably
             # introduced for EBAS were the original data frequency is not constant
             # but can vary from site to site)
@@ -231,21 +231,49 @@ def colocate_vertical_profile_gridded(
 
             # get model station data
             grid_stat = grid_stat_data[i]
+            # LB: want to do the same thing with grid_stat, but need some actual data to see what it looks like
+            tmp_grid_stat = grid_stat.copy()
+            tmp_grid_stat[var] = (
+                tmp_grid_stat[var][
+                    (vertical_layer["start"] <= tmp_grid_stat.altitude)
+                    & (tmp_grid_stat.altitude < vertical_layer["end"])
+                ]
+                .resample(rule="H")
+                .mean()
+            )
+            tmp_grid_stat["dtime"] = tmp_grid_stat["dtime"][
+                0
+            ]  # Assume first time stamp is the same everywhere because lidar fast
+
             if harmonise_units:
-                grid_unit = grid_stat.get_unit(var)
-                obs_unit = obs_stat.get_unit(var_ref)
+                grid_unit = tmp_grid_stat.get_unit(var)
+                obs_unit = tmp_obs_stat.get_unit(var_ref)
                 if not grid_unit == obs_unit:
-                    grid_stat.convert_unit(var, obs_unit)
+                    tmp_grid_stat.convert_unit(var, obs_unit)
                 if data_unit is None:
                     data_unit = obs_unit
 
             # LB: Up to here seems good testing below
 
+            # Make a copy of the station data and resample it to the mean based on hourly resolution. Needs testing!
+            tmp_obs_stat = obs_stat.copy()
+            tmp_obs_stat[var_ref] = (
+                tmp_obs_stat[var_ref][
+                    (vertical_layer["start"] <= tmp_obs_stat.altitude)
+                    & (tmp_obs_stat.altitude < vertical_layer["end"])
+                ]
+                .resample(rule="H")
+                .mean()
+            )
+            tmp_obs_stat["dtime"] = tmp_obs_stat["dtime"][
+                0
+            ]  # Assume first time stamp is the same everywhere because lidar fast
+
             try:
                 if colocate_time:
                     _df = _colocate_site_data_helper_timecol(
-                        stat_data=grid_stat,
-                        stat_data_ref=obs_stat,
+                        stat_data=tmp_grid_stat,
+                        stat_data_ref=tmp_obs_stat,
                         var=var,
                         var_ref=var_ref,
                         ts_type=col_freq,
@@ -256,8 +284,8 @@ def colocate_vertical_profile_gridded(
                 else:
                     breakpoint()
                     _df = _colocate_site_data_helper(
-                        stat_data=grid_stat,
-                        stat_data_ref=obs_stat,
+                        stat_data=tmp_grid_stat,
+                        stat_data_ref=tmp_obs_stat,
                         var=var,
                         var_ref=var_ref,
                         ts_type=col_freq,
