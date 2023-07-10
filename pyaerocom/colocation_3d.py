@@ -91,6 +91,11 @@ def colocate_vertical_profile_gridded(
             f"UngriddedData object to extract single datasets."
         )
 
+    if not all(["start" and "end" in keys for keys in colocation_layer_limits]):
+        raise KeyError(
+            "start and end must be provided for each vertical layer in colocate_vertical_profile_gridded"
+        )
+
     dataset_ref = data_ref.contains_datasets[0]
 
     if update_baseyear_gridded is not None:
@@ -193,7 +198,7 @@ def colocate_vertical_profile_gridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
 
-        for vertical_layer_limit in colocation_layer_limts:
+        for vertical_layer_limit in colocation_layer_limits:
             # ToDo: consider removing to keep ts_type_src_ref (this was probably
             # introduced for EBAS were the original data frequency is not constant
             # but can vary from site to site)
