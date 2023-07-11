@@ -59,6 +59,7 @@ def colocate_vertical_profile_gridded(
     use_climatology_ref=False,
     resample_how=None,
     colocation_layer_limits=None,
+    profile_layer_limits=None,
     **kwargs,
 ):
     """
@@ -93,7 +94,11 @@ def colocate_vertical_profile_gridded(
 
     if not all(["start" and "end" in keys for keys in colocation_layer_limits]):
         raise KeyError(
-            "start and end must be provided for each vertical layer in colocate_vertical_profile_gridded"
+            "start and end must be provided for colocation in each vertical layer in colocate_vertical_profile_gridded"
+        )
+    if not all(["start" and "end" in keys for keys in profile_layer_limits]):
+        raise KeyError(
+            "start and end must be provided for displaying profiles in each vertical layer in colocate_vertical_profile_gridded"
         )
 
     dataset_ref = data_ref.contains_datasets[0]
@@ -259,6 +264,9 @@ def colocate_vertical_profile_gridded(
 
             # Make a copy of the station data and resample it to the mean based on hourly resolution. Needs testing!
             tmp_obs_stat = obs_stat.copy()
+            # add the station altitude to the altitudes so everything is against Above Sea Level (ASL)
+            tmp_obs_stat.altitude += tmp_obs_stat.station_coords["altitude"]
+            
             tmp_obs_stat[var_ref] = (
                 tmp_obs_stat[var_ref][
                     (vertical_layer["start"] <= tmp_obs_stat.altitude)
