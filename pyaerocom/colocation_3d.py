@@ -188,6 +188,8 @@ def colocate_vertical_profile_gridded(
         data_unit = None
 
     breakpoint()
+    
+    # LB: Add station altitude so everything is in terms of beign above sea level
 
     list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
     # loop over all stations and append to colocated data object
