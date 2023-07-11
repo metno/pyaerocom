@@ -145,6 +145,7 @@ def colocate_vertical_profile_gridded(
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     # use only sites that are within model domain
+    breakpoint()
 
     # LB: filter_by_meta wipes is_vertical_profile
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
@@ -170,6 +171,10 @@ def colocate_vertical_profile_gridded(
             f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
 
+    breakpoint()  # need to make sure altitude of data comes along. when we get here the model level seems to be missing
+
+    # Reports: Inferring surface level in GriddedData based on mean value of ec532aer data in first and last level since CF coordinate info is missing... The level with the largest mean value will be assumed to be the surface. If mean values in both levels
+
     grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
 
     pd_freq = col_tst.to_pandas_freq()
@@ -193,7 +198,7 @@ def colocate_vertical_profile_gridded(
         data_unit = None
 
     breakpoint()
-    
+
     # LB: Add station altitude so everything is in terms of beign above sea level
 
     list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
@@ -266,7 +271,7 @@ def colocate_vertical_profile_gridded(
             tmp_obs_stat = obs_stat.copy()
             # add the station altitude to the altitudes so everything is against Above Sea Level (ASL)
             tmp_obs_stat.altitude += tmp_obs_stat.station_coords["altitude"]
-            
+
             tmp_obs_stat[var_ref] = (
                 tmp_obs_stat[var_ref][
                     (vertical_layer["start"] <= tmp_obs_stat.altitude)

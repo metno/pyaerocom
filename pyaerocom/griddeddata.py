@@ -1413,7 +1413,8 @@ class GriddedData:
                 return np.argmin(self.grid.dim_coords[3].points)
             elif coord.attributes["positive"] == "down":
                 return np.argmax(self.grid.dim_coords[3].points)
-
+        
+        breakpoint()
         try:
             coord = vc.VerticalCoordinate(cname)
             if coord.lev_increases_with_alt:
