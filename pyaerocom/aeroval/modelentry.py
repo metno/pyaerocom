@@ -46,7 +46,8 @@ class ModelEntry(BrowseDict):
     model_add_vars = DictStrKeysListVals()
     model_read_aux = DictType()
     model_rename_vars = DictType()
-    colocation_layer_limits = FlexList()
+    #colocation_layer_limits = FlexList()
+    #profile_layer_limits = FlexList()
 
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
@@ -55,7 +56,8 @@ class ModelEntry(BrowseDict):
         self.model_add_vars = {}
         self.model_rename_vars = {}
         self.model_read_aux = {}
-        self.colocation_layer_limts = None
+        #self.colocation_layer_limts = None
+        #self.profile_layer_limits = None
         
         self.update(**kwargs)
 
