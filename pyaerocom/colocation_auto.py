@@ -1418,8 +1418,10 @@ class Colocator(ColocationSetup):
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
             args.update(ts_type=ts_type)
         if self.obs_is_vertical_profile:
-            args.update(colocation_layer_limits=self.colocation_layer_limits,
-                        profile_layer_limits=self.profile_layer_limits)
+            args.update(
+                colocation_layer_limits=self.colocation_layer_limits,
+                profile_layer_limits=self.profile_layer_limits,
+            )
         return args
 
     def _check_dimensionality(self, args):
@@ -1431,10 +1433,6 @@ class Colocator(ColocationSetup):
         if mdata.ndim == 4 and self.obs_vert_type == "Surface":
             mdata = mdata.extract_surface_level()
             args["data"] = mdata
-        elif mdata.ndim > 3:
-            raise DataDimensionError(
-                f"cannot co-locate model data with more than 3 dimensions: {mdata}"
-            )
 
         if isinstance(odata, GriddedData):
             if odata.ndim == 4 and self.obs_vert_type == "Surface":

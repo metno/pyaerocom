@@ -135,7 +135,6 @@ class GriddedData:
     def __init__(
         self, input=None, var_name=None, check_unit=True, convert_unit_on_init=True, **meta
     ):
-
         if input is None:
             input = iris.cube.Cube([])
 
@@ -742,7 +741,6 @@ class GriddedData:
         """
         cube = self.grid
         if "invalid_units" in cube.attributes and cube.attributes["invalid_units"] in UALIASES:
-
             from_unit = cube.attributes["invalid_units"]
             to_unit = UALIASES[from_unit]
             logger.info(f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}")
@@ -825,7 +823,6 @@ class GriddedData:
         self._apply_unit_mulfac(new_unit, mulfac)
 
     def _apply_unit_mulfac(self, new_unit, mulfac):
-
         if mulfac != 1:
             new_cube = self._grid * mulfac
             new_cube.attributes.update(self._grid.attributes)
@@ -1042,7 +1039,6 @@ class GriddedData:
         return np.nanmean(mean)
 
     def _coords_to_iris_sample_points(self, **coords):
-
         sample_points = []
         num = None
         for cname, vals in coords.items():
@@ -1057,7 +1053,7 @@ class GriddedData:
 
     def _iris_sample_points_to_coords(self, sample_points):
         lats, lons = None, None
-        for (name, vals) in sample_points:
+        for name, vals in sample_points:
             if isnumeric(vals):
                 vals = [vals]
             if name in ("lat", "latitude"):
@@ -1082,7 +1078,6 @@ class GriddedData:
         use_iris=False,
         **coords,
     ):
-
         """Extract time-series for provided input coordinates (lon, lat)
 
         Extract time series for each lon / lat coordinate in this cube or at
@@ -1176,7 +1171,6 @@ class GriddedData:
         )
 
     def _to_time_series_xarray(self, scheme="nearest", add_meta=None, ts_type=None, **coords):
-
         try:
             self.check_dimcoords_tseries()
         except DimensionOrderError:
@@ -1223,7 +1217,6 @@ class GriddedData:
         lats = subset[lat_id].data
         lons = subset[lon_id].data
         for sidx in range(subset.shape[-1]):
-
             data = StationData(
                 latitude=lats[sidx],
                 longitude=lons[sidx],
@@ -1320,7 +1313,6 @@ class GriddedData:
     def _to_timeseries_3D(
         self, sample_points, scheme, collapse_scalar, vert_scheme, add_meta=None
     ):
-
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
 
@@ -1413,8 +1405,7 @@ class GriddedData:
                 return np.argmin(self.grid.dim_coords[3].points)
             elif coord.attributes["positive"] == "down":
                 return np.argmax(self.grid.dim_coords[3].points)
-        
-        breakpoint()
+
         try:
             coord = vc.VerticalCoordinate(cname)
             if coord.lev_increases_with_alt:
@@ -1647,7 +1638,6 @@ class GriddedData:
         return data
 
     def _resample_time_xarray(self, to_ts_type, how, min_num_obs):
-
         arr = xr.DataArray.from_iris(self.cube)
         from_ts_type = self.ts_type
         try:
@@ -1655,7 +1645,9 @@ class GriddedData:
             arr_out = rs.resample(
                 to_ts_type, from_ts_type=from_ts_type, how=how, min_num_obs=min_num_obs
             )
-        except ValueError:  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
+        except (
+            ValueError
+        ):  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr["time"] = self.time_stamps()
             rs = TimeResampler(arr)
             arr_out = rs.resample(
@@ -2088,7 +2080,6 @@ class GriddedData:
         self.cube.attributes = meta_out
 
     def _to_netcdf_aerocom(self, out_dir, **kwargs):
-
         years = self.years_avail()
         outpaths = []
         for subset in self.split_years(years):
@@ -2563,7 +2554,6 @@ class GriddedData:
         """Delete auxiliary variables and iris AuxFactories"""
         c = self.cube
         for aux_fac in c.aux_factories:
-
             c.remove_aux_factory(aux_fac)
 
         for coord in c.coords():
