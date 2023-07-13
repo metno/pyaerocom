@@ -171,7 +171,7 @@ class ReadEarlinet(ReadUngriddedBase):
         #: files that were actually excluded from reading
         self.excluded_files = []
 
-        #Lb: testing putting attr here
+        # Lb: testing putting attr here
         self.is_vertical_profile = True
 
     def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
@@ -245,7 +245,9 @@ class ReadEarlinet(ReadUngriddedBase):
             data_in["latitude"].values
         )
         data_out["altitude"] = np.float64(
-            data_in["altitude"].values
+            data_in[
+                "altitude"
+            ].values  # altitude is defined in EARLINET in terms- of altitude above sea level
         )  # Note altitude is an array for the data, station altitude is different
         data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
 

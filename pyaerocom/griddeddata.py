@@ -1141,6 +1141,7 @@ class GriddedData:
                 f"Extracting timeseries data from large array (shape: {self.shape}). "
                 f"This may take a while..."
             )
+
         # if the method makes it to this point, it is 3 or 4 dimensional
         # and the first 3 dimensions are time, latitude, longitude.
         if self.ndim == 3:  # data does not contain vertical dimension
@@ -1162,6 +1163,8 @@ class GriddedData:
 
         if sample_points is None:
             sample_points = self._coords_to_iris_sample_points(**coords)
+
+        # LB: collapse_scalar might not want to be true in this case
         return self._to_timeseries_3D(
             sample_points,
             scheme,
@@ -1316,8 +1319,18 @@ class GriddedData:
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
 
+        # LB: There is a loop here. Presumably the first time to_time_series is called, it hits one of the previous cases for 2D data
+        # If not, it comes to this function, which modifies it in a way that when sent back to to_time_series(), it then will hit one of the 2D cases
+        # In stead we need to think about what those 2d cases are doing and how we can mimic it to profiles. Fear they must be station data objects in which
+        # case maybe it makes sense in the collocation_3d loop to
+
         # ToDo: check if _to_timeseries_2D can be called here
-        return data.to_time_series(sample_points, scheme, collapse_scalar, add_meta=add_meta)
+        return data.to_time_series(
+            sample_points=sample_points,
+            scheme=scheme,
+            collapse_scalar=collapse_scalar,
+            add_meta=add_meta,
+        )
 
     def _apply_vert_scheme(self, sample_points, vert_scheme):
         """Helper method that checks and infers vertical scheme for time
@@ -1349,7 +1362,9 @@ class GriddedData:
                 "Cannot yet retrieve timeseries at altitude levels. Coming soon..."
             )
         elif vert_scheme == "profile":
-            raise NotImplementedError("Cannot yet retrieve profile timeseries")
+            # raise NotImplementedError("Cannot yet retrieve profile timeseries")
+            breakpoint()
+            return self
         else:
             try:
                 # check if vertical scheme can be converted into valid iris

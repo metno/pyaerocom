@@ -1728,7 +1728,7 @@ class UngriddedData:
                 # or find out why altitude is not included like var is
                 for var in meta["var_info"]:
                     if var == "altitude":
-                        continue
+                        continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:

@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
+import iris
 from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
@@ -142,13 +143,15 @@ def colocate_vertical_profile_gridded(
 
     latitude = data.latitude.points
     longitude = data.longitude.points
+    altitude = data.altitude.points
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
+    alt_range = [np.min(altitude), np.max(altitude)]
     # use only sites that are within model domain
-    breakpoint()
 
     # LB: filter_by_meta wipes is_vertical_profile
-    data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+    # Also note that filter_by_meta may not be calling alt_range. Function fitler_altitude is defined but not used
+    data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range, altitude=alt_range)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
@@ -171,11 +174,17 @@ def colocate_vertical_profile_gridded(
             f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
 
-    breakpoint()  # need to make sure altitude of data comes along. when we get here the model level seems to be missing
+    # breakpoint()  # need to make sure altitude of data comes along. when we get here the model level seems to be missing
 
     # Reports: Inferring surface level in GriddedData based on mean value of ec532aer data in first and last level since CF coordinate info is missing... The level with the largest mean value will be assumed to be the surface. If mean values in both levels
 
-    grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
+    # grid_stat_data = data.to_time_series(
+    #     longitude=ungridded_lons,
+    #     latitude=ungridded_lats,
+    #     vert_scheme="profile",  # LB: testing this last arg. think needs to be profile
+    # )
+
+    breakpoint()
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -241,8 +250,25 @@ def colocate_vertical_profile_gridded(
             # need to be updated, for details (or if errors occur), cf.
             # UngriddedData.to_station_data, where the conversion happens)
 
+            # LB: maybe need to do something here like
+            # data_for_grid_stat_data = get_right_subset(data)
+            # this_layer_data = data.extract(
+            #     iris.Constraint(
+            #         coord_values={
+            #             "altitude": lambda cell: vertical_layer["start"]
+            #             < cell
+            #             < vertical_layer["end"]
+            #         }
+            #     )
+            # )
+            # tmp = this_layer_data.grid.aggregated_by("altitude", iris.analysis.MEAN)
+            
+            this_layer_data = this_layer_data.
+            breakpoint()
+
             # get model station data
             grid_stat = grid_stat_data[i]
+
             # LB: want to do the same thing with grid_stat, but need some actual data to see what it looks like
             tmp_grid_stat = grid_stat.copy()
             tmp_grid_stat[var] = (
@@ -269,12 +295,12 @@ def colocate_vertical_profile_gridded(
 
             # Make a copy of the station data and resample it to the mean based on hourly resolution. Needs testing!
             tmp_obs_stat = obs_stat.copy()
-            # add the station altitude to the altitudes so everything is against Above Sea Level (ASL)
-            tmp_obs_stat.altitude += tmp_obs_stat.station_coords["altitude"]
 
             tmp_obs_stat[var_ref] = (
                 tmp_obs_stat[var_ref][
-                    (vertical_layer["start"] <= tmp_obs_stat.altitude)
+                    (
+                        vertical_layer["start"] <= tmp_obs_stat.altitude
+                    )  # altitude data should be given in terms of altitude above sea level
                     & (tmp_obs_stat.altitude < vertical_layer["end"])
                 ]
                 .resample(rule="H")
