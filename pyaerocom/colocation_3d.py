@@ -184,7 +184,7 @@ def colocate_vertical_profile_gridded(
     #     vert_scheme="profile",  # LB: testing this last arg. think needs to be profile
     # )
 
-    breakpoint()
+    # breakpoint()
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -206,20 +206,42 @@ def colocate_vertical_profile_gridded(
     else:
         data_unit = None
 
-    breakpoint()
+    # breakpoint()
+
+    # grid_areas = iris.analysis.cartography.area_weights(data.grid)
 
     # LB: Add station altitude so everything is in terms of beign above sea level
 
     list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
-    # loop over all stations and append to colocated data object
-    for i, obs_stat in enumerate(obs_stat_data):
-        # Add coordinates to arrays required for xarray.DataArray below
-        lons[i] = obs_stat.longitude
-        lats[i] = obs_stat.latitude
-        alts[i] = obs_stat.altitude
-        station_names[i] = obs_stat.station_name
 
-        for vertical_layer in colocation_layer_limits:
+    for (
+        vertical_layer
+    ) in (
+        colocation_layer_limits
+    ):  # Think about efficency here in terms of order of loops. candidate for parallelism
+        # create the 2D layer data
+        data_this_layer = data.extract(
+            iris.Constraint(
+                coord_values={
+                    "altitude": lambda cell: vertical_layer["start"] < cell < vertical_layer["end"]
+                }
+            )
+        ).collapsed("altitude", iris.analysis.MEAN)
+
+        grid_stat_data_this_layer = data_this_layer.to_time_series(
+            longitude=ungridded_lons,
+            latitude=ungridded_lats,
+        )
+
+        # loop over all stations and append to colocated data object
+        for i, obs_stat in enumerate(obs_stat_data):
+            # Add coordinates to arrays required for xarray.DataArray below
+            lons[i] = obs_stat.longitude
+            lats[i] = obs_stat.latitude
+            alts[i] = obs_stat.altitude
+            station_names[i] = obs_stat.station_name
+
+            # for vertical_layer in colocation_layer_limits:
             # ToDo: consider removing to keep ts_type_src_ref (this was probably
             # introduced for EBAS were the original data frequency is not constant
             # but can vary from site to site)
@@ -250,71 +272,64 @@ def colocate_vertical_profile_gridded(
             # need to be updated, for details (or if errors occur), cf.
             # UngriddedData.to_station_data, where the conversion happens)
 
-            # LB: maybe need to do something here like
-            # data_for_grid_stat_data = get_right_subset(data)
-            # this_layer_data = data.extract(
-            #     iris.Constraint(
-            #         coord_values={
-            #             "altitude": lambda cell: vertical_layer["start"]
-            #             < cell
-            #             < vertical_layer["end"]
-            #         }
-            #     )
-            # )
-            # tmp = this_layer_data.grid.aggregated_by("altitude", iris.analysis.MEAN)
-            
-            this_layer_data = this_layer_data.
-            breakpoint()
-
             # get model station data
-            grid_stat = grid_stat_data[i]
+            grid_stat_this_layer = grid_stat_data_this_layer[i]
 
+            # LB: Think directly below might not be needed now
             # LB: want to do the same thing with grid_stat, but need some actual data to see what it looks like
-            tmp_grid_stat = grid_stat.copy()
-            tmp_grid_stat[var] = (
-                tmp_grid_stat[var][
-                    (vertical_layer["start"] <= tmp_grid_stat.altitude)
-                    & (tmp_grid_stat.altitude < vertical_layer["end"])
-                ]
-                .resample(rule="H")
-                .mean()
-            )
-            tmp_grid_stat["dtime"] = tmp_grid_stat["dtime"][
-                0
-            ]  # Assume first time stamp is the same everywhere because lidar fast
-
-            if harmonise_units:
-                grid_unit = tmp_grid_stat.get_unit(var)
-                obs_unit = tmp_obs_stat.get_unit(var_ref)
-                if not grid_unit == obs_unit:
-                    tmp_grid_stat.convert_unit(var, obs_unit)
-                if data_unit is None:
-                    data_unit = obs_unit
+            # tmp_grid_stat = grid_stat.copy()
+            # tmp_grid_stat[var] = (
+            #     tmp_grid_stat[var][
+            #         (vertical_layer["start"] <= tmp_grid_stat.altitude)
+            #         & (tmp_grid_stat.altitude < vertical_layer["end"])
+            #     ]
+            #     .resample(rule="H")
+            #     .mean()
+            # )
+            # tmp_grid_stat["dtime"] = tmp_grid_stat["dtime"][
+            #     0
+            # ]  # Assume first time stamp is the same everywhere because lidar fast
 
             # LB: Up to here seems good testing below
 
             # Make a copy of the station data and resample it to the mean based on hourly resolution. Needs testing!
-            tmp_obs_stat = obs_stat.copy()
+            obs_stat_this_layer = obs_stat.copy()
 
-            tmp_obs_stat[var_ref] = (
-                tmp_obs_stat[var_ref][
-                    (
-                        vertical_layer["start"] <= tmp_obs_stat.altitude
-                    )  # altitude data should be given in terms of altitude above sea level
-                    & (tmp_obs_stat.altitude < vertical_layer["end"])
-                ]
-                .resample(rule="H")
-                .mean()
-            )
-            tmp_obs_stat["dtime"] = tmp_obs_stat["dtime"][
-                0
-            ]  # Assume first time stamp is the same everywhere because lidar fast
+            obs_stat_this_layer[var_ref] = obs_stat_this_layer.select_altitude(
+                var_name=var_ref, altitudes=list(vertical_layer.values())
+            ).mean(
+                "altitude"
+            )  # LB: note this is in beta, can implement directly like below
+
+            breakpoint()
+
+            # obs_stat_this_layer[var_ref] = (
+            #     this_layer_obs_stat[var_ref][
+            #         (
+            #             vertical_layer["start"] <= this_layer_obs_stat.altitude
+            #         )  # altitude data should be given in terms of altitude above sea level
+            #         & (this_layer_obs_stat.altitude < vertical_layer["end"])
+            #     ]
+            #     # .resample(rule="H") # LB: forget why this is here
+            #     .mean("altitude")
+            # )
+            # this_layer_obs_stat["dtime"] = this_layer_obs_stat["dtime"][
+            #     0
+            # ]  # Assume first time stamp is the same everywhere because lidar fast
+
+            if harmonise_units:
+                grid_unit = grid_stat_this_layer.get_unit(var)
+                obs_unit = obs_stat_this_layer.get_unit(var_ref)
+                if not grid_unit == obs_unit:
+                    grid_stat_this_layer.convert_unit(var, obs_unit)
+                if data_unit is None:
+                    data_unit = obs_unit
 
             try:
                 if colocate_time:
                     _df = _colocate_site_data_helper_timecol(
-                        stat_data=tmp_grid_stat,
-                        stat_data_ref=tmp_obs_stat,
+                        stat_data=grid_stat_this_layer,
+                        stat_data_ref=obs_stat_this_layer,
                         var=var,
                         var_ref=var_ref,
                         ts_type=col_freq,
@@ -324,9 +339,10 @@ def colocate_vertical_profile_gridded(
                     )
                 else:
                     breakpoint()
+                    # LB: obs_stat_this_layer turning into nans. figure out why
                     _df = _colocate_site_data_helper(
-                        stat_data=tmp_grid_stat,
-                        stat_data_ref=tmp_obs_stat,
+                        stat_data=grid_stat_this_layer,
+                        stat_data_ref=obs_stat_this_layer,
                         var=var,
                         var_ref=var_ref,
                         ts_type=col_freq,
@@ -361,5 +377,6 @@ def colocate_vertical_profile_gridded(
                     f"{var_ref} data from site {obs_stat.station_name} will "
                     f"not be added to ColocatedData. Reason: {e}"
                 )
+            breakpoint()
 
     return
