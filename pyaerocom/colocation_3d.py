@@ -212,7 +212,8 @@ def colocate_vertical_profile_gridded(
 
     # LB: Add station altitude so everything is in terms of beign above sea level
 
-    list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
+    # list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
+    list_of_colocateddata_objects = []
 
     for (
         vertical_layer
@@ -238,7 +239,9 @@ def colocate_vertical_profile_gridded(
             # Add coordinates to arrays required for xarray.DataArray below
             lons[i] = obs_stat.longitude
             lats[i] = obs_stat.latitude
-            alts[i] = obs_stat.altitude
+            alts[i] = obs_stat.station_coords[
+                "altitude"
+            ]  # altitude refers to altitdue of the data. be explcit where getting from
             station_names[i] = obs_stat.station_name
 
             # for vertical_layer in colocation_layer_limits:
@@ -295,20 +298,26 @@ def colocate_vertical_profile_gridded(
             # Make a copy of the station data and resample it to the mean based on hourly resolution. Needs testing!
             obs_stat_this_layer = obs_stat.copy()
 
-            obs_stat_this_layer[var_ref] = obs_stat_this_layer.select_altitude(
-                var_name=var_ref, altitudes=list(vertical_layer.values())
-            ).mean(
-                "altitude"
-            )  # LB: note this is in beta, can implement directly like below
+            try:
+                obs_stat_this_layer[var_ref] = obs_stat_this_layer.select_altitude(
+                    var_name=var_ref, altitudes=list(vertical_layer.values())
+                ).mean(
+                    "altitude"
+                )  # LB: note this is in beta, can implement directly like below
+            except ValueError:
+                logger.warning(
+                    f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data"
+                )
+                continue
 
-            breakpoint()
+            # breakpoint()
 
             # obs_stat_this_layer[var_ref] = (
-            #     this_layer_obs_stat[var_ref][
+            #     obs_stat_this_layer[var_ref][
             #         (
-            #             vertical_layer["start"] <= this_layer_obs_stat.altitude
+            #             vertical_layer["start"] <= obs_stat_this_layer.altitude
             #         )  # altitude data should be given in terms of altitude above sea level
-            #         & (this_layer_obs_stat.altitude < vertical_layer["end"])
+            #         & (obs_stat_this_layer.altitude < vertical_layer["end"])
             #     ]
             #     # .resample(rule="H") # LB: forget why this is here
             #     .mean("altitude")
@@ -338,7 +347,6 @@ def colocate_vertical_profile_gridded(
                         use_climatology_ref=use_climatology_ref,
                     )
                 else:
-                    breakpoint()
                     # LB: obs_stat_this_layer turning into nans. figure out why
                     _df = _colocate_site_data_helper(
                         stat_data=grid_stat_this_layer,
@@ -377,6 +385,63 @@ def colocate_vertical_profile_gridded(
                     f"{var_ref} data from site {obs_stat.station_name} will "
                     f"not be added to ColocatedData. Reason: {e}"
                 )
-            breakpoint()
 
-    return
+        try:
+            revision = data_ref.data_revision[dataset_ref]
+        except Exception:
+            try:
+                revision = data_ref._get_data_revision_helper(dataset_ref)
+            except MetaDataError:
+                revision = "MULTIPLE"
+            except Exception:
+                revision = "n/a"
+
+        files = [os.path.basename(x) for x in data.from_files]
+
+        meta = {
+            "data_source": [dataset_ref, data.data_id],
+            "var_name": [var_ref_aerocom, var_aerocom],
+            "var_name_input": [var_ref, var],
+            "ts_type": col_freq,  # will be updated below if resampling
+            "filter_name": filter_name,
+            "ts_type_src": [ts_type_src_ref, ts_type_src_data],
+            "var_units": [data_ref_unit, data_unit],
+            "data_level": 3,
+            "revision_ref": revision,
+            "from_files": files,
+            "from_files_ref": None,
+            "colocate_time": colocate_time,
+            "obs_is_clim": use_climatology_ref,
+            "pyaerocom": pya_ver,
+            "min_num_obs": min_num_obs,
+            "resample_how": resample_how,
+        }
+
+        breakpoint()
+        # create coordinates of DataArray
+        coords = {
+            "data_source": meta["data_source"],
+            "time": time_idx,
+            "station_name": station_names,
+            "latitude": ("station_name", lats),
+            "longitude": ("station_name", lons),
+            "altitude": ("station_name", alts),
+        }
+
+        dims = ["data_source", "time", "station_name"]
+        coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
+
+        # add correct units for lat / lon dimensions
+        coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
+        coldata.latitude.attrs["units"] = str(data.latitude.units)
+
+        coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
+        coldata.longitude.attrs["units"] = str(data.longitude.units)
+
+        list_of_colocateddata_objects.append(coldata)
+
+    # Then need to do profile colocation as well.
+
+    breakpoint()
+
+    return list_of_colocateddata_objects

@@ -63,7 +63,6 @@ STR_TO_IRIS = dict(
 
 
 def varlist_aerocom(varlist):
-
     if isinstance(varlist, str):
         varlist = [varlist]
     elif not isinstance(varlist, list):
@@ -348,7 +347,6 @@ def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     sh = data.shape
     if dims is not None:
         if not len(dims) == data.ndim:
-
             raise DataDimensionError("Input number of dimensios must match array dimension number")
         for i, dim in enumerate(dims):
             if not isinstance(dim, iris.coords.DimCoord):
@@ -1164,7 +1162,9 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     pd_freq = to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
-        invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
+        invalid = (
+            arr.resample(time=pd_freq).count(dim="time") < min_num_obs
+        )  # LB: This is why everything is getting set to nan
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
     resampler = arr.resample(time=pd_freq, loffset=loffset)
@@ -1403,7 +1403,6 @@ def datetime2str(time, ts_type=None):
 
 
 def start_stop_str(start, stop=None, ts_type=None):
-
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(start) and stop is None:
         return str(start)
