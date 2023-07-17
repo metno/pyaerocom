@@ -9,6 +9,7 @@ import pandas as pd
 import xarray as xr
 import iris
 from geonum.atmosphere import pressure
+from collections import namedtuple
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
@@ -62,7 +63,6 @@ def colocate_vertical_profile_gridded_helper(
     layer_limits=None,
     **kwargs,
 ):
-    breakpoint()
     if layer_limits is None:
         raise Exception(f"layer limits must be provided")
 
@@ -70,6 +70,8 @@ def colocate_vertical_profile_gridded_helper(
     col_freq = kwargs["col_freq"]
     col_tst = kwargs["col_tst"]
     var = kwargs["var"]
+    var_aerocom = kwargs["var_aerocom"]
+    var_ref_aerocom = kwargs["var_ref_aerocom"]
     # ts_type_src_ref = kwargs["ts_type_src_ref"]
 
     data_ref_unit = None
@@ -92,6 +94,9 @@ def colocate_vertical_profile_gridded_helper(
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
 
+    dataset_ref = data_ref.contains_datasets[0]
+    ts_type_src_data = data.ts_type
+
     list_of_colocateddata_objects = []
     for (
         vertical_layer
@@ -99,13 +104,19 @@ def colocate_vertical_profile_gridded_helper(
         layer_limits
     ):  # Think about efficency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
-        data_this_layer = data.extract(
-            iris.Constraint(
-                coord_values={
-                    "altitude": lambda cell: vertical_layer["start"] < cell < vertical_layer["end"]
-                }
-            )
-        ).collapsed("altitude", iris.analysis.MEAN)
+        try:
+            data_this_layer = data.extract(
+                iris.Constraint(
+                    coord_values={
+                        "altitude": lambda cell: vertical_layer["start"]
+                        < cell
+                        < vertical_layer["end"]
+                    }
+                )
+            ).collapsed("altitude", iris.analysis.MEAN)
+        except:
+            logger.warning(f"No altitude in model data layer {vertical_layer}")
+            continue
 
         grid_stat_data_this_layer = data_this_layer.to_time_series(
             longitude=kwargs["ungridded_lons"],
@@ -348,8 +359,6 @@ def colocate_vertical_profile_gridded(
             "start and end must be provided for displaying profiles in each vertical layer in colocate_vertical_profile_gridded"
         )
 
-    dataset_ref = data_ref.contains_datasets[0]
-
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
         data.base_year = update_baseyear_gridded
@@ -369,7 +378,7 @@ def colocate_vertical_profile_gridded(
     # Special ts_typs for which all stations with ts_type< are removed
     reduce_station_data_ts_type = ts_type
 
-    ts_type_src_data = data.ts_type
+    # ts_type_src_data = data.ts_type
     ts_type, ts_type_data = check_ts_type(data, ts_type)
     if not colocate_time and ts_type < ts_type_data:
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
@@ -416,75 +425,48 @@ def colocate_vertical_profile_gridded(
             f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
 
-    # breakpoint()  # need to make sure altitude of data comes along. when we get here the model level seems to be missing
+    # Colocation has to occur twice for vertical profiles.
+    # Once for the colocation which we will compute the statistics over.
+    # The second time is just to show the vertical profiles on the web. This needs to be finer
+    # Here we make a list with the list of ColocatedData objects for both colocation purposes
+    output_prep = [
+        colocate_vertical_profile_gridded_helper(
+            data=data,
+            data_ref=data_ref,
+            ts_type=ts_type,
+            start=start,
+            stop=stop,
+            filter_name=filter_name,
+            regrid_res_deg=regrid_res_deg,
+            harmonise_units=harmonise_units,
+            regrid_scheme=regrid_scheme,
+            var_ref=var_ref,
+            update_baseyear_gridded=update_baseyear_gridded,
+            min_num_obs=min_num_obs,
+            colocate_time=colocate_time,
+            use_climatology_ref=use_climatology_ref,
+            resample_how=resample_how,
+            layer_limits=layer_limits,
+            obs_stat_data=all_stats["stats"],
+            ungridded_lons=all_stats["longitude"],
+            ungridded_lats=all_stats["latitude"],
+            col_freq=col_freq,
+            col_tst=col_tst,
+            var=var,
+            var_aerocom=var_aerocom,
+            var_ref_aerocom=var_ref_aerocom,
+        )
+        for layer_limits in [colocation_layer_limits, profile_layer_limits]
+    ]
 
-    # Reports: Inferring surface level in GriddedData based on mean value of ec532aer data in first and last level since CF coordinate info is missing... The level with the largest mean value will be assumed to be the surface. If mean values in both levels
-
-    # grid_stat_data = data.to_time_series(
-    #     longitude=ungridded_lons,
-    #     latitude=ungridded_lats,
-    #     vert_scheme="profile",  # LB: testing this last arg. think needs to be profile
-    # )
-
-    # breakpoint()
-
-    # breakpoint()
-
-    # grid_areas = iris.analysis.cartography.area_weights(data.grid)
-
-    # LB: Add station altitude so everything is in terms of beign above sea level
-
-    # list_of_colocateddata_objects = [None] * len(colocation_layer_limits)
-    logger.info("Starting colocation of vertical profiles to compute statistics...")
-
-    colocateddata_for_statistics = colocate_vertical_profile_gridded_helper(
-        data=data,
-        data_ref=data_ref,
-        ts_type=ts_type,
-        start=start,
-        stop=stop,
-        filter_name=filter_name,
-        regrid_res_deg=regrid_res_deg,
-        harmonise_units=harmonise_units,
-        regrid_scheme=regrid_scheme,
-        var_ref=var_ref,
-        update_baseyear_gridded=update_baseyear_gridded,
-        min_num_obs=min_num_obs,
-        colocate_time=colocate_time,
-        use_climatology_ref=use_climatology_ref,
-        resample_how=resample_how,
-        layer_limits=colocation_layer_limits,
-        obs_stat_data=all_stats["stats"],
-        ungridded_lons=all_stats["longitude"],
-        ungridded_lats=all_stats["latitude"],
-        col_freq=col_freq,
-        col_tst=col_tst,
-        var=var,
+    # Create a namedtuple for output.
+    # Each element in the tuple is a list of ColocatedData objects.
+    # The lenght of these lists is the same as the number of colocation layers
+    Collocated_Data_Lists = namedtuple(
+        "Collocated_Data_Lists", ["colocateddata_for_statistics" "colocateddata_for_profile_viz"]
     )
-    logger.info("Starting colocation of vertical profiles for visualization...")
-    colocateddata_for_profile_viz = colocate_vertical_profile_gridded_helper(
-        data=data,
-        data_ref=data_ref,
-        ts_type=ts_type,
-        start=start,
-        stop=stop,
-        filter_name=filter_name,
-        regrid_res_deg=regrid_res_deg,
-        harmonise_units=harmonise_units,
-        regrid_scheme=regrid_scheme,
-        var_ref=var_ref,
-        update_baseyear_gridded=update_baseyear_gridded,
-        min_num_obs=min_num_obs,
-        colocate_time=colocate_time,
-        use_climatology_ref=use_climatology_ref,
-        resample_how=resample_how,
-        layer_limits=profile_layer_limits,
-        obs_stat_data=all_stats["stats"],
-        ungridded_lons=all_stats["longitude"],
-        ungridded_lats=all_stats["latitude"],
-        col_freq=col_freq,
-        col_tst=col_tst,
-        var=var,
-    )
+    collected_data_lists = Collocated_Data_Lists(
+        output_prep[0], output_prep[1]
+    )  # put the list of prepared output into namedtuple object s.t. both position and named arguments can be used
 
-    return colocateddata_for_statistics, colocateddata_for_profile_viz
+    return collected_data_lists
