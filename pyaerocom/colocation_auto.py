@@ -813,7 +813,9 @@ class Colocator(ColocationSetup):
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
             try:
-                coldata = self._run_helper(mod_var, obs_var)
+                coldata = self._run_helper(
+                    mod_var, obs_var
+                )  # note this can be ColocatedData or ColocatedDataLists
                 if not mod_var in data_out:
                     data_out[mod_var] = {}
                 data_out[mod_var][obs_var] = coldata
@@ -1287,7 +1289,13 @@ class Colocator(ColocationSetup):
             coldata.rename_variable(mod_var, mvar, self.model_id)
         else:
             mvar = mod_var
-        savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
+        if coldata.vertical_layer:
+            savename = self._coldata_savename(
+                obs_var, mvar, coldata.ts_type, vertical_layer=coldata.vertical_layer
+            )
+
+        else:
+            savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
         fp = coldata.to_netcdf(self.output_dir, savename=savename)
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"
@@ -1341,8 +1349,12 @@ class Colocator(ColocationSetup):
                 )
         self.start, self.stop = start_stop(self.start, self.stop)
 
-    def _coldata_savename(self, obs_var, mod_var, ts_type):
+    def _coldata_savename(self, obs_var, mod_var, ts_type, **kwargs):
         """Get filename of colocated data file for saving"""
+        if "vertical_layer" in kwargs:
+            vertical_layer = kwargs["vertical_layer"]
+        else:
+            vertical_layer = None
         name = ColocatedData._aerocom_savename(
             obs_var=obs_var,
             obs_id=self.get_obs_name(),
@@ -1352,6 +1364,7 @@ class Colocator(ColocationSetup):
             stop_str=self.get_stop_str(),
             ts_type=ts_type,
             filter_name=self.filter_name,
+            vertical_layer=vertical_layer,
         )
         return f"{name}.nc"
 
@@ -1450,8 +1463,6 @@ class Colocator(ColocationSetup):
         args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
 
-        breakpoint()
-
         if isinstance(coldata, ColocatedData):
             coldata.data.attrs["model_name"] = self.get_model_name()
             coldata.data.attrs["obs_name"] = self.get_obs_name()
@@ -1465,8 +1476,6 @@ class Colocator(ColocationSetup):
             if self.save_coldata:
                 self._save_coldata(coldata)
 
-            return coldata
-
         elif isinstance(coldata, ColocatedDataLists):
             breakpoint()
             for i_list in coldata:
@@ -1477,14 +1486,18 @@ class Colocator(ColocationSetup):
                     coldata_obj.data.attrs.update(**self.add_meta)
                     if self.zeros_to_nan:
                         coldata_obj = coldata_obj.set_zeros_nan()
-                    if self.model_to_stp:
+                    if self.model_to_stp:  # Lb: check is this needs modifying
                         coldata = correct_model_stp_coldata(coldata_obj)
                     if self.save_coldata:
                         self._save_coldata(coldata_obj)
+            breakpoint()
+
         else:
             raise Exception(
                 f"Invalid coldata type returned by colocation function {self._colocation_func}"
             )
+
+        return coldata
 
     def _print_coloc_info(self, var_matches):
         if not var_matches:

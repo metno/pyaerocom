@@ -1056,12 +1056,22 @@ class ColocatedData:
 
     @staticmethod
     def _aerocom_savename(
-        obs_var, obs_id, mod_var, mod_id, start_str, stop_str, ts_type, filter_name
+        obs_var, obs_id, mod_var, mod_id, start_str, stop_str, ts_type, filter_name, vertical_layer
     ):
-        return (
-            f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
-            f"{start_str}_{stop_str}_{ts_type}_{filter_name}"
-        )
+        if (
+            not vertical_layer is None
+        ):  # LB: Note this is in beta and needs testing. Probably some positional issues
+            start = vertical_layer["start"] / 1000
+            end = vertical_layer["end"] / 1000
+            return (
+                f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
+                f"{start_str}_{stop_str}_{ts_type}_{filter_name}_{start}-{end}km"
+            )
+        else:
+            return (
+                f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
+                f"{start_str}_{stop_str}_{ts_type}_{filter_name}"
+            )
 
     @property
     def savename_aerocom(self):
@@ -1715,7 +1725,7 @@ class ColocatedData:
 
             drop_idx = []
             nstats = len(arr.station_name)
-            for (lat, lon, stat) in data._iter_stats():
+            for lat, lon, stat in data._iter_stats():
                 if get_mask_value(lat, lon, mask) < 1:
                     drop_idx.append(stat)
 
