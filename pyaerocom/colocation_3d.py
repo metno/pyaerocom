@@ -10,6 +10,7 @@ import xarray as xr
 import iris
 from geonum.atmosphere import pressure
 from collections import namedtuple
+from typing import NamedTuple
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
@@ -44,6 +45,11 @@ from pyaerocom.colocation import (
 logger = logging.getLogger(__name__)
 
 
+ColocatedDataLists = namedtuple(
+    "ColocatedDataLists", ["colocateddata_for_statistics", "colocateddata_for_profile_viz"]
+)
+
+
 def colocate_vertical_profile_gridded_helper(
     data,
     data_ref,
@@ -62,7 +68,7 @@ def colocate_vertical_profile_gridded_helper(
     resample_how=None,
     layer_limits=None,
     **kwargs,
-):
+) -> list[ColocatedData]:
     if layer_limits is None:
         raise Exception(f"layer limits must be provided")
 
@@ -303,25 +309,36 @@ def colocate_vertical_profile_gridded_helper(
 def colocate_vertical_profile_gridded(
     data,
     data_ref,
-    ts_type=None,
-    start=None,
-    stop=None,
-    filter_name=None,
-    regrid_res_deg=None,
-    harmonise_units=True,
-    regrid_scheme="areaweighted",
-    var_ref=None,
-    update_baseyear_gridded=None,
-    min_num_obs=None,
-    colocate_time=False,
-    use_climatology_ref=False,
-    resample_how=None,
-    colocation_layer_limits=None,
-    profile_layer_limits=None,
+    ts_type: str = None,
+    start: str | None = None,
+    stop: str | None = None,
+    filter_name: str = None,
+    regrid_res_deg: int | dict | None = None,
+    harmonise_units: bool = True,
+    regrid_scheme: str = "areaweighted",
+    var_ref: str = None,
+    update_baseyear_gridded: int = None,
+    min_num_obs: int | dict | None = None,
+    colocate_time: bool = False,
+    use_climatology_ref: bool = False,
+    resample_how: str | dict = None,
+    colocation_layer_limits: list[dict] = None,
+    profile_layer_limits: list[dict] = None,
     **kwargs,
-):
+) -> NamedTuple:
     """
-    TODO: Fill in docstring
+    Colocated vertical profile data with gridded (model) data
+
+    The guts of this function are placed in a helper function as not to repeat the code.
+    This is done because colocation must occur twice:
+        i) at the the statistics are computed
+        ii) at a finder vertical resoltuion for profile vizualization
+    Some things you do not want to compute twice, however.
+    So (most of) the things that correspond to both colocation instances are computed here,
+    and then passed to the helper function.
+
+    Returns
+    -------
     """
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
@@ -458,15 +475,12 @@ def colocate_vertical_profile_gridded(
         )
         for layer_limits in [colocation_layer_limits, profile_layer_limits]
     ]
-
     # Create a namedtuple for output.
     # Each element in the tuple is a list of ColocatedData objects.
-    # The lenght of these lists is the same as the number of colocation layers
-    Collocated_Data_Lists = namedtuple(
-        "Collocated_Data_Lists", ["colocateddata_for_statistics" "colocateddata_for_profile_viz"]
-    )
-    collected_data_lists = Collocated_Data_Lists(
+    # The length of these lists is the same as the number of colocation layers
+
+    colocated_data_lists = ColocatedDataLists(
         output_prep[0], output_prep[1]
     )  # put the list of prepared output into namedtuple object s.t. both position and named arguments can be used
 
-    return collected_data_lists
+    return colocated_data_lists

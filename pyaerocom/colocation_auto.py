@@ -24,7 +24,7 @@ from pyaerocom.colocation import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.colocation_3d import colocate_vertical_profile_gridded
+from pyaerocom.colocation_3d import colocate_vertical_profile_gridded, ColocatedDataLists
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
@@ -1450,19 +1450,41 @@ class Colocator(ColocationSetup):
         args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
 
-        coldata.data.attrs["model_name"] = self.get_model_name()
-        coldata.data.attrs["obs_name"] = self.get_obs_name()
-        coldata.data.attrs["vert_code"] = self.obs_vert_type
-        coldata.data.attrs.update(**self.add_meta)
+        breakpoint()
 
-        if self.zeros_to_nan:
-            coldata = coldata.set_zeros_nan()
-        if self.model_to_stp:
-            coldata = correct_model_stp_coldata(coldata)
-        if self.save_coldata:
-            self._save_coldata(coldata)
+        if isinstance(coldata, ColocatedData):
+            coldata.data.attrs["model_name"] = self.get_model_name()
+            coldata.data.attrs["obs_name"] = self.get_obs_name()
+            coldata.data.attrs["vert_code"] = self.obs_vert_type
+            coldata.data.attrs.update(**self.add_meta)
 
-        return coldata
+            if self.zeros_to_nan:
+                coldata = coldata.set_zeros_nan()
+            if self.model_to_stp:
+                coldata = correct_model_stp_coldata(coldata)
+            if self.save_coldata:
+                self._save_coldata(coldata)
+
+            return coldata
+
+        elif isinstance(coldata, ColocatedDataLists):
+            breakpoint()
+            for i_list in coldata:
+                for coldata_obj in i_list:
+                    coldata_obj.data.attrs["model_name"] = self.get_model_name()
+                    coldata_obj.data.attrs["obs_name"] = self.get_obs_name()
+                    coldata_obj.data.attrs["vert_code"] = self.obs_vert_type
+                    coldata_obj.data.attrs.update(**self.add_meta)
+                    if self.zeros_to_nan:
+                        coldata_obj = coldata_obj.set_zeros_nan()
+                    if self.model_to_stp:
+                        coldata = correct_model_stp_coldata(coldata_obj)
+                    if self.save_coldata:
+                        self._save_coldata(coldata_obj)
+        else:
+            raise Exception(
+                f"Invalid coldata type returned by colocation function {self._colocation_func}"
+            )
 
     def _print_coloc_info(self, var_matches):
         if not var_matches:
