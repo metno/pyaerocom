@@ -1477,7 +1477,6 @@ class Colocator(ColocationSetup):
                 self._save_coldata(coldata)
 
         elif isinstance(coldata, ColocatedDataLists):
-            breakpoint()
             for i_list in coldata:
                 for coldata_obj in i_list:
                     coldata_obj.data.attrs["model_name"] = self.get_model_name()
@@ -1490,7 +1489,6 @@ class Colocator(ColocationSetup):
                         coldata = correct_model_stp_coldata(coldata_obj)
                     if self.save_coldata:
                         self._save_coldata(coldata_obj)
-            breakpoint()
 
         else:
             raise Exception(
