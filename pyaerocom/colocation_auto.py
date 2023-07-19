@@ -1289,6 +1289,7 @@ class Colocator(ColocationSetup):
             coldata.rename_variable(mod_var, mvar, self.model_id)
         else:
             mvar = mod_var
+
         if coldata.vertical_layer:
             savename = self._coldata_savename(
                 obs_var, mvar, coldata.ts_type, vertical_layer=coldata.vertical_layer

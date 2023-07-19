@@ -301,7 +301,7 @@ def colocate_vertical_profile_gridded_helper(
         coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
         coldata.longitude.attrs["units"] = str(data.longitude.units)
 
-        # coldata.vertical_layer = vertical_layer
+        coldata.vertical_layer = vertical_layer
 
         list_of_colocateddata_objects.append(coldata)
 
