@@ -220,7 +220,6 @@ def colocate_vertical_profile_gridded_helper(
                         min_num_obs=min_num_obs,
                         use_climatology_ref=use_climatology_ref,
                     )
-
                 # this try/except block was introduced on 23/2/2021 as temporary fix from
                 # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
                 # can end up resulting in incorrect number of timestamps after resampling
@@ -279,6 +278,7 @@ def colocate_vertical_profile_gridded_helper(
             "pyaerocom": pya_ver,
             "min_num_obs": min_num_obs,
             "resample_how": resample_how,
+            "vertical_layer": vertical_layer,
         }
 
         # create coordinates of DataArray
@@ -301,7 +301,7 @@ def colocate_vertical_profile_gridded_helper(
         coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
         coldata.longitude.attrs["units"] = str(data.longitude.units)
 
-        coldata.vertical_layer = vertical_layer
+        # coldata.vertical_layer = vertical_layer
 
         list_of_colocateddata_objects.append(coldata)
 
