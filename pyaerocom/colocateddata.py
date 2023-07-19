@@ -1056,7 +1056,15 @@ class ColocatedData:
 
     @staticmethod
     def _aerocom_savename(
-        obs_var, obs_id, mod_var, mod_id, start_str, stop_str, ts_type, filter_name, vertical_layer
+        obs_var,
+        obs_id,
+        mod_var,
+        mod_id,
+        start_str,
+        stop_str,
+        ts_type,
+        filter_name,
+        vertical_layer=None,  # LB: testing this because I don't want this to be required
     ):
         if (
             not vertical_layer is None

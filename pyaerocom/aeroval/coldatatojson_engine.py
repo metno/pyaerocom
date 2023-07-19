@@ -50,7 +50,9 @@ class ColdataToJsonEngine(ProcessingEngine):
         for file in files:
             logger.info(f"Processing: {file}")
             coldata = ColocatedData(file)
-            self.process_coldata(coldata)
+            self.process_coldata(
+                coldata
+            )  # Lb: possibly want a flag in the coldata objects which processes the profile coldata objects for viz
             converted.append(file)
         return converted
 
@@ -160,10 +162,12 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         use_country = True if regions_how == "country" else False
 
-        data = _init_data_default_frequencies(coldata, freqs)
+        data = _init_data_default_frequencies(
+            coldata, freqs
+        )  # LB: Here not all coldata has nans but data is all nans for all freqs
 
         if annual_stats_constrained:
-            data = _apply_annual_constraint(data)
+            data = _apply_annual_constraint(data)  # LB: maybe this is setting everything to nans
 
         if not diurnal_only:
             logger.info("Processing statistics timeseries for all regions")
@@ -189,6 +193,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
                 )
 
+            breakpoint()
             logger.info("Processing heatmap data for all regions")
             hm_all = _process_heatmap_data(
                 data,
