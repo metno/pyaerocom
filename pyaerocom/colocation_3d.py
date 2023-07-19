@@ -1,6 +1,7 @@
 """
 Methods and / or classes to perform colocation
 """
+from __future__ import annotations
 import logging
 import os
 
@@ -11,6 +12,7 @@ import iris
 from geonum.atmosphere import pressure
 from collections import namedtuple
 from typing import NamedTuple
+
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
