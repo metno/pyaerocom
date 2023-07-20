@@ -1160,7 +1160,7 @@ def _process_heatmap_data(
                                     except AeroValTrendsError as e:
                                         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                         logger.warning(msg)
-
+                            breakpoint()
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
                             )
@@ -1363,3 +1363,130 @@ def _init_data_default_frequencies(coldata, to_ts_types):
 def _start_stop_from_periods(periods):
     start, stop = _get_min_max_year_periods(periods)
     return start_stop(start, stop + 1)
+
+
+# def get_profile_filename(region, obs_name, var_name_web):
+#     return f"{region}_{obs_name}_{var_name_web}.json"
+
+
+# def process_profile_data(
+#     data,
+#     region_ids,
+#     use_weights,
+#     use_country,
+#     meta_glob,
+#     periods,
+#     seasons,
+#     add_trends,
+#     trends_min_yrs,
+# ):
+#     # basically need to do something like process_heatmap_data
+#     output = {}
+#     stats_dummy = _init_stats_dummy()
+#     for freq, coldata in data.items():
+#         # output[freq] = hm_freq = {}
+#         for regid, regname in region_ids.items():
+#             # hm_freq[regname] = {}
+#             for per in periods:
+#                 for season in seasons:
+#                     use_dummy = coldata is None
+#                     perstr = f"{per}-{season}"
+#                     if use_dummy:
+#                         stats = stats_dummy
+#                     else:
+#                         try:
+#                             subset = _select_period_season_coldata(coldata, per, season)
+
+#                             trends_successful = False
+#                             if add_trends and freq != "daily":
+#                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+#                                 (start, stop) = _get_min_max_year_periods([per])
+
+#                                 if stop - start >= trends_min_yrs:
+#                                     try:
+#                                         subset_time_series = subset.get_regional_timeseries(
+#                                             regid, check_country_meta=use_country
+#                                         )
+
+#                                         # (obs_trend, mod_trend) = _make_trends_from_timeseries(
+#                                         #     subset_time_series["obs"],
+#                                         #     subset_time_series["mod"],
+#                                         #     freq,
+#                                         #     season,
+#                                         #     start,
+#                                         #     stop,
+#                                         #     trends_min_yrs,
+#                                         # )
+
+#                                         # trends_successful = True
+#                                     except as e:
+#                                         msg = f"Failed to access subset, and will skip. This was due to {e}"
+#                                         logger.warning(msg)
+
+#                             subset = subset.filter_region(
+#                                 region_id=regid, check_country_meta=use_country
+#                             )
+
+#                             output["obs"][freq] = np.nanmean(subset.data[0, :, :])
+#                             output["mod"][freq] = np.nanmean(subset.data[1, :, :])
+#                             # stats = _get_extended_stats(subset, use_weights)
+
+#                             # if add_trends and freq != "daily" and trends_successful:
+#                             #     # The whole trends dicts are placed in the stats dict
+#                             #     stats["obs_trend"] = obs_trend
+#                             #     stats["mod_trend"] = mod_trend
+
+#                         except (DataCoverageError, TemporalResolutionError) as e:
+#                             output["obs"][freq] = np.nan
+#                             output["mod"][freq] = np.nan
+
+#     return output
+
+
+# def add_profile_entry_json(profile_file, coldata, period, season):
+#     if os.path.exists(profile_file):
+#         current = read_json(profile_file)
+#     else:
+#         current = {}
+#     # if not var_name_web in current:
+#     #     current[var_name_web] = {}
+#     # ov = current[var_name_web]
+#     model_name = coldata.obs_name
+#     if not model_name in current:
+#         current[model_name] = {}
+#     # on = ov[obs_name]
+
+#     if not "z" in current[model_name]:
+#         current[model_name]["z"] = [
+#             0
+#         ]  # initalize with 0 # LB: try writing this to a list and see is simple_json complains
+#     current[model_name]["z"].append(coldata.data.attrs["vertical_layer"]["end"])
+
+#     if not "obs" in current[model_name]:
+#         current[model_name]["obs"] = {}
+
+#     if not coldata.ts_type in current[model_name]["obs"]:
+#         current[model_name]["obs"][coldata.ts_type] = {}
+
+#     if not "mod" in current[model_name]:
+#         current[model_name]["mod"][coldata.ts_type] = {}
+
+#     if not "metadata" in current[model_name]:
+#         # should be same for all. hardcoded because no way to pass this all along now
+#         current["metadata"] = {
+#             "z_unit": "km",
+#             "z_description": "Altitude ASL",
+#             "z_long_description": "Altitude Above Sea Level"
+#             "unit": "km-1", #coldata.meta["var_units"][0], # list with two elemetns, get one. pyaerocm will try to get into units of obs, so should be this one but check later
+
+#         }
+
+#     # current[obs_name]["obs"][coldata.ts_type]
+#     # if not vert_code in on:
+#     #     on[vert_code] = {}
+#     # ovc = on[vert_code]
+#     # if not model_name in ovc:
+#     #     ovc[model_name] = {}
+#     # mn = ovc[model_name]
+#     # mn[model_var] = result
+#     # write_json(current, profile_file, ignore_nan=True)

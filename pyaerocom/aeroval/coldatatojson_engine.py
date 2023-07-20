@@ -193,7 +193,6 @@ class ColdataToJsonEngine(ProcessingEngine):
 
                 except TemporalResolutionError:
                     stats_ts = {}
-
                 fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
                 ts_file = os.path.join(out_dirs["hm/ts"], fname)
                 _add_heatmap_entry_json(
@@ -202,6 +201,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             # breakpoint()  # LB : here we need to do something for the different vertical layers.
             logger.info("Processing heatmap data for all regions")
+
             hm_all = _process_heatmap_data(
                 data,
                 regnames,
@@ -213,7 +213,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 add_trends,
                 trends_min_yrs,
             )
-
+            breakpoint()
             for freq, hm_data in hm_all.items():
                 fname = get_heatmap_filename(freq)
 
