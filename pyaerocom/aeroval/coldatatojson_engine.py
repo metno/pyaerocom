@@ -95,7 +95,13 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
 
-        vert_code = coldata.get_meta_item("vert_code")
+        if "vertical_layer" in coldata.data.attrs:
+            start = coldata.data.attrs["vertical_layer"]["start"] / 1000  # get into km
+            end = coldata.data.attrs["vertical_layer"]["end"] / 1000
+            vert_code = f"{start}-{end}km"
+        else:
+            vert_code = coldata.get_meta_item("vert_code")
+
         diurnal_only = coldata.get_meta_item("diurnal_only")
 
         add_trends = self.cfg.statistics_opts.add_trends
@@ -111,7 +117,8 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         # this will need to be figured out as soon as there is altitude
         elif "altitude" in coldata.data.dims:
-            raise NotImplementedError("Cannot yet handle profile data")
+            # raise NotImplementedError("Cannot yet handle profile data")
+            raise ValueError("Altitude should have been dealt with already in the colocation")
 
         elif not isinstance(coldata, ColocatedData):
             raise ValueError(f"Need ColocatedData object, got {type(coldata)}")
@@ -193,7 +200,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
                 )
 
-            breakpoint()  # LB : here we need to do something for the different vertical layers.
+            # breakpoint()  # LB : here we need to do something for the different vertical layers.
             logger.info("Processing heatmap data for all regions")
             hm_all = _process_heatmap_data(
                 data,
@@ -254,7 +261,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 map_name = get_json_mapname(
                     obs_name, var_name_web, model_name, model_var, vert_code, period
                 )
-                breakpoint()  # need format for output now. currently rewriting over previous .json files
+                # breakpoint()  # need format for output now. currently rewriting over previous .json files
                 outfile_map = os.path.join(out_dirs["map"], map_name)
                 write_json(map_data, outfile_map, ignore_nan=True)
 
