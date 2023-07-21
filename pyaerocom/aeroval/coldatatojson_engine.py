@@ -23,6 +23,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_timeseries_file_name,
     init_regions_web,
     update_regions_json,
+    process_profile_data,
+    get_profile_filename,
 )
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 
@@ -213,7 +215,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 add_trends,
                 trends_min_yrs,
             )
-            breakpoint()
+
             for freq, hm_data in hm_all.items():
                 fname = get_heatmap_filename(freq)
 
@@ -282,10 +284,35 @@ class ColdataToJsonEngine(ProcessingEngine):
                     # writes json file
                     _write_stationdata_json(ts_data_weekly_reg, outdir)
 
+        if (
+            "vertical_layer" in coldata.data.attrs
+        ):  # LB: Will need some sort of additional flag to deal with the two colocation level types
+            logger.info("Processing profile data for vizualization")
+
+            for regid in regnames:
+                profile_viz = process_profile_data(
+                    data,
+                    regid,
+                    use_country,
+                    periods,
+                    seasons,
+                )
+
+                fname = get_profile_filename(regid, obs_name, var_name_web)
+
+                add_profile_entry_json(fname, data, profile_viz, periods, seasons)
+
+                breakpoint()
+
+            # for reg in regions:
+            #     fname = get_profile_filename(reg, obs_name, var_name_web)
+
+            # add_profile_entry(fname, )
+
         logger.info(
             f"Finished computing json files for {model_name} ({model_var}) vs. "
             f"{obs_name} ({obs_var})"
         )
 
         dt = time() - t00
-        logger.info(f"Time expired (TOTAL): {dt:.2f} s")
+        logger.info(f"Time expired: {dt:.2f} s")
