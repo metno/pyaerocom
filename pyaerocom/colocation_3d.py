@@ -483,6 +483,9 @@ def colocate_vertical_profile_gridded(
     # Each element in the tuple is a list of ColocatedData objects.
     # The length of these lists is the same as the number of colocation layers
 
+    for coldata in output_prep[1]:
+        coldata.data.attrs["just_for_viz"] = 1
+
     colocated_data_lists = ColocatedDataLists(
         output_prep[0], output_prep[1]
     )  # put the list of prepared output into namedtuple object s.t. both position and named arguments can be used
