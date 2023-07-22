@@ -1376,7 +1376,7 @@ def process_profile_data(
     periods,
     seasons,
 ):
-    breakpoint()
+    # breakpoint()
     # basically need to do something like process_heatmap_data
     output = {"obs": {}, "mod": {}}
     # stats_dummy = _init_stats_dummy()
@@ -1467,7 +1467,10 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
             current[model_name]["z"] = [
                 0
             ]  # initalize with 0 # LB: try writing this to a list and see is simple_json complains
-        current[model_name]["z"].append(coldata.data.attrs["vertical_layer"]["end"])
+        if (
+            coldata.data.attrs["vertical_layer"]["end"] > current[model_name]["z"][-1]
+        ):  # only store incremental increases in the layers
+            current[model_name]["z"].append(coldata.data.attrs["vertical_layer"]["end"])
 
         if not "obs" in current[model_name]:
             current[model_name]["obs"] = {}
@@ -1476,7 +1479,7 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
             current[model_name]["obs"][freq] = {}
 
         if not "mod" in current[model_name]:
-            current[model_name]["mod"][freq] = {}
+            current[model_name]["mod"] = {}
 
         if not freq in current[model_name]["mod"]:
             current[model_name]["mod"][freq] = {}
@@ -1486,12 +1489,12 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
                 perstr = f"{per}-{season}"
 
                 if not perstr in current[model_name]["obs"][freq]:
-                    current[model_name]["obs"][freq] = []
+                    current[model_name]["obs"][freq][perstr] = []
                 if not perstr in current[model_name]["mod"][freq]:
-                    current[model_name]["mod"][freq] = []
+                    current[model_name]["mod"][freq][perstr] = []
 
-                current[model_name]["obs"][freq].append(profile_viz["obs"][freq][perstr])
-                current[model_name]["mod"][freq].append(profile_viz["mod"][freq][perstr])
+                current[model_name]["obs"][freq][perstr].append(profile_viz["obs"][freq][perstr])
+                current[model_name]["mod"][freq][perstr].append(profile_viz["mod"][freq][perstr])
 
         if not "metadata" in current[model_name]:
             # should be same for all. hardcoded because no way to pass this all along now

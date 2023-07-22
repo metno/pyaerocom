@@ -25,6 +25,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     update_regions_json,
     process_profile_data,
     get_profile_filename,
+    add_profile_entry_json,
 )
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 
@@ -300,9 +301,8 @@ class ColdataToJsonEngine(ProcessingEngine):
 
                 fname = get_profile_filename(regid, obs_name, var_name_web)
 
-                add_profile_entry_json(fname, data, profile_viz, periods, seasons)
-
-                breakpoint()
+                outfile_profile = os.path.join(out_dirs["profile"], fname)
+                add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
 
             # for reg in regions:
             #     fname = get_profile_filename(reg, obs_name, var_name_web)
