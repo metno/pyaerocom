@@ -1363,7 +1363,6 @@ class GriddedData:
             )
         elif vert_scheme == "profile":
             # raise NotImplementedError("Cannot yet retrieve profile timeseries")
-            breakpoint()
             return self
         else:
             try:

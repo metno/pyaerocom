@@ -212,7 +212,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                         ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
                     )
 
-                # breakpoint()  # LB : here we need to do something for the different vertical layers.
                 logger.info("Processing heatmap data for all regions")
 
                 hm_all = _process_heatmap_data(
@@ -278,7 +277,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                     map_name = get_json_mapname(
                         obs_name, var_name_web, model_name, model_var, vert_code, period
                     )
-                    # breakpoint()  # need format for output now. currently rewriting over previous .json files
                     outfile_map = os.path.join(out_dirs["map"], map_name)
                     write_json(map_data, outfile_map, ignore_nan=True)
 

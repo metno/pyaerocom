@@ -1376,8 +1376,6 @@ def process_profile_data(
     periods,
     seasons,
 ):
-    # breakpoint()
-    # basically need to do something like process_heatmap_data
     output = {"obs": {}, "mod": {}}
     # stats_dummy = _init_stats_dummy()
     for freq, coldata in data.items():
