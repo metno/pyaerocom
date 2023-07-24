@@ -242,8 +242,6 @@ def colocate_vertical_profile_gridded_helper(
                             f"Failed to colocate time for station {obs_stat.station_name}. "
                             f"This station will be skipped (error: {e})"
                         )
-                # if not all(np.isnan(arr[0, :, i])):
-                #     breakpoint()
             except TemporalResolutionError as e:
                 # resolution of obsdata is too low
                 logger.warning(
