@@ -80,6 +80,7 @@ def colocate_vertical_profile_gridded_helper(
     var_aerocom = kwargs["var_aerocom"]
     var_ref_aerocom = kwargs["var_ref_aerocom"]
     # ts_type_src_ref = kwargs["ts_type_src_ref"]
+    # breakpoint()
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -111,16 +112,21 @@ def colocate_vertical_profile_gridded_helper(
         layer_limits
     ):  # Think about efficency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
+        arr = np.full((2, time_num, stat_num), np.nan)
         try:
-            data_this_layer = data.extract(
-                iris.Constraint(
-                    coord_values={
-                        "altitude": lambda cell: vertical_layer["start"]
-                        < cell
-                        < vertical_layer["end"]
-                    }
+            data_this_layer = (
+                data.extract(
+                    iris.Constraint(
+                        coord_values={
+                            "altitude": lambda cell: vertical_layer["start"]
+                            < cell
+                            < vertical_layer["end"]
+                        }
+                    )
                 )
-            ).collapsed("altitude", iris.analysis.MEAN)
+                .collapsed("altitude", iris.analysis.MEAN)
+                .copy()
+            )  # LB: testing copy here to see if needed
         except:
             logger.warning(f"No altitude in model data layer {vertical_layer}")
             continue
@@ -381,6 +387,8 @@ def colocate_vertical_profile_gridded(
         # update time dimension in gridded data
         data.base_year = update_baseyear_gridded
 
+    # breakpoint()
+
     # apply region filter to data
     regfilter = Filter(name=filter_name)
     data_ref = regfilter.apply(data_ref)
@@ -486,5 +494,5 @@ def colocate_vertical_profile_gridded(
     colocated_data_lists = ColocatedDataLists(
         output_prep[0], output_prep[1]
     )  # put the list of prepared output into namedtuple object s.t. both position and named arguments can be used
-
+    # breakpoint()
     return colocated_data_lists
