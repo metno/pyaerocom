@@ -1365,13 +1365,14 @@ def _start_stop_from_periods(periods):
     return start_stop(start, stop + 1)
 
 
-def get_profile_filename(region, obs_name, var_name_web):
-    return f"{region}_{obs_name}_{var_name_web}.json"
+def get_profile_filename(station_name, obs_name, var_name_web):
+    return f"{station_name}_{obs_name}_{var_name_web}.json"
 
 
 def process_profile_data(
     data,
-    region_id,
+    # region_id,
+    station_name,
     use_country,
     periods,
     seasons,
@@ -1397,7 +1398,11 @@ def process_profile_data(
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
-                        subset = _select_period_season_coldata(coldata, per, season)
+                        all_stations_subset = _select_period_season_coldata(coldata, per, season)
+                        station_subset = all_stations_subset.data[
+                            :, :, all_stations_subset.data.station_name.values == station_name
+                        ]
+                        # subset = _select_period_season_coldata(coldata, per, season)
 
                         # trends_successful = False
                         # if add_trends and freq != "daily":
@@ -1406,9 +1411,9 @@ def process_profile_data(
 
                         # if stop - start >= trends_min_yrs:
                         # try:
-                        subset_time_series = subset.get_regional_timeseries(
-                            region_id, check_country_meta=use_country
-                        )
+                        # subset_time_series = subset.get_regional_timeseries(
+                        #     region_id, check_country_meta=use_country
+                        # )
 
                         # (obs_trend, mod_trend) = _make_trends_from_timeseries(
                         #     subset_time_series["obs"],
@@ -1422,8 +1427,10 @@ def process_profile_data(
 
                         # trends_successful = True
 
-                        output["obs"][freq][perstr] = np.nanmean(subset_time_series["obs"])
-                        output["mod"][freq][perstr] = np.nanmean(subset_time_series["mod"])
+                        # output["obs"][freq][perstr] = np.nanmean(subset_time_series["obs"])
+                        # output["mod"][freq][perstr] = np.nanmean(subset_time_series["mod"])
+                        output["obs"][freq][perstr] = np.nanmean(station_subset.data[0, :, :])
+                        output["mod"][freq][perstr] = np.nanmean(station_subset.data[1, :, :])
                     except:
                         msg = f"Failed to access subset timeseries, and will skip."
                         logger.warning(msg)

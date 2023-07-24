@@ -302,18 +302,19 @@ class ColdataToJsonEngine(ProcessingEngine):
             ):  # LB: Will need some sort of additional flag to deal with the two colocation level types
                 logger.info("Processing profile data for vizualization")
 
-                for regid in regnames:
+                # for regid in regnames:
+                for station_name in coldata.data.station_name.values:
                     profile_viz = process_profile_data(
                         data,
-                        regid,
+                        station_name,
                         use_country,
                         periods,
                         seasons,
                     )
 
-                    fname = get_profile_filename(regid, obs_name, var_name_web)
+                    fname = get_profile_filename(station_name, obs_name, var_name_web)
 
-                    outfile_profile = os.path.join(out_dirs["profile"], fname)
+                    outfile_profile = os.path.join(out_dirs["profiles"], fname)
                     add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
 
             # for reg in regions:
