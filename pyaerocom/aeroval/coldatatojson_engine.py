@@ -1,7 +1,7 @@
 import logging
 import os
-from time import time
 import shutil
+from time import time
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
@@ -19,14 +19,14 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_statistics_timeseries,
     _write_site_data,
     _write_stationdata_json,
+    add_profile_entry_json,
     get_heatmap_filename,
     get_json_mapname,
+    get_profile_filename,
     get_timeseries_file_name,
     init_regions_web,
-    update_regions_json,
     process_profile_data,
-    get_profile_filename,
-    add_profile_entry_json,
+    update_regions_json,
 )
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 

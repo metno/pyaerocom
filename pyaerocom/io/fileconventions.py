@@ -133,9 +133,7 @@ class FileConventionRead:
                 f"Invalid ts_type {info['ts_type']} in filename {basename(file)}"
             )
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
-            raise FileConventionError(
-                f"Invalid year {info['year']} in filename {basename(file)}"
-            )
+            raise FileConventionError(f"Invalid year {info['year']} in filename {basename(file)}")
 
     def _info_from_aerocom3(self, file: str) -> dict:
         """Extract info from filename Aerocom 3 convention
@@ -344,9 +342,7 @@ class FileConventionRead:
         elif self.name == "aerocom3":
             if vert_which is None:
                 vert_which = ".*"
-            return (
-                "_".join([".*", data_id, var, vert_which, str(year), ts_type]) + ".nc"
-            )
+            return "_".join([".*", data_id, var, vert_which, str(year), ts_type]) + ".nc"
         else:
             raise NotImplementedError(
                 f"File matching mask for convention {self.name} not yet defined..."

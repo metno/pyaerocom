@@ -2,21 +2,27 @@
 Methods and / or classes to perform colocation
 """
 from __future__ import annotations
+
 import logging
 import os
-
-import numpy as np
-import pandas as pd
-import xarray as xr
-import iris
-from geonum.atmosphere import pressure
 from collections import namedtuple
 from typing import NamedTuple
 
+import iris
+import numpy as np
+import pandas as pd
+import xarray as xr
+from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocation import (
+    _colocate_site_data_helper,
+    check_time_ival,
+    check_ts_type,
+    resolve_var_name,
+)
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -36,13 +42,6 @@ from pyaerocom.helpers import (
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
-
-from pyaerocom.colocation import (
-    resolve_var_name,
-    check_time_ival,
-    check_ts_type,
-    _colocate_site_data_helper,
-)
 
 logger = logging.getLogger(__name__)
 

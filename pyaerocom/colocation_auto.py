@@ -24,7 +24,7 @@ from pyaerocom.colocation import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.colocation_3d import colocate_vertical_profile_gridded, ColocatedDataLists
+from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
