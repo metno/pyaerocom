@@ -1466,10 +1466,10 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
         if not "metadata" in current[model_name]:
             # should be same for all. hardcoded because no way to pass this all along now
             current["metadata"] = {
-                "z_unit": "km",
+                "z_unit": "m",
                 "z_description": "Altitude ASL",
                 "z_long_description": "Altitude Above Sea Level",
-                "unit": "km-1",  # coldata.meta["var_units"][0], # list with two elemetns, get one. pyaerocm will try to get into units of obs, so should be this one but check later
+                "unit": "m-1",  # coldata.meta["var_units"][0], # list with two elemetns, get one. pyaerocm will try to get into units of obs, so should be this one but check later
             }
 
     write_json(current, profile_file, ignore_nan=True)
