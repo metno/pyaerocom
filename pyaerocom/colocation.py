@@ -28,6 +28,7 @@ from pyaerocom.helpers import (
     make_datetime_index,
     to_pandas_timestamp,
 )
+from pyaerocom.projections import Projection
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
@@ -1051,3 +1052,137 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     coldata.data.attrs["Model_STP_corr"] = True
     coldata.data.attrs["Model_STP_corr_info"] = info_str
     return coldata
+
+
+def colocate_gridded_ungridded_in_projection(
+    data,
+    data_ref,
+    ts_type=None,
+    start=None,
+    stop=None,
+    filter_name=None,
+    regrid_res_deg=None,
+    harmonise_units=True,
+    regrid_scheme="areaweighted",
+    var_ref=None,
+    update_baseyear_gridded=None,
+    min_num_obs=None,
+    colocate_time=False,
+    use_climatology_ref=False,
+    resample_how=None,
+    model_projection_parameters=None,
+    **kwargs,
+):
+
+    """Colocate gridded with ungridded data, but in projected coordinates (low level method)
+
+    This function will transform the observations (ungridded) into the (i,j) space of the projection and then do colocation there.
+
+
+    """
+    if not model_projection_parameters:
+        raise Exception(
+            "User must provide model_projection_paramters to colocate data in projected coordinates"
+        )
+
+    if filter_name is None:
+        filter_name = const.DEFAULT_REG_FILTER
+
+    # LB: This needs to be generalized for projected data in which case len(dims) > 1
+    # Proceed any try to figure out what :func:`to_time_series` expects
+
+    # try:
+    #   data.check_dimcoords_tseries()
+    # except DimensionOrderError:
+    #     data.reorder_dimensions_tseries()
+
+    var, var_aerocom = _resolve_var_name(data)
+    if var_ref is None:
+        var_ref = var_aerocom
+        var_ref_aerocom = var_aerocom
+    else:
+        var_ref_aerocom = const.VARS[var_ref].var_name_aerocom
+
+    if not var_ref in data_ref.contains_vars:
+        raise VarNotAvailableError(
+            f"Variable {var_ref} is not available in ungridded "
+            f"data (which contains {data_ref.contains_vars})"
+        )
+    elif len(data_ref.contains_datasets) > 1:
+        raise AttributeError(
+            f"Colocation can only be performed with ungridded data objects "
+            f"that only contain a single dataset (input data contains: "
+            f"{data_ref.contains_datasets}. Use method `extract_dataset` of "
+            f"UngriddedData object to extract single datasets."
+        )
+
+    dataset_ref = data_ref.contains_datasets[0]
+
+    if update_baseyear_gridded is not None:
+        # update time dimension in gridded data
+        data.base_year = update_baseyear_gridded
+
+    # apply region filter to data
+    regfilter = Filter(name=filter_name)
+    data_ref = regfilter.apply(data_ref)
+    data = regfilter.apply(data)
+    # LB: filtering seems to work?
+
+    # check time overlap and crop model data if needed
+    start, stop = _check_time_ival(data, start, stop)
+    data = data.crop(time_range=(start, stop))
+
+    # LB: Not obvious this is going to work in projected coordinates, but I think it should be fine
+    if regrid_res_deg is not None:
+        data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
+
+    # Special ts_typs for which all stations with ts_type< are removed
+    reduce_station_data_ts_type = ts_type
+
+    ts_type_src_data = data.ts_type
+    ts_type, ts_type_data = _check_ts_type(data, ts_type)
+    if not colocate_time and ts_type < ts_type_data:
+        data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
+        ts_type_data = ts_type
+
+    if use_climatology_ref:
+        col_freq = "monthly"
+        obs_start = const.CLIM_START
+        obs_stop = const.CLIM_STOP
+    else:
+        col_freq = str(ts_type)
+        obs_start = start
+        obs_stop = stop
+
+    # colocation frequency
+    col_tst = TsType(col_freq)
+
+    latitude = data.latitude.points
+    longitude = data.longitude.points
+    lat_range = [np.min(latitude), np.max(latitude)]
+    lon_range = [np.min(longitude), np.max(longitude)]
+    # use only sites that are within model domain
+    data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+
+    # get timeseries from all stations in provided time resolution
+    # (time resampling is done below in main loop)
+    all_stats = data_ref.to_station_data_all(
+        vars_to_convert=var_ref,
+        start=obs_start,
+        stop=obs_stop,
+        by_station_name=True,
+        ts_type_preferred=reduce_station_data_ts_type,
+        **kwargs,
+    )
+
+    obs_stat_data = all_stats["stats"]
+    ungridded_lons = all_stats["longitude"]
+    ungridded_lats = all_stats["latitude"]
+
+    # projection = Projection(model_projection_parameters)
+
+    # ungridded_lons_i, ungridded_lats_j = projection.conversion_function(
+    #     latitudes=ungridded_lats, longtidues=ungridded_lons
+    # )
+
+    raise NotImplementedError("Colocation in projected coordinates is currently a WIP.")

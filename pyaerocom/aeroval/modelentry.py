@@ -5,7 +5,7 @@ from pyaerocom.aeroval.aux_io_helpers import check_aux_info
 
 
 class ModelEntry(BrowseDict):
-    """Modeln configuration for evaluation (dictionary)
+    """Model configuration for evaluation (dictionary)
 
     Note
     ----
@@ -46,6 +46,7 @@ class ModelEntry(BrowseDict):
     model_add_vars = DictStrKeysListVals()
     model_read_aux = DictType()
     model_rename_vars = DictType()
+    model_projection_parameters = DictType()
 
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
@@ -54,6 +55,7 @@ class ModelEntry(BrowseDict):
         self.model_add_vars = {}
         self.model_rename_vars = {}
         self.model_read_aux = {}
+        self.model_projection_parameters = {}  # LB: Check to see if still need this
 
         self.update(**kwargs)
 

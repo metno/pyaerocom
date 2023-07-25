@@ -22,6 +22,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
+    colocate_gridded_ungridded_in_projection,
     correct_model_stp_coldata,
 )
 from pyaerocom.config import ALL_REGION_NAME
@@ -69,6 +70,7 @@ class ColocationSetup(BrowseDict):
     4-dimensional,  with dimensions `data_source` (index 0: obs, index 1:
     model), `time` and `latitude` and `longitude`.
 
+    3. LB (WIP): gridded (in projection coordinates) with either gridded or ungridded.
 
 
     Attributes
@@ -369,6 +371,8 @@ class ColocationSetup(BrowseDict):
         self.model_use_climatology = False
 
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
+        self.model_has_projection_coordinates = False
+        self.model_projection_parameters = {}  # provided by the user in the cfg
 
         self.flex_ts_type = True
 
@@ -698,6 +702,7 @@ class Colocator(ColocationSetup):
         self._check_add_model_read_aux(model_var)
         mdata = self._read_gridded(var_name=model_var, is_model=True)
         self._loaded_model_data[model_var] = mdata
+        self.model_has_projection_coordinates = mdata.has_projection_coordinates
         return mdata
 
     def get_obs_data(self, obs_var):
@@ -1361,6 +1366,8 @@ class Colocator(ColocationSetup):
             function the performs co-location operation
 
         """
+        if self.model_has_projection_coordinates:
+            return colocate_gridded_ungridded_in_projection  # Think need to return this function before am able to get the projection paramters from the model cfg
         if self.obs_is_ungridded:
             return colocate_gridded_ungridded
         else:
@@ -1398,6 +1405,10 @@ class Colocator(ColocationSetup):
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
             args.update(ts_type=ts_type)
+
+        if self.model_has_projection_coordinates:
+            args.update(model_projection_parameters=self.model_projection_parameters)
+
         return args
 
     def _check_dimensionality(self, args):
@@ -1445,6 +1456,7 @@ class Colocator(ColocationSetup):
         return coldata
 
     def _print_coloc_info(self, var_matches):
+        # LB: Note this function could be causing logging issues. key errors. huge mess while debugging
         if not var_matches:
             logger.info("Nothing to colocate")
             return
