@@ -1401,53 +1401,15 @@ def process_profile_data(
                         all_stations_subset = _select_period_season_coldata(coldata, per, season)
                         station_subset = all_stations_subset.data[
                             :, :, all_stations_subset.data.station_name.values == station_name
-                        ]
-                        # subset = _select_period_season_coldata(coldata, per, season)
+                        ]  # LB: Assumes ordering of station name matches
 
-                        # trends_successful = False
-                        # if add_trends and freq != "daily":
-                        # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                        # (start, stop) = _get_min_max_year_periods([per])
-
-                        # if stop - start >= trends_min_yrs:
-                        # try:
-                        # subset_time_series = subset.get_regional_timeseries(
-                        #     region_id, check_country_meta=use_country
-                        # )
-
-                        # (obs_trend, mod_trend) = _make_trends_from_timeseries(
-                        #     subset_time_series["obs"],
-                        #     subset_time_series["mod"],
-                        #     freq,
-                        #     season,
-                        #     start,
-                        #     stop,
-                        #     trends_min_yrs,
-                        # )
-
-                        # trends_successful = True
-
-                        # output["obs"][freq][perstr] = np.nanmean(subset_time_series["obs"])
-                        # output["mod"][freq][perstr] = np.nanmean(subset_time_series["mod"])
                         output["obs"][freq][perstr] = np.nanmean(station_subset.data[0, :, :])
                         output["mod"][freq][perstr] = np.nanmean(station_subset.data[1, :, :])
+
                     except:
                         msg = f"Failed to access subset timeseries, and will skip."
                         logger.warning(msg)
 
-                        # LB: I think this should be not needed and covered in the time series above but probably need to double check that
-                        # subset = subset.filter_region(
-                        #     region_id=regid, check_country_meta=use_country
-                        # )
-
-                        # stats = _get_extended_stats(subset, use_weights)
-
-                        # if add_trends and freq != "daily" and trends_successful:
-                        #     # The whole trends dicts are placed in the stats dict
-                        #     stats["obs_trend"] = obs_trend
-                        #     stats["mod_trend"] = mod_trend
-
-                        # except (DataCoverageError, TemporalResolutionError) as e:
                         output["obs"][freq][perstr] = np.nan
                         output["mod"][freq][perstr] = np.nan
 
