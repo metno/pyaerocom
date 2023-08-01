@@ -10,7 +10,6 @@ from pathlib import Path
 import xarray as xr
 
 from pyaerocom import const
-
 from pyaerocom.plugins.mep.reader import ReadMEP
 
 
