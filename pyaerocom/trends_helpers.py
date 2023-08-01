@@ -72,8 +72,8 @@ def _compute_trend_error(m, m_err, v0, v0_err):
     """
 
     delta_sl = m_err / v0
-    delta_ref = m * v0_err / v0**2
-    return np.sqrt(delta_sl**2 + delta_ref**2) * 100
+    delta_ref = m * v0_err / v0 ** 2
+    return np.sqrt(delta_sl ** 2 + delta_ref ** 2) * 100
 
 
 def _get_season(mon):
