@@ -11,7 +11,7 @@ import xarray as xr
 
 from pyaerocom import const
 
-from pyaerocom.plugins.mep import ReadMEP
+from pyaerocom.plugins.mep.reader import ReadMEP
 
 
 class ReadICOS(ReadMEP):
@@ -56,9 +56,7 @@ class ReadICOS(ReadMEP):
 
     VAR_MAPPING = {"vmrco2": "CO2_volume_mixing_ratio"}
 
-    STATION_REGEX = re.compile(
-        "icos-co2-nrt-(.*A)-.*.nc"
-    )  # LB: this needs checking. Don't think it's right
+    STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
 
     DEFAULT_VARS = list(VAR_MAPPING)
 
