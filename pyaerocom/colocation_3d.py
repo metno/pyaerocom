@@ -46,9 +46,14 @@ from pyaerocom.variable import Variable
 logger = logging.getLogger(__name__)
 
 
-ColocatedDataLists = namedtuple(
-    "ColocatedDataLists", ["colocateddata_for_statistics", "colocateddata_for_profile_viz"]
-)
+# ColocatedDataLists = namedtuple(
+#    "ColocatedDataLists", ["colocateddata_for_statistics", "colocateddata_for_profile_viz"]
+# )
+
+
+class ColocatedDataLists(NamedTuple):
+    colocateddata_for_statistics: list[ColocatedData]
+    colocateddata_for_profile_viz: list[ColocatedData]
 
 
 def _colocate_vertical_profile_gridded(
@@ -332,7 +337,7 @@ def colocate_vertical_profile_gridded(
     colocation_layer_limits: list[dict] = None,
     profile_layer_limits: list[dict] = None,
     **kwargs,
-) -> NamedTuple:
+) -> ColocatedDataLists:
     """
     Colocated vertical profile data with gridded (model) data
 
@@ -492,7 +497,7 @@ def colocate_vertical_profile_gridded(
         coldata.data.attrs["just_for_viz"] = 1
 
     colocated_data_lists = ColocatedDataLists(
-        output_prep[0], output_prep[1]
+        *output_prep
     )  # put the list of prepared output into namedtuple object s.t. both position and named arguments can be used
     # breakpoint()
     return colocated_data_lists

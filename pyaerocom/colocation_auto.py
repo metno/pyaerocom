@@ -1477,7 +1477,7 @@ class Colocator(ColocationSetup):
             if self.save_coldata:
                 self._save_coldata(coldata)
 
-        elif isinstance(coldata, ColocatedDataLists):
+        elif isinstance(coldata, ColocatedDataLists):  # look into intertools chain.from_iterable
             for i_list in coldata:
                 for coldata_obj in i_list:
                     coldata_obj.data.attrs["model_name"] = self.get_model_name()
