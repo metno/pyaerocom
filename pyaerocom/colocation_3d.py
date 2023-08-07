@@ -51,7 +51,7 @@ ColocatedDataLists = namedtuple(
 )
 
 
-def colocate_vertical_profile_gridded_helper(
+def _colocate_vertical_profile_gridded(
     data,
     data_ref,
     ts_type=None,
@@ -456,7 +456,7 @@ def colocate_vertical_profile_gridded(
     # The second time is just to show the vertical profiles on the web. This needs to be finer
     # Here we make a list with the list of ColocatedData objects for both colocation purposes
     output_prep = [
-        colocate_vertical_profile_gridded_helper(
+        _colocate_vertical_profile_gridded(
             data=data,
             data_ref=data_ref,
             ts_type=ts_type,
