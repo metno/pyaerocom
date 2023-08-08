@@ -30,6 +30,10 @@ COLUMNS = (
     "value",
 )
 
+TMP_DATA_DIR = (
+    "/lustre/storeB/project/fou/kl/sesam/archive/CSO-gridded/xEMEP__r01x01__qa08/NO2/2023/01"
+)
+
 
 class ReadTropomiL3(ReadGriddedData):
     """
@@ -40,9 +44,10 @@ class ReadTropomiL3(ReadGriddedData):
     _FILEMASK = "S5p_*.nc"
     __version__ = "0.01"
 
-    DATA_ID = ""
+    DATA_ID = const.TROPOMI_NAME
 
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None:
-            raise Exception("Need a data_dir")
-        super.__init__(data)
+            data_dir = TMP_DATA_DIR
+            # raise Exception("Need a data_dir")
+        super.__init__()

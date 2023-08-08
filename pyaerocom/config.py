@@ -91,6 +91,9 @@ class Config:
     #: MEP name
     MEP_NAME = "MEP"
 
+    # TROPOMI name
+    TROPOMI_NAME = "TROPOMI"
+
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
@@ -193,7 +196,6 @@ class Config:
     _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
 
     def __init__(self, config_file=None, try_infer_environment=True):
-
         # Directories
         self._outputdir = None
         self._cache_basedir = None
@@ -278,7 +280,6 @@ class Config:
         return [self.ROOTDIR, self.HOMEDIR]
 
     def _infer_config_from_basedir(self, basedir):
-
         basedir = os.path.normpath(basedir)
         for env_id, chk_sub in self._check_subdirs_cfg.items():
             chkdir = os.path.join(basedir, chk_sub)
