@@ -280,7 +280,16 @@ class ReadAirNow(ReadUngriddedBase):
             DataFrame containing the file data
 
         """
-        df = pd.read_csv(file, sep=self.FILE_COL_DELIM, names=self.FILE_COL_NAMES)
+        try:
+            df = pd.read_csv(
+                file,
+                sep=self.FILE_COL_DELIM,
+                names=self.FILE_COL_NAMES,
+                # encoding="unicode_escape",
+                on_bad_lines="skip",
+            )
+        except:
+            breakpoint()
         return df
 
     def _read_files(self, files, vars_to_retrieve):
@@ -327,7 +336,9 @@ class ReadAirNow(ReadUngriddedBase):
                 vardata = arr[mask]
                 arrs.append(vardata)
         if len(arrs) == 0:
-            raise DataRetrievalError("None of the input variables could be found in input list")
+            raise DataRetrievalError(
+                "None of the input variables could be found in input list"
+            )
         return self._filedata_to_statlist(arrs, vars_to_retrieve)
 
     def _filedata_to_statlist(self, arrs, vars_to_retrieve):
@@ -362,12 +373,12 @@ class ReadAirNow(ReadUngriddedBase):
         dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
         stats = []
         for var in vars_to_retrieve:
-
             # extract only variable data (should speed things up)
             var_in_file = self.VAR_MAP[var]
             mask = data[:, varcol] == var_in_file
             subset = data[mask]
             dtime_subset = dtime[mask]
+            breakpoint()
             statlist = np.unique(subset[:, statcol])
             for stat_id in tqdm(statlist, desc=var):
                 if not stat_id in stat_ids:
@@ -404,7 +415,9 @@ class ReadAirNow(ReadUngriddedBase):
         ------
         NotImplementedError
         """
-        raise NotImplementedError("Not needed for these data since the format is unsuitable...")
+        raise NotImplementedError(
+            "Not needed for these data since the format is unsuitable..."
+        )
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """
@@ -442,7 +455,8 @@ class ReadAirNow(ReadUngriddedBase):
         stats = self._read_files(files, vars_to_retrieve)
 
         data = UngriddedData.from_station_data(
-            stats, add_meta_keys=["timezone", "area_classification", "station_classification"]
+            stats,
+            add_meta_keys=["timezone", "area_classification", "station_classification"],
         )
 
         return data
