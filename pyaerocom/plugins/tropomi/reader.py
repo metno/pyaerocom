@@ -10,7 +10,7 @@ from pathlib import Path
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom.io.readgridded import ReadGriddedBase
+from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom.stationdata import StationData
 from pyaerocom.griddeddata import GriddedData
 
@@ -35,7 +35,7 @@ TMP_DATA_DIR = (
 )
 
 
-class ReadTropomiL3(ReadGriddedData):
+class ReadTropomiL3(ReadGridded):
     """
     Class to read processed TROPOMI data (homebrewed L3 data) for use in SESAM.
     e.g., Tropospheric vertical column of nitrogen dioxide
@@ -50,4 +50,4 @@ class ReadTropomiL3(ReadGriddedData):
         if data_dir is None:
             data_dir = TMP_DATA_DIR
             # raise Exception("Need a data_dir")
-        super.__init__()
+        super().__init__(data_dir=data_dir)

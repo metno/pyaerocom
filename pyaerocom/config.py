@@ -1,4 +1,4 @@
-import getpass
+reimport getpass
 import logging
 import os
 from configparser import ConfigParser
