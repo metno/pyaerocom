@@ -280,19 +280,36 @@ class ReadAirNow(ReadUngriddedBase):
             DataFrame containing the file data
 
         """
-        try:
-            df = pd.read_csv(
-                file,
-                sep=self.FILE_COL_DELIM,
-                names=self.FILE_COL_NAMES,
-                encoding="cp863",
-                # on_bad_lines="skip",
+
+        # Below is an overly complicated way to read in data without pandas.read_csv() because that now crashes for certain text encodings from Quebec
+        with open(file, encoding="cp863") as f:
+            data = f.readlines()
+
+        arr = [[]] * len(data)  # allocate enough space for every line in the file
+        idx = 0
+        for line in data:
+            line_contents = line.split(self.FILE_COL_DELIM)
+            # clean up the contents
+            # line_contents[self.FILE_COL_NAMES.index("station_id")] = np.int64(
+            #     line_contents[self.FILE_COL_NAMES.index("station_id")]
+            # )
+            line_contents[self.FILE_COL_NAMES.index("time_zone")] = np.float64(
+                line_contents[self.FILE_COL_NAMES.index("time_zone")]
             )
-        except:
-            breakpoint()
-            with open(file) as f:
-                data = f.read()
-            breakpoint()
+            line_contents[self.FILE_COL_NAMES.index("value")] = np.float64(
+                line_contents[self.FILE_COL_NAMES.index("value")]
+            )
+            line_contents[-1] = line_contents[-1].strip()  # institute has \n at the end, remove
+            if len(line_contents) != len(
+                self.FILE_COL_NAMES
+            ):  # some lines when split are longer than we have columns. skip these since don't know what to do with them. This line may be the source of questions regarding "missing AirNow data" on AeroVal
+                continue
+            arr[idx] = line_contents
+            idx += 1
+
+        # throw the used subset of arr into a DataFrame
+        df = pd.DataFrame(arr[:idx], columns=self.FILE_COL_NAMES)
+
         return df
 
     def _read_files(self, files, vars_to_retrieve):
@@ -327,6 +344,10 @@ class ReadAirNow(ReadUngriddedBase):
             fp = files[i]
             filedata = self._read_file(fp)
             arr = filedata.values
+            # arr = self._read_file(fp)
+
+            # arr = filedata
+            # breakpoint()
 
             for i, var in enumerate(vars_to_retrieve):
                 cond = arr[:, varcol] == self.VAR_MAP[var]
