@@ -35,7 +35,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     """
 
     #: Mask for identifying datafiles
-    _FILEMASK = "*.csv"
+    _FILEMASK = "NO*.csv"
 
     #: Version log of this class (for caching)
     __version__ = "0.08"
@@ -410,8 +410,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # time interpolations later on. Make sure that the data is ordered in time
         diff_unsorted = np.diff(data_dict[self.START_TIME_NAME])
         sort_flag = False
-        # just assume hourly data for now
-        time_diff = np.timedelta64(30, "m")
+        # use a vectorised time_diff instead of scalar one as before
+        time_diff = (data_dict[self.END_TIME_NAME][:lineidx]-data_dict[self.START_TIME_NAME][:lineidx]) / 2.
+
         # np.min needs an array and fails with ValueError when a scalar is supplied
         # this is the case for a single line file
         try:
@@ -422,7 +423,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if min_diff < 0:
             # data needs to be sorted
             ordered_idx = np.argsort(data_dict[self.START_TIME_NAME][:lineidx])
-            data_out["dtime"] = data_dict[self.START_TIME_NAME][ordered_idx] + time_diff
+            data_out["dtime"] = data_dict[self.START_TIME_NAME][ordered_idx] + time_diff[ordered_idx]
             sort_flag = True
         else:
             data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
