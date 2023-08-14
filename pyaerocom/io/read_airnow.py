@@ -27,7 +27,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f"/**/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = "0.07"
+    __version__ = "0.08"
 
     #: Column delimiter
     FILE_COL_DELIM = "|"
@@ -285,7 +285,11 @@ class ReadAirNow(ReadUngriddedBase):
         # determine file encoding first and provide that to pandas
         encoding = self.get_file_encoding(file)
         df = pd.read_csv(
-            file, sep=self.FILE_COL_DELIM, names=self.FILE_COL_NAMES, encoding=encoding
+            file,
+            sep=self.FILE_COL_DELIM,
+            names=self.FILE_COL_NAMES,
+            encoding=encoding,
+            on_bad_lines="skip",
         )
         return df
 
