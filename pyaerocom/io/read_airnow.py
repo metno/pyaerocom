@@ -1,10 +1,10 @@
+import codecs
 import logging
 import os
 from glob import glob
 
 import numpy as np
 import pandas as pd
-import codecs
 from tqdm import tqdm
 
 from pyaerocom.exceptions import DataRetrievalError
