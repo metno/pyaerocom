@@ -35,10 +35,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     """
 
     #: Mask for identifying datafiles
-    _FILEMASK = "NO*.csv"
+    _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.08"
+    __version__ = "0.09"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
