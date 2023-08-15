@@ -282,15 +282,39 @@ class ReadAirNow(ReadUngriddedBase):
 
         """
 
-        # determine file encoding first and provide that to pandas
-        encoding = self.get_file_encoding(file)
-        df = pd.read_csv(
-            file,
-            sep=self.FILE_COL_DELIM,
-            names=self.FILE_COL_NAMES,
-            encoding=encoding,
-            on_bad_lines="skip",
-        )
+        # try utf_8 anf cp863 reading first, then
+        # determine file encoding and provide that to pandas
+        # just determining the encoding is too slow given the # of files
+        # Airbase consists of
+        # just trying a couple of encodings and not determining the encoding all
+        # the time speeds up reading by a factor of 5
+        try:
+            encoding = "utf_8"
+            df = pd.read_csv(
+                file,
+                sep=self.FILE_COL_DELIM,
+                names=self.FILE_COL_NAMES,
+                encoding=encoding,
+                on_bad_lines="skip",
+            )
+        except UnicodeDecodeError:
+            encoding = "cp863"
+            df = pd.read_csv(
+                file,
+                sep=self.FILE_COL_DELIM,
+                names=self.FILE_COL_NAMES,
+                encoding=encoding,
+                on_bad_lines="skip",
+            )
+        except:
+            encoding = self.get_file_encoding(file)
+            df = pd.read_csv(
+                file,
+                sep=self.FILE_COL_DELIM,
+                names=self.FILE_COL_NAMES,
+                encoding=encoding,
+                on_bad_lines="skip",
+            )
         return df
 
     def _read_files(self, files, vars_to_retrieve):
