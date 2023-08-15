@@ -26,7 +26,7 @@ def test__FILEMASK(reader: ReadAirNow):
 
 
 def test__version__(reader: ReadAirNow):
-    assert reader.__version__ == "0.07"
+    assert reader.__version__ == "0.08"
 
 
 def test_FILE_COL_DELIM(reader: ReadAirNow):
