@@ -406,7 +406,8 @@ class ReadAirNow(ReadUngriddedBase):
             try:
                 statlist = np.unique(subset[:, statcol])
             except TypeError:
-                statlist = np.unique(str(subset[:, statcol]))
+                tmp_str = [subset[:, statcol][x] for x in range(len(subset[:, statcol]))]
+                statlist = np.unique(tmp_str)
             for stat_id in tqdm(statlist, desc=var):
                 if not stat_id in stat_ids:
                     continue
