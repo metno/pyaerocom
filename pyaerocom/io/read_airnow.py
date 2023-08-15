@@ -384,7 +384,7 @@ class ReadAirNow(ReadUngriddedBase):
         """
         data = np.concatenate(arrs)
 
-        logger.info("Converting filedata to list os StationData")
+        logger.info("Converting filedata to list of StationData")
         stat_meta = self.station_metadata
         stat_ids = list(stat_meta)
         varcol = self.FILE_COL_NAMES.index("variable")
