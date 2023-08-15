@@ -402,7 +402,11 @@ class ReadAirNow(ReadUngriddedBase):
             mask = data[:, varcol] == var_in_file
             subset = data[mask]
             dtime_subset = dtime[mask]
-            statlist = np.unique(subset[:, statcol])
+            # not all stations seems to provide the station id as string...
+            try:
+                statlist = np.unique(subset[:, statcol])
+            except TypeError:
+                statlist = np.unique(str(subset[:, statcol]))
             for stat_id in tqdm(statlist, desc=var):
                 if not stat_id in stat_ids:
                     continue
