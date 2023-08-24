@@ -353,15 +353,34 @@ class ReadAirNow(ReadUngriddedBase):
         arrs = []
         # 1 for pandas, 0 for Python
         read_flag = 1
+        unique_stat_ids = None
         for i in tqdm(range(len(files))):
             fp = files[i]
+            # print(fp)
             if read_flag == 1:
                 filedata = self._read_file(fp)
                 for i, filevar in enumerate(file_vars_to_retrieve):
-                    try:
-                        arrs.append(filedata[filedata["variable"] == filevar].values)
-                    except:
-                        pass
+                    # try:
+                    arrs.append(filedata[filedata["variable"] == filevar].values)
+                    if unique_stat_ids is None:
+                        unique_stat_ids = np.unique(
+                            (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]).astype(str)
+                        )
+                    else:
+                        try:
+                            unique_stat_ids = np.union1d(
+                                unique_stat_ids,
+                                np.unique(
+                                    (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]).astype(
+                                        str
+                                    )
+                                ),
+                            )
+                        except (ValueError, TypeError):
+                            print(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
+                            raise DataRetrievalError(
+                                f"file {fp}: error in creating unique stationlist"
+                            )
             else:
                 filedata = self.read_file(fp, vars_to_retrieve=vars_to_retrieve)
                 for i, var in enumerate(vars_to_retrieve):
@@ -383,9 +402,9 @@ class ReadAirNow(ReadUngriddedBase):
             #     arrs.append(vardata)
         if len(arrs) == 0:
             raise DataRetrievalError("None of the input variables could be found in input list")
-        return self._filedata_to_statlist(arrs, vars_to_retrieve)
+        return self._filedata_to_statlist(arrs, vars_to_retrieve, unique_stat_ids=unique_stat_ids)
 
-    def _filedata_to_statlist(self, arrs, vars_to_retrieve):
+    def _filedata_to_statlist(self, arrs, vars_to_retrieve, unique_stat_ids=None):
         """
         Convert loaded filedata into list of StationData objects
 
@@ -426,11 +445,15 @@ class ReadAirNow(ReadUngriddedBase):
             subset = data[mask]
             dtime_subset = dtime[mask]
             # not all stations seems to provide the station id as string...
-            try:
-                statlist = np.unique(subset[:, statcol])
-            except TypeError:
-                tmp_str = [subset[:, statcol][x] for x in range(len(subset[:, statcol]))]
-                statlist = np.unique(tmp_str)
+            if unique_stat_ids is None:
+                try:
+                    statlist = np.unique((subset[:, statcol]).astype(str))
+                except TypeError:
+                    raise DataRetrievalError("error in creating an unique station list")
+                    # tmp_str = [subset[:, statcol][x] for x in range(len(subset[:, statcol]))]
+                    # statlist = np.unique(tmp_str)
+            else:
+                statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var):
                 if not stat_id in stat_ids:
                     continue
