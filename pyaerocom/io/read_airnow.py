@@ -347,17 +347,27 @@ class ReadAirNow(ReadUngriddedBase):
 
         """
         logger.info("Read AirNow data file(s)")
+        file_vars_to_retrieve = [self.VAR_MAP[x] for x in vars_to_retrieve]
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
+        # 1 for pandas, 0 for Python
+        read_flag = 1
         for i in tqdm(range(len(files))):
             fp = files[i]
-            # filedata = self._read_file(fp)
-            # old_arr = filedata.values
-            filedata = self.read_file(fp, vars_to_retrieve=vars_to_retrieve)
-            for i, var in enumerate(vars_to_retrieve):
-                if filedata[var]["lines_retrieved"] > 0:
-                    arrs.append(np.array(filedata[var]["linedata"]))
+            if read_flag == 1:
+                filedata = self._read_file(fp)
+                for i, filevar in enumerate(file_vars_to_retrieve):
+                    try:
+                        arrs.append(filedata[filedata["variable"] == filevar].values)
+                    except:
+                        pass
+            else:
+                filedata = self.read_file(fp, vars_to_retrieve=vars_to_retrieve)
+                for i, var in enumerate(vars_to_retrieve):
+                    if filedata[var]["lines_retrieved"] > 0:
+                        arrs.append(np.array(filedata[var]["linedata"]))
+                        filedata[var] = None
 
             # arr = filedata.values
 
@@ -475,6 +485,7 @@ class ReadAirNow(ReadUngriddedBase):
 
         # unfortunately the files have different encodings, so we have to try them
         # on the entire file first
+        ret_data = {}
         encoding = "utf_8"
         try:
             with open(filename, encoding=encoding) as infile:
@@ -484,15 +495,24 @@ class ReadAirNow(ReadUngriddedBase):
             with open(filename, encoding=encoding) as infile:
                 linedata = infile.readlines()
         except:
-            encoding = self.get_file_encoding(filename)
-            with open(filename, encoding=encoding) as infile:
-                linedata = infile.readlines()
+            logger.info(f"unforeseen encoding in file {filename}! Trying to determine encoding")
+            try:
+                encoding = self.get_file_encoding(filename)
+                logger.info(f"determined encoding: {encoding}")
+                with open(filename, encoding=encoding) as infile:
+                    linedata = infile.readlines()
+            except MemoryError:
+                logger.info(f"could not determine encoding due to MemoryError: Skipping file...")
+                raise DataRetrievalError(
+                    f"could not determine encoding due to MemoryError: Skipping file..."
+                )
+                return ret_data
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         file_vars_to_retrieve = [self.VAR_MAP[x] for x in vars_to_retrieve]
 
-        ret_data = {}
+        tot_lines_retrieved = 0
         for var in vars_to_retrieve:
             ret_data[var] = {}
             ret_data[var]["lines_retrieved"] = 0
@@ -509,11 +529,13 @@ class ReadAirNow(ReadUngriddedBase):
                     continue
 
                 # make the numerical values numerical here already
-                # line_arr[4] = float(line_arr[4])
-                # line_arr[7] = float(line_arr[7])
+                line_arr[4] = float(line_arr[4])
+                line_arr[7] = float(line_arr[7])
                 ret_data[var]["linedata"].append(line_arr)
                 ret_data[var]["lines_retrieved"] += 1
+                tot_lines_retrieved += 1
 
+            # logger.info(f"{tot_lines_retrieved} out of {len(linedata)} retrieved.")
         return ret_data
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
