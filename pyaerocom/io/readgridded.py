@@ -694,12 +694,12 @@ class ReadGridded:
         FileNotFoundError
             if none of the input files matches a registered convention.
         """
-        breakpoint()
         for file in files:
             try:
                 self.file_convention.from_file(os.path.basename(file))
                 return
             except Exception:
+                breakpoint()
                 pass
 
         raise FileNotFoundError(

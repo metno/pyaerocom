@@ -30,9 +30,7 @@ COLUMNS = (
     "value",
 )
 
-TMP_DATA_DIR = (
-    "/lustre/storeB/project/fou/kl/sesam/archive/CSO-gridded/xEMEP__r01x01__qa08/NO2/2023/01"
-)
+TMP_DATA_DIR = "/lustre/storeB/project/fou/kl/sesam/archive/CSO-gridded/xEMEP__r01x01__qa08/NO2/2022/10/"
 
 
 class ReadTropomiL3(ReadGridded):
@@ -41,7 +39,7 @@ class ReadTropomiL3(ReadGridded):
     e.g., Tropospheric vertical column of nitrogen dioxide
     """
 
-    _FILEMASK = "S5p_*.nc"
+    _FILEMASK = "CSO_output_*_gridded.nc"
     __version__ = "0.01"
 
     DATA_ID = const.TROPOMI_NAME
@@ -49,5 +47,7 @@ class ReadTropomiL3(ReadGridded):
     def __init__(self, data_id=None, data_dir=None):
         if data_dir is None:
             data_dir = TMP_DATA_DIR
-            # raise Exception("Need a data_dir")
-        super().__init__(data_dir=data_dir)
+        breakpoint()
+        # raise Exception("Need a data_dir")
+        super().__init__(data_dir=data_dir, file_convention="cso")
+        breakpoint()

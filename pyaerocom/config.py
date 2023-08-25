@@ -1,4 +1,4 @@
-reimport getpass
+import getpass
 import logging
 import os
 from configparser import ConfigParser
@@ -136,7 +136,8 @@ class Config:
     CLIM_RESAMPLE_HOW = "mean"  # median, ...
     # as a function of climatological frequency
     CLIM_MIN_COUNT = dict(
-        daily=30, monthly=5  # at least 30 daily measurements in each month over whole period
+        daily=30,
+        monthly=5,  # at least 30 daily measurements in each month over whole period
     )  # analogue to daily ...
 
     # names for the satellite data sets
@@ -176,7 +177,11 @@ class Config:
 
     # this dictionary links environment ID's with corresponding subdirectory
     # names that are required to exist in order to load this environment
-    _check_subdirs_cfg = {"metno": "aerocom", "users-db": "AMAP", "local-db": "modeldata"}
+    _check_subdirs_cfg = {
+        "metno": "aerocom",
+        "users-db": "AMAP",
+        "local-db": "modeldata",
+    }
 
     with resources.path("pyaerocom.data", "variables.ini") as path:
         _var_info_file = str(path)
@@ -229,7 +234,9 @@ class Config:
 
         if config_file is not None:
             if not os.path.exists(config_file):
-                raise FileNotFoundError(f"input config file does not exist {config_file}")
+                raise FileNotFoundError(
+                    f"input config file does not exist {config_file}"
+                )
             elif not config_file.endswith("ini"):
                 raise ValueError("Need path to an ini file for input config_file")
 
@@ -406,7 +413,9 @@ class Config:
             try:
                 os.mkdir(val)
             except Exception:
-                raise OSError(f"Input directory {val} does not exist and can also not be created")
+                raise OSError(
+                    f"Input directory {val} does not exist and can also not be created"
+                )
         self._downloaddatadir = val
 
     @property
@@ -439,7 +448,9 @@ class Config:
         try:
             return chk_make_subdir(self.cache_basedir, self.user)
         except Exception as e:
-            logger.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
+            logger.warning(
+                f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching"
+            )
             self._caching_active = False
 
     @CACHEDIR.setter
@@ -467,7 +478,9 @@ class Config:
     @property
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
-        logger.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
+        logger.warning(
+            "Deprecated (but still functional) name VAR_PARAM. Please use VARS"
+        )
         return self.VARS
 
     @property
@@ -717,7 +730,11 @@ class Config:
         self.read_config(self.last_config_file, keep_basedirs)
 
     def read_config(
-        self, config_file, basedir=None, init_obslocs_ungridded=False, init_data_search_dirs=False
+        self,
+        config_file,
+        basedir=None,
+        init_obslocs_ungridded=False,
+        init_data_search_dirs=False,
     ):
         """
         Import paths from one of the config ini files
