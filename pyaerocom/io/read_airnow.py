@@ -21,13 +21,15 @@ class ReadAirNow(ReadUngriddedBase):
     """
 
     # Data type of files
-    _FILETYPE = ".dat"
+    # _FILETYPE = ".dat"
+    _FILETYPE = ".dam"
 
     # File search mask to recursively retrieve list of data files
-    _FILEMASK = f"/**/*{_FILETYPE}"
+    # _FILEMASK = f"/**/*{_FILETYPE}"
+    _FILEMASK = f"/monthly/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = "0.08"
+    __version__ = "0.09"
 
     #: Column delimiter
     FILE_COL_DELIM = "|"
@@ -301,6 +303,8 @@ class ReadAirNow(ReadUngriddedBase):
                 names=self.FILE_COL_NAMES,
                 encoding=encoding,
                 on_bad_lines="skip",
+                # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
+                dtype={2: str, 4: float},
             )
         except UnicodeDecodeError:
             encoding = "cp863"
@@ -310,6 +314,8 @@ class ReadAirNow(ReadUngriddedBase):
                 names=self.FILE_COL_NAMES,
                 encoding=encoding,
                 on_bad_lines="skip",
+                # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
+                dtype={2: str, 4: float},
             )
         except:
             encoding = self.get_file_encoding(file)
@@ -319,6 +325,8 @@ class ReadAirNow(ReadUngriddedBase):
                 names=self.FILE_COL_NAMES,
                 encoding=encoding,
                 on_bad_lines="skip",
+                # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
+                dtype={2: str, 4: float},
             )
         return df
 
@@ -364,17 +372,13 @@ class ReadAirNow(ReadUngriddedBase):
                     arrs.append(filedata[filedata["variable"] == filevar].values)
                     if unique_stat_ids is None:
                         unique_stat_ids = np.unique(
-                            (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]).astype(str)
+                            (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
                         )
                     else:
                         try:
                             unique_stat_ids = np.union1d(
                                 unique_stat_ids,
-                                np.unique(
-                                    (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]).astype(
-                                        str
-                                    )
-                                ),
+                                np.unique((arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])),
                             )
                         except (ValueError, TypeError):
                             print(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
@@ -442,6 +446,7 @@ class ReadAirNow(ReadUngriddedBase):
             # extract only variable data (should speed things up)
             var_in_file = self.VAR_MAP[var]
             mask = data[:, varcol] == var_in_file
+            # another RAM consuming op, the mask can just be used all the time (for the price of readability...)
             subset = data[mask]
             dtime_subset = dtime[mask]
             # not all stations seems to provide the station id as string...
@@ -460,19 +465,23 @@ class ReadAirNow(ReadUngriddedBase):
                 statmask = subset[:, statcol] == stat_id
                 if statmask.sum() == 0:
                     continue
+                # RAM consuming op...
                 statdata = subset[statmask]
                 timestamps = dtime_subset[statmask]
                 # timezone offsets (there's a half hour time zone!, so float)
-                toffs = statdata[:, tzonecol].astype(float)
+                # toffs = statdata[:, tzonecol].astype(float)
+                # not sure why the astype(float) is needed in between...
+                toffs = statdata[:, tzonecol].astype(float).astype("timedelta64[h]")
+                timestamps += toffs
                 stat = StationData(**stat_meta[stat_id])
 
-                vals = statdata[:, valcol].astype(float)
+                # vals = statdata[:, valcol].astype(float)
+                vals = statdata[:, valcol]
                 units = np.unique(statdata[:, unitcol])
                 # errors that did not occur in v0 but that may occur
                 assert len(units) == 1
                 assert units[0] in self.UNIT_MAP
-                toffs = toffs.astype("timedelta64[h]")
-                timestamps += toffs
+                # toffs = toffs.astype("timedelta64[h]")
                 stat["dtime"] = timestamps
                 stat["timezone"] = "UTC"
                 stat[var] = vals
