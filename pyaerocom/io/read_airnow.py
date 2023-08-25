@@ -304,7 +304,7 @@ class ReadAirNow(ReadUngriddedBase):
                 encoding=encoding,
                 on_bad_lines="skip",
                 # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
-                dtype={2: str, 4: float},
+                dtype={2: str, 4: float, 7: float},
             )
         except UnicodeDecodeError:
             encoding = "cp863"
@@ -315,7 +315,7 @@ class ReadAirNow(ReadUngriddedBase):
                 encoding=encoding,
                 on_bad_lines="skip",
                 # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
-                dtype={2: str, 4: float},
+                dtype={2: str, 4: float, 7: float},
             )
         except:
             encoding = self.get_file_encoding(file)
@@ -326,7 +326,11 @@ class ReadAirNow(ReadUngriddedBase):
                 encoding=encoding,
                 on_bad_lines="skip",
                 # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
-                dtype={2: str, 4: float},
+                dtype={
+                    2: str,
+                    4: float,
+                    7: float,
+                },
             )
         return df
 
@@ -364,7 +368,7 @@ class ReadAirNow(ReadUngriddedBase):
         unique_stat_ids = None
         for i in tqdm(range(len(files))):
             fp = files[i]
-            # print(fp)
+            print(fp)
             if read_flag == 1:
                 filedata = self._read_file(fp)
                 for i, filevar in enumerate(file_vars_to_retrieve):
