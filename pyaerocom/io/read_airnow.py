@@ -5,12 +5,11 @@ from glob import glob
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +26,10 @@ class ReadAirNow(ReadUngriddedBase):
     # File search mask to recursively retrieve list of data files
     # _FILEMASK = f"/**/*{_FILETYPE}"
     _FILEMASK = f"/monthly/*{_FILETYPE}"
+    # _FILEMASK = f"/monthly_testing/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = "0.09"
+    __version__ = "0.11"
 
     #: Column delimiter
     FILE_COL_DELIM = "|"
@@ -163,7 +163,13 @@ class ReadAirNow(ReadUngriddedBase):
         -------
         datetime64[s]
         """
-        mm, dd, yy = date.split("/")
+        try:
+            mm, dd, yy = date.split("/")
+        except ValueError:
+            print(date)
+            raise DataRetrievalError(
+                f"_date_time_str_to_datetime64: date conversion error date: {date} time:{time}"
+            )
         HH, MM = time.split(":")
         yr = str(self.BASEYEAR + int(yy))
         # returns as datetime64[s]
