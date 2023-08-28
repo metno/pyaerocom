@@ -109,18 +109,29 @@ class FileConventionRead:
         """
 
         if basename(file).count("_") >= 4:
-            self.import_default("aerocom3")
+            if "CSO" in basename(file):  # LB: This needs testing
+                self.import_default("cso")
+            else:
+                self.import_default("aerocom3")
+
         elif basename(file).count(".") >= 4:
             self.import_default("aerocom2")
         else:
             raise FileConventionError(
                 f"Could not identify convention from input file {basename(file)}"
             )
+        breakpoint()
         self.check_validity(file)
         return self
 
+    def from_filepath(
+        self, filepath
+    ):  # LB: for the CSO fielconvention, some info is in the filepath, so deal with this case separately
+        pass
+
     def check_validity(self, file):
         """Check if filename is valid"""
+        breakpoint()
         info = self.get_info_from_file(file)
         year = info["year"]
         if not TsType.valid(info["ts_type"]):
@@ -257,10 +268,44 @@ class FileConventionRead:
             )
         return info
 
+    def _info_from_cso(self, file: str) -> dict:
+        """Extract info from filename CSO convention
+
+        Parameters
+        -----------
+        file : str
+            netcdf file name
+
+        Returns
+        -------
+        dict
+            dictionary containing infos that were extracted from filename
+        """
+        info = self.info_init
+        spl = splitext(basename(file))[0].split(self.file_sep)
+        try:
+            info["year"] = int(spl[self.year_pos][0:4])
+        except Exception:
+            raise FileConventionError(
+                f"Failed to extract year information from file {basename(file)} "
+                f"using file convention {self.name}"
+            )
+
+        try:
+            info["var_name"] = spl[self.var_pos]
+        except Exception:
+            raise FileConventionError(
+                f"Failed to extract variable information from file {basename(file)} "
+                f"using file convention {self.name}"
+            )
+
+        breakpoint()
+        return info
+
     def get_info_from_file(self, file: str) -> dict:
         """Identify convention from a file
 
-        Currently only two conventions (aerocom2 and aerocom3) exist that are
+        Currently only three conventions (aerocom2, aerocom3, cso) exist that are
         identified by the delimiter used.
 
         Parameters
@@ -294,6 +339,9 @@ class FileConventionRead:
             return self._info_from_aerocom3(file)
         if self.name == "aerocom2":
             return self._info_from_aerocom2(file)
+        if self.name == "cso":  # LB: new file convention for gridded CSO files we will have
+            breakpoint()
+            return self._info_from_cso(file)
         raise FileConventionError(f"Unknown {self.name}")
 
     def string_mask(self, data_id, var, year, ts_type, vert_which=None):

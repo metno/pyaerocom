@@ -695,6 +695,7 @@ class ReadGridded:
             if none of the input files matches a registered convention.
         """
         for file in files:
+            breakpoint()
             try:
                 self.file_convention.from_file(os.path.basename(file))
                 return
@@ -812,7 +813,7 @@ class ReadGridded:
         ----
         It is presumed, that naming conventions of files in
         the data directory are not mixed but all correspond to either of the
-        conventions defined in
+        conventions defined in file_conventions.ini
 
         Parameters
         ----------
@@ -847,7 +848,7 @@ class ReadGridded:
             except FileNotFoundError as e:
                 logger.warning(repr(e))
                 return
-
+        breakpoint()  # LB: At what point can we get info from the filepath not the name?
         result = self._evaluate_fileinfo(files)
         df = self._fileinfo_to_dataframe(result)
         self.file_info = df
