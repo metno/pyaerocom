@@ -29,7 +29,7 @@ class ReadAirNow(ReadUngriddedBase):
     # _FILEMASK = f"/monthly_testing/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = "0.11"
+    __version__ = "0.12"
 
     #: Column delimiter
     FILE_COL_DELIM = "|"
@@ -163,17 +163,12 @@ class ReadAirNow(ReadUngriddedBase):
         -------
         datetime64[s]
         """
-        try:
-            mm, dd, yy = date.split("/")
-        except ValueError:
-            print(date)
-            raise DataRetrievalError(
-                f"_date_time_str_to_datetime64: date conversion error date: {date} time:{time}"
-            )
-        HH, MM = time.split(":")
+        mm, dd, yy = date.split("/")
+        # HH, MM = time.split(":")
         yr = str(self.BASEYEAR + int(yy))
         # returns as datetime64[s]
-        return np.datetime64(f"{yr}-{mm}-{dd}T{HH}:{MM}:00")
+        # return np.datetime64(f"{yr}-{mm}-{dd}T{HH}:{MM}:00")
+        return np.datetime64(f"{yr}-{mm}-{dd}T{time}:00")
 
     def _datetime64_from_filename(self, filepath):
         """
@@ -374,7 +369,7 @@ class ReadAirNow(ReadUngriddedBase):
         unique_stat_ids = None
         for i in tqdm(range(len(files))):
             fp = files[i]
-            print(fp)
+            # print(fp)
             if read_flag == 1:
                 filedata = self._read_file(fp)
                 for i, filevar in enumerate(file_vars_to_retrieve):
