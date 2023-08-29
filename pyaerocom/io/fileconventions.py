@@ -120,18 +120,22 @@ class FileConventionRead:
             raise FileConventionError(
                 f"Could not identify convention from input file {basename(file)}"
             )
-        breakpoint()
         self.check_validity(file)
         return self
 
     def from_filepath(
         self, filepath
-    ):  # LB: for the CSO fielconvention, some info is in the filepath, so deal with this case separately
-        pass
+    ):  # LB: for the CSO file convention, some info is in the filepath, so deal with this case separately
+        breakpoint()
+
+        if "CSO" in basename(filepath):
+            self.import_default("cso")
+
+        self.check_validity_filepath(filepath)
+        return
 
     def check_validity(self, file):
         """Check if filename is valid"""
-        breakpoint()
         info = self.get_info_from_file(file)
         year = info["year"]
         if not TsType.valid(info["ts_type"]):
@@ -140,6 +144,11 @@ class FileConventionRead:
             )
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
             raise FileConventionError(f"Invalid year {info['year']} in filename {basename(file)}")
+
+    def check_validity_filepath(self, filepath):
+        info = self.get_info_from_filepath(filepath)
+        year = info["year"]
+        breakpoint()
 
     def _info_from_aerocom3(self, file: str) -> dict:
         """Extract info from filename Aerocom 3 convention
@@ -283,6 +292,7 @@ class FileConventionRead:
         """
         info = self.info_init
         spl = splitext(basename(file))[0].split(self.file_sep)
+        breakpoint()
         try:
             info["year"] = int(spl[self.year_pos][0:4])
         except Exception:
@@ -339,9 +349,12 @@ class FileConventionRead:
             return self._info_from_aerocom3(file)
         if self.name == "aerocom2":
             return self._info_from_aerocom2(file)
+
+        raise FileConventionError(f"Unknown {self.name}")
+
+    def get_info_from_filepath(self, filepath: str) -> dict:
         if self.name == "cso":  # LB: new file convention for gridded CSO files we will have
-            breakpoint()
-            return self._info_from_cso(file)
+            return self._info_from_cso(filepath)
         raise FileConventionError(f"Unknown {self.name}")
 
     def string_mask(self, data_id, var, year, ts_type, vert_which=None):
