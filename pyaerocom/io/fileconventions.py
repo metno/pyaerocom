@@ -6,6 +6,14 @@ from pyaerocom.data import resources
 from pyaerocom.exceptions import FileConventionError
 from pyaerocom.tstype import TsType
 
+# CSO names to aerocom names
+CSO_VAR_MAP = {
+    "NO2": "vmrno2",
+    "HCHO": "vmrhcho",
+    "SO2": "vmrso2",
+    "CO": "vmrco",
+}
+
 
 class FileConventionRead:
     """Class that represents a file naming convention for reading Aerocom files
@@ -148,7 +156,14 @@ class FileConventionRead:
     def check_validity_filepath(self, filepath):
         info = self.get_info_from_filepath(filepath)
         year = info["year"]
-        breakpoint()
+        if not TsType.valid(info["ts_type"]):
+            raise FileConventionError(
+                f"Invalid ts_type {info['ts_type']} in filename {basename(filepath)}"
+            )
+        elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
+            raise FileConventionError(
+                f"Invalid year {info['year']} in filename {basename(filepath)}"
+            )
 
     def _info_from_aerocom3(self, file: str) -> dict:
         """Extract info from filename Aerocom 3 convention
@@ -277,7 +292,7 @@ class FileConventionRead:
             )
         return info
 
-    def _info_from_cso(self, file: str) -> dict:
+    def _info_from_cso(self, filepath: str) -> dict:
         """Extract info from filename CSO convention
 
         Parameters
@@ -291,25 +306,42 @@ class FileConventionRead:
             dictionary containing infos that were extracted from filename
         """
         info = self.info_init
-        spl = splitext(basename(file))[0].split(self.file_sep)
-        breakpoint()
+        spl_filepath = splitext(filepath)[0].split("/")  # split filepath on forward slash
         try:
-            info["year"] = int(spl[self.year_pos][0:4])
+            info["year"] = int(spl_filepath[-3])
         except Exception:
             raise FileConventionError(
-                f"Failed to extract year information from file {basename(file)} "
+                f"Failed to extract year information from file {basename(filepath)} "
+                f"using file convention {self.name}"
+            )
+        try:
+            info["var_name"] = CSO_VAR_MAP[spl_filepath[-4]]
+        except Exception:
+            raise FileConventionError(
+                f"Failed to extract variable information from file {basename(filepath)} "
                 f"using file convention {self.name}"
             )
 
         try:
-            info["var_name"] = spl[self.var_pos]
+            info["ts_type"] = "daily"  # this is a hack for now until we consider other ts_types
         except Exception:
             raise FileConventionError(
-                f"Failed to extract variable information from file {basename(file)} "
+                f"Failed to extract ts_type from file {basename(filepath)} "
                 f"using file convention {self.name}"
             )
 
-        breakpoint()
+        try:
+            info["data_id"] = ".".join(spl_filepath[-6:-4])
+        except Exception:
+            raise FileConventionError(
+                f"Failed to extract name from file {basename(filepath)} "
+                f"using file convention {self.name}"
+            )
+        if "atstations" in filepath.lower():
+            raise Exception(
+                "Developers: please debug "
+                "(file convention Aerocom 2 should not have atstations encoded in file name)"
+            )
         return info
 
     def get_info_from_file(self, file: str) -> dict:
