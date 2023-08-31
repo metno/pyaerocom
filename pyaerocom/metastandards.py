@@ -57,7 +57,6 @@ class DataSource(BrowseDict):
     _ini_file_name = "data_sources.ini"
 
     def __init__(self, **info):
-
         self.data_id = None
         self.dataset_name = None
         self.data_product = None
@@ -170,7 +169,6 @@ class StationMetaData(DataSource):
     """
 
     def __init__(self, **info):
-
         self.filename = None
 
         self.station_id = None
@@ -215,7 +213,6 @@ class AerocomDataID:
     KEYS = ["model_name", "meteo", "experiment", "perturbation"]
 
     def __init__(self, data_id=None, **meta_info):
-
         self._data_id = None
         self._values = None
 
@@ -391,3 +388,204 @@ class AerocomDataID:
 
 
 STANDARD_META_KEYS = list(StationMetaData())
+
+
+class CsoDataID:
+    """
+    Class representing a model data ID following Cso PhaseIII conventions
+
+    The ID must contain 4 substrings with meta parameters:
+
+        <ModelName>-<MeteoConfigSpecifier>_<ExperimentName>-<PerturbationName>
+
+    E.g.
+
+        NorESM2-met2010_CTRL-AP3
+
+    For more information see `AeroCom diagnostics spreadsheet <https://docs.google.com/spreadsheets/d/1NiHLVTDsBo0JEBSnnDECNI2ojUnCVlxuy2PFrsRJW38/edit#gid=1475397852>`__
+
+    This interface can be used to make sure a provided data ID is following
+    this convention and to extract the corresponding meta parameters as
+    dictionary (:func:`to_dict`) or to create an data_id from the corresponding
+    meta parameters :func:`from_dict`.
+    """
+
+    DELIM = "_"
+    SUBDELIM = "-"
+    KEYS = ["model_name", "meteo", "experiment", "perturbation"]
+
+    def __init__(self, data_id=None, **meta_info):
+        self._data_id = None
+        self._values = None
+
+        if data_id is not None:
+            self.data_id = data_id
+        elif meta_info:
+            self._values_from_dict(meta_info)
+
+    @property
+    def data_id(self):
+        """
+        str
+            AeroCom data ID
+        """
+        return self._data_id
+
+    @data_id.setter
+    def data_id(self, val):
+        self._values = self._eval_data_id(val)
+        self._data_id = val
+
+    @property
+    def values(self):
+        if self._values is not None:
+            return self._values
+        raise AttributeError("Meta value list is not set.")
+
+    @values.setter
+    def values(self, val):
+        breakpoint()
+        if not isinstance(val, list) or not len(val) == len(self.KEYS):
+            raise ValueError(f"Invalid input: need list of length {len(self.KEYS)}")
+        # this will first create a data_id string from input values and
+        # then call setter method to make sure the input is correct.
+        self.data_id = self.from_values(val)
+
+    def to_dict(self):
+        """Convert data_id to dictionary
+
+        Returns
+        -------
+        dict
+            dictionary with metadata information
+        """
+        if not len(self._values) == len(self.KEYS):
+            self._eval_data_id(self.data_id)
+        return dict(zip(self.KEYS, self._values))
+
+    def _values_from_dict(self, meta):
+        vals = []
+        for key in self.KEYS:
+            if not key in meta:
+                raise KeyError(f"Missing specification of {key} in input meta dict")
+            vals.append(meta[key])
+        self._data_id = self.from_values(vals)
+        self._values = vals
+
+    @staticmethod
+    def from_dict(meta):
+        """
+        Create instance of AerocomDataID from input meta dictionary
+
+        Parameters
+        ----------
+        meta : dict
+            dictionary containing required keys (cf. :attr:`KEYS`) and
+            corresponding values to create an data_id
+
+        Raises
+        ------
+        KeyError
+            if not all information required is provided
+
+        Returns
+        -------
+        CsoDataID
+
+        """
+        return CsoDataID(**meta)
+
+    @staticmethod
+    def from_values(values):
+        """
+        Create data_id from list of values
+
+        Note
+        ----
+        The values have to be in the right order, cf. :attr:`KEYS`
+
+        Parameters
+        ----------
+        values : list
+            list containing values for each key in :attr:`KEYS`
+
+        Raises
+        ------
+        ValueError
+            if length of input list mismatches length of :attr:`KEYS`
+
+        Returns
+        -------
+        str
+            generated data_id
+
+        """
+        if not len(values) == 4:
+            raise ValueError("Need 4 entries model_name, meteo_config, experiment, perturbation")
+        return "{}-{}_{}-{}".format(*values)
+
+    def _eval_data_id(self, val):
+        """
+        Check and extract meta information from input data_id
+
+        Parameters
+        ----------
+        val : str
+            data_id
+
+        Raises
+        ------
+        ValueError
+            if input is not string or is not in format
+            <model_name>-<meteo_config>_<experiment>-<perturbation>
+
+        Returns
+        -------
+        values
+            DESCRIPTION.
+
+        """
+        breakpoint()
+        if not isinstance(val, str):
+            raise ValueError(f"Invalid input for data_id. Need str. Got {val}")
+
+        values = [""] * len(self.KEYS)
+        spl = val.split(self.DELIM)
+        if not len(spl) == 2:
+            logger.warning(
+                f"Invalid data ID {val}. Need format <model-name>_<meteo-config>_<eperiment-name>"
+            )
+            values[0] = val
+            return values
+
+        sub = spl[0].split(self.SUBDELIM, 1)
+        if len(sub) == 2:
+            values[0] = sub[0]  # model_name
+
+            meteo = sub[1]
+            if meteo.startswith("met"):
+                values[1] = meteo  # meteo_config
+            else:
+                logger.warning(
+                    f"Meteorology config substring in data_id {meteo} needs to start with met."
+                )
+                values[0] = spl[0]
+        else:
+            values[0] = spl[0]
+
+        sub = spl[1].split(self.SUBDELIM, 1)
+        if len(sub) == 2:
+            values[2] = sub[0]
+            values[3] = sub[1]
+        else:
+            values[2] = spl[1]
+        return values
+
+    def __eq__(self, other):
+        return True if self._data_id == str(other) else False
+
+    def __repr__(self):
+        return self._data_id
+
+    def __str__(self):
+        return self._data_id

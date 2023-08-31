@@ -134,8 +134,6 @@ class FileConventionRead:
     def from_filepath(
         self, filepath
     ):  # LB: for the CSO file convention, some info is in the filepath, so deal with this case separately
-        breakpoint()
-
         if "CSO" in basename(filepath):
             self.import_default("cso")
 
@@ -316,6 +314,7 @@ class FileConventionRead:
             )
         try:
             info["var_name"] = CSO_VAR_MAP[spl_filepath[-4]]
+
         except Exception:
             raise FileConventionError(
                 f"Failed to extract variable information from file {basename(filepath)} "

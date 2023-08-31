@@ -35,7 +35,7 @@ from pyaerocom.io.aux_read_cubes import (
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
-from pyaerocom.metastandards import AerocomDataID
+from pyaerocom.metastandards import AerocomDataID, CsoDataID
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
@@ -676,8 +676,12 @@ class ReadGridded:
         vals : list
             list containing successfully extracted information from data_id
         """
-
-        vals = AerocomDataID(data_id).values
+        breakpoint()
+        # LB: Introduce CsoDataID?
+        if "CSO" in data_id:
+            vals = CsoDataID(data_id).values
+        else:
+            vals = AerocomDataID(data_id).values
         return vals
 
     def _update_file_convention(self, files):
@@ -699,10 +703,11 @@ class ReadGridded:
                 self.file_convention.from_file(os.path.basename(file))
                 return
             except Exception:
-                # breakpoint()
                 self.file_convention.from_filepath(file)
+                return
+            except:
                 pass
-
+        breakpoint()
         raise FileNotFoundError(
             f"None of the available files in {self.data_dir} matches a "
             f"registered pyaerocom file convention"
@@ -719,7 +724,15 @@ class ReadGridded:
                 logger.info(f"Ignoring file {_file}")
                 continue
             try:
-                info = self.file_convention.get_info_from_file(_file)
+                try:
+                    info = self.file_convention.get_info_from_file(_file)  # aerocom convention
+                    file_name_for_result = os.path.basename(_file)
+                except Exception:
+                    info = self.file_convention.get_info_from_filepath(
+                        _file
+                    )  # (at least) CSO convention
+                    file_name_for_result = _file
+
                 if not self.data_id:
                     self.data_id = info["data_id"]
                 var_name = info["var_name"]
@@ -747,10 +760,10 @@ class ReadGridded:
                         pert,
                         info["is_at_stations"],
                         _is_3d,
-                        os.path.basename(_file),
+                        # os.path.basename(_file),
+                        file_name_for_result,
                     ]
                 )
-
             except (FileConventionError, DataSourceError, TemporalResolutionError) as e:
                 msg = f"Failed to import file\n{_file}\nModel: {self.data_id}\nError: {e}"
                 logger.warning(msg)
@@ -759,7 +772,7 @@ class ReadGridded:
 
         if len(_vars_temp + _vars_temp_3d) == 0:
             raise AttributeError("Failed to extract information from filenames")
-
+        breakpoint()
         self._vars_2d = sorted(set(_vars_temp))
         self._vars_3d = sorted(set(_vars_temp_3d))
         return result
@@ -850,6 +863,7 @@ class ReadGridded:
                 return
         breakpoint()  # LB: At what point can we get info from the filepath not the name?
         result = self._evaluate_fileinfo(files)
+        breakpoint()
         df = self._fileinfo_to_dataframe(result)
         self.file_info = df
 
