@@ -676,7 +676,6 @@ class ReadGridded:
         vals : list
             list containing successfully extracted information from data_id
         """
-        breakpoint()
         # LB: Introduce CsoDataID?
         if "CSO" in data_id:
             vals = CsoDataID(data_id).values
@@ -707,7 +706,7 @@ class ReadGridded:
                 return
             except:
                 pass
-        breakpoint()
+        # breakpoint()
         raise FileNotFoundError(
             f"None of the available files in {self.data_dir} matches a "
             f"registered pyaerocom file convention"
@@ -772,7 +771,7 @@ class ReadGridded:
 
         if len(_vars_temp + _vars_temp_3d) == 0:
             raise AttributeError("Failed to extract information from filenames")
-        breakpoint()
+        # breakpoint()
         self._vars_2d = sorted(set(_vars_temp))
         self._vars_3d = sorted(set(_vars_temp_3d))
         return result
@@ -861,9 +860,9 @@ class ReadGridded:
             except FileNotFoundError as e:
                 logger.warning(repr(e))
                 return
-        breakpoint()  # LB: At what point can we get info from the filepath not the name?
+        # breakpoint()  # LB: At what point can we get info from the filepath not the name?
         result = self._evaluate_fileinfo(files)
-        breakpoint()
+        # breakpoint()
         df = self._fileinfo_to_dataframe(result)
         self.file_info = df
 

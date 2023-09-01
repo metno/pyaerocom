@@ -410,8 +410,8 @@ class CsoDataID:
     meta parameters :func:`from_dict`.
     """
 
-    DELIM = "_"
-    SUBDELIM = "-"
+    DELIM = "."
+    SUBDELIM = "__"
     KEYS = ["model_name", "meteo", "experiment", "perturbation"]
 
     def __init__(self, data_id=None, **meta_info):
@@ -444,7 +444,6 @@ class CsoDataID:
 
     @values.setter
     def values(self, val):
-        breakpoint()
         if not isinstance(val, list) or not len(val) == len(self.KEYS):
             raise ValueError(f"Invalid input: need list of length {len(self.KEYS)}")
         # this will first create a data_id string from input values and
@@ -545,40 +544,40 @@ class CsoDataID:
             DESCRIPTION.
 
         """
-        breakpoint()
         if not isinstance(val, str):
             raise ValueError(f"Invalid input for data_id. Need str. Got {val}")
 
         values = [""] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
-            logger.warning(
-                f"Invalid data ID {val}. Need format <model-name>_<meteo-config>_<eperiment-name>"
-            )
+            logger.warning(f"Invalid data ID {val}. Need format ???")
             values[0] = val
             return values
 
-        sub = spl[0].split(self.SUBDELIM, 1)
-        if len(sub) == 2:
-            values[0] = sub[0]  # model_name
+        values[0] = spl[0]  # model name
 
-            meteo = sub[1]
-            if meteo.startswith("met"):
-                values[1] = meteo  # meteo_config
-            else:
-                logger.warning(
-                    f"Meteorology config substring in data_id {meteo} needs to start with met."
-                )
-                values[0] = spl[0]
-        else:
-            values[0] = spl[0]
+        sub = spl[1].split(self.SUBDELIM)
+        # if len(sub) == 3:
+        values[1] = sub[0]  # model_name
+        values[2] = sub[1]
+        values[3] = sub[2]
+        # meteo = sub[1]
+        # if meteo.startswith("met"):
+        #     values[1] = meteo  # meteo_config
+        # else:
+        #     logger.warning(
+        #         f"Meteorology config substring in data_id {meteo} needs to start with met."
+        #     )
+        #     values[0] = spl[0]
+        # else:
+        #    values[0] = spl[0]
 
-        sub = spl[1].split(self.SUBDELIM, 1)
-        if len(sub) == 2:
-            values[2] = sub[0]
-            values[3] = sub[1]
-        else:
-            values[2] = spl[1]
+        # sub = spl[1].split(self.SUBDELIM, 1)
+        # if len(sub) == 2:
+        #     values[2] = sub[0]
+        #     values[3] = sub[1]
+        # else:
+        #     values[2] = spl[1]
         return values
 
     def __eq__(self, other):
