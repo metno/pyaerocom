@@ -51,4 +51,3 @@ class ReadTropomiL3(ReadGridded):
             data_dir = TMP_DATA_DIR
         # raise Exception("Need a data_dir")
         super().__init__(data_dir=data_dir, file_convention="cso")
-        breakpoint()

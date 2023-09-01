@@ -1525,6 +1525,7 @@ class ReadGridded:
         raise VarNotAvailableError(f"Variable {var_name} could not be found")
 
     def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
+        breakpoint()
         if all(x == "" for x in self.file_info.vert_code.values):
             logger.info(
                 f"Deactivating file search by vertical code for {self.data_id}, "
@@ -1659,6 +1660,8 @@ class ReadGridded:
         # could be read.
         if aux_vars is not None:
             self.add_aux_compute(var_name, aux_vars, aux_fun)
+
+        breakpoint()
 
         vert_which, ts_type = self._eval_vert_which_and_ts_type(var_name, vert_which, ts_type)
         data = self._try_read_var(
