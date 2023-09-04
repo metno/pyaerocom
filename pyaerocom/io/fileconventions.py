@@ -336,11 +336,8 @@ class FileConventionRead:
                 f"Failed to extract name from file {basename(filepath)} "
                 f"using file convention {self.name}"
             )
-        if "atstations" in filepath.lower():
-            raise Exception(
-                "Developers: please debug "
-                "(file convention Aerocom 2 should not have atstations encoded in file name)"
-            )
+
+        # info["vert_code"] = "space"
         return info
 
     def get_info_from_file(self, file: str) -> dict:

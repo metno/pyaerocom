@@ -1046,7 +1046,7 @@ class ReadGridded:
         msg = ""
         exps = subset.experiment.unique()
         verts = subset.vert_code.unique()
-
+        breakpoint()  # LB: ideally shouldn't get to this point
         if len(exps) > 1:
             msg += f"Found multiple experiments. Choose from: {exps}"
         if len(verts) > 1:
@@ -1525,7 +1525,6 @@ class ReadGridded:
         raise VarNotAvailableError(f"Variable {var_name} could not be found")
 
     def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
-        breakpoint()
         if all(x == "" for x in self.file_info.vert_code.values):
             logger.info(
                 f"Deactivating file search by vertical code for {self.data_id}, "
@@ -1844,6 +1843,7 @@ class ReadGridded:
 
         See :func:`read_var` for description of input arguments.
         """
+        breakpoint()
         if var_name in self._aux_requires and self.check_compute_var(var_name):
             return self.compute_var(
                 var_name=var_name,
