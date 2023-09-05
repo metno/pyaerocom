@@ -1365,13 +1365,13 @@ def _start_stop_from_periods(periods):
     return start_stop(start, stop + 1)
 
 
-def get_profile_filename(station_name, obs_name, var_name_web):
-    return f"{station_name}_{obs_name}_{var_name_web}.json"
+def get_profile_filename(station_or_region_name, obs_name, var_name_web):
+    return f"{station_or_region_name}_{obs_name}_{var_name_web}.json"
 
 
 def process_profile_data(
     data,
-    # region_id,
+    region_id,
     station_name,
     use_country,
     periods,
@@ -1398,13 +1398,23 @@ def process_profile_data(
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
-                        all_stations_subset = _select_period_season_coldata(coldata, per, season)
-                        station_subset = all_stations_subset.data[
-                            :, :, all_stations_subset.data.station_name.values == station_name
-                        ]  # LB: Assumes ordering of station name matches
+                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+                        if region_id is not None:
+                            # try:  # get the subset for this station or region
+                            subset = per_season_subset.filter_region(
+                                region_id=region_id, check_country_meta=use_country
+                            )
+                        # except UnknownRegion:
+                        if station_name is not None:
+                            subset = per_season_subset.data[
+                                :,
+                                :,
+                                per_season_subset.data.station_name.values
+                                == station_name,  # in this case a station
+                            ]  # LB: Assumes ordering of station name matches
 
-                        output["obs"][freq][perstr] = np.nanmean(station_subset.data[0, :, :])
-                        output["mod"][freq][perstr] = np.nanmean(station_subset.data[1, :, :])
+                        output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                        output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
 
                     except:
                         msg = f"Failed to access subset timeseries, and will skip."
@@ -1429,7 +1439,7 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
         if not model_name in current:
             current[model_name] = {}
         # on = ov[obs_name]
-
+        breakpoint()
         if not "z" in current[model_name]:
             current[model_name]["z"] = [
                 0
@@ -1465,7 +1475,7 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
 
         if not "metadata" in current[model_name]:
             # should be same for all. hardcoded because no way to pass this all along now
-            current["metadata"] = {
+            current[model_name]["metadata"] = {
                 "z_unit": "m",
                 "z_description": "Altitude ASL",
                 "z_long_description": "Altitude Above Sea Level",

@@ -190,7 +190,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
                 input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
-
                 for reg in regnames:
                     try:
                         stats_ts = _process_statistics_timeseries(
@@ -301,26 +300,36 @@ class ColdataToJsonEngine(ProcessingEngine):
                 "vertical_layer" in coldata.data.attrs
             ):  # LB: Will need some sort of additional flag to deal with the two colocation level types
                 logger.info("Processing profile data for vizualization")
+                # Loop through regions
+                for regid in regnames:
+                    profile_viz = process_profile_data(
+                        data=data,
+                        region_id=regid,
+                        station_name=None,
+                        use_country=use_country,
+                        periods=periods,
+                        seasons=seasons,
+                    )
 
-                # for regid in regnames:
+                    fname = get_profile_filename(regnames[regid], obs_name, var_name_web)
+
+                    outfile_profile = os.path.join(out_dirs["profiles"], fname)
+                    add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
+                # Loop through stations
                 for station_name in coldata.data.station_name.values:
                     profile_viz = process_profile_data(
-                        data,
-                        station_name,
-                        use_country,
-                        periods,
-                        seasons,
+                        data=data,
+                        region_id=None,
+                        station_name=station_name,
+                        use_country=use_country,
+                        periods=periods,
+                        seasons=seasons,
                     )
 
                     fname = get_profile_filename(station_name, obs_name, var_name_web)
 
                     outfile_profile = os.path.join(out_dirs["profiles"], fname)
                     add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
-
-            # for reg in regions:
-            #     fname = get_profile_filename(reg, obs_name, var_name_web)
-
-            # add_profile_entry(fname, )
 
         logger.info(
             f"Finished computing json files for {model_name} ({model_var}) vs. "
