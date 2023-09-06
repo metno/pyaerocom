@@ -250,6 +250,9 @@ class ReadEarlinet(ReadUngriddedBase):
             ].values  # altitude is defined in EARLINET in terms- of altitude above sea level
         )  # Note altitude is an array for the data, station altitude is different
         data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
+        data_out["altitude_attrs"] = data_in[
+            "altitude"
+        ].attrs  # get attrs for altitude units + extra
 
         # get intersection of metadaa in ddataa_out and data_in
         for k, v in self.META_NAMES_FILE.items():

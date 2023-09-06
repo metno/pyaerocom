@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 from time import time
+from cf_units import Unit
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
@@ -106,9 +107,34 @@ class ColdataToJsonEngine(ProcessingEngine):
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
 
         if "vertical_layer" in coldata.data.attrs:
-            start = coldata.data.attrs["vertical_layer"]["start"] / 1000  # get into km
-            end = coldata.data.attrs["vertical_layer"]["end"] / 1000
-            vert_code = f"{start}-{end}km"
+            if not Unit(coldata.data.attrs["altitude_units"]) == Unit(
+                "km"
+            ):  # put everything in terms of km for viz
+                # convert start and end for file naming
+                alt_units = coldata.data.attrs["altitude_units"]
+
+                coldata.data.attrs["vertical_layer"]["start"] = str(
+                    Unit(alt_units).convert(
+                        coldata.data.attrs["vertical_layer"]["start"], other="km"
+                    )
+                )
+
+                coldata.data.attrs["vertical_layer"]["end"] = str(
+                    Unit(alt_units).convert(
+                        coldata.data.attrs["vertical_layer"]["end"], other="km"
+                    )
+                )
+
+                start = coldata.data.attrs["vertical_layer"]["start"]
+                end = coldata.data.attrs["vertical_layer"]["end"]
+                vert_code = f"{start}-{end}km"
+
+                # convert altitude for viz
+                coldata.data.altitude.values = Unit(alt_units).convert(
+                    coldata.data.altitude.values, other="km"
+                )
+                coldata.data.attrs["altitude_units"] = str(Unit("km"))
+
         else:
             vert_code = coldata.get_meta_item("vert_code")
 

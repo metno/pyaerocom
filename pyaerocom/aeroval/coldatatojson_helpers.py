@@ -1439,15 +1439,19 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
         if not model_name in current:
             current[model_name] = {}
         # on = ov[obs_name]
-        breakpoint()
+
         if not "z" in current[model_name]:
             current[model_name]["z"] = [
                 0
             ]  # initalize with 0 # LB: try writing this to a list and see is simple_json complains
+        midpoint = (
+            float(coldata.data.attrs["vertical_layer"]["end"])
+            + float(coldata.data.attrs["vertical_layer"]["start"])
+        ) / 2
         if (
-            coldata.data.attrs["vertical_layer"]["end"] > current[model_name]["z"][-1]
+            midpoint > current[model_name]["z"][-1]
         ):  # only store incremental increases in the layers
-            current[model_name]["z"].append(coldata.data.attrs["vertical_layer"]["end"])
+            current[model_name]["z"].append(midpoint)
 
         if not "obs" in current[model_name]:
             current[model_name]["obs"] = {}
@@ -1476,7 +1480,7 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
         if not "metadata" in current[model_name]:
             # should be same for all. hardcoded because no way to pass this all along now
             current[model_name]["metadata"] = {
-                "z_unit": "m",
+                "z_unit": "km",
                 "z_description": "Altitude ASL",
                 "z_long_description": "Altitude Above Sea Level",
                 "unit": "m-1",  # coldata.meta["var_units"][0], # list with two elemetns, get one. pyaerocm will try to get into units of obs, so should be this one but check later

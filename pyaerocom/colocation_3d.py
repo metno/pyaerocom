@@ -7,6 +7,7 @@ import logging
 import os
 from collections import namedtuple
 from typing import NamedTuple
+from cf_units import Unit
 
 import iris
 import numpy as np
@@ -311,6 +312,8 @@ def _colocate_vertical_profile_gridded(
         coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
         coldata.longitude.attrs["units"] = str(data.longitude.units)
 
+        coldata.data.attrs["altitude_units"] = str(data.altitude.units)
+
         coldata.vertical_layer = vertical_layer
 
         list_of_colocateddata_objects.append(coldata)
@@ -386,6 +389,26 @@ def colocate_vertical_profile_gridded(
     if not all(["start" and "end" in keys for keys in profile_layer_limits]):
         raise KeyError(
             "start and end must be provided for displaying profiles in each vertical layer in colocate_vertical_profile_gridded"
+        )
+
+    data_ref_meta_idxs_with_var_info = []
+    for i in range(len(data_ref.metadata)):
+        if not "altitude" in data_ref.metadata[i]["var_info"]:
+            logger.warning(
+                f"Warning: Station {data_ref.metadata[i]['station_name']} does not have any var_info"
+            )
+        else:
+            data_ref_meta_idxs_with_var_info.append(i)
+
+    if not all(
+        [
+            data.altitude.units == Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
+            for i in data_ref_meta_idxs_with_var_info
+        ]
+    ):
+        raise DataUnitError
+        logger.info(
+            f"Mismatching units in colocation_3d.py. Model has units {data.altitude.units} whereas not all observations have this unit. Debug to find out where."
         )
 
     if update_baseyear_gridded is not None:
