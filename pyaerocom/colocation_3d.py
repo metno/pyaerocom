@@ -7,12 +7,12 @@ import logging
 import os
 from collections import namedtuple
 from typing import NamedTuple
-from cf_units import Unit
 
 import iris
 import numpy as np
 import pandas as pd
 import xarray as xr
+from cf_units import Unit
 from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
