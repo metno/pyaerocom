@@ -132,7 +132,7 @@ def _colocate_vertical_profile_gridded(
                 )
                 .collapsed("altitude", iris.analysis.MEAN)
                 .copy()
-            )  # LB: testing copy here to see if needed
+            )
         except:
             logger.warning(f"No altitude in model data layer {vertical_layer}")
             continue
@@ -194,7 +194,7 @@ def _colocate_vertical_profile_gridded(
                     var_name=var_ref, altitudes=list(vertical_layer.values())
                 ).mean(
                     "altitude", skipna=True  # very important to skip nans here
-                )  # LB: note this is in beta, can implement directly like below
+                )
             except ValueError:
                 logger.warning(
                     f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data"
@@ -222,7 +222,6 @@ def _colocate_vertical_profile_gridded(
                         use_climatology_ref=use_climatology_ref,
                     )
                 else:
-                    # LB: obs_stat_this_layer turning into nans. figure out why
                     _df = _colocate_site_data_helper(
                         stat_data=grid_stat_this_layer,
                         stat_data_ref=obs_stat_this_layer,
@@ -458,13 +457,12 @@ def colocate_vertical_profile_gridded(
     alt_range = [np.min(altitude), np.max(altitude)]
     # use only sites that are within model domain
 
-    # LB: filter_by_meta wipes is_vertical_profile
+    # filter_by_meta wipes is_vertical_profile
     # Also note that filter_by_meta may not be calling alt_range. Function fitler_altitude is defined but not used
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range, altitude=alt_range)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
-    # LB: Looks like data altitudes are in there (e.g., all_stats["stats"][0]["altitude"])
     all_stats = data_ref.to_station_data_all(
         vars_to_convert=var_ref,
         start=obs_start,

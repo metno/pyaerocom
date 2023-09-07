@@ -437,9 +437,7 @@ def _colocate_site_data_helper(
     # time resolution, particularly the obs data)
     grid_ts = stat_data.resample_time(
         var, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
-    )[
-        var
-    ]  # LB: this is good
+    )[var]
 
     if use_climatology_ref:
         obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[var_ref]
@@ -451,7 +449,7 @@ def _colocate_site_data_helper(
     if not isinstance(obs_ts, pd.Series):
         obs_ts = (
             obs_ts.to_series()
-        )  # LB: place here for now for earlinet, may think of more clever place to put it
+        )  # place here for now for earlinet, may think of more clever place to put it
     # fill up missing time stamps
     return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"])
 
@@ -755,7 +753,7 @@ def colocate_gridded_ungridded(
     lon_range = [np.min(longitude), np.max(longitude)]
     # use only sites that are within model domain
 
-    # LB: filter_by_meta wipes is_vertical_profile
+    # filter_by_meta wipes is_vertical_profile
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
 
     # get timeseries from all stations in provided time resolution

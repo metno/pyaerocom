@@ -1396,9 +1396,7 @@ class Colocator(ColocationSetup):
 
     def _prepare_colocation_args(self, model_var: str, obs_var: str):
         model_data = self.get_model_data(model_var)
-        obs_data = self.get_obs_data(
-            obs_var
-        )  # LB: is_vertical_profile still being passed correctly
+        obs_data = self.get_obs_data(obs_var)
 
         if getattr(obs_data, "is_vertical_profile", None):
             self.obs_is_vertical_profile = obs_data.is_vertical_profile
@@ -1486,7 +1484,7 @@ class Colocator(ColocationSetup):
                     coldata_obj.data.attrs.update(**self.add_meta)
                     if self.zeros_to_nan:
                         coldata_obj = coldata_obj.set_zeros_nan()
-                    if self.model_to_stp:  # Lb: check is this needs modifying
+                    if self.model_to_stp:  # TODO: check is this needs modifying
                         coldata = correct_model_stp_coldata(coldata_obj)
                     if self.save_coldata:
                         self._save_coldata(coldata_obj)

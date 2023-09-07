@@ -124,9 +124,7 @@ class ReadEarlinet(ReadUngriddedBase):
     VAR_UNIT_NAMES = dict(
         extinction=["units"],
         backscatter=["units"],
-        dustlayerheight=[
-            "units"
-        ],  # LB: guessing about this one now. need to check later about dust
+        dustlayerheight=["units"],
         altitude="units",
     )
     #: Variable names of uncertainty data
@@ -171,7 +169,6 @@ class ReadEarlinet(ReadUngriddedBase):
         #: files that were actually excluded from reading
         self.excluded_files = []
 
-        # Lb: testing putting attr here
         self.is_vertical_profile = True
 
     def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
@@ -236,7 +233,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         data_in = xarray.open_dataset(filename, engine="netcdf4")
 
-        # LB: below is my way of getting the coords since no longer in metadata
+        # getting the coords since no longer in metadata
         # Put also just in the attributes. not sure why appears twice
         data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
             data_in["longitude"].values
@@ -420,7 +417,6 @@ class ReadEarlinet(ReadUngriddedBase):
                 outliers_removed=outliers_removed,
                 has_altitute=has_altitude,
             )
-            # LB: update data_out["var_info"] with altitude info
         return data_out
 
     def read(
@@ -474,7 +470,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
 
-        # LB: turn files into a list becauase I suspect there may be a bug if you don't do this
+        # turn files into a list becauase I suspect there may be a bug if you don't do this
         if isinstance(files, str):
             files = [files]
 
@@ -485,7 +481,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         files = files[
             first_file : last_file + 1
-        ]  # LB: think need to +1 here in order to actually get desired subset
+        ]  # think need to +1 here in order to actually get desired subset
 
         self.read_failed = []
 
@@ -693,7 +689,6 @@ class ReadEarlinet(ReadUngriddedBase):
 
             patterns.append(_pattern)
 
-        # LB: think about how to structure Earlinet data before considering implementation details
         matches = []
         for root, dirnames, files in os.walk(self.data_dir, topdown=True):
             paths = [os.path.join(root, f) for f in files]

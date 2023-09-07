@@ -52,7 +52,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             list of files that have been converted.
 
         """
-        # LB: Hacky approach to make sure writting new output
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         for idir in out_dirs:
             if os.path.exists(out_dirs[idir]):
@@ -62,9 +61,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         for file in files:
             logger.info(f"Processing: {file}")
             coldata = ColocatedData(file)
-            self.process_coldata(
-                coldata
-            )  # Lb: possibly want a flag in the coldata objects which processes the profile coldata objects for viz
+            self.process_coldata(coldata)
             converted.append(file)
         return converted
 
@@ -326,9 +323,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                         # writes json file
                         _write_stationdata_json(ts_data_weekly_reg, outdir)
         else:
-            if (
-                "vertical_layer" in coldata.data.attrs
-            ):  # LB: Will need some sort of additional flag to deal with the two colocation level types
+            if "vertical_layer" in coldata.data.attrs:
                 logger.info("Processing profile data for vizualization")
                 # Loop through regions
                 for regid in regnames:

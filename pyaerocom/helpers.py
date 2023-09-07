@@ -1162,9 +1162,7 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     pd_freq = to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
-        invalid = (
-            arr.resample(time=pd_freq).count(dim="time") < min_num_obs
-        )  # LB: This is why everything is getting set to nan
+        invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
     resampler = arr.resample(time=pd_freq, loffset=loffset)

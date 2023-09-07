@@ -1411,7 +1411,7 @@ def process_profile_data(
                                 :,
                                 per_season_subset.data.station_name.values
                                 == station_name,  # in this case a station
-                            ]  # LB: Assumes ordering of station name matches
+                            ]  # Assumes ordering of station name matches
 
                         output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
                         output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
