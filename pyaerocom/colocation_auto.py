@@ -1290,7 +1290,7 @@ class Colocator(ColocationSetup):
         else:
             mvar = mod_var
 
-        if coldata.vertical_layer:
+        if hasattr(coldata, "vertical_layer"):
             savename = self._coldata_savename(
                 obs_var, mvar, coldata.ts_type, vertical_layer=coldata.vertical_layer
             )
