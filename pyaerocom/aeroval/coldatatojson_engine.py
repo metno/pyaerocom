@@ -124,9 +124,12 @@ class ColdataToJsonEngine(ProcessingEngine):
                         coldata.data.attrs["vertical_layer"]["end"], other="km"
                     )
                 )
-
-                start = coldata.data.attrs["vertical_layer"]["start"]
-                end = coldata.data.attrs["vertical_layer"]["end"]
+                # start and end for vertical layers (display on web and name jsons)
+                start = float(coldata.data.attrs["vertical_layer"]["start"])
+                end = float(coldata.data.attrs["vertical_layer"]["end"])
+                # format correctly (e.g., 1, 1.5, 2, 2.5, etc.)
+                start = "{0}".format(str(round(start, 1) if start % 1 else int(start)))
+                end = "{0}".format(str(round(end, 1) if end % 1 else int(end)))
                 vert_code = f"{start}-{end}km"
 
                 # convert altitude for viz
