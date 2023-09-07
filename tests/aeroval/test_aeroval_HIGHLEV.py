@@ -11,7 +11,7 @@ from tests.conftest import geojson_unavail
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
-    #"contour": ["od550aer_TM5-AP3-CTRL.geojson", "od550aer_TM5-AP3-CTRL.json"], # LB: old. Not there anymore?
+    # "contour": ["od550aer_TM5-AP3-CTRL.geojson", "od550aer_TM5-AP3-CTRL.json"], # LB: old. Not there anymore?
     "contour": 0,
     "hm": ["glob_stats_daily.json", "glob_stats_monthly.json", "glob_stats_yearly.json"],
     "hm/ts": 10,  # number of .json files in sub dir
@@ -27,13 +27,13 @@ CHK_CFG2 = {
     ],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
-    #"hm/ts": 21,  # number of .json files in subdir
+    # "hm/ts": 21,  # number of .json files in subdir
     "hm/ts": 9,
     "scat": [
         # "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
         "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
     ],
-    #"ts": 40,  # number of .json files in subdir
+    # "ts": 40,  # number of .json files in subdir
     "ts": 17,
     "ts/diurnal": 0,  # number of .json files in subdir
 }
@@ -87,7 +87,6 @@ def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
         elif isinstance(check, int):
             files = list(path.glob("*.json"))
             assert len(files) == check
-
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp4"])
