@@ -85,8 +85,6 @@ def _colocate_vertical_profile_gridded(
     var = kwargs["var"]
     var_aerocom = kwargs["var_aerocom"]
     var_ref_aerocom = kwargs["var_ref_aerocom"]
-    # ts_type_src_ref = kwargs["ts_type_src_ref"]
-    # breakpoint()
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -414,8 +412,6 @@ def colocate_vertical_profile_gridded(
         # update time dimension in gridded data
         data.base_year = update_baseyear_gridded
 
-    # breakpoint()
-
     # apply region filter to data
     regfilter = Filter(name=filter_name)
     data_ref = regfilter.apply(data_ref)
@@ -520,5 +516,5 @@ def colocate_vertical_profile_gridded(
     colocated_data_lists = ColocatedDataLists(
         *output_prep
     )  # put the list of prepared output into namedtuple object s.t. both position and named arguments can be used
-    # breakpoint()
+
     return colocated_data_lists
