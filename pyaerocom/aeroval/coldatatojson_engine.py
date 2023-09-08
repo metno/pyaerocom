@@ -206,9 +206,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         use_country = True if regions_how == "country" else False
 
-        data = _init_data_default_frequencies(
-            coldata, freqs
-        )  # LB: Here not all coldata has nans but data is all nans for all freqs
+        data = _init_data_default_frequencies(coldata, freqs)
 
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)  # LB: maybe this is setting everything to nans

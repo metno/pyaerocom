@@ -202,7 +202,6 @@ class ReadEarlinet(ReadUngriddedBase):
             if (
                 var in self.VAR_PATTERNS_FILE
             ):  # make sure to only read what is supported by this file
-                # if fnmatch.fnmatch(filename, self.VAR_PATTERNS_FILE[var]): # LB: old
                 if self.VAR_PATTERNS_FILE[var] in filename:
                     _vars.append(var)
             elif var in self.AUX_REQUIRES:

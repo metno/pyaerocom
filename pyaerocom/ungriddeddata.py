@@ -1723,9 +1723,6 @@ class UngriddedData:
         for meta_idx, meta in self.metadata.items():
             if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
-                # LB: altitude indices are not in UngriddedData.meta_idx
-                # Either need to skip on this case
-                # or find out why altitude is not included like var is
                 for var in meta["var_info"]:
                     if var == "altitude":
                         continue  # altitude is not actually a variable but is stored in var_info like one

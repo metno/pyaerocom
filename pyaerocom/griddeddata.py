@@ -1319,11 +1319,6 @@ class GriddedData:
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
 
-        # LB: There is a loop here. Presumably the first time to_time_series is called, it hits one of the previous cases for 2D data
-        # If not, it comes to this function, which modifies it in a way that when sent back to to_time_series(), it then will hit one of the 2D cases
-        # In stead we need to think about what those 2d cases are doing and how we can mimic it to profiles. Fear they must be station data objects in which
-        # case maybe it makes sense in the collocation_3d loop to
-
         # ToDo: check if _to_timeseries_2D can be called here
         return data.to_time_series(
             sample_points=sample_points,
