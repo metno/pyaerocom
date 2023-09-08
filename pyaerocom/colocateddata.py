@@ -1064,13 +1064,11 @@ class ColocatedData:
         stop_str,
         ts_type,
         filter_name,
-        vertical_layer=None,  # LB: testing this because I don't want this to be required
+        vertical_layer=None,
     ):
-        if (
-            not vertical_layer is None
-        ):  # LB: Note this is in beta and needs testing. Probably some positional issues
-            start = vertical_layer["start"] / 1000
-            end = vertical_layer["end"] / 1000
+        if not vertical_layer is None:
+            start = vertical_layer["start"]
+            end = vertical_layer["end"]
             return (
                 f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
                 f"{start_str}_{stop_str}_{ts_type}_{filter_name}_{start}-{end}km"

@@ -8,6 +8,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+from cf_units import Unit
 
 if sys.version_info >= (3, 10):  # pragma: no cover
     from importlib import metadata
@@ -1291,8 +1292,20 @@ class Colocator(ColocationSetup):
             mvar = mod_var
 
         if hasattr(coldata, "vertical_layer"):
+            # save colocated vertical layer netCDF files with vertical layers in km
+            if not Unit(coldata.data.altitude_units) == Unit("km"):
+                start = Unit(coldata.data.altitude_units).convert(
+                    coldata.vertical_layer["start"], other="km"
+                )
+                end = Unit(coldata.data.altitude_units).convert(
+                    coldata.vertical_layer["end"], other="km"
+                )
+                vertical_layer = {"start": start, "end": end}
+            else:
+                vetical_layer = coldata.vertical_layer
+
             savename = self._coldata_savename(
-                obs_var, mvar, coldata.ts_type, vertical_layer=coldata.vertical_layer
+                obs_var, mvar, coldata.ts_type, vertical_layer=vertical_layer
             )
 
         else:
