@@ -1,11 +1,10 @@
 """
-Methods and / or classes to perform colocation
+Methods and / or classes to perform 3D colocation
 """
 from __future__ import annotations
 
 import logging
 import os
-from collections import namedtuple
 from typing import NamedTuple
 
 import iris
@@ -13,7 +12,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from cf_units import Unit
-from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
@@ -35,8 +33,6 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import (
-    get_lowest_resolution,
-    isnumeric,
     make_datetime_index,
     to_pandas_timestamp,
 )
