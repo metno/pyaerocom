@@ -652,7 +652,7 @@ class ReadUngridded:
                     **kwargs,
                 )
                 data.append(data_to_append)
-                # LB: This is a guess rn because UngriddedData can contain more than 1 variable
+                # TODO: Test this. UngriddedData can contain more than 1 variable
                 if getattr(data_to_append, "is_vertical_profile", None):
                     data.is_vertical_profile = data_to_append.is_vertical_profile
 

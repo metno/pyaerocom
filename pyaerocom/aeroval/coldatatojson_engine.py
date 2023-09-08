@@ -209,7 +209,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         data = _init_data_default_frequencies(coldata, freqs)
 
         if annual_stats_constrained:
-            data = _apply_annual_constraint(data)  # LB: maybe this is setting everything to nans
+            data = _apply_annual_constraint(data)
 
         if not "just_for_viz" in coldata.data.attrs:  # make the regular json output
             if not diurnal_only:
