@@ -1164,7 +1164,6 @@ class GriddedData:
         if sample_points is None:
             sample_points = self._coords_to_iris_sample_points(**coords)
 
-        # LB: collapse_scalar might not want to be true in this case
         return self._to_timeseries_3D(
             sample_points,
             scheme,

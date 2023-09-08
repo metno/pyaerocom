@@ -1317,7 +1317,6 @@ class StationData(StationMetaData):
                     f"Altitude data and {var_name} data have different lengths"
                 )
             mask = np.logical_and(alt >= altitudes[0], alt <= altitudes[1])
-            # LB: Comment out for testing. Maybe issue a logging warning instead
             if mask.sum() == 0:
                 raise ValueError(f"no data in specified altitude range")
             return data[mask]
