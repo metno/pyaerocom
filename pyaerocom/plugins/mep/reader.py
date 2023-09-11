@@ -3,9 +3,9 @@ from __future__ import annotations
 import logging
 import re
 from collections import defaultdict
+from collections.abc import Iterable
 from functools import cached_property, lru_cache
 from pathlib import Path
-from typing import Iterable
 
 import xarray as xr
 
@@ -115,7 +115,7 @@ class ReadMEP(ReadUngriddedBase):
         logger.debug(f"found {len(paths)} files")
         return tuple(paths)
 
-    @lru_cache()
+    @lru_cache
     def stations(self, files: tuple[str | Path, ...] | None = None) -> dict[str, list[Path]]:
         if not files:
             files = self.FOUND_FILES

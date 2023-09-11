@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Type
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -138,7 +136,7 @@ def test_StationData_check_var_unit_aerocom():
     ],
 )
 def test_StationData_check_var_unit_aerocom_error(
-    stat: StationData, var_name: str, exception: Type[Exception], error: str
+    stat: StationData, var_name: str, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.check_var_unit_aerocom(var_name)
@@ -233,7 +231,7 @@ def test_StationData_get_station_coords(
     ],
 )
 def test_StationData_get_station_coords_error(
-    stat: StationData, exception: Type[Exception], error: str
+    stat: StationData, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.get_station_coords(force_single_value=True)
@@ -416,7 +414,7 @@ def test_StationData_select_altitude_Series():
     ],
 )
 def test_StationData_select_altitude_Series_error(
-    stat: StationData, altitudes: tuple[int, int], exception: Type[Exception], error: str
+    stat: StationData, altitudes: tuple[int, int], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.select_altitude("od550aer", altitudes)
