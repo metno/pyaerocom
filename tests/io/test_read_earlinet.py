@@ -28,9 +28,6 @@ def test_all_files_exist():
     "num,vars_to_retrieve",
     [
         (0, "ec355aer"),
-        # (1, "bsc532aer"),
-        # (0, ReadEarlinet.PROVIDES_VARIABLES),
-        # (1, ReadEarlinet.PROVIDES_VARIABLES),
     ],
 )
 def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):

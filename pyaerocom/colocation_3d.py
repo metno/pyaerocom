@@ -40,10 +40,6 @@ from pyaerocom.variable import Variable
 logger = logging.getLogger(__name__)
 
 
-# ColocatedDataLists = namedtuple(
-#    "ColocatedDataLists", ["colocateddata_for_statistics", "colocateddata_for_profile_viz"]
-# )
-
 
 class ColocatedDataLists(NamedTuple):
     colocateddata_for_statistics: list[ColocatedData]
