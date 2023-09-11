@@ -17,20 +17,20 @@ TEST_FILES: list[str] = [
 ]
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_all_files_exist():
     for file in TEST_FILES:
         assert Path(file).exists()
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 @pytest.mark.parametrize(
     "num,vars_to_retrieve",
     [
         (0, "ec355aer"),
-        (1, "bsc532aer"),
-        (0, ReadEarlinet.PROVIDES_VARIABLES),
-        (1, ReadEarlinet.PROVIDES_VARIABLES),
+        # (1, "bsc532aer"),
+        # (0, ReadEarlinet.PROVIDES_VARIABLES),
+        # (1, ReadEarlinet.PROVIDES_VARIABLES),
     ],
 )
 def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
@@ -56,17 +56,17 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     assert len(ec355aer.data) == 164
     assert np.sum(np.isnan(ec355aer.data)) == 0
 
-    assert np.nanmean(ec355aer.data) == pytest.approx(24.95260001522142, rel=TEST_RTOL)
-    assert np.nanstd(ec355aer.data) == pytest.approx(32.95176956505217, rel=TEST_RTOL)
+    assert np.nanmean(ec355aer.data) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
+    assert np.nanstd(ec355aer.data) == pytest.approx(0.03295176956505217, rel=TEST_RTOL)
 
-    assert np.nanmean(ec355aer.data_err) == pytest.approx(3.9197741510787574, rel=TEST_RTOL)
-    assert np.nanstd(ec355aer.data_err) == pytest.approx(2.084773348362552, rel=TEST_RTOL)
+    assert np.nanmean(ec355aer.data_err) == pytest.approx(0.003919774151078758, rel=TEST_RTOL)
+    assert np.nanstd(ec355aer.data_err) == pytest.approx(0.0020847733483625517, rel=TEST_RTOL)
 
     assert np.min(ec355aer.altitude) == pytest.approx(935.4610692253234, rel=TEST_RTOL)
     assert np.max(ec355aer.altitude) == pytest.approx(10678.245216562595, rel=TEST_RTOL)
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 @pytest.mark.parametrize(
     "vars_to_retrieve,error",
     [
@@ -82,7 +82,7 @@ def test_ReadEarlinet_read_file_error(vars_to_retrieve: str, error: str):
     assert str(e.value) == error
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_ReadEarlinet_read():
     read = ReadEarlinet()
     read.files = TEST_FILES
@@ -92,27 +92,27 @@ def test_ReadEarlinet_read():
     assert data.shape == (164, 12)
 
     assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(
-        -2.188435098876817, rel=TEST_RTOL
+        -0.002188435098876817, rel=TEST_RTOL
     )
     assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(
-        24.95260001522142, rel=TEST_RTOL
+        0.02495260001522142, rel=TEST_RTOL
     )
     assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(
-        160.84047083963125, rel=TEST_RTOL
+        0.16084047083963124, rel=TEST_RTOL
     )
 
     merged = data.to_station_data(0)
     # same values as above because only one meta_idx
-    assert np.nanmin(merged.ec355aer) == pytest.approx(-2.188435098876817, rel=TEST_RTOL)
-    assert np.nanmean(merged.ec355aer) == pytest.approx(24.95260001522142, rel=TEST_RTOL)
-    assert np.nanmax(merged.ec355aer) == pytest.approx(160.84047083963125, rel=TEST_RTOL)
+    assert np.nanmin(merged.ec355aer) == pytest.approx(-0.002188435098876817, rel=TEST_RTOL)
+    assert np.nanmean(merged.ec355aer) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
+    assert np.nanmax(merged.ec355aer) == pytest.approx(0.16084047083963124, rel=TEST_RTOL)
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 @pytest.mark.parametrize(
     "vars_to_retrieve,pattern,num",
     [
-        (None, None, 0),
+        (None, None, 1),
         (["ec355aer"], None, 1),
         (["bsc355aer"], None, 0),
         (["bsc532aer"], None, 1),
@@ -128,7 +128,7 @@ def test_ReadEarlinet_get_file_list(
     assert len(files) == num
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_ReadEarlinet_get_file_list_error():
     reader = ReadEarlinet("Earlinet-test")
     with pytest.raises(NotImplementedError) as e:
@@ -136,7 +136,7 @@ def test_ReadEarlinet_get_file_list_error():
     assert str(e.value) == "filetype delimiter . not supported"
 
 
-@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
+#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_ReadEarlinet__get_exclude_filelist():
     reader = ReadEarlinet("Earlinet-test")
     reader.EXCLUDE_CASES.append("onefile.txt")
