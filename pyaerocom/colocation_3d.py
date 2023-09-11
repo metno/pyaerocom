@@ -32,10 +32,7 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.filter import Filter
-from pyaerocom.helpers import (
-    make_datetime_index,
-    to_pandas_timestamp,
-)
+from pyaerocom.helpers import make_datetime_index, to_pandas_timestamp
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
