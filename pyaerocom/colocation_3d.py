@@ -136,7 +136,7 @@ def _colocate_vertical_profile_gridded(
             lats[i] = obs_stat.latitude
             alts[i] = obs_stat.station_coords[
                 "altitude"
-            ]  # altitude refers to altitdue of the data. be explcit where getting from
+            ]  # altitude refers to altitude of the data. be explcit where getting from
             station_names[i] = obs_stat.station_name
 
             # for vertical_layer in colocation_layer_limits:
