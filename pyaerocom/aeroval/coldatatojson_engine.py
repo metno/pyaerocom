@@ -130,15 +130,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                 end = "{0}".format(str(round(end, 1) if end % 1 else int(end)))
                 vert_code = f"{start}-{end}km"
 
-                # convert altitude for viz: LB: bug with station altitude. Keep in meters?
-                # coldata.data.altitude.values = Unit(alt_units).convert(
-                #     coldata.data.altitude.values, other="km"
-                # )
-                coldata.data.attrs["altitude_units"] = str(Unit("km"))
-
-        else:
-            vert_code = coldata.get_meta_item("vert_code")
-
         diurnal_only = coldata.get_meta_item("diurnal_only")
 
         add_trends = self.cfg.statistics_opts.add_trends
@@ -358,6 +349,10 @@ class ColdataToJsonEngine(ProcessingEngine):
         logger.info(
             f"Finished computing json files for {model_name} ({model_var}) vs. "
             f"{obs_name} ({obs_var})"
+        )
+
+        dt = time() - t00
+        logger.info(f"Time expired: {dt:.2f} s")
         )
 
         dt = time() - t00
