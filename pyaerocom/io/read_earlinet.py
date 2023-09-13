@@ -243,7 +243,7 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out["altitude"] = np.float64(
             data_in[
                 "altitude"
-            ].values  # altitude is defined in EARLINET in terms- of altitude above sea level
+            ].values  # altitude is defined in EARLINET in terms of altitude above sea level
         )  # Note altitude is an array for the data, station altitude is different
         data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
         data_out["altitude_attrs"] = data_in[
