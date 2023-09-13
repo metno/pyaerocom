@@ -130,10 +130,10 @@ class ColdataToJsonEngine(ProcessingEngine):
                 end = "{0}".format(str(round(end, 1) if end % 1 else int(end)))
                 vert_code = f"{start}-{end}km"
 
-                # convert altitude for viz
-                coldata.data.altitude.values = Unit(alt_units).convert(
-                    coldata.data.altitude.values, other="km"
-                )
+                # convert altitude for viz: LB: bug with station altitude. Keep in meters?
+                # coldata.data.altitude.values = Unit(alt_units).convert(
+                #     coldata.data.altitude.values, other="km"
+                # )
                 coldata.data.attrs["altitude_units"] = str(Unit("km"))
 
         else:
@@ -281,6 +281,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 scatter_freq = min(scatter_freq, main_freq)
 
                 logger.info("Processing map and scat data by period")
+                # breakpoint()
                 for period in periods:
                     # compute map_data and scat_data just for this period
                     map_data, scat_data = _process_map_and_scat(
