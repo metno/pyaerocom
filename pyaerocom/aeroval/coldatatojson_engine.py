@@ -353,7 +353,6 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         dt = time() - t00
         logger.info(f"Time expired: {dt:.2f} s")
-        )
 
         dt = time() - t00
         logger.info(f"Time expired: {dt:.2f} s")
