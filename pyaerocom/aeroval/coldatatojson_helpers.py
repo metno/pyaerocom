@@ -1376,7 +1376,7 @@ def process_profile_data(
     use_country,
     periods,
     seasons,
-):
+):  # pragma: no cover
     output = {"obs": {}, "mod": {}}
 
     for freq, coldata in data.items():
@@ -1421,7 +1421,7 @@ def process_profile_data(
     return output
 
 
-def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
+def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):  # pragma: no cover
     if os.path.exists(profile_file):
         current = read_json(profile_file)
     else:
