@@ -104,7 +104,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
 
-        if "vertical_layer" in coldata.data.attrs:
+        if hasattr(coldata.data, "vertical_layer"):
             if not Unit(coldata.data.attrs["altitude_units"]) == Unit(
                 "km"
             ):  # put everything in terms of km for viz
@@ -313,7 +313,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                         # writes json file
                         _write_stationdata_json(ts_data_weekly_reg, outdir)
         else:
-            if "vertical_layer" in coldata.data.attrs:
+            if hasattr(coldata.data, "vertical_layer"):
                 logger.info("Processing profile data for vizualization")
                 # Loop through regions
                 for regid in regnames:
