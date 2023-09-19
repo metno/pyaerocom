@@ -24,8 +24,6 @@ from tests.fixtures.stations import FAKE_STATION_DATA
 def get_earlinet_data(var_name):
     data = ReadEarlinet("Earlinet-test").read(vars_to_retrieve=var_name)
     stats = data.to_station_data_all()["stats"]
-    # assert len(stats) == 1
-    # return stats[0]
     assert len(stats) == 0
     return stats
 
@@ -338,7 +336,6 @@ def test_StationData_merge_varinfo_error(stat: StationData, other: StationData):
     [
         (stat1, "od550aer", False),
         (stat2, "od550aer", False),
-        # (ec_earlinet, "ec532aer", True),
     ],
 )
 def test_StationData_check_if_3d(stat: StationData, var_name: str, result: bool):
