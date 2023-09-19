@@ -17,13 +17,11 @@ TEST_FILES: list[str] = [
 ]
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_all_files_exist():
     for file in TEST_FILES:
         assert Path(file).exists()
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 @pytest.mark.parametrize(
     "num,vars_to_retrieve",
     [
@@ -63,7 +61,6 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     assert np.max(ec355aer.altitude) == pytest.approx(10678.245216562595, rel=TEST_RTOL)
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 @pytest.mark.parametrize(
     "vars_to_retrieve,error",
     [
@@ -79,7 +76,6 @@ def test_ReadEarlinet_read_file_error(vars_to_retrieve: str, error: str):
     assert str(e.value) == error
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_ReadEarlinet_read():
     read = ReadEarlinet()
     read.files = TEST_FILES
@@ -105,7 +101,6 @@ def test_ReadEarlinet_read():
     assert np.nanmax(merged.ec355aer) == pytest.approx(0.16084047083963124, rel=TEST_RTOL)
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 @pytest.mark.parametrize(
     "vars_to_retrieve,pattern,num",
     [
@@ -115,8 +110,6 @@ def test_ReadEarlinet_read():
         (["bsc532aer"], None, 1),
     ],
 )
-
-# Needs some consideration of how we store the data
 def test_ReadEarlinet_get_file_list(
     vars_to_retrieve: list[str] | None, pattern: str | None, num: int
 ):
@@ -125,7 +118,6 @@ def test_ReadEarlinet_get_file_list(
     assert len(files) == num
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_ReadEarlinet_get_file_list_error():
     reader = ReadEarlinet("Earlinet-test")
     with pytest.raises(NotImplementedError) as e:
@@ -133,7 +125,6 @@ def test_ReadEarlinet_get_file_list_error():
     assert str(e.value) == "filetype delimiter . not supported"
 
 
-#@pytest.mark.skip(reason="no way of currently testing this. need move earlinet data for testing")
 def test_ReadEarlinet__get_exclude_filelist():
     reader = ReadEarlinet("Earlinet-test")
     reader.EXCLUDE_CASES.append("onefile.txt")
