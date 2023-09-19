@@ -255,7 +255,6 @@ def test_ExperimentOutput_delete_experiment_data_CFG1(eval_config: dict):
     cfg.statistics_opts.add_trends = False
     cfg.time_cfg.add_seasons = False
     proc = ExperimentProcessor(cfg)
-    breakpoint()
     proc.run()
     path = Path(proc.exp_output.exp_dir)
     assert path.exists()
