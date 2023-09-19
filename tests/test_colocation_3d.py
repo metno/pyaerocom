@@ -88,7 +88,6 @@ def test_colocate_vertical_profile_gridded(
     profile_layer_limits,
 ):
     colocated_data_list = colocate_vertical_profile_gridded(
-        # data,
         data=fake_model_data_with_altitude,
         data_ref=example_earlinet_ungriddeddata,
         ts_type=ts_type,
