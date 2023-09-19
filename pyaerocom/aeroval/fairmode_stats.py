@@ -7,7 +7,7 @@ FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together a
     - Develop harmonized set of tools to test whether or a not a model is fit for a given purpose
     - CAMS has to make use of FAIRMODE diagrams
 
-This module contains methods to cmpute the relevant FAIRMODE statistics.
+This module contains methods to compute the relevant FAIRMODE statistics.
 """
 
 import numpy as np
@@ -30,7 +30,7 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
     RV = SPECIES[spec]["RV"]
     alpha = SPECIES[spec]["alpha"]
 
-    in_sqrt = (1 - alpha ** 2) * (mean ** 2 + std ** 2) + alpha ** 2 * RV ** 2
+    in_sqrt = (1 - alpha**2) * (mean**2 + std**2) + alpha**2 * RV**2
 
     return UrRV * np.sqrt(in_sqrt)
 
@@ -44,7 +44,7 @@ def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
 
 def _crms(mod_std: float, obs_std: float, R: float) -> float:
     """Returns the Centered Root Mean Squared Error"""
-    return np.sqrt(mod_std ** 2 + obs_std ** 2 - 2 * mod_std * obs_std * R)
+    return np.sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
 
 
 def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
