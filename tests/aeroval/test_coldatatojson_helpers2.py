@@ -18,9 +18,9 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_statistics_timeseries,
     get_heatmap_filename,
     get_json_mapname,
+    get_profile_filename,
     get_stationfile_name,
     get_timeseries_file_name,
-    get_profile_filename,
 )
 from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
 from pyaerocom.region_defs import (
