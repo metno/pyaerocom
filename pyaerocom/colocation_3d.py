@@ -18,9 +18,11 @@ from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     _colocate_site_data_helper,
+    _colocate_site_data_helper_timecol,
     check_time_ival,
     check_ts_type,
     resolve_var_name,
+    _regrid_gridded,
 )
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -340,6 +342,7 @@ def colocate_vertical_profile_gridded(
     Returns
     -------
     """
+
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
     try:
