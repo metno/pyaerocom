@@ -438,7 +438,6 @@ def test_StationData_select_altitude_Series_error(
     "stat,var_name,kwargs",
     [
         (stat1, "od550aer", dict()),
-        # (ec_earlinet, "ec532aer", dict(altitude=(0, 1000))),
     ],
 )
 def test_StationData_to_timeseries(stat: StationData, var_name: str, kwargs: dict):
