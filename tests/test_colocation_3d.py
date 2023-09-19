@@ -1,18 +1,14 @@
 from __future__ import annotations
-import pytest
-
-import iris
-import numpy as np
-
-from pyaerocom import GriddedData
-from pyaerocom.colocation_3d import (
-    colocate_vertical_profile_gridded,
-    ColocatedDataLists,
-)
-from tests.fixtures.data_access import TEST_DATA
 
 import pickle
 
+import iris
+import numpy as np
+import pytest
+
+from pyaerocom import GriddedData
+from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
+from tests.fixtures.data_access import TEST_DATA
 
 ROOT: str = TEST_DATA["Earlinet-test-3d-collocation"].path
 

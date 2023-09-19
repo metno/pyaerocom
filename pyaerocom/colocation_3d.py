@@ -19,10 +19,10 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,
+    _regrid_gridded,
     check_time_ival,
     check_ts_type,
     resolve_var_name,
-    _regrid_gridded,
 )
 from pyaerocom.exceptions import (
     DataUnitError,
