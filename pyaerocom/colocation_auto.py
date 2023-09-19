@@ -1480,6 +1480,7 @@ class Colocator(ColocationSetup):
             coldata.data.attrs["model_name"] = self.get_model_name()
             coldata.data.attrs["obs_name"] = self.get_obs_name()
             coldata.data.attrs["vert_code"] = self.obs_vert_type
+
             coldata.data.attrs.update(**self.add_meta)
 
             if self.zeros_to_nan:
