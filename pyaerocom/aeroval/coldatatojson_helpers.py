@@ -1378,33 +1378,28 @@ def process_profile_data(
     seasons,
 ):
     output = {"obs": {}, "mod": {}}
-    # stats_dummy = _init_stats_dummy()
-    for freq, coldata in data.items():
-        # output[freq] = hm_freq = {}
 
+    for freq, coldata in data.items():
         if freq not in output["obs"]:
             output["obs"][freq] = {}
         if freq not in output["mod"]:
             output["mod"][freq] = {}
-        # for regid, regname in region_ids.items():
-        # hm_freq[regname] = {}
+
         for per in periods:
             for season in seasons:
                 use_dummy = coldata is None
                 perstr = f"{per}-{season}"
                 if use_dummy:
-                    # stats = stats_dummy
                     output["obs"][freq][perstr] = np.nan
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
                         per_season_subset = _select_period_season_coldata(coldata, per, season)
                         if region_id is not None:
-                            # try:  # get the subset for this station or region
                             subset = per_season_subset.filter_region(
                                 region_id=region_id, check_country_meta=use_country
                             )
-                        # except UnknownRegion:
+
                         if station_name is not None:
                             subset = per_season_subset.data[
                                 :,
@@ -1431,14 +1426,11 @@ def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):
         current = read_json(profile_file)
     else:
         current = {}
-    # if not var_name_web in current:
-    #     current[var_name_web] = {}
-    # ov = current[var_name_web]
+
     for freq, coldata in data.items():
         model_name = coldata.model_name
         if not model_name in current:
             current[model_name] = {}
-        # on = ov[obs_name]
 
         midpoint = (
             float(coldata.data.attrs["vertical_layer"]["end"])
