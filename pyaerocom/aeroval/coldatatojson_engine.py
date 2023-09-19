@@ -129,6 +129,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 start = "{0}".format(str(round(start, 1) if start % 1 else int(start)))
                 end = "{0}".format(str(round(end, 1) if end % 1 else int(end)))
                 vert_code = f"{start}-{end}km"
+        else:
+            vert_code = coldata.get_meta_item("vert_code")
 
         diurnal_only = coldata.get_meta_item("diurnal_only")
 
@@ -272,7 +274,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 scatter_freq = min(scatter_freq, main_freq)
 
                 logger.info("Processing map and scat data by period")
-                # breakpoint()
+
                 for period in periods:
                     # compute map_data and scat_data just for this period
                     map_data, scat_data = _process_map_and_scat(
