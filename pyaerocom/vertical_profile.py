@@ -30,7 +30,6 @@ class VerticalProfile:
         self.var_info = BrowseDict()
         self.var_info["altitude"] = dict(units=altitude_unit)
         self.var_info[self.var_name] = dict(units=var_unit)
-        # self.var_info[self.var_name]["altitude"] = dict(units=altitude_unit)
 
         if hasattr(self.data_err, "__len__"):
             assert len(self.data) == len(self.data_err) == len(self.altitude)
@@ -82,7 +81,7 @@ class VerticalProfile:
         figsize=None,
         ax=None,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Simple plot method for vertical profile"""
         if figsize is None:
             figsize = (4, 8)

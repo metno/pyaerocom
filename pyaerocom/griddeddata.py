@@ -1356,7 +1356,6 @@ class GriddedData:
                 "Cannot yet retrieve timeseries at altitude levels. Coming soon..."
             )
         elif vert_scheme == "profile":
-            # raise NotImplementedError("Cannot yet retrieve profile timeseries")
             return self
         else:
             try:
