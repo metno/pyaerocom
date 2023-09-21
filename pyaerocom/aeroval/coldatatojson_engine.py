@@ -147,7 +147,6 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         # this will need to be figured out as soon as there is altitude
         elif "altitude" in coldata.data.dims:
-            # raise NotImplementedError("Cannot yet handle profile data")
             raise ValueError("Altitude should have been dealt with already in the colocation")
 
         elif not isinstance(coldata, ColocatedData):
