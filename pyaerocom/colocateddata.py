@@ -1066,7 +1066,7 @@ class ColocatedData:
         filter_name,
         vertical_layer=None,
     ):
-        if not vertical_layer is None:
+        if vertical_layer is not None:
             start = vertical_layer["start"]
             end = vertical_layer["end"]
             return (

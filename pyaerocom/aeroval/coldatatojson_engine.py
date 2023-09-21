@@ -105,7 +105,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
 
         if hasattr(coldata.data, "vertical_layer"):
-            if not Unit(coldata.data.attrs["altitude_units"]) == Unit(
+            if Unit(coldata.data.attrs["altitude_units"]) != Unit(
                 "km"
             ):  # put everything in terms of km for viz
                 # convert start and end for file naming
@@ -126,8 +126,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 start = float(coldata.data.attrs["vertical_layer"]["start"])
                 end = float(coldata.data.attrs["vertical_layer"]["end"])
                 # format correctly (e.g., 1, 1.5, 2, 2.5, etc.)
-                start = "{0}".format(str(round(start, 1) if start % 1 else int(start)))
-                end = "{0}".format(str(round(end, 1) if end % 1 else int(end)))
+                start = f"{round(float(start), 1):g}"
+                end = f"{round(float(end), 1):g}"
                 vert_code = f"{start}-{end}km"
         else:
             vert_code = coldata.get_meta_item("vert_code")
