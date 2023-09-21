@@ -75,9 +75,9 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
         )
     elif eval_type == "season":
         return dict(
-            freqs=["daily", "monthly"],
+            freqs=["hourly","daily", "monthly"],
             ts_type="hourly",
-            main_freq="daily",
+            main_freq="hourly",
             forecast_evaluation=True,
         )
     elif eval_type == "week":
