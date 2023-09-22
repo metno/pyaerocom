@@ -55,7 +55,8 @@ class ReadICOS(ReadMEP):
 
     VAR_MAPPING = {"vmrco2": "CO2_volume_mixing_ratio"}
 
-    STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
+    # STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
+    STATION_REGEX = re.compile("icos-co2-(.*A)-.*.nc")
 
     DEFAULT_VARS = list(VAR_MAPPING)
 
@@ -64,6 +65,7 @@ class ReadICOS(ReadMEP):
     PROVIDES_VARIABLES = list(VAR_MAPPING) + list(AUX_FUNS)
 
     def __init__(self, data_id=None, data_dir=None):
+        breakpoint()
         if data_dir is None:
             data_dir = const.OBSLOCS_UNGRIDDED[const.ICOS_NAME]
 
