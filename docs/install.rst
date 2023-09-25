@@ -25,7 +25,7 @@ This will install the latest released version of pyaerocom and its depencencies.
 
 	# install pyaerocom on machines with Proj8 or newer
 	# e.g. Ubuntu 22.04 LTS (Jammy Jellyfish)
-	python3 -m pip install --use-deprecated=legacy-resolver pyaerocom
+	python3 -m pip install pyaerocom
 
 Or into a new virtual environment (recommended) named *.venv* via::
 
@@ -38,7 +38,7 @@ Or into a new virtual environment (recommended) named *.venv* via::
 
 	# install pyaerocom on machines with Proj8 or newer
 	# e.g. Ubuntu 22.04 LTS (Jammy Jellyfish)
-	pip install --use-deprecated=legacy-resolver pyaerocom
+	pip install pyaerocom
 
 
 Install from source into a conda environment
