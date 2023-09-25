@@ -91,8 +91,8 @@ class Config:
     #: MEP name
     MEP_NAME = "MEP"
 
-    # TROPOMI name
-    TROPOMI_NAME = "TROPOMI"
+    # TROPOMI access names
+    TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
 
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
