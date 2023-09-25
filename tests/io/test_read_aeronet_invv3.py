@@ -11,7 +11,7 @@ from tests.conftest import TEST_RTOL, lustre_unavail
 def test_load_berlin():
     dataset = ReadAeronetInvV3()
     files = dataset.find_in_file_list("*Berlin*")
-    assert len(files) == 4  # previously 2
+    assert len(files) == 4
     assert Path(files[1]).name == "19930101_20230708_Berlin_FUB.all"
     data = dataset.read_file(files[1], vars_to_retrieve=["abs550aer"])
 
