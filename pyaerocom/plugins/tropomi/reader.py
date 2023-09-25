@@ -49,6 +49,6 @@ class ReadTropomi_XEMEP_R01x01(ReadGridded):
     def __init__(self, data_id=DATA_ID, data_dir=None):
         breakpoint()
         if data_dir is None:
-            data_dir = const.OBSLOCS_UNGRIDDED[const.TROPOMI_XEMEP_R01x01_NAME]
+            data_dir = const.OBSLOCS_UNGRIDDED[const.TROPOMI_XEMEP_R01x01]
         # raise Exception("Need a data_dir")
         super().__init__(data_id=data_id, data_dir=data_dir, file_convention="aerocom3")
