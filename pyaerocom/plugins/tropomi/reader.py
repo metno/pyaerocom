@@ -30,10 +30,6 @@ COLUMNS = (
     "value",
 )
 
-TMP_DATA_DIR = (
-    "/lustre/storeB/project/fou/kl/sesam/archive/CSO-gridded/xEMEP__r01x01__qa08/NO2/2022/10/"
-)
-
 
 class ReadTropomi_XEMEP_R01x01(ReadGridded):
     """
@@ -45,6 +41,10 @@ class ReadTropomi_XEMEP_R01x01(ReadGridded):
     __version__ = "0.01"
 
     DATA_ID = "TROPOMI_XEMEP_R01x01"
+    #: List of all datasets supported by this interface
+    SUPPORTED_DATASETS = [const.TROPOMI_XEMEP_R01x01_NAME]
+
+    TS_TYPE = "daily"
 
     def __init__(self, data_id=DATA_ID, data_dir=None):
         breakpoint()
