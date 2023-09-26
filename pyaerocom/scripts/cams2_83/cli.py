@@ -400,12 +400,12 @@ def runner(
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
         #pool_data = [[s, files, cache] for s in species_list]
-        with ProcessPoolExecutor(max_workers=pool) as executor:
-            futures = [
-                executor.submit(read_observations,specie,files=files,cache=cache)
-                for specie in species_list
-            ]
-            #executor.map(read_observations, pool_data)
+        executor = ProcessPoolExecutor(max_workers=pool)
+        futures = [
+            executor.submit(read_observations,specie,files=files,cache=cache)
+            for specie in species_list
+        ]
+        #executor.map(read_observations, pool_data)
         for future in as_completed(futures):
             future.result()
 
@@ -417,11 +417,11 @@ def runner(
         logger.info(f"Running CAMS2_83 Spesific Statistics")
         if pool > 1:
             logger.info(f"Making forecast plot with pool {pool}")
-            with ProcessPoolExecutor(max_workers=pool) as executor:
-                futures = [
-                    executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
-                    for specie in species_list
-                ]
+            executor = ProcessPoolExecutor(max_workers=pool)
+            futures = [
+                executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
+                for specie in species_list
+            ]
             for future in as_completed(futures):
                 future.result()
         else:
