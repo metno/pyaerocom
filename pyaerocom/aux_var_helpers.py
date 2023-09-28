@@ -216,15 +216,15 @@ def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref, angstrom_coeff):
 
 
 def _calc_od_helper(
-        data,
-        var_name,
-        to_lambda,
-        od_ref,
-        lambda_ref,
-        od_ref_alt=None,
-        lambda_ref_alt=None,
-        use_angstrom_coeff="ang4487aer",
-        treshold_angstrom=None,
+    data,
+    var_name,
+    to_lambda,
+    od_ref,
+    lambda_ref,
+    od_ref_alt=None,
+    lambda_ref_alt=None,
+    use_angstrom_coeff="ang4487aer",
+    treshold_angstrom=None,
 ):
     """Helper method for computing ODs
 
