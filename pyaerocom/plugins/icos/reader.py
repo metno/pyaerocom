@@ -60,7 +60,7 @@ class ReadICOS(ReadMEP):
 
     PROVIDES_VARIABLES = list(VAR_MAPPING) + list(AUX_FUNS)
 
-    def __init__(self, data_id=None, data_dir=None):
+    def __init__(self, data_id: str | None = None, data_dir: str | None = None):
         if data_dir is None:
             data_dir = const.OBSLOCS_UNGRIDDED[const.ICOS_NAME]
 
