@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
+from pyaerocom.plugins.mep.reader import ReadMEP
 from pyaerocom.plugins.icos.reader import ReadICOS
 from tests.conftest import lustre_unavail
 
@@ -13,8 +14,10 @@ try:
 except KeyError:
     pytest.mark.skip(reason=f"ICOS path not initialised due to non existence in CI")
 
-
 VARS_DEFAULT = {"vmrco2"}
+VARS_PROVIDED = VARS_DEFAULT  # | {} add more if ever needed
+
+STATION_NAMES = ("bir", "gat", "hpb")
 
 
 @lustre_unavail
@@ -26,7 +29,7 @@ def reader() -> ReadICOS:
 @lustre_unavail
 @pytest.fixture()
 def station_files(station: str) -> list[Path]:
-    files = sorted(ICOS_PATH.rglob(f"icos-co2-nrt-{station}-.*-.*-.*.nc"))
+    files = sorted(ICOS_PATH.rglob(f"icos-co2-{station}*.nc"))
     assert files, f"no files for {station}"
     return files
 
@@ -44,13 +47,13 @@ def test_DEFAULT_VARS(reader: ReadICOS):
 @lustre_unavail
 def test_files(reader: ReadICOS):
     assert reader.files, "no stations files found"
-    # assert len(reader.files) >= 3, "found less files than expected"
+    assert len(reader.files) >= 1, "found less files than expected"
 
 
 @lustre_unavail
 def test_FOUND_FILES(reader: ReadICOS):
     assert reader.FOUND_FILES, "no stations files found"
-    # assert len(reader.FOUND_FILES) >= 3, "found less files than expected"
+    assert len(reader.FOUND_FILES) >= 1, "found less files than expected"
 
 
 @lustre_unavail
@@ -82,9 +85,8 @@ def test_read_file_error(reader: ReadICOS):
 @lustre_unavail
 @pytest.mark.parametrize("station", STATION_NAMES)
 def test_read(reader: ReadICOS, station_files: list[str]):
-    # data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=5)
-    # assert set(data.contains_vars) == VARS_PROVIDED
-    pass
+    data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=1)
+    assert set(data.contains_vars) == VARS_PROVIDED
 
 
 @lustre_unavail
@@ -98,4 +100,3 @@ def test_read_error(reader: ReadICOS):
 @lustre_unavail
 def test_reader_gives_correct_mep_path(reader: ReadICOS):
     assert str(ICOS_PATH) == reader.data_dir
-    assert True

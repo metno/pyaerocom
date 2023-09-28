@@ -358,7 +358,7 @@ def plot_griddeddata_on_map(
             if discrete_norm:
                 # to compute upper range of colour range, round up vmax
                 exp = float(exponent(vmax) - 1)
-                vmax_colors = ceil(vmax / 10 ** exp) * 10 ** exp
+                vmax_colors = ceil(vmax / 10**exp) * 10**exp
                 bounds = calc_pseudolog_cmaplevels(vmin=vmin, vmax=vmax_colors, add_zero=add_zero)
                 norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
 

@@ -10,8 +10,9 @@ from pathlib import Path
 import xarray as xr
 
 from pyaerocom import const
-
 from pyaerocom.plugins.mep.reader import ReadMEP
+
+logger = logging.getLogger(__name__)
 
 
 class ReadICOS(ReadMEP):
@@ -56,7 +57,8 @@ class ReadICOS(ReadMEP):
 
     VAR_MAPPING = {"vmrco2": "CO2_volume_mixing_ratio"}
 
-    STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
+    # STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
+    STATION_REGEX = re.compile("icos-co2-(.*)-.*-.*.nc")
 
     DEFAULT_VARS = list(VAR_MAPPING)
 

@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.13.2"
+version = "0.14.0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -21,6 +21,9 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "cartopy>=0.20",
+    "scitools-iris>=3.2,!=3.5.0",
+    "matplotlib>=3.6.0",
     'importlib-metadata>=3.6; python_version < "3.10"',
     'importlib-resources>=5.10; python_version < "3.11"',
     'tomli>=2.0.1; python_version < "3.11"',
@@ -53,16 +56,6 @@ Documentation = "https://pyaerocom.readthedocs.io"
 "Source Code" = "https://github.com/metno/pyaerocom"
 
 [project.optional-dependencies]
-proj-legacy = [
-    # proj<8, e.g CI
-    'cartopy>=0.16.0,<0.20',
-    "scitools-iris>=3.1.0,<3.2",
-    # cartopy 0.19 incompatible with matplotlib 3.6
-    "matplotlib>=3.0.1,<3.6",
-    # cartopy 0.19 incompatible with matplotlib 2.0
-    "shapely<2.0.0",
-]
-proj8 = ["cartopy>=0.20", "scitools-iris>=3.2,!=3.5.0", "matplotlib>=3.6.0"]
 docs = [
     "sphinx>=4.2.0",
     "sphinxcontrib-napoleon",
@@ -142,7 +135,7 @@ exclude_lines = [
 ]
 
 [tool.black]
-target-version = ['py38']
+target-version = ['py39']
 extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
@@ -208,7 +201,6 @@ commands_pre =
 commands =
     pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras = 
-    proj8
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
@@ -224,13 +216,11 @@ ignore_outcome = True
 commands =
     mypy pyaerocom/
 extras = 
-    proj8
     lint
 
 [testenv:docs]
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 
-    proj8
     docs
 """
