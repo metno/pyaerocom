@@ -22,7 +22,12 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, to_pandas_timestamp
+from pyaerocom.helpers import (
+    get_highest_resolution,
+    isnumeric,
+    sort_ts_types,
+    to_pandas_timestamp,
+)
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_read_cubes import (
     add_cubes,
@@ -170,7 +175,6 @@ class ReadGridded:
     VERT_ALT = {"Surface": "ModelLevel"}
 
     def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3"):
-
         self._data_dir = None
 
         #: data_id of gridded dataset
@@ -269,7 +273,10 @@ class ReadGridded:
         """
         if self.file_info is None:
             self.search_all_files()
-        return [os.path.join(self.data_dir, x) for x in sorted(self.file_info.filename.values)]
+        return [
+            os.path.join(self.data_dir, x)
+            for x in sorted(self.file_info.filename.values)
+        ]
 
     @property
     def ts_types(self):
@@ -444,7 +451,6 @@ class ReadGridded:
             if fnmatch.fnmatch(var_name, pattern):
                 vars_required = self.AUX_REQUIRES[pattern]
                 for addvar in vars_required:
-
                     if not "*" in addvar:
                         vars_found.append(addvar)
                     else:
@@ -476,7 +482,9 @@ class ReadGridded:
 
                     if all_ok:
                         fun = self.AUX_FUNS[pattern]
-                        self.add_aux_compute(var_name, vars_required=vars_to_read, fun=fun)
+                        self.add_aux_compute(
+                            var_name, vars_required=vars_to_read, fun=fun
+                        )
                         self._aux_avail[var_name] = (vars_to_read, fun)
                         return True
         return False
@@ -506,7 +514,9 @@ class ReadGridded:
         """
         if not var_to_compute in self._aux_avail:
             if not self.check_compute_var(var_to_compute):
-                raise VarNotAvailableError(f"Variable {var_to_compute} cannot be computed")
+                raise VarNotAvailableError(
+                    f"Variable {var_to_compute} cannot be computed"
+                )
         return self._aux_avail[var_to_compute]
 
     def check_compute_var(self, var_name):
@@ -530,7 +540,9 @@ class ReadGridded:
         """
 
         if "*" in var_name:
-            raise VariableDefinitionError(f"Invalid variable name {var_name}. Must not contain *")
+            raise VariableDefinitionError(
+                f"Invalid variable name {var_name}. Must not contain *"
+            )
         if var_name in self._aux_avail:
             return True
         elif self._check_aux_compute_access(var_name):
@@ -731,7 +743,9 @@ class ReadGridded:
                     _vars_temp.append(var_name)
 
                 if not TsType.valid(info["ts_type"]):  # in self.TS_TYPES:
-                    raise TemporalResolutionError(f"Invalid frequency {info['ts_type']}")
+                    raise TemporalResolutionError(
+                        f"Invalid frequency {info['ts_type']}"
+                    )
 
                 (model, meteo, experiment, pert) = self._eval_data_id(info["data_id"])
                 result.append(
@@ -752,7 +766,9 @@ class ReadGridded:
                 )
 
             except (FileConventionError, DataSourceError, TemporalResolutionError) as e:
-                msg = f"Failed to import file\n{_file}\nModel: {self.data_id}\nError: {e}"
+                msg = (
+                    f"Failed to import file\n{_file}\nModel: {self.data_id}\nError: {e}"
+                )
                 logger.warning(msg)
                 if const.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
@@ -1381,12 +1397,18 @@ class ReadGridded:
             )
         for var in vars_to_read[1:]:
             _tt = self.filter_files(
-                var_name=var, start=start, stop=stop, experiment=experiment, vert_which=vert_which
+                var_name=var,
+                start=start,
+                stop=stop,
+                experiment=experiment,
+                vert_which=vert_which,
             )
             common = np.intersect1d(common, _tt.ts_type.unique())
 
         if len(common) == 0:
-            raise DataCoverageError(f"Could not find common ts_type for variables {vars_to_read}")
+            raise DataCoverageError(
+                f"Could not find common ts_type for variables {vars_to_read}"
+            )
         elif len(common) == 1:
             if ts_type is None or flex_ts_type:
                 return common[0]
@@ -1500,7 +1522,9 @@ class ReadGridded:
         # provided in the dataset
         for alias in var.aliases:
             if alias in self.vars_filename:
-                logger.info(f"Did not find {var_name} field but {alias}. Using the latter instead")
+                logger.info(
+                    f"Did not find {var_name} field but {alias}. Using the latter instead"
+                )
                 return alias
 
         # Finally, if still no match could be found, check if input variable
@@ -1647,7 +1671,9 @@ class ReadGridded:
         if aux_vars is not None:
             self.add_aux_compute(var_name, aux_vars, aux_fun)
 
-        vert_which, ts_type = self._eval_vert_which_and_ts_type(var_name, vert_which, ts_type)
+        vert_which, ts_type = self._eval_vert_which_and_ts_type(
+            var_name, vert_which, ts_type
+        )
         data = self._try_read_var(
             var_name,
             start,
@@ -1663,7 +1689,6 @@ class ReadGridded:
         )
 
         if constraints is not None:
-
             if isinstance(constraints, dict):
                 constraints = [constraints]
             for constraint in constraints:
@@ -1844,6 +1869,7 @@ class ReadGridded:
                 **kwargs,
             )
 
+        breakpoint()
         try:
             var_to_read = self._get_var_to_read(var_name)
             return self._load_var(
@@ -1949,7 +1975,8 @@ class ReadGridded:
         """
         if vars_to_retrieve is None and "var_names" in kwargs:
             warnings.warn(
-                "Input arg var_names is deprecated. " "Please use vars_to_retrieve instead",
+                "Input arg var_names is deprecated. "
+                "Please use vars_to_retrieve instead",
                 DeprecationWarning,
                 stacklevel=2,
             )
