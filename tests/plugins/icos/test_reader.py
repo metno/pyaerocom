@@ -16,7 +16,7 @@ if not const.has_access_lustre:
 VARS_DEFAULT = {"vmrco2"}
 VARS_PROVIDED = VARS_DEFAULT  # | {} add more if ever needed
 
-STATION_NAMES = ("bir", "gat", "hpb")
+station_names = pytest.mark.parametrize("station", ("bir", "gat", "hpb"))
 
 
 @pytest.fixture(scope="module")
@@ -57,7 +57,7 @@ def test_FOUND_FILES(reader: ReadICOS):
     assert len(reader.FOUND_FILES) >= 1, "found less files than expected"
 
 
-@pytest.mark.parametrize("station", STATION_NAMES)
+@station_names
 def test_stations(reader: ReadICOS, station: str):
     assert reader.stations()[station], f"no {station} station files"
 
@@ -66,7 +66,7 @@ def test_PROVIDES_VARIABLES(reader: ReadICOS):
     return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
-@pytest.mark.parametrize("station", STATION_NAMES)
+@station_names
 def test_read_file(reader: ReadICOS, station_files: list[str]):
     data = reader.read_file(station_files[-1])
     assert set(data.contains_vars) == VARS_DEFAULT
@@ -79,7 +79,7 @@ def test_read_file_error(reader: ReadICOS):
     assert str(e.value) == f"missing {bad_station_file}"
 
 
-@pytest.mark.parametrize("station", STATION_NAMES)
+@station_names
 def test_read(reader: ReadICOS, station_files: list[str]):
     data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=1)
     assert set(data.contains_vars) == VARS_PROVIDED
