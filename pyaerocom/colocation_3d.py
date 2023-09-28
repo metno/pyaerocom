@@ -87,9 +87,10 @@ def _colocate_vertical_profile_gridded(
 
     arr = np.full((2, time_num, stat_num), np.nan)
 
-    lons = [np.nan] * stat_num
-    lats = [np.nan] * stat_num
-    alts = [np.nan] * stat_num
+    lons = np.full(stat_num, np.nan)
+    lats = np.full(stat_num, np.nan)
+    alts = np.full(stat_num, np.nan)
+
     station_names = [""] * stat_num
 
     dataset_ref = data_ref.contains_datasets[0]
