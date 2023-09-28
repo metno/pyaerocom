@@ -142,7 +142,7 @@ exclude_lines = [
 ]
 
 [tool.black]
-target-version = ['py39']
+target-version = ["py39", "py310"]
 extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
