@@ -132,6 +132,8 @@ class UngriddedData:
 
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
+    ALLOWED_VERT_CORD_TYPES = ["altitude"]
+
     @property
     def _ROWNO(self):
         return self._data.shape[0]
@@ -1724,7 +1726,7 @@ class UngriddedData:
             if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
-                    if var == "altitude":
+                    if var in self.ALLOWED_VERT_CORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
