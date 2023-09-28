@@ -203,7 +203,9 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-        if not "just_for_viz" in coldata.data.attrs:  # make the regular json output
+        if (
+            not "just_for_viz" in coldata.data.attrs or coldata.data.attrs["just_for_viz"] == 0
+        ):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
                 input_freq = self.cfg.statistics_opts.stats_tseries_base_freq

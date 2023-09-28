@@ -1370,13 +1370,33 @@ def get_profile_filename(station_or_region_name, obs_name, var_name_web):
 
 
 def process_profile_data(
-    data,
-    region_id,
-    station_name,
-    use_country,
-    periods,
-    seasons,
-):  # pragma: no cover
+    data: ColocatedData,
+    region_id: str,
+    station_name: str,
+    use_country: bool,
+    periods: list[str],
+    seasons: list[str],
+) -> dict:  # pragma: no cover
+    """
+    This method populates the json files in data/profiles which are use for visualization.
+    Analogous to _process_map_and_scat for profile data.
+    Each json file corresponds to a region or station, obs network, and variable.
+    Inside the json, it is broken up by model.
+    Each model has a key for "z" (the vertical dimension), "obs", and "mod"
+    Each "obs" and "mod" is broken up by period.
+
+
+    Args:
+        data (ColocatedData): ColocatedData object for this layer
+        region_id (str): Spatial subset to compute the mean profiles over
+        station_name (str): Station to compute mean profiles over for period
+        use_country (boolean): Passed to filter_region().
+        periods (str): Year part of the temporal range to average over
+        seasons (str): Sesonal part of the temporal range to average over
+
+    Returns:
+        output (dict): Dictionary to write to json
+    """
     output = {"obs": {}, "mod": {}}
 
     for freq, coldata in data.items():
@@ -1421,7 +1441,27 @@ def process_profile_data(
     return output
 
 
-def add_profile_entry_json(profile_file, data, profile_viz, periods, seasons):  # pragma: no cover
+def add_profile_entry_json(
+    profile_file: str,
+    data: ColocatedData,
+    profile_viz: dict,
+    periods: list[str],
+    seasons: list[str],
+):  # pragma: no cover
+    """
+    Analogous to _add_heatmap_entry_json for profile data.
+    Every time this function is called it checks to see if the profile_file exists.
+    If so, it reads it, if not it makes a new one.
+    This is because one can not add to json files and so everytime we want to add entries for profile layers
+    we must read in the old file, add the entries, and write a new file.
+
+    Args:
+        profile_file (str): Name of profile_file
+        data (ColocatedData): For this vertical layer
+        profile_viz (dict): Output of process_profile_data()
+        periods (list[str]): periods to compute over (years)
+        seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
+    """
     if os.path.exists(profile_file):
         current = read_json(profile_file)
     else:
