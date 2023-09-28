@@ -59,7 +59,7 @@ def _colocate_vertical_profile_gridded(
     colocate_time=False,
     use_climatology_ref=False,
     resample_how=None,
-    layer_limits=None,
+    layer_limits: dict[dict[str]] = None,
     obs_stat_data=None,
     ungridded_lons=None,
     ungridded_lats=None,
