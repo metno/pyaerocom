@@ -2183,7 +2183,7 @@ class UngriddedData:
         # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
         self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
             self._data[:, self._LATINDEX] + self._LAT_OFFSET
-        ) * (10**self._LOCATION_PRECISION)
+        ) * (10 ** self._LOCATION_PRECISION)
         return self.coded_loc
 
     def decode_lat_lon_from_float(self):
@@ -2191,13 +2191,13 @@ class UngriddedData:
 
         lons = (
             np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-            / 10**self._LOCATION_PRECISION
+            / 10 ** self._LOCATION_PRECISION
         )
         lats = (
             self.coded_loc
             - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
             * 10 ** (2 * self._LOCATION_PRECISION)
-        ) / (10**self._LOCATION_PRECISION) - self._LAT_OFFSET
+        ) / (10 ** self._LOCATION_PRECISION) - self._LAT_OFFSET
 
         return lats, lons
 
