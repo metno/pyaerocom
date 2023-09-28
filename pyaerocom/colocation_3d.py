@@ -50,31 +50,27 @@ class ColocatedDataLists(NamedTuple):
 def _colocate_vertical_profile_gridded(
     data,
     data_ref,
-    ts_type=None,
     start=None,
     stop=None,
     filter_name=None,
-    regrid_res_deg=None,
     harmonise_units=True,
-    regrid_scheme="areaweighted",
     var_ref=None,
-    update_baseyear_gridded=None,
     min_num_obs=None,
     colocate_time=False,
     use_climatology_ref=False,
     resample_how=None,
     layer_limits=None,
-    **kwargs,
+    obs_stat_data=None,
+    ungridded_lons=None,
+    ungridded_lats=None,
+    col_freq=None,
+    col_tst=None,
+    var=None,
+    var_aerocom=None,
+    var_ref_aerocom=None,
 ) -> list[ColocatedData]:
     if layer_limits is None:
         raise Exception(f"layer limits must be provided")
-
-    obs_stat_data = kwargs["obs_stat_data"]
-    col_freq = kwargs["col_freq"]
-    col_tst = kwargs["col_tst"]
-    var = kwargs["var"]
-    var_aerocom = kwargs["var_aerocom"]
-    var_ref_aerocom = kwargs["var_ref_aerocom"]
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -126,8 +122,8 @@ def _colocate_vertical_profile_gridded(
             continue
 
         grid_stat_data_this_layer = data_this_layer.to_time_series(
-            longitude=kwargs["ungridded_lons"],
-            latitude=kwargs["ungridded_lats"],
+            longitude=ungridded_lons,
+            latitude=ungridded_lats,
         )
 
         # loop over all stations and append to colocated data object
@@ -472,15 +468,11 @@ def colocate_vertical_profile_gridded(
         _colocate_vertical_profile_gridded(
             data=data,
             data_ref=data_ref,
-            ts_type=ts_type,
             start=start,
             stop=stop,
             filter_name=filter_name,
-            regrid_res_deg=regrid_res_deg,
             harmonise_units=harmonise_units,
-            regrid_scheme=regrid_scheme,
             var_ref=var_ref,
-            update_baseyear_gridded=update_baseyear_gridded,
             min_num_obs=min_num_obs,
             colocate_time=colocate_time,
             use_climatology_ref=use_climatology_ref,
