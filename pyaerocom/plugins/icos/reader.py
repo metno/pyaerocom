@@ -2,12 +2,6 @@ from __future__ import annotations
 
 import logging
 import re
-from collections import defaultdict
-from collections.abc import Iterable
-from functools import cached_property, lru_cache
-from pathlib import Path
-
-import xarray as xr
 
 from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
