@@ -2,12 +2,6 @@ from __future__ import annotations
 
 import logging
 import re
-from collections import defaultdict
-from collections.abc import Iterable
-from functools import cached_property, lru_cache
-from pathlib import Path
-
-import xarray as xr
 
 from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
@@ -66,7 +60,7 @@ class ReadICOS(ReadMEP):
 
     PROVIDES_VARIABLES = list(VAR_MAPPING) + list(AUX_FUNS)
 
-    def __init__(self, data_id=None, data_dir=None):
+    def __init__(self, data_id: str | None = None, data_dir: str | None = None):
         if data_dir is None:
             data_dir = const.OBSLOCS_UNGRIDDED[const.ICOS_NAME]
 
