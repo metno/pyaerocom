@@ -91,6 +91,9 @@ class Config:
     #: MEP name
     MEP_NAME = "MEP"
 
+    #: ICOS name
+    ICOS_NAME = "ICOS"
+
     # TROPOMI access names
     TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
 
