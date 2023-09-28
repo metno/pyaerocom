@@ -6,14 +6,12 @@ import pytest
 
 from pyaerocom import const
 from pyaerocom.plugins.icos.reader import ReadICOS
-from tests.conftest import lustre_unavail
 
-try:
-    ICOS_PATH = Path(const.OBSLOCS_UNGRIDDED[const.ICOS_NAME])
-except KeyError:
-    pytestmark = pytest.mark.skip(reason="ICOS path not initialised due to non existence in CI")
-else:
-    pytestmark = lustre_unavail
+if not const.has_access_lustre:
+    pytestmark = pytest.skip(
+        reason="Skipping tests that require access to AEROCOM database on METNo servers",
+        allow_module_level=True,
+    )
 
 VARS_DEFAULT = {"vmrco2"}
 VARS_PROVIDED = VARS_DEFAULT  # | {} add more if ever needed
@@ -22,13 +20,21 @@ STATION_NAMES = ("bir", "gat", "hpb")
 
 
 @pytest.fixture(scope="module")
-def reader() -> ReadICOS:
-    return ReadICOS(data_dir=str(ICOS_PATH))
+def icos_path() -> Path:
+    try:
+        return Path(const.OBSLOCS_UNGRIDDED[const.ICOS_NAME])
+    except KeyError:
+        pytest.skip(reason="ICOS path not initialised due to non existence in CI")
+
+
+@pytest.fixture(scope="module")
+def reader(icos_path: Path) -> ReadICOS:
+    return ReadICOS(data_dir=str(icos_path))
 
 
 @pytest.fixture()
-def station_files(station: str) -> list[Path]:
-    files = sorted(ICOS_PATH.rglob(f"icos-co2-{station}*.nc"))
+def station_files(icos_path: Path, station: str) -> list[Path]:
+    files = sorted(icos_path.rglob(f"icos-co2-{station}*.nc"))
     assert files, f"no files for {station}"
     return files
 
@@ -86,5 +92,5 @@ def test_read_error(reader: ReadICOS):
     assert str(e.value) == f"Unsupported variables: {bad_variable_name}"
 
 
-def test_reader_gives_correct_mep_path(reader: ReadICOS):
-    assert str(ICOS_PATH) == reader.data_dir
+def test_reader_gives_correct_mep_path(reader: ReadICOS, icos_path: Path):
+    assert reader.data_dir == str(icos_path)
