@@ -294,7 +294,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
 
     difference = data - ref_data
 
-    diffsquare = difference ** 2
+    diffsquare = difference**2
 
     if weights is not None:
         weights = weights[mask]
