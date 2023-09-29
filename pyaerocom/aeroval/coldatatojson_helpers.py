@@ -1431,8 +1431,8 @@ def process_profile_data(
                         output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
                         output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
 
-                    except:
-                        msg = f"Failed to access subset timeseries, and will skip."
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
                         logger.warning(msg)
 
                         output["obs"][freq][perstr] = np.nan
