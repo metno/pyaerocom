@@ -105,33 +105,12 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
 
-        if hasattr(coldata.data, "vertical_layer"):
-            if Unit(coldata.data.attrs["altitude_units"]) != Unit(
-                "km"
-            ):  # put everything in terms of km for viz
-                # convert start and end for file naming
-                alt_units = coldata.data.attrs["altitude_units"]
-
-                coldata.data.attrs["vertical_layer"]["start"] = str(
-                    Unit(alt_units).convert(
-                        coldata.data.attrs["vertical_layer"]["start"], other="km"
-                    )
-                )
-
-                coldata.data.attrs["vertical_layer"]["end"] = str(
-                    Unit(alt_units).convert(
-                        coldata.data.attrs["vertical_layer"]["end"], other="km"
-                    )
-                )
-                # start and end for vertical layers (display on web and name jsons)
-                start = float(coldata.data.attrs["vertical_layer"]["start"])
-                end = float(coldata.data.attrs["vertical_layer"]["end"])
-                # format correctly (e.g., 1, 1.5, 2, 2.5, etc.)
-                start = f"{round(float(start), 1):g}"
-                end = f"{round(float(end), 1):g}"
-                vert_code = f"{start}-{end}km"
-        else:
-            vert_code = coldata.get_meta_item("vert_code")
+        if Unit(coldata.data.attrs["altitude_units"]) != Unit(
+            "km"
+        ):  # put everything in terms of km for viz
+            # convert start and end for file naming
+            self._convert_coldata_altitude_units_to_km(coldata)
+        vert_code = self._get_vert_code(coldata)
 
         diurnal_only = coldata.get_meta_item("diurnal_only")
 
@@ -336,6 +315,30 @@ class ColdataToJsonEngine(ProcessingEngine):
         dt = time() - t00
         logger.info(f"Time expired: {dt:.2f} s")
 
+    def _convert_coldata_altitude_units_to_km(coldata: ColocatedData):
+        alt_units = coldata.data.attrs["altitude_units"]
+
+        coldata.data.attrs["vertical_layer"]["start"] = str(
+            Unit(alt_units).convert(coldata.data.attrs["vertical_layer"]["start"], other="km")
+        )
+
+        coldata.data.attrs["vertical_layer"]["end"] = str(
+            Unit(alt_units).convert(coldata.data.attrs["vertical_layer"]["end"], other="km")
+        )
+
+    def _get_vert_code(coldata: ColocatedData):
+        if hasattr(coldata.data, "vertical_layer"):
+            # start and end for vertical layers (display on web and name jsons)
+            start = float(coldata.data.attrs["vertical_layer"]["start"])
+            end = float(coldata.data.attrs["vertical_layer"]["end"])
+            # format correctly (e.g., 1, 1.5, 2, 2.5, etc.)
+            start = f"{round(float(start), 1):g}"
+            end = f"{round(float(end), 1):g}"
+            vert_code = f"{start}-{end}km"
+        else:
+            vert_code = coldata.get_meta_item("vert_code")
+        return vert_code
+
     def _process_statistics_timeseries_for_all_regions():
         pass
 
@@ -369,7 +372,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             outfile_profile = os.path.join(out_dirs["profiles"], fname)
             add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
         # Loop through stations
-        # for station_name in coldata.data.station_name.values:
         for station_name in station_names:
             profile_viz = process_profile_data_for_stations(
                 data=data,
