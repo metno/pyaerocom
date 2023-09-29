@@ -127,7 +127,6 @@ class ReadEbasOptions(BrowseDict):
     _FILTER_IDS = ["prefer_statistics", "wavelength_tol_nm"]
 
     def __init__(self, **args):
-
         self.prefer_statistics = ["arithmetic mean", "median"]
         self.ignore_statistics = ["percentile:15.87", "percentile:84.13"]
 
@@ -287,7 +286,6 @@ class ReadEbas(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     def __init__(self, data_id=None, data_dir=None):
-
         super().__init__(data_id=data_id, data_dir=data_dir)
 
         self._opts = {"default": ReadEbasOptions()}
@@ -1423,7 +1421,6 @@ class ReadEbas(ReadUngriddedBase):
             )
 
     def _flag_incorrect_frequencies(self, filedata):
-
         # time diffs in units of s for each measurement
         dt = (filedata.stop_meas - filedata.start_meas).astype(float)
         # frequency in file (supposedly)

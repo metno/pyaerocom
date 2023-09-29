@@ -380,7 +380,6 @@ class ReadGhost(ReadUngriddedBase):
         invalid = self._eval_flags(vardata, invalidate_flags, ds)
 
         for idx in ds.station.values:
-
             stat = {}
             meta = StationMetaData()
             meta["ts_type"] = self.TS_TYPE

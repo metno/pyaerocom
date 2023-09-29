@@ -77,7 +77,6 @@ def _compute_trend_error(m, m_err, v0, v0_err):
 
 
 def _get_season(mon):
-
     for seas, months in SEASONS.items():
         if mon in months:
             return seas
