@@ -27,7 +27,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_profile_filename,
     get_timeseries_file_name,
     init_regions_web,
-    process_profile_data,
+    process_profile_data_for_regions,
+    process_profile_data_for_stations,
     update_regions_json,
 )
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
@@ -203,9 +204,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-        if (
-            not "just_for_viz" in coldata.data.attrs or coldata.data.attrs["just_for_viz"] == 0
-        ):  # make the regular json output
+        if coldata.data.attrs.get("just_for_viz", True):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
                 input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
@@ -316,38 +315,18 @@ class ColdataToJsonEngine(ProcessingEngine):
                         # writes json file
                         _write_stationdata_json(ts_data_weekly_reg, outdir)
         else:
-            if hasattr(coldata.data, "vertical_layer"):
-                logger.info("Processing profile data for vizualization")
-                # Loop through regions
-                for regid in regnames:
-                    profile_viz = process_profile_data(
-                        data=data,
-                        region_id=regid,
-                        station_name=None,
-                        use_country=use_country,
-                        periods=periods,
-                        seasons=seasons,
-                    )
+            logger.info("Processing profile data for vizualization")
 
-                    fname = get_profile_filename(regnames[regid], obs_name, var_name_web)
-
-                    outfile_profile = os.path.join(out_dirs["profiles"], fname)
-                    add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
-                # Loop through stations
-                for station_name in coldata.data.station_name.values:
-                    profile_viz = process_profile_data(
-                        data=data,
-                        region_id=None,
-                        station_name=station_name,
-                        use_country=use_country,
-                        periods=periods,
-                        seasons=seasons,
-                    )
-
-                    fname = get_profile_filename(station_name, obs_name, var_name_web)
-
-                    outfile_profile = os.path.join(out_dirs["profiles"], fname)
-                    add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
+            self._process_profile_data_for_vizualization(
+                data=data,
+                use_country=use_country,
+                region_names=regnames,
+                station_names=coldata.data.station_name.values,
+                periods=periods,
+                seasons=seasons,
+                var_name_web=var_name_web,
+                out_dirs=out_dirs,
+            )
 
         logger.info(
             f"Finished computing json files for {model_name} ({model_var}) vs. "
@@ -357,5 +336,50 @@ class ColdataToJsonEngine(ProcessingEngine):
         dt = time() - t00
         logger.info(f"Time expired: {dt:.2f} s")
 
-        dt = time() - t00
-        logger.info(f"Time expired: {dt:.2f} s")
+    def _process_statistics_timeseries_for_all_regions():
+        pass
+
+    def _process_profile_data_for_vizualization(
+        data: ColocatedData = None,
+        use_country: bool = False,
+        region_names=None,
+        station_names=None,
+        periods: list[str] = None,
+        seasons=list[str],
+        obs_name: str = None,
+        var_name_web: str = None,
+        out_dirs: dict = None,
+    ):
+        assert (
+            region_names != None and station_names != None
+        ), f"Both region_id and station_name can not both be None"
+
+        # Loop through regions
+        for regid in region_names:
+            profile_viz = process_profile_data_for_regions(
+                data=data,
+                region_id=regid,
+                use_country=use_country,
+                periods=periods,
+                seasons=seasons,
+            )
+
+            fname = get_profile_filename(region_names[regid], obs_name, var_name_web)
+
+            outfile_profile = os.path.join(out_dirs["profiles"], fname)
+            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
+        # Loop through stations
+        # for station_name in coldata.data.station_name.values:
+        for station_name in station_names:
+            profile_viz = process_profile_data_for_stations(
+                data=data,
+                station_name=station_name,
+                use_country=use_country,
+                periods=periods,
+                seasons=seasons,
+            )
+
+            fname = get_profile_filename(station_name, obs_name, var_name_web)
+
+            outfile_profile = os.path.join(out_dirs["profiles"], fname)
+            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)

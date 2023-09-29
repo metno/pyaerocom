@@ -1369,10 +1369,9 @@ def get_profile_filename(station_or_region_name, obs_name, var_name_web):
     return f"{station_or_region_name}_{obs_name}_{var_name_web}.json"
 
 
-def process_profile_data(
+def process_profile_data_for_regions(
     data: ColocatedData,
     region_id: str,
-    station_name: str,
     use_country: bool,
     periods: list[str],
     seasons: list[str],
@@ -1415,18 +1414,76 @@ def process_profile_data(
                 else:
                     try:
                         per_season_subset = _select_period_season_coldata(coldata, per, season)
-                        if region_id is not None:
-                            subset = per_season_subset.filter_region(
-                                region_id=region_id, check_country_meta=use_country
-                            )
 
-                        if station_name is not None:
-                            subset = per_season_subset.data[
-                                :,
-                                :,
-                                per_season_subset.data.station_name.values
-                                == station_name,  # in this case a station
-                            ]  # Assumes ordering of station name matches
+                        subset = per_season_subset.filter_region(
+                            region_id=region_id, check_country_meta=use_country
+                        )
+
+                        output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                        output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
+                        logger.warning(msg)
+
+                        output["obs"][freq][perstr] = np.nan
+                        output["mod"][freq][perstr] = np.nan
+
+    return output
+
+
+def process_profile_data_for_stations(
+    data: ColocatedData,
+    station_name: str,
+    use_country: bool,
+    periods: list[str],
+    seasons: list[str],
+) -> dict:  # pragma: no cover
+    """
+    This method populates the json files in data/profiles which are use for visualization.
+    Analogous to _process_map_and_scat for profile data.
+    Each json file corresponds to a region, obs network, and variable.
+    Inside the json, it is broken up by model.
+    Each model has a key for "z" (the vertical dimension), "obs", and "mod"
+    Each "obs" and "mod" is broken up by period.
+
+
+    Args:
+        data (ColocatedData): ColocatedData object for this layer
+        region_id (str): Spatial subset to compute the mean profiles over
+        station_name (str): Station to compute mean profiles over for period
+        use_country (boolean): Passed to filter_region().
+        periods (str): Year part of the temporal range to average over
+        seasons (str): Sesonal part of the temporal range to average over
+
+    Returns:
+        output (dict): Dictionary to write to json
+    """
+    output = {"obs": {}, "mod": {}}
+
+    for freq, coldata in data.items():
+        if freq not in output["obs"]:
+            output["obs"][freq] = {}
+        if freq not in output["mod"]:
+            output["mod"][freq] = {}
+
+        for per in periods:
+            for season in seasons:
+                use_dummy = coldata is None
+                perstr = f"{per}-{season}"
+                if use_dummy:
+                    output["obs"][freq][perstr] = np.nan
+                    output["mod"][freq][perstr] = np.nan
+                else:
+                    try:
+                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+
+                        subset = per_season_subset.data[
+                            :,
+                            :,
+                            per_season_subset.data.station_name.values
+                            == station_name,  # in this case a station
+                        ]  # Assumes ordering of station name matches
 
                         output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
                         output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
