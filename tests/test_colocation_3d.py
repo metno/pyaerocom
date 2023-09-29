@@ -10,10 +10,10 @@ from pyaerocom import GriddedData
 from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
 from tests.fixtures.data_access import TEST_DATA
 
-ROOT: str = TEST_DATA["Earlinet-test-3d-collocation"].path
+ROOT = TEST_DATA["Earlinet-test-3d-collocation"].path
 
-TEST_FILE: list[str] = [
-    f"{ROOT}/earlinet_example_for_ci.pkl",
+TEST_FILE = [
+    ROOT / "earlinet_example_for_ci.pkl",
 ]
 
 
@@ -56,14 +56,15 @@ def fake_model_data_with_altitude():
 
 @pytest.fixture
 def example_earlinet_ungriddeddata():
-    file = open(TEST_FILE[0], "rb")
-    return pickle.load(file)
+    path = TEST_FILE[0]
+    assert path.is_file(), f"you should have {path}, update ~/MyPyaerocom/testdata-minimal/"
+    return pickle.load(path.open("rb"))
 
 
 @pytest.mark.parametrize(
     "ts_type,resample_how,min_num_obs,use_climatology_ref,colocation_layer_limits,profile_layer_limits",
     [
-        (
+        pytest.param(
             "daily",
             "mean",
             {"monthly": {"daily": 25}},
@@ -74,6 +75,7 @@ def example_earlinet_ungriddeddata():
             [
                 {"start": 0, "end": 6000},
             ],
+            id="fake_data",
         )
     ],
 )
