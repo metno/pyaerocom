@@ -24,3 +24,5 @@ f790df13cfe42792e88f1c9fc0b7ae0d02eeb1d2
 b33da064f6ca28072d93340f8a9fdbcf219bcbd9
 # 2021-11-26: Merge branch 'main-dev' into lint-on-ci
 9b7b52365480f5e9205012a849708b7ce7e201a5
+# 2023-09-29: format with black
+81d3cc9262f1746f0480a49ca804c9a2b970c17a
