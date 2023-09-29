@@ -107,11 +107,9 @@ def test_aasetal_data(aasetal_data: UngriddedData):
 @lustre_unavail
 @pytest.mark.xfail(raises=UnitConversionError)
 def test_aasetal_data_correct_units(aasetal_data: UngriddedData):
-
     tested = []
     stats = []
     for meta_key, meta in aasetal_data.metadata.items():
-
         for var, info in meta["var_info"].items():
             if var in tested:
                 # test each variable only once
@@ -120,7 +118,6 @@ def test_aasetal_data_correct_units(aasetal_data: UngriddedData):
             tested.append(var)
             stats.append(meta["station_name"])
         if len(tested) == len(VARS):
-
             break
 
     assert meta_key == 520
@@ -147,7 +144,6 @@ testdata = [
 def test_reading_routines(
     aasetal_data: UngriddedData, data_paths: list[Path], filenum, station_name, colname, var_name
 ):
-
     UNITCONVERSION = ReadAasEtal().UNITCONVERSION
 
     df = pd.read_csv(data_paths[filenum], sep=",", low_memory=False)

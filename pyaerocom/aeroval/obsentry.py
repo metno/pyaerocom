@@ -60,7 +60,6 @@ class ObsEntry(BrowseDict):
     obs_vert_type = StrType()
 
     def __init__(self, **kwargs):
-
         self.obs_id = ""
 
         self.obs_vars = []

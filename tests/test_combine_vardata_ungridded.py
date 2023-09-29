@@ -60,7 +60,6 @@ def stats_sda_fineaod(SDA_DATA):
 def test_combine_vardata_ungridded_single_ungridded(
     SUN_DATA, var1, var2, kwargs, numst, mean_first
 ):
-
     input_data = [(SUN_DATA, SUN_ID, var1), (SUN_DATA, SUN_ID, var2)]
     stats = combine_vardata_ungridded(input_data, **kwargs)
 
@@ -251,7 +250,6 @@ def test__map_same_stations_samedata(stats_sun_aod, match_stats_how, match_stats
 def test__map_same_stations(
     stats_sun_aod, stats_sda_aod, match_stats_how, match_stats_tol_km, num_matches, diff_idx
 ):
-
     index_short, index_long, statnames_short, statnames_long = _map_same_stations(
         stats_sun_aod, stats_sda_aod, match_stats_how, match_stats_tol_km
     )

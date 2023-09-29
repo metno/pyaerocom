@@ -18,7 +18,6 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
     """
 
     def run(self, model_name, obs_name, var_list, try_colocate_if_missing=True):
-
         self._process_entry(
             model_name=model_name,
             obs_name=obs_name,
@@ -27,7 +26,6 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         )
 
     def _process_entry(self, model_name, obs_name, var_list, try_colocate_if_missing):
-
         sobs_cfg = self.cfg.obs_cfg.get_entry(obs_name)
 
         if var_list is None:
