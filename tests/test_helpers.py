@@ -124,7 +124,6 @@ def fake_hourly_ts():
 )
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
-
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how, min_num_obs=min_num_obs)
     assert len(s1) == num
     assert np.nanmean(s1) == pytest.approx(avg, abs=1e-2, nan_ok=True)

@@ -213,7 +213,6 @@ def check_and_regrid_lons_cube(cube):
 
 
 def check_dim_coord_names_cube(cube):
-
     from pyaerocom import const
 
     coords = dict(
@@ -536,7 +535,6 @@ def correct_time_coord(cube, ts_type, year):
 
 
 def _check_correct_dtypes_timedim_cube_list(cubes):
-
     try:
         dtypes = np.unique([cube.coord("time").points.dtype for cube in cubes])
     except iris.exceptions.CoordinateNotFoundError:

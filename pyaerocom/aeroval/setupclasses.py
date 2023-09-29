@@ -206,7 +206,6 @@ class TimeSetup(ConstrainedContainer):
 
 
 class WebDisplaySetup(ConstrainedContainer):
-
     map_zoom = EitherOf(["World", "Europe"])
     regions_how = EitherOf(["default", "aerocom", "htap", "country"])
 
@@ -384,7 +383,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         return EvalSetup(**settings)
 
     def _import_aux_funs(self):
-
         h = ReadAuxHandler(self.io_aux_file)
         self._aux_funs.update(**h.import_all())
 

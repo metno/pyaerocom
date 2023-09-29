@@ -57,7 +57,6 @@ class DataSource(BrowseDict):
     _ini_file_name = "data_sources.ini"
 
     def __init__(self, **info):
-
         self.data_id = None
         self.dataset_name = None
         self.data_product = None
@@ -170,7 +169,6 @@ class StationMetaData(DataSource):
     """
 
     def __init__(self, **info):
-
         self.filename = None
 
         self.station_id = None
@@ -215,7 +213,6 @@ class AerocomDataID:
     KEYS = ["model_name", "meteo", "experiment", "perturbation"]
 
     def __init__(self, data_id=None, **meta_info):
-
         self._data_id = None
         self._values = None
 

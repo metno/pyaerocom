@@ -634,7 +634,7 @@ def _init_site_coord_arrays(data):
 
 def _get_stat_regions(lats, lons, regions):
     regs = []
-    for (lat, lon) in zip(lats, lons):
+    for lat, lon in zip(lats, lons):
         reg = find_closest_region_coord(lat, lon, regions=regions)
         regs.append(reg)
     return regs
@@ -857,11 +857,9 @@ def _process_map_and_scat(
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
-
                             (start, stop) = _get_min_max_year_periods([per])
 
                             if stop - start >= trends_min_yrs:
-
                                 try:
                                     time = subset.data.time.values
                                     (obs_trend, mod_trend) = _make_trends(

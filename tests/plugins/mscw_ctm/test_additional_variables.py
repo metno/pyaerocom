@@ -12,7 +12,6 @@ from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
 
 def test_calc_concNhno3():
-
     conchno3 = create_fake_MSCWCtm_data()
 
     concNhno3_from_func = calc_concNhno3(conchno3)
@@ -27,7 +26,6 @@ def test_calc_concNhno3():
 
 
 def test_calc_concNno3pm10():
-
     concno3c = create_fake_MSCWCtm_data()
     concno3f = create_fake_MSCWCtm_data()
 
@@ -45,7 +43,6 @@ def test_calc_concNno3pm10():
 
 
 def test_calc_concNno3pm25():
-
     concno3c = create_fake_MSCWCtm_data()
     concno3f = create_fake_MSCWCtm_data()
 
@@ -63,7 +60,6 @@ def test_calc_concNno3pm25():
 
 
 def test_calc_conNtno3():
-
     conchno3 = create_fake_MSCWCtm_data()
     concno3f = create_fake_MSCWCtm_data()
     concno3c = create_fake_MSCWCtm_data()
@@ -121,7 +117,6 @@ def test_calc_concNnh4():
 
 
 def test_update_EC_units():
-
     concecpm25 = create_fake_MSCWCtm_data()
 
     concCecpm25_from_func = update_EC_units(concecpm25)
