@@ -186,113 +186,30 @@ class ColdataToJsonEngine(ProcessingEngine):
         if coldata.data.attrs.get("just_for_viz", True):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
-                input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
-                for reg in regnames:
-                    try:
-                        stats_ts = _process_statistics_timeseries(
-                            data=data,
-                            freq=main_freq,
-                            region_ids={reg: regnames[reg]},
-                            use_weights=use_weights,
-                            use_country=use_country,
-                            data_freq=input_freq,
-                        )
 
-                    except TemporalResolutionError:
-                        stats_ts = {}
-                    fname = get_timeseries_file_name(
-                        regnames[reg], obs_name, var_name_web, vert_code
-                    )
-                    ts_file = os.path.join(out_dirs["hm/ts"], fname)
-                    _add_heatmap_entry_json(
-                        ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
-                    )
-
-                logger.info("Processing heatmap data for all regions")
-
-                hm_all = _process_heatmap_data(
-                    data,
-                    regnames,
-                    use_weights,
-                    use_country,
-                    meta_glob,
-                    periods,
-                    seasons,
-                    add_trends,
-                    trends_min_yrs,
+                self._process_stats_timeseries_for_all_regions(
+                    data=data,
+                    main_freq=main_freq,
+                    regnames=regnames,
+                    use_weights=use_weights,
+                    use_country=use_country,
+                    obs_name=obs_name,
+                    obs_var=obs_var,
+                    var_name_web=var_name_web,
+                    out_dirs=out_dirs,
+                    vert_code=vert_code,
+                    model_name=model_name,
+                    model_var=model_var,
+                    meta_glob=meta_glob,
+                    periods=periods,
+                    seasons=seasons,
+                    add_trends=add_trends,
+                    trends_min_yrs=trends_min_yrs,
+                    regions_how=regions_how,
+                    regs=regs,
+                    stats_min_num=stats_min_num,
+                    use_fairmode=use_fairmode,
                 )
-
-                for freq, hm_data in hm_all.items():
-                    fname = get_heatmap_filename(freq)
-
-                    hm_file = os.path.join(out_dirs["hm"], fname)
-
-                    _add_heatmap_entry_json(
-                        hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
-                    )
-
-                logger.info("Processing regional timeseries for all regions")
-                ts_objs_regional = _process_regional_timeseries(
-                    data, regnames, regions_how, meta_glob
-                )
-
-                _write_site_data(ts_objs_regional, out_dirs["ts"])
-                if coldata.has_latlon_dims:
-                    for cd in data.values():
-                        if cd is not None:
-                            cd.data = cd.flatten_latlondim_station_name().data
-
-                logger.info("Processing individual site timeseries data")
-                (ts_objs, map_meta, site_indices) = _process_sites(
-                    data, regs, regions_how, meta_glob
-                )
-
-                _write_site_data(ts_objs, out_dirs["ts"])
-
-                scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-                scatter_freq = min(scatter_freq, main_freq)
-
-                logger.info("Processing map and scat data by period")
-
-                for period in periods:
-                    # compute map_data and scat_data just for this period
-                    map_data, scat_data = _process_map_and_scat(
-                        data,
-                        map_meta,
-                        site_indices,
-                        [period],
-                        str(scatter_freq),
-                        stats_min_num,
-                        seasons,
-                        add_trends,
-                        trends_min_yrs,
-                        use_fairmode,
-                        obs_var,
-                    )
-
-                    # the files in /map and /scat will be split up according to their time period as well
-                    map_name = get_json_mapname(
-                        obs_name, var_name_web, model_name, model_var, vert_code, period
-                    )
-                    outfile_map = os.path.join(out_dirs["map"], map_name)
-                    write_json(map_data, outfile_map, ignore_nan=True)
-
-                    outfile_scat = os.path.join(out_dirs["scat"], map_name)
-                    write_json(scat_data, outfile_scat, ignore_nan=True)
-
-            if coldata.ts_type == "hourly" and use_diurnal:
-                logger.info("Processing diurnal profiles")
-                (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
-                    coldata, regions_how, regnames, meta_glob
-                )
-                outdir = os.path.join(out_dirs["ts/diurnal"])
-                for ts_data_weekly in ts_objs_weekly:
-                    # writes json file
-                    _write_stationdata_json(ts_data_weekly, outdir)
-                if ts_objs_weekly_reg != None:
-                    for ts_data_weekly_reg in ts_objs_weekly_reg:
-                        # writes json file
-                        _write_stationdata_json(ts_data_weekly_reg, outdir)
         else:
             logger.info("Processing profile data for vizualization")
 
@@ -343,12 +260,12 @@ class ColdataToJsonEngine(ProcessingEngine):
         pass
 
     def _process_profile_data_for_vizualization(
-        data: ColocatedData = None,
+        data: dict[str, ColocatedData] = None,
         use_country: bool = False,
         region_names=None,
         station_names=None,
         periods: list[str] = None,
-        seasons=list[str],
+        seasons: list[str] = None,
         obs_name: str = None,
         var_name_web: str = None,
         out_dirs: dict = None,
@@ -385,3 +302,114 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             outfile_profile = os.path.join(out_dirs["profiles"], fname)
             add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
+
+    def _process_stats_timeseries_for_all_regions(
+        data: dict[str, ColocatedData] = None,
+        main_freq: str = None,
+        regnames=None,
+        use_weights: bool = True,
+        use_country: bool = False,
+        obs_name: str = None,
+        obs_var: str = None,
+        var_name_web: str = None,
+        out_dirs: dict = None,
+        vert_code: str = None,
+        model_name: str = None,
+        model_var: str = None,
+        meta_glob: dict = None,
+        periods: list[str] = None,
+        seasons: list[str] = None,
+        add_trends: bool = False,
+        trends_min_yrs: int = 7,
+        regions_how: str = "default",
+        regs: dict = None,
+        stats_min_num: int = 1,
+        use_fairmode: bool = False,
+    ):
+        input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
+        for reg in regnames:
+            try:
+                stats_ts = _process_statistics_timeseries(
+                    data=data,
+                    freq=main_freq,
+                    region_ids={reg: regnames[reg]},
+                    use_weights=use_weights,
+                    use_country=use_country,
+                    data_freq=input_freq,
+                )
+
+            except TemporalResolutionError:
+                stats_ts = {}
+            fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
+            ts_file = os.path.join(out_dirs["hm/ts"], fname)
+            _add_heatmap_entry_json(
+                ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
+            )
+
+        logger.info("Processing heatmap data for all regions")
+
+        hm_all = _process_heatmap_data(
+            data,
+            regnames,
+            use_weights,
+            use_country,
+            meta_glob,
+            periods,
+            seasons,
+            add_trends,
+            trends_min_yrs,
+        )
+
+        for freq, hm_data in hm_all.items():
+            fname = get_heatmap_filename(freq)
+
+            hm_file = os.path.join(out_dirs["hm"], fname)
+
+            _add_heatmap_entry_json(
+                hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
+            )
+
+        logger.info("Processing regional timeseries for all regions")
+        ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
+
+        _write_site_data(ts_objs_regional, out_dirs["ts"])
+        if coldata.has_latlon_dims:
+            for cd in data.values():
+                if cd is not None:
+                    cd.data = cd.flatten_latlondim_station_name().data
+
+        logger.info("Processing individual site timeseries data")
+        (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
+
+        _write_site_data(ts_objs, out_dirs["ts"])
+
+        scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+        scatter_freq = min(scatter_freq, main_freq)
+
+        logger.info("Processing map and scat data by period")
+
+        for period in periods:
+            # compute map_data and scat_data just for this period
+            map_data, scat_data = _process_map_and_scat(
+                data,
+                map_meta,
+                site_indices,
+                [period],
+                str(scatter_freq),
+                stats_min_num,
+                seasons,
+                add_trends,
+                trends_min_yrs,
+                use_fairmode,
+                obs_var,
+            )
+
+            # the files in /map and /scat will be split up according to their time period as well
+            map_name = get_json_mapname(
+                obs_name, var_name_web, model_name, model_var, vert_code, period
+            )
+            outfile_map = os.path.join(out_dirs["map"], map_name)
+            write_json(map_data, outfile_map, ignore_nan=True)
+
+            outfile_scat = os.path.join(out_dirs["scat"], map_name)
+            write_json(scat_data, outfile_scat, ignore_nan=True)
