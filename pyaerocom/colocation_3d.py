@@ -9,8 +9,6 @@ from typing import NamedTuple
 
 import iris
 import numpy as np
-import pandas as pd
-import xarray as xr
 from cf_units import Unit
 
 from pyaerocom import __version__ as pya_ver
@@ -29,15 +27,11 @@ from pyaerocom.exceptions import (
     DimensionOrderError,
     MetaDataError,
     TemporalResolutionError,
-    TimeMatchError,
-    VariableDefinitionError,
     VarNotAvailableError,
 )
 from pyaerocom.filter import Filter
-from pyaerocom.helpers import make_datetime_index, to_pandas_timestamp
-from pyaerocom.time_resampler import TimeResampler
+from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
-from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +53,7 @@ def _colocate_vertical_profile_gridded(
     colocate_time=False,
     use_climatology_ref=False,
     resample_how=None,
-    layer_limits: dict[dict[str]] = None,
+    layer_limits: dict[str, dict[str, float]] = None,
     obs_stat_data=None,
     ungridded_lons=None,
     ungridded_lats=None,
@@ -97,11 +91,8 @@ def _colocate_vertical_profile_gridded(
     ts_type_src_data = data.ts_type
 
     list_of_colocateddata_objects = []
-    for (
-        vertical_layer
-    ) in (
-        layer_limits
-    ):  # Think about efficency here in terms of order of loops. candidate for parallelism
+    for vertical_layer in layer_limits:
+        # Think about efficency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
         arr = np.full((2, time_num, stat_num), np.nan)
         try:
@@ -118,8 +109,9 @@ def _colocate_vertical_profile_gridded(
                 .collapsed("altitude", iris.analysis.MEAN)
                 .copy()
             )
-        except:
+        except Exception as e:
             logger.warning(f"No altitude in model data layer {vertical_layer}")
+            logger.debug(f"Raised: {e}")
             continue
 
         grid_stat_data_this_layer = data_this_layer.to_time_series(
@@ -137,7 +129,6 @@ def _colocate_vertical_profile_gridded(
             ]  # altitude refers to altitude of the data. be explcit where getting from
             station_names[i] = obs_stat.station_name
 
-            # for vertical_layer in colocation_layer_limits:
             # ToDo: consider removing to keep ts_type_src_ref (this was probably
             # introduced for EBAS were the original data frequency is not constant
             # but can vary from site to site)
@@ -217,11 +208,7 @@ def _colocate_vertical_profile_gridded(
                         min_num_obs=min_num_obs,
                         use_climatology_ref=use_climatology_ref,
                     )
-                # this try/except block was introduced on 23/2/2021 as temporary fix from
-                # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
-                # can end up resulting in incorrect number of timestamps after resampling
-                # (the error was discovered using EBASMC, concpm10, 2019 and colocation
-                # frequency monthly)
+
                 try:
                     # assign the unified timeseries data to the colocated data array
                     arr[0, :, i] = _df["ref"].values
@@ -367,13 +354,12 @@ def colocate_vertical_profile_gridded(
             f"UngriddedData object to extract single datasets."
         )
 
-    if not all(["start" and "end" in keys for keys in colocation_layer_limits]):
+    if any(
+        not {"start", "end"}.issubset(layer)
+        for layer in colocation_layer_limits + profile_layer_limits
+    ):
         raise KeyError(
-            "start and end must be provided for colocation in each vertical layer in colocate_vertical_profile_gridded"
-        )
-    if not all(["start" and "end" in keys for keys in profile_layer_limits]):
-        raise KeyError(
-            "start and end must be provided for displaying profiles in each vertical layer in colocate_vertical_profile_gridded"
+            "start and end must be provided for profiles in each vertical layer in colocate_vertical_profile_gridded"
         )
 
     data_ref_meta_idxs_with_var_info = []
