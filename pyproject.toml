@@ -21,20 +21,20 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "cartopy>=0.20",
-    "scitools-iris>=3.2,!=3.5.0",
-    "matplotlib>=3.6.0",
+    "cartopy>=0.21.1",
+    "scitools-iris>=3.6.0",
+    "matplotlib>=3.7.1",
     'importlib-metadata>=3.6; python_version < "3.10"',
     'importlib-resources>=5.10; python_version < "3.11"',
     'tomli>=2.0.1; python_version < "3.11"',
     "xarray>=0.16.0,<2022.11.0",
-    "scipy>=1.1.0",
-    "pandas>=0.23.0,<2",
-    "seaborn>=0.8.0",
+    "scipy>=1.10.1",
+    "pandas>=2",
+    "seaborn>=0.12.2",
     "geonum",
     "LatLon23",                                           # required by geonum
     "SRTM.py",                                            # required by geonum
-    "numpy>=0.12.0",
+    "numpy>=1.24.3",
     "simplejson",
     "requests",
     "reverse-geocode",
@@ -42,7 +42,7 @@ dependencies = [
     "openpyxl",
     "geojsoncontour",
     'cf-units>=3.1; python_version >= "3.10"',            # https://github.com/SciTools/cf-units/issues/218
-    "typer>=0.4.0",
+    "typer>=0.7.0",
 ]
 
 [project.readme]
@@ -195,7 +195,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py39, py310, py311, format, lint, docs
+envlist = py39, py310, py311, py312, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =
