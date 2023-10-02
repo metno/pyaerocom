@@ -373,16 +373,14 @@ def colocate_vertical_profile_gridded(
         else:
             data_ref_meta_idxs_with_var_info.append(i)
 
-    if not all(
-        [
-            data.altitude.units == Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
-            for i in data_ref_meta_idxs_with_var_info
-        ]
+    if any(
+        data.altitude.units != Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
+        for i in data_ref_meta_idxs_with_var_info
     ):
-        raise DataUnitError
         logger.info(
             f"Mismatching units in colocation_3d.py. Model has units {data.altitude.units} whereas not all observations have this unit. Debug to find out where."
         )
+        raise DataUnitError
 
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
