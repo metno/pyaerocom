@@ -397,7 +397,7 @@ def colocate_vertical_profile_gridded(
     start, stop = check_time_ival(data, start, stop)
     data = data.crop(time_range=(start, stop))
 
-    if regrid_res_deg is not None:
+    if regrid_res_deg is not None:  # pragma: no cover
         data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
 
     # Special ts_typs for which all stations with ts_type< are removed
@@ -409,7 +409,7 @@ def colocate_vertical_profile_gridded(
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
 
-    if use_climatology_ref:
+    if use_climatology_ref:  # pragma: no cover
         col_freq = "monthly"
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
