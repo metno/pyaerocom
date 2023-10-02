@@ -5,10 +5,11 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from enum import Enum
-from multiprocessing import cpu_count
+import multiprocessing as mp
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
+import time
 
 import pandas as pd
 import typer
@@ -389,8 +390,6 @@ def runner(
 
     stp = EvalSetup(**cfg)
 
-    import time
-
     start = time.time()
 
     logging.info(f"Clearing cache at {const.CACHEDIR}")
@@ -410,22 +409,46 @@ def runner(
             future.result()
 
 
-    logger.info(f"Running Rest of Statistics")
+    logger.info(f"Running Statistics")
     ExperimentProcessor(stp).run()
-    print("Done Running Rest of Statistics")
-    if eval_type in {"season", "long"}:
-        logger.info(f"Running CAMS2_83 Spesific Statistics")
-        if pool > 1:
-            logger.info(f"Making forecast plot with pool {pool}")
-            with ProcessPoolExecutor(max_workers=pool) as executor:
-                futures = [
-                    executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
-                    for specie in species_list
-                ]
-            for future in as_completed(futures):
-                future.result()
-        else:
-            CAMS2_83_Processer(stp).run(analysis=analysis)
+    print("Done Running Statistics")
+
+
+def runnermedianscores(
+    cfg: dict,
+    cache: str | Path | None,
+    *,
+    analysis: bool = False,
+    dry_run: bool = False,
+    quiet: bool = False,
+    pool: int = 1,
+):
+    if dry_run:
+        return
+
+    if cache is not None:
+        const.CACHEDIR = str(cache)
+
+    if quiet:
+        const.QUIET = True
+
+    stp = EvalSetup(**cfg)
+
+    start = time.time()
+
+    logger.info(f"Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run")
+    if pool > 1:
+        logger.info(f"Making forecast plot with pool {pool}")
+        with ProcessPoolExecutor(max_workers=pool) as executor:
+            futures = [
+                executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
+                for specie in species_list
+            ]
+        for future in as_completed(futures):
+            future.result()
+    else:
+        CAMS2_83_Processer(stp).run(analysis=analysis)
+    
     print(f"Long run: {time.time() - start} sec")
 
 
@@ -501,9 +524,14 @@ def main(
         help="Sets the flag which tells the code to set add_model_maps=True. Option is set to False otherwise",
     ),
     onlymap: bool = typer.Option(
-         False,
-         help="Sets the flag which tells the code to set add_model_maps=True and only_model_maps=True. Option is set to False otherwise",
+        False,
+        help="Sets the flag which tells the code to set add_model_maps=True and only_model_maps=True. Option is set to False otherwise",
      ),
+    medianscores: bool = typer.Option(
+        False,
+        "--medianscores",
+        help="If true just the cams2_83-specific statistics are computed, a.k.a. the median scores plots or 'weird' plots, the cache is not cleared and it's assumed that the colocated data is already in place and the regular statistics have already been run",
+    ),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
@@ -532,11 +560,13 @@ def main(
     if verbose or dry_run:
         change_verbosity(logging.INFO)
 
-    if pool > cpu_count():
+    if pool > mp.cpu_count():
         logger.warning(
-            f"The given pool {pool} is larger than the maximum CPU count {cpu_count()}. Using that instead"
+            f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}. Using that instead"
         )
-        pool = cpu_count()
+        pool = mp.cpu_count()
+
+    #mp.set_start_method('forkserver')
 
     cfg = make_config(
         start_date,
@@ -557,4 +587,13 @@ def main(
     )
 
     quiet = not verbose
-    runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)
+    if medianscores == True:
+        if eval_type not in {"season", "long"} :
+            logger.error("Median scores calculations are only consistent with a season/long kind of evaluation")
+            raise Exception("Median scores calculations are only consistent with a season/long kind of evaluation")
+        else :
+            logger.info("Special run for median scores only")
+            runnermedianscores(cfg, cache, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)
+    else :
+        logger.info("Standard run")
+        runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)
