@@ -51,14 +51,14 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
     assert len(ec355aer.data) == 164
     assert np.sum(np.isnan(ec355aer.data)) == 0
 
-    assert np.nanmean(ec355aer.data) == pytest.approx(0.02495, rel=TEST_RTOL)
-    assert np.nanstd(ec355aer.data) == pytest.approx(0.03295, rel=TEST_RTOL)
+    assert np.nanmean(ec355aer.data) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
+    assert np.nanstd(ec355aer.data) == pytest.approx(0.03295176956505217, rel=TEST_RTOL)
 
-    assert np.nanmean(ec355aer.data_err) == pytest.approx(0.00391, rel=TEST_RTOL)
-    assert np.nanstd(ec355aer.data_err) == pytest.approx(0.00208, rel=TEST_RTOL)
+    assert np.nanmean(ec355aer.data_err) == pytest.approx(0.003919774151078758, rel=TEST_RTOL)
+    assert np.nanstd(ec355aer.data_err) == pytest.approx(0.0020847733483625517, rel=TEST_RTOL)
 
-    assert np.min(ec355aer.altitude) == pytest.approx(935.46106, rel=TEST_RTOL)
-    assert np.max(ec355aer.altitude) == pytest.approx(10678.24521, rel=TEST_RTOL)
+    assert np.min(ec355aer.altitude) == pytest.approx(935.4610692253234, rel=TEST_RTOL)
+    assert np.max(ec355aer.altitude) == pytest.approx(10678.245216562595, rel=TEST_RTOL)
 
 
 @pytest.mark.parametrize(
@@ -84,15 +84,21 @@ def test_ReadEarlinet_read():
     assert len(data.metadata) == 1
     assert data.shape == (164, 12)
 
-    assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(-0.00218, rel=TEST_RTOL)
-    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(0.02495, rel=TEST_RTOL)
-    assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(0.16084, rel=TEST_RTOL)
+    assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(
+        -0.002188435098876817, rel=TEST_RTOL
+    )
+    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(
+        0.02495260001522142, rel=TEST_RTOL
+    )
+    assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(
+        0.16084047083963124, rel=TEST_RTOL
+    )
 
     merged = data.to_station_data(0)
     # same values as above because only one meta_idx
-    assert np.nanmin(merged.ec355aer) == pytest.approx(-0.00218, rel=TEST_RTOL)
-    assert np.nanmean(merged.ec355aer) == pytest.approx(0.02495, rel=TEST_RTOL)
-    assert np.nanmax(merged.ec355aer) == pytest.approx(0.16084, rel=TEST_RTOL)
+    assert np.nanmin(merged.ec355aer) == pytest.approx(-0.002188435098876817, rel=TEST_RTOL)
+    assert np.nanmean(merged.ec355aer) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
+    assert np.nanmax(merged.ec355aer) == pytest.approx(0.16084047083963124, rel=TEST_RTOL)
 
 
 @pytest.mark.parametrize(
