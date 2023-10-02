@@ -191,6 +191,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
                 self._process_stats_timeseries_for_all_regions(
                     data=data,
+                    coldata=coldata,
                     main_freq=main_freq,
                     regnames=regnames,
                     use_weights=use_weights,
@@ -234,7 +235,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         dt = time() - t00
         logger.info(f"Time expired: {dt:.2f} s")
 
-    def _convert_coldata_altitude_units_to_km(coldata: ColocatedData):
+    def _convert_coldata_altitude_units_to_km(self, coldata: ColocatedData = None):
         alt_units = coldata.data.attrs["altitude_units"]
 
         coldata.data.attrs["vertical_layer"]["start"] = str(
@@ -245,7 +246,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             Unit(alt_units).convert(coldata.data.attrs["vertical_layer"]["end"], other="km")
         )
 
-    def _get_vert_code(coldata: ColocatedData):
+    def _get_vert_code(self, coldata: ColocatedData = None):
         if hasattr(coldata.data, "vertical_layer"):
             # start and end for vertical layers (display on web and name jsons)
             start = float(coldata.data.attrs["vertical_layer"]["start"])
@@ -258,10 +259,8 @@ class ColdataToJsonEngine(ProcessingEngine):
             vert_code = coldata.get_meta_item("vert_code")
         return vert_code
 
-    def _process_statistics_timeseries_for_all_regions():
-        pass
-
     def _process_profile_data_for_vizualization(
+        self,
         data: dict[str, ColocatedData] = None,
         use_country: bool = False,
         region_names=None,
@@ -306,7 +305,9 @@ class ColdataToJsonEngine(ProcessingEngine):
             add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
 
     def _process_stats_timeseries_for_all_regions(
+        self,
         data: dict[str, ColocatedData] = None,
+        coldata: ColocatedData = None,
         main_freq: str = None,
         regnames=None,
         use_weights: bool = True,
