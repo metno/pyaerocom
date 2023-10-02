@@ -4,7 +4,6 @@ from pyaerocom._lowlevel_helpers import (
     BrowseDict,
     DictStrKeysListVals,
     DictType,
-    FlexList,
     StrType,
 )
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info

@@ -25,7 +25,6 @@ from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
-from pyaerocom.vertical_profile import VerticalProfile
 
 logger = logging.getLogger(__name__)
 
@@ -434,7 +433,7 @@ class StationData(StationMetaData):
                 # this has been handled above
                 continue
             if self[key] is None and not add_none_vals:
-                # logger.info(f"No metadata available for key {key}")
+                logger.info(f"No metadata available for key {key}")
                 continue
 
             val = self[key]

@@ -7,7 +7,6 @@ import numpy.typing as npt
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 
-# ToDo: complete docstring
 class VerticalProfile:
     """Object representing single variable profile data"""
 
@@ -31,6 +30,7 @@ class VerticalProfile:
         self.var_info["altitude"] = dict(units=altitude_unit)
         self.var_info[self.var_name] = dict(units=var_unit)
 
+        # Guard against having data (and data errors) with missing asociated altitude info
         if hasattr(self.data_err, "__len__"):
             assert len(self.data) == len(self.data_err) == len(self.altitude)
         else:
