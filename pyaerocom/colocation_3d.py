@@ -324,6 +324,8 @@ def colocate_vertical_profile_gridded(
     and then passed to the helper function.
 
     Returns
+        colocated_data_lists : ColocatedDataLists
+
     -------
     """
 

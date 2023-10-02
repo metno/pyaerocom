@@ -446,10 +446,6 @@ def _colocate_site_data_helper(
             var_ref, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
         )[var_ref]
 
-    if not isinstance(obs_ts, pd.Series):
-        obs_ts = (
-            obs_ts.to_series()
-        )  # place here for now for earlinet, may think of more clever place to put it
     # fill up missing time stamps
     return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"])
 
