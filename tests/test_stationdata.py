@@ -24,7 +24,7 @@ def get_earlinet_data(var_name):
     data = ReadEarlinet("Earlinet-test").read(vars_to_retrieve=var_name)
     stats = data.to_station_data_all()["stats"]
     assert len(stats) == 1
-    return stats
+    return stats[0]
 
 
 stat1 = FAKE_STATION_DATA["station_data1"]
@@ -388,14 +388,14 @@ def test_StationData_remove_variable_error():
 
 
 def test_StationData_select_altitude_DataArray():
-    selection = ec_earlinet[0].select_altitude("ec355aer", (1000, 2000))
+    selection = ec_earlinet.select_altitude("ec355aer", (1000, 2000))
     assert isinstance(selection, DataArray) or isinstance(selection, pd.Series)
     assert selection.shape == (16,)
 
 
 def test_StationData_select_altitude_DataArray_error():
     with pytest.raises(NotImplementedError) as e:
-        ec_earlinet[0].select_altitude("ec355aer", 1000)
+        ec_earlinet.select_altitude("ec355aer", 1000)
     assert str(e.value) == "So far only a range (low, high) is supported for altitude extraction."
 
 
