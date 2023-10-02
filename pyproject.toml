@@ -57,20 +57,20 @@ Documentation = "https://pyaerocom.readthedocs.io"
 
 [project.optional-dependencies]
 docs = [
-    "sphinx>=4.2.0",
+    "sphinx>=7.2.6",
     "sphinxcontrib-napoleon",
     "sphinx_rtd_theme",
     "sphinx-argparse",
     "nbsphinx",
 ]
 test = [
-    "pytest>=6.0",
+    "pytest>=7.4",
     "pytest-dependency",
     "pytest-cov",
     "packaging",
     "pooch>=1.7.0",
 ]
-lint = ["mypy>=0.931", "types-requests", "types-setuptools", "types-simplejson"]
+lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
 [project.scripts]
@@ -99,7 +99,7 @@ exclude = [
 ]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.4"
 log_cli = false
 log_cli_level = "WARNING"
 addopts = "--failed-first"
