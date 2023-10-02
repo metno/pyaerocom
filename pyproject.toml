@@ -21,28 +21,32 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "cartopy>=0.21.1",
     "scitools-iris>=3.6.0",
-    "matplotlib>=3.7.1",
-    'importlib-metadata>=3.6; python_version < "3.10"',
-    'importlib-resources>=5.10; python_version < "3.11"',
-    'tomli>=2.0.1; python_version < "3.11"',
     "xarray>=2022.11.0",
+    "cartopy>=0.21.1",
+    "matplotlib>=3.7.1",
     "scipy>=1.10.1",
     "pandas>=2",
-    "seaborn>=0.12.2",
-    "geonum",
-    "LatLon23",                                           # required by geonum
-    "SRTM.py",                                            # required by geonum
     "numpy>=1.24.3",
+    "seaborn>=0.12.2",
+    "dask",
+    "geonum",
+    "LatLon23",             # required by geonum
+    "SRTM.py",              # required by geonum
     "simplejson",
     "requests",
     "reverse-geocode",
     "tqdm",
     "openpyxl",
     "geojsoncontour",
-    'cf-units>=3.1; python_version >= "3.10"',            # https://github.com/SciTools/cf-units/issues/218
     "typer>=0.7.0",
+    # python < 3.10
+    'importlib-metadata>=3.6; python_version < "3.10"',
+    # python < 3.11
+    'tomli>=2.0.1; python_version < "3.11"',
+    'importlib-resources>=5.10; python_version < "3.11"',
+    # https://github.com/SciTools/cf-units/issues/218
+    'cf-units>=3.1; python_version >= "3.10"',
 ]
 
 [project.readme]
