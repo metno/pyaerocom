@@ -1985,7 +1985,7 @@ class UngriddedData:
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = {}
             for var in meta["var_info"]:
-                if var == "altitude":
+                if var in ALLOWED_VERT_CORD_TYPES:
                     continue
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
