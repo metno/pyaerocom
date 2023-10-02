@@ -105,11 +105,13 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
 
-        if Unit(coldata.data.attrs["altitude_units"]) != Unit(
-            "km"
-        ):  # put everything in terms of km for viz
-            # convert start and end for file naming
-            self._convert_coldata_altitude_units_to_km(coldata)
+        if hasattr(coldata.data, "altitude_units"):
+            if Unit(coldata.data.attrs["altitude_units"]) != Unit(
+                "km"
+            ):  # put everything in terms of km for viz
+                # convert start and end for file naming
+                self._convert_coldata_altitude_units_to_km(coldata)
+
         vert_code = self._get_vert_code(coldata)
 
         diurnal_only = coldata.get_meta_item("diurnal_only")
