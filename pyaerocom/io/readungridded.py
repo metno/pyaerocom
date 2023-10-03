@@ -416,6 +416,12 @@ class ReadUngridded:
         if filter_post:
             filters = self._eval_filter_post(filter_post, data_id, vars_available)
             data_out = data_out.apply_filters(**filters)
+
+        # Check to see if this reader is for a VerticalProfile
+        # It is currently only allowed that a reader can be for a VerticalProfile, not a species
+        if getattr(reader, "is_vertical_profile", None):
+            data_out.is_vertical_profile = reader.is_vertical_profile
+
         return data_out
 
     def _eval_filter_post(self, filter_post, data_id, vars_available):
@@ -638,15 +644,17 @@ class ReadUngridded:
                     )
                 )
             else:
-                data.append(
-                    self.read_dataset(
-                        ds,
-                        vars_to_retrieve,
-                        only_cached=only_cached,
-                        filter_post=filter_post,
-                        **kwargs,
-                    )
+                data_to_append = self.read_dataset(
+                    ds,
+                    vars_to_retrieve,
+                    only_cached=only_cached,
+                    filter_post=filter_post,
+                    **kwargs,
                 )
+                data.append(data_to_append)
+                # TODO: Test this. UngriddedData can contain more than 1 variable
+                if getattr(data_to_append, "is_vertical_profile", None):
+                    data.is_vertical_profile = data_to_append.is_vertical_profile
 
             logger.info(f"Successfully imported {ds} data")
         return data

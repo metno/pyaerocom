@@ -70,6 +70,8 @@ class ObsEntry(BrowseDict):
 
         self.is_superobs = False
         self.only_superobs = False
+        self.colocation_layer_limts = None
+        self.profile_layer_limits = None
 
         self.read_opts_ungridded = {}
 

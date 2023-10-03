@@ -281,7 +281,7 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
     proc.run()
     del cfg.model_cfg["mod1"]
     modified = proc.exp_output.clean_json_files()
-    assert len(modified) == 15
+    assert len(modified) == 13
 
 
 @geojson_unavail

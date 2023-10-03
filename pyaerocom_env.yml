@@ -13,7 +13,6 @@ dependencies:
   - seaborn >=0.8.0
   - dask
   - geonum
-  - numpy
   - simplejson
   - requests
   - reverse-geocode

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 import os
 import warnings
@@ -1056,12 +1057,28 @@ class ColocatedData:
 
     @staticmethod
     def _aerocom_savename(
-        obs_var, obs_id, mod_var, mod_id, start_str, stop_str, ts_type, filter_name
+        obs_var: str,
+        obs_id: str,
+        mod_var: str,
+        mod_id: str,
+        start_str: str,
+        stop_str: str,
+        ts_type: str,
+        filter_name: str,
+        vertical_layer: dict[str, float] | None = None,
     ):
-        return (
-            f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
-            f"{start_str}_{stop_str}_{ts_type}_{filter_name}"
-        )
+        if vertical_layer is not None:
+            start_layer = vertical_layer["start"]
+            end_layer = vertical_layer["end"]
+            return (
+                f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
+                f"{start_str}_{stop_str}_{ts_type}_{filter_name}_{start_layer}-{end_layer}km"
+            )
+        else:
+            return (
+                f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
+                f"{start_str}_{stop_str}_{ts_type}_{filter_name}"
+            )
 
     @property
     def savename_aerocom(self):

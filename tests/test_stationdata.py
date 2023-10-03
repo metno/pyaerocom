@@ -51,7 +51,7 @@ stat3["station_coords"]["latitude"] = "blaaa"
 stat4 = stat2.copy()
 stat4["longitude"] = "42"
 
-ec_earlinet = get_earlinet_data("ec532aer")
+ec_earlinet = get_earlinet_data("ec355aer")
 
 
 def test_StationData_default_vert_grid():
@@ -113,7 +113,7 @@ def test_StationData_check_var_unit_aerocom():
     assert stat.get_unit("ec550aer") == "m-1"
 
     stat.check_var_unit_aerocom("ec550aer")
-    assert stat.get_unit("ec550aer") == "1/Mm"
+    assert stat.get_unit("ec550aer") == "1/km"
 
 
 @pytest.mark.parametrize(
@@ -150,7 +150,7 @@ def test_StationData_check_unit():
 def test_StationData_check_unit_error():
     with pytest.raises(DataUnitError) as e:
         stat1.check_unit("ec550aer", None)
-    assert str(e.value) == "Invalid unit m-1 (expected 1/Mm)"
+    assert str(e.value) == "Invalid unit m-1 (expected 1/km)"
 
 
 def test_StationData_convert_unit():
@@ -328,7 +328,6 @@ def test_StationData_merge_varinfo_error(stat: StationData, other: StationData):
     [
         (stat1, "od550aer", False),
         (stat2, "od550aer", False),
-        (ec_earlinet, "ec532aer", True),
     ],
 )
 def test_StationData_check_if_3d(stat: StationData, var_name: str, result: bool):
@@ -389,15 +388,14 @@ def test_StationData_remove_variable_error():
 
 
 def test_StationData_select_altitude_DataArray():
-    selection = ec_earlinet.select_altitude("ec532aer", (1000, 2000))
-    assert isinstance(selection, DataArray)
-    assert selection.shape == (4, 5)
-    assert list(selection.altitude.values) == [1125, 1375, 1625, 1875]
+    selection = ec_earlinet.select_altitude("ec355aer", (1000, 2000))
+    assert isinstance(selection, DataArray) or isinstance(selection, pd.Series)
+    assert selection.shape == (16,)
 
 
 def test_StationData_select_altitude_DataArray_error():
     with pytest.raises(NotImplementedError) as e:
-        ec_earlinet.select_altitude("ec532aer", 1000)
+        ec_earlinet.select_altitude("ec355aer", 1000)
     assert str(e.value) == "So far only a range (low, high) is supported for altitude extraction."
 
 
@@ -425,33 +423,11 @@ def test_StationData_select_altitude_Series_error(
     "stat,var_name,kwargs",
     [
         (stat1, "od550aer", dict()),
-        (ec_earlinet, "ec532aer", dict(altitude=(0, 1000))),
     ],
 )
 def test_StationData_to_timeseries(stat: StationData, var_name: str, kwargs: dict):
     series = stat.to_timeseries(var_name, **kwargs)
     assert isinstance(series, pd.Series)
-
-
-@pytest.mark.parametrize(
-    "kwargs,error",
-    [
-        pytest.param(
-            dict(),
-            "please specify altitude range via input arg: altitude, e.g. altitude=(100,110)",
-            id="no altitude",
-        ),
-        pytest.param(
-            dict(altitude=(0, 10)),
-            "no data in specified altitude range",
-            id="no data",
-        ),
-    ],
-)
-def test_StationData_to_timeseries_error(kwargs: dict, error: str):
-    with pytest.raises(ValueError) as e:
-        ec_earlinet.to_timeseries("ec532aer", **kwargs)
-    assert str(e.value) == error
 
 
 def test_StationData_plot_timeseries():

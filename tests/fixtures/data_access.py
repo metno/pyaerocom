@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 TESTDATA_NAME = "testdata-minimal"
 
 #: That's were the testdata can be downloaded from
-TESTDATA_URL = f"https://pyaerocom-ng.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.20220707"
+TESTDATA_URL = f"https://pyaerocom-ng.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.20230919"
 
 #: Directory where testdata will be downloaded into
 TESTDATA_ROOT = Path(const.OUTPUTDIR) / TESTDATA_NAME
@@ -62,6 +62,7 @@ TEST_DATA: dict[str, DataForTests] = {
     "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", ReadGhost),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
+    "Earlinet-test-3d-collocation": DataForTests("obsdata/Earlinet/"),
 }
 
 
