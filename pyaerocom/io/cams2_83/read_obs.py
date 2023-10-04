@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import chunk
 import logging
 import time
 from datetime import date, datetime, timedelta
