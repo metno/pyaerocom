@@ -285,7 +285,6 @@ class ReadAasEtal(ReadUngriddedBase):
 
                 metadata[meta_key]["var_info"] = {}
                 for var_count, var in enumerate(temp_vars):
-
                     values = stat[var]
                     start = idx + var_count * num_times
                     stop = start + num_times

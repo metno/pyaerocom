@@ -1,6 +1,95 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "pyaerocom"
+version = "0.14.0"
+authors = [{ name = "MET Norway" }]
+description = "pyaerocom model evaluation software"
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "cartopy>=0.20",
+    "scitools-iris>=3.2,!=3.5.0",
+    "matplotlib>=3.6.0",
+    'importlib-metadata>=3.6; python_version < "3.10"',
+    'importlib-resources>=5.10; python_version < "3.11"',
+    'tomli>=2.0.1; python_version < "3.11"',
+    "xarray>=0.16.0,<2022.11.0",
+    "scipy>=1.1.0",
+    "pandas>=0.23.0,<2",
+    "seaborn>=0.8.0",
+    "geonum",
+    "LatLon23",                                           # required by geonum
+    "SRTM.py",                                            # required by geonum
+    "numpy>=0.12.0",
+    "simplejson",
+    "requests",
+    "reverse-geocode",
+    "tqdm",
+    "openpyxl",
+    "geojsoncontour",
+    'cf-units>=3.1; python_version >= "3.10"',            # https://github.com/SciTools/cf-units/issues/218
+    "typer>=0.4.0",
+]
+
+[project.readme]
+file = "README.rst"
+content-type = "text/x-rst"
+
+[project.urls]
+Homepage = "https://github.com/metno/pyaerocom"
+"Bug Tracker" = "https://github.com/metno/pyaerocom/issues"
+Documentation = "https://pyaerocom.readthedocs.io"
+"Source Code" = "https://github.com/metno/pyaerocom"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx>=4.2.0",
+    "sphinxcontrib-napoleon",
+    "sphinx_rtd_theme",
+    "sphinx-argparse",
+    "nbsphinx",
+]
+test = ["pytest>=6.0", "pytest-dependency", "pytest-cov", "packaging"]
+lint = ["mypy>=0.931", "types-requests", "types-setuptools", "types-simplejson"]
+dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
+
+[project.scripts]
+pya = "pyaerocom.scripts.cli:main"
+
+[project.entry-points."pyaerocom.gridded"]
+ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
+
+[project.entry-points."pyaerocom.ungridded"]
+ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
+ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
+ReadMEP = "pyaerocom.plugins.mep.reader:ReadMEP"
+
+[tool.flit.sdist]
+include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]
+exclude = [
+    ".git*",
+    ".pre-commit-config.yaml",
+    ".readthedocs.yaml",
+    "changelog",
+    "docs",
+    "release_checklist.md",
+    "scripts",
+    "suppl",
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -14,6 +103,7 @@ filterwarnings = [
     "error",
     "ignore::pytest.PytestUnraisableExceptionWarning",
     # except deprecation and future warnings ouside this packege
+    'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
     # and not on this list
@@ -29,14 +119,13 @@ omit = [
     "pyaerocom/io/read_aeronet_invv2.py",
     "pyaerocom/io/read_aeronet_sdav2.py",
     "pyaerocom/io/read_aeronet_sunv2.py",
-    "pyaerocom/io/read_gaw.py",
-    "pyaerocom/io/read_aeolus_l2a_data.py",
-    "pyaerocom/io/read_sentinel5p_data.py",
-    "pyaerocom/io/readsatellitel2base.py",
+    "pyaerocom/plugins/gaw/*",
+    "pyaerocom/extras/satellite_l2/*",
     "pyaerocom/vert_coords.py",
 ]
 
 [tool.coverage.report]
+fail_under = 75
 skip_covered = true
 exclude_lines = [
     "pragma: no cover",
@@ -46,19 +135,19 @@ exclude_lines = [
 ]
 
 [tool.black]
-target-version = ['py38']
+target-version = ['py39']
 extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
 [tool.isort]
-py_version = "38"
+py_version = "39"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
 extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_unused_configs = true
 warn_unused_ignores = true
 warn_no_return = true
@@ -99,22 +188,22 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, format, lint, docs
+envlist = py39, py310, py311, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =
-    setuptools<=60.9.3
+    setuptools >=40.6.0,<=60.9.3
+    cython > 0.29.15 
 
 [testenv]
-install_command = 
-    python -m pip install {opts} {packages} --use-deprecated=legacy-resolver
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov}
+    pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras = 
-    proj-legacy
     test
+setenv =
+    UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 
 [testenv:format]
 commands =
@@ -127,13 +216,11 @@ ignore_outcome = True
 commands =
     mypy pyaerocom/
 extras = 
-    proj-legacy
     lint
 
 [testenv:docs]
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 
-    proj-legacy
     docs
 """

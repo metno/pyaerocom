@@ -362,7 +362,6 @@ class ReadAirNow(ReadUngriddedBase):
         dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
         stats = []
         for var in vars_to_retrieve:
-
             # extract only variable data (should speed things up)
             var_in_file = self.VAR_MAP[var]
             mask = data[:, varcol] == var_in_file

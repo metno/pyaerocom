@@ -16,6 +16,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
     MetaDataError,
+    StationCoordinateError,
     StationNotFoundError,
     TimeMatchError,
     VarNotAvailableError,
@@ -34,6 +35,8 @@ from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+
+from .tstype import TsType
 
 logger = logging.getLogger(__name__)
 
@@ -99,11 +102,11 @@ class UngriddedData:
     """
 
     #: version of class (for caching)
-    __version__ = "0.21"
+    __version__ = "0.22"
 
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
-    _CHUNKSIZE = 1000000
+    _CHUNKSIZE = 10000000
 
     #: The following indices specify what the individual rows of the datarray
     #: are reserved for. These may be expanded when creating an instance of
@@ -129,12 +132,13 @@ class UngriddedData:
 
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
+    ALLOWED_VERT_COORD_TYPES = ["altitude"]
+
     @property
     def _ROWNO(self):
         return self._data.shape[0]
 
     def __init__(self, num_points=None, add_cols=None):
-
         if num_points is None:
             num_points = self._CHUNKSIZE
 
@@ -153,6 +157,7 @@ class UngriddedData:
         self._idx = -1
 
         self.filter_hist = {}
+        self._is_vertical_profile = False
 
     def _get_data_revision_helper(self, data_id):
         """
@@ -269,7 +274,7 @@ class UngriddedData:
             raise ValueError(f"Invalid input for add_meta_keys {add_meta_keys}... need list")
         if isinstance(stats, StationData):
             stats = [stats]
-        data_obj = UngriddedData(num_points=1000000)
+        data_obj = UngriddedData()
 
         meta_key = 0.0
         idx = 0
@@ -370,7 +375,9 @@ class UngriddedData:
 
         return data_obj
 
-    def add_station_data(self, stat, meta_idx=None, data_idx=None, check_index=False):
+    def add_station_data(
+        self, stat, meta_idx=None, data_idx=None, check_index=False
+    ):  # pragma: no cover
         raise NotImplementedError("Coming at some point")
         if meta_idx is None:
             meta_idx = self.last_meta_idx + 1
@@ -440,6 +447,21 @@ class UngriddedData:
         """Boolean specifying whether this object contains flag data"""
         return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
 
+    @property
+    def is_vertical_profile(self):
+        """Boolean specifying whether is vertical profile"""
+        return self._is_vertical_profile
+
+    @is_vertical_profile.setter
+    def is_vertical_profile(self, value):
+        """
+        Boolean specifying whether is vertical profile.
+        Note must be set in ReadUngridded based on the reader
+        because the instance of class used during reading is
+        not the same as the instance used later in the workflow
+        """
+        self._is_vertical_profile = value
+
     def copy(self):
         """Make a copy of this object
 
@@ -466,7 +488,7 @@ class UngriddedData:
         return new
 
     @property
-    def contains_vars(self):
+    def contains_vars(self) -> list[str]:
         """List of all variables in this dataset"""
         return list(self.var_idx)
 
@@ -805,6 +827,7 @@ class UngriddedData:
         start=None,
         stop=None,
         freq=None,
+        ts_type_preferred=None,
         merge_if_multi=True,
         merge_pref_attr=None,
         merge_sort_by_largest=True,
@@ -899,6 +922,17 @@ class UngriddedData:
                 stat = self._metablock_to_stationdata(
                     idx, vars_to_convert, start, stop, add_meta_keys
                 )
+                if ts_type_preferred is not None:
+                    if "ts_type" in stat["var_info"][vars_to_convert[0]].keys():
+                        if TsType(stat["var_info"][vars_to_convert[0]]["ts_type"]) < TsType(
+                            ts_type_preferred
+                        ):
+                            continue
+                    elif "ts_type" in stat.keys():
+                        if TsType(stat["ts_type"]) < TsType(ts_type_preferred):
+                            continue
+                    else:
+                        raise KeyError("Could not find ts_type in stat")
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
                 logger.debug(f"Skipping meta index {idx}. Reason: {repr(e)}")
@@ -1035,7 +1069,6 @@ class UngriddedData:
                 sd.station_coords[ck] = meta[ck]
             except KeyError:
                 pass
-
         # if no input variables are provided, use the ones that are available
         # for this metadata block
         if vars_to_convert is None:
@@ -1051,7 +1084,6 @@ class UngriddedData:
         # for at least one of the input variables
         FOUND_ONE = False
         for var in vars_avail:
-
             # get indices of this variable
             var_idx = self.meta_idx[meta_idx][var]
 
@@ -1165,6 +1197,7 @@ class UngriddedData:
         start=None,
         stop=None,
         freq=None,
+        ts_type_preferred=None,
         by_station_name=True,
         ignore_index=None,
         **kwargs,
@@ -1211,7 +1244,6 @@ class UngriddedData:
 
         _iter = self._generate_station_index(by_station_name, ignore_index)
         for idx in _iter:
-
             try:
                 data = self.to_station_data(
                     idx,
@@ -1221,6 +1253,7 @@ class UngriddedData:
                     freq,
                     merge_if_multi=True,
                     allow_wildcards_station_name=False,
+                    ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
 
@@ -1235,6 +1268,7 @@ class UngriddedData:
                 TimeMatchError,
                 DataCoverageError,
                 NotImplementedError,
+                StationCoordinateError,
             ) as e:
                 logger.debug(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
@@ -1242,7 +1276,9 @@ class UngriddedData:
 
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
-    def get_variable_data(self, variables, start=None, stop=None, ts_type=None, **kwargs):
+    def get_variable_data(
+        self, variables, start=None, stop=None, ts_type=None, **kwargs
+    ):  # pragma: no cover
         """Extract all data points of a certain variable
 
         Parameters
@@ -1695,6 +1731,8 @@ class UngriddedData:
             if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
+                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                        continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
@@ -1947,6 +1985,8 @@ class UngriddedData:
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = {}
             for var in meta["var_info"]:
+                if var in self.ALLOWED_VERT_COORD_TYPES:
+                    continue
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
 
@@ -2202,7 +2242,6 @@ class UngriddedData:
         for meta_key, meta in self.metadata.items():
             found = False
             for idx, meta_reg in enumerate(meta_registered):
-
                 if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
                     same_indices[idx].append(meta_key)
                     found = True
@@ -2669,7 +2708,7 @@ class UngriddedData:
         insert_nans=True,
         ax=None,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot time series of station and variable
 
         Parameters
@@ -2726,7 +2765,7 @@ class UngriddedData:
         legend=True,
         add_title=True,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Plot station coordinates on a map
 
         All input parameters are optional and may be used to add constraints
@@ -2967,7 +3006,7 @@ class UngriddedData:
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
         s = (
-            f"\n{head}\n{len(head)*'-'}"
+            f"\n{head}\n{len(head) * '-'}"
             f"\nContains networks: {self.contains_datasets}"
             f"\nContains variables: {self.contains_vars}"
             f"\nContains instruments: {self.contains_instruments}"

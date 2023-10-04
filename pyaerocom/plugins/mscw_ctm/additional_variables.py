@@ -1,10 +1,11 @@
+import xarray as xr
 from geonum.atmosphere import T0_STD, p0
 
 from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
 
-def add_dataarrays(*arrs):
+def add_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
     """
     Add a bunch of :class:`xarray.DataArray` instances
 
@@ -19,7 +20,7 @@ def add_dataarrays(*arrs):
         Added array
 
     """
-    if not len(arrs) > 1:
+    if not len(arrs) > 1:  # pragma: no cover
         raise ValueError("Need at least 2 input arrays to add")
     result = arrs[0].copy(deep=True)
     for arr in arrs[1:]:
@@ -27,7 +28,7 @@ def add_dataarrays(*arrs):
     return result
 
 
-def subtract_dataarrays(*arrs):
+def subtract_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
     """
     Subtract a bunch of :class:`xarray.DataArray` instances from an array
 
@@ -44,7 +45,7 @@ def subtract_dataarrays(*arrs):
         Diff array (all additional ones are subtracted from first array)
 
     """
-    if not len(arrs) > 1:
+    if not len(arrs) > 1:  # pragma: no cover
         raise ValueError("Need at least 2 input arrays to add")
     result = arrs[0].copy(deep=True)
     for arr in arrs[1:]:
@@ -52,8 +53,8 @@ def subtract_dataarrays(*arrs):
     return result
 
 
-def calc_concNhno3(*arrs):
-    if len(arrs) > 1:
+def calc_concNhno3(*arrs: xr.DataArray) -> xr.DataArray:
+    if len(arrs) > 1:  # pragma: no cover
         raise ValueError("Shoul only be given 1 array")
 
     M_N = 14.006
@@ -68,7 +69,7 @@ def calc_concNhno3(*arrs):
 
 
 # ToDo: add docstring
-def calc_concNno3pm10(concno3f, concno3c):
+def calc_concNno3pm10(concno3f: xr.DataArray, concno3c: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_O = 15.999
 
@@ -81,7 +82,9 @@ def calc_concNno3pm10(concno3f, concno3c):
 
 
 # ToDo: add docstring
-def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction=0.134):
+def calc_concNno3pm25(
+    concno3f: xr.DataArray, concno3c: xr.DataArray, fine_from_coarse_fraction: float = 0.134
+) -> xr.DataArray:
     M_N = 14.006
     M_O = 15.999
 
@@ -94,7 +97,27 @@ def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction=0.134):
 
 
 # ToDo: add docstring
-def calc_conNtno3(conchno3, concno3f, concno3c):
+def calc_concno3pm10(concno3f, concno3c):
+    concno3pm10 = concno3f + concno3c
+
+    concno3pm10.attrs["var_name"] = "concno3pm10"
+    concno3pm10.attrs["units"] = "ug m-3"
+
+    return concno3pm10
+
+
+# ToDo: add docstring
+def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction=0.134):
+    concno3pm25 = concno3f + fine_from_coarse_fraction * concno3c
+
+    concno3pm25.attrs["var_name"] = "concno3pm25"
+    concno3pm25.attrs["units"] = "ug m-3"
+    return concno3pm25
+
+
+def calc_conNtno3(
+    conchno3: xr.DataArray, concno3f: xr.DataArray, concno3c: xr.DataArray
+) -> xr.DataArray:
     concNhno3 = calc_concNhno3(conchno3)
     concNno3pm10 = calc_concNno3pm10(concno3f, concno3c)
 
@@ -104,8 +127,8 @@ def calc_conNtno3(conchno3, concno3f, concno3c):
 
 
 # ToDo: add docstring
-def calc_concNnh3(*arrs):
-    if len(arrs) > 1:
+def calc_concNnh3(*arrs: xr.DataArray) -> xr.DataArray:
+    if len(arrs) > 1:  # pragma: no cover
         raise ValueError("Shoul only be given 1 array")
 
     M_N = 14.006
@@ -118,8 +141,8 @@ def calc_concNnh3(*arrs):
 
 
 # ToDo: add docstring
-def calc_concNnh4(*arrs):
-    if len(arrs) > 1:
+def calc_concNnh4(*arrs: xr.DataArray) -> xr.DataArray:
+    if len(arrs) > 1:  # pragma: no cover
         raise ValueError("Shoul only be given 1 array")
 
     M_N = 14.006
@@ -132,7 +155,7 @@ def calc_concNnh4(*arrs):
 
 
 # ToDo: add docstring
-def calc_concNtnh(concnh3, concnh4):
+def calc_concNtnh(concnh3: xr.DataArray, concnh4: xr.DataArray) -> xr.DataArray:
     concNnh3 = calc_concNnh3(concnh3)
     concNnh4 = calc_concNnh4(concnh4)
 
@@ -142,14 +165,16 @@ def calc_concNtnh(concnh3, concnh4):
 
 
 # ToDo: add docstring
-def update_EC_units(concecpm25):
+def update_EC_units(concecpm25: xr.DataArray) -> xr.DataArray:
     concCecpm25 = concecpm25
     concCecpm25.attrs["units"] = "ug C m-3"
 
     return concCecpm25
 
 
-def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
+def calc_concsspm25(
+    concssf: xr.DataArray, concssc: xr.DataArray, coarse_fraction: float = 0.13
+) -> xr.DataArray:
     """
     Calculate PM2.5 seasalt
 
@@ -175,7 +200,7 @@ def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
     return concsspm25
 
 
-def calc_vmrox(concno2, vmro3):
+def calc_vmrox(concno2: xr.DataArray, vmro3: xr.DataArray) -> xr.DataArray:
     """
     Calculate OX VMR from NO2 concentration and O3 VMR
 
@@ -209,8 +234,50 @@ def calc_vmrox(concno2, vmro3):
     return vmrox
 
 
-def calc_vmrno2(concno2):
+def calc_vmrox_from_conc(concno2, conco3):
+    """
+    Calculate OX VMR from NO2 concentration and O3 VMR
 
+    Converts NO2 conc to NO2 VMR assuming US standard atmosphere and adds
+    that with VMR O3.
+
+    Parameters
+    ----------
+    concno2 : xr.DataArray
+        mass concentration of NO2
+    vmro3 : xr.DataArray
+        volume mixing ratio of O3
+
+    Returns
+    -------
+    xr.DataArray
+        volume mixing ratio of OX (O3 + NO2) in units of nmole mole-1
+
+    """
+    vmrno2 = concx_to_vmrx(
+        data=concno2,
+        p_pascal=p0,  # 1013 hPa (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        conc_unit=str(concno2.attrs["units"]),
+        mmol_var=get_molmass("no2"),  # g/mol NO2
+        to_unit="nmol mol-1",
+    )
+
+    vmro3 = concx_to_vmrx(
+        data=conco3,
+        p_pascal=p0,  # 1013 hPa (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        conc_unit=str(conco3.attrs["units"]),
+        mmol_var=get_molmass("o3"),  # g/mol O3
+        to_unit="nmol mol-1",
+    )
+
+    vmrox = vmrno2 + vmro3
+    vmrox.attrs["units"] = "nmol mol-1"
+    return vmrox
+
+
+def calc_vmrno2(concno2: xr.DataArray) -> xr.DataArray:
     vmrno2 = concx_to_vmrx(
         data=concno2,
         p_pascal=p0,  # 1013 hPa (US standard atm)
@@ -222,3 +289,99 @@ def calc_vmrno2(concno2):
 
     vmrno2.attrs["units"] = "nmol mol-1"
     return vmrno2
+
+
+def identity(arr):
+    return arr
+
+
+def calc_conNtno3_emep(*arrs):
+    if len(arrs) > 1:
+        raise ValueError("Should only be given 1 array")
+
+    M_N = 14.006
+    M_O = 15.999
+
+    fac = M_N / (M_N + 3 * M_O)
+
+    concNtno3 = arrs[0].copy(deep=True)
+    concNtno3 = concNtno3 * fac
+    concNtno3.attrs["units"] = "ug N m-3"
+
+    return concNtno3
+
+
+def calc_conNtnh_emep(*arrs):
+    if len(arrs) > 1:
+        raise ValueError("Should only be given 1 array")
+
+    M_N = 14.006
+    M_H = 1.007
+
+    fac = M_N / (M_H * 4 + M_N)
+
+    conNtnh = arrs[0].copy(deep=True)
+    conNtnh = conNtnh * fac
+    conNtnh.attrs["units"] = "ug N m-3"
+
+    return conNtnh
+
+
+def calc_concso4t(concso4, concss):
+    factor = 0.007
+    concso4t = concso4 + factor * concss
+    concso4t.attrs["units"] = "ug m-3"
+
+    return concso4t
+
+
+def calc_concNno(concno):
+    M_N = 14.006
+    M_O = 15.999
+
+    fac = M_N / (M_N + M_O)
+
+    concno = concno.copy(deep=True)
+    concNno = concno * fac
+    concNno.attrs["units"] = "ug N m-3"
+
+    return concNno
+
+
+def calc_vmro3(conco3):
+    vmro3 = concx_to_vmrx(
+        data=conco3,
+        p_pascal=p0,  # 1013 hPa (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        conc_unit=str(conco3.attrs["units"]),
+        mmol_var=get_molmass("o3"),  # g/mol O3
+        to_unit="nmol mol-1",
+    )
+
+    vmro3.attrs["units"] = "nmol mol-1"
+    return vmro3
+
+
+def calc_concNno2(concno2):
+    M_N = 14.006
+    M_O = 15.999
+
+    fac = M_N / (M_N + M_O * 2)
+
+    concno2 = concno2.copy(deep=True)
+    concNno2 = concno2 * fac
+    concNno2.attrs["units"] = "ug N m-3"
+
+    return concNno2
+
+
+def calc_concSso2(concso2):
+    M_O = 15.999
+    M_S = 32.065
+    fac = M_S / (M_S + M_O * 2)
+
+    concso2 = concso2.copy(deep=True)
+    concSso2 = concso2 * fac
+    concSso2.attrs["units"] = "ug S m-3"
+
+    return concSso2

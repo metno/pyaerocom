@@ -78,7 +78,6 @@ class TimeResampler:
         return val
 
     def _get_idx_entry(self, fr, to, min_num_obs, how):
-
         min_num = fr.get_min_num_obs(to, min_num_obs)
 
         _how = self._get_resample_how(fr, to, how)

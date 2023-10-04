@@ -267,7 +267,7 @@ def _calc_od_helper(
         ``use_angstrom_coeff`` is missing
     """
     if not od_ref in data:
-        if od_ref_alt is None or not od_ref_alt in data:
+        if od_ref_alt is None and not od_ref_alt in data:
             raise AttributeError(f"No alternative OD found for computation of {var_name}")
         return compute_od_from_angstromexp(
             to_lambda=to_lambda,
@@ -706,7 +706,6 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
 
 def calc_vmro3max(data):
-
     var_name = "vmro3"
     new_var_name = "vmro3max"
 

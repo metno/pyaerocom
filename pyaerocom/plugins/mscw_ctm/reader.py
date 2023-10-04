@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import re
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -9,23 +10,35 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io._read_mscw_ctm_helpers import (
+from pyaerocom.units_helpers import UALIASES
+
+from .additional_variables import (
     add_dataarrays,
     calc_concNhno3,
     calc_concNnh3,
     calc_concNnh4,
+    calc_concNno,
+    calc_concNno2,
     calc_concNno3pm10,
     calc_concNno3pm25,
+    calc_concno3pm10,
+    calc_concno3pm25,
     calc_concNtnh,
+    calc_concso4t,
+    calc_concSso2,
     calc_concsspm25,
+    calc_conNtnh_emep,
     calc_conNtno3,
+    calc_conNtno3_emep,
     calc_vmrno2,
+    calc_vmro3,
     calc_vmrox,
+    calc_vmrox_from_conc,
+    identity,
     subtract_dataarrays,
     update_EC_units,
 )
-from pyaerocom.units_helpers import UALIASES
-from pyaerocom.variable_helpers import get_emep_variables
+from .model_variables import emep_variables
 
 logger = logging.getLogger(__name__)
 
@@ -65,13 +78,28 @@ class ReadMscwCtm:
         "concNnh4": ["concnh4"],
         "concNno3pm10": ["concno3f", "concno3c"],
         "concNno3pm25": ["concno3f", "concno3c"],
-        "concNtno3": ["conchno3", "concno3f", "concno3c"],
-        "concNtnh": ["concnh3", "concnh4"],
+        "concno3pm10": ["concno3f", "concno3c"],
+        "concno3pm25": ["concno3f", "concno3c"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concssf", "concssc"],
-        "concCecpm25": ["concecpm25"],
-        "vmrox": ["concno2", "vmro3"],
+        # "vmrox": ["concno2", "vmro3"],
+        "vmrox": ["concno2", "conco3"],
         "vmrno2": ["concno2"],
+        "concNtno3": ["concoxn"],
+        "concNtnh": ["concrdn"],
+        # "concNtno3": ["conchno3", "concno3f", "concno3c"],
+        # "concNtnh": ["concnh3", "concnh4"],
+        "concecpm25": ["concecFine"],
+        "concecpm10": ["concecFine", "concecCoarse"],
+        "concCecpm10": ["concecpm10"],
+        "concCecpm25": ["concecpm25"],
+        "concCocpm25": ["concCocFine"],
+        "concCocpm10": ["concCocFine", "concCocCoarse"],
+        "concso4t": ["concso4", "concss"],
+        "concNno": ["concno"],
+        "concNno2": ["concno2"],
+        "concSso2": ["concso2"],
+        "vmro3": ["conco3"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -89,13 +117,28 @@ class ReadMscwCtm:
         "concNnh4": calc_concNnh4,
         "concNno3pm10": calc_concNno3pm10,
         "concNno3pm25": calc_concNno3pm25,
-        "concNtno3": calc_conNtno3,
-        "concNtnh": calc_concNtnh,
+        "concno3pm10": calc_concno3pm10,
+        "concno3pm25": calc_concno3pm25,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
-        "concCecpm25": update_EC_units,
-        "vmrox": calc_vmrox,
+        # "vmrox": calc_vmrox,
+        "vmrox": calc_vmrox_from_conc,
         "vmrno2": calc_vmrno2,
+        "concNtno3": calc_conNtno3_emep,
+        "concNtnh": calc_conNtnh_emep,
+        # "concNtno3": calc_conNtno3,
+        # "concNtnh": calc_concNtnh,
+        "concecpm25": identity,
+        "concecpm10": add_dataarrays,
+        "concCecpm25": update_EC_units,
+        "concCecpm10": update_EC_units,
+        "concCocpm25": identity,
+        "concCocpm10": add_dataarrays,
+        "concso4t": calc_concso4t,
+        "concNno": calc_concNno,
+        "concNno2": calc_concNno2,
+        "concSso2": calc_concSso2,
+        "vmro3": calc_vmro3,
     }
 
     #: supported filename masks, placeholder is for frequencies
@@ -130,7 +173,7 @@ class ReadMscwCtm:
         self._file_mask = self.FILE_MASKS[0]
         self._files = None
 
-        self.var_map = get_emep_variables()
+        self.var_map = emep_variables()
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -196,10 +239,9 @@ class ReadMscwCtm:
         fps = self.filepaths
         yrs = []
         for fp in fps:
-
             try:
                 yr = re.search(r".*(20\d\d).*", fp).group(1)
-            except:
+            except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {fp}")
 
             yrs.append(yr)
@@ -233,7 +275,7 @@ class ReadMscwCtm:
             yrs_dir = ddir.split(os.sep)[-1]
             try:
                 yr = re.search(r".*(20\d\d).*", yrs_dir).group(1)
-            except:
+            except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {yrs_dir}")
 
             if int(yr) not in yrs:
@@ -286,7 +328,7 @@ class ReadMscwCtm:
         """
         Name of netcdf file
         """
-        if not isinstance(val, str):
+        if not isinstance(val, str):  # pragma: no cover
             raise ValueError("needs str")
         elif val == self._filename:
             return
@@ -298,7 +340,7 @@ class ReadMscwCtm:
         """
         Path to data file
         """
-        if self.data_dir is None and self._filepaths is None:
+        if self.data_dir is None and self._filepaths is None:  # pragma: no cover
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         return self._filepath
 
@@ -317,13 +359,13 @@ class ReadMscwCtm:
         """
         Path to data file
         """
-        if self.data_dir is None and self._filepaths is None:
+        if self.data_dir is None and self._filepaths is None:  # pragma: no cover
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         return self._filepaths
 
     @filepaths.setter
     def filepaths(self, value):
-        if not isinstance(value, list):
+        if not isinstance(value, list):  # pragma: no cover
             raise ValueError("needs to be list of strings")
         self._filepaths = value
 
@@ -443,15 +485,10 @@ class ReadMscwCtm:
 
         ts_type = self.ts_type_from_filename(self.filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
-
-        for i, fp in enumerate(fps):
-            if not os.path.split(fp)[-1] == self.filename:
-                continue
-
-            logger.info(f"Opening {fp}")
-            tmp_ds = xr.open_dataset(fp)
-
-            ds[yrs[i]] = tmp_ds
+        if len(fps) > 1 and ts_type == "hourly":
+            raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
+        logger.info(f"Opening {fps}")
+        ds = xr.open_mfdataset(fps)
 
         self._filedata = ds
 
@@ -589,7 +626,9 @@ class ReadMscwCtm:
             return self._read_var_from_file(var_name_aerocom, ts_type)
         elif var_name_aerocom in self.AUX_REQUIRES:
             return self._compute_var(var_name_aerocom, ts_type)
-        raise VarNotAvailableError(f"Variable {var_name_aerocom} is not supported")
+        raise VarNotAvailableError(
+            f"Variable {var_name_aerocom} is not supported"
+        )  # pragma: no cover
 
     def read_var(self, var_name, ts_type=None, **kwargs):
         """Load data for given variable.
@@ -611,9 +650,9 @@ class ReadMscwCtm:
         var = const.VARS[var_name]
         var_name_aerocom = var.var_name_aerocom
 
-        if self.data_dir is None:
+        if self.data_dir is None:  # pragma: no cover
             raise ValueError("data_dir must be set before reading.")
-        elif self.filename is None and ts_type is None:
+        elif self.filename is None and ts_type is None:  # pragma: no cover
             raise ValueError("please specify ts_type")
         elif ts_type is not None:
             # filename and ts_type are set. update filename if ts_type suggests
@@ -627,8 +666,8 @@ class ReadMscwCtm:
             arr.attrs["units"] = UALIASES[arr.units]
         try:
             cube = arr.to_iris()
-        except MemoryError as e:
-            raise NotImplementedError(f"BAAAM: {e}")
+        except MemoryError as e:  # pragma: no cover
+            raise NotImplementedError from e
 
         if ts_type == "hourly":
             cube.coord("time").convert_units("hours since 1900-01-01")
@@ -683,15 +722,7 @@ class ReadMscwCtm:
 
         try:
             filedata = self.filedata
-
-            if len(filedata) == 1:
-                data = filedata[list(filedata)[0]][emep_var]
-            else:
-                if ts_type == "hourly":
-                    raise ValueError(
-                        f"ts_type {ts_type} can not be hourly when using multiple years"
-                    )
-                data = xr.concat([ds[emep_var] for ds in filedata.values()], dim="time")
+            data = filedata[emep_var]
 
         except KeyError:
             raise VarNotAvailableError(
@@ -733,5 +764,10 @@ class ReadEMEP(ReadMscwCtm):
     """Old name of :class:`ReadMscwCtm`."""
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "You are using a deprecated name ReadEMEP for class ReadMscwCtm, "
+            "please use ReadMscwCtm instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(*args, **kwargs)
-        print("You are using a deprecated name ReadEMEP for class ReadMscwCtm")

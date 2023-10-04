@@ -1,44 +1,48 @@
+from __future__ import annotations
+
 import getpass
-import tempfile
-from importlib import resources
 from pathlib import Path
-from typing import Type
 
 import pytest
 
 import pyaerocom.config as testmod
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME, Config
+from pyaerocom.data import resources
 from pyaerocom.grid_io import GridIO
 from pyaerocom.varcollection import VarCollection
 from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
 
-TMP_PATH = Path(tempfile.mkdtemp())
-CFG_FILE_WRONG = TMP_PATH / "paths.txt"
-CFG_FILE_WRONG.write_text("")
 
-LOCAL_DB_DIR = TMP_PATH / "data"
-LOCAL_DB_DIR.mkdir()
-(LOCAL_DB_DIR / "modeldata").mkdir()
-(LOCAL_DB_DIR / "obsdata").mkdir()
+@pytest.fixture()
+def config_file(file: str | None, tmp_path: Path) -> str | None:
+    if file is None:
+        return None
 
+    if file.casefold() == "default":
+        assert resources.is_resource("pyaerocom.data", "paths.ini")
+        with resources.path("pyaerocom.data", "paths.ini") as path:
+            return str(path)
 
-with resources.path("pyaerocom.data", "paths.ini") as path:
-    CFG_FILE = str(path)
+    if file.casefold() == "wrong_suffix":
+        path = tmp_path / "paths.txt"
+        path.write_text("")
+        assert path.exists()
+        return str(path)
 
-
-def test_CFG_FILE_EXISTS():
-    assert resources.is_resource("pyaerocom.data", "paths.ini")
-
-
-def test_CFG_FILE_WRONG_EXISTS():
-    assert CFG_FILE_WRONG.exists()
+    return file
 
 
-def test_LOCAL_DB_DIR_EXISTS():
-    assert LOCAL_DB_DIR.exists()
+@pytest.fixture()
+def local_db(tmp_path: Path) -> Path:
+    """temporary path to DB file structure"""
+    path = tmp_path / "data"
+    (path / "modeldata").mkdir(parents=True)
+    (path / "obsdata").mkdir()
+    assert path.is_dir()
+    return path
 
 
 @pytest.fixture(scope="module")
@@ -52,22 +56,22 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 
 
 @pytest.mark.parametrize(
-    "config_file,try_infer_environment",
+    "file,try_infer_environment",
     [
         (None, False),
         (None, True),
-        (CFG_FILE, False),
+        ("default", False),
     ],
 )
-def test_Config___init__(config_file, try_infer_environment):
+def test_Config___init__(config_file: str, try_infer_environment: bool):
     testmod.Config(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
-    "config_file,exception,error",
+    "file,exception,error",
     [
         pytest.param(
-            str(CFG_FILE_WRONG),
+            "wrong_suffix",
             ValueError,
             "Need path to an ini file for input config_file",
             id="wrong file extension",
@@ -80,15 +84,15 @@ def test_Config___init__(config_file, try_infer_environment):
         ),
     ],
 )
-def test_Config___init___error(config_file: str, exception: Type[Exception], error: str):
+def test_Config___init___error(config_file: str, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         testmod.Config(config_file, False)
     assert str(e.value) == error
 
 
-def test_Config__infer_config_from_basedir():
+def test_Config__infer_config_from_basedir(local_db: Path):
     cfg = testmod.Config(try_infer_environment=False)
-    res = cfg._infer_config_from_basedir(LOCAL_DB_DIR)
+    res = cfg._infer_config_from_basedir(local_db)
     assert res[1] == "local-db"
 
 
@@ -158,6 +162,7 @@ def test_empty_class_header(empty_cfg):
     assert cfg.EARLINET_NAME == "EARLINET"
     assert cfg.GAWTADSUBSETAASETAL_NAME == "GAWTADsubsetAasEtAl"
     assert cfg.DMS_AMS_CVO_NAME == "DMS_AMS_CVO"
+    assert cfg.MEP_NAME == "MEP"
     assert cfg.EBAS_DB_LOCAL_CACHE
     assert cfg.MIN_YEAR == 0
     assert cfg.MAX_YEAR == 20000
@@ -256,7 +261,7 @@ def test_empty_class_header(empty_cfg):
         assert cfg._coords_info_file == str(path)
 
     dbdirs = {
-        "lustre/storeA/project": "metno",
+        "lustre/storeB/project": "metno",
         "metno/aerocom_users_database": "users-db",
         "MyPyaerocom/data": "local-db",
     }
@@ -309,6 +314,7 @@ def test_default_config_HOMEDIR():
     assert const.HOMEDIR.endswith("/")
 
 
+@lustre_avail
 def test_default_config():
     cfg = Config()
 

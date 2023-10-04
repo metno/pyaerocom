@@ -7,7 +7,7 @@ FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together a
     - Develop harmonized set of tools to test whether or a not a model is fit for a given purpose
     - CAMS has to make use of FAIRMODE diagrams
 
-This module contains methods to cmpute the relevant FAIRMODE statistics.
+This module contains methods to compute the relevant FAIRMODE statistics.
 """
 
 from math import isclose, sqrt

@@ -39,7 +39,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = "*.csv"
 
     #: Version log of this class (for caching)
-    __version__ = "0.07"
+    __version__ = "0.09"
 
     #: Column delimiter
     FILE_COL_DELIM = ","
@@ -78,8 +78,18 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
 
+    VAR_NAMES_FILE["concSso2"] = "concentration"
+    VAR_NAMES_FILE["concNno"] = "concentration"
+    VAR_NAMES_FILE["concNno2"] = "concentration"
+
     #: units of variables in files (needs to be defined for each variable supported)
-    VAR_UNITS_FILE = {"µg/m3": "ug m-3", "mg/m3": "mg m-3", "ppb": "ppb"}
+    VAR_UNITS_FILE = {
+        "µg/m3": "ug m-3",
+        "mg/m3": "mg m-3",
+        "µgS/m3": "ug S m-3",
+        "µgN/m3": "ug N m-3",
+        "ppb": "ppb",
+    }
 
     #: file masks for the data files
     FILE_MASKS = dict(
@@ -93,10 +103,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concco="**/??_10_*_timeseries.csv*",
         concno="**/??_38_*_timeseries.csv*",
         concpm25="**/??_6001_*_timeseries.csv*",
+        concSso2="**/??_1_*_timeseries.csv*",
+        concNno2="**/??_8_*_timeseries.csv*",
+        concNno="**/??_38_*_timeseries.csv*",
     )
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
+
+    CONV_FACTOR["concSso2"] = np.float_(0.50052292274792)
+    CONV_FACTOR["concNno2"] = np.float_(0.3044517868011477)
+    CONV_FACTOR["concNno"] = np.float_(0.466788868521913)
     CONV_FACTOR["vmro3"] = np.float_(
         0.493
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
@@ -109,6 +126,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
     # unit of the converted property after the conversion
     CONV_UNIT = {}
+    CONV_UNIT["concSso2"] = "µgS/m3"
+    CONV_UNIT["concNno2"] = "µgN/m3"
+    CONV_UNIT["concNno"] = "µgN/m3"
     CONV_UNIT["vmro3"] = "ppb"
     CONV_UNIT["vmro3max"] = "ppb"
     CONV_UNIT["vmrno2"] = "ppb"
@@ -172,12 +192,22 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ""
 
-    AUX_REQUIRES = {"vmro3max": ["conco3"], "vmro3": ["conco3"], "vmrno2": ["concno2"]}
+    AUX_REQUIRES = {
+        "vmro3max": ["conco3"],
+        "vmro3": ["conco3"],
+        "vmrno2": ["concno2"],
+        "concNno2": ["concno2"],
+        "concNno": ["concno"],
+        "concSso2": ["concso2"],
+    }
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmro3max": NotImplementedError(),
         "vmrno2": NotImplementedError(),
+        "concNno2": NotImplementedError(),
+        "concNno": NotImplementedError(),
+        "concSso2": NotImplementedError(),
     }
 
     def __init__(self, data_id=None, data_dir=None):
@@ -327,6 +357,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         data_dict[header[idx]][lineidx] = np.nan
 
             lineidx += 1
+        # if the first line in the file was empty
+        if data_dict["unitofmeasurement"] == "":
+            if rows[12] == "":
+                raise EEAv2FileError(
+                    f"Unit of Measurment could not be inferred from EEA file {filename}"
+                )
+            else:
+                # with loss of generality get the unitofmeasurement from the last row column 12 (which should be a kept header)
+                data_dict["unitofmeasurement"] = rows[12]
 
         unit_in_file = data_dict["unitofmeasurement"]
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
@@ -368,16 +407,42 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # TsType is
         # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
 
+        # Sometimes the times in the data files are not ordered in time which causes problems when doing
+        # time interpolations later on. Make sure that the data is ordered in time
+        diff_unsorted = np.diff(data_dict[self.START_TIME_NAME])
+        sort_flag = False
+        # use a vectorised time_diff instead of scalar one as before
+        time_diff = (
+            data_dict[self.END_TIME_NAME][:lineidx] - data_dict[self.START_TIME_NAME][:lineidx]
+        ) / 2.0
+
+        # np.min needs an array and fails with ValueError when a scalar is supplied
+        # this is the case for a single line file
+        try:
+            min_diff = np.min(diff_unsorted)
+        except ValueError:
+            min_diff = 0
+
+        if min_diff < 0:
+            # data needs to be sorted
+            ordered_idx = np.argsort(data_dict[self.START_TIME_NAME][:lineidx])
+            data_out["dtime"] = (
+                data_dict[self.START_TIME_NAME][ordered_idx] + time_diff[ordered_idx]
+            )
+            sort_flag = True
+        else:
+            data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
+
         for key, value in data_dict.items():
             # adjust the variable name to aerocom standard
             if key != self.VAR_NAMES_FILE[aerocom_var_name]:
                 data_out[key] = value[:lineidx]
             else:
-                data_out[aerocom_var_name] = value[:lineidx]
+                if sort_flag:
+                    data_out[aerocom_var_name] = value[:lineidx][ordered_idx]
+                else:
+                    data_out[aerocom_var_name] = value[:lineidx]
 
-        # just assume hourly data for now
-        time_diff = np.timedelta64(30, "m")
-        data_out["dtime"] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
         # convert data vectors to pandas.Series (if attribute
         # vars_as_series=True)
         if vars_as_series:
@@ -504,7 +569,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             #                                                   self.data_id,
             #                                                   self.data_dir,
             #                                                   all_str))
-        self.files = files
         return files
 
     def get_station_coords(self, meta_key):
@@ -561,10 +625,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         var_name = vars_to_retrieve[0]
         logger.info("Reading EEA data")
         if files is None:
-            if len(self.files) == 0:
-                logger.info("Retrieving file list")
-                files = self.get_file_list(self.FILE_MASKS[var_name])
-            files = self.files
+            logger.info("Retrieving file list")
+            files = self.get_file_list(self.FILE_MASKS[var_name])
 
         if first_file is None:
             first_file = 0
@@ -677,5 +739,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         self._metadata = None
+        self.files = files
 
         return data_obj

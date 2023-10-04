@@ -15,7 +15,7 @@ from pyaerocom.colocation import (
 )
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
-from pyaerocom.io import ReadMscwCtm
+from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32
 from tests.fixtures.stations import create_fake_station_data
 
@@ -195,7 +195,6 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 def test_colocate_gridded_ungridded(
     data_tm5, aeronetsunv3lev2_subset, addargs, ts_type, shape, obsmean, modmean
 ):
-
     coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, **addargs)
 
     assert isinstance(coldata, ColocatedData)

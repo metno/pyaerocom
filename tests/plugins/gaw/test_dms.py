@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
-from pyaerocom.io import ReadGAW
+from pyaerocom.plugins.gaw.reader import ReadGAW
 from tests.conftest import TEST_RTOL, lustre_unavail
 
 
@@ -66,7 +66,6 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
 
 @lustre_unavail
 def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
-
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0, start=2000, stop=2008, freq="monthly")
 
     assert_array_equal(

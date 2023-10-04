@@ -67,7 +67,6 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
     if isinstance(nparr, dask.array.core.Array):
         nparr = nparr.compute()
     for i, (lat, lon) in enumerate(stacked.station_name.values):
-
         coord = lat, lon
         vals = nparr[:, i]
         dd[str(coord)] = sd = {}

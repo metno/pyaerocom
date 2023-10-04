@@ -13,7 +13,7 @@ import tarfile
 import coda
 import xarray as xr
 
-from pyaerocom.io.read_aeolus_l2a_data import ReadL2Data
+from pyaerocom.extras.satellite_l2.aeolus_l2a import ReadL2Data
 
 default_topo_file = "/lustre/storeB/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc"
 netcdf_indir = "/lustre/storeB/project/fou/kl/admaeolus/EMEPmodel"
@@ -533,7 +533,6 @@ def main():
 
     # write L3 gridded data
     if "gridfile" in options:
-
         vars_to_copy = [obj._ALTITUDENAME, obj._LONGITUDENAME, obj._LATITUDENAME, ""]
         vars_to_read = options["variables"].copy()
         netcdf_indir = options["modelindir"]

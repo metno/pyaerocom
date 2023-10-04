@@ -1,70 +1,24 @@
 import glob
 import logging
 import os
+from pathlib import Path
 
 import cf_units
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-import pyaerocom as pya
-from pyaerocom import const
-from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
+from .additional_variables import vmr_to_ghost_stations
+from .meta_keys import ghost_meta_keys
+
 logger = logging.getLogger(__name__)
-
-
-def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
-    """
-    Convert VMR data to mass concentration for list of GHOST StationData objects
-
-    Note
-    ----
-    This is a private function used in :class:`ReadGhost` and is not supposed
-    to be used directly.
-
-    Parameters
-    ----------
-    data : list
-        list of :class:`StationData` objects containing VMR data (e.g. vmrno2)
-    mconcvar : str
-        Name of mass concentration variable (e.g. concno2)
-    vmrvar : str
-        Name of VMR variable (e.g. vmrno2)
-
-    Returns
-    -------
-    data : list
-        list of modified :class:`StationData` objects that include computed
-        mass concentrations in addition to VMR data.
-
-    """
-    for stat in data:
-        vmrdata = stat[vmrvar]
-        meta = stat["meta"]
-        p = meta["network_provided_volume_standard_pressure"]
-        T = meta["network_provided_volume_standard_temperature"]
-        mmol_var = get_molmass(vmrvar)
-        unit_var = meta["var_info"][vmrvar]["units"]
-        to_unit = const.VARS[mconcvar].units
-        conc = vmrx_to_concx(
-            vmrdata, p_pascal=p, T_kelvin=T, mmol_var=mmol_var, vmr_unit=unit_var, to_unit=to_unit
-        )
-        stat[mconcvar] = conc
-        vi = {}
-        vi.update(meta["var_info"][vmrvar])
-        vi["computed"] = True
-        vi["units"] = to_unit
-        meta["var_info"][mconcvar] = vi
-
-    return data
 
 
 class ReadGhost(ReadUngriddedBase):
@@ -131,7 +85,7 @@ class ReadGhost(ReadUngriddedBase):
     }
 
     #: List of GHOST metadata keys
-    META_KEYS = GHOST_META_KEYS
+    META_KEYS = ghost_meta_keys()
 
     #: Names of flag variables in GHOST NetCDF files
     FLAG_VARS = ["flag", "qa"]
@@ -166,11 +120,11 @@ class ReadGhost(ReadUngriddedBase):
     }
 
     AUX_FUNS = {
-        "concco": _vmr_to_conc_ghost_stats,
-        "concno": _vmr_to_conc_ghost_stats,
-        "concno2": _vmr_to_conc_ghost_stats,
-        "conco3": _vmr_to_conc_ghost_stats,
-        "concso2": _vmr_to_conc_ghost_stats,
+        "concco": vmr_to_ghost_stations,
+        "concno": vmr_to_ghost_stations,
+        "concno2": vmr_to_ghost_stations,
+        "conco3": vmr_to_ghost_stations,
+        "concso2": vmr_to_ghost_stations,
     }
 
     CONVERT_UNITS_META = {
@@ -290,7 +244,7 @@ class ReadGhost(ReadUngriddedBase):
 
             _dir = os.path.join(self.data_dir, var)
             _files = glob.glob(f"{_dir}/{pattern}")
-            if len(_files) == 0:
+            if not _files:  # pragma: no cover
                 raise DataSourceError(f"Could not find any data files for {var}")
             files.extend(_files)
 
@@ -333,7 +287,7 @@ class ReadGhost(ReadUngriddedBase):
     def _ts_type_from_data_dir(self):
         try:
             freq = str(TsType(os.path.basename(self.data_dir)))
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             freq = "undefined"
         self.TS_TYPES[self.data_id] = freq
         return freq
@@ -387,9 +341,9 @@ class ReadGhost(ReadUngriddedBase):
 
         ds = xr.open_dataset(filename)
 
-        if not all(x in ds.dims for x in ["station", "time"]):
+        if not {"station", "time"}.issubset(ds.dims):  # pragma: no cover
             raise AttributeError("Missing dimensions")
-        if not "station_name" in ds:
+        if not "station_name" in ds:  # pragma: no cover
             raise AttributeError("No variable station_name found")
 
         stats = []
@@ -401,10 +355,8 @@ class ReadGhost(ReadUngriddedBase):
         for meta_key in self.META_KEYS:
             try:
                 meta_glob[meta_key] = ds[meta_key].values
-            except KeyError:
-                logger.warning(
-                    f"No such metadata key in GHOST data file: {os.path.basename(filename)}"
-                )
+            except KeyError:  # pragma: no cover
+                logger.warning(f"No such metadata key in GHOST data file: {Path(filename).name}")
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs["units"]
@@ -428,9 +380,8 @@ class ReadGhost(ReadUngriddedBase):
         invalid = self._eval_flags(vardata, invalidate_flags, ds)
 
         for idx in ds.station.values:
-
             stat = {}
-            meta = pya.metastandards.StationMetaData()
+            meta = StationMetaData()
             meta["ts_type"] = self.TS_TYPE
             stat["time"] = tvals
             stat["meta"] = meta

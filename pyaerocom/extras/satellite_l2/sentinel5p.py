@@ -7,8 +7,9 @@ import time
 import numpy as np
 
 from pyaerocom import const
-from pyaerocom.io.readsatellitel2base import ReadL2DataBase
 from pyaerocom.ungriddeddata import UngriddedData
+
+from .base_reader import ReadL2DataBase
 
 
 class ReadL2Data(ReadL2DataBase):
@@ -573,7 +574,6 @@ class ReadL2Data(ReadL2DataBase):
             elif len(groups) == 2:
                 file_data[var] = np.squeeze(coda.fetch(product, groups[0], groups[1]))
             elif len(groups) == 4:
-
                 file_data[var] = np.squeeze(
                     coda.fetch(product, groups[0], groups[1], groups[2], groups[3])
                 )
@@ -658,7 +658,6 @@ class ReadL2Data(ReadL2DataBase):
         gridded=False,
         apply_quality_flag=0.0,
     ):
-
         if data_to_write is None:
             _data = self.data
         else:
@@ -985,7 +984,6 @@ class ReadL2Data(ReadL2DataBase):
             return
 
         if engine == "python":
-
             data_for_gridding, gridded_var_data = self._to_grid_grid_init(
                 gridtype=gridtype, vars=vars, init_time=_data["time"].mean()
             )
@@ -1073,7 +1071,6 @@ class ReadL2Data(ReadL2DataBase):
         pass
 
         if isinstance(data, xr.Dataset):
-
             pass
         else:
             super().to_grid(
@@ -1150,5 +1147,4 @@ class ReadL2Data(ReadL2DataBase):
                 return _data
 
         else:
-
             super().select_bbox(_data, bbox)

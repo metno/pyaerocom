@@ -8,12 +8,13 @@ from __future__ import annotations
 import logging
 import tarfile
 from pathlib import Path
-from typing import NamedTuple, Type
+from typing import NamedTuple
 
 import requests
 
 from pyaerocom import const, io
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.plugins.ghost.reader import ReadGhost
 
 logger = logging.getLogger(__name__)
 
@@ -22,45 +23,46 @@ logger = logging.getLogger(__name__)
 TESTDATA_NAME = "testdata-minimal"
 
 #: That's were the testdata can be downloaded from
-TESTDATA_URL = f"https://pyaerocom-ng.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.20220602"
+TESTDATA_URL = f"https://pyaerocom-ng.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.20230919"
 
 #: Directory where testdata will be downloaded into
 TESTDATA_ROOT = Path(const.OUTPUTDIR) / TESTDATA_NAME
 
 
-class TestData(NamedTuple):
+class DataForTests(NamedTuple):
     relpath: str
-    reader: Type[ReadUngriddedBase] | None = None
+    reader: type[ReadUngriddedBase] | None = None
 
     @property
     def path(self) -> Path:
         return TESTDATA_ROOT / self.relpath
 
 
-TEST_DATA: dict[str, TestData] = {
-    "MODELS": TestData("modeldata"),
-    "OBSERVATIONS": TestData("obsdata"),
-    "CONFIG": TestData("config"),
-    "AeronetSunV3L2Subset.daily": TestData(
+TEST_DATA: dict[str, DataForTests] = {
+    "MODELS": DataForTests("modeldata"),
+    "OBSERVATIONS": DataForTests("obsdata"),
+    "CONFIG": DataForTests("config"),
+    "AeronetSunV3L2Subset.daily": DataForTests(
         "obsdata/AeronetSunV3Lev2.daily/renamed", io.ReadAeronetSunV3
     ),
-    "AeronetSunV3L2Subset.AP": TestData(
+    "AeronetSunV3L2Subset.AP": DataForTests(
         "obsdata/AeronetSunV3Lev2.0.AP/renamed", io.ReadAeronetSunV3
     ),
-    "AeronetSDAV3L2Subset.daily": TestData(
+    "AeronetSDAV3L2Subset.daily": DataForTests(
         "obsdata/AeronetSDAV3Lev2.daily/renamed", io.ReadAeronetSdaV3
     ),
-    "AeronetInvV3L2Subset.daily": TestData(
+    "AeronetInvV3L2Subset.daily": DataForTests(
         "obsdata/AeronetInvV3Lev2.daily/renamed", io.ReadAeronetInvV3
     ),
-    "EBASSubset": TestData("obsdata/EBASMultiColumn", io.ReadEbas),
-    "AirNowSubset": TestData("obsdata/AirNowSubset", io.ReadAirNow),
-    "G.EEA.daily.Subset": TestData("obsdata/GHOST/data/EEA_AQ_eReporting/daily", io.ReadGhost),
-    "G.EEA.hourly.Subset": TestData("obsdata/GHOST/data/EEA_AQ_eReporting/hourly", io.ReadGhost),
-    "G.EBAS.daily.Subset": TestData("obsdata/GHOST/data/EBAS/daily", io.ReadGhost),
-    "G.EBAS.hourly.Subset": TestData("obsdata/GHOST/data/EBAS/hourly", io.ReadGhost),
-    "EEA_AQeRep.v2.Subset": TestData("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
-    "Earlinet-test": TestData("obsdata/Earlinet", io.ReadEarlinet),
+    "EBASSubset": DataForTests("obsdata/EBASMultiColumn", io.ReadEbas),
+    "AirNowSubset": DataForTests("obsdata/AirNowSubset", io.ReadAirNow),
+    "G.EEA.daily.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/daily", ReadGhost),
+    "G.EEA.hourly.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/hourly", ReadGhost),
+    "G.EBAS.daily.Subset": DataForTests("obsdata/GHOST/data/EBAS/daily", ReadGhost),
+    "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", ReadGhost),
+    "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
+    "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
+    "Earlinet-test-3d-collocation": DataForTests("obsdata/Earlinet/"),
 }
 
 

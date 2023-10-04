@@ -205,7 +205,6 @@ class ReadAeronetSdaV2(ReadAeronetBase):
         self.logger.info(f"Reading file {filename}")
         # Iterate over the lines of the file
         with open(filename) as in_file:
-
             c_head_line = in_file.readline()
             c_algorithm = in_file.readline()
 

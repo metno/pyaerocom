@@ -10,7 +10,7 @@ from pyaerocom import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.griddeddata import GriddedData
 
-from .data_access import TestData
+from .data_access import DataForTests
 
 CHECK_PATHS = SimpleNamespace(
     tm5="modeldata/TM5-met2010_CTRL-TEST/renamed",
@@ -19,19 +19,18 @@ CHECK_PATHS = SimpleNamespace(
     tm5_tm5=f"coldata/od550aer_REF-TM5_AP3-CTRL2016_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc",
 )
 
-TM5_DATA_PATH = TestData(CHECK_PATHS.tm5).path
+TM5_DATA_PATH = DataForTests(CHECK_PATHS.tm5).path
 
 
 @pytest.fixture(scope="session")
 def data_tm5() -> GriddedData:
-    path = TestData(CHECK_PATHS.tm5aod).path
+    path = DataForTests(CHECK_PATHS.tm5aod).path
     assert path.exists()
     data = GriddedData(path)
     return data
 
 
 def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData:
-
     arr = open_dataarray(path)
     if "_min_num_obs" in arr.attrs:
         info = {}
@@ -50,11 +49,11 @@ def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData:
 
 @pytest.fixture(scope="session")
 def coldata_tm5_aeronet() -> ColocatedData:
-    path = TestData(CHECK_PATHS.coldata_tm5_aeronet).path
+    path = DataForTests(CHECK_PATHS.coldata_tm5_aeronet).path
     return load_coldata_tm5_aeronet_from_scratch(path)
 
 
 @pytest.fixture(scope="session")
 def coldata_tm5_tm5() -> ColocatedData:
-    path = TestData(CHECK_PATHS.tm5_tm5).path
+    path = DataForTests(CHECK_PATHS.tm5_tm5).path
     return load_coldata_tm5_aeronet_from_scratch(path)

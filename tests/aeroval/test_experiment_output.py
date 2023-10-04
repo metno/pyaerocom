@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import pytest
 
@@ -45,7 +44,7 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
         ),
     ],
 )
-def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], error: str):
+def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         ProjectOutput(proj_id, json_basedir)
     assert str(e.value) == error
@@ -167,16 +166,17 @@ def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout: ExperimentOutp
 
 def test_ExperimentOutput__info_from_map_file():
     output = ExperimentOutput._info_from_map_file(
-        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer.json"
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer_2010.json"
     )
-    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer")
+
+    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer", "2010")
 
 
 @pytest.mark.parametrize(
     "filename",
     [
         "blaaaa",
-        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer.json",
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer_2010.json",  # has four underscores
     ],
 )
 def test_ExperimentOutput__info_from_map_file_error(filename: str):
@@ -184,12 +184,12 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
         ExperimentOutput._info_from_map_file(filename)
     assert str(e.value) == (
         f"invalid map filename: {filename}. "
-        "Must contain exactly 2 underscores _ to separate obsinfo, vertical and model info"
+        "Must contain exactly 3 underscores _ to separate obsinfo, vertical, model info, and periods"
     )
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
-    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[])
+    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[], per=[])
 
 
 def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout: ExperimentOutput):
@@ -281,7 +281,7 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
     proc.run()
     del cfg.model_cfg["mod1"]
     modified = proc.exp_output.clean_json_files()
-    assert len(modified) == 15
+    assert len(modified) == 13
 
 
 @geojson_unavail
@@ -309,7 +309,6 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
 def test_ExperimentOutput_reorder_experiments(
     dummy_expout: ExperimentOutput, add_names, order, result
 ):
-
     path = Path(dummy_expout.experiments_file)
 
     data = dict().fromkeys(add_names, dict(public=True))

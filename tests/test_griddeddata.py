@@ -15,6 +15,7 @@ from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
     DataSearchError,
+    LongitudeConstraintError,
     VariableDefinitionError,
     VariableNotFoundError,
 )
@@ -137,7 +138,6 @@ def test_GriddedData_interpolate(data_tm5: GriddedData):
 
 
 def test_GriddedData_to_time_series(data_tm5: GriddedData):
-
     stats = data_tm5.to_time_series(latitude=TESTLATS, longitude=TESTLONS)
     assert [stat.latitude for stat in stats] == [-9, 21]
     assert [stat.longitude for stat in stats] == [-118.5, 70.5]
@@ -381,3 +381,75 @@ def test_GriddedData__check_invalid_unit_alias(
     data = GriddedData(fake_dataset_path, var_name=var_name, check_unit=False)
     data._check_invalid_unit_alias()
     assert data.units == data_unit
+
+
+def test_mean_at_coords(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    mean = data.mean_at_coords(latitude=data.lat.points, longitude=data.lon.points)
+    assert isinstance(mean, np.floating)
+
+
+def test__coords_to_iris_sample_points(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    assert len(data._coords_to_iris_sample_points()) == 0
+    points = data._coords_to_iris_sample_points(coords=(data.lat, data.lon))
+    assert isinstance(points, list)
+    assert points[0][1][0].shape == data.lat.shape
+    assert points[0][1][1].shape == data.lon.shape
+
+
+def test_extract_surface_level_wrong_dim(
+    data_tm5: GriddedData,
+):  # can only currently test the exception gets raised b/c don't have a good 4D testing dataset
+    data = data_tm5.copy()
+    with pytest.raises(DataDimensionError) as e:
+        data.extract_surface_level()
+    assert e.type is DataDimensionError
+
+
+def test__infer_index_surface_level_wrong_dim(
+    data_tm5: GriddedData,
+):  # can only currently test the exception gets raised b/c don't have a good 4D testing dataset
+    data = data_tm5.copy()
+    with pytest.raises(DataDimensionError) as e:
+        data._infer_index_surface_level()
+    assert e.type is DataDimensionError
+
+
+def test_find_closest_index_empty(
+    data_tm5: GriddedData,
+):  # can't find a place where called in codebase but doesn't seem to be depricated
+    empty = data_tm5.find_closest_index()
+    assert len(empty) == 0
+
+
+def test_remove_outliers(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data.remove_outliers(inplace=False)
+    assert data.shape == new.shape
+    assert new.metadata["outliers_removed"]
+
+
+def test__resample_time_iris(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data._resample_time_iris("yearly")
+    assert new.ts_type == "yearly"
+
+
+def test_get_area_weighted_timeseries(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data.get_area_weighted_timeseries("EUROPE")
+    assert new.region
+
+
+def test_extract(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    sub = data.extract(iris.Constraint(latitude=0.0))
+    assert len(sub.shape) < len(data.shape)
+
+
+def test_intersection(data_tm5: GriddedData):
+    data = data_tm5.copy()
+    new = data.intersection(longitude=(-70, 35))
+    assert new.shape[0:1] == data.shape[0:1]
+    assert new.shape[2] < data.shape[2]

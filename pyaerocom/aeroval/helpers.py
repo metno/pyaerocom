@@ -4,8 +4,6 @@ import os
 import shutil
 from pathlib import Path
 
-import pandas as pd
-
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -23,6 +21,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.io import ReadGridded
 from pyaerocom.tstype import TsType
+from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +188,6 @@ def check_if_year(periods: list[str]) -> bool:
 
 
 def make_dummy_model(obs_list: list, cfg) -> str:
-
     # Sets up variable for the model register
     tmpdir = const.LOCAL_TMP_DIR
     const.add_data_search_dir(tmpdir)
@@ -203,6 +201,7 @@ def make_dummy_model(obs_list: list, cfg) -> str:
     (start, stop) = get_max_period_range(cfg.time_cfg.periods)
     freq = get_highest_resolution(*cfg.time_cfg.freqs)
 
+    tmp_var_obj = Variable()
     # Loops over variables in obs
     for obs in obs_list:
         for var in cfg.obs_cfg[obs]["obs_vars"]:
@@ -212,6 +211,15 @@ def make_dummy_model(obs_list: list, cfg) -> str:
 
             # Converts cube to GriddedData
             dummy_grid = GriddedData(dummy_cube)
+
+            # Set the value to be the mean of acceptable values to prevent incorrect outlier removal
+            # This needs some care though because the defaults are (currently) -inf and inf, which leads to erroneous removal
+
+            if not (
+                dummy_grid.var_info.minimum == tmp_var_obj.VMIN_DEFAULT
+                or dummy_grid.var_info.maximum == tmp_var_obj.VMAX_DEFAULT
+            ):
+                dummy_grid.data *= (dummy_grid.var_info.minimum + dummy_grid.var_info.maximum) / 2
 
             # Loop over each year
             yr_gen = dummy_grid.split_years()

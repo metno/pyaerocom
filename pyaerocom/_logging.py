@@ -12,12 +12,14 @@ All pyaerocom child modules share the logging configuration
 from __future__ import annotations
 
 import logging
-from importlib import resources
+import os
 from logging.config import fileConfig
+
+from pyaerocom.data import resources
 
 LOGGING_CONFIG = dict(
     # root logger
-    file_name="pyaerocom.log",
+    file_name=os.getenv("PYAEROCOM_LOG_FILE", default="pyaerocom.log"),
     file_days="14",
     file_level="DEBUG",
     # pyaerocom logger

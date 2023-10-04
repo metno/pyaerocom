@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Type
 
 import cf_units
 import pytest
@@ -11,7 +10,7 @@ import xarray as xr
 import pyaerocom.exceptions as exc
 from pyaerocom import get_variable
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
+from pyaerocom.plugins.mscw_ctm.reader import ReadEMEP, ReadMscwCtm
 from tests.conftest import TEST_RTOL
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
@@ -111,6 +110,17 @@ VAR_MAP = {
     "dryoxn": "DDEP_OXN_m2Grid",
     "dryoxs": "DDEP_SOX_m2Grid",
     "dryrdn": "DDEP_RDN_m2Grid",
+    "concCocCoarse": "SURF_ugC_PM_OMCOARSE",
+    "concCocFine": "SURF_ugC_PM_OM25",
+    "concecCoarse": "SURF_ug_ECCOARSE",
+    "concecFine": "SURF_ug_ECFINE",
+    "concnh4coarse": "SURF_ug_NH4_F",
+    "concnh4fine": "SURF_ug_NH4_F",
+    "concoxn": "SURF_ugN_OXN",
+    "concso4c": "SURF_ug_SO4",
+    "concso4coarse": "SURF_ug_SO4",
+    "concso4fine": "SURF_ug_SO4",
+    "vmrno": "SURF_ppb_NO",
 }
 
 
@@ -209,7 +219,7 @@ def test_ReadMscwCtm_read_var(var_name: str, ts_type: str, data_dir: str):
     ],
 )
 def test_ReadMscwCtm_read_var_error(
-    var_name: str, ts_type: str, exception: Type[Exception], error: str, data_dir: str
+    var_name: str, ts_type: str, exception: type[Exception], error: str, data_dir: str
 ):
     reader = ReadMscwCtm(data_dir=data_dir)
     with pytest.raises(exception) as e:
@@ -324,7 +334,7 @@ def test_ReadMscwCtm_open_file(data_dir: str):
         reader.open_file()
     reader.data_dir = data_dir
     data = reader.open_file()
-    assert isinstance(data["2017"], xr.Dataset)
+    assert isinstance(data, xr.Dataset)
     assert reader._filedata is data
 
 
@@ -380,24 +390,25 @@ def test_ReadMscwCtm__repr__():
 
 
 def test_ReadEMEP__init__():
-    assert isinstance(ReadEMEP(), ReadMscwCtm)
+    with pytest.raises(DeprecationWarning) as e:
+        assert isinstance(ReadEMEP(), ReadMscwCtm)
+    assert "please use ReadMscwCtm instead" in str(e.value)
 
 
 def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]) -> Path:
-
     reader = ReadMscwCtm()
     varmap = reader.var_map
 
     root = tmp_path / "emep"
     frequencies = freq if isinstance(freq, list) else [freq]
     for freq in frequencies:
-        ds = xr.Dataset()
-        for var_name, units in vars_and_units.items():
-            var_name = varmap[var_name]
-            ds[var_name] = create_fake_MSCWCtm_data(tst=reader.FREQ_CODES[freq])
-            ds[var_name].attrs.update(units=units, var_name=var_name)
-
         for year in ["2017", "2018", "2019", "2015", "2018", "2013"]:
+            ds = xr.Dataset()
+            for var_name, units in vars_and_units.items():
+                var_name = varmap[var_name]
+                ds[var_name] = create_fake_MSCWCtm_data(year=year, tst=reader.FREQ_CODES[freq])
+                ds[var_name].attrs.update(units=units, var_name=var_name)
+
             path = root / str(year) / f"Base_{freq}.nc"
             path.parent.mkdir(exist_ok=True, parents=True)
             ds.to_netcdf(path)
@@ -439,14 +450,12 @@ M_NO3 = M_N + M_O * 3
             {"concno3c": 1, "concno3f": 1, "concno3": 2},
         ),
         (
-            {"concno3c": "ug m-3", "concno3f": "ug m-3", "conchno3": "ug m-3"},
+            {"concoxn": "ug m-3"},
             "day",
             ["concNtno3"],
             {
-                "concno3c": 1,
-                "concno3f": 1,
-                "conchno3": 1,
-                "concNtno3": 2 * M_N / M_NO3 + M_N / M_HNO3,
+                "concoxn": 1,
+                "concNtno3": M_N / (M_N + 3 * M_O),
             },
         ),
         ({"wetoxs": "mg S m-2 d-1"}, "day", None, {"wetoxs": 1}),

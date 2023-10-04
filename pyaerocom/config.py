@@ -2,7 +2,6 @@ import getpass
 import logging
 import os
 from configparser import ConfigParser
-from importlib import resources
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +13,7 @@ from pyaerocom._lowlevel_helpers import (
     chk_make_subdir,
     list_to_shortstr,
 )
+from pyaerocom.data import resources
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
 from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
@@ -91,6 +91,12 @@ class Config:
 
     #: DMS
     DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
+
+    #: MEP name
+    MEP_NAME = "MEP"
+
+    #: ICOS name
+    ICOS_NAME = "ICOS"
 
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
@@ -183,7 +189,7 @@ class Config:
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = {}
-    _DB_SEARCH_SUBDIRS["lustre/storeA/project"] = "metno"
+    _DB_SEARCH_SUBDIRS["lustre/storeB/project"] = "metno"
     _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
     _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
 
@@ -194,7 +200,6 @@ class Config:
     _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
 
     def __init__(self, config_file=None, try_infer_environment=True):
-
         # Directories
         self._outputdir = None
         self._cache_basedir = None
@@ -271,11 +276,8 @@ class Config:
         elif loc in self._rejected_access:
             return False
 
-        if timeout is None:
-            timeout = self.SERVER_CHECK_TIMEOUT
-
         logger.info(f"Checking access to: {loc}")
-        if check_dir_access(loc, timeout=timeout):
+        if check_dir_access(loc):
             self._confirmed_access.append(loc)
             return True
         self._rejected_access.append(loc)
@@ -285,7 +287,6 @@ class Config:
         return [self.ROOTDIR, self.HOMEDIR]
 
     def _infer_config_from_basedir(self, basedir):
-
         basedir = os.path.normpath(basedir)
         for env_id, chk_sub in self._check_subdirs_cfg.items():
             chkdir = os.path.join(basedir, chk_sub)

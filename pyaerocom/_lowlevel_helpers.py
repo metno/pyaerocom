@@ -5,7 +5,6 @@ import abc
 import logging
 import os
 from collections.abc import MutableMapping
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -63,7 +62,7 @@ def read_json(file_path):
         content as dictionary
     """
     with open(file_path) as f:
-        data = simplejson.load(f)
+        data = simplejson.load(f, allow_nan=True)
     return data
 
 
@@ -80,8 +79,9 @@ def write_json(data_dict, file_path, **kwargs):
         additional keyword args passed to :func:`simplejson.dumps` (e.g.
         indent, )
     """
+    kwargs.update(ignore_nan=True)
     with open(file_path, "w") as f:
-        simplejson.dump(round_floats(data_dict), f, **kwargs)
+        simplejson.dump(round_floats(data_dict), f, allow_nan=True, **kwargs)
 
 
 def check_make_json(fp, indent=4):
@@ -136,7 +136,7 @@ def invalid_input_err_str(argname, argval, argopts):
     return f"Invalid input for {argname} ({argval}), choose from {argopts}"
 
 
-def check_dir_access(path, timeout=0.1):
+def check_dir_access(path):
     """Uses multiprocessing approach to check if location can be accessed
 
     Parameters
@@ -151,28 +151,17 @@ def check_dir_access(path, timeout=0.1):
     """
     if not isinstance(path, str):
         return False
-    pool = ThreadPoolExecutor()
 
-    def try_ls(testdir, timeout):
-        future = pool.submit(os.listdir, testdir)
-        try:
-            future.result(timeout)
-            return True
-        except Exception:
-            return False
-
-    return try_ls(path, timeout)
+    return os.access(path, os.R_OK)
 
 
-def check_write_access(path, timeout=0.1):
+def check_write_access(path):
     """Check if input location provides write access
 
     Parameters
     ----------
     path : str
         directory to be tested
-    timeout : float
-        timeout in seconds (to avoid blockage at non-existing locations)
 
     """
     if not isinstance(path, str):
@@ -181,25 +170,6 @@ def check_write_access(path, timeout=0.1):
 
     return os.access(path, os.W_OK)
 
-    # pool = ThreadPoolExecutor()
-
-    # def _test_write_access(path):
-    #     test = os.path.join(path, "_tmp")
-    #     try:
-    #         os.mkdir(test)
-    #         os.rmdir(test)
-    #         return True
-    #     except Exception:
-    #         return False
-
-    # def run_timeout(path, timeout):
-    #     future = pool.submit(_test_write_access, path)
-    #     try:
-    #         return future.result(timeout)
-    #     except Exception:
-    #         return False
-
-    # return run_timeout(path, timeout)
 
 
 def _class_name(obj):

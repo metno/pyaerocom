@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from pyaerocom import UngriddedData, ungriddeddata
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import DataCoverageError, VariableDefinitionError
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
@@ -15,7 +15,7 @@ def ungridded_empty():
 
 
 def test_init_shape(ungridded_empty):
-    assert ungridded_empty.shape == (1000000, 12)
+    assert ungridded_empty.shape == (10000000, 12)
 
 
 def test_init_add_cols():
@@ -25,7 +25,7 @@ def test_init_add_cols():
 
 def test_add_chunk(ungridded_empty):
     ungridded_empty.add_chunk(111002)
-    assert ungridded_empty.shape == (2000000, 12)
+    assert ungridded_empty.shape == (20000000, 12)
 
 
 def test_coordinate_access():
@@ -214,7 +214,6 @@ def test_check_unit(data_scat_jungfraujoch):
 
 @pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
 def test_check_convert_var_units(data_scat_jungfraujoch):
-
     out = data_scat_jungfraujoch.check_convert_var_units("sc550aer", "m-1", inplace=False)
 
     fac = 1e-6
@@ -239,3 +238,58 @@ def test_from_single_station_data():
     data0 = stat.ec550aer
     data1 = d.all_datapoints_var("ec550aer")
     assert data0 == pytest.approx(data1, abs=1e-20)
+
+
+def test_last_meta_idx(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.last_meta_idx, (np.ndarray, np.generic))
+
+
+def test_has_flag_data(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.has_flag_data, (np.bool_, bool))
+
+
+def test_is_filtered(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.is_filtered, (np.bool_, bool))
+
+
+def test_available_meta_keys(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.available_meta_keys, list)
+    assert all(isinstance(key, str) for key in aeronetsunv3lev2_subset.available_meta_keys)
+
+
+def test_nonunique_station_names(aeronetsunv3lev2_subset: UngriddedData):
+    assert isinstance(aeronetsunv3lev2_subset.nonunique_station_names, list)
+
+
+def test_set_flags_nan_error(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    with pytest.raises(AttributeError):
+        data = data.data.set_flags_nan(inplace=True)
+
+
+def test_remove_outliers(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    assert not data.filter_hist
+    new = data.remove_outliers(var_name="od550aer", low=0, high=0)
+    assert new.filter_hist
+
+
+def test_extract_var(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    od = data.extract_var("od550aer")
+    assert not data.is_filtered
+    assert od.is_filtered
+    assert od.shape[0] < data.shape[0]
+
+
+def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedData):
+    data = aeronetsunv3lev2_subset.copy()
+    with pytest.raises(VariableDefinitionError):
+        data.extract_var("nope")
+
+
+def test_find_common_stations(aeronetsunv3lev2_subset: UngriddedData):
+    data1 = aeronetsunv3lev2_subset.copy()
+    data2 = aeronetsunv3lev2_subset.copy()
+    station_map = data1.find_common_stations(other=data2)
+    assert station_map == {key: key for key in station_map}

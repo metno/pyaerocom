@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import numpy as np
 import pytest
@@ -156,7 +155,7 @@ def test_opts(reader: ReadEbas):
         keep_aux_vars=False,
         convert_units=True,
         try_convert_vmr_conc=True,
-        ensure_correct_freq=True,
+        ensure_correct_freq=False,
         freq_from_start_stop_meas=True,
         freq_min_cov=0.0,
     )
@@ -223,7 +222,7 @@ def test_NAN_VAL(reader: ReadEbas):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadEbas):
-    PROVIDES_VARIABLES = [
+    PROVIDES_VARIABLES = {
         "DEFAULT",
         "concca",
         "concmg",
@@ -242,6 +241,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "bsc550dryaer",
         "scrh",
         "acrh",
+        "ts",
         "concso4",
         "SO4ugSm3",
         "concso4pm10",
@@ -300,9 +300,19 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "wetoxn",
         "pr",
         "prmm",
-    ]
+        "concnh4fine",
+        "concCocpm10",
+        "concNno",
+        "concCecpm10",
+        "concno3pm10",
+        "concSso2",
+        "concso4fine",
+        "concso4coarse",
+        "concnh4coarse",
+        "concno3pm25",
+    }
 
-    assert sorted(reader.PROVIDES_VARIABLES) == sorted(PROVIDES_VARIABLES)
+    assert set(reader.PROVIDES_VARIABLES) == (PROVIDES_VARIABLES)
 
 
 def test_sqlite_database_file(reader: ReadEbas):
@@ -371,7 +381,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-    reader: ReadEbas, val, exception: Type[Exception], error: str
+    reader: ReadEbas, val, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -418,7 +428,7 @@ def test_get_ebas_var(reader: ReadEbas):
     ],
 )
 def test_get_ebas_var_error(
-    reader: ReadEbas, var_name: str, exception: Type[Exception], error: str
+    reader: ReadEbas, var_name: str, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader.get_ebas_var(var_name)
@@ -446,10 +456,11 @@ def test__get_var_cols_error(reader: ReadEbas, filedata: EbasNasaAmesFile, var: 
 
 
 def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
-    vars_to_read = ["sc550aer", "scrh"]
+    vars_to_read = ["sc550aer", "scrh", "ts"]
     columns = reader.find_var_cols(vars_to_read, filedata)
     assert columns["sc550aer"] == 17
     assert columns["scrh"] == 3
+    assert columns["ts"] == 4
 
 
 @pytest.mark.parametrize(
@@ -561,7 +572,7 @@ def test_read_file_error(
     reader: ReadEbas,
     ebas_issue_files: Path,
     vars_to_retrieve: str,
-    exception: Type[Exception],
+    exception: type[Exception],
     error: str,
 ):
     with pytest.raises(exception) as e:

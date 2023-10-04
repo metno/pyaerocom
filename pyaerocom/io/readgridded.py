@@ -170,7 +170,6 @@ class ReadGridded:
     VERT_ALT = {"Surface": "ModelLevel"}
 
     def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3"):
-
         self._data_dir = None
 
         #: data_id of gridded dataset
@@ -444,7 +443,6 @@ class ReadGridded:
             if fnmatch.fnmatch(var_name, pattern):
                 vars_required = self.AUX_REQUIRES[pattern]
                 for addvar in vars_required:
-
                     if not "*" in addvar:
                         vars_found.append(addvar)
                     else:
@@ -1663,7 +1661,6 @@ class ReadGridded:
         )
 
         if constraints is not None:
-
             if isinstance(constraints, dict):
                 constraints = [constraints]
             for constraint in constraints:

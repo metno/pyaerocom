@@ -7,13 +7,13 @@ import logging
 import os
 import shutil
 from datetime import datetime
-from importlib import resources
 from pathlib import Path
 from time import time
 
 import simplejson as json
 
 from pyaerocom import const
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
 
@@ -78,7 +78,7 @@ def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
     return f"aerocom3_{data_id}_{var_name}_{vert_code}_{year}_{ts_type}.nc"
 
 
-def _print_read_info(i, mod, tot_num, last_t, name, logger):
+def _print_read_info(i, mod, tot_num, last_t, name, logger):  # pragma: no cover
     """Helper for displaying standardised output in reading classes
 
     Not to be used directly
