@@ -47,7 +47,17 @@ class OutputPaths(ConstrainedContainer):
 
     """
 
-    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour", "forecast", "profiles"]
+    JSON_SUBDIRS = [
+        "map",
+        "ts",
+        "ts/diurnal",
+        "scat",
+        "hm",
+        "hm/ts",
+        "contour",
+        "forecast",
+        "profiles",
+    ]
 
     json_basedir = DirLoc(
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
@@ -427,7 +437,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         stop_yr = stop.year
         years = check_if_year(periods)
         if not years:
-
             if start == stop and isinstance(start, pd.Timestamp):
                 stop = start + timedelta(hours=23)
             elif isinstance(start, pd.Timestamp):

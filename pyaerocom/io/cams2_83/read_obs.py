@@ -54,7 +54,6 @@ def obs_paths(
 
 
 class ReadCAMS2_83(ReadUngriddedBase):
-
     __version__ = "0.0.0"
     _FILEMASK = ""
     DATA_ID = const.CAMS2_83_NRT_NAME

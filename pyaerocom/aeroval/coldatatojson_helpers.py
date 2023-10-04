@@ -857,7 +857,6 @@ def _process_map_and_scat(
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
-
                             # (start, stop) = _get_min_max_year_periods([per])
                             (start, stop) = _start_stop_from_periods(per)
 
@@ -1376,7 +1375,8 @@ def _start_stop_from_periods(period):
     start, stop = start_stop(start, stop)
     return start.year, stop.year
 
-#def _start_stop_from_periods(periods):
+
+# def _start_stop_from_periods(periods):
 #    start, stop = _get_min_max_year_periods(periods)
 #    return start_stop(start, stop + 1)
 

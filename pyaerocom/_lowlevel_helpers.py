@@ -171,7 +171,6 @@ def check_write_access(path):
     return os.access(path, os.W_OK)
 
 
-
 def _class_name(obj):
     """Returns class name of an object"""
     return type(obj).__name__

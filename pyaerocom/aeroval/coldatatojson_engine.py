@@ -186,29 +186,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-<<<<<<< HEAD
-        if not diurnal_only:
-            logger.info("Processing statistics timeseries for all regions")
-            input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
-            for reg in regnames:
-                try:
-                    stats_ts = _process_statistics_timeseries(
-                        data=data,
-                        freq=main_freq,
-                        region_ids={reg: regnames[reg]},
-                        use_weights=use_weights,
-                        use_country=use_country,
-                        data_freq=input_freq,
-                    )
-
-                except TemporalResolutionError:
-                    stats_ts = {}
-                fname = get_timeseries_file_name(reg, obs_name, var_name_web, vert_code)
-                ts_file = os.path.join(out_dirs["hm/ts"], fname)
-                _add_heatmap_entry_json(
-                    ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
-                )
-=======
         if coldata.data.attrs.get("just_for_viz", True):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
@@ -372,7 +349,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             _add_heatmap_entry_json(
                 ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
             )
->>>>>>> main-dev
 
         logger.info("Processing heatmap data for all regions")
 
@@ -416,25 +392,13 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         logger.info("Processing map and scat data by period")
 
-<<<<<<< HEAD
-
-            
-            scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-            scatter_freq = min(scatter_freq, main_freq)
-
-=======
         for period in periods:
             # compute map_data and scat_data just for this period
->>>>>>> main-dev
             map_data, scat_data = _process_map_and_scat(
                 data,
                 map_meta,
                 site_indices,
-<<<<<<< HEAD
-                periods,
-=======
                 [period],
->>>>>>> main-dev
                 str(scatter_freq),
                 stats_min_num,
                 seasons,
@@ -453,28 +417,3 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             outfile_scat = os.path.join(out_dirs["scat"], map_name)
             write_json(scat_data, outfile_scat, ignore_nan=True)
-<<<<<<< HEAD
-
-        if coldata.ts_type == "hourly" and use_diurnal:
-            logger.info("Processing diurnal profiles")
-            (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
-                coldata, regions_how, regnames, meta_glob
-            )
-            outdir = os.path.join(out_dirs["ts/diurnal"])
-            for ts_data_weekly in ts_objs_weekly:
-                # writes json file
-                _write_stationdata_json(ts_data_weekly, outdir)
-            if ts_objs_weekly_reg != None:
-                for ts_data_weekly_reg in ts_objs_weekly_reg:
-                    # writes json file
-                    _write_stationdata_json(ts_data_weekly_reg, outdir)
-
-        logger.info(
-            f"Finished computing json files for {model_name} ({model_var}) vs. "
-            f"{obs_name} ({obs_var})"
-        )
-
-        dt = time() - t00
-        logger.info(f"Time expired (TOTAL): {dt:.2f} s")
-=======
->>>>>>> main-dev

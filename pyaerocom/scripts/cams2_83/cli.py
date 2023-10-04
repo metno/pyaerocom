@@ -76,7 +76,7 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
         )
     elif eval_type == "season":
         return dict(
-            freqs=["hourly","daily", "monthly"],
+            freqs=["hourly", "daily", "monthly"],
             ts_type="hourly",
             main_freq="hourly",
             forecast_evaluation=True,
@@ -120,7 +120,6 @@ def get_seasons_in_period(start_date: datetime, end_date: datetime) -> List[str]
             start_period = date
 
     else:
-
         if start_period == daterange[-1]:
             periods.append(f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}")
         else:
@@ -261,9 +260,8 @@ def make_config(
     eval_type: Eval_Type | None,
     analysis: bool,
     onlymap: bool,
-    addmap: bool, 
+    addmap: bool,
 ) -> dict:
-
     logger.info("Making the configuration")
 
     if not models:
@@ -322,31 +320,31 @@ def make_config(
     if description is not None:
         cfg["exp_descr"] = description
     if addmap:
-        cfg["add_model_maps"]=True
+        cfg["add_model_maps"] = True
     if onlymap:
-        cfg["add_model_maps"]=True
-        cfg["only_model_maps"]=True
+        cfg["add_model_maps"] = True
+        cfg["only_model_maps"] = True
 
     return cfg
 
 
-#def read_observations(data: list) -> None:
+# def read_observations(data: list) -> None:
 def read_observations(specie: str, *, files: List, cache: str | Path | None) -> None:
-    #logger.info(f"Running {data[0]}")
-    #cache = data[2]
-    #if cache is not None:
+    # logger.info(f"Running {data[0]}")
+    # cache = data[2]
+    # if cache is not None:
     #    const.CACHEDIR = str(cache)
 
-    #reader = ReadUngridded()
+    # reader = ReadUngridded()
 
-    #reader.read(
+    # reader.read(
     #    data_ids="CAMS2_83.NRT",
     #    vars_to_retrieve=data[0],
     #    files=data[1],
     #    force_caching=True,
-    #)
+    # )
 
-    #logger.info(f"Finished {data[0]}")
+    # logger.info(f"Finished {data[0]}")
     logger.info(f"Running {specie}")
     if cache is not None:
         const.CACHEDIR = str(cache)
@@ -398,16 +396,15 @@ def runner(
     if pool > 1:
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
-        #pool_data = [[s, files, cache] for s in species_list]
+        # pool_data = [[s, files, cache] for s in species_list]
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
-                executor.submit(read_observations,specie,files=files,cache=cache)
+                executor.submit(read_observations, specie, files=files, cache=cache)
                 for specie in species_list
             ]
-            #executor.map(read_observations, pool_data)
+            # executor.map(read_observations, pool_data)
         for future in as_completed(futures):
             future.result()
-
 
     logger.info(f"Running Statistics")
     ExperimentProcessor(stp).run()
@@ -436,7 +433,9 @@ def runnermedianscores(
 
     start = time.time()
 
-    logger.info(f"Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run")
+    logger.info(
+        f"Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
+    )
     if pool > 1:
         logger.info(f"Making forecast plot with pool {pool}")
         with ProcessPoolExecutor(max_workers=pool) as executor:
@@ -448,7 +447,7 @@ def runnermedianscores(
             future.result()
     else:
         CAMS2_83_Processer(stp).run(analysis=analysis)
-    
+
     print(f"Long run: {time.time() - start} sec")
 
 
@@ -526,7 +525,7 @@ def main(
     onlymap: bool = typer.Option(
         False,
         help="Sets the flag which tells the code to set add_model_maps=True and only_model_maps=True. Option is set to False otherwise",
-     ),
+    ),
     medianscores: bool = typer.Option(
         False,
         "--medianscores",
@@ -556,7 +555,6 @@ def main(
     ),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
-
     if verbose or dry_run:
         change_verbosity(logging.INFO)
 
@@ -566,7 +564,7 @@ def main(
         )
         pool = mp.cpu_count()
 
-    #mp.set_start_method('forkserver')
+    # mp.set_start_method('forkserver')
 
     cfg = make_config(
         start_date,
@@ -588,12 +586,18 @@ def main(
 
     quiet = not verbose
     if medianscores == True:
-        if eval_type not in {"season", "long"} :
-            logger.error("Median scores calculations are only consistent with a season/long kind of evaluation")
-            raise Exception("Median scores calculations are only consistent with a season/long kind of evaluation")
-        else :
+        if eval_type not in {"season", "long"}:
+            logger.error(
+                "Median scores calculations are only consistent with a season/long kind of evaluation"
+            )
+            raise Exception(
+                "Median scores calculations are only consistent with a season/long kind of evaluation"
+            )
+        else:
             logger.info("Special run for median scores only")
-            runnermedianscores(cfg, cache, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)
-    else :
+            runnermedianscores(
+                cfg, cache, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool
+            )
+    else:
         logger.info("Standard run")
         runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)

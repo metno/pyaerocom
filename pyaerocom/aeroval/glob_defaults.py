@@ -122,38 +122,38 @@ statistics_defaults = {
         "decimals": 1,
         "forecast": True,
     },
-#    "mb": {
-#        "name": "Mean Bias",
-#        "longname": "Mean Bias",
-#        "scale": [
-#            -0.15,
-#            -0.1,
-#            -0.05,
-#            0,
-#            0.05,
-#            0.1,
-#            0.15,
-#        ],  # factor to be multiplied by range of data
-#        "colmap": "bwr",
-#        "unit": "var",
-#        "decimals": 1,
-#    },
-#    "mab": {
-#        "name": "MAB",
-#        "longname": "Mean Absolute Bias",
-#        "scale": [
-#            0,
-#            0.025,
-#            0.05,
-#            0.075,
-#            0.1,
-#            0.125,
-#            0.15,
-#        ],  # factor to be multiplied by range of data
-#        "colmap": "bwr",
-#        "unit": "var",
-#        "decimals": 1,
-#    },
+    #    "mb": {
+    #        "name": "Mean Bias",
+    #        "longname": "Mean Bias",
+    #        "scale": [
+    #            -0.15,
+    #            -0.1,
+    #            -0.05,
+    #            0,
+    #            0.05,
+    #            0.1,
+    #            0.15,
+    #        ],  # factor to be multiplied by range of data
+    #        "colmap": "bwr",
+    #        "unit": "var",
+    #        "decimals": 1,
+    #    },
+    #    "mab": {
+    #        "name": "MAB",
+    #        "longname": "Mean Absolute Bias",
+    #        "scale": [
+    #            0,
+    #            0.025,
+    #            0.05,
+    #            0.075,
+    #            0.1,
+    #            0.125,
+    #            0.15,
+    #        ],  # factor to be multiplied by range of data
+    #        "colmap": "bwr",
+    #        "unit": "var",
+    #        "decimals": 1,
+    #    },
     "R": {
         "name": "R",
         "longname": "Correlation Coefficient",
@@ -321,8 +321,6 @@ var_web_info = dict(
     conco3=["O3", "3D", "Gas concentrations"],
     concno310=["NO3_PM10", "3D", "Particle concentration"],
     concno325=["NO3_PM25", "3D", "Particle concentration"],
-<<<<<<< HEAD
-=======
     proxyod550bc=["OD (Black Carbon)", "2D", "Optical properties"],
     proxyod550dust=["OD (Dust)", "2D", "Optical properties"],
     proxyod550oa=["OD (Organic Matter)", "2D", "Optical properties"],
@@ -330,7 +328,6 @@ var_web_info = dict(
     proxyod550ss=["OD (Sea Salt)", "2D", "Optical properties"],
     proxyod550nh4=["OD (NH4)", "2D", "Optical properties"],
     proxyod550no3=["OD (NO3)", "2D", "Optical properties"],
->>>>>>> main-dev
     # Gases
     concNno=["NO", "3D", "Concentration"],
     concno2=["NO2", "3D", "Gas concentrations"],

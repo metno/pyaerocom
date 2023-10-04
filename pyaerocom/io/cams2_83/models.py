@@ -7,7 +7,6 @@ from typing import NamedTuple
 
 
 class ModelName(str, Enum):
-
     ENSEMBLE = "ensemble"
     CHIMERE = "chimere"
     DEHM = "dehm"
