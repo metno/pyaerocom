@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from pandas import Timestamp
 
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
@@ -90,7 +91,7 @@ def test__period_str_to_timeslice_error():
     ],
 )
 def test__get_min_max_year_periods(periods: list[str], result: tuple[int, int]):
-    assert _get_min_max_year_periods(periods) == result
+    assert tuple(int(itm.strftime("%Y")) for itm in _get_min_max_year_periods(periods)) == result
 
 
 def test__get_min_max_year_periods_error():
