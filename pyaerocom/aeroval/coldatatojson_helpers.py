@@ -632,10 +632,11 @@ def _init_site_coord_arrays(data):
     return (sites, lats, lons, alts, countries, jsdates)
 
 
-def _get_stat_regions(lats, lons, regions):
+def _get_stat_regions(lats, lons, regions, **kwargs):
     regs = []
+    regions_how = kwargs["regions_how"] if kwargs["regions_how"] else None
     for lat, lon in zip(lats, lons):
-        reg = find_closest_region_coord(lat, lon, regions=regions)
+        reg = find_closest_region_coord(lat, lon, regions=regions, regions_how=regions_how)
         regs.append(reg)
     return regs
 
@@ -645,6 +646,8 @@ def _process_sites(data, regions, regions_how, meta_glob):
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
         regs = countries
+    elif regions_how == "htap":
+        regs = _get_stat_regions(lats, lons, regions, regions_how=regions_how)
     else:
         regs = _get_stat_regions(lats, lons, regions)
 
