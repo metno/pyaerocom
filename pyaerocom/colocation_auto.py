@@ -35,7 +35,7 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadMscwCtm, ReadUngridded
+from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 
