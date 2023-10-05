@@ -470,7 +470,7 @@ class UngriddedData:
         return new
 
     @property
-    def contains_vars(self):
+    def contains_vars(self) -> list[str]:
         """List of all variables in this dataset"""
         return list(self.var_idx)
 

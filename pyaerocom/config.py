@@ -94,6 +94,9 @@ class Config:
     #: MEP name
     MEP_NAME = "MEP"
 
+    #: ICOS name
+    ICOS_NAME = "ICOS"
+
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
