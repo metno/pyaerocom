@@ -392,7 +392,7 @@ def find_closest_region_coord(
         regions = get_all_default_regions()
     matches = get_regions_coord(lat, lon, regions)
     matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
-    if "regions_how" in kwargs and kwargs["regions_how"] == "htap":
+    if kwargs.get("regions_how") == "htap":
         # keep only first entry and Oceans if it exists
         keep = matches[:1]
         if "Oceans" in matches[1:]:

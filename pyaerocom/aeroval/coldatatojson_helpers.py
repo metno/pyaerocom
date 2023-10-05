@@ -634,7 +634,7 @@ def _init_site_coord_arrays(data):
 
 def _get_stat_regions(lats, lons, regions, **kwargs):
     regs = []
-    regions_how = kwargs["regions_how"] if kwargs["regions_how"] else None
+    regions_how = kwargs.get("regions_how", None)
     for lat, lon in zip(lats, lons):
         reg = find_closest_region_coord(lat, lon, regions=regions, regions_how=regions_how)
         regs.append(reg)
