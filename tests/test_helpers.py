@@ -17,7 +17,7 @@ def test_get_standarad_name():
 
 
 def test_get_standard_unit():
-    assert helpers.get_standard_unit("ec550aer") == "1/Mm"
+    assert helpers.get_standard_unit("ec550aer") == "1/km"
 
 
 def test_get_lowest_resolution():

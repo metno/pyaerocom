@@ -2398,7 +2398,6 @@ class ReadL2Data(ReadL2DataBase):
                     except ValueError:
                         # this happens when height_data and var_data have only one entry
                         # set out_arr[time_step_idx,:] to NaN in this case for now
-                        # breakpoint()
                         out_arr[time_step_idx, :] = np.nan
 
                 # if nansum > 0:
@@ -2724,7 +2723,6 @@ class ReadL2Data(ReadL2DataBase):
                     except ValueError:
                         # this happens when height_data and var_data have only one entry
                         # set out_arr[time_step_idx,:] to NaN in this case for now
-                        # breakpoint()
                         out_arr[time_step_idx, :] = np.nan
 
                 elif nansum == 0:

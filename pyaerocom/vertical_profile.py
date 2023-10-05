@@ -1,14 +1,25 @@
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 
-# ToDo: complete docstring
 class VerticalProfile:
     """Object representing single variable profile data"""
 
-    def __init__(self, data, altitude, dtime, var_name, data_err, var_unit, altitude_unit):
+    def __init__(
+        self,
+        data: npt.ArrayLike,
+        altitude: npt.ArrayLike,
+        dtime,
+        var_name: str,
+        data_err: Optional[npt.ArrayLike],
+        var_unit: str,
+        altitude_unit: str,
+    ):
         self.var_name = var_name
         self.dtime = dtime
         self.data = data
@@ -19,7 +30,11 @@ class VerticalProfile:
         self.var_info["altitude"] = dict(units=altitude_unit)
         self.var_info[self.var_name] = dict(units=var_unit)
 
-        assert len(self.data) == len(self.data_err) == len(self.altitude)
+        # Guard against having data (and data errors) with missing asociated altitude info
+        if hasattr(self.data_err, "__len__"):
+            assert len(self.data) == len(self.data_err) == len(self.altitude)
+        else:
+            assert len(self.data) == len(self.altitude)
 
     @property
     def data(self):
@@ -66,7 +81,7 @@ class VerticalProfile:
         figsize=None,
         ax=None,
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """Simple plot method for vertical profile"""
         if figsize is None:
             figsize = (4, 8)

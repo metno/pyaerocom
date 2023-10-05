@@ -39,7 +39,7 @@ class OutputPaths(ConstrainedContainer):
 
     """
 
-    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour"]
+    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour", "profiles"]
 
     json_basedir = DirLoc(
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
@@ -104,13 +104,13 @@ class StatisticsSetup(ConstrainedContainer):
     Attributes
     ----------
     weighted_stats : bool
-        if True, statistical parameters are calculated using area weights,
+        if True, statistics are calculated using area weights,
         this is only relevant for gridded / gridded evaluations.
     annual_stats_constrained : bool
         if True, then only sites are considered that satisfy a potentially
         specified annual resampling constraint (see
         :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs`). E.g.
-        lets say you want to calculate statistical parameters (bias,
+        lets say you want to calculate statistics (bias,
         correlation, etc.) for monthly model / obs data for a given site and
         year. Lets further say, that there are only 8 valid months of data, and
         4 months are missing, so statistics will be calculated for that year
