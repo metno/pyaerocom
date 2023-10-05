@@ -347,15 +347,14 @@ def get_regions_coord(lat, lon, regions=None):
     list
         list of regions that contain this coordinate
     """
-    breakpoint()
     matches = []
     if regions is None:
         regions = get_all_default_regions()
     ocean_mask = load_region_mask_xr("OCN")
     on_ocean = bool(get_mask_value(lat, lon, ocean_mask))
     for rname, reg in regions.items():
-        # if rname == ALL_REGION_NAME:  # always True for ALL_REGION_NAME
-        #     continue
+        if rname == ALL_REGION_NAME:  # always True for ALL_REGION_NAME
+            continue
         # OCN needs special handling determined by the rname, not hardcoded to return OCN b/c of HTAP issues
 
         if rname in POSSIBLE_REGION_OCEAN_NAMES:
@@ -393,7 +392,6 @@ def find_closest_region_coord(
         regions = get_all_default_regions()
     matches = get_regions_coord(lat, lon, regions)
     matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
-    breakpoint()
     if kwargs["regions_how"] and kwargs["regions_how"] == "htap":
         # keep only first entry and Oceans if it exists
         keep = matches[:1]
