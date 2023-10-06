@@ -5,8 +5,6 @@ import re
 
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
-from tqdm import tqdm
-
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
@@ -24,6 +22,7 @@ from pyaerocom.aux_var_helpers import (
     compute_wetoxs_from_concprcpoxst,
     compute_wetrdn_from_concprcprdn,
     compute_wetso4_from_concprcpso4,
+    compute_wetna_from_concprcpna,
     concx_to_vmrx,
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
@@ -47,6 +46,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -241,6 +241,7 @@ class ReadEbas(ReadUngriddedBase):
         "wetoxn": ["concprcpoxn", "pr"],
         "wetrdn": ["concprcprdn", "pr"],
         "wetso4": ["concprcpso4", "pr"],
+        "wetna": ["concprcpna", "pr"],
         "wetno3": ["concprcpno3", "pr"],
         "wetnh4": ["concprcpnh4", "pr"],
         "vmro3max": ["vmro3"],
@@ -312,6 +313,7 @@ class ReadEbas(ReadUngriddedBase):
         "wetnh4": compute_wetnh4_from_concprcpnh4,
         "wetno3": compute_wetno3_from_concprcpno3,
         "wetso4": compute_wetso4_from_concprcpso4,
+        "wetna": compute_wetna_from_concprcpna,
         "vmro3max": calc_vmro3max,
         # proxy dry dep
         # Suphar based
