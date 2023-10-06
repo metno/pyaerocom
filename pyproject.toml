@@ -69,6 +69,7 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
+cams2_83_run = pyaerocom.scripts.cams2_83.cli:app
 
 [project.entry-points."pyaerocom.gridded"]
 ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
