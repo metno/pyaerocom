@@ -75,6 +75,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None, perform_fmt_ch
     """
     cubes = []
     loaded_files = []
+
     for i, _file in enumerate(files):
         try:
             cube = load_cube_custom(
@@ -122,6 +123,7 @@ def load_cube_custom(file, var_name=None, file_convention=None, perform_fmt_chec
         file = str(file)  # iris load does not like PosixPath
     if perform_fmt_checks is None:
         perform_fmt_checks = const.GRID_IO.PERFORM_FMT_CHECKS
+
     cube_list = iris.load(file)
     cube = None
     if var_name is None:

@@ -215,7 +215,9 @@ class VerticalCoordinate:
     FUNS_YIELD = {"asc": "air_pressure", "ahspc": "air_pressure", "gph": "altitude"}
 
     _LEV_INCREASES_WITH_ALT = dict(
-        atmosphere_sigma_coordinate=False, atmosphere_hybrid_sigma_pressure_coordinate=False
+        atmosphere_sigma_coordinate=False,
+        atmosphere_hybrid_sigma_pressure_coordinate=False,
+        altitude=True,
     )
 
     def __init__(self, name=None):

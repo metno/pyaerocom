@@ -1141,6 +1141,7 @@ class GriddedData:
                 f"Extracting timeseries data from large array (shape: {self.shape}). "
                 f"This may take a while..."
             )
+
         # if the method makes it to this point, it is 3 or 4 dimensional
         # and the first 3 dimensions are time, latitude, longitude.
         if self.ndim == 3:  # data does not contain vertical dimension
@@ -1162,6 +1163,7 @@ class GriddedData:
 
         if sample_points is None:
             sample_points = self._coords_to_iris_sample_points(**coords)
+
         return self._to_timeseries_3D(
             sample_points,
             scheme,
@@ -1317,7 +1319,12 @@ class GriddedData:
         data = self._apply_vert_scheme(sample_points, vert_scheme)
 
         # ToDo: check if _to_timeseries_2D can be called here
-        return data.to_time_series(sample_points, scheme, collapse_scalar, add_meta=add_meta)
+        return data.to_time_series(
+            sample_points=sample_points,
+            scheme=scheme,
+            collapse_scalar=collapse_scalar,
+            add_meta=add_meta,
+        )
 
     def _apply_vert_scheme(self, sample_points, vert_scheme):
         """Helper method that checks and infers vertical scheme for time
@@ -1349,7 +1356,7 @@ class GriddedData:
                 "Cannot yet retrieve timeseries at altitude levels. Coming soon..."
             )
         elif vert_scheme == "profile":
-            raise NotImplementedError("Cannot yet retrieve profile timeseries")
+            return self
         else:
             try:
                 # check if vertical scheme can be converted into valid iris
