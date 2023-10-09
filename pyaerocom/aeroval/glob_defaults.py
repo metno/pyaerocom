@@ -353,6 +353,7 @@ var_web_info = dict(
     vmrox=["OX", "3D", "Gas volume mixing ratio"],
     concco=["CO", "3D", "Particle concentration"],
     vmrco=["CO", "3D", "Volume mixing ratios"],
+    vmrco2=["CO", "3D", "Volume mixing ratios"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
     concpm25=["PM2.5", "3D", "Particle concentrations"],
