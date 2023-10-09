@@ -85,6 +85,7 @@ class ReadMscwCtm:
         # "vmrox": ["concno2", "vmro3"],
         "vmrox": ["concno2", "conco3"],
         "vmrno2": ["concno2"],
+        # "concbenzene": ["vmrbenezene"],
         "concNtno3": ["concoxn"],
         "concNtnh": ["concrdn"],
         # "concNtno3": ["conchno3", "concno3f", "concno3c"],

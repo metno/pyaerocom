@@ -76,6 +76,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_NAMES_FILE["vmro3"] = "concentration"
     VAR_NAMES_FILE["vmro3max"] = "concentration"
     VAR_NAMES_FILE["vmrno2"] = "concentration"
+    VAR_NAMES_FILE["concbenzene"] = "concentration"
+    VAR_NAMES_FILE["vmrbenzene"] = "concentration"
 
     VAR_NAMES_FILE["concSso2"] = "concentration"
     VAR_NAMES_FILE["concNno"] = "concentration"
@@ -102,6 +104,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         concco="**/??_10_*_timeseries.csv*",
         concno="**/??_38_*_timeseries.csv*",
         concpm25="**/??_6001_*_timeseries.csv*",
+        concbenzene="**/??_20_*_timeseries.csv*",
+        vmrbenzene="**/??_20_*_timeseries.csv*",
         concSso2="**/??_1_*_timeseries.csv*",
         concNno2="**/??_8_*_timeseries.csv*",
         concNno="**/??_38_*_timeseries.csv*",
@@ -122,6 +126,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     CONV_FACTOR["vmrno2"] = np.float_(
         0.514
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
+    CONV_FACTOR["vmrbenzene"] = np.float_(1.0 / 3.2430)
 
     # unit of the converted property after the conversion
     CONV_UNIT = {}
@@ -131,7 +136,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     CONV_UNIT["vmro3"] = "ppb"
     CONV_UNIT["vmro3max"] = "ppb"
     CONV_UNIT["vmrno2"] = "ppb"
-
+    CONV_UNIT["vmrbenzene"] = "ppb"
     #: field name of the start time of the measurement (in lower case)
     START_TIME_NAME = "datetimebegin"
 
@@ -147,6 +152,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     VAR_CODES["10"] = "concco"
     VAR_CODES["38"] = "concno"
     VAR_CODES["6001"] = "concpm25"
+    VAR_CODES["20"] = "concbenzene"
 
     #: column name that holds the EEA variable code
     VAR_CODE_NAME = "airpollutantcode"
@@ -198,12 +204,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         "concNno2": ["concno2"],
         "concNno": ["concno"],
         "concSso2": ["concso2"],
+        "vmrbenzene": ["concbenzene"],
     }
 
     AUX_FUNS = {
         "vmro3": NotImplementedError(),
         "vmro3max": NotImplementedError(),
         "vmrno2": NotImplementedError(),
+        "vmrbenzene": NotImplementedError(),
         "concNno2": NotImplementedError(),
         "concNno": NotImplementedError(),
         "concSso2": NotImplementedError(),
