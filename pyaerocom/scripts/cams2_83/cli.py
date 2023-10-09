@@ -22,10 +22,9 @@ from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
+from pyaerocom.scripts.config import CFG, obs_filters, species_list
+from pyaerocom.scripts.processer import CAMS2_83_Processer
 from pyaerocom.tools import clear_cache
-
-from .config import CFG, obs_filters, species_list
-from .processer import CAMS2_83_Processer
 
 """
 TODO:
@@ -437,7 +436,7 @@ def runnermedianscores(
         f"Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
     if pool > 1:
-        logger.info(f"Making forecast plot with pool {pool}")
+        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
                 executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
@@ -446,6 +445,7 @@ def runnermedianscores(
         for future in as_completed(futures):
             future.result()
     else:
+        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
         CAMS2_83_Processer(stp).run(analysis=analysis)
 
     print(f"Long run: {time.time() - start} sec")
