@@ -96,7 +96,7 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "vmrco2": {
-        "scale": [100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0],
+        "scale": [400.0, 405.0, 410.0, 415.0, 420.0, 425.0, 430.0, 435.0, 440.0, 445.0, 450.0],
         "colmap": "coolwarm",
     },
     "concco": {
@@ -357,7 +357,7 @@ var_web_info = dict(
     vmrox=["OX", "3D", "Gas volume mixing ratio"],
     concco=["CO", "3D", "Particle concentration"],
     vmrco=["CO", "3D", "Volume mixing ratios"],
-    vmrco2=["CO", "3D", "Volume mixing ratios"],
+    vmrco2=["CO2", "3D", "Volume mixing ratios"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
     concpm25=["PM2.5", "3D", "Particle concentrations"],
