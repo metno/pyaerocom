@@ -1,6 +1,5 @@
 import logging
 import os
-import shutil
 from time import time
 
 from cf_units import Unit
@@ -17,10 +16,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_map_and_scat,
     _process_regional_timeseries,
     _process_sites,
-    _process_sites_weekly_ts,
     _process_statistics_timeseries,
     _write_site_data,
-    _write_stationdata_json,
     add_profile_entry_json,
     get_heatmap_filename,
     get_json_mapname,
@@ -53,10 +50,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             list of files that have been converted.
 
         """
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
-        for idir in out_dirs:
-            if os.path.exists(out_dirs[idir]):
-                shutil.rmtree(out_dirs[idir])
 
         converted = []
         for file in files:

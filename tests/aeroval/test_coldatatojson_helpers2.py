@@ -4,7 +4,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import xarray
-from pyexpat.errors import XML_ERROR_PARAM_ENTITY_REF
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -23,12 +22,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_timeseries_file_name,
 )
 from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
-from pyaerocom.region_defs import (
-    HTAP_REGIONS,
-    HTAP_REGIONS_DEFAULT,
-    OLD_AEROCOM_REGIONS,
-    OTHER_REGIONS,
-)
 from tests.fixtures.collocated_data import COLDATA
 
 
