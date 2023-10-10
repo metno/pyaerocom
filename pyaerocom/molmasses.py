@@ -15,6 +15,7 @@ MOLMASSES = {
     "glyoxal": 58.036,
     "glyox": 58.036,
     "hcho": 30.026,
+    "co2": 44.0095,
 }
 
 
