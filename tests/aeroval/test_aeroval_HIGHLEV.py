@@ -39,7 +39,7 @@ CHK_CFG4 = {
     "hm": ["glob_stats_monthly.json"],
     "hm/ts": 10,  # number of .json files in subdir
     "scat": ["SDA-and-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
-    "ts": 9,  # number of .json files in subdir
+    "ts": 21,  # number of .json files in subdir
     "ts/diurnal": 0,  # number of .json files in subdir
 }
 
