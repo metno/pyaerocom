@@ -50,11 +50,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             list of files that have been converted.
 
         """
-        # out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
-        # for idir in out_dirs:
-        #     if os.path.exists(out_dirs[idir]):
-        #         shutil.rmtree(out_dirs[idir])
-
         converted = []
         for file in files:
             logger.info(f"Processing: {file}")
