@@ -22,8 +22,8 @@ from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
-from pyaerocom.scripts.config import CFG, obs_filters, species_list
-from pyaerocom.scripts.processer import CAMS2_83_Processer
+from pyaerocom.scripts.cams2_83.config import CFG, obs_filters, species_list
+from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
 from pyaerocom.tools import clear_cache
 
 """
