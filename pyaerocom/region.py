@@ -399,5 +399,5 @@ def find_closest_region_coord(
             keep += ["Oceans"]
         if ALL_REGION_NAME in matches[1:]:
             keep += [ALL_REGION_NAME]
-        return list({*keep})
+        return list(set(keep))
     return matches
