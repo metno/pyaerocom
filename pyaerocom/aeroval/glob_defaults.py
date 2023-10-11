@@ -206,6 +206,7 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetna": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
     "wetoxn": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
     "wetrdn": {
         "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
@@ -595,6 +596,7 @@ var_web_info = dict(
     depoxs=["TotDepOXS", "3D", "Total Deposition"],
     depoxn=["TotDepOXN", "3D", "Total Deposition"],
     deprdn=["TotDepRDN", "3D", "Total Deposition"],
+    wetna=["WetNa", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
     wetoxsc=["WetOXScorr", "3D", "Deposition"],
     wetoxst=["WetOXStot", "3D", "Deposition"],
