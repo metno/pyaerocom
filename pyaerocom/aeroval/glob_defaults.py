@@ -498,6 +498,18 @@ statistics_obs_only = {
     },
 }
 
+# For experiments where only model data is interesting, as with proxy drydep
+statistics_model_only = {
+    "data_mean": {
+        "name": "Mean-Mod",
+        "longname": "Model Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
+    },
+}
+
 #: Mapping of pyaerocom variable names to web naming conventions
 ## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
 var_web_info = dict(
