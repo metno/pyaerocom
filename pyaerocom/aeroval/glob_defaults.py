@@ -211,6 +211,12 @@ var_ranges_defaults = {
         "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
         "colmap": "coolwarm",
     },
+    "wetoxsf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetoxnf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetrdnf": {
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
+        "colmap": "coolwarm",
+    },
     "prmm": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
@@ -292,6 +298,9 @@ var_ranges_defaults = {
     "depoxs": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "depoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "deprdn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depoxsf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depoxnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "deprdnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
 }
 
 #: Default information for statistical parameters
@@ -595,6 +604,9 @@ var_web_info = dict(
     depoxs=["TotDepOXS", "3D", "Total Deposition"],
     depoxn=["TotDepOXN", "3D", "Total Deposition"],
     deprdn=["TotDepRDN", "3D", "Total Deposition"],
+    depoxsf=["TotDepOXSforr", "3D", "Total Deposition"],
+    depoxnf=["TotDepOXNforr", "3D", "Total Deposition"],
+    deprdnf=["TotDepRDNforr", "3D", "Total Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
     wetoxsc=["WetOXScorr", "3D", "Deposition"],
     wetoxst=["WetOXStot", "3D", "Deposition"],
