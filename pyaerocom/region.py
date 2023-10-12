@@ -12,6 +12,8 @@ from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
 
+POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
+
 
 class Region(BrowseDict):
     """Class specifying a region
@@ -349,14 +351,17 @@ def get_regions_coord(lat, lon, regions=None):
     if regions is None:
         regions = get_all_default_regions()
     ocean_mask = load_region_mask_xr("OCN")
-    on_ocean = get_mask_value(lat, lon, ocean_mask)
+    on_ocean = bool(get_mask_value(lat, lon, ocean_mask))
     for rname, reg in regions.items():
         if rname == ALL_REGION_NAME:  # always True for ALL_REGION_NAME
+            matches.append(rname)
             continue
         # OCN needs special handling determined by the rname, not hardcoded to return OCN b/c of HTAP issues
+        if rname in POSSIBLE_REGION_OCEAN_NAMES:
+            if on_ocean:
+                matches.append(rname)
+            continue
         if reg.contains_coordinate(lat, lon) and not on_ocean:
-            matches.append(rname)
-        if rname == "OCN" and on_ocean:
             matches.append(rname)
     if len(matches) == 0:
         matches.append(ALL_REGION_NAME)
@@ -364,9 +369,7 @@ def get_regions_coord(lat, lon, regions=None):
 
 
 def find_closest_region_coord(
-    lat: float,
-    lon: float,
-    regions: dict | None = None,
+    lat: float, lon: float, regions: dict | None = None, **kwargs
 ) -> list[str]:
     """Finds list of regions sorted by their center closest to input coordinate
 
@@ -389,5 +392,12 @@ def find_closest_region_coord(
         regions = get_all_default_regions()
     matches = get_regions_coord(lat, lon, regions)
     matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
-
+    if kwargs.get("regions_how") == "htap":
+        # keep only first entry and Oceans if it exists
+        keep = matches[:1]
+        if "Oceans" in matches[1:]:
+            keep += ["Oceans"]
+        if ALL_REGION_NAME in matches[1:]:
+            keep += [ALL_REGION_NAME]
+        return list(set(keep))
     return matches

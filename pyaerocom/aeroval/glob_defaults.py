@@ -490,18 +490,6 @@ statistics_trend = {
 statistics_obs_only = {
     "refdata_mean": {
         "name": "Mean-Obs",
-        "longname": "Model Mean",
-        "scale": None,
-        "colmap": "coolwarm",
-        "unit": "1",
-        "decimals": 2,
-    },
-}
-
-# For experiments where only model data is interesting, as with proxy drydep
-statistics_model_only = {
-    "data_mean": {
-        "name": "Mean-Mod",
         "longname": "Observation Mean",
         "scale": None,
         "colmap": "coolwarm",
@@ -568,6 +556,7 @@ var_web_info = dict(
     vmrox=["OX", "3D", "Gas volume mixing ratio"],
     concco=["CO", "3D", "Particle concentration"],
     vmrco=["CO", "3D", "Volume mixing ratios"],
+    vmrco2=["CO2", "3D", "Volume mixing ratios"],
     vmrc2h2=["Ethyne", "3D", "Volume mixing ratios"],
     vmrc2h4=["Ethylene", "3D", "Volume mixing ratios"],
     vmrc2h6=["Ethane", "3D", "Volume mixing ratios"],

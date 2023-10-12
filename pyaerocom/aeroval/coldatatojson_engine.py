@@ -50,6 +50,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             list of files that have been converted.
 
         """
+
         converted = []
         for file in files:
             logger.info(f"Processing: {file}")
