@@ -1,7 +1,4 @@
 from __future__ import annotations
-
-import pickle
-
 import iris
 import numpy as np
 import pytest
