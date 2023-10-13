@@ -6,14 +6,16 @@ import iris
 import numpy as np
 import pytest
 
+from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom import GriddedData
 from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
 from tests.fixtures.data_access import TEST_DATA
 
-ROOT = TEST_DATA["Earlinet-test-3d-collocation"].path
 
-TEST_FILE = [
-    ROOT / "earlinet_example_for_ci.pkl",
+ROOT = TEST_DATA["Earlinet-test"].path
+
+TEST_FILE: list[str] = [
+    f"{ROOT}/EARLINET_AerRemSen_waw_Lev02_b0532_202109221030_202109221130_v01_qc03.nc",
 ]
 
 
@@ -29,7 +31,7 @@ def fake_model_data_with_altitude():
         np.linspace(0, 60000, 10000), var_name="alt", standard_name="altitude", units="meters"
     )
     time = iris.coords.DimCoord(
-        np.arange(18896, 18896 + 7, 1),
+        np.arange(18892, 18892 + 7, 1),
         var_name="time",
         standard_name="time",
         units="days since epoch",
@@ -56,9 +58,9 @@ def fake_model_data_with_altitude():
 
 @pytest.fixture
 def example_earlinet_ungriddeddata():
-    path = TEST_FILE[0]
-    assert path.is_file(), f"you should have {path}, update ~/MyPyaerocom/testdata-minimal/"
-    return pickle.load(path.open("rb"))
+    reader = ReadEarlinet()
+    data = reader.read(vars_to_retrieve=["bsc532aer"], files=TEST_FILE[0])
+    return data
 
 
 @pytest.mark.parametrize(
