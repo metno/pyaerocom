@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 TESTATA_FILE = "testdata-minimal.tar.gz.20231013"
 
 minimal_dataset = pooch.create(
-    path=Path(const.OUTPUTDIR),
+    path=const.OUTPUTDIR,  # ~/MyPyaerocom/
     base_url="https://pyaerocom-ng.met.no/pyaerocom-suppl",
     registry={
         "testdata-minimal.tar.gz.20220602": "md5:5d4c6455089bc93fff1fc5e2612cf439",
@@ -34,7 +34,7 @@ minimal_dataset = pooch.create(
 
 
 def download(file_name: str = TESTATA_FILE):
-    """download tar file to  ~/MyPyaerocom/ unpack cointents into ~/MyPyaerocom/testdata-minimal/"""
+    """download tar file to ~/MyPyaerocom/ unpack cointents into ~/MyPyaerocom/testdata-minimal/"""
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
     minimal_dataset.fetch(file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir="./"))
 
