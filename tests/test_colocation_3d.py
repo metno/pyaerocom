@@ -59,8 +59,7 @@ def fake_model_data_with_altitude():
 @pytest.fixture
 def example_earlinet_ungriddeddata():
     reader = ReadEarlinet()
-    data = reader.read(vars_to_retrieve=["bsc532aer"], files=TEST_FILE[0])
-    return data
+    return reader.read(vars_to_retrieve=["bsc532aer"], files=TEST_FILE[0])
 
 
 @pytest.mark.parametrize(
