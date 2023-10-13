@@ -47,6 +47,19 @@ class DataForTests(NamedTuple):
     def path(self) -> Path:
         return minimal_dataset.path / "testdata-minimal" / self.relpath
 
+    def register_ungridded(self, name: str):
+        if self.reader is None:
+            logger.info(f"Adding data search directory {self.path}")
+            const.add_data_search_dir(str(self.path))
+            return
+
+        if const.OBSLOCS_UNGRIDDED.get(name) == str(self.path):
+            logger.info(f"Ungridded dataset {name} is already registered")
+            return
+
+        logger.info(f"Register ungridded dataset {name}:  path={self.path} reader={self.reader}")
+        const.add_ungridded_obs(name, str(self.path), reader=self.reader, check_read=False)
+
 
 TEST_DATA: dict[str, DataForTests] = {
     "MODELS": DataForTests("modeldata"),
@@ -79,20 +92,9 @@ def init() -> bool:
     download()
 
     for name, data in TEST_DATA.items():
-        if data.reader is None:
-            logger.info(f"Adding data search directory {data.path}.")
-            const.add_data_search_dir(str(data.path))
-            continue
-
-        if const.OBSLOCS_UNGRIDDED.get(name) == str(data.path):
-            logger.info(f"dataset {name} is already registered")
-            continue
-
-        logger.info(
-            f"Adding ungridded dataset {name} located at {data.path}. Reader: {data.reader}"
-        )
+        assert data.path.is_dir(), f"missing dataset {name=}"
         try:
-            const.add_ungridded_obs(name, str(data.path), reader=data.reader, check_read=False)
+            data.register_ungridded(name)
         except Exception as e:
             logger.warning(
                 f"Failed to instantiate testdata since ungridded "
