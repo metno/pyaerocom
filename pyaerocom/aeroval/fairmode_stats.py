@@ -7,14 +7,14 @@ FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together a
     - Develop harmonized set of tools to test whether or a not a model is fit for a given purpose
     - CAMS has to make use of FAIRMODE diagrams
 
-This module contains methods to cmpute the relevant FAIRMODE statistics.
+This module contains methods to compute the relevant FAIRMODE statistics.
 """
 
 import numpy as np
 
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
-    vmro3=dict(UrRV=0.18, RV=120, alpha=0.79),
+    conco3=dict(UrRV=0.18, RV=120, alpha=0.79),
     concpm10=dict(UrRV=0.28, RV=50, alpha=0.25),
     concpm25=dict(UrRV=0.36, RV=25, alpha=0.5),
 )

@@ -487,7 +487,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def assign_flagcols(self):
         _prev = 0
-        for (idx, item) in enumerate(self.var_defs):
+        for idx, item in enumerate(self.var_defs):
             if item.is_flag:
                 for _idx in range(_prev, idx):
                     self.var_defs[_idx].flag_col = idx
@@ -495,7 +495,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def init_flags(self, evaluate=True):
         """Decode flag columns and store info in :attr:`flags`"""
-        for (idx, item) in enumerate(self.var_defs):
+        for idx, item in enumerate(self.var_defs):
             if item.is_flag:
                 data = self.data[:, idx]
                 flag = EbasFlagCol(raw_data=data, interpret_on_init=evaluate)
@@ -760,7 +760,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def print_col_info(self):
         """Print information about individual columns"""
-        for (idx, coldef) in enumerate(self.var_defs):
+        for idx, coldef in enumerate(self.var_defs):
             print(f"Column {idx}\n{coldef}")
 
     def __str__(self):

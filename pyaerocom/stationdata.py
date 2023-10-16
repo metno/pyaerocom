@@ -25,7 +25,6 @@ from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
-from pyaerocom.vertical_profile import VerticalProfile
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +82,6 @@ class StationData(StationMetaData):
     ]
 
     def __init__(self, **meta_info):
-
         self.dtime = []
 
         self.var_info = BrowseDict()
@@ -435,7 +433,7 @@ class StationData(StationMetaData):
                 # this has been handled above
                 continue
             if self[key] is None and not add_none_vals:
-                logger.info(f"No metadata available for key {key}")
+                logger.debug(f"No metadata available for key {key}")
                 continue
 
             val = self[key]
@@ -720,7 +718,6 @@ class StationData(StationMetaData):
         return ts_type
 
     def _update_var_timeinfo(self):
-
         for var, info in self.var_info.items():
             data = self[var]
             if not isinstance(data, pd.Series):

@@ -98,7 +98,6 @@ def calc_concNno3pm25(
 
 # ToDo: add docstring
 def calc_concno3pm10(concno3f, concno3c):
-
     concno3pm10 = concno3f + concno3c
 
     concno3pm10.attrs["var_name"] = "concno3pm10"
@@ -109,7 +108,6 @@ def calc_concno3pm10(concno3f, concno3c):
 
 # ToDo: add docstring
 def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction=0.134):
-
     concno3pm25 = concno3f + fine_from_coarse_fraction * concno3c
 
     concno3pm25.attrs["var_name"] = "concno3pm25"
@@ -280,7 +278,6 @@ def calc_vmrox_from_conc(concno2, conco3):
 
 
 def calc_vmrno2(concno2: xr.DataArray) -> xr.DataArray:
-
     vmrno2 = concx_to_vmrx(
         data=concno2,
         p_pascal=p0,  # 1013 hPa (US standard atm)
@@ -352,7 +349,6 @@ def calc_concNno(concno):
 
 
 def calc_vmro3(conco3):
-
     vmro3 = concx_to_vmrx(
         data=conco3,
         p_pascal=p0,  # 1013 hPa (US standard atm)

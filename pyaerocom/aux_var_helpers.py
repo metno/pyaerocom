@@ -706,7 +706,6 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
 
 def calc_vmro3max(data):
-
     var_name = "vmro3"
     new_var_name = "vmro3max"
 
