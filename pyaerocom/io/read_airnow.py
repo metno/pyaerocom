@@ -5,11 +5,12 @@ from glob import glob
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
