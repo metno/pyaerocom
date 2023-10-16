@@ -13,7 +13,6 @@ dependencies:
   - seaborn >=0.8.0
   - dask
   - geonum
-  - numpy
   - simplejson
   - requests
   - reverse-geocode
@@ -25,11 +24,13 @@ dependencies:
 ## python < 3.11
   - tomli >=2.0.1
   - importlib-resources >=5.10
+## from pip
+  - pip
+  - pip:
+    - geojsoncontour
 ## testing
   - pytest >=6.0
   - pytest-dependency
   - pytest-cov
   - packaging
-  - pip
-  - pip:
-    - geojsoncontour
+  - pooch >=1.7.0

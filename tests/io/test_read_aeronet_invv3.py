@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import numpy as np
@@ -10,10 +11,10 @@ from tests.conftest import TEST_RTOL, lustre_unavail
 @lustre_unavail
 def test_load_berlin():
     dataset = ReadAeronetInvV3()
-    files = dataset.find_in_file_list("*Berlin*")
-    assert len(files) == 2
-    assert Path(files[1]).name == "19930101_20230506_Berlin_FUB.all"
-    data = dataset.read_file(files[1], vars_to_retrieve=["abs550aer"])
+    files = dataset.find_in_file_list("*Berlin_FUB*")
+    assert len(files) == 1
+    assert re.match(r"^19930101_\d{8}_Berlin_FUB.all$", Path(files[0]).name)
+    data = dataset.read_file(files[0], vars_to_retrieve=["abs550aer"])
 
     test_vars = ["abs440aer", "angabs4487aer", "abs550aer"]
     assert all(x in data for x in test_vars)
@@ -28,5 +29,5 @@ def test_load_berlin():
 
     first_vals = [np.nanmean(data[var]) for var in test_vars]
 
-    nominal = [0.014609, 0.876344, 0.012291]
+    nominal = [0.015538, 0.915505, 0.012879]
     assert first_vals == pytest.approx(nominal, rel=TEST_RTOL)

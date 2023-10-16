@@ -28,7 +28,6 @@ def test_filter_attributes():
     ],
 )
 def test_filter_griddeddata(data_tm5, filter_name, mean):
-
     # use copy so that this fixture can be used elsewhere without being c
     # changed by this method globally
     model = data_tm5.copy()
@@ -43,7 +42,6 @@ def test_filter_griddeddata(data_tm5, filter_name, mean):
     "filter_name,num_sites", [(f"{ALL_REGION_NAME}-wMOUNTAINS", 22), ("OCN", 8), ("EUROPE", 7)]
 )
 def test_filter_ungriddeddata(aeronetsunv3lev2_subset, filter_name, num_sites):
-
     obs_data = aeronetsunv3lev2_subset
 
     f = Filter(filter_name)

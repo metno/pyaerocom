@@ -336,7 +336,6 @@ def test__read_files_single_var(
     first_vals: list[float],
     unit: str,
 ):
-
     files = reader.get_file_list()
     data = reader._read_files(files, [var_name])
     assert isinstance(data, list)
@@ -361,7 +360,6 @@ def test__read_files_single_var(
 
 
 def test__read_files_single_var_error(reader: ReadAirNow):
-
     files = reader.get_file_list()
     # NH3 not available in selected 3 test files
     with pytest.raises(DataRetrievalError) as e:
