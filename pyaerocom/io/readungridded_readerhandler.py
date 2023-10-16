@@ -45,8 +45,7 @@ class ReaderHandler:
     )
 
     def __init__(
-        self,
-        data_id: Optional[str] = None,
+        self, data_id: Optional[str] = None, pyaro_config: Optional[dict[str, str]] = None
     ) -> None:
         pass
 
