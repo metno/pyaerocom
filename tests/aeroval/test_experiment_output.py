@@ -231,39 +231,39 @@ def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: b
     "var,val",
     [
         (
-                "ang4487aer",
-                {
-                    "scale": [
-                        -0.2,
-                        -0.1,
-                        0.0,
-                        0.1,
-                        0.2,
-                        0.3,
-                        0.4,
-                        0.5,
-                        0.6,
-                        0.7,
-                        0.8,
-                        0.9,
-                        1.0,
-                        1.1,
-                        1.2,
-                        1.3,
-                        1.4,
-                        1.5,
-                        1.6,
-                        1.7,
-                        1.8,
-                        1.9,
-                        2.0,
-                    ],
-                    "colmap": "coolwarm",
-                },
+            "ang4487aer",
+            {
+                "scale": [
+                    -0.2,
+                    -0.1,
+                    0.0,
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4,
+                    0.5,
+                    0.6,
+                    0.7,
+                    0.8,
+                    0.9,
+                    1.0,
+                    1.1,
+                    1.2,
+                    1.3,
+                    1.4,
+                    1.5,
+                    1.6,
+                    1.7,
+                    1.8,
+                    1.9,
+                    2.0,
+                ],
+                "colmap": "coolwarm",
+            },
         ),
         (
-                "concprcpso4",
-                {"colmap": "coolwarm", "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10]},
+            "concprcpso4",
+            {"colmap": "coolwarm", "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10]},
         ),
     ],
 )
@@ -334,7 +334,7 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
     ],
 )
 def test_ExperimentOutput_reorder_experiments(
-        dummy_expout: ExperimentOutput, add_names, order, result
+    dummy_expout: ExperimentOutput, add_names, order, result
 ):
     path = Path(dummy_expout.experiments_file)
 

@@ -2535,7 +2535,7 @@ class GriddedData:
         if not self.longitude.has_bounds():
             self.longitude.guess_bounds()
         if not self.latitude.has_bounds():
-            try: # needs at least 2 values to work
+            try:  # needs at least 2 values to work
                 self.latitude.guess_bounds()
             except ValueError:
                 pass
