@@ -1165,7 +1165,7 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
         invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
-    resampler = arr.resample(time=pd_freq, offset=loffset)
+    resampler = arr.resample(time=pd_freq, loffset=loffset)
     try:
         aggfun = getattr(resampler, how)
     except AttributeError:
