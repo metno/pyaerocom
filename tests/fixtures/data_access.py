@@ -6,11 +6,10 @@ automatically into ~/MyPyaerocom/testdata-minimal
 from __future__ import annotations
 
 import logging
-import tarfile
 from pathlib import Path
 from typing import NamedTuple
 
-import requests
+import pooch
 
 from pyaerocom import const, io
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -19,14 +18,25 @@ from pyaerocom.plugins.ghost.reader import ReadGhost
 logger = logging.getLogger(__name__)
 
 
-#: Name of testdata directory
-TESTDATA_NAME = "testdata-minimal"
+#: tarfile to download
+TESTATA_FILE = "testdata-minimal.tar.gz.20231013"
 
-#: That's were the testdata can be downloaded from
-TESTDATA_URL = f"https://pyaerocom-ng.met.no/pyaerocom-suppl/{TESTDATA_NAME}.tar.gz.20230919"
+minimal_dataset = pooch.create(
+    path=const.OUTPUTDIR,  # ~/MyPyaerocom/
+    base_url="https://pyaerocom-ng.met.no/pyaerocom-suppl",
+    registry={
+        "testdata-minimal.tar.gz.20220602": "md5:5d4c6455089bc93fff1fc5e2612cf439",
+        "testdata-minimal.tar.gz.20220707": "md5:86fc5cb31e8123b96ef01d44fbe93c52",
+        "testdata-minimal.tar.gz.20230919": "md5:7b4c55d5258da7a2b41a3a085b947fba",
+        "testdata-minimal.tar.gz.20231013": "md5:f3e311c28e341a5c54d5bbba6f9849d2",
+    },
+)
 
-#: Directory where testdata will be downloaded into
-TESTDATA_ROOT = Path(const.OUTPUTDIR) / TESTDATA_NAME
+
+def download(file_name: str = TESTATA_FILE):
+    """download tar file to ~/MyPyaerocom/ unpack cointents into ~/MyPyaerocom/testdata-minimal/"""
+    logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
+    minimal_dataset.fetch(file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir="./"))
 
 
 class DataForTests(NamedTuple):
@@ -35,7 +45,20 @@ class DataForTests(NamedTuple):
 
     @property
     def path(self) -> Path:
-        return TESTDATA_ROOT / self.relpath
+        return minimal_dataset.path / "testdata-minimal" / self.relpath
+
+    def register_ungridded(self, name: str):
+        if self.reader is None:
+            logger.info(f"Adding data search directory {self.path}")
+            const.add_data_search_dir(str(self.path))
+            return
+
+        if const.OBSLOCS_UNGRIDDED.get(name) == str(self.path):
+            logger.info(f"Ungridded dataset {name} is already registered")
+            return
+
+        logger.info(f"Register ungridded dataset {name}:  path={self.path} reader={self.reader}")
+        const.add_ungridded_obs(name, str(self.path), reader=self.reader, check_read=False)
 
 
 TEST_DATA: dict[str, DataForTests] = {
@@ -62,100 +85,16 @@ TEST_DATA: dict[str, DataForTests] = {
     "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", ReadGhost),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
-    "Earlinet-test-3d-collocation": DataForTests("obsdata/Earlinet/"),
 }
 
 
-def download() -> bool:
-    """
-    Download testdata
-
-    Returns
-    -------
-    bool
-        True if download was successful, else False
-
-    """
-    path = TESTDATA_ROOT.parent / Path(TESTDATA_URL).name
-    logger.info(f"Downloading pyaerocom testdata into {path.parent}")
-    path.parent.mkdir(exist_ok=True, parents=True)
-
-    try:
-        r = requests.get(TESTDATA_URL)
-        r.raise_for_status()
-    except requests.HTTPError as e:
-        logger.warning(f"Failed to download testdata: {e}", exc_info=True)
-        return False
-    else:
-        path.write_bytes(r.content)
-
-    try:
-        with tarfile.open(path, "r:gz") as tar:
-            tar.extractall(path.parent)
-    except tarfile.TarError as e:
-        logger.warning(f"Failed to unpack testdata: {e}", exc_info=True)
-        return False
-    finally:
-        path.unlink()
-
-    return True
-
-
-def check_access() -> bool:
-    """
-    Method that checks if testdata can be accessed
-
-    See also :func:`check_access_and_download_if_needed`.
-
-    Returns
-    -------
-    bool
-        True if testdata is available and all relevant path locations
-        could be validated, else False.
-
-    """
-    return all(data.path.is_dir() for data in TEST_DATA.values())
-
-
-def check_access_and_download_if_needed() -> bool:
-    """
-    Method that checks if testdata can be accessed and if not downloads it
-
-    Returns
-    -------
-    bool
-        True if testdata is available and all relevant path locations
-        could be validated, else False.
-
-    """
-    if check_access():
-        return True
-
-    if download():
-        return check_access()
-
-    return False
-
-
 def init() -> bool:
-    if not check_access_and_download_if_needed():
-        return False
+    download()
 
     for name, data in TEST_DATA.items():
-        if data.reader is None:
-            logger.info(f"Adding data search directory {data.path}.")
-            const.add_data_search_dir(str(data.path))
-            continue
-
-        if const.OBSLOCS_UNGRIDDED.get(name) == str(data.path):
-            logger.info(f"dataset {name} is already registered")
-            continue
-
-        logger.info(
-            f"Adding ungridded dataset {name} located at {data.path}. Reader: {data.reader}"
-        )
+        assert data.path.is_dir(), f"missing dataset {name=}"
         try:
-            const.add_ungridded_obs(name, str(data.path), reader=data.reader, check_read=False)
+            data.register_ungridded(name)
         except Exception as e:
             logger.warning(
                 f"Failed to instantiate testdata since ungridded "
