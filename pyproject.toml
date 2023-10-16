@@ -63,7 +63,13 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
 ]
-test = ["pytest>=6.0", "pytest-dependency", "pytest-cov", "packaging"]
+test = [
+    "pytest>=6.0",
+    "pytest-dependency",
+    "pytest-cov",
+    "packaging",
+    "pooch>=1.7.0",
+]
 lint = ["mypy>=0.931", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
