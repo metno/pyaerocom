@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class ReadIPCForest(ReadUngriddedBase):
     #: version log of this class (for caching)
-    __version__ = "0.3_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.4_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
