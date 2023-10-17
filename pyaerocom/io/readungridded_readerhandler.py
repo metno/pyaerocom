@@ -1,5 +1,9 @@
 import sys
 import logging
+import os
+
+import warnings
+from pathlib import Path
 from typing import Optional
 
 if sys.version_info >= (3, 10):  # pragma: no cover
@@ -21,6 +25,7 @@ from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
+from pyaerocom import const
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +50,30 @@ class ReaderHandler:
     )
 
     def __init__(
-        self, data_id: Optional[str] = None, pyaro_config: Optional[dict[str, str]] = None
+        self,
+        data_ids: Optional[list[str]] = None,
+        data_dirs: Optional[dict[str, str]] = None,
+        pyaro_config: Optional[dict[str, str]] = None,
     ) -> None:
-        pass
+        self.data_ids = data_ids
+        self._data_dirs = data_dirs
+
+        self.config = pyaro_config
+
+        self._readers = {}
+
+    def _set_reader_type(self):
+        ...
+
+    def dataset_provides_variables(self, data_id=None):
+        """List of variables provided by a certain dataset"""
+        if data_id is None:
+            data_id = self.data_id
+        if not data_id in self._readers:
+            reader = self.get_lowlevel_reader(data_id)
+        else:
+            reader = self._readers[data_id]
+        return reader.PROVIDES_VARIABLES
 
     def get_lowlevel_reader(self, data_id=None):
         """Helper method that returns initiated reader class for input ID
@@ -106,7 +132,7 @@ class ReaderHandler:
             if network is supported but no reading routine is implemented yet
 
         """
-        for _cls in self.SUPPORTED_READERS:
+        for _cls in self.SUPPORTED_READERS_PYAEROCOM:
             if data_id in _cls.SUPPORTED_DATASETS:
                 return _cls
         raise NetworkNotImplemented(f"Could not find reading class for dataset {data_id}")
@@ -134,3 +160,46 @@ class ReaderHandler:
         else:
             ddir = None
         return reader(data_id=data_id, data_dir=ddir)
+
+    @property
+    def post_compute(self):
+        """Information about datasets that can be computed in post"""
+        return const.OBS_UNGRIDDED_POST
+
+    @property
+    def SUPPORTED_DATASETS(self):
+        """
+        Returns list of strings containing all supported dataset names
+        """
+        lst = []
+        for reader in self.SUPPORTED_READERS_PYAEROCOM:
+            lst.extend(reader.SUPPORTED_DATASETS)
+        lst.extend(self.post_compute)
+        return lst
+
+    @property
+    def supported_datasets(self):
+        """
+        Wrapper for :attr:`SUPPORTED_DATASETS`
+        """
+        return self.SUPPORTED_DATASETS
+
+    @property
+    def data_dirs(self):
+        """
+        dict: Data directory(ies) for dataset(s) to read (keys are data IDs)
+        """
+        return self._data_dirs
+
+    @data_dirs.setter
+    def data_dirs(self, val):
+        if isinstance(val, Path):
+            val = str(val)
+        dsr = self.data_ids
+        if len(dsr) < 2 and isinstance(val, str):
+            val = {dsr[0]: val}
+        elif not isinstance(val, dict):
+            raise ValueError(f"Invalid input for data_dirs ({val}); needs to be a dictionary.")
+        for data_dir in val.values():
+            assert os.path.exists(data_dir), f"{data_dir} does not exist"
+        self._data_dirs = val

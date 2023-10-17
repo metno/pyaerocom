@@ -3,6 +3,7 @@ import os
 import sys
 import warnings
 from pathlib import Path
+from typing import Optional
 
 if sys.version_info >= (3, 10):  # pragma: no cover
     from importlib import metadata
@@ -26,8 +27,13 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+
+from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
+from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
+
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +72,13 @@ class ReadUngridded:
 
     DONOTCACHE_NAME = "DONOTCACHE"
 
-    def __init__(self, data_ids=None, ignore_cache=False, data_dirs=None):
+    def __init__(
+        self,
+        data_ids=None,
+        ignore_cache=False,
+        data_dirs=None,
+        config: Optional[PyaroConfig] = None,
+    ):
         # will be assigned in setter method of data_ids
         self._data_ids = []
         self._data_dirs = {}
@@ -84,6 +96,10 @@ class ReadUngridded:
         if ignore_cache:
             logger.info("Deactivating caching")
             const.CACHING = False
+
+        self.config = config
+        if isinstance(config, PyaroConfig):
+            self._init_pyaro_reader(config=config)
 
     @property
     def data_dirs(self):
@@ -240,6 +256,48 @@ class ReadUngridded:
             reader = self._init_lowlevel_reader(_cls, data_id)
             self._readers[data_id] = reader
         return self._readers[data_id]
+
+    def add_pyaro_reader(self, config: PyaroConfig) -> ReadUngriddedBase:
+        return self._init_pyaro_reader(config=config)
+
+    def _init_pyaro_reader(self, config: Optional[PyaroConfig] = None) -> ReadUngriddedBase:
+        """
+        Initializes PyAro reader from config, and adds reader to list of readers. If no config is given, the config given when ReaderUngridded was initiated is used
+
+        Parameters
+        -----------
+        config : PyaroConfig (Optional)
+            Config for reader
+
+        Returns
+        -------
+        ReadUngriddedBase
+            instance of reading class (needs to be implementation of base
+            class :class:`ReadUngriddedBase`)
+
+
+        Raises
+        ------
+        ValueError
+            If both the config argument and self.config are None
+        """
+        if config is None:
+            if self.config is None:
+                raise ValueError("Config for reading Pyaro is not given")
+            config = self.config
+        else:
+            self.config = config
+
+        id = config.data_id
+
+        if id in self._readers:
+            return self._readers[id]
+
+        else:
+            reader = ReadPyaro(config=config)
+            self._readers[id] = reader
+            self._data_ids.append[id]
+            return reader
 
     def _find_read_class(self, data_id):
         """Find reading class for dataset name

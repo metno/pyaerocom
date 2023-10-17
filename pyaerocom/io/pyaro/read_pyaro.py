@@ -12,9 +12,9 @@ import numpy as np
 class ReadPyaro(ReadUngriddedBase):
     __version__ = "0.0.1"
 
-    def __init__(self, reader: TimeseriesReader, config: PyaroConfig) -> None:
+    def __init__(self, config: PyaroConfig) -> None:
         self.config: PyaroConfig = config
-        self.reader: TimeseriesReader = reader
+        self.reader: TimeseriesReader = config.engine
         self.converter = PyaroToUngriddedData(self.reader)
 
     """
