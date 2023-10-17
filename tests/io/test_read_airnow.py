@@ -314,12 +314,12 @@ def test__read_file(reader: ReadAirNow):
     ],
 )
 def test__read_files_single_var(
-    reader: ReadAirNow,
-    var_name: str,
-    statnum: int,
-    first_dtime: list[str],
-    first_vals: list[float],
-    unit: str,
+        reader: ReadAirNow,
+        var_name: str,
+        statnum: int,
+        first_dtime: list[str],
+        first_vals: list[float],
+        unit: str,
 ):
     files = reader.get_file_list()
     data = reader._read_files(files, [var_name])
@@ -345,10 +345,7 @@ def test__read_files_single_var(
 
 
 def test__read_files_single_var_error(reader: ReadAirNow):
-    # reader = ReadAirNow("AirNowSubset")
-    # files = test_get_file_list(reader=reader)
     files = reader.get_file_list()
-    # assert files
     # NH3 not available in selected 2 test files
     with pytest.raises(DataRetrievalError) as e:
         reader._read_files(files, ["vmrnh3"])
@@ -360,25 +357,25 @@ def test__read_files_single_var_error(reader: ReadAirNow):
     [
         ("concpm10", 96, 96),
         (
-            [
-                "concbc",
-                "concpm10",
-                "concpm25",
-                "vmrco",
-                "vmrno",
-                "vmrno2",
-                "vmrnox",
-                "vmrnoy",
-                "vmro3",
-                "vmrso2",
-            ],
-            933,
-            334,
+                [
+                    "concbc",
+                    "concpm10",
+                    "concpm25",
+                    "vmrco",
+                    "vmrno",
+                    "vmrno2",
+                    "vmrnox",
+                    "vmrnoy",
+                    "vmro3",
+                    "vmrso2",
+                ],
+                933,
+                334,
         ),
     ],
 )
 def test_read(
-    reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
+        reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
 ):
     data = reader.read(vars_to_retrieve)
     if isinstance(vars_to_retrieve, str):
