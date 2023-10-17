@@ -16,8 +16,10 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_map_and_scat,
     _process_regional_timeseries,
     _process_sites,
+    _process_sites_weekly_ts,
     _process_statistics_timeseries,
     _write_site_data,
+    _write_stationdata_json,
     add_profile_entry_json,
     get_heatmap_filename,
     get_json_mapname,
@@ -206,6 +208,15 @@ class ColdataToJsonEngine(ProcessingEngine):
                     regs=regs,
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
+                )
+            if coldata.ts_type == "hourly" and use_diurnal:
+                logger.info("Processing diurnal profiles")
+                self._process_diurnal_profiles(
+                    coldata=coldata,
+                    regions_how=regions_how,
+                    regnames=regnames,
+                    meta_glob=meta_glob,
+                    out_dirs=out_dirs,
                 )
         else:
             logger.info("Processing profile data for vizualization")
@@ -410,3 +421,23 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             outfile_scat = os.path.join(out_dirs["scat"], map_name)
             write_json(scat_data, outfile_scat, ignore_nan=True)
+
+    def _process_diurnal_profiles(
+        self,
+        coldata: ColocatedData = None,
+        regions_how: str = "default",
+        regnames=None,
+        meta_glob: dict = None,
+        out_dirs: dict = None,
+    ):
+        (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
+            coldata, regions_how, regnames, meta_glob
+        )
+        outdir = os.path.join(out_dirs["ts/diurnal"])
+        for ts_data_weekly in ts_objs_weekly:
+            # writes json file
+            _write_stationdata_json(ts_data_weekly, outdir)
+        if ts_objs_weekly_reg != None:
+            for ts_data_weekly_reg in ts_objs_weekly_reg:
+                # writes json file
+                _write_stationdata_json(ts_data_weekly_reg, outdir)

@@ -250,6 +250,7 @@ class WebDisplaySetup(ConstrainedContainer):
         self.hide_charts = []
         self.hide_pages = []
         self.ts_annotations = {}
+        self.add_pages = []
         self.update(**kwargs)
 
 
