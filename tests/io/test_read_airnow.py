@@ -153,18 +153,18 @@ def test__date_time_str_to_datetime64(reader: ReadAirNow):
     assert str(dt) == "2020-10-23T13:55:00"
 
 
-@pytest.mark.parametrize(
-    "filename,timestamp",
-    [
-        ("202307.dam", "2023-07-01T00:00:00"),
-        ("202308.dam", "2023-08-01T00:00:00"),
-    ],
-)
-def test__datetime64_from_filename(reader: ReadAirNow, filename: str, timestamp: str):
-    dt = reader._datetime64_from_filename(filename)
-    assert isinstance(dt, np.datetime64)
-    assert dt.dtype == "datetime64[s]"
-    assert str(dt) == timestamp
+# @pytest.mark.parametrize(
+#     "filename,timestamp",
+#     [
+#         ("202307.dam", "2023-07-01T00:00:00"),
+#         ("202308.dam", "2023-08-01T00:00:00"),
+#     ],
+# )
+# def test__datetime64_from_filename(reader: ReadAirNow, filename: str, timestamp: str):
+#     dt = reader._datetime64_from_filename(filename)
+#     assert isinstance(dt, np.datetime64)
+#     assert dt.dtype == "datetime64[s]"
+#     assert str(dt) == timestamp
 
 
 def test__read_metadata_file(reader: ReadAirNow):
@@ -264,7 +264,7 @@ def test__read_file(reader: ReadAirNow):
         pytest.param(
             "concpm25",
             213,
-            ["2023-06-30T20:00:00", '2023-07-31T20:00:00'],
+            ["2023-06-30T20:00:00", "2023-07-31T20:00:00"],
             [11.2, 3.9],
             "ug m-3",
             id="concpm25",
@@ -280,7 +280,7 @@ def test__read_file(reader: ReadAirNow):
         pytest.param(
             "vmrno",
             85,
-            ['2023-06-30T20:00:00', '2023-07-31T20:00:00'],
+            ["2023-06-30T20:00:00", "2023-07-31T20:00:00"],
             [0.0, 0.2],
             "ppb",
             id="vmrno",
@@ -288,7 +288,7 @@ def test__read_file(reader: ReadAirNow):
         pytest.param(
             "vmrno2",
             95,
-            ["2023-06-30T20:00:00", '2023-07-31T20:00:00'],
+            ["2023-06-30T20:00:00", "2023-07-31T20:00:00"],
             [0.0, 0.2],
             "ppb",
             id="vmrno2",
@@ -312,7 +312,7 @@ def test__read_file(reader: ReadAirNow):
         pytest.param(
             "vmro3",
             284,
-            ['2023-06-30T20:00:00', '2023-07-31T20:00:00'],
+            ["2023-06-30T20:00:00", "2023-07-31T20:00:00"],
             [27.0, 12.0],
             "ppb",
             id="vmro3",
@@ -320,7 +320,7 @@ def test__read_file(reader: ReadAirNow):
         pytest.param(
             "vmrso2",
             57,
-            ['2023-06-30T20:00:00', '2023-07-31T20:00:00'],
+            ["2023-06-30T20:00:00", "2023-07-31T20:00:00"],
             [0.0, 0.0],
             "ppb",
             id="vmrso2",
@@ -328,12 +328,12 @@ def test__read_file(reader: ReadAirNow):
     ],
 )
 def test__read_files_single_var(
-        reader: ReadAirNow,
-        var_name: str,
-        statnum: int,
-        first_dtime: list[str],
-        first_vals: list[float],
-        unit: str,
+    reader: ReadAirNow,
+    var_name: str,
+    statnum: int,
+    first_dtime: list[str],
+    first_vals: list[float],
+    unit: str,
 ):
     files = reader.get_file_list()
     data = reader._read_files(files, [var_name])
@@ -359,8 +359,11 @@ def test__read_files_single_var(
 
 
 def test__read_files_single_var_error(reader: ReadAirNow):
+    # reader = ReadAirNow("AirNowSubset")
+    # files = test_get_file_list(reader=reader)
     files = reader.get_file_list()
-    # NH3 not available in selected 3 test files
+    # assert files
+    # NH3 not available in selected 2 test files
     with pytest.raises(DataRetrievalError) as e:
         reader._read_files(files, ["vmrnh3"])
     assert str(e.value) == "None of the input variables could be found in input list"
@@ -371,25 +374,25 @@ def test__read_files_single_var_error(reader: ReadAirNow):
     [
         ("concpm10", 96, 96),
         (
-                [
-                    "concbc",
-                    "concpm10",
-                    "concpm25",
-                    "vmrco",
-                    "vmrno",
-                    "vmrno2",
-                    "vmrnox",
-                    "vmrnoy",
-                    "vmro3",
-                    "vmrso2",
-                ],
-                933,
-                334,
+            [
+                "concbc",
+                "concpm10",
+                "concpm25",
+                "vmrco",
+                "vmrno",
+                "vmrno2",
+                "vmrnox",
+                "vmrnoy",
+                "vmro3",
+                "vmrso2",
+            ],
+            933,
+            334,
         ),
     ],
 )
 def test_read(
-        reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
+    reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
 ):
     data = reader.read(vars_to_retrieve)
     if isinstance(vars_to_retrieve, str):

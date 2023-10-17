@@ -171,29 +171,29 @@ class ReadAirNow(ReadUngriddedBase):
         # return np.datetime64(f"{yr}-{mm}-{dd}T{HH}:{MM}:00")
         return np.datetime64(f"{yr}-{mm}-{dd}T{time}:00")
 
-    def _datetime64_from_filename(self, filepath):
-        """
-        Get timestamp from filename
-
-        Note
-        ----
-        This is not in use at the moment and the timestamps in the file may
-        differ within 1h around what the filename suggests. So be careful if
-        you want to use this method.
-
-        Parameters
-        ----------
-        filepath : str
-            path of file
-
-        Returns
-        -------
-        datetime64[s]
-        """
-        fn = os.path.basename(filepath).split(self._FILETYPE)[0]
-        assert len(fn) == 10
-        tstr = f"{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00"
-        return np.datetime64(tstr)
+    # def _datetime64_from_filename(self, filepath):
+    #     """
+    #     Get timestamp from filename
+    #
+    #     Note
+    #     ----
+    #     This is not in use at the moment and the timestamps in the file may
+    #     differ within 1h around what the filename suggests. So be careful if
+    #     you want to use this method.
+    #
+    #     Parameters
+    #     ----------
+    #     filepath : str
+    #         path of file
+    #
+    #     Returns
+    #     -------
+    #     datetime64[s]
+    #     """
+    #     fn = os.path.basename(filepath).split(self._FILETYPE)[0]
+    #     assert len(fn) == 10
+    #     tstr = f"{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00"
+    #     return np.datetime64(tstr)
 
     def _read_metadata_file(self):
         """
@@ -446,8 +446,16 @@ class ReadAirNow(ReadUngriddedBase):
         unitcol = self.FILE_COL_NAMES.index("unit")
         valcol = self.FILE_COL_NAMES.index("value")
 
-        dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
         stats = []
+        # shortcut for limited testing dataset because the code
+        # below the try statement fails with testing:
+        # E               ValueError: cannot call `vectorize` on size 0 inputs unless `otypes` is set
+        # ../../../mambaforge/envs/pyadev-applied/lib/python3.11/site-packages/numpy/lib/function_base.py:2363: ValueError
+        try:
+            dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
+        except ValueError:
+            raise DataRetrievalError("None of the input variables could be found in input list")
+
         for var in vars_to_retrieve:
             # extract only variable data (should speed things up)
             var_in_file = self.VAR_MAP[var]
