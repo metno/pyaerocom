@@ -27,7 +27,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f"/monthly/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = "0.13"
+    __version__ = "0.12"
 
     #: Column delimiter
     FILE_COL_DELIM = "|"
@@ -162,10 +162,8 @@ class ReadAirNow(ReadUngriddedBase):
         datetime64[s]
         """
         mm, dd, yy = date.split("/")
-        # HH, MM = time.split(":")
         yr = str(self.BASEYEAR + int(yy))
         # returns as datetime64[s]
-        # return np.datetime64(f"{yr}-{mm}-{dd}T{HH}:{MM}:00")
         return np.datetime64(f"{yr}-{mm}-{dd}T{time}:00")
 
     def _read_metadata_file(self):
@@ -335,37 +333,27 @@ class ReadAirNow(ReadUngriddedBase):
         # initialize empty dataframe
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
-        # 1 for pandas, 0 for Python
-        read_flag = 1
         unique_stat_ids = None
         for i in tqdm(range(len(files))):
             fp = files[i]
-            if read_flag == 1:
-                filedata = self._read_file(fp)
-                for i, filevar in enumerate(file_vars_to_retrieve):
-                    arrs.append(filedata[filedata["variable"] == filevar].values)
-                    if unique_stat_ids is None:
-                        unique_stat_ids = np.unique(
-                            (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
+            filedata = self._read_file(fp)
+            for i, filevar in enumerate(file_vars_to_retrieve):
+                arrs.append(filedata[filedata["variable"] == filevar].values)
+                if unique_stat_ids is None:
+                    unique_stat_ids = np.unique(
+                        (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
+                    )
+                else:
+                    try:
+                        unique_stat_ids = np.union1d(
+                            unique_stat_ids,
+                            np.unique((arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])),
                         )
-                    else:
-                        try:
-                            unique_stat_ids = np.union1d(
-                                unique_stat_ids,
-                                np.unique((arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])),
-                            )
-                        except (ValueError, TypeError):
-                            print(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
-                            raise DataRetrievalError(
-                                f"file {fp}: error in creating unique stationlist"
-                            )
-            else:
-                filedata = self.read_file(fp, vars_to_retrieve=vars_to_retrieve)
-                for i, var in enumerate(vars_to_retrieve):
-                    if filedata[var]["lines_retrieved"] > 0:
-                        arrs.append(np.array(filedata[var]["linedata"]))
-                        filedata[var] = None
-
+                    except (ValueError, TypeError):
+                        print(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
+                        raise DataRetrievalError(
+                            f"file {fp}: error in creating unique stationlist"
+                        )
         if len(arrs) == 0:
             raise DataRetrievalError("None of the input variables could be found in input list")
         return self._filedata_to_statlist(arrs, vars_to_retrieve, unique_stat_ids=unique_stat_ids)
