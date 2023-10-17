@@ -171,30 +171,6 @@ class ReadAirNow(ReadUngriddedBase):
         # return np.datetime64(f"{yr}-{mm}-{dd}T{HH}:{MM}:00")
         return np.datetime64(f"{yr}-{mm}-{dd}T{time}:00")
 
-    # def _datetime64_from_filename(self, filepath):
-    #     """
-    #     Get timestamp from filename
-    #
-    #     Note
-    #     ----
-    #     This is not in use at the moment and the timestamps in the file may
-    #     differ within 1h around what the filename suggests. So be careful if
-    #     you want to use this method.
-    #
-    #     Parameters
-    #     ----------
-    #     filepath : str
-    #         path of file
-    #
-    #     Returns
-    #     -------
-    #     datetime64[s]
-    #     """
-    #     fn = os.path.basename(filepath).split(self._FILETYPE)[0]
-    #     assert len(fn) == 10
-    #     tstr = f"{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00"
-    #     return np.datetime64(tstr)
-
     def _read_metadata_file(self):
         """
         Read station metadatafile
@@ -291,7 +267,7 @@ class ReadAirNow(ReadUngriddedBase):
 
         """
 
-        # try utf_8 anf cp863 reading first, then
+        # try utf_8 and cp863 reading first, then
         # determine file encoding and provide that to pandas
         # just determining the encoding is too slow given the # of files
         # Airbase consists of
@@ -305,7 +281,6 @@ class ReadAirNow(ReadUngriddedBase):
                 names=self.FILE_COL_NAMES,
                 encoding=encoding,
                 on_bad_lines="skip",
-                # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
                 dtype={2: str, 4: float, 7: float},
             )
         except UnicodeDecodeError:
@@ -316,7 +291,6 @@ class ReadAirNow(ReadUngriddedBase):
                 names=self.FILE_COL_NAMES,
                 encoding=encoding,
                 on_bad_lines="skip",
-                # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
                 dtype={2: str, 4: float, 7: float},
             )
         except:
@@ -327,7 +301,6 @@ class ReadAirNow(ReadUngriddedBase):
                 names=self.FILE_COL_NAMES,
                 encoding=encoding,
                 on_bad_lines="skip",
-                # dtype={0: str, 1: str, 2: str, 3: str, 4: float, 5: str, 6: str, 7: float, 8: str},
                 dtype={
                     2: str,
                     4: float,
@@ -370,11 +343,9 @@ class ReadAirNow(ReadUngriddedBase):
         unique_stat_ids = None
         for i in tqdm(range(len(files))):
             fp = files[i]
-            # print(fp)
             if read_flag == 1:
                 filedata = self._read_file(fp)
                 for i, filevar in enumerate(file_vars_to_retrieve):
-                    # try:
                     arrs.append(filedata[filedata["variable"] == filevar].values)
                     if unique_stat_ids is None:
                         unique_stat_ids = np.unique(
@@ -398,18 +369,6 @@ class ReadAirNow(ReadUngriddedBase):
                         arrs.append(np.array(filedata[var]["linedata"]))
                         filedata[var] = None
 
-            # arr = filedata.values
-
-            # for i, var in enumerate(vars_to_retrieve):
-            #     cond = arr[:, varcol] == self.VAR_MAP[var]
-            #     if i == 0:
-            #         mask = cond
-            #     else:
-            #         mask = np.logical_or(mask, cond)
-            # matches = mask.sum()
-            # if matches:
-            #     vardata = arr[mask]
-            #     arrs.append(vardata)
         if len(arrs) == 0:
             raise DataRetrievalError("None of the input variables could be found in input list")
         return self._filedata_to_statlist(arrs, vars_to_retrieve, unique_stat_ids=unique_stat_ids)
@@ -434,7 +393,7 @@ class ReadAirNow(ReadUngriddedBase):
         """
         # doubling of RAM usage!
         data = np.concatenate(arrs)
-        # so kill the input data right afterward
+        # so kill the input data right afterwards
         arrs = None
 
         logger.info("Converting filedata to list of StationData")
@@ -465,12 +424,8 @@ class ReadAirNow(ReadUngriddedBase):
             dtime_subset = dtime[mask]
             # not all stations seems to provide the station id as string...
             if unique_stat_ids is None:
-                try:
-                    statlist = np.unique((subset[:, statcol]).astype(str))
-                except TypeError:
-                    raise DataRetrievalError("error in creating an unique station list")
-                    # tmp_str = [subset[:, statcol][x] for x in range(len(subset[:, statcol]))]
-                    # statlist = np.unique(tmp_str)
+                # statlist = np.unique((subset[:, statcol]).astype(str))
+                statlist = np.unique((subset[:, statcol]))
             else:
                 statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var):
@@ -483,19 +438,16 @@ class ReadAirNow(ReadUngriddedBase):
                 statdata = subset[statmask]
                 timestamps = dtime_subset[statmask]
                 # timezone offsets (there's a half hour time zone!, so float)
-                # toffs = statdata[:, tzonecol].astype(float)
-                # not sure why the astype(float) is needed in between...
+                # not sure why the astype(float) is needed in between, but does not work without...
                 toffs = statdata[:, tzonecol].astype(float).astype("timedelta64[h]")
                 timestamps += toffs
                 stat = StationData(**stat_meta[stat_id])
 
-                # vals = statdata[:, valcol].astype(float)
                 vals = statdata[:, valcol]
                 units = np.unique(statdata[:, unitcol])
                 # errors that did not occur in v0 but that may occur
                 assert len(units) == 1
                 assert units[0] in self.UNIT_MAP
-                # toffs = toffs.astype("timedelta64[h]")
                 stat["dtime"] = timestamps
                 stat["timezone"] = "UTC"
                 stat[var] = vals
@@ -565,7 +517,6 @@ class ReadAirNow(ReadUngriddedBase):
             ret_data[var]["linedata"] = []
 
             for line in linedata:
-                # line_arr = line.strip().split(self.FILE_COL_DELIM)
                 line_arr = line.split(self.FILE_COL_DELIM)
                 # skip malformed lines
                 if len(line_arr) != self.FILE_COL_ROW_NUMBER:
@@ -580,8 +531,6 @@ class ReadAirNow(ReadUngriddedBase):
                 ret_data[var]["linedata"].append(line_arr)
                 ret_data[var]["lines_retrieved"] += 1
                 tot_lines_retrieved += 1
-
-            # logger.info(f"{tot_lines_retrieved} out of {len(linedata)} retrieved.")
         return ret_data
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
