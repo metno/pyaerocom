@@ -21,16 +21,13 @@ class ReadAirNow(ReadUngriddedBase):
     """
 
     # Data type of files
-    # _FILETYPE = ".dat"
     _FILETYPE = ".dam"
 
     # File search mask to recursively retrieve list of data files
-    # _FILEMASK = f"/**/*{_FILETYPE}"
     _FILEMASK = f"/monthly/*{_FILETYPE}"
-    # _FILEMASK = f"/monthly_testing/*{_FILETYPE}"
 
     #: Version log of this class (for caching)
-    __version__ = "0.12"
+    __version__ = "0.13"
 
     #: Column delimiter
     FILE_COL_DELIM = "|"
@@ -85,10 +82,10 @@ class ReadAirNow(ReadUngriddedBase):
         "comment": str,
     }
 
-    #: strings to be replaced in original station names
+    # strings to be replaced in original station names
     REPLACE_STATNAME = {"&": "and", "/": " ", ":": " ", ".": " ", "'": ""}
 
-    #: Years in timestamps in the files are are 2-digit (e.g. 20 for 2020)
+    # Years in timestamps in the files are 2-digit (e.g. 20 for 2020)
     BASEYEAR = 2000
 
     #: Name of dataset (OBS_ID)
@@ -131,7 +128,7 @@ class ReadAirNow(ReadUngriddedBase):
     #: Default variables
     DEFAULT_VARS = PROVIDES_VARIABLES
 
-    #: Frequncy of measurements
+    #: Frequency of measurements
     TS_TYPE = "hourly"
 
     #: file containing station metadata
