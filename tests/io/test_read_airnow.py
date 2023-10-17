@@ -153,20 +153,6 @@ def test__date_time_str_to_datetime64(reader: ReadAirNow):
     assert str(dt) == "2020-10-23T13:55:00"
 
 
-# @pytest.mark.parametrize(
-#     "filename,timestamp",
-#     [
-#         ("202307.dam", "2023-07-01T00:00:00"),
-#         ("202308.dam", "2023-08-01T00:00:00"),
-#     ],
-# )
-# def test__datetime64_from_filename(reader: ReadAirNow, filename: str, timestamp: str):
-#     dt = reader._datetime64_from_filename(filename)
-#     assert isinstance(dt, np.datetime64)
-#     assert dt.dtype == "datetime64[s]"
-#     assert str(dt) == timestamp
-
-
 def test__read_metadata_file(reader: ReadAirNow):
     COLUMNS = [
         "aqsid",

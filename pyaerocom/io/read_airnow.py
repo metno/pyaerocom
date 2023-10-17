@@ -268,6 +268,7 @@ class ReadAirNow(ReadUngriddedBase):
         # Airbase consists of
         # just trying a couple of encodings and not determining the encoding all
         # the time speeds up reading by a factor of 5
+        # make sure certain dtypes are set for a few rows (e.g. station code as str)
         try:
             encoding = "utf_8"
             df = pd.read_csv(
@@ -407,9 +408,9 @@ class ReadAirNow(ReadUngriddedBase):
             # another RAM consuming op, the mask can just be used all the time (for the price of readability...)
             subset = data[mask]
             dtime_subset = dtime[mask]
-            # not all stations seems to provide the station id as string...
+            # there are stations with a all numeric station ID, but type hints in pd.read_csv made sure
+            # they are read as str...
             if unique_stat_ids is None:
-                # statlist = np.unique((subset[:, statcol]).astype(str))
                 statlist = np.unique((subset[:, statcol]))
             else:
                 statlist = unique_stat_ids
@@ -423,7 +424,7 @@ class ReadAirNow(ReadUngriddedBase):
                 statdata = subset[statmask]
                 timestamps = dtime_subset[statmask]
                 # timezone offsets (there's a half hour time zone!, so float)
-                # not sure why the astype(float) is needed in between, but does not work without...
+                # not sure why the astype(float) is needed in between, but it does not work without...
                 toffs = statdata[:, tzonecol].astype(float).astype("timedelta64[h]")
                 timestamps += toffs
                 stat = StationData(**stat_meta[stat_id])
