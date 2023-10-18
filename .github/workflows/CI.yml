@@ -67,10 +67,10 @@ jobs:
         python-version: [3.9, '3.10', '3.11']
         experimental: [false]
         os: [ubuntu-22.04]
-        #include:
-        #  - python-version: '3.12'
-        #    experimental: true        
-        #    os: ubuntu-22.04
+        include:
+          - python-version: '3.12'
+            experimental: true        
+            os: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
