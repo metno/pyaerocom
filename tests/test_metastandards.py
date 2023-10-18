@@ -41,7 +41,6 @@ def test_datasource(
     revision_date,
     stat_merge_pref_attr,
 ):
-
     ds = DataSource(data_id=data_id)
     assert ds["dataset_name"] == dataset_name
     assert ds["data_product"] == data_product
@@ -91,7 +90,6 @@ def test_stationmetadata():
     ],
 )
 def test_aerocomdataid(data_id, values, test_addstuff):
-
     data_id = AerocomDataID(data_id)
 
     assert data_id.values == values

@@ -126,7 +126,6 @@ class ReadAeronetInvV3(ReadAeronetBase):
         self.logger.debug(f"Reading file {filename}")
 
         with open(filename) as in_file:
-
             data_out["dataset_info"] = in_file.readline().strip()
             self.logger.debug(f"Skipping line: {in_file.readline()}")
             data_out["algorithm_info"] = in_file.readline().strip()

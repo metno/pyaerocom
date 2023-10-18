@@ -4,7 +4,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import xarray
-from pyexpat.errors import XML_ERROR_PARAM_ENTITY_REF
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
@@ -18,16 +17,11 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_statistics_timeseries,
     get_heatmap_filename,
     get_json_mapname,
+    get_profile_filename,
     get_stationfile_name,
     get_timeseries_file_name,
 )
 from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
-from pyaerocom.region_defs import (
-    HTAP_REGIONS,
-    HTAP_REGIONS_DEFAULT,
-    OLD_AEROCOM_REGIONS,
-    OTHER_REGIONS,
-)
 from tests.fixtures.collocated_data import COLDATA
 
 
@@ -47,6 +41,11 @@ def test_get_stationfile_name():
 def test_get_json_mapname():
     json = get_json_mapname("obs1", "var1", "mod1", "var1", "Column", "period")
     assert json == "obs1-var1_Column_mod1-var1_period.json"
+
+
+def get_profile_filename():
+    json = get_profile_filename("reg1", "obs1", "var1")
+    assert json == "reg1_obs1_var1.json"
 
 
 @pytest.mark.parametrize(

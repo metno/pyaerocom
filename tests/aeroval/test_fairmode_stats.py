@@ -37,22 +37,22 @@ def test_fairmode_stats(obs_var: str, stats: dict):
             id="NaN mean",
         ),
         pytest.param(
-            "vmro3",
+            "conco3",
             dict(refdata_mean=0, refdata_std=np.nan, data_std=1, R=1, mb=0, rms=0),
             id="NaN obs_std",
         ),
         pytest.param(
-            "vmro3",
+            "conco3",
             dict(refdata_mean=0, refdata_std=1, data_std=np.nan, R=1, mb=0, rms=0),
             id="NaN mod_std",
         ),
         pytest.param(
-            "vmro3",
+            "conco3",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=np.nan, mb=0, rms=0),
             id="NaN R",
         ),
         pytest.param(
-            "vmro3",
+            "conco3",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=np.nan, rms=0),
             id="NaN bias",
         ),

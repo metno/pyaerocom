@@ -138,7 +138,6 @@ def test_GriddedData_interpolate(data_tm5: GriddedData):
 
 
 def test_GriddedData_to_time_series(data_tm5: GriddedData):
-
     stats = data_tm5.to_time_series(latitude=TESTLATS, longitude=TESTLONS)
     assert [stat.latitude for stat in stats] == [-9, 21]
     assert [stat.longitude for stat in stats] == [-118.5, 70.5]

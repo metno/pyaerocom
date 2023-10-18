@@ -25,7 +25,6 @@ def test__COLOR_THEMES():
     ],
 )
 def test_ColorTheme___init__(name, theme_name):
-
     assert ColorTheme(name).name == theme_name
 
 

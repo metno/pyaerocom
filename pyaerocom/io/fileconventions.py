@@ -48,7 +48,6 @@ class FileConventionRead:
         data_id_pos=None,
         from_file=None,
     ):
-
         self.name = name
         self.file_sep = file_sep
 
@@ -72,7 +71,12 @@ class FileConventionRead:
         extracted from filenames
         """
         return dict(
-            year=None, var_name=None, ts_type=None, vert_code="", is_at_stations=False, data_id=""
+            year=None,
+            var_name=None,
+            ts_type=None,
+            vert_code="",
+            is_at_stations=False,
+            data_id="",
         )
 
     def from_file(self, file):

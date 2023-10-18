@@ -112,7 +112,6 @@ class AerocomBrowser(BrowseDict):
                         # now check if it is actually an exact match, if
                         # applicable
                         if return_if_match:
-
                             if ignorecase:
                                 match = name_or_pattern.lower() == subdir.lower()
                             else:

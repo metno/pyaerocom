@@ -17,7 +17,7 @@ def test_get_standarad_name():
 
 
 def test_get_standard_unit():
-    assert helpers.get_standard_unit("ec550aer") == "1/Mm"
+    assert helpers.get_standard_unit("ec550aer") == "1/km"
 
 
 def test_get_lowest_resolution():
@@ -124,7 +124,6 @@ def fake_hourly_ts():
 )
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
-
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how, min_num_obs=min_num_obs)
     assert len(s1) == num
     assert np.nanmean(s1) == pytest.approx(avg, abs=1e-2, nan_ok=True)
