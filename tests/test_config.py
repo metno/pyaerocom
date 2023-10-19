@@ -119,7 +119,7 @@ def test_Config_has_access_users_database():
         ("metno", None, False, False, 0),
         ("metno", None, True, False, 0),
         ("metno", None, True, True, 0),
-        ("metno", f"/home/{USER}", True, True, 1),
+        ("metno", f"/home/{USER}", True, True, 2),
         ("users-db", None, False, False, 0),
     ],
 )
