@@ -359,10 +359,10 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "wetso4",
         "wetna",
         "concprcpoxst",
-        'wetoxsc',
-        'concprcpoxsc',
-        'wetoxst',
-        'concprcpna',
+        "wetoxsc",
+        "concprcpoxsc",
+        "wetoxst",
+        "concprcpna",
     }
 
     assert set(reader.PROVIDES_VARIABLES) == (PROVIDES_VARIABLES)
