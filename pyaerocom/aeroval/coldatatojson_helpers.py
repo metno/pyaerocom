@@ -48,7 +48,7 @@ def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
 
 def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
     """Get name base name of json file"""
-    periodmod = period.strip("/")
+    periodmod = period.replace('/','')
     return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
 
 
