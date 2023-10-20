@@ -49,10 +49,15 @@ class ReadICOS(ReadMEP):
     #: functions used to convert variables that are computed
     AUX_FUNS = {}
 
-    VAR_MAPPING = {"vmrco2": "CO2_volume_mixing_ratio"}
+    VAR_MAPPING = {
+        "vmrco2": "CO2_volume_mixing_ratio",
+        "vmrch4": "CH4_volume_mixing_ratio",
+        "vmrco": "CO_volume_mixing_ratio",
+    }
 
     # STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
     STATION_REGEX = re.compile("icos-co2-(.*)-.*-.*.nc")
+    # STATION_REGEX = re.compile("icos-.*-(.*)-.*-.*.nc") # co2, ch4, co agnostic
 
     DEFAULT_VARS = list(VAR_MAPPING)
 
