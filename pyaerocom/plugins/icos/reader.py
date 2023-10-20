@@ -91,11 +91,11 @@ class ReadICOS(ReadMEP):
         super().__init__(data_id=data_id, data_dir=data_dir)
         # self.files = sorted(map(str, self.FOUND_FILES))
 
-    @cached_property
-    def FOUND_FILES(self) -> tuple[Path, ...]:
-        paths = sorted(Path(self.data_dir).rglob(self._FILEMASK))
-        logger.debug(f"found {len(paths)} files")
-        return tuple(paths)
+    # @cached_property
+    # def FOUND_FILES(self) -> tuple[Path, ...]:
+    #     paths = sorted(Path(self.data_dir).rglob(self._FILEMASK))
+    #     logger.debug(f"found {len(paths)} files")
+    #     return tuple(paths)
 
     # @lru_cache
     # def stations(self, files: tuple[str | Path, ...] | None = None) -> dict[str, list[Path]]:
@@ -143,10 +143,6 @@ class ReadICOS(ReadMEP):
         if unsupported := set(vars_to_retrieve) - set(self.PROVIDES_VARIABLES):
             raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
 
-        # # Files will depend on the var
-        # for var in vars_to_retrieve:
-        #     files_to_consider = sorted(Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var]))
-
         if files is not None and not isinstance(files, tuple):
             files = tuple(files)
 
@@ -156,30 +152,44 @@ class ReadICOS(ReadMEP):
         if files is not None and last_file is not None:
             files = files[:last_file]
 
-        stations: list[StationData] = []
+        if files is None:
+            # # Files will depend on the var
+            stations: list[StationData] = []
+            for var in vars_to_retrieve:
+                this_var_files = sorted(Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var]))
 
-        for station_name, paths in self.stations(files).items():
-            logger.debug(f"Reading station {station_name}")
-            ds = self._read_dataset(paths)[vars_to_retrieve]
-            stations.append(self.to_stationdata(ds, station_name))
+                for station_name, paths in self.stations(files).items():
+                    paths_to_read = list(set(paths) & set(this_var_files))
 
-        return UngriddedData.from_station_data(stations)
+                    logger.debug(f"Reading station {station_name}")
+                    breakpoint()
+                    ds = self._read_dataset(paths_to_read)
+                    ds = ds.rename({self.VAR_MAPPING[var]: var})
+                    ds = ds.assign(
+                        time=self._dataset_time(ds),
+                        **{name: func(ds) for name, func in self.AUX_FUNS.items()},
+                    )
+                    ds.set_coords(("latitude", "longitude", "altitude"))
+                    breakpoint()  # LB: here.
+                    stations.append(self.to_stationdata(ds, station_name))
+            return UngriddedData.from_station_data(stations)
+        else:
+            stations: list[StationData] = []
+            for station_name, paths in self.stations(files).items():
+                logger.debug(f"Reading station {station_name}")
+                ds = self._read_dataset(paths)[vars_to_retrieve]
+                stations.append(self.to_stationdata(ds, station_name))
+
+            return UngriddedData.from_station_data(stations)
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
-        breakpoint()
-        ds = xr.open_mfdataset(
+        return xr.open_mfdataset(
             sorted(paths),
             concat_dim="time",
             combine="nested",
             parallel=True,
             decode_cf=True,
         )
-        ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
-        ds = ds.assign(
-            time=self._dataset_time(ds),
-            **{name: func(ds) for name, func in self.AUX_FUNS.items()},
-        )
-        return ds.set_coords(("latitude", "longitude", "altitude"))
 
     @classmethod
     def _dataset_time(cls, ds: xr.Dataset) -> xr.DataArray:
