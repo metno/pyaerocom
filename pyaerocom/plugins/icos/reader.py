@@ -156,10 +156,13 @@ class ReadICOS(ReadMEP):
             # # Files will depend on the var
             stations: list[StationData] = []
             for var in vars_to_retrieve:
+                # breakpoint()
                 this_var_files = sorted(Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var]))
 
                 for station_name, paths in self.stations(files).items():
                     paths_to_read = list(set(paths) & set(this_var_files))
+                    if not paths_to_read:
+                        continue
 
                     logger.debug(f"Reading station {station_name}")
                     # breakpoint()
@@ -183,9 +186,12 @@ class ReadICOS(ReadMEP):
             return UngriddedData.from_station_data(stations)
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
+        # try:
         return xr.open_mfdataset(
             sorted(paths), concat_dim="time", combine="nested", parallel=True, decode_cf=True
         )
+        # except OSError:
+        #     breakpoint()
         # ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
         # ds = ds.assign(
         #     time=self._dataset_time(ds),
@@ -193,19 +199,19 @@ class ReadICOS(ReadMEP):
         # )
         # return ds.set_coords(("latitude", "longitude", "altitude"))
 
-    @classmethod
-    def _dataset_time(cls, ds: xr.Dataset) -> xr.DataArray:
-        # can not add ds["datetime_start"] and ds["datetime_start"], as both are of type datetime[ns]
-        time = ds[cls.START_TIME_NAME] + (ds[cls.END_TIME_NAME] - ds[cls.START_TIME_NAME]) / 2
-        return xr.Variable(
-            "time",
-            time,
-            dict(
-                long_name="time at middle of the period",
-                units=ds[cls.START_TIME_NAME].encoding["units"],
-            ),
-            ds[cls.START_TIME_NAME].encoding,
-        )
+    # @classmethod
+    # def _dataset_time(cls, ds: xr.Dataset) -> xr.DataArray:
+    #     # can not add ds["datetime_start"] and ds["datetime_start"], as both are of type datetime[ns]
+    #     time = ds[cls.START_TIME_NAME] + (ds[cls.END_TIME_NAME] - ds[cls.START_TIME_NAME]) / 2
+    #     return xr.Variable(
+    #         "time",
+    #         time,
+    #         dict(
+    #             long_name="time at middle of the period",
+    #             units=ds[cls.START_TIME_NAME].encoding["units"],
+    #         ),
+    #         ds[cls.START_TIME_NAME].encoding,
+    #     )
 
     @classmethod
     def to_stationdata(cls, ds: xr.Dataset, station_name: str) -> StationData:
