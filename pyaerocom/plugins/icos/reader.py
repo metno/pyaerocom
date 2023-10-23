@@ -162,7 +162,7 @@ class ReadICOS(ReadMEP):
                     paths_to_read = list(set(paths) & set(this_var_files))
 
                     logger.debug(f"Reading station {station_name}")
-                    breakpoint()
+                    # breakpoint()
                     ds = self._read_dataset(paths_to_read)
                     ds = ds.rename({self.VAR_MAPPING[var]: var})
                     ds = ds.assign(
@@ -170,7 +170,7 @@ class ReadICOS(ReadMEP):
                         **{name: func(ds) for name, func in self.AUX_FUNS.items()},
                     )
                     ds.set_coords(("latitude", "longitude", "altitude"))
-                    breakpoint()  # LB: here.
+                    # breakpoint()  # LB: here.
                     stations.append(self.to_stationdata(ds, station_name))
             return UngriddedData.from_station_data(stations)
         else:
@@ -184,12 +184,14 @@ class ReadICOS(ReadMEP):
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
         return xr.open_mfdataset(
-            sorted(paths),
-            concat_dim="time",
-            combine="nested",
-            parallel=True,
-            decode_cf=True,
+            sorted(paths), concat_dim="time", combine="nested", parallel=True, decode_cf=True
         )
+        # ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
+        # ds = ds.assign(
+        #     time=self._dataset_time(ds),
+        #     **{name: func(ds) for name, func in self.AUX_FUNS.items()},
+        # )
+        # return ds.set_coords(("latitude", "longitude", "altitude"))
 
     @classmethod
     def _dataset_time(cls, ds: xr.Dataset) -> xr.DataArray:
@@ -226,6 +228,8 @@ class ReadICOS(ReadMEP):
         station["dtime"] = ds["time"].values
 
         for var in ds.data_vars:
+            if not var in cls.PROVIDES_VARIABLES:
+                continue
             station[var] = ds[var].to_series()
             station["var_info"][var] = {"units": ds[var].units}
 
