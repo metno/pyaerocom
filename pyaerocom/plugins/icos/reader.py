@@ -74,8 +74,6 @@ class ReadICOS(ReadMEP):
         "vmrco": "icos-co-*.nc",
     }
 
-    # STATION_REGEX = re.compile("icos-co2-nrt-(.*)-.*-.*-.*.nc")
-    # STATION_REGEX = re.compile("icos-co2-(.*)-.*-.*.nc")
     STATION_REGEX = re.compile("icos-.*-(.*)-.*-.*.nc")  # co2, ch4, co agnostic
 
     DEFAULT_VARS = list(VAR_MAPPING)
@@ -128,7 +126,6 @@ class ReadICOS(ReadMEP):
         if files is None:
             # # Files will depend on the var
             stations: list[StationData] = []
-            # for var in var_to_retrieve:
             this_var_files = sorted(Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var]))
 
             for station_name, paths in self.stations(files).items():
