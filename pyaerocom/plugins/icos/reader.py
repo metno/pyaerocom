@@ -100,19 +100,24 @@ class ReadICOS(ReadMEP):
 
     def read(
         self,
-        var_to_retrieve: Iterable[str] | None = None,
+        var_to_retrieve: str | None = None,
         files: Iterable[str | Path] | None = None,
         first_file: int | None = None,
         last_file: int | None = None,
     ) -> UngriddedData:
         if len(var_to_retrieve) > 1:
-            raise NotImplementedError("Unnskyld, ReadICOS can only read one variable at a time...")
+            raise NotImplementedError(
+                "Unnskyld, ReadICOS can only read one variable at a time..."
+            )
 
         if var_to_retrieve is None:
             var_to_retrieve = self.DEFAULT_VARS[0]
 
         if unsupported := set(var_to_retrieve) - set(self.PROVIDES_VARIABLES):
             raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
+
+        if isinstance(var_to_retrieve, list):
+            var_to_retrieve = var_to_retrieve[0]
 
         if files is not None and not isinstance(files, tuple):
             files = tuple(files)
@@ -126,7 +131,9 @@ class ReadICOS(ReadMEP):
         if files is None:
             # # Files will depend on the var
             stations: list[StationData] = []
-            this_var_files = sorted(Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var]))
+            this_var_files = sorted(
+                Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var_to_retrieve])
+            )
 
             for station_name, paths in self.stations(files).items():
                 paths_to_read = list(set(paths) & set(this_var_files))
@@ -147,14 +154,24 @@ class ReadICOS(ReadMEP):
             stations: list[StationData] = []
             for station_name, paths in self.stations(files).items():
                 logger.debug(f"Reading station {station_name}")
-                ds = self._read_dataset(paths)[vars_to_retrieve]
+                ds = self._read_dataset(paths)[var_to_retrieve]
+                ds = ds.rename({self.VAR_MAPPING[var_to_retrieve]: var_to_retrieve})
+                ds = ds.assign(
+                    time=self._dataset_time(ds),
+                    **{name: func(ds) for name, func in self.AUX_FUNS.items()},
+                )
+                ds.set_coords(("latitude", "longitude", "altitude"))
                 stations.append(self.to_stationdata(ds, station_name))
 
             return UngriddedData.from_station_data(stations)
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
         return xr.open_mfdataset(
-            sorted(paths), concat_dim="time", combine="nested", parallel=True, decode_cf=True
+            sorted(paths),
+            concat_dim="time",
+            combine="nested",
+            parallel=True,
+            decode_cf=True,
         )
 
     @classmethod
