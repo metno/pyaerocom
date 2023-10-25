@@ -19,16 +19,28 @@ else:  # pragma: no cover
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
+from pyaerocom._lowlevel_helpers import (
+    BrowseDict,
+    ListOfStrings,
+    StrWithDefault,
+    chk_make_subdir,
+)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
+from pyaerocom.colocation_3d import (
+    ColocatedDataLists,
+    colocate_vertical_profile_gridded,
+)
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
+from pyaerocom.exceptions import (
+    ColocationError,
+    ColocationSetupError,
+    DataCoverageError,
+)
 from pyaerocom.helpers import (
     get_lowest_resolution,
     start_stop,
@@ -763,7 +775,9 @@ class Colocator(ColocationSetup):
         if isinstance(self.obs_vars, str):
             self.obs_vars = [self.obs_vars]
         elif not isinstance(self.obs_vars, list):
-            raise AttributeError("obs_vars not defined or invalid, need list with strings...")
+            raise AttributeError(
+                "obs_vars not defined or invalid, need list with strings..."
+            )
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()
@@ -771,12 +785,16 @@ class Colocator(ColocationSetup):
 
         vars_to_process = self._find_var_matches()
         if var_list is not None:
-            vars_to_process = self._filter_var_matches_varlist(vars_to_process, var_list)
+            vars_to_process = self._filter_var_matches_varlist(
+                vars_to_process, var_list
+            )
 
         (vars_to_process, ts_types) = self._check_load_model_data(vars_to_process)
 
         if self.save_coldata and not self.reanalyse_existing:
-            vars_to_process = self._filter_var_matches_files_not_exist(vars_to_process, ts_types)
+            vars_to_process = self._filter_var_matches_files_not_exist(
+                vars_to_process, ts_types
+            )
         return vars_to_process
 
     def run(self, var_list: list = None, **opts):
@@ -876,7 +894,11 @@ class Colocator(ColocationSetup):
             candidate = check_meta_match(
                 meta, model_name=mname, obs_name=oname, start=start, stop=stop
             )
-            if candidate and meta["model_var"] in model_vars and meta["obs_var"] in obs_vars:
+            if (
+                candidate
+                and meta["model_var"] in model_vars
+                and meta["obs_var"] in obs_vars
+            ):
                 if var_list is None:
                     ok = True
                 else:
@@ -1090,7 +1112,9 @@ class Colocator(ColocationSetup):
             if self.raise_exceptions:
                 invalid = [var for var in self.obs_vars if not var in avail]
                 invalid = "; ".join(invalid)
-                raise DataCoverageError(f"Invalid obs var(s) for {self.obs_id}: {invalid}")
+                raise DataCoverageError(
+                    f"Invalid obs var(s) for {self.obs_id}: {invalid}"
+                )
 
             self.obs_vars = avail
 
@@ -1223,6 +1247,7 @@ class Colocator(ColocationSetup):
             )
 
         data = self._check_remove_outliers_gridded(data, var_name, is_model)
+        breakpoint()
         return data
 
     def _try_get_vert_which_alt(self, is_model, var_name):
@@ -1438,7 +1463,9 @@ class Colocator(ColocationSetup):
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
-                ts_type=ts_type, var_ref=obs_var, use_climatology_ref=self.obs_use_climatology
+                ts_type=ts_type,
+                var_ref=obs_var,
+                use_climatology_ref=self.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
@@ -1471,7 +1498,9 @@ class Colocator(ColocationSetup):
         return args
 
     def _run_helper(self, model_var: str, obs_var: str):
-        logger.info(f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})")
+        logger.info(
+            f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})"
+        )
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
@@ -1490,7 +1519,9 @@ class Colocator(ColocationSetup):
             if self.save_coldata:
                 self._save_coldata(coldata)
 
-        elif isinstance(coldata, ColocatedDataLists):  # look into intertools chain.from_iterable
+        elif isinstance(
+            coldata, ColocatedDataLists
+        ):  # look into intertools chain.from_iterable
             for i_list in coldata:
                 for coldata_obj in i_list:
                     coldata_obj.data.attrs["model_name"] = self.get_model_name()
@@ -1515,7 +1546,9 @@ class Colocator(ColocationSetup):
         if not var_matches:
             logger.info("Nothing to colocate")
             return
-        logger.info("The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR")
+        logger.info(
+            "The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR"
+        )
 
         for key, val in var_matches.items():
             logger.info(f"{key}\t{val}")

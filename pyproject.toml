@@ -82,6 +82,7 @@ pya = "pyaerocom.scripts.cli:main"
 
 [project.entry-points."pyaerocom.gridded"]
 ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
+ReadTropomi_XEMEP_R01x01 = "pyaerocom.plugins.mscw_ctm.reader:ReadTropomi_XEMEP_R01x01"
 
 [project.entry-points."pyaerocom.ungridded"]
 ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
