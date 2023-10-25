@@ -133,7 +133,7 @@ class GriddedData:
     )
 
     def __init__(
-        self, input=None, var_name=None, check_unit=True, convert_unit_on_init=True, **meta
+            self, input=None, var_name=None, check_unit=True, convert_unit_on_init=True, **meta
     ):
         if input is None:
             input = iris.cube.Cube([])
@@ -1070,13 +1070,13 @@ class GriddedData:
         return dict(lat=lats, lon=lons)
 
     def to_time_series(
-        self,
-        sample_points=None,
-        scheme="nearest",
-        vert_scheme=None,
-        add_meta=None,
-        use_iris=False,
-        **coords,
+            self,
+            sample_points=None,
+            scheme="nearest",
+            vert_scheme=None,
+            add_meta=None,
+            use_iris=False,
+            **coords,
     ):
         """Extract time-series for provided input coordinates (lon, lat)
 
@@ -1242,7 +1242,7 @@ class GriddedData:
         return result
 
     def _to_timeseries_2D(
-        self, sample_points, scheme, collapse_scalar, add_meta=None, ts_type=None
+            self, sample_points, scheme, collapse_scalar, add_meta=None, ts_type=None
     ):
         """Extract time-series for provided input coordinates (lon, lat)
 
@@ -1313,7 +1313,7 @@ class GriddedData:
         return result
 
     def _to_timeseries_3D(
-        self, sample_points, scheme, collapse_scalar, vert_scheme, add_meta=None
+            self, sample_points, scheme, collapse_scalar, vert_scheme, add_meta=None
     ):
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
@@ -1653,7 +1653,7 @@ class GriddedData:
                 to_ts_type, from_ts_type=from_ts_type, how=how, min_num_obs=min_num_obs
             )
         except (
-            ValueError
+                ValueError
         ):  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr["time"] = self.time_stamps()
             rs = TimeResampler(arr)
@@ -1915,7 +1915,7 @@ class GriddedData:
                 data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
-                data = data[time_range[0] : time_range[1]]
+                data = data[time_range[0]: time_range[1]]
             else:
                 raise DataExtractionError("Failed to apply temporal cropping")
         return GriddedData(data, check_unit=False, convert_unit_on_init=False, **suppl)
@@ -2001,7 +2001,7 @@ class GriddedData:
         return f"{fconv.file_sep}".join(name) + ".nc"
 
     def aerocom_savename(
-        self, data_id=None, var_name=None, vert_code=None, year=None, ts_type=None
+            self, data_id=None, var_name=None, vert_code=None, year=None, ts_type=None
     ):
         """Get filename for saving following AeroCom conventions
 
@@ -2184,7 +2184,7 @@ class GriddedData:
         return GriddedData(itp_cube, **self.metadata)
 
     def regrid(
-        self, other=None, lat_res_deg=None, lon_res_deg=None, scheme="areaweighted", **kwargs
+            self, other=None, lat_res_deg=None, lon_res_deg=None, scheme="areaweighted", **kwargs
     ):
         """Regrid this grid to grid resolution of other grid
 
@@ -2337,7 +2337,7 @@ class GriddedData:
         return GriddedData(data_crop, **self.metadata)
 
     def quickplot_map(
-        self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs
+            self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs
     ):  # pragma: no cover
         """Make a quick plot onto a map
 
@@ -2414,7 +2414,7 @@ class GriddedData:
                 from pyaerocom.mathutils import exponent
 
                 mean = data.mean()
-                vstr = f"{mean:.{abs(exponent(mean))+1}f}"
+                vstr = f"{mean:.{abs(exponent(mean)) + 1}f}"
                 mustr = f"Mean={vstr}"
                 u = str(self.units)
                 if not u == "1":
@@ -2533,12 +2533,13 @@ class GriddedData:
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
         if not self.longitude.has_bounds():
-            self.longitude.guess_bounds()
+            if self.longitude.size > 2:
+                # guess_bounds needs at least 2 values to work
+                self.longitude.guess_bounds()
         if not self.latitude.has_bounds():
-            try:  # needs at least 2 values to work
+            # guess_bounds needs at least 2 values to work
+            if self.latitude.size > 2:
                 self.latitude.guess_bounds()
-            except ValueError:
-                pass
 
     def __getattr__(self, attr):
         return self[attr]
