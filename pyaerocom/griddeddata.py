@@ -2533,13 +2533,17 @@ class GriddedData:
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
         if not self.longitude.has_bounds():
-            if self.longitude.size > 2:
-                # guess_bounds needs at least 2 values to work
+            # guess_bounds needs at least 2 values to work
+            try:
                 self.longitude.guess_bounds()
+            except ValueError:
+                pass
         if not self.latitude.has_bounds():
             # guess_bounds needs at least 2 values to work
-            if self.latitude.size > 2:
+            try:
                 self.latitude.guess_bounds()
+            except ValueError:
+                pass
 
     def __getattr__(self, attr):
         return self[attr]
