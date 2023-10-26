@@ -102,6 +102,14 @@ def test_ReadGridded_read_var(reader_tm5: ReadGridded):
     assert gridded.var_name == "new_var"
     assert isinstance(gridded, GriddedData)
 
+    gridded_single_point = gridded.sel(
+        latitude=0.0,
+        longitude=0.0,
+    )
+    with pytest.raises(ValueError):
+        gridded_single_point.latitude.guess_bounds()
+        gridded_single_point.longitude.guess_bounds()
+
 
 @pytest.mark.parametrize(
     "experiments",
