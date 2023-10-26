@@ -13,7 +13,7 @@ if not const.has_access_lustre:
         allow_module_level=True,
     )
 
-VARS_DEFAULT = {"vmrco2"}
+VARS_DEFAULT = {"vmrco2", "vmrch4", "vmrco"}
 VARS_PROVIDED = VARS_DEFAULT  # | {} add more if ever needed
 
 station_names = pytest.mark.parametrize("station", ("bir", "gat", "hpb"))
