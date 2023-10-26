@@ -18,7 +18,7 @@ from pyaerocom.plugins.ghost.reader import ReadGhost
 logger = logging.getLogger(__name__)
 
 #: tarfile to download
-TESTATA_FILE = "testdata-minimal.tar.gz.20231017"
+TESTATA_FILE = "testdata-minimal.tar.gz.20231019"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -29,6 +29,7 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20230919": "md5:7b4c55d5258da7a2b41a3a085b947fba",
         "testdata-minimal.tar.gz.20231013": "md5:f3e311c28e341a5c54d5bbba6f9849d2",
         "testdata-minimal.tar.gz.20231017": "md5:705d91e01ca7647b4c93dfe67def661f",
+        "testdata-minimal.tar.gz.20231019": "md5:f8912ee83d6749fb2a9b1eda1d664ca2",
     },
 )
 
