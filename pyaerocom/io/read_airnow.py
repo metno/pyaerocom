@@ -359,8 +359,12 @@ class ReadAirNow(ReadUngriddedBase):
             raise DataRetrievalError("None of the input variables could be found in input list")
         return self._filedata_to_statlist(arrs, vars_to_retrieve, unique_stat_ids=unique_stat_ids)
 
-    def _filedata_to_statlist(self, arrs: list[np.ndarray], vars_to_retrieve: list[str],
-                              unique_stat_ids: list[str] = None) -> list[StationData]:
+    def _filedata_to_statlist(
+        self,
+        arrs: list[np.ndarray],
+        vars_to_retrieve: list[str],
+        unique_stat_ids: list[str] = None,
+    ) -> list[StationData]:
         """
         Convert loaded filedata into list of StationData objects
 
