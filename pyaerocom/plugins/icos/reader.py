@@ -2,20 +2,16 @@ from __future__ import annotations
 
 import logging
 import re
-
-from pyaerocom import const
-
 from collections import defaultdict
 from collections.abc import Iterable
 from functools import cached_property, lru_cache
 from pathlib import Path
 
-import xarray as xr
 import numpy as np
+import xarray as xr
 
-
+from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -106,9 +102,7 @@ class ReadICOS(ReadMEP):
         last_file: int | None = None,
     ) -> UngriddedData:
         if len(var_to_retrieve) > 1:
-            raise NotImplementedError(
-                "Unnskyld, ReadICOS can only read one variable at a time..."
-            )
+            raise NotImplementedError("Unnskyld, ReadICOS can only read one variable at a time...")
 
         if var_to_retrieve is None:
             var_to_retrieve = self.DEFAULT_VARS[0]
