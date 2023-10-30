@@ -108,6 +108,7 @@ def test_ReadGridded_read_var(reader_tm5: ReadGridded):
     )
     with pytest.raises(ValueError):
         gridded_single_point.latitude.guess_bounds()
+    with pytest.raises(ValueError):
         gridded_single_point.longitude.guess_bounds()
 
 
@@ -202,7 +203,7 @@ def test_file_info(reader_reanalysis: ReadGridded):
 @lustre_unavail
 def test_years_available(reader_reanalysis: ReadGridded):
     # go up to 2023 because 2022 is now available. Will likely need to be updated in the future
-    years = list(range(2003, 2023))
+    years = list(range(2011, 2022))
     assert reader_reanalysis.years_avail == years
 
 
