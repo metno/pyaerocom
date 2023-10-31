@@ -598,16 +598,6 @@ def _process_sites_weekly_ts(coldata, regions_how, region_ids, meta_glob):
         ),
     }
 
-    # try to merge repw_res together into one dataarray
-    repw_res_v2 = xr.concat(
-        [
-            _create_diurnal_weekly_data_object(coldata, "seasonal")["rep_week"],
-            _create_diurnal_weekly_data_object(coldata, "yearly")["rep_week"].expand_dims(
-                "period", axis=0
-            ),
-        ],
-        dim="period",
-    )
     ts_objs = _process_weekly_object_to_station_time_series(repw_res, meta_glob)
     ts_objs_reg = _process_weekly_object_to_country_time_series(
         repw_res, meta_glob, regions_how, region_ids
