@@ -88,6 +88,7 @@ ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
 ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
 ReadMEP = "pyaerocom.plugins.mep.reader:ReadMEP"
 ReadICOS = "pyaerocom.plugins.icos.reader:ReadICOS"
+ReadIPCForest = "pyaerocom.plugins.ipcforests.reader:ReadIPCForest"
 
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]

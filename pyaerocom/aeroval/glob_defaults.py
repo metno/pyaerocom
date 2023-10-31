@@ -200,10 +200,17 @@ var_ranges_defaults = {
         "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
         "colmap": "coolwarm",
     },
-    "wetoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "wetoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetna": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetoxn": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
     "wetrdn": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25],
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
+        "colmap": "coolwarm",
+    },
+    "wetoxsf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetoxnf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetrdnf": {
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
         "colmap": "coolwarm",
     },
     "prmm": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
@@ -215,6 +222,7 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "drydust": {
+        # "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
         "colmap": "coolwarm",
     },
@@ -255,6 +263,58 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
+    "proxydryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "proxydrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "proxydrypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "proxydryno2": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "proxydryhono": {"scale": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], "colmap": "coolwarm"},
+    "proxydryn2o5": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "proxydryhno3": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "proxydryno3c": {
+        "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
+        "colmap": "coolwarm",
+    },
+    "proxydryno3f": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "proxydrynh3": {
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
+        "colmap": "coolwarm",
+    },
+    "proxydrynh4": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "proxydryso2": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "proxydryso4": {
+        "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
+        "colmap": "coolwarm",
+    },
+    "proxydryoxs": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
+        "colmap": "coolwarm",
+    },
+    "proxydryoxn": {
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
+        "colmap": "coolwarm",
+    },
+    "proxydryrdn": {
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
+        "colmap": "coolwarm",
+    },
+    "depoxs": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "deprdn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depoxsf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depoxnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "deprdnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
 }
 
 #: Default information for statistical parameters
@@ -451,6 +511,18 @@ statistics_obs_only = {
     },
 }
 
+# For experiments where only model data is interesting, as with proxy drydep
+statistics_model_only = {
+    "data_mean": {
+        "name": "Mean-Mod",
+        "longname": "Model Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
+    },
+}
+
 #: Mapping of pyaerocom variable names to web naming conventions
 ## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
 var_web_info = dict(
@@ -487,6 +559,7 @@ var_web_info = dict(
     concNno=["NO", "3D", "Concentration"],
     concno2=["NO2", "3D", "Gas concentrations"],
     concNno2=["NO2", "3D", "Gas concentrations"],
+    vmrno=["NO", "3D", "Volume mixing ratios"],
     vmrno2=["NO2", "3D", "Volume mixing ratios"],
     concno3=["NO3", "3D", "Gas concentrations"],
     conctno3=["tNO3", "3D", "Concentration"],
@@ -509,6 +582,11 @@ var_web_info = dict(
     concco=["CO", "3D", "Particle concentration"],
     vmrco=["CO", "3D", "Volume mixing ratios"],
     vmrco2=["CO2", "3D", "Volume mixing ratios"],
+    vmrc2h2=["Ethyne", "3D", "Volume mixing ratios"],
+    vmrc2h4=["Ethylene", "3D", "Volume mixing ratios"],
+    vmrc2h6=["Ethane", "3D", "Volume mixing ratios"],
+    vmrhcho=["Formaldehyde", "3D", "Volume mixing ratios"],
+    vmrisop=["Isoprene", "3D", "Volume mixing ratios"],
     vmrch4=["CH4", "3D", "Volume mixing ratios"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
@@ -543,9 +621,47 @@ var_web_info = dict(
     drydust=["DryDustDep", "3D", "Deposition"],
     wetdust=["WetDustDep", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
+    wetoxsc=["WetOXScorr", "3D", "Deposition"],
+    wetoxst=["WetOXStot", "3D", "Deposition"],
     wetoxn=["WetOXN", "3D", "Deposition"],
     wetrdn=["WetRDN", "3D", "Deposition"],
     prmm=["Precipitation", "3D", "Deposition"],
     # Temperature
     ts=["Surface Temperature", "3D", "Temperature"],
+    # proxy drydep
+    proxydryoxs=["proxyDryOXS", "3D", "Deposition"],
+    proxydryso2=["proxyDrySO2", "3D", "Deposition"],
+    proxydryso4=["proxyDrySO4", "3D", "Deposition"],
+    proxydryoxn=["proxyDryOXN", "3D", "Deposition"],
+    proxydryno2=["proxyDryNO2", "3D", "Deposition"],
+    proxydryno2no2=["proxyDryNO2NO2", "3D", "Deposition"],
+    proxydryhono=["proxyDryHONO", "3D", "Deposition"],
+    proxydryn2o5=["proxyDryN2O5", "3D", "Deposition"],
+    proxydryhno3=["proxyDryHNO3", "3D", "Deposition"],
+    proxydryno3c=["proxyDryNO3Coarse", "3D", "Deposition"],
+    proxydryno3f=["proxyDryNO3Fine", "3D", "Deposition"],
+    proxydryrdn=["proxyDryRDN", "3D", "Deposition"],
+    proxydrynh3=["proxyDryNH3", "3D", "Deposition"],
+    proxydrynh4=["proxyDryNH4", "3D", "Deposition"],
+    proxydryo3=["proxyDryO3", "3D", "Deposition"],
+    proxydrypm10=["proxyDryPM10", "3D", "Deposition"],
+    proxydrypm25=["proxyDryPM2.5", "3D", "Deposition"],
+    # proxy wetdep
+    proxywetoxs=["proxyWetOXS", "3D", "Deposition"],
+    proxywetso2=["proxyWetSO2", "3D", "Deposition"],
+    proxywetso4=["proxyWetSO4", "3D", "Deposition"],
+    proxywetoxn=["proxyWetOXN", "3D", "Deposition"],
+    proxywetno2=["proxyWetNO2", "3D", "Deposition"],
+    proxywetno2no2=["proxyWetNO2NO2", "3D", "Deposition"],
+    proxywethono=["proxyWetHONO", "3D", "Deposition"],
+    proxywetn2o5=["proxyWetN2O5", "3D", "Deposition"],
+    proxywethno3=["proxyWetHNO3", "3D", "Deposition"],
+    proxywetno3c=["proxyWetNO3Coarse", "3D", "Deposition"],
+    proxywetno3f=["proxyWetNO3Fine", "3D", "Deposition"],
+    proxywetrdn=["proxyWetRDN", "3D", "Deposition"],
+    proxywetnh3=["proxyWetNH3", "3D", "Deposition"],
+    proxywetnh4=["proxyWetNH4", "3D", "Deposition"],
+    proxyweto3=["proxyWetO3", "3D", "Deposition"],
+    proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
+    proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
 )
