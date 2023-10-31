@@ -393,6 +393,7 @@ def _get_period_keys(resolution: Literal["seasonal", "yearly"]):
 
     return period_keys[resolution]
 
+
 def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
     """
     Processes one station data set for all supported averaging windows into a
