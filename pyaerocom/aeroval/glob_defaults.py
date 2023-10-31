@@ -2,7 +2,6 @@
 var_ranges_defaults = {
     "default": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "ang4487aer": {
-        # "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
         "scale": [
             -0.2,
             -0.1,
@@ -31,7 +30,6 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "od550aer": {
-        # "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "scale": [
             0.0,
             0.01,
@@ -58,7 +56,6 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "od550lt1aer": {
-        # "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "scale": [
             0.0,
             0.01,
@@ -85,7 +82,6 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "od550gt1aer": {
-        # "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "scale": [
             0.0,
             0.01,
@@ -112,7 +108,6 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "od550dust": {
-        # "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "scale": [
             0.0,
             0.01,
@@ -224,7 +219,6 @@ var_ranges_defaults = {
     "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "depdust": {
         "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
-        # "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         "colmap": "coolwarm",
     },
     "drydust": {
@@ -233,7 +227,6 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "wetdust": {
-        # "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
         "colmap": "coolwarm",
     },
@@ -243,6 +236,26 @@ var_ranges_defaults = {
     },
     "vmrco": {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
+        "colmap": "coolwarm",
+    },
+    "vmrco2": {
+        "scale": [400.0, 405.0, 410.0, 415.0, 420.0, 425.0, 430.0, 435.0, 440.0, 445.0, 450.0],
+        "colmap": "coolwarm",
+    },
+    "vmrch4": {
+        "scale": [
+            1700,
+            1750,
+            1800,
+            1850,
+            1900,
+            1950,
+            2000,
+            2050,
+            2100,
+            2150,
+            2200,
+        ],
         "colmap": "coolwarm",
     },
     "concco": {
@@ -574,6 +587,7 @@ var_web_info = dict(
     vmrc2h6=["Ethane", "3D", "Volume mixing ratios"],
     vmrhcho=["Formaldehyde", "3D", "Volume mixing ratios"],
     vmrisop=["Isoprene", "3D", "Volume mixing ratios"],
+    vmrch4=["CH4", "3D", "Volume mixing ratios"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
     concpm25=["PM2.5", "3D", "Particle concentrations"],
@@ -597,19 +611,15 @@ var_web_info = dict(
     concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
     concCecpm10=["EC PM10", "3D", "Particle concentration"],
     concCocpm10=["OC PM10", "3D", "Particle concentration"],
-    concCoc25=["OC PM2.5", "3D", "Particle concentration"],
+    concdust=["Dust concentration", "3D", "Particle concentration"],
     # Depositions
     drysox=["DryOXS", "3D", "Deposition"],
-    dryoxs=["proxyDryOXS", "3D", "Deposition"],
-    dryoxn=["proxyDryOXN", "3D", "Deposition"],
-    dryrdn=["proxyDryRDN", "3D", "Deposition"],
-    depoxs=["TotDepOXS", "3D", "Total Deposition"],
-    depoxn=["TotDepOXN", "3D", "Total Deposition"],
-    deprdn=["TotDepRDN", "3D", "Total Deposition"],
-    wetna=["WetNa", "3D", "Deposition"],
-    depoxsf=["TotDepOXSforr", "3D", "Total Deposition"],
-    depoxnf=["TotDepOXNforr", "3D", "Total Deposition"],
-    deprdnf=["TotDepRDNforr", "3D", "Total Deposition"],
+    dryoxs=["FakeDryOXS", "3D", "Deposition"],
+    dryoxn=["FakeDryOXN", "3D", "Deposition"],
+    dryrdn=["FakeDryRDN", "3D", "Deposition"],
+    depdust=["TotDustDep", "3D", "Deposition"],
+    drydust=["DryDustDep", "3D", "Deposition"],
+    wetdust=["WetDustDep", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
     wetoxsc=["WetOXScorr", "3D", "Deposition"],
     wetoxst=["WetOXStot", "3D", "Deposition"],

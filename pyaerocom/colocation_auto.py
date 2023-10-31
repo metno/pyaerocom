@@ -1438,7 +1438,9 @@ class Colocator(ColocationSetup):
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
-                ts_type=ts_type, var_ref=obs_var, use_climatology_ref=self.obs_use_climatology
+                ts_type=ts_type,
+                var_ref=obs_var,
+                use_climatology_ref=self.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
