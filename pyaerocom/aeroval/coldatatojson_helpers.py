@@ -5,6 +5,7 @@ import logging
 import os
 from copy import deepcopy
 from datetime import datetime
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -381,13 +382,16 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
     return output_array
 
 
-def _get_period_keys(resolution):
-    if resolution == "seasonal":
-        period_keys = ["DJF", "MAM", "JJA", "SON"]
-    elif resolution == "yearly":
-        period_keys = ["All"]
-    return period_keys
+def _get_period_keys(resolution: Literal["seasonal", "yearly"]):
+    period_keys = dict(
+        seasonal=["DJF", "MAM", "JJA", "SON"],
+        yearly=["All"],
+    )
 
+    if resolution not in period_keys:
+        raise ValueError(f"Unknown {resolution=}")
+
+    return period_keys[resolution]
 
 def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
     """
