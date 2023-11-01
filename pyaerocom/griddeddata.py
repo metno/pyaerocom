@@ -2434,7 +2434,7 @@ class GriddedData:
                 from pyaerocom.mathutils import exponent
 
                 mean = data.mean()
-                vstr = f"{mean:.{abs(exponent(mean))+1}f}"
+                vstr = f"{mean:.{abs(exponent(mean)) + 1}f}"
                 mustr = f"Mean={vstr}"
                 u = str(self.units)
                 if not u == "1":
@@ -2552,10 +2552,18 @@ class GriddedData:
 
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
-        if self.longitude.bounds is None:
-            self.longitude.guess_bounds()
-        if self.latitude.bounds is None:
-            self.latitude.guess_bounds()
+        if not self.longitude.has_bounds():
+            # guess_bounds needs at least 2 values to work
+            try:
+                self.longitude.guess_bounds()
+            except ValueError:
+                pass
+        if not self.latitude.has_bounds():
+            # guess_bounds needs at least 2 values to work
+            try:
+                self.latitude.guess_bounds()
+            except ValueError:
+                pass
 
     def __getattr__(self, attr):
         return self[attr]

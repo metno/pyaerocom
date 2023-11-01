@@ -155,6 +155,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.use_fairmode = False
         self.use_diurnal = False
         self.obs_only_stats = False
+        self.model_only_stats = False
         self.update(**kwargs)
 
 
