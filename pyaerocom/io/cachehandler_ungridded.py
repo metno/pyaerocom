@@ -292,7 +292,7 @@ class CacheHandlerUngridded:
 
         """
         for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
-            print(fp)
+            logger.info(fp)
 
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
