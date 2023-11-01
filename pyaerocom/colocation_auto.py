@@ -827,7 +827,6 @@ class Colocator(ColocationSetup):
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
             try:
-                # breakpoint()
                 coldata = self._run_helper(
                     mod_var, obs_var
                 )  # note this can be ColocatedData or ColocatedDataLists
