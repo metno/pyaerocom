@@ -68,6 +68,7 @@ class AerocomBrowser(BrowseDict):
                 path = os.path.normpath(obs_path)
                 if os.path.exists(path):
                     self[obs_id] = path
+                    _candidates.append(obs_id)
                     if return_if_match:
                         return path
             else:

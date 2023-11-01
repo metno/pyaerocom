@@ -2,6 +2,7 @@
 from importlib import metadata
 
 from ._logging import change_verbosity
+from ._warnings import ignore_basemap_warning
 
 __version__ = metadata.version(__package__)
 
@@ -9,11 +10,11 @@ from .config import Config
 
 # Instantiate default configuration
 const = Config()
+ignore_basemap_warning()
 
 # Sub-packages
 from . import io
 from . import plot
-from . import tools
 from . import scripts
 
 # Imports
@@ -54,6 +55,3 @@ from .variable_helpers import get_variable
 from .utils import create_varinfo_table
 
 from . import aeroval
-
-# toplevel functions
-from pyaerocom.tools import browse_database
