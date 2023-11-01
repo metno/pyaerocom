@@ -47,3 +47,7 @@ def ignore_warnings(category: type[Warning], *messages: str):
             yield
     finally:
         pass
+
+
+def ignore_basemap_warning():  # pragma: no cover
+    warnings.filterwarnings("ignore", r".*install Basemap$", UserWarning, "geonum")
