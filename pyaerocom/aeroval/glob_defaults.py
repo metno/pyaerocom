@@ -315,7 +315,12 @@ var_ranges_defaults = {
     "depoxsf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "depoxnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "deprdnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "vcdno2": {
+        "scale": [0, 0.5e-5, 1e-5, 1.5e-5, 2e-5, 2.5e-5, 3e-5, 3.5e-5, 4e-5, 4.5e-5],
+        "colmap": "coolwarm",
+    },
 }
+
 
 #: Default information for statistical parameters
 statistics_defaults = {
@@ -588,6 +593,10 @@ var_web_info = dict(
     vmrhcho=["Formaldehyde", "3D", "Volume mixing ratios"],
     vmrisop=["Isoprene", "3D", "Volume mixing ratios"],
     vmrch4=["CH4", "3D", "Volume mixing ratios"],
+    vcdno2=["NO2", "3D", "Vertical Column Density"],
+    vcdso2=["SO2", "3D", "Vertical Column Density"],
+    vcdhcho=["HCHO", "3D", "Vertical Column Density"],
+    vcdco=["CO", "3D", "Vertical Column Density"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
     concpm25=["PM2.5", "3D", "Particle concentrations"],
