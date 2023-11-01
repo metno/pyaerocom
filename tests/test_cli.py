@@ -29,6 +29,12 @@ def fake_cache(monkeypatch, tmp_path: Path):
     return tmp_path
 
 
+def test_listcache(fake_cache: Path):
+    assert list(fake_cache.glob("*.pkl"))
+    result = runner.invoke(main, ["listcache"])
+    assert result.exit_code == 0
+
+
 def test_clearcache(fake_cache: Path):
     assert list(fake_cache.glob("*.pkl"))
 

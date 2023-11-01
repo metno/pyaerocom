@@ -11,7 +11,7 @@ def version_callback(value: bool):
     if not value:
         return
 
-    typer.echo(f"{__package__} {__version__}")
+    typer.echo(f"🦄 {__package__} {__version__}")
     raise typer.Exit()
 
 
@@ -39,6 +39,12 @@ def clearcache():
         tools.clear_cache()
     else:
         print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
+
+
+@main.command()
+def listcache():
+    """List cached data objects"""
+    tools.list_cache()
 
 
 @main.command()

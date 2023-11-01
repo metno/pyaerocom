@@ -12,3 +12,13 @@ def clear_cache():
 
     ch = CacheHandlerUngridded()
     ch.delete_all_cache_files()
+
+
+def list_cache():
+    """
+    List all *.pkl files in cache directory
+    """
+    from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+
+    ch = CacheHandlerUngridded()
+    ch.list_all_cache_files()
