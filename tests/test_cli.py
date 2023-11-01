@@ -1,7 +1,6 @@
 from importlib import metadata
 from pathlib import Path
 
-import numpy as np
 import pytest
 from typer.testing import CliRunner
 
@@ -24,7 +23,7 @@ def fake_cache(monkeypatch, tmp_path: Path):
         "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded.cache_dir", tmp_path
     )
     cache_file = tmp_path / "tmp.pkl"
-    cache_file.write_bytes(np.zeros(10))
+    cache_file.write_bytes(b"")
     assert cache_file.exists()
     return tmp_path
 

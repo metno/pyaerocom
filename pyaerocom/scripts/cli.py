@@ -3,6 +3,7 @@ from typing import Optional
 import typer
 
 from pyaerocom import __package__, __version__, const, tools
+from pyaerocom.io.cachehandler_ungridded import list_cache_files
 
 main = typer.Typer()
 
@@ -36,7 +37,8 @@ def clearcache():
     delete = typer.confirm("Are you sure you want to delete all cached data objects?")
     if delete:
         print("OK then.... here we go!")
-        tools.clear_cache()
+        for path in list_cache_files():
+            path.unlink()
     else:
         print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
 
@@ -44,7 +46,8 @@ def clearcache():
 @main.command()
 def listcache():
     """List cached data objects"""
-    tools.list_cache()
+    for path in list_cache_files():
+        typer.echo(str(path))
 
 
 @main.command()

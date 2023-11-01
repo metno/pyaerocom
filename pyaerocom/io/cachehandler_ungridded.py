@@ -5,6 +5,8 @@ import glob
 import logging
 import os
 import pickle
+from collections.abc import Iterator
+from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
@@ -271,29 +273,6 @@ class CacheHandlerUngridded:
         logger.info(f"Successfully loaded cache file {fp}")
         return True
 
-    def delete_all_cache_files(self):
-        """
-        Deletes all pickled data objects in cache directory
-
-        If not set differently, the cache directory is the pyaerocom default,
-        accessible via :attr:`pyaerocom.const.CACHEDIR`.
-
-        """
-        for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
-            os.remove(fp)
-            logger.info(f"Deleted {fp}")
-
-    def list_all_cache_files(self):
-        """
-        List all pickled data objects in cache directory
-
-        If not set differently, the cache directory is the pyaerocom default,
-        accessible via :attr:`pyaerocom.const.CACHEDIR`.
-
-        """
-        for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
-            logger.info(fp)
-
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
 
@@ -369,3 +348,15 @@ class CacheHandlerUngridded:
 
     def __str__(self):
         return f"pyaerocom.CacheHandlerUngridded\nDefault cache dir: {self.cache_dir}"
+
+
+def list_cache_files() -> Iterator[Path]:
+    """
+    List all pickled data objects in cache directory
+
+    If not set differently, the cache directory is the pyaerocom default,
+    accessible via :attr:`pyaerocom.const.CACHEDIR`.
+
+    """
+    ch = CacheHandlerUngridded()
+    return Path(ch.cache_dir).glob("*.pkl")
