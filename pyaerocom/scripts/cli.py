@@ -2,8 +2,9 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import __package__, __version__, const, tools
+from pyaerocom import __package__, __version__, const
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
+from pyaerocom.io.utils import browse_database
 
 main = typer.Typer()
 
@@ -27,7 +28,7 @@ def callback(
 def browse(database: str = typer.Argument(..., help="Provide database name.")):
     """Browse database e.g., browse <DATABASE>"""
     print(f"Searching database for matches of {database}")
-    print(tools.browse_database(database))
+    print(browse_database(database))
 
 
 @main.command()

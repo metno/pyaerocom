@@ -15,7 +15,6 @@ ignore_basemap_warning()
 # Sub-packages
 from . import io
 from . import plot
-from . import tools
 from . import scripts
 
 # Imports
@@ -56,6 +55,3 @@ from .variable_helpers import get_variable
 from .utils import create_varinfo_table
 
 from . import aeroval
-
-# toplevel functions
-from pyaerocom.tools import browse_database
