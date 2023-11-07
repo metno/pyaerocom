@@ -8,6 +8,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from cf_units import Unit
 
@@ -37,6 +38,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.io import ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +80,10 @@ class ColocationSetup(BrowseDict):
     ----------
     model_id : str
         ID of model to be used.
+
+    obs_config: PyaroConfig
+        In the case Pyaro is used, a config must be provided. In that case obs_id(see below)
+        is ignored and only the config is used.
     obs_id : str
         ID of observation network to be used.
     obs_vars : list
@@ -313,6 +319,7 @@ class ColocationSetup(BrowseDict):
     def __init__(
         self,
         model_id=None,
+        obs_config: Optional[PyaroConfig] = None,
         obs_id=None,
         obs_vars=None,
         ts_type=None,
@@ -323,7 +330,11 @@ class ColocationSetup(BrowseDict):
         **kwargs,
     ):
         self.model_id = model_id
+        self.obs_config = obs_config
         self.obs_id = obs_id
+        # Gets obs_id from config, if given
+        if self.obs_config is not None:
+            self.obs_id = self.obs_config.data_id
         self.obs_vars = obs_vars
 
         self.ts_type = ts_type
@@ -346,6 +357,7 @@ class ColocationSetup(BrowseDict):
         # Options related to obs reading and processing
         self.obs_name = None
         self.obs_data_dir = None
+
         self.obs_use_climatology = False
 
         self._obs_cache_only = False  # only relevant if obs is ungridded
@@ -572,6 +584,8 @@ class Colocator(ColocationSetup):
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
+        if self.obs_config is not None:
+            return True
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
 
     @property
@@ -623,6 +637,9 @@ class Colocator(ColocationSetup):
         """
         Observation data reader
         """
+        if self.obs_config is not None:
+            return ReadUngridded(config=self.obs_config)
+
         if not self._check_data_id_obs_reader():
             if self.obs_is_ungridded:
                 self._obs_reader = ReadUngridded(

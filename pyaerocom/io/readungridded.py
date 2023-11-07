@@ -65,6 +65,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        # ReadPyaro,
     ]
     SUPPORTED_READERS.extend(
         ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
@@ -133,6 +134,7 @@ class ReadUngridded:
         """
         lst = []
         for reader in self.SUPPORTED_READERS:
+            print(reader, reader.SUPPORTED_DATASETS)
             lst.extend(reader.SUPPORTED_DATASETS)
         lst.extend(self.post_compute)
         return lst
@@ -294,9 +296,11 @@ class ReadUngridded:
             return self._readers[id]
 
         else:
-            reader = ReadPyaro(config=config)
+            engine = config.engine
+            reader = ReadPyaro(config=config, engine=engine)
+            self.SUPPORTED_READERS.append(reader)
             self._readers[id] = reader
-            self._data_ids.append[id]
+            self._data_ids.append(id)
             return reader
 
     def _find_read_class(self, data_id):

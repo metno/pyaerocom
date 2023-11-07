@@ -1,7 +1,8 @@
-from pyaro_config import PyaroConfig
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
-from pyaro.timeseries import Reader, Data, Station
-from pyaro.csvreader import CSVTimeseriesReader
+from pyaro.timeseries import Reader, Data, Station, Engine
+from pyaro.csvreader import CSVTimeseriesEngine
+from pyaro.timeseries.Wrappers import VariableNameChangingReader
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
@@ -16,45 +17,54 @@ logger = logging.getLogger(__name__)
 class ReadPyaro(ReadUngriddedBase):
     __version__ = "0.0.1"
 
-    def __init__(self, config: PyaroConfig, reader: Reader) -> None:
+    def __init__(self, config: PyaroConfig, engine: Engine) -> None:
         self.config: PyaroConfig = config
         # self.engine: Reader = config.engine
-        self.reader = reader
-        self.converter = PyaroToUngriddedData(self.reader, self.config)
+        self.engine = engine
+        self.converter = PyaroToUngriddedData(self.engine, self.config)
+        self.reader = self.converter.reader
+        self._data_id = self.config.data_id
+        self._data_dir = self.config.filename_or_obj_or_url
 
     """
     Definition of abstract methods from ReadUngriddedBase
     """
 
+    @property
     def DATA_ID(self):
-        return self.config.data_id
+        return self._data_id
 
+    @property
     def PROVIDES_VARIABLES(self):
         """
         return self.reader.get_variables()
         """
-        return []
+        return self.reader.variables()
 
+    @property
     def DEFAULT_VARS(self):
         return self.PROVIDES_VARIABLES
 
+    @property
     def TS_TYPE(self):
         """
         To be provided by the reader or engine
         """
-        return "undefined"
+        return "monthly"
 
+    @property
     def _FILEMASK(self):
         return self.config.filename_or_obj_or_url
 
+    @property
     def SUPPORTED_DATASETS(self):
-        return [self.data_id]
+        return [self.config.data_id]
 
     def read(self, vars_to_retrieve=None, files=..., first_file=None, last_file=None):
         return self.converter.read(vars_to_retrieve=vars_to_retrieve)
 
     def read_file(self, filename, vars_to_retrieve=None):
-        return self.read(vars_to_retrieve)
+        return self.converter.read(vars_to_retrieve)
 
 
 class PyaroToUngriddedData:
@@ -71,10 +81,20 @@ class PyaroToUngriddedData:
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
     _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
-    def __init__(self, reader: Reader, config: PyaroConfig) -> None:
+    def __init__(self, engine: Engine, config: PyaroConfig) -> None:
         self.data: UngriddedData = UngriddedData()
-        self.reader: Reader = reader
         self.config = config
+        self.engine = engine
+        self.reader: Reader = self._open_reader(self.engine)
+
+    def _open_reader(self, engine: Engine) -> Reader:
+        if self.config.name_map is None:
+            return engine.open(self.config.filename_or_obj_or_url, filters=self.config.filters)
+        else:
+            return VariableNameChangingReader(
+                engine.open(self.config.filename_or_obj_or_url, filters=self.config.filters),
+                self.config.name_map,
+            )
 
     def _convert_to_ungriddeddata(self, pyaro_data: dict[str, Data]) -> UngriddedData:
         stations = self.get_stations()
@@ -145,6 +165,7 @@ class PyaroToUngriddedData:
                 altitude=station["altitude"],
                 station_name=name,
                 country=station["country"],
+                ts_type="monthly",  # TEMP
                 data_revision="n/d",  # Temp: Need to be changed. Must add way of getting this from Reader
             )
             idx += 1
@@ -162,7 +183,7 @@ class PyaroToUngriddedData:
         new_data[self._ALTITUDEINDEX] = data["altitudes"]
         new_data[self._VARINDEX] = var_idx
         new_data[self._DATAINDEX] = data["values"]
-        new_data[self._DATAHEIGHTINDEX] = 0
+        new_data[self._DATAHEIGHTINDEX] = np.nan
         new_data[self._DATAERRINDEX] = data["standard_deviations"]
         new_data[self._DATAFLAGINDEX] = data["flags"]
         new_data[self._STOPTIMEINDEX] = data["stop_times"]
@@ -200,16 +221,21 @@ class PyaroToUngriddedData:
 
 if __name__ == "__main__":
     data_id = "csv_reader"
-    reader = CSVTimeseriesReader(
-        filename="/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/pyaro/src/pyaro/csvreader/testdata/csvReader_testdata.csv",
-    )
+    engine = CSVTimeseriesEngine()
+    # (
+    #     filename="/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/pyaro/src/pyaro/csvreader/testdata/csvReader_testdata.csv",
+    # )
 
     config = PyaroConfig(
         data_id=data_id,
         filename_or_obj_or_url="/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/pyaro/src/pyaro/csvreader/testdata/csvReader_testdata.csv",
         filters=[],
+        engine=engine,
+        name_map={"SOx": "oxidised_sulphur"},
     )
-    rp = ReadPyaro(config, reader)
+    rp = ReadPyaro(config=config, engine=engine)
 
-    data = rp.read(["SOx", "NOx"])
+    print(rp.DEFAULT_VARS)
+    data = rp.read()  # ["SOx", "NOx"])
     station = data.to_station_data(0)
+    print(station)
