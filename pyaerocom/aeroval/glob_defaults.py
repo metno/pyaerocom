@@ -266,6 +266,7 @@ var_ranges_defaults = {
     "proxydryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
     "proxydrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "proxydrypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "proxydryss": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "proxydryno2": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
@@ -630,6 +631,7 @@ var_web_info = dict(
     ts=["Surface Temperature", "3D", "Temperature"],
     # proxy drydep
     proxydryoxs=["proxyDryOXS", "3D", "Deposition"],
+    proxydryss=["proxyDrySS", "3D", "Deposition"],
     proxydryso2=["proxyDrySO2", "3D", "Deposition"],
     proxydryso4=["proxyDrySO4", "3D", "Deposition"],
     proxydryoxn=["proxyDryOXN", "3D", "Deposition"],
