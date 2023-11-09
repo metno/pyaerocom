@@ -332,6 +332,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "proxydryo3",
         "proxydryoxs",
         "proxydryss",
+        "proxydryna",
         "proxydrypm10",
         "proxydrypm25",
         "proxydryrdn",

@@ -187,7 +187,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.51_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.52_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -249,7 +249,8 @@ class ReadEbas(ReadUngriddedBase):
         # proxy drydep
         # Suphar based
         "proxydryoxs": ["concprcpoxs", "pr"],
-        "proxydryss": ["concprcpoxs", "pr"],
+        "proxydryss": ["concprcpna", "pr"],
+        "proxydryna": ["concprcpna", "pr"],
         "proxydryso2": ["concprcpoxs", "pr"],
         "proxydryso4": ["concprcpoxs", "pr"],
         # Oxidized nitrogen based
@@ -320,7 +321,8 @@ class ReadEbas(ReadUngriddedBase):
         # proxy dry dep
         # Suphar based
         "proxydryoxs": compute_wetoxs_from_concprcpoxs,
-        "proxydryss": compute_wetoxs_from_concprcpoxs,
+        "proxydryss": compute_wetna_from_concprcpna,
+        "proxydryna": compute_wetna_from_concprcpna,
         "proxydryso2": compute_wetoxs_from_concprcpoxs,
         "proxydryso4": compute_wetoxs_from_concprcpoxs,
         # Oxidized nitrogen based
