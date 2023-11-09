@@ -249,6 +249,7 @@ class ReadEbas(ReadUngriddedBase):
         # proxy drydep
         # Suphar based
         "proxydryoxs": ["concprcpoxs", "pr"],
+        "proxydryss": ["concprcpoxs", "pr"],
         "proxydryso2": ["concprcpoxs", "pr"],
         "proxydryso4": ["concprcpoxs", "pr"],
         # Oxidized nitrogen based
@@ -319,6 +320,7 @@ class ReadEbas(ReadUngriddedBase):
         # proxy dry dep
         # Suphar based
         "proxydryoxs": compute_wetoxs_from_concprcpoxs,
+        "proxydryss": compute_wetoxs_from_concprcpoxs,
         "proxydryso2": compute_wetoxs_from_concprcpoxs,
         "proxydryso4": compute_wetoxs_from_concprcpoxs,
         # Oxidized nitrogen based
