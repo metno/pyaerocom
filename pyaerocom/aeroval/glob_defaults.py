@@ -200,6 +200,10 @@ var_ranges_defaults = {
         "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
         "colmap": "coolwarm",
     },
+    "concom25": {
+        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
+        "colmap": "coolwarm",
+    },
     "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
     "wetna": {
         "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10, 20],
@@ -619,6 +623,7 @@ var_web_info = dict(
     concsspm25=["SS PM25", "3D", "Particle concentration"],
     concCecpm25=["EC PM2.5", "3D", "Particle concentration"],
     concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
+    concom25=["OM PM2.5", "3D", "Particle concentration"],
     concCecpm10=["EC PM10", "3D", "Particle concentration"],
     concCocpm10=["OC PM10", "3D", "Particle concentration"],
     concdust=["Dust concentration", "3D", "Particle concentration"],
