@@ -200,15 +200,18 @@ var_ranges_defaults = {
         "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
         "colmap": "coolwarm",
     },
-    "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
-    "wetna": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
-    "wetoxn": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
-    "wetrdn": {
-        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
+    "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
+    "wetna": {
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10, 20],
         "colmap": "coolwarm",
     },
-    "wetoxsf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
-    "wetoxnf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5], "colmap": "coolwarm"},
+    "wetoxn": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
+    "wetrdn": {
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5],
+        "colmap": "coolwarm",
+    },
+    "wetoxsf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
+    "wetoxnf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
     "wetrdnf": {
         "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5],
         "colmap": "coolwarm",
@@ -312,7 +315,10 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "depoxs": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "depna": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20], "colmap": "coolwarm"},
+    "depna": {
+        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
+        "colmap": "coolwarm",
+    },
     "depoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "deprdn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "depoxsf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
