@@ -254,9 +254,12 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "prmm": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
+    "dryoxs": {
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5],
+        "colmap": "coolwarm",
+    },
+    "dryoxn": {"scale": [0, 0.1, 0.2, 0.5, 1, 2.0, 5, 10, 20, 50], "colmap": "coolwarm"},
+    "dryrdn": {"scale": [0, 0.1, 0.2, 0.5, 1, 2.0, 5, 10, 20, 50], "colmap": "coolwarm"},
     "depdust": {
         "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
         "colmap": "coolwarm",
@@ -304,17 +307,32 @@ var_ranges_defaults = {
     },
     "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
     "proxydryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
+    "dryo3": {"scale": [0, 0.5, 1, 15, 20, 25, 0.30, 40, 50], "colmap": "coolwarm"},
     "proxydrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "drypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "proxydrypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "drypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "proxydryss": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "dryss": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "proxydryna": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "dryna": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
     "proxydryno2": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
+    "dryno2": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
     "proxydryhono": {"scale": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], "colmap": "coolwarm"},
+    "dryhono": {"scale": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], "colmap": "coolwarm"},
     "proxydryn2o5": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "dryn2o5": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
     "proxydryhno3": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
+    "dryhno3": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
@@ -322,8 +340,17 @@ var_ranges_defaults = {
         "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
         "colmap": "coolwarm",
     },
+    "dryno3c": {
+        "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
+        "colmap": "coolwarm",
+    },
     "proxydryno3f": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
+    "dryno3f": {"scale": [0.01, 0.02, 0.03, 0.04, 0.05], "colmap": "coolwarm"},
     "proxydrynh3": {
+        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
+        "colmap": "coolwarm",
+    },
+    "drynh3": {
         "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
         "colmap": "coolwarm",
     },
@@ -331,11 +358,23 @@ var_ranges_defaults = {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
+    "drynh4": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
     "proxydryso2": {
         "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
         "colmap": "coolwarm",
     },
+    "dryso2": {
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+        "colmap": "coolwarm",
+    },
     "proxydryso4": {
+        "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
+        "colmap": "coolwarm",
+    },
+    "dryso4": {
         "scale": [0.01, 0.02, 0.03, 0.04, 0.05],
         "colmap": "coolwarm",
     },
