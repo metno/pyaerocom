@@ -206,7 +206,7 @@ var_ranges_defaults = {
     },
     "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
     "wetna": {
-        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10, 20],
+        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10, 20, 50, 100],
         "colmap": "coolwarm",
     },
     "wetoxn": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
@@ -324,11 +324,20 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "depoxn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "deprdn": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "deprdn": {
+        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
+        "colmap": "coolwarm",
+    },
     "depoxsf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "depnaf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "depnaf": {
+        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
+        "colmap": "coolwarm",
+    },
     "depoxnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "deprdnf": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+    "deprdnf": {
+        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
+        "colmap": "coolwarm",
+    },
 }
 
 #: Default information for statistical parameters
@@ -636,8 +645,8 @@ var_web_info = dict(
     depoxnf=["TotDepOXNforr", "3D", "Deposition"],
     depss=["TotDepSS", "3D", "Deposition"],
     depssf=["TotDepSSforr", "3D", "Deposition"],
-    depna=["TotDepSodium", "3D", "Deposition"],
-    depnaf=["TotDepSodiumforr", "3D", "Deposition"],
+    depna=["TotDepNa", "3D", "Deposition"],
+    depnaf=["TotDepNaforr", "3D", "Deposition"],
     drysox=["DryOXS", "3D", "Deposition"],
     dryoxs=["DryOXS", "3D", "Deposition"],
     dryoxn=["DryOXN", "3D", "Deposition"],
@@ -646,7 +655,7 @@ var_web_info = dict(
     drydust=["DryDustDep", "3D", "Deposition"],
     wetdust=["WetDustDep", "3D", "Deposition"],
     wetoxs=["WetOXS", "3D", "Deposition"],
-    wetna=["WetSodium", "3D", "Deposition"],
+    wetna=["WetNa", "3D", "Deposition"],
     wetoxsc=["WetOXScorr", "3D", "Deposition"],
     wetoxst=["WetOXStot", "3D", "Deposition"],
     wetoxn=["WetOXN", "3D", "Deposition"],
@@ -657,7 +666,7 @@ var_web_info = dict(
     # proxy drydep
     proxydryoxs=["proxyDryOXS", "3D", "Deposition"],
     proxydryss=["proxyDrySS", "3D", "Deposition"],
-    proxydryna=["proxyDrySodium", "3D", "Deposition"],
+    proxydryna=["proxyDryNa", "3D", "Deposition"],
     proxydryso2=["proxyDrySO2", "3D", "Deposition"],
     proxydryso4=["proxyDrySO4", "3D", "Deposition"],
     proxydryoxn=["proxyDryOXN", "3D", "Deposition"],
