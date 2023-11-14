@@ -17,13 +17,16 @@ from pyaerocom.helpers import (
     get_highest_resolution,
     get_max_period_range,
     make_dummy_cube,
-    start_stop_str,
+    # start_stop_str,
+    make_dummy_cube_with_altitude,
 )
 from pyaerocom.io import ReadGridded
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
+
+COLOCATION_LAYER_LIMITS_NAME = "colocation_layer_limts"
 
 
 def check_var_ranges_avail(model_data, var_name):
@@ -170,10 +173,15 @@ def make_dummy_model(obs_list: list, cfg) -> str:
     tmp_var_obj = Variable()
     # Loops over variables in obs
     for obs in obs_list:
+        vert_code = cfg.obs_cfg[obs]["obs_vert_type"]
         for var in cfg.obs_cfg[obs]["obs_vars"]:
             # Create dummy cube
-
-            dummy_cube = make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
+            if hasattr(cfg.obs_cfg[obs], COLOCATION_LAYER_LIMITS_NAME):
+                dummy_cube = make_dummy_cube_with_altitude(
+                    var, start_yr=start, stop_yr=stop, freq=freq
+                )
+            else:
+                dummy_cube = make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
 
             # Converts cube to GriddedData
             dummy_grid = GriddedData(dummy_cube)

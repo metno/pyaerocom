@@ -1099,6 +1099,7 @@ class Colocator(ColocationSetup):
         oname = self.get_obs_name()
         logger.info(f"Colocation processing status for {mname} vs. {oname}")
         logger.info(self.processing_status)
+        breakpoint()
 
     def _filter_var_matches_var_name(self, var_matches, var_name):
         filtered = {}

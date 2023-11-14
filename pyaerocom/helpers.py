@@ -68,6 +68,7 @@ def varlist_aerocom(varlist):
     elif not isinstance(varlist, list):
         raise ValueError("Need string or list")
     output = []
+
     for var in varlist:
         try:
             _var = const.VARS[var].var_name_aerocom
@@ -1765,3 +1766,102 @@ def make_dummy_cube(
     for coord in dummy.coords():
         coord.points = coord.points.astype(dtype)
     return dummy
+
+
+def make_dummy_cube_with_altitude(
+    var_name: str, start_yr: int = 2000, stop_yr: int = 2020, freq: str = "daily", dtype=float
+) -> iris.cube.Cube:
+    startstr = f"days since {start_yr}-01-01 00:00"
+
+    if freq not in TS_TYPE_TO_PANDAS_FREQ.keys():
+        raise ValueError(f"{freq} not a recognized frequency")
+
+    start_str = f"{start_yr}-01-01 00:00"
+    stop_str = f"{stop_yr}-12-31 00:00"
+    times = pd.date_range(start_str, stop_str, freq=TS_TYPE_TO_PANDAS_FREQ[freq])
+
+    days_since_start = (times - times[0]).days
+    unit = get_variable(var_name).units
+
+    lat_range = (-90, 90)
+    lon_range = (-180, 180)
+    alt_range = (0, 10000)
+    lat_res_deg = 45
+    lon_res_deg = 90
+    alt_res_deg = 2500
+    time_unit = Unit(startstr, calendar="gregorian")
+
+    lons = np.arange(
+        lon_range[0] + (lon_res_deg / 2), lon_range[1] + (lon_res_deg / 2), lon_res_deg
+    )
+    lats = np.arange(
+        lat_range[0] + (lat_res_deg / 2), lat_range[1] + (lat_res_deg / 2), lat_res_deg
+    )
+    alts = np.arange(
+        alt_range[0] + (alt_res_deg / 2), alt_range[1] + (alt_res_deg / 2), alt_res_deg
+    )
+
+    latdim = iris.coords.DimCoord(
+        lats,
+        var_name="lat",
+        standard_name="latitude",
+        long_name="Center coordinates for latitudes",
+        circular=False,
+        units=Unit("degrees"),
+    )
+
+    londim = iris.coords.DimCoord(
+        lons,
+        var_name="lon",
+        standard_name="longitude",
+        long_name="Center coordinates for longitudes",
+        circular=False,
+        units=Unit("degrees"),
+    )
+
+    altdim = iris.coords.DimCoord(
+        alts,
+        var_name="alt",
+        standard_name="altitude",
+        long_name="Center coordinates for altitudes",
+        circular=False,
+        units=Unit("meters"),
+    )
+    timedim = iris.coords.DimCoord(
+        days_since_start, var_name="time", standard_name="time", long_name="Time", units=time_unit
+    )
+
+    latdim.guess_bounds()
+    londim.guess_bounds()
+    dummy = iris.cube.Cube(np.ones((len(times), len(lats), len(lons), len(alts))), units=unit)
+
+    dummy.add_dim_coord(latdim, 1)
+    dummy.add_dim_coord(londim, 2)
+    dummy.add_dim_coord(altdim, 3)
+    dummy.add_dim_coord(timedim, 0)
+    dummy.var_name = var_name
+    dummy.ts_type = freq
+
+    dummy.data = dummy.data.astype(dtype)
+    for coord in dummy.coords():
+        coord.points = coord.points.astype(dtype)
+    return dummy
+
+
+# def add_alt_dim_to_dummy_cube(dummy_cube: iris.cube.Cube) -> iris.cube.Cube:
+#     breakpoint()
+#     alt_range = (0, 10000)
+#     alt_res_deg = 2500
+#     alts = np.arange(
+#         alt_range[0] + (alt_res_deg / 2), alt_range[1] + (alt_res_deg / 2), alt_res_deg
+#     )
+#     altdim = iris.coords.DimCoord(
+#         alts,
+#         var_name="alt",
+#         standard_name="altitude",
+#         long_name="Center coordinates for altitudes",
+#         circular=False,
+#         units=Unit("meters"),
+#     )
+
+#     dummy_cube.add_dim_coord(altdim, 3)

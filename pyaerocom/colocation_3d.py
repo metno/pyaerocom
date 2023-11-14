@@ -336,6 +336,9 @@ def colocate_vertical_profile_gridded(
     except DimensionOrderError:
         data.reorder_dimensions_tseries()
 
+    if not hasattr(data, "altitude"):
+        raise AttributeError(f"GriddedData object must have altitude as a coordinate")
+
     var, var_aerocom = resolve_var_name(data)
     if var_ref is None:
         var_ref = var_aerocom
@@ -372,7 +375,7 @@ def colocate_vertical_profile_gridded(
             )
         else:
             data_ref_meta_idxs_with_var_info.append(i)
-
+    breakpoint()
     if any(
         data.altitude.units != Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
         for i in data_ref_meta_idxs_with_var_info
