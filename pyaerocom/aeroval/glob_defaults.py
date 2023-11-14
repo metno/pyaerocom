@@ -174,7 +174,7 @@ var_ranges_defaults = {
     "vmrno2": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40], "colmap": "coolwarm"},
     "vmro3max": {"scale": [0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60], "colmap": "coolwarm"},
     "concNhno3": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
+        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 1],
         "colmap": "coolwarm",
     },
     "concNno3pm10": {
@@ -217,7 +217,7 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "concNtnh": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 7.5, 10.0, 20],
+        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 7.5, 10.0, 20, 50],
         "colmap": "coolwarm",
     },
     "concsspm25": {
@@ -229,8 +229,13 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "concCecpm25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
+    "concCec25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "concCocpm25": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
+        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 10],
+        "colmap": "coolwarm",
+    },
+    "concCoc25": {
+        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 10],
         "colmap": "coolwarm",
     },
     "concom25": {
@@ -737,6 +742,8 @@ var_web_info = dict(
     concsspm25=["SS PM25", "3D", "Particle concentration"],
     concCecpm25=["EC PM2.5", "3D", "Particle concentration"],
     concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
+    concCec25=["EC PM2.5", "3D", "Particle concentration"],
+    concCoc25=["OC PM2.5", "3D", "Particle concentration"],
     concom25=["OM PM2.5", "3D", "Particle concentration"],
     concCecpm10=["EC PM10", "3D", "Particle concentration"],
     concCocpm10=["OC PM10", "3D", "Particle concentration"],
