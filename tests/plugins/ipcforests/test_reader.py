@@ -5,7 +5,7 @@ import pytest
 from pyaerocom import const
 from pyaerocom.plugins.ipcforests.metadata import MetadataReader as ReadIPCForestMeta
 from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
-from tests.fixtures.data_access import DataForTests, TEST_DATA
+from tests.fixtures.data_access import TEST_DATA, DataForTests
 
 # station names are not consistent between variables!
 # STATION_NAMES = ("DE-604-2", "NO-7-2", "UK-718-2")
@@ -55,14 +55,14 @@ def test_PROVIDES_VARIABLES(reader: ReadIPCForest):
 
 
 def test_read_file(
-        reader: ReadIPCForest,
+    reader: ReadIPCForest,
 ):
     data = reader.read(vars_to_retrieve=VARS_DEFAULT)
     assert set(data.contains_vars) == VARS_DEFAULT
 
 
 def test_read_station(
-        reader: ReadIPCForest,
+    reader: ReadIPCForest,
 ):
     # IPCForest reader does not support partial read of stations at this time
     # not easy to implement due to being a single file dataset
