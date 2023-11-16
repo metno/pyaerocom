@@ -27,7 +27,6 @@ def reader():
 
 @pytest.fixture(scope="module")
 def meta_reader() -> ReadIPCForestMeta:
-    # pytest.set_trace()
     return ReadIPCForestMeta(str(IPC_PATH))
 
 
