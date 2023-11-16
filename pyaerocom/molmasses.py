@@ -1,4 +1,17 @@
-VAR_PREFIXES = ["vmr", "mmr", "conc", "sconc", "wet", "dry"]
+VAR_PREFIXES = [
+    "vmr",
+    "mmr",
+    "conc",
+    "sconc",
+    "wet",
+    "dry",
+    "concNt",
+    "concN",
+    "concC",
+    "proxydry",
+    "proxywet",
+    "dep",
+]
 
 # in g/mol
 MOLMASSES = {
@@ -8,6 +21,7 @@ MOLMASSES = {
     "so4": 96.06,
     "no": 30.01,
     "no2": 46.0055,
+    "no3": 62.0045,
     "hno3": 63.01,
     "nh3": 17.031,
     "nh4": 18.039,
