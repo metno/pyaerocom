@@ -1,7 +1,7 @@
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
-from pyaro.timeseries import Reader, Data, Station, Engine
-from pyaro.csvreader import CSVTimeseriesEngine
+from pyaro import list_timeseries_engines, open_timeseries
+from pyaro.timeseries import Reader, Data, Station
 from pyaro.timeseries.Wrappers import VariableNameChangingReader
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -15,16 +15,26 @@ logger = logging.getLogger(__name__)
 
 
 class ReadPyaro(ReadUngriddedBase):
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
 
-    def __init__(self, config: PyaroConfig, engine: Engine) -> None:
+    SUPPORTED_DATASETS = list(list_timeseries_engines().keys())
+
+    def __init__(self, config: PyaroConfig) -> None:
         self.config: PyaroConfig = config
-        # self.engine: Reader = config.engine
-        self.engine = engine
-        self.converter = PyaroToUngriddedData(self.engine, self.config)
+
+        self._check_id()
+
+        
+        self.converter = PyaroToUngriddedData(self.config)
         self.reader = self.converter.reader
         self._data_id = self.config.data_id
         self._data_dir = self.config.filename_or_obj_or_url
+
+
+
+
+
+        
 
     """
     Definition of abstract methods from ReadUngriddedBase
@@ -57,14 +67,26 @@ class ReadPyaro(ReadUngriddedBase):
         return self.config.filename_or_obj_or_url
 
     @property
-    def SUPPORTED_DATASETS(self):
-        return [self.config.data_id]
+
+    
+    @staticmethod
+    def get_pyaro_readers():
+        return list_timeseries_engines()
 
     def read(self, vars_to_retrieve=None, files=..., first_file=None, last_file=None):
         return self.converter.read(vars_to_retrieve=vars_to_retrieve)
 
     def read_file(self, filename, vars_to_retrieve=None):
         return self.converter.read(vars_to_retrieve)
+
+    def _check_id(self):
+        avail_readers = list_timeseries_engines()
+        if not self.config.data_id in avail_readers:
+            logger.warning(f"Could not find {self.config.data_id} in list of available Pyaro readers: {avail_readers}")
+        
+
+
+
 
 
 class PyaroToUngriddedData:
@@ -81,18 +103,19 @@ class PyaroToUngriddedData:
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
     _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
-    def __init__(self, engine: Engine, config: PyaroConfig) -> None:
+    def __init__(self, config: PyaroConfig) -> None:
         self.data: UngriddedData = UngriddedData()
         self.config = config
-        self.engine = engine
-        self.reader: Reader = self._open_reader(self.engine)
+        self.reader: Reader = self._open_reader()
 
-    def _open_reader(self, engine: Engine) -> Reader:
+    def _open_reader(self) -> Reader:
+        data_id = self.config.data_id
+
         if self.config.name_map is None:
-            return engine.open(self.config.filename_or_obj_or_url, filters=self.config.filters)
+            return open_timeseries(data_id, self.config.filename_or_obj_or_url, filters=self.config.filters)
         else:
             return VariableNameChangingReader(
-                engine.open(self.config.filename_or_obj_or_url, filters=self.config.filters),
+                open_timeseries(data_id, self.config.filename_or_obj_or_url, filters=self.config.filters),
                 self.config.name_map,
             )
 
@@ -220,20 +243,16 @@ class PyaroToUngriddedData:
 
 
 if __name__ == "__main__":
-    data_id = "csv_reader"
-    engine = CSVTimeseriesEngine()
-    # (
-    #     filename="/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/pyaro/src/pyaro/csvreader/testdata/csvReader_testdata.csv",
-    # )
+
+    data_id = "csv_timeseries"
 
     config = PyaroConfig(
         data_id=data_id,
-        filename_or_obj_or_url="/lustre/storeB/project/fou/kl/emep/People/danielh/projects/pyaerocom/pyaro/src/pyaro/csvreader/testdata/csvReader_testdata.csv",
+        filename_or_obj_or_url="/home/danielh/Documents/pyaerocom/pyaro/tests/testdata/csvReader_testdata.csv",
         filters=[],
-        engine=engine,
         name_map={"SOx": "oxidised_sulphur"},
     )
-    rp = ReadPyaro(config=config, engine=engine)
+    rp = ReadPyaro(config=config)
 
     print(rp.DEFAULT_VARS)
     data = rp.read()  # ["SOx", "NOx"])

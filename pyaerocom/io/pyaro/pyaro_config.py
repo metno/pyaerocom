@@ -7,7 +7,7 @@ class PyaroConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    engine: Engine  # Entrypoint name instead
+    # engine: Engine  # Entrypoint name instead
     data_id: str
     filename_or_obj_or_url: str
     filters: list[str]
