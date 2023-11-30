@@ -10,6 +10,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 import numpy as np
 
 import logging
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
@@ -125,10 +126,12 @@ class PyaroToUngriddedData:
         var_size = {var: len(pyaro_data[var]) for var in pyaro_data}
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
+        units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
+
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
-        metadata = self._make_ungridded_metadata(stations=stations, var_idx=var_idx)
+        metadata = self._make_ungridded_metadata(stations=stations, var_idx=var_idx, units=units)
         meta_idx = {s: {v: [] for v in vars} for s in metadata}
         data_array = np.zeros([total_size, 12])
 
@@ -144,7 +147,7 @@ class PyaroToUngriddedData:
             ):  # The 1 start is a temp fix for the empty first row of the current Data implementation from pyaro
                 data_line = var_data[i]
                 current_station = data_line["stations"]
-
+                
                 # Fills data array
                 ungriddeddata_line = self._pyaro_dataline_to_ungriddeddata_dataline(
                     data_line, idx, var_idx[var]
@@ -171,7 +174,7 @@ class PyaroToUngriddedData:
         return self.data
 
     def _make_ungridded_metadata(
-        self, stations: dict[str, Station], var_idx: dict[str, int]
+        self, stations: dict[str, Station], var_idx: dict[str, int], units: dict[str, str]
     ) -> dict[str, dict[str, str | list[str]]]:
         idx = 0
         metadata = {}
@@ -179,6 +182,7 @@ class PyaroToUngriddedData:
             metadata[idx] = dict(
                 data_id=self.config.data_id,
                 variables=list(self.get_variables()),
+                var_info = units,
                 # [
                 # var_idx[var] for var in self.get_variables()
                 # ],  # Temp: all stations are now assumed to have all variables
@@ -194,7 +198,7 @@ class PyaroToUngriddedData:
             idx += 1
 
         return metadata
-
+    
     def _pyaro_dataline_to_ungriddeddata_dataline(
         self, data: np.void, idx: int, var_idx: int
     ) -> np.ndarray:
