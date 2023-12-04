@@ -64,7 +64,6 @@ def test_read_file(
 def test_read_station(
     reader: ReadIPCForest,
 ):
-
     data = reader.read(
         vars_to_retrieve=VARS_DEFAULT,
     )
