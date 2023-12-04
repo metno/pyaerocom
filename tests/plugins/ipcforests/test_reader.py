@@ -10,7 +10,6 @@ from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
 from tests.fixtures.data_access import TEST_DATA, DataForTests
 
 # station names are not consistent between variables!
-# STATION_NAMES = ("DE-604-2", "NO-7-2", "UK-718-2")
 # Station names are kind of limited since we took only the last 5000 lines from the data file for the test data set
 STATION_NAMES = ("BG-1-1", "LV-15-2", "BG-4-3")
 
@@ -65,12 +64,10 @@ def test_read_file(
 def test_read_station(
     reader: ReadIPCForest,
 ):
-    # IPCForest reader does not support partial read of stations at this time
-    # not easy to implement due to being a single file dataset
+
     data = reader.read(
         vars_to_retrieve=VARS_DEFAULT,
     )
-    print(data.unique_station_names)
     for station in STATION_NAMES:
         assert station in data.unique_station_names
 
