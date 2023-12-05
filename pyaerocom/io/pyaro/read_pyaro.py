@@ -6,14 +6,18 @@ from pyaro.timeseries.Wrappers import VariableNameChangingReader
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.tstype import TsType
 
 import numpy as np
 
 import logging
 from copy import deepcopy
+from typing import NewType
 
 logger = logging.getLogger(__name__)
 
+
+Metadata = NewType("Metadata", dict[str, dict[str, str | list[str]]])
 
 class ReadPyaro(ReadUngriddedBase):
     __version__ = "0.0.2"
@@ -127,7 +131,7 @@ class PyaroToUngriddedData:
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
         units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-
+        ts_types = {k: None for k in stations}
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
@@ -153,6 +157,17 @@ class PyaroToUngriddedData:
                     data_line, idx, var_idx[var]
                 )
 
+                # Finds the ts_type of the stations. Raises error of same station has different types
+                start, stop = data_line["start_times"], data_line["stop_times"]
+                ts_type = self._calculate_ts_type(start, stop)
+                if ts_types[current_station] is None:
+                    ts_types[current_station] = ts_type
+                elif ts_types[current_station] != ts_type:
+                    msg = f"TS type {ts_type} of station {current_station} is different from already found value {ts_types[current_station]}"
+                    logger.error(msg)
+                    raise ValueError(msg)
+
+
                 data_array[idx, :] = ungriddeddata_line
 
                 #  Fills meta_idx
@@ -168,14 +183,14 @@ class PyaroToUngriddedData:
 
         self.data._data = data_array
         self.data.meta_idx = new_meta_idx
-        self.data.metadata = metadata
+        self.data.metadata = self._add_ts_type_to_metadata(metadata, ts_types)
         self.data.var_idx = var_idx
 
         return self.data
 
     def _make_ungridded_metadata(
         self, stations: dict[str, Station], var_idx: dict[str, int], units: dict[str, str]
-    ) -> dict[str, dict[str, str | list[str]]]:
+    ) -> Metadata:
         idx = 0
         metadata = {}
         for name, station in stations.items():
@@ -192,12 +207,12 @@ class PyaroToUngriddedData:
                 altitude=station["altitude"],
                 station_name=name,
                 country=station["country"],
-                ts_type="monthly",  # TEMP
+                ts_type="undefined",  # TEMP
                 data_revision="n/d",  # Temp: Need to be changed. Must add way of getting this from Reader
             )
             idx += 1
 
-        return metadata
+        return Metadata(metadata)
     
     def _pyaro_dataline_to_ungriddeddata_dataline(
         self, data: np.void, idx: int, var_idx: int
@@ -217,6 +232,30 @@ class PyaroToUngriddedData:
         new_data[self._TRASHINDEX] = np.nan
 
         return new_data
+    
+
+    def _calculate_ts_type(self, start: np.datetime64, stop: np.datetime64) -> TsType:
+        seconds = (stop-start).astype('timedelta64[s]').astype(np.int32)
+        ts_type = TsType.from_total_seconds(seconds)
+
+        return ts_type
+
+
+    def _add_ts_type_to_metadata(self, metadata: Metadata, ts_types: dict[str, str|None]) -> Metadata:
+
+        new_metadata: Metadata = deepcopy(metadata)
+        for idx in new_metadata:
+            station_name = new_metadata[idx]["station_name"]
+            ts_type = ts_types[station_name]
+            new_metadata[idx]["ts_type"] = ts_type if ts_type is not None else "undefined"
+    
+        return new_metadata
+
+        
+
+
+
+
 
     def get_variables(self) -> list[str]:
         return self.reader.variables()
@@ -260,5 +299,6 @@ if __name__ == "__main__":
 
     print(rp.DEFAULT_VARS)
     data = rp.read()  # ["SOx", "NOx"])
+    breakpoint()
     station = data.to_station_data(0)
     print(station)
