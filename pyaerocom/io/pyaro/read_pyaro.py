@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 Metadata = NewType("Metadata", dict[str, dict[str, str | list[str]]])
 
+
 class ReadPyaro(ReadUngriddedBase):
     __version__ = "0.0.2"
 
@@ -29,17 +30,10 @@ class ReadPyaro(ReadUngriddedBase):
 
         self._check_id()
 
-        
         self.converter = PyaroToUngriddedData(self.config)
         self.reader = self.converter.reader
         self._data_id = self.config.data_id
         self._data_dir = self.config.filename_or_obj_or_url
-
-
-
-
-
-        
 
     """
     Definition of abstract methods from ReadUngriddedBase
@@ -72,8 +66,6 @@ class ReadPyaro(ReadUngriddedBase):
         return self.config.filename_or_obj_or_url
 
     @property
-
-    
     @staticmethod
     def get_pyaro_readers():
         return list_timeseries_engines()
@@ -87,11 +79,9 @@ class ReadPyaro(ReadUngriddedBase):
     def _check_id(self):
         avail_readers = list_timeseries_engines()
         if not self.config.data_id in avail_readers:
-            logger.warning(f"Could not find {self.config.data_id} in list of available Pyaro readers: {avail_readers}")
-        
-
-
-
+            logger.warning(
+                f"Could not find {self.config.data_id} in list of available Pyaro readers: {avail_readers}"
+            )
 
 
 class PyaroToUngriddedData:
@@ -117,10 +107,14 @@ class PyaroToUngriddedData:
         data_id = self.config.data_id
 
         if self.config.name_map is None:
-            return open_timeseries(data_id, self.config.filename_or_obj_or_url, filters=self.config.filters)
+            return open_timeseries(
+                data_id, self.config.filename_or_obj_or_url, filters=self.config.filters
+            )
         else:
             return VariableNameChangingReader(
-                open_timeseries(data_id, self.config.filename_or_obj_or_url, filters=self.config.filters),
+                open_timeseries(
+                    data_id, self.config.filename_or_obj_or_url, filters=self.config.filters
+                ),
                 self.config.name_map,
             )
 
@@ -131,7 +125,7 @@ class PyaroToUngriddedData:
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
         units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-        ts_types = {k: None for k in stations}
+        ts_types: dict[str, TsType | None] = {k: None for k in stations}
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
@@ -151,7 +145,7 @@ class PyaroToUngriddedData:
             ):  # The 1 start is a temp fix for the empty first row of the current Data implementation from pyaro
                 data_line = var_data[i]
                 current_station = data_line["stations"]
-                
+
                 # Fills data array
                 ungriddeddata_line = self._pyaro_dataline_to_ungriddeddata_dataline(
                     data_line, idx, var_idx[var]
@@ -166,7 +160,6 @@ class PyaroToUngriddedData:
                     msg = f"TS type {ts_type} of station {current_station} is different from already found value {ts_types[current_station]}"
                     logger.error(msg)
                     raise ValueError(msg)
-
 
                 data_array[idx, :] = ungriddeddata_line
 
@@ -197,7 +190,7 @@ class PyaroToUngriddedData:
             metadata[idx] = dict(
                 data_id=self.config.data_id,
                 variables=list(self.get_variables()),
-                var_info = units,
+                var_info=units,
                 # [
                 # var_idx[var] for var in self.get_variables()
                 # ],  # Temp: all stations are now assumed to have all variables
@@ -213,7 +206,7 @@ class PyaroToUngriddedData:
             idx += 1
 
         return Metadata(metadata)
-    
+
     def _pyaro_dataline_to_ungriddeddata_dataline(
         self, data: np.void, idx: int, var_idx: int
     ) -> np.ndarray:
@@ -232,30 +225,22 @@ class PyaroToUngriddedData:
         new_data[self._TRASHINDEX] = np.nan
 
         return new_data
-    
 
     def _calculate_ts_type(self, start: np.datetime64, stop: np.datetime64) -> TsType:
-        seconds = (stop-start).astype('timedelta64[s]').astype(np.int32)
+        seconds = (stop - start).astype("timedelta64[s]").astype(np.int32)
         ts_type = TsType.from_total_seconds(seconds)
 
         return ts_type
 
-
-    def _add_ts_type_to_metadata(self, metadata: Metadata, ts_types: dict[str, str|None]) -> Metadata:
-
+    def _add_ts_type_to_metadata(
+        self, metadata: Metadata, ts_types: dict[str, TsType | None]
+    ) -> Metadata:
         new_metadata: Metadata = deepcopy(metadata)
         for idx in new_metadata:
             station_name = new_metadata[idx]["station_name"]
-            ts_type = ts_types[station_name]
+            ts_type = str(ts_types[station_name])
             new_metadata[idx]["ts_type"] = ts_type if ts_type is not None else "undefined"
-    
         return new_metadata
-
-        
-
-
-
-
 
     def get_variables(self) -> list[str]:
         return self.reader.variables()
@@ -286,7 +271,6 @@ class PyaroToUngriddedData:
 
 
 if __name__ == "__main__":
-
     data_id = "csv_timeseries"
 
     config = PyaroConfig(

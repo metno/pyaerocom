@@ -209,25 +209,27 @@ class ReadUngridded:
             raise AttributeError("Multiple data_ids assigned")
         return self.data_ids[0]
 
-    def dataset_provides_variables(self, data_id=None):
+    def dataset_provides_variables(self, data_id=None, config: Optional[PyaroConfig] = None):
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
+        if config is None:
+            config = self.config
         if not data_id in self._readers:
-            reader = self.get_lowlevel_reader(data_id)
+            reader = self.get_lowlevel_reader(data_id, config)
         else:
             reader = self._readers[data_id]
         return reader.PROVIDES_VARIABLES
 
-    def get_reader(self, data_id):
+    def get_reader(self, data_id, config: Optional[PyaroConfig] = None):
         warnings.warn(
             "this method was renamed to get_lowlevel_reader, please use the new name",
             DeprecationWarning,
             stacklevel=2,
         )
-        return self.get_lowlevel_reader(data_id)
+        return self.get_lowlevel_reader(data_id, config=config)
 
-    def get_lowlevel_reader(self, data_id=None):
+    def get_lowlevel_reader(self, data_id=None, config: Optional[PyaroConfig] = None):
         """Helper method that returns initiated reader class for input ID
 
         Parameters
@@ -331,7 +333,7 @@ class ReadUngridded:
                 return _cls
         raise NetworkNotImplemented(f"Could not find reading class for dataset {data_id}")
 
-    def _init_lowlevel_reader(self, reader, data_id):
+    def _init_lowlevel_reader(self, reader, data_id, config: Optional[PyaroConfig] = None):
         """
         Initiate lowlevel reader for input data ID
 
@@ -348,15 +350,26 @@ class ReadUngridded:
             instantiated reader class for input ID.
 
         """
+        if config is None:
+            config = self.config
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
             logger.info(f"Reading {data_id} from specified data loaction: {ddir}")
         else:
             ddir = None
-        return reader(data_id=data_id, data_dir=ddir)
+        if config is None:
+            return reader(data_id=data_id, data_dir=ddir)
+        else:
+            return reader(config=config)
 
     def read_dataset(
-        self, data_id, vars_to_retrieve=None, only_cached=False, filter_post=None, **kwargs
+        self,
+        data_id,
+        config: Optional[PyaroConfig] = None,
+        vars_to_retrieve=None,
+        only_cached=False,
+        filter_post=None,
+        **kwargs,
     ):
         """Read dataset into an instance of :class:`ReadUngridded`
 
@@ -406,7 +419,7 @@ class ReadUngridded:
 
             logger.info("Received additional reading constraints, ignoring caching")
 
-        reader = self.get_lowlevel_reader(data_id)
+        reader = self.get_lowlevel_reader(data_id, config=config)
 
         if vars_to_retrieve is None:
             vars_to_retrieve = reader.DEFAULT_VARS
@@ -727,7 +740,7 @@ class ReadUngridded:
                 return svar
         raise ValueError()
 
-    def get_vars_supported(self, obs_id, vars_desired):
+    def get_vars_supported(self, obs_id, vars_desired, config: Optional[PyaroConfig] = None):
         """
         Filter input list of variables by supported ones for a certain data ID
 
@@ -772,7 +785,7 @@ class ReadUngridded:
 
         else:
             # check if variable can be read from a dataset on disk
-            _oreader = self.get_lowlevel_reader(obs_id)
+            _oreader = self.get_lowlevel_reader(obs_id, config=config)
             for var in varlist_aerocom(vars_desired):
                 if _oreader.var_supported(var):
                     obs_vars.append(var)
@@ -781,5 +794,5 @@ class ReadUngridded:
     def __str__(self):
         s = ""
         for ds in self.data_ids:
-            s += f"\n{self.get_lowlevel_reader(ds)}"
+            s += f"\n{self.get_lowlevel_reader(ds, config=const)}"
         return s

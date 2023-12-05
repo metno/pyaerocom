@@ -336,13 +336,13 @@ class ColocationSetup(BrowseDict):
         if self.obs_config is not None:
             self.obs_id = self.obs_config.data_id
 
-
         if self.obs_config is not None and self.obs_id is not None:
             if self.obs_config.data_id != self.obs_id:
-                logger.warning(f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. This may cause probles down the line")
+                logger.warning(
+                    f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. This may cause probles down the line"
+                )
             else:
                 self.obs_id = self.obs_config.data_id
-
 
         self.obs_vars = obs_vars
 
@@ -652,7 +652,9 @@ class Colocator(ColocationSetup):
         if not self._check_data_id_obs_reader():
             if self.obs_is_ungridded:
                 self._obs_reader = ReadUngridded(
-                    data_ids=[self.obs_id], data_dirs=self.obs_data_dir, config=self.obs_config,
+                    data_ids=[self.obs_id],
+                    data_dirs=self.obs_data_dir,
+                    config=self.obs_config,
                 )
             else:
                 self._obs_reader = self._instantiate_gridded_reader(what="obs")
