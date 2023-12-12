@@ -132,12 +132,13 @@ class UngriddedData:
 
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
+    ALLOWED_VERT_COORD_TYPES = ["altitude"]
+
     @property
     def _ROWNO(self):
         return self._data.shape[0]
 
     def __init__(self, num_points=None, add_cols=None):
-
         if num_points is None:
             num_points = self._CHUNKSIZE
 
@@ -156,6 +157,7 @@ class UngriddedData:
         self._idx = -1
 
         self.filter_hist = {}
+        self._is_vertical_profile = False
 
     def _get_data_revision_helper(self, data_id):
         """
@@ -445,6 +447,21 @@ class UngriddedData:
         """Boolean specifying whether this object contains flag data"""
         return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
 
+    @property
+    def is_vertical_profile(self):
+        """Boolean specifying whether is vertical profile"""
+        return self._is_vertical_profile
+
+    @is_vertical_profile.setter
+    def is_vertical_profile(self, value):
+        """
+        Boolean specifying whether is vertical profile.
+        Note must be set in ReadUngridded based on the reader
+        because the instance of class used during reading is
+        not the same as the instance used later in the workflow
+        """
+        self._is_vertical_profile = value
+
     def copy(self):
         """Make a copy of this object
 
@@ -471,7 +488,7 @@ class UngriddedData:
         return new
 
     @property
-    def contains_vars(self):
+    def contains_vars(self) -> list[str]:
         """List of all variables in this dataset"""
         return list(self.var_idx)
 
@@ -1052,7 +1069,6 @@ class UngriddedData:
                 sd.station_coords[ck] = meta[ck]
             except KeyError:
                 pass
-
         # if no input variables are provided, use the ones that are available
         # for this metadata block
         if vars_to_convert is None:
@@ -1068,7 +1084,6 @@ class UngriddedData:
         # for at least one of the input variables
         FOUND_ONE = False
         for var in vars_avail:
-
             # get indices of this variable
             var_idx = self.meta_idx[meta_idx][var]
 
@@ -1229,7 +1244,6 @@ class UngriddedData:
 
         _iter = self._generate_station_index(by_station_name, ignore_index)
         for idx in _iter:
-
             try:
                 data = self.to_station_data(
                     idx,
@@ -1717,6 +1731,8 @@ class UngriddedData:
             if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
+                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                        continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
@@ -1883,12 +1899,20 @@ class UngriddedData:
                 )
         if set_flags_nan:
             if not data.has_flag_data:
-                raise MetaDataError(
+                # jgriesfeller 20230210
+                # not sure if raising this exception is the right thing to do
+                # the fake variables (vars computed from other variables) might not have
+                # and do not need flags (because that has been done during the read of the
+                # variable they are computed from)
+                # disabling and logging it for now
+                # raise MetaDataError(
+                logger.info(
                     'Cannot apply filter "set_flags_nan" to '
                     "UngriddedData object, since it does not "
                     "contain flag information"
                 )
-            data = data.set_flags_nan(inplace=True)
+            else:
+                data = data.set_flags_nan(inplace=True)
         if region_id:
             data = data.filter_region(region_id)
         return data
@@ -1969,6 +1993,8 @@ class UngriddedData:
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = {}
             for var in meta["var_info"]:
+                if var in self.ALLOWED_VERT_COORD_TYPES:
+                    continue
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
 
@@ -2224,7 +2250,6 @@ class UngriddedData:
         for meta_key, meta in self.metadata.items():
             found = False
             for idx, meta_reg in enumerate(meta_registered):
-
                 if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
                     same_indices[idx].append(meta_key)
                     found = True

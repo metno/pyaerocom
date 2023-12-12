@@ -9,6 +9,8 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
+from cf_units import Unit
+
 if sys.version_info >= (3, 10):  # pragma: no cover
     from importlib import metadata
 else:  # pragma: no cover
@@ -24,6 +26,7 @@ from pyaerocom.colocation import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
+from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
@@ -292,7 +295,7 @@ class ColocationSetup(BrowseDict):
     #: file for ec550aer at the surface ('*ec550aer*Surface*.nc'), then, the
     #: colocation routine will look for '*ec550aer*ModelLevel*.nc' and if this
     #: exists, it will load it and extract the surface level.
-    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel"}
+    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel", "2D": "2D"}
 
     #: do not raise Exception if invalid item is attempted to be assigned
     #: (Overwritten from base class)
@@ -319,7 +322,6 @@ class ColocationSetup(BrowseDict):
         save_coldata=False,
         **kwargs,
     ):
-
         self.model_id = model_id
         self.obs_id = obs_id
         self.obs_vars = obs_vars
@@ -350,6 +352,9 @@ class ColocationSetup(BrowseDict):
         self.obs_vert_type = None
         self.obs_ts_type_read = None
         self.obs_filters = {}
+        self._obs_is_vertical_profile = False
+        self.colocation_layer_limits = None
+        self.profile_layer_limits = None
 
         self.read_opts_ungridded = {}
 
@@ -568,6 +573,17 @@ class Colocator(ColocationSetup):
         bool: True if obs_id refers to an ungridded observation, else False
         """
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
+
+    @property
+    def obs_is_vertical_profile(self):
+        """
+        bool: True if obs_id refers to a VerticalProfile, else False
+        """
+        return self._obs_is_vertical_profile
+
+    @obs_is_vertical_profile.setter
+    def obs_is_vertical_profile(self, value):
+        self._obs_is_vertical_profile = value
 
     @property
     def model_reader(self):
@@ -799,7 +815,9 @@ class Colocator(ColocationSetup):
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
             try:
-                coldata = self._run_helper(mod_var, obs_var)
+                coldata = self._run_helper(
+                    mod_var, obs_var
+                )  # note this can be ColocatedData or ColocatedDataLists
                 if not mod_var in data_out:
                     data_out[mod_var] = {}
                 data_out[mod_var][obs_var] = coldata
@@ -1029,7 +1047,6 @@ class Colocator(ColocationSetup):
         return reader
 
     def _check_add_model_read_aux(self, model_var):
-
         if not model_var in self.model_read_aux:
             return False
         info = self.model_read_aux[model_var]
@@ -1078,7 +1095,6 @@ class Colocator(ColocationSetup):
             self.obs_vars = avail
 
     def _print_processing_status(self):
-
         mname = self.get_model_name()
         oname = self.get_obs_name()
         logger.info(f"Colocation processing status for {mname} vs. {oname}")
@@ -1168,7 +1184,6 @@ class Colocator(ColocationSetup):
         return tst
 
     def _read_gridded(self, var_name, is_model):
-
         start, stop = self.start, self.stop
         ts_type_read = self._get_ts_type_read(var_name, is_model)
         kwargs = {}
@@ -1276,7 +1291,26 @@ class Colocator(ColocationSetup):
             coldata.rename_variable(mod_var, mvar, self.model_id)
         else:
             mvar = mod_var
-        savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
+
+        if hasattr(coldata, "vertical_layer"):
+            # save colocated vertical layer netCDF files with vertical layers in km
+            if not Unit(coldata.data.altitude_units) == Unit("km"):
+                start = Unit(coldata.data.altitude_units).convert(
+                    coldata.vertical_layer["start"], other="km"
+                )
+                end = Unit(coldata.data.altitude_units).convert(
+                    coldata.vertical_layer["end"], other="km"
+                )
+                vertical_layer = {"start": start, "end": end}
+            else:
+                vetical_layer = coldata.vertical_layer
+
+            savename = self._coldata_savename(
+                obs_var, mvar, coldata.ts_type, vertical_layer=vertical_layer
+            )
+
+        else:
+            savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
         fp = coldata.to_netcdf(self.output_dir, savename=savename)
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"
@@ -1330,8 +1364,12 @@ class Colocator(ColocationSetup):
                 )
         self.start, self.stop = start_stop(self.start, self.stop)
 
-    def _coldata_savename(self, obs_var, mod_var, ts_type):
+    def _coldata_savename(self, obs_var, mod_var, ts_type, **kwargs):
         """Get filename of colocated data file for saving"""
+        if "vertical_layer" in kwargs:
+            vertical_layer = kwargs["vertical_layer"]
+        else:
+            vertical_layer = None
         name = ColocatedData._aerocom_savename(
             obs_var=obs_var,
             obs_id=self.get_obs_name(),
@@ -1341,6 +1379,7 @@ class Colocator(ColocationSetup):
             stop_str=self.get_stop_str(),
             ts_type=ts_type,
             filter_name=self.filter_name,
+            vertical_layer=vertical_layer,
         )
         return f"{name}.nc"
 
@@ -1361,15 +1400,21 @@ class Colocator(ColocationSetup):
             function the performs co-location operation
 
         """
+
+        if self.obs_is_vertical_profile:
+            return colocate_vertical_profile_gridded
         if self.obs_is_ungridded:
             return colocate_gridded_ungridded
         else:
             return colocate_gridded_gridded
 
-    def _prepare_colocation_args(self, model_var, obs_var):
-
+    def _prepare_colocation_args(self, model_var: str, obs_var: str):
         model_data = self.get_model_data(model_var)
         obs_data = self.get_obs_data(obs_var)
+
+        if getattr(obs_data, "is_vertical_profile", None):
+            self.obs_is_vertical_profile = obs_data.is_vertical_profile
+
         rshow = self._eval_resample_how(model_var, obs_var)
 
         if self.model_use_climatology:
@@ -1393,11 +1438,18 @@ class Colocator(ColocationSetup):
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
-                ts_type=ts_type, var_ref=obs_var, use_climatology_ref=self.obs_use_climatology
+                ts_type=ts_type,
+                var_ref=obs_var,
+                use_climatology_ref=self.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
             args.update(ts_type=ts_type)
+        if self.obs_is_vertical_profile:
+            args.update(
+                colocation_layer_limits=self.colocation_layer_limits,
+                profile_layer_limits=self.profile_layer_limits,
+            )
         return args
 
     def _check_dimensionality(self, args):
@@ -1409,10 +1461,6 @@ class Colocator(ColocationSetup):
         if mdata.ndim == 4 and self.obs_vert_type == "Surface":
             mdata = mdata.extract_surface_level()
             args["data"] = mdata
-        elif mdata.ndim > 3:
-            raise DataDimensionError(
-                f"cannot co-locate model data with more than 3 dimensions: {mdata}"
-            )
 
         if isinstance(odata, GriddedData):
             if odata.ndim == 4 and self.obs_vert_type == "Surface":
@@ -1424,23 +1472,44 @@ class Colocator(ColocationSetup):
                 )
         return args
 
-    def _run_helper(self, model_var, obs_var):
+    def _run_helper(self, model_var: str, obs_var: str):
         logger.info(f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})")
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
 
-        coldata.data.attrs["model_name"] = self.get_model_name()
-        coldata.data.attrs["obs_name"] = self.get_obs_name()
-        coldata.data.attrs["vert_code"] = self.obs_vert_type
-        coldata.data.attrs.update(**self.add_meta)
+        if isinstance(coldata, ColocatedData):
+            coldata.data.attrs["model_name"] = self.get_model_name()
+            coldata.data.attrs["obs_name"] = self.get_obs_name()
+            coldata.data.attrs["vert_code"] = self.obs_vert_type
 
-        if self.zeros_to_nan:
-            coldata = coldata.set_zeros_nan()
-        if self.model_to_stp:
-            coldata = correct_model_stp_coldata(coldata)
-        if self.save_coldata:
-            self._save_coldata(coldata)
+            coldata.data.attrs.update(**self.add_meta)
+
+            if self.zeros_to_nan:
+                coldata = coldata.set_zeros_nan()
+            if self.model_to_stp:
+                coldata = correct_model_stp_coldata(coldata)
+            if self.save_coldata:
+                self._save_coldata(coldata)
+
+        elif isinstance(coldata, ColocatedDataLists):  # look into intertools chain.from_iterable
+            for i_list in coldata:
+                for coldata_obj in i_list:
+                    coldata_obj.data.attrs["model_name"] = self.get_model_name()
+                    coldata_obj.data.attrs["obs_name"] = self.get_obs_name()
+                    coldata_obj.data.attrs["vert_code"] = self.obs_vert_type
+                    coldata_obj.data.attrs.update(**self.add_meta)
+                    if self.zeros_to_nan:
+                        coldata_obj = coldata_obj.set_zeros_nan()
+                    if self.model_to_stp:  # TODO: check is this needs modifying
+                        coldata = correct_model_stp_coldata(coldata_obj)
+                    if self.save_coldata:
+                        self._save_coldata(coldata_obj)
+
+        else:
+            raise Exception(
+                f"Invalid coldata type returned by colocation function {self._colocation_func}"
+            )
 
         return coldata
 

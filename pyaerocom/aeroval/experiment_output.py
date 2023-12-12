@@ -16,6 +16,7 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
+    statistics_model_only,
     statistics_obs_only,
     statistics_trend,
     var_ranges_defaults,
@@ -444,7 +445,6 @@ class ExperimentOutput(ProjectOutput):
         return modified
 
     def _clean_modelmap_files(self):
-
         # Note: to be called after cleanup of files in map subdir
         json_files = self._get_json_output_files("contour")
         rm = []
@@ -575,6 +575,8 @@ class ExperimentOutput(ProjectOutput):
     def _create_statistics_json(self):
         if self.cfg.statistics_opts.obs_only_stats:
             stats_info = statistics_obs_only
+        elif self.cfg.statistics_opts.model_only_stats:
+            stats_info = statistics_model_only
         else:
             stats_info = statistics_defaults
             stats_info.update(extended_statistics)
@@ -634,7 +636,6 @@ class ExperimentOutput(ProjectOutput):
         return out
 
     def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
-
         muv = mcfg.model_use_vars
         mrv = mcfg.model_rename_vars
 
@@ -757,7 +758,6 @@ class ExperimentOutput(ProjectOutput):
             (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(file)
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
-
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
                 var = mcfg.get_varname_web(mod_var, obs_var)
                 if not var in new:

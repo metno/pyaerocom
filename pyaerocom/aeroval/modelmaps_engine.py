@@ -11,6 +11,7 @@ from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
+    DataQueryError,
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
@@ -49,7 +50,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         return files
 
     def _get_vars_to_process(self, model_name, var_list):
-
         mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
             self.cfg.obs_cfg.get_all_vars()
         )[1]
@@ -85,7 +85,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
 
-            except (TemporalResolutionError, DataCoverageError, VariableDefinitionError) as e:
+            except (
+                TemporalResolutionError,
+                DataCoverageError,
+                VariableDefinitionError,
+                DataQueryError,
+            ) as e:
                 if self.raise_exceptions:
                     raise
                 logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")

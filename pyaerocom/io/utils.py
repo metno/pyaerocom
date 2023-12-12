@@ -9,7 +9,6 @@ from pyaerocom.io.readungridded import ReadUngridded
 
 
 def get_ungridded_reader(obs_id):
-
     for reader in ReadUngridded.SUPPORTED_READERS:
         if obs_id in reader.SUPPORTED_DATASETS:
             return reader

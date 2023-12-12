@@ -533,7 +533,6 @@ def main():
 
     # write L3 gridded data
     if "gridfile" in options:
-
         vars_to_copy = [obj._ALTITUDENAME, obj._LONGITUDENAME, obj._LATITUDENAME, ""]
         vars_to_read = options["variables"].copy()
         netcdf_indir = options["modelindir"]
