@@ -152,7 +152,7 @@ class PyaroToUngriddedData:
                 )
 
                 # Finds the ts_type of the stations. Raises error of same station has different types
-                start, stop = data_line["start_times"], data_line["stop_times"]
+                start, stop = data_line["start_times"], data_line["end_times"]
                 ts_type = self._calculate_ts_type(start, stop)
                 if ts_types[current_station] is None:
                     ts_types[current_station] = ts_type
@@ -221,14 +221,19 @@ class PyaroToUngriddedData:
         new_data[self._DATAHEIGHTINDEX] = np.nan
         new_data[self._DATAERRINDEX] = data["standard_deviations"]
         new_data[self._DATAFLAGINDEX] = data["flags"]
-        new_data[self._STOPTIMEINDEX] = data["stop_times"]
+        new_data[self._STOPTIMEINDEX] = data["end_times"]
         new_data[self._TRASHINDEX] = np.nan
 
         return new_data
 
     def _calculate_ts_type(self, start: np.datetime64, stop: np.datetime64) -> TsType:
         seconds = (stop - start).astype("timedelta64[s]").astype(np.int32)
-        ts_type = TsType.from_total_seconds(seconds)
+        if seconds == 0:
+            ts_type = TsType(
+                "daily"
+            )  # TODO this should be instentanious, but that tstype does not exist
+        else:
+            ts_type = TsType.from_total_seconds(seconds)
 
         return ts_type
 
@@ -246,7 +251,7 @@ class PyaroToUngriddedData:
         return self.reader.variables()
 
     def get_stations(self) -> dict[str, Station]:
-        return self.reader.stations()
+        return self.reader.stations()()  # TODO FIx this double ()
 
     def read(self, vars_to_retrieve=None) -> UngriddedData:
         allowed_vars = self.get_variables()
