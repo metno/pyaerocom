@@ -31,3 +31,8 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Issues?
+=======
+Please submit an issue (https://github.com/metno/pyaerocom/issues) if you would like to see a feature or experience a bug.
