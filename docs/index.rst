@@ -35,4 +35,4 @@ Indices and tables
 
 Issues?
 =======
-Please submit an issue (https://github.com/metno/pyaerocom/issues) if you would like to see a feature or experience a bug.
+Please `submit an issue <https://github.com/metno/pyaerocom/issues>`__ if you would like to see a feature or experience a bug.
