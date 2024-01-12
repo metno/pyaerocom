@@ -310,6 +310,22 @@ var_ranges_defaults = {
         "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
         "colmap": "coolwarm",
     },
+    "proxyzdust": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
+    "zdust": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
+    "proxyzaerosol": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
+    "zaerosol": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
     "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
     "proxydryo3": {"scale": [0, 0.5, 1, 5, 10, 15, 20, 25, 30, 40, 50], "colmap": "coolwarm"},
     "dryo3": {"scale": [0, 0.5, 1, 5, 10, 15, 20, 25, 30, 40, 50], "colmap": "coolwarm"},
@@ -464,7 +480,7 @@ statistics_defaults = {
         "scale": [-100, -75, -50, -25, 0, 25, 50, 75, 100],
         "colmap": "bwr",
         "unit": "%",
-        "decimals": 1,
+        "decimals": 2,
         "forecast": True,
     },
     "mnmb": {
@@ -473,7 +489,7 @@ statistics_defaults = {
         "scale": [-100, -75, -50, -25, 0, 25, 50, 75, 100],
         "colmap": "bwr",
         "unit": "%",
-        "decimals": 1,
+        "decimals": 2,
         "forecast": True,
     },
     "mb": {
@@ -490,7 +506,7 @@ statistics_defaults = {
         ],  # factor to be multiplied by range of data
         "colmap": "bwr",
         "unit": "var",
-        "decimals": 1,
+        "decimals": 2,
     },
     "mab": {
         "name": "MAB",
@@ -506,7 +522,7 @@ statistics_defaults = {
         ],  # factor to be multiplied by range of data
         "colmap": "bwr",
         "unit": "var",
-        "decimals": 1,
+        "decimals": 2,
     },
     "R": {
         "name": "R",
@@ -819,4 +835,8 @@ var_web_info = dict(
     proxyweto3=["proxyWetO3", "3D", "Deposition"],
     proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
     proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
+    proxyzdust=["DLH", "2D", "Height"],
+    zdust=["DLH", "2D", "Height"],
+    proxyzaerosol=["ALH", "2D", "Height"],
+    zaerosol=["ALH", "2D", "Height"],
 )
