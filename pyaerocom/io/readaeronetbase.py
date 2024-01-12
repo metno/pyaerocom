@@ -450,6 +450,8 @@ class ReadAeronetBase(ReadUngriddedBase):
                         from pyaerocom.exceptions import MetaDataError
 
                         raise MetaDataError("Metadata attr unit is deprecated, please use units")
+                    elif var in self.UNITS:
+                        u = self.UNITS[var]
                     else:
                         u = self.DEFAULT_UNIT
                 elif var in self.UNITS:
