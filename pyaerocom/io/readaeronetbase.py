@@ -63,9 +63,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     DEFAULT_UNIT = "1"
 
     #: Variable specific units, only required for variables that deviate from
-    #: :attr:`DEFAULT_UNIT` (is irrelevant for all variables that are
-    #: so far supported by the implemented Aeronet products, i.e. all variables
-    #: are dimensionless as specified in :attr:`DEFAULT_UNIT`)
+    #: :attr:`DEFAULT_UNIT`
     UNITS = {}
 
     IGNORE_META_KEYS = ["date", "time", "day_of_year"]

@@ -122,6 +122,10 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyzdust": calc_od550aer,
     }
 
+    UNITS = {
+        "proxyzdust": "km",
+        "proxyzaerosol": "km",
+    }
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
