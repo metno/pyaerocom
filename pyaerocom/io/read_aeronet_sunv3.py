@@ -163,7 +163,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out[item] = []
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        # self.logger.info(f"Reading file {filename}")
         # enable alternative reading of .gz files here to save space on the file system
         suffix = pathlib.Path(filename).suffix
         tmp_name = filename
