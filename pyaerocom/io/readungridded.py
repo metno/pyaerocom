@@ -71,7 +71,6 @@ class ReadUngridded:
         ReadEEAAQEREP_V2,
         ReadPyaro,
         ReadIPCForest,
-
     ]
     SUPPORTED_READERS.extend(
         ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
@@ -249,6 +248,8 @@ class ReadUngridded:
             instance of reading class (needs to be implementation of base
             class :class:`ReadUngriddedBase`).
         """
+        if data_id is None and config is not None:
+            data_id = config.data_id
         if data_id is None:
             if len(self.data_ids) != 1:
                 raise ValueError("Please specify dataset")
@@ -263,7 +264,7 @@ class ReadUngridded:
 
         if not data_id in self._readers:
             _cls = self._find_read_class(data_id)
-            reader = self._init_lowlevel_reader(_cls, data_id)
+            reader = self._init_lowlevel_reader(_cls, data_id, config=config)
             self._readers[data_id] = reader
         return self._readers[data_id]
 
@@ -371,10 +372,10 @@ class ReadUngridded:
     def read_dataset(
         self,
         data_id,
-        config: Optional[PyaroConfig] = None,
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
+        config: Optional[PyaroConfig] = None,
         **kwargs,
     ):
         """Read dataset into an instance of :class:`ReadUngridded`
@@ -548,8 +549,15 @@ class ReadUngridded:
                 filters[key] = val
         return filters
 
+    # TODO Make this method compatible with configs
     def read_dataset_post(
-        self, data_id, vars_to_retrieve, only_cached=False, filter_post=None, **kwargs
+        self,
+        data_id,
+        vars_to_retrieve,
+        only_cached=False,
+        filter_post=None,
+        config: Optional[PyaroConfig] = None,
+        **kwargs,
     ):
         """Read dataset into an instance of :class:`ReadUngridded`
 
@@ -603,6 +611,7 @@ class ReadUngridded:
                         data_id=aux_id,
                         vars_to_retrieve=aux_vars,
                         only_cached=only_cached,
+                        config=config,
                         **kwargs,
                     )
                     for aux_var in aux_vars:
@@ -613,10 +622,11 @@ class ReadUngridded:
                     # individual variables...
                     for aux_var in aux_vars:
                         _data = self.read_dataset(
-                            aux_id,
-                            aux_var,
+                            data_id=aux_id,
+                            vars_to_retrieve=aux_var,
                             only_cached=only_cached,
                             filter_post=filter_post,
+                            config=config,
                             **kwargs,
                         )
                         input_data_ids_vars.append((_data, aux_id, aux_var))
@@ -715,8 +725,8 @@ class ReadUngridded:
             if ds in self.post_compute:
                 data.append(
                     self.read_dataset_post(
-                        ds,
-                        vars_to_retrieve,
+                        data_id=ds,
+                        vars_to_retrieve=vars_to_retrieve,
                         only_cached=only_cached,
                         filter_post=filter_post,
                         **kwargs,
