@@ -37,6 +37,7 @@ from pyaerocom.variable import get_aliases
 logger = logging.getLogger(__name__)
 
 
+# TODO Add check if data id of config is same as one already given by pyaerocom
 class ReadUngridded:
     """Factory class for reading of ungridded data based on obsnetwork ID
 
@@ -99,6 +100,7 @@ class ReadUngridded:
             const.CACHING = False
 
         self.config = config
+        self.config_ids = []
         if isinstance(config, PyaroConfig):
             self._init_pyaro_reader(config=config)
 
@@ -243,6 +245,12 @@ class ReadUngridded:
             instance of reading class (needs to be implementation of base
             class :class:`ReadUngriddedBase`).
         """
+        if data_id is not None and config is not None:
+            if data_id != config.data_id:
+                raise ValueError(
+                    f"DATA ID and config are both given, but they are not equal, {data_id} != {config.data_id}"
+                )
+
         if data_id is None and config is not None:
             data_id = config.data_id
         if data_id is None:
@@ -303,6 +311,7 @@ class ReadUngridded:
             reader = ReadPyaro(config=config)
             self._readers[id] = reader
             self._data_ids.append(id)
+            self.config_ids.append(id)
             return reader
 
     def _find_read_class(self, data_id):
@@ -352,17 +361,27 @@ class ReadUngridded:
             instantiated reader class for input ID.
 
         """
+        if data_id is not None and config is not None:
+            if data_id != config.data_id:
+                raise ValueError(
+                    f"DATA ID and config are both given, but they are not equal, {data_id} != {config.data_id}"
+                )
         if config is None:
             config = self.config
+
+        if data_id is None:
+            data_id = config.data_id
+
+        if data_id in self.config_ids:
+            return reader(config=config)
+
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
             logger.info(f"Reading {data_id} from specified data loaction: {ddir}")
         else:
             ddir = None
-        if config is None:
-            return reader(data_id=data_id, data_dir=ddir)
-        else:
-            return reader(config=config)
+
+        return reader(data_id=data_id, data_dir=ddir)
 
     def read_dataset(
         self,
@@ -370,7 +389,6 @@ class ReadUngridded:
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
-        config: Optional[PyaroConfig] = None,
         **kwargs,
     ):
         """Read dataset into an instance of :class:`ReadUngridded`
@@ -421,7 +439,7 @@ class ReadUngridded:
 
             logger.info("Received additional reading constraints, ignoring caching")
 
-        reader = self.get_lowlevel_reader(data_id, config=config)
+        reader = self.get_lowlevel_reader(data_id)
 
         if vars_to_retrieve is None:
             vars_to_retrieve = reader.DEFAULT_VARS
@@ -551,7 +569,6 @@ class ReadUngridded:
         vars_to_retrieve,
         only_cached=False,
         filter_post=None,
-        config: Optional[PyaroConfig] = None,
         **kwargs,
     ):
         """Read dataset into an instance of :class:`ReadUngridded`
@@ -606,7 +623,6 @@ class ReadUngridded:
                         data_id=aux_id,
                         vars_to_retrieve=aux_vars,
                         only_cached=only_cached,
-                        config=config,
                         **kwargs,
                     )
                     for aux_var in aux_vars:
@@ -621,7 +637,6 @@ class ReadUngridded:
                             vars_to_retrieve=aux_var,
                             only_cached=only_cached,
                             filter_post=filter_post,
-                            config=config,
                             **kwargs,
                         )
                         input_data_ids_vars.append((_data, aux_id, aux_var))
@@ -656,7 +671,13 @@ class ReadUngridded:
         return first
 
     def read(
-        self, data_ids=None, vars_to_retrieve=None, only_cached=False, filter_post=None, **kwargs
+        self,
+        data_ids=None,
+        vars_to_retrieve=None,
+        only_cached=False,
+        filter_post=None,
+        config: Optional[PyaroConfig] = None,
+        **kwargs,
     ):
         """Read observations
 
@@ -711,6 +732,10 @@ class ReadUngridded:
             data_ids = self.data_ids
         elif isinstance(data_ids, str):
             data_ids = [data_ids]
+
+        if config is not None:
+            self._init_pyaro_reader(config=config)
+            data_ids.append(config.data_id)
 
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
