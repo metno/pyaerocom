@@ -3,6 +3,9 @@ import pytest
 from pyaerocom import const
 from pyaerocom.io import ReadUngridded
 
+from pyaerocom.io import PyaroConfig, ReadPyaro
+from tests.fixtures.pyaro import pyaro_test_data_file, make_csv_test_file, pyaro_testconfig
+
 
 def test_invalid_init_data_dirs():
     data_dirs = "/bla/blub"
@@ -111,3 +114,52 @@ def test_basic_attributes():
         reader.get_lowlevel_reader()
     with pytest.raises(AttributeError):
         reader.dataset_provides_variables()
+
+
+#########################################
+# Tests for use of PyaroConfig
+#########################################
+
+
+def test_init_config(pyaro_testconfig):
+    reader = ReadUngridded(config=pyaro_testconfig)
+
+    assert reader.data_id == pyaro_testconfig.data_id
+
+
+def test_get_lowlevel_reader_config(pyaro_testconfig):
+    reader = ReadUngridded(config=pyaro_testconfig)
+
+    ll_reader = reader.get_lowlevel_reader(data_id=None, config=pyaro_testconfig)
+    assert isinstance(ll_reader, ReadPyaro)
+
+
+def test_supported_pyaro(pyaro_testconfig):
+    reader = ReadUngridded(config=pyaro_testconfig)
+
+    assert ReadPyaro in reader.SUPPORTED_READERS
+    assert pyaro_testconfig.data_id in reader.supported_datasets
+
+
+def test_read_pyaro_and_other(pyaro_testconfig):
+    data_ids = ["AeronetInvV3L2Subset.daily"]
+    reader = ReadUngridded(config=pyaro_testconfig)
+
+    data = reader.read(data_ids, config=pyaro_testconfig)
+    assert len(data.contains_datasets) == 2
+    assert pyaro_testconfig.data_id in data.contains_datasets
+
+
+##
+# Tests that raises errors
+##
+
+
+def test_different_data_id(pyaro_testconfig):
+    diff_data_id = "invalid"
+    reader = ReadUngridded(config=pyaro_testconfig)
+
+    with pytest.raises(
+        ValueError, match="DATA ID and config are both given, but they are not equal"
+    ):
+        reader.get_lowlevel_reader(data_id=diff_data_id, config=pyaro_testconfig)

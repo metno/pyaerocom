@@ -36,21 +36,31 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     return file
 
 
-@pytest.fixture
-def pyaro_test_data_file(tmp_path) -> Path:
-    return make_csv_test_file(tmp_path)
-
-
-@pytest.fixture
-def pyaro_testdata(tmp_path) -> ReadPyaro:
+def testconfig(tmp_path: Path) -> PyaroConfig:
     data_id = "csv_timeseries"
 
     config = PyaroConfig(
         data_id=data_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
-        name_map={"SOx": "oxidised_sulphur"},
+        name_map={"SOx": "concso4"},
     )
+    return config
+
+
+@pytest.fixture
+def pyaro_test_data_file(tmp_path) -> Path:
+    return make_csv_test_file(tmp_path)
+
+
+@pytest.fixture
+def pyaro_testconfig(tmp_path) -> PyaroConfig:
+    return testconfig(tmp_path=tmp_path)
+
+
+@pytest.fixture
+def pyaro_testdata(tmp_path) -> ReadPyaro:
+    config = testconfig(tmp_path=tmp_path)
     rp = ReadPyaro(config=config)
 
     return rp

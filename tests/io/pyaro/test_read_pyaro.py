@@ -23,7 +23,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "oxidised_sulphur"]
+    variables = ["NOx", "concso4"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
@@ -50,7 +50,7 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
     assert len(data.unique_station_names) == 2
 
     # Tests the found stations
-    all_stations = data.to_station_data_all("oxidised_sulphur")
+    all_stations = data.to_station_data_all("concso4")
 
     assert all_stations["stats"][0]["ts_type"] == "daily"
     assert all_stations["stats"][0]["country"] == "NO"
