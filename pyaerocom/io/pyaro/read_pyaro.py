@@ -64,14 +64,14 @@ class ReadPyaro(ReadUngriddedBase):
         """
         To be provided by the reader or engine
         """
-        #return "monthly"
+        # return "monthly"
         return "undefined"
 
     @property
     def _FILEMASK(self):
         return self.config.filename_or_obj_or_url
 
-    #@property
+    # @property
     @staticmethod
     def get_pyaro_readers():
         return list_timeseries_engines()

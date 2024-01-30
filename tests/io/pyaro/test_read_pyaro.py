@@ -10,20 +10,24 @@ from pyaerocom.io import ReadPyaro, PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
 from pyaerocom import UngriddedData
 
+
 def test_testfile(pyaro_test_data_file):
     assert pyaro_test_data_file.exists()
+
 
 def test_readpyaro(pyaro_testdata):
     rp = pyaro_testdata
 
     assert isinstance(rp, ReadPyaro)
 
+
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx","oxidised_sulphur"]
+    variables = ["NOx", "oxidised_sulphur"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
+
 
 def test_getreaders(pyaro_testdata):
     readers = pyaro_testdata.get_pyaro_readers()
@@ -31,11 +35,11 @@ def test_getreaders(pyaro_testdata):
     assert pyaro_testdata.DATA_ID in readers
 
 
-
 ####################################################
 #   Tests for the helper class PyaroToUngriddedData
 ####################################################
-    
+
+
 def test_pyarotoungriddeddata_reading(pyaro_testdata):
     obj = pyaro_testdata.converter
     data = obj.read()
@@ -51,7 +55,6 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
     assert all_stations["stats"][0]["ts_type"] == "daily"
     assert all_stations["stats"][0]["country"] == "NO"
 
-
     # Tests the dates
     start = pd.to_datetime("01.01.2015", dayfirst=True)
     end = pd.to_datetime("31.12.2015", dayfirst=True)
@@ -64,8 +67,8 @@ def test_pyarotoungriddeddata_stations(pyaro_testdata):
 
     assert len(obj.get_stations()) == 2
 
+
 def test_pyarotoungriddeddata_variables(pyaro_testdata):
     obj = pyaro_testdata.converter
 
     assert obj.get_variables() == pyaro_testdata.PROVIDES_VARIABLES
-
