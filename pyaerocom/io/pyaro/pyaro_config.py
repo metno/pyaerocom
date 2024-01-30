@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-from typing import Optional, ClassVar, Self
+from typing import Optional, ClassVar#, Self
 from pathlib import Path
 from importlib import resources
 import yaml
@@ -54,7 +54,7 @@ class PyaroConfig(BaseModel):
 
 
     @classmethod
-    def load(cls, name: str, filepath: Optional[Path] = None) -> Self:
+    def load(cls, name: str, filepath: Optional[Path] = None):# -> Self:
         if filepath is not None:
             if filepath.is_dir():
                 raise ValueError(f"Filepath {filepath} is a directory not a file")
