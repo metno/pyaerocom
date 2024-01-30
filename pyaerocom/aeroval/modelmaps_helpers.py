@@ -102,6 +102,7 @@ def calc_contour_json(data, cmap, cmap_bins):
             "standard conda installation of pyaerocom."
         )
 
+    plt.close("all")
     matplotlib.use("Agg")
     GeoAxes._pcolormesh_patched = Axes.pcolormesh
 

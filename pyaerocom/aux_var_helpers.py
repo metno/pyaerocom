@@ -563,6 +563,52 @@ def compute_wetoxs_from_concprcpoxs(data):
     return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxs", "pr")
 
 
+def compute_wetoxs_from_concprcpoxst(data):
+    """Compute wdep from conc in precip and precip data
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxst", "pr")
+
+
+def compute_wetoxs_from_concprcpoxsc(data):
+    """Compute wdep from conc in precip and precip data
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxsc", "pr")
+
+
 def compute_wetoxn_from_concprcpoxn(data):
     """Compute wdep from conc in precip and precip data
 
@@ -607,6 +653,22 @@ def compute_wetrdn_from_concprcprdn(data):
 
     """
     return _compute_wdep_from_concprcp_helper(data, "wetrdn", "concprcprdn", "pr")
+
+
+def compute_wetnh4_from_concprcpnh4(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetnh4", "concprcpnh4", "pr")
+
+
+def compute_wetno3_from_concprcpno3(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetno3", "concprcpno3", "pr")
+
+
+def compute_wetso4_from_concprcpso4(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetso4", "concprcpso4", "pr")
+
+
+def compute_wetna_from_concprcpna(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetna", "concprcpna", "pr")
 
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, to_unit=None):
@@ -725,3 +787,51 @@ def calc_vmro3max(data):
     # print(data.var_info)
     # exit()
     return o3max
+
+
+def identity(data):
+    return data
+
+
+def make_proxy_drydep_from_O3(data):
+    # sort of prototype to add a compted variable
+    # one has to extend the data structures of the station data object
+    # 'right', but has to return just the data array
+    # That concept is a bit confusing (why not do everything in data here?)
+    var_name = "vmro3"
+    new_var_name = "proxydryo3"
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+
+def make_proxy_wetdep_from_O3(data):
+    # sort of prototype to add a compted variable
+    # one has to extend the data structures of the station data object
+    # 'right', but has to return just the data array
+    # That concept is a bit confusing (why not do everything in data here?)
+    var_name = "vmro3"
+    new_var_name = "proxyweto3"
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data

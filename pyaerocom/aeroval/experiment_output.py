@@ -16,6 +16,7 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
+    statistics_model_only,
     statistics_obs_only,
     statistics_trend,
     var_ranges_defaults,
@@ -574,6 +575,8 @@ class ExperimentOutput(ProjectOutput):
     def _create_statistics_json(self):
         if self.cfg.statistics_opts.obs_only_stats:
             stats_info = statistics_obs_only
+        elif self.cfg.statistics_opts.model_only_stats:
+            stats_info = statistics_model_only
         else:
             stats_info = statistics_defaults
             stats_info.update(extended_statistics)

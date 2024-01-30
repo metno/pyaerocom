@@ -301,7 +301,7 @@ class ColocationSetup(BrowseDict):
     #: file for ec550aer at the surface ('*ec550aer*Surface*.nc'), then, the
     #: colocation routine will look for '*ec550aer*ModelLevel*.nc' and if this
     #: exists, it will load it and extract the surface level.
-    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel"}
+    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel", "2D": "2D"}
 
     #: do not raise Exception if invalid item is attempted to be assigned
     #: (Overwritten from base class)
@@ -1466,7 +1466,9 @@ class Colocator(ColocationSetup):
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
-                ts_type=ts_type, var_ref=obs_var, use_climatology_ref=self.obs_use_climatology
+                ts_type=ts_type,
+                var_ref=obs_var,
+                use_climatology_ref=self.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)

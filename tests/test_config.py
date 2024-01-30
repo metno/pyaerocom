@@ -114,21 +114,23 @@ def test_Config_has_access_users_database():
 
 @lustre_avail
 @pytest.mark.parametrize(
-    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
+    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs,data_searchdirno",
     [
-        ("metno", None, False, False),
-        ("metno", None, True, False),
-        ("metno", None, True, True),
-        ("metno", f"/home/{USER}", True, True),
-        ("users-db", None, False, False),
+        ("metno", None, False, False, 0),
+        ("metno", None, True, False, 0),
+        ("metno", None, True, True, 0),
+        ("metno", f"/home/{USER}", True, True, 2),
+        ("users-db", None, False, False, 0),
     ],
 )
-def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs):
+def test_Config_read_config(
+    cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, data_searchdirno
+):
     cfg = testmod.Config(try_infer_environment=False)
     cfg_file = cfg._config_files[cfg_id]
     assert Path(cfg_file).exists()
     cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
-    assert len(cfg.DATA_SEARCH_DIRS) == 0
+    assert len(cfg.DATA_SEARCH_DIRS) == data_searchdirno
     assert len(cfg.OBSLOCS_UNGRIDDED) == 0
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()

@@ -39,6 +39,8 @@ HA_TO_SQM = 10000  # hectar to square metre.
 #: factor
 UCONV_MUL_FACS = pd.DataFrame(
     [
+        # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
+        # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
         # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
         # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
         # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
@@ -64,6 +66,7 @@ UCONV_MUL_FACS = pd.DataFrame(
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
+
 UALIASES = {
     # mass concentrations
     "ug S m-3": "ug S/m3",
@@ -80,6 +83,7 @@ UALIASES = {
     # deposition rates (explicit)
     ## sulphur species
     "mgS/m2/h": "mg S m-2 h-1",
+    "mg/m2/h": "mg m-2 h-1",
     "mgS/m**2/h": "mg S m-2 h-1",
     "mgSm-2h-1": "mg S m-2 h-1",
     "mgSm**-2h-1": "mg S m-2 h-1",

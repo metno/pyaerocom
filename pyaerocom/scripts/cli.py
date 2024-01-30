@@ -2,7 +2,9 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import __package__, __version__, const, tools
+from pyaerocom import __package__, __version__, const
+from pyaerocom.io.cachehandler_ungridded import list_cache_files
+from pyaerocom.io.utils import browse_database
 
 main = typer.Typer()
 
@@ -11,7 +13,7 @@ def version_callback(value: bool):
     if not value:
         return
 
-    typer.echo(f"{__package__} {__version__}")
+    typer.echo(f"🦄 {__package__} {__version__}")
     raise typer.Exit()
 
 
@@ -26,7 +28,7 @@ def callback(
 def browse(database: str = typer.Argument(..., help="Provide database name.")):
     """Browse database e.g., browse <DATABASE>"""
     print(f"Searching database for matches of {database}")
-    print(tools.browse_database(database))
+    print(browse_database(database))
 
 
 @main.command()
@@ -36,9 +38,17 @@ def clearcache():
     delete = typer.confirm("Are you sure you want to delete all cached data objects?")
     if delete:
         print("OK then.... here we go!")
-        tools.clear_cache()
+        for path in list_cache_files():
+            path.unlink()
     else:
         print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
+
+
+@main.command()
+def listcache():
+    """List cached data objects"""
+    for path in list_cache_files():
+        typer.echo(str(path))
 
 
 @main.command()

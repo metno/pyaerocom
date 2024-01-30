@@ -5,6 +5,7 @@ import logging
 import os
 from copy import deepcopy
 from datetime import datetime
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -381,12 +382,16 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
     return output_array
 
 
-def _get_period_keys(resolution):
-    if resolution == "seasonal":
-        period_keys = ["DJF", "MAM", "JJA", "SON"]
-    elif resolution == "yearly":
-        period_keys = ["Annual"]
-    return period_keys
+def _get_period_keys(resolution: Literal["seasonal", "yearly"]):
+    period_keys = dict(
+        seasonal=["DJF", "MAM", "JJA", "SON"],
+        yearly=["All"],
+    )
+
+    if resolution not in period_keys:
+        raise ValueError(f"Unknown {resolution=}")
+
+    return period_keys[resolution]
 
 
 def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
@@ -426,8 +431,8 @@ def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
 
     ts_data = {
         "time": time,
-        "seasonal": {"obs": yeardict, "mod": yeardict},
-        "yearly": {"obs": yeardict, "mod": yeardict},
+        "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+        "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
     }
     ts_data["station_name"] = stat_name
     ts_data.update(meta_glob)
@@ -526,8 +531,8 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
         for regid, regname in region_ids.items():
             ts_data = {
                 "time": time,
-                "seasonal": {"obs": yeardict, "mod": yeardict},
-                "yearly": {"obs": yeardict, "mod": yeardict},
+                "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+                "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
             }
             ts_data["station_name"] = regname
             ts_data.update(meta_glob)
@@ -632,10 +637,11 @@ def _init_site_coord_arrays(data):
     return (sites, lats, lons, alts, countries, jsdates)
 
 
-def _get_stat_regions(lats, lons, regions):
+def _get_stat_regions(lats, lons, regions, **kwargs):
     regs = []
+    regions_how = kwargs.get("regions_how", None)
     for lat, lon in zip(lats, lons):
-        reg = find_closest_region_coord(lat, lon, regions=regions)
+        reg = find_closest_region_coord(lat, lon, regions=regions, regions_how=regions_how)
         regs.append(reg)
     return regs
 
@@ -645,6 +651,8 @@ def _process_sites(data, regions, regions_how, meta_glob):
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
         regs = countries
+    elif regions_how == "htap":
+        regs = _get_stat_regions(lats, lons, regions, regions_how=regions_how)
     else:
         regs = _get_stat_regions(lats, lons, regions)
 

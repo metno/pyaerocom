@@ -1,11 +1,6 @@
 from copy import deepcopy
 
-from pyaerocom._lowlevel_helpers import (
-    BrowseDict,
-    DictStrKeysListVals,
-    DictType,
-    StrType,
-)
+from pyaerocom._lowlevel_helpers import BrowseDict, DictStrKeysListVals, DictType, StrType
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
 
 
