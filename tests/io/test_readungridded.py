@@ -1,10 +1,8 @@
 import pytest
 
 from pyaerocom import const
-from pyaerocom.io import ReadUngridded
-
-from pyaerocom.io import PyaroConfig, ReadPyaro
-from tests.fixtures.pyaro import pyaro_test_data_file, make_csv_test_file, pyaro_testconfig
+from pyaerocom.io import PyaroConfig, ReadPyaro, ReadUngridded
+from tests.fixtures.pyaro import make_csv_test_file, pyaro_test_data_file, pyaro_testconfig
 
 
 def test_invalid_init_data_dirs():
