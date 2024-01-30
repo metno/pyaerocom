@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
-import pandas as pd
-import numpy as np
 
-from pyaerocom.io import ReadPyaro, PyaroConfig
+import numpy as np
+import pandas as pd
+import pytest
+
+from pyaerocom.io import PyaroConfig, ReadPyaro
 
 
 def make_csv_test_file(tmp_path: Path) -> Path:

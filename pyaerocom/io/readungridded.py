@@ -14,7 +14,10 @@ from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.helpers import varlist_aerocom
+from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
+from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
 from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
@@ -27,17 +30,9 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-
-
-from pyaerocom.io import ReadUngriddedBase
-
 from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
-
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
-from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
-from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
-
 
 logger = logging.getLogger(__name__)
 
