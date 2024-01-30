@@ -724,8 +724,8 @@ class ReadUngridded:
                 )
             else:
                 data_to_append = self.read_dataset(
-                    ds,
-                    vars_to_retrieve,
+                    data_id=ds,
+                    vars_to_retrieve=vars_to_retrieve,
                     only_cached=only_cached,
                     filter_post=filter_post,
                     **kwargs,
