@@ -43,6 +43,7 @@ dependencies = [
     "geojsoncontour",
     'cf-units>=3.1; python_version >= "3.10"',            # https://github.com/SciTools/cf-units/issues/218
     "typer>=0.4.0",
+    "pyaro",
 ]
 
 [project.readme]
