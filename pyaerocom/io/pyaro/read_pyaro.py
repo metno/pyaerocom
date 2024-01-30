@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 from pyaro import list_timeseries_engines, open_timeseries
