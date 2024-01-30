@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
-
-from pyaro import list_timeseries_engines, open_timeseries
-from pyaro.timeseries import Reader, Data, Station
-from pyaro.timeseries.Wrappers import VariableNameChangingReader
-
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.tstype import TsType
-
-import numpy as np
-
 import logging
 from copy import deepcopy
 from typing import NewType
 
+import numpy as np
+from pyaro import list_timeseries_engines, open_timeseries
+from pyaro.timeseries import Data, Reader, Station
+from pyaro.timeseries.Wrappers import VariableNameChangingReader
+
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.tstype import TsType
+from pyaerocom.ungriddeddata import UngriddedData
 
 # TODO: Add possibility to filter after reading (if possible)
 

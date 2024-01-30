@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-from typing import Optional, ClassVar  # , Self
-from pathlib import Path
+import os
 from importlib import resources
+from pathlib import Path
+from typing import ClassVar, Optional  # , Self
+
 import yaml
+from pydantic import BaseModel
 
 import pyaerocom as pya
-
-
-import os
 
 
 class PyaroConfig(BaseModel):
