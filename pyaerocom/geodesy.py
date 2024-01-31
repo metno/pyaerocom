@@ -6,10 +6,11 @@ This module contains low-level methods to perform geographical calculations,
 """
 import logging
 import os
+from copy import deepcopy
 
 import geonum
 import numpy as np
-import reverse_geocode as rg
+from geocoder_reverse_natural_earth import Geocoder_Reverse_Exception, Geocoder_Reverse_NE
 
 from pyaerocom import const
 from pyaerocom.helpers import isnumeric
@@ -100,10 +101,38 @@ def get_country_info_coords(coords):
     if not isinstance(coords, (list, tuple)):
         raise ValueError("Invalid input for coords, need list or tuple or array")
 
-    if isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
-        return [rg.get(coords)]
+    geo = Geocoder_Reverse_NE()
+    ret_list = []
+    ret_proto = {"city": "", "country": "", "code": ""}
 
-    return rg.search(coords)
+    if isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
+        lat, lon = coords
+        try:
+            dummy = geo.lookup(lat, lon)
+        except Geocoder_Reverse_Exception:
+            dummy = geo.lookup_nearest(lat, lon)
+            if dummy is None:
+                return [ret_proto]
+        # return [rg.get(coords)]
+        ret_dummy = deepcopy(ret_proto)
+        ret_dummy["country"] = dummy["NAME"]
+        ret_dummy["code"] = dummy["ISO_A2_EH"]
+        return [ret_dummy]
+    else:
+        for coord in coords:
+            ret_dummy = deepcopy(ret_proto)
+            lat, lon = coord
+            try:
+                dummy = geo.lookup(lat, lon)
+            except Geocoder_Reverse_Exception:
+                dummy = geo.lookup_nearest(lat, lon)
+            if dummy is not None:
+                ret_dummy["country"] = dummy["NAME"]
+                ret_dummy["code"] = dummy["ISO_A2_EH"]
+
+            ret_list.append(ret_dummy)
+    return ret_list
+    # return rg.search(coords)
 
 
 def get_topo_data(

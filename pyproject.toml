@@ -183,7 +183,6 @@ module = [
     "geojsoncontour",
     "pandas",
     "dask",
-    "reverse_geocode",
     "seaborn",
     "openpyxl",
     "tqdm",
