@@ -268,7 +268,7 @@ class ReadUngriddedBase(abc.ABC):
         if self._data_dir is None:
             self._data_dir = get_obsnetwork_dir(self.data_id)
         if not os.path.exists(self._data_dir):
-            raise (f"{self._data_dir} does not exist.")
+            raise FileNotFoundError(f"{self._data_dir} does not exist.")
         return self._data_dir
 
     @property
