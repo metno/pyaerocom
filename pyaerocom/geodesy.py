@@ -103,7 +103,9 @@ def get_country_info_coords(coords):
 
     geo = Geocoder_Reverse_NE()
     ret_list = []
-    ret_proto = {"city": "", "country": "", "code": ""}
+    # that's what reverse_geocoder used to return
+    # (more a list of this)
+    ret_proto = {"city": "", "country_code": "", "code": ""}
 
     if isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
         lat, lon = coords
@@ -116,7 +118,7 @@ def get_country_info_coords(coords):
         # return [rg.get(coords)]
         ret_dummy = deepcopy(ret_proto)
         ret_dummy["country"] = dummy["NAME"]
-        ret_dummy["code"] = dummy["ISO_A2_EH"]
+        ret_dummy["country_code"] = dummy["ISO_A2_EH"]
         return [ret_dummy]
     else:
         for coord in coords:
@@ -128,7 +130,7 @@ def get_country_info_coords(coords):
                 dummy = geo.lookup_nearest(lat, lon)
             if dummy is not None:
                 ret_dummy["country"] = dummy["NAME"]
-                ret_dummy["code"] = dummy["ISO_A2_EH"]
+                ret_dummy["country_code"] = dummy["ISO_A2_EH"]
 
             ret_list.append(ret_dummy)
     return ret_list
