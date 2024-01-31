@@ -8,14 +8,18 @@ TEST_LON = 9
 
 
 @pytest.mark.parametrize(
-    "coords,countries",
-    [((52, 12), ["Germany"]), ([(46.1956, 6.21125), (55.398, 10.3669)], ["France", "Denmark"])],
+    "coords,countries,country_code",
+    [
+        ((52, 12), ["Germany"], ["DE"]),
+        ([(46.1956, 6.21125), (55.398, 10.3669)], ["France", "Denmark"], ["FR", "DK"]),
+    ],
 )
-def test_get_country_info_coords(coords, countries):
+def test_get_country_info_coords(coords, countries, country_code):
     for i, res in enumerate(geodesy.get_country_info_coords(coords)):
         assert isinstance(res, dict)
         assert "country" in res
         assert res["country"] == countries[i]
+        assert res["country_code"] == country_code[i]
 
 
 def test_haversine():
