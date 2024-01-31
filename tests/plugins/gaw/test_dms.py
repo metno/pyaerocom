@@ -1,23 +1,43 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
+from pyaerocom import const
 from pyaerocom.plugins.gaw.reader import ReadGAW
 from tests.conftest import TEST_RTOL, lustre_unavail
 
+if not const.has_access_lustre:
+    pytestmark = pytest.skip(
+        reason="Skipping tests that require access to AEROCOM database on METNo servers",
+        allow_module_level=True,
+    )
 
-def _make_data():
-    r = ReadGAW()
+
+@pytest.fixture(scope="module")
+def gaw_path() -> Path:
+    try:
+        return Path(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME)
+    except KeyError:
+        pytest.skip(reason="GAW path not initialised due to non existence in CI")
+
+
+# @pytest.fixture(scope="module")
+def _make_data(gaw_path: Path) -> ReadGAW:
+    r = ReadGAW(data_dir=str(gaw_path))
     return r.read("vmrdms")
 
 
 @pytest.fixture(scope="module")
-@lustre_unavail
+# @lustre_unavail
 def data_vmrdms_ams_cvo():
-    return _make_data()
+    return _make_data(gaw_path)
 
 
-@lustre_unavail
+# @lustre_unavail
 @pytest.mark.xfail(reason="wrong data.shape")
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
@@ -40,7 +60,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     )
 
 
-@lustre_unavail
+# @lustre_unavail
 @pytest.mark.xfail(reason='stat["vmrdms"] are 1e12 off')
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0)
@@ -64,7 +84,7 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
     )
 
 
-@lustre_unavail
+# @lustre_unavail
 def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0, start=2000, stop=2008, freq="monthly")
 
