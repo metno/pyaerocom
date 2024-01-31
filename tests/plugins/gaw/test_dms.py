@@ -18,16 +18,16 @@ if not const.has_access_lustre:
 
 
 @pytest.fixture(scope="module")
-def gaw_path() -> Path:
+def gaw_path() -> str:
     try:
-        return Path(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME])
+        return str(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME])
     except KeyError:
         pytest.skip(reason="GAW path not initialised due to non existence in CI")
 
 
 # @pytest.fixture(scope="module")
-def _make_data(gaw_path: Path) -> ReadGAW:
-    r = ReadGAW(data_dir=str(gaw_path))
+def _make_data(gaw_path: str) -> ReadGAW:
+    r = ReadGAW(data_dir=gaw_path)
     return r.read("vmrdms")
 
 
