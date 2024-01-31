@@ -20,7 +20,7 @@ if not const.has_access_lustre:
 @pytest.fixture(scope="module")
 def gaw_path() -> Path:
     try:
-        return Path(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME)
+        return Path(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME])
     except KeyError:
         pytest.skip(reason="GAW path not initialised due to non existence in CI")
 
