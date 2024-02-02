@@ -275,9 +275,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         var_name_web: str = None,
         out_dirs: dict = None,
     ):
-        assert (
-            region_names != None and station_names != None
-        ), f"Both region_id and station_name can not both be None"
+        if region_names != None and station_names != None:
+            raise ValueError("Both region_id and station_name can not both be None")
 
         # Loop through regions
         for regid in region_names:
