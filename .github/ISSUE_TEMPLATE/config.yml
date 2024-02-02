@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Pyaerocom documentation
+    url: https://pyaerocom.readthedocs.io/en/latest/
+    about: Documentation page for Pyaerocom
