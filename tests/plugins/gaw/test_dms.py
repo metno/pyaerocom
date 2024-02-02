@@ -12,6 +12,7 @@ from tests.conftest import TEST_RTOL
 
 
 def skip_flag():
+    # for some reason const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME] is not defined on CI
     if const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED:
         return True
     elif os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]):
