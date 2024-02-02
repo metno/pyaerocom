@@ -12,10 +12,17 @@ from tests.conftest import TEST_RTOL
 
 
 @pytest.mark.skipif(
+    const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED,
+    reason="GAW path not found (are we on CI?)",
+    allow_module_level=True,
+)
+
+@pytest.mark.skipif(
     not os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]),
     reason="GAW path not found (are we on CI?)",
     allow_module_level=True,
 )
+
 @pytest.fixture(scope="module")
 def gaw_path() -> str:
     return const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]
