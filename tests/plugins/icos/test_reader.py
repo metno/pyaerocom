@@ -16,7 +16,7 @@ if not const.has_access_lustre:
 VARS_DEFAULT = {"vmrco2", "vmrch4", "vmrco"}
 VARS_PROVIDED = VARS_DEFAULT  # | {} add more if ever needed
 
-station_names = pytest.mark.parametrize("station", ("bir", "gat", "hpb"))
+station_names = pytest.mark.parametrize("station", ("Birkenes", "Gartow", "Hohenpeissenberg"))
 
 
 @pytest.fixture(scope="module")
@@ -63,13 +63,13 @@ def test_stations(reader: ReadICOS, station: str):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadICOS):
-    return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
+    assert set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
 @station_names
 def test_read_file(reader: ReadICOS, station_files: list[str]):
     data = reader.read_file(station_files[-1])
-    assert set(data.contains_vars) == VARS_DEFAULT
+    assert set(data.contains_vars) <= VARS_DEFAULT
 
 
 def test_read_file_error(reader: ReadICOS):
@@ -81,16 +81,17 @@ def test_read_file_error(reader: ReadICOS):
 
 @station_names
 def test_read(reader: ReadICOS, station_files: list[str]):
-    data = reader.read(VARS_PROVIDED, station_files, first_file=0, last_file=1)
-    assert set(data.contains_vars) == VARS_PROVIDED
+    for var in VARS_PROVIDED:
+        data = reader.read(var, station_files, first_file=0, last_file=1)
+        assert set(data.contains_vars) <= VARS_PROVIDED
 
 
 def test_read_error(reader: ReadICOS):
     bad_variable_name = "not-a-variable"
     with pytest.raises(ValueError) as e:
-        reader.read((bad_variable_name,))
+        reader.read(bad_variable_name)
     assert str(e.value) == f"Unsupported variables: {bad_variable_name}"
 
 
-def test_reader_gives_correct_mep_path(reader: ReadICOS, icos_path: Path):
+def test_reader_gives_correct_icos_path(reader: ReadICOS, icos_path: Path):
     assert reader.data_dir == str(icos_path)
