@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os.path
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -9,7 +8,7 @@ from numpy.testing import assert_allclose, assert_array_equal
 
 from pyaerocom import const
 from pyaerocom.plugins.gaw.reader import ReadGAW
-from tests.conftest import TEST_RTOL, lustre_unavail
+from tests.conftest import TEST_RTOL
 
 
 @pytest.mark.skipif(
