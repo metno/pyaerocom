@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import os
+
 import pytest
 
+from pyaerocom import const
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
     _get_min_max_year_periods,
@@ -12,6 +15,8 @@ from pyaerocom.aeroval.helpers import (
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.griddeddata import GriddedData
+
+os.makedirs(const.LOCAL_TMP_DIR, exist_ok=True)
 
 
 @pytest.mark.parametrize(
