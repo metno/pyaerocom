@@ -10,6 +10,7 @@ from pyaerocom import const
 from pyaerocom.plugins.gaw.reader import ReadGAW
 from tests.conftest import TEST_RTOL
 
+
 def skip_flag():
 
     if const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED:
@@ -18,6 +19,7 @@ def skip_flag():
         return True
     else:
         return False
+
 
 @pytest.mark.skipif(
     skip_flag(),
