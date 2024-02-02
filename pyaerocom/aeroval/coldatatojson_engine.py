@@ -180,7 +180,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-        if coldata.data.attrs.get("just_for_viz", True):  # make the regular json output
+        if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
 
