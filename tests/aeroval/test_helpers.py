@@ -106,6 +106,7 @@ def test__get_min_max_year_periods_error():
 def test_make_dummy_model(eval_config: dict):
     cfg = EvalSetup(**eval_config)
     assert cfg.obs_cfg["AERONET-Sun"]
+    assert const.LOCAL_TMP_DIR == "/home/runner/MyPyaerocom/tmp"
     os.makedirs(const.LOCAL_TMP_DIR, exist_ok=True)
     model_id = make_dummy_model(["AERONET-Sun"], cfg)
     assert model_id == "dummy_model"
