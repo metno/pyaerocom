@@ -12,20 +12,21 @@ from tests.conftest import TEST_RTOL
 
 
 def skip_flag():
-
     if const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED:
         return True
-    elif not os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]):
-        return True
-    else:
+    elif os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]):
         return False
+    else:
+        return True
 
 
-@pytest.mark.skipif(
+skip = pytest.mark.skipif(
     skip_flag(),
     reason="GAW path not found (are we on CI?)",
     allow_module_level=True,
 )
+
+
 @pytest.fixture(scope="module")
 def gaw_path() -> str:
     return const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]
@@ -42,6 +43,7 @@ def data_vmrdms_ams_cvo(_make_data, gaw_path):
     return _make_data
 
 
+@skip
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     assert data.shape == (15616, 12)
@@ -62,6 +64,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     )
 
 
+@skip
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0)
 
@@ -84,6 +87,7 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
     )
 
 
+@skip
 def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0, start=2000, stop=2008, freq="monthly")
 
