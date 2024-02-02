@@ -10,19 +10,20 @@ from pyaerocom import const
 from pyaerocom.plugins.gaw.reader import ReadGAW
 from tests.conftest import TEST_RTOL
 
+def skip_flag():
+
+    if const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED:
+        return True
+    elif not os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]):
+        return True
+    else:
+        return False
 
 @pytest.mark.skipif(
-    const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED,
+    skip_flag(),
     reason="GAW path not found (are we on CI?)",
     allow_module_level=True,
 )
-
-@pytest.mark.skipif(
-    not os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]),
-    reason="GAW path not found (are we on CI?)",
-    allow_module_level=True,
-)
-
 @pytest.fixture(scope="module")
 def gaw_path() -> str:
     return const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]
