@@ -228,6 +228,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 station_names=coldata.data.station_name.values,
                 periods=periods,
                 seasons=seasons,
+                obs_name = obs_name,
                 var_name_web=var_name_web,
                 out_dirs=out_dirs,
             )
