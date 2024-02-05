@@ -2,6 +2,7 @@ import logging
 import os
 from time import time
 
+from numpy.typing import ArrayLike
 from cf_units import Unit
 
 from pyaerocom import ColocatedData, TsType
@@ -267,15 +268,16 @@ class ColdataToJsonEngine(ProcessingEngine):
         self,
         data: dict[str, ColocatedData] = None,
         use_country: bool = False,
-        region_names=None,
-        station_names=None,
+        region_names: dict[str:str] = None,
+        station_names: ArrayLike = None,
         periods: list[str] = None,
         seasons: list[str] = None,
         obs_name: str = None,
         var_name_web: str = None,
         out_dirs: dict = None,
     ):
-        if region_names != None and station_names != None:
+
+        if region_names == None and station_names == None:
             raise ValueError("Both region_id and station_name can not both be None")
 
         # Loop through regions
