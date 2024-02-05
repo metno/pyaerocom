@@ -12,7 +12,6 @@ def _make_data():
 
 
 @pytest.fixture(scope="module")
-@lustre_unavail
 def data_vmrdms_ams_cvo():
     return _make_data()
 
