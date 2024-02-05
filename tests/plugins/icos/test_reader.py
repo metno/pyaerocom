@@ -63,7 +63,7 @@ def test_stations(reader: ReadICOS, station: str):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadICOS):
-    return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
+    assert set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
 @station_names
