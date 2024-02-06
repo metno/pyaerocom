@@ -2,8 +2,8 @@ import logging
 import os
 from time import time
 
-from numpy.typing import ArrayLike
 from cf_units import Unit
+from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
