@@ -3,6 +3,7 @@ import os
 from time import time
 
 from cf_units import Unit
+from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
@@ -180,7 +181,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-        if coldata.data.attrs.get("just_for_viz", True):  # make the regular json output
+        if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
 
@@ -227,6 +228,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 station_names=coldata.data.station_name.values,
                 periods=periods,
                 seasons=seasons,
+                obs_name=obs_name,
                 var_name_web=var_name_web,
                 out_dirs=out_dirs,
             )
@@ -267,17 +269,16 @@ class ColdataToJsonEngine(ProcessingEngine):
         self,
         data: dict[str, ColocatedData] = None,
         use_country: bool = False,
-        region_names=None,
-        station_names=None,
+        region_names: dict[str:str] = None,
+        station_names: ArrayLike = None,
         periods: list[str] = None,
         seasons: list[str] = None,
         obs_name: str = None,
         var_name_web: str = None,
         out_dirs: dict = None,
     ):
-        assert (
-            region_names != None and station_names != None
-        ), f"Both region_id and station_name can not both be None"
+        if region_names == None and station_names == None:
+            raise ValueError("Both region_id and station_name can not both be None")
 
         # Loop through regions
         for regid in region_names:
