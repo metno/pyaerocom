@@ -1,6 +1,7 @@
 """
 Classes and methods to perform high-level colocation.
 """
+
 import glob
 import logging
 import os
@@ -331,18 +332,22 @@ class ColocationSetup(BrowseDict):
     ):
         self.model_id = model_id
         self.obs_config = obs_config
-        self.obs_id = obs_id
-        # Gets obs_id from config, if given
-        if self.obs_config is not None:
-            self.obs_id = self.obs_config.data_id
+        self._obs_id = None
+        self._obs_config = None
 
-        if self.obs_config is not None and self.obs_id is not None:
-            if self.obs_config.data_id != self.obs_id:
-                logger.warning(
-                    f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. This may cause probles down the line"
-                )
-            else:
-                self.obs_id = self.obs_config.data_id
+        self.obs_id = obs_id
+        self.obs_config = obs_config
+
+        # if self._obs_config is not None:
+        #     self.obs_id = self.obs_config.data_id
+
+        # if self.obs_config is not None and self.obs_id is not None:
+        #     if self.obs_config.data_id != self.obs_id:
+        #         logger.warning(
+        #             f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. This may cause probles down the line"
+        #         )
+        #     else:
+        #         self.obs_id = self.obs_config.data_id
 
         self.obs_vars = obs_vars
 
@@ -487,6 +492,36 @@ class ColocationSetup(BrowseDict):
         """Base directory for storing logfiles"""
         p = chk_make_subdir(self.basedir_coldata, "logfiles")
         return p
+
+    @property
+    def obs_id(self) -> str:
+        return self._obs_id
+
+    @obs_id.setter
+    def obs_id(self, val: str | None) -> None:
+        if self.obs_config is not None and val != self.obs_config.data_id:
+            logger.info(
+                f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. Setting Pyaro config to None!"
+            )
+            self.obs_config = None
+
+        self._obs_id = val
+
+    @property
+    def obs_config(self) -> PyaroConfig:
+        return self._obs_config
+
+    @obs_config.setter
+    def obs_config(self, val: PyaroConfig | None) -> None:
+        if val is not None:
+            if self.obs_id is not None and val.data_id != self.obs_id:
+                logger.info(
+                    f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
+                )
+                self.obs_id = val.data_id
+            if self.obs_id is None:
+                self.obs_id = val.data_id
+        self._obs_config = val
 
     def add_glob_meta(self, **kwargs):
         """

@@ -285,7 +285,7 @@ if __name__ == "__main__":
         data_id=data_id,
         filename_or_obj_or_url="/home/danielh/Documents/pyaerocom/pyaro/tests/testdata/csvReader_testdata.csv",
         filters=[],
-        name_map={"SOx": "oxidised_sulphur"},
+        name_map={"SOx": "concso4"},
     )
     rp = ReadPyaro(config=config)
 
