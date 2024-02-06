@@ -485,3 +485,26 @@ def test_colocation_pyaro(
     cd = data["concso4"]["concso4"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
+
+
+def test_colocation_pyaro_change_obs_id(
+    pyaro_test_data_file, pyaro_testconfig, fake_MSCWCtm_data_monthly_2015
+) -> None:
+    col = Colocator(save_coldata=False)
+    config = pyaro_testconfig
+    col.obs_id = "undefined"
+    col.obs_config = config
+    col.obs_id = "undefined"
+    col.obs_config = config
+
+    col.model_id = "EMEP"
+    col.gridded_reader_id = {"model": "ReadMscwCtm"}
+    col.model_data_dir = fake_MSCWCtm_data_monthly_2015
+    col.obs_vars = "concso4"
+    col.ts_type = "monthly"
+
+    data = col.run()
+
+    cd = data["concso4"]["concso4"]
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type == "monthly"

@@ -501,7 +501,7 @@ class ColocationSetup(BrowseDict):
     def obs_id(self, val: str | None) -> None:
         if self.obs_config is not None and val != self.obs_config.data_id:
             logger.info(
-                f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. Setting Pyaro config to None!"
+                f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {val}. Setting Pyaro config to None!"
             )
             self.obs_config = None
 
@@ -516,7 +516,7 @@ class ColocationSetup(BrowseDict):
         if val is not None:
             if self.obs_id is not None and val.data_id != self.obs_id:
                 logger.info(
-                    f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
+                    f"Data ID in Pyaro config {val.data_id} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
                 )
                 self.obs_id = val.data_id
             if self.obs_id is None:
