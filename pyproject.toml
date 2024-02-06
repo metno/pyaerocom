@@ -35,7 +35,7 @@ dependencies = [
     "SRTM.py",              # required by geonum
     "simplejson",
     "requests",
-    "reverse-geocode",
+    "geocoder_reverse_natural_earth",
     "tqdm",
     "openpyxl",
     "geojsoncontour",
@@ -183,7 +183,6 @@ module = [
     "geojsoncontour",
     "pandas",
     "dask",
-    "reverse_geocode",
     "seaborn",
     "openpyxl",
     "tqdm",
