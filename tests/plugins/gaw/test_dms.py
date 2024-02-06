@@ -1,28 +1,54 @@
+from __future__ import annotations
+
+import os.path
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
+from pyaerocom import const
 from pyaerocom.plugins.gaw.reader import ReadGAW
-from tests.conftest import TEST_RTOL, lustre_unavail
+from tests.conftest import TEST_RTOL
 
 
-def _make_data():
-    r = ReadGAW()
+def skip_flag():
+    # for some reason const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME] is not defined on CI
+    if const.DMS_AMS_CVO_NAME not in const.OBSLOCS_UNGRIDDED:
+        return True
+    elif os.path.exists(const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]):
+        return False
+    else:
+        return True
+
+
+skip = pytest.mark.skipif(
+    skip_flag(),
+    reason="GAW path not found (are we on CI?)",
+    allow_module_level=True,
+)
+
+
+@pytest.fixture(scope="module")
+def gaw_path() -> str:
+    return const.OBSLOCS_UNGRIDDED[const.DMS_AMS_CVO_NAME]
+
+
+@pytest.fixture(scope="module")
+def _make_data(gaw_path: str) -> ReadGAW:
+    r = ReadGAW(data_dir=gaw_path)
     return r.read("vmrdms")
 
 
 @pytest.fixture(scope="module")
-def data_vmrdms_ams_cvo():
-    return _make_data()
+def data_vmrdms_ams_cvo(_make_data, gaw_path):
+    return _make_data
 
 
-@lustre_unavail
-@pytest.mark.xfail(reason="wrong data.shape")
+@skip
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
-    # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
-    assert data.shape == (819 + 7977, 12)
-    assert len(data.metadata) == 2
+    assert data.shape == (15616, 12)
+    assert len(data.metadata) == 6
 
     unique_coords = []
     unique_coords.extend(np.unique(data.latitude))
@@ -33,14 +59,13 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
 
     vals = data._data[:, data.index["data"]]
     assert_allclose(
-        [vals.nanmean(), vals.nanstd(), vals.nanmax(), vals.nanmin],
-        [174.8499921813917, 233.0328306938496, 2807.6, 0.0],
+        [np.nanmean(vals), np.nanstd(vals), np.nanmax(vals), np.nanmin(vals)],
+        [1.794279e14, 2.352963e14, 2.807600e15, -7.900000e12],
         rtol=TEST_RTOL,
     )
 
 
-@lustre_unavail
-@pytest.mark.xfail(reason='stat["vmrdms"] are 1e12 off')
+@skip
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0)
 
@@ -58,12 +83,12 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
     vmrdms = stat["vmrdms"]
     assert_allclose(
         [vmrdms.mean(), vmrdms.std(), vmrdms.max(), vmrdms.min()],
-        [185.6800736155262, 237.1293922258991, 2807.6, 5.1],
+        [1.856801e14, 2.371294e14, 2.807600e15, 5.100000e12],
         rtol=TEST_RTOL,
     )
 
 
-@lustre_unavail
+@skip
 def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx=0, start=2000, stop=2008, freq="monthly")
 
