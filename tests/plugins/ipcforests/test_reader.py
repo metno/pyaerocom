@@ -51,7 +51,7 @@ def test_METADATA(meta_reader: ReadIPCForestMeta):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadIPCForest):
-    return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
+    assert set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
 def test_read_file(

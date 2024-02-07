@@ -266,7 +266,6 @@ class Station:
         """
         flags = np.array(self.flags[species])
         quality = np.sum(flags[np.where(flags == 0)]) / len(flags)
-        breakpoint()
         if quality >= quality_limit:
             return pd.Series(self.data[species], index=self.dtime[species])
         else:

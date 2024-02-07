@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.15.0"
+version = "0.15.1"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -35,7 +35,7 @@ dependencies = [
     "SRTM.py",              # required by geonum
     "simplejson",
     "requests",
-    "reverse-geocode",
+    "geocoder_reverse_natural_earth",
     "tqdm",
     "openpyxl",
     "geojsoncontour",
@@ -183,7 +183,6 @@ module = [
     "geojsoncontour",
     "pandas",
     "dask",
-    "reverse_geocode",
     "seaborn",
     "openpyxl",
     "tqdm",
