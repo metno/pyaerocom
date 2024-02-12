@@ -157,6 +157,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.obs_only_stats = False
         self.model_only_stats = False
         self.drop_stats = ()
+        self.stats_decimals = None
         self.update(**kwargs)
 
 
@@ -237,6 +238,7 @@ class EvalRunOptions(ConstrainedContainer):
         self.only_model_maps = False
         self.obs_only = False
         self.drop_stats = ()
+        self.stats_decimals = None
         self.update(**kwargs)
 
 
