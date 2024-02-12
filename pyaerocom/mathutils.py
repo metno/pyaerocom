@@ -353,8 +353,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     result["mb"] = mb
     result["mab"] = mab
     
-    breakpoint()
-    
+ 
     if drop_stats:
         for istat in drop_stats:
             result.pop(istat, None)
