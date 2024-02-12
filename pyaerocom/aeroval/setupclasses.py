@@ -156,6 +156,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.use_diurnal = False
         self.obs_only_stats = False
         self.model_only_stats = False
+        self.drop_stats = ()
         self.update(**kwargs)
 
 
@@ -235,6 +236,7 @@ class EvalRunOptions(ConstrainedContainer):
         #: If True, process only maps (skip obs evaluation)
         self.only_model_maps = False
         self.obs_only = False
+        self.drop_stats = ()
         self.update(**kwargs)
 
 

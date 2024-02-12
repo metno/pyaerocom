@@ -580,6 +580,12 @@ class ExperimentOutput(ProjectOutput):
         else:
             stats_info = statistics_defaults
             stats_info.update(extended_statistics)
+
+        # configurable statistics - drop any statistics provided in drop_stats
+        if self.cfg.statistics_opts.drop_stats:
+            for stat in self.cfg.statistics_opts.drop_stats:
+                stats_info.pop(stat, None)
+
         if self.cfg.statistics_opts.add_trends:
             if self.cfg.processing_opts.obs_only:
                 obs_statistics_trend = {
