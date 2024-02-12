@@ -364,7 +364,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             data,
             regnames,
             use_weights,
-            drop_stats,
             use_country,
             meta_glob,
             periods,

@@ -1308,7 +1308,7 @@ def _process_statistics_timeseries(data, freq, region_ids, use_weights, drop_sta
             per = to_idx_str[i]
             try:
                 arr = ColocatedData(subset.data.sel(time=per))
-                stats = arr.calc_statistics(use_area_weights=use_weights)
+                stats = arr.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
                 output[regname][str(js)] = _prep_stats_json(stats)
             except DataCoverageError:
                 pass
