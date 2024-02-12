@@ -192,7 +192,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     main_freq=main_freq,
                     regnames=regnames,
                     use_weights=use_weights,
-                    drop_stats = drop_stats,
+                    drop_stats=drop_stats,
                     use_country=use_country,
                     obs_name=obs_name,
                     obs_var=obs_var,
