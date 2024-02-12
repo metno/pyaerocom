@@ -97,7 +97,7 @@ def test__process_statistics_timeseries(
     example_coldata, freq: str, region_ids: dict[str, str], data_freq: str, nmb_avg
 ):
     result = _process_statistics_timeseries(
-        example_coldata, freq, region_ids, False, False, data_freq
+        data=example_coldata, freq=freq, region_ids=region_ids, use_weights=False, drop_stats=(), use_country=False, data_freq=data_freq
     )
     assert len(result) == len(region_ids)
     biases = [np.nan]
@@ -106,7 +106,24 @@ def test__process_statistics_timeseries(
             biases.append(stats["nmb"])
     mean_bias = np.nanmean(biases)
     assert mean_bias == pytest.approx(nmb_avg, abs=0.001, nan_ok=True)
+    
+    
+@pytest.mark.parametrize(
+    "freq,region_ids,data_freq,nmb_avg,drop_stats",
+    [
+        ("yearly", {"EUROPE": "Europe"}, "monthly", 0.168, ("mb", "mab")),
+        ("yearly", {"EUROPE": "Europe"}, None, 0.122, ("nmb")),
 
+    ],
+)
+@pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
+def test__process_statistics_timeseries_drop_stats(
+    example_coldata, freq: str, region_ids: dict[str, str], data_freq: str, nmb_avg, drop_stats
+):
+    result = _process_statistics_timeseries(
+        data=example_coldata, freq=freq, region_ids=region_ids, use_weights=False, drop_stats=drop_stats, use_country=False, data_freq=data_freq
+    )
+    assert all([stat not in result for stat in drop_stats])
 
 @pytest.mark.parametrize(
     "freq,region_ids,data_freq,exception,error",
@@ -146,7 +163,7 @@ def test__process_statistics_timeseries_error(
     error: str,
 ):
     with pytest.raises(exception) as e:
-        _process_statistics_timeseries(example_coldata, freq, region_ids, False, False, data_freq)
+        _process_statistics_timeseries(data=example_coldata, freq=freq, region_ids=region_ids, use_weights=False, drop_stats=(), use_country=False, data_freq=data_freq)
     assert str(e.value) == error
 
 
