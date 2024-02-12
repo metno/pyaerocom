@@ -788,7 +788,7 @@ class ColocatedData:
 
         return cd
 
-    def calc_statistics(self, use_area_weights=False, **kwargs):
+    def calc_statistics(self, use_area_weights=False, drop_stats = (), **kwargs):
         """Calculate statistics from model and obs data
 
         Calculate standard statistics for model assessment. This is done by

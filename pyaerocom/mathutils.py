@@ -189,7 +189,7 @@ def _nanmean_and_std(data):
 @ignore_warnings(
     RuntimeWarning, "An input array is constant", "invalid value encountered in .*divide"
 )
-def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None):
+def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None, drop_stats=None):
     """Calc statistical properties from two data arrays
 
     Calculates the following statistical properties based on the two provided
@@ -352,6 +352,12 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     result["fge"] = fge
     result["mb"] = mb
     result["mab"] = mab
+    
+    breakpoint()
+    
+    if drop_stats:
+        for istat in drop_stats:
+            result.pop(istat, None)
 
     return result
 

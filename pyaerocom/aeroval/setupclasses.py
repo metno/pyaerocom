@@ -134,7 +134,9 @@ class StatisticsSetup(ConstrainedContainer):
         the above example 310 values would be used - 31 for each site - to
         compute the statistics for a given month (in this case, a month with 31
         days, obviously).
-
+    drop_stats: tuple, optional
+        tuple of strings with names of statistics (as determined by keys in 
+        aeroval.glob_defaults.py's statistics_defaults) to not compute
 
     Parameters
     ----------
