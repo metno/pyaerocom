@@ -1,6 +1,7 @@
 """
 Methods and / or classes to perform 3D colocation
 """
+
 from __future__ import annotations
 
 import logging

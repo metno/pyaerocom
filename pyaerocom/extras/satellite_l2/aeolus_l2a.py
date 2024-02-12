@@ -1,6 +1,7 @@
 """
 read binary ESA L2B files of the ADM Aeolus mission
 """
+
 import glob
 import logging
 import os
@@ -1172,9 +1173,9 @@ class ReadL2Data(ReadL2DataBase):
                             )
                             cut_flag = False
 
-                        ret_data[
-                            index_counter : index_counter + matching_length, :
-                        ] = ungridded_data_obj._data[matching_indexes, :]
+                        ret_data[index_counter : index_counter + matching_length, :] = (
+                            ungridded_data_obj._data[matching_indexes, :]
+                        )
                         index_counter += matching_length
 
             elif isinstance(location, tuple):
@@ -2963,11 +2964,12 @@ class ReadL2Data(ReadL2DataBase):
 
                             if less_than_zero_indexes.size == 1:
                                 try:
-                                    gridded_var_data[var]["mean"][
-                                        lat_idx, lon_idx, height_idx
-                                    ] = _data[
-                                        match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]
-                                    ]
+                                    gridded_var_data[var]["mean"][lat_idx, lon_idx, height_idx] = (
+                                        _data[
+                                            match_indexes[less_than_zero_indexes],
+                                            self.INDEX_DICT[var],
+                                        ]
+                                    )
                                     gridded_var_data[var]["stddev"][
                                         lat_idx, lon_idx, height_idx
                                     ] = 0.0
@@ -2979,13 +2981,13 @@ class ReadL2Data(ReadL2DataBase):
                                     pass
                             else:
                                 try:
-                                    gridded_var_data[var]["mean"][
-                                        lat_idx, lon_idx, height_idx
-                                    ] = np.nanmean(
-                                        _data[
-                                            match_indexes[less_than_zero_indexes],
-                                            self.INDEX_DICT[var],
-                                        ]
+                                    gridded_var_data[var]["mean"][lat_idx, lon_idx, height_idx] = (
+                                        np.nanmean(
+                                            _data[
+                                                match_indexes[less_than_zero_indexes],
+                                                self.INDEX_DICT[var],
+                                            ]
+                                        )
                                     )
                                     gridded_var_data[var]["stddev"][
                                         lat_idx, lon_idx, height_idx

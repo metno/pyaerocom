@@ -1,6 +1,7 @@
 """
 read Aeronet direct sun V2 data
 """
+
 import re
 
 import numpy as np

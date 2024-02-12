@@ -1,6 +1,7 @@
 """
 Test script for creating variables.ini from HTAP2 excel table
 """
+
 import os
 import string
 from configparser import ConfigParser

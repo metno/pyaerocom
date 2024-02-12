@@ -1,6 +1,7 @@
 """
 Mathematical low level utility methods of pyaerocom
 """
+
 import numpy as np
 from scipy.stats import kendalltau, pearsonr, spearmanr
 
@@ -299,9 +300,9 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     if weights is not None:
         weights = weights[mask]
         weights = weights / weights.max()
-        result[
-            "NOTE"
-        ] = "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
+        result["NOTE"] = (
+            "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
+        )
 
     result["rms"] = np.sqrt(np.average(diffsquare, weights=weights))
 

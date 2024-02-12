@@ -1,6 +1,7 @@
 """
 Interface for reading EEA AqERep files (formerly known as Airbase data).
 """
+
 import gzip
 import logging
 import os

@@ -4,6 +4,7 @@ Metadata keys from GHOST that only depend on station dimension
 THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
 PROVIDED BY BSC
 """
+
 from pyaerocom.plugins.ghost.meta_keys import ghost_meta_keys
 
 desired_keys = [

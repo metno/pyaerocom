@@ -1,6 +1,7 @@
 """
 Module containing time resampling functionality
 """
+
 import logging
 
 import pandas as pd

@@ -1,6 +1,7 @@
 """
 base class for satellite level2 data reading conversion
 """
+
 import logging
 
 import geopy
@@ -398,9 +399,9 @@ class ReadL2DataBase(ReadUngriddedBase):
                                 _key
                             ]
                         elif len(input_shape) == 4:
-                            data_obj._data[_key][
-                                0 : file_data[_key].shape[0], :, :, :
-                            ] = file_data[_key]
+                            data_obj._data[_key][0 : file_data[_key].shape[0], :, :, :] = (
+                                file_data[_key]
+                            )
                         else:
                             pass
 
@@ -434,9 +435,9 @@ class ReadL2DataBase(ReadUngriddedBase):
                                     _key
                                 ]
                             elif len(current_shape) == 4:
-                                tmp_data[
-                                    0 : data_obj._data[_key].shape[0], :, :, :
-                                ] = data_obj._data[_key]
+                                tmp_data[0 : data_obj._data[_key].shape[0], :, :, :] = (
+                                    data_obj._data[_key]
+                                )
                             else:
                                 pass
 

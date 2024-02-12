@@ -1,6 +1,7 @@
 """
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
+
 import logging
 import os
 from copy import deepcopy

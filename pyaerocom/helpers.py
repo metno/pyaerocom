@@ -1,6 +1,7 @@
 """
 General helper methods for the pyaerocom library.
 """
+
 from __future__ import annotations
 
 import logging

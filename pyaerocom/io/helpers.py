@@ -1,6 +1,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
+
 from __future__ import annotations
 
 import logging

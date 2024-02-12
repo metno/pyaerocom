@@ -1,6 +1,7 @@
 """
 Classes and methods to perform high-level colocation.
 """
+
 import glob
 import logging
 import os

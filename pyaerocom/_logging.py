@@ -9,6 +9,7 @@ All pyaerocom child modules share the logging configuration
 - logging configuration is read from pyaerocom/data/logging.ini
   with default values from LOGGING_CONFIG
 """
+
 from __future__ import annotations
 
 import logging
