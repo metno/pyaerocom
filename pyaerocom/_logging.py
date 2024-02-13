@@ -1,7 +1,7 @@
 """
 Logging configuration and package metadata helpers
 
-NOTE: 
+NOTE:
 All pyaerocom child modules share the logging configuration
 - all logging messages are time stamped and writen out to file
 - some messages are also printed to the console
@@ -26,7 +26,7 @@ LOGGING_CONFIG = dict(
     console_level="INFO",
 )
 
-with resources.path("pyaerocom.data", "logging.ini") as path:
+with resources.path("pyaerocom", "logging.ini") as path:
     fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
 
 
