@@ -100,7 +100,11 @@ jobs:
         python -m pip install tox
     - name: Run test
       continue-on-error: ${{ matrix.experimental }}
-      run: tox -e py
+      run: |
+        tox -e py -- -vvx tests/aeroval/test_helpers.py::test_make_dummy_model[cfgexp1]
+        tox -e py -- -vvx tests/aeroval/test_helpers.py
+        tox -e py -- -vvx tests/aeroval
+        tox -e py
 
   conda:
     runs-on: ubuntu-latest
