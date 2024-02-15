@@ -15,7 +15,6 @@ dependencies:
   - geonum
   - simplejson
   - requests
-  - reverse-geocode
   - tqdm
   - openpyxl
   - typer >=0.7.0
@@ -28,6 +27,7 @@ dependencies:
   - pip
   - pip:
     - geojsoncontour
+    - geocoder_reverse_natural_earth >= 0.0.2
 ## testing
   - pytest >=7.4
   - pytest-dependency
