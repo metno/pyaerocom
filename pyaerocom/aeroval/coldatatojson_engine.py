@@ -184,7 +184,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
             if not diurnal_only:
                 logger.info("Processing statistics timeseries for all regions")
-                # breakpoint()
+
                 self._process_stats_timeseries_for_all_regions(
                     data=data,
                     coldata=coldata,
@@ -209,7 +209,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
                 )
-                # breakpoint()
+
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
                 self._process_diurnal_profiles(
@@ -335,7 +335,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         stats_min_num: int = 1,
         use_fairmode: bool = False,
     ):
-        # breakpoint()
         input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
         for reg in regnames:
             try:

@@ -1271,7 +1271,6 @@ def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_coun
         Dictionary with results.
 
     """
-    # breakpoint()
     if data_freq is None:
         data_freq = freq
 
