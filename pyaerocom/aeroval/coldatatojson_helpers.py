@@ -1236,7 +1236,9 @@ def _map_indices(outer_idx, inner_idx):
     return mapping.astype(int)
 
 
-def _process_statistics_timeseries(data, freq, region_ids, use_weights, drop_stats, use_country, data_freq):
+def _process_statistics_timeseries(
+    data, freq, region_ids, use_weights, drop_stats, use_country, data_freq
+    ):
     """
     Compute statistics timeseries for input data
 
