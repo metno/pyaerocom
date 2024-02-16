@@ -14,20 +14,21 @@ from __future__ import annotations
 import logging
 import os
 from logging.config import fileConfig
+import pathlib
 
 from pyaerocom.data import resources
 
 LOGGING_CONFIG = dict(
     # root logger
-    file_name=os.getenv("PYAEROCOM_LOG_FILE", default="pyaerocom.log"),
-    file_days="14",
-    file_level="DEBUG",
-    # pyaerocom logger
-    console_level="INFO",
+    file_name=os.getenv("PYAEROCOM_LOG_FILE", default=f"pyaerocom.log.{os.getpid()}"),
+    pid=os.getpid()
 )
-
-with resources.path("pyaerocom", "logging.ini") as path:
-    fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
+cwd_log_path = pathlib.Path.cwd() / "logging.ini"
+if cwd_log_path.exists():
+    fileConfig(cwd_log_path, defaults=LOGGING_CONFIG, disable_existing_loggers=True)
+else:
+    with resources.path("pyaerocom", "logging.ini") as path:
+        fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
 
 
 def change_verbosity(level: str | int) -> None:
