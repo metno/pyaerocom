@@ -1,3 +1,6 @@
+import json
+from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -55,6 +58,42 @@ def listcache():
 def ppiaccess():
     """Check if MetNO PPI can be accessed"""
     print("True") if const.has_access_lustre else print("False")
+
+
+class Verbosity(str, Enum):
+    ERROR = "ERROR"
+    WARNING = "WARNING"
+    INFO = "INFO"
+    DEBUG = "DEBUG"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@main.command()
+def aeroval(
+    config: Path = typer.Argument(
+        ..., help="experiment configuration (JSON)", exists=True, readable=True
+    ),
+    reuse_coldata: bool = typer.Option(
+        True, "--reuse-coldata/--clean-coldata", help="reuse/clean colocated data before running"
+    ),
+    verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
+):
+    """run AeroVal experiment as descried on config file"""
+    from pyaerocom import change_verbosity
+    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+
+    if config.suffix != ".json":
+        typer.echo(f"{config.suffix=}  != '.json'")
+        raise typer.Abort()
+
+    change_verbosity(verbosity)
+    CFG = json.loads(config.read_text())
+    stp = EvalSetup(**CFG)
+    proc = ExperimentProcessor(stp)
+    proc.exp_output.delete_experiment_data(also_coldata=not reuse_coldata)
+    proc.run()
 
 
 if __name__ == "__main__":
