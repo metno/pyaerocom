@@ -31,3 +31,17 @@ def get_level_name(logger: logging.Logger) -> str:
 @pytest.fixture
 def test_logger(name: str | None) -> logging.Logger:
     return logging.getLogger(name)
+
+
+@pytest.mark.parametrize(
+    "level,error",
+    [
+        (60, "invalid logging level 60"),
+        ("blaaa", "Unknown level: 'BLAAA'"),
+    ],
+)
+@pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
+def test_change_verbosity_error(level: str | int, error: str, test_logger: logging.Logger):
+    with pytest.raises(ValueError) as e:
+        change_verbosity(level)
+    assert str(e.value).startswith(error)
