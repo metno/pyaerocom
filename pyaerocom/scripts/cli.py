@@ -5,7 +5,8 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import __package__, __version__, const
+from pyaerocom import __package__, __version__, change_verbosity, const
+from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
 from pyaerocom.io.utils import browse_database
 
@@ -81,10 +82,8 @@ def aeroval(
     verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
 ):
     """run AeroVal experiment as descried on config file"""
-    from pyaerocom import change_verbosity
-    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
-    if config.suffix != ".json":
+    if config.suffix != ".json":  # pragma:no cover
         typer.echo(f"{config.suffix=}  != '.json'")
         raise typer.Abort()
 
