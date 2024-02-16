@@ -3,6 +3,65 @@ Core API
 
 Documentation of the core API of pyaerocom.
 
+Logging
+-------
+
+``pyaerocom`` initializes logging automatically on import in the following way.
+
+  1. ``info``-messages or worse are logged to ``pyaerocom.log.$PID`` or
+   (dynamic feature) the file given in the environment variable ``PYAEROCOM_LOG_FILE``
+  2. ``warning``-messages or worse are also printed on stdout.
+   (dynamic feature) Output to stdout is disabled if the script is called non-interactive.
+
+Putting a file with the name ``logging.ini`` in the scripts current working directory will use that
+configuration instead of above described default. An example ``logging.ini`` doing about the same as
+described above, except for the dynamic features, and enable ``debug`` logging on one package,
+here ``pyaerocom.io.ungridded``:
+
+.. code-block:: ini
+   [loggers]
+   keys=root,pyaerocom-ungridded
+
+   [handlers]
+   keys=console,file
+
+   [formatters]
+   keys=plain,detailed
+
+   [formatter_plain]
+   format=%(message)s
+
+   [formatter_detailed]
+   format=%(asctime)s:%(name)s:%(levelname)s:%(message)s
+   datefmt=%F %T
+
+   [handler_console]
+   class=StreamHandler
+   formatter=plain
+   args=(sys.stdout,)
+   level=WARN
+
+   [handler_file]
+   class=FileHandler
+   formatter=detailed
+   level=DEBUG
+   file_name=pyaerocom.log.%(pid)s
+   args=('%(file_name)s', "w")
+
+
+   [logger_root]
+   handlers=file,console
+   level=INFO
+
+   [logger_pyaerocom-ungridded]
+   handlers=file
+   qualname=pyaerocom.io.readungriddedbase
+   level=DEBUG
+   propagate=1
+
+
+
+
 Data classes
 ------------
 
