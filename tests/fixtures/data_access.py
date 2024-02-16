@@ -37,8 +37,9 @@ minimal_dataset = pooch.create(
 
 
 def download(file_name: str = TESTATA_FILE):
-    """download tar file to ~/MyPyaerocom/ unpack cointents into ~/MyPyaerocom/testdata-minimal/"""
+    """download tar file to ~/MyPyaerocom/ unpack contents into ~/MyPyaerocom/testdata-minimal/"""
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
+    minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
     minimal_dataset.fetch(file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir="./"))
 
 
