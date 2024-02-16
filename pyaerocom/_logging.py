@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import logging
 import os
-from logging.config import fileConfig
 import pathlib
 import sys
+from logging.config import fileConfig
 
 from pyaerocom.data import resources
 
