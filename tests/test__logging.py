@@ -34,6 +34,18 @@ def test_logger(name: str | None) -> logging.Logger:
 
 
 @pytest.mark.parametrize(
+    "level", ["debug", "info", "warning", "error", "critical", 10, 20, 30, 40, 50]
+)
+@pytest.mark.parametrize("name", ["pyaerocom.test", "pyaerocom.deep.nested.module"])
+def test_change_verbosity(level: str | int, test_logger: logging.Logger):
+    change_verbosity(level)
+    if isinstance(level, int):
+        assert get_level_value(test_logger) == level
+    if isinstance(level, str):
+        assert get_level_name(test_logger) == level.upper()
+
+
+@pytest.mark.parametrize(
     "level,error",
     [
         (60, "invalid logging level 60"),
