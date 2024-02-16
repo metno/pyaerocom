@@ -19,6 +19,7 @@ import sys
 
 from pyaerocom.data import resources
 
+
 def change_verbosity(level: str | int) -> None:
     """
     Change logging verbosity (to console)
@@ -41,11 +42,12 @@ def change_verbosity(level: str | int) -> None:
             f"invalid logging level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
-    logger = logging.getLogger('')
+    logger = logging.getLogger("")
     assert logger.handlers, f"{logger.name} logger has not been configured correctly"
     for handler in logger.handlers:
         if type(handler) == logging.StreamHandler:
             handler.setLevel(level)
+
 
 LOGGING_CONFIG = dict(
     # root logger
@@ -58,5 +60,5 @@ if cwd_log_path.exists():
 else:
     with resources.path("pyaerocom", "logging.ini") as path:
         fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
-    if not sys.stdout.isatty(): # disable stdout when non-interactive
+    if not sys.stdout.isatty():  # disable stdout when non-interactive
         change_verbosity(logging.CRITICAL)
