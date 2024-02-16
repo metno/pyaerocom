@@ -15,21 +15,9 @@ import logging
 import os
 from logging.config import fileConfig
 import pathlib
+import sys
 
 from pyaerocom.data import resources
-
-LOGGING_CONFIG = dict(
-    # root logger
-    file_name=os.getenv("PYAEROCOM_LOG_FILE", default=f"pyaerocom.log.{os.getpid()}"),
-    pid=os.getpid()
-)
-cwd_log_path = pathlib.Path.cwd() / "logging.ini"
-if cwd_log_path.exists():
-    fileConfig(cwd_log_path, defaults=LOGGING_CONFIG, disable_existing_loggers=True)
-else:
-    with resources.path("pyaerocom", "logging.ini") as path:
-        fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
-
 
 def change_verbosity(level: str | int) -> None:
     """
@@ -53,8 +41,22 @@ def change_verbosity(level: str | int) -> None:
             f"invalid logging level {level}, choose a value between {logging.DEBUG} and {logging.CRITICAL}"
         )
 
-    logger = logging.getLogger(__package__)
+    logger = logging.getLogger('')
     assert logger.handlers, f"{logger.name} logger has not been configured correctly"
     for handler in logger.handlers:
         if type(handler) == logging.StreamHandler:
             handler.setLevel(level)
+
+LOGGING_CONFIG = dict(
+    # root logger
+    file_name=os.getenv("PYAEROCOM_LOG_FILE", default=f"pyaerocom.log.{os.getpid()}"),
+    pid=os.getpid(),
+)
+cwd_log_path = pathlib.Path.cwd() / "logging.ini"
+if cwd_log_path.exists():
+    fileConfig(cwd_log_path, defaults=LOGGING_CONFIG, disable_existing_loggers=True)
+else:
+    with resources.path("pyaerocom", "logging.ini") as path:
+        fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
+    if not sys.stdout.isatty(): # disable stdout when non-interactive
+        change_verbosity(logging.CRITICAL)
