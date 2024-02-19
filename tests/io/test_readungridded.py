@@ -162,3 +162,16 @@ def test_different_data_id(pyaro_testconfig):
         ValueError, match="DATA ID and config are both given, but they are not equal"
     ):
         reader.get_lowlevel_reader(data_id=diff_data_id, config=pyaro_testconfig[0])
+
+
+def test_config_name_already_exists(pyaro_testconfig):
+    data_ids = ["AeronetInvV3L2Subset.daily"]
+    config = pyaro_testconfig[0]
+    config.name = data_ids[0]
+
+    with pytest.raises(NameError, match="cannot have the same name as an included dataset"):
+        reader = ReadUngridded(configs=pyaro_testconfig)
+
+    with pytest.raises(NameError, match="cannot have the same name as an included dataset"):
+        reader = ReadUngridded(data_ids=data_ids)
+        data = reader.read(configs=config)

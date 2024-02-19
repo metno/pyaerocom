@@ -142,6 +142,15 @@ class ReadUngridded:
         return const.OBS_UNGRIDDED_POST
 
     @property
+    def INCLUDED_DATASETS(self):
+        lst = []
+        for reader in self.INCLUDED_READERS:
+            print(reader, reader.SUPPORTED_DATASETS)
+            lst.extend(reader.SUPPORTED_DATASETS)
+        lst.extend(self.post_compute)
+        return lst
+
+    @property
     def SUPPORTED_DATASETS(self):
         """
         Returns list of strings containing all supported dataset names
@@ -332,6 +341,11 @@ class ReadUngridded:
             If both the config argument and self.config are None
         """
         name = config.name
+
+        if name in self.INCLUDED_DATASETS:
+            raise NameError(
+                f"{name} from config {config} cannot have the same name as an included dataset"
+            )
 
         if name in self._readers:
             return self._readers[name]
