@@ -37,6 +37,7 @@ class ReadPyaro(ReadUngriddedBase):
         # self._data_id = self.config.data_id
         self._data_dir = self.config.filename_or_obj_or_url
         self._data_name = self.config.name
+        self._data_id = self.config.name
 
     """
     Definition of abstract methods from ReadUngriddedBase
