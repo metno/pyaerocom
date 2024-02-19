@@ -39,13 +39,22 @@ def make_csv_test_file(tmp_path: Path) -> Path:
 def testconfig(tmp_path: Path) -> PyaroConfig:
     data_id = "csv_timeseries"
 
-    config = PyaroConfig(
+    config1 = PyaroConfig(
+        name="test",
         data_id=data_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
         name_map={"SOx": "concso4"},
     )
-    return config
+
+    config2 = PyaroConfig(
+        name="test2",
+        data_id=data_id,
+        filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
+        filters={},
+        name_map={"SOx": "concso4"},
+    )
+    return [config1, config2]
 
 
 @pytest.fixture
@@ -60,7 +69,7 @@ def pyaro_testconfig(tmp_path) -> PyaroConfig:
 
 @pytest.fixture
 def pyaro_testdata(tmp_path) -> ReadPyaro:
-    config = testconfig(tmp_path=tmp_path)
+    config = testconfig(tmp_path=tmp_path)[0]
     rp = ReadPyaro(config=config)
 
     return rp

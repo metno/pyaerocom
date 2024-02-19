@@ -23,7 +23,7 @@ Metadata = NewType("Metadata", dict[str, dict[str, str | list[str]]])
 
 
 class ReadPyaro(ReadUngriddedBase):
-    __version__ = "0.0.2"
+    __version__ = "1.0.1"
 
     SUPPORTED_DATASETS = list(list_timeseries_engines().keys())
 
@@ -34,8 +34,9 @@ class ReadPyaro(ReadUngriddedBase):
 
         self.converter = PyaroToUngriddedData(self.config)
         self.reader = self.converter.reader
-        self._data_id = self.config.data_id
+        # self._data_id = self.config.data_id
         self._data_dir = self.config.filename_or_obj_or_url
+        self._data_name = self.config.name
 
     """
     Definition of abstract methods from ReadUngriddedBase
@@ -43,7 +44,9 @@ class ReadPyaro(ReadUngriddedBase):
 
     @property
     def DATA_ID(self):
-        return self._data_id
+        return self._data_name
+
+    # self._data_id  # self._data_name
 
     @property
     def PROVIDES_VARIABLES(self):
@@ -191,7 +194,7 @@ class PyaroToUngriddedData:
         metadata = {}
         for name, station in stations.items():
             metadata[idx] = dict(
-                data_id=self.config.data_id,
+                data_id=self.config.name,
                 variables=list(self.get_variables()),
                 var_info=units,
                 # [

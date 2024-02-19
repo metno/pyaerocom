@@ -119,33 +119,34 @@ def test_basic_attributes():
 #########################################
 
 
-def test_init_config(pyaro_testconfig):
-    reader = ReadUngridded(config=pyaro_testconfig)
+def test_init_configs(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
 
-    assert reader.data_id == pyaro_testconfig.data_id
+    for i, reader_id in enumerate(reader.data_ids):
+        assert reader_id == pyaro_testconfig[i].name
 
 
-def test_get_lowlevel_reader_config(pyaro_testconfig):
-    reader = ReadUngridded(config=pyaro_testconfig)
+def test_get_lowlevel_reader_configs(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
 
-    ll_reader = reader.get_lowlevel_reader(data_id=None, config=pyaro_testconfig)
+    ll_reader = reader.get_lowlevel_reader(data_id=pyaro_testconfig[0].name)
     assert isinstance(ll_reader, ReadPyaro)
 
 
 def test_supported_pyaro(pyaro_testconfig):
-    reader = ReadUngridded(config=pyaro_testconfig)
+    reader = ReadUngridded(configs=pyaro_testconfig)
 
     assert ReadPyaro in reader.SUPPORTED_READERS
-    assert pyaro_testconfig.data_id in reader.supported_datasets
+    assert pyaro_testconfig[0].data_id in reader.supported_datasets
 
 
 def test_read_pyaro_and_other(pyaro_testconfig):
     data_ids = ["AeronetInvV3L2Subset.daily"]
-    reader = ReadUngridded(config=pyaro_testconfig)
+    reader = ReadUngridded(data_ids=data_ids)
 
-    data = reader.read(data_ids, config=pyaro_testconfig)
-    assert len(data.contains_datasets) == 2
-    assert pyaro_testconfig.data_id in data.contains_datasets
+    data = reader.read(configs=pyaro_testconfig)
+    assert len(data.contains_datasets) == 3
+    assert pyaro_testconfig[0].name in data.contains_datasets
 
 
 ##
@@ -155,9 +156,9 @@ def test_read_pyaro_and_other(pyaro_testconfig):
 
 def test_different_data_id(pyaro_testconfig):
     diff_data_id = "invalid"
-    reader = ReadUngridded(config=pyaro_testconfig)
+    reader = ReadUngridded(configs=pyaro_testconfig)
 
     with pytest.raises(
         ValueError, match="DATA ID and config are both given, but they are not equal"
     ):
-        reader.get_lowlevel_reader(data_id=diff_data_id, config=pyaro_testconfig)
+        reader.get_lowlevel_reader(data_id=diff_data_id, config=pyaro_testconfig[0])

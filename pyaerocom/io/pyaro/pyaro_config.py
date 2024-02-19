@@ -19,19 +19,29 @@ class PyaroConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+    ##########################
+    #   Model fields
+    ##########################
+
+    name: str
     data_id: str
     filename_or_obj_or_url: str
-    # filters: list[Filter]
     filters: dict[str, dict[str, str | list[str]]]
     name_map: Optional[dict[str, str]] = None  # no Unit conversion option
+
+    ##########################
+    #   Save and load methods
+    ##########################
 
     def json_repr(self):
         return self.model_dump()
 
-    def save(self, name: str, path: Optional[Path] = None) -> None:
+    def save(self, path: Optional[Path] = None) -> None:
         # TODO: Check that the path not filename
         # TODO: Check if the name is unique
         # TODO: Append to catalog, not overwrite
+
+        name = self.name
 
         if not path.is_dir():
             raise ValueError(f"{path} must be a directory")
@@ -93,6 +103,7 @@ if __name__ == "__main__":
     url = "https://pyaerocom.met.no/pyaro-suppl/testdata/aeronetsun_testdata.csv"
 
     config = PyaroConfig(
+        name="aeronetsun_test",
         data_id=data_id,
         filename_or_obj_or_url=url,
         # filters=[pyaro.timeseries.filters.get("variables", include=["AOD_550nm"])],
