@@ -4,6 +4,7 @@ import sys
 import warnings
 from pathlib import Path
 from typing import Optional
+from copy import deepcopy
 
 if sys.version_info >= (3, 10):  # pragma: no cover
     from importlib import metadata
@@ -65,12 +66,18 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
-        ReadPyaro,
+        # ReadPyaro,
         ReadIPCForest,
     ]
     SUPPORTED_READERS.extend(
         ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
     )
+
+    # Creates list of all readers excluding ReadPyaro
+    INCLUDED_READERS = deepcopy(SUPPORTED_READERS)
+
+    # Adds ReadPyaro to said list
+    SUPPORTED_READERS.append(ReadPyaro)
 
     DONOTCACHE_NAME = "DONOTCACHE"
 
@@ -79,7 +86,7 @@ class ReadUngridded:
         data_ids=None,
         ignore_cache=False,
         data_dirs=None,
-        config: Optional[PyaroConfig] = None,
+        configs: Optional[PyaroConfig | list[PyaroConfig]] = None,
     ):
         # will be assigned in setter method of data_ids
         self._data_ids = []
@@ -99,10 +106,15 @@ class ReadUngridded:
             logger.info("Deactivating caching")
             const.CACHING = False
 
-        self.config = config
-        self.config_ids = []
-        if isinstance(config, PyaroConfig):
-            self._init_pyaro_reader(config=config)
+        if isinstance(configs, PyaroConfig):
+            self._configs = [configs]
+        else:
+            self._configs = configs
+
+        self.config_ids = {}
+        if configs is not None:
+            for config in configs:
+                self._init_pyaro_reader(config=config)
 
     @property
     def data_dirs(self):
@@ -139,6 +151,7 @@ class ReadUngridded:
             print(reader, reader.SUPPORTED_DATASETS)
             lst.extend(reader.SUPPORTED_DATASETS)
         lst.extend(self.post_compute)
+        lst.extend(list(self.config_ids.keys()))
         return lst
 
     @property
@@ -182,6 +195,25 @@ class ReadUngridded:
         elif not isinstance(val, (tuple, list)):
             raise OSError("Invalid input for parameter data_ids")
         self._data_ids = val
+
+    @property
+    def configs(self):
+        """List configs"""
+        return self._configs
+
+    @configs.setter
+    def configs(self, val: PyaroConfig | list[PyaroConfig]):
+        if isinstance(val, PyaroConfig):
+            val = [val]
+        elif not isinstance(val, (tuple, list)):
+            raise OSError("Invalid input for parameter data_ids")
+        # TODO: Reset reader list(?)
+        logger.warning(
+            f"You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
+        )
+        for config in val:
+            self._init_pyaro_reader(config=config)
+        self._configs = deepcopy(val)
 
     @property
     def data_id(self):
@@ -250,7 +282,6 @@ class ReadUngridded:
                 raise ValueError(
                     f"DATA ID and config are both given, but they are not equal, {data_id} != {config.data_id}"
                 )
-
         if data_id is None and config is not None:
             data_id = config.data_id
         if data_id is None:
@@ -264,23 +295,28 @@ class ReadUngridded:
             )
         elif not data_id in self.data_ids:
             self.data_ids.append(data_id)
+            if config is not None:
+                self.add_config(config=config)
 
         if not data_id in self._readers:
             _cls = self._find_read_class(data_id)
-            reader = self._init_lowlevel_reader(_cls, data_id, config=config)
-            self._readers[data_id] = reader
+            reader = self._init_lowlevel_reader(_cls, data_id)  # , config=config)
+            if config is not None:
+                self._readers[config.name] = reader
+            else:
+                self._readers[data_id] = reader
         return self._readers[data_id]
 
     def add_pyaro_reader(self, config: PyaroConfig) -> ReadUngriddedBase:
         return self._init_pyaro_reader(config=config)
 
-    def _init_pyaro_reader(self, config: Optional[PyaroConfig] = None) -> ReadUngriddedBase:
+    def _init_pyaro_reader(self, config: PyaroConfig) -> ReadUngriddedBase:
         """
         Initializes PyAro reader from config, and adds reader to list of readers. If no config is given, the config given when ReaderUngridded was initiated is used
 
         Parameters
         -----------
-        config : PyaroConfig (Optional)
+        config : PyaroConfig
             Config for reader
 
         Returns
@@ -295,24 +331,37 @@ class ReadUngridded:
         ValueError
             If both the config argument and self.config are None
         """
-        if config is None:
-            if self.config is None:
-                raise ValueError("Config for reading Pyaro is not given")
-            config = self.config
-        else:
-            self.config = config
+        name = config.name
 
-        id = config.data_id
-
-        if id in self._readers:
-            return self._readers[id]
+        if name in self._readers:
+            return self._readers[name]
 
         else:
             reader = ReadPyaro(config=config)
-            self._readers[id] = reader
-            self._data_ids.append(id)
-            self.config_ids.append(id)
+            self._readers[name] = reader
+            self._data_ids.append(name)
+            self.config_ids[name] = config.data_id
             return reader
+
+    def add_config(self, config: PyaroConfig) -> None:
+        """
+        Adds single PyaroConfig to self.configs
+
+        Parameters
+        ----------
+        config: PyaroConfig
+
+        Raises
+        ------
+        ValueError
+            If config is not PyaroConfig
+
+        """
+        if not isinstance(config, PyaroConfig):
+            raise ValueError(f"Given config is not a PyaroConfig")
+
+        self._init_pyaro_reader(config=config)
+        self._configs.append(config)
 
     def _find_read_class(self, data_id):
         """Find reading class for dataset name
@@ -344,7 +393,7 @@ class ReadUngridded:
                 return _cls
         raise NetworkNotImplemented(f"Could not find reading class for dataset {data_id}")
 
-    def _init_lowlevel_reader(self, reader, data_id, config: Optional[PyaroConfig] = None):
+    def _init_lowlevel_reader(self, reader, data_id):
         """
         Initiate lowlevel reader for input data ID
 
@@ -361,16 +410,19 @@ class ReadUngridded:
             instantiated reader class for input ID.
 
         """
-        if data_id is not None and config is not None:
-            if data_id != config.data_id:
-                raise ValueError(
-                    f"DATA ID and config are both given, but they are not equal, {data_id} != {config.data_id}"
-                )
-        if config is None:
-            config = self.config
+        # if data_id is not None and config is not None:
+        #     if data_id != config.name:
+        #         raise ValueError(
+        #             f"DATA ID and config are both given, but they are not equal, {data_id} != {config.data_id}"
+        #         )
+        # if config is None:
+        #     config = self.config
+
+        # if data_id is None:
+        #     data_id = config.name
 
         if data_id is None:
-            data_id = config.data_id
+            raise ValueError(f"Data_id can not be none")
 
         if data_id in self.config_ids:
             return reader(config=config)
@@ -676,7 +728,7 @@ class ReadUngridded:
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
-        config: Optional[PyaroConfig] = None,
+        configs: Optional[PyaroConfig | list[PyaroConfig]] = None,
         **kwargs,
     ):
         """Read observations
@@ -733,9 +785,12 @@ class ReadUngridded:
         elif isinstance(data_ids, str):
             data_ids = [data_ids]
 
-        if config is not None:
-            self._init_pyaro_reader(config=config)
-            data_ids.append(config.data_id)
+        if configs is not None:
+            if not isinstance(configs, list):
+                configs = [configs]
+            for config in configs:
+                self._init_pyaro_reader(config=config)
+                data_ids.append(config.name)
 
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
