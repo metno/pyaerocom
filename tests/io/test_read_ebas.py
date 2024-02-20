@@ -437,7 +437,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-    reader: ReadEbas, val: Literal['Bla', 42], exception: type[Exception], error: str
+    reader: ReadEbas, val: Literal["Bla", 42], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -604,6 +604,7 @@ def test_read_file(reader: ReadEbas, ebas_issue_files: Path, vars_to_retrieve: s
                         assert data[key][subkey][subsubkey] == subsubval
         else:
             assert data[key] == val
+
 
 @pytest.mark.parametrize(
     "issue_files,vars_to_retrieve,exception,error",
