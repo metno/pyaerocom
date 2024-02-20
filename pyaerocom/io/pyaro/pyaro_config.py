@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from importlib import resources
 from pathlib import Path
-from typing import ClassVar, Optional  # , Self
+from typing import ClassVar, Optional
 
 import yaml
 from pydantic import BaseModel
@@ -57,11 +57,11 @@ class PyaroConfig(BaseModel):
             yaml.safe_dump(body, f)
 
     @classmethod
-    def from_dict(cls, data: dict) -> Self:
+    def from_dict(cls, data: dict):
         return PyaroConfig.model_validate(data)
 
     @classmethod
-    def load(cls, name: str, filepath: Optional[Path] = None):  # -> Self:
+    def load(cls, name: str, filepath: Optional[Path] = None):
         if filepath is not None:
             if filepath.is_dir():
                 raise ValueError(f"Filepath {filepath} is a directory not a file")
@@ -96,21 +96,3 @@ class PyaroConfig(BaseModel):
             data = yaml.safe_load(f)
 
         return data
-
-
-if __name__ == "__main__":
-    data_id = "aeronetsunreader"
-    url = "https://pyaerocom.met.no/pyaro-suppl/testdata/aeronetsun_testdata.csv"
-
-    config = PyaroConfig(
-        name="aeronetsun_test",
-        data_id=data_id,
-        filename_or_obj_or_url=url,
-        # filters=[pyaro.timeseries.filters.get("variables", include=["AOD_550nm"])],
-        filters={},  # {"variables": {"include": ["AOD_550nm"]}},
-        name_map={},  # {"AOD_550nm": "od550aer"},
-    )
-
-    config.save("aeronetsun_test")
-    # print(config.list_configs(Path("./catalog.yaml")))
-    # print(config.load("aeronetsun_test"))

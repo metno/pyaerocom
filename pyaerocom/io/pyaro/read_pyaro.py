@@ -23,6 +23,9 @@ TODO: Features to add:
 - revision date
 - data level
 - PI
+
+
+- Make code faster...
 """
 
 """
@@ -48,7 +51,6 @@ class ReadPyaro(ReadUngriddedBase):
 
         self.converter = PyaroToUngriddedData(self.config)
         self.reader = self.converter.reader
-        # self._data_id = self.config.data_id
         self._data_dir = self.config.filename_or_obj_or_url
         self._data_name = self.config.name
         self._data_id = self.config.name
@@ -60,8 +62,6 @@ class ReadPyaro(ReadUngriddedBase):
     @property
     def DATA_ID(self):
         return self._data_name
-
-    # self._data_id  # self._data_name
 
     @property
     def PROVIDES_VARIABLES(self):
@@ -79,14 +79,12 @@ class ReadPyaro(ReadUngriddedBase):
         """
         To be provided by the reader or engine
         """
-        # return "monthly"
         return "undefined"
 
     @property
     def _FILEMASK(self):
         return self.config.filename_or_obj_or_url
 
-    # @property
     @staticmethod
     def get_pyaro_readers():
         return list_timeseries_engines()
@@ -212,9 +210,6 @@ class PyaroToUngriddedData:
                 data_id=self.config.name,
                 variables=list(self.get_variables()),
                 var_info=units,
-                # [
-                # var_idx[var] for var in self.get_variables()
-                # ],  # Temp: all stations are now assumed to have all variables
                 instrument_name="",
                 latitude=station["latitude"],
                 longitude=station["longitude"],
@@ -295,21 +290,3 @@ class PyaroToUngriddedData:
             data[var] = self.reader.data(varname=var)
 
         return self._convert_to_ungriddeddata(data)
-
-
-if __name__ == "__main__":
-    data_id = "csv_timeseries"
-
-    config = PyaroConfig(
-        data_id=data_id,
-        filename_or_obj_or_url="/home/danielh/Documents/pyaerocom/pyaro/tests/testdata/csvReader_testdata.csv",
-        filters=[],
-        name_map={"SOx": "concso4"},
-    )
-    rp = ReadPyaro(config=config)
-
-    print(rp.DEFAULT_VARS)
-    data = rp.read()  # ["SOx", "NOx"])
-    breakpoint()
-    station = data.to_station_data(0)
-    print(station)
