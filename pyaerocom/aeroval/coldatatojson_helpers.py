@@ -700,8 +700,8 @@ def _process_sites(data, regions, regions_how, meta_glob):
     return (ts_objs, map_meta, site_indices)
 
 
-def _get_statistics(obs_vals, mod_vals, min_num):
-    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num)
+def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
+    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
     return _prep_stats_json(stats)
 
 
@@ -834,6 +834,7 @@ def _process_map_and_scat(
     trends_min_yrs,
     use_fairmode,
     obs_var,
+    drop_stats,
 ):
     stats_dummy = _init_stats_dummy()
     scat_data = {}
@@ -857,7 +858,7 @@ def _process_map_and_scat(
                     else:
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
-                        stats = _get_statistics(obs_vals, mod_vals, min_num)
+                        stats = _get_statistics(obs_vals, mod_vals, min_num=min_num, drop_stats=drop_stats)
 
                         if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
@@ -1019,8 +1020,8 @@ def _prep_stats_json(stats):
     return stats
 
 
-def _get_extended_stats(coldata, use_weights):
-    stats = coldata.calc_statistics(use_area_weights=use_weights)
+def _get_extended_stats(coldata, use_weights, drop_stats):
+    stats = coldata.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
 
     # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
     # (stats['R_spatial_mean'],
@@ -1121,6 +1122,7 @@ def _process_heatmap_data(
     data,
     region_ids,
     use_weights,
+    drop_stats,
     use_country,
     meta_glob,
     periods,
@@ -1174,7 +1176,7 @@ def _process_heatmap_data(
                                 region_id=regid, check_country_meta=use_country
                             )
 
-                            stats = _get_extended_stats(subset, use_weights)
+                            stats = _get_extended_stats(subset, use_weights, drop_stats)
 
                             if add_trends and freq != "daily" and trends_successful:
                                 # The whole trends dicts are placed in the stats dict
