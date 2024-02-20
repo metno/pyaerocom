@@ -256,6 +256,8 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
 
     result["totnum"] = float(len(mask))
     result["num_valid"] = float(num_points)
+    if result["num_valid"] == 0:
+        breakpoint()
     ref_mean, ref_std = _nanmean_and_std(ref_data)
     data_mean, data_std = _nanmean_and_std(data)
     result["refdata_mean"] = ref_mean

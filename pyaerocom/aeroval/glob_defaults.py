@@ -325,6 +325,7 @@ var_ranges_defaults = {
     },
     "vcdno2": {
         "scale": [0, 0.5e-5, 1e-5, 1.5e-5, 2e-5, 2.5e-5, 3e-5, 3.5e-5, 4e-5, 4.5e-5],
+        #"scale": [0, 1e-6, 1e-5, 1e-4, 1e-3],
         "colmap": "coolwarm",
     },
 }

@@ -824,7 +824,6 @@ class Colocator(ColocationSetup):
                 self._close_log()
                 raise
             vars_to_process = {}
-        breakpoint()
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
             try:
