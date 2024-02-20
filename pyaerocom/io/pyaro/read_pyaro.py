@@ -15,6 +15,20 @@ from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 # TODO: Add possibility to filter after reading (if possible)
+"""
+TODO: Features to add:
+- instrument name
+- station_id?
+- filename
+- revision date
+- data level
+- PI
+"""
+
+"""
+TODO: Features to check
+- ts_type (freq)
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +220,7 @@ class PyaroToUngriddedData:
                 longitude=station["longitude"],
                 altitude=station["altitude"],
                 station_name=name,
+                station_id=name,
                 country=station["country"],
                 ts_type="undefined",  # TEMP
                 data_revision="n/d",  # Temp: Need to be changed. Must add way of getting this from Reader

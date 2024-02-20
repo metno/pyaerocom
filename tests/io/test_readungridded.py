@@ -149,6 +149,21 @@ def test_read_pyaro_and_other(pyaro_testconfig):
     assert pyaro_testconfig[0].name in data.contains_datasets
 
 
+def test_read_pyaro_valid_data(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+
+    data = reader.read(vars_to_retrieve=["concso4"])
+    station = data.to_station_data(0)
+
+    assert not station["concso4"].empty
+    assert not station["concso4"].hasnans
+
+    station = data.to_station_data(1)
+
+    assert not station["concso4"].empty
+    assert not station["concso4"].hasnans
+
+
 ##
 # Tests that raises errors
 ##
