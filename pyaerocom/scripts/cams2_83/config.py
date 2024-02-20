@@ -13,7 +13,7 @@ GLOBAL_CONFIG = dict(
     exp_id="prototype",
     exp_name="Prototype-daily",
     exp_descr=("Evaluation using EEA NRT obs."),
-    exp_pi="Augustin Mortier (augustinm@met.no), Michael Gauss (michaelg@met.no)",
+    exp_pi="<a href='https://atmosphere.copernicus.eu/help-and-support'>CAMS user support</a>",
     # Whether or not the experiment is visible in the web interface
     public=True,
     # Locations where to place the results
