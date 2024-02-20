@@ -29,12 +29,6 @@ def test_variables(pyaro_testdata):
     assert rp.DEFAULT_VARS == variables
 
 
-def test_get_readers(pyaro_testdata):
-    readers = pyaro_testdata.get_pyaro_readers()
-
-    # assert pyaro_testdata.DATA_ID in readers
-
-
 ####################################################
 #   Tests for the helper class PyaroToUngriddedData
 ####################################################

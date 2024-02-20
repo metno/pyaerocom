@@ -164,6 +164,13 @@ def test_read_pyaro_valid_data(pyaro_testconfig):
     assert not station["concso4"].hasnans
 
 
+def test_config_map(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+    m = reader.config_map
+    assert m[pyaro_testconfig[0].name] == pyaro_testconfig[0]
+    assert m[pyaro_testconfig[1].name] == pyaro_testconfig[1]
+
+
 ##
 # Tests that raises errors
 ##

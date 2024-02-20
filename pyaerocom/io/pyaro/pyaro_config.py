@@ -37,9 +37,6 @@ class PyaroConfig(BaseModel):
         return self.model_dump()
 
     def save(self, path: Optional[Path] = None) -> None:
-        # TODO: Check that the path not filename
-        # TODO: Check if the name is unique
-        # TODO: Append to catalog, not overwrite
 
         name = self.name
 

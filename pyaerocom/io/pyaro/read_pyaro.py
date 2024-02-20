@@ -14,25 +14,6 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
-# TODO: Add possibility to filter after reading (if possible)
-"""
-TODO: Features to add:
-- instrument name
-- station_id?
-- filename
-- revision date
-- data level
-- PI
-
-
-- Make code faster...
-"""
-
-"""
-TODO: Features to check
-- ts_type (freq)
-"""
-
 logger = logging.getLogger(__name__)
 
 
@@ -157,7 +138,6 @@ class PyaroToUngriddedData:
 
         idx = 0
         for var, var_data in pyaro_data.items():
-            # var_data = pyaro_data[var]
             size = var_size[var]
             for i in range(
                 1, size
@@ -238,7 +218,7 @@ class PyaroToUngriddedData:
                 station_name=station["long_name"],
                 station_id=name,
                 country=station["country"],
-                ts_type="undefined",  # TEMP
+                ts_type="undefined",  # TEMP: Changes dynamically below
             )
 
             metadata[idx].update(self._get_metadata_from_pyaro(station))
@@ -268,9 +248,7 @@ class PyaroToUngriddedData:
     def _calculate_ts_type(self, start: np.datetime64, stop: np.datetime64) -> TsType:
         seconds = (stop - start).astype("timedelta64[s]").astype(np.int32)
         if seconds == 0:
-            ts_type = TsType(
-                "daily"
-            )  # TODO this should be instentanious, but that tstype does not exist
+            ts_type = TsType("hourly")
         else:
             ts_type = TsType.from_total_seconds(seconds)
 
@@ -290,7 +268,7 @@ class PyaroToUngriddedData:
         return self.reader.variables()
 
     def get_stations(self) -> dict[str, Station]:
-        return self.reader.stations()()  # TODO FIx this double ()
+        return self.reader.stations()()
 
     def read(self, vars_to_retrieve=None) -> UngriddedData:
         allowed_vars = self.get_variables()

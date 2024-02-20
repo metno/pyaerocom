@@ -66,7 +66,6 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
-        # ReadPyaro,
         ReadIPCForest,
     ]
     SUPPORTED_READERS.extend(
@@ -106,15 +105,18 @@ class ReadUngridded:
             logger.info("Deactivating caching")
             const.CACHING = False
 
+        self.config_ids = {}
+        self.config_map = {}
+
         if isinstance(configs, PyaroConfig):
             self._configs = [configs]
         else:
             self._configs = configs
 
-        self.config_ids = {}
-        if configs is not None:
+        if isinstance(configs, list):
             for config in configs:
-                self._init_pyaro_reader(config=config)
+                if config is not None:
+                    self._init_pyaro_reader(config=config)
 
     @property
     def data_dirs(self):
@@ -216,7 +218,6 @@ class ReadUngridded:
             val = [val]
         elif not isinstance(val, (tuple, list)):
             raise OSError("Invalid input for parameter data_ids")
-        # TODO: Reset reader list(?)
         logger.warning(
             f"You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
         )
@@ -309,7 +310,7 @@ class ReadUngridded:
 
         if not data_id in self._readers:
             _cls = self._find_read_class(data_id)
-            reader = self._init_lowlevel_reader(_cls, data_id)  # , config=config)
+            reader = self._init_lowlevel_reader(_cls, data_id)
             if config is not None:
                 self._readers[config.name] = reader
             else:
@@ -355,6 +356,7 @@ class ReadUngridded:
             self._readers[name] = reader
             self._data_ids.append(name)
             self.config_ids[name] = config.data_id
+            self.config_map[name] = config
             return reader
 
     def add_config(self, config: PyaroConfig) -> None:
@@ -438,8 +440,8 @@ class ReadUngridded:
         if data_id is None:
             raise ValueError(f"Data_id can not be none")
 
-        if data_id in self.config_ids:
-            return reader(config=config)
+        if data_id in self.config_map:
+            return reader(config=self.config_map[data_id])
 
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
@@ -628,7 +630,6 @@ class ReadUngridded:
                 filters[key] = val
         return filters
 
-    # TODO Make this method compatible with configs
     def read_dataset_post(
         self,
         data_id,

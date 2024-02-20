@@ -468,11 +468,9 @@ def test_colocator_with_obs_data_dir_gridded():
 ###################################
 
 
-def test_colocation_pyaro(
-    pyaro_test_data_file, pyaro_testconfig, fake_MSCWCtm_data_monthly_2015
-) -> None:
+def test_colocation_pyaro(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
     col = Colocator(save_coldata=False)
-    config = pyaro_testconfig
+    config = pyaro_testconfig[0]
     col.obs_config = config
     col.model_id = "EMEP"
     col.gridded_reader_id = {"model": "ReadMscwCtm"}
@@ -487,11 +485,9 @@ def test_colocation_pyaro(
     assert cd.ts_type == "monthly"
 
 
-def test_colocation_pyaro_change_obs_id(
-    pyaro_test_data_file, pyaro_testconfig, fake_MSCWCtm_data_monthly_2015
-) -> None:
+def test_colocation_pyaro_change_obs_id(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
     col = Colocator(save_coldata=False)
-    config = pyaro_testconfig
+    config = pyaro_testconfig[0]
     col.obs_id = "undefined"
     col.obs_config = config
     col.obs_id = "undefined"

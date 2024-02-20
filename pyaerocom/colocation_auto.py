@@ -338,17 +338,6 @@ class ColocationSetup(BrowseDict):
         self.obs_id = obs_id
         self.obs_config = obs_config
 
-        # if self._obs_config is not None:
-        #     self.obs_id = self.obs_config.data_id
-
-        # if self.obs_config is not None and self.obs_id is not None:
-        #     if self.obs_config.data_id != self.obs_id:
-        #         logger.warning(
-        #             f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {self.obs_id}. This may cause probles down the line"
-        #         )
-        #     else:
-        #         self.obs_id = self.obs_config.data_id
-
         self.obs_vars = obs_vars
 
         self.ts_type = ts_type
@@ -499,9 +488,9 @@ class ColocationSetup(BrowseDict):
 
     @obs_id.setter
     def obs_id(self, val: str | None) -> None:
-        if self.obs_config is not None and val != self.obs_config.data_id:
+        if self.obs_config is not None and val != self.obs_config.name:
             logger.info(
-                f"Data ID in Pyaro config {self.obs_config.data_id} does not match obs_id {val}. Setting Pyaro config to None!"
+                f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {val}. Setting Pyaro config to None!"
             )
             self.obs_config = None
 
@@ -514,13 +503,13 @@ class ColocationSetup(BrowseDict):
     @obs_config.setter
     def obs_config(self, val: PyaroConfig | None) -> None:
         if val is not None:
-            if self.obs_id is not None and val.data_id != self.obs_id:
+            if self.obs_id is not None and val.name != self.obs_id:
                 logger.info(
-                    f"Data ID in Pyaro config {val.data_id} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
+                    f"Data ID in Pyaro config {val.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
                 )
-                self.obs_id = val.data_id
+                self.obs_id = val.name
             if self.obs_id is None:
-                self.obs_id = val.data_id
+                self.obs_id = val.name
         self._obs_config = val
 
     def add_glob_meta(self, **kwargs):
@@ -628,8 +617,9 @@ class Colocator(ColocationSetup):
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
-        # if self.obs_config is not None:
-        #     return True
+        if self.obs_config is not None:
+            return True
+
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
 
     @property
@@ -681,15 +671,15 @@ class Colocator(ColocationSetup):
         """
         Observation data reader
         """
-        # if self.obs_config is not None:
-        #     return ReadUngridded(config=self.obs_config)
 
         if not self._check_data_id_obs_reader():
             if self.obs_is_ungridded:
                 self._obs_reader = ReadUngridded(
                     data_ids=[self.obs_id],
                     data_dirs=self.obs_data_dir,
-                    config=self.obs_config,
+                    configs=[
+                        self.obs_config,
+                    ],
                 )
             else:
                 self._obs_reader = self._instantiate_gridded_reader(what="obs")
