@@ -200,6 +200,28 @@ class PyaroToUngriddedData:
 
         return self.data
 
+    def _get_metadata_from_pyaro(self, station: Station) -> list[dict[str, str]]:
+        metadata = dict(
+            instrument_name=None,
+            data_revision="n/d",
+            PI=None,
+            filename=None,
+            country_code=station["country"],
+            data_level=None,
+            revision_date=None,
+            website=None,
+            data_product=None,
+            data_version=None,
+            framework=None,
+            instr_vert_loc=None,
+            stat_merge_pref_attr=None,
+        )
+        for key in metadata:
+            if key in station.keys():
+                metadata[key] = station[key]
+
+        return metadata
+
     def _make_ungridded_metadata(
         self, stations: dict[str, Station], var_idx: dict[str, int], units: dict[str, str]
     ) -> Metadata:
@@ -210,16 +232,16 @@ class PyaroToUngriddedData:
                 data_id=self.config.name,
                 variables=list(self.get_variables()),
                 var_info=units,
-                instrument_name="",
                 latitude=station["latitude"],
                 longitude=station["longitude"],
                 altitude=station["altitude"],
-                station_name=name,
+                station_name=station["long_name"],
                 station_id=name,
                 country=station["country"],
                 ts_type="undefined",  # TEMP
-                data_revision="n/d",  # Temp: Need to be changed. Must add way of getting this from Reader
             )
+
+            metadata[idx].update(self._get_metadata_from_pyaro(station))
             idx += 1
 
         return Metadata(metadata)
