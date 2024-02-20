@@ -836,7 +836,7 @@ def _process_map_and_scat(
     obs_var,
     drop_stats,
 ):
-    stats_dummy = _init_stats_dummy()
+    stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
     for freq, cd in data.items():
@@ -1131,7 +1131,7 @@ def _process_heatmap_data(
     trends_min_yrs,
 ):
     output = {}
-    stats_dummy = _init_stats_dummy()
+    stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     for freq, coldata in data.items():
         output[freq] = hm_freq = {}
         for regid, regname in region_ids.items():
