@@ -8,9 +8,9 @@ Logging
 
 ``pyaerocom`` initializes logging automatically on import in the following way.
 
-  1. ``info``-messages or worse are logged to ``pyaerocom.log.$PID`` or
+1. ``info``-messages or worse are logged to ``pyaerocom.log.$PID`` or
    (dynamic feature) the file given in the environment variable ``PYAEROCOM_LOG_FILE``
-  2. ``warning``-messages or worse are also printed on stdout.
+2. ``warning``-messages or worse are also printed on stdout.
    (dynamic feature) Output to stdout is disabled if the script is called non-interactive.
 
 Putting a file with the name ``logging.ini`` in the scripts current working directory will use that
