@@ -18,7 +18,8 @@ configuration instead of above described default. An example ``logging.ini`` doi
 described above, except for the dynamic features, and enable ``debug`` logging on one package (``pyaerocom.io.ungridded``), is
 provided here:
 
-.. code-block::
+.. code-block:: ini
+
    [loggers]
    keys=root,pyaerocom-ungridded
 
