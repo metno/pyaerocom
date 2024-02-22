@@ -15,10 +15,10 @@ Logging
 
 Putting a file with the name ``logging.ini`` in the scripts current working directory will use that
 configuration instead of above described default. An example ``logging.ini`` doing about the same as
-described above, except for the dynamic features, and enable ``debug`` logging on one package, is
-provided here ``pyaerocom.io.ungridded``:
+described above, except for the dynamic features, and enable ``debug`` logging on one package (``pyaerocom.io.ungridded``), is
+provided here:
 
-.. code-block:: ini
+.. code-block::
    [loggers]
    keys=root,pyaerocom-ungridded
 
