@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom._lowlevel_helpers import read_json, write_json
+from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice

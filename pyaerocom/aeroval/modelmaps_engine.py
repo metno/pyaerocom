@@ -2,7 +2,7 @@ import logging
 import os
 
 from pyaerocom import GriddedData, TsType
-from pyaerocom._lowlevel_helpers import write_json
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail

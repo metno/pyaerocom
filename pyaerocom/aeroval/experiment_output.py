@@ -4,14 +4,12 @@ import os
 import shutil
 
 from pyaerocom import const
+from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
     StrType,
     TypeValidator,
-    check_make_json,
-    read_json,
     sort_dict_by_name,
-    write_json,
 )
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
