@@ -6,7 +6,7 @@ import simplejson
 logger = logging.getLogger(__name__)
 
 
-def round_floats(in_data, precision=5):
+def round_floats(in_data, precision):
     """
     simple helper method to change all floats of a data structure to a given precision.
     For nested structures, this method is called recursively to go through
@@ -26,6 +26,8 @@ def round_floats(in_data, precision=5):
         tuples in the structure have been converted to lists to make them mutable
 
     """
+    
+    assert precision, f"round_floats(): precision argument must be defined in a function which calls it"
 
     if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64)):
         # np.float64, is an aliase for the Python float, but is mentioned here for completeness
