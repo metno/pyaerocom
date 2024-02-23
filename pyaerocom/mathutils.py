@@ -1,6 +1,7 @@
 """
 Mathematical low level utility methods of pyaerocom
 """
+
 import numpy as np
 from scipy.stats import kendalltau, pearsonr, spearmanr
 
@@ -229,7 +230,13 @@ def calc_statistics(
     min_num_valid : int
         minimum number of valid measurements required to compute statistical
         parameters.
-
+    weights: ndarray
+        array containing weights if computing weighted statistics
+    drop_stats: tuple
+        tuple which drops the provided statistics from computed json files.
+        For example, setting drop_stats = ("mb", "mab"), results in json files
+        in hm/ts with entries which do not contain the mean bias and mean
+        absolute bias, but the other statistics are preserved.
     Returns
     -------
     dict
@@ -301,9 +308,9 @@ def calc_statistics(
     if weights is not None:
         weights = weights[mask]
         weights = weights / weights.max()
-        result[
-            "NOTE"
-        ] = "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
+        result["NOTE"] = (
+            "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
+        )
 
     result["rms"] = np.sqrt(np.average(diffsquare, weights=weights))
 
