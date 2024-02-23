@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import read_json, write_json
+from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup

@@ -140,7 +140,8 @@ class StatisticsSetup(ConstrainedContainer):
         setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
-
+    round_floats_precision: int, optional
+        Sets the precision argument for the function pyaerocom/_lowlevel_helpers.py::round_floats
 
 
     Parameters
@@ -165,6 +166,7 @@ class StatisticsSetup(ConstrainedContainer):
         self.model_only_stats = False
         self.drop_stats = ()
         self.stats_decimals = None
+        self.round_floats_precision = 5
         self.update(**kwargs)
 
 
