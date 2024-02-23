@@ -12,22 +12,22 @@ from tqdm import tqdm
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.plugins.ipcforests.metadata import MetadataReader, Station, SurveyYear
+from pyaerocom.plugins.icpforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
 
-class ReadIPCForest(ReadUngriddedBase):
+class ReadICPForest(ReadUngriddedBase):
     #: version log of this class (for caching)
     __version__ = "0.5_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = const.IPCFORESTS_NAME
+    DATA_ID = const.ICPFORESTS_NAME
 
     #: List of all datasets supported by this interface
-    SUPPORTED_DATASETS = [const.IPCFORESTS_NAME]
+    SUPPORTED_DATASETS = [const.ICPFORESTS_NAME]
 
     TS_TYPE = "undefined"
 

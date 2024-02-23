@@ -101,7 +101,7 @@ COUNTRIES = {
 
 
 class Station:
-    """Holds information for a singe IPC Forest station. The same station with different ts_types
+    """Holds information for a singe ICP Forest station. The same station with different ts_types
     are treated as seperate stations at this level
 
     Parameters
