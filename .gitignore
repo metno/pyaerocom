@@ -156,3 +156,4 @@ sorted_out
 
 # Vim temp files
 *.swp
+logging.ini
