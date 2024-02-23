@@ -1,5 +1,5 @@
 pyaerocom.log*
-
+logging.ini
 # Byte-compiled / optimized / DLL files
 __pycache__/
 _cache/
@@ -156,4 +156,3 @@ sorted_out
 
 # Vim temp files
 *.swp
-logging.ini
