@@ -207,7 +207,7 @@ class TimeSetup(ConstrainedContainer):
 
 
 class WebDisplaySetup(ConstrainedContainer):
-    map_zoom = EitherOf(["World", "Europe"])
+    map_zoom = EitherOf(["World", "Europe", "xEMEP"])
     regions_how = EitherOf(["default", "aerocom", "htap", "country"])
 
     def __init__(self, **kwargs):
