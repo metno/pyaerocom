@@ -1,6 +1,7 @@
 """
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
+
 import logging
 import os
 from copy import deepcopy
@@ -699,8 +700,8 @@ def _process_sites(data, regions, regions_how, meta_glob):
     return (ts_objs, map_meta, site_indices)
 
 
-def _get_statistics(obs_vals, mod_vals, min_num):
-    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num)
+def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
+    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
     return _prep_stats_json(stats)
 
 
@@ -833,8 +834,9 @@ def _process_map_and_scat(
     trends_min_yrs,
     use_fairmode,
     obs_var,
+    drop_stats,
 ):
-    stats_dummy = _init_stats_dummy()
+    stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
     for freq, cd in data.items():
@@ -856,7 +858,9 @@ def _process_map_and_scat(
                     else:
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
-                        stats = _get_statistics(obs_vals, mod_vals, min_num)
+                        stats = _get_statistics(
+                            obs_vals, mod_vals, min_num=min_num, drop_stats=drop_stats
+                        )
 
                         if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
@@ -1018,8 +1022,8 @@ def _prep_stats_json(stats):
     return stats
 
 
-def _get_extended_stats(coldata, use_weights):
-    stats = coldata.calc_statistics(use_area_weights=use_weights)
+def _get_extended_stats(coldata, use_weights, drop_stats):
+    stats = coldata.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
 
     # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
     # (stats['R_spatial_mean'],
@@ -1120,6 +1124,7 @@ def _process_heatmap_data(
     data,
     region_ids,
     use_weights,
+    drop_stats,
     use_country,
     meta_glob,
     periods,
@@ -1128,7 +1133,7 @@ def _process_heatmap_data(
     trends_min_yrs,
 ):
     output = {}
-    stats_dummy = _init_stats_dummy()
+    stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     for freq, coldata in data.items():
         output[freq] = hm_freq = {}
         for regid, regname in region_ids.items():
@@ -1173,7 +1178,7 @@ def _process_heatmap_data(
                                 region_id=regid, check_country_meta=use_country
                             )
 
-                            stats = _get_extended_stats(subset, use_weights)
+                            stats = _get_extended_stats(subset, use_weights, drop_stats)
 
                             if add_trends and freq != "daily" and trends_successful:
                                 # The whole trends dicts are placed in the stats dict
@@ -1236,7 +1241,9 @@ def _map_indices(outer_idx, inner_idx):
     return mapping.astype(int)
 
 
-def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_country, data_freq):
+def _process_statistics_timeseries(
+    data, freq, region_ids, use_weights, drop_stats, use_country, data_freq
+):
     """
     Compute statistics timeseries for input data
 
@@ -1308,7 +1315,7 @@ def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_coun
             per = to_idx_str[i]
             try:
                 arr = ColocatedData(subset.data.sel(time=per))
-                stats = arr.calc_statistics(use_area_weights=use_weights)
+                stats = arr.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
                 output[regname][str(js)] = _prep_stats_json(stats)
             except DataCoverageError:
                 pass

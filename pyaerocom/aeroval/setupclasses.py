@@ -134,6 +134,13 @@ class StatisticsSetup(ConstrainedContainer):
         the above example 310 values would be used - 31 for each site - to
         compute the statistics for a given month (in this case, a month with 31
         days, obviously).
+    drop_stats: tuple, optional
+        tuple of strings with names of statistics (as determined by keys in
+        aeroval.glob_defaults.py's statistics_defaults) to not compute. For example,
+        setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
+        entries which do not contain the mean bias and mean absolute bias,
+        but the other statistics are preserved.
+
 
 
     Parameters
@@ -156,6 +163,8 @@ class StatisticsSetup(ConstrainedContainer):
         self.use_diurnal = False
         self.obs_only_stats = False
         self.model_only_stats = False
+        self.drop_stats = ()
+        self.stats_decimals = None
         self.update(**kwargs)
 
 
@@ -235,6 +244,8 @@ class EvalRunOptions(ConstrainedContainer):
         #: If True, process only maps (skip obs evaluation)
         self.only_model_maps = False
         self.obs_only = False
+        self.drop_stats = ()
+        self.stats_decimals = None
         self.update(**kwargs)
 
 
