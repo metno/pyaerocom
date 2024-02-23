@@ -62,52 +62,6 @@ class ProjectOutput:
         """
         return list(read_json(self.experiments_file))
 
-    def _add_entry_experiments_json(self, exp_id, data):
-        fp = self.experiments_file
-        current = read_json(fp)
-        current[exp_id] = data
-        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
-
-    def _del_entry_experiments_json(self, exp_id):
-        """
-        Remove an entry from experiments.json
-
-        Parameters
-        ----------
-        exp_id : str
-            name of experiment
-
-        Returns
-        -------
-        None
-
-        """
-        current = read_json(self.experiments_file)
-        try:
-            del current[exp_id]
-        except KeyError:
-            logger.warning(f"no such experiment registered: {exp_id}")
-        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
-
-    def reorder_experiments(self, exp_order=None):
-        """Reorder experiment order in evaluation interface
-
-        Puts experiment list into order as specified by `exp_order`, all
-        remaining experiments are sorted alphabetically.
-
-        Parameters
-        ----------
-        exp_order : list, optional
-            desired experiment order, if None, then alphabetical order is used.
-        """
-        if exp_order is None:
-            exp_order = []
-        elif not isinstance(exp_order, list):
-            raise ValueError("need list as input")
-        current = read_json(self.experiments_file)
-        current = sort_dict_by_name(current, pref_list=exp_order)
-        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
-
 
 class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
@@ -846,3 +800,49 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name] = obs_vars
         return obs_vars
+    
+    def _add_entry_experiments_json(self, exp_id, data):
+        fp = self.experiments_file
+        current = read_json(fp)
+        current[exp_id] = data
+        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
+    
+    def _del_entry_experiments_json(self, exp_id):
+        """
+        Remove an entry from experiments.json
+
+        Parameters
+        ----------
+        exp_id : str
+            name of experiment
+
+        Returns
+        -------
+        None
+
+        """
+        current = read_json(self.experiments_file)
+        try:
+            del current[exp_id]
+        except KeyError:
+            logger.warning(f"no such experiment registered: {exp_id}")
+        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
+        
+    def reorder_experiments(self, exp_order=None):
+        """Reorder experiment order in evaluation interface
+
+        Puts experiment list into order as specified by `exp_order`, all
+        remaining experiments are sorted alphabetically.
+
+        Parameters
+        ----------
+        exp_order : list, optional
+            desired experiment order, if None, then alphabetical order is used.
+        """
+        if exp_order is None:
+            exp_order = []
+        elif not isinstance(exp_order, list):
+            raise ValueError("need list as input")
+        current = read_json(self.experiments_file)
+        current = sort_dict_by_name(current, pref_list=exp_order)
+        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
