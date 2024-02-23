@@ -140,7 +140,7 @@ class StatisticsSetup(ConstrainedContainer):
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
     round_floats_precision: int, optional
-        Sets the precision argument for the function pyaerocom/_lowlevel_helpers.py::round_floats
+        Sets the precision argument for the function pyaerocom/aaeroval/json_utils.py::round_floats
 
 
     Parameters
