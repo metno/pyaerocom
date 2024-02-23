@@ -2,10 +2,10 @@ import logging
 import os
 
 from pyaerocom import GriddedData, TsType
-from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
@@ -173,6 +173,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
 
-        write_json(datajson, fp_json, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
-        write_json(contourjson, fp_geojson, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
+        write_json(
+            datajson, fp_json, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True
+        )
+        write_json(
+            contourjson,
+            fp_geojson,
+            self.cfg.statistics_opts.round_floats_precision,
+            ignore_nan=True,
+        )
         return [fp_json, fp_geojson]

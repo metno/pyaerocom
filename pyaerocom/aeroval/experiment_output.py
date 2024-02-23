@@ -4,13 +4,7 @@ import os
 import shutil
 
 from pyaerocom import const
-from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
-from pyaerocom._lowlevel_helpers import (
-    DirLoc,
-    StrType,
-    TypeValidator,
-    sort_dict_by_name,
-)
+from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
@@ -20,6 +14,7 @@ from pyaerocom.aeroval.glob_defaults import (
     var_ranges_defaults,
     var_web_info,
 )
+from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
@@ -153,7 +148,9 @@ class ExperimentOutput(ProjectOutput):
         """
         avail = self._create_menu_dict()
         avail = self._sort_menu_entries(avail)
-        write_json(avail, self.menu_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
+        write_json(
+            avail, self.menu_file, self.cfg.statistics_opts.round_floats_precision, indent=4
+        )
 
     def update_interface(self) -> None:
         """
@@ -522,7 +519,9 @@ class ExperimentOutput(ProjectOutput):
         for var in all_vars:
             if not var in ranges or ranges[var]["scale"] == []:
                 ranges[var] = self._get_cmap_info(var)
-        write_json(ranges, self.var_ranges_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
+        write_json(
+            ranges, self.var_ranges_file, self.cfg.statistics_opts.round_floats_precision, indent=4
+        )
 
     def _create_statistics_json(self):
         if self.cfg.statistics_opts.obs_only_stats:
@@ -551,7 +550,12 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(obs_statistics_trend)
             else:
                 stats_info.update(statistics_trend)
-        write_json(stats_info, self.statistics_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
+        write_json(
+            stats_info,
+            self.statistics_file,
+            self.cfg.statistics_opts.round_floats_precision,
+            indent=4,
+        )
 
     def _get_var_name_and_type(self, var_name):
         """Get menu name and type of observation variable
@@ -800,13 +804,18 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name] = obs_vars
         return obs_vars
-    
+
     def _add_entry_experiments_json(self, exp_id, data):
         fp = self.experiments_file
         current = read_json(fp)
         current[exp_id] = data
-        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
-    
+        write_json(
+            current,
+            self.experiments_file,
+            self.cfg.statistics_opts.round_floats_precision,
+            indent=4,
+        )
+
     def _del_entry_experiments_json(self, exp_id):
         """
         Remove an entry from experiments.json
@@ -826,8 +835,13 @@ class ExperimentOutput(ProjectOutput):
             del current[exp_id]
         except KeyError:
             logger.warning(f"no such experiment registered: {exp_id}")
-        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
-        
+        write_json(
+            current,
+            self.experiments_file,
+            self.cfg.statistics_opts.round_floats_precision,
+            indent=4,
+        )
+
     def reorder_experiments(self, exp_order=None):
         """Reorder experiment order in evaluation interface
 
@@ -845,4 +859,9 @@ class ExperimentOutput(ProjectOutput):
             raise ValueError("need list as input")
         current = read_json(self.experiments_file)
         current = sort_dict_by_name(current, pref_list=exp_order)
-        write_json(current, self.experiments_file, self.cfg.statistics_opts.round_floats_precision, indent=4)
+        write_json(
+            current,
+            self.experiments_file,
+            self.cfg.statistics_opts.round_floats_precision,
+            indent=4,
+        )

@@ -2,20 +2,17 @@ import json
 from pathlib import Path
 
 import numpy as np
-import pytest 
+import pytest
 
-from pyaerocom.aeroval.json_utils import (
-    check_make_json,
-    read_json,
-    round_floats,
-    write_json,
-)
+from pyaerocom.aeroval.json_utils import check_make_json, read_json, round_floats, write_json
+
 
 @pytest.fixture()
 def json_path(tmp_path: Path) -> Path:
     path = tmp_path / "file.json"
     assert not path.exists()
     return path
+
 
 @pytest.mark.parametrize(
     "raw,precision,rounded",
@@ -61,6 +58,7 @@ def test_read_json(json_path: Path):
     assert json_path.exists()
     assert read_json(json_path) == data
 
+
 @pytest.mark.parametrize("data", [{"bla": 42}, {"bla": 42, "blub": np.nan}])
 @pytest.mark.parametrize("kwargs", [dict(), dict(ignore_nan=True, indent=5)])
 def test_write_json(json_path: Path, data: dict, kwargs: dict):
@@ -77,11 +75,11 @@ def test_write_json_error(json_path: Path):
 def test_check_make_json(json_path: Path):
     json = check_make_json(json_path)
     assert Path(json).exists()
-    
+
+
 def test_check_make_json_error(tmp_path: Path):
     path = tmp_path / "bla.txt"
     assert not path.exists()
     with pytest.raises(ValueError) as e:
         check_make_json(path)
     assert str(e.value) == "Input filepath must end with .json"
-    

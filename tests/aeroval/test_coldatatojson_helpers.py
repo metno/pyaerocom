@@ -29,6 +29,7 @@ from pyaerocom.region_defs import (
 
 PRECISION = 5
 
+
 def test__write_stationdata_json(tmp_path: Path):
     data = dict(station_name="stat1", obs_name="obs1", var_name_web="var1", vert_code="Column")
     path: Path = tmp_path / get_stationfile_name(**data)

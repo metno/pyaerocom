@@ -1,5 +1,6 @@
 import logging
 import os
+
 import numpy as np
 import simplejson
 
@@ -26,8 +27,10 @@ def round_floats(in_data, precision):
         tuples in the structure have been converted to lists to make them mutable
 
     """
-    
-    assert precision, f"round_floats(): precision argument must be defined in a function which calls it"
+
+    assert (
+        precision
+    ), f"round_floats(): precision argument must be defined in a function which calls it"
 
     if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64)):
         # np.float64, is an aliase for the Python float, but is mentioned here for completeness
@@ -78,9 +81,11 @@ def write_json(data_dict, file_path, precision=5, **kwargs):
     """
     kwargs.update(ignore_nan=True)
     with open(file_path, "w") as f:
-        simplejson.dump(round_floats(in_data=data_dict, precision=precision), f, allow_nan=True, **kwargs)
-        
-        
+        simplejson.dump(
+            round_floats(in_data=data_dict, precision=precision), f, allow_nan=True, **kwargs
+        )
+
+
 def check_make_json(fp, indent=4):
     """
     Make sure input json file exists

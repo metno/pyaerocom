@@ -6,7 +6,6 @@ from cf_units import Unit
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
-from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _add_heatmap_entry_json,
@@ -31,6 +30,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     process_profile_data_for_stations,
     update_regions_json,
 )
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 
 logger = logging.getLogger(__name__)
@@ -295,7 +295,14 @@ class ColdataToJsonEngine(ProcessingEngine):
             fname = get_profile_filename(region_names[regid], obs_name, var_name_web)
 
             outfile_profile = os.path.join(out_dirs["profiles"], fname)
-            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons, precision=self.cfg.statistics_opts.round_floats_precision)
+            add_profile_entry_json(
+                outfile_profile,
+                data,
+                profile_viz,
+                periods,
+                seasons,
+                precision=self.cfg.statistics_opts.round_floats_precision,
+            )
         # Loop through stations
         for station_name in station_names:
             profile_viz = process_profile_data_for_stations(
@@ -309,7 +316,14 @@ class ColdataToJsonEngine(ProcessingEngine):
             fname = get_profile_filename(station_name, obs_name, var_name_web)
 
             outfile_profile = os.path.join(out_dirs["profiles"], fname)
-            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons, precision=self.cfg.statistics_opts.round_floats_precision)
+            add_profile_entry_json(
+                outfile_profile,
+                data,
+                profile_viz,
+                periods,
+                seasons,
+                precision=self.cfg.statistics_opts.round_floats_precision,
+            )
 
     def _process_stats_timeseries_for_all_regions(
         self,
@@ -355,7 +369,14 @@ class ColdataToJsonEngine(ProcessingEngine):
             fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
             ts_file = os.path.join(out_dirs["hm/ts"], fname)
             _add_heatmap_entry_json(
-                ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var, precision=self.cfg.statistics_opts.round_floats_precision
+                ts_file,
+                stats_ts,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                precision=self.cfg.statistics_opts.round_floats_precision,
             )
 
         logger.info("Processing heatmap data for all regions")
@@ -379,13 +400,22 @@ class ColdataToJsonEngine(ProcessingEngine):
             hm_file = os.path.join(out_dirs["hm"], fname)
 
             _add_heatmap_entry_json(
-                hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var, precision=self.cfg.statistics_opts.round_floats_precision
+                hm_file,
+                hm_data,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                precision=self.cfg.statistics_opts.round_floats_precision,
             )
 
         logger.info("Processing regional timeseries for all regions")
         ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
-        _write_site_data(ts_objs_regional, out_dirs["ts"], self.cfg.statistics_opts.round_floats_precision)
+        _write_site_data(
+            ts_objs_regional, out_dirs["ts"], self.cfg.statistics_opts.round_floats_precision
+        )
         if coldata.has_latlon_dims:
             for cd in data.values():
                 if cd is not None:
@@ -423,10 +453,20 @@ class ColdataToJsonEngine(ProcessingEngine):
                 obs_name, var_name_web, model_name, model_var, vert_code, period
             )
             outfile_map = os.path.join(out_dirs["map"], map_name)
-            write_json(map_data, outfile_map, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
+            write_json(
+                map_data,
+                outfile_map,
+                self.cfg.statistics_opts.round_floats_precision,
+                ignore_nan=True,
+            )
 
             outfile_scat = os.path.join(out_dirs["scat"], map_name)
-            write_json(scat_data, outfile_scat, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
+            write_json(
+                scat_data,
+                outfile_scat,
+                self.cfg.statistics_opts.round_floats_precision,
+                ignore_nan=True,
+            )
 
     def _process_diurnal_profiles(
         self,
@@ -442,8 +482,12 @@ class ColdataToJsonEngine(ProcessingEngine):
         outdir = os.path.join(out_dirs["ts/diurnal"])
         for ts_data_weekly in ts_objs_weekly:
             # writes json file
-            _write_stationdata_json(ts_data_weekly, outdir, self.cfg.statistics_opts.round_floats_precision)
+            _write_stationdata_json(
+                ts_data_weekly, outdir, self.cfg.statistics_opts.round_floats_precision
+            )
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 # writes json file
-                _write_stationdata_json(ts_data_weekly_reg, outdir, self.cfg.statistics_opts.round_floats_precision)
+                _write_stationdata_json(
+                    ts_data_weekly_reg, outdir, self.cfg.statistics_opts.round_floats_precision
+                )

@@ -10,7 +10,6 @@ from pyaerocom._lowlevel_helpers import (
 )
 
 
-
 @pytest.mark.parametrize("title", ["", "Bla", "Hello"])
 @pytest.mark.parametrize("indent", [0, 4, 10])
 def test_str_underline(title: str, indent: int):

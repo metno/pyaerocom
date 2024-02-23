@@ -3,7 +3,6 @@ import os
 from getpass import getuser
 
 from pyaerocom import __version__, const
-from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom._lowlevel_helpers import (
     AsciiFileLoc,
     ConstrainedContainer,
@@ -16,6 +15,7 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
+from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
@@ -387,7 +387,13 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         """
         filepath = os.path.join(outdir, self.json_filename)
         data = self.json_repr()
-        write_json(data, filepath, self.statistics_opts.round_floats_precision, ignore_nan=ignore_nan, indent=indent)
+        write_json(
+            data,
+            filepath,
+            self.statistics_opts.round_floats_precision,
+            ignore_nan=ignore_nan,
+            indent=indent,
+        )
         return filepath
 
     @staticmethod
