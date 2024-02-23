@@ -59,7 +59,7 @@ def read_json(file_path):
     return data
 
 
-def write_json(data_dict, file_path, precision, **kwargs):
+def write_json(data_dict, file_path, precision=5, **kwargs):
     """Save json file
 
     Parameters

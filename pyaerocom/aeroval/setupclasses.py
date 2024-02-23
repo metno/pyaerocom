@@ -387,7 +387,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         """
         filepath = os.path.join(outdir, self.json_filename)
         data = self.json_repr()
-        write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
+        write_json(data, filepath, self.statistics_opts.round_floats_precision, ignore_nan=ignore_nan, indent=indent)
         return filepath
 
     @staticmethod

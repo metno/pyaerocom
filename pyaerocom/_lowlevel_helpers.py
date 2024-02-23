@@ -251,15 +251,15 @@ class AsciiFileLoc(Loc):
         open(value, "w").close()
 
 
-class JSONFile(Loc):
-    def create(self, value):
-        write_json({}, value)
-        self.logger.info(f"created json file {value}")
+# class JSONFile(Loc):
+#     def create(self, value):
+#         write_json({}, value)
+#         self.logger.info(f"created json file {value}")
 
-    def validate(self, value):
-        value = super().validate(value)
-        if value is not None and not value.endswith("json"):
-            raise ValueError("need .json file ending")
+#     def validate(self, value):
+#         value = super().validate(value)
+#         if value is not None and not value.endswith("json"):
+#             raise ValueError("need .json file ending")
 
 
 class BrowseDict(MutableMapping):

@@ -173,6 +173,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
 
-        write_json(datajson, fp_json, ignore_nan=True)
-        write_json(contourjson, fp_geojson, ignore_nan=True)
+        write_json(datajson, fp_json, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
+        write_json(contourjson, fp_geojson, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
         return [fp_json, fp_geojson]
