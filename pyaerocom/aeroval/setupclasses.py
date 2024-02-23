@@ -3,6 +3,7 @@ import os
 from getpass import getuser
 
 from pyaerocom import __version__, const
+from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom._lowlevel_helpers import (
     AsciiFileLoc,
     ConstrainedContainer,
@@ -11,8 +12,6 @@ from pyaerocom._lowlevel_helpers import (
     ListOfStrings,
     NestedContainer,
     StrType,
-    read_json,
-    write_json,
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
