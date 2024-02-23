@@ -328,3 +328,22 @@ def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutp
     with pytest.raises(ValueError) as e:
         dummy_expout.reorder_experiments("b")
     assert str(e.value) == "need list as input"
+
+
+@geojson_unavail
+@pytest.mark.parametrize("cfg,drop_stats,stats_decimals", [("cfgexp1", ("mab", "R_spearman"), 2)])
+def test_Experiment_Output_drop_stats_and_decimals(
+    eval_config: dict, drop_stats, stats_decimals: int
+):
+    cfg = EvalSetup(**eval_config)
+    cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
+    cfg["statistics_opts"]["drop_stats"] = drop_stats
+    cfg["statistics_opts"]["stats_decimals"] = stats_decimals
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    path = Path(proc.exp_output.exp_dir)
+    files = [f for f in path.iterdir() if f.is_file()]
+    assert any(["statistics.json" in f.name for f in files])
+    statistics_json = read_json(path / "statistics.json")
+    assert all([stat not in statistics_json for stat in drop_stats])
+    assert all([statistics_json[stat]["decimals"] == stats_decimals for stat in statistics_json])
