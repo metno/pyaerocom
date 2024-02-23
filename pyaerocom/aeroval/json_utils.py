@@ -16,6 +16,8 @@ def round_floats(in_data, precision=5):
     ----------
     in_data : float, dict, tuple, list
         data structure whose numbers should be limited in precision
+    precision: int, optional
+        precision with which to write round to. defaults to 5
 
     Returns
     -------
@@ -57,7 +59,7 @@ def read_json(file_path):
     return data
 
 
-def write_json(data_dict, file_path, **kwargs):
+def write_json(data_dict, file_path, precision, **kwargs):
     """Save json file
 
     Parameters
@@ -66,13 +68,15 @@ def write_json(data_dict, file_path, **kwargs):
         dictionary that can be written to json file
     file_path : str
         output file path
+    precision: int, optional
+        precision argument to pass to round_floats()
     **kwargs
         additional keyword args passed to :func:`simplejson.dumps` (e.g.
         indent, )
     """
     kwargs.update(ignore_nan=True)
     with open(file_path, "w") as f:
-        simplejson.dump(round_floats(data_dict), f, allow_nan=True, **kwargs)
+        simplejson.dump(round_floats(in_data=data_dict, precision=precision), f, allow_nan=True, **kwargs)
         
         
 def check_make_json(fp, indent=4):
