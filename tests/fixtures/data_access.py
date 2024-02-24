@@ -14,7 +14,7 @@ import pooch
 from pyaerocom import const, io
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.plugins.ghost.reader import ReadGhost
-from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
+from pyaerocom.plugins.icpforests.reader import ReadICPForest
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ TEST_DATA: dict[str, DataForTests] = {
     "G.EEA.hourly.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/hourly", ReadGhost),
     "G.EBAS.daily.Subset": DataForTests("obsdata/GHOST/data/EBAS/daily", ReadGhost),
     "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", ReadGhost),
-    "IPCFORESTS.Subset": DataForTests("obsdata/ipc-forests/dep", ReadIPCForest),
+    "ICPFORESTS.Subset": DataForTests("obsdata/ipc-forests/dep", ReadICPForest),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
 }

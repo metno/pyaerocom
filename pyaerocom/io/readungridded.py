@@ -26,7 +26,7 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
+from pyaerocom.plugins.icpforests.reader import ReadICPForest
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
@@ -60,7 +60,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
-        ReadIPCForest,
+        ReadICPForest,
     ]
     SUPPORTED_READERS.extend(
         ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
