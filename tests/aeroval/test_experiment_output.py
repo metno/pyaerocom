@@ -13,8 +13,6 @@ from tests.conftest import geojson_unavail
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
 
-PRECISION = 5
-
 
 @pytest.fixture()
 def dummy_expout(tmp_path: Path) -> ExperimentOutput:
@@ -70,7 +68,7 @@ def test_ProjectOutput_available_experiments(tmp_path: Path):
     val = ProjectOutput("test", str(tmp_path))
     assert val.available_experiments == []
 
-    write_json({"exp": 42}, val.experiments_file, PRECISION)
+    write_json({"exp": 42}, val.experiments_file)
     assert val.available_experiments == ["exp"]
 
 

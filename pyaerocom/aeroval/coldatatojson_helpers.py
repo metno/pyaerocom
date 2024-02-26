@@ -53,7 +53,7 @@ def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, p
     return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{period}.json"
 
 
-def _write_stationdata_json(ts_data, out_dir, precision: int):
+def _write_stationdata_json(ts_data, out_dir):
     """
     This method writes time series data given in a dictionary to .json files
 
@@ -63,8 +63,6 @@ def _write_stationdata_json(ts_data, out_dir, precision: int):
         A dictionary containing all processed time series data.
     out_dir : str or similar
         output directory
-    precision: int
-        Precision with which to write json files. Passed to write_json
 
     Returns
     -------
@@ -81,17 +79,17 @@ def _write_stationdata_json(ts_data, out_dir, precision: int):
     else:
         current = {}
     current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, precision, ignore_nan=True)
+    write_json(current, fp, ignore_nan=True)
 
 
-def _write_site_data(ts_objs, dirloc, precision):
+def _write_site_data(ts_objs, dirloc):
     """Write list of station timeseries files to json"""
     for ts_data in ts_objs:
         # writes json file
-        _write_stationdata_json(ts_data, dirloc, precision)
+        _write_stationdata_json(ts_data, dirloc)
 
 
-def _write_diurnal_week_stationdata_json(ts_data, out_dirs, precision):
+def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     """
     Minor modification of method _write_stationdata_json to allow a further
     level of sub-directories
@@ -123,11 +121,11 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs, precision):
     else:
         current = {}
     current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, precision, ignore_nan=True)
+    write_json(current, fp, ignore_nan=True)
 
 
 def _add_heatmap_entry_json(
-    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var, precision
+    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
         current = read_json(heatmap_file)
@@ -146,7 +144,7 @@ def _add_heatmap_entry_json(
         ovc[model_name] = {}
     mn = ovc[model_name]
     mn[model_var] = result
-    write_json(current, heatmap_file, precision, ignore_nan=True)
+    write_json(current, heatmap_file, ignore_nan=True)
 
 
 def _prepare_regions_json_helper(region_ids):
@@ -1521,7 +1519,6 @@ def add_profile_entry_json(
     profile_viz: dict,
     periods: list[str],
     seasons: list[str],
-    precision: int,
 ):  # pragma: no cover
     """
     Analogous to _add_heatmap_entry_json for profile data.
@@ -1591,4 +1588,4 @@ def add_profile_entry_json(
                 "unit": coldata.unitstr,
             }
 
-    write_json(current, profile_file, precision, ignore_nan=True)
+    write_json(current, profile_file, ignore_nan=True)

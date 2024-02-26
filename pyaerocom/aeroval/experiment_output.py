@@ -148,9 +148,7 @@ class ExperimentOutput(ProjectOutput):
         """
         avail = self._create_menu_dict()
         avail = self._sort_menu_entries(avail)
-        write_json(
-            avail, self.menu_file, self.cfg.statistics_opts.round_floats_precision, indent=4
-        )
+        write_json(avail, self.menu_file, indent=4)
 
     def update_interface(self) -> None:
         """
@@ -213,7 +211,7 @@ class ExperimentOutput(ProjectOutput):
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
                             hm[vardisp][obs][vc][mod][modvar] = hm_data
 
-            write_json(hm, fp, self.cfg.statistics_opts.round_floats_precision, ignore_nan=True)
+            write_json(hm, fp, ignore_nan=True)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data):
         if all([x in hm_data for x in all_regions]):
@@ -390,7 +388,7 @@ class ExperimentOutput(ProjectOutput):
                 modified = True
                 logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-        write_json(data_new, fp, self.cfg.statistics_opts.round_floats_precision)
+        write_json(data_new, fp)
         return modified
 
     def _clean_modelmap_files(self):
@@ -519,9 +517,7 @@ class ExperimentOutput(ProjectOutput):
         for var in all_vars:
             if not var in ranges or ranges[var]["scale"] == []:
                 ranges[var] = self._get_cmap_info(var)
-        write_json(
-            ranges, self.var_ranges_file, self.cfg.statistics_opts.round_floats_precision, indent=4
-        )
+        write_json(ranges, self.var_ranges_file, indent=4)
 
     def _create_statistics_json(self):
         if self.cfg.statistics_opts.obs_only_stats:
@@ -550,12 +546,7 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(obs_statistics_trend)
             else:
                 stats_info.update(statistics_trend)
-        write_json(
-            stats_info,
-            self.statistics_file,
-            self.cfg.statistics_opts.round_floats_precision,
-            indent=4,
-        )
+        write_json(stats_info, self.statistics_file, indent=4)
 
     def _get_var_name_and_type(self, var_name):
         """Get menu name and type of observation variable
@@ -812,7 +803,6 @@ class ExperimentOutput(ProjectOutput):
         write_json(
             current,
             self.experiments_file,
-            self.cfg.statistics_opts.round_floats_precision,
             indent=4,
         )
 
@@ -838,7 +828,6 @@ class ExperimentOutput(ProjectOutput):
         write_json(
             current,
             self.experiments_file,
-            self.cfg.statistics_opts.round_floats_precision,
             indent=4,
         )
 
@@ -862,6 +851,5 @@ class ExperimentOutput(ProjectOutput):
         write_json(
             current,
             self.experiments_file,
-            self.cfg.statistics_opts.round_floats_precision,
             indent=4,
         )

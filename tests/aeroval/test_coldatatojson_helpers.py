@@ -27,8 +27,6 @@ from pyaerocom.region_defs import (
     OTHER_REGIONS,
 )
 
-PRECISION = 5
-
 
 def test__write_stationdata_json(tmp_path: Path):
     data = dict(station_name="stat1", obs_name="obs1", var_name_web="var1", vert_code="Column")
@@ -36,11 +34,11 @@ def test__write_stationdata_json(tmp_path: Path):
     assert not path.exists()
 
     data["model_name"] = "model1"
-    _write_stationdata_json(data, path.parent, PRECISION)
+    _write_stationdata_json(data, path.parent)
     assert path.exists()
 
     data["model_name"] = "model2"
-    _write_stationdata_json(data, path.parent, PRECISION)
+    _write_stationdata_json(data, path.parent)
     assert path.exists()
 
     data = json.loads(path.read_text())
@@ -61,7 +59,7 @@ def test__write_site_data(tmp_path: Path):
         for n in range(3)
     ]
     assert not list(tmp_path.glob("*.json"))
-    _write_site_data(data, str(tmp_path), 5)
+    _write_site_data(data, str(tmp_path))
     assert len(list(tmp_path.glob("*.json"))) == len(data)
 
 
@@ -72,11 +70,11 @@ def test__write_diurnal_week_stationdata_json(tmp_path: Path):
     assert not path.exists()
 
     data["model_name"] = "model1"
-    _write_diurnal_week_stationdata_json(data, dirs, PRECISION)
+    _write_diurnal_week_stationdata_json(data, dirs)
     assert path.exists()
 
     data["model_name"] = "model2"
-    _write_diurnal_week_stationdata_json(data, dirs, PRECISION)
+    _write_diurnal_week_stationdata_json(data, dirs)
     assert path.exists()
 
     data = json.loads(path.read_text())
@@ -91,14 +89,14 @@ def test__add_heatmap_entry_json(tmp_path: Path):
 
     result = dict(value=None)
     obs, obs_var, vert, model, model_var = "obs", "obs_var", "Column", "model", "model_var"
-    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var, PRECISION)
+    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var)
     assert path.exists()
 
     data = json.loads(path.read_text())
     assert data[obs_var][obs][vert][model][model_var] == result
 
     result.update(value=42.0)
-    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var, PRECISION)
+    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var)
 
     data = json.loads(path.read_text())
     assert data[obs_var][obs][vert][model][model_var] == result

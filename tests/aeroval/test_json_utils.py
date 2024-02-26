@@ -4,7 +4,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyaerocom.aeroval.json_utils import check_make_json, read_json, round_floats, write_json
+from pyaerocom.aeroval.json_utils import (
+    check_make_json,
+    read_json,
+    round_floats,
+    set_float_serialization_precision,
+    write_json,
+)
 
 
 @pytest.fixture()
@@ -44,7 +50,8 @@ def json_path(tmp_path: Path) -> Path:
     ],
 )
 def test_round_floats(raw, precision: int, rounded):
-    _rounded = round_floats(raw, precision=precision)
+    set_float_serialization_precision(precision)
+    _rounded = round_floats(raw)
     if type(raw) in (list, tuple):
         assert type(_rounded) == list
     if type(raw) == dict:
