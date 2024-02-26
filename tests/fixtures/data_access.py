@@ -19,7 +19,7 @@ from pyaerocom.plugins.icpforests.reader import ReadICPForest
 logger = logging.getLogger(__name__)
 
 #: tarfile to download
-TESTATA_FILE = "testdata-minimal.tar.gz.20231116"
+TESTDATA_FILE = "testdata-minimal.tar.gz.20231116"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -36,7 +36,7 @@ minimal_dataset = pooch.create(
 )
 
 
-def download(file_name: str = TESTATA_FILE):
+def download(file_name: str = TESTDATA_FILE):
     """download tar file to ~/MyPyaerocom/ unpack contents into ~/MyPyaerocom/testdata-minimal/"""
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
     minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
