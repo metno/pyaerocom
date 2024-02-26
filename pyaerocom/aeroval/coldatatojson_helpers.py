@@ -53,7 +53,7 @@ def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, p
     return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{period}.json"
 
 
-def _write_stationdata_json(ts_data, out_dir, precision):
+def _write_stationdata_json(ts_data, out_dir, precision : int):
     """
     This method writes time series data given in a dictionary to .json files
 
@@ -63,6 +63,8 @@ def _write_stationdata_json(ts_data, out_dir, precision):
         A dictionary containing all processed time series data.
     out_dir : str or similar
         output directory
+    precision: int
+        Precision with which to write json files. Passed to write_json
 
     Returns
     -------
