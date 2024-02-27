@@ -37,7 +37,6 @@ class PyaroConfig(BaseModel):
         return self.model_dump()
 
     def save(self, path: Optional[Path] = None) -> None:
-
         name = self.name
 
         if not path.is_dir():
