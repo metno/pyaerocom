@@ -2,9 +2,9 @@ import logging
 import os
 import sys
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Optional, Union
-from copy import deepcopy
 
 if sys.version_info >= (3, 10):  # pragma: no cover
     from importlib import metadata

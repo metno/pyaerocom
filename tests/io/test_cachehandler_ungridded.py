@@ -3,11 +3,10 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import UngriddedData
-from pyaerocom.io import ReadAeronetSunV3
+from pyaerocom.io import ReadAeronetSunV3, ReadPyaro
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from tests.conftest import lustre_avail
 from tests.fixtures.pyaro import pyaro_testdata
-from pyaerocom.io import ReadPyaro
 
 
 @pytest.fixture(scope="module")

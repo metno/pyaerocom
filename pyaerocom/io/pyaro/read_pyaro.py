@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import NewType, Union
+from typing import NewType, Optional, Union
 
 import numpy as np
 from pyaro import list_timeseries_engines, open_timeseries
@@ -125,7 +125,7 @@ class PyaroToUngriddedData:
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
         units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-        ts_types: dict[str, TsType | None] = {k: None for k in stations}
+        ts_types: dict[str, Optional[TsType]] = {k: None for k in stations}
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
@@ -255,7 +255,7 @@ class PyaroToUngriddedData:
         return ts_type
 
     def _add_ts_type_to_metadata(
-        self, metadata: Metadata, ts_types: dict[str, TsType | None]
+        self, metadata: Metadata, ts_types: dict[str, Optional[TsType]]
     ) -> Metadata:
         new_metadata: Metadata = deepcopy(metadata)
         for idx in new_metadata:
