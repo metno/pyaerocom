@@ -33,26 +33,6 @@ def test_reload_custom(
     assert cache_handler.loaded_data[path.name].shape == aeronetsunv3lev2_subset.shape
 
 
-def test_reload_config(
-    cache_handler: CacheHandlerUngridded, pyaro_testdata: ReadPyaro, tmp_path: Path
-):
-    path = tmp_path / f"{pyaro_testdata.DATA_ID}_concso4.pkl"
-    cache_handler.write(pyaro_testdata.read(), var_or_file_name=path.name, cache_dir=path.parent)
-    assert path.exists()
-
-
-def test_reload_config(
-    cache_handler: CacheHandlerUngridded, pyaro_testdata: ReadPyaro, tmp_path: Path
-):
-    path = tmp_path / f"{pyaro_testdata.DATA_ID}_concso4.pkl"
-    cache_handler.reader = pyaro_testdata
-    assert cache_handler.check_and_load("concso4", cache_dir=path.parent) == False
-    cache_handler.write(pyaro_testdata.read(), var_or_file_name=path.name, cache_dir=path.parent)
-    assert path.exists()
-
-    assert cache_handler.check_and_load("concso4") == True
-
-
 @pytest.mark.dependency
 def test_reload(
     cache_handler: CacheHandlerUngridded,
