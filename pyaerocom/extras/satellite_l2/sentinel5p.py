@@ -860,7 +860,6 @@ class ReadL2Data(ReadL2DataBase):
                             )
                         else:
                             ds[var] = (dim_name_dict[var]), _data[var]
-                            pass
                     else:
                         if var == "avg_kernel":
                             # temp = np.squeeze((_data[var].reshape([point_dim_size, level_dim_size]))[keep_indexes,:])
@@ -879,7 +878,6 @@ class ReadL2Data(ReadL2DataBase):
                             )
                         else:
                             ds[var] = (dim_name_dict[var]), _data[var]
-                            pass
 
             # add attributes to variables
             for var in ds:
@@ -893,7 +891,6 @@ class ReadL2Data(ReadL2DataBase):
 
         else:
             # gridded
-            pass
             time_dim_name = self._TIME_NAME
             lat_dim_name = self._LATITUDENAME
             lon_dim_name = self._LONGITUDENAME
@@ -1067,8 +1064,6 @@ class ReadL2Data(ReadL2DataBase):
         else:
             # 1 by on degree grid on emep domain
             pass
-
-        pass
 
         if isinstance(data, xr.Dataset):
             pass
