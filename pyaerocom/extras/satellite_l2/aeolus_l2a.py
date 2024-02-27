@@ -1179,10 +1179,8 @@ class ReadL2Data(ReadL2DataBase):
 
             elif isinstance(location, tuple):
                 logging.error("passing one location as tuple not supported at this point")
-                pass
             else:
                 logging.error("locations have to be passed as a list of tuples with (lat, lon)")
-                pass
             # return only the part of the array containing some values
             if cut_flag:
                 ret_data = ret_data[:index_counter, :]
@@ -1437,7 +1435,6 @@ class ReadL2Data(ReadL2DataBase):
                 _data = data_to_write
 
                 # gridded
-                pass
                 time_dim_name = self._TIME_NAME
                 lat_dim_name = self._LATITUDENAME
                 lon_dim_name = self._LONGITUDENAME
@@ -2007,7 +2004,6 @@ class ReadL2Data(ReadL2DataBase):
             ds = xr.Dataset()
             # group the data by putting the names with double underscores together
             # (single underscores are used by coda in its field names already)
-            pass
             for lev1_name in coda_data:
                 # lev1 is alsways a dict
                 if isinstance(coda_data[lev1_name], dict):
@@ -2016,7 +2012,6 @@ class ReadL2Data(ReadL2DataBase):
                             for lev3_name in coda_data[lev1_name][lev2_name]:
                                 if isinstance(coda_data[lev1_name][lev2_name][lev3_name], dict):
                                     pass
-                                pass
                         elif isinstance(coda_data[lev1_name][lev2_name], list):
                             # assume a list of identical dicts here
                             for idx, dummy in enumerate(coda_data[lev1_name]):
@@ -2044,7 +2039,6 @@ class ReadL2Data(ReadL2DataBase):
 
                 else:
                     # coda_data[lev1_name} is a scalar
-                    pass
                     var_name = lev1_name
                     ds[var_name] = coda_data[lev1_name]
 
@@ -2381,7 +2375,6 @@ class ReadL2Data(ReadL2DataBase):
                         plot_val_temp = plot_val_temp[0:temp_height_index]
                         height_data = plot_heights_temp[0:temp_height_index]
                         var_data = plot_val_temp[0:temp_height_index]
-                        pass
 
                     try:
                         # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False,
@@ -2706,7 +2699,6 @@ class ReadL2Data(ReadL2DataBase):
                         plot_val_temp = plot_val_temp[0:temp_height_index]
                         height_data = plot_heights_temp[0:temp_height_index]
                         var_data = plot_val_temp[0:temp_height_index]
-                        pass
 
                     try:
                         # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False,
@@ -3109,7 +3101,6 @@ class ReadL2Data(ReadL2DataBase):
                     for grid_lon in self.SUPPORTED_GRIDS[gridtype]["grid_lons"]:
                         grid_data_prot[grid_lat][grid_lon] = {}
 
-                pass
             else:
                 # model grid; just dimensions
                 temp = "starting simple gridding for given grid with dims ({},{},{})...".format(
@@ -3180,7 +3171,6 @@ class ReadL2Data(ReadL2DataBase):
         :param topofile:
         topography file; heights will be added to altitudes if provided
         """
-        pass
         import xarray as xr
 
         if topofile is not None:

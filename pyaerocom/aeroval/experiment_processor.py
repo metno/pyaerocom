@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import logging
-from multiprocessing import dummy
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
