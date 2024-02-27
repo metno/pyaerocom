@@ -6,7 +6,6 @@ from cf_units import Unit
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
-from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _add_heatmap_entry_json,
@@ -31,6 +30,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     process_profile_data_for_stations,
     update_regions_json,
 )
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 
 logger = logging.getLogger(__name__)

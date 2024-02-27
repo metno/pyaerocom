@@ -35,8 +35,8 @@ class Config:
     # default names of the different obs networks
     # might get overwritten from paths.ini see func read_config
 
-    #: IPC Forests
-    IPCFORESTS_NAME = "IPCFORESTS"
+    #: ICP Forests
+    ICPFORESTS_NAME = "ICPFORESTS"
 
     #: Aeronet Sun V2 access names
     AERONET_SUN_V2L15_AOD_DAILY_NAME = "AeronetSunV2Lev1.5.daily"

@@ -11,12 +11,11 @@ from pyaerocom._lowlevel_helpers import (
     ListOfStrings,
     NestedContainer,
     StrType,
-    read_json,
-    write_json,
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
+from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
@@ -140,7 +139,8 @@ class StatisticsSetup(ConstrainedContainer):
         setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
-
+    round_floats_precision: int, optional
+        Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`
 
 
     Parameters
@@ -165,6 +165,11 @@ class StatisticsSetup(ConstrainedContainer):
         self.model_only_stats = False
         self.drop_stats = ()
         self.stats_decimals = None
+
+        if "round_floats_precision" in kwargs:
+            precision = kwargs.pop("round_floats_precision")
+            set_float_serialization_precision(precision)
+
         self.update(**kwargs)
 
 

@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
+from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from tests.conftest import geojson_unavail
 
@@ -72,27 +72,21 @@ def test_ProjectOutput_available_experiments(tmp_path: Path):
     assert val.available_experiments == ["exp"]
 
 
-def test_ProjectOutput__add_entry_experiments_json(tmp_path: Path):
-    val = ProjectOutput("test", str(tmp_path))
-    assert val.available_experiments == []
+def test_ExperimentOutput__add_entry_experiments_json():
+    cfg = EvalSetup(proj_id="proj", exp_id="exp")
+    val = ExperimentOutput(cfg)
 
     val._add_entry_experiments_json("test", 42)
     assert val.available_experiments == ["test"]
 
 
-def test_ProjectOutput__del_entry_experiments_json(tmp_path: Path):
-    val = ProjectOutput("test", str(tmp_path))
+def test_ExperimentOutput__del_entry_experiments_json(tmp_path):
+    cfg = EvalSetup(proj_id="proj", exp_id="exp")
+    val = ExperimentOutput(cfg)
 
     exp_id = "test"
-    assert exp_id not in val.available_experiments
-
-    val._add_entry_experiments_json(exp_id, {})
     assert exp_id in val.available_experiments
 
-    val._del_entry_experiments_json(exp_id)
-    assert exp_id not in val.available_experiments
-
-    # to catch KeyError and make sure it passes
     val._del_entry_experiments_json(exp_id)
     assert exp_id not in val.available_experiments
 
