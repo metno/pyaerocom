@@ -3,7 +3,7 @@ import os
 import sys
 import warnings
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from copy import deepcopy
 
 if sys.version_info >= (3, 10):  # pragma: no cover
@@ -85,7 +85,7 @@ class ReadUngridded:
         data_ids=None,
         ignore_cache=False,
         data_dirs=None,
-        configs: Optional[PyaroConfig | list[PyaroConfig]] = None,
+        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
     ):
         # will be assigned in setter method of data_ids
         self._data_ids = []
@@ -213,7 +213,7 @@ class ReadUngridded:
         return self._configs
 
     @configs.setter
-    def configs(self, val: PyaroConfig | list[PyaroConfig]):
+    def configs(self, val: Union[PyaroConfig, list[PyaroConfig]]):
         if isinstance(val, PyaroConfig):
             val = [val]
         elif not isinstance(val, (tuple, list)):
@@ -732,7 +732,7 @@ class ReadUngridded:
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
-        configs: Optional[PyaroConfig | list[PyaroConfig]] = None,
+        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
         **kwargs,
     ):
         """Read observations
