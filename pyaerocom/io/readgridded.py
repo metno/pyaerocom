@@ -22,7 +22,12 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, to_pandas_timestamp
+from pyaerocom.helpers import (
+    get_highest_resolution,
+    isnumeric,
+    sort_ts_types,
+    to_pandas_timestamp,
+)
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_components_fun import (
     calc_concNhno3_from_vmr,
@@ -1413,7 +1418,11 @@ class ReadGridded:
             )
         for var in vars_to_read[1:]:
             _tt = self.filter_files(
-                var_name=var, start=start, stop=stop, experiment=experiment, vert_which=vert_which
+                var_name=var,
+                start=start,
+                stop=stop,
+                experiment=experiment,
+                vert_which=vert_which,
             )
             common = np.intersect1d(common, _tt.ts_type.unique())
 

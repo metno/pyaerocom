@@ -818,6 +818,7 @@ class ColocatedData:
         dict
             dictionary containing statistical parameters
         """
+        # breakpoint()
         if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
             kwargs["weights"] = self.area_weights[0].flatten()
 

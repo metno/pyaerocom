@@ -211,6 +211,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
                 )
+
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
                 self._process_diurnal_profiles(

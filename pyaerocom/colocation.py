@@ -34,6 +34,8 @@ from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
+DUMMY_MODEL_NAME = "dummy_model"
+
 
 def resolve_var_name(data):
     """
@@ -146,7 +148,9 @@ def _ensure_gridded_gridded_same_freq(data, data_ref, min_num_obs, resample_how)
                 ts_type_data, min_num_obs=min_num_obs, how=resample_how
             )
         else:
-            data = data.resample_time(ts_type_data_ref, min_num_obs=min_num_obs, how=resample_how)
+            data = data.resample_time(
+                ts_type_data_ref, min_num_obs=min_num_obs, how=resample_how
+            )
     return data, data_ref, data.ts_type
 
 
@@ -254,10 +258,14 @@ def colocate_gridded_gridded(
     if regrid_res_deg is not None:
         data_ref = _regrid_gridded(data_ref, regrid_scheme, regrid_res_deg)
     # perform regridding
-    if data.lon_res < data_ref.lon_res:  # obs has lower resolution
-        data = data.regrid(data_ref, scheme=regrid_scheme)
+    if data.name != DUMMY_MODEL_NAME:
+        if data.lon_res < data_ref.lon_res:  # obs has lower resolution
+            data = data.regrid(data_ref, scheme=regrid_scheme)
+        else:
+            data_ref = data_ref.regrid(data, scheme=regrid_scheme)
     else:
-        data_ref = data_ref.regrid(data, scheme=regrid_scheme)
+        # Remake the dummy model to be the size of the data_ref
+        data = data.regrid(data_ref, scheme="nearest")
 
     ts_type_src = [data_ref.ts_type, data.ts_type]
     # time resolution of dataset to be analysed
@@ -330,7 +338,9 @@ def colocate_gridded_gridded(
 
     dims = ["data_source", "time", "latitude", "longitude"]
 
-    coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
+    coldata = ColocatedData(
+        data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta
+    )
 
     # add correct units for lat / lon dimensions
     coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
@@ -392,7 +402,14 @@ def check_ts_type(data, ts_type):
 
 
 def _colocate_site_data_helper(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+    stat_data,
+    stat_data_ref,
+    var,
+    var_ref,
+    ts_type,
+    resample_how,
+    min_num_obs,
+    use_climatology_ref,
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -440,10 +457,16 @@ def _colocate_site_data_helper(
     )[var]
 
     if use_climatology_ref:
-        obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[var_ref]
+        obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[
+            var_ref
+        ]
     else:
         obs_ts = stat_data_ref.resample_time(
-            var_ref, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
+            var_ref,
+            ts_type=ts_type,
+            how=resample_how,
+            min_num_obs=min_num_obs,
+            inplace=True,
         )[var_ref]
 
     # fill up missing time stamps
@@ -451,7 +474,14 @@ def _colocate_site_data_helper(
 
 
 def _colocate_site_data_helper_timecol(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+    stat_data,
+    stat_data_ref,
+    var,
+    var_ref,
+    ts_type,
+    resample_how,
+    min_num_obs,
+    use_climatology_ref,
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -512,7 +542,11 @@ def _colocate_site_data_helper_timecol(
     # =============================================================================
 
     stat_data.resample_time(
-        var_name=var, ts_type=str(coltst), how=resample_how, min_num_obs=min_num_obs, inplace=True
+        var_name=var,
+        ts_type=str(coltst),
+        how=resample_how,
+        min_num_obs=min_num_obs,
+        inplace=True,
     )
 
     stat_data_ref.resample_time(
@@ -530,7 +564,9 @@ def _colocate_site_data_helper_timecol(
     # now both StationData objects are in the same resolution, but they still
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
     # which will merge the time index
-    merged = pd.concat([stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"])
+    merged = pd.concat(
+        [stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"]
+    )
     # Interpolate the model to the times of the observations
     # (for non-standard coltst it could be that 'resample_time'
     # has placed the model and observations at different time stamps)
@@ -728,7 +764,9 @@ def colocate_gridded_ungridded(
     ts_type_src_data = data.ts_type
     ts_type, ts_type_data = check_ts_type(data, ts_type)
     if not colocate_time and ts_type < ts_type_data:
-        data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
+        data = data.resample_time(
+            str(ts_type), min_num_obs=min_num_obs, how=resample_how
+        )
         ts_type_data = ts_type
 
     if use_climatology_ref:
@@ -772,7 +810,9 @@ def colocate_gridded_ungridded(
             f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
 
-    grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
+    grid_stat_data = data.to_time_series(
+        longitude=ungridded_lons, latitude=ungridded_lats
+    )
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -976,7 +1016,10 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     arr = coldata.data
 
     coords = zip(
-        arr.latitude.values, arr.longitude.values, arr.altitude.values, arr.station_name.values
+        arr.latitude.values,
+        arr.longitude.values,
+        arr.altitude.values,
+        arr.station_name.values,
     )
     if p0 is None:
         p0 = pressure()  # STD conditions sea level

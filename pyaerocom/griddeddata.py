@@ -133,7 +133,12 @@ class GriddedData:
     )
 
     def __init__(
-        self, input=None, var_name=None, check_unit=True, convert_unit_on_init=True, **meta
+        self,
+        input=None,
+        var_name=None,
+        check_unit=True,
+        convert_unit_on_init=True,
+        **meta,
     ):
         if input is None:
             input = iris.cube.Cube([])
@@ -814,7 +819,10 @@ class GriddedData:
         current = self.units
 
         mulfac = get_unit_conversion_fac(
-            from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
+            from_unit=current,
+            to_unit=new_unit,
+            var_name=self.var_name,
+            ts_type=self.ts_type,
         )
         logger.info(
             f"Succesfully converted unit from {current} to {new_unit} in {self.short_str()}"
@@ -1149,7 +1157,10 @@ class GriddedData:
                 if sample_points is None:
                     sample_points = self._coords_to_iris_sample_points(**coords)
                 result = self._to_timeseries_2D(
-                    sample_points, scheme, collapse_scalar=collapse_scalar, add_meta=add_meta
+                    sample_points,
+                    scheme,
+                    collapse_scalar=collapse_scalar,
+                    add_meta=add_meta,
                 )
             else:
                 if not coords:
@@ -1661,7 +1672,10 @@ class GriddedData:
                 to_ts_type, from_ts_type=from_ts_type, how=how, min_num_obs=min_num_obs
             )
         data = GriddedData(
-            arr_out.to_iris(), check_unit=False, convert_unit_on_init=False, **self.metadata
+            arr_out.to_iris(),
+            check_unit=False,
+            convert_unit_on_init=False,
+            **self.metadata,
         )
         data.metadata["ts_type"] = to_ts_type
         data.metadata.update(rs.last_setup)
@@ -2184,7 +2198,13 @@ class GriddedData:
         return GriddedData(itp_cube, **self.metadata)
 
     def regrid(
-        self, other=None, lat_res_deg=None, lon_res_deg=None, scheme="areaweighted", **kwargs
+        self,
+        other=None,
+        lat_res_deg=None,
+        lon_res_deg=None,
+        # scheme="areaweighted",
+        scheme="nearest",
+        **kwargs,
     ):
         """Regrid this grid to grid resolution of other grid
 
@@ -2602,7 +2622,11 @@ class GriddedData:
 
         if var_name in self.reader.vars_provided:
             data = self.reader.read_var(
-                var_name, start=self.start, stop=self.stop, ts_type=self.ts_type, flex_ts_type=True
+                var_name,
+                start=self.start,
+                stop=self.stop,
+                ts_type=self.ts_type,
+                flex_ts_type=True,
             )
             return data
         raise VariableNotFoundError(f"Could not find variable {var_name}")

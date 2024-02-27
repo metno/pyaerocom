@@ -19,16 +19,28 @@ else:  # pragma: no cover
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
+from pyaerocom._lowlevel_helpers import (
+    BrowseDict,
+    ListOfStrings,
+    StrWithDefault,
+    chk_make_subdir,
+)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
+from pyaerocom.colocation_3d import (
+    ColocatedDataLists,
+    colocate_vertical_profile_gridded,
+)
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
+from pyaerocom.exceptions import (
+    ColocationError,
+    ColocationSetupError,
+    DataCoverageError,
+)
 from pyaerocom.helpers import (
     get_lowest_resolution,
     start_stop,
@@ -1223,6 +1235,7 @@ class Colocator(ColocationSetup):
             )
 
         data = self._check_remove_outliers_gridded(data, var_name, is_model)
+
         return data
 
     def _try_get_vert_which_alt(self, is_model, var_name):
