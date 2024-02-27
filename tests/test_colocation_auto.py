@@ -483,6 +483,12 @@ def test_colocation_pyaro(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> N
     cd = data["concso4"]["concso4"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
+    assert str(cd.start) == "2015-01-15T00:00:00.000000000"
+    assert str(cd.stop) == "2015-12-15T00:00:00.000000000"
+
+    assert np.sum(np.isnan(cd.data[0, :].data)) == 0
+
+    assert cd.data[0, :].data.shape[0] == 12
 
 
 def test_colocation_pyaro_change_obs_id(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
