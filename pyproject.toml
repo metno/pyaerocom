@@ -47,6 +47,9 @@ dependencies = [
     'importlib-resources>=5.10; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1; python_version >= "3.10"',
+    "pyaro",
+    "pydantic",
+
 ]
 
 [project.readme]

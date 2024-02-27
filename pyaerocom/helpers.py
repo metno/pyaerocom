@@ -1254,6 +1254,8 @@ def to_pandas_timestamp(value):
     --------
     pandas.Timestamp
     """
+    if isinstance(value, np.str_):
+        value = str(value)
     if isinstance(value, pd.Timestamp):
         return value
     elif isinstance(value, (str, np.datetime64, datetime, date)):
@@ -1366,7 +1368,6 @@ def start_stop(start, stop=None, stop_sub_sec=True):
     except pd.errors.OutOfBoundsDatetime:  # probably climatology
         start = _check_climatology_timestamp(start)
         isclim = True
-
     if stop is None:
         if isclim:
             yr = 2222
