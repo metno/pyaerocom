@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import NewType
+from typing import NewType, Union
 
 import numpy as np
 from pyaro import list_timeseries_engines, open_timeseries
@@ -17,7 +17,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 logger = logging.getLogger(__name__)
 
 
-Metadata = NewType("Metadata", dict[str, dict[str, str | list[str]]])
+Metadata = NewType("Metadata", dict[str, dict[str, Union[str, list[str]]]])
 
 
 class ReadPyaro(ReadUngriddedBase):
