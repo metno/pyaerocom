@@ -54,5 +54,6 @@ We are in the process of moving to the code style enforced by [black](https://gi
 * [Alvaro Valdebenito](https://github.com/avaldebe)
 * [Daniel Heinesen](https://github.com/dulte)
 * [Augustin Mortier](https://github.com/AugustinMortier)
+* [Lewis Blake](https://github.com/lewisblake)
 * [Jonas Gliß](https://github.com/jgliss) - former member
 * [Hans Brenna](https://github.com/hansbrenna) - former member

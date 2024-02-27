@@ -1,4 +1,4 @@
-|CI| |Docs| |Coverage|
+|CI| |Docs| |Coverage| |DOI|
 
 =========
 pyaerocom
@@ -24,3 +24,5 @@ pyaerocom
 .. |Coverage| image:: https://codecov.io/gh/metno/pyaerocom/branch/main-dev/graph/badge.svg?token=A0AdX8YciZ
     :target: https://codecov.io/gh/metno/pyaerocom
 
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10374181.svg
+   :target: https://doi.org/10.5281/zenodo.10374181

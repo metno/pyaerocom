@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class ReadIPCForest(ReadUngriddedBase):
     #: version log of this class (for caching)
-    __version__ = "0.4_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.5_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.IPCFORESTS_NAME
@@ -57,9 +57,11 @@ class ReadIPCForest(ReadUngriddedBase):
         "depoxs": 20,
         "depoxn": 19,
         "deprdn": 17,
+        "depna": 16,
         "depoxsf": 20,
         "depoxnf": 19,
         "deprdnf": 17,
+        "depnaf": 16,
         "wetso4": 20,
         "wetno3": 19,
         "wetnh4": 17,
@@ -86,6 +88,8 @@ class ReadIPCForest(ReadUngriddedBase):
         "wetnh4": "mg N m-2 d-1",
         "wetno2": "mg N m-2 d-1",
         "wetna": "mg m-2 d-1",
+        "depna": "mg m-2 d-1",
+        "depnaf": "mg m-2 d-1",
         # unverified
         "wetcl": "mg m-2 d-1",
     }
