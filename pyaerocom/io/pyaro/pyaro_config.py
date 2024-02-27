@@ -26,7 +26,7 @@ class PyaroConfig(BaseModel):
     name: str
     data_id: str
     filename_or_obj_or_url: str
-    filters: dict[str, dict[str, str | list[str]]]
+    filters: dict[str, dict[str, list[str]]]
     name_map: Optional[dict[str, str]] = None  # no Unit conversion option
 
     ##########################

@@ -331,7 +331,6 @@ class ColocationSetup(BrowseDict):
         **kwargs,
     ):
         self.model_id = model_id
-        self.obs_config = obs_config
         self._obs_id = None
         self._obs_config = None
 

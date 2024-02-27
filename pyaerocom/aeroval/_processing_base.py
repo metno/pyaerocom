@@ -115,7 +115,7 @@ class HasColocator(HasConfig):
         """
         if obs_name:
             obs_cfg = self.cfg.get_obs_entry(obs_name)
-            pyaro_config = obs_cfg["config"] if "config" in obs_cfg else None
+            pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
             col_cfg = {**self.cfg.colocation_opts}
             col_cfg["obs_config"] = pyaro_config
             col = Colocator(**col_cfg)

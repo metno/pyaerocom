@@ -109,9 +109,9 @@ class ReadUngridded:
         self.config_map = {}
 
         if isinstance(configs, PyaroConfig):
-            self._configs = [configs]
-        else:
-            self._configs = configs
+            configs = [configs]
+
+        self._configs = configs
 
         if isinstance(configs, list):
             for config in configs:
@@ -273,7 +273,7 @@ class ReadUngridded:
         )
         return self.get_lowlevel_reader(data_id, config=config)
 
-    def get_lowlevel_reader(self, data_id=None, config: Optional[PyaroConfig] = None):
+    def get_lowlevel_reader(self, data_id=None):
         """Helper method that returns initiated reader class for input ID
 
         Parameters
@@ -287,34 +287,23 @@ class ReadUngridded:
             instance of reading class (needs to be implementation of base
             class :class:`ReadUngriddedBase`).
         """
-        if data_id is not None and config is not None:
-            if data_id != config.data_id:
-                raise ValueError(
-                    f"DATA ID and config are both given, but they are not equal, {data_id} != {config.data_id}"
-                )
-        if data_id is None and config is not None:
-            data_id = config.data_id
+
         if data_id is None:
             if len(self.data_ids) != 1:
                 raise ValueError("Please specify dataset")
         if not data_id in self.supported_datasets:
-            raise NetworkNotSupported(
-                f"Could not fetch reader class: Input "
-                f"network {data_id} is not supported by "
-                f"ReadUngridded"
-            )
+            if data_id not in self.config_map:
+                raise NetworkNotSupported(
+                    f"Could not fetch reader class: Input "
+                    f"network {data_id} is not supported by "
+                    f"ReadUngridded"
+                )
         elif not data_id in self.data_ids:
             self.data_ids.append(data_id)
-            if config is not None:
-                self.add_config(config=config)
-
         if not data_id in self._readers:
             _cls = self._find_read_class(data_id)
             reader = self._init_lowlevel_reader(_cls, data_id)
-            if config is not None:
-                self._readers[config.name] = reader
-            else:
-                self._readers[data_id] = reader
+            self._readers[data_id] = reader
         return self._readers[data_id]
 
     def add_pyaro_reader(self, config: PyaroConfig) -> ReadUngriddedBase:
@@ -846,7 +835,7 @@ class ReadUngridded:
                 return svar
         raise ValueError()
 
-    def get_vars_supported(self, obs_id, vars_desired, config: Optional[PyaroConfig] = None):
+    def get_vars_supported(self, obs_id, vars_desired):  # , config: Optional[PyaroConfig] = None):
         """
         Filter input list of variables by supported ones for a certain data ID
 
@@ -891,7 +880,7 @@ class ReadUngridded:
 
         else:
             # check if variable can be read from a dataset on disk
-            _oreader = self.get_lowlevel_reader(obs_id, config=config)
+            _oreader = self.get_lowlevel_reader(obs_id)
             for var in varlist_aerocom(vars_desired):
                 if _oreader.var_supported(var):
                     obs_vars.append(var)

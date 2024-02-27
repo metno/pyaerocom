@@ -171,19 +171,15 @@ def test_config_map(pyaro_testconfig):
     assert m[pyaro_testconfig[1].name] == pyaro_testconfig[1]
 
 
+def test_get_vars_supported_pyaro(pyaro_testconfig):
+    config = pyaro_testconfig[0]
+    reader = ReadUngridded(configs=config)
+    assert reader.get_vars_supported(obs_id=config.name, vars_desired="concso4")
+
+
 ##
 # Tests that raises errors
 ##
-
-
-def test_different_data_id(pyaro_testconfig):
-    diff_data_id = "invalid"
-    reader = ReadUngridded(configs=pyaro_testconfig)
-
-    with pytest.raises(
-        ValueError, match="DATA ID and config are both given, but they are not equal"
-    ):
-        reader.get_lowlevel_reader(data_id=diff_data_id, config=pyaro_testconfig[0])
 
 
 def test_config_name_already_exists(pyaro_testconfig):
