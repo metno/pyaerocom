@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.15.0"
+version = "0.15.1"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -35,7 +35,7 @@ dependencies = [
     "SRTM.py",              # required by geonum
     "simplejson",
     "requests",
-    "reverse-geocode",
+    "geocoder_reverse_natural_earth",
     "tqdm",
     "openpyxl",
     "geojsoncontour",
@@ -91,7 +91,7 @@ ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
 ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
 ReadMEP = "pyaerocom.plugins.mep.reader:ReadMEP"
 ReadICOS = "pyaerocom.plugins.icos.reader:ReadICOS"
-ReadIPCForest = "pyaerocom.plugins.ipcforests.reader:ReadIPCForest"
+ReadICPForest = "pyaerocom.plugins.icpforests.reader:ReadICPForest"
 
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]
@@ -151,7 +151,7 @@ exclude_lines = [
 
 [tool.black]
 target-version = ['py39']
-extend_skip = ["pyaerocom-tutorials"]
+extend-exclude = "pyaerocom-tutorials"
 line-length = 99
 
 [tool.isort]
@@ -186,7 +186,6 @@ module = [
     "geojsoncontour",
     "pandas",
     "dask",
-    "reverse_geocode",
     "seaborn",
     "openpyxl",
     "tqdm",

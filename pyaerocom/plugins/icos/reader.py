@@ -2,12 +2,9 @@ from __future__ import annotations
 
 import logging
 import re
-from collections import defaultdict
 from collections.abc import Iterable
-from functools import cached_property, lru_cache
 from pathlib import Path
 
-import numpy as np
 import xarray as xr
 
 from pyaerocom import const
@@ -101,17 +98,17 @@ class ReadICOS(ReadMEP):
         first_file: int | None = None,
         last_file: int | None = None,
     ) -> UngriddedData:
-        if len(var_to_retrieve) > 1:
-            raise NotImplementedError("Unnskyld, ReadICOS can only read one variable at a time...")
-
         if var_to_retrieve is None:
             var_to_retrieve = self.DEFAULT_VARS[0]
 
-        if unsupported := set(var_to_retrieve) - set(self.PROVIDES_VARIABLES):
-            raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
-
         if isinstance(var_to_retrieve, list):
             var_to_retrieve = var_to_retrieve[0]
+
+        if len([var_to_retrieve]) > 1:
+            raise NotImplementedError("Unnskyld, ReadICOS can only read one variable at a time...")
+
+        if unsupported := set([var_to_retrieve]) - set(self.PROVIDES_VARIABLES):
+            raise ValueError(f"Unsupported variables: {', '.join(sorted(unsupported))}")
 
         if files is not None and not isinstance(files, tuple):
             files = tuple(files)
@@ -146,9 +143,17 @@ class ReadICOS(ReadMEP):
             return UngriddedData.from_station_data(stations)
         else:
             stations: list[StationData] = []
+            this_var_files = sorted(
+                Path(self.data_dir).rglob(self.FILEMASK_MAPPING[var_to_retrieve])
+            )
+
             for station_name, paths in self.stations(files).items():
+                paths_to_read = list(set(paths) & set(this_var_files))
+                if not paths_to_read:
+                    continue
+
                 logger.debug(f"Reading station {station_name}")
-                ds = self._read_dataset(paths)[var_to_retrieve]
+                ds = self._read_dataset(paths)
                 ds = ds.rename({self.VAR_MAPPING[var_to_retrieve]: var_to_retrieve})
                 ds = ds.assign(
                     time=self._dataset_time(ds),

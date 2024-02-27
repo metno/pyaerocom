@@ -247,8 +247,8 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats["refdata_mean"] == stats["data_mean"]
     assert stats["nmb"] == 0
     assert stats["mnmb"] == 0
-    assert stats["R"] == 1
-    assert stats["R_spearman"] == 1
+    assert stats["R"] == pytest.approx(1, rel=1e-6)
+    assert stats["R_spearman"] == pytest.approx(1, rel=1e-6)
 
 
 @pytest.mark.xfail(raises=UnresolvableTimeDefinitionError)

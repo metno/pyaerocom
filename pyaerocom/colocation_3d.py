@@ -166,10 +166,12 @@ def _colocate_vertical_profile_gridded(
             obs_stat_this_layer = obs_stat.copy()
 
             try:
-                obs_stat_this_layer[var_ref] = obs_stat_this_layer.select_altitude(
-                    var_name=var_ref, altitudes=list(vertical_layer.values())
-                ).mean(
-                    "altitude", skipna=True  # very important to skip nans here
+                obs_stat_this_layer[var_ref] = (
+                    obs_stat_this_layer.select_altitude(
+                        var_name=var_ref, altitudes=list(vertical_layer.values())
+                    )
+                    .mean("altitude", skipna=True)  # very important to skip nans here
+                    .to_series()  # make pandas series
                 )
             except ValueError:
                 logger.warning(

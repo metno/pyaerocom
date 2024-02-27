@@ -1397,7 +1397,6 @@ def datetime2str(time, ts_type=None):
         time = to_pandas_timestamp(time).strftime(conv)
     except pd.errors.OutOfBoundsDatetime:
         logger.warning(f"Failed to convert time {time} to string")
-        pass
     return time
 
 

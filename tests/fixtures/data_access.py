@@ -14,12 +14,12 @@ import pooch
 from pyaerocom import const, io
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.plugins.ghost.reader import ReadGhost
-from pyaerocom.plugins.ipcforests.reader import ReadIPCForest
+from pyaerocom.plugins.icpforests.reader import ReadICPForest
 
 logger = logging.getLogger(__name__)
 
 #: tarfile to download
-TESTATA_FILE = "testdata-minimal.tar.gz.20231116"
+TESTDATA_FILE = "testdata-minimal.tar.gz.20231116"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -36,9 +36,10 @@ minimal_dataset = pooch.create(
 )
 
 
-def download(file_name: str = TESTATA_FILE):
-    """download tar file to ~/MyPyaerocom/ unpack cointents into ~/MyPyaerocom/testdata-minimal/"""
+def download(file_name: str = TESTDATA_FILE):
+    """download tar file to ~/MyPyaerocom/ unpack contents into ~/MyPyaerocom/testdata-minimal/"""
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
+    minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
     minimal_dataset.fetch(file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir="./"))
 
 
@@ -86,7 +87,7 @@ TEST_DATA: dict[str, DataForTests] = {
     "G.EEA.hourly.Subset": DataForTests("obsdata/GHOST/data/EEA_AQ_eReporting/hourly", ReadGhost),
     "G.EBAS.daily.Subset": DataForTests("obsdata/GHOST/data/EBAS/daily", ReadGhost),
     "G.EBAS.hourly.Subset": DataForTests("obsdata/GHOST/data/EBAS/hourly", ReadGhost),
-    "IPCFORESTS.Subset": DataForTests("obsdata/ipc-forests/dep", ReadIPCForest),
+    "ICPFORESTS.Subset": DataForTests("obsdata/ipc-forests/dep", ReadICPForest),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
 }
