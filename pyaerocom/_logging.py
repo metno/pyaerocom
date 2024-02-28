@@ -67,7 +67,7 @@ else:
     if not sys.stdout.isatty():  # disable stdout when non-interactive
         change_verbosity(logging.CRITICAL)
     # cleanup of old default logging files
-    now = time.now()
+    now = time.time()
     logger = logging.getLogger(__name__)
     for f in log_path.glob("pyaerocom.log.*"):
         age = now - f.lstat().st_mtime
