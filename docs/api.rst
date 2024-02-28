@@ -46,7 +46,7 @@ provided here:
    class=FileHandler
    formatter=detailed
    level=DEBUG
-   file_name=pyaerocom.log.%(pid)s
+   file_name=logs/pyaerocom.log.%(pid)s
    args=('%(file_name)s', "w")
 
 
