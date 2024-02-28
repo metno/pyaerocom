@@ -15,8 +15,8 @@ import logging
 import os
 import pathlib
 import sys
-from logging.config import fileConfig
 import time
+from logging.config import fileConfig
 
 from pyaerocom.data import resources
 
