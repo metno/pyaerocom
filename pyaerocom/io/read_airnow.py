@@ -335,7 +335,7 @@ class ReadAirNow(ReadUngriddedBase):
         varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
         unique_stat_ids = None
-        for i in tqdm(range(len(files))):
+        for i in tqdm(range(len(files)), disable=None):
             fp = files[i]
             filedata = self._read_file(fp)
             for i, filevar in enumerate(file_vars_to_retrieve):
@@ -421,7 +421,7 @@ class ReadAirNow(ReadUngriddedBase):
                 statlist = np.unique((subset[:, statcol]))
             else:
                 statlist = unique_stat_ids
-            for stat_id in tqdm(statlist, desc=var):
+            for stat_id in tqdm(statlist, desc=var, disable=None):
                 if not stat_id in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id
