@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import multiprocessing as mp
 import time
@@ -485,14 +486,14 @@ def main(
         Path("../../data").resolve(),
         exists=True,
         readable=True,
-        writable=True,
+        # writable=True,
         help="Path where the results are stored",
     ),
     coldata_path: Path = typer.Option(
         Path("../../coldata").resolve(),
         exists=True,
         readable=True,
-        writable=True,
+        # writable=True,
         help="Path where the coldata are stored",
     ),
     model: List[ModelName] = typer.Option(
@@ -583,6 +584,10 @@ def main(
         onlymap,
         addmap,
     )
+    if dry_run:
+        path = Path(f"{date.today():%Y%m%d}_{id}.json")
+        path.write_text(json.dumps(cfg, indent=2))
+        return
 
     quiet = not verbose
     if medianscores == True:
