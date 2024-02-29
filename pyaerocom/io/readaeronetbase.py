@@ -368,7 +368,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         num_files = len(files)
         logger.info("Reading AERONET data")
         skipped = 0
-        for i in tqdm(range(num_files)):
+        for i in tqdm(range(num_files), disable=None):
             _file = files[i]
             try:
                 station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
