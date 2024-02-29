@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from pprint import pformat
-from typing import List, Optional
+from typing import Optional
 
 import pandas as pd
 import typer
@@ -212,9 +212,9 @@ def make_config(
     data_path: Path,
     coldata_path: Path,
     models: list[ModelName],
-    id: str | None,
-    name: str | None,
-    description: str | None,
+    id: str,
+    name: str,
+    description: str,
     eval_type: Eval_Type | None,
     analysis: bool,
     only_map: bool,
@@ -266,14 +266,7 @@ def make_config(
     if analysis:
         cfg.update(forecast_days=1)
 
-    if id is not None:
-        cfg.update(exp_id=id)
-
-    if name is not None:
-        cfg.update(exp_name=name)
-
-    if description is not None:
-        cfg.update(exp_descr=description)
+    cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
     if add_map:
         cfg.update(add_model_maps=True)
@@ -386,66 +379,38 @@ def runner_medians_cores(
 @app.command()
 def main(
     start_date: datetime = typer.Argument(
-        f"{datetime.today():%F}",
-        formats=["%Y-%m-%d", "%Y%m%d"],
-        help="Start date for the evaluation",
+        ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
     end_date: datetime = typer.Argument(
-        f"{datetime.today():%F}",
-        formats=["%Y-%m-%d", "%Y%m%d"],
-        help="End date for the evaluation",
+        ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),
-    leap: int = typer.Argument(
-        0,
-        min=0,
-        max=3,
-        help="Which forecast day to use",
-    ),
+    leap: int = typer.Argument(0, min=0, max=3, help="forecast day"),
     model_path: Path = typer.Option(
-        DEFAULT_MODEL_PATH,
-        exists=True,
-        readable=True,
-        help="Path where the model data is found",
+        DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
     obs_path: Path = typer.Option(
-        DEFAULT_OBS_PATH,
-        exists=True,
-        readable=True,
-        help="Path where the obs data is found",
+        DEFAULT_OBS_PATH, exists=True, readable=True, help="path to observation data"
     ),
     data_path: Path = typer.Option(
         Path("../../data").resolve(),
         exists=True,
         readable=True,
         # writable=True,
-        help="Path where the results are stored",
+        help="where results are stored",
     ),
     coldata_path: Path = typer.Option(
         Path("../../coldata").resolve(),
         exists=True,
         readable=True,
         # writable=True,
-        help="Path where the coldata are stored",
+        help="where the collocated data are stored",
     ),
-    model: List[ModelName] = typer.Option(
-        [],
-        "--model",
-        "-m",
-        case_sensitive=False,
-        help="Which model to use. All is used if none is given",
+    model: list[ModelName] = typer.Option(
+        list(ModelName), "--model", "-m", case_sensitive=False, help="model(s) to evaluate"
     ),
-    id: Optional[str] = typer.Option(
-        None,
-        help="Experiment name. If none are given, the id from the default config is used",
-    ),
-    name: Optional[str] = typer.Option(
-        None,
-        help="Experiment name. If none are given, the name from the default config is used",
-    ),
-    description: Optional[str] = typer.Option(
-        None,
-        help="Experiment description. If none given, the description from the default config is used",
-    ),
+    id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
+    name: str = typer.Option(CFG["exp_name"], help="experiment name"),
+    description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
     analysis: bool = typer.Option(
         False,
         "--analysis/--forecast",
