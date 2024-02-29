@@ -2,14 +2,11 @@ from __future__ import annotations
 
 import json
 import logging
-import multiprocessing as mp
-import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from pprint import pformat
 from typing import Optional
 
 import pandas as pd
@@ -36,7 +33,7 @@ TODO:
 """
 
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
 
 
@@ -189,7 +186,6 @@ def make_model_entry(
     end_date: datetime,
     leap: int,
     model_path: Path,
-    obs_path: Path,
     model: ModelName,
     runtype: str,
 ) -> dict:
@@ -238,7 +234,6 @@ def make_config(
                 end_date,
                 leap,
                 model_path,
-                obs_path,
                 model,
                 runtype="AN" if analysis else "FC",
             )
@@ -277,10 +272,9 @@ def make_config(
     return cfg
 
 
-def read_observations(specie: str, *, files: list[str], cache: str | Path | None) -> None:
+def read_observations(specie: str, *, files: list[str], cache: str | Path) -> None:
     logger.info(f"Running {specie}")
-    if cache is not None:
-        const.CACHEDIR = str(cache)
+    const.CACHEDIR = str(cache)
 
     reader = ReadUngridded()
     reader.read(data_ids="CAMS2_83.NRT", vars_to_retrieve=specie, files=files, force_caching=True)
@@ -292,27 +286,11 @@ def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
     ana_cams2_83.run(analysis=analysis, var_list=specie)
 
 
-def runner(
-    cfg: dict,
-    cache: str | Path | None,
-    eval_type: Eval_Type | None,
-    *,
-    analysis: bool = False,
-    dry_run: bool = False,
-    quiet: bool = False,
-    pool: int = 1,
-):
-    logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
-    if dry_run:
-        return
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    if quiet:
-        const.QUIET = True
-
+def standard_runner(config: Path, *, pool: int = 1):
+    logger.info(f"Standard Evaluation\n{config}")
+    cfg = json.loads(config.read_text())
     stp = EvalSetup(**cfg)
+
     logging.info(f"Clearing cache at {const.CACHEDIR}")
     clear_cache()
 
@@ -321,7 +299,7 @@ def runner(
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
-                executor.submit(read_observations, specie, files=files, cache=cache)
+                executor.submit(read_observations, specie, files=files, cache=const.CACHEDIR)
                 for specie in species_list
             ]
         for future in as_completed(futures):
@@ -329,37 +307,18 @@ def runner(
 
     logger.info("Running Statistics")
     ExperimentProcessor(stp).run()
-    logger.info("Done Running Statistics")
 
 
-def runner_medians_cores(
-    cfg: dict,
-    cache: str | Path | None,
-    *,
-    analysis: bool = False,
-    dry_run: bool = False,
-    quiet: bool = False,
-    pool: int = 1,
-):
-    if dry_run:
-        return
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    if quiet:
-        const.QUIET = True
-
-    stp = EvalSetup(**cfg)
-
-    start = time.time()
-
-    logger.info(
-        "Running CAMS2_83 Specific Statistics, "
+def runner_median_scores(config: Path, *, analysis: bool = False, pool: int = 1):
+    logger.info("CAMS2_83 Specific Statistics\n{config}")
+    logger.warning(
         "cache is not cleared, "
         "collocated data is assumed in place, "
         "regular statistics are assumed to have been run"
     )
+    cfg = json.loads(config.read_text())
+    stp = EvalSetup(**cfg)
+
     if pool > 1:
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
         with ProcessPoolExecutor(max_workers=pool) as executor:
@@ -373,11 +332,21 @@ def runner_medians_cores(
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
         CAMS2_83_Processer(stp).run(analysis=analysis)
 
-    print(f"Long run: {time.time() - start} sec")
+
+@app.callback()
+def callback(
+    cache: Path = typer.Option(const.CACHEDIR, help="cache path"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+):
+    """evaluate CAMS2_83 models against surface observations"""
+    change_verbosity(logging.INFO if verbose else logging.ERROR)
+    const.QUIET = not verbose
+    const.CACHEDIR = str(cache)
 
 
-@app.command()
-def main(
+@app.command(no_args_is_help=True)
+def conf(
+    config: Path = typer.Argument(..., writable=True, help="experiment configuration"),
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
@@ -403,7 +372,7 @@ def main(
         exists=True,
         readable=True,
         # writable=True,
-        help="where the collocated data are stored",
+        help="where collocated data are stored",
     ),
     model: list[ModelName] = typer.Option(
         list(ModelName), "--model", "-m", case_sensitive=False, help="model(s) to evaluate"
@@ -414,58 +383,15 @@ def main(
     analysis: bool = typer.Option(
         False,
         "--analysis/--forecast",
-        help="Sets the flag which tells the code to use the analysis model data. If false, the forecast model data is used",
+        help="analysis or forecast model and observations",
     ),
-    add_map: bool = typer.Option(
-        False,
-        "--addmap",
-        help="Sets the flag which tells the code to set add_model_maps=True. Option is set to False otherwise",
-    ),
+    add_map: bool = typer.Option(False, "--addmap", help="set add_model_maps"),
     only_map: bool = typer.Option(
-        False,
-        "--onlymap",
-        help="Sets the flag which tells the code to set add_model_maps=True and only_model_maps=True. Option is set to False otherwise",
+        False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
-    median_scores: bool = typer.Option(
-        False,
-        "--medianscores",
-        help="If true just the cams2_83-specific statistics are computed, a.k.a. the median scores plots or 'weird' plots, the cache is not cleared and it's assumed that the collocated data is already in place and the regular statistics have already been run",
-    ),
-    cache: Optional[Path] = typer.Option(
-        None,
-        help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
-    ),
-    dry_run: bool = typer.Option(
-        False,
-        "--dry-run",
-        "-n",
-        help="Will only make and print the config without running the evaluation",
-    ),
-    eval_type: Optional[Eval_Type] = typer.Option(
-        None,
-        "--eval-type",
-        "-e",
-        help="Type of evaluation.",
-    ),
-    pool: int = typer.Option(
-        1,
-        "--pool",
-        "-p",
-        help="Number of CPUs to be used for reading OBS and creating forecast plots",
-    ),
-    verbose: bool = typer.Option(False, "--verbose", "-v"),
+    eval_type: Optional[Eval_Type] = typer.Option(None, "--eval-type", "-e"),
 ):
-    if verbose or dry_run:
-        change_verbosity(logging.INFO)
-
-    if pool > mp.cpu_count():
-        logger.warning(
-            f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}. Using that instead"
-        )
-        pool = mp.cpu_count()
-
-    # mp.set_start_method('forkserver')
-
+    """write experiment configuration as JSON"""
     cfg = make_config(
         start_date,
         end_date,
@@ -483,24 +409,41 @@ def main(
         only_map,
         add_map,
     )
-    if dry_run:
-        path = Path(f"{date.today():%Y%m%d}_{id}.json")
-        path.write_text(json.dumps(cfg, indent=2))
-        return
+    config.write_text(json.dumps(cfg, indent=2))
 
-    if median_scores:
-        if eval_type not in {"season", "long"}:
-            logger.error(
-                "Median scores calculations are only consistent with a season/long kind of evaluation"
-            )
-            raise typer.Abort()
-        else:
-            logger.info("Special run for median scores only")
-            runner_medians_cores(
-                cfg, cache, analysis=analysis, dry_run=dry_run, quiet=not verbose, pool=pool
-            )
-    else:
-        logger.info("Standard run")
-        runner(
-            cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=not verbose, pool=pool
-        )
+
+@app.command(no_args_is_help=True)
+def evaluation(
+    config: Path = typer.Argument(
+        ..., exists=True, readable=True, help="experiment configuration"
+    ),
+    pool: int = typer.Option(
+        1,
+        "--pool",
+        "-p",
+        help="Number of CPUs to be used for reading OBS and creating forecast plots",
+    ),
+):
+    """run standard evaluation as described on experiment configuration"""
+    standard_runner(config, pool=pool)
+
+
+@app.command(no_args_is_help=True)
+def median_scores(
+    config: Path = typer.Argument(
+        ..., exists=True, readable=True, help="experiment configuration"
+    ),
+    analysis: bool = typer.Option(
+        False,
+        "--analysis/--forecast",
+        help="analysis or forecast model and observations",
+    ),
+    pool: int = typer.Option(
+        1,
+        "--pool",
+        "-p",
+        help="Number of CPUs to be used for reading OBS and creating forecast plots",
+    ),
+):
+    """special evaluation for experiment as described on experiment configuration"""
+    runner_median_scores(config, analysis=analysis, pool=pool)
