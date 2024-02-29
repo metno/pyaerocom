@@ -19,6 +19,9 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
+from pydantic import BaseModel
+from typing import Optional, Tuple, Literal
+
 logger = logging.getLogger(__name__)
 
 
@@ -86,17 +89,13 @@ class OutputPaths(ConstrainedContainer):
             loc = self._check_init_dir(os.path.join(base, subdir), assert_exists)
             out[subdir] = loc
         return out
-
-
-class ModelMapsSetup(ConstrainedContainer):
-    maps_freq = EitherOf(["monthly", "yearly"])
-
-    def __init__(self, **kwargs):
-        self.maps_res_deg = 5
-        self.update(**kwargs)
-
-
-class StatisticsSetup(ConstrainedContainer):
+        
+        
+class ModelMapsSetup(BaseModel):
+    maps_freq : Literal["monthly", "yearly"] = "monthly"
+    maps_res_deg : int = 5
+             
+class StatisticsSetup(BaseModel, extra="allow"):
     """
     Setup options for statistical calculations
 
@@ -109,6 +108,7 @@ class StatisticsSetup(ConstrainedContainer):
         if True, then only sites are considered that satisfy a potentially
         specified annual resampling constraint (see
         :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs`). E.g.
+
         lets say you want to calculate statistics (bias,
         correlation, etc.) for monthly model / obs data for a given site and
         year. Lets further say, that there are only 8 valid months of data, and
@@ -151,26 +151,23 @@ class StatisticsSetup(ConstrainedContainer):
 
     """
 
-    MIN_NUM = 1
+    MIN_NUM : int = 1
+    weighted_stats: bool = True
+    annual_stats_constrained : bool = False
+    add_trends : bool = False
+    trends_min_yrs : int = 7
+    stats_tseries_base_freq : str | None = None
+    use_fairmode : bool = False
+    use_diurnal : bool = False
+    obs_only_stats : bool = False
+    model_only_stats : bool = False # LB: casues namespace conflicts. see if way around
+    drop_stats : Tuple[str] = ()
+    stats_decimals : int | None = None
+    round_floats_precision : Optional[int] = None
 
-    def __init__(self, **kwargs):
-        self.weighted_stats = True
-        self.annual_stats_constrained = False
-        self.add_trends = False
-        self.trends_min_yrs = 7
-        self.stats_tseries_base_freq = None
-        self.use_fairmode = False
-        self.use_diurnal = False
-        self.obs_only_stats = False
-        self.model_only_stats = False
-        self.drop_stats = ()
-        self.stats_decimals = None
+    if round_floats_precision:
+        set_float_serialization_precision(round_floats_precision)
 
-        if "round_floats_precision" in kwargs:
-            precision = kwargs.pop("round_floats_precision")
-            set_float_serialization_precision(precision)
-
-        self.update(**kwargs)
 
 
 class TimeSetup(ConstrainedContainer):
@@ -270,6 +267,7 @@ class ExperimentInfo(ConstrainedContainer):
         self.update(**kwargs)
 
 
+# LB: this, I think, is the priority.
 class EvalSetup(NestedContainer, ConstrainedContainer):
     """Composite class representing a whole analysis setup
 
@@ -303,7 +301,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.colocation_opts = ColocationSetup(
             save_coldata=True, keep_data=False, resample_how="mean"
         )
-        self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+        #self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
         self.webdisp_opts = WebDisplaySetup()
 
         self.processing_opts = EvalRunOptions()
@@ -314,6 +312,169 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.var_web_info = {}
         self.path_manager = OutputPaths(self.proj_id, self.exp_id)
         self.update(**kwargs)
+        self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+
+    @property
+    def proj_id(self) -> str:
+        """
+        str: proj ID (wrapper to :attr:`proj_info.proj_id`)
+        """
+        return self.proj_info.proj_id
+
+    @property
+    def exp_id(self) -> str:
+        """
+        str: experiment ID (wrapper to :attr:`exp_info.exp_id`)
+        """
+        return self.exp_info.exp_id
+
+    @property
+    def json_filename(self) -> str:
+        """
+        str: Savename of config file: cfg_<proj_id>_<exp_id>.json
+        """
+        return f"cfg_{self.proj_id}_{self.exp_id}.json"
+
+    @property
+    def gridded_aux_funs(self):
+        if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
+            self._import_aux_funs()
+        return self._aux_funs
+
+    def get_obs_entry(self, obs_name):
+        return self.obs_cfg.get_entry(obs_name).to_dict()
+
+    def get_model_entry(self, model_name):
+        """Get model entry configuration
+
+        Since the configuration files for experiments are in json format, they
+        do not allow the storage of executable custom methods for model data
+        reading. Instead, these can be specified in a python module that may
+        be specified via :attr:`add_methods_file` and that contains a
+        dictionary `FUNS` that maps the method names with the callable methods.
+
+        As a result, this means that, by default, custom read methods for
+        individual models in :attr:`model_config` do not contain the
+        callable methods but only the names. This method will take care of
+        handling this and will return a dictionary where potential custom
+        method strings have been converted to the corresponding callable
+        methods.
+
+        Parameters
+        ----------
+        model_name : str
+            name of model
+
+        Returns
+        -------
+        dict
+            Dictionary that specifies the model setup ready for the analysis
+        """
+        cfg = self.model_cfg.get_entry(model_name)
+        cfg = cfg.prep_dict_analysis(self.gridded_aux_funs)
+        return cfg
+
+    def to_json(self, outdir: str, ignore_nan: bool = True, indent: int = 3) -> None:
+        """
+        Save configuration as JSON file
+
+        Parameters
+        ----------
+        outdir : str
+            directory where the config json file is supposed to be stored
+        ignore_nan : bool
+            set NaNs to Null when writing
+        indent : int
+            json indentation
+
+        """
+        filepath = os.path.join(outdir, self.json_filename)
+        data = self.json_repr()
+        write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
+        return filepath
+
+    @staticmethod
+    def from_json(filepath: str) -> "EvalSetup":
+        """Load configuration from json config file"""
+        settings = read_json(filepath)
+        return EvalSetup(**settings)
+
+    def _import_aux_funs(self):
+        h = ReadAuxHandler(self.io_aux_file)
+        self._aux_funs.update(**h.import_all())
+
+    def _check_time_config(self):
+        periods = self.time_cfg.periods
+        colstart = self.colocation_opts["start"]
+        colstop = self.colocation_opts["stop"]
+
+        if len(periods) == 0:
+            if colstart is None:
+                raise AeroValConfigError("Either periods or start must be set...")
+            per = self.colocation_opts._period_from_start_stop()
+            periods = [per]
+            logger.info(
+                f"periods is not set, inferred {per} from start / stop colocation settings."
+            )
+
+        self.time_cfg["periods"] = _check_statistics_periods(periods)
+        start, stop = _get_min_max_year_periods(periods)
+        if colstart is None:
+            self.colocation_opts["start"] = start
+        if colstop is None:
+            self.colocation_opts["stop"] = (
+                stop + 1
+            )  # add 1 year since we want to include stop year
+            
+            
+            
+            
+class EvalSetup2(BaseModel):
+    """Composite class representing a whole analysis setup
+
+    This represents the level at which json I/O happens for configuration
+    setup files.
+    """
+
+    IGNORE_JSON : list[str] = ["_aux_funs"]
+    ADD_GLOB : list[str] = ["io_aux_file"]
+    # LB: will need to address 
+    io_aux_file = AsciiFileLoc(
+        default="",
+        assert_exists=False,
+        auto_create=False,
+        logger=logger,
+        tooltip=".py file containing additional read methods for modeldata",
+    )
+    _aux_funs: dict = {}
+
+    def __init__(self, proj_id: str = None, exp_id: str = None, **kwargs):
+        if proj_id is None:
+            proj_id = kwargs["proj_info"]["proj_id"]
+        if exp_id is None:
+            exp_id = kwargs["exp_info"]["exp_id"]
+
+        self.proj_info = ProjectInfo(proj_id=proj_id)
+        self.exp_info = ExperimentInfo(exp_id=exp_id)
+
+        self.time_cfg = TimeSetup()
+
+        self.modelmaps_opts = ModelMapsSetup()
+        self.colocation_opts = ColocationSetup(
+            save_coldata=True, keep_data=False, resample_how="mean"
+        )
+        #self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+        self.webdisp_opts = WebDisplaySetup()
+
+        self.processing_opts = EvalRunOptions()
+
+        self.obs_cfg = ObsCollection()
+        self.model_cfg = ModelCollection()
+
+        self.var_web_info = {}
+        self.path_manager = OutputPaths(self.proj_id, self.exp_id)
+        self.update(**kwargs)
+        self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
 
     @property
     def proj_id(self) -> str:
