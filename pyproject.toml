@@ -47,7 +47,7 @@ exclude_lines = [
 
 [tool.black]
 target-version = ['py38']
-extend_skip = ["pyaerocom-tutorials"]
+extend-exclude = "pyaerocom-tutorials"
 line-length = 99
 
 [tool.isort]
