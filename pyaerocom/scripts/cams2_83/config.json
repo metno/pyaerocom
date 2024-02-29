@@ -1,0 +1,188 @@
+{
+  "model_cfg": {},
+  "obs_cfg": {
+    "EEA": {
+      "obs_id": "CAMS2_83.NRT",
+      "obs_vars": [
+        "concno2",
+        "concco",
+        "conco3",
+        "concso2",
+        "concpm10",
+        "concpm25"
+      ],
+      "web_interface_name": "Obs",
+      "obs_vert_type": "Surface",
+      "read_opts_ungridded": {
+        "files": [],
+        "force_caching": true
+      },
+      "obs_filters": {
+        "concno2": {
+          "latitude": [
+            30,
+            82
+          ],
+          "longitude": [
+            -30,
+            90
+          ],
+          "station_id": [
+            "NO0042*"
+          ],
+          "negate": "station_id"
+        },
+        "concco": {
+          "latitude": [
+            30,
+            82
+          ],
+          "longitude": [
+            -30,
+            90
+          ],
+          "station_id": [
+            "BETN*"
+          ],
+          "negate": "station_id"
+        },
+        "conco3": {
+          "latitude": [
+            30,
+            82
+          ],
+          "longitude": [
+            -30,
+            90
+          ],
+          "station_id": [
+            "NO0042*"
+          ],
+          "negate": "station_id"
+        },
+        "concso2": {
+          "latitude": [
+            30,
+            82
+          ],
+          "longitude": [
+            -30,
+            90
+          ],
+          "station_id": "GR0001*",
+          "negate": "station_id"
+        },
+        "concpm10": {
+          "latitude": [
+            30,
+            82
+          ],
+          "longitude": [
+            -30,
+            90
+          ],
+          "station_id": [
+            "NO0042*"
+          ],
+          "negate": "station_id"
+        },
+        "concpm25": {
+          "latitude": [
+            30,
+            82
+          ],
+          "longitude": [
+            -30,
+            90
+          ],
+          "station_id": [
+            "NO0042*"
+          ],
+          "negate": "station_id"
+        }
+      }
+    }
+  },
+  "proj_id": "cams2-83",
+  "exp_id": "prototype",
+  "exp_name": "Prototype-daily",
+  "exp_descr": "Evaluation using EEA NRT obs.",
+  "exp_pi": "<a href='https://atmosphere.copernicus.eu/help-and-support'>CAMS user support</a>",
+  "public": true,
+  "json_basedir": "../../data",
+  "coldata_basedir": "../../coldata",
+  "reanalyse_existing": true,
+  "only_json": false,
+  "add_model_maps": false,
+  "only_model_maps": false,
+  "clear_existing_json": false,
+  "raise_exceptions": false,
+  "use_cams2_83": true,
+  "filter_name": "ALL-wMOUNTAINS",
+  "ts_type": "hourly",
+  "map_zoom": "Europe",
+  "freqs": [
+    "hourly",
+    "daily"
+  ],
+  "periods": [
+    "2021-2022"
+  ],
+  "main_freq": "hourly",
+  "use_diurnal": false,
+  "resample_how": {
+    "vmro3": {
+      "daily": {
+        "hourly": "max"
+      }
+    }
+  },
+  "zeros_to_nan": true,
+  "colocate_time": false,
+  "obs_remove_outliers": false,
+  "model_remove_outliers": false,
+  "harmonise_units": true,
+  "regions_how": "country",
+  "annual_stats_constrained": false,
+  "weighted_stats": false,
+  "forecast_evaluation": true,
+  "forecast_days": 4,
+  "use_fairmode": true,
+  "var_order_menu": [
+    "vmrno2",
+    "vmro3max",
+    "vmro3",
+    "conco3",
+    "vmrox",
+    "concso2",
+    "vmrco",
+    "concpm25",
+    "concpm10",
+    "concso4",
+    "concNtno3",
+    "concNtnh",
+    "concNnh3",
+    "concNnh4",
+    "concNhno3",
+    "concNno3pm25",
+    "concNno3pm10",
+    "concsspm25",
+    "concsspm10",
+    "concCecpm25",
+    "concCocpm25",
+    "wetoxs",
+    "wetrdn",
+    "wetoxn",
+    "pr",
+    "drysox",
+    "dryrdn",
+    "dryoxn",
+    "dryo3",
+    "dryvelo3"
+  ],
+  "min_num_obs": {
+    "daily": {
+      "hourly": 18
+    }
+  }
+}
