@@ -10,14 +10,13 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
 
-import pandas as pd
 import typer
 from dateutil.relativedelta import relativedelta
 
@@ -54,16 +53,12 @@ class Eval_Type(str, Enum):
     def __str__(self) -> str:
         return self.value
 
-    def check_dates(self, start_date: datetime, end_date: datetime) -> None:
+    def check_dates(self, start_date: date, end_date: date) -> None:
         if self == "day" and start_date != end_date:
-            raise ValueError(
-                f"For single day, start and stop must be the same and not {start_date}-{end_date}"
-            )
+            raise ValueError(f"For single day {start_date=} and {end_date=} should be the same")
 
-        if self == "week" and (end_date - start_date).days < 7:
-            raise ValueError(
-                f"For week, more than 7 days must be given. Only {(end_date-start_date).days} days were given"
-            )
+        if self == "week" and (days := (end_date - start_date) // timedelta(days=1)) < 7:
+            raise ValueError(f"For week needs {days=} >= 7")
 
     def freqs_config(self) -> dict:
         if self == "long":
@@ -100,38 +95,36 @@ class Eval_Type(str, Enum):
         raise NotImplementedError(f"Unsupported {self}")
 
 
-def get_seasons_in_period(start_date: datetime, end_date: datetime) -> list[str]:
-    seasons = ["DJF", "DJF", "MAM", "MAM", "MAM", "JJA", "JJA", "JJA", "SON", "SON", "SON", "DJF"]
+def seasons_in_period(start_date: date, end_date: date) -> list[str]:
+    def season(date: date) -> Literal["DJF", "MAM", "JJA", "SON"]:
+        return ("DJF", "MAM", "JJA", "SON")[date.month % 12 // 3]
 
-    def get_season(date: pd.Timestamp):
-        return seasons[date.month - 1]
-
-    date_range = pd.date_range(start_date, end_date, freq="d")
+    dates = date_range(start_date, end_date)
     periods = []
-    prev_date = start_period = date_range[0]
-    prev_season = get_season(prev_date)
-    for current_date in date_range[1:]:
-        if get_season(current_date) == prev_season:
+    prev_date = start_period = dates[0]
+    prev_season = season(prev_date)
+    for current_date in dates[1:]:
+        if season(current_date) == prev_season:
             prev_date = current_date
         else:
             periods.append(f"{start_period:%Y%m%d}-{prev_date:%Y%m%d}")
             prev_date = current_date
-            prev_season = get_season(current_date)
+            prev_season = season(current_date)
             start_period = current_date
 
     else:
-        if start_period == date_range[-1]:
+        if start_period == dates[-1]:
             periods.append(f"{start_period:%Y%m%d}")
         else:
-            periods.append(f"{start_period:%Y%m%d}-{date_range[-1]:%Y%m%d}")
+            periods.append(f"{start_period:%Y%m%d}-{dates[-1]:%Y%m%d}")
 
     return periods
 
 
-def get_years_starting_in_november(start_date: datetime, end_date: datetime) -> list[str]:
+def years_starting_in_november(start_date: date, end_date: date) -> list[str]:
     periods = []
     prev_date = start_date
-    new_yr = datetime(start_date.year, 12, 1)
+    new_yr = date(start_date.year, 12, 1)
 
     if new_yr > start_date:
         periods.append(f"{start_date:%Y%m%d}-{new_yr-timedelta(days=1):%Y%m%d}")
@@ -159,11 +152,11 @@ def get_years_starting_in_november(start_date: datetime, end_date: datetime) -> 
     return periods
 
 
-def make_period(start_date: datetime, end_date: datetime) -> list[str]:
-    season_periods = get_seasons_in_period(start_date, end_date)
-    nov_periods = get_years_starting_in_november(start_date, end_date)
+def make_period(start_date: date, end_date: date) -> list[str]:
+    season_periods = seasons_in_period(start_date, end_date)
+    nov_periods = years_starting_in_november(start_date, end_date)
 
-    if start_date.date() == end_date.date():
+    if start_date == end_date:
         return [f"{start_date:%Y%m%d}"]
 
     periods = [f"{start_date:%Y%m%d}-{end_date:%Y%m%d}"]
@@ -173,25 +166,21 @@ def make_period(start_date: datetime, end_date: datetime) -> list[str]:
     return periods
 
 
-def make_period_ys(start_date: datetime, end_date: datetime) -> list[str]:
+def make_period_ys(start_date: date, end_date: date) -> list[str]:
     periods = [f"{start_date.year}-{end_date.year}"]
     periods.extend(str(yr) for yr in range(start_date.year, end_date.year + 1))
     return periods
 
 
-def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
-    if isinstance(start_date, datetime):
-        start_date = start_date.date()
-    if isinstance(end_date, datetime):
-        end_date = end_date.date()
+def date_range(start_date: date, end_date: date) -> tuple[date, ...]:
     days = (end_date - start_date) // timedelta(days=1)
     assert days >= 0
     return tuple(start_date + timedelta(days=day) for day in range(days + 1))
 
 
 def make_model_entry(
-    start_date: datetime,
-    end_date: datetime,
+    start_date: date,
+    end_date: date,
     leap: int,
     model_path: Path,
     model: ModelName,
@@ -208,8 +197,8 @@ def make_model_entry(
 
 
 def make_config(
-    start_date: datetime,
-    end_date: datetime,
+    start_date: date,
+    end_date: date,
     leap: int,
     model_path: Path,
     obs_path: Path,
@@ -386,8 +375,8 @@ def conf(
 ):
     """write experiment configuration as JSON"""
     cfg = make_config(
-        start_date,
-        end_date,
+        start_date.date(),
+        end_date.date(),
         leap,
         model_path,
         obs_path,
