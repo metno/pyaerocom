@@ -6,6 +6,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from enum import Enum
+from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Optional
 
@@ -421,6 +422,8 @@ def evaluation(
         1,
         "--pool",
         "-p",
+        min=1,
+        max=cpu_count(),
         help="Number of CPUs to be used for reading OBS and creating forecast plots",
     ),
 ):
