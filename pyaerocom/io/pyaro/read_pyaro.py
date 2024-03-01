@@ -281,7 +281,6 @@ class PyaroToUngriddedData:
         data = {}
         for var in vars_to_retrieve:
             if var not in allowed_vars:
-                print(var, allowed_vars)
                 logger.warning(
                     f"Variable {var} not in list over allowed variabes for {self.config.data_id}: {allowed_vars}"
                 )
