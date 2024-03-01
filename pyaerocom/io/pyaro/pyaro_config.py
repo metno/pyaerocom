@@ -12,6 +12,7 @@ import pyaerocom as pya
 
 logger = logging.getLogger(__name__)
 
+
 class PyaroConfig(BaseModel):
     _DEFAULT_CATALOG: ClassVar[Path] = resources.files(pya) / Path(
         "data/pyaro_catalogs/default.yaml"
