@@ -76,6 +76,6 @@ else:
             f.unlink()
     old_logfile = pathlib.Path("pyaerocom.log")
     if old_logfile.exists():
-        logger.warn(
+        logger.warning(
             f"no longer used old default logfile '{old_logfile}' exist, please consider deleting"
         )

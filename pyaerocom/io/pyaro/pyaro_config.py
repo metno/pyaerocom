@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import logging
 from importlib import resources
 from pathlib import Path
 from typing import ClassVar, Optional
@@ -9,6 +9,8 @@ import yaml
 from pydantic import BaseModel
 
 import pyaerocom as pya
+
+logger = logging.getLogger(__name__)
 
 
 class PyaroConfig(BaseModel):
@@ -75,7 +77,7 @@ class PyaroConfig(BaseModel):
     def list_configs(cls, filepath: Optional[Path] = None) -> list[str]:
         data = cls.load_catalog()
         if filepath is not None:
-            print(f"Updating with private catalog {filepath}")
+            logger.info(f"Updating with private catalog {filepath}")
             data.update(cls.load_catalog(filepath))
 
         return list(data.keys())
