@@ -167,9 +167,6 @@ def conf(
         # writable=True,
         help="where collocated data are stored",
     ),
-    model: list[ModelName] = typer.Option(
-        list(ModelName), "--model", "-m", case_sensitive=False, help="model(s) to evaluate"
-    ),
     id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
@@ -193,7 +190,7 @@ def conf(
         obs_path,
         data_path,
         coldata_path,
-        model,
+        list(ModelName),
         id,
         name,
         description,
@@ -243,17 +240,27 @@ def read_observations(specie: str, files: list[str], cache: str | Path) -> None:
     reader.read(data_ids="CAMS2_83.NRT", vars_to_retrieve=specie, files=files, force_caching=True)
 
 
+def model_task_id(task_id: str | None = os.getenv("SGE_TASK_ID")) -> ModelName | None:
+    if task_id is None or not task_id.isnumeric():
+        return None
+
+    return tuple(ModelName)[int(task_id) % len(ModelName)]
+
+
 @app.command(no_args_is_help=True)
 def evaluation(
     config: Path = typer.Argument(
         ..., exists=True, readable=True, help="experiment configuration"
+    ),
+    model: ModelName = typer.Argument(
+        model_task_id(), case_sensitive=False, help="model to evaluate"
     ),
 ):
     """run standard evaluation as described on experiment configuration"""
     logger.info(f"Standard Evaluation\n{config}")
     cfg = json.loads(config.read_text())
     stp = EvalSetup(**cfg)
-    ExperimentProcessor(stp).run()
+    ExperimentProcessor(stp).run(model_name=model)
 
 
 class Species(str, Enum):
@@ -271,10 +278,7 @@ class Species(str, Enum):
         if task_id is None or not task_id.isnumeric():
             return None
 
-        try:
-            return cls[species_list[int(task_id)]]
-        except IndexError as e:
-            raise ValueError(f"{task_id=} out of range") from e
+        return tuple(cls)[int(task_id) % len(cls)]
 
 
 @app.command(no_args_is_help=True)
