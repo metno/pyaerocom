@@ -21,7 +21,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "scitools-iris>=3.6.0",
+    "scitools-iris>=3.6.0, <3.8",
     "xarray<=2022.10.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
@@ -207,14 +207,14 @@ skip_missing_interpreters = True
 isolated_build = True
 requires =
     setuptools >=40.6.0,<=60.9.3
-    cython > 0.29.15 
+    cython > 0.29.15
 
 [testenv]
 commands_pre =
     python --version
 commands =
     pytest -ra -q {posargs:--cov --no-cov-on-fail}
-extras = 
+extras =
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
@@ -229,12 +229,12 @@ deps =
 ignore_outcome = True
 commands =
     mypy pyaerocom/
-extras = 
+extras =
     lint
 
 [testenv:docs]
 commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
-extras = 
+extras =
     docs
 """
