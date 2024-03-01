@@ -1,9 +1,19 @@
 # isort:skip_file
 from importlib import metadata
+import warnings
 
 from ._logging import change_verbosity
 
 __version__ = metadata.version(__package__)
+
+warnings.filterwarnings(
+    action="ignore",
+    message=r"Plotting of maps etc.*install Basemap",
+    category=UserWarning,
+    module="geonum",
+    append=True,
+)
+
 
 from .config import Config
 
