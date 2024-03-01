@@ -20,7 +20,7 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import Optional, Tuple, Literal
 from pathlib import Path
 
@@ -223,96 +223,55 @@ class TimeSetup(ConstrainedContainer):
         return output
 
 
-# class WebDisplaySetup(ConstrainedContainer):
-#     map_zoom = EitherOf(["World", "Europe"])
-#     regions_how = EitherOf(["default", "aerocom", "htap", "country"])
+class WebDisplaySetup(ConstrainedContainer):
+    map_zoom = EitherOf(["World", "Europe"])
+    regions_how = EitherOf(["default", "aerocom", "htap", "country"])
 
-#     def __init__(self, **kwargs):
-#         self.regions_how = "default"
-#         self.map_zoom = "World"
-#         self.add_model_maps = False
-#         self.modelorder_from_config = True
-#         self.obsorder_from_config = True
-#         self.var_order_menu = []
-#         self.obs_order_menu = []
-#         self.model_order_menu = []
-#         self.hide_charts = []
-#         self.hide_pages = []
-#         self.ts_annotations = {}
-#         self.add_pages = []
-#         self.update(**kwargs)
-        
-        
-class WebDisplaySetup(BaseModel):
-    model_config = ConfigDict()
-    model_config['protected_namespaces'] = ()
-    map_zoom : Literal["World", "Europe", "xEMEP"] = "World"
-    regions_how : Literal["default", "aerocom", "htap", "country"] = "default"
-    map_zoom : str = "World"
-    add_model_maps : bool = False
-    modelorder_from_config : bool = True
-    obsorder_from_config : bool = True
-    var_order_menu : list[str] = []
-    obs_order_menu : list[str] = []
-    model_order_menu : list[str] = []
-    hide_charts : list[str] = []
-    hide_pages : list[str] = []
-    ts_annotations : dict[str, str] = {}
-    add_pages : list[str] = []
-            
+    def __init__(self, **kwargs):
+        self.regions_how = "default"
+        self.map_zoom = "World"
+        self.add_model_maps = False
+        self.modelorder_from_config = True
+        self.obsorder_from_config = True
+        self.var_order_menu = []
+        self.obs_order_menu = []
+        self.model_order_menu = []
+        self.hide_charts = []
+        self.hide_pages = []
+        self.ts_annotations = {}
+        self.add_pages = []
+        self.update(**kwargs)
 
 
-# class EvalRunOptions(ConstrainedContainer):
-#     def __init__(self, **kwargs):
-#         # bool options run (do not affect results)
-#         self.clear_existing_json = True
-#         self.only_json = False
-#         self.only_colocation = False
-#         #: If True, process only maps (skip obs evaluation)
-#         self.only_model_maps = False
-#         self.obs_only = False
-#         self.drop_stats = ()
-#         self.stats_decimals = None
-#         self.update(**kwargs)
-        
-class EvalRunOptions(BaseModel):
-
-    clear_existing_json : bool = True
-    only_json : bool = False
-    only_colocation : bool = False
-    #: If True, process only maps (skip obs evaluation)
-    only_model_maps : bool = False
-    obs_only : bool = False
-    drop_stats : bool = ()
-    stats_decimals : bool = None
+class EvalRunOptions(ConstrainedContainer):
+    def __init__(self, **kwargs):
+        # bool options run (do not affect results)
+        self.clear_existing_json = True
+        self.only_json = False
+        self.only_colocation = False
+        #: If True, process only maps (skip obs evaluation)
+        self.only_model_maps = False
+        self.obs_only = False
+        self.drop_stats = ()
+        self.stats_decimals = None
+        self.update(**kwargs)
 
 
-# class ProjectInfo(ConstrainedContainer):
-#     def __init__(self, proj_id: str):
-#         self.proj_id = proj_id
+class ProjectInfo(ConstrainedContainer):
+    def __init__(self, proj_id: str):
+        self.proj_id = proj_id
 
 
-class ProjectInfo(BaseModel):
-    proj_id : str
+class ExperimentInfo(ConstrainedContainer):
+    def __init__(self, exp_id: str, **kwargs):
+        self.exp_id = exp_id
+        self.exp_name = ""
+        self.exp_descr = ""
+        self.public = False
+        self.exp_pi = getuser()
+        self.pyaerocom_version = __version__
+        self.update(**kwargs)
 
-# class ExperimentInfo(ConstrainedContainer):
-#     def __init__(self, exp_id: str, **kwargs):
-#         self.exp_id = exp_id
-#         self.exp_name = ""
-#         self.exp_descr = ""
-#         self.public = False
-#         self.exp_pi = getuser()
-#         self.pyaerocom_version = __version__
-#         self.update(**kwargs)
-
-
-class ExperimentInfo(BaseModel):
-    exp_id : str 
-    exp_name : str = ""
-    exp_descr : str = ""
-    public :bool = False
-    exp_pi : str = getuser()
-    pyaerocom_version : str = __version__
 
 # LB: this, I think, is the priority.
 class EvalSetup(NestedContainer, ConstrainedContainer):
