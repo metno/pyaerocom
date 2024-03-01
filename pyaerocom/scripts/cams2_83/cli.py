@@ -126,52 +126,6 @@ def make_config(
     return cfg
 
 
-def read_observations(specie: str, *, files: list[str], cache: str | Path) -> None:
-    logger.info(f"Running {specie}")
-    const.CACHEDIR = str(cache)
-
-    reader = ReadUngridded()
-    reader.read(data_ids="CAMS2_83.NRT", vars_to_retrieve=specie, files=files, force_caching=True)
-    logger.info(f"Finished {specie}")
-
-
-def standard_runner(config: Path, *, pool: int = 1):
-    logger.info(f"Standard Evaluation\n{config}")
-    cfg = json.loads(config.read_text())
-    stp = EvalSetup(**cfg)
-
-    logging.info(f"Clearing cache at {const.CACHEDIR}")
-    clear_cache()
-
-    if pool > 1:
-        logger.info(f"Running observation reading with pool {pool}")
-        files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
-        with ProcessPoolExecutor(max_workers=pool) as executor:
-            futures = [
-                executor.submit(read_observations, specie, files=files, cache=const.CACHEDIR)
-                for specie in species_list
-            ]
-        for future in as_completed(futures):
-            future.result()
-
-    logger.info("Running Statistics")
-    ExperimentProcessor(stp).run()
-
-
-def runner_median_scores(config: Path, specie: str, *, analysis: bool = False):
-    logger.info("CAMS2_83 Specific Statistics\n{config}")
-    logger.warning(
-        "cache is not cleared, "
-        "collocated data is assumed in place, "
-        "regular statistics are assumed to have been run"
-    )
-    cfg = json.loads(config.read_text())
-    stp = EvalSetup(**cfg)
-
-    logger.info(f"Median scores plot for {specie=} and {analysis=}")
-    CAMS2_83_Processer(stp).run(analysis=analysis, var_list=specie)
-
-
 @app.callback()
 def callback(
     cache: Path = typer.Option(const.CACHEDIR, help="cache path"),
@@ -252,29 +206,62 @@ def conf(
 
 
 @app.command(no_args_is_help=True)
-def evaluation(
+def pre_cache_obs(
     config: Path = typer.Argument(
         ..., exists=True, readable=True, help="experiment configuration"
     ),
     pool: int = typer.Option(
-        1,
-        "--pool",
-        "-p",
-        min=1,
-        max=cpu_count(),
-        help="Number of CPUs to be used for reading OBS and creating forecast plots",
+        1, "--pool", "-p", min=1, max=cpu_count(), help="CPUs for reading OBS"
+    ),
+):
+    """read observations to update cache"""
+    logging.info(f"clearing cache at {const.CACHEDIR}")
+    clear_cache()
+
+    logger.info(f"reading observations on {pool} processes")
+    cfg = json.loads(config.read_text())
+    files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
+    with ProcessPoolExecutor(max_workers=pool) as executor:
+        futures = {
+            executor.submit(read_observations, specie, files, const.CACHEDIR): specie
+            for specie in species_list
+        }
+
+        # re-raise exception as soon as the task fails
+        for future in as_completed(futures):
+            specie = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"{specie} raised {e}")
+                raise
+
+
+def read_observations(specie: str, files: list[str], cache: str | Path) -> None:
+    const.CACHEDIR = str(cache)
+    reader = ReadUngridded()
+    reader.read(data_ids="CAMS2_83.NRT", vars_to_retrieve=specie, files=files, force_caching=True)
+
+
+@app.command(no_args_is_help=True)
+def evaluation(
+    config: Path = typer.Argument(
+        ..., exists=True, readable=True, help="experiment configuration"
     ),
 ):
     """run standard evaluation as described on experiment configuration"""
-    standard_runner(config, pool=pool)
+    logger.info(f"Standard Evaluation\n{config}")
+    cfg = json.loads(config.read_text())
+    stp = EvalSetup(**cfg)
+    ExperimentProcessor(stp).run()
 
 
 class Species(str, Enum):
-    _ignore_ = "species Species"
+    _ignore_ = "spc Species"
 
     Species = vars()
-    for species in species_list:
-        Species[species] = species
+    for spc in species_list:
+        Species[spc] = spc
 
     def __str__(self) -> str:
         return self.value
@@ -295,7 +282,7 @@ def median_scores(
     config: Path = typer.Argument(
         ..., exists=True, readable=True, help="experiment configuration"
     ),
-    species: Species = typer.Argument(Species.from_task_id()),
+    spc: Species = typer.Argument(Species.from_task_id()),
     analysis: bool = typer.Option(
         False,
         "--analysis/--forecast",
@@ -303,4 +290,14 @@ def median_scores(
     ),
 ):
     """special evaluation for experiment as described on experiment configuration"""
-    runner_median_scores(config, species, analysis=analysis)
+    logger.info("CAMS2_83 Specific Statistics\n{config}")
+    logger.warning(
+        "cache is not cleared, "
+        "collocated data is assumed in place, "
+        "regular statistics are assumed to have been run"
+    )
+    cfg = json.loads(config.read_text())
+    stp = EvalSetup(**cfg)
+
+    logger.info(f"Median scores plot for {spc=} and {analysis=}")
+    CAMS2_83_Processer(stp).run(analysis=analysis, var_list=spc)
