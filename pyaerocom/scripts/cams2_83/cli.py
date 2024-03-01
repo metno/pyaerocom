@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
@@ -9,6 +11,11 @@ from enum import Enum
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Optional
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 import pandas as pd
 import typer
@@ -282,11 +289,6 @@ def read_observations(specie: str, *, files: list[str], cache: str | Path) -> No
     logger.info(f"Finished {specie}")
 
 
-def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
-    ana_cams2_83 = CAMS2_83_Processer(stp)
-    ana_cams2_83.run(analysis=analysis, var_list=specie)
-
-
 def standard_runner(config: Path, *, pool: int = 1):
     logger.info(f"Standard Evaluation\n{config}")
     cfg = json.loads(config.read_text())
@@ -310,7 +312,7 @@ def standard_runner(config: Path, *, pool: int = 1):
     ExperimentProcessor(stp).run()
 
 
-def runner_median_scores(config: Path, *, analysis: bool = False, pool: int = 1):
+def runner_median_scores(config: Path, specie: str, *, analysis: bool = False):
     logger.info("CAMS2_83 Specific Statistics\n{config}")
     logger.warning(
         "cache is not cleared, "
@@ -320,18 +322,8 @@ def runner_median_scores(config: Path, *, analysis: bool = False, pool: int = 1)
     cfg = json.loads(config.read_text())
     stp = EvalSetup(**cfg)
 
-    if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        with ProcessPoolExecutor(max_workers=pool) as executor:
-            futures = [
-                executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
-                for specie in species_list
-            ]
-        for future in as_completed(futures):
-            future.result()
-    else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        CAMS2_83_Processer(stp).run(analysis=analysis)
+    logger.info(f"Median scores plot for {specie=} and {analysis=}")
+    CAMS2_83_Processer(stp).run(analysis=analysis, var_list=specie)
 
 
 @app.callback()
@@ -431,22 +423,38 @@ def evaluation(
     standard_runner(config, pool=pool)
 
 
+class Species(str, Enum):
+    _ignore_ = "species Species"
+
+    Species = vars()
+    for species in species_list:
+        Species[species] = species
+
+    def __str__(self) -> str:
+        return self.value
+
+    @classmethod
+    def from_task_id(cls, task_id: str | None = os.getenv("SGE_TASK_ID")) -> Self | None:
+        if task_id is None or not task_id.isnumeric():
+            return None
+
+        try:
+            return cls[species_list[int(task_id)]]
+        except IndexError as e:
+            raise ValueError(f"{task_id=} out of range") from e
+
+
 @app.command(no_args_is_help=True)
 def median_scores(
     config: Path = typer.Argument(
         ..., exists=True, readable=True, help="experiment configuration"
     ),
+    species: Species = typer.Argument(Species.from_task_id()),
     analysis: bool = typer.Option(
         False,
         "--analysis/--forecast",
         help="analysis or forecast model and observations",
     ),
-    pool: int = typer.Option(
-        1,
-        "--pool",
-        "-p",
-        help="Number of CPUs to be used for reading OBS and creating forecast plots",
-    ),
 ):
     """special evaluation for experiment as described on experiment configuration"""
-    runner_median_scores(config, analysis=analysis, pool=pool)
+    runner_median_scores(config, species, analysis=analysis)
