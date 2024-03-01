@@ -21,7 +21,7 @@ import typer
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
-from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
@@ -50,10 +50,10 @@ def make_model_entry(
     leap: int,
     model_path: Path,
     model: ModelName,
-    runtype: str,
+    run_type: RunType,
 ) -> dict:
     return dict(
-        model_id=f"CAMS2-83.{model.name}.day{leap}.{runtype}",
+        model_id=f"CAMS2-83.{model.name}.day{leap}.{run_type}",
         model_data_dir=str(model_path.resolve()),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
@@ -75,7 +75,7 @@ def make_config(
     name: str,
     description: str,
     eval_type: EvalType,
-    analysis: bool,
+    run_type: RunType,
     only_map: bool,
     add_map: bool,
 ) -> dict:
@@ -93,7 +93,7 @@ def make_config(
                 leap,
                 model_path,
                 model,
-                runtype="AN" if analysis else "FC",
+                run_type=run_type,
             )
             for model in models
         },
@@ -109,10 +109,10 @@ def make_config(
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
     obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
-        str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=analysis)
+        str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
     ]
 
-    if analysis:
+    if run_type == RunType.AN:
         cfg.update(forecast_days=1)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
@@ -139,6 +139,8 @@ def callback(
 
 @app.command(no_args_is_help=True)
 def conf(
+    run_type: RunType = typer.Argument(...),
+    eval_type: EvalType = typer.Argument(...),
     config: Path = typer.Argument(..., writable=True, help="experiment configuration"),
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
@@ -146,7 +148,7 @@ def conf(
     end_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),
-    leap: int = typer.Argument(0, min=0, max=3, help="forecast day"),
+    leap: int = typer.Argument(0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"),
     model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
@@ -170,16 +172,10 @@ def conf(
     id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
-    analysis: bool = typer.Option(
-        False,
-        "--analysis/--forecast",
-        help="analysis or forecast model and observations",
-    ),
     add_map: bool = typer.Option(False, "--addmap", help="set add_model_maps"),
     only_map: bool = typer.Option(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
-    eval_type: EvalType = typer.Option(..., "--eval-type", "-e"),
 ):
     """write experiment configuration as JSON"""
     cfg = make_config(
@@ -195,7 +191,7 @@ def conf(
         name,
         description,
         eval_type,
-        analysis,
+        run_type,
         only_map,
         add_map,
     )
