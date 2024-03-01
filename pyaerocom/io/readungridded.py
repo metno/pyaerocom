@@ -147,7 +147,6 @@ class ReadUngridded:
     def INCLUDED_DATASETS(self):
         lst = []
         for reader in self.INCLUDED_READERS:
-            logger.debug(f"{reader}: {reader.SUPPORTED_DATASETS}")
             lst.extend(reader.SUPPORTED_DATASETS)
         lst.extend(self.post_compute)
         return lst
@@ -159,7 +158,6 @@ class ReadUngridded:
         """
         lst = []
         for reader in self.SUPPORTED_READERS:
-            logger.debug(f"{reader}: {reader.SUPPORTED_DATASETS}")
             lst.extend(reader.SUPPORTED_DATASETS)
         lst.extend(self.post_compute)
         lst.extend(list(self.config_ids.keys()))
