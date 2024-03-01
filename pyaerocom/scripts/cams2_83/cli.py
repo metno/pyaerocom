@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -208,7 +208,7 @@ def make_config(
     id: str,
     name: str,
     description: str,
-    eval_type: Eval_Type | None,
+    eval_type: Eval_Type,
     analysis: bool,
     only_map: bool,
     add_map: bool,
@@ -371,7 +371,7 @@ def conf(
     only_map: bool = typer.Option(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
-    eval_type: Optional[Eval_Type] = typer.Option(None, "--eval-type", "-e"),
+    eval_type: Eval_Type = typer.Option(..., "--eval-type", "-e"),
 ):
     """write experiment configuration as JSON"""
     cfg = make_config(
