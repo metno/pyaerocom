@@ -2,6 +2,7 @@ include LICENSE
 include README.rst
 include pyaerocom_env.yml
 recursive-include pyaerocom/data *
+recursive-include pyaerocom/scripts *
 recursive-include tests/ *
 
 prune docs/_build
