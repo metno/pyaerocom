@@ -256,7 +256,7 @@ def evaluation(
     logger.info(f"Standard Evaluation\n{config}")
     cfg = json.loads(config.read_text())
     stp = EvalSetup(**cfg)
-    ExperimentProcessor(stp).run(model_name=model)
+    ExperimentProcessor(stp).run(model_name=model.name)
 
 
 class Species(str, Enum):
