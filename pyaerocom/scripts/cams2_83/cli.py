@@ -53,7 +53,7 @@ def make_model_entry(
     run_type: RunType,
 ) -> dict:
     return dict(
-        model_id=f"CAMS2-83.{model.name}.day{leap}.{run_type}",
+        model_id=f"CAMS2-83.{model.name}.day{leap}.{run_type.name}",
         model_data_dir=str(model_path.resolve()),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
