@@ -8,12 +8,10 @@ from collections.abc import MutableMapping
 from pathlib import Path
 
 import numpy as np
-import simplejson
 
 from pyaerocom._warnings import ignore_warnings
 
 from pydantic import BaseModel, ConfigDict
-#from typing import Optional, Callable
 
 logger = logging.getLogger(__name__)
 
