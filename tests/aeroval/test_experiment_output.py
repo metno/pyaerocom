@@ -95,7 +95,7 @@ def test_ExperimentOutput():
     cfg = EvalSetup(proj_id="proj", exp_id="exp")
     val = ExperimentOutput(cfg)
     assert isinstance(val.cfg, EvalSetup)
-    assert val.proj_id == cfg["proj_info"]["proj_id"]
+    assert val.proj_id == cfg.proj_info.proj_id
 
     path = Path(val.json_basedir)
     assert path == BASEDIR_DEFAULT

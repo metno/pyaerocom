@@ -15,7 +15,9 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic.dataclasses import dataclass
+from dataclasses import field
 from typing import Optional, Tuple, Literal
 
 logger = logging.getLogger(__name__)
@@ -80,11 +82,12 @@ class OutputPaths(BaseModel):
             out[subdir] = loc
         return out
         
-        
-class ModelMapsSetup(BaseModel):
+@dataclass        
+class ModelMapsSetup:
     maps_freq : Literal["monthly", "yearly"] = "monthly"
     maps_res_deg : int = 5
              
+    
 class StatisticsSetup(BaseModel, extra="allow"):
     """
     Setup options for statistical calculations
@@ -202,8 +205,8 @@ class TimeSetup(BaseModel):
                 output.append(perstr)
         return output
         
-        
-class WebDisplaySetup(BaseModel):
+@dataclass
+class WebDisplaySetup:
     # Pydantic ConfigDict
     model_config = ConfigDict()
     model_config['protected_namespaces'] = ()
@@ -214,16 +217,16 @@ class WebDisplaySetup(BaseModel):
     add_model_maps : bool = False
     modelorder_from_config : bool = True
     obsorder_from_config : bool = True
-    var_order_menu : list[str] = []
-    obs_order_menu : list[str] = []
-    model_order_menu : list[str] = []
-    hide_charts : list[str] = []
-    hide_pages : list[str] = []
-    ts_annotations : dict[str, str] = {}
-    add_pages : list[str] = []
+    var_order_menu : tuple[str] = ()
+    obs_order_menu : tuple[str] = ()
+    model_order_menu : tuple[str] = ()
+    hide_charts : tuple[str] = ()
+    hide_pages : tuple[str] = ()
+    ts_annotations : dict[str, str] = field(default_factory=dict)
+    add_pages : tuple[str] = ()
             
-
-class EvalRunOptions(BaseModel):
+@dataclass
+class EvalRunOptions:
 
     clear_existing_json : bool = True
     only_json : bool = False
@@ -234,16 +237,18 @@ class EvalRunOptions(BaseModel):
     drop_stats : bool = ()
     stats_decimals : bool = None
 
-class ProjectInfo(BaseModel):
-    proj_id : str
+@dataclass
+class ProjectInfo:
+    proj_id : "str"
 
-class ExperimentInfo(BaseModel):
-    exp_id : str 
-    exp_name : str = ""
-    exp_descr : str = ""
-    public :bool = False
-    exp_pi : str = getuser()
-    pyaerocom_version : str = __version__
+@dataclass
+class ExperimentInfo:
+    exp_id : "str" 
+    exp_name : "str" = ""
+    exp_descr : "str" = ""
+    public : "bool" = False
+    exp_pi : "str" = getuser()
+    pyaerocom_version : "str" = __version__
                   
 class EvalSetup(BaseModel):
     """Composite class representing a whole analysis setup
@@ -267,10 +272,26 @@ class EvalSetup(BaseModel):
     #io_aux_file : Path
     _aux_funs: dict = {}
 
-    proj_id : str = ""
-    exp_id : str = ""
-
-    proj_info : ProjectInfo = ProjectInfo(proj_id=proj_id)
+    proj_id : str
+    exp_id : str
+    
+    @field_validator('proj_info')
+    def inject_proj_id(cls, v, values):
+        v['proj_id'] = values['proj_id']
+        return v
+    
+    @field_validator('exp_info')
+    def inject_exp_id(cls, v, values):
+        v['exp_id'] = values['exp_id']
+        return v
+    
+    # @field_validator('path_mangaer')
+    # def inject_proj_id_and_exp_id(cls, v, values):
+    #     v['exp_id'] = values['exp_id']
+    #     v['proj_id'] = values['proj_id']
+    #     return v
+    
+    proj_info : ProjectInfo  = ProjectInfo(proj_id=proj_id)
     exp_info : ExperimentInfo = ExperimentInfo(exp_id=exp_id)
     time_cfg : TimeSetup = TimeSetup()
     modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
@@ -283,7 +304,7 @@ class EvalSetup(BaseModel):
     obs_cfg : ObsCollection | dict = ObsCollection()
     model_cfg : ModelCollection | dict = ModelCollection()
     var_web_info : dict = {}
-    path_manager : OutputPaths = OutputPaths(proj_id=proj_id, exp_id=exp_id)
+    #path_manager : OutputPaths = OutputPaths(proj_id=proj_id, exp_id=exp_id)
     statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
 
     # @property
