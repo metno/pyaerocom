@@ -21,21 +21,20 @@ from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
-logger = logging.getLogger(__name__)
+from pydantic import BaseModel, ConfigDict, computed_field, field_validator
+from pydantic.dataclasses import dataclass
+from pathlib import Path
 
+logger = logging.getLogger(__name__)
 
 class ProjectOutput:
     """JSON output for project"""
 
-    proj_id = StrType()
-    json_basedir = DirLoc(assert_exists=True)
-
-    def __init__(self, proj_id: str, json_basedir: str):
-        self.proj_id = proj_id
-        self.json_basedir = json_basedir
+    proj_id : str 
+    json_basedir: DirLoc = DirLoc(assert_exists=True)
 
     @property
-    def proj_dir(self):
+    def proj_dir(self) -> str:
         """Project directory"""
         fp = os.path.join(self.json_basedir, self.proj_id)
         if not os.path.exists(fp):
@@ -44,24 +43,37 @@ class ProjectOutput:
         return fp
 
     @property
-    def experiments_file(self):
+    def experiments_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.proj_dir, "experiments.json")
         fp = check_make_json(fp)
         return fp
 
     @property
-    def available_experiments(self):
+    def available_experiments(self) -> list:
         """
         List of available experiments
         """
         return list(read_json(self.experiments_file))
 
 
-class ExperimentOutput(ProjectOutput):
+class ExperimentOutput(BaseModel, ProjectOutput):
     """JSON output for experiment"""
 
-    cfg = TypeValidator(EvalSetup)
+    # Pydantic ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    cfg : EvalSetup
+
+    # @field_validator("json_basedir")
+    # def validate_json_basedir(cls, v):
+    #     return v.json_basedir
+        
+
+    # @computed_field
+    # @property
+    # def cfg(self) -> EvalSetup:
+    #     return EvalSetup(self.cfg)
 
     def __init__(self, cfg):
         self.cfg = cfg
@@ -70,6 +82,8 @@ class ExperimentOutput(ProjectOutput):
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories
         self._invalid = dict(models=[], obs=[])
+    
+    _invalid = dict(models=[], obs = [])
 
     @property
     def exp_id(self):

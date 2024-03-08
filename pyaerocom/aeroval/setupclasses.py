@@ -15,7 +15,7 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, computed_field
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 from typing import Optional, Tuple, Literal
@@ -243,12 +243,12 @@ class ProjectInfo:
 
 @dataclass
 class ExperimentInfo:
-    exp_id : "str" 
-    exp_name : "str" = ""
-    exp_descr : "str" = ""
-    public : "bool" = False
-    exp_pi : "str" = getuser()
-    pyaerocom_version : "str" = __version__
+    exp_id : str 
+    exp_name : str = ""
+    exp_descr : str = ""
+    public : bool = False
+    exp_pi : str = getuser()
+    pyaerocom_version : str = __version__
                   
 class EvalSetup(BaseModel):
     """Composite class representing a whole analysis setup
@@ -275,24 +275,21 @@ class EvalSetup(BaseModel):
     proj_id : str
     exp_id : str
     
-    @field_validator('proj_info')
-    def inject_proj_id(cls, v, values):
-        v['proj_id'] = values['proj_id']
-        return v
+    @computed_field
+    @property
+    def proj_info(self) -> ProjectInfo:
+        return ProjectInfo(proj_id=self.proj_id)
     
-    @field_validator('exp_info')
-    def inject_exp_id(cls, v, values):
-        v['exp_id'] = values['exp_id']
-        return v
+    @computed_field
+    @property
+    def exp_info(self) -> ExperimentInfo:
+        return ExperimentInfo(exp_id=self.exp_id)
     
-    # @field_validator('path_mangaer')
-    # def inject_proj_id_and_exp_id(cls, v, values):
-    #     v['exp_id'] = values['exp_id']
-    #     v['proj_id'] = values['proj_id']
-    #     return v
+    @computed_field
+    @property
+    def path_manager(self) -> OutputPaths:
+        return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
     
-    proj_info : ProjectInfo  = ProjectInfo(proj_id=proj_id)
-    exp_info : ExperimentInfo = ExperimentInfo(exp_id=exp_id)
     time_cfg : TimeSetup = TimeSetup()
     modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
     colocation_opts : ColocationSetup = ColocationSetup(
@@ -304,22 +301,7 @@ class EvalSetup(BaseModel):
     obs_cfg : ObsCollection | dict = ObsCollection()
     model_cfg : ModelCollection | dict = ModelCollection()
     var_web_info : dict = {}
-    #path_manager : OutputPaths = OutputPaths(proj_id=proj_id, exp_id=exp_id)
     statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
-
-    # @property
-    # def proj_id(self) -> str:
-    #     """
-    #     str: proj ID (wrapper to :attr:`proj_info.proj_id`)
-    #     """
-    #     return self.proj_info.proj_id
-
-    # @property
-    # def exp_id(self) -> str:
-    #     """
-    #     str: experiment ID (wrapper to :attr:`exp_info.exp_id`)
-    #     """
-    #     return self.exp_info.exp_id
 
     @property
     def json_filename(self) -> str:
