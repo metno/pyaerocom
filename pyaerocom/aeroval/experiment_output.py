@@ -27,13 +27,15 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# class ProjectOutput(BaseModel):
 class ProjectOutput:
     """JSON output for project"""
     
     # Pydantic ConfigDict
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    #model_config = ConfigDict(arbitrary_types_allowed=True)
 
     proj_id : str 
+    # json_basedir : Path | str
     json_basedir: DirLoc = DirLoc(assert_exists=True)
     
     def __init__(self, proj_id: str, json_basedir: str):
