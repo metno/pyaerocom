@@ -29,9 +29,16 @@ logger = logging.getLogger(__name__)
 
 class ProjectOutput:
     """JSON output for project"""
+    
+    # Pydantic ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     proj_id : str 
     json_basedir: DirLoc = DirLoc(assert_exists=True)
+    
+    def __init__(self, proj_id: str, json_basedir: str):
+        self.proj_id = proj_id
+        self.json_basedir = json_basedir    
 
     @property
     def proj_dir(self) -> str:
@@ -57,11 +64,11 @@ class ProjectOutput:
         return list(read_json(self.experiments_file))
 
 
-class ExperimentOutput(BaseModel, ProjectOutput):
+class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
 
     # Pydantic ConfigDict
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    #model_config = ConfigDict(arbitrary_types_allowed=True)
 
     cfg : EvalSetup
 
@@ -86,12 +93,12 @@ class ExperimentOutput(BaseModel, ProjectOutput):
     _invalid = dict(models=[], obs = [])
 
     @property
-    def exp_id(self):
+    def exp_id(self) -> str:
         """Experiment ID"""
         return self.cfg.exp_id
 
     @property
-    def exp_dir(self):
+    def exp_dir(self) -> str:
         """Experiment directory"""
         fp = os.path.join(self.proj_dir, self.exp_id)
         if not os.path.exists(fp):
@@ -100,35 +107,35 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         return fp
 
     @property
-    def regions_file(self):
+    def regions_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "regions.json")
         fp = check_make_json(fp)
         return fp
 
     @property
-    def statistics_file(self):
+    def statistics_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "statistics.json")
         fp = check_make_json(fp)
         return fp
 
     @property
-    def var_ranges_file(self):
+    def var_ranges_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "ranges.json")
         check_make_json(fp)
         return fp
 
     @property
-    def menu_file(self):
+    def menu_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "menu.json")
         check_make_json(fp)
         return fp
 
     @property
-    def results_available(self):
+    def results_available(self) -> bool:
         """
         bool: True if results are available for this experiment, else False
         """
@@ -145,7 +152,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         """
         return self.cfg.path_manager.get_json_output_dirs()
 
-    def update_menu(self):
+    def update_menu(self) -> None:
         """Update menu
 
         The menu.json file is created based on the available json map files in the
@@ -198,7 +205,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         self.cfg._check_time_config()
         self.cfg.to_json(self.exp_dir)
 
-    def _sync_heatmaps_with_menu_and_regions(self):
+    def _sync_heatmaps_with_menu_and_regions(self) -> None:
         """
         Synchronise content of heatmap json files with content of menu.json
         """
@@ -227,7 +234,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
 
             write_json(hm, fp, ignore_nan=True)
 
-    def _check_hm_all_regions_avail(self, all_regions, hm_data):
+    def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
             return hm_data
         # some regions are not available in this subset
@@ -241,7 +248,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         return hm_data
 
     @staticmethod
-    def _info_from_map_file(filename):
+    def _info_from_map_file(filename) -> tuple[str]:
         """
         Separate map filename into meta info on obs and model content
 
@@ -291,7 +298,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
 
         return (oname, ovar, vert_code, mname, mvar, per)
 
-    def _results_summary(self):
+    def _results_summary(self) -> dict:
         res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
         tab = []
@@ -304,7 +311,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
             output[name] = list(set(res[i]))
         return output
 
-    def clean_json_files(self):
+    def clean_json_files(self) -> list:
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
@@ -362,7 +369,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         self.update_interface()  # will take care of heatmap data
         return modified
 
-    def _check_clean_ts_file(self, fp):
+    def _check_clean_ts_file(self, fp) -> bool:
         fname = os.path.basename(fp)
         spl = fname.split(".json")[0].split("_")
         vc, obsinfo = spl[-1], spl[-2]
@@ -405,7 +412,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         write_json(data_new, fp)
         return modified
 
-    def _clean_modelmap_files(self):
+    def _clean_modelmap_files(self) -> list[str]:
         # Note: to be called after cleanup of files in map subdir
         json_files = self._get_json_output_files("contour")
         rm = []
@@ -434,7 +441,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                 removed.append(file)
         return removed
 
-    def delete_experiment_data(self, also_coldata=True):
+    def delete_experiment_data(self, also_coldata=True) -> None:
         """Delete all data associated with a certain experiment
 
         Note
@@ -501,11 +508,11 @@ class ExperimentOutput(BaseModel, ProjectOutput):
             order.extend(self.cfg.obs_cfg.web_iface_names)
         return order
 
-    def _get_json_output_files(self, dirname):
+    def _get_json_output_files(self, dirname) -> list[str]:
         dirloc = self.out_dirs_json[dirname]
         return glob.glob(f"{dirloc}/*.json")
 
-    def _get_cmap_info(self, var):
+    def _get_cmap_info(self, var) -> list[float]:
         if var in var_ranges_defaults:
             return var_ranges_defaults[var]
         try:
@@ -521,7 +528,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
 
         return info
 
-    def _create_var_ranges_json(self):
+    def _create_var_ranges_json(self) -> None:
         try:
             ranges = read_json(self.var_ranges_file)
         except FileNotFoundError:
@@ -533,7 +540,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                 ranges[var] = self._get_cmap_info(var)
         write_json(ranges, self.var_ranges_file, indent=4)
 
-    def _create_statistics_json(self):
+    def _create_statistics_json(self) -> None:
         if self.cfg.statistics_opts.obs_only_stats:
             stats_info = statistics_obs_only
         elif self.cfg.statistics_opts.only_stats_for_model:
@@ -562,7 +569,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                 stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
-    def _get_var_name_and_type(self, var_name):
+    def _get_var_name_and_type(self, var_name) -> str:
         """Get menu name and type of observation variable
 
         Parameters
@@ -607,7 +614,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
             pass
         return out
 
-    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
+    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var) -> bool:
         muv = mcfg.model_use_vars
         mrv = mcfg.model_rename_vars
 
@@ -666,7 +673,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                 return True
         return False
 
-    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
+    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var) -> bool:
         """
         Check if input combination of model and obs var is valid
 
@@ -723,7 +730,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                 return True
         return False
 
-    def _create_menu_dict(self):
+    def _create_menu_dict(self) -> dict:
         new = {}
         files = self._get_json_output_files("map")
         for file in files:
@@ -755,7 +762,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                 )
         return new
 
-    def _sort_menu_entries(self, avail):
+    def _sort_menu_entries(self, avail) -> dict:
         """
         Used in method :func:`update_menu_evaluation_iface`
 
@@ -795,7 +802,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
                     new_sorted[var]["obs"][obs_name][vert_code] = models_sorted
         return new_sorted
 
-    def _get_valid_obs_vars(self, obs_name):
+    def _get_valid_obs_vars(self, obs_name) -> dict:
         if obs_name in self._valid_obs_vars:
             return self._valid_obs_vars[obs_name]
 
@@ -810,7 +817,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
         self._valid_obs_vars[obs_name] = obs_vars
         return obs_vars
 
-    def _add_entry_experiments_json(self, exp_id, data):
+    def _add_entry_experiments_json(self, exp_id, data) -> None:
         fp = self.experiments_file
         current = read_json(fp)
         current[exp_id] = data
@@ -820,7 +827,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
             indent=4,
         )
 
-    def _del_entry_experiments_json(self, exp_id):
+    def _del_entry_experiments_json(self, exp_id) -> None:
         """
         Remove an entry from experiments.json
 
@@ -845,7 +852,7 @@ class ExperimentOutput(BaseModel, ProjectOutput):
             indent=4,
         )
 
-    def reorder_experiments(self, exp_order=None):
+    def reorder_experiments(self, exp_order=None) -> None:
         """Reorder experiment order in evaluation interface
 
         Puts experiment list into order as specified by `exp_order`, all
