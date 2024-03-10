@@ -20,6 +20,8 @@ from pydantic.dataclasses import dataclass
 from dataclasses import field
 from typing import Optional, Tuple, Literal
 
+from pathlib import Path
+
 logger = logging.getLogger(__name__)
 
     
@@ -52,6 +54,10 @@ class OutputPaths(BaseModel):
         tooltip="Base directory for json output files",
     )
 
+    # json_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
+    # json_basedir = Path(json_basedir).mkdir(parents=True, exist_ok=True)
+    
+    
     coldata_basedir : DirLoc | str = DirLoc(
         default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
         assert_exists=True,
@@ -59,6 +65,9 @@ class OutputPaths(BaseModel):
         logger=logger,
         tooltip="Base directory for colocated data output files (NetCDF)",
     )
+    
+    # coldata_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
+    # coldata_basedir = Path(coldata_basedir).mkdir(parents=True, exists_ok=True)
 
     ADD_GLOB : list[str] = ["coldata_basedir", "json_basedir"]
     
