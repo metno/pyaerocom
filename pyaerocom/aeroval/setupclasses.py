@@ -271,7 +271,7 @@ class EvalSetup(BaseModel):
     IGNORE_JSON : list[str] = ["_aux_funs"]
     ADD_GLOB : list[str] = ["io_aux_file"]
     # # LB: will need to address 
-    io_aux_file : AsciiFileLoc = AsciiFileLoc(
+    io_aux_file : AsciiFileLoc | str = AsciiFileLoc(
         default="",
         assert_exists=False,
         auto_create=False,
