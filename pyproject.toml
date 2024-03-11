@@ -219,6 +219,12 @@ extras =
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
+    OMP_NUM_THREADS=1
+    OPENBLAS_NUM_THREADS=1
+    MKL_NUM_THREADS=1
+    VECLIB_MAXIMUM_THREADS=1
+    MAGIC_THREAD_LIMIT=1
+    NUMEXPR_NUM_THREADS=1
 
 [testenv:format]
 commands =
