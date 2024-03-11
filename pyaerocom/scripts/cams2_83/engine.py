@@ -138,7 +138,6 @@ class CAMS2_83_Engine(ProcessingEngine):
             )
 
     def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
-
         stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
         station_list = data.station_name.data
         for station in station_list:

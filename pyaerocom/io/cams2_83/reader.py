@@ -175,7 +175,6 @@ def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
         dummy_var_name = vars_list[0]
         for species in AEROCOM_NAMES:
             if species not in vars_list:
-
                 ds = ds.assign(**{species: dummy_var * np.nan})
                 attrs = ds[dummy_var_name].attrs
                 attrs["species"] = FULL_NAMES[species]
@@ -248,7 +247,6 @@ class ReadCAMS2_83:
         data_id: str | None = None,
         data_dir: str | Path | None = None,
     ) -> None:
-
         self._filedata: xr.Dataset | None = None
         self._filepaths: list[Path] | None = None
         self._data_dir: Path | None = None
