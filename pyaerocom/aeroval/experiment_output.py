@@ -75,8 +75,6 @@ class ExperimentOutput(ProjectOutput):
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories
         self._invalid = dict(models=[], obs=[])
-    
-    _invalid = dict(models=[], obs = [])
 
     @property
     def exp_id(self) -> str:
