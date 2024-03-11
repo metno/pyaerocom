@@ -15,7 +15,7 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict, computed_field
+from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 from typing import Optional, Tuple, Literal
@@ -248,7 +248,7 @@ class EvalRunOptions:
 
 @dataclass
 class ProjectInfo:
-    proj_id : "str"
+    proj_id : str
 
 @dataclass
 class ExperimentInfo:
@@ -306,14 +306,25 @@ class EvalSetup(BaseModel):
     )
     webdisp_opts : WebDisplaySetup= WebDisplaySetup()
     processing_opts : EvalRunOptions = EvalRunOptions()
-    # TODO Use Pydantic for ObsCollection and ModelCollection
-    obs_cfg : ObsCollection = ObsCollection()
-    #obs_cfg = ObsCollection(obs_cfg) # Lb: need an __init__()
     
-    
-    model_cfg : ModelCollection | dict = ModelCollection()
     var_web_info : dict = {}
     statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+    
+    # TODO Use Pydantic for ObsCollection and ModelCollection
+    obs_cfg : ObsCollection | dict = ObsCollection() 
+    model_cfg : ModelCollection | dict = ModelCollection()
+    
+    @field_validator("obs_cfg")
+    def validate_obs_cfg(cls, v):
+        if not isinstance(v, ObsCollection):
+            return ObsCollection(v)
+        return v
+    
+    @field_validator("model_cfg")
+    def validate_model_cfg(cls, v):
+        if not isinstance(v, ModelCollection):
+            return ModelCollection(v)
+        return v
 
     @property
     def json_filename(self) -> str:
