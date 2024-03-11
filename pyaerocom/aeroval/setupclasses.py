@@ -307,7 +307,10 @@ class EvalSetup(BaseModel):
     webdisp_opts : WebDisplaySetup= WebDisplaySetup()
     processing_opts : EvalRunOptions = EvalRunOptions()
     # TODO Use Pydantic for ObsCollection and ModelCollection
-    obs_cfg : ObsCollection | dict = ObsCollection()
+    obs_cfg : ObsCollection = ObsCollection()
+    #obs_cfg = ObsCollection(obs_cfg) # Lb: need an __init__()
+    
+    
     model_cfg : ModelCollection | dict = ModelCollection()
     var_web_info : dict = {}
     statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
