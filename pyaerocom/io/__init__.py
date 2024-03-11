@@ -29,6 +29,7 @@ from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+from .cams2_83.reader import ReadCAMS2_83
 
 # Pyaro classes
 from .pyaro.read_pyaro import ReadPyaro

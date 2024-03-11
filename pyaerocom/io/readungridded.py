@@ -17,6 +17,7 @@ from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, Netw
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
@@ -64,6 +65,7 @@ class ReadUngridded:
         ReadEbas,
         ReadAasEtal,
         ReadAirNow,
+        ReadCAMS2_83,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
         ReadICPForest,
