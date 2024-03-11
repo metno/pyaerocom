@@ -21,22 +21,18 @@ from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
-from pydantic import BaseModel, ConfigDict, computed_field, field_validator
-from pydantic.dataclasses import dataclass
-from pathlib import Path
+# from pydantic import BaseModel, ConfigDict, computed_field, field_validator
+# from pydantic.dataclasses import dataclass
+
 
 logger = logging.getLogger(__name__)
 
-# class ProjectOutput(BaseModel):
 class ProjectOutput:
     """JSON output for project"""
     
-    # Pydantic ConfigDict
-    #model_config = ConfigDict(arbitrary_types_allowed=True)
+    proj_id = StrType()
 
-    proj_id : str 
-    # json_basedir : Path | str
-    json_basedir: DirLoc = DirLoc(assert_exists=True)
+    json_basedir = DirLoc(assert_exists=True)
     
     def __init__(self, proj_id: str, json_basedir: str):
         self.proj_id = proj_id
@@ -69,20 +65,8 @@ class ProjectOutput:
 class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
 
-    # Pydantic ConfigDict
-    #model_config = ConfigDict(arbitrary_types_allowed=True)
+    cfg = TypeValidator(EvalSetup)
 
-    cfg : EvalSetup
-
-    # @field_validator("json_basedir")
-    # def validate_json_basedir(cls, v):
-    #     return v.json_basedir
-        
-
-    # @computed_field
-    # @property
-    # def cfg(self) -> EvalSetup:
-    #     return EvalSetup(self.cfg)
 
     def __init__(self, cfg):
         self.cfg = cfg
