@@ -5,20 +5,14 @@ Classes and methods to perform high-level colocation.
 import glob
 import logging
 import os
-import sys
 import traceback
 from datetime import datetime
+from importlib import metadata
 from pathlib import Path
 from typing import Optional
 
-from cf_units import Unit
-
-if sys.version_info >= (3, 10):  # pragma: no cover
-    from importlib import metadata
-else:  # pragma: no cover
-    import importlib_metadata as metadata
-
 import pandas as pd
+from cf_units import Unit
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir

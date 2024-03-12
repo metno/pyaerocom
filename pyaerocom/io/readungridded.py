@@ -1,15 +1,10 @@
 import logging
 import os
-import sys
 import warnings
 from copy import deepcopy
+from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
-
-if sys.version_info >= (3, 10):  # pragma: no cover
-    from importlib import metadata
-else:  # pragma: no cover
-    import importlib_metadata as metadata
 
 from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
