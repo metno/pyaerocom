@@ -27,7 +27,6 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from tests.fixtures.ebas import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")

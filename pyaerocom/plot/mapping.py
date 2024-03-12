@@ -8,7 +8,6 @@ from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
-from pyaerocom import const
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.mathutils import exponent
@@ -295,7 +294,7 @@ def plot_griddeddata_on_map(
     if not data.has_latlon_dims:
         raise DataDimensionError("Input data needs to have latitude and longitude dimension")
     if not data.ndim == 2:
-        if not data.ndim == 3 or not "time" in data.dimcoord_names:
+        if not data.ndim == 3 or "time" not in data.dimcoord_names:
             raise DataDimensionError(
                 "Input data needs to be 2 dimensional "
                 "or 3D with time being the 3rd "

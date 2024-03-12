@@ -5,7 +5,6 @@ from configparser import ConfigParser
 import pytest
 
 from pyaerocom.io import EbasSQLRequest
-from pyaerocom.io.ebas_file_index import EbasSQLRequest
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 
 TESTDATA = [

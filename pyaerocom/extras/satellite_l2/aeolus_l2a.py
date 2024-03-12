@@ -1996,8 +1996,6 @@ class ReadL2Data(ReadL2DataBase):
         import time
 
         start_time = time.perf_counter()
-        import numpy as np
-        import pandas as pd
         import xarray as xr
 
         if grouping == "names":
@@ -2223,7 +2221,6 @@ class ReadL2Data(ReadL2DataBase):
         linear_time=False,
     ):
         """plot sample profile plot"""
-        import matplotlib
         import matplotlib.pyplot as plt
         from matplotlib.colors import BoundaryNorm
         from matplotlib.ticker import MaxNLocator
@@ -2539,7 +2536,6 @@ class ReadL2Data(ReadL2DataBase):
         linear_time=False,
     ):
         """plot sample profile plot"""
-        import matplotlib
         import matplotlib.pyplot as plt
         from matplotlib.colors import BoundaryNorm
         from matplotlib.ticker import MaxNLocator
