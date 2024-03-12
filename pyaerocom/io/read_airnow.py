@@ -342,13 +342,13 @@ class ReadAirNow(ReadUngriddedBase):
                 arrs.append(filedata[filedata["variable"] == filevar].values)
                 if unique_stat_ids is None:
                     unique_stat_ids = np.unique(
-                        (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
+                        arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]
                     )
                 else:
                     try:
                         unique_stat_ids = np.union1d(
                             unique_stat_ids,
-                            np.unique((arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])),
+                            np.unique(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]),
                         )
                     except (ValueError, TypeError):
                         print(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
@@ -418,7 +418,7 @@ class ReadAirNow(ReadUngriddedBase):
             # there are stations with a all numeric station ID, but type hints in pd.read_csv made sure
             # they are read as str...
             if unique_stat_ids is None:
-                statlist = np.unique((subset[:, statcol]))
+                statlist = np.unique(subset[:, statcol])
             else:
                 statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var, disable=None):

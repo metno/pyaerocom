@@ -24,7 +24,7 @@ def json_path(tmp_path: Path) -> Path:
     "raw,precision,rounded",
     [
         pytest.param(
-            float(1.12344567890),
+            1.12344567890,
             5,
             1.12345,
             id="single float",
@@ -42,7 +42,7 @@ def json_path(tmp_path: Path) -> Path:
             id="np.float tuple",
         ),
         pytest.param(
-            dict(bla=np.float128(0.1234455667), blubb=int(1), ha="test"),
+            dict(bla=np.float128(0.1234455667), blubb=1, ha="test"),
             5,
             dict(bla=pytest.approx(0.12345, 1e-5), blubb=1, ha="test"),
             id="mixed dict",
