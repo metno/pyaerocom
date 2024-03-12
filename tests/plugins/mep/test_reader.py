@@ -8,27 +8,32 @@ from pyaerocom import const
 from pyaerocom.plugins.mep.reader import ReadMEP
 from tests.conftest import lustre_unavail
 
-try:
-    MEP_PATH = Path(const.OBSLOCS_UNGRIDDED[const.MEP_NAME])
-except KeyError:
-    pytest.mark.skip(reason=f"MEP path not initialised due to non existence in CI")
-
 STATION_NAMES = ("1478A", "2706A", "3377A")
-
 VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
 VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
 
 
-@lustre_unavail
 @pytest.fixture(scope="module")
-def reader() -> ReadMEP:
-    return ReadMEP(data_dir=str(MEP_PATH))
+def mep_path() -> Path:
+    try:
+        path = Path(const.OBSLOCS_UNGRIDDED[const.MEP_NAME])
+    except KeyError:
+        pytest.skip("MEP path is not registeded")
+
+    if not path.exists():
+        pytest.skip(f"missing {path}, this os OK on CI")
+
+    return path
 
 
-@lustre_unavail
+@pytest.fixture(scope="module")
+def reader(mep_path: Path) -> ReadMEP:
+    return ReadMEP(data_dir=str(mep_path))
+
+
 @pytest.fixture()
-def station_files(station: str) -> list[Path]:
-    files = sorted(MEP_PATH.rglob(f"mep-rd-{station}-*.nc"))
+def station_files(mep_path: Path, station: str) -> list[Path]:
+    files = sorted(mep_path.rglob(f"mep-rd-{station}-*.nc"))
     assert files, f"no files for {station}"
     return files
 
@@ -96,6 +101,5 @@ def test_read_error(reader: ReadMEP):
     assert str(e.value) == f"Unsupported variables: {bad_variable_name}"
 
 
-@lustre_unavail
-def test_reader_gives_correct_mep_path(reader: ReadMEP):
-    assert str(MEP_PATH) == reader.data_dir
+def test_reader_gives_correct_mep_path(reader: ReadMEP, mep_path: Path):
+    assert Path(reader.data_dir) == mep_path
