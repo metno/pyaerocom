@@ -135,12 +135,12 @@ class ColdataToJsonEngine(ProcessingEngine):
             raise NotImplementedError(
                 "Cannot yet apply country filtering for 4D colocated data instances"
             )
-        elif not main_freq in freqs:
+        elif main_freq not in freqs:
             raise AeroValConfigError(
                 f"main_freq {main_freq} is not in experiment frequencies: {freqs}"
             )
         if self.cfg.statistics_opts.stats_tseries_base_freq is not None:
-            if not self.cfg.statistics_opts.stats_tseries_base_freq in freqs:
+            if self.cfg.statistics_opts.stats_tseries_base_freq not in freqs:
                 raise AeroValConfigError(
                     f"Base frequency for statistics timeseries needs to be "
                     f"specified in experiment frequencies: {freqs}"

@@ -350,7 +350,7 @@ class Variable:
     @property
     def has_unit(self):
         """Boolean specifying whether variable has unit"""
-        return True if not self.units in (1, None) else False
+        return self.units not in {1, None}
 
     @property
     def lower_limit(self):
@@ -503,7 +503,7 @@ class Variable:
             cfg = self.read_config()
         elif not isinstance(cfg, ConfigParser):
             raise ValueError(f"invalid input for cfg, need config parser got {type(cfg)}")
-        if not var_name in cfg:
+        if var_name not in cfg:
             try:
                 var_name = self._check_aliases(var_name)
             except VariableDefinitionError:
@@ -515,7 +515,7 @@ class Variable:
         # this variable should import settings from another variable
         if "use" in var_info:
             use = var_info["use"]
-            if not use in cfg:
+            if use not in cfg:
                 raise VariableDefinitionError(
                     f"Input variable {var_name} depends on {use} "
                     f"which is not available in variables.ini."

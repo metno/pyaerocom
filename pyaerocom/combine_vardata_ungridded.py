@@ -377,12 +377,12 @@ def combine_vardata_ungridded(
     if data2 is data1 and var2 == var1 and data_id1 == data_id2:
         raise ValueError("nothing to combine...")
 
-    if not data_id1 in data1.contains_datasets:
+    if data_id1 not in data1.contains_datasets:
         raise ValueError(f"No such data ID {data_id1} in {data1}")
     elif len(data1.contains_datasets) > 1:
         data1 = data1.extract_dataset(data_id1)
 
-    if not data_id2 in data2.contains_datasets:
+    if data_id2 not in data2.contains_datasets:
         raise ValueError(f"No such data ID {data_id2} in {data2}")
     elif len(data2.contains_datasets) > 1:
         data2 = data2.extract_dataset(data_id2)
@@ -407,7 +407,7 @@ def combine_vardata_ungridded(
 
     match_stats_opts = ["station_name", "closest"]
 
-    if not match_stats_how in match_stats_opts:
+    if match_stats_how not in match_stats_opts:
         raise ValueError(
             f"Invalid input for match_stats_how {match_stats_how}, choose from {match_stats_opts}"
         )
@@ -418,7 +418,7 @@ def combine_vardata_ungridded(
     # dataset & variable can be provided via this instance
     prefer = id1
 
-    if not merge_how in merge_how_opts:
+    if merge_how not in merge_how_opts:
         raise ValueError(invalid_input_err_str("merge_how", merge_how, merge_how_opts))
 
     elif merge_how == "eval":

@@ -94,7 +94,7 @@ class ColocatedData:
             elif isinstance(data, xarray.DataArray):
                 self.data = data
             elif isinstance(data, np.ndarray):
-                if not data.ndim in (3, 4):
+                if data.ndim not in (3, 4):
                     raise DataDimensionError("invalid input, need 3D or 4D numpy array")
                 elif not data.shape[0] == 2:
                     raise DataDimensionError(
@@ -176,7 +176,7 @@ class ColocatedData:
     @property
     def longitude(self):
         """Array of longitude coordinates"""
-        if not "longitude" in self.data.coords:
+        if "longitude" not in self.data.coords:
             raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
@@ -189,7 +189,7 @@ class ColocatedData:
     @property
     def latitude(self):
         """Array of latitude coordinates"""
-        if not "latitude" in self.data.coords:
+        if "latitude" not in self.data.coords:
             raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
@@ -202,7 +202,7 @@ class ColocatedData:
     @property
     def time(self):
         """Array containing time stamps"""
-        if not "time" in self.data.dims:
+        if "time" not in self.data.dims:
             raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
@@ -219,7 +219,7 @@ class ColocatedData:
     @property
     def ts_type(self):
         """String specifying temporal resolution of data"""
-        if not "ts_type" in self.metadata:
+        if "ts_type" not in self.metadata:
             raise ValueError(
                 "Colocated data object does not contain information about temporal resolution"
             )
@@ -254,7 +254,7 @@ class ColocatedData:
                 val = "N/D"
             elif not isinstance(val, str):
                 val = str(val)
-            if not val in unique:
+            if val not in unique:
                 unique.append(val)
         return ", ".join(unique)
 
@@ -267,7 +267,7 @@ class ColocatedData:
     def num_coords(self):
         """Total number of lat/lon coordinate pairs"""
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
-        if not "station_name" in obj.coords:
+        if "station_name" not in obj.coords:
             raise DataDimensionError("Need dimension station_name")
         return len(obj.data.station_name)
 
@@ -282,12 +282,12 @@ class ColocatedData:
         """
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
         dims = obj.dims
-        if not "station_name" in dims:
+        if "station_name" not in dims:
             raise DataDimensionError("Need dimension station_name")
         obs = obj.data[0]
         if len(dims) > 3:  # additional dimensions
             default_dims = ("data_source", "time", "station_name")
-            add_dims = tuple(x for x in dims if not x in default_dims)
+            add_dims = tuple(x for x in dims if x not in default_dims)
             raise DataDimensionError(
                 f"Can only unambiguously retrieve no of coords with obs data "
                 f"for colocated data with dims {default_dims}, please reduce "
@@ -326,7 +326,7 @@ class ColocatedData:
         list
             list of countries available in these data
         """
-        if not "country" in self.coords:
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -350,7 +350,7 @@ class ColocatedData:
         list
             list of countries available in these data
         """
-        if not "country_code" in self.coords:
+        if "country_code" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -407,7 +407,7 @@ class ColocatedData:
             dictionary of unique country names (keys) and corresponding country
             codes (values)
         """
-        if not "country" in self.coords:
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -436,9 +436,9 @@ class ColocatedData:
             raise DataDimensionError(
                 "Can only compute area weights for data with latitude and longitude dimension"
             )
-        if not "units" in self.data.latitude.attrs:
+        if "units" not in self.data.latitude.attrs:
             self.data.latitude.attrs["units"] = "degrees"
-        if not "units" in self.data.longitude.attrs:
+        if "units" not in self.data.longitude.attrs:
             self.data.longitude.attrs["units"] = "degrees"
         arr = self.data
         from pyaerocom import GriddedData
@@ -660,7 +660,7 @@ class ColocatedData:
             list containing 3-element tuples, one for each site i, comprising
             (latitude[i], longitude[i], station_name[i]).
         """
-        if not "station_name" in self.data.dims:
+        if "station_name" not in self.data.dims:
             raise AttributeError(
                 "ColocatedData object has no dimension station_name. Consider stacking..."
             )
@@ -738,7 +738,7 @@ class ColocatedData:
         if assign_to_dim is None:
             assign_to_dim = "station_name"
 
-        if not assign_to_dim in self.dims:
+        if assign_to_dim not in self.dims:
             raise DataDimensionError("No such dimension", assign_to_dim)
 
         coldata = self if inplace else self.copy()
@@ -818,7 +818,7 @@ class ColocatedData:
         dict
             dictionary containing statistical parameters
         """
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
+        if use_area_weights and "weights" not in kwargs and self.has_latlon_dims:
             kwargs["weights"] = self.area_weights[0].flatten()
 
         nc = self.num_coords
@@ -917,7 +917,7 @@ class ColocatedData:
         """
         if aggr is None:
             aggr = "mean"
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
+        if use_area_weights and "weights" not in kwargs and self.has_latlon_dims:
             weights = self.area_weights[0]  # 3D (time, lat, lon)
             assert self.dims[1] == "time"
             kwargs["weights"] = np.nanmean(weights, axis=0).flatten()
@@ -1037,9 +1037,9 @@ class ColocatedData:
         DataSourceError
             if input data_source is not available in this object
         """
-        if not data_source in self.metadata["data_source"]:
+        if data_source not in self.metadata["data_source"]:
             raise DataSourceError(f"No such data source {data_source} in ColocatedData")
-        if not var_name in self.metadata["var_name"]:
+        if var_name not in self.metadata["var_name"]:
             raise VarNotAvailableError(f"No such variable {var_name} in ColocatedData")
 
         if inplace:
@@ -1468,7 +1468,7 @@ class ColocatedData:
 
         """
         what = "country" if not use_country_code else "country_code"
-        if not what in arr.coords:
+        if what not in arr.coords:
             raise DataDimensionError(
                 f"Cannot filter country {country}. No country information available in DataArray"
             )
@@ -1835,7 +1835,7 @@ class ColocatedData:
         """
         if not len(self.data_source) == 2:
             raise DataDimensionError("data_source dimension needs exactly 2 entries")
-        elif not "time" in self.dims:
+        elif "time" not in self.dims:
             raise DataDimensionError("data needs to have time dimension")
         _arr = self.data
         mod, obs = _arr[1], _arr[0]

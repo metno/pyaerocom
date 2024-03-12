@@ -437,7 +437,7 @@ class ConstrainedContainer(BrowseDict):
         ----
         Only used in __setitem__ not in __setattr__.
         """
-        if not key in dir(self):
+        if key not in dir(self):
             if self.CRASH_ON_INVALID:
                 raise ValueError(f"Invalid key {key}")
             logger.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
@@ -447,7 +447,7 @@ class ConstrainedContainer(BrowseDict):
         val = self._check_valtype(key, val)
         current_tp = type(current)
 
-        if not current is None and not isinstance(val, current_tp):
+        if current is not None and not isinstance(val, current_tp):
             raise ValueError(
                 f"Invalid type {type(val)} for key: {key}. Need {current_tp} "
                 f"(Current value: {current})"
@@ -518,7 +518,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
     for key, val in dict2.items():
         try:
             # entry does not exist in first dict or is None
-            if not key in new or new[key] is None:
+            if key not in new or new[key] is None:
                 new[key] = val
                 continue
             # get value of first input dict
@@ -543,7 +543,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 
             elif isinstance(this, list) and isinstance(val, list):
                 for item in val:
-                    if not item in this:
+                    if item not in this:
                         this.append(item)
                 new[key] = this
 
@@ -652,7 +652,7 @@ def sort_dict_by_name(d, pref_list: list = None) -> dict:
         if k in d:
             s[k] = d[k]
     for k in sorted_keys:
-        if not k in pref_list:
+        if k not in pref_list:
             s[k] = d[k]
     return s
 

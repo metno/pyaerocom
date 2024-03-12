@@ -689,7 +689,7 @@ class ReadEbas(ReadUngriddedBase):
                     files_aux_req[_var] = sorted(paths)
 
         for _var in vars_to_retrieve:
-            if not _var in files_vars:
+            if _var not in files_vars:
                 files_vars[_var] = self._merge_auxvar_lists(_var, files_aux_req)
 
         self._lists_orig = files_vars
@@ -726,7 +726,7 @@ class ReadEbas(ReadUngriddedBase):
             return []
         remaining = None
         for _vreq in _required:
-            if not _vreq in files_aux_req:
+            if _vreq not in files_aux_req:
                 return []
             _lst = files_aux_req[_vreq]
             if remaining is None:
@@ -780,7 +780,7 @@ class ReadEbas(ReadUngriddedBase):
                         matrix = col_info["matrix"]
                     else:
                         matrix = data.matrix
-                    if not matrix in ebas_var_info["matrix"]:
+                    if matrix not in ebas_var_info["matrix"]:
                         ok = False
                 if ok and "statistics" in col_info:
                     # ALWAYS ignore columns containing statistics flagged in
@@ -788,7 +788,7 @@ class ReadEbas(ReadUngriddedBase):
                     if col_info["statistics"] in opts.ignore_statistics:
                         ok = False
                     elif check_stats:
-                        if not col_info["statistics"] in ebas_var_info["statistics"]:
+                        if col_info["statistics"] not in ebas_var_info["statistics"]:
                             ok = False
                 for key in self.IGNORE_COLS_CONTAIN:
                     if key in col_info:
@@ -797,13 +797,13 @@ class ReadEbas(ReadUngriddedBase):
                         break
                 if ok:
                     col_matches.append(colnum)
-                    if not col_info.name in comps:
+                    if col_info.name not in comps:
                         comps.append(col_info.name)
         if len(col_matches) == 0:
             raise NotInFileError(f"Variable {ebas_var_info.var_name} could not be found in file")
         elif len(comps) > 1 and len(ebas_var_info.component) > 1:
             for prefcomp in ebas_var_info.component:
-                if not prefcomp in comps:
+                if prefcomp not in comps:
                     continue
                 col_matches = [
                     colnum for colnum in col_matches if prefcomp == data.var_defs[colnum].name
@@ -834,7 +834,7 @@ class ReadEbas(ReadUngriddedBase):
 
         """
         to_unit = str(self.var_info(var_name).units)
-        if not to_unit in ("", "1"):
+        if to_unit not in ("", "1"):
             _cols = []
             for colnum in result_col:
                 try:
@@ -1017,7 +1017,7 @@ class ReadEbas(ReadUngriddedBase):
         except KeyError:
             ival = re.findall(r"\d+", tres_code)[0]
             code = tres_code.split(ival)[-1]
-            if not code in self.TS_TYPE_CODES:
+            if code not in self.TS_TYPE_CODES:
                 raise NotImplementedError(f"Cannot handle EBAS resolution code {tres_code}")
             ts_type = ival + self.TS_TYPE_CODES[code]
             self.TS_TYPE_CODES[tres_code] = ts_type
@@ -1089,7 +1089,7 @@ class ReadEbas(ReadUngriddedBase):
 
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
-            if not "wavelength" in colinfo:
+            if "wavelength" not in colinfo:
                 logger.warning(
                     f"Ignoring column {colnum}\n{colinfo}\nVar {var_info.var_name}: "
                     f"column misses wavelength specification!"
@@ -1123,7 +1123,7 @@ class ReadEbas(ReadUngriddedBase):
 
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
-            if not "wavelength" in colinfo:
+            if "wavelength" not in colinfo:
                 logger.warning(
                     f"Ignoring column {colnum} ({colinfo}) in EBAS file for reading var {var_info}: "
                     f"column misses wavelength specification"
@@ -1182,7 +1182,7 @@ class ReadEbas(ReadUngriddedBase):
         # make sure this variable has wavelength set
         # vi.ensure_wavelength_avail()
         if vi.is_wavelength_dependent:
-            if not "wavelength" in _col:
+            if "wavelength" not in _col:
                 raise EbasFileError(
                     f"Cannot access column wavelength information for variable {var}"
                 )
@@ -1390,7 +1390,7 @@ class ReadEbas(ReadUngriddedBase):
 
     def get_ebas_var(self, var_name):
         """Get instance of :class:`EbasVarInfo` for input AeroCom variable"""
-        if not var_name in self._loaded_ebas_vars:
+        if var_name not in self._loaded_ebas_vars:
             self._loaded_ebas_vars[var_name] = EbasVarInfo(var_name)
         return self._loaded_ebas_vars[var_name]
 
@@ -1458,15 +1458,15 @@ class ReadEbas(ReadUngriddedBase):
 
             meta = file.meta
 
-            if not "unit" in _col:  # make sure a unit is assigned to data column
+            if "unit" not in _col:  # make sure a unit is assigned to data column
                 _col["unit"] = file.unit
 
             data = self._check_shift_wavelength(var, _col, meta, data)
 
             # TODO: double-check with NILU if this can be assumed
-            if not "matrix" in _col:
+            if "matrix" not in _col:
                 _col["matrix"] = meta["matrix"]
-            if not "statistics" in _col:
+            if "statistics" not in _col:
                 stats = None
                 if "statistics" in meta:
                     stats = meta["statistics"]
@@ -1557,7 +1557,7 @@ class ReadEbas(ReadUngriddedBase):
                     f"{tst} resolution. Minimum requirement for {var} is "
                     f"{opts.freq_min_cov * 100:.2f}%"
                 )
-            if not var in filedata.data_flagged:
+            if var not in filedata.data_flagged:
                 filedata.data_flagged[var] = np.zeros(num).astype(bool)
             filedata.data_flagged[var][invalid] = True
         return filedata
@@ -1595,7 +1595,7 @@ class ReadEbas(ReadUngriddedBase):
         """
         data = super().compute_additional_vars(data, vars_to_compute)
         for var in vars_to_compute:
-            if not var in data:  # variable could not be computed -> ignore
+            if var not in data:  # variable could not be computed -> ignore
                 continue
 
             data.var_info[var].update(self.get_ebas_var(var))  # self._loaded_ebas_vars[var]
@@ -1606,20 +1606,20 @@ class ReadEbas(ReadUngriddedBase):
                 if from_var in data:
                     from_dict = data["var_info"][from_var]
                     for k, v in from_dict.items():
-                        if not k in to_dict or to_dict[k] is None:
+                        if k not in to_dict or to_dict[k] is None:
                             to_dict[k] = v
 
                 if from_var in data.data_flagged:
                     data.data_flagged[var] = data.data_flagged[from_var]
                 if from_var in data.data_err:
                     data.data_err[var] = data.data_err[from_var]
-            if not "units" in data["var_info"][var]:
+            if "units" not in data["var_info"][var]:
                 data["var_info"][var]["units"] = self.var_info(var)["units"]
         return data
 
     def var_info(self, var_name):
         """Aerocom variable info for input var_name"""
-        if not var_name in self._loaded_aerocom_vars:
+        if var_name not in self._loaded_aerocom_vars:
             self._loaded_aerocom_vars[var_name] = const.VARS[var_name]
         return self._loaded_aerocom_vars[var_name]
 
@@ -1647,9 +1647,9 @@ class ReadEbas(ReadUngriddedBase):
             options
 
         """
-        if not var_name in self.VAR_READ_OPTS:
+        if var_name not in self.VAR_READ_OPTS:
             return self._opts["default"]
-        if not var_name in self._opts:
+        if var_name not in self._opts:
             vo = ReadEbasOptions(**self.VAR_READ_OPTS[var_name])
             self._opts[var_name] = vo
         return self._opts[var_name]
@@ -1895,7 +1895,7 @@ class ReadEbas(ReadUngriddedBase):
                 start = idx + var_count * num_times
                 stop = start + num_times
 
-                if not var in data_obj.var_idx:
+                if var not in data_obj.var_idx:
                     var_count_glob += 1
                     var_idx = var_count_glob
                     data_obj.var_idx[var] = var_idx

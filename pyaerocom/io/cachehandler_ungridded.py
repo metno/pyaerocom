@@ -150,7 +150,7 @@ class CacheHandlerUngridded:
         if not isinstance(head, dict):
             raise CacheReadError("Invalid cache file")
         for k, v in head.items():
-            if not k in current:
+            if k not in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
             elif not v == current[k]:
                 logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
@@ -316,7 +316,7 @@ class CacheHandlerUngridded:
                     )
                 var_name = data.contains_vars[0]
 
-            elif not var_name in data.contains_vars:
+            elif var_name not in data.contains_vars:
                 raise CacheWriteError(
                     f"Cannot write cache file: variable {var_name} "
                     f"does not exist in input UngriddedData object"

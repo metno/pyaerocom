@@ -287,7 +287,7 @@ class ReadGhost(ReadUngriddedBase):
     def _ts_type_from_data_dir(self):
         try:
             freq = str(TsType(os.path.basename(self.data_dir)))
-        except Exception as e:  # pragma: no cover
+        except Exception:  # pragma: no cover
             freq = "undefined"
         self.TS_TYPES[self.data_id] = freq
         return freq
@@ -343,7 +343,7 @@ class ReadGhost(ReadUngriddedBase):
 
         if not {"station", "time"}.issubset(ds.dims):  # pragma: no cover
             raise AttributeError("Missing dimensions")
-        if not "station_name" in ds:  # pragma: no cover
+        if "station_name" not in ds:  # pragma: no cover
             raise AttributeError("No variable station_name found")
 
         stats = []
@@ -452,7 +452,7 @@ class ReadGhost(ReadUngriddedBase):
             can_compute = True
             requires = self.AUX_REQUIRES[var]
             for req in requires:
-                if not req in first_stat:
+                if req not in first_stat:
                     can_compute = False
             if can_compute:
                 # this will add the variable data to each station data in
@@ -460,7 +460,7 @@ class ReadGhost(ReadUngriddedBase):
                 statlist_from_file = self.AUX_FUNS[var](statlist_from_file, var, *requires)
                 statlist_from_file = self._add_flags_var_to_compute(statlist_from_file, var)
 
-                if not var in vars_added:
+                if var not in vars_added:
                     vars_added.append(var)
         return (statlist_from_file, vars_added)
 
@@ -592,7 +592,7 @@ class ReadGhost(ReadUngriddedBase):
                     start = idx + j * num_times
                     stop = start + num_times
 
-                    if not var_to_write in data_obj.var_idx:
+                    if var_to_write not in data_obj.var_idx:
                         var_count_glob += 1
                         var_idx = var_count_glob
                         data_obj.var_idx[var_to_write] = var_idx

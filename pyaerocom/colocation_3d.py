@@ -64,7 +64,7 @@ def _colocate_vertical_profile_gridded(
     var_ref_aerocom=None,
 ) -> list[ColocatedData]:
     if layer_limits is None:
-        raise Exception(f"layer limits must be provided")
+        raise Exception("layer limits must be provided")
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -136,7 +136,7 @@ def _colocate_vertical_profile_gridded(
                 ts_type_src_ref = obs_stat["ts_type_src"]
             elif obs_stat["ts_type_src"] != ts_type_src_ref:
                 spl = ts_type_src_ref.split(";")
-                if not obs_stat["ts_type_src"] in spl:
+                if obs_stat["ts_type_src"] not in spl:
                     spl.append(obs_stat["ts_type_src"])
                 ts_type_src_ref = ";".join(spl)
 
@@ -345,7 +345,7 @@ def colocate_vertical_profile_gridded(
     else:
         var_ref_aerocom = const.VARS[var_ref].var_name_aerocom
 
-    if not var_ref in data_ref.contains_vars:
+    if var_ref not in data_ref.contains_vars:
         raise VarNotAvailableError(
             f"Variable {var_ref} is not available in ungridded "
             f"data (which contains {data_ref.contains_vars})"
@@ -368,7 +368,7 @@ def colocate_vertical_profile_gridded(
 
     data_ref_meta_idxs_with_var_info = []
     for i in range(len(data_ref.metadata)):
-        if not "altitude" in data_ref.metadata[i]["var_info"]:
+        if "altitude" not in data_ref.metadata[i]["var_info"]:
             logger.warning(
                 f"Warning: Station {data_ref.metadata[i]['station_name']} does not have any var_info"
             )

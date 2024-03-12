@@ -36,7 +36,7 @@ def ignore_warnings(category: type[Warning], *messages: str):
 
     if not messages:
         message = ""
-    elif all(type(msg) == str for msg in messages):
+    elif all(isinstance(msg, str) for msg in messages):
         message = "|".join(messages)
     else:
         raise ValueError("messages must be list of strings")

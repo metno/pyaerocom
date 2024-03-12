@@ -212,7 +212,7 @@ class ReadUngridded:
         elif not isinstance(val, (tuple, list)):
             raise OSError("Invalid input for parameter data_ids")
         logger.warning(
-            f"You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
+            "You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
         )
         for config in val:
             self._init_pyaro_reader(config=config)
@@ -252,7 +252,7 @@ class ReadUngridded:
             data_id = self.data_id
         if config is None:
             config = self.config
-        if not data_id in self._readers:
+        if data_id not in self._readers:
             reader = self.get_lowlevel_reader(data_id, config)
         else:
             reader = self._readers[data_id]
@@ -284,16 +284,16 @@ class ReadUngridded:
         if data_id is None:
             if len(self.data_ids) != 1:
                 raise ValueError("Please specify dataset")
-        if not data_id in self.supported_datasets:
+        if data_id not in self.supported_datasets:
             if data_id not in self.config_map:
                 raise NetworkNotSupported(
                     f"Could not fetch reader class: Input "
                     f"network {data_id} is not supported by "
                     f"ReadUngridded"
                 )
-        elif not data_id in self.data_ids:
+        elif data_id not in self.data_ids:
             self.data_ids.append(data_id)
-        if not data_id in self._readers:
+        if data_id not in self._readers:
             _cls = self._find_read_class(data_id)
             reader = self._init_lowlevel_reader(_cls, data_id)
             self._readers[data_id] = reader
@@ -356,7 +356,7 @@ class ReadUngridded:
 
         """
         if not isinstance(config, PyaroConfig):
-            raise ValueError(f"Given config is not a PyaroConfig")
+            raise ValueError("Given config is not a PyaroConfig")
 
         self._init_pyaro_reader(config=config)
         self._configs.append(config)
@@ -420,7 +420,7 @@ class ReadUngridded:
         #     data_id = config.name
 
         if data_id is None:
-            raise ValueError(f"Data_id can not be none")
+            raise ValueError("Data_id can not be none")
 
         if data_id in self.config_map:
             return reader(config=self.config_map[data_id])
@@ -519,7 +519,7 @@ class ReadUngridded:
                     )
 
         if not only_cached:
-            vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
+            vars_to_read = [v for v in vars_available if v not in cache.loaded_data]
         else:
             vars_to_read = []
 
@@ -583,7 +583,7 @@ class ReadUngridded:
             if key == "ignore_station_names":  # for backwards compatibility
                 if isinstance(val, (str, list)):
                     filters["station_name"] = val
-                    if not "negate" in filters:
+                    if "negate" not in filters:
                         filters["negate"] = []
                     filters["negate"].append("station_name")
 
@@ -601,7 +601,7 @@ class ReadUngridded:
                         var = vars_available[0]
                         try:
                             filters["station_name"] = val[var]
-                            if not "negate" in filters:
+                            if "negate" not in filters:
                                 filters["negate"] = []
                             filters["negate"].append("station_name")
                         except KeyError:
@@ -853,7 +853,7 @@ class ReadUngridded:
             postinfo = self.post_compute[obs_id]
             supported = postinfo["vars_supported"]
             for var in varlist_aerocom(vars_desired):
-                if not var in supported:
+                if var not in supported:
                     try:
                         var = self._check_var_alias(var, supported)
                     except ValueError:

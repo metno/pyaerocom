@@ -56,7 +56,7 @@ class TrendsEngine:
             season = "all"
         if slope_confidence is None:
             slope_confidence = 0.68
-        if not ts_type in ["yearly", "monthly"]:
+        if ts_type not in ["yearly", "monthly"]:
             raise ValueError(ts_type)
 
         result = _init_trends_result_dict(start_year)
@@ -190,7 +190,7 @@ class TrendPlotter:  # pragma: no cover
         return self.CMAP(self.NORM(trend_val))
 
     def plot(self, season="all", period=None, ax=None):
-        if not season in self.seasons_avail:
+        if season not in self.seasons_avail:
             raise AttributeError(f"No results available for season {season}")
         if period is None:
             if len(self.results[season]) > 1:
@@ -218,7 +218,7 @@ class TrendPlotter:  # pragma: no cover
         ylbl = self.var_name
         if self.var_name is not None and "units" in self.meta:
             u = str(self.meta["units"])
-            if not u in ["", "1"]:
+            if u not in {"", "1"}:
                 ylbl += f" [{u}]"
         ax.set_ylabel(ylbl)
         tit = ""

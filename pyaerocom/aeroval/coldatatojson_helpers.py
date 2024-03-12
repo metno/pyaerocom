@@ -131,16 +131,16 @@ def _add_heatmap_entry_json(
         current = read_json(heatmap_file)
     else:
         current = {}
-    if not var_name_web in current:
+    if var_name_web not in current:
         current[var_name_web] = {}
     ov = current[var_name_web]
-    if not obs_name in ov:
+    if obs_name not in ov:
         ov[obs_name] = {}
     on = ov[obs_name]
-    if not vert_code in on:
+    if vert_code not in on:
         on[vert_code] = {}
     ovc = on[vert_code]
-    if not model_name in ovc:
+    if model_name not in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
     mn[model_var] = result
@@ -238,7 +238,7 @@ def update_regions_json(region_defs, regions_json):
         current = {}
 
     for region_name, region_info in region_defs.items():
-        if not region_name in current:
+        if region_name not in current:
             current[region_name] = region_info
     write_json(current, regions_json)
     return current
@@ -850,7 +850,7 @@ def _process_map_and_scat(
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
                 for i, map_stat in zip(site_indices, map_data):
-                    if not freq in map_stat:
+                    if freq not in map_stat:
                         map_stat[freq] = {}
 
                     if use_dummy:
@@ -899,7 +899,7 @@ def _process_map_and_scat(
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
                         site = map_stat["station_name"]
-                        if not site in scat_data:
+                        if site not in scat_data:
                             scat_data[site] = {}
                             scat_data[site]["latitude"] = map_stat["latitude"]
                             scat_data[site]["longitude"] = map_stat["longitude"]
@@ -996,7 +996,7 @@ def _apply_annual_constraint(data):
 
     """
     output = {}
-    if not "yearly" in data or data["yearly"] is None:
+    if "yearly" not in data or data["yearly"] is None:
         raise AeroValConfigError(
             "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
@@ -1108,7 +1108,7 @@ def _select_period_season_coldata(coldata, period, season):
     if len(arr.time) == 0:
         raise DataCoverageError(f"No data available in period {period}")
     if season != "all":
-        if not season in arr.season:
+        if season not in arr.season:
             raise DataCoverageError(f"No data available in {season} in period {period}")
         elif TsType(coldata.ts_type) < "monthly":
             raise TemporalResolutionError(
@@ -1185,7 +1185,7 @@ def _process_heatmap_data(
                                 stats["obs_trend"] = obs_trend
                                 stats["mod_trend"] = mod_trend
 
-                        except (DataCoverageError, TemporalResolutionError) as e:
+                        except (DataCoverageError, TemporalResolutionError):
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats
@@ -1289,7 +1289,7 @@ def _process_statistics_timeseries(
         )
 
     output = {}
-    if not data_freq in data or data[data_freq] is None:
+    if data_freq not in data or data[data_freq] is None:
         raise TemporalResolutionError(
             f"failed to compute statistics timeseries, no co-located data "
             f"available in specified base resolution {data_freq}"
@@ -1541,14 +1541,14 @@ def add_profile_entry_json(
 
     for freq, coldata in data.items():
         model_name = coldata.model_name
-        if not model_name in current:
+        if model_name not in current:
             current[model_name] = {}
 
         midpoint = (
             float(coldata.data.attrs["vertical_layer"]["end"])
             + float(coldata.data.attrs["vertical_layer"]["start"])
         ) / 2
-        if not "z" in current[model_name]:
+        if "z" not in current[model_name]:
             current[model_name]["z"] = [midpoint]  # initalize with midpoint
 
         if (
@@ -1556,31 +1556,31 @@ def add_profile_entry_json(
         ):  # only store incremental increases in the layers
             current[model_name]["z"].append(midpoint)
 
-        if not "obs" in current[model_name]:
+        if "obs" not in current[model_name]:
             current[model_name]["obs"] = {}
 
-        if not freq in current[model_name]["obs"]:
+        if freq not in current[model_name]["obs"]:
             current[model_name]["obs"][freq] = {}
 
-        if not "mod" in current[model_name]:
+        if "mod" not in current[model_name]:
             current[model_name]["mod"] = {}
 
-        if not freq in current[model_name]["mod"]:
+        if freq not in current[model_name]["mod"]:
             current[model_name]["mod"][freq] = {}
 
         for per in periods:
             for season in seasons:
                 perstr = f"{per}-{season}"
 
-                if not perstr in current[model_name]["obs"][freq]:
+                if perstr not in current[model_name]["obs"][freq]:
                     current[model_name]["obs"][freq][perstr] = []
-                if not perstr in current[model_name]["mod"][freq]:
+                if perstr not in current[model_name]["mod"][freq]:
                     current[model_name]["mod"][freq][perstr] = []
 
                 current[model_name]["obs"][freq][perstr].append(profile_viz["obs"][freq][perstr])
                 current[model_name]["mod"][freq][perstr].append(profile_viz["mod"][freq][perstr])
 
-        if not "metadata" in current[model_name]:
+        if "metadata" not in current[model_name]:
             current[model_name]["metadata"] = {
                 "z_unit": coldata.data.attrs["altitude_units"],
                 "z_description": "Altitude ASL",

@@ -355,7 +355,7 @@ class FileConventionRead:
         conf_reader = ConfigParser()
         with resources.path("pyaerocom.data", "file_conventions.ini") as path:
             conf_reader.read(path)
-        if not name in conf_reader:
+        if name not in conf_reader:
             raise NameError(f"No default available for {name}")
         self.name = name
         for key, val in conf_reader[name].items():

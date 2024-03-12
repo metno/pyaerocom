@@ -71,7 +71,7 @@ def varlist_aerocom(varlist):
     for var in varlist:
         try:
             _var = const.VARS[var].var_name_aerocom
-            if not _var in output:
+            if _var not in output:
                 output.append(_var)
         except VariableDefinitionError as e:
             logger.warning(repr(e))
@@ -150,12 +150,12 @@ def extract_latlon_dataarray(
         lat_dimname = "lat"
     if lon_dimname is None:
         lon_dimname = "lon"
-    if not lat_dimname in arr.dims and lat_dimname == "lat":
+    if lat_dimname not in arr.dims and lat_dimname == "lat":
         for alias in const.COORDINFO["lat"].aliases:
             if alias in arr.dims:
                 lat_dimname = alias
                 break
-    if not lon_dimname in arr.dims and lon_dimname == "lon":
+    if lon_dimname not in arr.dims and lon_dimname == "lon":
         for alias in const.COORDINFO["lon"].aliases:
             if alias in arr.dims:
                 lon_dimname = alias
@@ -288,7 +288,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         of the array)
 
     """
-    from pyaerocom import const
 
     if len(coord_vals) < 2:
         logger.warning(
@@ -753,9 +752,9 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
     is_3d = []
     stats = []
     for stat in statlist:
-        if not var_name in stat:
+        if var_name not in stat:
             raise DataCoverageError(f"All input stations must contain {var_name} data")
-        elif pref_attr is not None and not pref_attr in stat:
+        elif pref_attr is not None and pref_attr not in stat:
             raise MetaDataError(
                 f"Cannot sort station relevance by attribute {pref_attr}. "
                 f"At least one of the input stations does not contain this attribute"
@@ -1153,7 +1152,7 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
 
     if not isinstance(arr, xr.DataArray):
         raise OSError(f"Invalid input for arr: need DataArray, got {type(arr)}")
-    elif not "time" in arr.dims:
+    elif "time" not in arr.dims:
         raise DataDimensionError("Cannot resample time: input DataArray has no time dimension")
 
     from pyaerocom.tstype import TsType
@@ -1230,7 +1229,7 @@ def str_to_iris(key, **kwargs):
         corresponding iris analysis object (e.g. Aggregator, method)
     """
     key = key.lower()
-    if not key in STR_TO_IRIS:
+    if key not in STR_TO_IRIS:
         raise KeyError(
             "No iris.analysis object available for key %s, please "
             "choose from %s" % (key, STR_TO_IRIS.keys())
@@ -1388,8 +1387,6 @@ def start_stop(start, stop=None, stop_sub_sec=True):
 
 
 def datetime2str(time, ts_type=None):
-    from pyaerocom import const
-
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)

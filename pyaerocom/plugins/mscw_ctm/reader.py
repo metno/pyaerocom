@@ -307,7 +307,7 @@ class ReadMscwCtm:
         Directory containing netcdf files
         """
         if self._data_dir is None:
-            raise AttributeError(f"data_dir needs to be set before accessing")
+            raise AttributeError("data_dir needs to be set before accessing")
         return self._data_dir
 
     @data_dir.setter

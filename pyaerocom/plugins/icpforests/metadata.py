@@ -396,7 +396,7 @@ class Plots:
 
     def read_file(self, altitudes: dict[str, int]) -> dict[int, dict[int, dict[int, Plot]]]:
         plots: dict[int, dict[int, dict[int, Plot]]] = {}
-        print(f"Starting to read plot metadata")
+        print("Starting to read plot metadata")
         with open(self.plot_file, "r") as f:
             f.readline()
             for line in f:
@@ -434,7 +434,7 @@ class Plots:
                 plots[country_code][plot_code][sampler_code].add_survey_year(
                     survey_year, start, stop, periods
                 )
-        print(f"Done read plot metadata")
+        print("Done read plot metadata")
         self.plots = plots
         return plots
 

@@ -174,7 +174,7 @@ ALL_SITES = [
         ({"station_name": ["Tr*", "Mauna*"]}, ["Trelew", "Mauna_Loa"]),
         (
             {"station_name": ["Tr*", "Mauna*"], "negate": "station_name"},
-            [x for x in ALL_SITES if not x in ["Trelew", "Mauna_Loa"]],
+            [x for x in ALL_SITES if x not in {"Trelew", "Mauna_Loa"}],
         ),
         (
             {"altitude": [0, 1000], "negate": "altitude"},

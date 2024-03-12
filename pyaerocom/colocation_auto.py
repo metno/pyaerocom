@@ -596,7 +596,7 @@ class Colocator(ColocationSetup):
                 model_vars.append(ovar)
 
         for ovar, mvars in self.model_add_vars.items():
-            if not ovar in ovars:
+            if ovar not in ovars:
                 logger.warning(
                     f"Found entry in model_add_vars for obsvar {ovar} which "
                     f"is not specified in attr obs_vars, and will thus be "
@@ -864,7 +864,7 @@ class Colocator(ColocationSetup):
                 coldata = self._run_helper(
                     mod_var, obs_var
                 )  # note this can be ColocatedData or ColocatedDataLists
-                if not mod_var in data_out:
+                if mod_var not in data_out:
                     data_out[mod_var] = {}
                 data_out[mod_var][obs_var] = coldata
                 self._processing_status.append([mod_var, obs_var, 1])
@@ -994,7 +994,7 @@ class Colocator(ColocationSetup):
         if any([x in self.obs_filters for x in obs_vars]):
             # variable specific obs_filters
             for ovar in obs_vars:
-                if not ovar in self.obs_filters:
+                if ovar not in self.obs_filters:
                     self.obs_filters[ovar] = {}
 
     def _check_load_model_data(self, var_matches):
@@ -1093,7 +1093,7 @@ class Colocator(ColocationSetup):
         return reader
 
     def _check_add_model_read_aux(self, model_var):
-        if not model_var in self.model_read_aux:
+        if model_var not in self.model_read_aux:
             return False
         info = self.model_read_aux[model_var]
         if not isinstance(info, dict):
@@ -1126,7 +1126,7 @@ class Colocator(ColocationSetup):
 
         if len(self.obs_vars) > len(avail):
             for ovar in self.obs_vars:
-                if not ovar in avail:
+                if ovar not in avail:
                     logger.warning(
                         f"Obs variable {ovar} is not available in {self.obs_id} "
                         f"and will be ignored"
@@ -1134,7 +1134,7 @@ class Colocator(ColocationSetup):
                     self._processing_status.append([None, ovar, 3])
 
             if self.raise_exceptions:
-                invalid = [var for var in self.obs_vars if not var in avail]
+                invalid = [var for var in self.obs_vars if var not in avail]
                 invalid = "; ".join(invalid)
                 raise DataCoverageError(f"Invalid obs var(s) for {self.obs_id}: {invalid}")
 
@@ -1386,7 +1386,7 @@ class Colocator(ColocationSetup):
         # 9999 denote climatological data)
         yrs_avail = self.model_reader.years_avail
         if self.model_use_climatology:
-            if not 9999 in yrs_avail:
+            if 9999 not in yrs_avail:
                 raise DataCoverageError("No climatology files available")
             first, last = 9999, None
         else:

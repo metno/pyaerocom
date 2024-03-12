@@ -208,7 +208,7 @@ def get_standard_name(var_name):
     VariableDefinitionError
         if standarad name is not set for variable in *variables.ini* file
     """
-    if not var_name in const.VARS:
+    if var_name not in const.VARS:
         raise VarNotAvailableError(f"No such variable {var_name}. Check variables.ini")
     name = const.VARS[var_name].standard_name
     if name is None:
@@ -255,7 +255,7 @@ def get_obsnetwork_dir(obs_id):
     IOError
         if directory does not exist
     """
-    if not obs_id in const.OBSLOCS_UNGRIDDED:
+    if obs_id not in const.OBSLOCS_UNGRIDDED:
         raise ValueError(f"Observation network ID {obs_id} does not exist")
 
     data_dir = const.OBSLOCS_UNGRIDDED[obs_id]

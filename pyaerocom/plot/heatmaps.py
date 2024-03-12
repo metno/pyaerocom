@@ -246,7 +246,7 @@ def df_to_heatmap(
         cbar_kws = {}
     if annot_fontsize is None:
         annot_fontsize = labelsize - 4
-    if not "annot_kws" in kwargs:
+    if "annot_kws" not in kwargs:
         kwargs["annot_kws"] = {}
     kwargs["annot_kws"]["size"] = annot_fontsize
     df_hm = df

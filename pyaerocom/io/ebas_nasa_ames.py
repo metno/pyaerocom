@@ -65,9 +65,9 @@ class EbasColDef(dict):
 
     def get_wavelength_nm(self):
         """Try to access wavelength information in nm (as float)"""
-        if not "wavelength" in self:
+        if "wavelength" not in self:
             raise KeyError(f"Column variable {self.name} does not contain wavelength information")
-        elif not "nm" in self.wavelength:
+        elif "nm" not in self.wavelength:
             raise NotImplementedError("Wavelength definition is not in nm")
         return float(self.wavelength.split("nm")[0].strip())
 
@@ -431,7 +431,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
     @property
     def base_date(self):
         """Base date of data as numpy.datetime64[s]"""
-        if not "timezone" in self.meta:
+        if "timezone" not in self.meta:
             raise AttributeError(
                 "Fatal: could not infer base date. Timezone is not available in file header"
             )
@@ -512,7 +512,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             )
         offs = self.base_date
         unit = self.time_unit
-        if not unit in self.TIMEUNIT2SECFAC:
+        if unit not in self.TIMEUNIT2SECFAC:
             raise ValueError(f"Invalid unit for temporal resolution: {unit}")
         mulfac = self.TIMEUNIT2SECFAC[unit]
 
@@ -580,7 +580,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                 "Mismatch between variable definitions in header and "
                 "number of data columns in table\n"
             )
-        if not "timezone" in self.meta:
+        if "timezone" not in self.meta:
             msgs += "Timezone not defined in metadata"
         if msgs:
             raise AttributeError(f"Quality check failed. Messages: {msgs}")
@@ -734,7 +734,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             unit = spl[1]
         data = EbasColDef(name=name, is_flag=True, is_var=False, unit=unit)
 
-        if not "numflag" in name:
+        if "numflag" not in name:
             data.is_var = True
             data.is_flag = False
             for item in spl[2:]:

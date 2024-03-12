@@ -80,16 +80,16 @@ class AuxInfoUngridded:
             self.aux_units = {}
 
         for var in self.vars_supported:
-            if not var in self.aux_requires:
+            if var not in self.aux_requires:
                 raise ValueError(f"Variable {var} is not defined in attr aux_requires...")
 
-            elif not var in self.aux_merge_how:
+            elif var not in self.aux_merge_how:
                 raise ValueError(
                     f"Missing information about how {var} should be merged (aux_merge_how)"
                 )
             merge_how = self.aux_merge_how[var]
             if merge_how == "eval":
-                if not var in self.aux_funs:
+                if var not in self.aux_funs:
                     raise ValueError(
                         f"Specification of computation function is missing for var {var}"
                     )
@@ -109,7 +109,7 @@ class AuxInfoUngridded:
                 for _var in var_info:
                     obsvar = ObsVarCombi(aux_id, _var)
                     obsvarstr = str(obsvar)
-                    if merge_how == "eval" and not obsvarstr in fun:
+                    if merge_how == "eval" and obsvarstr not in fun:
                         raise ValueError(
                             f"Mismatch between aux_requires and aux_funs for variable {var}. "
                             f"No such obs;var string {obsvarstr} in computation method {fun}"

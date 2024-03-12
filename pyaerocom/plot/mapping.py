@@ -401,9 +401,8 @@ def plot_griddeddata_on_map(
 
         if var_name is not None:
             var_str = var_name  # + VARS.unit_str
-            if unit is not None:
-                if not str(unit) in ["1", "no_unit"]:
-                    var_str += f" [{unit}]"
+            if unit is not None and str(unit) not in {"1", "no_unit"}:
+                var_str += f" [{unit}]"
 
             cbar.set_label(var_str)
 
@@ -589,7 +588,7 @@ def plot_nmb_map_colocateddata(
         mew = kwargs.pop("mew")
     except KeyError:
         mew = 1
-    if not coldata.ndim in (3, 4):
+    if coldata.ndim not in {3, 4}:
         raise DataDimensionError("only 3D or 4D colocated data objects are supported")
     assert "time" in coldata.dims
 

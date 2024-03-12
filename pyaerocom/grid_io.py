@@ -151,7 +151,7 @@ class GridIO:
         IOError
             if key is not a valid setting
         """
-        if not key in self.__dict__:
+        if key not in self.__dict__:
             raise OSError("Could not update IO setting: Invalid key")
         self.__dict__[key] = value
 
@@ -161,7 +161,7 @@ class GridIO:
         GridIO["<key>"] => value
 
         """
-        if not key in self.__dict__:
+        if key not in self.__dict__:
             raise OSError("Invalid attribute")
         return self.__dict__[key]
 

@@ -422,7 +422,7 @@ class ReadAirNow(ReadUngriddedBase):
             else:
                 statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var, disable=None):
-                if not stat_id in stat_ids:
+                if stat_id not in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id
                 if statmask.sum() == 0:
@@ -493,9 +493,9 @@ class ReadAirNow(ReadUngriddedBase):
                 with open(filename, encoding=encoding) as infile:
                     linedata = infile.readlines()
             except MemoryError:
-                logger.info(f"could not determine encoding due to MemoryError: Skipping file...")
+                logger.info("could not determine encoding due to MemoryError: Skipping file...")
                 raise DataRetrievalError(
-                    f"could not determine encoding due to MemoryError: Skipping file..."
+                    "could not determine encoding due to MemoryError: Skipping file..."
                 )
                 return ret_data
 

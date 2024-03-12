@@ -263,7 +263,7 @@ class AerocomDataID:
     def _values_from_dict(self, meta):
         vals = []
         for key in self.KEYS:
-            if not key in meta:
+            if key not in meta:
                 raise KeyError(f"Missing specification of {key} in input meta dict")
             vals.append(meta[key])
         self._data_id = self.from_values(vals)
