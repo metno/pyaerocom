@@ -924,9 +924,7 @@ class ReadL2Data(ReadL2DataBase):
         temp = f"time for single file read [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
         self.logger.info(
-            "{} points read; {} were valid".format(
-                self._point_no_found, self._point_no_with_good_quality
-            )
+            f"{self._point_no_found} points read; {self._point_no_with_good_quality} were valid"
         )
         self.RETRIEVAL_READ = read_retrieval
         self.files_read.append(filename)
@@ -1083,9 +1081,7 @@ class ReadL2Data(ReadL2DataBase):
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start
-            temp = "time for single station distance calc using geopy [s]: {:.3f}".format(
-                elapsed_sec
-            )
+            temp = f"time for single station distance calc using geopy [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
         else:
             pass
@@ -2893,11 +2889,7 @@ class ReadL2Data(ReadL2DataBase):
                 matched_heights += height_match_indexes.size
                 if height_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
                     continue
-                print(
-                    "height: {}, matched indexes: {}".format(
-                        grid_height, height_match_indexes.size
-                    )
-                )
+                print(f"height: {grid_height}, matched indexes: {height_match_indexes.size}")
                 # data_temp = _data[height_match_indexes,:]
                 for lat_idx, grid_lat in enumerate(grid_lats):
                     diff_lat = np.absolute(_data[height_match_indexes, self._LATINDEX] - grid_lat)
@@ -3364,9 +3356,7 @@ class ReadL2Data(ReadL2DataBase):
                             )[0]
                             if lat_verbose_flag:
                                 print(
-                                    "lowest height distance: {} m".format(
-                                        diff_height_to_model[lowest_idx]
-                                    )
+                                    f"lowest height distance: {diff_height_to_model[lowest_idx]} m"
                                 )
                             # lowest_idx = height index of model
                             # height_idx = index of satellite data
@@ -3450,9 +3440,7 @@ class ReadL2Data(ReadL2DataBase):
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start_time
-            temp = "time for gridding to model grid with python data types [s]: {:.3f}".format(
-                elapsed_sec
-            )
+            temp = f"time for gridding to model grid with python data types [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
             temp = "matched {} points out of {} existing points to grid".format(
                 matching_points, _data.shape[0]
