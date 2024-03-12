@@ -154,7 +154,7 @@ extend-exclude = ["pyaerocom-tutorials"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I002", "UP"]
-ignore = ["E501"]
+ignore = ["E402", "E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
