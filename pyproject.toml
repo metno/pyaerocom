@@ -149,19 +149,19 @@ exclude_lines = [
 ]
 
 [tool.black]
-target-version = ['py39']
+target-version = ['py310']
 extend-exclude = "pyaerocom-tutorials"
 line-length = 99
 
 [tool.isort]
-py_version = "39"
+py_version = "310"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
 extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_unused_configs = true
 warn_unused_ignores = true
 warn_no_return = true
