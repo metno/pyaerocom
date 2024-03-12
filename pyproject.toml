@@ -146,6 +146,20 @@ exclude_lines = [
     'if __name__ == "__main__":',
 ]
 
+[tool.ruff]
+include = ["pyproject.toml", "pyaerocom/**/*.py", "tests/**/*.py"]
+target-version = "py310"
+line-length = 99
+extend-exclude = ["pyaerocom-tutorials"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I002", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"cli.py" = ["UP007"]
+
 [tool.black]
 target-version = ['py310']
 extend-exclude = "pyaerocom-tutorials"
