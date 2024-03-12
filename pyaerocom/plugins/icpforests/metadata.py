@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -458,7 +457,7 @@ class Plots:
 
     def get_position(
         self, year: int, country_code: int, plot_code: int, sampler_code: int
-    ) -> Tuple[float, float, int]:
+    ) -> tuple[float, float, int]:
         lat = self._coord_to_desimal(self.plots[country_code][plot_code][sampler_code].lat)
         lon = self._coord_to_desimal(self.plots[country_code][plot_code][sampler_code].lon)
         alt = self.plots[country_code][plot_code][sampler_code].alt

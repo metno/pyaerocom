@@ -9,7 +9,6 @@ import traceback
 from datetime import datetime
 from importlib import metadata
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from cf_units import Unit
@@ -314,7 +313,7 @@ class ColocationSetup(BrowseDict):
     def __init__(
         self,
         model_id=None,
-        obs_config: Optional[PyaroConfig] = None,
+        obs_config: PyaroConfig | None = None,
         obs_id=None,
         obs_vars=None,
         ts_type=None,
@@ -480,7 +479,7 @@ class ColocationSetup(BrowseDict):
         return self._obs_id
 
     @obs_id.setter
-    def obs_id(self, val: Optional[str]) -> None:
+    def obs_id(self, val: str | None) -> None:
         if self.obs_config is not None and val != self.obs_config.name:
             logger.info(
                 f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {val}. Setting Pyaro config to None!"
@@ -494,7 +493,7 @@ class ColocationSetup(BrowseDict):
         return self._obs_config
 
     @obs_config.setter
-    def obs_config(self, val: Optional[PyaroConfig]) -> None:
+    def obs_config(self, val: PyaroConfig | None) -> None:
         if val is not None:
             if self.obs_id is not None and val.name != self.obs_id:
                 logger.info(

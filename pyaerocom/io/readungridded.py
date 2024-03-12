@@ -4,7 +4,6 @@ import warnings
 from copy import deepcopy
 from importlib import metadata
 from pathlib import Path
-from typing import Optional, Union
 
 from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -80,7 +79,7 @@ class ReadUngridded:
         data_ids=None,
         ignore_cache=False,
         data_dirs=None,
-        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
+        configs: PyaroConfig | list[PyaroConfig] | None = None,
     ):
         # will be assigned in setter method of data_ids
         self._data_ids = []
@@ -206,7 +205,7 @@ class ReadUngridded:
         return self._configs
 
     @configs.setter
-    def configs(self, val: Union[PyaroConfig, list[PyaroConfig]]):
+    def configs(self, val: PyaroConfig | list[PyaroConfig]):
         if isinstance(val, PyaroConfig):
             val = [val]
         elif not isinstance(val, (tuple, list)):
@@ -246,7 +245,7 @@ class ReadUngridded:
             raise AttributeError("Multiple data_ids assigned")
         return self.data_ids[0]
 
-    def dataset_provides_variables(self, data_id=None, config: Optional[PyaroConfig] = None):
+    def dataset_provides_variables(self, data_id=None, config: PyaroConfig | None = None):
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
@@ -258,7 +257,7 @@ class ReadUngridded:
             reader = self._readers[data_id]
         return reader.PROVIDES_VARIABLES
 
-    def get_reader(self, data_id, config: Optional[PyaroConfig] = None):
+    def get_reader(self, data_id, config: PyaroConfig | None = None):
         warnings.warn(
             "this method was renamed to get_lowlevel_reader, please use the new name",
             DeprecationWarning,
@@ -725,7 +724,7 @@ class ReadUngridded:
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
-        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
+        configs: PyaroConfig | list[PyaroConfig] | None = None,
         **kwargs,
     ):
         """Read observations
