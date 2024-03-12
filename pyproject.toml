@@ -9,7 +9,6 @@ authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
@@ -19,7 +18,7 @@ classifiers = [
     "Intended Audience :: Education",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "scitools-iris>=3.6.0, <3.8",
     "xarray<=2022.10.0",
@@ -202,7 +201,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py39, py310, py311, py312, format, lint, docs
+envlist = py310, py311, py312, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =
