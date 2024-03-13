@@ -199,7 +199,7 @@ def check_files(paths: list[Path]) -> list[Path]:
 
     new_paths: list[Path] = []
 
-    for p in tqdm(paths, disable=const.QUIET):
+    for p in tqdm(paths, disable=None):
         import signal
 
         command = ["python", "-c", f"from netCDF4 import Dataset; Dataset('{p}')"]
