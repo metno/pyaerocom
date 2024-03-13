@@ -502,6 +502,9 @@ class ColocationSetup(BrowseDict):
     @obs_config.setter
     def obs_config(self, val: Optional[PyaroConfig]) -> None:
         if val is not None:
+            if isinstance(val, dict):
+                logger.info(f"Obs config was given as dict. Will try to convert to PyaroConfig")
+                val = PyaroConfig(**val)
             if self.obs_id is not None and val.name != self.obs_id:
                 logger.info(
                     f"Data ID in Pyaro config {val.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
