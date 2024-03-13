@@ -1185,8 +1185,7 @@ class ReadGridded:
         for k, v in kwargs.items():
             if k in self.__dict__:
                 self.logger.info(
-                    "Updating %s in ModelImportResult for model %s"
-                    "New value: %s" % (k, self.data_id, v)
+                    f"Updating {k} in ModelImportResult for model {self.data_id} New value: {v}"
                 )
                 self.__dict__[k] = v
             else:

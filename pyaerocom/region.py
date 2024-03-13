@@ -1,6 +1,7 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -240,12 +241,11 @@ class Region(BrowseDict):
 
     def __str__(self):
         s = (
-            "pyaeorocom Region\nName: %s\n"
-            "Longitude range: %s\n"
-            "Latitude range: %s\n"
-            "Longitude range (plots): %s\n"
-            "Latitude range (plots): %s"
-            % (self.name, self.lon_range, self.lat_range, self.lon_range_plot, self.lat_range_plot)
+            f"pyaeorocom Region\nName: {self.name}\n"
+            f"Longitude range: {self.lon_range}\n"
+            f"Latitude range: {self.lat_range}\n"
+            f"Longitude range (plots): {self.lon_range_plot}\n"
+            f"Latitude range (plots): {self.lat_range_plot}"
         )
         return s
 

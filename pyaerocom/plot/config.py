@@ -91,9 +91,7 @@ class ColorTheme:
 
         """
         if theme_name not in _COLOR_THEMES:
-            raise ValueError(
-                "Default theme with name %s is not available. Choose from %s" % _COLOR_THEMES
-            )
+            raise ValueError(f"{theme_name=} is not available. Choose from {_COLOR_THEMES.keys()}")
         self.from_dict(_COLOR_THEMES[theme_name])
 
     def from_dict(self, info_dict):
