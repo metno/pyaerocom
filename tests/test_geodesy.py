@@ -39,7 +39,11 @@ def test_srtm_altitude():
     assert geodesy.get_topo_altitude(TEST_LAT, TEST_LON) == pytest.approx(207)
 
 
-@etopo1_unavail
+@pytest.mark.xfail(
+    reason="fails in CI when etopo1 dataset not available",
+    raises=FileNotFoundError,
+    strict=False,
+)
 def test_etopo_altitude():
     alt = geodesy.get_topo_altitude(TEST_LAT, TEST_LON, topo_dataset="etopo1")
     assert alt == pytest.approx(217)
