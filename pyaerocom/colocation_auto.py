@@ -37,7 +37,7 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded, ReadUngridded
+from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
@@ -551,7 +551,7 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded}
+    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadCAMS2_83": ReadCAMS2_83}
     SUPPORTED_GRIDDED_READERS.update(
         {ep.name: ep.load() for ep in metadata.entry_points(group="pyaerocom.gridded")}
     )

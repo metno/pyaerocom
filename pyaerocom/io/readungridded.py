@@ -483,14 +483,20 @@ class ReadUngridded:
             argument whenever possible, which will result in better performance
             as the unconstrained original data is read in and cached, and then
             the filtering is applied.
+            Additionally, a force_caching option is given here to allow caches
+            even if kwargs are given.
 
         Returns
         --------
         UngriddedData
             data object
         """
+        force_caching = False
+        if "force_caching" in kwargs:
+            force_caching = kwargs.pop("force_caching")
+
         _caching = None
-        if len(kwargs) > 0:
+        if len(kwargs) > 0 and not force_caching:
             _caching = const.CACHING
             const.CACHING = False
 
