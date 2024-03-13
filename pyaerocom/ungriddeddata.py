@@ -325,7 +325,7 @@ class UngriddedData:
                     if not len(times) == len(values):
                         raise ValueError
 
-                times = np.asarray([np.datetime64(x, "s") for x in times])
+                times = np.asarray([np.datetime64(x.replace(tzinfo=None), "s") for x in times])
                 times = np.float64(times)
 
                 num_times = len(times)
