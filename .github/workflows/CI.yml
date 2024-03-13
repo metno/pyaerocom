@@ -85,7 +85,7 @@ jobs:
         sudo apt update
         sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
     - name: Cache pip and tox
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       if: ${{ ! matrix.experimental }}
       with:
         path: |
