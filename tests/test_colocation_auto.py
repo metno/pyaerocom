@@ -10,8 +10,6 @@ from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
 from tests.fixtures.data_access import TEST_DATA
-from tests.fixtures.mscw_ctm import fake_MSCWCtm_data_monthly_2015
-from tests.fixtures.pyaro import pyaro_test_data_file, pyaro_testconfig
 
 COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 
