@@ -251,25 +251,25 @@ class ReadUngridded:
             raise AttributeError("Multiple data_ids assigned")
         return self.data_ids[0]
 
-    def dataset_provides_variables(self, data_id=None, config: Optional[PyaroConfig] = None):
+    def dataset_provides_variables(self, data_id=None):
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
         if config is None:
             config = self.config
         if not data_id in self._readers:
-            reader = self.get_lowlevel_reader(data_id, config)
+            reader = self.get_lowlevel_reader(data_id)
         else:
             reader = self._readers[data_id]
         return reader.PROVIDES_VARIABLES
 
-    def get_reader(self, data_id, config: Optional[PyaroConfig] = None):
+    def get_reader(self, data_id):
         warnings.warn(
             "this method was renamed to get_lowlevel_reader, please use the new name",
             DeprecationWarning,
             stacklevel=2,
         )
-        return self.get_lowlevel_reader(data_id, config=config)
+        return self.get_lowlevel_reader(data_id)
 
     def get_lowlevel_reader(self, data_id=None):
         """Helper method that returns initiated reader class for input ID
@@ -887,5 +887,5 @@ class ReadUngridded:
     def __str__(self):
         s = ""
         for ds in self.data_ids:
-            s += f"\n{self.get_lowlevel_reader(ds, config=const)}"
+            s += f"\n{self.get_lowlevel_reader(ds)}"
         return s
