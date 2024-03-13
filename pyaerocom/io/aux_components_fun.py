@@ -1,5 +1,4 @@
 import logging
-from traceback import format_exc
 
 import cf_units
 import iris

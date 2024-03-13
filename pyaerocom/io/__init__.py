@@ -30,4 +30,8 @@ from .read_ebas import ReadEbas
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 
+# Pyaro classes
+from .pyaro.read_pyaro import ReadPyaro
+from .pyaro.pyaro_config import PyaroConfig
+
 from . import helpers_units

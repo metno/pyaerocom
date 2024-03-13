@@ -1,6 +1,7 @@
 """
 Mathematical low level utility methods of pyaerocom
 """
+
 import numpy as np
 from scipy.stats import kendalltau, pearsonr, spearmanr
 
@@ -189,7 +190,9 @@ def _nanmean_and_std(data):
 @ignore_warnings(
     RuntimeWarning, "An input array is constant", "invalid value encountered in .*divide"
 )
-def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None):
+def calc_statistics(
+    data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None, drop_stats=None
+):
     """Calc statistical properties from two data arrays
 
     Calculates the following statistical properties based on the two provided
@@ -227,7 +230,13 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     min_num_valid : int
         minimum number of valid measurements required to compute statistical
         parameters.
-
+    weights: ndarray
+        array containing weights if computing weighted statistics
+    drop_stats: tuple
+        tuple which drops the provided statistics from computed json files.
+        For example, setting drop_stats = ("mb", "mab"), results in json files
+        in hm/ts with entries which do not contain the mean bias and mean
+        absolute bias, but the other statistics are preserved.
     Returns
     -------
     dict
@@ -352,6 +361,10 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, 
     result["fge"] = fge
     result["mb"] = mb
     result["mab"] = mab
+
+    if drop_stats:
+        for istat in drop_stats:
+            result.pop(istat, None)
 
     return result
 
@@ -494,10 +507,10 @@ def estimate_value_range(vmin, vmax, extend_percent=0):
     return vmin, vmax
 
 
-def _init_stats_dummy():
+def _init_stats_dummy(drop_stats=None):
     # dummy for statistics dictionary for locations without data
     stats_dummy = {}
-    for k in calc_statistics([1], [1]):
+    for k in calc_statistics([1], [1], drop_stats=drop_stats):
         stats_dummy[k] = np.nan
 
     # Test to make sure these variables are defined even when yearly and season != all
