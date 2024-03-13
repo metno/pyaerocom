@@ -460,7 +460,6 @@ class ReadMscwCtm:
         """
         Years available in loaded dataset
         """
-        data = self.filepaths
         years = self._get_yrs_from_filepaths()
 
         years = list(np.unique(years))

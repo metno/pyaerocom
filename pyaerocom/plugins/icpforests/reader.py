@@ -217,7 +217,7 @@ class ReadICPForest(ReadUngriddedBase):
         with open(filename) as f:
             f.readline()
 
-            for line_nr, line in tqdm(enumerate(f)):
+            for line in tqdm(f):
                 words = line.split(";")
                 year = int(words[0])
                 country_code = int(words[1])
@@ -232,8 +232,6 @@ class ReadICPForest(ReadUngriddedBase):
                     or sampler_code == 8
                 ):
                     continue
-
-                sampler_type = self.metadata.deposition_type[sampler_code]
 
                 period = int(words[6])
                 start = words[4]

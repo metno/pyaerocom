@@ -775,9 +775,6 @@ def calc_vmro3max(data):
 
     o3max = data[var_name]
 
-    units = data.var_info[var_name]["units"]
-    # data.var_info[new_var_name]["units"] = units
-
     if new_var_name not in data.var_info:
         data.var_info[new_var_name] = {}
 
@@ -803,8 +800,6 @@ def make_proxy_drydep_from_O3(data):
 
     flags = data.data_flagged[var_name]
     new_var_data = data[var_name]
-    units = data.var_info[var_name]["units"]
-    # data.var_info[new_var_name]["units"] = units
 
     if new_var_name not in data.var_info:
         data.var_info[new_var_name] = {}
@@ -825,8 +820,6 @@ def make_proxy_wetdep_from_O3(data):
 
     flags = data.data_flagged[var_name]
     new_var_data = data[var_name]
-    units = data.var_info[var_name]["units"]
-    # data.var_info[new_var_name]["units"] = units
 
     if new_var_name not in data.var_info:
         data.var_info[new_var_name] = {}

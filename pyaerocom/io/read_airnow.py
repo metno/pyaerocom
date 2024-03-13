@@ -332,7 +332,6 @@ class ReadAirNow(ReadUngriddedBase):
         logger.info("Read AirNow data file(s)")
         file_vars_to_retrieve = [self.VAR_MAP[x] for x in vars_to_retrieve]
         # initialize empty dataframe
-        varcol = self.FILE_COL_NAMES.index("variable")
         arrs = []
         unique_stat_ids = None
         for i in tqdm(range(len(files)), disable=None):
