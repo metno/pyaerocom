@@ -271,7 +271,7 @@ def test_empty_class_header(empty_cfg):
         assert sd in cfg._DB_SEARCH_SUBDIRS
         assert cfg._DB_SEARCH_SUBDIRS[sd] == name
 
-    assert cfg.DONOTCACHEFILE == None
+    assert cfg.DONOTCACHEFILE is None
 
     assert cfg.ERA5_SURFTEMP_FILENAME == "era5.msl.t2m.201001-201012.nc"
 
