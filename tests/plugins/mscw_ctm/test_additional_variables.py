@@ -10,15 +10,15 @@ from pyaerocom.plugins.mscw_ctm.additional_variables import (
 )
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
+M_N = 14.006
+M_O = 15.999
+M_H = 1.007
+
 
 def test_calc_concNhno3():
     conchno3 = create_fake_MSCWCtm_data()
 
     concNhno3_from_func = calc_concNhno3(conchno3)
-
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
 
     concNhno3 = conchno3 * (M_N / (M_H + M_N + M_O * 3))
     concNhno3.attrs["units"] = "ug N m-3"
@@ -30,9 +30,6 @@ def test_calc_concNno3pm10():
     concno3f = create_fake_MSCWCtm_data()
 
     concNno3pm10_from_func = calc_concNno3pm10(concno3f, concno3c)
-
-    M_N = 14.006
-    M_O = 15.999
 
     fac = M_N / (M_N + 3 * M_O)
     concno3pm10 = concno3f + concno3c
@@ -47,9 +44,6 @@ def test_calc_concNno3pm25():
     concno3f = create_fake_MSCWCtm_data()
 
     concNno3pm10_from_func = calc_concNno3pm25(concno3f, concno3c)
-
-    M_N = 14.006
-    M_O = 15.999
 
     fac = M_N / (M_N + 3 * M_O)
     concno3pm10 = concno3f + 0.134 * concno3c
@@ -93,10 +87,6 @@ def test_calc_concNnh3():
 
     concNnh3_from_func = calc_concNnh3(concnh3)
 
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-
     concNnh3 = concnh3 * (M_N / (M_H * 3 + M_N))
     concNnh3.attrs["units"] = "ug N m-3"
     assert (concNnh3 == concNnh3_from_func).all()
@@ -106,10 +96,6 @@ def test_calc_concNnh4():
     concnh4 = create_fake_MSCWCtm_data()
 
     concNnh4_from_func = calc_concNnh4(concnh4)
-
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
 
     concNnh4 = concnh4 * (M_N / (M_H * 4 + M_N))
     concNnh4.attrs["units"] = "ug N m-3"
