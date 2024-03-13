@@ -23,7 +23,7 @@ TESTDATA_FILE = "testdata-minimal.tar.gz.20231116"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
-    base_url="https://pyaerocom-ng.met.no/pyaerocom-suppl",
+    base_url="https://pyaerocom.met.no/pyaerocom-suppl",
     registry={
         "testdata-minimal.tar.gz.20220602": "md5:5d4c6455089bc93fff1fc5e2612cf439",
         "testdata-minimal.tar.gz.20220707": "md5:86fc5cb31e8123b96ef01d44fbe93c52",
