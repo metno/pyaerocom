@@ -43,7 +43,7 @@ def test_get_json_mapname():
     assert json == "obs1-var1_Column_mod1-var1_period.json"
 
 
-def get_profile_filename():
+def test_get_profile_filename():
     json = get_profile_filename("reg1", "obs1", "var1")
     assert json == "reg1_obs1_var1.json"
 
