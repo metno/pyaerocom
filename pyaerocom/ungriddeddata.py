@@ -426,7 +426,7 @@ class UngriddedData:
 
         next_idx = max(idx.values()) + 1
         if add_cols is not None:
-            if not isinstance(add_cols, (list, tuple)):
+            if not isinstance(add_cols, list | tuple):
                 raise ValueError("Invalid input for add_cols. Need list or tuple")
             for name in add_cols:
                 if name in idx:
@@ -1438,7 +1438,7 @@ class UngriddedData:
                 str_f[key] = val
             elif isnumeric(val):
                 val_f[key] = val
-            elif isinstance(val, (list, np.ndarray, tuple)):
+            elif isinstance(val, list | np.ndarray | tuple):
                 if all([isinstance(x, str) for x in val]):
                     list_f[key] = val
                 elif len(val) == 2 and all([isnumeric(x) for x in val]):
@@ -2596,7 +2596,7 @@ class UngriddedData:
             _check_vars = True
             if isinstance(check_vars_available, str):
                 check_vars_available = [check_vars_available]
-            elif isinstance(check_vars_available, (tuple, np.ndarray)):
+            elif isinstance(check_vars_available, tuple | np.ndarray):
                 check_vars_available = list(check_vars_available)
             if not isinstance(check_vars_available, list):
                 raise ValueError(

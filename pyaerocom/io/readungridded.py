@@ -195,7 +195,7 @@ class ReadUngridded:
     def data_ids(self, val):
         if isinstance(val, str):
             val = [val]
-        elif not isinstance(val, (tuple, list)):
+        elif not isinstance(val, tuple | list):
             raise OSError("Invalid input for parameter data_ids")
         self._data_ids = val
 
@@ -208,7 +208,7 @@ class ReadUngridded:
     def configs(self, val: PyaroConfig | list[PyaroConfig]):
         if isinstance(val, PyaroConfig):
             val = [val]
-        elif not isinstance(val, (tuple, list)):
+        elif not isinstance(val, tuple | list):
             raise OSError("Invalid input for parameter data_ids")
         logger.warning(
             "You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
@@ -580,7 +580,7 @@ class ReadUngridded:
 
         for key, val in filter_post.items():
             if key == "ignore_station_names":  # for backwards compatibility
-                if isinstance(val, (str, list)):
+                if isinstance(val, str | list):
                     filters["station_name"] = val
                     if "negate" not in filters:
                         filters["negate"] = []

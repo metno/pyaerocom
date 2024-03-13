@@ -1903,7 +1903,7 @@ class GriddedData:
             return GriddedData(data, **suppl)
         else:
             assert len(time_range) == 2
-            if all(isinstance(x, (str, np.datetime64)) for x in time_range):
+            if all(isinstance(x, str | np.datetime64) for x in time_range):
                 time_range = (pd.Timestamp(time_range[0]), pd.Timestamp(time_range[1]))
             if all(isinstance(x, pd.Timestamp) for x in time_range):
                 logger.info("Cropping along time axis based on Timestamps")
