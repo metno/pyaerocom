@@ -2080,9 +2080,9 @@ class GriddedData:
         """Get rid of empty entries and convert bools to int in meta"""
         meta_out = {}
         for k, v in self.metadata.items():
-            if type(v) == bool:
+            if isinstance(v, bool):
                 meta_out[k] = int(v)
-            elif v != None:
+            elif v is not None:
                 meta_out[k] = v
         self.cube.attributes = meta_out
 
