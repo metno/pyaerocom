@@ -87,7 +87,7 @@ def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
 @pytest.mark.parametrize("cfg", ["cfgexp4"])
 def test_reanalyse_existing(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    assert cfg.colocation_opts.reanalyse_existing == True
+    assert cfg.colocation_opts.reanalyse_existing is True
     output = Path(cfg.path_manager.coldata_basedir) / cfg.proj_id / cfg.exp_id
 
     proc = ExperimentProcessor(cfg)
@@ -104,7 +104,7 @@ def test_reanalyse_existing(eval_config: dict):
 
     cfg.colocation_opts.reanalyse_existing = False
     proc = ExperimentProcessor(cfg)
-    assert proc.reanalyse_existing == False
+    assert proc.reanalyse_existing is False
 
     proc.run()
     assert output.is_dir()

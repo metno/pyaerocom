@@ -137,7 +137,7 @@ def test_same_meta_dict():
         station_name="bla", station_id="blub1", latitude=33, longitude=15, altitude=401, PI="pi2"
     )
 
-    assert helpers.same_meta_dict(d1, d2) == False
+    assert helpers.same_meta_dict(d1, d2) is False
 
 
 def test_to_pandas_timestamp():
