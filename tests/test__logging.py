@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from pyaerocom._logging import LOGGING_CONFIG, change_verbosity
+from pyaerocom._logging import change_verbosity
 
 
 def get_level_value(logger: logging.Logger | None) -> int:
