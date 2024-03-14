@@ -5,20 +5,14 @@ Classes and methods to perform high-level colocation.
 import glob
 import logging
 import os
-import sys
 import traceback
 from datetime import datetime
+from importlib import metadata
 from pathlib import Path
 from typing import Optional
 
-from cf_units import Unit
-
-if sys.version_info >= (3, 10):  # pragma: no cover
-    from importlib import metadata
-else:  # pragma: no cover
-    import importlib_metadata as metadata
-
 import pandas as pd
+from cf_units import Unit
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
@@ -505,6 +499,9 @@ class ColocationSetup(BrowseDict):
     @obs_config.setter
     def obs_config(self, val: Optional[PyaroConfig]) -> None:
         if val is not None:
+            if isinstance(val, dict):
+                logger.info(f"Obs config was given as dict. Will try to convert to PyaroConfig")
+                val = PyaroConfig(**val)
             if self.obs_id is not None and val.name != self.obs_id:
                 logger.info(
                     f"Data ID in Pyaro config {val.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
@@ -1363,7 +1360,7 @@ class Colocator(ColocationSetup):
                 )
                 vertical_layer = {"start": start, "end": end}
             else:
-                vetical_layer = coldata.vertical_layer
+                vertical_layer = coldata.vertical_layer
 
             savename = self._coldata_savename(
                 obs_var, mvar, coldata.ts_type, vertical_layer=vertical_layer
