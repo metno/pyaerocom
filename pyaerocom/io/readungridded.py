@@ -67,11 +67,8 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
-<<<<<<< HEAD
         ReadCAMS2_83,
-=======
         ReadICPForest,
->>>>>>> main-dev
     ]
     SUPPORTED_READERS.extend(
         ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")

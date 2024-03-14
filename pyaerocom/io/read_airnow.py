@@ -416,10 +416,6 @@ class ReadAirNow(ReadUngriddedBase):
             # another RAM consuming op, the mask can just be used all the time (for the price of readability...)
             subset = data[mask]
             dtime_subset = dtime[mask]
-<<<<<<< HEAD
-            statlist = np.unique(subset[:, statcol])
-            for stat_id in tqdm(statlist, desc=var, disable=const.QUIET):
-=======
             # there are stations with a all numeric station ID, but type hints in pd.read_csv made sure
             # they are read as str...
             if unique_stat_ids is None:
@@ -427,7 +423,6 @@ class ReadAirNow(ReadUngriddedBase):
             else:
                 statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var, disable=None):
->>>>>>> main-dev
                 if not stat_id in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id
