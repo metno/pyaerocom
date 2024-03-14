@@ -1352,7 +1352,7 @@ class Colocator(ColocationSetup):
                 )
                 vertical_layer = {"start": start, "end": end}
             else:
-                vetical_layer = coldata.vertical_layer
+                vertical_layer = coldata.vertical_layer
 
             savename = self._coldata_savename(
                 obs_var, mvar, coldata.ts_type, vertical_layer=vertical_layer
