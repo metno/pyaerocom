@@ -63,7 +63,7 @@ def test_stations(reader: ReadMEP, station: str):
 
 @lustre_unavail
 def test_PROVIDES_VARIABLES(reader: ReadMEP):
-    return set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
+    assert set(reader.PROVIDES_VARIABLES) >= VARS_PROVIDED
 
 
 @lustre_unavail

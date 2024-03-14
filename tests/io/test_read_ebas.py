@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -310,6 +311,61 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "concso4coarse",
         "concnh4coarse",
         "concno3pm25",
+        "vmrnh3",
+        "proxydryoxn",
+        "proxywetpm25",
+        "concss25",
+        "concprcpno3",
+        "concprcpso4",
+        "concCoc25",
+        "concom25",
+        "concprcpnh4",
+        "concsscoarse",
+        "proxydryhno3",
+        "proxydryhono",
+        "proxydryn2o5",
+        "proxydrynh3",
+        "proxydrynh4",
+        "proxydryno2",
+        "proxydryno2no2",
+        "proxydryno3c",
+        "proxydryno3f",
+        "proxydryo3",
+        "proxydryoxs",
+        "proxydryss",
+        "proxydryna",
+        "proxydrypm10",
+        "proxydrypm25",
+        "proxydryrdn",
+        "proxydryso2",
+        "proxydryso4",
+        "proxywethno3",
+        "proxywethono",
+        "proxywetn2o5",
+        "proxywetnh3",
+        "proxywetnh4",
+        "proxywetno2",
+        "proxywetno2no2",
+        "proxywetno3c",
+        "proxywetno3f",
+        "proxyweto3",
+        "proxywetoxn",
+        "proxywetoxs",
+        "proxywetpm10",
+        "proxywetrdn",
+        "proxywetso2",
+        "proxywetso4",
+        "vmrhno3",
+        "vmrtp",
+        "wetnh4",
+        "wetno3",
+        "wetso4",
+        "wetna",
+        "concprcpoxst",
+        "wetoxsc",
+        "concprcpoxsc",
+        "wetoxst",
+        "concprcpna",
     }
 
     assert set(reader.PROVIDES_VARIABLES) == (PROVIDES_VARIABLES)
@@ -381,7 +437,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-    reader: ReadEbas, val, exception: type[Exception], error: str
+    reader: ReadEbas, val: Literal["Bla", 42], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -472,7 +528,7 @@ def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
     ],
 )
 def test__flag_incorrect_frequencies(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     reader: ReadEbas,
     filedata: EbasNasaAmesFile,
     ts_type: str,
@@ -504,7 +560,7 @@ conco3_tower_var_info = {
         "volume_std._temperature": "293.15 K",
         "volume_std._pressure": "1013.25 hPa",
         "detection_limit": "1.995 ug/m3",
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        "comment": "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K, 1013.25 hPa), conversion factor 1.99534. Variable metadata detection limit converted.",
         "matrix": "air",
         "statistics": "arithmetic mean",
         "ts_type": "hourly",
@@ -518,7 +574,7 @@ vmro3_tower_var_info = {
         "measurement_height": "50.0 m",
         "instrument_name": "uv_abs_kre_0050",
         "detection_limit": "1.0 nmol/mol",
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        "comment": "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K, 1013.25 hPa), conversion factor 1.99534. Variable metadata detection limit converted.",
         "matrix": "air",
         "statistics": "arithmetic mean",
         "ts_type": "hourly",
@@ -539,7 +595,15 @@ def test_read_file(reader: ReadEbas, ebas_issue_files: Path, vars_to_retrieve: s
     data = reader.read_file(ebas_issue_files, vars_to_retrieve)
     assert isinstance(data, StationData)
     for key, val in check.items():
-        assert data[key] == val
+        if isinstance(val, dict):
+            for subkey, subval in val.items():
+                for subsubkey, subsubval in subval.items():
+                    if subsubkey == "comment":
+                        assert data[key][subkey][subsubkey].startswith(subsubval)
+                    else:
+                        assert data[key][subkey][subsubkey] == subsubval
+        else:
+            assert data[key] == val
 
 
 @pytest.mark.parametrize(

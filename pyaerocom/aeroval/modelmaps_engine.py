@@ -2,15 +2,16 @@ import logging
 import os
 
 from pyaerocom import GriddedData, TsType
-from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
+    DataQueryError,
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
@@ -84,7 +85,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
 
-            except (TemporalResolutionError, DataCoverageError, VariableDefinitionError) as e:
+            except (
+                TemporalResolutionError,
+                DataCoverageError,
+                VariableDefinitionError,
+                DataQueryError,
+            ) as e:
                 if self.raise_exceptions:
                     raise
                 logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")

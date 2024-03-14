@@ -1,6 +1,7 @@
 """
 Classes and methods to perform high-level colocation.
 """
+
 import glob
 import logging
 import os
@@ -8,6 +9,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from cf_units import Unit
 
@@ -38,6 +40,7 @@ from pyaerocom.helpers import (
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +82,10 @@ class ColocationSetup(BrowseDict):
     ----------
     model_id : str
         ID of model to be used.
+
+    obs_config: PyaroConfig
+        In the case Pyaro is used, a config must be provided. In that case obs_id(see below)
+        is ignored and only the config is used.
     obs_id : str
         ID of observation network to be used.
     obs_vars : list
@@ -296,7 +303,7 @@ class ColocationSetup(BrowseDict):
     #: file for ec550aer at the surface ('*ec550aer*Surface*.nc'), then, the
     #: colocation routine will look for '*ec550aer*ModelLevel*.nc' and if this
     #: exists, it will load it and extract the surface level.
-    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel"}
+    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel", "2D": "2D"}
 
     #: do not raise Exception if invalid item is attempted to be assigned
     #: (Overwritten from base class)
@@ -314,6 +321,7 @@ class ColocationSetup(BrowseDict):
     def __init__(
         self,
         model_id=None,
+        obs_config: Optional[PyaroConfig] = None,
         obs_id=None,
         obs_vars=None,
         ts_type=None,
@@ -324,7 +332,12 @@ class ColocationSetup(BrowseDict):
         **kwargs,
     ):
         self.model_id = model_id
+        self._obs_id = None
+        self._obs_config = None
+
         self.obs_id = obs_id
+        self.obs_config = obs_config
+
         self.obs_vars = obs_vars
 
         self.ts_type = ts_type
@@ -347,6 +360,7 @@ class ColocationSetup(BrowseDict):
         # Options related to obs reading and processing
         self.obs_name = None
         self.obs_data_dir = None
+
         self.obs_use_climatology = False
 
         self._obs_cache_only = False  # only relevant if obs is ungridded
@@ -470,6 +484,36 @@ class ColocationSetup(BrowseDict):
         p = chk_make_subdir(self.basedir_coldata, "logfiles")
         return p
 
+    @property
+    def obs_id(self) -> str:
+        return self._obs_id
+
+    @obs_id.setter
+    def obs_id(self, val: Optional[str]) -> None:
+        if self.obs_config is not None and val != self.obs_config.name:
+            logger.info(
+                f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {val}. Setting Pyaro config to None!"
+            )
+            self.obs_config = None
+
+        self._obs_id = val
+
+    @property
+    def obs_config(self) -> PyaroConfig:
+        return self._obs_config
+
+    @obs_config.setter
+    def obs_config(self, val: Optional[PyaroConfig]) -> None:
+        if val is not None:
+            if self.obs_id is not None and val.name != self.obs_id:
+                logger.info(
+                    f"Data ID in Pyaro config {val.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
+                )
+                self.obs_id = val.name
+            if self.obs_id is None:
+                self.obs_id = val.name
+        self._obs_config = val
+
     def add_glob_meta(self, **kwargs):
         """
         Add global metadata to :attr:`add_meta`
@@ -578,6 +622,9 @@ class Colocator(ColocationSetup):
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
+        if self.obs_config is not None:
+            return True
+
         return True if self.obs_id in get_all_supported_ids_ungridded() else False
 
     @property
@@ -629,10 +676,15 @@ class Colocator(ColocationSetup):
         """
         Observation data reader
         """
+
         if not self._check_data_id_obs_reader():
             if self.obs_is_ungridded:
                 self._obs_reader = ReadUngridded(
-                    data_ids=[self.obs_id], data_dirs=self.obs_data_dir
+                    data_ids=[self.obs_id],
+                    data_dirs=self.obs_data_dir,
+                    configs=[
+                        self.obs_config,
+                    ],
                 )
             else:
                 self._obs_reader = self._instantiate_gridded_reader(what="obs")
@@ -1446,7 +1498,9 @@ class Colocator(ColocationSetup):
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
-                ts_type=ts_type, var_ref=obs_var, use_climatology_ref=self.obs_use_climatology
+                ts_type=ts_type,
+                var_ref=obs_var,
+                use_climatology_ref=self.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)

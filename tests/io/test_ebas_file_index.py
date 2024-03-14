@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest

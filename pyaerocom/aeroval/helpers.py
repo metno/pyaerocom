@@ -1,15 +1,10 @@
-import glob
 import logging
 import os
-import shutil
 from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.colocation_auto import Colocator
-from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import (
     get_highest_resolution,

@@ -1,7 +1,6 @@
 import fnmatch
 import logging
 import os
-from configparser import ConfigParser
 
 from cf_units import Unit
 

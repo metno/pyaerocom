@@ -332,7 +332,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         for idx, _file in enumerate(sorted(non_archive_files)):
             # list coda data paths in the 1st file in case the user asked for that
             if idx == 0 and list_coda_paths:
-                pass
                 coda_handle = coda.open(_file)
                 root_field_names = coda.get_field_names(coda_handle)
                 for field in root_field_names:
@@ -762,10 +761,6 @@ class ReadL2DataBase(ReadUngriddedBase):
                 # 1 by on degree grid on emep domain
                 pass
 
-            pass
-
-        pass
-
     ###################################################################################
     def _to_grid_grid_init(self, gridtype="1x1", vars=None, init_time=None):
         """small helper routine to init the grid data struct"""
@@ -796,7 +791,6 @@ class ReadL2DataBase(ReadUngriddedBase):
                 for grid_lon in self.SUPPORTED_GRIDS[gridtype]["grid_lons"]:
                     grid_data_prot[grid_lat][grid_lon] = {}
 
-            pass
         else:
             temp = f"Error: Unknown grid: {gridtype}"
             return

@@ -1899,12 +1899,20 @@ class UngriddedData:
                 )
         if set_flags_nan:
             if not data.has_flag_data:
-                raise MetaDataError(
+                # jgriesfeller 20230210
+                # not sure if raising this exception is the right thing to do
+                # the fake variables (vars computed from other variables) might not have
+                # and do not need flags (because that has been done during the read of the
+                # variable they are computed from)
+                # disabling and logging it for now
+                # raise MetaDataError(
+                logger.info(
                     'Cannot apply filter "set_flags_nan" to '
                     "UngriddedData object, since it does not "
                     "contain flag information"
                 )
-            data = data.set_flags_nan(inplace=True)
+            else:
+                data = data.set_flags_nan(inplace=True)
         if region_id:
             data = data.filter_region(region_id)
         return data
