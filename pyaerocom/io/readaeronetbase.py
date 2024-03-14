@@ -365,6 +365,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         meta_idx = data_obj.meta_idx
 
         num_vars = len(vars_to_retrieve)
+        num_files = len(files)
         logger.info("Reading AERONET data")
         skipped = 0
         for i in tqdm(range(num_files), disable=None):
