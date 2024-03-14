@@ -1,6 +1,7 @@
 """
 Interface for reading EEA AqERep files (formerly known as Airbase data).
 """
+
 import gzip
 import logging
 import os
@@ -552,22 +553,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         import glob
         import os
 
-        from pyaerocom._lowlevel_helpers import list_to_shortstr
-
         if pattern is None:
             logger.warning("using default pattern *.* for file search")
             pattern = "*.*"
         self.logger.info("Fetching data files. This might take a while...")
         fp = os.path.join(self.data_dir, pattern)
         files = sorted(glob.glob(fp, recursive=True))
-        if not len(files) > 0:
-            all_str = list_to_shortstr(os.listdir(self.data_dir))
-            # raise DataSourceError('No files could be detected matching file '
-            #                       'mask {} in dataset {}, files in folder {}:\n'
-            #                       'Files in folder:{}'.format(pattern,
-            #                                                   self.data_id,
-            #                                                   self.data_dir,
-            #                                                   all_str))
         return files
 
     def get_station_coords(self, meta_key):

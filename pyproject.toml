@@ -30,8 +30,8 @@ dependencies = [
     "seaborn>=0.12.2",
     "dask",
     "geonum",
-    "LatLon23",             # required by geonum
-    "SRTM.py",              # required by geonum
+    "LatLon23",                       # required by geonum
+    "SRTM.py",                        # required by geonum
     "simplejson",
     "requests",
     "geocoder_reverse_natural_earth",
@@ -159,6 +159,11 @@ ignore = ["E402", "E501"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "cli.py" = ["UP007"]
+"pyaerocom/extras/satellite_l2/*.py" = ["F841", "E722", "F821", "F402"]
+"pyaerocom/_concprcp_units_helpers.py" = ["F841"]
+"pyaerocom/vert_coords.py" = ["F841"]
+"tests/io/test_ebas_nasa_ames.py" = ["F811", "F401"]
+"tests/test_trends_engine.py" = ["F401"]
 
 [tool.black]
 target-version = ['py310']
