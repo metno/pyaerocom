@@ -15,7 +15,6 @@ from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
     DataSearchError,
-    LongitudeConstraintError,
     VariableDefinitionError,
     VariableNotFoundError,
 )
