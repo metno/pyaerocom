@@ -445,7 +445,7 @@ class AltitudeAccess:
         d = self.data_obj
         for coord in coord_list:
             if coord in self:
-                pass
+                continue
             try:
                 coord_info = const.COORDINFO[coord]
             except VariableDefinitionError:
