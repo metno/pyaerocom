@@ -6,14 +6,14 @@ from packaging.version import Version
 from pyaerocom import const
 
 pytest_plugins = [
-    "tests.fixtures.mscw_ctm",
-    "tests.fixtures.tm5",
-    "tests.fixtures.ebas",
-    "tests.fixtures.aeronet",
-    "tests.fixtures.stations",
-    "tests.fixtures.collocated_data",
-    "tests.fixtures.aeroval.config",
-    "tests.fixtures.pyaro",
+    "pyaerocom.fixtures.mscw_ctm",
+    "pyaerocom.fixtures.tm5",
+    "pyaerocom.fixtures.ebas",
+    "pyaerocom.fixtures.aeronet",
+    "pyaerocom.fixtures.stations",
+    "pyaerocom.fixtures.collocated_data",
+    "pyaerocom.fixtures.aeroval.config",
+    "pyaerocom.fixtures.pyaro",
 ]
 
 TEST_RTOL = 1e-4
