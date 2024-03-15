@@ -213,7 +213,7 @@ requires =
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
