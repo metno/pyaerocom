@@ -274,6 +274,18 @@ class CacheHandlerUngridded:
         logger.info(f"Successfully loaded cache file {fp}")
         return True
 
+    def delete_all_cache_files(self):
+        """
+        Deletes all pickled data objects in cache directory
+
+        If not set differently, the cache directory is the pyaerocom default,
+        accessible via :attr:`pyaerocom.const.CACHEDIR`.
+
+        """
+        for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
+            os.remove(fp)
+            logger.info(f"Deleted {fp}")
+
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
 
