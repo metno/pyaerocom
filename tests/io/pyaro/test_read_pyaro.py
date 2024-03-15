@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
-import pytest
 
 from pyaerocom import UngriddedData
-from pyaerocom.io import PyaroConfig, ReadPyaro
-from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
-from tests.fixtures.pyaro import pyaro_test_data_file, pyaro_testdata
+from pyaerocom.io import ReadPyaro
 
 
 def test_testfile(pyaro_test_data_file):

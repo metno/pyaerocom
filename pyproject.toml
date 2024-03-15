@@ -9,7 +9,6 @@ authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
@@ -19,7 +18,7 @@ classifiers = [
     "Intended Audience :: Education",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "scitools-iris>=3.6.0, <3.8",
     "xarray<=2022.10.0",
@@ -40,13 +39,11 @@ dependencies = [
     "openpyxl",
     "geojsoncontour",
     "typer>=0.7.0",
-    # python < 3.10
-    'importlib-metadata>=3.6; python_version < "3.10"',
     # python < 3.11
     'tomli>=2.0.1; python_version < "3.11"',
     'importlib-resources>=5.10; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
-    'cf-units>=3.1; python_version >= "3.10"',
+    'cf-units>=3.1',
     "pyaro",
     "pydantic",
 
@@ -110,7 +107,10 @@ exclude = [
 minversion = "7.4"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = "--failed-first"
+addopts = [
+    "--failed-first",
+    "--import-mode=importlib",
+]
 xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
@@ -150,19 +150,19 @@ exclude_lines = [
 ]
 
 [tool.black]
-target-version = ['py39']
+target-version = ['py310']
 extend-exclude = "pyaerocom-tutorials"
 line-length = 99
 
 [tool.isort]
-py_version = "39"
+py_version = "310"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
 extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_unused_configs = true
 warn_unused_ignores = true
 warn_no_return = true
@@ -202,7 +202,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py39, py310, py311, py312, format, lint, docs
+envlist = py310, py311, py312, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -213,7 +213,7 @@ requires =
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
