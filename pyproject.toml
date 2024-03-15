@@ -45,7 +45,7 @@ dependencies = [
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
     "pyaro",
-    "pydantic",
+    "pydantic>2",
 
 ]
 
