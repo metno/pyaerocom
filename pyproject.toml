@@ -107,7 +107,10 @@ exclude = [
 minversion = "7.4"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = "--failed-first"
+addopts = [
+    "--failed-first",
+    "--import-mode=importlib",
+]
 xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
@@ -210,7 +213,7 @@ requires =
 commands_pre =
     python --version
 commands =
-    pytest -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
