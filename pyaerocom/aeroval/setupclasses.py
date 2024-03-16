@@ -163,7 +163,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
     use_diurnal : bool = False
     obs_only_stats : bool = False
     only_stats_for_model : bool = False # LB: casues namespace conflicts. see if way around
-    drop_stats : tuple[str] = ()
+    drop_stats : tuple[str, ...] = ()
     stats_decimals : int | None = None
     round_floats_precision : Optional[int] = None
 
@@ -226,13 +226,13 @@ class WebDisplaySetup:
     add_model_maps : bool = False
     modelorder_from_config : bool = True
     obsorder_from_config : bool = True
-    var_order_menu : tuple[str] = ()
-    obs_order_menu : tuple[str] = ()
-    model_order_menu : tuple[str] = ()
-    hide_charts : tuple[str] = ()
-    hide_pages : tuple[str] = ()
+    var_order_menu : tuple[str, ...] = ()
+    obs_order_menu : tuple[str, ...] = ()
+    model_order_menu : tuple[str, ...] = ()
+    hide_charts : tuple[str, ...] = ()
+    hide_pages : tuple[str, ...] = ()
     ts_annotations : dict[str, str] = field(default_factory=dict)
-    add_pages : tuple[str] = ()
+    add_pages : tuple[str, ...] = ()
             
 @dataclass
 class EvalRunOptions:
