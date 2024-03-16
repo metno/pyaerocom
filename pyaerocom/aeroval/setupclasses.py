@@ -214,8 +214,8 @@ class TimeSetup(BaseModel):
                 output.append(perstr)
         return output
         
-@dataclass
-class WebDisplaySetup:
+#@dataclass
+class WebDisplaySetup(BaseModel):
     # Pydantic ConfigDict
     model_config = ConfigDict()
     model_config['protected_namespaces'] = ()
@@ -233,9 +233,10 @@ class WebDisplaySetup:
     hide_pages : tuple[str, ...] = ()
     ts_annotations : dict[str, str] = field(default_factory=dict)
     add_pages : tuple[str, ...] = ()
-            
-@dataclass
-class EvalRunOptions:
+           
+# Can't be dataclasses if computed_fields.
+#@dataclass
+class EvalRunOptions(BaseModel):
 
     clear_existing_json : bool = True
     only_json : bool = False
@@ -302,9 +303,13 @@ class EvalSetup(BaseModel):
         return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
     
     #time_cfg : TimeSetup = TimeSetup()
+    
     # This is an attempt at a hack to get keys from a general CFG into their appropriate respective classes
     # It's hard to come up with a way to do this that doesn't introduce breaking changes
     # Introducing breaking changes only seems appropriate after a config format is settled.
+    # Note: all these computed fields could be more easily defined if the config were 
+    # rigid enough to have they explicitly defined (e.g., in a TOML file), rather than dumping everything
+    # into one large config dict and then dishing out get the relevant parts to each class.
     @computed_field
     @property
     def time_cfg(self) -> TimeSetup:
@@ -315,7 +320,6 @@ class EvalSetup(BaseModel):
             return TimeSetup()
     
     #modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
-    
     @computed_field
     @property
     def modelmaps_opts(self) -> ModelMapsSetup:
@@ -339,25 +343,67 @@ class EvalSetup(BaseModel):
     #     else:
     #         return obj()
     
-    colocation_opts : ColocationSetup = ColocationSetup(
-        save_coldata=True, keep_data=False, resample_how="mean"
-    )
-    webdisp_opts : WebDisplaySetup= WebDisplaySetup()
-    processing_opts : EvalRunOptions = EvalRunOptions()
+    # colocation_opts : ColocationSetup = ColocationSetup(
+    #     save_coldata=True, keep_data=False, resample_how="mean"
+    # )
+
+    # TODO: Use Pydantic for ColocationSetup
+    @computed_field
+    @property
+    def colocation_opts(self) -> ColocationSetup:
+        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(ColocationSetup().__dict__.keys()))):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return ColocationSetup(**subset_dict)
+        else:
+            return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
+        
+    
+    
+    #webdisp_opts : WebDisplaySetup= WebDisplaySetup()
+    @computed_field
+    @property
+    def webdisp_opts(self) -> WebDisplaySetup:
+        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(WebDisplaySetup.model_fields))):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return WebDisplaySetup(**subset_dict)
+        else:
+            return WebDisplaySetup()
+    
+    
+    #processing_opts : EvalRunOptions = EvalRunOptions()
+    @computed_field
+    @property
+    def processing_opts(self) -> EvalRunOptions:
+        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(EvalRunOptions.model_fields))):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return EvalRunOptions(**subset_dict)
+        else:
+            return EvalRunOptions()
+
     
     var_web_info : dict = {}
-    statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
     
+    #statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+    @computed_field
+    @property
+    def statistics_opts(self) -> StatisticsSetup:
+        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(StatisticsSetup.model_fields))):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return StatisticsSetup(**subset_dict)
+        else:
+            return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+    
+    # LB: ObsCollection and ModelCollection need to be made JSON serializable.
     # TODO Use Pydantic for ObsCollection and ModelCollection
     obs_cfg : ObsCollection | dict = ObsCollection() 
-    model_cfg : ModelCollection | dict = ModelCollection()
-    
     @field_validator("obs_cfg")
     def validate_obs_cfg(cls, v):
         if not isinstance(v, ObsCollection):
             return ObsCollection(v)
         return v
+      
     
+    model_cfg : ModelCollection | dict = ModelCollection()
     @field_validator("model_cfg")
     def validate_model_cfg(cls, v):
         if not isinstance(v, ModelCollection):
