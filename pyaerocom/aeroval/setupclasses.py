@@ -18,13 +18,13 @@ from pyaerocom.exceptions import AeroValConfigError
 from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator
 from pydantic.dataclasses import dataclass
 from dataclasses import field
-from typing import Optional, Tuple, Literal, Generic, TypeVar
+from typing import Optional, Tuple, Literal
 
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+#T = TypeVar('T')
     
 class OutputPaths(BaseModel):
     """
@@ -91,8 +91,8 @@ class OutputPaths(BaseModel):
             out[subdir] = loc
         return out
         
-@dataclass        
-class ModelMapsSetup:
+#@dataclass        
+class ModelMapsSetup(BaseModel):
     maps_freq : Literal["monthly", "yearly"] = "monthly"
     maps_res_deg : int = 5
              
@@ -163,7 +163,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
     use_diurnal : bool = False
     obs_only_stats : bool = False
     only_stats_for_model : bool = False # LB: casues namespace conflicts. see if way around
-    drop_stats : Tuple[str] = ()
+    drop_stats : tuple[str] = ()
     stats_decimals : int | None = None
     round_floats_precision : Optional[int] = None
 
@@ -243,8 +243,9 @@ class EvalRunOptions:
     #: If True, process only maps (skip obs evaluation)
     only_model_maps : bool = False
     obs_only : bool = False
-    drop_stats : bool = ()
-    stats_decimals : bool = None
+    # LB: Not sure why these stats options are being delcared twice
+    # drop_stats : tuple[str] = ()
+    # stats_decimals : bool = None
 
 @dataclass
 class ProjectInfo:
@@ -289,6 +290,7 @@ class EvalSetup(BaseModel):
     def proj_info(self) -> ProjectInfo:
         return ProjectInfo(proj_id=self.proj_id)
     
+    # LB: This will need updating with additional fields as well like time_cfg
     @computed_field
     @property
     def exp_info(self) -> ExperimentInfo:
@@ -305,27 +307,25 @@ class EvalSetup(BaseModel):
     # Introducing breaking changes only seems appropriate after a config format is settled.
     @computed_field
     @property
-    def time_cfg(self) -> TimeSetup():
-        if hasattr(self, "model_extra") & (time_cfg_keys := set(self.model_extra).intersection(set(TimeSetup.__fields__))):
+    def time_cfg(self) -> TimeSetup:
+        if hasattr(self, "model_extra") & bool(time_cfg_keys := set(self.model_extra).intersection(set(TimeSetup.model_fields))):
             subset_dict = {k: self.model_extra[k] for k in time_cfg_keys}
             return TimeSetup(**subset_dict)
         else:
             return TimeSetup()
     
-    modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
-    # @computed_field
-    # @property
-    # def modelmaps_opts(self) -> ModelMapsSetup():
-    #     if hasattr(self, "model_extra"):
-    #         obj_cfg_keys = set(self.model_extra).intersection(set(ModelMapsSetup.__fields__))
-    #         if obj_cfg_keys:
-    #             subset_dict = {k: self.model_extra[k] for k in obj_cfg_keys}
-    #             return ModelMapsSetup(**subset_dict)
-    #         else: 
-    #             return ModelMapsSetup()
-    #     else:
-    #         return ModelMapsSetup()
+    #modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
     
+    @computed_field
+    @property
+    def modelmaps_opts(self) -> ModelMapsSetup:
+        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(ModelMapsSetup.model_fields))):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return ModelMapsSetup(**subset_dict)
+        else:
+            return ModelMapsSetup()
+        
+        
     # # Etc. etc... could do above many times. Is there a way to do it with an update function??
     # #@classmethod
     # def _update(self, obj: Generic[T]) -> Generic[T]:
@@ -372,15 +372,15 @@ class EvalSetup(BaseModel):
         return f"cfg_{self.proj_id}_{self.exp_id}.json"
 
     @property
-    def gridded_aux_funs(self):
+    def gridded_aux_funs(self) -> dict:
         if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
             self._import_aux_funs()
         return self._aux_funs
 
-    def get_obs_entry(self, obs_name):
+    def get_obs_entry(self, obs_name) -> dict:
         return self.obs_cfg.get_entry(obs_name).to_dict()
 
-    def get_model_entry(self, model_name):
+    def get_model_entry(self, model_name) -> dict:
         """Get model entry configuration
 
         Since the configuration files for experiments are in json format, they
@@ -434,12 +434,17 @@ class EvalSetup(BaseModel):
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
+    
+    
+    # LB. experimental feature
+    def json_repr(self):
+        return self.model_dump()
 
-    def _import_aux_funs(self):
+    def _import_aux_funs(self) -> None:
         h = ReadAuxHandler(self.io_aux_file)
         self._aux_funs.update(**h.import_all())
 
-    def _check_time_config(self):
+    def _check_time_config(self) -> None:
         periods = self.time_cfg.periods
         colstart = self.colocation_opts["start"]
         colstop = self.colocation_opts["stop"]
