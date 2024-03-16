@@ -18,13 +18,13 @@ from pyaerocom.exceptions import AeroValConfigError
 from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator
 from pydantic.dataclasses import dataclass
 from dataclasses import field
-from typing import Optional, Tuple, Literal
+from typing import Optional, Tuple, Literal, Generic, TypeVar
 
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-    
+T = TypeVar('T')
     
 class OutputPaths(BaseModel):
     """
@@ -299,8 +299,46 @@ class EvalSetup(BaseModel):
     def path_manager(self) -> OutputPaths:
         return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
     
-    time_cfg : TimeSetup = TimeSetup()
+    #time_cfg : TimeSetup = TimeSetup()
+    # This is an attempt at a hack to get keys from a general CFG into their appropriate respective classes
+    # It's hard to come up with a way to do this that doesn't introduce breaking changes
+    # Introducing breaking changes only seems appropriate after a config format is settled.
+    @computed_field
+    @property
+    def time_cfg(self) -> TimeSetup():
+        if hasattr(self, "model_extra") & (time_cfg_keys := set(self.model_extra).intersection(set(TimeSetup.__fields__))):
+            subset_dict = {k: self.model_extra[k] for k in time_cfg_keys}
+            return TimeSetup(**subset_dict)
+        else:
+            return TimeSetup()
+    
     modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
+    # @computed_field
+    # @property
+    # def modelmaps_opts(self) -> ModelMapsSetup():
+    #     if hasattr(self, "model_extra"):
+    #         obj_cfg_keys = set(self.model_extra).intersection(set(ModelMapsSetup.__fields__))
+    #         if obj_cfg_keys:
+    #             subset_dict = {k: self.model_extra[k] for k in obj_cfg_keys}
+    #             return ModelMapsSetup(**subset_dict)
+    #         else: 
+    #             return ModelMapsSetup()
+    #     else:
+    #         return ModelMapsSetup()
+    
+    # # Etc. etc... could do above many times. Is there a way to do it with an update function??
+    # #@classmethod
+    # def _update(self, obj: Generic[T]) -> Generic[T]:
+    #     if hasattr(self, "model_extra"):
+    #         extra_obj_cfg_keys = set(self.model_extra).intersection(set(obj.__fields__))
+    #         if extra_obj_cfg_keys:
+    #             subset_dict = {k: self.model_extra[k] for k in extra_obj_cfg_keys}
+    #             return obj(**subset_dict)
+    #         else:
+    #             return obj()
+    #     else:
+    #         return obj()
+    
     colocation_opts : ColocationSetup = ColocationSetup(
         save_coldata=True, keep_data=False, resample_how="mean"
     )
@@ -392,7 +430,7 @@ class EvalSetup(BaseModel):
         return filepath
 
     @staticmethod
-    def from_json(filepath: str) -> "EvalSetup":
+    def from_json(filepath: str) -> EvalSetup:
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
@@ -415,7 +453,7 @@ class EvalSetup(BaseModel):
                 f"periods is not set, inferred {per} from start / stop colocation settings."
             )
 
-        self.time_cfg["periods"] = _check_statistics_periods(periods)
+        self.time_cfg.periods = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
         if colstart is None:
             self.colocation_opts["start"] = start
