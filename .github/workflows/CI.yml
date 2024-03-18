@@ -11,9 +11,9 @@ jobs:
     env:
       PYTHON: "3.10"
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ env.PYTHON }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
     - name: Python info
@@ -38,9 +38,9 @@ jobs:
     env:
       PYTHON: "3.10"
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ env.PYTHON }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
     - name: Python info
@@ -71,9 +71,9 @@ jobs:
             experimental: true
             os: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Python info
@@ -85,7 +85,7 @@ jobs:
         sudo apt update
         sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
     - name: Cache pip and tox
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       if: ${{ ! matrix.experimental }}
       with:
         path: |
@@ -112,9 +112,9 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: ${{ matrix.python-version }}
         activate-environment: pya
@@ -132,7 +132,8 @@ jobs:
       run: python -m pytest -ra -q --cov --no-cov-on-fail --cov-report xml
     - name: Upload coverage to Codecov
       if: ${{ success() }}
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
-          file: ./coverage.xml
-          flags: unittests
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
