@@ -18,9 +18,7 @@ dependencies:
   - tqdm
   - openpyxl
   - typer >=0.7.0
-  - pydantic
-## python < 3.10
-  - importlib-metadata >=3.6
+  - pydantic > 2.0.0
 ## python < 3.11
   - tomli >=2.0.1
   - importlib-resources >=5.10
