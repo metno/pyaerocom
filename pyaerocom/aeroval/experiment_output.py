@@ -4,15 +4,7 @@ import os
 import shutil
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (
-    DirLoc,
-    StrType,
-    TypeValidator,
-    check_make_json,
-    read_json,
-    sort_dict_by_name,
-    write_json,
-)
+from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
@@ -22,6 +14,7 @@ from pyaerocom.aeroval.glob_defaults import (
     var_ranges_defaults,
     var_web_info,
 )
+from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
@@ -63,52 +56,6 @@ class ProjectOutput:
         List of available experiments
         """
         return list(read_json(self.experiments_file))
-
-    def _add_entry_experiments_json(self, exp_id, data):
-        fp = self.experiments_file
-        current = read_json(fp)
-        current[exp_id] = data
-        write_json(current, self.experiments_file, indent=4)
-
-    def _del_entry_experiments_json(self, exp_id):
-        """
-        Remove an entry from experiments.json
-
-        Parameters
-        ----------
-        exp_id : str
-            name of experiment
-
-        Returns
-        -------
-        None
-
-        """
-        current = read_json(self.experiments_file)
-        try:
-            del current[exp_id]
-        except KeyError:
-            logger.warning(f"no such experiment registered: {exp_id}")
-        write_json(current, self.experiments_file, indent=4)
-
-    def reorder_experiments(self, exp_order=None):
-        """Reorder experiment order in evaluation interface
-
-        Puts experiment list into order as specified by `exp_order`, all
-        remaining experiments are sorted alphabetically.
-
-        Parameters
-        ----------
-        exp_order : list, optional
-            desired experiment order, if None, then alphabetical order is used.
-        """
-        if exp_order is None:
-            exp_order = []
-        elif not isinstance(exp_order, list):
-            raise ValueError("need list as input")
-        current = read_json(self.experiments_file)
-        current = sort_dict_by_name(current, pref_list=exp_order)
-        write_json(current, self.experiments_file, indent=4)
 
 
 class ExperimentOutput(ProjectOutput):
@@ -580,6 +527,17 @@ class ExperimentOutput(ProjectOutput):
         else:
             stats_info = statistics_defaults
             stats_info.update(extended_statistics)
+
+        # configurable statistics - drop any statistics provided in drop_stats
+        if self.cfg.statistics_opts.drop_stats:
+            for stat in self.cfg.statistics_opts.drop_stats:
+                stats_info.pop(stat, None)
+
+        # configure the number of decimals shown in statistics if provided
+        if self.cfg.statistics_opts.stats_decimals:
+            for stat in stats_info:
+                stats_info[stat].update(decimals=self.cfg.statistics_opts.stats_decimals)
+
         if self.cfg.statistics_opts.add_trends:
             if self.cfg.processing_opts.obs_only:
                 obs_statistics_trend = {
@@ -837,3 +795,61 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name] = obs_vars
         return obs_vars
+
+    def _add_entry_experiments_json(self, exp_id, data):
+        fp = self.experiments_file
+        current = read_json(fp)
+        current[exp_id] = data
+        write_json(
+            current,
+            self.experiments_file,
+            indent=4,
+        )
+
+    def _del_entry_experiments_json(self, exp_id):
+        """
+        Remove an entry from experiments.json
+
+        Parameters
+        ----------
+        exp_id : str
+            name of experiment
+
+        Returns
+        -------
+        None
+
+        """
+        current = read_json(self.experiments_file)
+        try:
+            del current[exp_id]
+        except KeyError:
+            logger.warning(f"no such experiment registered: {exp_id}")
+        write_json(
+            current,
+            self.experiments_file,
+            indent=4,
+        )
+
+    def reorder_experiments(self, exp_order=None):
+        """Reorder experiment order in evaluation interface
+
+        Puts experiment list into order as specified by `exp_order`, all
+        remaining experiments are sorted alphabetically.
+
+        Parameters
+        ----------
+        exp_order : list, optional
+            desired experiment order, if None, then alphabetical order is used.
+        """
+        if exp_order is None:
+            exp_order = []
+        elif not isinstance(exp_order, list):
+            raise ValueError("need list as input")
+        current = read_json(self.experiments_file)
+        current = sort_dict_by_name(current, pref_list=exp_order)
+        write_json(
+            current,
+            self.experiments_file,
+            indent=4,
+        )

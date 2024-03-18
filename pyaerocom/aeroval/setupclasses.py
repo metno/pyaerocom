@@ -11,12 +11,11 @@ from pyaerocom._lowlevel_helpers import (
     ListOfStrings,
     NestedContainer,
     StrType,
-    read_json,
-    write_json,
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
+from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
@@ -134,6 +133,14 @@ class StatisticsSetup(ConstrainedContainer):
         the above example 310 values would be used - 31 for each site - to
         compute the statistics for a given month (in this case, a month with 31
         days, obviously).
+    drop_stats: tuple, optional
+        tuple of strings with names of statistics (as determined by keys in
+        aeroval.glob_defaults.py's statistics_defaults) to not compute. For example,
+        setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
+        entries which do not contain the mean bias and mean absolute bias,
+        but the other statistics are preserved.
+    round_floats_precision: int, optional
+        Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`
 
 
     Parameters
@@ -156,6 +163,13 @@ class StatisticsSetup(ConstrainedContainer):
         self.use_diurnal = False
         self.obs_only_stats = False
         self.model_only_stats = False
+        self.drop_stats = ()
+        self.stats_decimals = None
+
+        if "round_floats_precision" in kwargs:
+            precision = kwargs.pop("round_floats_precision")
+            set_float_serialization_precision(precision)
+
         self.update(**kwargs)
 
 
@@ -235,6 +249,8 @@ class EvalRunOptions(ConstrainedContainer):
         #: If True, process only maps (skip obs evaluation)
         self.only_model_maps = False
         self.obs_only = False
+        self.drop_stats = ()
+        self.stats_decimals = None
         self.update(**kwargs)
 
 

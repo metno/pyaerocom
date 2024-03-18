@@ -1,26 +1,12 @@
-import glob
 import logging
 import os
-import shutil
 from pathlib import Path
-
-import numpy as np
 
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.colocation_auto import Colocator
-from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import (
-    get_highest_resolution,
-    get_max_period_range,
-    make_dummy_cube,
-    start_stop_str,
-)
-from pyaerocom.io import ReadGridded
-from pyaerocom.tstype import TsType
+from pyaerocom.helpers import get_highest_resolution, get_max_period_range, make_dummy_cube
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)

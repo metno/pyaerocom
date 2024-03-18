@@ -1830,7 +1830,7 @@ class ReadEbas(ReadUngriddedBase):
         var_count_glob = -1
         logger.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
-        for i in tqdm(range(num_files)):
+        for i in tqdm(range(num_files), disable=None):
             _file = files[i]
             contains = files_contain[i]
             try:

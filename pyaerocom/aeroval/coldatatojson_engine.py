@@ -6,7 +6,6 @@ from cf_units import Unit
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
-from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _add_heatmap_entry_json,
@@ -31,6 +30,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     process_profile_data_for_stations,
     update_regions_json,
 )
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 
 logger = logging.getLogger(__name__)
@@ -87,6 +87,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         """
         t00 = time()
         use_weights = self.cfg.statistics_opts.weighted_stats
+        drop_stats = self.cfg.statistics_opts.drop_stats
         # redundant, but cheap and important to be correct
         self.cfg._check_time_config()
         freqs = self.cfg.time_cfg.freqs
@@ -191,6 +192,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     main_freq=main_freq,
                     regnames=regnames,
                     use_weights=use_weights,
+                    drop_stats=drop_stats,
                     use_country=use_country,
                     obs_name=obs_name,
                     obs_var=obs_var,
@@ -316,6 +318,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         main_freq: str = None,
         regnames=None,
         use_weights: bool = True,
+        drop_stats: tuple = (),
         use_country: bool = False,
         obs_name: str = None,
         obs_var: str = None,
@@ -342,6 +345,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     freq=main_freq,
                     region_ids={reg: regnames[reg]},
                     use_weights=use_weights,
+                    drop_stats=drop_stats,
                     use_country=use_country,
                     data_freq=input_freq,
                 )
@@ -360,6 +364,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             data,
             regnames,
             use_weights,
+            drop_stats,
             use_country,
             meta_glob,
             periods,
@@ -410,6 +415,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 trends_min_yrs,
                 use_fairmode,
                 obs_var,
+                drop_stats,
             )
 
             # the files in /map and /scat will be split up according to their time period as well

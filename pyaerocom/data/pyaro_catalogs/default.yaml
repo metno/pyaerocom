@@ -1,0 +1,15 @@
+aeronetsun_test:
+  data_id: aeronetsunreader
+  filename_or_obj_or_url: https://pyaerocom.met.no/pyaro-suppl/testdata/aeronetsun_testdata.csv
+  filters: {}
+  name_map: {}
+
+aeronetsun_od550aer:
+  data_id: aeronetsunreader
+  filename_or_obj_or_url: https://pyaerocom.met.no/pyaro-suppl/testdata/aeronetsun_testdata.csv
+  filters:
+    variables:
+      include:
+      - AOD_550nm
+  name_map:
+    AOD_550nm: od550aer

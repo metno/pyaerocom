@@ -4,9 +4,11 @@ Pyearocom module for reading and processing of EBAS NASA Ames files
 For details on the file format see `here <https://ebas-submit.nilu.no/
 Submit-Data/Getting-started>`__
 """
+import csv
 import logging
 import os
 from datetime import datetime
+from io import StringIO
 
 import numpy as np
 
@@ -720,7 +722,11 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def _read_vardef_line(self, line_from_file):
         """Import variable definition line from NASA Ames file"""
-        spl = [x.strip() for x in line_from_file.split(",")]
+        lineX = line_from_file.replace(", ", ",")  # avoid two-char delimiters
+        cr = csv.reader(StringIO(lineX), delimiter=",", quotechar='"')
+        row = next(cr)
+        spl = [x.strip() for x in row]
+        spl = [x.replace(",", ", ") for x in spl]  # add space after comma again in quoted fields
         name = spl[0]
         if not len(spl) > 1:
             unit = ""

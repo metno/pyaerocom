@@ -1,6 +1,7 @@
 """
 Methods and / or classes to perform colocation
 """
+
 import logging
 import os
 
