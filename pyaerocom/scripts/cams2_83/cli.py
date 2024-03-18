@@ -18,13 +18,13 @@ from dateutil.relativedelta import relativedelta
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
+from pyaerocom.io.cachehandler_ungridded import list_cache_files
 from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 from pyaerocom.scripts.cams2_83.config import CFG, obs_filters, species_list
 from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
-from pyaerocom.tools import clear_cache
 
 """
 TODO:
@@ -47,6 +47,12 @@ class Eval_Type(str, Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+def clear_cache():
+    """Delete cached data objects"""
+    for path in list_cache_files():
+        path.unlink()
 
 
 def check_dates_from_eval(
