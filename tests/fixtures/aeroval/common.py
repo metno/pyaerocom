@@ -8,6 +8,8 @@ from cf_units import Unit
 
 from pyaerocom import GriddedData
 
+iris.FUTURE.save_split_attrs = True
+
 
 def make_dummy_cube_3D_daily(
     year=2010, daynum=365, lat_range=None, lon_range=None, value=1, dtype=float
