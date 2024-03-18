@@ -63,9 +63,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     DEFAULT_UNIT = "1"
 
     #: Variable specific units, only required for variables that deviate from
-    #: :attr:`DEFAULT_UNIT` (is irrelevant for all variables that are
-    #: so far supported by the implemented Aeronet products, i.e. all variables
-    #: are dimensionless as specified in :attr:`DEFAULT_UNIT`)
+    #: :attr:`DEFAULT_UNIT`
     UNITS = {}
 
     IGNORE_META_KEYS = ["date", "time", "day_of_year"]
@@ -450,6 +448,8 @@ class ReadAeronetBase(ReadUngriddedBase):
                         from pyaerocom.exceptions import MetaDataError
 
                         raise MetaDataError("Metadata attr unit is deprecated, please use units")
+                    elif var in self.UNITS:
+                        u = self.UNITS[var]
                     else:
                         u = self.DEFAULT_UNIT
                 elif var in self.UNITS:

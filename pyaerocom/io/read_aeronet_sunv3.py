@@ -100,6 +100,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550so4": ["od440aer", "od500aer", "ang4487aer"],
         "proxyod550ss": ["od440aer", "od500aer", "ang4487aer"],
         "proxyod550no3": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyzaerosol": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyzdust": ["od440aer", "od500aer", "ang4487aer"],
     }
 
     #: Functions that are used to compute additional variables (i.e. one
@@ -116,8 +118,14 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550so4": calc_od550aer,
         "proxyod550ss": calc_od550aer,
         "proxyod550no3": calc_od550aer,
+        "proxyzaerosol": calc_od550aer,
+        "proxyzdust": calc_od550aer,
     }
 
+    UNITS = {
+        "proxyzdust": "km",
+        "proxyzaerosol": "km",
+    }
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
@@ -155,7 +163,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out[item] = []
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        # self.logger.info(f"Reading file {filename}")
         # enable alternative reading of .gz files here to save space on the file system
         suffix = pathlib.Path(filename).suffix
         tmp_name = filename
