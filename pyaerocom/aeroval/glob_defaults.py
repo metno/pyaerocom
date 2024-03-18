@@ -17,6 +17,10 @@ var_ranges_defaults = {
         "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "colmap": "coolwarm",
     },
+    "ratpm25pm10": {
+        "scale": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        "colmap": "coolwarm",
+    },
     "od550dust": {
         "scale": [0, 0.0125, 0.025, 0.0375, 0.05, 0.0625, 0.075, 0.0875, 0.1],
         "colmap": "coolwarm",
@@ -533,6 +537,7 @@ statistics_model_only = {
 
 #: Mapping of pyaerocom variable names to web naming conventions
 ## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
+
 var_web_info = dict(
     od550aer=["AOD", "2D", "Optical properties"],
     od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
@@ -688,4 +693,8 @@ var_web_info = dict(
     proxyweto3=["proxyWetO3", "3D", "Deposition"],
     proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
     proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
+
+    # other stuff
+    ratpm25pm10=["ratio PM2.5 PM10", "3D", "Particle ratio"],
+    ratpm10pm25=["ratio PM10 PM2.5", "3D", "Particle ratio"],
 )
