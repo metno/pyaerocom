@@ -693,7 +693,6 @@ var_web_info = dict(
     proxyweto3=["proxyWetO3", "3D", "Deposition"],
     proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
     proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
-
     # other stuff
     ratpm25pm10=["ratio PM2.5 PM10", "3D", "Particle ratio"],
     ratpm10pm25=["ratio PM10 PM2.5", "3D", "Particle ratio"],
