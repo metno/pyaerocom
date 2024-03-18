@@ -9,8 +9,9 @@
 
 ## Checklist
 
+* [ ] Start with a draft-PR
 * [ ] The pull request title is a good summary of the changes
 * [ ] Documentation reflects the changes where applicable
-* [ ] Unit tests for the changes exist
-* [ ] Tests pass on CI and locally
-* [ ] My PR is ready to review
+* [ ] Tests for the changes exist where applicable
+* [ ] Tests pass first locally and then on CI
+* [ ] My PR is ready to review and I have selected a reviewer
