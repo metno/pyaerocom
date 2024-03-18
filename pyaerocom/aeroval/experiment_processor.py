@@ -53,7 +53,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 f"marked to be used only as part of a superobs "
                 f"network"
             )
-        elif ofcfg["only_json"]:
+        elif ocfg["only_json"]:
             if not ofcg["coldata_dir"]:
                 raise Exception(
                     f"No coldata_dir provided for an obs network for whcih only_json=True. The asusmption of setting only_json=True is that colocated files already exist, and so a directory colcoation for these files must be provided."
