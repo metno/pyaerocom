@@ -134,5 +134,6 @@ jobs:
       if: ${{ success() }}
       uses: codecov/codecov-action@v4
       with:
-          file: ./coverage.xml
-          flags: unittests
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
