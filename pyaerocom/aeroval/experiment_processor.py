@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import logging
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
@@ -52,6 +53,18 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 f"marked to be used only as part of a superobs "
                 f"network"
             )
+        elif ocfg["only_json"]:
+            if not ocfg["coldata_dir"]:
+                raise Exception(
+                    f"No coldata_dir provided for an obs network for whcih only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory colcoation for these files must be provided."
+                )
+            else:
+                preprocessed_coldata_dir = ocfg["coldata_dir"]
+                mask = f"{preprocessed_coldata_dir}/*.nc"
+                files_to_convert = glob.glob(mask)
+                engine = ColdataToJsonEngine(self.cfg)
+                engine.run(files_to_convert)
+
         else:
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
