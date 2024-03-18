@@ -15,7 +15,7 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator
+from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator, field_serializer
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 from typing import Optional, Tuple, Literal
@@ -357,7 +357,9 @@ class EvalSetup(BaseModel):
         else:
             return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
         
-    
+    @field_serializer("colocation_opts")
+    def serialize_colocation_opts(self, colocation_opts : ColocationSetup):
+        return colocation_opts.json_repr()
     
     #webdisp_opts : WebDisplaySetup= WebDisplaySetup()
     @computed_field
@@ -393,15 +395,20 @@ class EvalSetup(BaseModel):
         else:
             return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
     
-    # LB: ObsCollection and ModelCollection need to be made JSON serializable.
+    # LB: ObsCollection and ModelCollection require special attention b/c they're not based on Pydantic.
     # TODO Use Pydantic for ObsCollection and ModelCollection
     obs_cfg : ObsCollection | dict = ObsCollection() 
+    
     @field_validator("obs_cfg")
     def validate_obs_cfg(cls, v):
         if not isinstance(v, ObsCollection):
             return ObsCollection(v)
         return v
-      
+    
+    @field_serializer("obs_cfg")
+    def serialize_obs_cfg(self, obs_cfg : ObsCollection):
+        return obs_cfg.json_repr()
+    
     
     model_cfg : ModelCollection | dict = ModelCollection()
     @field_validator("model_cfg")
@@ -409,6 +416,11 @@ class EvalSetup(BaseModel):
         if not isinstance(v, ModelCollection):
             return ModelCollection(v)
         return v
+    
+    @field_serializer("model_cfg")
+    def serialize_model_cfg(self, model_cfg : ModelCollection):
+        return model_cfg.json_repr()
+    
 
     @property
     def json_filename(self) -> str:
