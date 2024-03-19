@@ -81,7 +81,7 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 pya = "pyaerocom.scripts.cli:main"
 
 [project.entry-points."pyaerocom.gridded"]
-ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
+ReadMscwCtm = "pyaerocom.io.mscw_ctm.reader:ReadMscwCtm"
 
 [project.entry-points."pyaerocom.ungridded"]
 ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"

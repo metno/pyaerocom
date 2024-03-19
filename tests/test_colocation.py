@@ -15,7 +15,7 @@ from pyaerocom.colocation import (
 )
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
-from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32
 from tests.fixtures.stations import create_fake_station_data
 
