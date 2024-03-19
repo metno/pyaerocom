@@ -14,6 +14,7 @@ from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.io.icos.reader import ReadICOS
 from pyaerocom.io.icpforests.reader import ReadICPForest
+from pyaerocom.io.mep.reader import ReadMEP
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
@@ -62,6 +63,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        ReadMEP,
         ReadICOS,
         ReadICPForest,
     ]
@@ -885,6 +887,9 @@ class ReadUngridded:
                 if _oreader.var_supported(var):
                     obs_vars.append(var)
         return obs_vars
+
+    def __str__(self):
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
 
     def __str__(self):
         return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)

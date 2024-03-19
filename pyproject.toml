@@ -86,7 +86,6 @@ pya = "pyaerocom.scripts.cli:main"
 [project.entry-points."pyaerocom.ungridded"]
 ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
 ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
-ReadMEP = "pyaerocom.io.mep.reader:ReadMEP"
 
 
 [tool.flit.sdist]
