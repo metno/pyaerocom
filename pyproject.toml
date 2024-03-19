@@ -80,12 +80,6 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
 
-[project.entry-points."pyaerocom.gridded"]
-# deptecated
-
-[project.entry-points."pyaerocom.ungridded"]
-# deptecated
-
 
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]

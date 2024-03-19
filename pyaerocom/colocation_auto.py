@@ -6,9 +6,7 @@ import glob
 import logging
 import os
 import traceback
-import warnings
 from datetime import datetime
-from importlib import metadata
 from pathlib import Path
 from typing import Optional
 
@@ -551,14 +549,6 @@ class Colocator(ColocationSetup):
     """
 
     SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm}
-    if entry_points := metadata.entry_points(group="pyaerocom.gridded"):
-        warnings.warn(
-            "pyaerocom.gridded entry points are deprecated",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        SUPPORTED_GRIDDED_READERS.update({ep.name: ep.load() for ep in entry_points})
-        del entry_points
 
     STATUS_CODES = {
         1: "SUCCESS",
