@@ -8,7 +8,7 @@ from pathlib import Path
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom.plugins.mep.reader import ReadMEP
+from pyaerocom.io.mep.reader import ReadMEP
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
