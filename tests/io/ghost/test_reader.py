@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyaerocom.plugins.ghost.reader import ReadGhost
+from pyaerocom.io.ghost.reader import ReadGhost
 
 
 @pytest.fixture(scope="module")
