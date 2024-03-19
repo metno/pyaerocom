@@ -81,7 +81,7 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 pya = "pyaerocom.scripts.cli:main"
 
 [project.entry-points."pyaerocom.gridded"]
-ReadMscwCtm = "pyaerocom.io.mscw_ctm.reader:ReadMscwCtm"
+# deptecated
 
 [project.entry-points."pyaerocom.ungridded"]
 ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
@@ -124,8 +124,6 @@ filterwarnings = [
     # and not on this list
     "ignore:.*please install Basemap:UserWarning:geonum.*:",
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",
-    # ingore pyaerocom.gridded DeprecationWarning for now
-    "ignore:pyaerocom.gridded entry points are deprecated:DeprecationWarning:pyaerocom.colocation_auto",
 ]
 
 [tool.coverage.run]

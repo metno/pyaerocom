@@ -34,6 +34,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.io import ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
@@ -549,7 +550,7 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded}
+    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm}
     if entry_points := metadata.entry_points(group="pyaerocom.gridded"):
         warnings.warn(
             "pyaerocom.gridded entry points are deprecated",

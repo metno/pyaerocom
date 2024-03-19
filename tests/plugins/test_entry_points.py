@@ -2,9 +2,7 @@ from importlib import metadata
 
 
 def test_gridded():
-    names = {ep.name for ep in metadata.entry_points(group="pyaerocom.gridded")}
-    assert names, "no entry points found"
-    assert names == {"ReadMscwCtm"}
+    assert not metadata.entry_points(group="pyaerocom.gridded")
 
 
 def test_ungridded():
