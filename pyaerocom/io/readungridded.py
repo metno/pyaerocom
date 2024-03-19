@@ -12,6 +12,7 @@ from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, Netw
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.icos.reader import ReadICOS
 from pyaerocom.io.icpforests.reader import ReadICPForest
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
@@ -61,6 +62,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        ReadICOS,
         ReadICPForest,
     ]
     if entry_points := metadata.entry_points(group="pyaerocom.ungridded"):
