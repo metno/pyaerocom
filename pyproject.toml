@@ -84,7 +84,7 @@ pya = "pyaerocom.scripts.cli:main"
 # deptecated
 
 [project.entry-points."pyaerocom.ungridded"]
-ReadGAW = "pyaerocom.io.gaw.reader:ReadGAW"
+# deptecated
 
 
 [tool.flit.sdist]
@@ -121,8 +121,6 @@ filterwarnings = [
     # and not on this list
     "ignore:.*please install Basemap:UserWarning:geonum.*:",
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",
-    # ingore pyaerocom.ungridded DeprecationWarning for now
-    "ignore:pyaerocom.ungridded entry points are deprecated:DeprecationWarning:pyaerocom.io.readungridded",
 ]
 
 [tool.coverage.run]
