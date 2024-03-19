@@ -80,15 +80,6 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
 
-[project.entry-points."pyaerocom.gridded"]
-ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
-
-[project.entry-points."pyaerocom.ungridded"]
-ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
-ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
-ReadMEP = "pyaerocom.plugins.mep.reader:ReadMEP"
-ReadICOS = "pyaerocom.plugins.icos.reader:ReadICOS"
-ReadICPForest = "pyaerocom.plugins.icpforests.reader:ReadICPForest"
 
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]

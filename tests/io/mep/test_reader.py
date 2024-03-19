@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
-from pyaerocom.plugins.mep.reader import ReadMEP
+from pyaerocom.io.mep.reader import ReadMEP
 
 STATION_NAMES = ("1478A", "2706A", "3377A")
 VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
