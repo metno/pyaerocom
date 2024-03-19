@@ -12,6 +12,7 @@ from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, Netw
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.ghost.reader import ReadGhost
 from pyaerocom.io.icos.reader import ReadICOS
 from pyaerocom.io.icpforests.reader import ReadICPForest
 from pyaerocom.io.mep.reader import ReadMEP
@@ -63,6 +64,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        ReadGhost,
         ReadMEP,
         ReadICOS,
         ReadICPForest,
@@ -889,6 +891,10 @@ class ReadUngridded:
         return obs_vars
 
     def __str__(self):
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
+
+    def __str__(self):
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
         return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
 
     def __str__(self):
