@@ -63,9 +63,14 @@ class ReadUngridded:
         ReadEEAAQEREP_V2,
         ReadICPForest,
     ]
-    SUPPORTED_READERS.extend(
-        ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
-    )
+    if entry_points := metadata.entry_points(group="pyaerocom.ungridded"):
+        warnings.warn(
+            "pyaerocom.ungridded entry points are deprecated",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        SUPPORTED_READERS.extend(ep.load() for ep in entry_points)
+        del entry_points
 
     # Creates list of all readers excluding ReadPyaro
     INCLUDED_READERS = deepcopy(SUPPORTED_READERS)
