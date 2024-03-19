@@ -273,7 +273,7 @@ class ReadUngridded:
         )
         return self.get_lowlevel_reader(data_id)
 
-    def get_lowlevel_reader(self, data_id=None):
+    def get_lowlevel_reader(self, data_id: str | None = None) -> ReadUngriddedBase:
         """Helper method that returns initiated reader class for input ID
 
         Parameters
@@ -291,16 +291,16 @@ class ReadUngridded:
         if data_id is None:
             if len(self.data_ids) != 1:
                 raise ValueError("Please specify dataset")
-        if not data_id in self.supported_datasets:
+        if data_id not in self.supported_datasets:
             if data_id not in self.config_map:
                 raise NetworkNotSupported(
                     f"Could not fetch reader class: Input "
                     f"network {data_id} is not supported by "
                     f"ReadUngridded"
                 )
-        elif not data_id in self.data_ids:
+        elif data_id not in self.data_ids:
             self.data_ids.append(data_id)
-        if not data_id in self._readers:
+        if data_id not in self._readers:
             _cls = self._find_read_class(data_id)
             reader = self._init_lowlevel_reader(_cls, data_id)
             self._readers[data_id] = reader
@@ -887,7 +887,4 @@ class ReadUngridded:
         return obs_vars
 
     def __str__(self):
-        s = ""
-        for ds in self.data_ids:
-            s += f"\n{self.get_lowlevel_reader(ds)}"
-        return s
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
