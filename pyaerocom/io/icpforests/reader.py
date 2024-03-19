@@ -11,8 +11,8 @@ from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.io.icpforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.plugins.icpforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 

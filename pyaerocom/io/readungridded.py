@@ -12,6 +12,7 @@ from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, Netw
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.icpforests.reader import ReadICPForest
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
@@ -26,7 +27,6 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.plugins.icpforests.reader import ReadICPForest
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 

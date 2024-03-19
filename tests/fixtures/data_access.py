@@ -12,9 +12,9 @@ from typing import NamedTuple
 import pooch
 
 from pyaerocom import const, io
+from pyaerocom.io.icpforests.reader import ReadICPForest
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.plugins.ghost.reader import ReadGhost
-from pyaerocom.plugins.icpforests.reader import ReadICPForest
 
 logger = logging.getLogger(__name__)
 
