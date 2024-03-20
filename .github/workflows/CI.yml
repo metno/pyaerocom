@@ -99,7 +99,14 @@ jobs:
         python -m pip install tox
     - name: Run test
       continue-on-error: ${{ matrix.experimental }}
-      run: tox -e py
+      run: tox -e py -- --cov --no-cov-on-fail --cov-report xml
+    - name: Upload coverage to Codecov
+      if: ${{ success() }}
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
 
   conda:
     runs-on: ubuntu-latest
@@ -130,10 +137,3 @@ jobs:
     - name: Run pytest
       continue-on-error: ${{ matrix.experimental }}
       run: python -m pytest -ra -q --cov --no-cov-on-fail --cov-report xml
-    - name: Upload coverage to Codecov
-      if: ${{ success() }}
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
-        flags: unittests
