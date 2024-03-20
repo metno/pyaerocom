@@ -5,7 +5,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 import numpy as np
@@ -277,7 +277,7 @@ def _init_meta_glob(coldata, **kwargs):
         meta_glob["obs_revision"] = meta["revision_ref"]
     except KeyError:
         meta_glob["obs_revision"] = NDSTR
-    meta_glob["processed_utc"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    meta_glob["processed_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     meta_glob.update(kwargs)
     return meta_glob
 

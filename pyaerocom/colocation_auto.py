@@ -7,7 +7,6 @@ import logging
 import os
 import traceback
 from datetime import datetime
-from importlib import metadata
 from pathlib import Path
 from typing import Optional
 
@@ -34,6 +33,7 @@ from pyaerocom.helpers import (
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
@@ -553,6 +553,7 @@ class Colocator(ColocationSetup):
 
     SUPPORTED_GRIDDED_READERS = {
         "ReadGridded": ReadGridded,
+        "ReadMscwCtm": ReadMscwCtm,
         "ReadCAMS2_83": ReadCAMS2_83,
     }
     SUPPORTED_GRIDDED_READERS.update(

@@ -11,6 +11,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
@@ -30,8 +31,8 @@ dependencies = [
     "seaborn>=0.12.2",
     "dask",
     "geonum",
-    "LatLon23",             # required by geonum
-    "SRTM.py",              # required by geonum
+    "LatLon23",                       # required by geonum
+    "SRTM.py",                        # required by geonum
     "simplejson",
     "requests",
     "geocoder_reverse_natural_earth",
@@ -81,15 +82,6 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 pya = "pyaerocom.scripts.cli:main"
 cams2_83_run = "pyaerocom.scripts.cams2_83.cli:app"
 
-[project.entry-points."pyaerocom.gridded"]
-ReadMscwCtm = "pyaerocom.plugins.mscw_ctm.reader:ReadMscwCtm"
-
-[project.entry-points."pyaerocom.ungridded"]
-ReadGAW = "pyaerocom.plugins.gaw.reader:ReadGAW"
-ReadGhost = "pyaerocom.plugins.ghost.reader:ReadGhost"
-ReadMEP = "pyaerocom.plugins.mep.reader:ReadMEP"
-ReadICOS = "pyaerocom.plugins.icos.reader:ReadICOS"
-ReadICPForest = "pyaerocom.plugins.icpforests.reader:ReadICPForest"
 
 [tool.flit.sdist]
 include = ["LICENSE", "README.*", "pyaerocom_env.yml", "tests"]
@@ -108,10 +100,7 @@ exclude = [
 minversion = "7.4"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = [
-    "--failed-first",
-    "--import-mode=importlib",
-]
+addopts = ["--failed-first", "--import-mode=importlib"]
 xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
@@ -203,7 +192,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, format, lint, docs
+envlist = py310, py311, py312, format, lint, docs, build
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -238,4 +227,10 @@ commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras =
     docs
+
+[testenv:build]
+commands =
+    python -m build
+deps =
+    build
 """

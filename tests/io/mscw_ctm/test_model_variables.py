@@ -1,4 +1,4 @@
-from pyaerocom.plugins.mscw_ctm.model_variables import emep_variables
+from pyaerocom.io.mscw_ctm.model_variables import emep_variables
 
 
 def test_emep_variables():

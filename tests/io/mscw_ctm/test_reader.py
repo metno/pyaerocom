@@ -10,7 +10,7 @@ import xarray as xr
 import pyaerocom.exceptions as exc
 from pyaerocom import get_variable
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.plugins.mscw_ctm.reader import ReadEMEP, ReadMscwCtm
+from pyaerocom.io.mscw_ctm.reader import ReadEMEP, ReadMscwCtm
 from tests.conftest import TEST_RTOL
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 

@@ -2,7 +2,6 @@ import logging
 import os
 import warnings
 from copy import deepcopy
-from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
 
@@ -13,6 +12,11 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
+from pyaerocom.io.gaw.reader import ReadGAW
+from pyaerocom.io.ghost.reader import ReadGhost
+from pyaerocom.io.icos.reader import ReadICOS
+from pyaerocom.io.icpforests.reader import ReadICPForest
+from pyaerocom.io.mep.reader import ReadMEP
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
@@ -27,7 +31,6 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.plugins.icpforests.reader import ReadICPForest
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
@@ -63,11 +66,12 @@ class ReadUngridded:
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
         ReadCAMS2_83,
+        ReadGAW,
+        ReadGhost,
+        ReadMEP,
+        ReadICOS,
         ReadICPForest,
     ]
-    SUPPORTED_READERS.extend(
-        ep.load() for ep in metadata.entry_points(group="pyaerocom.ungridded")
-    )
 
     # Creates list of all readers excluding ReadPyaro
     INCLUDED_READERS = deepcopy(SUPPORTED_READERS)
@@ -268,7 +272,7 @@ class ReadUngridded:
         )
         return self.get_lowlevel_reader(data_id)
 
-    def get_lowlevel_reader(self, data_id=None):
+    def get_lowlevel_reader(self, data_id: str | None = None) -> ReadUngriddedBase:
         """Helper method that returns initiated reader class for input ID
 
         Parameters
@@ -286,16 +290,16 @@ class ReadUngridded:
         if data_id is None:
             if len(self.data_ids) != 1:
                 raise ValueError("Please specify dataset")
-        if not data_id in self.supported_datasets:
+        if data_id not in self.supported_datasets:
             if data_id not in self.config_map:
                 raise NetworkNotSupported(
                     f"Could not fetch reader class: Input "
                     f"network {data_id} is not supported by "
                     f"ReadUngridded"
                 )
-        elif not data_id in self.data_ids:
+        elif data_id not in self.data_ids:
             self.data_ids.append(data_id)
-        if not data_id in self._readers:
+        if data_id not in self._readers:
             _cls = self._find_read_class(data_id)
             reader = self._init_lowlevel_reader(_cls, data_id)
             self._readers[data_id] = reader
@@ -886,7 +890,15 @@ class ReadUngridded:
         return obs_vars
 
     def __str__(self):
-        s = ""
-        for ds in self.data_ids:
-            s += f"\n{self.get_lowlevel_reader(ds)}"
-        return s
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
+
+    def __str__(self):
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
+
+    def __str__(self):
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
+
+    def __str__(self):
+        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
