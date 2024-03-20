@@ -191,7 +191,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, format, lint, docs
+envlist = py310, py311, py312, format, lint, docs, build
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -226,4 +226,10 @@ commands =
     sphinx-build {posargs:-T} docs/ docs/_build/html
 extras =
     docs
+
+[testenv:build]
+commands =
+    python -m build
+deps =
+    build
 """
