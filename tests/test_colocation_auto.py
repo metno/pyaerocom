@@ -8,7 +8,7 @@ from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
-from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.fixtures.data_access import TEST_DATA
 
 COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
@@ -459,3 +459,52 @@ def test_colocator_with_obs_data_dir_gridded():
     assert cd.ts_type == "monthly"
     assert str(cd.start) == "2010-01-15T12:00:00.000000000"
     assert str(cd.stop) == "2010-12-15T12:00:00.000000000"
+
+
+###################################
+#   Test for colocation with Pyaro
+###################################
+
+
+def test_colocation_pyaro(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
+    col = Colocator(save_coldata=False)
+    config = pyaro_testconfig[0]
+    col.obs_config = config
+    col.model_id = "EMEP"
+    col.gridded_reader_id = {"model": "ReadMscwCtm"}
+    col.model_data_dir = fake_MSCWCtm_data_monthly_2015
+    col.obs_vars = "concso4"
+    col.ts_type = "monthly"
+
+    data = col.run()
+
+    cd = data["concso4"]["concso4"]
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type == "monthly"
+    assert str(cd.start) == "2015-01-15T00:00:00.000000000"
+    assert str(cd.stop) == "2015-12-15T00:00:00.000000000"
+
+    assert np.sum(np.isnan(cd.data[0, :].data)) == 0
+
+    assert cd.data[0, :].data.shape[0] == 12
+
+
+def test_colocation_pyaro_change_obs_id(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
+    col = Colocator(save_coldata=False)
+    config = pyaro_testconfig[0]
+    col.obs_id = "undefined"
+    col.obs_config = config
+    col.obs_id = "undefined"
+    col.obs_config = config
+
+    col.model_id = "EMEP"
+    col.gridded_reader_id = {"model": "ReadMscwCtm"}
+    col.model_data_dir = fake_MSCWCtm_data_monthly_2015
+    col.obs_vars = "concso4"
+    col.ts_type = "monthly"
+
+    data = col.run()
+
+    cd = data["concso4"]["concso4"]
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type == "monthly"

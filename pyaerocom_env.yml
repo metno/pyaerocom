@@ -1,9 +1,9 @@
-# This only installs the requirments of pyaerocom, not pyaerocom itself.
+# This only installs the requirements of pyaerocom, not pyaerocom itself.
 # Activate the environment and run "pip install . --no-deps".
 channels:
   - conda-forge
 dependencies:
-  - iris >=3.6.0
+  - iris >=3.6.0, <3.8.0
   - xarray <=2022.10.0
   - cartopy >=0.21.1
   - matplotlib-base >=3.7.1
@@ -15,12 +15,10 @@ dependencies:
   - geonum
   - simplejson
   - requests
-  - reverse-geocode
   - tqdm
   - openpyxl
   - typer >=0.7.0
-## python < 3.10
-  - importlib-metadata >=3.6
+  - pydantic > 2.0.0
 ## python < 3.11
   - tomli >=2.0.1
   - importlib-resources >=5.10
@@ -28,6 +26,8 @@ dependencies:
   - pip
   - pip:
     - geojsoncontour
+    - geocoder_reverse_natural_earth >= 0.0.2
+    - pyaro
 ## testing
   - pytest >=7.4
   - pytest-dependency

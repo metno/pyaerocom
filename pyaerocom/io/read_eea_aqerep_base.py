@@ -653,7 +653,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         _country_dict = get_country_name_from_iso()
         logger.info("Reading files...")
 
-        for i in tqdm(range(len(files))):
+        for i in tqdm(range(len(files)), disable=None):
             _file = files[i]
             try:
                 station_data = self.read_file(_file, var_name=var_name)

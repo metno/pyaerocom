@@ -348,8 +348,8 @@ class AerocomDataID:
         values = [""] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
-            logger.warning(
-                f"Invalid data ID {val}. Need format <model-name>_<meteo-config>_<eperiment-name>"
+            logger.info(
+                f"Invalid or old data ID {val}. Consider format <model-name>-<meteo-config>_<experiment>-<perturbation>"
             )
             values[0] = val
             return values

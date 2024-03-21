@@ -1,0 +1,5543 @@
+- 2024-03-05, Lewis Blake	Update pyproject.toml
+- 2024-03-05, Lewis Blake	Merge pull request #1022 from metno/remove-conda
+- 2024-03-04, Daniel Heinesen	Update install.rst
+- 2024-03-01, Heiko Klein	Merge pull request #1018 from metno/logging3
+- 2024-03-01, Heiko Klein	remove logger.debug as requested by review
+- 2024-03-01, Heiko Klein	pin iris to <3.8.0 for now, iris 3.8 released yesterday
+- 2024-03-01, Heiko Klein	pin iris to <3.8.0 for now, iris 3.8 released yesterday
+- 2024-03-01, Heiko Klein	black
+- 2024-03-01, Heiko Klein	make metadatastandards-deviations on projects info instead of warnings since metadatastandards have changed to often
+- 2024-03-01, Heiko Klein	fixing forgotten print-statements for #1016
+- 2024-02-29, Heiko Klein	Merge pull request #1015 from metno/logging2
+- 2024-02-29, Heiko Klein	document cleanup of logs
+- 2024-02-28, Heiko Klein	make tqdm(disable=None) the default following the logging guidelines
+- 2024-02-28, Heiko Klein	using correct now-time
+- 2024-02-28, Heiko Klein	isort
+- 2024-02-28, Heiko Klein	deletion of old log-files after 7 days; warning about old log
+- 2024-02-27, Daniel Heinesen	Merge pull request #976 from metno/new-interface-reader
+- 2024-02-27, Daniel Heinesen	Linting...
+- 2024-02-27, Daniel Heinesen	More fixes to types
+- 2024-02-27, Daniel Heinesen	Fixes more types for 3.9
+- 2024-02-27, Daniel Heinesen	Adds dependencies to conda env, and changes a NewType
+- 2024-02-27, Daniel Heinesen	Removes tests for caching due to use of pickling in CI
+- 2024-02-27, Daniel Heinesen	Merge branch 'main-dev' into new-interface-reader
+- 2024-02-27, Daniel Heinesen	Small formatting, and merge with main-dev
+- 2024-02-27, Daniel Heinesen	Merge branch 'main-dev' into new-interface-reader
+- 2024-02-27, Daniel Heinesen	Removes redundant code in readungridded. Works with pyaeroval now
+- 2024-02-27, Lewis Blake	Merge pull request #1014 from metno/cleanup
+- 2024-02-27, Daniel Heinesen	Makes tests check if collocated data for pyaro is not empty
+- 2024-02-27, lewisblake	autoflake tests
+- 2024-02-27, lewisblake	autoflake rest of pyaerocom
+- 2024-02-27, lewisblake	remove more unused imports from aeroval/helpers.py
+- 2024-02-27, lewisblake	autoflake plugins
+- 2024-02-27, lewisblake	autoflake io
+- 2024-02-27, lewisblake	autoflake aeroval
+- 2024-02-27, Lewis Blake	Merge pull request #1009 from metno/roundfloats1008
+- 2024-02-26, lewisblake	simplier implementation FLOAT_DECIMALS
+- 2024-02-26, lewisblake	linting
+- 2024-02-26, lewisblake	type to precision in _write_stationdata_json
+- 2024-02-26, Alvaro Valdebenito	Merge pull request #998 from metno/pyaeroval-cli
+- 2024-02-16, Alvaro Valdebenito	add test
+- 2024-02-16, Alvaro Valdebenito	run AeroVal experiment from CLI
+- 2024-02-16, Alvaro Valdebenito	typo
+- 2024-02-26, Lewis Blake	Merge pull request #1013 from metno/rm-add-to-project
+- 2024-02-26, lewisblake	rm add_to_project
+- 2024-02-24, Jan Griesfeller	Merge pull request #1007 from metno/945-the-name-of-pyaerocoms-ipcforests-obs-network-rather-icpforests
+- 2024-02-23, Lewis Blake	linting
+- 2024-02-23, Lewis Blake	Delete JSONFile class
+- 2024-02-23, Lewis Blake	move logging.ini in .gitignore
+- 2024-02-23, Lewis Blake	add logging.ini to .gitignore
+- 2024-02-23, Lewis Blake	update tests
+- 2024-02-23, Lewis Blake	move experiment-methods out of ProjectOutput class
+- 2024-02-23, lewisblake	remove json tests from test__lowlevel_helpers
+- 2024-02-23, lewisblake	test_json_utils
+- 2024-02-23, lewisblake	imprtant to remove default in round_floats()
+- 2024-02-23, lewisblake	update documentation
+- 2024-02-23, lewisblake	provide all relevant functions the argument
+- 2024-02-23, lewisblake	remove json funs from _lowlevel_helpers
+- 2024-02-23, lewisblake	add precision argument
+- 2024-02-23, Jan Jurgen Griesfeller	renamed all ipcforests to the correct icpforests (except testdata)
+- 2024-02-23, lewisblake	all imports correcet except in tests
+- 2024-02-23, lewisblake	introduce round_floats_precision attr to StatisticsSetup
+- 2024-02-23, lewisblake	import from aeroval.json_utils
+- 2024-02-23, lewisblake	create json_utils
+- 2024-02-23, Jan Jurgen Griesfeller	renamed all ipcforests to the correct icpforests (except testdata)
+- 2024-02-23, Lewis Blake	Merge pull request #993 from metno/statsconfig885
+- 2024-02-23, lewisblake	more linting
+- 2024-02-23, lewisblake	documentation and linting
+- 2024-02-22, Heiko Klein	Update api.rst
+- 2024-02-22, Heiko Klein	Update api.rst
+- 2024-02-22, Heiko Klein	Update api.rst
+- 2024-02-21, lewisblake	black coldatatojson_helpers.py
+- 2024-02-20, lewisblake	drop_stats _init_stats_dummy
+- 2024-02-20, Heiko Klein	Merge pull request #1001 from metno/ebas-warnings
+- 2024-02-20, lewisblake	drop_stats in _process_heatmap_data
+- 2024-02-20, Daniel Heinesen	Fixes colocation test fails. Removes alot of dead code
+- 2024-02-20, Heiko Klein	Merge pull request #999 from metno/logging
+- 2024-02-20, Daniel Heinesen	Read Pyaro will now check if station metadata are fields in the Pyaro Station object, and use that as metadata
+- 2024-02-20, Heiko Klein	black
+- 2024-02-20, Heiko Klein	fixing "comment" tests
+- 2024-02-20, Daniel Heinesen	Some cleaning
+- 2024-02-20, Daniel Heinesen	Adds extra test to check if pyaro data read is empty or nan
+- 2024-02-20, Heiko Klein	docs
+- 2024-02-19, Daniel Heinesen	Checks if name from config is already an included dataset
+- 2024-02-19, Daniel Heinesen	Fixes caching for list of configs
+- 2024-02-19, Daniel Heinesen	Should have been apart of #72bd5920
+- 2024-02-19, Daniel Heinesen	Adds possibility to use list of configs, with same reader but different names
+- 2024-02-16, Heiko Klein	isort
+- 2024-02-16, Heiko Klein	avoid double-char delimiters for csv
+- 2024-02-16, Heiko Klein	adding back change-verbosity test
+- 2024-02-16, Heiko Klein	adding back change-verbosity test
+- 2024-02-16, Heiko Klein	Merge branch 'main-dev' into ebas-warnings
+- 2024-02-16, Heiko Klein	using csv to split rows with quotechars
+- 2024-02-16, Heiko Klein	Merge branch 'main-dev' into logging
+- 2024-02-16, Heiko Klein	removing tests of changed logging-internals
+- 2024-02-16, Heiko Klein	isort
+- 2024-02-16, Heiko Klein	black
+- 2024-02-16, Heiko Klein	adding code for logging
+- 2024-02-16, Heiko Klein	make default logger silent when non-interactive
+- 2024-02-16, Heiko Klein	enable new logging-rutines
+- 2024-02-16, lewisblake	black test_experiment_output.py
+- 2024-02-16, lewisblake	test_Experiment_Output_drop_stats_and_decimals
+- 2024-02-15, lewisblake	black codlatatojson_helpers
+- 2024-02-15, lewisblake	formatting _process_statistics_timeseries
+- 2024-02-15, lewisblake	Merge branch 'main-dev' into statsconfig885
+- 2024-02-14, Lewis Blake	Merge pull request #997 from metno/issue996
+- 2024-02-14, Alvaro Valdebenito	Revert "only specific tests, WIP"
+- 2024-02-14, Alvaro Valdebenito	create missing tmp path #996
+- 2024-02-14, Alvaro Valdebenito	only specific tests, WIP
+- 2024-02-14, Alvaro Valdebenito	update black config
+- 2024-02-13, Heiko Klein	mv logging.ini from pyaerocom.data to pyaerocom
+- 2024-02-12, lewisblake	linters
+- 2024-02-12, lewisblake	tests
+- 2024-02-12, lewisblake	pass drop_stats correctly
+- 2024-02-12, lewisblake	remove breakpoint()
+- 2024-02-12, lewisblake	try using drop_stats to remove from files
+- 2024-02-12, lewisblake	introduce configurable decimals
+- 2024-02-12, lewisblake	introduce drop_stats
+- 2024-02-07, Lewis Blake	Update pyproject.toml
+- 2024-02-06, Lewis Blake	Merge pull request #973 from metno/earlinet
+- 2024-02-06, lewisblake	fix imports
+- 2024-02-06, lewisblake	remove line to appease CI
+- 2024-02-06, lewisblake	Merge branch 'main-dev' into earlinet
+- 2024-02-06, Jan Griesfeller	Merge pull request #978 from metno/898-errors-in-country-database
+- 2024-02-06, Daniel Heinesen	Fixes an error with colocation if config is none. Adds one more test
+- 2024-02-06, Daniel Heinesen	Adds one test for colocation with pyaro
+- 2024-02-06, Lewis Blake	linters
+- 2024-02-06, Jan Griesfeller	remove testing stuff to make test work
+- 2024-02-06, Jan Griesfeller	remove clutter
+- 2024-02-06, Jan Griesfeller	fixed test
+- 2024-02-05, Jan Griesfeller	adjust minimal version of geocoder_reverse_natural_earth
+- 2024-02-05, Jan Griesfeller	Merge remote-tracking branch 'origin/main-dev' into 898-errors-in-country-database
+- 2024-02-05, lewisblake	use obs_name in _process_profile...
+- 2024-02-05, lewisblake	use old check - working
+- 2024-02-05, Lewis Blake	Merge pull request #984 from metno/add-to-project966
+- 2024-02-05, Lewis Blake	Merge pull request #982 from metno/trupubman972
+- 2024-02-05, Lewis Blake	Merge pull request #979 from metno/icosco2
+- 2024-02-05, Lewis Blake	Merge branch 'main-dev' into trupubman972
+- 2024-02-05, Lewis Blake	Merge branch 'main-dev' into icosco2
+- 2024-02-05, Lewis Blake	Merge pull request #974 from metno/pytest-8
+- 2024-02-02, Jan Jurgen Griesfeller	add see, what's actually in const.LOCAL_TMP_DIR on CI
+- 2024-02-02, Jan Jurgen Griesfeller	add directory creation to fix test
+- 2024-02-02, Jan Jurgen Griesfeller	add directory creation
+- 2024-02-02, Jan Jurgen Griesfeller	add comment
+- 2024-02-02, Jan Jurgen Griesfeller	next test to fix test on CI
+- 2024-02-02, Jan Jurgen Griesfeller	linting
+- 2024-02-02, Jan Jurgen Griesfeller	try to make CI work
+- 2024-02-02, Jan Jurgen Griesfeller	dataset key is not in CI for some reason
+- 2024-02-02, Jan Jurgen Griesfeller	replaced return with assert
+- 2024-02-02, Jan Jurgen Griesfeller	replaced return with assert
+- 2024-02-02, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/icosco2' into 898-errors-in-country-database
+- 2024-02-02, Jan Jurgen Griesfeller	remove clutter
+- 2024-02-02, Jan Jurgen Griesfeller	fixed entire test locally
+- 2024-02-02, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/898-errors-in-country-database' into 898-errors-in-country-database
+- 2024-02-02, Jan Jurgen Griesfeller	add missing check for country_code
+- 2024-02-02, lewisblake	use if instead of assert
+- 2024-02-02, lewisblake	correct logic for just_for_viz in json engine
+- 2024-02-02, Lewis Blake	Merge pull request #985 from metno/issuetemplate971
+- 2024-02-02, Lewis Blake	general_issue.md
+- 2024-02-02, Lewis Blake	feature_request.md
+- 2024-02-02, Lewis Blake	documentation-md
+- 2024-02-02, Lewis Blake	config.yml
+- 2024-02-02, Lewis Blake	bug_report.md
+- 2024-02-01, Jan Griesfeller	test adjusted to new local machine that has different precision
+- 2024-02-01, lewisblake	workflow_dispath
+- 2024-02-01, Lewis Blake	release env for publish.yml
+- 2024-02-01, Lewis Blake	fix up reader and tests
+- 2024-02-01, lewisblake	change range of backscatter values
+- 2024-02-01, lewisblake	Merge branch 'main-dev' into earlinet
+- 2024-01-31, Jan Jurgen Griesfeller	add missing check for country_code
+- 2024-01-31, Jan Jurgen Griesfeller	add missing check for country_code
+- 2024-01-31, Jan Jurgen Griesfeller	correctly raise exception
+- 2024-01-31, Jan Jurgen Griesfeller	typo
+- 2024-01-31, Jan Jurgen Griesfeller	test to fix CI; WIP
+- 2024-01-31, Jan Jurgen Griesfeller	add geocoder_reverse_natural_earth as dependency
+- 2024-01-31, Jan Jurgen Griesfeller	correct name in returned list of dict
+- 2024-01-31, Jan Jurgen Griesfeller	replace reverse_geocode with geocoder_reverse_natural_earth
+- 2024-01-31, Jan Jurgen Griesfeller	replace reverse_geocode with geocoder_reverse_natural_earth
+- 2024-01-30, Daniel Heinesen	Formatting with isort
+- 2024-01-30, Daniel Heinesen	Adds tests for readungridded with pyaro
+- 2024-01-30, Daniel Heinesen	Major changes to readungridded, making it possible to read data_ids at the same time as a config
+- 2024-01-30, Daniel Heinesen	More files formatted with isort
+- 2024-01-30, Daniel Heinesen	Formatting with isort
+- 2024-01-30, Daniel Heinesen	Removes unused file
+- 2024-01-30, Daniel Heinesen	Some formatting with black
+- 2024-01-30, Daniel Heinesen	Adds use of config to compute post
+- 2024-01-30, Daniel Heinesen	Fixes named parameters of read_dataset
+- 2024-01-30, Daniel Heinesen	Removes merge text
+- 2024-01-30, Daniel Heinesen	Merge main-dev to branch
+- 2024-01-30, Daniel Heinesen	removes version of pydantic due to pip and conda using diff versions
+- 2024-01-30, Daniel Heinesen	Removes Self typing due to incompatibility with 3.9
+- 2024-01-30, Daniel Heinesen	Adds future annotation import
+- 2024-01-30, Daniel Heinesen	Adds pydantic to pyproject
+- 2024-01-30, Daniel Heinesen	Adds pyaro to pyprojects
+- 2024-01-29, Alvaro Valdebenito	return instead of assert in test function
+- 2024-01-29, Alvaro Valdebenito	pytest 7.4  DeprecationWarning
+- 2024-01-29, lewisblake	Revert "Update add_to_project.yml"
+- 2024-01-29, lewisblake	Revert "Update add_to_project.yml"
+- 2024-01-29, lewisblake	try to_series()
+- 2024-01-29, Lewis Blake	Update add_to_project.yml
+- 2024-01-29, Lewis Blake	Update add_to_project.yml
+- 2024-01-29, Lewis Blake	Merge pull request #967 from metno/add-to-project966
+- 2024-01-25, lewisblake	first try
+- 2024-01-23, Daniel Heinesen	Adds tests for pyaro reading and config
+- 2024-01-23, Daniel Heinesen	Adds default pyaro catalog
+- 2024-01-23, Daniel Heinesen	Adds saving and loading to pyaroconfig
+- 2024-01-11, Lewis Blake	Merge pull request #961 from metno/closeissues960
+- 2024-01-10, Lewis Blake	Update index.rst to make link to issues embedded
+- 2024-01-10, Lewis Blake	Update index.rst to include a link to where to submit issues
+- 2024-01-10, lewisblake	add text that the issue will be closed in 14 days
+- 2024-01-10, lewisblake	add close_issues.yml
+- 2024-01-04, Daniel Heinesen	First MVP for catalogs for pyaro
+- 2023-12-19, Daniel Heinesen	Fix filters for pyaro
+- 2023-12-14, Lewis Blake	Merge pull request #958 from metno/adddoi
+- 2023-12-14, lewisblake	Merge branch 'main-dev' into adddoi
+- 2023-12-14, lewisblake	lewis to pyaerocom team
+- 2023-12-14, lewisblake	add doi
+- 2023-12-12, Lewis Blake	Merge pull request #957 from metno/colormaps953
+- 2023-12-12, lewisblake	update tests
+- 2023-12-12, lewisblake	restore default colormaps
+- 2023-12-05, Daniel Heinesen	pyaro is now a MVP for aeroval
+- 2023-12-05, Daniel Heinesen	pyaro reader now calculates ts_type. raises an error of more than one is found for a station
+- 2023-12-04, Lewis Blake	Update pyproject.toml
+- 2023-12-04, Jan Griesfeller	Merge pull request #944 from metno/griesie-943-add-removed-conversion-factors-again
+- 2023-12-04, Jan Jurgen Griesfeller	linting
+- 2023-12-04, Jan Jurgen Griesfeller	Merge branch 'griesie-943-add-removed-conversion-factors-again' of github.com:metno/pyaerocom into griesie-943-add-removed-conversion-factors-again
+- 2023-12-04, Jan Jurgen Griesfeller	adjusted to review
+- 2023-11-30, Daniel Heinesen	Added reading of units. Makes it work with colocation
+- 2023-11-28, Daniel Heinesen	Starts cleaing colocation after changes done in last commit 5a2f15bb
+- 2023-11-28, Daniel Heinesen	ReadPyaro  now gets list of readers and the correct engine from Pyaro
+- 2023-11-17, Jan Jurgen Griesfeller	remove clutter
+- 2023-11-16, Jan Jurgen Griesfeller	remove clutter
+- 2023-11-16, Jan Jurgen Griesfeller	linting
+- 2023-11-16, Jan Jurgen Griesfeller	linting
+- 2023-11-16, Jan Jurgen Griesfeller	added ipcforests testing to CI
+- 2023-11-16, Jan Jurgen Griesfeller	adjusted testing to added species
+- 2023-11-15, Jan Jurgen Griesfeller	adjusted more color bars
+- 2023-11-14, Jan Jurgen Griesfeller	added minimum
+- 2023-11-14, Jan Jurgen Griesfeller	added minimum
+- 2023-11-14, Jan Jurgen Griesfeller	adjusted more color bars to data
+- 2023-11-14, Jan Jurgen Griesfeller	adjusted more color bars to data
+- 2023-11-14, Jan Jurgen Griesfeller	added more variables so aeroval's map plotting works
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more color bars
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more color bars
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more color bars
+- 2023-11-13, Jan Jurgen Griesfeller	add DataQueryError to errors
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more colorscales
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more colorscales
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more colorscales
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more colorscales
+- 2023-11-13, Jan Jurgen Griesfeller	adjusted more colorscales
+- 2023-11-10, Jan Jurgen Griesfeller	added concom25 definition
+- 2023-11-10, Jan Jurgen Griesfeller	add nh4 for concNnh4 unit conversion
+- 2023-11-10, Jan Jurgen Griesfeller	adjusted wetdep color scales
+- 2023-11-10, Jan Jurgen Griesfeller	adjusted depna color scale
+- 2023-11-10, Jan Jurgen Griesfeller	adjusted to added dep variables
+- 2023-11-10, Jan Jurgen Griesfeller	adjusted depna color scale
+- 2023-11-09, Jan Jurgen Griesfeller	add variables proxydryna, depna
+- 2023-11-09, Jan Jurgen Griesfeller	add variable proxydryss
+- 2023-11-09, Jan Jurgen Griesfeller	add variable proxydryss to ebas reading
+- 2023-11-09, Jan Jurgen Griesfeller	add variable proxydryss to ebas reading
+- 2023-11-07, Daniel Heinesen	Can now colocate
+- 2023-11-01, Lewis Blake	Merge pull request #938 from metno/listcache937
+- 2023-11-01, Alvaro Valdebenito	browse_database from CLI directly
+- 2023-11-01, Alvaro Valdebenito	ingore "install Basemap" warning
+- 2023-11-01, Alvaro Valdebenito	consolidate list/clear cache
+- 2023-11-01, lewisblake	use logger
+- 2023-11-01, lewisblake	first attempt
+- 2023-10-31, Jan Griesfeller	Merge pull request #746 from metno/ipc-forests
+- 2023-10-31, Jan Jurgen Griesfeller	adjusted test
+- 2023-10-31, Jan Jurgen Griesfeller	adjusted to review
+- 2023-10-31, Jan Jurgen Griesfeller	adjusted to review
+- 2023-10-31, Jan Jurgen Griesfeller	removed unused code
+- 2023-10-31, Jan Jurgen Griesfeller	removed duplicate wetpm10 entry introduced by merging mein-dev
+- 2023-10-31, Jan Jurgen Griesfeller	added more variables
+- 2023-10-31, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-10-31, Jan Griesfeller	Merge pull request #826 from metno/griesie_fix_825
+- 2023-10-30, Jan Jurgen Griesfeller	adjusted lustre tests to updated data
+- 2023-10-30, Jan Jurgen Griesfeller	adjusted lustre tests to updated data
+- 2023-10-30, Jan Jurgen Griesfeller	adjusted to review
+- 2023-10-26, Jan Jurgen Griesfeller	added small test for guess_bounds()
+- 2023-10-26, Daniel Heinesen	First conversion between pyaro and ungriddeddata
+- 2023-10-26, Jan Jurgen Griesfeller	linting
+- 2023-10-26, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-10-26, Jan Griesfeller	Merge pull request #895 from metno/griesie-fix-890-airnow-reader-crashing
+- 2023-10-26, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-10-26, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-fix-890-airnow-reader-crashing
+- 2023-10-26, Jan Jurgen Griesfeller	linting
+- 2023-10-26, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/griesie-fix-890-airnow-reader-crashing' into griesie-fix-890-airnow-reader-crashing
+- 2023-10-26, Jan Jurgen Griesfeller	added type hints
+- 2023-10-26, Lewis Blake	Merge pull request #934 from metno/fix930
+- 2023-10-26, lewisblake	linters
+- 2023-10-25, lewisblake	mmrs
+- 2023-10-25, lewisblake	ch4 mol mass
+- 2023-10-25, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-fix-890-airnow-reader-crashing
+- 2023-10-25, Jan Jurgen Griesfeller	go back to initial way of doing things since the last version did not work
+- 2023-10-25, Jan Jurgen Griesfeller	adjust to review
+- 2023-10-25, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-10-24, lewisblake	add vmrch4 and vmrco to tests
+- 2023-10-24, lewisblake	rm deadcode
+- 2023-10-24, lewisblake	clean up reader
+- 2023-10-23, lewisblake	working version - must clean up
+- 2023-10-23, lewisblake	icos working co2, ch4 wip
+- 2023-10-20, lewisblake	hacking apart MEP reader
+- 2023-10-20, lewisblake	WIP
+- 2023-10-20, lewisblake	co, ch4, co2, new regex
+- 2023-10-19, Jan Jurgen Griesfeller	added test to get more coverage
+- 2023-10-19, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-fix-890-airnow-reader-crashing
+- 2023-10-19, Jan Jurgen Griesfeller	linting
+- 2023-10-19, Jan Jurgen Griesfeller	adjust tests
+- 2023-10-18, Jan Jurgen Griesfeller	adjust tests
+- 2023-10-18, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-10-17, Daniel Heinesen	Adds pyaro option to readungridded
+- 2023-10-17, Jan Jurgen Griesfeller	linting
+- 2023-10-17, Jan Jurgen Griesfeller	remove even more clutter
+- 2023-10-17, Jan Jurgen Griesfeller	remove even more clutter
+- 2023-10-17, Jan Jurgen Griesfeller	remove even more clutter
+- 2023-10-17, Jan Jurgen Griesfeller	remove even more clutter, bump version
+- 2023-10-17, Jan Jurgen Griesfeller	remove clutter, remove few double operations
+- 2023-10-17, Jan Jurgen Griesfeller	make testing work
+- 2023-10-16, Jan Jurgen Griesfeller	WIP: fix tests
+- 2023-10-16, Lewis Blake	Merge pull request #928 from metno/dependencies
+- 2023-10-16, Jan Jurgen Griesfeller	linting
+- 2023-10-16, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-fix-890-airnow-reader-crashing
+- 2023-10-16, Jan Jurgen Griesfeller	adjust to new plugin structure for obs reading
+- 2023-10-16, Alvaro Valdebenito	pandas/xarray version upper limits
+- 2023-10-16, Jan Jurgen Griesfeller	remove dead code
+- 2023-10-16, Jan Jurgen Griesfeller	linting
+- 2023-10-16, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-10-16, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-10-16, Jan Jurgen Griesfeller	linting
+- 2023-10-16, Alvaro Valdebenito	pin pandas/xarray to last working version
+- 2023-10-02, Alvaro Valdebenito	update conda env
+- 2023-10-02, Alvaro Valdebenito	update xarray version
+- 2023-10-02, Alvaro Valdebenito	bump test/docs/lint dependencies
+- 2023-10-02, Alvaro Valdebenito	bump dependencies
+- 2023-10-02, Alvaro Valdebenito	add python 3.12 to CI
+- 2023-10-16, Alvaro Valdebenito	Merge pull request #929 from metno/pooch
+- 2023-10-13, Alvaro Valdebenito	fix docs CI job
+- 2023-10-13, Alvaro Valdebenito	update test_load_berlin
+- 2023-10-02, Alvaro Valdebenito	fix matplotlib DeprecationWaring
+- 2023-10-13, Alvaro Valdebenito	clean up
+- 2023-10-13, Alvaro Valdebenito	register one testdata-minimal dataset at the time
+- 2023-10-13, Alvaro Valdebenito	download and unpack testdata-minimal w/pooch
+- 2023-10-13, Alvaro Valdebenito	add pooch to test requirements
+- 2023-10-16, Daniel Heinesen	more pyaro
+- 2023-10-16, Daniel Heinesen	Start of pyaro integration
+- 2023-10-16, Lewis Blake	Merge pull request #927 from metno/fix_diurnal
+- 2023-10-16, Lewis Blake	Merge pull request #925 from metno/fix914
+- 2023-10-16, Lewis Blake	Merge pull request #924 from metno/fix913
+- 2023-10-16, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-10-13, lewisblake	linters
+- 2023-10-13, lewisblake	rm "Earlinet-test-3d-collocation" from TEST_DATA
+- 2023-10-13, lewisblake	❌🥒
+- 2023-10-13, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/fix_diurnal' into ipc-forests
+- 2023-10-13, lewisblake	refactor and reintroduce diurnal processing
+- 2023-10-13, lewisblake	simplify
+- 2023-10-13, lewisblake	update testdata-minimal on pyaerocom server
+- 2023-10-13, lewisblake	update tests
+- 2023-10-12, Jan Jurgen Griesfeller	added proxy wetdeps
+- 2023-10-12, Jan Jurgen Griesfeller	add statistics_model_only again that was accidently removed during merge
+- 2023-10-12, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-10-12, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/ipc-forests' into ipc-forests
+- 2023-10-12, Jan Jurgen Griesfeller	added deposition to forrest variables
+- 2023-10-11, Jan Jurgen Griesfeller	various changes to variable wetna for aeroval
+- 2023-10-11, lewisblake	add_pages
+- 2023-10-10, Lewis Blake	Merge pull request #918 from metno/regions901
+- 2023-10-10, Lewis Blake	Merge pull request #921 from metno/fix920
+- 2023-10-10, lewisblake	list(set(keep))
+- 2023-10-10, lewisblake	fix up CI
+- 2023-10-10, Lewis Blake	Merge pull request #923 from metno/fix922
+- 2023-10-10, lewisblake	21
+- 2023-10-10, lewisblake	fix up CI
+- 2023-10-10, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/fix922' into ipc-forests
+- 2023-10-10, lewisblake	remove deleteing tree - done at begining of exp
+- 2023-10-10, lewisblake	remvoe unused imports from tests
+- 2023-10-10, lewisblake	remove unused imports
+- 2023-10-09, lewisblake	first working draft
+- 2023-10-09, lewisblake	aeroval defaults co2
+- 2023-10-09, lewisblake	ppm
+- 2023-10-09, lewisblake	add vmr co3 to glob_defaults
+- 2023-10-09, lewisblake	icos.reader
+- 2023-10-09, lewisblake	register icos plugin
+- 2023-10-06, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/ipc-forests' into ipc-forests
+- 2023-10-06, Jan Jurgen Griesfeller	added variable wetna
+- 2023-10-05, lewisblake	get() wit it
+- 2023-10-05, lewisblake	"regions_how" in kwargs
+- 2023-10-05, lewisblake	version for testing
+- 2023-10-05, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-10-05, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/ipc-forests' into ipc-forests
+- 2023-10-05, Jan Jurgen Griesfeller	adjusted wetoxs, wetrdn and wetoxn color bars
+- 2023-10-05, lewisblake	WIP
+- 2023-10-04, lewisblake	WIP
+- 2023-10-04, Lewis Blake	Merge pull request #916 from metno/fix915
+- 2023-10-04, lewisblake	conco3
+- 2023-10-03, Lewis Blake	Merge pull request #855 from metno/earlinet
+- 2023-10-02, lewisblake	self.ALLOWED_VERT_COORD_TYPES
+- 2023-10-02, lewisblake	swap order any checking of DataUnitError
+- 2023-10-02, lewisblake	colocation_3d # pragma: no covers
+- 2023-10-02, lewisblake	ALLOWED_VERT_CORD_TYPES again
+- 2023-10-02, lewisblake	bring back sigfigs in test_read_earlinet
+- 2023-10-02, lewisblake	info -> debug in stationdata
+- 2023-10-02, lewisblake	go back to old stats[0] in test_stationdata
+- 2023-10-02, lewisblake	clean up
+- 2023-10-02, lewisblake	remove pd.to_timseries() on obs
+- 2023-10-02, lewisblake	clean up and check start and end
+- 2023-10-02, lewisblake	remove duplicated depenency
+- 2023-10-02, lewisblake	_get_vert_code(self, ...)
+- 2023-10-02, lewisblake	if hasattr(coldata.data, "altitude_units")
+- 2023-10-02, lewisblake	_process_stats_timeseries_for_all_regions
+- 2023-09-29, lewisblake	clean up vert_code
+- 2023-09-29, lewisblake	from __future__ import annotations
+- 2023-09-29, Jan Jurgen Griesfeller	added variable wetna
+- 2023-09-29, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-09-29, lewisblake	_process_profile_data_for_vizualization
+- 2023-09-29, lewisblake	no blind except
+- 2023-09-29, lewisblake	_aerocom_savename
+- 2023-09-29, Alvaro Valdebenito	improve colocation_3d tests
+- 2023-09-29, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-09-29, Lewis Blake	Merge pull request #911 from metno/reformat
+- 2023-09-29, Alvaro Valdebenito	ignore blame
+- 2023-09-29, Alvaro Valdebenito	format with black
+- 2023-09-29, Alvaro Valdebenito	bump black version to 23.9.1
+- 2023-09-28, Jan Jurgen Griesfeller	linting
+- 2023-09-28, Jan Jurgen Griesfeller	linting (isort)
+- 2023-09-28, Jan Jurgen Griesfeller	update black version
+- 2023-09-28, Jan Jurgen Griesfeller	remove black version
+- 2023-09-28, Jan Jurgen Griesfeller	try to solve CI linting
+- 2023-09-28, Jan Jurgen Griesfeller	try to solve CI linting
+- 2023-09-28, Jan Jurgen Griesfeller	linting
+- 2023-09-28, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-09-28, Lewis Blake	Merge pull request #894 from metno/griesie_fix_891-eea-reader
+- 2023-09-28, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-09-28, Lewis Blake	Merge pull request #910 from metno/icosco2
+- 2023-09-28, Alvaro Valdebenito	add type annotations
+- 2023-09-28, Alvaro Valdebenito	remove unused modules
+- 2023-09-28, Alvaro Valdebenito	test icos reader w/common pytest.mark.parametrize
+- 2023-09-28, Alvaro Valdebenito	test icos reader w/icos_path fixture
+- 2023-09-28, Alvaro Valdebenito	test icos reader w/pytestmark
+- 2023-09-28, lewisblake	ALLOWED_VERT_CORD_TYPES
+- 2023-09-28, lewisblake	use numpy array instead of list of nans
+- 2023-09-28, lewisblake	type hints
+- 2023-09-28, lewisblake	remove kwargs
+- 2023-09-28, lewisblake	adding comments about methods and typing
+- 2023-09-28, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-09-28, Lewis Blake	Merge pull request #888 from metno/icosco2
+- 2023-09-28, lewisblake	linters again
+- 2023-09-28, Lewis Blake	linters
+- 2023-09-28, Lewis Blake	Merge branch 'icosco2' of github.com:metno/pyaerocom into icosco2
+- 2023-09-27, lewisblake	Merge branch 'main-dev' into icosco2
+- 2023-09-27, lewisblake	all tests passing local CI
+- 2023-09-25, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-09-25, Alvaro Valdebenito	Merge pull request #908 from metno/drop-proj-legacy
+- 2023-09-25, Alvaro Valdebenito	update test_load_berlin
+- 2023-09-25, Alvaro Valdebenito	update pip install instructions
+- 2023-08-11, Alvaro Valdebenito	remove proj-legacy/proj8 options
+- 2023-09-22, lewisblake	clean up notes to self
+- 2023-09-22, lewisblake	reader working
+- 2023-09-22, lewisblake	fix ICOS path typo
+- 2023-09-21, lewisblake	remove dead code
+- 2023-09-21, lewisblake	Alvaro feedback round 1
+- 2023-09-20, Lewis Blake	reintroduce test_stationdata
+- 2023-09-20, lewisblake	clean up
+- 2023-09-19, lewisblake	remove old earlinet test parameterizations
+- 2023-09-19, lewisblake	remove old earlinet test
+- 2023-09-19, lewisblake	isort
+- 2023-09-19, lewisblake	no cover profile exts of funs w/o current tests
+- 2023-09-19, lewisblake	test_get_profilename
+- 2023-09-19, Lewis Blake	clean up
+- 2023-09-19, lewisblake	typo fix
+- 2023-09-19, Lewis Blake	test_load_berlin has 4 files
+- 2023-09-19, Lewis Blake	clean up
+- 2023-09-19, Lewis Blake	clean up
+- 2023-09-19, Lewis Blake	vert_code
+- 2023-09-19, Lewis Blake	use hasattr()
+- 2023-09-19, lewisblake	remove dead code
+- 2023-09-19, lewisblake	linters
+- 2023-09-19, Lewis Blake	linters and remove dead code
+- 2023-09-19, Lewis Blake	update testdfata-minimal file
+- 2023-09-19, Lewis Blake	colocation_3d tests work
+- 2023-09-15, Lewis Blake	working on fixtures that need fixtures
+- 2023-09-14, Lewis Blake	testing WIP
+- 2023-09-14, lewisblake	exctinction & backscatter colorbars
+- 2023-09-13, lewisblake	prepare creating of fake data
+- 2023-09-13, lewisblake	remove dead code
+- 2023-09-13, lewisblake	altitude for stations back in meters
+- 2023-09-13, Lewis Blake	testing WIP
+- 2023-09-13, Lewis Blake	testing WIP
+- 2023-09-13, Jan Jurgen Griesfeller	adjust testing to changed colorbar
+- 2023-09-13, Jan Jurgen Griesfeller	adjust testing to added deposition var
+- 2023-09-13, Jan Jurgen Griesfeller	adjust testinbg to what's defined in pyaerocom
+- 2023-09-11, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_825
+- 2023-09-11, Lewis Blake	need to include model and obs in testdata-minimal
+- 2023-09-11, Lewis Blake	test_read-earlinet passing local CI
+- 2023-09-11, Lewis Blake	linters
+- 2023-09-11, lewisblake	getting tests ready for local testing
+- 2023-09-08, lewisblake	cleanup not needed imports
+- 2023-09-08, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-09-08, lewisblake	make empty test_colocation_3d file
+- 2023-09-08, lewisblake	remove dead breakpoints
+- 2023-09-08, lewisblake	linters
+- 2023-09-08, lewisblake	remove notes to self
+- 2023-09-08, lewisblake	remove notes to self. convert to TODOs
+- 2023-09-08, lewisblake	save coldata objs w/ vertical layers in km
+- 2023-09-08, lewisblake	remove dev notes
+- 2023-09-07, lewisblake	remove some notes to self
+- 2023-09-07, lewisblake	black
+- 2023-09-07, lewisblake	modify CI
+- 2023-09-07, lewisblake	13
+- 2023-09-07, lewisblake	aeronet tests
+- 2023-09-07, lewisblake	isort
+- 2023-09-07, lewisblake	unit to km in tests
+- 2023-09-07, lewisblake	use hasattr()
+- 2023-09-07, lewisblake	formatting and units
+- 2023-09-07, lewisblake	change units on extinction vars
+- 2023-09-06, lewisblake	add some meta from coldata
+- 2023-09-06, lewisblake	figured out altitude units
+- 2023-09-05, lewisblake	profiles vized. need to change alt units
+- 2023-08-28, Jan Jurgen Griesfeller	remove some clutter and add small optimisations
+- 2023-08-28, Jan Jurgen Griesfeller	adjusted some colorbars
+- 2023-08-28, Jan Jurgen Griesfeller	WIP add error handling
+- 2023-08-25, Jan Jurgen Griesfeller	add more type definitions to pd.read_csv to avoid reading errors
+- 2023-08-25, Jan Jurgen Griesfeller	use preprocessed monthly files for speed
+- 2023-08-24, Jan Jurgen Griesfeller	WIP: optimise RAM usage #2
+- 2023-08-24, Jan Jurgen Griesfeller	WIP: optimise RAM usage
+- 2023-08-23, lewisblake	Merge branch 'main-dev' into icosco2
+- 2023-08-23, Jan Jurgen Griesfeller	try a more RAM saving approach by only reading in var matching lines at the 1st place
+- 2023-08-21, Jan Jurgen Griesfeller	Merge branch 'main-dev' into ipc-forests
+- 2023-08-15, Jan Jurgen Griesfeller	2nd try: fix to make sure all station ids are strings
+- 2023-08-15, Jan Jurgen Griesfeller	fix to make sure all station ids are strings
+- 2023-08-15, Jan Jurgen Griesfeller	update test for new version
+- 2023-08-15, Jan Jurgen Griesfeller	just try a couple of file encodings before determining it
+- 2023-08-15, Jan Jurgen Griesfeller	just try a couple of file encodings before determining it
+- 2023-08-14, Jan Jurgen Griesfeller	provide pandas with a valid encoding string for each file to read
+- 2023-08-14, Jan Jurgen Griesfeller	linting
+- 2023-08-14, Jan Jurgen Griesfeller	try to fix airnow files with strange file encodings
+- 2023-08-14, Jan Jurgen Griesfeller	adjust version and remove debugging clutter
+- 2023-08-14, Jan Jurgen Griesfeller	linting
+- 2023-08-14, Jan Jurgen Griesfeller	fix to make daily files read correctly
+- 2023-08-11, Alvaro Valdebenito	bump version
+- 2023-08-07, lewisblake	ColocatedDataLists class
+- 2023-08-07, lewisblake	_colocate_vertical_profile_gridded
+- 2023-08-07, lewisblake	add vmrco2
+- 2023-08-01, lewisblake	linters
+- 2023-08-01, Lewis Blake	put in place infrastructure for testing
+- 2023-08-01, Lewis Blake	start tests for icos
+- 2023-08-01, Lewis Blake	black
+- 2023-08-01, Lewis Blake	update regex to get stations
+- 2023-08-01, Lewis Blake	empty commit
+- 2023-08-01, lewisblake	some intial setup
+- 2023-07-25, lewisblake	change unit on metadata to m
+- 2023-07-25, lewisblake	clean up and testing
+- 2023-07-24, lewisblake	fix layer colocation bug
+- 2023-07-24, lewisblake	separate profiles by station_name
+- 2023-07-24, lewisblake	output profiles not profile
+- 2023-07-24, lewisblake	linters
+- 2023-07-24, lewisblake	skips tests that need new earlinet data
+- 2023-07-24, lewisblake	skip earlinet tests that need new data
+- 2023-07-24, lewisblake	clean up
+- 2023-07-22, lewisblake	check bug in profile output
+- 2023-07-22, lewisblake	correct profile output
+- 2023-07-22, lewisblake	add profile JSON_SUBDIRS
+- 2023-07-21, lewisblake	write profile json 1st draft
+- 2023-07-20, lewisblake	working on profile json output WIP
+- 2023-07-20, lewisblake	change vertical_layer for output
+- 2023-07-19, lewisblake	from __future__ import annotations
+- 2023-07-19, lewisblake	got the the point where need json output examples
+- 2023-07-19, lewisblake	Finding out why no data in output WIP
+- 2023-07-19, lewisblake	Finding out why no data WIP
+- 2023-07-19, lewisblake	add vertical_layer to coldata meta
+- 2023-07-19, lewisblake	use correct statistics terminology
+- 2023-07-18, lewisblake	figuring out why no data
+- 2023-07-18, lewisblake	can run through w/o crashing but modify output
+- 2023-07-18, lewisblake	named tuple output and type hints
+- 2023-07-17, lewisblake	output a namedtuple
+- 2023-07-17, lewisblake	major refactor into a helper function
+- 2023-07-17, lewisblake	got through  for loop, check colocation nans
+- 2023-07-14, lewisblake	prepared arguments for colocation helpers
+- 2023-07-13, lewisblake	strategy is to create 2D layer time_series in loop
+- 2023-07-12, lewisblake	4D model data in colocator. requires preprocessing
+- 2023-07-11, lewisblake	can't use model_level_number
+- 2023-07-11, lewisblake	profile layer limits also included
+- 2023-07-11, lewisblake	comment out colocation and profile layer limits from model entry
+- 2023-07-11, lewisblake	add station altitude to altitudes
+- 2023-07-10, lewisblake	filter obs_data by altitudes in vertical layer
+- 2023-07-10, lewisblake	start and end plus checker in function
+- 2023-07-10, lewisblake	merge main-dev to keep current Merge branch 'main-dev' into earlinet
+- 2023-07-04, Jan Jurgen Griesfeller	addes wetsoxsc and wetoxst definition
+- 2023-07-04, Jan Jurgen Griesfeller	add DOMOS path
+- 2023-07-04, Jan Jurgen Griesfeller	introduced wetoxst and wetoxsc as variables
+- 2023-07-04, Jan Jurgen Griesfeller	introduced wetoxst and wetoxsc as variables
+- 2023-07-04, Jan Jurgen Griesfeller	introduced wetoxst and wetoxsc as variables
+- 2023-07-03, Jan Jurgen Griesfeller	corrected wetso4 definition
+- 2023-06-21, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-06-21, augustinm	Merge pull request #884 from metno/fix883
+- 2023-06-21, lewisblake	remove forecast from mab and mb
+- 2023-06-19, Lewis Blake	Merge pull request #879 from metno/remove-marcopolo-842
+- 2023-06-19, lewisblake	remove from supported readers
+- 2023-06-19, lewisblake	remove from imported pyaerocom instance
+- 2023-06-19, Lewis Blake	Merge pull request #881 from avaldebe/update-python-support
+- 2023-06-19, lewisblake	reverse reverse
+- 2023-06-19, lewisblake	missed a spot
+- 2023-06-19, Alvaro Valdebenito	update RTD config
+- 2023-06-19, Alvaro Valdebenito	use python 3.9 syntax
+- 2023-06-19, Alvaro Valdebenito	update test_EbasNasaAmesFile_head_fix_error
+- 2023-06-19, Alvaro Valdebenito	drop py3.8
+- 2023-06-19, Alvaro Valdebenito	test py3.11
+- 2023-06-19, lewisblake	remove marcopolo. update to MEP
+- 2023-06-09, Jan Griesfeller	Merge pull request #869 from metno/fix864
+- 2023-06-09, lewisblake	different syntax
+- 2023-06-09, lewisblake	Merge branch 'main-dev' into fix864
+- 2023-06-09, Lewis Blake	Merge pull request #877 from metno/fix872
+- 2023-06-09, lewisblake	linter
+- 2023-06-09, augustinm	Merge pull request #876 from metno/fix872
+- 2023-06-09, Lewis Blake	Merge pull request #871 from metno/fix-test-3.11
+- 2023-06-09, lewisblake	include obs key in out
+- 2023-06-09, lewisblake	return only_use_in only if key exits
+- 2023-06-09, lewisblake	proxy nh4 and no3
+- 2023-06-09, lewisblake	split on space in string
+- 2023-06-09, lewisblake	NH4 and NO3
+- 2023-06-08, Jan Griesfeller	Merge pull request #875 from metno/griesie-proxyod550no3-874
+- 2023-06-08, Jan Jurgen Griesfeller	added proxyod550no3 variable
+- 2023-06-08, augustinm	Merge pull request #873 from metno/fix872
+- 2023-06-08, lewisblake	proxyod550oa only_use_in
+- 2023-06-07, lewisblake	remove import configparser
+- 2023-06-07, lewisblake	only_use_in
+- 2023-06-07, lewisblake	black
+- 2023-06-07, lewisblake	AttributeError
+- 2023-06-07, lewisblake	write model_only = True to menu.json
+- 2023-06-07, lewisblake	add model_only = True to proxys in vairables.ini
+- 2023-06-07, lewisblake	add proxy variables to glob_defaults
+- 2023-06-07, lewisblake	try updating toml
+- 2023-06-07, lewisblake	remove space
+- 2023-06-06, Jan Jurgen Griesfeller	adjusted default units for drydust and wetdust to mg m-2 d-1
+- 2023-06-05, charlien	fix test for 3.11
+- 2023-06-05, lewisblake	blacklist 3.5.0
+- 2023-06-05, lewisblake	fix iris <=3.4.1
+- 2023-05-30, lewisblake	WIP
+- 2023-05-23, lewisblake	remove dead code
+- 2023-05-23, lewisblake	colocation_layer_limits passed to new colocator
+- 2023-05-23, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/ipc-forests' into ipc-forests
+- 2023-05-23, Jan Jurgen Griesfeller	Merge branch 'griesie-865-adjust-aeroval-color-scales' into ipc-forests
+- 2023-05-23, Jan Jurgen Griesfeller	Merge branch 'griesie-865-adjust-aeroval-color-scales' into griesie_fix_825
+- 2023-05-23, Jan Jurgen Griesfeller	adjusted some colorscales to match those from the old idl tools
+- 2023-05-19, lewisblake	WIP
+- 2023-05-19, lewisblake	verticalprofile colocator WIP
+- 2023-05-19, lewisblake	more private methods to public to import other places, probs shoulda been public anyway
+- 2023-05-19, lewisblake	resolve_var_name no longer private
+- 2023-05-19, lewisblake	breakpoint in new colocator
+- 2023-05-19, lewisblake	setter and get obs_is_vertical_profile
+- 2023-05-19, Jan Jurgen Griesfeller	adjusted some color scales for map plotting to the ones used in the old aerocom-tools
+- 2023-05-19, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-05-19, lewisblake	attempt at obs_is_vertical_profile
+- 2023-05-19, lewisblake	figured a way to pass vertical profile form reader to ungriddeddata
+- 2023-05-16, Lewis Blake	Merge pull request #861 from metno/update-berlin-test
+- 2023-05-16, charlien	update test
+- 2023-05-15, lewisblake	Merge branch 'main-dev' into earlinet
+- 2023-05-15, Lewis Blake	Merge pull request #853 from metno/blake_testing_bias
+- 2023-05-12, lewisblake	figuring out why is_vertical_profile not being set
+- 2023-05-12, lewisblake	linters
+- 2023-05-12, lewisblake	linters
+- 2023-05-12, lewisblake	update values based on work with Augustin
+- 2023-05-12, lewisblake	factor to be multiplied by range of data
+- 2023-05-12, lewisblake	working on is_vertical_profile property
+- 2023-05-12, lewisblake	mab and mb factor and scales
+- 2023-05-12, lewisblake	change earlinet ts_type to hourly
+- 2023-05-12, lewisblake	skip stuff if var is altitude. may remove later
+- 2023-05-12, lewisblake	obs_is_3d
+- 2023-05-12, lewisblake	start a colocation 3d file
+- 2023-05-11, lewisblake	scale var and iqr-based range
+- 2023-05-11, lewisblake	remove weights from calculation
+- 2023-05-11, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-05-11, lewisblake	seeing where ungriddeddata fails WIP
+- 2023-05-08, Jan Jurgen Griesfeller	WIP on correcting the diurnal cycle calculation
+- 2023-05-08, Lewis Blake	Merge pull request #854 from avaldebe/update-codecov
+- 2023-05-08, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-05-05, lewisblake	working on getting through to aeroval with altitude
+- 2023-05-05, lewisblake	working on pushing through to aeroval
+- 2023-05-04, lewisblake	add ec355aer to variables.ini
+- 2023-05-04, Lewis Blake	update __version__
+- 2023-05-04, Lewis Blake	update paths
+- 2023-05-04, Lewis Blake	adjust number of files since onefile.txt updated
+- 2023-05-04, Lewis Blake	test_ReadEarlinet_read working
+- 2023-05-04, Lewis Blake	dtime needed .astype("datetime64[s]")
+- 2023-05-03, Lewis Blake	working on tets: figure out converting to station data
+- 2023-05-03, Lewis Blake	fix up get_file_list tests
+- 2023-05-03, Lewis Blake	fix up get_file_list
+- 2023-05-03, Lewis Blake	update paths.ini with temp path for testing
+- 2023-04-27, Alvaro Valdebenito	test against Ubuntu 22.04/Proj8 on CI
+- 2023-04-26, Alvaro Valdebenito	test entry points for extensions/plugins
+- 2023-04-26, Alvaro Valdebenito	update pytest options
+- 2023-04-25, Alvaro Valdebenito	update codecov GH action
+- 2023-04-27, Lewis Blake	working on tests but need to to think about directory structure
+- 2023-04-27, Lewis Blake	squeeze err
+- 2023-04-27, Lewis Blake	remove breakpoint()
+- 2023-04-27, Lewis Blake	use pandas.Timestamp().to_numpy()
+- 2023-04-27, Lewis Blake	Merge pull request #844 from metno/blake-obs-testing
+- 2023-04-26, Lewis Blake	working on tests
+- 2023-04-26, Lewis Blake	add ec355aer
+- 2023-04-26, Lewis Blake	change altitude in data_obj to be station lat. daa alt already defined
+- 2023-04-25, Lewis Blake	close to first draft. minor fixes for tomorrow morning
+- 2023-04-25, Lewis Blake	typing and fix assert barrier
+- 2023-04-25, Lewis Blake	read_file should be good now. test zdust though
+- 2023-04-24, lewisblake	Get updates from main-dev Merge branch 'main-dev' into blake_testing_bias
+- 2023-04-24, lewisblake	checking initial functionality wip
+- 2023-04-24, lewisblake	Get CI fixes from main-dev Merge branch 'main-dev' into blake-obs-testing
+- 2023-04-24, Lewis Blake	Merge pull request #852 from avaldebe/fix-CI
+- 2023-04-24, Alvaro Valdebenito	xarray < 2022.11.0
+- 2023-04-24, Alvaro Valdebenito	updete available gridded test years
+- 2023-04-24, Alvaro Valdebenito	update aeronet test file name
+- 2023-04-24, Alvaro Valdebenito	add deprecation warning
+- 2023-04-24, Alvaro Valdebenito	fix missing entry-points on tests
+- 2023-04-24, Alvaro Valdebenito	pandas < 2.0.0
+- 2023-04-24, Alvaro Valdebenito	serialize nan/inf/-inf to null
+- 2023-04-20, lewisblake	mb and mab unit to 1
+- 2023-04-20, lewisblake	include weights on mb and mab
+- 2023-04-14, Jan Jurgen Griesfeller	add some deepcopy calls
+- 2023-04-11, lewisblake	create a tmp var to frhe var obj. see if calling Varibale() directly causing problems
+- 2023-04-11, lewisblake	remove allow_nan=True in ebas.py
+- 2023-04-11, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/ipc-forests' into ipc-forests
+- 2023-04-11, Jan Jurgen Griesfeller	updated due to PR review
+- 2023-04-11, lewisblake	simplejson allow_nan=True
+- 2023-04-11, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-04-11, lewisblake	Variable()
+- 2023-04-11, lewisblake	only set data dummy to mean if defined
+- 2023-03-29, Lewis Blake	Merge pull request #835 from metno/bias823
+- 2023-03-29, Jan Griesfeller	Merge pull request #805 from metno/mep-paths
+- 2023-03-29, Jan Jurgen Griesfeller	linting
+- 2023-03-29, Jan Jurgen Griesfeller	replace fake with proxy in all variable names; linting
+- 2023-03-29, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-mep-paths
+- 2023-03-29, Jan Griesfeller	Merge pull request #841 from metno/griesie-fix-832-proxy-vars
+- 2023-03-28, Jan Jurgen Griesfeller	linting
+- 2023-03-28, Jan Jurgen Griesfeller	include one proxy variable ins the testing
+- 2023-03-28, Jan Jurgen Griesfeller	introduce the proxy variables from variables.ini; put od550aer in there
+- 2023-03-28, Jan Jurgen Griesfeller	add proxy variables
+- 2023-03-28, Jan Jurgen Griesfeller	linting
+- 2023-03-28, Jan Jurgen Griesfeller	added a simple metadata test
+- 2023-03-28, Jan Jurgen Griesfeller	take years without data for a species into account
+- 2023-03-28, Jan Jurgen Griesfeller	linting
+- 2023-03-27, Jan Jurgen Griesfeller	some more testing
+- 2023-03-27, Jan Jurgen Griesfeller	start ipcforests testing
+- 2023-03-27, Jan Jurgen Griesfeller	linting
+- 2023-03-27, Jan Jurgen Griesfeller	added data_searchdirno; there's one absolute path in path.ini now
+- 2023-03-27, Jan Jurgen Griesfeller	remove clutter
+- 2023-03-27, Jan Jurgen Griesfeller	linting
+- 2023-03-27, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-03-27, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into mep-paths
+- 2023-03-27, Jan Griesfeller	Merge pull request #838 from metno/griesie-fix-837
+- 2023-03-24, Jan Jurgen Griesfeller	linting
+- 2023-03-24, Jan Jurgen Griesfeller	remove private clutter
+- 2023-03-24, Jan Jurgen Griesfeller	remove private path
+- 2023-03-24, Jan Jurgen Griesfeller	linting with black version 23.1.0
+- 2023-03-24, Jan Jurgen Griesfeller	Merge branch 'griesie-fix-837' into griesie_fix_825
+- 2023-03-24, Jan Jurgen Griesfeller	adjust tests to new variables
+- 2023-03-24, Jan Jurgen Griesfeller	remove clutter
+- 2023-03-24, Jan Jurgen Griesfeller	Merge branch 'griesie-fix-837' into ipc-forests
+- 2023-03-24, Jan Jurgen Griesfeller	Merge branch 'griesie-fix-837' into griesie-mep-paths
+- 2023-03-24, Jan Jurgen Griesfeller	adjust CI to always update mirror IPs
+- 2023-03-24, Jan Jurgen Griesfeller	Pin xarray to smaller 2023.3.0
+- 2023-03-24, Jan Jurgen Griesfeller	linting
+- 2023-03-23, Jan Jurgen Griesfeller	linting
+- 2023-03-23, Jan Jurgen Griesfeller	linting
+- 2023-03-23, Jan Jurgen Griesfeller	move code location
+- 2023-03-23, Jan Jurgen Griesfeller	move code to plugins
+- 2023-03-23, Jan Jurgen Griesfeller	try to fix CI
+- 2023-03-23, Jan Jurgen Griesfeller	linting
+- 2023-03-23, Jan Jurgen Griesfeller	move apt update from docs yo venv
+- 2023-03-23, Jan Jurgen Griesfeller	add apt update to get recent IPs
+- 2023-03-23, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-03-23, Jan Jurgen Griesfeller	run tests outside of CI only for now
+- 2023-03-23, Jan Jurgen Griesfeller	8th try to get CI to work with these tests
+- 2023-03-23, Jan Jurgen Griesfeller	7th try to get CI to work with these tests
+- 2023-03-23, Jan Jurgen Griesfeller	6th try to get CI to work with these tests
+- 2023-03-23, Jan Jurgen Griesfeller	5th try to get CI to work with these tests
+- 2023-03-23, Jan Jurgen Griesfeller	3rd try to get CI to work with these tests
+- 2023-03-23, Jan Jurgen Griesfeller	2nd try to get CI to work with these tests
+- 2023-03-22, Jan Jurgen Griesfeller	try to fix CI
+- 2023-03-22, Jan Jurgen Griesfeller	try out simplified init on CI; rely on const for some setting
+- 2023-03-22, Jan Jurgen Griesfeller	use path from the const module instead of a manual setting
+- 2023-03-21, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-mep-paths
+- 2023-03-21, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_825
+- 2023-03-21, Jan Griesfeller	Merge pull request #803 from metno/griesie_fix_802
+- 2023-03-17, Jan Jurgen Griesfeller	adjust concdust parameters
+- 2023-03-17, Jan Jurgen Griesfeller	added parameters for drydust, wetdust, concdust variables
+- 2023-03-15, lewisblake	add defaults to new stats
+- 2023-03-15, Lewis Blake	Merge pull request #834 from metno/bias823
+- 2023-03-15, lewisblake	cleaner formulation
+- 2023-03-15, lewisblake	remove temporary comments in tests
+- 2023-03-14, lewisblake	first attempt at fixing tests
+- 2023-03-14, lewisblake	first attempt
+- 2023-03-08, Jan Jurgen Griesfeller	adjusted color scale once more
+- 2023-03-08, Jan Jurgen Griesfeller	adjusted color scale once more
+- 2023-03-08, Jan Jurgen Griesfeller	adjusted color scale
+- 2023-03-08, Lewis Blake	Merge pull request #831 from metno/fairmode829
+- 2023-03-07, Jan Jurgen Griesfeller	added dust_dep in var_web_info dictionary
+- 2023-03-07, Jan Jurgen Griesfeller	added maximum
+- 2023-03-07, Jan Jurgen Griesfeller	added colorbar for depdust variable
+- 2023-03-02, Jan Jurgen Griesfeller	added depdust
+- 2023-03-01, Jan Jurgen Griesfeller	adjustments to new iris API
+- 2023-02-27, lewisblake	update parameters based on michaels suggestion
+- 2023-02-27, Jan Jurgen Griesfeller	Merge branch 'griesie_fix_802' into ipc-forests
+- 2023-02-27, Jan Jurgen Griesfeller	Merge branch 'griesie_fix_802' into mep-paths
+- 2023-02-27, Jan Jurgen Griesfeller	Merge branch 'griesie_fix_802' into griesie_fix_825
+- 2023-02-27, Jan Jurgen Griesfeller	linting
+- 2023-02-27, Jan Jurgen Griesfeller	remove link to storeA
+- 2023-02-27, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_802
+- 2023-02-27, Lewis Blake	Merge pull request #827 from metno/surface-temp-updates
+- 2023-02-20, lewisblake	add new line
+- 2023-02-20, lewisblake	add test_make_dummy_model
+- 2023-02-20, Charlie Negri	Merge pull request #824 from metno/fix-scatterplot-freq-selection
+- 2023-02-20, lewisblake	remove unneeded space
+- 2023-02-20, lewisblake	apply merged filtering in all cases
+- 2023-02-20, lewisblake	Have dummy_model have data which is the mean of accepted values
+- 2023-02-20, Charlie Negri	keep the scatter_freq type to TsType here and convert to string on the _process_map_and_scat call
+- 2023-02-20, lewisblake	remove breakpoint()
+- 2023-02-20, lewisblake	reinsotruce since fialing tests
+- 2023-02-20, lewisblake	reintroruce since failing tests
+- 2023-02-20, lewisblake	remove dummy_model exeception in colocation.py
+- 2023-02-17, lewisblake	don't apply range filtering to dummy data
+- 2023-02-15, Charlie Negri	fix bug
+- 2023-02-15, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/griesie_fix_802' into griesie_fix_825
+- 2023-02-15, Jan Jurgen Griesfeller	added data location for the DOMOS project
+- 2023-02-15, Jan Jurgen Griesfeller	updated version
+- 2023-02-15, Charlie Negri	better name, fix print error
+- 2023-02-15, Charlie Negri	pick coarsest freq for scatter plot, consistent with what the map engine does
+- 2023-02-10, Jan Jurgen Griesfeller	removed raise MetaDataError for data without flags. See comment for details
+- 2023-02-08, Jan Jurgen Griesfeller	create fake wetdep variables for EBASMC obs network
+- 2023-02-07, Jan Jurgen Griesfeller	added udunit for mg/m2/h
+- 2023-02-07, Jan Jurgen Griesfeller	Merge branch 'main-dev' into ipc-forests
+- 2023-02-07, Jan Griesfeller	Merge pull request #818 from metno/ipc-forest-update-color_defaults
+- 2023-02-06, Jan Jurgen Griesfeller	added alias prmm = pr used in task4041
+- 2023-02-06, Lewis Blake	Merge pull request #816 from metno/fix-colormaps-mapengine
+- 2023-02-03, lewisblake	run black
+- 2023-02-03, lewisblake	implement color scales from Hilde
+- 2023-02-02, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-01-31, Alvaro Valdebenito	upldate black/isort
+- 2023-01-31, Charlie Negri	resample_time requires the frequency as a string
+- 2023-01-30, Jan Jurgen Griesfeller	added udunit for mg/m2/h
+- 2023-01-30, Charlie Negri	fix format
+- 2023-01-30, Charlie Negri	better handling the pickup of the coarsest frequency
+- 2023-01-30, Charlie Negri	better handling the pickup of the coarsest frequency
+- 2023-01-30, Charlie Negri	pick the coarsest from freqs, do not care about main_freq
+- 2023-01-30, Lewis Blake	Merge pull request #815 from metno/add-conco-cmap-info
+- 2023-01-30, Charlie Negri	compare main_freq to other freqs in the map engine, to pick the coarsest
+- 2023-01-26, Jan Jurgen Griesfeller	make compatible to Python versions < 3.10
+- 2023-01-26, Charlie Negri	.keys() method superfluous
+- 2023-01-25, Charlie Negri	fix formatting
+- 2023-01-25, Charlie Negri	make map engine use the defaults for variables colormap setting
+- 2023-01-25, Charlie Negri	add missing concco colormap info
+- 2023-01-23, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into ipc-forests
+- 2023-01-23, lewisblake	Merge branch 'mep-paths' of github.com:metno/pyaerocom into mep-paths
+- 2023-01-20, Jan Jurgen Griesfeller	adjust to increased default size
+- 2023-01-20, Jan Jurgen Griesfeller	added some iris subclass imports
+- 2023-01-20, Jan Jurgen Griesfeller	changes to make the MEP data pickable
+- 2023-01-20, Jan Jurgen Griesfeller	changed path of MEP dataset because of aggregated data (one file per station)
+- 2023-01-20, Jan Jurgen Griesfeller	increased default # of datapoints due to often bigger datasets
+- 2023-01-19, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/griesie_fix_802' into mep-paths
+- 2023-01-13, Lewis Blake	Merge pull request #798 from metno/surface-temp-updates
+- 2023-01-13, lewisblake	Merge branch 'main-dev' into mep-paths
+- 2023-01-13, lewisblake	Merge branch 'main-dev' into surface-temp-updates
+- 2023-01-13, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_802
+- 2023-01-13, Jan Griesfeller	Merge pull request #808 from metno/griesie-fix-759
+- 2023-01-13, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_802
+- 2023-01-13, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie-fix-759
+- 2023-01-12, Alvaro Valdebenito	Merge pull request #809 from metno/fix-lgeos-import
+- 2023-01-12, Alvaro Valdebenito	pin shapely version
+- 2023-01-12, Jan Jurgen Griesfeller	Merge branch 'griesie-fix-759' into ipc-forests
+- 2023-01-12, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/ipc-forests' into ipc-forests
+- 2023-01-12, Jan Jurgen Griesfeller	removed timeout
+- 2023-01-12, Jan Jurgen Griesfeller	changed methods check_write_access and check_dir_access to just rely on the OS to determine accessibility
+- 2023-01-11, Jan Jurgen Griesfeller	remove another storeA location
+- 2023-01-11, Jan Jurgen Griesfeller	switch to storeB
+- 2023-01-09, Jan Jurgen Griesfeller	Merge branch 'griesie_fix_802' into ipc-forests
+- 2023-01-06, lewisblake	change str comparision
+- 2023-01-06, lewisblake	only do merged filtering is not dummy_model
+- 2023-01-05, lewisblake	key breakpoints
+- 2023-01-05, lewisblake	change min from 170 to 1 for dummy variable
+- 2023-01-05, lewisblake	found where the problem occurs. colocation.py line 536
+- 2023-01-02, Jan Jurgen Griesfeller	change path to standard aerocm location
+- 2022-12-16, lewisblake	working through colocation.poy to see why the _df are coming back nans
+- 2022-12-15, lewisblake	Merge branch 'main-dev' into surface-temp-updates
+- 2022-12-15, lewisblake	add some tests
+- 2022-12-15, lewisblake	add test in cfg for MEP
+- 2022-12-15, lewisblake	swap order in config to remain alphabetical
+- 2022-12-15, lewisblake	increment version number
+- 2022-12-15, lewisblake	reverting to commit d7c34486
+- 2022-12-15, lewisblake	try setting defaults for testing of github
+- 2022-12-15, lewisblake	keep clause if const.has_lust_access
+- 2022-12-15, lewisblake	keep Alvaro's safegaurd
+- 2022-12-15, lewisblake	inialize reader with const.MEP_NAME
+- 2022-12-14, lewisblake	add MEP_NAME
+- 2022-12-14, lewisblake	going back to just "MEP"
+- 2022-12-14, lewisblake	add slahs after download again
+- 2022-12-14, lewisblake	update DATA_ID
+- 2022-12-14, lewisblake	adding MEP paths
+- 2022-12-13, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/griesie_fix_802' into main-dev
+- 2022-12-12, Lewis Blake	Merge pull request #801 from metno/harp-reader
+- 2022-12-09, Alvaro Valdebenito	cache venv on ubnuntu version
+- 2022-12-09, Alvaro Valdebenito	build docs on ubuntu-20.04
+- 2022-12-09, Alvaro Valdebenito	test Python 3.8/3.9/3.10 on ubuntu-20.04
+- 2022-12-08, Alvaro Valdebenito	MEP reader w/time at the middle of period
+- 2022-12-06, Alvaro Valdebenito	Merge branch 'main-dev' into harp-reader
+- 2022-12-06, Alvaro Valdebenito	Merge pull request #800 from metno/aeroval-path-fixture
+- 2022-12-06, Alvaro Valdebenito	MEP reader add debug messages
+- 2022-12-06, Alvaro Valdebenito	remove MEP progress bar
+- 2022-12-06, Alvaro Valdebenito	MEP stations from xr.Dataset
+- 2022-12-06, Jan Jurgen Griesfeller	changes to work on storeB
+- 2022-12-05, Alvaro Valdebenito	MEP aux var/functions from xr.Dataset
+- 2022-12-05, Alvaro Valdebenito	clean up reader
+- 2022-12-05, Alvaro Valdebenito	temporary path on aeroval test_setup CAMS84
+- 2022-12-05, Alvaro Valdebenito	type:ignore on aeroval test_setup
+- 2022-12-05, Alvaro Valdebenito	import pytest module on aeroval test_setup
+- 2022-12-05, Alvaro Valdebenito	Merge pull request #784 from metno/harp-reader
+- 2022-12-05, Alvaro Valdebenito	update xarray requirement for conda envs
+- 2022-12-05, Alvaro Valdebenito	clean up MEP test xfail decorator
+- 2022-12-05, Alvaro Valdebenito	rename HARP to MEP
+- 2022-12-05, Alvaro Valdebenito	HARP/MEP tests need lustre access
+- 2022-12-02, Alvaro Valdebenito	refactor HARP/MEP Station and Measurement classes
+- 2022-12-02, Alvaro Valdebenito	annotate HARP/MEP Station and Measurement classes
+- 2022-12-02, Alvaro Valdebenito	clean up HARP/MEP aux functions
+- 2022-12-02, Alvaro Valdebenito	implement HARP/MEP read(files=,...)
+- 2022-12-02, Alvaro Valdebenito	HARP/MEP read single file, WIP
+- 2022-12-02, Alvaro Valdebenito	clean up ReadHARP class
+- 2022-12-02, Alvaro Valdebenito	refactor HARP/MEP reader.DATASET_NAME reader.DEFAULT_VARS reader.PROVIDES_VARIABLES
+- 2022-12-02, Alvaro Valdebenito	test HARP/MEP reader.DATASET_NAME reader.DEFAULT_VARS reader.PROVIDES_VARIABLES
+- 2022-12-02, Alvaro Valdebenito	refactor HARP/MEP reader.FOUND_FILES reader.STATIONS
+- 2022-12-02, Alvaro Valdebenito	test HARP/MEP reader.FOUND_FILES reader.STATIONS
+- 2022-12-01, Alvaro Valdebenito	Merge branch 'main-dev' into harp-reader
+- 2022-12-01, Alvaro Valdebenito	Merge pull request #797 from metno/fix-local-ci
+- 2022-12-01, Alvaro Valdebenito	test HARP MEP read, WIP
+- 2022-12-01, lewisblake	fixed splitting on colon in case of url
+- 2022-12-01, lewisblake	temperature is actually 3D
+- 2022-12-01, lewisblake	first try at giving ts better scale
+- 2022-12-01, lewisblake	Add name for surface temperature on web
+- 2022-11-30, lewisblake	remove breakpoint, keep lustre_avail
+- 2022-11-30, lewisblake	increase years to 2023
+- 2022-11-30, lewisblake	lustre_avail
+- 2022-11-30, lewisblake	update filename from lustre
+- 2022-11-30, lewisblake	add lustre_avail to tests if fail on lustre
+- 2022-11-29, Alvaro Valdebenito	Merge branch 'main-dev' into harp-reader
+- 2022-11-29, Alvaro Valdebenito	Merge pull request #796 from metno/ubuntu-22.04
+- 2022-11-29, Alvaro Valdebenito	clean up HARP reader
+- 2022-11-29, Alvaro Valdebenito	minor test update
+- 2022-11-29, Alvaro Valdebenito	solve circular import
+- 2022-11-29, Alvaro Valdebenito	remove duplicated property
+- 2022-11-29, Alvaro Valdebenito	use __future__.annotations
+- 2022-11-29, Alvaro Valdebenito	Merge branch 'main-dev' into harp-reader
+- 2022-11-29, Alvaro Valdebenito	use importlib_resources
+- 2022-11-29, Alvaro Valdebenito	set UDUNITS2_XML_PATH in tox envs
+- 2022-11-29, Alvaro Valdebenito	Python 3.11 venv on Ubuntu 22.04
+- 2022-11-29, Alvaro Valdebenito	Merge pull request #794 from avaldebe/temp
+- 2022-11-29, Alvaro Valdebenito	remove conda Python 3.11 from CI
+- 2022-11-28, Alvaro Valdebenito	add temperature ebas def
+- 2022-11-28, Alvaro Valdebenito	update cf-units version
+- 2022-11-23, Daniel Heinesen	Tries to optimize the reading
+- 2022-11-23, Daniel Heinesen	Adds fakedrydep and totdep
+- 2022-11-15, Lewis Blake	Merge pull request #787 from metno/obs_only_plot_defaults
+- 2022-11-15, lewisblake	remove not relevant changes
+- 2022-11-15, lewisblake	augustin global defaults
+- 2022-11-15, lewisblake	porj para WIP first attempt
+- 2022-11-14, Daniel Heinesen	Merge branch 'main-dev' into ipc-forests
+- 2022-11-14, Daniel Heinesen	Small change
+- 2022-11-11, Daniel Heinesen	Reader can now convert from conc to vmr
+- 2022-11-10, Daniel Heinesen	first pass at harp reader
+- 2022-11-08, Alvaro Valdebenito	Merge pull request #783 from avaldebe/fix-conda-env
+- 2022-11-07, Alvaro Valdebenito	allow xarray 2022.11.0
+- 2022-11-07, Alvaro Valdebenito	let test fail on Python 3.11 conda env
+- 2022-11-07, Alvaro Valdebenito	add python 3.11 conda env
+- 2022-11-07, Alvaro Valdebenito	use importlib_resources
+- 2022-11-07, Alvaro Valdebenito	exclude xarray 2022.11.0
+- 2022-11-04, Alvaro Valdebenito	bump version
+- 2022-11-03, Lewis Blake	Merge pull request #777 from metno/statistics_json
+- 2022-11-03, lewisblake	statistics.json flags
+- 2022-11-03, Daniel Heinesen	Merge pull request #741 from metno/add_ts_annotations
+- 2022-11-03, Lewis Blake	Merge pull request #761 from metno/obs_only_stats
+- 2022-11-03, Lewis Blake	Merge pull request #776 from metno/split-map-files-by-year
+- 2022-11-03, lewisblake	swap order of outputs lines 734
+- 2022-10-31, Alvaro Valdebenito	Merge pull request #760 from metno/python3.11
+- 2022-10-31, Alvaro Valdebenito	Revert "install netCDF dependencies on CI for Python 3.11"
+- 2022-10-31, Alvaro Valdebenito	update GH actions, close #763
+- 2022-10-31, Daniel Heinesen	Adds more variables to task4041
+- 2022-10-26, Daniel Heinesen	Adds vmr to conc for aerocom model data, in a compicated way
+- 2022-10-26, lewisblake	first attempt
+- 2022-10-26, Lewis Blake	Merge pull request #758 from metno/split-map-files-by-year
+- 2022-10-26, Daniel Heinesen	More variables for task4041
+- 2022-10-26, lewisblake	give prmm more appropriate plotting range
+- 2022-10-25, Alvaro Valdebenito	do not cache Python 3.11 tox evn on CI
+- 2022-10-25, Alvaro Valdebenito	run CI every month on main-dev
+- 2022-10-25, Alvaro Valdebenito	install netCDF dependencies on CI for Python 3.11
+- 2022-10-25, Alvaro Valdebenito	test Python 3.11 on CI
+- 2022-10-24, lewisblake	updated failing tests
+- 2022-10-24, lewisblake	remove breakpoint. update tests
+- 2022-10-24, lewisblake	split on period
+- 2022-10-24, lewisblake	give period its own _
+- 2022-10-24, lewisblake	move period to obs info
+- 2022-10-24, lewisblake	accounting for period
+- 2022-10-24, lewisblake	update tests to include period
+- 2022-10-24, lewisblake	_process_map_and_scat by [period]
+- 2022-10-24, lewisblake	map_name include period
+- 2022-10-11, Daniel Heinesen	Adds multiple variables
+- 2022-10-06, Daniel Heinesen	Can now read new model data
+- 2022-10-06, Daniel Heinesen	Merge pull request #721 from metno/2022-reporting
+- 2022-10-05, Lewis Blake	Merge pull request #750 from metno/concpm10bug
+- 2022-10-03, lewisblake	remove breakpoint
+- 2022-10-03, lewisblake	restructure to make sense
+- 2022-10-03, lewisblake	is -> ==
+- 2022-10-03, lewisblake	initial fiz in EEA reader if first row has no unit
+- 2022-09-29, Jan Griesfeller	Merge pull request #737 from metno/griesie_fix_652
+- 2022-09-26, Daniel Heinesen	Merge branch 'main-dev' into ipc-forests
+- 2022-09-26, Daniel Heinesen	Fixes varcollection test
+- 2022-09-26, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_652
+- 2022-09-26, Daniel Heinesen	Fixes tests for read_ebas
+- 2022-09-26, Daniel Heinesen	Merge branch 'main-dev' into 2022-reporting
+- 2022-09-26, Daniel Heinesen	Merge branch 'main-dev' into add_ts_annotations
+- 2022-09-26, Daniel Heinesen	Adds total dep, check quality flags, and uses only the lowest sea salt correction
+- 2022-09-26, Daniel Heinesen	Merge pull request #744 from avaldebe/matplotlib-3.6.0
+- 2022-09-23, Alvaro Valdebenito	resolve matplotlib 3.6.0 deprecation warnings
+- 2022-09-23, Alvaro Valdebenito	resolve pandas 1.5.0 deprecation warning
+- 2022-09-23, Alvaro Valdebenito	old cartopy is incompatible with new matplotlib
+- 2022-09-23, Alvaro Valdebenito	ignore PendingDeprecationWarning on dependencies
+- 2022-09-22, Daniel Heinesen	Adds option for ts_annotation for aeroval config
+- 2022-09-19, Daniel Heinesen	Changes creation of fake emep data to make tests work with new emep reading
+- 2022-09-19, Daniel Heinesen	Adds concoxn as seperate variable, and makes one more test pass
+- 2022-09-16, Jan Jurgen Griesfeller	linting
+- 2022-09-16, Jan Jurgen Griesfeller	add import of StationCoordinateError
+- 2022-09-16, Jan Jurgen Griesfeller	linting
+- 2022-09-16, Jan Jurgen Griesfeller	remove matplotlub deprecation warning
+- 2022-09-16, Jan Jurgen Griesfeller	added StationCoordinateError to exceptions to skip over during obs data reading
+- 2022-09-15, Lewis Blake	Merge pull request #735 from metno/actually_fix_dummy_model_732
+- 2022-09-15, lewisblake	remove breakpoint
+- 2022-09-15, lewisblake	fix day_since_start
+- 2022-09-15, Daniel Heinesen	Adds some docstrings to metadata.py
+- 2022-09-15, Daniel Heinesen	Changes how and where ts_type is calculated
+- 2022-09-15, Daniel Heinesen	Adds sea salt correction to so4 dep
+- 2022-09-12, Daniel Heinesen	Sampler type filter added
+- 2022-09-12, Daniel Heinesen	First working version of reader
+- 2022-09-09, Lewis Blake	Merge pull request #722 from metno/docnegvalues708
+- 2022-09-09, Lewis Blake	Merge pull request #723 from metno/ts_files_720
+- 2022-09-08, Daniel Heinesen	Halfway through making reader
+- 2022-09-05, Lewis Blake	make ts file regions consistent
+- 2022-09-05, Daniel Heinesen	Makes some more tests work, and removes some commented code snippets
+- 2022-09-05, Lewis Blake	document #708
+- 2022-09-05, Daniel Heinesen	Merge with main-dev
+- 2022-09-05, Daniel Heinesen	Merge branch 'main-dev' into 2022-reporting
+- 2022-08-30, Alvaro Valdebenito	Merge pull request #703 from avaldebe/plugins
+- 2022-08-24, Daniel Heinesen	Acutally gets day fix to work
+- 2022-08-23, Alvaro Valdebenito	use longer/descriptive variable names
+- 2022-08-23, Alvaro Valdebenito	clean up dependencies
+- 2022-08-22, Alvaro Valdebenito	Merge branch 'main-dev' into plugins
+- 2022-08-22, Alvaro Valdebenito	Merge pull request #702 from avaldebe/log-file
+- 2022-08-22, Alvaro Valdebenito	Merge branch 'main-dev' into log-file
+- 2022-08-22, Alvaro Valdebenito	set log filename from env variable, close #687
+- 2022-08-22, Alvaro Valdebenito	Merge branch 'main-dev' into plugins
+- 2022-08-19, Jan Griesfeller	Merge pull request #715 from metno/griesie_fix_710
+- 2022-08-18, Jan Jurgen Griesfeller	make it work with xarray 2022.6.0 and optimise
+- 2022-08-16, Lewis Blake	actually pass ts_type_preferred to to_station_data
+- 2022-08-15, Daniel Heinesen	Fixes freq bug
+- 2022-08-15, Lewis Blake	Merge pull request #714 from metno/fix-daily-ts
+- 2022-08-15, Lewis Blake	we think we fixed it
+- 2022-08-15, Daniel Heinesen	Fixes bug where daily data is avg out when lower freq is present for same station in same time span
+- 2022-08-15, Daniel Heinesen	Fixes bug of daily stations disappearing with higher ts_types are included in same timespan
+- 2022-08-10, Daniel Heinesen	starts ipc forests reader
+- 2022-08-08, Daniel Heinesen	Fixes error in regional diurnal series
+- 2022-08-05, Alvaro Valdebenito	Merge branch 'main-dev' into log-file
+- 2022-08-05, Alvaro Valdebenito	Merge branch 'main-dev' into plugins
+- 2022-08-04, Lewis Blake	Merge pull request #696 from metno/increase_test_coverage
+- 2022-08-04, Lewis Blake	remove parameterize
+- 2022-08-04, Lewis Blake	str() instead of __str__()
+- 2022-08-04, Lewis Blake	pragma no cover add_station_data
+- 2022-08-04, Lewis Blake	Alvaro changes 1
+- 2022-08-04, Lewis Blake	pragma no cover _print_read_info (not used)
+- 2022-08-03, Lewis Blake	Merge branch 'main-dev' into increase_test_coverage
+- 2022-08-03, Lewis Blake	Merge pull request #707 from metno/split_ts_files_647_2
+- 2022-08-03, Lewis Blake	rest of test_ungriddeddata.py
+- 2022-08-03, Lewis Blake	pragma no cover plot_station_coordinates
+- 2022-08-03, Lewis Blake	pragma no cover plot_station_timeseries
+- 2022-08-03, Lewis Blake	up to remove outliers
+- 2022-08-03, Lewis Blake	pragma no cover unused get_variable_data
+- 2022-08-02, Alvaro Valdebenito	no cover
+- 2022-08-02, Lewis Blake	test_intersection
+- 2022-08-02, Alvaro Valdebenito	no cover
+- 2022-08-02, Lewis Blake	correct pragma no coer
+- 2022-08-02, Lewis Blake	Is_optical_density possibly depricated
+- 2022-08-02, Lewis Blake	test edge case for unitconv_wet_dept_from_emep
+- 2022-08-02, Lewis Blake	test_extract
+- 2022-08-02, Alvaro Valdebenito	no cover
+- 2022-08-02, Alvaro Valdebenito	move L2 readers to extras submodule
+- 2022-08-02, Lewis Blake	fix text_remove_outliers
+- 2022-08-02, Lewis Blake	Merge branch 'main-dev' into increase_test_coverage
+- 2022-08-02, Alvaro Valdebenito	check installed packages w/importlib.metadata
+- 2022-08-02, Lewis Blake	Merge branch 'main-dev' into split_ts_files_647_2. Alvaro fix
+- 2022-07-13, Alvaro Valdebenito	set log filename from env variable, close #687
+- 2022-08-02, Alvaro Valdebenito	Merge pull request #711 from avaldebe/fix-corr
+- 2022-08-02, Alvaro Valdebenito	Merge branch 'fix-corr' into plugins
+- 2022-08-02, Alvaro Valdebenito	fix IndexError on xarray 2022.6.0, close #710
+- 2022-08-02, Alvaro Valdebenito	update conda env
+- 2022-08-01, Lewis Blake	up to test_extract WIP
+- 2022-08-01, Lewis Blake	pragma no cover aerocom file name (depricated)
+- 2022-08-01, Lewis Blake	#pragma: no cover quickplot_map
+- 2022-08-01, Lewis Blake	remove depreicated to_time_series_single_coord
+- 2022-08-01, Lewis Blake	doing what I can up to get_altitude
+- 2022-07-26, Lewis Blake	89% coverage test_varnameinfo.py
+- 2022-07-26, Lewis Blake	check to see if is_optical_density exits
+- 2022-07-25, Lewis Blake	70% varnameinfo tested
+- 2022-07-25, Lewis Blake	start test_varnameinfo
+- 2022-07-25, Lewis Blake	remove unused test
+- 2022-07-25, Lewis Blake	plausible coldatatojson_helpers2 tested
+- 2022-07-25, Lewis Blake	type anotations
+- 2022-07-25, Lewis Blake	empty comiit
+- 2022-07-22, Lewis Blake	through _create_diurnal_weekly_data_object
+- 2022-07-22, Lewis Blake	test_trend_helpers except _get_yearly
+- 2022-07-22, Lewis Blake	pre-commit
+- 2022-07-22, Alvaro Valdebenito	update black version
+- 2022-07-22, Lewis Blake	start tests_trends_helpers
+- 2022-07-22, Lewis Blake	black & isort
+- 2022-07-22, Lewis Blake	address TODO ensureing pandas.Series
+- 2022-07-22, Lewis Blake	finish test unit helpers
+- 2022-07-22, Lewis Blake	read ebas tests WIP. return later
+- 2022-07-22, Lewis Blake	saving ebas WIP. return later
+- 2022-07-20, Lewis Blake	test_helpers_units WIP
+- 2022-07-20, Lewis Blake	remove tests for neg values until implemented
+- 2022-07-19, Lewis Blake	attempting #605
+- 2022-07-19, Lewis Blake	black igjen
+- 2022-07-14, Alvaro Valdebenito	move GHOST aux func to submodule
+- 2022-07-14, Alvaro Valdebenito	read GHOST mete keys from TOML file
+- 2022-07-14, Alvaro Valdebenito	move GHOST mete keys to plugin
+- 2022-07-14, Alvaro Valdebenito	provide GHOST reader as entry point
+- 2022-07-14, Alvaro Valdebenito	move GHOST reader to own plugin submodule
+- 2022-07-14, Alvaro Valdebenito	provide GAW reader as entry point
+- 2022-07-14, Alvaro Valdebenito	move GAW reader to own plugin submodule
+- 2022-07-14, Alvaro Valdebenito	rename mscw_ctm submodules
+- 2022-07-14, Alvaro Valdebenito	move mscw ctm reader helpers to plugin
+- 2022-07-14, Alvaro Valdebenito	provide emep variables in TOML file
+- 2022-07-13, Alvaro Valdebenito	move emep_variables.ino to mswc_ctm plugin
+- 2022-07-18, Alvaro Valdebenito	provide mscw ctm reader as entry point
+- 2022-07-18, Alvaro Valdebenito	move mscw_ctm to own plugin submodule
+- 2022-07-18, Alvaro Valdebenito	use flit for entry points on editable install
+- 2022-07-18, Lewis Blake	remove comments
+- 2022-07-18, Lewis Blake	black
+- 2022-07-18, Lewis Blake	passes local testing
+- 2022-07-18, Lewis Blake	first attempt
+- 2022-07-11, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into 2022-reporting
+- 2022-07-11, Daniel Heinesen	Temp removal of vmro3 as own emep var
+- 2022-07-11, Daniel Heinesen	Adds new variables for 2022 reporting
+- 2022-07-08, Lewis Blake	Merge branch 'main-dev' into increase_test_coverage
+- 2022-07-08, Lewis Blake	yet more linting
+- 2022-07-08, Lewis Blake	more linters
+- 2022-07-08, Lewis Blake	linting
+- 2022-07-08, Lewis Blake	finished testing aux_read_cubes
+- 2022-07-08, Jan Griesfeller	Merge pull request #682 from metno/griesie_fix_640
+- 2022-07-08, Jan Jurgen Griesfeller	linting
+- 2022-07-08, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_640
+- 2022-07-08, Jan Jurgen Griesfeller	set self.files again
+- 2022-07-07, Jan Jurgen Griesfeller	remove unwanted check for self.files
+- 2022-07-07, Lewis Blake	upt to test_mmr_from_vmr
+- 2022-07-07, Jan Jurgen Griesfeller	adjust testdata-minimal filename
+- 2022-07-07, Jan Jurgen Griesfeller	polishing after review
+- 2022-07-06, Jan Jurgen Griesfeller	remove clutter
+- 2022-07-06, Lewis Blake	begin testing aux_read_cubes
+- 2022-07-06, Jan Jurgen Griesfeller	make use of np.diff
+- 2022-07-06, Jan Jurgen Griesfeller	linting
+- 2022-07-06, Lewis Blake	attempt -> e
+- 2022-07-06, Jan Jurgen Griesfeller	adjust testing to new fixture system, add some tests
+- 2022-07-06, Jan Jurgen Griesfeller	adjust testing to new fixture system
+- 2022-07-06, Jan Jurgen Griesfeller	linting
+- 2022-07-06, Jan Jurgen Griesfeller	linting
+- 2022-07-06, Jan Jurgen Griesfeller	remove caching of found files; should noty matter match due to OS caching
+- 2022-07-06, Lewis Blake	both ways for AttributeErrors
+- 2022-07-06, Lewis Blake	test AttributeError if no od_ref(s)
+- 2022-07-06, Lewis Blake	remove breakpoint
+- 2022-07-06, Lewis Blake	test_calc_abs550aer
+- 2022-07-06, Lewis Blake	fix logic if od_ref not in data. or -> and
+- 2022-07-06, Lewis Blake	Merge pull request #689 from metno/oceans674
+- 2022-07-06, Lewis Blake	minor clean up
+- 2022-07-05, Alvaro Valdebenito	Merge pull request #694 from avaldebe/no-tempfile
+- 2022-07-05, Alvaro Valdebenito	run tests sequentally on CI
+- 2022-07-05, Alvaro Valdebenito	run test in parellel on CI
+- 2022-07-05, Alvaro Valdebenito	provide config_file as a fixtue
+- 2022-07-05, Lewis Blake	reduce number of calls to get_mask_value
+- 2022-07-05, Alvaro Valdebenito	provide local DB path as fixture
+- 2022-07-05, Lewis Blake	isort
+- 2022-07-05, Lewis Blake	working version passing local CI + black
+- 2022-07-05, Alvaro Valdebenito	provide aod_cube as fixture
+- 2022-07-05, Alvaro Valdebenito	consolidate iris_io test fixtures
+- 2022-07-05, Alvaro Valdebenito	deliver TM5/EMEP file paths from fixture
+- 2022-07-05, Alvaro Valdebenito	use tests.fixtures.tm5.CHECK_PATHS
+- 2022-07-05, Alvaro Valdebenito	rename tests.fixtures.data_access.TestData
+- 2022-07-05, Alvaro Valdebenito	provide fake/empty netcdf as fixture
+- 2022-07-05, Alvaro Valdebenito	clean unused test file
+- 2022-07-05, Alvaro Valdebenito	use tempfile.mkdtemp instead of gettempdir #692
+- 2022-07-05, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_640
+- 2022-07-04, lewisblake	remove dead code
+- 2022-07-04, lewisblake	define the regions by htap netcdf files
+- 2022-07-04, lewisblake	remove global-land-mask dep. no conda version
+- 2022-07-01, lewisblake	start testing get_regions_coords
+- 2022-07-01, lewisblake	global-land-mask dependency
+- 2022-07-01, lewisblake	special handling for oceans
+- 2022-06-28, augustinm	Merge pull request #688 from metno/pya_cli_ex670
+- 2022-06-28, lewisblake	cape town coords
+- 2022-06-28, lewisblake	include tests
+- 2022-06-28, lewisblake	checking withini region with wrapping lon vlaues
+- 2022-06-28, Daniel Heinesen	Adds SO4 and NH4 as pm10 and 2.5
+- 2022-06-27, Daniel Heinesen	Makes NO work
+- 2022-06-27, lewisblake	Add pyaeroval cli example
+- 2022-06-24, Lewis Blake	Merge pull request #683 from metno/dummy_cube_latlon_fix
+- 2022-06-24, lewisblake	requested changes 2
+- 2022-06-24, lewisblake	requested changes
+- 2022-06-24, lewisblake	remove .geonum from pytest cache
+- 2022-06-24, lewisblake	remove parantehsis
+- 2022-06-24, lewisblake	modify strm test to not fail is FileNotFoundError
+- 2022-06-24, lewisblake	try caching geonum
+- 2022-06-24, lewisblake	Merge branch 'dummy_cube_latlon_fix' of github.com:metno/pyaerocom into dummy_cube_latlon_fix
+- 2022-06-24, lewisblake	remove breakpoint()
+- 2022-06-23, Alvaro Valdebenito	cache srtm geonum files
+- 2022-06-23, lewisblake	cube only over 1 year for performance
+- 2022-06-23, lewisblake	test make dummy cube
+- 2022-06-23, Alvaro Valdebenito	update ignored RuntimeWarning messages
+- 2022-06-23, Alvaro Valdebenito	update cache venv on CI
+- 2022-06-23, Daniel Heinesen	more changes to reporting
+- 2022-06-23, lewisblake	Merge branch 'main-dev' into dummy_cube_latlon_fix
+- 2022-06-23, lewisblake	space after first import
+- 2022-06-23, Lewis Blake	Merge pull request #686 from metno/fix-ci
+- 2022-06-22, Alvaro Valdebenito	add legacy-resolver options on docs
+- 2022-06-22, Alvaro Valdebenito	use pip legacy-resolver o install cartopy on CI
+- 2022-06-22, Alvaro Valdebenito	Revert "run CI on Ubuntu 22.04"
+- 2022-06-22, Alvaro Valdebenito	run CI on Ubuntu 22.04
+- 2022-06-22, Alvaro Valdebenito	Revert "add numpy to tox build env"
+- 2022-06-22, Alvaro Valdebenito	add numpy to tox build env
+- 2022-06-22, Jan Jurgen Griesfeller	take into account 1 line files (np.min fails there)
+- 2022-06-22, Daniel Heinesen	Various changes to make new variables actually work
+- 2022-06-22, lewisblake	correct type annotation and clean assert
+- 2022-06-22, lewisblake	remove None option
+- 2022-06-22, lewisblake	new type annotations
+- 2022-06-22, lewisblake	Use sequence type hint
+- 2022-06-22, lewisblake	Correct typing
+- 2022-06-22, lewisblake	fix lat/lon mix up
+- 2022-06-21, Jan Jurgen Griesfeller	sort the time series if needed
+- 2022-06-21, lewisblake	calc_vmr
+- 2022-06-21, Daniel Heinesen	Adds so4 total and seasalt corrected
+- 2022-06-21, Daniel Heinesen	Adds pm split to EC and OC
+- 2022-06-16, Lewis Blake	Merge pull request #675 from metno/update-readable-obs-669
+- 2022-06-15, Daniel Heinesen	Merge pull request #644 from metno/fix-point-midday
+- 2022-06-15, Alvaro Valdebenito	Merge branch 'main-dev' into fix-point-midday
+- 2022-06-15, lewisblake	Requested changes to supported data. No EARLINET
+- 2022-06-13, Alvaro Valdebenito	Merge pull request #547 from avaldebe/fixtures
+- 2022-06-13, Daniel Heinesen	more formatting....
+- 2022-06-13, Daniel Heinesen	Merge branch 'main-dev' into fix-point-midday
+- 2022-06-13, Daniel Heinesen	Formatting
+- 2022-06-09, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-06-09, lewisblake	update docs for list of readable obs
+- 2022-06-07, Lewis Blake	Merge pull request #666 from lewisblake/split-ts-files-647
+- 2022-06-07, Lewis Blake	Merge pull request #1 from metno/split-ts-files-647
+- 2022-06-07, Alvaro Valdebenito	Merge pull request #668 from avaldebe/fix-install-docs
+- 2022-06-07, Alvaro Valdebenito	fix pip update instructions
+- 2022-06-07, Jan Griesfeller	Merge pull request #659 from metno/griesie_fix_645
+- 2022-06-07, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-06-03, lewisblake	hm to heatmap
+- 2022-06-02, lewisblake	name change _ass_heatmap_entry_json
+- 2022-06-02, Jan Jurgen Griesfeller	update testdata filename #2
+- 2022-06-02, lewisblake	isort setupclasses.py
+- 2022-06-02, lewisblake	pyaerocom version in cfg_*.json
+- 2022-06-01, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_645
+- 2022-06-01, Jan Griesfeller	Merge pull request #661 from metno/griesie_fix_658
+- 2022-06-01, Lewis Blake	Merge pull request #662 from lewisblake/split-ts-files-647
+- 2022-06-01, lewisblake	try inlcuding pya version in output exp json
+- 2022-06-01, lewisblake	change tests to accomodate new hm/ts file format
+- 2022-06-01, lewisblake	format w/ black after deleting dead code
+- 2022-06-01, Alvaro Valdebenito	ignore pandas timstep conversion warning
+- 2022-06-01, lewisblake	isort
+- 2022-06-01, lewisblake	format with black
+- 2022-06-01, Jan Jurgen Griesfeller	corrected copy & paste error
+- 2022-06-01, lewisblake	inlcuding test
+- 2022-06-01, lewisblake	working version
+- 2022-06-01, Jan Jurgen Griesfeller	make linting happy
+- 2022-06-01, Jan Jurgen Griesfeller	corrected heatmap data when entire season is full of NaNs
+- 2022-06-01, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-05-31, Jan Jurgen Griesfeller	update testdata filename
+- 2022-05-31, Jan Jurgen Griesfeller	adjust to updated test data
+- 2022-05-31, Jan Jurgen Griesfeller	remove breakpoint
+- 2022-05-31, Jan Jurgen Griesfeller	fix linting
+- 2022-05-31, Jan Jurgen Griesfeller	try to fix CI
+- 2022-05-31, Lewis Blake	Merge pull request #660 from lewisblake/split-ts-files-647
+- 2022-05-31, lewisblake	inital implementation to test on ppi
+- 2022-05-31, Jan Jurgen Griesfeller	updated link to new testdata version
+- 2022-05-31, Jan Jurgen Griesfeller	adjust WORLD filter to use ALL_REGION_NAME
+- 2022-05-31, Jan Jurgen Griesfeller	moved definition of ALL_REGION_NAME to region_defs.py
+- 2022-05-31, Jan Jurgen Griesfeller	1st try to replace WORLD with ALL in used filter names
+- 2022-05-31, lewisblake	first attempt, not tested  WIP
+- 2022-05-31, lewisblake	Merge branch 'main-dev' of https://github.com/metno/pyaerocom into main-dev
+- 2022-05-30, Alvaro Valdebenito	includes tests on manifest
+- 2022-05-30, Alvaro Valdebenito	includes tests on manifest
+- 2022-05-30, Alvaro Valdebenito	Merge pull request #655 from avaldebe/update-conda-env
+- 2022-05-30, Alvaro Valdebenito	update maniifest
+- 2022-05-30, Alvaro Valdebenito	try conda-forge suggestion
+- 2022-05-30, Alvaro Valdebenito	update conda env
+- 2022-05-30, Jan Griesfeller	Merge pull request #653 from metno/griesie_fix639
+- 2022-05-30, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-05-30, Jan Jurgen Griesfeller	adjust expression to reviewer's taste
+- 2022-05-27, Jan Jurgen Griesfeller	move use_dummy init within the seasons loop
+- 2022-05-27, Jan Jurgen Griesfeller	1st try to solve #639
+- 2022-05-25, lewisblake	comment explaining xrpytic TSTR_TO_CF
+- 2022-05-20, Alvaro Valdebenito	Merge pull request #649 from metno/AugustinMortier-patch-readme
+- 2022-05-20, Jan Griesfeller	Merge pull request #641 from metno/griesie_fix519_v3
+- 2022-05-18, augustinm	Update README.rst
+- 2022-05-16, Ove Haugvaldstad	add angstrom exponent filtered AERONET AOD for dust evaluation (#621)
+- 2022-05-16, Jan Jurgen Griesfeller	make black happy again
+- 2022-05-16, Jan Jurgen Griesfeller	added some ratpm10pm25 related tests
+- 2022-05-16, Jan Jurgen Griesfeller	added missing /n
+- 2022-05-16, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix519_v3
+- 2022-05-12, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-05-12, Alvaro Valdebenito	update RTD configuration
+- 2022-05-12, Alvaro Valdebenito	rename RTD config file
+- 2022-05-12, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-05-12, Daniel Heinesen	Merge pull request #582 from metno/fix-map-regions
+- 2022-05-12, Daniel Heinesen	Removes dead code
+- 2022-05-12, Alvaro Valdebenito	Merge branch 'main-dev'
+- 2022-05-12, Alvaro Valdebenito	update release CI workflow
+- 2022-05-12, Alvaro Valdebenito	bump version
+- 2021-10-15, Jonas Gliß	Update README.rst
+- 2022-05-12, Lewis Blake	Merge pull request #646 from metno/fix-fairmode-PM25-UrRV
+- 2022-05-11, lewisblake	empty commit
+- 2022-05-11, lewisblake	isort access_testdata.py
+- 2022-05-11, lewisblake	reformat access_testdata-py with black
+- 2022-05-11, lewisblake	Change pm25 UrRV to 0.36
+- 2022-05-09, Daniel Heinesen	Adds offset for day and hour
+- 2022-05-05, Daniel Heinesen	isort formatting
+- 2022-05-05, Daniel Heinesen	formatting
+- 2022-05-05, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into fix-map-regions
+- 2022-05-04, Jan Jurgen Griesfeller	Merge branch 'griesie_fix_635' into griesie_fix519_v3
+- 2022-05-04, Jan Jurgen Griesfeller	make isort happy
+- 2022-05-03, Jan Jurgen Griesfeller	Make black happy
+- 2022-05-03, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix519_v3
+- 2022-05-03, Jan Jurgen Griesfeller	additions to handle ratmp10pm25 and ratpm25pm10 via aeroval
+- 2022-05-03, Jan Jurgen Griesfeller	added NotImplementedError exception to list of exceptions that cause a station to be ignores
+- 2022-05-02, Jan Griesfeller	Merge pull request #626 from metno/pyaerocom-ng-test
+- 2022-04-29, Daniel Heinesen	Merge pull request #633 from metno/fix-sspm10
+- 2022-04-29, Daniel Heinesen	Remove extra c from concsspm10
+- 2022-04-28, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-04-28, Daniel Heinesen	Merge pull request #627 from metno/fix_o3max
+- 2022-04-28, Daniel Heinesen	Format imports
+- 2022-04-28, Daniel Heinesen	Removes old solution for o3max
+- 2022-04-28, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into fix_o3max
+- 2022-04-28, WillemVanCaspel	Merge pull request #631 from metno/add_vmrno2
+- 2022-04-28, Willem Elias van Caspel	Formatting
+- 2022-04-28, Daniel Heinesen	Adds o3max to menus
+- 2022-04-26, Lewis Blake	Merge pull request #624 from lewisblake/typercli
+- 2022-04-26, lewisblake	update CI cache
+- 2022-04-26, lewisblake	typer dependence declaration
+- 2022-04-26, Alvaro Valdebenito	clean aeronet ivv3 tests
+- 2022-04-26, lewisblake	requested changes
+- 2022-04-25, Alvaro Valdebenito	clean fairmode_stats and split tests
+- 2022-04-25, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-04-25, Alvaro Valdebenito	Merge pull request #620 from avaldebe/legacy-proj
+- 2022-04-06, Alvaro Valdebenito	update RTD
+- 2022-04-04, Alvaro Valdebenito	isort
+- 2022-04-04, Alvaro Valdebenito	update install docs
+- 2022-04-04, Alvaro Valdebenito	requerements dependant on Proj version as extras
+- 2022-04-25, lewisblake	post alvaro help
+- 2022-04-25, lewisblake	isort
+- 2022-04-25, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into fix-map-regions
+- 2022-04-25, Daniel Heinesen	Fix test
+- 2022-04-25, Daniel Heinesen	Makes list to List in annotation
+- 2022-04-25, Daniel Heinesen	Formatting
+- 2022-04-25, Daniel Heinesen	Makes annotation backwards compatible
+- 2022-04-25, Daniel Heinesen	Formatting
+- 2022-04-25, lewisblake	remove sphinx_click
+- 2022-04-25, Daniel Heinesen	Adds vmro3max to EEA
+- 2022-04-25, lewisblake	Merge branch 'main-dev' into typercli
+- 2022-04-25, lewisblake	Manually create documentation
+- 2022-04-25, Daniel Heinesen	Merge pull request #593 from metno/obs-only
+- 2022-04-22, Daniel Heinesen	Makes ebas work with o3max
+- 2022-04-22, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into fix_o3max
+- 2022-04-22, lewisblake	CLI docs WIP
+- 2022-04-22, lewisblake	remove # pragma no cover
+- 2022-04-22, Willem Elias van Caspel	Adds calculation of vmrno2 from concno2 for emep reader
+- 2022-04-22, Jan Jurgen Griesfeller	change URL to test new pyaerocom webserver with CI
+- 2022-04-19, lewisblake	isort-ing
+- 2022-04-19, lewisblake	remove commented out import
+- 2022-04-19, lewisblake	--version callback and tests
+- 2022-04-06, lewisblake	working on docs
+- 2022-04-06, lewisblake	First draft typer-based CLI
+- 2022-04-05, lewisblake	test clip WIP EARLINET
+- 2022-04-04, Lewis Blake	testing browse WIP
+- 2022-04-04, Lewis Blake	browse requires arg
+- 2022-04-04, Jan Griesfeller	Merge pull request #612 from metno/griesie_fix_611
+- 2022-04-04, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_611
+- 2022-04-04, Lewis Blake	Merge pull request #614 from lewisblake/fix_minor_fairmode_bug
+- 2022-04-04, Lewis Blake	Merge branch 'main-dev' into fix_minor_fairmode_bug
+- 2022-04-04, Lewis Blake	isort and black
+- 2022-04-04, Lewis Blake	pytests designed to catch nans & fail on purpose
+- 2022-04-04, Alvaro Valdebenito	Merge pull request #617 from metno/missing-ini-files-again
+- 2022-04-04, Alvaro Valdebenito	isort
+- 2022-04-04, Alvaro Valdebenito	Update MANIFEST.in
+- 2022-04-01, Lewis Blake	cleaned up unused code
+- 2022-04-01, Lewis Blake	test_clearcache works
+- 2022-03-31, Lewis Blake	test_cli WIP
+- 2022-03-31, Jan Jurgen Griesfeller	Merge branch 'main-dev' into griesie_fix_611
+- 2022-03-31, Lewis Blake	removed last np since importing few functions
+- 2022-03-31, Jan Jurgen Griesfeller	removed uneeded line
+- 2022-03-31, Lewis Blake	Remove old test_compute_fairmode_stats.py
+- 2022-03-31, Lewis Blake	Rename test to match farimode_stats.py
+- 2022-03-31, Lewis Blake	Check if stats has nan values
+- 2022-03-31, Jan Jurgen Griesfeller	simplified the UTC calculation a bit
+- 2022-03-31, Lewis Blake	test_cli WIP
+- 2022-03-30, Lewis Blake	Working prototype of tes_clearcache
+- 2022-03-30, Daniel Heinesen	Merge pull request #613 from metno/fairmode
+- 2022-03-30, Jan Jurgen Griesfeller	removed dead code
+- 2022-03-30, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_611
+- 2022-03-30, Jan Jurgen Griesfeller	updated test to not create an unwanted file in the data directory anymore. Added file to the testing dataset.
+- 2022-03-30, Daniel Heinesen	merge
+- 2022-03-30, Daniel Heinesen	Changes processing engine to use new fairmode function
+- 2022-03-30, Daniel Heinesen	Removes unused fairmode code
+- 2022-03-30, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-03-30, Lewis Blake	clip tests WIP
+- 2022-03-30, Alvaro Valdebenito	Merge pull request #608 from metno/fix_CI_docs_lint
+- 2022-03-30, Jan Jurgen Griesfeller	updated test
+- 2022-03-30, Jan Jurgen Griesfeller	get rid of the numpy deprecation warning concerning the time zone aware usage of datetime64
+- 2022-03-30, Lewis Blake	test clear cache WIP
+- 2022-03-29, Jan Jurgen Griesfeller	further updated testing, but still failing due to numpy DeprecationWarning
+- 2022-03-29, Lewis Blake	Reverting to app.command() method. Commiting old
+- 2022-03-29, Jan Jurgen Griesfeller	do some more testing
+- 2022-03-29, Jan Jurgen Griesfeller	adjusted definition of FILE_MASKS
+- 2022-03-29, Alvaro Valdebenito	Merge branch 'main-dev' into fixtures
+- 2022-03-29, Lewis Blake	Merge pull request #607 from lewisblake/fairmode
+- 2022-03-29, Lewis Blake	Merge branch 'fairmode' into fairmode
+- 2022-03-29, Alvaro Valdebenito	bump black version
+- 2022-03-25, Alvaro Valdebenito	setuptools<=60.9.3 on all tox envs
+- 2022-03-29, Alvaro Valdebenito	Merge branch 'main-dev' into fairmode
+- 2022-03-29, Lewis Blake	generic fairmode MQI
+- 2022-03-29, Lewis Blake	check fairmode sing inputs
+- 2022-03-29, Lewis Blake	clean up fairmode RMSU related methods
+- 2022-03-29, Lewis Blake	rename fairmode module
+- 2022-03-29, Lewis Blake	typer cli WIP
+- 2022-03-28, Jan Jurgen Griesfeller	make black happy again
+- 2022-03-28, Jan Jurgen Griesfeller	made the file search patterns more specific to not find unwanted files
+- 2022-03-28, Lewis Blake	isort-ing files with supposedly incorrect fomatting
+- 2022-03-25, Lewis Blake	Addressing what I can of Alvaro's feedback
+- 2022-03-24, Lewis Blake	Margin main-dev into fairmode for up-to-date comparision
+- 2022-03-24, Lewis Blake	Keep tests same, won't implement optional beta now
+- 2022-03-24, Lewis Blake	Restructured FAIRMODE stats implementation and tests
+- 2022-03-24, Jan Griesfeller	Merge pull request #595 from metno/griesie-fix-592
+- 2022-03-24, Lewis Blake	Fixed typo RMSE -> RMSU
+- 2022-03-24, Lewis Blake	Upgraded testing _process_fairmode() to ensure keys match expected
+- 2022-03-24, Lewis Blake	implemented beta_mqi in fairmode_stats
+- 2022-03-23, Jan Jurgen Griesfeller	reorganisation as suggested by reviewer
+- 2022-03-23, Jan Jurgen Griesfeller	make black happy again
+- 2022-03-23, Jan Jurgen Griesfeller	removed more dead code
+- 2022-03-23, Jan Jurgen Griesfeller	removed dead code
+- 2022-03-23, Jan Jurgen Griesfeller	make isort happy again
+- 2022-03-23, Jan Jurgen Griesfeller	commented out tests for the removed unit converters in units_helpers.py
+- 2022-03-23, Jan Jurgen Griesfeller	make black happy again
+- 2022-03-23, Jan Jurgen Griesfeller	moved test data creation files from tests/scripts to pyaerocom/scripts/testdata-minimal
+- 2022-03-23, Jan Jurgen Griesfeller	removed some unit conversions in UCONV_MUL_FACS
+- 2022-03-23, Jan Jurgen Griesfeller	removed aliases for SO4ugSm3 to make the testing work again
+- 2022-03-23, Lewis Blake	Merge branch 'main-dev' into fairmode
+- 2022-03-23, Lewis Blake	MQI in _process_fairmode and basic test for functionality
+- 2022-03-23, Lewis Blake	Merge pull request #598 from lewisblake/docs551
+- 2022-03-22, Lewis Blake	A standard CLI --version flag, correct format
+- 2022-03-21, Jan Jurgen Griesfeller	added aliases for variable SO4ugSm3
+- 2022-03-21, Lewis Blake	For using  --help: "Current" -> "Installed"
+- 2022-03-21, Lewis Blake	Added CLI --version flag
+- 2022-03-18, Alvaro Valdebenito	clean update tox lint/docs environments
+- 2022-03-18, Alvaro Valdebenito	add pre-commit
+- 2022-03-18, Lewis Blake	Found GHOST abbreviation and website
+- 2022-03-18, Jan Jurgen Griesfeller	make clack happy again
+- 2022-03-18, Jan Jurgen Griesfeller	changed name of testdata tar.gz file
+- 2022-03-17, Jan Jurgen Griesfeller	added variable SO4ugSm3 to test__unit_conversion_fac_custom, removed concso4
+- 2022-03-17, Jan Jurgen Griesfeller	added variable SO4ugSm3 to UCONV_MUL_FACS
+- 2022-03-17, Jan Jurgen Griesfeller	added variable SO4ugSm3 to PROVIDES_VARIABLES
+- 2022-03-17, Jan Jurgen Griesfeller	adjusted to new ebas data version
+- 2022-03-17, Jan Jurgen Griesfeller	adjusted to new ebas data version
+- 2022-03-17, Jan Jurgen Griesfeller	small correction in execute_request method
+- 2022-03-17, Jan Jurgen Griesfeller	use new testdata in CI image. Name is temporary.
+- 2022-03-15, Lewis Blake	EBAS url touched. no changes
+- 2022-03-15, Lewis Blake	initial commit. added urls for reading of ungridded data (except GHOST)
+- 2022-03-15, Lewis Blake	AERONET link
+- 2022-03-11, Jan Jurgen Griesfeller	added variable SO4ugSm3 which will hold concso4 data in units ug S m-3
+- 2022-03-11, Jan Jurgen Griesfeller	removed automatic conversion from units "ug S/m3" to "ug m-3"
+- 2022-03-09, Jan Jurgen Griesfeller	make sure that make_file_query_str() is called when searching for filenames
+- 2022-03-08, Alvaro Valdebenito	aeroval fixture docstrings
+- 2022-03-08, Alvaro Valdebenito	clean up aeroval fixtures
+- 2022-03-08, Alvaro Valdebenito	aeroval exp5 config via fixture
+- 2022-03-08, Alvaro Valdebenito	aeroval exp4 config via fixture
+- 2022-03-08, Alvaro Valdebenito	aeroval exp3 config via fixture
+- 2022-03-08, Alvaro Valdebenito	aeroval exp1/exp2 config via fixture
+- 2022-03-08, Jan Jurgen Griesfeller	remove unnecessary joins in SQL statements
+- 2022-03-08, Jan Jurgen Griesfeller	move addition for characteristic to make_file_query_str method
+- 2022-03-08, Jan Jurgen Griesfeller	add missing blank
+- 2022-03-08, Jan Jurgen Griesfeller	make linting happy
+- 2022-03-08, Jan Jurgen Griesfeller	write ebas_files.json into the right directory (scripts)
+- 2022-03-08, Jan Jurgen Griesfeller	add info about how to update test data for CI
+- 2022-03-08, Jan Jurgen Griesfeller	update to make the usage of the subdirectory clearer
+- 2022-03-08, Jan Jurgen Griesfeller	adjust to EBAS Revision 20220101 and latest pyaerocom version
+- 2022-03-08, Daniel Heinesen	Makes delete_dummy_model use pathlib
+- 2022-03-08, Jan Jurgen Griesfeller	added tests/scripts to include scripts that prepare the test data set
+- 2022-03-04, Alvaro Valdebenito	add dev extras
+- 2022-03-04, Alvaro Valdebenito	comment unused linters
+- 2022-03-03, Alvaro Valdebenito	replace xr.testing.assert_allclose
+- 2022-03-03, Alvaro Valdebenito	ingore .testmondata
+- 2022-03-03, Alvaro Valdebenito	add annotations
+- 2022-03-03, Alvaro Valdebenito	replace np.testing.assert_allclose w/pytest.approx
+- 2022-03-07, Daniel Heinesen	Fix dict comprihension
+- 2022-03-07, Daniel Heinesen	Small changes to clean code
+- 2022-03-06, Jan Jurgen Griesfeller	increased version number
+- 2022-03-06, Jan Jurgen Griesfeller	added extention to sql command to exclude unneeded files
+- 2022-03-02, Alvaro Valdebenito	clean up custom untit conversion test
+- 2022-03-02, Alvaro Valdebenito	convert to test function
+- 2022-03-02, Alvaro Valdebenito	direct imports on combine_vardata_ungridded tests
+- 2022-03-01, Alvaro Valdebenito	cleaner coldata fixture
+- 2022-03-01, Alvaro Valdebenito	assume geonum package is installed
+- 2022-03-01, Alvaro Valdebenito	assume reverse_geocode package is installed
+- 2022-03-01, Alvaro Valdebenito	mark.xfail tests that need geojsoncontour
+- 2022-03-01, Alvaro Valdebenito	cleaner imports from tests.conftest
+- 2022-03-01, Alvaro Valdebenito	clean griddeddata tests
+- 2022-03-01, Alvaro Valdebenito	clean broken GAW dms  tests
+- 2022-03-01, Alvaro Valdebenito	use pytest.mark.xfail instead of pytest.mark.skip
+- 2022-02-09, Alvaro Valdebenito	use const.OUTPUTDIR instread of "~/MyPyaerocom"
+- 2022-02-09, Alvaro Valdebenito	use path.resolve() instead of path.absolute()
+- 2022-02-09, Alvaro Valdebenito	move testdata access to fixture
+- 2022-02-02, Alvaro Valdebenito	mypy
+- 2022-01-04, Alvaro Valdebenito	clean aeroval higlev tests
+- 2022-01-04, Alvaro Valdebenito	clean griddeddata tests
+- 2022-01-04, Alvaro Valdebenito	use pathlib.Path instead of os.path
+- 2022-01-03, Alvaro Valdebenito	split test_clear_cache info fixture/test
+- 2022-01-03, Alvaro Valdebenito	rename add_dummy_model_data argument
+- 2022-01-03, Alvaro Valdebenito	use tmp_path fixture instead of tmpdir
+- 2021-12-17, Alvaro Valdebenito	clean aeronet tests
+- 2021-12-17, Alvaro Valdebenito	xfail broken tests
+- 2021-12-17, Alvaro Valdebenito	use pathlib.path instead of os.path
+- 2021-12-17, Alvaro Valdebenito	clean tests.conftest imports
+- 2021-12-17, Alvaro Valdebenito	mv create_fake_MSCWCtm_data to mscw_ctm fixtures
+- 2021-12-17, Alvaro Valdebenito	mv make_dummy_cube_3D_daily tests.fistures.aeroval
+- 2021-12-17, Alvaro Valdebenito	mv add_dummy_model_data to tests.fixtures.aeroval
+- 2021-12-17, Alvaro Valdebenito	mv aeroval test helpers to tests.fixtures.aeroval
+- 2021-12-17, Alvaro Valdebenito	demote tools subpacakge to module
+- 2021-12-17, Alvaro Valdebenito	clean stations fixture
+- 2021-12-17, Alvaro Valdebenito	move FAKE_STATION_DATA to stations fixture
+- 2021-12-16, Alvaro Valdebenito	clean up conftest.py
+- 2021-12-16, Alvaro Valdebenito	remove tempdir fixture
+- 2021-12-16, Alvaro Valdebenito	merge cache write/reload tests
+- 2021-12-16, Alvaro Valdebenito	clean aeronet fixtures
+- 2021-12-16, Alvaro Valdebenito	move TESTDATADIR to separate fixture file
+- 2021-12-16, Alvaro Valdebenito	remove CHECK_PATHS from conftests.py
+- 2021-12-16, Alvaro Valdebenito	move coldata fixture & helpers into separate file
+- 2021-12-16, Alvaro Valdebenito	move statlist fixture & helpers into separate file
+- 2021-12-16, Alvaro Valdebenito	move aeronet fixtures to separate file
+- 2021-12-16, Alvaro Valdebenito	move aasetal_data fixture to test file
+- 2021-12-16, Alvaro Valdebenito	consolidate ebas fixtures
+- 2021-12-16, Alvaro Valdebenito	move ebas fixtures to separate file
+- 2021-12-16, Alvaro Valdebenito	clean conftest
+- 2021-12-16, Alvaro Valdebenito	require minimum test data
+- 2021-12-16, Alvaro Valdebenito	move tm5 fixtures to separate file
+- 2021-12-16, Alvaro Valdebenito	replace EMEP_DIR w/fixture
+- 2021-12-16, Alvaro Valdebenito	move emep fixtures into separate file
+- 2022-03-04, Daniel Heinesen	Removes one annotation due to circular import error
+- 2022-03-04, Daniel Heinesen	Some annotation
+- 2022-03-04, Daniel Heinesen	Adds option obs_only. Can either be set in config, or file be set to true of no model is found
+- 2022-03-04, Daniel Heinesen	Fixes dates of dummy cube
+- 2022-03-04, Jan Griesfeller	Merge pull request #589 from metno/griesie_fix588
+- 2022-03-04, Alvaro Valdebenito	test against correct longitudes with iris 3.2
+- 2022-03-03, Daniel Heinesen	Fixes gridded data crop
+- 2022-03-03, Daniel Heinesen	Adds options for removing pages on the web
+- 2022-03-03, Daniel Heinesen	Used mean bias instead of nmb
+- 2022-03-03, Jan Jurgen Griesfeller	make isort happy again
+- 2022-03-03, Jan Jurgen Griesfeller	make black happy again
+- 2022-03-03, Daniel Heinesen	moves creation of dummy model to aeroval helpers, and merges with main-dev
+- 2022-03-03, Daniel Heinesen	Adds fairmode statistics
+- 2022-03-01, Jan Jurgen Griesfeller	cope with different iris versions
+- 2022-03-01, Jan Jurgen Griesfeller	adjusted to iris 3.2
+- 2022-03-01, Jan Jurgen Griesfeller	adjusted to iris 3.2
+- 2022-03-01, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix588
+- 2022-02-28, Alvaro Valdebenito	Merge pull request #590 from avaldebe/missing-ini-files
+- 2022-02-28, Alvaro Valdebenito	exclude cf-units-3.0.1.post0 SciTools/cf-units#218
+- 2022-02-28, Alvaro Valdebenito	use pypa-packaging for comparing versions
+- 2022-02-21, Alvaro Valdebenito	missing ini files
+- 2022-02-28, Alvaro Valdebenito	use importlib.metadata
+- 2022-02-28, Alvaro Valdebenito	Merge branch 'main-dev' into griesie_fix588
+- 2022-02-23, Alvaro Valdebenito	Merge pull request #586 from avaldebe/cartopy
+- 2022-02-23, Jan Jurgen Griesfeller	make black happy again
+- 2022-02-23, Jan Jurgen Griesfeller	make the test work with iris 3.1 and greater
+- 2022-02-23, Jan Jurgen Griesfeller	test to see if anaconda CI works with this fix with iris 3.2
+- 2022-02-21, Alvaro Valdebenito	exclude iris-3.2
+- 2022-02-21, Alvaro Valdebenito	cleaup config
+- 2022-02-21, Alvaro Valdebenito	exclude cartopy-0.20 from pip installs
+- 2022-02-10, Daniel Heinesen	makes region matches a sorted list
+- 2022-02-08, Daniel Heinesen	Fixes get region in trend helpers
+- 2022-02-07, Alvaro Valdebenito	Merge pull request #552 from avaldebe/filterwarnings
+- 2022-02-07, Alvaro Valdebenito	patch format/lint/docs tox env so they work on CI
+- 2022-02-07, Alvaro Valdebenito	Merge branch 'main-dev' into filterwarnings
+- 2022-02-07, Daniel Heinesen	makes it so that the region is always a list
+- 2022-02-07, Daniel Heinesen	Adds list of regions instead of just the best
+- 2022-02-02, Daniel Heinesen	Merge pull request #579 from metno/fix-seasalt
+- 2022-02-02, Daniel Heinesen	Changes sspm10 to be ssf+ssc
+- 2022-02-01, Alvaro Valdebenito	Merge branch 'main-dev' into filterwarnings
+- 2022-02-01, Alvaro Valdebenito	Merge pull request #575 from avaldebe/logging
+- 2022-02-01, Alvaro Valdebenito	more DeprecationWarnings
+- 2022-02-01, Alvaro Valdebenito	Merge branch 'main-dev' into logging
+- 2022-02-01, Alvaro Valdebenito	Merge pull request #578 from avaldebe/new-black
+- 2022-02-01, Alvaro Valdebenito	ignore falures on lint tox env
+- 2022-02-01, Alvaro Valdebenito	conform to new black version
+- 2022-02-01, Alvaro Valdebenito	pin black version
+- 2022-01-27, Alvaro Valdebenito	set pyaerocom logger  level
+- 2022-01-27, Alvaro Valdebenito	use class instance logger
+- 2022-01-27, Alvaro Valdebenito	use module's logger
+- 2022-01-25, Alvaro Valdebenito	simplify ignore_warnings options
+- 2022-01-25, Alvaro Valdebenito	remove Const.FILTER_IRIS_WARNINGS
+- 2022-01-25, Alvaro Valdebenito	ignore geonim and iris warnings on tests
+- 2022-01-25, Alvaro Valdebenito	update pytest filterwarnings config
+- 2022-01-17, Alvaro Valdebenito	Merge pull request #548 from avaldebe/conda-gh-ci
+- 2022-01-17, Jan Griesfeller	Merge pull request #545 from metno/griesie_fix544
+- 2022-01-11, Alvaro Valdebenito	update checkout gh-action
+- 2022-01-11, Alvaro Valdebenito	updage codecov gh-action
+- 2022-01-11, Alvaro Valdebenito	clean conda CI job
+- 2022-01-11, Alvaro Valdebenito	Revert "cache conda envs on CI"
+- 2022-01-11, Alvaro Valdebenito	cache conda envs on CI
+- 2022-01-11, Alvaro Valdebenito	ignore py3.10 deprecation warning
+- 2022-01-11, Alvaro Valdebenito	add py3.10 to conda CI matrix
+- 2022-01-11, Alvaro Valdebenito	Revert "cache conda env on CI"
+- 2022-01-11, Alvaro Valdebenito	cache conda env on CI
+- 2022-01-11, Alvaro Valdebenito	use conda-incubator/setup-miniconda gh-action
+- 2022-01-11, Alvaro Valdebenito	rename CI venv job
+- 2022-01-11, Jan Jurgen Griesfeller	remove the alias od550gt1aer for od550dust again
+- 2022-01-10, Jan Jurgen Griesfeller	run through newer black again since CI was still complaining
+- 2022-01-10, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix544
+- 2022-01-10, Alvaro Valdebenito	Merge pull request #540 from metno/rm-if-__name__
+- 2021-12-16, Alvaro Valdebenito	remove unnecesary headers, close #16
+- 2021-12-15, Alvaro Valdebenito	move aeolus_l2a cli to own script
+- 2021-12-15, Alvaro Valdebenito	move Sentinel5P cli to own script
+- 2021-12-15, Alvaro Valdebenito	mv  variables.ini from excel script out of package
+- 2021-12-15, Alvaro Valdebenito	clean imports
+- 2021-12-15, Alvaro Valdebenito	remove superfluous enrty points
+- 2022-01-10, Alvaro Valdebenito	Merge pull request #542 from avaldebe/py310-on-ci
+- 2022-01-07, Jan Jurgen Griesfeller	run through black again since CI was complaining
+- 2022-01-07, Jan Jurgen Griesfeller	small correction to handle a Deprecation warning
+- 2022-01-06, Jan Jurgen Griesfeller	1st draft
+- 2022-01-04, Alvaro Valdebenito	resolve DeprecationWarning
+- 2022-01-04, Alvaro Valdebenito	GriddedData.name issue a DeprecationWarning
+- 2022-01-03, Alvaro Valdebenito	Revert "add py3.10 to conda CI matrix"
+- 2022-01-03, Alvaro Valdebenito	add py3.10 to conda CI matrix
+- 2021-12-17, Alvaro Valdebenito	py3.10 tests must pass on CI
+- 2021-12-17, Alvaro Valdebenito	minor changes for testsing on py3.10
+- 2021-12-15, Alvaro Valdebenito	Merge pull request #531 from avaldebe/rm-pyadir
+- 2021-12-15, Alvaro Valdebenito	rename _init_helper module to _logging
+- 2021-12-15, Alvaro Valdebenito	Merge branch 'main-dev' into rm-pyadir
+- 2021-12-15, Alvaro Valdebenito	Merge pull request #535 from metno/one-logger
+- 2021-12-15, Alvaro Valdebenito	Merge branch 'main-dev' into rm-pyadir
+- 2021-12-15, Alvaro Valdebenito	Merge branch 'main-dev' into one-logger
+- 2021-12-15, Alvaro Valdebenito	Merge pull request #530 from avaldebe/dict-keys
+- 2021-12-14, Alvaro Valdebenito	Merge branch 'main-dev' into rm-pyadir
+- 2021-12-14, Alvaro Valdebenito	Merge branch 'main-dev' into one-logger
+- 2021-12-14, Alvaro Valdebenito	Merge branch 'main-dev' into dict-keys
+- 2021-12-14, Jan Griesfeller	Merge pull request #538 from metno/griesie_fix518_2
+- 2021-12-14, Jan Jurgen Griesfeller	forgot black and isort
+- 2021-12-14, Jan Jurgen Griesfeller	added test for AeronetReadError exception
+- 2021-12-14, Jan Jurgen Griesfeller	added small comment
+- 2021-12-14, Jan Jurgen Griesfeller	put through black and isort
+- 2021-12-14, Jan Jurgen Griesfeller	add an increase of verbosity to testing code
+- 2021-12-14, Jan Jurgen Griesfeller	add test for all points that also tests the reading of gzipped data files
+- 2021-12-14, Jan Jurgen Griesfeller	small change to make the different test independent of each other
+- 2021-12-14, Jan Jurgen Griesfeller	added all pointys reading test; test if it works on CI
+- 2021-12-14, Jan Jurgen Griesfeller	added all pointys reading test; test if it works on CI
+- 2021-12-14, Jan Jurgen Griesfeller	add AeronetSunV3L2Subset.AP testing dataset (all points; gz file reading)
+- 2021-12-13, Jan Jurgen Griesfeller	bumped version number since I forgot to do that earlier
+- 2021-12-13, Jan Jurgen Griesfeller	run through black and isort again since CI was complaining
+- 2021-12-13, Jan Jurgen Griesfeller	make the reading more fault tolerable; add possibility to read gzipped files
+- 2021-12-13, Jan Jurgen Griesfeller	make the reading more fault tolerable
+- 2021-12-13, Jan Jurgen Griesfeller	add class AeronetReadError for Aeronet read error
+- 2021-12-10, Alvaro Valdebenito	Merge branch 'main-dev' into one-logger
+- 2021-12-10, Alvaro Valdebenito	_init_helpers tests w/explicit imports
+- 2021-12-10, Alvaro Valdebenito	split log tests w/wo exceptions
+- 2021-12-06, Alvaro Valdebenito	use dict instead of OrderedDict
+- 2021-12-06, Alvaro Valdebenito	iterate over dict instead of dict.keys()
+- 2021-12-02, Alvaro Valdebenito	replce list(dict.keys()) w/list(dict)
+- 2021-12-10, Alvaro Valdebenito	Merge branch 'main-dev' into rm-pyadir
+- 2021-12-02, Alvaro Valdebenito	only one data module
+- 2021-12-02, Alvaro Valdebenito	__version__ from importlib.metadata
+- 2021-12-02, Alvaro Valdebenito	clean get_country_name_from_iso helper
+- 2021-12-02, Alvaro Valdebenito	remove unused helpers
+- 2021-12-02, Alvaro Valdebenito	consolidate config tests w/importlib.resources.path
+- 2021-12-02, Alvaro Valdebenito	replace const.DIR_INI_FILES w/imporlib.resources.path
+- 2021-12-02, Alvaro Valdebenito	replace __dir__ w/importlib.resources.path
+- 2021-12-02, Alvaro Valdebenito	replace PYADIR w/importlib.resources.path
+- 2021-12-02, Alvaro Valdebenito	treat pyaerocom.data as a module
+- 2021-11-30, Alvaro Valdebenito	clean io.read_ebas tests
+- 2021-11-30, Alvaro Valdebenito	io.read_ebas tests w/explicit imports
+- 2021-11-30, Alvaro Valdebenito	io.read_ebas w/wo exceptions
+- 2021-11-30, Alvaro Valdebenito	refactor io.read_ebas w/test functions
+- 2021-11-30, Alvaro Valdebenito	io.read_airnow tests w/wo exceptions
+- 2021-11-30, Alvaro Valdebenito	refactor io.read_airnow  w/test functions
+- 2021-11-30, Alvaro Valdebenito	io.read_earlinet w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	clean stationdata tests
+- 2021-11-29, Alvaro Valdebenito	stationdata tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	stationdata tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/Fake4D class
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/gridded_data fixture
+- 2021-11-29, Alvaro Valdebenito	clean plot.mapping tests
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	clean aeroval.helpers tests
+- 2021-11-29, Alvaro Valdebenito	aeroval.helpers tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	aeroval.helpers tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	io.iris tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	io.ebas_file_index tests w/type annotations
+- 2021-11-29, Alvaro Valdebenito	io.ebas_file_index tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	io.ebas_file_index tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	clean io.ebas_nasa_ames tests
+- 2021-11-29, Alvaro Valdebenito	io.ebas_nasa_ames tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	io.ebas_nasa_ames tests w/wo exceptions
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output w/simpler dummy_expout
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output w/pathlib.path
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output w/explicit import
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output tests w/wo exceptions
+- 2021-11-26, Alvaro Valdebenito	clean  coldatatojson_helpers2 tests
+- 2021-11-26, Alvaro Valdebenito	coldatatojson_helpers2 tests w/explicit import
+- 2021-11-26, Alvaro Valdebenito	coldatatojson_helpers2 tests w/wo exceptions
+- 2021-11-26, Alvaro Valdebenito	clean variable tests
+- 2021-11-26, Alvaro Valdebenito	variable tests w/wo exception
+- 2021-11-26, Alvaro Valdebenito	clean units_helpers tests
+- 2021-11-26, Alvaro Valdebenito	units_helpers tests w/explicit import
+- 2021-11-26, Alvaro Valdebenito	units_helpers tests w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	clean aeroval.experiment_processor tests
+- 2021-11-24, Alvaro Valdebenito	aeroval.experiment_processor tests w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	clean aeroval._processing_base tests
+- 2021-11-24, Alvaro Valdebenito	aeroval._processing_base w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	aeroval._processing_base w/test functions
+- 2021-11-24, Alvaro Valdebenito	explicit import
+- 2021-11-24, Alvaro Valdebenito	clean ebas_varinfo tests
+- 2021-11-24, Alvaro Valdebenito	EbasVarInfo test fixture
+- 2021-11-24, Alvaro Valdebenito	make_sql_request test w/wo exception
+- 2021-11-24, Alvaro Valdebenito	clean aeroval.utils tests
+- 2021-11-24, Alvaro Valdebenito	aeroval.utils tests w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	clean vertical_profile tests
+- 2021-11-24, Alvaro Valdebenito	vertical_profile test w/wo exception
+- 2021-11-22, Alvaro Valdebenito	clean aux_var_helpers tests
+- 2021-11-22, Alvaro Valdebenito	parametrize compute_od_from_angstromexp tests
+- 2021-11-22, Alvaro Valdebenito	parameterize calc_od550aer/_calc_od_helper tests
+- 2021-11-22, Alvaro Valdebenito	move vmrx_to_concx test
+- 2021-11-22, Alvaro Valdebenito	calc_ang4487aer tst w/wo exception
+- 2021-11-22, Alvaro Valdebenito	aux_var_helpers tests w/explicit imports
+- 2021-11-22, Alvaro Valdebenito	clean tstype tests
+- 2021-11-22, Alvaro Valdebenito	tstype tests w/wo exceptions
+- 2021-11-22, Alvaro Valdebenito	clean mathutils tests
+- 2021-11-22, Alvaro Valdebenito	mathutils tests w/wo exceptions
+- 2021-11-19, Alvaro Valdebenito	single test dataframe
+- 2021-11-19, Alvaro Valdebenito	fix df_to_heatmap exception message
+- 2021-11-19, Alvaro Valdebenito	df_to_heatmap test w/wo exception
+- 2021-11-19, Alvaro Valdebenito	clean readungridded tests
+- 2021-11-19, Alvaro Valdebenito	readungridded test w/wo exceptions
+- 2021-11-19, Alvaro Valdebenito	readungriddedbase tests w/wo exception
+- 2021-11-19, Alvaro Valdebenito	replace VAR_INI with fixture
+- 2021-11-19, Alvaro Valdebenito	clean varcollection tests
+- 2021-11-19, Alvaro Valdebenito	split varcollection w/wo exception
+- 2021-11-19, Alvaro Valdebenito	clean time_resampler tests
+- 2021-11-19, Alvaro Valdebenito	remove redundant TimeResampler test
+- 2021-11-19, Alvaro Valdebenito	TimeResampler.input_data test w/wo exception
+- 2021-11-19, Alvaro Valdebenito	combine obs_io tests
+- 2021-11-19, Alvaro Valdebenito	clean obs_io tests
+- 2021-11-19, Alvaro Valdebenito	AuxInfoUngridded.__init__ test w/wo exceptions
+- 2021-11-19, Alvaro Valdebenito	refactor utils.print_file
+- 2021-11-19, Alvaro Valdebenito	fix utils.print_file
+- 2021-11-19, Alvaro Valdebenito	split utils.print_file test w/wo exception
+- 2021-11-19, Alvaro Valdebenito	utils.create_varinfo_table test w/wo exception
+- 2021-11-15, Alvaro Valdebenito	temp json file path as fixture
+- 2021-11-15, Alvaro Valdebenito	cleanup _lowlevel_helpers tests
+- 2021-11-15, Alvaro Valdebenito	parameterize test_str_underline
+- 2021-11-15, Alvaro Valdebenito	import objects to test
+- 2021-11-15, Alvaro Valdebenito	refactor _lowlevel_helpers.str_underline
+- 2021-11-15, Alvaro Valdebenito	fix _lowlevel_helpers.str_underline
+- 2021-11-15, Alvaro Valdebenito	test _lowlevel_helpers.str_underline
+- 2021-11-12, Alvaro Valdebenito	clean up tests
+- 2021-11-12, Alvaro Valdebenito	splits tests with/without exceptions
+- 2021-11-12, Alvaro Valdebenito	cleanup tests
+- 2021-11-12, Alvaro Valdebenito	split tests with/without exceptions
+- 2021-11-08, Alvaro Valdebenito	cleanup tests
+- 2021-11-08, Alvaro Valdebenito	no exception to test
+- 2021-11-05, Alvaro Valdebenito	cleanup tests
+- 2021-11-05, Alvaro Valdebenito	split tests with/without exceptions
+- 2021-11-05, Alvaro Valdebenito	no exception to test
+- 2021-12-10, Alvaro Valdebenito	console messages to stdout
+- 2021-12-09, Alvaro Valdebenito	fix deprecation warnings
+- 2021-12-09, Alvaro Valdebenito	warnings.warn instad of logging.warn
+- 2021-12-09, Alvaro Valdebenito	clean logging tests
+- 2021-12-09, Alvaro Valdebenito	add pytest logging option
+- 2021-12-09, Alvaro Valdebenito	logging configuration from file
+- 2021-12-09, Alvaro Valdebenito	clean change_verbosity arguments
+- 2021-12-09, Alvaro Valdebenito	clean file/console logging configuration
+- 2021-12-09, Alvaro Valdebenito	root logger writes to file
+- 2021-12-09, Alvaro Valdebenito	ignore rotating logs
+- 2021-12-07, Alvaro Valdebenito	find closest StreamHandler
+- 2021-12-07, Alvaro Valdebenito	cleaner change_verbosity calls
+- 2021-12-07, Alvaro Valdebenito	do not share logging object acorss modules
+- 2021-12-07, Alvaro Valdebenito	log more during tests
+- 2021-12-07, Alvaro Valdebenito	remove print_log
+- 2021-12-07, Alvaro Valdebenito	add a TimedRotatingFileHandler
+- 2021-12-07, Alvaro Valdebenito	setLevel on logging handler
+- 2021-12-07, Alvaro Valdebenito	remove LOGLEVELS
+- 2021-12-03, Alvaro Valdebenito	remove Config.logger/print_log
+- 2021-12-03, Alvaro Valdebenito	import logger/print_log directly
+- 2021-12-09, Alvaro Valdebenito	Merge pull request #526 from avaldebe/split-raise-tests
+- 2021-12-09, Ove Haugvaldstad	Merge pull request #536 from Ovewh/single_station_data_fix
+- 2021-12-08, ovewh	reformat with black and isort
+- 2021-12-08, ovewh	fixes #528
+- 2021-12-06, Alvaro Valdebenito	typo
+- 2021-11-30, Alvaro Valdebenito	clean io.read_ebas tests
+- 2021-11-30, Alvaro Valdebenito	io.read_ebas tests w/explicit imports
+- 2021-11-30, Alvaro Valdebenito	io.read_ebas w/wo exceptions
+- 2021-11-30, Alvaro Valdebenito	refactor io.read_ebas w/test functions
+- 2021-11-30, Alvaro Valdebenito	io.read_airnow tests w/wo exceptions
+- 2021-11-30, Alvaro Valdebenito	refactor io.read_airnow  w/test functions
+- 2021-11-30, Alvaro Valdebenito	io.read_earlinet w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	clean stationdata tests
+- 2021-11-29, Alvaro Valdebenito	stationdata tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	stationdata tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/Fake4D class
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/gridded_data fixture
+- 2021-11-29, Alvaro Valdebenito	clean plot.mapping tests
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	plot.mapping tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	clean aeroval.helpers tests
+- 2021-11-29, Alvaro Valdebenito	aeroval.helpers tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	aeroval.helpers tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	io.iris tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	io.ebas_file_index tests w/type annotations
+- 2021-11-29, Alvaro Valdebenito	io.ebas_file_index tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	io.ebas_file_index tests w/wo exceptions
+- 2021-11-29, Alvaro Valdebenito	clean io.ebas_nasa_ames tests
+- 2021-11-29, Alvaro Valdebenito	io.ebas_nasa_ames tests w/explicit imports
+- 2021-11-29, Alvaro Valdebenito	io.ebas_nasa_ames tests w/wo exceptions
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output w/simpler dummy_expout
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output w/pathlib.path
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output w/explicit import
+- 2021-11-26, Alvaro Valdebenito	aeroval.experiment_output tests w/wo exceptions
+- 2021-11-26, Alvaro Valdebenito	clean  coldatatojson_helpers2 tests
+- 2021-11-26, Alvaro Valdebenito	coldatatojson_helpers2 tests w/explicit import
+- 2021-11-26, Alvaro Valdebenito	coldatatojson_helpers2 tests w/wo exceptions
+- 2021-11-26, Alvaro Valdebenito	clean variable tests
+- 2021-11-26, Alvaro Valdebenito	variable tests w/wo exception
+- 2021-11-26, Alvaro Valdebenito	clean units_helpers tests
+- 2021-11-26, Alvaro Valdebenito	units_helpers tests w/explicit import
+- 2021-11-26, Alvaro Valdebenito	units_helpers tests w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	clean aeroval.experiment_processor tests
+- 2021-11-24, Alvaro Valdebenito	aeroval.experiment_processor tests w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	clean aeroval._processing_base tests
+- 2021-11-24, Alvaro Valdebenito	aeroval._processing_base w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	aeroval._processing_base w/test functions
+- 2021-11-24, Alvaro Valdebenito	explicit import
+- 2021-11-24, Alvaro Valdebenito	clean ebas_varinfo tests
+- 2021-11-24, Alvaro Valdebenito	EbasVarInfo test fixture
+- 2021-11-24, Alvaro Valdebenito	make_sql_request test w/wo exception
+- 2021-11-24, Alvaro Valdebenito	clean aeroval.utils tests
+- 2021-11-24, Alvaro Valdebenito	aeroval.utils tests w/wo exceptions
+- 2021-11-24, Alvaro Valdebenito	clean vertical_profile tests
+- 2021-11-24, Alvaro Valdebenito	vertical_profile test w/wo exception
+- 2021-11-22, Alvaro Valdebenito	clean aux_var_helpers tests
+- 2021-11-22, Alvaro Valdebenito	parametrize compute_od_from_angstromexp tests
+- 2021-11-22, Alvaro Valdebenito	parameterize calc_od550aer/_calc_od_helper tests
+- 2021-11-22, Alvaro Valdebenito	move vmrx_to_concx test
+- 2021-11-22, Alvaro Valdebenito	calc_ang4487aer tst w/wo exception
+- 2021-11-22, Alvaro Valdebenito	aux_var_helpers tests w/explicit imports
+- 2021-11-22, Alvaro Valdebenito	clean tstype tests
+- 2021-11-22, Alvaro Valdebenito	tstype tests w/wo exceptions
+- 2021-11-22, Alvaro Valdebenito	clean mathutils tests
+- 2021-11-22, Alvaro Valdebenito	mathutils tests w/wo exceptions
+- 2021-11-19, Alvaro Valdebenito	single test dataframe
+- 2021-11-19, Alvaro Valdebenito	fix df_to_heatmap exception message
+- 2021-11-19, Alvaro Valdebenito	df_to_heatmap test w/wo exception
+- 2021-11-19, Alvaro Valdebenito	clean readungridded tests
+- 2021-11-19, Alvaro Valdebenito	readungridded test w/wo exceptions
+- 2021-11-19, Alvaro Valdebenito	readungriddedbase tests w/wo exception
+- 2021-11-19, Alvaro Valdebenito	replace VAR_INI with fixture
+- 2021-11-19, Alvaro Valdebenito	clean varcollection tests
+- 2021-11-19, Alvaro Valdebenito	split varcollection w/wo exception
+- 2021-11-19, Alvaro Valdebenito	clean time_resampler tests
+- 2021-11-19, Alvaro Valdebenito	remove redundant TimeResampler test
+- 2021-11-19, Alvaro Valdebenito	TimeResampler.input_data test w/wo exception
+- 2021-11-19, Alvaro Valdebenito	combine obs_io tests
+- 2021-11-19, Alvaro Valdebenito	clean obs_io tests
+- 2021-11-19, Alvaro Valdebenito	AuxInfoUngridded.__init__ test w/wo exceptions
+- 2021-11-19, Alvaro Valdebenito	refactor utils.print_file
+- 2021-11-19, Alvaro Valdebenito	fix utils.print_file
+- 2021-11-19, Alvaro Valdebenito	split utils.print_file test w/wo exception
+- 2021-11-19, Alvaro Valdebenito	utils.create_varinfo_table test w/wo exception
+- 2021-11-15, Alvaro Valdebenito	temp json file path as fixture
+- 2021-11-15, Alvaro Valdebenito	cleanup _lowlevel_helpers tests
+- 2021-11-15, Alvaro Valdebenito	parameterize test_str_underline
+- 2021-11-15, Alvaro Valdebenito	import objects to test
+- 2021-11-15, Alvaro Valdebenito	refactor _lowlevel_helpers.str_underline
+- 2021-11-15, Alvaro Valdebenito	fix _lowlevel_helpers.str_underline
+- 2021-11-15, Alvaro Valdebenito	test _lowlevel_helpers.str_underline
+- 2021-11-12, Alvaro Valdebenito	clean up tests
+- 2021-11-12, Alvaro Valdebenito	splits tests with/without exceptions
+- 2021-11-12, Alvaro Valdebenito	cleanup tests
+- 2021-11-12, Alvaro Valdebenito	split tests with/without exceptions
+- 2021-11-08, Alvaro Valdebenito	cleanup tests
+- 2021-11-08, Alvaro Valdebenito	no exception to test
+- 2021-11-05, Alvaro Valdebenito	cleanup tests
+- 2021-11-05, Alvaro Valdebenito	split tests with/without exceptions
+- 2021-11-05, Alvaro Valdebenito	no exception to test
+- 2021-12-06, Alvaro Valdebenito	Merge pull request #524 from avaldebe/np-deprecated
+- 2021-12-06, Alvaro Valdebenito	Merge pull request #511 from metno/add_contributing_file
+- 2021-12-06, Alvaro Valdebenito	former members
+- 2021-12-06, Alvaro Valdebenito	formatting
+- 2021-11-17, Alvaro Valdebenito	add dtype to np.asarray call
+- 2021-11-17, Alvaro Valdebenito	replace deprecated np.float by no.float64
+- 2021-11-29, Alvaro Valdebenito	Merge pull request #397 from avaldebe/lint-on-ci
+- 2021-11-26, Alvaro Valdebenito	ignore blame
+- 2021-11-26, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-26, Daniel Heinesen	Merge pull request #451 from metno/emep_mulitple_years
+- 2021-11-25, Alvaro Valdebenito	io.read_mscw_ctm tests w/data_path fixture
+- 2021-11-25, Alvaro Valdebenito	io.read_mscw_ctm tests w/pathlib.Path
+- 2021-11-25, Alvaro Valdebenito	clean io.read_mscw_ctm tests
+- 2021-11-25, Alvaro Valdebenito	ignore blame
+- 2021-11-25, Alvaro Valdebenito	format io.read_mscw_ctm tests
+- 2021-11-25, Daniel Heinesen	Adds asserts to an unfinished test
+- 2021-11-25, Daniel Heinesen	Moves getting tst in clean_filepaths
+- 2021-11-25, Daniel Heinesen	Removes old comments and changes one emep reader test
+- 2021-11-24, Daniel Heinesen	Removes unused import
+- 2021-11-24, Daniel Heinesen	Removes commented code
+- 2021-11-24, Daniel Heinesen	Removes some unit handeling for OX to make OX conversion for emep work
+- 2021-11-24, Daniel Heinesen	Splits all the tests for the emep reader
+- 2021-11-24, Daniel Heinesen	Merge branch 'emep_mulitple_years' of github.com:metno/pyaerocom into emep_mulitple_years
+- 2021-11-24, Daniel Heinesen	Small change to ox unit conversion
+- 2021-11-24, Alvaro Valdebenito	use tmp_path fixture
+- 2021-11-24, Alvaro Valdebenito	remove unused raises
+- 2021-11-24, Alvaro Valdebenito	read_mscw_ctm tests w/wo exception
+- 2021-11-24, Alvaro Valdebenito	remove old code
+- 2021-11-23, Daniel Heinesen	Adds more safety when sorting the list of files, and some tests for this
+- 2021-11-22, Alvaro Valdebenito	ingore blame
+- 2021-11-22, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-22, Daniel Heinesen	Small fix
+- 2021-11-22, Daniel Heinesen	Uncomments the filepath test and adds typeerror to emep_reader.filepath
+- 2021-11-22, Jan Griesfeller	Merge pull request #517 from metno/griesie_fix_515_516
+- 2021-11-22, Daniel Heinesen	Fixes filepath property
+- 2021-11-22, Daniel Heinesen	Test fix
+- 2021-11-22, Daniel Heinesen	More tests
+- 2021-11-22, Daniel Heinesen	Adds cleaning of filepaths and more tests
+- 2021-11-19, Alvaro Valdebenito	missing f on f-string
+- 2021-11-19, Daniel Heinesen	Adds test for reading multiple dirs
+- 2021-11-18, Daniel Heinesen	EMEP reader tests run
+- 2021-11-18, Daniel Heinesen	More test fixes
+- 2021-11-18, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into emep_mulitple_years
+- 2021-11-18, Daniel Heinesen	Fixes to tests
+- 2021-11-17, Daniel Heinesen	Multiple years now work
+- 2021-11-15, Daniel Heinesen	merge
+- 2021-09-23, Daniel Heinesen	Starts to combine multiple years of EMEP data
+- 2021-11-15, Daniel Heinesen	Makes model_use/rename_vars work with obs entries
+- 2021-11-12, Alvaro Valdebenito	ignore blame
+- 2021-11-12, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-12, Daniel Heinesen	Merge pull request #513 from metno/fix_readme
+- 2021-11-12, Daniel Heinesen	Merge pull request #514 from metno/get_tutorial_to_work
+- 2021-11-12, Jan Jurgen Griesfeller	adjust test since we created another conc* variable alias
+- 2021-11-11, Alvaro Valdebenito	use f-strings
+- 2021-11-11, Jan Jurgen Griesfeller	Trigger CI
+- 2021-11-11, Alvaro Valdebenito	ignore blame
+- 2021-11-11, Alvaro Valdebenito	combine partial strings
+- 2021-11-11, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-09, Hans Brenna	defining an auxiliary variable and an alias for testing.
+- 2021-11-08, Hans Brenna	Merge pull request #502 from metno/add_multiyear_support_for_diurnal
+- 2021-11-05, Jan Jurgen Griesfeller	no old aerocom variables should be used in pyaerocom; sconc has been replaced by conc
+- 2021-11-05, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-04, Jan Jurgen Griesfeller	fix #516 for the case that the model data variable has been aliased automatically (e.g. sconcpm10 has been read instead of concpm10
+- 2021-11-04, Jan Jurgen Griesfeller	extend max distance for stations to be considered identical
+- 2021-11-04, Alvaro Valdebenito	Merge pull request #462 from avaldebe/warnings
+- 2021-11-04, Alvaro Valdebenito	Merge branch 'main-dev' into warnings
+- 2021-11-04, Alvaro Valdebenito	build docs on CI
+- 2021-11-04, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-04, Jan Griesfeller	Merge pull request #503 from metno/griesie_fix-501
+- 2021-11-02, Alvaro Valdebenito	don't lint docs/pyaerocom-tutorials
+- 2021-11-02, Daniel Heinesen	Removes fontsize_base from plot_coordinates call
+- 2021-11-02, Alvaro Valdebenito	Revert "build docs on lint CI job"
+- 2021-11-02, Alvaro Valdebenito	build docs on lint CI job
+- 2021-11-02, Alvaro Valdebenito	build docs on CI
+- 2021-11-02, Alvaro Valdebenito	build docs with tox
+- 2021-11-02, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-11-02, Daniel Heinesen	quickplot_map now plots with whole griddate (tut 1 fix)
+- 2021-11-02, Alvaro Valdebenito	cash pip and tox for each python version
+- 2021-11-02, Alvaro Valdebenito	allow Python 3.10 to fail on CI
+- 2021-11-02, Daniel Heinesen	Changes tutorial link
+- 2021-11-02, Alvaro Valdebenito	test Python 3.10 on CI
+- 2021-10-29, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-29, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-29, Alvaro Valdebenito	 invalid value encountered in multiply
+- 2021-10-29, Alvaro Valdebenito	treat warnings as errors on testing
+- 2021-10-29, Alvaro Valdebenito	resolve numpy FutureWarning
+- 2021-10-29, Alvaro Valdebenito	resolve MatplotlibDeprecationWarning
+- 2021-10-29, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-29, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-28, Alvaro Valdebenito	split test_plot_map_aerocom
+- 2021-10-28, Alvaro Valdebenito	ignore RuntimeWarning on pya
+- 2021-10-28, Alvaro Valdebenito	treat warnings ignored on pya as errors on tests
+- 2021-10-28, Alvaro Valdebenito	change ignore_warnings function signature
+- 2021-10-28, Alvaro Valdebenito	clean old filterwarnings
+- 2021-10-28, Alvaro Valdebenito	ignore warnings on pya instead of tests
+- 2021-10-28, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-28, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-28, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-28, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-28, Alvaro Valdebenito	ignore one Warning subclass on each call
+- 2021-10-28, Hans Brenna	Update CONTRIBUTING.md
+- 2021-10-28, Hans Brenna	Create CONTRIBUTING.md
+- 2021-10-28, Alvaro Valdebenito	Merge branch 'main-dev' into warnings
+- 2021-10-28, Alvaro Valdebenito	Merge pull request #510 from avaldebe/fix-rtd
+- 2021-10-28, Alvaro Valdebenito	set sphinx min version
+- 2021-10-28, Alvaro Valdebenito	 move docs/requirements.txt to setup.cfg
+- 2021-10-28, Alvaro Valdebenito	use nullcontext as does_not_raise_exception
+- 2021-10-28, Alvaro Valdebenito	reimplement filter_warnings as context manager
+- 2021-10-28, Alvaro Valdebenito	test filter_warnings decorator
+- 2021-10-18, Alvaro Valdebenito	ignore warnings on tests
+- 2021-09-27, Alvaro Valdebenito	fix regex expressions
+- 2021-09-27, Alvaro Valdebenito	set numpy minimum supported version
+- 2021-09-27, Alvaro Valdebenito	solve deprecation warnings
+- 2021-09-27, Alvaro Valdebenito	ignore warnings when imporing iris/geonum
+- 2021-09-27, Alvaro Valdebenito	ignore warnings on tests
+- 2021-10-27, Alvaro Valdebenito	run pytest and linters on CI with tox
+- 2021-10-27, Alvaro Valdebenito	tidy up
+- 2021-10-27, Alvaro Valdebenito	split format and lint tools
+- 2021-10-27, Alvaro Valdebenito	run pycodestyle and pydocstyle on CI
+- 2021-10-27, Alvaro Valdebenito	configure pycodestyle
+- 2021-10-27, Alvaro Valdebenito	run pylint on CI
+- 2021-10-27, Alvaro Valdebenito	configure pylint
+- 2021-10-27, Alvaro Valdebenito	ignore blame
+- 2021-10-27, Alvaro Valdebenito	format with black and isort
+- 2021-10-27, Alvaro Valdebenito	Merge branch 'main-dev' into lint-on-ci
+- 2021-10-27, Alvaro Valdebenito	Merge pull request #500 from avaldebe/pypoject
+- 2021-10-25, Jan Jurgen Griesfeller	added some missing minimum values to make the aeroval analysis work with default ranges
+- 2021-10-25, Jan Griesfeller	Merge pull request #499 from metno/griesie_fix_366
+- 2021-10-25, Jan Jurgen Griesfeller	refined assert statements
+- 2021-10-25, Jan Jurgen Griesfeller	added tests
+- 2021-10-25, Jan Jurgen Griesfeller	restructured code; add other numpy float types
+- 2021-10-22, Alvaro Valdebenito	set mypy search paths
+- 2021-10-22, Alvaro Valdebenito	ignore blame
+- 2021-10-22, Alvaro Valdebenito	run pyupgrade --py38-plus and black
+- 2021-10-22, Alvaro Valdebenito	format with isort
+- 2021-10-22, Alvaro Valdebenito	format with black
+- 2021-10-22, Alvaro Valdebenito	split format and lint checks
+- 2021-10-11, Alvaro Valdebenito	add lint extras
+- 2021-06-08, Alvaro Valdebenito	add lint job to CI
+- 2021-10-22, Alvaro Valdebenito	publish on CI
+- 2021-10-22, Alvaro Valdebenito	create a draft release from a tag
+- 2021-10-22, Alvaro Valdebenito	configure mypy
+- 2021-10-21, Hans Brenna	first version
+- 2021-10-20, Alvaro Valdebenito	Revert "test py3.10 on CI"
+- 2021-10-20, Alvaro Valdebenito	configure black, isort & mypy
+- 2021-10-20, Alvaro Valdebenito	add lint/format extras
+- 2021-10-20, Alvaro Valdebenito	move coverage config to pyproject.toml
+- 2021-10-20, Alvaro Valdebenito	move pytest config to pyproject.toml
+- 2021-10-20, Alvaro Valdebenito	drop py3.7
+- 2021-10-20, Alvaro Valdebenito	test py3.10 on CI
+- 2021-10-20, Alvaro Valdebenito	update release docs
+- 2021-10-20, Alvaro Valdebenito	remove VERSIOM.md
+- 2021-10-20, Alvaro Valdebenito	replace setup.py with pyproject.toml and setup.cfg
+- 2021-10-19, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into griesie_fix_366
+- 2021-10-19, Jan Jurgen Griesfeller	adjusted comments a bit
+- 2021-10-19, Jan Jurgen Griesfeller	added round_floats call write_json method
+- 2021-10-19, Jan Jurgen Griesfeller	first working version
+- 2021-10-19, Jan Jurgen Griesfeller	create branch
+- 2021-10-18, Jonas Gliß	Merge pull request #495 from metno/add-aeroval-docs
+- 2021-10-18, Jonas Gliß	Merge branch 'main-dev' into add-aeroval-docs
+- 2021-10-18, Jan Griesfeller	Merge pull request #497 from metno/update_version
+- 2021-10-18, Jan Jurgen Griesfeller	bump version to next dev version
+- 2021-10-15, jgliss	Merge branch 'main-dev' into add-aeroval-docs
+- 2021-10-15, Jonas Gliß	Update README.rst
+- 2021-10-15, Jonas Gliß	Update README.rst
+- 2021-10-15, jgliss	Use var_name_input instead of var_name from ColocatedData for output files in AeroVal (both json and colocated data files)
+- 2021-10-15, jgliss	Minor update in docs/aeroval-examples
+- 2021-10-15, jgliss	Register docs/aeroval-examples.rst in docs/index.rst and add an example IO aux file
+- 2021-10-15, jgliss	Merge branch 'main-dev' into add-aeroval-docs
+- 2021-10-15, jgliss	remove commented out code
+- 2021-10-15, jgliss	Make sure auxiliary variables are registered in Colocator before trying to read
+- 2021-10-15, jgliss	Add config file for example1 in docs/_static/aeroval
+- 2021-10-15, jgliss	update coordinate tolerance ranges in StationData.get_meta and make new custom exception
+- 2021-10-15, jgliss	Fix AERONET reading after recent StationData coordinate check update; cleanup some unused code and docs in AERONET readers
+- 2021-10-15, Jan Griesfeller	Merge pull request #493 from metno/iris_3_1_fix
+- 2021-10-15, jgliss	bump version to 0.12.2dev1
+- 2021-10-15, jgliss	Merge branch 'iris_3_1_fix' into add-aeroval-docs
+- 2021-10-15, jgliss	work on docs in setupclasses.py
+- 2021-10-15, Jan Jurgen Griesfeller	remove scitools-pyke since iris does not need it anymore
+- 2021-10-15, Jan Jurgen Griesfeller	request scitools-iris >=3.1.0
+- 2021-10-15, Jan Jurgen Griesfeller	request scitools-iris >=3.1.0
+- 2021-10-15, Jan Jurgen Griesfeller	reorganise type cast to iris.cube.CubeList, adjust doc string to the fact that we use an official API call now
+- 2021-10-15, Jan Jurgen Griesfeller	remove limitation of iris version
+- 2021-10-15, Jan Jurgen Griesfeller	working solution to use cube official concatenation api of iris
+- 2021-10-14, Jan Jurgen Griesfeller	some iris 3.1.0 adjustments
+- 2021-10-14, Jonas Gliß	Merge pull request #491 from metno/main-dev
+- 2021-10-14, jgliss	Bump version
+- 2021-10-14, jgliss	bump version to 0.12.1rc1
+- 2021-10-14, Jonas Gliß	Merge pull request #490 from metno/v0121
+- 2021-10-14, jgliss	Check availability of geosjsoncontour and skip tests that depend on it
+- 2021-10-14, jgliss	Add tests in MANIFEST.in
+- 2021-10-14, jgliss	Merge branch 'transition' into main-dev
+- 2021-10-14, Jonas Gliß	Merge pull request #485 from metno/main-dev
+- 2021-10-14, jgliss	remove unused verbose arg
+- 2021-10-14, Jonas Gliß	Update VERSION.md
+- 2021-10-14, Jonas Gliß	Merge pull request #487 from metno/update-docs
+- 2021-10-14, Jonas Gliß	Merge pull request #489 from metno/changelogv0120
+- 2021-10-13, jgliss	minor update in release summary
+- 2021-10-13, jgliss	Update release summary for v0.12.0
+- 2021-10-13, jgliss	Add cli in docs/index.rst
+- 2021-10-13, jgliss	update .readthedocs.yml
+- 2021-10-13, jgliss	Add changelog for version 0.12.0 release
+- 2021-10-13, jgliss	Add CLI to sphinx docs using sphinx-argparse
+- 2021-10-13, jgliss	Work on docs
+- 2021-10-13, jgliss	Finish update of docs/api.rst for toplevel modules
+- 2021-10-13, jgliss	Update api.rst
+- 2021-10-13, jgliss	update docs in trends_engine.py
+- 2021-10-13, jgliss	update docs/api.rst
+- 2021-10-13, jgliss	update variable related modules in docs/api.rst
+- 2021-10-13, jgliss	Add new obsdatasets to docs/api.rst
+- 2021-10-13, jgliss	Merge branch 'main-dev' into update-docs
+- 2021-10-13, Jan Griesfeller	Merge pull request #483 from metno/griesie-fix-482
+- 2021-10-13, jgliss	add EEA reader(s) to docs/api.rst
+- 2021-10-13, jgliss	Merge branch 'main-dev' into update-docs
+- 2021-10-13, jgliss	minor updates in docs/api.rst
+- 2021-10-13, Jonas Gliß	Merge pull request #484 from metno/minor-fixes
+- 2021-10-13, jgliss	update flowcharts in suppl
+- 2021-10-13, Jan Jurgen Griesfeller	Removed setting pyaerocom flags as we have set all data flagged invalid to NaN already
+- 2021-10-13, jgliss	Cleanup in readgridded.py and update docs
+- 2021-10-13, jgliss	Update plot modules in docs/api.rst
+- 2021-10-13, jgliss	Add more docs and update default display settings for missing variable min / max information in AeroVal
+- 2021-10-13, Jan Jurgen Griesfeller	flag data according to pyaerocom standards, make metadata reading as gz file work
+- 2021-10-13, jgliss	minor fix
+- 2021-10-13, jgliss	update docs/api-aeroval.rst
+- 2021-10-13, jgliss	fix test
+- 2021-10-13, jgliss	minor updates and test fixes for StationData
+- 2021-10-13, jgliss	minor update
+- 2021-10-13, jgliss	Update coordinate in fake station data list
+- 2021-10-13, jgliss	add more tests
+- 2021-10-12, Jan Jurgen Griesfeller	correct validity flag assignment
+- 2021-10-12, jgliss	add more tests for StationData
+- 2021-10-12, jgliss	Fix calls of dict_to_str in __str__ methods of Variable and StationData
+- 2021-10-11, jgliss	add test
+- 2021-10-11, jgliss	Merge branch 'master' into main-dev
+- 2021-10-11, jgliss	add mising comma in license str in setup.py
+- 2021-10-11, Jonas Gliß	Update release_checklist.md
+- 2021-10-11, Jonas Gliß	Merge pull request #480 from metno/v0.12.0
+- 2021-10-11, jgliss	update pandas dependency in pyaerocom_env.yml
+- 2021-10-11, jgliss	Update version for release candidate to v0.12.0rc1
+- 2021-10-11, Jonas Gliß	Merge pull request #477 from metno/aeroval-trends-tests
+- 2021-10-11, jgliss	update test
+- 2021-10-11, jgliss	add minimum and maximum to prmm in variables.ini
+- 2021-10-11, jgliss	Uncomment some tests
+- 2021-10-11, jgliss	Add highlevel tests for AeroVal trends processing
+- 2021-10-11, Jonas Gliß	Merge pull request #473 from metno/fix-437
+- 2021-10-11, Jonas Gliß	Merge pull request #476 from metno/fix-setflags-eeareader
+- 2021-10-11, jgliss	Invert assignment of flags in UngriddedData when reading EEA
+- 2021-10-11, jgliss	Merge branch 'main-dev' into fix-437
+- 2021-10-11, jgliss	merge master into main-dev
+- 2021-10-11, jgliss	Merge branch 'main-dev' into fix-437
+- 2021-10-09, jgliss	Add test
+- 2021-10-09, jgliss	Add test
+- 2021-10-09, jgliss	(BETA) Reimplement ExperimentOutput.clean_json_files; minor updates in docs and structure
+- 2021-10-08, jgliss	add more tests for _processing_base and fix bug in DataImporter
+- 2021-10-08, jgliss	add more tests for _processing_base
+- 2021-10-08, jgliss	Add some tests for aeroval/_processing_base.py
+- 2021-10-08, jgliss	Update ensemble computation function and add tests; attempt to fix VarCollection confusion across CI suite
+- 2021-10-08, Jonas Gliß	Merge pull request #469 from metno/ship-earlinet-tests
+- 2021-10-08, jgliss	remove duplicate line in VerticalProfile.__init__
+- 2021-10-08, jgliss	(WIP) checking ensemble model computation method
+- 2021-10-08, jgliss	Ensure proper test cleanup wrt added variables in tests/aeroval/test_helpers.py
+- 2021-10-08, jgliss	Add more tests for aeroval/helpers.py
+- 2021-10-08, jgliss	add more tests
+- 2021-10-08, jgliss	Delete deprecated function make_info_str_eval_setup in aeroval/helpers.py
+- 2021-10-08, jgliss	Merge branch 'main-dev' into fix-437
+- 2021-10-08, jgliss	Merge branch 'main-dev' into ship-earlinet-tests
+- 2021-10-08, jgliss	Update some imports and work on tests for aeroval/helpers.py
+- 2021-10-08, Jonas Gliß	Merge pull request #475 from metno/fix-474
+- 2021-10-08, jgliss	Re-implement reorder_experiments in ExperimentOutput (removed from aeroval/helpers.py)
+- 2021-10-08, jgliss	Delete old CLI for AeroVal
+- 2021-10-08, jgliss	Update test in colocation_auto
+- 2021-10-08, jgliss	Allow co-location frequency to differ from gridded reading frequency even if flex_ts_type is False in Colocator
+- 2021-10-08, jgliss	add more tests for invalid eval entry names
+- 2021-10-08, jgliss	Make sure EvalSetup crashes if _ is in model or obs entry name
+- 2021-10-07, jgliss	minor cleanup in ReadEarlinet
+- 2021-10-07, jgliss	minor cleanup in ReadEarlinet
+- 2021-10-07, jgliss	minor cleanup in ReadEarlinet
+- 2021-10-07, jgliss	Add test case for exclude files in ReadEarlinet
+- 2021-10-07, jgliss	minor cleanup and add more Earlinet tests
+- 2021-10-07, jgliss	Revise and cleanup VerticalProfile class and add related tests
+- 2021-10-07, jgliss	Ship Earlinet lustre tests to testdata-minimal
+- 2021-10-07, Jonas Gliß	Merge pull request #468 from metno/superobs
+- 2021-10-07, jgliss	declare release summary draft
+- 2021-10-07, jgliss	Add more tests
+- 2021-10-07, jgliss	add draft of v0.12.0 release summary
+- 2021-10-07, jgliss	Add more AeroVal tests
+- 2021-10-07, jgliss	Set TMPDIR in conftest and define pytest_sessionfinish (currently nothing done)
+- 2021-10-07, jgliss	make new highlevel aeroval test module
+- 2021-10-06, jgliss	remove unused import
+- 2021-10-06, jgliss	Rename some test modules
+- 2021-10-06, jgliss	Add / modify some tests
+- 2021-10-06, jgliss	(BETA) reimplement superobs processing (needs more testing)
+- 2021-10-06, jgliss	Reorganise AeroVal API to prepare superobs eval; minor cleanup of unused stuff
+- 2021-10-06, jgliss	Minor reformatting
+- 2021-10-06, jgliss	minor update docs
+- 2021-10-06, jgliss	Move class ColdataToJsonEngine from helpers module to its own module
+- 2021-10-06, jgliss	Rename coldatatojson_engine.py to coldatatojson_helpers.py
+- 2021-10-06, jgliss	Merge branch 'main-dev' of git+ssh://github.com/metno/pyaerocom into main-dev
+- 2021-10-06, jgliss	add test exp4 file (WIP)
+- 2021-10-06, Jonas Gliß	Merge pull request #429 from metno/add-tests-plot
+- 2021-10-06, jgliss	Merge branch 'main-dev' into add-tests-plot
+- 2021-10-06, jgliss	Update docs in heatmap plots and add tests
+- 2021-10-06, Daniel Heinesen	Merge pull request #461 from metno/eea_reading-fix405
+- 2021-10-06, Jonas Gliß	Merge pull request #467 from metno/rm-coverage
+- 2021-10-06, jgliss	add more tests for plotscatter
+- 2021-10-06, Daniel Heinesen	Merge pull request #454 from metno/extended_statistics
+- 2021-10-06, Daniel Heinesen	Merge branch 'main-dev' into extended_statistics
+- 2021-10-05, jgliss	Add some modules to .coveragerc that are considered experimental and / or dev
+- 2021-10-05, jgliss	add docs and tests for plotscatter
+- 2021-10-05, jgliss	Add more tests
+- 2021-10-05, jgliss	fix minor bug from earlier commit in mapping.py
+- 2021-10-05, jgliss	rollback changes in region_defs.py
+- 2021-10-05, jgliss	add more tests for mapping.py
+- 2021-10-05, jgliss	add more tests for mapping.py
+- 2021-10-05, jgliss	cleanup and add tests in plot subpackage
+- 2021-10-05, jgliss	Merge branch 'main-dev' into add-tests-plot
+- 2021-10-05, jgliss	Add more tests for plot/plotcoordinates
+- 2021-10-05, jgliss	Add tests for plot/plotcoordinates
+- 2021-10-05, Jonas Gliß	Merge pull request #456 from metno/dev-precip-eval
+- 2021-10-05, jgliss	add more tests for aux_var_helpers
+- 2021-10-05, jgliss	Merge branch 'main-dev' into dev-precip-eval
+- 2021-10-05, jgliss	work on tests
+- 2021-10-05, jgliss	Update GriddedData.regrid (use contiguous bounds for dummy lat / lon dims) and update some docs
+- 2021-10-05, jgliss	update docstring
+- 2021-10-05, jgliss	Move funcs calc_concsspm25 and calc_vmrox from emep reader to helper mod and slightly increase robustness of calc_vmrox
+- 2021-10-05, jgliss	Merge fix-464 and resolve conflicts
+- 2021-10-05, Jonas Gliß	Merge pull request #465 from metno/fix-464
+- 2021-10-05, jgliss	uncomment some tests
+- 2021-10-04, jgliss	Update tempdir for fake model data
+- 2021-10-04, jgliss	minor updates
+- 2021-10-04, jgliss	uncomment some tests
+- 2021-10-04, jgliss	add code to create dummy model data for tests and add more tests
+- 2021-10-04, jgliss	Use metadata vertical code in GriddedData.netcdf if available
+- 2021-10-04, jgliss	add / modify some tests
+- 2021-10-04, jgliss	make sure post obs datasets are not attempted to be added multiple times during the same session
+- 2021-10-04, jgliss	minor fix and add test
+- 2021-10-04, jgliss	Make sure access of const.LOCAL_TMP_DIR does not crash when trying to access
+- 2021-10-04, jgliss	Add test run for cfg_test_exp2 in tests
+- 2021-10-04, jgliss	make sure data_ids is processed as list in ReadUngridded.read
+- 2021-10-04, jgliss	update ReadUngridded init tests and add new config file for testing functionality required in #465 (WIP)
+- 2021-10-04, jgliss	make sure to only read obs_id as data_id when using ReadUngridded in Colocator
+- 2021-10-04, jgliss	Delete attr ReadUngridded.vars_to_retrieve and update handling of input vars_to_retrieve and data_ids
+- 2021-10-04, jgliss	check variable names are aliases
+- 2021-10-04, Daniel Heinesen	Merge pull request #460 from metno/seasalt
+- 2021-10-01, jgliss	add more tests
+- 2021-10-01, jgliss	Add test to check experiment output files
+- 2021-10-01, jgliss	add more tests
+- 2021-10-01, jgliss	delete unwanted file from previous commit
+- 2021-10-01, jgliss	Add simple AeroVal setup and start adding more tests
+- 2021-10-01, Jan Jurgen Griesfeller	bump version to 0.11.1 due to publishing error
+- 2021-10-01, Jonas	Merge pull request #367 from metno/prep-v0.11.0
+- 2021-10-01, jgliss	Merge branch 'prep-v0.11.0' of git+ssh://github.com/metno/pyaerocom into prep-v0.11.0
+- 2021-10-01, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/prep-v0.11.0' into prep-v0.11.0
+- 2021-10-01, Jan Jurgen Griesfeller	add chnagelog file
+- 2021-10-01, jgliss	Merge branch 'prep-v0.11.0' of git+ssh://github.com/metno/pyaerocom into prep-v0.11.0
+- 2021-10-01, jgliss	fix failing tests due to updates in testdata-minimal
+- 2021-10-01, Jan Griesfeller	Update VERSION.md
+- 2021-10-01, jgliss	Merge branch 'prep-v0.11.0' of git+ssh://github.com/metno/pyaerocom into prep-v0.11.0
+- 2021-10-01, jgliss	update pyaerocom_env.yml (iris < 3.1.0)
+- 2021-10-01, Jan Jurgen Griesfeller	trigger CI
+- 2021-10-01, jgliss	add tests/cfg_test_exp1.py
+- 2021-10-01, Daniel Heinesen	Revert a change to read_eea
+- 2021-10-01, Daniel Heinesen	Adds vmrox calc
+- 2021-10-01, Daniel Heinesen	Merge branch 'fix-464' of github.com:metno/pyaerocom into seasalt
+- 2021-10-01, jgliss	Ensure correct access for obs_id check in Colocator.obs_reader
+- 2021-10-01, Daniel Heinesen	Changes {} to dict
+- 2021-10-01, Daniel Heinesen	Merge branch 'fix-464' of github.com:metno/pyaerocom into seasalt
+- 2021-10-01, Daniel Heinesen	Adds test for duplicates
+- 2021-10-01, jgliss	further debug #464, should work now
+- 2021-10-01, jgliss	Add code for registration of new ungridded obs datasets in ObsEntry, attempt on #464
+- 2021-10-01, jgliss	Parse lon_range and lat_range to dummy in GriddedData.regrid to avoid regridding globally if range is constrained
+- 2021-09-30, jgliss	update test
+- 2021-09-30, jgliss	merge main-dev
+- 2021-09-30, jgliss	fix some tests
+- 2021-09-30, jgliss	fix some tests
+- 2021-09-30, jgliss	update variable access in plotscatter
+- 2021-09-30, jgliss	Minor updates and test fixes
+- 2021-09-30, jgliss	Add more tests
+- 2021-09-30, jgliss	Minor update in modelmaps_engine and update imports
+- 2021-09-30, jgliss	update import
+- 2021-09-30, jgliss	add new method check_var_ranges_avail in aeroval/helpers
+- 2021-09-30, jgliss	add input arg delete_existing to GriddedData.register_var_glob
+- 2021-09-30, jgliss	Add docs and update imports
+- 2021-09-30, jgliss	Update imports in read_mscw_ctm and fix minor bug
+- 2021-09-30, jgliss	Update library imports related to variable refactor
+- 2021-09-30, jgliss	Rename all variables in ini files that contain underscore
+- 2021-09-30, jgliss	Reorganise content of variables.py into several new modules (varcollection, variable_helpers, varnameinfo, variable)
+- 2021-09-30, jgliss	Rename pr_mm to prmm in ebas_config.ini (no underscore allowed in variable names)
+- 2021-09-30, jgliss	Rename pr_mm to prmm in emep_variables (no underscore allowed in variable names)
+- 2021-09-30, jgliss	Rename pr_mm to prmm (no underscore allowed in variable names)
+- 2021-09-30, jgliss	New exception TemporalSamplingError
+- 2021-09-30, jgliss	updated some imports in units_helpers
+- 2021-09-30, jgliss	Add new EBAS option freq_min_cov to check consistency in meas periods
+- 2021-09-30, Jan Jurgen Griesfeller	added and removed some comments
+- 2021-09-30, Daniel Heinesen	Removed duplicates
+- 2021-09-30, Daniel Heinesen	Merge branch 'main-dev' of github.com:metno/pyaerocom into seasalt
+- 2021-09-30, Alvaro Valdebenito	Merge pull request #410 from avaldebe/aeroval-tests
+- 2021-09-30, Daniel Heinesen	Changed test for seasalt
+- 2021-09-30, Jan Jurgen Griesfeller	rewrote the file reading so that the entire file is read into memory first
+- 2021-09-30, Alvaro Valdebenito	don't filterwarnings
+- 2021-09-30, Daniel Heinesen	Adds some keys to stats dummy, and more defs to glob default
+- 2021-09-27, Alvaro Valdebenito	rename testdata_access to access_testdata
+- 2021-09-27, Alvaro Valdebenito	Apply suggestions from code review
+- 2021-09-15, Alvaro Valdebenito	test aeroval.coldatatojson_engine helper functions
+- 2021-09-14, Alvaro Valdebenito	skip broken HasColocator, DataImporter tests
+- 2021-09-14, Alvaro Valdebenito	test DataImporter
+- 2021-09-14, Alvaro Valdebenito	test HasConfig, HasColocator
+- 2021-09-08, Alvaro Valdebenito	test aeroval.aux_io_helpers
+- 2021-09-08, Alvaro Valdebenito	omit abstract classes from coverage
+- 2021-09-08, Alvaro Valdebenito	test cams84 aeroval setup
+- 2021-09-07, Alvaro Valdebenito	exclude aeroval.utils from coverage
+- 2021-09-07, Alvaro Valdebenito	drop broken "__main__" clauses
+- 2021-09-07, Alvaro Valdebenito	convert "__main__" clauses to tests
+- 2021-09-07, Alvaro Valdebenito	clean up headers, #16
+- 2021-09-07, Alvaro Valdebenito	avoid classes/functions starting with Test/test
+- 2021-09-07, Alvaro Valdebenito	address FutureWarning
+- 2021-09-07, Alvaro Valdebenito	address DeprecationWarning
+- 2021-09-07, Alvaro Valdebenito	ignore specific warnings
+- 2021-09-29, jgliss	update EBAS test
+- 2021-09-29, jgliss	delete empty lines in test module
+- 2021-09-29, jgliss	Register pr variable in ReadEbas and deactivate unit conversion (pr in units of mm is needed in wdep reading)
+- 2021-09-29, jgliss	add docs in aux_var_helpers
+- 2021-09-29, jgliss	update failing EBAS tests
+- 2021-09-29, jgliss	update failing tests for TsType.to_si
+- 2021-09-29, jgliss	update and add tests
+- 2021-09-29, jgliss	minor refactor and cleanup and add docs
+- 2021-09-29, jgliss	pass ts_type to unit conversion in StationData (cf. updates in units_helpers)
+- 2021-09-29, jgliss	add some helpers for implicit rate unit conversion in units_helpers, and unify in get_unit_conversion_fac; move concprcp helpers into new module (WIP)
+- 2021-09-29, jgliss	Move custom unit conversion code out of GriddedData and into units_helpers, and simplify
+- 2021-09-29, jgliss	update import of concprcp helper in ReadGridded
+- 2021-09-29, jgliss	Rename EMEP precip var from pr to pr_mm
+- 2021-09-29, jgliss	Return value str of TsType.to_si is now bracketed if mulfac is not 1 (e.g. TsType("3daily").to_si() == "(3d)" instead of "3d")
+- 2021-09-29, jgliss	Minor updates in variable.py and var_groups.py to identify deposition, emission and rate variables
+- 2021-09-29, jgliss	add _is_rate = 1 for pr and pr_mm in variables.ini
+- 2021-09-29, jgliss	Move some broken functions for concprcp analysis from units_helpers to _concprcp_units_helpers
+- 2021-09-28, jgliss	add more tests for EMEP reading
+- 2021-09-28, jgliss	Harmonise AUX_FUNS and AUX_REQUIRES in EMEP reader and add test
+- 2021-09-28, jgliss	refactor helper functions for EMEP reader into new module and add more tests
+- 2021-09-28, jgliss	add some high-level EMEP reader tests
+- 2021-09-28, jgliss	delete units_helpers.implicit_to_explicit_rates as it was too hard coded and is unused in lib
+- 2021-09-28, jgliss	(WIP) revise units_helpers and add tests
+- 2021-09-28, Jonas	Merge pull request #457 from metno/set-stats-minnum-one
+- 2021-09-28, jgliss	Set StatisticsSetup.MIN_NUM to 1 (before it was 3)
+- 2021-09-28, jgliss	Merge branch 'main-dev' into dev-precip-eval
+- 2021-09-28, Jonas	Merge pull request #453 from metno/fix-402
+- 2021-09-28, jgliss	Merge branch 'fix-402' into dev-precip-eval
+- 2021-09-28, jgliss	Add test for ExperimentOutput.delete_experiment_data
+- 2021-09-28, jgliss	minor bug fix and add test for aeroval/experiment_output.py
+- 2021-09-28, jgliss	add test for check_make_json
+- 2021-09-28, Daniel Heinesen	Adds new calculation for sspm25
+- 2021-09-27, jgliss	minor reformatting
+- 2021-09-27, jgliss	Reactivate pr unit check in ReadEbas
+- 2021-09-27, jgliss	Create new variable pr_mm and change EBAS reader accordingly
+- 2021-09-27, jgliss	minor cleanup in read_mscw_ctm.py
+- 2021-09-27, jgliss	add documentation
+- 2021-09-27, Daniel Heinesen	Adds options for statistics.json for extended statistics
+- 2021-09-24, jgliss	make sure to create new objects when computing auxiliary variables in EMEP reader
+- 2021-09-24, jgliss	Improve UngriddedData.filter_by_meta
+- 2021-09-24, jgliss	Fix test and minor updates in creation of output directories and files in AeroVal experiment
+- 2021-09-24, jgliss	fix #402 and make draft of option add_seasons in EvalSetup.time_cfg (NOT TESTED)
+- 2021-09-23, jgliss	Check that time config is initialised properly before copying config file in ExperimentOutput.update_interface
+- 2021-09-23, Jonas	Merge pull request #439 from metno/fix-438
+- 2021-09-23, Daniel Heinesen	Starts to combine multiple years of EMEP data
+- 2021-09-23, jgliss	Merge branch 'main-dev' into add-tests-plot
+- 2021-09-23, Jonas	Merge pull request #449 from metno/fix-448
+- 2021-09-23, jgliss	Add some tests for aeroval.experiment_output
+- 2021-09-23, jgliss	minor updates in ExperimentOutput
+- 2021-09-23, jgliss	further debug _is_part_of_experiment in ExperimentOutput
+- 2021-09-22, jgliss	try to really fix #423
+- 2021-09-22, jgliss	fix failing test
+- 2021-09-22, jgliss	attempt fix of #448 and remove defaults for vert_scheme in GriddedData._to_timeseries_3D
+- 2021-09-22, jgliss	Restrict obs_vert_type to str and delete attr. model_vert_type_alt in ColocationSetup
+- 2021-09-22, jgliss	fix typo
+- 2021-09-22, jgliss	further debug ExperimentOutput._is_part_of_experiment
+- 2021-09-22, jgliss	add attr model_rename_vars to ModelEntry
+- 2021-09-22, jgliss	add docs
+- 2021-09-22, jgliss	fix some tests
+- 2021-09-22, jgliss	Merge branch 'fix-438' of git+ssh://github.com/metno/pyaerocom into fix-438
+- 2021-09-22, jgliss	add tests for GriddedData
+- 2021-09-22, jgliss	delete method ModelEntry.has_var
+- 2021-09-22, jgliss	Rewrite aeroval.ExperimentOutput._is_part_of_experiment
+- 2021-09-22, Daniel Heinesen	Merge pull request #447 from metno/check_unit_true
+- 2021-09-22, Daniel Heinesen	Corrects name in calc_concNno3pm25
+- 2021-09-21, jgliss	make sure missing variables are added in co-location and modelmaps engine
+- 2021-09-21, jgliss	add method GriddedData.register_var_glob to add unregistered variables
+- 2021-09-21, jgliss	only update entries in ranges.json that are not already set
+- 2021-09-21, jgliss	Merge branch 'main-dev' into fix-438
+- 2021-09-21, jgliss	minor cleanup and add tests for GriddedData
+- 2021-09-21, jgliss	Move assignment of reader attr in GriddedData to the end of  ReadGridded._loar_var
+- 2021-09-21, Jonas	Merge pull request #446 from metno/add-codecov-badge
+- 2021-09-21, jgliss	Add codecov badge in README
+- 2021-09-21, jgliss	Cleanup and add tests for GriddedData
+- 2021-09-21, Daniel Heinesen	Sets check_unit true
+- 2021-09-21, Daniel Heinesen	Merge pull request #445 from metno/trends-statitics
+- 2021-09-21, Daniel Heinesen	Fixes dict addition
+- 2021-09-21, jgliss	Merge branch 'fix-438' of git+ssh://github.com/metno/pyaerocom into fix-438
+- 2021-09-21, jgliss	add tests for mathutils.estimate_value_range
+- 2021-09-21, jgliss	add minimum / maximum values in newly created variables in colocation._resolve_var_name
+- 2021-09-21, jgliss	Add new methods nanmin, nanmax and estimate_value_range_from_data in GriddedData
+- 2021-09-21, jgliss	add new function estimate_value_range in mathutils
+- 2021-09-21, jgliss	improve verbosity in ModelMapsEngine if variable is not defined
+- 2021-09-21, Daniel Heinesen	Adds only trends statitics if add_trends
+- 2021-09-21, Jonas	Merge pull request #443 from metno/fix-423
+- 2021-09-21, jgliss	attempt fix of #423
+- 2021-09-20, jgliss	minor fix in constrained reading in ReadGridded
+- 2021-09-20, jgliss	Make sure EvalSetup can reimport config from json file created via EvalSetup.to_json via EvalSetup.from_json
+- 2021-09-20, jgliss	Add deprecated keys for outlier removal to FORBIDDEN_CHARS_KEYS of ColocationSetup and remove class method to check that explicitly
+- 2021-09-20, jgliss	add docs
+- 2021-09-20, jgliss	BrowseDict.FORBIDDEN_CHARS_KEYS will now check for exact matches and not string contains for each item
+- 2021-09-20, jgliss	fix minor bug in Variable._cmap_bins_from_vmin_vmax
+- 2021-09-20, jgliss	Merge branch 'main-dev' into fix-438
+- 2021-09-20, jgliss	Merge branch 'main-dev' into add-tests-plot
+- 2021-09-20, jgliss	Merge branch 'main-dev' of git+ssh://github.com/metno/pyaerocom into main-dev
+- 2021-09-20, jgliss	add skipif marker to exclude certain tests if connected with lustre
+- 2021-09-20, Jonas	Merge pull request #442 from avaldebe/pin-iris-version
+- 2021-09-20, Alvaro Valdebenito	set upper iris version, #440
+- 2021-09-17, jgliss	Fix pyaerocom_env.yml
+- 2021-09-17, jgliss	Add geojsoncontour dependency in setup.py
+- 2021-09-17, jgliss	Modify ReadGridded.apply_read_constraint, since recent updates in that function modified cube in a way that could not be handled properly anymore by iris
+- 2021-09-17, jgliss	remove default to_ts_type=monthly in GriddedData.resample_time
+- 2021-09-16, jgliss	make sure model maps pixel processing data is numpy array (and not dask); add some tests for modelmaps_helpers
+- 2021-09-16, jgliss	make sure mathutils.calc_statistics does not crash if weights are provided but data is empty
+- 2021-09-16, jgliss	minor reformatting in colocateddata.py
+- 2021-09-16, jgliss	Add dask and geojsoncontour to pyaerocom_env.yml
+- 2021-09-16, jgliss	revoke type hints because of crashing CI
+- 2021-09-16, jgliss	Review variable handling in AeroVal; should fix #438
+- 2021-09-16, Jonas	Merge pull request #435 from metno/minor-fixes
+- 2021-09-16, Daniel Heinesen	First MVP of the obs-only using constant dummy model
+- 2021-09-16, jgliss	delete pyaerocom/aeroval/_lowlev.py
+- 2021-09-16, jgliss	merge minor-fixes
+- 2021-09-16, jgliss	Delete aeroval/_lowlev.py and update ModelEntry and ObsEntry accordingly
+- 2021-09-16, jgliss	Remove unused vmin, vmax variables in contour maps for model maps processing and add docs
+- 2021-09-16, jgliss	revoke wrongly introduced @property decorator in ModelEntry.get_all_vars
+- 2021-09-16, jgliss	Add docstring in modelmaps_helpers.py
+- 2021-09-16, jgliss	Remove outdated modules from docs/api.rst
+- 2021-09-16, jgliss	add docs in aeroval/modelentry.py
+- 2021-09-16, jgliss	Add ToDo strings for #437
+- 2021-09-16, jgliss	Add docs in aeroval/helpers.py
+- 2021-09-16, jgliss	minor reformatting
+- 2021-09-16, jgliss	Add more docs in aeroval/utils.py
+- 2021-09-16, jgliss	add more AeroVal docs
+- 2021-09-16, jgliss	Create new module for superobs processing
+- 2021-09-16, jgliss	Initialise docs section for AeroVal tools
+- 2021-09-16, jgliss	Merge branch 'main-dev' into minor-fixes
+- 2021-09-16, Daniel Heinesen	Changes map_val to use start year
+- 2021-09-15, jgliss	Merge branch 'main-dev' into minor-fixes
+- 2021-09-15, jgliss	minor fix in colocation_auto.py
+- 2021-09-15, Daniel Heinesen	Merge pull request #426 from metno/add_trends
+- 2021-09-15, jgliss	Merge branch 'main-dev' into add_trends
+- 2021-09-15, Daniel Heinesen	Changes docstrings and removes one else
+- 2021-09-15, Daniel Heinesen	Some more PEP8
+- 2021-09-15, Alvaro Valdebenito	Merge pull request #434 from metno/fix-HasColocator
+- 2021-09-15, Daniel Heinesen	Merge and PEP8
+- 2021-09-15, Daniel Heinesen	Catches only relevant trends errors
+- 2021-09-15, Daniel Heinesen	Removes random noise from tests
+- 2021-09-15, Daniel Heinesen	Adds simple try statments and docstrings
+- 2021-09-15, Daniel Heinesen	Uses _get_min_max_year_periods for trends
+- 2021-09-15, Daniel Heinesen	Moves conversion of seasons to _get_season_from_months
+- 2021-09-15, Daniel Heinesen	Removed defaults
+- 2021-09-15, Daniel Heinesen	Apply suggestions from code review
+- 2021-09-15, jgliss	Move method _get_diurnal_only from ExperimentProcessor to HasColocator
+- 2021-09-15, jgliss	minor reformatting
+- 2021-09-15, Jonas	Merge pull request #433 from metno/fix-432
+- 2021-09-15, Jan Griesfeller	Merge pull request #425 from metno/griesie_EEA_testing_new
+- 2021-09-15, Jan Griesfeller	Update pyaerocom/io/read_eea_aqerep_base.py
+- 2021-09-15, Jan Griesfeller	Update pyaerocom/io/read_eea_aqerep_base.py
+- 2021-09-14, jgliss	add tests to make sure #432 is fixed
+- 2021-09-14, jgliss	add tests to make sure #432 is fixed
+- 2021-09-14, Jan Jurgen Griesfeller	tmp file needs to be closed to be accessible as a file all the time!
+- 2021-09-14, Jan Jurgen Griesfeller	CI testing of EEAv2 data read should work now
+- 2021-09-14, Jan Jurgen Griesfeller	added enough checks so that all possible file corruptions are handled correctly
+- 2021-09-14, jgliss	attempt fix of #432
+- 2021-09-14, Jonas	Merge pull request #428 from metno/minor-updates
+- 2021-09-14, jgliss	add tests/README.md
+- 2021-09-14, Daniel Heinesen	Adds new errors to make _make_trends test work
+- 2021-09-14, Daniel Heinesen	Adds fake data to _make_trends test
+- 2021-09-13, jgliss	update test and some imports
+- 2021-09-13, jgliss	Add tests for pyaerocom/plot/config.py
+- 2021-09-13, jgliss	Delete unused class pyaerocom/plot/config/MapPlotSettings
+- 2021-09-13, jgliss	update imports in tests/io/test_iris_io.py
+- 2021-09-13, jgliss	delete dir plot/_sorted_out
+- 2021-09-13, jgliss	delete dir pyaerocom/io/test
+- 2021-09-13, jgliss	Move test_iris_io.py from pyaerocom/io/test/ to tests/io and delete dir pyaerocom/io/test
+- 2021-09-13, jgliss	delete pyaerocom/pyaerocom/test directory
+- 2021-09-13, jgliss	Minor cleanup
+- 2021-09-13, jgliss	minor modifications in _init_helpers.py and add tests for that module
+- 2021-09-13, jgliss	minor cleanup
+- 2021-09-13, Daniel Heinesen	Adds first (trivial) test for _make_trends
+- 2021-09-13, Daniel Heinesen	Merge
+- 2021-09-13, Daniel Heinesen	Adds regional trends
+- 2021-09-13, jgliss	get rid of some warnings in map plot, add missing import in ungriddeddata.py
+- 2021-09-13, Jonas	Merge pull request #422 from metno/fix-colocator-flex
+- 2021-09-13, jgliss	merge main-dev
+- 2021-09-13, Jonas	Merge pull request #419 from metno/add-docs
+- 2021-09-13, jgliss	Merge branch 'main-dev' into add-docs
+- 2021-09-13, jgliss	work on docs
+- 2021-09-13, Jonas	Merge pull request #354 from metno/fix-341
+- 2021-09-13, Daniel Heinesen	Removes a debug exit
+- 2021-09-13, jgliss	Merge branch 'main-dev' into add-docs
+- 2021-09-13, jgliss	work on docs
+- 2021-09-13, jgliss	move matplotlib.use(Agg) from module header into function calc_contour_json in modelmaps_helpers?
+- 2021-09-13, jgliss	import browse_database function in pyaerocom/__init__.py
+- 2021-09-13, Daniel Heinesen	Adds function for adding trends, and adds cfg options
+- 2021-09-10, jgliss	add more tests for _lowlevel_helpers.py
+- 2021-09-10, jgliss	add more tests for _lowlevel_helpers.py
+- 2021-09-10, jgliss	add more tests for _lowlevel_helpers.py
+- 2021-09-10, Jan Jurgen Griesfeller	added simple testing for EEAAQeRepv2 testing routine
+- 2021-09-10, jgliss	Add some tests for ConstrainedContainer
+- 2021-09-10, jgliss	Increase flexibility of ColocationSetup attributes (discard inherit from ConstrainedContainer, instead use BrowseDict)
+- 2021-09-10, jgliss	minor change in docstring
+- 2021-09-09, jgliss	Add docstring
+- 2021-09-09, jgliss	remove directive undoc-members from api.rst for module colocation_auto
+- 2021-09-09, jgliss	modify docstring
+- 2021-09-09, jgliss	fix test
+- 2021-09-09, jgliss	Minor modifications in docstring
+- 2021-09-09, jgliss	Minor modifications in docstring
+- 2021-09-09, jgliss	merge main-dev into fix-341
+- 2021-09-09, Jonas	Merge pull request #421 from avaldebe/move-tests
+- 2021-09-09, jgliss	Revise header docstring of ColocationSetup class
+- 2021-09-09, jgliss	Add more tests for colocation_auto.py, including one to ensure #406 is solved
+- 2021-09-09, Alvaro Valdebenito	add wheel to CI install step
+- 2021-09-09, Alvaro Valdebenito	update package setup
+- 2021-09-09, Alvaro Valdebenito	update pytest config
+- 2021-09-09, Alvaro Valdebenito	tidy up coverage config
+- 2021-09-09, Alvaro Valdebenito	move tools tests, #420
+- 2021-09-09, Alvaro Valdebenito	move aeroval tests, #420
+- 2021-09-09, Alvaro Valdebenito	move io tests, #420
+- 2021-09-09, jgliss	(WIP) work on docs and tests for colocation_auto.py
+- 2021-09-09, Alvaro Valdebenito	move root tests, #420
+- 2021-09-09, jgliss	Restrict start / stop settings in Colocator, in case model_use_climatology is active
+- 2021-09-09, jgliss	Merge branch 'main-dev' into add-docs
+- 2021-09-09, jgliss	continue work on docs in colocation.py
+- 2021-09-09, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-09-09, jgliss	add docs in colocation.py
+- 2021-09-09, Jonas	Merge pull request #416 from metno/fix-409
+- 2021-09-09, jgliss	Add some tests for climatology co-location
+- 2021-09-08, jgliss	Merge branch 'main-dev' into fix-409
+- 2021-09-08, jgliss	Merge branch 'main-dev' of git+ssh://github.com/metno/pyaerocom into main-dev
+- 2021-09-08, jgliss	Update exception handling related to statistics tseries computation; add related tests
+- 2021-09-08, jgliss	Raise UnkownRegion error in ColocatedData.filter_region if input region is invalid
+- 2021-09-08, jgliss	Add new custom exception UnkownRegion
+- 2021-09-08, Hans Brenna	Merge pull request #403 from metno/fix_readMSCWCtm_tstype
+- 2021-09-08, jgliss	Start adding tests for coldatatojson_engine
+- 2021-09-08, jgliss	Merge branch 'fix-409' into main-dev
+- 2021-09-08, Jonas	Merge pull request #418 from metno/add-docs
+- 2021-09-08, Jonas	Merge pull request #414 from metno/fix-413
+- 2021-09-08, Hans Brenna	Merge branch 'main-dev' into fix_readMSCWCtm_tstype
+- 2021-09-08, jgliss	Merge branch 'main-dev' into add-docs
+- 2021-09-08, jgliss	Update docstring
+- 2021-09-08, jgliss	Add some checks and docs for statistics timeseries
+- 2021-09-08, jgliss	(BETA) Rewrite _process_statistics_timeseries in aeroval.coldatatojson_engine to match the needs of #409
+- 2021-09-08, jgliss	Add new eval option stats_tseries_base_freq in aeroval.setupclasses.StatisticsSetup
+- 2021-09-08, jgliss	Remove unused code in helpers.resample_time_dataarray
+- 2021-09-08, jgliss	Delete attr. time_config.XARR_TIME_GROUPERS as it is not used anymore
+- 2021-09-07, jgliss	Improve fix of #413 for more general cases
+- 2021-09-07, jgliss	attempt to fix #413
+- 2021-09-07, Jonas	Merge pull request #411 from metno/fix-409
+- 2021-09-07, jgliss	update iris version requirement in pyaerocom_env.yml
+- 2021-09-07, Jan Griesfeller	Merge pull request #408 from metno/griesie_EEA_robustness
+- 2021-09-07, Jan Jurgen Griesfeller	forgot to change filemasks for test to include gz files
+- 2021-09-07, Jan Jurgen Griesfeller	forgot to increase version number
+- 2021-09-07, jgliss	Change defaults of colocation_setup in EvalSetup
+- 2021-09-07, Jonas	Merge pull request #336 from metno/aeroval-updates
+- 2021-09-07, Jan Jurgen Griesfeller	made EEA AQeRep.v2 reading more robust; added possibility to read gzipped files
+- 2021-09-07, jgliss	Add docs in aeroval/aux_io_helpers.py
+- 2021-09-06, Hans Brenna	added tests
+- 2021-09-06, Hans Brenna	added tests
+- 2021-09-03, Jonas	Merge pull request #407 from metno/fix-406
+- 2021-09-03, jgliss	Fix failing tests in colocation_auto.py (required update of _infer_start_stop_yr_from_model_reader in Colocator)
+- 2021-09-03, jgliss	fix test
+- 2021-09-03, jgliss	fix #406
+- 2021-09-03, jgliss	(WIP) add tests for climatological colocation
+- 2021-09-03, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-09-03, jgliss	Merge branch 'main-dev' into aeroval-updates
+- 2021-09-03, jgliss	(WIP) add more tests for colocation_auto (wrt climatological colocation)
+- 2021-09-03, Jonas	Merge pull request #389 from metno/tmp-cleanup-tests
+- 2021-09-03, jgliss	trigger CI
+- 2021-09-03, jgliss	Add test and improve robustness for reading of climatological model files
+- 2021-09-03, Jonas	Merge pull request #381 from metno/ebas-var-updates
+- 2021-09-03, Hans Brenna	added test
+- 2021-09-03, Hans Brenna	added test
+- 2021-09-03, jgliss	fix failing test
+- 2021-09-03, jgliss	Merge aeroval-updates in fix-341
+- 2021-09-03, Hans Brenna	added test
+- 2021-09-03, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-09-03, jgliss	add docs
+- 2021-09-03, jgliss	Merge branch 'trends-updates' into aeroval-updates
+- 2021-09-03, jgliss	Merge branch 'main-dev' into trends-updates
+- 2021-09-03, jgliss	Discard deprecated code for experiment overview table in AeroVal; work on docs
+- 2021-09-03, Jonas	Merge pull request #399 from metno/resampling-cleanup
+- 2021-09-03, Jonas	Merge pull request #400 from metno/av-trend-patch
+- 2021-09-02, Hans Brenna	reverted
+- 2021-09-02, Hans Brenna	trying out a fix for eea reading
+- 2021-09-02, Hans Brenna	test something
+- 2021-09-02, Hans Brenna	test something
+- 2021-09-02, Hans Brenna	test something
+- 2021-09-02, Hans Brenna	fixed failing test
+- 2021-09-01, jgliss	Fix test
+- 2021-09-01, jgliss	Merge branch 'main-dev' into ebas-var-updates
+- 2021-09-01, jgliss	Merge branch 'main-dev' into av-trend-patch
+- 2021-09-01, Hans Brenna	fixed a bug in browser
+- 2021-09-01, Hans Brenna	Merge pull request #393 from metno/add-hydrocarbon-EBAS-vars
+- 2021-09-01, Jonas	Update VERSION.md
+- 2021-09-01, Alvaro Valdebenito	Merge pull request #396 from avaldebe/issue-395
+- 2021-09-01, jgliss	trigger CI
+- 2021-08-30, Hans Brenna	minor fixæ
+- 2021-08-30, Hans Brenna	added drydep vars
+- 2021-08-30, Hans Brenna	added wet*
+- 2021-08-30, Hans Brenna	added ECpm25 and OC i hope
+- 2021-08-27, Hans Brenna	set up EC25, OC25
+- 2021-08-27, Hans Brenna	added seasalt
+- 2021-08-27, Hans Brenna	added tno3,tnh
+- 2021-08-26, Hans Brenna	added no3pm10, no3pm25
+- 2021-08-26, Hans Brenna	added concNnh4
+- 2021-08-26, Hans Brenna	update
+- 2021-08-25, Hans Brenna	updates
+- 2021-08-24, Hans Brenna	working on aeroval
+- 2021-08-24, Hans Brenna	testing aux_funs for EMEP reading
+- 2021-08-24, Hans Brenna	testing aux_funs for EMEP reading
+- 2021-08-24, Hans Brenna	testing aux_funs for EMEP reading
+- 2021-08-24, Hans Brenna	update read_mscw_ctm
+- 2021-08-24, Hans Brenna	testing
+- 2021-08-24, Hans Brenna	test adding vmin, vmax
+- 2021-08-04, Hans Brenna	Cfixed a bug inferring ts_type though I don't know if it is a robust fix yet
+- 2021-07-20, jgliss	add timecol tests
+- 2021-07-20, jgliss	Merge branch 'av-trend-patch' of git+ssh://github.com/metno/pyaerocom into av-trend-patch
+- 2021-07-20, jgliss	work on tests
+- 2021-07-20, Eivind Grøtting Wærsted	Fix bug in colocate_gridded_ungridded introduced during bug fix in 3863cca
+- 2021-07-20, jgliss	Merge branch 'av-trend-patch' of git+ssh://github.com/metno/pyaerocom into av-trend-patch
+- 2021-07-20, jgliss	work on colocation tests
+- 2021-07-20, Eivind Grøtting Wærsted	Fix bug in colocate_gridded_ungridded for non-standard time frequencies
+- 2021-07-20, jgliss	fix tests
+- 2021-07-16, Eivind Grøtting Wærsted	Merge branch 'av-trend-patch' of github.com:metno/pyaerocom into av-trend-patch
+- 2021-07-16, Eivind Grøtting Wærsted	Do not filter out mountain stations by default
+- 2021-07-16, Eivind Grøtting Wærsted	Add precipitation (pr) to emep_variables.ini
+- 2021-07-14, jgliss	update ebas test
+- 2021-07-14, Eivind Grøtting Wærsted	In read_ebas.py, merge some more stations and increase version number
+- 2021-07-14, Eivind Grøtting Wærsted	Remove duplicate OM variable concocpm25, introduced in 31a1435
+- 2021-07-13, Eivind Grøtting Wærsted	Add unit 'ugC/m3' to UALIASES
+- 2021-07-13, Eivind Grøtting Wærsted	In EMEP reading, check UALIASES before converting to a cube
+- 2021-07-13, Eivind Grøtting Wærsted	Add variables vmro3max and concocpm25, change seasalt descriptions
+- 2021-07-12, jgliss	fix lowercase ConfigParser keys in mapping of EMEP reader variables (attr var_map)
+- 2021-07-12, jgliss	minor fixes
+- 2021-07-12, jgliss	Merge branch 'av-trend-patch' of git+ssh://github.com/metno/pyaerocom into av-trend-patch
+- 2021-07-12, jgliss	minor fixes
+- 2021-07-09, Eivind Grøtting Wærsted	Add new variables in emep_variables.ini, and correct name 'wetsox' -> 'wetoxs'
+- 2021-07-08, jgliss	Remove bool opts add_trends and seasonal_stats in aeroval/StatisticsSetup
+- 2021-07-02, Hans Brenna	added enforcement of start and stop in colocation
+- 2021-07-02, jgliss	fix time colocation
+- 2021-07-02, jgliss	fix time colocation
+- 2021-07-02, Hans Brenna	updates related to emep trends calculation
+- 2021-06-28, jgliss	minor fixes
+- 2021-06-23, jgliss	continue trends updates
+- 2021-06-22, Alvaro Valdebenito	drop conda w/py37 from CI
+- 2021-06-22, Alvaro Valdebenito	update install docs
+- 2021-06-22, jgliss	work on trends updates
+- 2021-06-22, Alvaro Valdebenito	conda CI matrix
+- 2021-06-22, Alvaro Valdebenito	Revert "sqlite3.connect needs a str on python3.6"
+- 2021-06-22, Alvaro Valdebenito	drop python 3.6
+- 2021-06-21, jgliss	minor reformatting
+- 2021-06-21, jgliss	fix some minor bugs; update/delete some lustre based tests; WIP: update TrendsEngine
+- 2021-06-18, jgliss	fix tests for config.py
+- 2021-06-18, jgliss	fix tests for colocateddata.py
+- 2021-06-18, jgliss	implement percentile based resampling of timeseries data
+- 2021-06-18, jgliss	fix tests of colocation_auto.py
+- 2021-06-17, jgliss	fix some tests of colocation_auto.py
+- 2021-06-17, jgliss	fix tests of colocation.py
+- 2021-06-16, jgliss	Merge remote-tracking branch 'origin/resampling-cleanup' into av-trend-patch
+- 2021-06-16, jgliss	start revisiting and updating test suite
+- 2021-06-16, jgliss	Merge branch 'trends-updates' into resampling-cleanup
+- 2021-06-16, jgliss	Merge branch 'add-hydrocarbon-EBAS-vars' into trends-updates
+- 2021-06-16, jgliss	fix failing tests
+- 2021-06-16, jgliss	fix failing tests
+- 2021-06-16, jgliss	fix colocation.py tests
+- 2021-06-16, jgliss	(BETA) finish working version of new strategy in TimeResampler
+- 2021-06-16, jgliss	Improve flexibility of hierarchical resampling
+- 2021-06-16, Hans Brenna	added helper variable concss10
+- 2021-06-16, Hans Brenna	corrected aliase error
+- 2021-06-16, jgliss	(API) make "apply_constraints" etc, for time resampling implicit, if min_num_obs is set; deactivate default min_num_obs (i.e. default resampling does not use any constraints); some cleanup
+- 2021-06-15, jgliss	Merge branch 'add-hydrocarbon-EBAS-vars' into trends-updates
+- 2021-06-15, jgliss	Merge branch 'aeroval-updates' of git+ssh://github.com/metno/pyaerocom into aeroval-updates
+- 2021-06-15, jgliss	Merge remote-tracking branch 'origin/trends-updates' into aeroval-updates
+- 2021-06-15, Jonas	Merge pull request #398 from metno/main-dev
+- 2021-06-15, jgliss	(WIP, MAJOR) Continue AeroVal API refactor
+- 2021-06-10, jgliss	(WIP, MAJOR) Continue AeroVal API refactor
+- 2021-06-08, Alvaro Valdebenito	pip cache
+- 2021-06-08, Alvaro Valdebenito	RTD build/install with pip
+- 2021-06-08, jgliss	(WIP, MAJOR) Continue AeroVal API refactor
+- 2021-06-08, Hans Brenna	some updates for hourly heatmap
+- 2021-06-07, Alvaro Valdebenito	different conda/build CI jobs
+- 2021-06-07, Alvaro Valdebenito	pyearocom[tests]
+- 2021-06-04, jgliss	add minimum requirement of 7 years for trends calculation
+- 2021-06-04, Alvaro Valdebenito	nbsphinx as extra
+- 2021-06-04, Alvaro Valdebenito	Revert "use new conda env on CI"
+- 2021-06-04, Alvaro Valdebenito	use new conda env on CI
+- 2021-06-03, jgliss	minor fixes
+- 2021-06-03, Alvaro Valdebenito	set python version on conda env used on CI
+- 2021-06-03, Alvaro Valdebenito	show python version used on CI
+- 2021-06-03, Alvaro Valdebenito	sqlite3.connect needs a str on python3.6
+- 2021-06-03, Alvaro Valdebenito	add dependencies
+- 2021-06-03, jgliss	Merge branch 'main-dev' into trends-updates
+- 2021-06-03, jgliss	(WIP, MAJOR) Continue AeroVal API refactor
+- 2021-06-03, Alvaro Valdebenito	update clasifiers
+- 2021-06-03, Hans Brenna	added support for hourly heatmaps
+- 2021-06-02, jgliss	Delete option *vert_scheme* in colocation routines -> needs to be handled in a simpler and more general way...
+- 2021-06-02, Hans Brenna	changes emibvoc units
+- 2021-05-31, jgliss	(WIP, MAJOR) Continue AeroVal API refactor
+- 2021-05-31, Alvaro Valdebenito	python versions
+- 2021-05-31, Alvaro Valdebenito	ingnore .venv
+- 2021-05-31, Alvaro Valdebenito	add python version classifiers, #395
+- 2021-05-28, jgliss	remove testfiles.py
+- 2021-05-28, jgliss	Continue refactor; remove testfiles.py and ini and refs
+- 2021-05-27, jgliss	Continue API updates
+- 2021-05-27, jgliss	Cleanup module API of pyaerocom
+- 2021-05-27, jgliss	(WIP, MAJOR) Continue AeroVal API refactor
+- 2021-05-26, Hans Brenna	updated units for hydrocarbons
+- 2021-05-26, Hans Brenna	updated units for hydrocarbons
+- 2021-05-25, jgliss	(WIP, MAJOR) continue AeroVal API refactor
+- 2021-05-25, jgliss	(WIP, MAJOR) rename web submodule to aeroval and remove all trends code, refactor some mods, classes and functions towards more SOLID OOP design
+- 2021-05-25, Hans Brenna	added glyox as alias to glyoxal
+- 2021-05-25, jgliss	Merge branch 'main-dev' into ebas-var-updates
+- 2021-05-25, jgliss	Tempfix some tests
+- 2021-05-25, Jonas	Merge pull request #391 from metno/fix-390
+- 2021-05-25, Hans Brenna	added molmasses
+- 2021-05-20, Hans Brenna	added some hydrocarbon variables
+- 2021-05-18, jgliss	Merge branch 'fix-390' into aeroval-updates
+- 2021-05-18, jgliss	Minor cleanup of unused stuff in ebas_file_index and add tests
+- 2021-05-18, jgliss	Add tests
+- 2021-05-18, jgliss	(WIP) continue revision and updates of web tool workflow
+- 2021-05-18, jgliss	(WIP) continue revision and updates of web tool workflow
+- 2021-05-18, jgliss	Add decorater filter_warnings in new module _warnings_management
+- 2021-05-16, jgliss	Minor updates
+- 2021-05-12, jgliss	(WIP) major API changes and harmonisation related to colocation routines (low and highlevel)
+- 2021-05-11, jgliss	(WIP) write both AeroCom variable names and input variable names in ColocatedData
+- 2021-05-11, jgliss	Merge branch 'fix-390' into aeroval-updates
+- 2021-05-11, jgliss	Reinsert raise FileNotFoundError if no files can be retrieved in ReadEbas.get_file_list
+- 2021-05-11, jgliss	Attempt fix for #390
+- 2021-05-11, jgliss	(WIP) continue harmonisation and revision of highlevel webtools processing chains
+- 2021-05-07, jgliss	(WIP) continue with refactoring and improving web-tools for AeroVal
+- 2021-05-05, Hans Brenna	restored alias after checking
+- 2021-05-05, jgliss	Make sure save_coldata is True in AerocomEvaluation and update coldata model dir name
+- 2021-05-05, jgliss	(WIP) Continue revising and redesign of Colocator
+- 2021-05-04, Hans Brenna	Merge branch 'main-dev' of https://github.com/metno/pyaerocom into main-dev
+- 2021-05-04, Hans Brenna	corrected alias concsscoarse=concsspm10 which are not the same
+- 2021-05-03, jgliss	(WIP) continue updating in Colocator
+- 2021-05-03, jgliss	Add property decorator obs_reader to Colocator
+- 2021-05-03, jgliss	Add property decorator data_id to ReadUngridded
+- 2021-04-30, jgliss	Merge branch 'tmp-cleanup-tests' into aeroval-updates
+- 2021-04-30, jgliss	(WIP) start updating Colocator for better outputfile handling
+- 2021-04-30, jgliss	Merge branch 'main-dev' into tmp-cleanup-tests
+- 2021-04-30, jgliss	Fix iris import error in main-dev
+- 2021-04-30, jgliss	Merge branch 'main-dev' into tmp-cleanup-tests
+- 2021-04-30, jgliss	(WIP) start reorganising code related to menu, overview tables  etc
+- 2021-04-29, jgliss	Update some tests
+- 2021-04-29, jgliss	Add period and season statistics computation to _process_sites in json helpers
+- 2021-04-28, jgliss	Implement period and seasonal statistics in heatmap processing of web tools
+- 2021-04-27, jgliss	(WIP) Start reorganising web tools for new structure
+- 2021-04-27, jgliss	Delete pyaerocom/web/const.py (not needed anymore)
+- 2021-04-27, jgliss	Bump version
+- 2021-04-27, jgliss	Merge branch 'main-dev' into aeroval-updates
+- 2021-04-27, jgliss	Implement pi attr in AerocomEvaluation
+- 2021-04-27, Jonas	Merge pull request #387 from metno/ebas-gases-vmr
+- 2021-04-27, jgliss	Merge branch 'trends-updates' into aeroval-updates
+- 2021-04-27, jgliss	Merge branch 'ebas-gases-vmr' into aeroval-updates
+- 2021-04-27, jgliss	Merge branch 'tmp-cleanup-tests' into aeroval-updates
+- 2021-04-26, jgliss	Merge branch 'main-dev' into aeroval-updates
+- 2021-04-26, jgliss	Minor fixes in ReadEbas and add tests
+- 2021-04-26, jgliss	Merge branch 'ebas-gases-vmr' into tmp-cleanup-tests
+- 2021-04-26, jgliss	Merge branch 'main-dev' into tmp-cleanup-tests
+- 2021-04-26, jgliss	Merge branch 'main-dev' into ebas-gases-vmr
+- 2021-04-26, jgliss	Fix some minor variable issues in ReadEbas and add more tests
+- 2021-04-26, Jonas	Merge pull request #388 from metno/cams84-fixes
+- 2021-04-26, jgliss	Add test and make method find_station_matches in ReadEbas private
+- 2021-04-23, jgliss	Empty commit trying to trigger update of PR #387
+- 2021-04-23, jgliss	Include code to use T, p from EBAS metadata for conversion of vmr and conc vars, where available; add some tests (UPDATED testdata-minimal)
+- 2021-04-23, jgliss	Minor reformatting
+- 2021-04-23, jgliss	Update usage of get_reader (DEPRECATED) to new name get_lowlevel_reader in ReadUngridded
+- 2021-04-23, jgliss	Add input arg data_dir in ReadEEAAQEREPBase.__init__ (needed in higher level functions)
+- 2021-04-23, jgliss	Update logic related to experiment deletion and menu update in web-tools
+- 2021-04-23, jgliss	merge cams84-fixes
+- 2021-04-23, jgliss	Fix import error of function equalise_attributes in io/iris_io.py due to iris update in version 3.0.0
+- 2021-04-22, jgliss	(WIP MAJOR API) implement updates from former 2 commits in all affected modules; add some more tests
+- 2021-04-22, jgliss	(WIP MAJOR API) initiate renaming / harmonisation of ReadUngridded attrs datasets_to_read (data_ids) and data_dir (data_dirs); clean up and improve API of ReadUngridded
+- 2021-04-22, jgliss	(WIP MAJOR API) initiate renaming / harmonisation  of attrs DATASET_PATH (data_dir), dataset_to_read (data_id) in readungriddedbase
+- 2021-04-22, jgliss	Update docstring in ReadEbas
+- 2021-04-22, jgliss	Add openpyxl to pyaerocom_env.yml
+- 2021-04-21, jgliss	Fix minor dev-bug in AerocomEvaluation
+- 2021-04-21, jgliss	Minor updates related to output directories
+- 2021-04-21, jgliss	Merge updates-web into cams84-fixes (closes PR #363)
+- 2021-04-21, jgliss	Fix failing test
+- 2021-04-21, jgliss	Merge branch 'main-dev' into updates-web
+- 2021-04-21, jgliss	merge branch fix-384 and attempt further improvements related to output path handling in ColocationSetup and AerocomEvaluation
+- 2021-04-21, jgliss	Make sure htap region filter in ColocatedData raises DataCoverageError if filter results in empty data object; improve docs
+- 2021-04-21, jgliss	Fix ReadAirNow timezone offset issue
+- 2021-04-21, jgliss	Improve documentation of some methods in UngriddedData
+- 2021-04-21, jgliss	Fix typo / bug in UngriddedData.from_station_data
+- 2021-04-21, jgliss	Update ReadAirNow -> some sites appear to have multiple timezone offsets, skip them for now
+- 2021-04-21, jgliss	Init directories at the end of AerocomEvaluation.__init__ if attr out_basedir is set
+- 2021-04-20, jgliss	(WIP) implement back and forth conversion of conc and vmr in ReadEbas
+- 2021-04-19, jgliss	Merge branch 'main-dev' into ebas-gases-vmr
+- 2021-04-19, Jonas	Merge pull request #383 from metno/fix-382
+- 2021-04-16, jgliss	(WIP)
+- 2021-04-16, jgliss	(WIP): add beta version of automatic conc->vmr conversion in ReadEbas
+- 2021-04-16, jgliss	Add concno2 to UCONV_MUL_FACS in units_helpers.py (should enable to read most NO2 data from EBAS as concno2)
+- 2021-04-16, jgliss	Merge branch 'main-dev' into updates-web
+- 2021-04-16, jgliss	Add more tests for AerocomEvaluation
+- 2021-04-16, jgliss	(WIP) minor updates in AerocomEvaluation
+- 2021-04-16, jgliss	Attempt to fix #382; comes with simplification of and improved robustness for both ColocatedData.to_netcdf and read_netcdf; add related tests
+- 2021-04-16, jgliss	Add more tests for TimeResampler (related to #382, but fail to reproduce error on that level, i.e. nested resampling_how works)
+- 2021-04-15, jgliss	Add function to compute synthetic 3D hourly ColocatedData object in _conftest_helpers.py
+- 2021-04-14, jgliss	Merge branch 'main-dev' into ebas-so4-fine_vs_coarse
+- 2021-04-14, jgliss	Merge branch 'master' into main-dev
+- 2021-04-14, Jonas	Merge pull request #373 from metno/temporal-spatial-corr
+- 2021-04-14, Jonas	Merge pull request #379 from metno/fix-docs
+- 2021-04-14, jgliss	Update / add tests for ColocatedData and web json helpers
+- 2021-04-14, jgliss	Improve code to apply annual constraint option in web tools -> works now also for 4D data and multiple year datasets
+- 2021-04-14, jgliss	Minor modification in 4D fake ColocatedData object
+- 2021-04-14, jgliss	Update docstring in ColocatedData.resample_time
+- 2021-04-14, jgliss	Delete recently introduced method ColocatedData.get_station_names_notnan since this is cumbersome and solved differently in web helpers; set defaults for inplace and colocate_time to False in ColocatedData.resample_time
+- 2021-04-14, jgliss	Update synthetic colocated data objects to enable them to be used for more tests
+- 2021-04-13, jgliss	Add / update tests for web tools
+- 2021-04-13, jgliss	Update code for temporal and spatial correlation in web helpers and make some methods more robust agains missing metadata
+- 2021-04-13, jgliss	Add / update tests for ColocatedData
+- 2021-04-13, jgliss	Add ts_type to fake_4d coldata for testing
+- 2021-04-13, jgliss	ColocatedData: add new property attrs. lat_range and lon_range; add option to specify aggregator in new methods for temporal and spatial statistics; improve / simplify apply_latlon_filter
+- 2021-04-13, Jonas	Update .readthedocs.yml
+- 2021-04-13, jgliss	Attempt to install project via readthedocs.yml
+- 2021-04-13, jgliss	Add fail_on_warning = true in .readthedocs.yml
+- 2021-04-13, jgliss	Update __main__in ReadAirNow
+- 2021-04-13, jgliss	Update BASEDIR in paths.ini
+- 2021-04-12, jgliss	Remove try/except block related to new temporal / spatial corr in heatmap data
+- 2021-04-12, jgliss	Remove unneeded imports in test module
+- 2021-04-12, jgliss	Update some tests related to output of calc_statistics
+- 2021-04-12, Hans Brenna	Merge pull request #377 from metno/minor-ebas-changes
+- 2021-04-12, Hans Brenna	fixed failing test
+- 2021-04-12, jgliss	(WIP) update web helpers to include spatial and temporal R in heatmap statistics
+- 2021-04-12, jgliss	Remove option to save scatter plot in plot_scatter_aerocom
+- 2021-04-12, jgliss	Improve robustness of ColocatedData.plot_scatter and add tests
+- 2021-04-12, Hans Brenna	made some small ebas changes
+- 2021-04-12, jgliss	Add new methods calc_temporal_statistics and calc_spatial_statistics in ColocatedData
+- 2021-04-09, jgliss	add more tests
+- 2021-04-09, jgliss	add more tests
+- 2021-04-09, jgliss	Remove option constrain_val_range in ColocatedData.calc_statistics
+- 2021-04-09, jgliss	Revise and simplify some class methods in ColocatedData and add more tests
+- 2021-04-09, jgliss	Reorgnaise example ColocatedData objects for tests into single fixture "coldata"
+- 2021-04-09, jgliss	Merge branch 'main-dev' into temporal-spatial-corr
+- 2021-04-09, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-04-09, jgliss	Merge branch 'main-dev' into aeroval-updates
+- 2021-04-09, jgliss	Merge branch 'main-dev' into trends-updates
+- 2021-04-09, jgliss	Merge branch 'main-dev' into updates-web
+- 2021-04-09, jgliss	Merge branch 'main-dev' into ebas-so4-fine_vs_coarse
+- 2021-04-09, Jonas	Merge pull request #371 from metno/fix-359
+- 2021-04-09, jgliss	Remove __main__ from ebas_varinfo.py
+- 2021-04-09, jgliss	Merge branch 'main-dev' into fix-359
+- 2021-04-09, Jonas	Merge pull request #376 from metno/drop-var_name-lowercase
+- 2021-04-09, jgliss	Remove support for old_name in EbasVarInfo and delete some outdated code; add more related tests
+- 2021-04-09, jgliss	Update test_variable.py
+- 2021-04-09, jgliss	remove all conversions of variable names to lowercase in variable.py
+- 2021-04-09, jgliss	Continue dev work for #374
+- 2021-04-09, jgliss	Add _convtest_helpers to .coveragerc
+- 2021-04-09, jgliss	Add helper method that creates a fake ColocatedData in _conftest_helpers
+- 2021-04-08, jgliss	Merge recent updates from main-dev
+- 2021-04-08, jgliss	Merge branch 'main-dev' into ebas-so4-fine_vs_coarse
+- 2021-04-08, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-04-08, jgliss	Merge branch 'main-dev' into fix-359
+- 2021-04-08, jgliss	Merge branch 'main-dev' into trends-updates
+- 2021-04-08, jgliss	Merge branch 'main-dev' into updates-web
+- 2021-04-08, Jonas	Merge pull request #318 from metno/trends-fixes
+- 2021-04-08, jgliss	Update ebas_config.ini according to defs in #359 and update tests accordingly
+- 2021-04-08, jgliss	Merge main-dev into fix-341
+- 2021-04-08, Jonas	Merge pull request #370 from metno/update-requirements
+- 2021-04-08, jgliss	Update pyaerocom_env.yml
+- 2021-04-07, jgliss	Remove try/except block in merge_station_data
+- 2021-04-07, jgliss	Add ToDo note in merge_station_data
+- 2021-04-07, jgliss	Reinsert import in conftest
+- 2021-04-07, jgliss	Add tests for helpers/merge_station_data using new synthetic fake data
+- 2021-04-07, jgliss	Improve functions infer_time_resolution and merge_station_data in helpers.py
+- 2021-04-07, jgliss	Change behaviour in StationData._ensure_same_var_ts_type_other to use next_lower tstype if merged tstype has a mulfac != 1 (since TsType.next_lower will not necessarily go to base freq anymore)
+- 2021-04-07, jgliss	Remove unused code in test/synthetic_data.py
+- 2021-04-07, jgliss	Add helper for test suite to compute list of fake StationData objects (relevant also for #326)
+- 2021-04-07, jgliss	Delete helper method compute_trends_station in stationdata.py (will not be required anymore after updating TrendsEngine)
+- 2021-04-07, jgliss	Merge main-dev into trends-updates
+- 2021-04-07, jgliss	Merge branch 'main-dev' into trends-fixes
+- 2021-04-07, Jonas	Merge pull request #333 from metno/code-cleanup
+- 2021-04-06, jgliss	merge main-dev
+- 2021-04-06, jgliss	Fix failing tests in AerocomEvaluation
+- 2021-04-06, jgliss	Fix some tests and make sure basedir_coldata exists also when invoking private methods
+- 2021-04-06, jgliss	Merge main-dev
+- 2021-04-06, jgliss	(WIP) Continue with updating TrendsEngine
+- 2021-04-06, jgliss	(WIP) Continue with updating TrendsEngine
+- 2021-04-06, Hans Brenna	Merge pull request #344 from metno/Hans_main_dev
+- 2021-04-06, Hans Brenna	fixed failing time resampling test
+- 2021-04-06, jgliss	(WIP) Start revising and updating TrendsEngine
+- 2021-04-06, jgliss	remove commented out code
+- 2021-04-06, Hans Brenna	fixed failing ebas tests
+- 2021-04-06, Hans Brenna	Update pyaerocom/io/test/test_read_ebas.py
+- 2021-04-06, Hans Brenna	Update pyaerocom/io/test/test_read_ebas.py
+- 2021-04-06, Hans Brenna	Update pyaerocom/io/test/test_read_ebas.py
+- 2021-04-06, Hans Brenna	Update pyaerocom/data/variables.ini
+- 2021-04-06, Hans Brenna	Update pyaerocom/data/variables.ini
+- 2021-04-06, Hans Brenna	Update pyaerocom/data/ebas_config.ini
+- 2021-04-06, Hans Brenna	Update pyaerocom/data/ebas_config.ini
+- 2021-04-06, Hans Brenna	Update pyaerocom/data/aliases.ini
+- 2021-03-31, jgliss	Add more tests
+- 2021-03-31, jgliss	Simplify __init__ of Config class and add more related tests
+- 2021-03-31, Hans Brenna	preliminary fixes
+- 2021-03-31, jgliss	Add more tests for Config class
+- 2021-03-31, jgliss	Fix minor bug related to basedir when reading obs and model config from config file in Config class; remove code for paths_testdata.ini
+- 2021-03-31, jgliss	Delete outdated file data/paths_testdata.ini
+- 2021-03-31, jgliss	Continue code cleanup (using vulture package to identify unused code)
+- 2021-03-31, Hans Brenna	Update pyaerocom/io/readgridded.py
+- 2021-03-31, Hans Brenna	Update pyaerocom/io/readgridded.py
+- 2021-03-31, Hans Brenna	Update pyaerocom/molmasses.py
+- 2021-03-31, Hans Brenna	Update pyaerocom/time_resampler.py
+- 2021-03-31, jgliss	Add 2 new variables concso4pm10 and concso4pm25 (for checks in #359)
+- 2021-03-30, Jonas	Merge pull request #365 from metno/ebas-tower-data
+- 2021-03-30, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-03-30, jgliss	Merge main-dev (including #365 which has been merged locally into main-dev)
+- 2021-03-30, Hans Brenna	Merge pull request #347 from metno/dev-annual-limit
+- 2021-03-29, jgliss	Add more tests and remove "info" attr from EbasFlagCol
+- 2021-03-29, jgliss	Add tests related to EBAS reading
+- 2021-03-29, jgliss	ReadEbas: improve handling and readability of filecolumn identification
+- 2021-03-29, jgliss	Delete unused and currently unneeded methods in classses in ebas_nasa_ames.py
+- 2021-03-26, jgliss	Attempt fix for #364
+- 2021-03-26, jgliss	Harmonise output in some helpers in ColocatedData and add more tests
+- 2021-03-26, jgliss	Improve docstrings in ColocatedData
+- 2021-03-26, jgliss	Delete _init_data_default_frequenciesOLD in web/helpers_evaluation_iface.py
+- 2021-03-26, jgliss	Add / modify tests
+- 2021-03-26, jgliss	Update usage of ColocatedData meta to using new name metadata in affected modules
+- 2021-03-26, jgliss	(WIP) ColocatedData: rename meta to metadata (meta still works) and change some Exceptions being raised in some methods
+- 2021-03-26, jgliss	Add tests for ColocatedData and be more restrictive in instantiation
+- 2021-03-26, jgliss	Merge local branch hmd-patch into dev-annual-limit
+- 2021-03-26, jgliss	Fix failing EBAS test
+- 2021-03-26, jgliss	Merge remote-tracking branch 'origin/main-dev' into hmd-patch
+- 2021-03-26, jgliss	Merge branch 'master' into main-dev
+- 2021-03-26, jgliss	Delete commented out code in ColocatedData
+- 2021-03-26, jgliss	(WIP) continue work on updates related to output dirs
+- 2021-03-26, jgliss	Change default data_id in GriddedData from N/D to undefined (should not affect anything)
+- 2021-03-26, Hans Brenna	added EC/OC25
+- 2021-03-26, Hans Brenna	think I got it now
+- 2021-03-26, Hans Brenna	another attempt
+- 2021-03-26, Jonas	Merge pull request #346 from metno/fix-ebas-colsel
+- 2021-03-26, Hans Brenna	fixed failing tests in test_ebas_varinfo.py
+- 2021-03-26, Hans Brenna	merged fix-ebas-colsel
+- 2021-03-26, Hans Brenna	merged main-dev
+- 2021-03-26, jgliss	Update AerocomEvaluation.__str__ and work on test updates
+- 2021-03-26, jgliss	Update init checks of basedir_coldata in ColocationSetup
+- 2021-03-26, jgliss	Merge branch 'main-dev' into updates-web
+- 2021-03-25, jgliss	Update tests for ColocatedData
+- 2021-03-25, jgliss	Update json helper _process_regional_timeseries to handle DataCoverageError from ColocatedData.filter_region
+- 2021-03-25, jgliss	Raise DataCoverageError in ColocatedData.filter_region (sub methods) results in empty object
+- 2021-03-25, jgliss	Make sure latlon filter in ColocatedData.filter_region is only applied if region_id is valid
+- 2021-03-25, jgliss	Bump version of ReadEbas and update one associated test
+- 2021-03-25, jgliss	Implement annual_stats_constrained as an option in AerocomEvaluation
+- 2021-03-25, jgliss	Rename new option apply_annual_limit to annual_stats_constrained for heatmap statistics
+- 2021-03-25, jgliss	finish first draft to fix #361
+- 2021-03-25, jgliss	Delete outdated class attr IGNORE_WAVELENGTH in ReadEbas
+- 2021-03-25, jgliss	fix merge conflict with main-dev
+- 2021-03-25, jgliss	(WIP) continue work on issue #361 (still not finished)
+- 2021-03-25, Hans Brenna	implemented #359
+- 2021-03-25, Hans Brenna	Merge pull request #362 from metno/flag-ebas-files
+- 2021-03-25, Hans Brenna	flagged wrong danish .nas files
+- 2021-03-25, jgliss	Merge branch 'main-dev' into fix-ebas-colsel
+- 2021-03-25, jgliss	(WIP) continue work on issue #361 (still not finished)
+- 2021-03-25, Jonas	Merge pull request #330 from metno/add-ghost-vars
+- 2021-03-25, jgliss	Merge branch 'main-dev' into add-ghost-vars
+- 2021-03-25, Jonas	Merge pull request #343 from metno/emep-updates
+- 2021-03-25, jgliss	(WIP) work on issue #361 (not finished)
+- 2021-03-24, jgliss	Minor updates in ReadMscwCtm
+- 2021-03-24, jgliss	Start improving handling of output paths (particularly colocated data dir) in AerocomEvaluation
+- 2021-03-24, jgliss	ColocationSetup._check_basedir_coldata now returns the directory
+- 2021-03-24, Hans Brenna	push bug for issue #361
+- 2021-03-24, jgliss	improve handling of basedir_coldata in colocation_auto.py
+- 2021-03-24, Hans Brenna	Merge branch 'Hans_main_dev' into dev-annual-limit
+- 2021-03-24, jgliss	Continue cleanup and improvements of io/iris_io.py
+- 2021-03-23, jgliss	update io/helpers.py.add_file_to_log
+- 2021-03-23, jgliss	Move cube quality checks in iris_io.py into separate function _cube_quality_check
+- 2021-03-23, jgliss	Do not catch (but raise) exception if pyaerocom.const.LOGFILESDIR cannot be created / accessed
+- 2021-03-22, jgliss	Improve readability of ReadGridded
+- 2021-03-22, jgliss	Delete deprecated method ColocatedData.num_grid_points
+- 2021-03-22, jgliss	Start implementing tests for iris_io.py module
+- 2021-03-22, jgliss	delete unused functions in io/iris_io and reorganise some stuff with pyaerocom/helpers.py
+- 2021-03-22, jgliss	add method make_datetimeindex_from_year to pyaerocom/helpers.py
+- 2021-03-22, Hans Brenna	Merge pull request #356 from metno/dev-annual-stats
+- 2021-03-22, Hans Brenna	registered yearly heatmap file
+- 2021-03-22, Hans Brenna	fixed merge conflicst
+- 2021-03-19, jgliss	(API, BETA) Update AeroVal CLI main (supports var_name as arg and rename / clarify some existing args)
+- 2021-03-19, jgliss	Create json outputdirs for AerocomEvaluation only when run_evaluation is called (not when update is called)
+- 2021-03-19, jgliss	Use DataArrays instead of cubes to compute variables in EMEP reader
+- 2021-03-19, Hans Brenna	small change
+- 2021-03-19, jgliss	Add concnh4 and concno3 to web VAR_MAPPING
+- 2021-03-19, jgliss	Minor updates related to info strings in AerocomEvaluation
+- 2021-03-19, jgliss	Add molmass of NO to enable reading of concno in ReadGhost
+- 2021-03-19, Hans Brenna	Merge branch 'fix-ebas-colsel' into Hans_main_dev
+- 2021-03-19, jgliss	Fix tests
+- 2021-03-18, jgliss	Add some tests for GriddedData
+- 2021-03-18, jgliss	Remove unused imports in scripts/highlevel_utils.py
+- 2021-03-18, jgliss	Simplify handling of cache_dir in CacheHandlerUngridded and add some tests
+- 2021-03-18, jgliss	Add warnings for upcoming deprecation of trends computation modules and add them to coveragerc
+- 2021-03-18, jgliss	Add to and rearrange TsType test module
+- 2021-03-18, jgliss	Continue work on TsType cleanup and improvements
+- 2021-03-18, jgliss	Improve logic in TsType._infer_mulfac_total_seconds, to infer the closest possible within allowed tolerance
+- 2021-03-18, jgliss	Update and add tests for TsType
+- 2021-03-18, jgliss	Update and add tests for TsType
+- 2021-03-18, jgliss	(TsType) Update next_lower method and comparison operators
+- 2021-03-18, jgliss	Bump version of ReadEbas
+- 2021-03-18, Jonas	Merge pull request #357 from metno/feature-352
+- 2021-03-18, jgliss	Exclude code in modules __main__ from coverage report
+- 2021-03-17, jgliss	Update verbosity in ReadEbas
+- 2021-03-17, jgliss	Update allowed max val for mulfac of minutely from 180 to 360
+- 2021-03-17, jgliss	Update EBAS reading wrt to updates in TsType; Add / modify tests for TsType
+- 2021-03-17, jgliss	Add functionality to TsType to infer frequency based on total seconds
+- 2021-03-17, Hans Brenna	added yearly statistics
+- 2021-03-17, Hans Brenna	merged fix-ebas-colsel
+- 2021-03-17, jgliss	skip outdated EBAS test in master
+- 2021-03-17, jgliss	Attempt fix column selection for multiple component matches (#355)
+- 2021-03-16, jgliss	test exclude __main__ from coverage in EMEP reader
+- 2021-03-16, jgliss	fix test
+- 2021-03-16, jgliss	add tests for EMEP reader
+- 2021-03-16, jgliss	add tests for EMEP reader
+- 2021-03-16, jgliss	add tests for EMEP reader
+- 2021-03-16, jgliss	add tests for EMEP reader
+- 2021-03-16, jgliss	update tests for filepath in EMEP reader
+- 2021-03-16, jgliss	add tests for filepath in EMEP reader
+- 2021-03-16, jgliss	update tests and add setter for filepath in EMEP reader
+- 2021-03-16, jgliss	update and add tests for EMEP reader
+- 2021-03-16, Hans Brenna	added an alias
+- 2021-03-16, jgliss	Merge branch 'main-dev' into emep-updates
+- 2021-03-16, jgliss	modify tests (one still fails, intended)
+- 2021-03-16, jgliss	Merge branch 'main-dev' into trends-fixes
+- 2021-03-16, jgliss	Merge branch 'main-dev' into add-ghost-vars
+- 2021-03-16, jgliss	update conftest in master after update of testdata-minimal
+- 2021-03-16, jgliss	update EBAS tests in master after update of testdata-minimal
+- 2021-03-16, jgliss	merge main-dev
+- 2021-03-16, jgliss	Merge branch 'main-dev' into code-cleanup
+- 2021-03-16, jgliss	Merge branch 'main-dev' into fix-341
+- 2021-03-16, Jonas	Merge pull request #350 from metno/add-tests-webtools
+- 2021-03-16, Jonas	Merge pull request #353 from metno/main-dev
+- 2021-03-16, jgliss	Merge branch 'master' into main-dev
+- 2021-03-16, Jonas	Merge pull request #342 from metno/ci-update
+- 2021-03-16, Jonas	Merge pull request #351 from metno/merge-statdata2json-methods
+- 2021-03-16, Jonas	Update pyaerocom/web/helpers_evaluation_iface.py
+- 2021-03-16, jgliss	fix test
+- 2021-03-16, jgliss	Merge branch 'add-tests-webtools' into merge-statdata2json-methods
+- 2021-03-15, jgliss	minor cleanup wrt testdata setup
+- 2021-03-15, jgliss	add tests and update ebas testdata (ONGOING)
+- 2021-03-15, Hans Brenna	merged fix-ebas-colsel
+- 2021-03-13, jgliss	add more tests
+- 2021-03-13, jgliss	add more tests
+- 2021-03-12, jgliss	add more tests
+- 2021-03-12, jgliss	rename add_entry_heatmap_json to _add_entry_heatmap_json
+- 2021-03-12, jgliss	delete _write_diurnal_week_stationdata_json and modify _write_stationdata_json accordingly in web helpers mod
+- 2021-03-12, jgliss	fix some test dependencies
+- 2021-03-12, jgliss	validate test
+- 2021-03-12, jgliss	Add tests
+- 2021-03-12, jgliss	Merge branch 'main-dev' into add-tests-webtools
+- 2021-03-12, jgliss	Start implementing tests for helpers_evaluation_iface
+- 2021-03-12, Hans Brenna	Merge branch 'Hans_main_dev' into dev-annual-limit
+- 2021-03-12, Hans Brenna	Merge branch 'main-dev' into Hans_main_dev
+- 2021-03-12, Hans Brenna	Merge pull request #349 from metno/fix-#348
+- 2021-03-12, Hans Brenna	fix for #348
+- 2021-03-11, Hans Brenna	draft of applying mon->yr constraints when calculating overall statistics
+- 2021-03-11, jgliss	Improve verbosity and add test for ReadEbas.read
+- 2021-03-11, Hans Brenna	fixed failing test in test_time_resampler
+- 2021-03-11, Hans Brenna	fixed failing test in test_read_ebas
+- 2021-03-11, Hans Brenna	fixed failing test in test_ebas_varinfo
+- 2021-03-11, jgliss	update logic related to unique column selection in ReadEbas (more conservative now)
+- 2021-03-10, jgliss	start updating the way climatological timeseries are handled in colocation_auto.py
+- 2021-03-10, Hans Brenna	Merge branch 'main-dev' into Hans_main_dev
+- 2021-03-10, Hans Brenna	reverted some changes
+- 2021-03-10, jgliss	Drop support for following features in lowlevel colocation routines: update_baseyear_gridded; ignore_station_names
+- 2021-03-10, jgliss	add first version of .coveragerc file
+- 2021-03-10, jgliss	start updating emep reader tests
+- 2021-03-09, jgliss	Merge branch 'main-dev' into emep-updates
+- 2021-03-09, jgliss	Merge branch 'master' into main-dev
+- 2021-03-09, jgliss	trigger CI.yml
+- 2021-03-09, Jonas	Merge pull request #340 from metno/ci-docs-updates
+- 2021-03-09, jgliss	update CI.yml (attempt upload to codecov)
+- 2021-03-09, jgliss	Merge branch 'main-dev' into emep-updates
+- 2021-03-09, jgliss	Merge branch 'master' into main-dev
+- 2021-03-09, Jonas	Merge pull request #339 from metno/ebas-updates
+- 2021-03-09, jgliss	continue redesign of emep reader
+- 2021-03-09, Jonas	Merge pull request #332 from metno/docs-tutorials
+- 2021-03-09, jgliss	start revising and updating EMEP reader
+- 2021-03-08, jgliss	Merge branch 'main-dev' into emep-updates
+- 2021-03-08, jgliss	minor updates in TsType verbosity
+- 2021-03-08, jgliss	minor updates in ReadEbas verbosity
+- 2021-03-08, jgliss	register concnh4 in units_helpers.UCONV_MUL_FACS
+- 2021-03-08, Jonas	Merge pull request #338 from metno/fix-337
+- 2021-03-08, jgliss	attempt fix of #337
+- 2021-03-08, jgliss	minor stuff
+- 2021-03-05, jgliss	make new emep branch
+- 2021-03-04, jgliss	delete .travis.yml
+- 2021-03-04, jgliss	minor updates in mathutils.calc_statistics and add related tests
+- 2021-03-04, jgliss	Minor update in helpers/resample_timeseries
+- 2021-03-04, jgliss	fix pandas deprecation warnings related to dtype of Series and resampling loffset
+- 2021-03-04, jgliss	replace all occurrences of np.float
+- 2021-03-04, jgliss	add notes where code needs to be updated for seasonal processing in web tools
+- 2021-03-03, jgliss	Delete plot/plotseries.py and refs
+- 2021-03-03, jgliss	Delete plot/plotsitelocation.py and refs
+- 2021-03-03, jgliss	Delete plot/plotmaps.py and refs
+- 2021-03-03, jgliss	Delete plot/plotscatter.py and refs (see also #77)
+- 2021-03-03, jgliss	delete file pyaerocom/data/model_ids.txt
+- 2021-03-03, jgliss	Merge branch 'main-dev' into code-cleanup
+- 2021-03-03, Jonas	Merge pull request #335 from metno/fix-334
+- 2021-03-03, jgliss	fix #334 and one further unrecognised bug in regional timeseries processing
+- 2021-03-03, jgliss	delete outdated modules under scripts (related to #78)
+- 2021-03-03, jgliss	Remove subpackage interactive in setup.py
+- 2021-03-03, jgliss	Delete subpackage interactive and all refs
+- 2021-03-03, jgliss	delete unused file io/read_airbase.py (see #31 for details)
+- 2021-03-03, jgliss	update CI.yml
+- 2021-03-03, jgliss	update CI.yml
+- 2021-03-03, jgliss	update docs
+- 2021-03-03, jgliss	update CI.yml to invoke pytest with pytest-cov
+- 2021-03-03, jgliss	add pytest-cov to test requirements
+- 2021-03-01, jgliss	Add nbsphinx to pyaerocom_env.yml and update .readthedocs.yml
+- 2021-03-01, jgliss	clone and add pyaerocom-tutorials when building docs
+- 2021-03-01, jgliss	Add some GHOST data to testdata-minimal and update GHOST tests accordingly
+- 2021-02-26, jgliss	merge main-dev
+- 2021-02-26, jgliss	Start preparing GHOST tests to be included in testdata-minimal
+- 2021-02-26, Jonas	Merge pull request #310 from metno/dev-cams84
+- 2021-02-26, jgliss	Improve inferral of ts_type in ReadGhost and add concno3 and concnh4 to list of supported variables
+- 2021-02-25, jgliss	Improve numerical robustness of a test
+- 2021-02-25, jgliss	Fix bug in colocation.py introduced in latest merge
+- 2021-02-25, jgliss	Merge branch 'main-dev' into dev-cams84
+- 2021-02-25, Jonas	Merge pull request #297 from metno/update-outlier-removal-colocation
+- 2021-02-25, jgliss	Update test function for colocation_auto
+- 2021-02-25, jgliss	Merge branch 'main-dev' into update-outlier-removal-colocation
+- 2021-02-25, Jonas	Merge pull request #269 from metno/dev-wetdep-eval
+- 2021-02-25, jgliss	Remove outdated variables in variables.ini
+- 2021-02-25, jgliss	Merge branch 'main-dev' into dev-wetdep-eval
+- 2021-02-25, Jonas	Merge pull request #260 from metno/webeval-maps
+- 2021-02-24, jgliss	Remove unneeded (recently temporarily introduced) code in colocation.py
+- 2021-02-24, jgliss	Merge main-dev into dev-wetdep-eval
+- 2021-02-24, jgliss	Merge main-dev into webeval-maps
+- 2021-02-24, jgliss	Merge branch 'main-dev' into update-outlier-removal-colocation
+- 2021-02-24, jgliss	Merge branch 'main-dev' into dev-cams84
+- 2021-02-24, jgliss	Add MarcoPolo in paths.ini
+- 2021-02-24, Jonas	Merge pull request #323 from metno/master
+- 2021-02-24, jgliss	Merge branch 'master' of git+ssh://github.com/metno/pyaerocom
+- 2021-02-24, Jonas	Update pyaerocom_env.yml
+- 2021-02-24, jgliss	Bump version to 0.10.1
+- 2021-02-24, jgliss	Update release_checklist.md and specify long_description_content_type in setup.py
+- 2021-02-24, jgliss	Bump version to 0.10.1rc1 for testing PyPi and conda release; update release_checklist.md
+- 2021-02-24, jgliss	Add changelog CHANGELOG_v0_10_0__v0_10_1.md
+- 2021-02-24, Jonas	Merge pull request #321 from metno/release_0_10_1
+- 2021-02-23, jgliss	Checkout README from master
+- 2021-02-23, jgliss	Checkout README from master
+- 2021-02-23, jgliss	Quickfix of #322 (affected sites will be skipped in colocation, needs further looking into for 0.11.0)
+- 2021-02-23, jgliss	Checkout test_geodesy.py from dev-cams84
+- 2021-02-23, jgliss	Update docs/install.rst
+- 2021-02-23, jgliss	Merge branch 'master' into release_0_10_1
+- 2021-02-23, jgliss	Update pyaerocom_env.yml
+- 2021-02-17, Jonas	Merge pull request #316 from metno/update-regions
+- 2021-02-17, jgliss	Checkout test_geodesy from update-regions
+- 2021-02-17, Jonas	Merge pull request #315 from metno/dev-web-superobs
+- 2021-02-17, jgliss	Skip failing SRTM.py test
+- 2021-02-17, jgliss	Attempt to fix 319
+- 2021-02-16, jgliss	Catch TemporalResolutionError in merge_station_data (related to #318)
+- 2021-02-16, jgliss	Add temporary skip of srtm.py related test due to issue 51 in srtm.py
+- 2021-02-15, jgliss	Add wrappers for raise_exceptions and reanalyse_existing in AerocomEvaluation and add some docstrings
+- 2021-02-15, jgliss	Add new method available_meta_keys in UngriddedData class
+- 2021-02-15, augustinm	Merge pull request #295 from metno/trends-updates
+- 2021-02-09, jgliss	Support latlon filter in 2D ColocatedData if lonrange is crossing 180 -> -180 deg edge
+- 2021-02-09, jgliss	Fix some failing tests
+- 2021-02-09, jgliss	Update longitude ranges of HTAP regions crossing 180 deg border
+- 2021-02-09, jgliss	Expand API of Region class and work on plotting routines (WIP)
+- 2021-02-09, jgliss	Merge branch 'dev-web-superobs' into update-regions
+- 2021-02-08, jgliss	Fix some failing tests
+- 2021-02-08, jgliss	Merge branch 'dev-web-superobs' into update-regions
+- 2021-02-08, jgliss	Add support of vmrno2 in ReadEEAAQEREPBase
+- 2021-02-08, jgliss	Merge branch 'dev-cams84' into dev-web-superobs
+- 2021-02-08, Jan Griesfeller	Merge pull request #313 from metno/gr_EEA_dev_base_update
+- 2021-02-08, jgliss	Minor reformatting
+- 2021-02-08, jgliss	Redefine borders of HTAP regions
+- 2021-02-08, jgliss	Update region handling in filter.py
+- 2021-02-08, jgliss	(API): update handling of regions; Region class can have separate name and ID; implement using name in web processing where defined; delete regions.ini and put everything into pyaerocom/region_defs.py instead
+- 2021-02-08, Jan Griesfeller	Update pyaerocom/io/helpers_units.py
+- 2021-02-06, jgliss	Implement code to ignore obs config entries individually that are marked with "only_superobs"
+- 2021-02-06, jgliss	Implement option regions_how="htap" for web evaluation
+- 2021-02-06, jgliss	Add attr only_superobs to ObsConfigEval (for observations that are only supposed to be a part of an superobservation network)
+- 2021-02-05, jgliss	Use provided chinese chars as station_name in ReadMarcoPolo
+- 2021-02-05, jgliss	Continue development of superobs web processing in AerocomEvaluation
+- 2021-02-05, jgliss	(UNTESTED) Implement handling of superobs entries in AerocomEvaluation.run_evaluation
+- 2021-02-05, jgliss	Add attr. is_superobs to ObsConfigEval
+- 2021-02-05, jgliss	Make sure station_classification and area_classification are assigned in UngriddedData in AirNow reading
+- 2021-02-05, jgliss	Add option add_meta_keys in UngriddedData.from_station_data
+- 2021-02-05, jgliss	Minor fixes in new NetCDF I/O code in ColocatedData (cf previous commits)
+- 2021-02-05, jgliss	Start implementing processing of superobs entry in AerocomEvaluation; deletion of experiment data now also deletes colocated data files; new attrs. obs_order_menu, model_order_menu, modelorder_from_config, obsorder_from_config
+- 2021-02-05, jgliss	Update code for menu creation of AerocomEvaluation tools (split in subfunctions, add docs and option to sort also observations and models in addition to variables
+- 2021-02-05, jgliss	Add meta attrs resample_how and outliers_removed in colocate_gridded_gridded
+- 2021-02-05, jgliss	(API) Remove creation of unneeded coordinates var_name, var_units and ts_type_src in ColocatedData objects created in lowlevel colocation routines in colocation.py
+- 2021-02-05, jgliss	Improve NetCDF I/O in ColocatedData (meta info) and add new method get_time_resampling_settings
+- 2021-02-05, Jan Jurgen Griesfeller	added EEA AQeRep.v2 reading, added more variables
+- 2021-02-05, Jan Jurgen Griesfeller	added conversion method from conco3 to vmro3
+- 2021-02-04, Jan Jurgen Griesfeller	added stuff for EEA AQeRep.v2 reading
+- 2021-02-04, jgliss	checkout web/web_naming_conventions.py from branch dev-wetdep-eval (to add vmrno2 and vmro3)
+- 2021-02-04, Jonas	Merge pull request #312 from metno/jgliss-eea-nrt-updates
+- 2021-02-04, jgliss	Address PR comments from jgriesfeller
+- 2021-02-04, Hans Brenna	removed a function call to hack fix for dryvelo3
+- 2021-02-03, jgliss	Make sure ts_type is assigned correctly (there is also daily data in the files)
+- 2021-02-03, jgliss	Make sure lat, lon and alt are written as floats in ReadEEAAQEREP
+- 2021-02-03, jgliss	Remove 2nd definition of TsType that I wrongly introduced in former commit
+- 2021-02-03, jgliss	Minor updates and restructuring in read_eea_aqerep.py to be more consistent with other readers, rename vmro3 to conco3
+- 2021-02-03, Hans Brenna	implemented a hacky way of processing dry o3 velocity
+- 2021-02-03, jgliss	Add mmrno2 in variables.ini
+- 2021-02-03, jgliss	Merge branch 'dev-read-marcopolo' of git+ssh://github.com/metno/pyaerocom into dev-read-marcopolo
+- 2021-02-03, jgliss	Implement mconc->vmr conversion for NO2 and O3 in ReadMarcoPolo
+- 2021-02-03, jgliss	Fix minor bug in mathutils.concx_to_vmrx that results in Exception if to_unit is provided
+- 2021-02-03, jgliss	Fix minor bug in AuxInfoUngridded setup check if method is not eval
+- 2021-02-03, jgliss	Remove unused retrieval of dry air molmass in read_ghost auxvar helper method
+- 2021-02-02, Jonas	Merge branch 'dev-cams84' into dev-read-marcopolo
+- 2021-02-02, Hans Brenna	trial change to allow more than one variable in model_add_vars
+- 2021-02-02, jgliss	UngriddedData.from_station_data now also works with list of dicts
+- 2021-02-02, Jan Griesfeller	Merge pull request #309 from metno/griesie_EEA_dev
+- 2021-02-02, Jonas	Merge branch 'dev-cams84' into griesie_EEA_dev
+- 2021-02-02, jgliss	Add ReadMarcoPolo import in io/__init__.py
+- 2021-02-02, jgliss	Register ReadMarcoPolo in ReadUngridded
+- 2021-02-02, jgliss	(BETA): Finish first version of ReadMarcoPolo
+- 2021-02-02, jgliss	Minor doc cleanup in read_airnow.py
+- 2021-02-02, Jan Jurgen Griesfeller	added comments, extended test in __main__; corrected erros with non vmro3 variables
+- 2021-02-02, Jan Jurgen Griesfeller	changed handling of default file name; All in this file
+- 2021-02-02, jgliss	Add initial module from pyaerocom-dev-scripts
+- 2021-02-02, Jonas	Merge pull request #307 from metno/cams84-read-airnow
+- 2021-02-02, jgliss	Cleanup
+- 2021-02-02, Jan Jurgen Griesfeller	made the country code lookup take a lookup failure into account
+- 2021-02-02, Jan Jurgen Griesfeller	added Kosovo to the country codes
+- 2021-02-01, jgliss	Finalise first set of tests for ReadAirNow
+- 2021-02-01, jgliss	Make sure to avoid problematic chars in station names of AirNow
+- 2021-02-01, jgliss	Update test for ReadAirNow
+- 2021-02-01, jgliss	Add tests for ReadAirNow (NOT FINISHED)
+- 2021-02-01, jgliss	Check and update variable list in ReadAirNow and make sure data_id and ts_type is put into UngriddedData
+- 2021-02-01, Jan Jurgen Griesfeller	added EEA NRT reading class
+- 2021-02-01, Jan Jurgen Griesfeller	added stuff to read EEA NRT data
+- 2021-02-01, Jan Jurgen Griesfeller	added get_country_name_from_iso method
+- 2021-02-01, Jan Jurgen Griesfeller	added json file with a country code -> country name mapping
+- 2021-02-01, jgliss	Harmonise unit in check_rate_units_implicit in units_helpers.py
+- 2021-02-01, Hans Brenna	fixed merge conflicts
+- 2021-02-01, Hans Brenna	merged dev_wetdep_eval
+- 2021-02-01, Hans Brenna	Merge branch 'fix_model_add_vars' into Hans_main_dev
+- 2021-02-01, Hans Brenna	some changes
+- 2021-02-01, Hans Brenna	Merge pull request #305 from metno/fix_model_add_vars
+- 2021-02-01, jgliss	Rename WDEP_IMPLICIT_UNITS to DEP_IMPLICIT_UNITS and register unit mg m-2 therein
+- 2021-02-01, jgliss	Start implementing tests for AirNow
+- 2021-02-01, jgliss	Start implementing tests for AirNow
+- 2021-01-29, Jan Griesfeller	Merge pull request #303 from metno/rtd-docs
+- 2021-01-29, jgliss	Bump version of ReadAirNow
+- 2021-01-29, jgliss	Checkout molmasses from dev-wetdep-eval
+- 2021-01-29, jgliss	Checkout io/aux_read_cubes from dev-wetdep-eval (to test 2020 evaluation for CAMS84)
+- 2021-01-29, jgliss	Make sure vars_to_retrieve is not None and update some variable names
+- 2021-01-29, jgliss	Update module header in readungridded.py
+- 2021-01-29, jgliss	Update module header in config.py
+- 2021-01-29, jgliss	Add docstrings in read_airnow.py
+- 2021-01-29, jgliss	Register ReadAirNow
+- 2021-01-29, jgliss	Add initial version of read_airnow in io
+- 2021-01-29, jgliss	Merge branch 'main-dev' into dev-wetdep-eval
+- 2021-01-29, jgliss	Update conf.py
+- 2021-01-28, jgliss	Merge branch 'rtd-docs' of https://github.com/metno/pyaerocom into rtd-docs
+- 2021-01-28, jgliss	update docs/requirements.txt
+- 2021-01-28, jgliss	Bump version
+- 2021-01-28, Hans Brenna	added drydep N
+- 2021-01-28, Hans Brenna	added dryoxs as alias for drysox
+- 2021-01-28, Hans Brenna	updated web_naming_conventions.py
+- 2021-01-27, Hans Brenna	small change
+- 2021-01-27, Hans Brenna	added checking for the presence of model_add_vars
+- 2021-01-27, Hans Brenna	added another variable
+- 2021-01-27, Jonas	Update README.rst
+- 2021-01-27, Jonas	Update README.rst
+- 2021-01-27, jgliss	Update README (minimal version draft)
+- 2021-01-26, jgliss	update .gitignore
+- 2021-01-26, jgliss	Revoke README
+- 2021-01-26, jgliss	Add additional info in docs (in several new rst files, e.g. install, intro, getstarted)
+- 2021-01-26, Hans Brenna	added sum to unit-conserivng operations
+- 2021-01-26, jgliss	Testing rendering of ..literalinclude:: in README.rst for GitHub
+- 2021-01-26, jgliss	Move AEROCOM_INTRO to toplevel dir
+- 2021-01-26, jgliss	Move AeroCom intro text from README into AEROCOM_INTRO.rst in docs dir
+- 2021-01-26, jgliss	Add conda env specs in .readthedocs.yml
+- 2021-01-26, jgliss	Remove conda instructions in .readthedocs.yml
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Debug RTD docs build failure
+- 2021-01-26, jgliss	Add PATH to conf.py
+- 2021-01-26, jgliss	Add RTD badge in README
+- 2021-01-26, jgliss	Continue work on implementation of RTD docs
+- 2021-01-26, jgliss	Update info in docs header of GriddedData
+- 2021-01-26, jgliss	update docstring in helpers.py
+- 2021-01-26, jgliss	Make sure default var_mapping is set in AerocomEvaluation
+- 2021-01-26, jgliss	Remove commented out code in mathutils.py
+- 2021-01-26, jgliss	Add tests for new method in molmasses.py
+- 2021-01-26, jgliss	Minor reformatting
+- 2021-01-26, jgliss	Add new method get_mmr_to_vmr_fac in molmasses.py
+- 2021-01-26, jgliss	Add new method mmr_to_vmr_cube in io/aux_read_cubes.py
+- 2021-01-26, jgliss	Add vmro3 and vmrno2 to pya.web.web_naming_conventions.VAR_MAPPING
+- 2021-01-26, jgliss	Revise docs and reinit sphinx (tutorials are removed for now)
+- 2021-01-26, jgliss	Add .readthedocs.yml
+- 2021-01-26, jgliss	Add file changelog/v0110_release_summary.md (currently only empty template)
+- 2021-01-25, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2021-01-25, Jonas	Merge pull request #302 from metno/issue301
+- 2021-01-22, jgliss	Fix failing CI tests
+- 2021-01-22, jgliss	Remove now unneeded code for temporal resampling of output ColocatedData in colocate_gridded_ungridded routine
+- 2021-01-22, jgliss	Cleanup in colocation.py
+- 2021-01-22, jgliss	Attempt to fix #301
+- 2021-01-22, jgliss	Remove commented out code in helpers.py
+- 2021-01-22, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2021-01-22, Hans Brenna	small change in ebas_config.ini
+- 2021-01-22, jgliss	Update mathutils.calc_statistics to account for 0s in denominator of biases only after summing up
+- 2021-01-21, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2021-01-20, jgliss	Make sure gridded / ungridded colocation is not attempted to be done in higher temporal resolution than is available in obsdata (fixes #300)
+- 2021-01-20, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2021-01-20, jgliss	Update TimeResampler to avoid downsampling if apply_constraints=False and from_ts_type > to_ts_type...
+- 2021-01-20, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2021-01-20, jgliss	Bump version in ReadEbas
+- 2021-01-20, jgliss	Unflag EBAS wdep=concprcp*pr where pr=0
+- 2021-01-20, jgliss	Set zeros_to_nan option in json file computation to False by default and add as option in AerocomEvaluation
+- 2021-01-20, jgliss	Bump version of ReadEbas
+- 2021-01-20, jgliss	Make sure wdep=0 and not NaN where pr=0 in mathutils wdep calc helper
+- 2021-01-20, Jan Jurgen Griesfeller	added stuff for EEA_NRT obs network
+- 2021-01-20, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2021-01-19, jgliss	Add SI str for yearly in time_config.py
+- 2021-01-19, jgliss	Add new option freq_from_start_stop_meas in ReadEbas and implement corresponding method to derive the frequency
+- 2021-01-19, jgliss	Add new attr RATES_DEFAULT_FREQ=d in units_helpers.py
+- 2021-01-19, jgliss	Update default rate freq in deposition custom unit conversion in GriddedData
+- 2021-01-19, jgliss	Update default rate freq in wdep calc helper and modify names of associated helper methods used in ReadEbas (see also prev. commits)
+- 2021-01-19, jgliss	Update ReadEbas supported variables according to variable updates in prev. 2 commits
+- 2021-01-19, jgliss	Remove concprcpX and wetX vars for so4, no3, nh4 in ebas_config.ini and add concprcp for oxs, oxn and rdn
+- 2021-01-19, jgliss	Change default units of wetoxs, wetoxn and wetrdn to mg S/N m-2 d-1
+- 2021-01-19, Hans Brenna	change in time_resampler.py
+- 2021-01-19, jgliss	Update test for TimeResampler
+- 2021-01-19, jgliss	Remove header in summary_str of AerocomEvaluation.update_summary_str
+- 2021-01-19, jgliss	Change ceil operator to round in TimeResampler when deriving min_num_obs for freqs with multiplication factor
+- 2021-01-19, jgliss	 Change units and minimum of wetoxs, wetoxn and wetrdn
+- 2021-01-18, jgliss	Fix EBAS test
+- 2021-01-18, jgliss	Allow for lazy constrained reading in ReadGridded (see #299 for problems arising from that)
+- 2021-01-18, jgliss	Remove commented out code in units_helpers
+- 2021-01-18, jgliss	(ONGOING): minor reorganisation of deposition unit handling in units_helpers
+- 2021-01-18, jgliss	Register  wetoxs, wetoxn and wetrdn in ReadEbas
+- 2021-01-18, jgliss	Separate some function calls in GriddedData for easier debugging
+- 2021-01-18, jgliss	(BETA): Implement unit conversion for dep or emi rates in GriddedData if units are custom (e.g. implicit rates)
+- 2021-01-18, jgliss	Add minimum=0 for wetoxs in variables.ini
+- 2021-01-18, jgliss	Add wetoxs, wetoxn and wetrdn in ebas_config.ini
+- 2021-01-18, jgliss	Remove ReadGriddedMulti import in io/__init__.py
+- 2021-01-18, jgliss	Add new helper compute_wetoxs_from_concprcpso4 in mathutils
+- 2021-01-18, jgliss	(API): remove ReadGriddedMulti; add np.not_equal to read constrained operators in ReadGridded
+- 2021-01-18, jgliss	Fix minor bug in plotscatter.py if minimum value in data is 0 related to axes limits
+- 2021-01-18, Hans Brenna	added organic carbon
+- 2021-01-15, jgliss	Add wetrdn to variables.ini
+- 2021-01-15, jgliss	Minor update in output
+- 2021-01-15, Jonas	Merge pull request #298 from metno/wdep-updates-temp
+- 2021-01-15, Jonas	Update pyaerocom/io/readgridded.py
+- 2021-01-15, Jonas	Update pyaerocom/griddeddata.py
+- 2021-01-15, jgliss	Merge branch 'dev-wetdep-eval' into wdep-updates-temp
+- 2021-01-15, jgliss	Add automatic summary string to AerocomEvaluation class (attr. summary_str)
+- 2021-01-15, jgliss	Minor reformatting in units_helpers.py
+- 2021-01-15, jgliss	Remove unneeded import of Unit class in readgridded.py
+- 2021-01-15, jgliss	GriddedData: Continue work on deposition unit issues in modeldata
+- 2021-01-15, Jonas	Merge pull request #280 from metno/read-ebas-wdep
+- 2021-01-15, jgliss	Update read_ebas.__main__
+- 2021-01-15, jgliss	Update test_variables.py
+- 2021-01-15, jgliss	Add test module for custom unit conversion
+- 2021-01-15, jgliss	Move helpers  related to wetdep and concprcp reading from models from readgridded.py to units_helpers.py (WILL NEED SOME GENERALISATIONS)
+- 2021-01-15, jgliss	Add var_groups in pyaerocom.__init__.py
+- 2021-01-15, jgliss	Work on automatic unit conversion in GriddedData (NOT FINISHED)
+- 2021-01-15, jgliss	Remove latitude and longitude defs from variables.ini as they are duplicated (and aliases) of lat lon vars
+- 2021-01-15, jgliss	Add new property methods to Variable class: is_emission, is_deposition, is_rate and rename is_dry to is_at_dry_conditions
+- 2021-01-15, jgliss	Add new module var_groups.py
+- 2021-01-14, jgliss	Add check_unit=False in instantiation of GriddedData in EMEP model reading routine
+- 2021-01-14, jgliss	Add check_unit=False in some methods in GriddedData where new GriddedData objects are created
+- 2021-01-14, jgliss	Add unit alias check in GriddedData; separate method check_unit from convert_unit and provide additional input args to control behaviour accordingly
+- 2021-01-14, jgliss	Remove unit alias check in ReadGridded
+- 2021-01-14, jgliss	Update test
+- 2021-01-14, jgliss	Change wdep calc helper method in mathutils.py so output units is in inverse seconds
+- 2021-01-14, jgliss	Register concca, concmg and conck (Ca, Mg, K) in variables.ini and ebas_config.ini
+- 2021-01-13, jgliss	Merge dev-wetdep-eval into read-ebas-wdep
+- 2021-01-13, jgliss	Minor cleanup related to definitions of wdep variables in EBAS
+- 2021-01-13, jgliss	Bump version in ReadEbas
+- 2021-01-13, jgliss	Implement reading of wetno3 and wetnh4 in ReadEbas
+- 2021-01-13, jgliss	Update definitions of wetno3 and wetnh4 in ebas_config.ini
+- 2021-01-13, jgliss	Implement helper methods to compute wetno3 and wetnh4 in mathutils.py
+- 2021-01-13, Hans Brenna	defined concec
+- 2021-01-13, jgliss	Fix test
+- 2021-01-13, jgliss	Add tests for new freq check feature in ReadEbas
+- 2021-01-13, jgliss	(MAJOR UPDATE): new EBAS option "ensure_correct_freq" which defaults to True: now measurements not corresonding to resolution_code are flagged during reading
+- 2021-01-13, jgliss	Finish helper method in mathutils to compute wdep from concprcp, implement for wetso4 from concprcpso4
+- 2021-01-13, jgliss	Add tests for TsType.num_secs
+- 2021-01-13, jgliss	Add new helper property attr. num_secs in TsType
+- 2021-01-13, jgliss	Add tests for TsType.tol_secs
+- 2021-01-13, jgliss	Add new decorator attr tol_secs in TsType (computes tolerance in seconds)
+- 2021-01-13, Hans Brenna	fixed ebas concss25 def
+- 2021-01-13, jgliss	Fix failing tests related to EBAS reading
+- 2021-01-12, Jonas	Update README.rst
+- 2021-01-12, jgliss	Update tests related to colocation
+- 2021-01-12, jgliss	Minor update in Colocator
+- 2021-01-12, jgliss	Add empty line in paths.ini
+- 2021-01-12, jgliss	(API): Model and obs outlier removal is now applied in Colocator (NOTE: var_outlier_ranges and var_ref_outlier_ranges have been renamed to obs_ou... and model_outlier_ranges, remove_outliers now only applies to obs and new attr model_remove_outliers handles model case)
+- 2021-01-12, jgliss	(API): Remove outlier removal in low-level colocation routines (fixes #50, work in progress for #296)
+- 2021-01-12, jgliss	Reading of ungridded data goes now via Colocator.read_ungridded in TrendsEvaluation
+- 2021-01-12, Hans Brenna	fixed a bug in ebas_setup
+- 2021-01-10, Hans Brenna	defined some new variables for CAMS61
+- 2021-01-06, Hans Brenna	small updates to enable CAMS61 processing
+- 2020-12-21, Hans Brenna	Merge branch 'main-dev' into Hans_main_dev
+- 2020-12-19, Jonas	Merge pull request #293 from metno/main-dev
+- 2020-12-19, jgliss	Fix bug introduced during last merge
+- 2020-12-19, jgliss	Merge branch 'master' into main-dev
+- 2020-12-19, Jonas	Merge pull request #291 from metno/update-release-info
+- 2020-12-19, jgliss	Announce release of 0.10.0 in README and add new file release_checklist.md
+- 2020-12-19, jgliss	Fix link in release summary
+- 2020-12-19, Jonas	Merge pull request #283 from metno/release_0_10_0
+- 2020-12-19, jgliss	Remove empty line in VERSION.md
+- 2020-12-19, jgliss	Update version
+- 2020-12-19, jgliss	Update README
+- 2020-12-19, jgliss	Update README
+- 2020-12-19, jgliss	Update README
+- 2020-12-19, jgliss	Update README
+- 2020-12-19, jgliss	Change name of iterator from i to j in nested loop in ReadGhost
+- 2020-12-19, jgliss	Update docstring in region.py
+- 2020-12-19, jgliss	Finish first draft of release note for v0.10.0
+- 2020-12-19, jgliss	Minor code cleanup
+- 2020-12-19, jgliss	Remove old and commented out code in plot subpackage
+- 2020-12-19, jgliss	Remove commented out code
+- 2020-12-19, jgliss	Minor reformatting in read_ebas
+- 2020-12-19, jgliss	Remove commented out code in readgridded.py
+- 2020-12-19, jgliss	Remove deprecated, commented out method ReadEbas.get_file_listOLD
+- 2020-12-18, jgliss	Work on summary for upcoming 0.10.0 release and diff_files file
+- 2020-12-18, jgliss	Create release file diff_files_v080_v0100.md in changelog
+- 2020-12-18, jgliss	Update docs/index.rst (latest version from webeval-maps)
+- 2020-12-18, jgliss	Merge branch 'master' into release_0_10_0
+- 2020-12-18, jgliss	Merge branch 'main-dev' into dev-wetdep-eval
+- 2020-12-18, Eirik Gallefoss	Merge pull request #281 from metno/test_aerocom_evaluation
+- 2020-12-18, Hans Brenna	merged main-dev
+- 2020-12-18, Jonas	Merge pull request #282 from metno/release_0_10_0-minorcleanup
+- 2020-12-18, Hans Brenna	Merge pull request #278 from metno/fix-#277
+- 2020-12-18, Hans Brenna	Merge pull request #279 from metno/fix-#277-main-dev
+- 2020-12-18, Hans Brenna	Update pyaerocom/time_resampler.py
+- 2020-12-18, Hans Brenna	Update pyaerocom/time_resampler.py
+- 2020-12-18, jgliss	AerocomEvaluation.__setitem__ does not throw KeyError anymore if input key is not supported but just skips this parameter; minor code cleanup
+- 2020-12-18, Eirik gallefoss	Add test AerocomEvaluation
+- 2020-12-17, jgliss	(BETA): ReadEbas can now also handle variable specific options; fix bug for SQL settings for derived variables; organise code a bit better and remove unneeded wrappers for read options
+- 2020-12-17, jgliss	Remove some whitespace
+- 2020-12-17, jgliss	Rename EBAS var precip to pr and update wetso4 in ebas_config.ini
+- 2020-12-17, jgliss	Fix some inconsistencies for derived variables in EbasVarInfo and add new method make_sql_requests
+- 2020-12-17, jgliss	Remove some commented out old code
+- 2020-12-17, jgliss	(BETA): Add method compute_wdep_from_concprcpso4 in mathutils.py
+- 2020-12-17, Hans Brenna	fixed issue #277 for main-dev
+- 2020-12-17, Hans Brenna	fix issue #277
+- 2020-12-17, Hans Brenna	added variable precip and fixed issue #277
+- 2020-12-17, Eirik Gallefoss	Merge pull request #272 from metno/emep_fixes
+- 2020-12-17, Eirik Gallefoss	Apply suggestions from code review
+- 2020-12-17, Eirik gallefoss	Remove check for ts_type dict ReadMscwCtm
+- 2020-12-17, Eirik gallefoss	Remove unnecessary test ReadMscwCtm
+- 2020-12-17, Eirik gallefoss	Ensure Colocator._read_gridded don't pass ts_type as dict
+- 2020-12-16, Eirik Gallefoss	Update pyaerocom/io/read_mscw_ctm.py
+- 2020-12-16, Eirik Gallefoss	Update pyaerocom/io/read_mscw_ctm.py
+- 2020-12-16, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2020-12-16, Jonas	Merge pull request #274 from metno/fix-273
+- 2020-12-16, jgliss	Update instantiation of coord arrays for ColocatedData in colocate_gridded_ungridded
+- 2020-12-16, jgliss	Remove some commented out code in GriddedData
+- 2020-12-16, jgliss	Attempt fix of #273 and update instantiation of coordinate and colocated data arrays in colocate_gridded_ungridded
+- 2020-12-16, jgliss	Implement usage of reanalyse_existing and raise_exceptions in new map processing code
+- 2020-12-16, jgliss	Unify output timestamps to midmonth in json and geojson for maps processing
+- 2020-12-16, jgliss	Remove unused attr TsType.RS_OFFSETS
+- 2020-12-16, jgliss	Remove empty lines
+- 2020-12-16, Eirik Gallefoss	Update pyaerocom/io/read_mscw_ctm.py
+- 2020-12-15, jgliss	Continue work on maps processing
+- 2020-12-15, jgliss	change datatype for new map data json to np.float64
+- 2020-12-15, jgliss	Remove unused class header attr Variable.RH_MAX_DRY
+- 2020-12-15, Eirik Gallefoss	ReadMscwCtm: Resolve ts_type if filepath is set
+- 2020-12-15, Eirik Gallefoss	Add __repr__ in ReadMscwCtm
+- 2020-12-15, Eirik Gallefoss	Fix cube coords when ts_type is hourly in ReadMscwCtm
+- 2020-12-15, Eirik Gallefoss	Handle ts_types dictionary in ReadMscwCtm
+- 2020-12-15, Eirik Gallefoss	Fix units ac550aer in ReadMscwCtm
+- 2020-12-15, Eirik Gallefoss	Add EMEP variable ac550aer
+- 2020-12-15, Eirik Gallefoss	Add Colocator test that ensures model_data_dir is propagated to reader
+- 2020-12-15, Eirik Gallefoss	Add test ReadMscwCtm for handling ts_type dicts
+- 2020-12-15, Eirik Gallefoss	Merge pull request #270 from metno/fix_tests_release010
+- 2020-12-14, jgliss	Locally merge dev-wetdep-eval into webeval-maps
+- 2020-12-14, jgliss	Continue work on map processing code
+- 2020-12-14, jgliss	Minor update in GriddedData __str__ and __repr__ methods
+- 2020-12-14, jgliss	Add new attr. model_rename_vars to Colocator
+- 2020-12-14, jgliss	Add option rename_var to ReadGridded.read_var (and affected lowerlevel methods)
+- 2020-12-14, jgliss	Update  web-names of od550lt1aer and od550gt1aer
+- 2020-12-14, jgliss	Update reading of modeldata in map processing (goes via AerocomEvaluation.read_model_data now)
+- 2020-12-11, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2020-12-11, jgliss	Make sure metadata is conserved if custom unit fix is done in wdep GriddedData
+- 2020-12-11, jgliss	Add metadata flag timedim-corrected in GriddedData if time dimension was updated automatically
+- 2020-12-11, jgliss	Add concprcpnh4 and concprcprdn in variables.ini
+- 2020-12-11, jgliss	Add concprcprdn as aux variable in ReadGridded
+- 2020-12-11, Hans Brenna	Merge branch 'dev-wetdep-eval' into Hans_main_dev
+- 2020-12-11, Hans Brenna	merged main-dev
+- 2020-12-10, jgliss	Fix wrong unit mapping in UALIASES
+- 2020-12-10, jgliss	Add MM/H in as unit alias for mm h-1
+- 2020-12-10, jgliss	Move print_log output to logger in ColocatedData (Filtering of ... results in unchanged ...)
+- 2020-12-10, jgliss	Add some units aliases used in some models in CAMS61 project
+- 2020-12-09, jgliss	Add some units aliases
+- 2020-12-09, jgliss	Update info str on unit conversion error in GriddedData
+- 2020-12-09, jgliss	Add wetoxs in variables.ini
+- 2020-12-09, jgliss	Add concprcpoxs in variables.ini
+- 2020-12-09, jgliss	Add concprcpoxs to AUX_VARS in ReadGridded and debug corresponding computation methods for different precip and wdep units (CHIMERE model)
+- 2020-12-09, Eirik gallefoss	Update EBAS tests to match new data
+- 2020-12-09, Eirik gallefoss	Skip part of config test if lustre is available
+- 2020-12-09, Eirik gallefoss	Update obsdata modification dates
+- 2020-12-09, Eirik gallefoss	Add reader ID to ReadUngridded test
+- 2020-12-09, Eirik gallefoss	Update AeronetInvv3 test
+- 2020-12-09, Eirik gallefoss	Define obsdata_versions
+- 2020-12-09, Eirik gallefoss	Update LOCALTMPDIR path to match convention
+- 2020-12-09, Eirik gallefoss	Update test for config timeout
+- 2020-12-08, Eirik gallefoss	Remove prefix for some meta keys
+- 2020-12-08, Eirik gallefoss	Update ghost tests to match changes
+- 2020-12-08, Eirik gallefoss	Increase timeout for lustre access
+- 2020-12-08, Eirik gallefoss	Merge changes related to ReadGhost
+- 2020-12-07, jgliss	Finalise 2 new methods in EbasNasaAmesFile class to det time differences and gaps
+- 2020-12-07, jgliss	Add meta parameter "set_type_code" to ReadEbas
+- 2020-12-03, Eirik Gallefoss	Update release summary
+- 2020-12-04, jgliss	Update test
+- 2020-12-04, jgliss	Finalise updated version of compute_model_average_and_diversity method
+- 2020-12-04, jgliss	Allow to pass options preserving NaNs and indent in AerocomEvaluation.to_json (current default write np.nan to Null...)
+- 2020-12-04, jgliss	Add monthly entry in TS_TYPE_TO_SI dict in time_config.py
+- 2020-12-04, jgliss	(BETA): Finish first version of logic required for reading concentration in precip from deposition and precip model output
+- 2020-12-04, jgliss	Add new option model_read_opts in ColocationSetup / Colocator (for allowing custom model reading settings)
+- 2020-12-04, jgliss	Deactivate unit check of GriddedData object returned in GriddedData.crop; fix bug in GriddedData.to_netcdf (input savename was ignored)
+- 2020-12-04, Hans Brenna	changed description of conctno3
+- 2020-12-03, Jonas	Merge pull request #268 from metno/fix-263-prelim
+- 2020-12-03, jgliss	Rename arg in test
+- 2020-12-03, jgliss	Add logic in TimeResampler for keeping track of aggregators applied that do not preserve the unit of the data
+- 2020-12-03, Jonas	Merge pull request #267 from metno/dev-eval-concprcp
+- 2020-12-03, Hans Brenna	merged main-dev
+- 2020-12-03, jgliss	Pass read_var instead of var_name in cfg.read_model_data in compute_model_average_and_diversity (Takk, Eirik)
+- 2020-12-03, Hans Brenna	Merge pull request #266 from metno/implement_GHOSTv1.3
+- 2020-12-03, jgliss	Merge branch 'main-dev' into dev-eval-concprcp
+- 2020-12-03, jgliss	Update ensemble calculation method in web/utils.py (output std field for mean, allow alternative variables for models  as input)
+- 2020-12-03, jgliss	Make sure ObsConfigEval instantiates properly if input obs_aux_requires is invalid and change default from None to {}
+- 2020-12-03, jgliss	Change verbosity and explicitness in AerocomEvaluation wrt autoload of config file
+- 2020-12-03, jgliss	Fix output error and ignore GriddedData unit check when instantiating from GriddedData from cube in regrid
+- 2020-12-03, Jonas	Merge pull request #265 from metno/fix-tests
+- 2020-12-03, Hans Brenna	bump ghost version
+- 2020-12-03, Hans Brenna	bump read_ghost version
+- 2020-12-03, Hans Brenna	Merge branch 'main-dev' into implement_GHOSTv1.3
+- 2020-12-03, Hans Brenna	updated standard GHOST flags after suggestion from Dene
+- 2020-12-03, Hans Brenna	merged in main-dev and updated GHOST flags
+- 2020-12-03, jgliss	Minor formatting changes in web/utils.py
+- 2020-12-02, jgliss	Update EBAS test to revoked default value for AE used for wvl shifts
+- 2020-12-02, jgliss	Fix failing tests in web subpackage
+- 2020-12-02, jgliss	Update obs_io.py tests
+- 2020-12-02, jgliss	Update tests for module metastandards.py
+- 2020-12-02, jgliss	Fix minor bug in exception formatting in GriddedData.check_unit (fixes quite some failing tests)
+- 2020-12-02, jgliss	Merge branch 'main-dev' into webeval-maps
+- 2020-12-02, jgliss	Change ASSUME_AE_SHIFT_WVL to 1.5 in ReadEbas and fix failing test in ReadEbas.get_file_list
+- 2020-12-02, jgliss	Merge branch 'main-dev' into dev-eval-concprcp
+- 2020-12-02, jgliss	Update CI.yml
+- 2020-12-02, jgliss	Trigger CI
+- 2020-12-02, jgliss	Fix #263
+- 2020-12-02, jgliss	Update readgridded.py using version from webeval-maps (fixes #264)
+- 2020-12-02, Hans Brenna	attempted fix of #263
+- 2020-12-02, jgliss	Set no auto-unit check when initialising GriddedData from dummy cube
+- 2020-12-02, jgliss	Update docs/readme.rst and index.rst
+- 2020-12-02, jgliss	Fix bug in contour colormapping in web mapeval
+- 2020-12-02, jgliss	Update colormaps and levels for abs550aer and ang4487aer
+- 2020-12-01, jgliss	Make sure ReadGridded does not break if aux-vars requirement variables are not defined (e.g. mmrprcpoxn for computing concprcpoxn)
+- 2020-12-01, jgliss	Fix import error arising from last merge conflict
+- 2020-12-01, Jonas	Merge branch 'main-dev' into webeval-maps
+- 2020-12-01, Jonas	Merge pull request #259 from metno/check-ebas-concvars
+- 2020-12-01, Hans Brenna	Merge pull request #258 from metno/implement_GHOSTv1.3
+- 2020-12-01, Hans Brenna	merged implement_GHOSTv1.3
+- 2020-12-01, Hans Brenna	bump GHOST reader version to force re-read of the data
+- 2020-12-01, Hans Brenna	Merge branch 'implement_GHOSTv1.3' into Hans_main_dev
+- 2020-12-01, Hans Brenna	changed ghost_meta_keys and test
+- 2020-12-01, Hans Brenna	merged main-dev
+- 2020-12-01, jgliss	Merge branch 'main-dev' into webeval-maps
+- 2020-12-01, jgliss	Merge branch 'check-ebas-concvars' of git+ssh://github.com/metno/pyaerocom into check-ebas-concvars
+- 2020-12-01, Jonas	Merge pull request #257 from metno/main-dev
+- 2020-12-01, Jonas	Merge branch 'check-ebas-concvars' into main-dev
+- 2020-12-01, Jonas	Merge pull request #242 from metno/fix-#239
+- 2020-12-01, jgliss	Minor cleanup in code
+- 2020-12-01, jgliss	Continue work on concprcp evaluation
+- 2020-12-01, Jonas	Update pyaerocom/combine_vardata_ungridded.py
+- 2020-12-01, Jonas	Update pyaerocom/ungriddeddata.py
+- 2020-11-30, Hans Brenna	Merge branch 'fix-#239' into Hans_main_dev
+- 2020-11-30, jgliss	Fix recently introduced bug in UngriddedData._check_filter_match resulting in list filters to be ignored
+- 2020-11-30, jgliss	Minor update in AerocomEvaluation (when deleting experiment data)
+- 2020-11-27, jgliss	(ONGOING DEV) readgridded.py: allow additional input for aux vars computation methods; add some helpers tocompute conc in precip from deposition and precip fields
+- 2020-11-27, jgliss	Add some unit aliases in units_helpers.py
+- 2020-11-27, jgliss	Add a ToDo comment in UngriddedData
+- 2020-11-27, jgliss	Remove filepath exists check in ReadEbas.get_file_list as this slowed things down terribly when data is on mounted remote
+- 2020-11-27, jgliss	Minor updates in GriddedData.resample_time (i.e. only keep unit for aggr mean, median, std)
+- 2020-11-27, jgliss	Assign now also start and stop meas in EbasNasaAmes; add 2 methods get_time_differences_meas and get_time_gaps_meas
+- 2020-11-27, jgliss	Add new variables concprcpno3 and concprcpoxn and rename concso4pr to concprcpso4
+- 2020-11-26, Hans Brenna	Merge branch 'fix-#239' into Hans_main_dev
+- 2020-11-26, Hans Brenna	Merge branch 'conctno3_definitions' into Hans_main_dev
+- 2020-11-26, Hans Brenna	merged main-dev, conctno3 and vmr-to-conc branches
+- 2020-11-26, Hans Brenna	Merge branch 'dev_gridded_conc_from_vmr' into Hans_main_dev
+- 2020-11-26, Hans Brenna	Merge branch 'conctno3_definitions' into Hans_main_dev
+- 2020-11-26, Hans Brenna	Merge branch 'main-dev' into Hans_main_dev
+- 2020-11-26, Eirik Gallefoss	Add molmass nh3
+- 2020-11-25, jgliss	Change EBAS assumed AE back to 1 and bump version (release 0.10.0 should reproduce results from Gliss et al., 2020)
+- 2020-11-25, jgliss	Update some tests for units_helpers module
+- 2020-11-25, jgliss	(DEV): work on custom unit conversion in GriddedData
+- 2020-11-25, jgliss	Add missing  docs in ReadGridded
+- 2020-11-25, jgliss	Update unit conversion in StationData and UngriddedData (after recent update in units_helpers)
+- 2020-11-25, jgliss	Update unit conversion in ReadEarlinet and ReadEbas (after recent update in units_helpers)
+- 2020-11-25, jgliss	(DEV): add methods is_deposition and get_unit_conversion_fac; rename unit_conversion_fac -> _unit_conversion_fac_si; unit_conversion_fac_custom -> _unit...fac_custom and update convert_unit accordingly; invalidate convert_unit_back
+- 2020-11-25, jgliss	Change unit from wetoxn to kg N m-2 s-1
+- 2020-11-25, jgliss	Remove check gridded_data.var_info.has_units in colocation.py if harmonise_units is True
+- 2020-11-25, jgliss	Add new method to_si to TsType class (needed for unit conversion)
+- 2020-11-25, jgliss	Empty commit to test trigger CI
+- 2020-11-25, jgliss	Fix order of checks in str metadata filtering in UngriddedData
+- 2020-11-25, jgliss	Add and update some tests for in test_readungridded
+- 2020-11-25, jgliss	Fix filtering of UngriddedData in ReadUngridded when ignore_station_names is provided as filter
+- 2020-11-25, Eirik gallefoss	Add conctno3 and conctnh
+- 2020-11-25, Jonas	Merge pull request #253 from metno/fix-252
+- 2020-11-25, jgliss	Add some more tests for TimeResampler
+- 2020-11-24, jgliss	Fix some minor bugs in TimeResampler, reorganise some stuff and add test module for time_resampler (only some tests so far)
+- 2020-11-24, jgliss	Fix #252 (went for option 2 proposed in the issue)
+- 2020-11-24, jgliss	(TEMP): reverse ReadEbas.ASSUME_AE_SHIFT_WVL from 1.5 to 1.0 to reproduce Gliss et al., 2020 results
+- 2020-11-24, jgliss	(WIP): working on improving general handling of custom units, particularly non SI mass conc. expressed as mass of Nitrogen, Sulphur...
+- 2020-11-24, jgliss	Update _check_correct_units in ReadGridded
+- 2020-11-24, jgliss	(WIP): include proper treatment of custom units in GriddedData
+- 2020-11-24, jgliss	Remove repeated entry in data_sources.ini
+- 2020-11-24, jgliss	Set defaults for exp_descr="" and exp_status="experimental" in AerocomEvaluation
+- 2020-11-24, jgliss	Add new mandatory attr exp_status in AerocomEvaluation
+- 2020-11-24, jgliss	(UNDER CONSTRUCTION): add new method make_info_str in helpers_evaluation_iface.py
+- 2020-11-24, jgliss	Add instr_vert_loc to ObsConfigEval and remove explicit definitions of attrs. obs_aux_funs and obs_aux_units
+- 2020-11-24, jgliss	Add new default meta parameter instr_vert_loc in DataSource class
+- 2020-11-24, jgliss	Add instr_vert_loc to data_sources.ini and add separate GHOST.EEA and GHOST.EBAS definitions
+- 2020-11-24, jgliss	Raise TemporalResolutionError if TsType is instantiated with None
+- 2020-11-24, jgliss	Remove strict dependency of aux_units in AuxInfoUngridded
+- 2020-11-23, jgliss	Add new mandatory attribute exp_descr to AerocomEvaluation
+- 2020-11-23, jgliss	Add wetoxn to variables.ini
+- 2020-11-23, Hans Brenna	Merge branch 'Hans_main_dev' into dev_gridded_conc_from_vmr
+- 2020-11-23, Hans Brenna	changed path for pattern conc*
+- 2020-11-23, Hans Brenna	Merge branch 'dev_gridded_conc_from_vmr' into Hans_main_dev
+- 2020-11-23, jgliss	Remove redundant import
+- 2020-11-20, jgliss	Update EBAS test due to new supported variable contnh
+- 2020-11-20, jgliss	Minor bug fix in units_helpers, recently introduced
+- 2020-11-20, Hans Brenna	change to method get_diurnal_only to handle skipping some model data
+- 2020-11-20, Hans Brenna	Merge branch 'fix-#239' into Hans_main_dev
+- 2020-11-20, jgliss	Merge branch 'read_ammonia_nitric' into check-ebas-concvars
+- 2020-11-20, jgliss	Fix minor bug in ReadEbas related to finding best data column for multiple matrix matches
+- 2020-11-20, jgliss	Add some tests for UngriddedData.filter_by_meta
+- 2020-11-20, jgliss	Merge branch 'main-dev' into fix-#239
+- 2020-11-20, jgliss	Merge branch 'master' into main-dev
+- 2020-11-19, jgliss	Trigger CI
+- 2020-11-19, jgliss	Trigger CI
+- 2020-11-19, Jonas	Merge pull request #248 from metno/copy-new-CI
+- 2020-11-19, jgliss	Empty commit (test trigger CI)
+- 2020-11-19, jgliss	Copy updated CI.yml from main-dev
+- 2020-11-19, jgliss	Update tests for combine_vardata_ungridded
+- 2020-11-19, jgliss	Add option to add custom metadata in combine_vardata_ungridded and fix ambiguities related to input and output units
+- 2020-11-19, jgliss	Provide option to add metadata in StationData conversion methods
+- 2020-11-19, jgliss	Add new class attr PROTECTED_KEYS in StationData header and modify related metadata operation methods
+- 2020-11-19, jgliss	Add new global variable STANDARD_META_KEYS in mod metastandards
+- 2020-11-19, Jonas	Merge pull request #246 from metno/update_workflow
+- 2020-11-19, Eirik Gallefoss	Update server timeout in config test
+- 2020-11-19, Eirik Gallefoss	Update actions in workflow to newest version
+- 2020-11-19, Eirik Gallefoss	Conversion of griddeddata to non SI units
+- 2020-11-18, jgliss	Move ungridded obsdata post filtering into ReadUngridded.read fromColocator
+- 2020-11-18, jgliss	Add new feature for "filter_post" in ReadUngridded reading methods (BETA)
+- 2020-11-18, Eirik Gallefoss	Add concno3 from concno3f and concno3c
+- 2020-11-18, Eirik Gallefoss	Add variables Sum(HNO3+NO3) and Sum(NH3+NH4)
+- 2020-11-18, jgliss	Move print_log output to logger in UngriddedData
+- 2020-11-18, jgliss	Merge branch 'release_0_10_0' into fix-#239
+- 2020-11-18, jgliss	(TEMP DEV): raise Exception after reading ungridded obs in Colocator
+- 2020-11-18, jgliss	Add filter_post arg to ReadUngridded.read_dataset (NOT IMPLEMENTED)
+- 2020-11-18, jgliss	Improve flexibility of UngriddedData.filter_by_meta (pointwise list filtering, allow arg "negate")
+- 2020-11-18, Jonas	Merge pull request #231 from metno/changes-forces2020
+- 2020-11-17, jgliss	Merge branch 'changes-forces2020' into main-dev
+- 2020-11-17, jgliss	Merge branch 'release_0_10_0' into main-dev
+- 2020-11-17, jgliss	Change server checkout time on init to 1s (TEMP FOR HOMEOFFICE)
+- 2020-11-17, jgliss	Trying to fix bugs in color mapping in contour map code (NOT SOLVED)
+- 2020-11-16, jgliss	Remove commented out code
+- 2020-11-16, jgliss	Add NotImplementedError in vert_coords
+- 2020-11-16, jgliss	Add framework to trends eval metainfo and handling for new ts_type "native"
+- 2020-11-16, jgliss	Implement option "only_maps" in pyaeroeval CLI
+- 2020-11-16, jgliss	Add functionality to process model maps in AerocomEvaluaion (new attr. add_maps, and implementation in method run_map_eval)
+- 2020-11-16, jgliss	Minor change in string formatting on KeyError in helpers_evaluation_iface
+- 2020-11-16, jgliss	Add new test for TsType class
+- 2020-11-16, jgliss	Add new attr. map_cmap to Variable
+- 2020-11-16, jgliss	Add logic to handle new ts_type "native" in TimeResampler
+- 2020-11-16, jgliss	Add new default ts_type "native"
+- 2020-11-16, jgliss	Make sure vert_code is added to GriddedData in ReadGridded
+- 2020-11-16, jgliss	Add attr. vert_code to GriddedData
+- 2020-11-16, jgliss	Remove commented out old code in grid_io.py
+- 2020-11-16, jgliss	Some cleanup and harmonisation in variables.ini
+- 2020-11-16, jgliss	Add module web/web_maps_helpers with methods for online maps processing
+- 2020-11-13, Hans Brenna	added concso4 to ghost reader
+- 2020-11-11, jgliss	Allow ts_type "native" for trends computation in TrendsEvaluation class
+- 2020-11-11, jgliss	Change ReadEarlinet.TS_TYPE from "n/d" to "native" and bump class version
+- 2020-11-11, jgliss	Improve handling of time frequencies for trends computation in TrendsEvaluation
+- 2020-11-11, jgliss	Rename outdated varnames bscatc* to bsc* in read_earlinet.py
+- 2020-11-11, jgliss	Slightly loosen strictness of UngriddedData._check_index
+- 2020-11-11, jgliss	Remove commented out old code in region.py
+- 2020-11-11, jgliss	Add tests for region filtering of ColocatedData
+- 2020-11-11, jgliss	Improve handling of region and latlon filtering in ColocatedData
+- 2020-11-10, Hans Brenna	merged Hans_main_dev afet main-dev merge
+- 2020-11-10, Hans Brenna	merged main-dev into Hans_main_dev
+- 2020-11-09, Jonas	Merge pull request #230 from metno/support-addvar
+- 2020-11-09, Jonas	Merge pull request #229 from metno/add-ebas-pm1
+- 2020-11-09, Jonas	Merge pull request #227 from metno/edit-tutorials
+- 2020-11-09, jgliss	Add some tests for new feature in colocation routines
+- 2020-11-09, jgliss	GriddedData.var_name_aerocom now returns Variable.var_name_aerocom (before was Variable.var_name)
+- 2020-11-09, jgliss	Implement automatic registration of unknown variables in lowlevel colocation routines
+- 2020-11-09, jgliss	Minor bug fix in recently added method VarCollection.add_var
+- 2020-11-09, jgliss	Add new methods pya.variable.VarCollection: add_var and get_var and add test
+- 2020-11-09, jgliss	Fix some failing tests
+- 2020-11-09, jgliss	Add new default meta attr *framework* and implement in ReadEbas
+- 2020-11-09, jgliss	Remove empty line
+- 2020-11-09, jgliss	Remove specifying merge_if_multi when calling UngriddedData.to_station_data_all in  TrendsEvaluation
+- 2020-11-06, jgliss	Fix test after variable update
+- 2020-11-06, jgliss	Add EBAS var concpm1
+- 2020-11-04, jgliss	Add suppress_warnings section in docs/conf.py
+- 2020-11-04, jgliss	Fix #225 (harmonise input for retrieving iris range constraints)
+- 2020-11-03, jgliss	Update README
+- 2020-11-03, jgliss	Update tutorials section in docs
+- 2020-11-03, jgliss	Add docs/pyaerocom-tutorials to gitignore
+- 2020-11-02, jgliss	Update release candidate
+- 2020-11-02, jgliss	Revoke version (to avoid reloading observations)
+- 2020-11-02, jgliss	Add note in docs/api.rst
+- 2020-11-02, jgliss	Add method initialise_testdata in pyaerocom.__init__.py
+- 2020-11-02, jgliss	Add note in README
+- 2020-10-30, Jonas	Update pyaerocom_env.yml
+- 2020-10-30, Jonas	Merge pull request #218 from metno/v090dev
+- 2020-10-30, Jonas	Merge pull request #221 from metno/update-docs
+- 2020-10-30, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-10-30, jgliss	Update version
+- 2020-10-30, jgliss	Update docs
+- 2020-10-30, Eirik gallefoss	Add release summary v0100
+- 2020-10-30, Hans Brenna	merged surface layer fix
+- 2020-10-30, jgliss	Minor code cleanup and updates in docstrings
+- 2020-10-30, jgliss	Continue work on updated docs
+- 2020-10-30, Hans Brenna	merged surface layer fix
+- 2020-10-30, Eirik gallefoss	Merge branch 'v090dev' of github.com:metno/pyaerocom into v090dev
+- 2020-10-30, Eirik gallefoss	Add changelog 0.8.0 -> 0.10.0
+- 2020-10-30, jgliss	Merge branch 'v090dev' into update-docs
+- 2020-10-30, Jonas	Merge branch 'master' into v090dev
+- 2020-10-30, Eirik Gallefoss	Merge pull request #214 from metno/merge_hans_emep
+- 2020-10-30, jgliss	(WORK IN PROGRESS): update docs
+- 2020-10-30, Eirik gallefoss	Fix EMEP fixture
+- 2020-10-30, Jonas	Merge branch 'v090dev' into merge_hans_emep
+- 2020-10-30, Jonas	Merge pull request #217 from metno/add-tests-config
+- 2020-10-30, Eirik Gallefoss	Ensure iface_names is list
+- 2020-10-30, Eirik Gallefoss	Minor cleanup helpers_evaluation_iface
+- 2020-10-30, jgliss	Revert META_KEYS in ReadGhost
+- 2020-10-30, jgliss	Fix some failing tests
+- 2020-10-30, jgliss	Add more tests for Config class
+- 2020-10-30, jgliss	Add more tests for Config class
+- 2020-10-30, jgliss	Improve handling of DONOTCACHEFILE in ReadUngridded
+- 2020-10-30, jgliss	Rename Config._cachedir to _cache_basedir and add getter and setter method cache_basedir; add property decorator user
+- 2020-10-30, jgliss	Add some tests and minor cleanup in some modules
+- 2020-10-30, jgliss	Modify some docstrings in test_data_access and add function initialise()
+- 2020-10-29, jgliss	Remove attributes related to testdata in Config class
+- 2020-10-29, jgliss	Move all code related to access of testdata into new module testdata_access; make proper adjustments in all affected modules
+- 2020-10-29, jgliss	Add __repr__ in ReadUngriddedBase
+- 2020-10-29, jgliss	Remove unneeded imports in colocation_auto.py
+- 2020-10-29, jgliss	Set Variable.units = 1 as default
+- 2020-10-29, jgliss	Merge branch 'v090dev' into merge_hans_emep
+- 2020-10-29, jgliss	Add input arg try_infer_environment in Config class; start adding tests for config.py
+- 2020-10-29, Jonas	Merge pull request #179 from metno/dev-readox
+- 2020-10-29, Jonas	Update pyaerocom/combine_vardata_ungridded.py
+- 2020-10-29, Jonas	Update pyaerocom/combine_vardata_ungridded.py
+- 2020-10-29, Hans Brenna	minor reversion of earlier changes
+- 2020-10-29, jgliss	Add some tests for combine_vardata_ungridded
+- 2020-10-29, Eirik Gallefoss	Update docstring colocation_auto
+- 2020-10-29, Eirik Gallefoss	Ensure only filepath or data_dir is set
+- 2020-10-29, Eirik Gallefoss	Ensure attribute is defined
+- 2020-10-29, Eirik Gallefoss	Rename ReadEMEP to ReadMscwCtm
+- 2020-10-28, Eirik Gallefoss	Update EBAS tests
+- 2020-10-28, Eirik Gallefoss	Merge branch 'Hans_main_dev' into merge_hans_emep
+- 2020-10-28, Eirik Gallefoss	Merge branch 'v090dev' into ReadEMEP
+- 2020-10-28, Eirik Gallefoss	Merge pull request #209 from metno/rename_ReadEMEP
+- 2020-10-28, Eirik Gallefoss	Merge pull request #212 from metno/fix210_lustre_tests
+- 2020-10-27, jgliss	ReadGhost: Add try except block to avoid Exception if one of the predefined metadata parameters is not in file; remove vmrox from aux vars (as it cannot be computed here)
+- 2020-10-27, jgliss	Fix some tests
+- 2020-10-27, jgliss	Make sure original sites metadata are not altered in _combine_2_sites
+- 2020-10-27, jgliss	Add Exception handle in ReadUngridded
+- 2020-10-27, jgliss	Make ReadEbas.file_index a property (i.e., not instantiated on __init__ anymore)
+- 2020-10-27, jgliss	Minor updates in metadata handling of StationData
+- 2020-10-26, jgliss	Merge branch 'v090dev' into dev-readox
+- 2020-10-26, jgliss	Fix failing ReadEbas test
+- 2020-10-26, jgliss	Fix usages of UngriddedData._ROWNO where needed in other modules
+- 2020-10-26, jgliss	Remove unneeded try except block in ReadEbas
+- 2020-10-26, jgliss	Add vmrox in aux variables in ReadGridded
+- 2020-10-26, jgliss	Make attr. _ROWNO in UngriddedData a property decorator and simplify __init__
+- 2020-10-26, jgliss	Improve logic in metadata merging in StationData (SHOULD BE OUTSOURCED INTO HELPER)
+- 2020-10-26, jgliss	Add vmrno2 in ebas_config.ini
+- 2020-10-26, jgliss	Loosen strictness for metadata merging  in _combine_2_sites in combine_vardata_ungridded.py
+- 2020-10-26, Hans Brenna	small change to read ghost
+- 2020-10-26, Jonas	Merge pull request #207 from metno/fix-surface-layer-extraction
+- 2020-10-23, jgliss	Remove outdated todo comment
+- 2020-10-23, jgliss	ReadUngridded can now also handle post computation with merge method combine
+- 2020-10-23, jgliss	Make sure aux_requires of all variables is checked in AuxInfoUngridded
+- 2020-10-23, jgliss	Add test module and tests for obs_io.py
+- 2020-10-23, jgliss	Generalise attributes of obs_io.AuxInfoUngridded and update config.Config.add_ungridded_post_dataset
+- 2020-10-23, jgliss	Minor formatting update in ebas_nasa_ames
+- 2020-10-22, jgliss	Merge branch 'v090dev' into dev-readox
+- 2020-10-22, jgliss	Minor updates in tests
+- 2020-10-22, jgliss	Make sure ReadUngridded.data_dir setter can handle PosixPath input
+- 2020-10-22, jgliss	Fix failing test
+- 2020-10-22, jgliss	Make use of new method ReadUngridded.get_vars_supported in Colocator
+- 2020-10-22, jgliss	Add new method colocate_vardata to UngriddedData
+- 2020-10-22, jgliss	Major update to ReadUngridded: incorporate logic for post-computation of variables (BETA)
+- 2020-10-22, jgliss	Replace deprecated call
+- 2020-10-22, jgliss	Add fmf550aer to AUX vars in ReadGridded
+- 2020-10-22, jgliss	Replace const.OBS_IDS_UNGRIDDED with const.OBSLOCS_UNGRIDDED in io/helpers.py
+- 2020-10-22, jgliss	Minor formatting in CacheHandlerUngridded
+- 2020-10-22, jgliss	Minor update in AerocomBrowser
+- 2020-10-22, jgliss	Add new method add_ungridded_post_dataset and attr. OBS_UNGRIDDED_POST to Conig class and remove all deprecated methods in config.py
+- 2020-10-22, jgliss	Add attr aux_units to AuxInfoUngridded (and some checks) in obs_io.py
+- 2020-10-22, jgliss	Minor reformatting in test_helpers.py
+- 2020-10-22, jgliss	Add new attr. obs_aux_units to ObsConfigEval
+- 2020-10-22, jgliss	Add some fixtures to conftest.py
+- 2020-10-22, jgliss	Add new exception InitialisationError
+- 2020-10-22, jgliss	Add tests for new module combine_vardata_ungridded (NOT FINISHED)
+- 2020-10-22, jgliss	Rename new module colocate_ungridded_helper.py to combine_vardata_ungridded.py and apply some minor modifications to the code
+- 2020-10-22, Hans Brenna	Merge pull request #202 from metno/implement_new_GHOST_version
+- 2020-10-21, jgliss	Add new attrs obs_type, obs_aux_requires and obs_aux_funs to ObsConfigEval as well as method check_add_obs
+- 2020-10-21, jgliss	Minor docstring cleanup in griddeddata.py
+- 2020-10-21, jgliss	New helper classes ObsVarCombi and AuxInfoUngridded in obs_io.py (MISSING TESTS)
+- 2020-10-21, Eirik Gallefoss	Add testdata_unavail decorator
+- 2020-10-21, Eirik gallefoss	Fix failing tests aeronet sdav3 and sunv3
+- 2020-10-21, Eirik gallefoss	Update expected available years test_readgridded
+- 2020-10-21, Eirik gallefoss	Update expected variables in test_readungridded
+- 2020-10-21, Eirik gallefoss	Update ungridded revision date in tests
+- 2020-10-21, Eirik gallefoss	Add new EBAS fixture to fix failing lustre tests
+- 2020-10-20, jgliss	Allow merging of StationData metadata also if station_name attrs differ
+- 2020-10-20, jgliss	Use haversine in calc_latlon_dists rather than slow method calc_distance
+- 2020-10-20, jgliss	Rename new helper module
+- 2020-10-20, jgliss	Add new variable fmf550aer (aerosol fine mode fraction)
+- 2020-10-19, jgliss	Add class method colocate_vardata to UngriddedData (docstring and tests missing)
+- 2020-10-19, jgliss	Update argument and variable names in combine_vardata_ungridded and add docstring
+- 2020-10-19, jgliss	Reorganise new code for ungridded/ungridded colocation in different modules
+- 2020-10-19, jgliss	Add docstring for new method UngriddedData.from_station_data
+- 2020-10-19, Hans Brenna	changed ghost meta keys
+- 2020-10-19, Hans Brenna	Merge branch 'implement_new_GHOST_version' into Hans_main_dev
+- 2020-10-19, jgliss	Finish first draft of ungridded / ungridded base colocation routine
+- 2020-10-16, Hans Brenna	added reading for ghost.monthly
+- 2020-10-16, Hans Brenna	updated QA flags after Denes suggestion
+- 2020-10-16, Eirik Gallefoss	Rename ReadEMEP to ReadMscwCtm
+- 2020-10-16, jgliss	Continue work on new module colocate_ungridded_ungridded_helper
+- 2020-10-16, jgliss	Continue work on new module colocate_ungridded_ungridded_helper
+- 2020-10-16, jgliss	Merge branch 'v090dev' into dev-readox
+- 2020-10-16, Jonas	Merge pull request #200 from metno/web-copy-configfile
+- 2020-10-16, Jonas	Update pyaerocom/web/aerocom_evaluation.py
+- 2020-10-16, Eirik Gallefoss	Merge pull request #195 from metno/test_readgridded
+- 2020-10-15, jgliss	Fix tests
+- 2020-10-15, jgliss	Make sure ts_type and flex_ts_type_gridded is handled properly in Colocator
+- 2020-10-15, jgliss	(DRAFT, NOT FINISHED) Add new helper file for ungridded / ungridded colocation routine
+- 2020-10-15, jgliss	Make sure correct colocation settings are passed to json file computation method in AerocomEvaluation
+- 2020-10-15, jgliss	Add angabs4487aer in web_naming_conventions.py
+- 2020-10-15, jgliss	Update input definition of add_meta_keys in helpers.merge_station_data
+- 2020-10-15, jgliss	Slightly modify handling of metadata merging between StationData
+- 2020-10-15, jgliss	Add angabs4487aer in ReadGridded
+- 2020-10-14, jgliss	Update method extract_surface_level in GriddedData (makes use of attr "positive" if defined)
+- 2020-10-14, jgliss	Improve merging of common metadata blocks in UngriddedData.merge_common_meta
+- 2020-10-14, jgliss	Minor update in plotcoordinates.py
+- 2020-10-14, jgliss	Remove adding metablock entry "variables" into UngriddedData in  ReadAeronetBase
+- 2020-10-13, jgliss	Replace np.isclose with math.isclose in helpers.same_meta_dict (performance increase)
+- 2020-10-09, jgliss	UngriddedData: Add beta version of method from_station_data and new property last_meta_idx (MISSING DOCS); declare add_station_data (Not implemented)
+- 2020-10-09, Eirik gallefoss	Modify tests for ReadGridded
+- 2020-10-09, Eirik Gallefoss	Merge pull request #205 from metno/fix173
+- 2020-10-09, Hans Brenna	tried to add GHOST.*.monthly. not sure why it does not work
+- 2020-10-09, Hans Brenna	some small changes
+- 2020-10-09, Hans Brenna	added a few more variables
+- 2020-10-09, Eirik gallefoss	Merge branch 'ReadEMEP' into fix173
+- 2020-10-09, Eirik gallefoss	Add property years_avail to ReadEMEP
+- 2020-10-09, Eirik Gallefoss	Merge pull request #204 from metno/fix203
+- 2020-10-09, Eirik gallefoss	Improve handling of file reading in ReadEMEP
+- 2020-10-09, Hans Brenna	Merge branch 'implement_new_GHOST_version' into Hans_main_dev
+- 2020-10-09, jgliss	Add new optional input arg common_meta in ReadAeronetBase.read
+- 2020-10-09, Eirik gallefoss	Update get_var_info_from_files
+- 2020-10-09, jgliss	Update tstype.py: new method to_datetime64 in TsType (and some tests)
+- 2020-10-09, Eirik gallefoss	Merge branch 'v090dev' into test_readgridded
+- 2020-10-05, Eirik gallefoss	Add new tests for ReadGridded
+- 2020-10-08, Hans Brenna	adding more variables
+- 2020-10-08, Hans Brenna	adding more variables and updated qa flags
+- 2020-10-08, Hans Brenna	fixed failing ghost test
+- 2020-10-08, Hans Brenna	adding variables to GHOST
+- 2020-10-08, Hans Brenna	updated ghost meta keys
+- 2020-10-08, Eirik gallefoss	Merge branch 'v090dev' into ReadEMEP
+- 2020-10-08, jgliss	Merge branch 'v090dev' into dev-readox
+- 2020-10-08, Jonas	Merge pull request #198 from metno/gliss-paper-modifications
+- 2020-10-08, Jonas	Update pyaerocom/colocation_auto.py
+- 2020-10-08, Jonas	Update pyaerocom/colocateddata.py
+- 2020-10-08, Jonas	Update pyaerocom/colocateddata.py
+- 2020-10-08, jgliss	Remove method ColocatedData.check_dimensions
+- 2020-10-08, jgliss	Modify / add tests for AerocomEvaluation
+- 2020-10-07, Hans Brenna	starting development of recursive gridded variable calcuation
+- 2020-10-07, Hans Brenna	defined some new variables
+- 2020-10-07, jgliss	AerocomEvaluation.run_evaluation: copy configuration json file into experiment directory at the end of processing
+- 2020-10-07, jgliss	Fix failing test and add one new test for ReadEbas
+- 2020-10-07, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-09-28, Eirik Gallefoss	Merge pull request #188 from metno/fix_helpers
+- 2020-09-25, Eirik gallefoss	Fix to_datestring_YYYYMMDD and add tests
+- 2020-09-23, Eirik Gallefoss	Merge pull request #156 from metno/add_tests_aerocom_evaluation
+- 2020-09-23, Eirik Gallefoss	Merge pull request #183 from metno/implicit_to_explicit_rate
+- 2020-09-23, Eirik Gallefoss	Merge pull request #185 from metno/ReadEMEP-fix-ts_types
+- 2020-09-23, Eirik gallefoss	Merge branch 'implicit_to_explicit_rate' into add_tests_aerocom_evaluation
+- 2020-09-23, Eirik gallefoss	Merge branch 'v090dev' into implicit_to_explicit_rate
+- 2020-09-23, Eirik Gallefoss	Hardcode seconds in day
+- 2020-09-18, jgliss	Minor stuff
+- 2020-09-17, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-09-17, Jonas	Merge pull request #164 from metno/var-conflict-conc-mmr-pm25
+- 2020-09-15, jgliss	Update print statement in exception in  AerocomEvaluation
+- 2020-09-15, jgliss	(BETA, NEEDS REVISION): Use different AEs for abs and scat for wvl shift
+- 2020-09-15, jgliss	Minor update in ReadUngriddedBase
+- 2020-09-15, jgliss	(BETA, NEEDS REVIEW): add retrieval of mean RH in mathutils methods for dry variables
+- 2020-09-15, jgliss	Add some variables and aliases
+- 2020-09-15, jgliss	remove ts_type check and ignore VariableDefinitionError in find_var_matches in Colocator
+- 2020-09-14, Eirik gallefoss	Fix implicit_to_explicit_rates
+- 2020-09-14, Eirik gallefoss	Merge branch 'v090dev' into ReadEMEP
+- 2020-09-07, Hans Brenna	testing model-model colocation for cams61
+- 2020-09-07, Hans Brenna	added more vmr variable definitions to EBASMC dataset
+- 2020-09-02, jgliss	Minor cleanup
+- 2020-08-31, Eirik Gallefoss	Merge branch 'ReadEMEP' into ReadEMEP-fix-ts_types
+- 2020-07-17, jgliss	Fix #176 (and remove a dangerous try/except block in GriddedData.stop)
+- 2020-08-31, Eirik Gallefoss	Merge env file from v090dev
+- 2020-08-31, Eirik gallefoss	Make .ts_types ignore unknown file names
+- 2020-08-28, jgliss	Merge v090dev
+- 2020-08-27, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-08-27, Hans Brenna	cleaning up
+- 2020-08-27, Hans Brenna	Merge pull request #184 from metno/read-ebas-vmr
+- 2020-08-27, jgliss	Fix failing test for ReadEbas
+- 2020-08-27, jgliss	Fix failing test for ReadEbas
+- 2020-08-27, jgliss	Implement one more layer in NASA Ames column selection logic for variable unit
+- 2020-08-26, jgliss	Resolve merge conflict in test_colocation_auto
+- 2020-08-26, jgliss	Add vmro3 to ebas_config.ini (NOTE: not available in our copy of EBAS data)
+- 2020-08-26, jgliss	Rename ang4487aer_calc to ang44&87aer in ReadAeronetSunV3
+- 2020-08-26, jgliss	minor bug fix in mapping.py
+- 2020-08-26, jgliss	Add ang44&87aer in variables.ini
+- 2020-08-25, Hans Brenna	more variables.ini changes
+- 2020-08-25, Hans Brenna	more variables.ini changes
+- 2020-08-25, Hans Brenna	some changes towards conc-vmr conversion and changed some vmr units to nmol mol-1
+- 2020-08-24, Eirik gallefoss	Minor syntax changes
+- 2020-08-24, Eirik gallefoss	Add function implicit_to_explicit_rates
+- 2020-08-24, Eirik gallefoss	Add function that calculates seconds in period
+- 2020-08-24, Eirik Gallefoss	Merge pull request #167 from metno/colocation_auto_options
+- 2020-08-19, jgliss	Minor updates in plot methods
+- 2020-08-18, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-08-18, jgliss	Resolve merge conflicts
+- 2020-08-18, Jonas	Merge pull request #182 from metno/convert-unit-ungridded
+- 2020-08-18, jgliss	Set correct EBAS dataset in conftest
+- 2020-08-18, jgliss	Add tests for UngriddedData methods check_unit and check_convert_var_units
+- 2020-08-18, jgliss	Include unit conversion in UngriddedData.remove_outliers
+- 2020-08-18, jgliss	Update outdate variable name (scatc550aer -> sc550aer) in conftest
+- 2020-08-18, jgliss	Minor changes in colocation.py __main__
+- 2020-08-18, jgliss	Fix merge conflict with stashed changes in web/utils.py
+- 2020-08-18, jgliss	Remove merge conflict in colocation.py
+- 2020-08-18, jgliss	Finish 1st implementation of unit conversion method in UngriddedData
+- 2020-08-18, Jonas	Merge pull request #178 from metno/eval-quantile-vars
+- 2020-08-18, jgliss	(NOT FINISHED) Start implementing new method check_convert_var_units in UngriddedData
+- 2020-08-18, jgliss	Merge branch 'gliss-paper-modifications' into eval-quantile-vars
+- 2020-08-18, jgliss	Merge branch 'v090dev' into eval-quantile-vars
+- 2020-08-14, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-08-14, Hans Brenna	changes to be able to read GHOST.EBAS and compare with EBASMC
+- 2020-08-13, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-08-13, Jonas	Merge pull request #180 from metno/minor-fixes
+- 2020-08-13, jgliss	Fix standard names in variables.ini
+- 2020-08-13, jgliss	fix failing tests
+- 2020-08-13, jgliss	Rename unit mole mole-1 to CF compliant mol mol-1
+- 2020-08-13, jgliss	Replace outdated access of data_id via DATA_ID attr. in ungridded readers (since DATA_ID now is always the default data ID and not the actually set data_id)
+- 2020-08-13, jgliss	Update ts_type to numpy conversion in GriddedData start and stop
+- 2020-08-12, jgliss	Start with implementation of support for vmrox in ReadGhost (NOT WORKING YET)
+- 2020-08-12, jgliss	Add vmrox to variables.ini
+- 2020-08-12, jgliss	Add mmrox to variables.ini
+- 2020-08-12, jgliss	Add concox to AUX variables of ReadGridded
+- 2020-08-12, jgliss	Add concox to variables.ini
+- 2020-08-12, jgliss	Minor updates related to formatting of numbers in heatmap plots
+- 2020-08-11, jgliss	Minor updates in map plots module
+- 2020-08-11, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-08-11, Hans Brenna	Merge pull request #158 from metno/dev_process_diurnal_cycle
+- 2020-08-07, Hans Brenna	a few more changes
+- 2020-08-07, Hans Brenna	some chages towards merging PR #158
+- 2020-07-20, Eirik gallefoss	Merge branch 'v090dev' into add_tests_aerocom_evaluation
+- 2020-06-22, Eirik gallefoss	Tests for web/aerocom_evaluation #133
+- 2020-07-20, Eirik gallefoss	Merge branch 'v090dev' into colocation_auto_options
+- 2020-07-07, Eirik gallefoss	Add tests for add_model_vars option in colocation_auto
+- 2020-07-17, jgliss	Reorder some logic in colocate_gridded_gridded to avoid crash if variable is not defined but harmonise_units=False
+- 2020-07-17, jgliss	Add one test in for new feature model_data_dir in Colocator
+- 2020-07-17, jgliss	Add new attr. model_data_dir to Colocator (cf. recent update obs_data_dir #170)
+- 2020-07-17, jgliss	Fix some stuff for q1 and q3 calc in ensemble calc method
+- 2020-07-17, jgliss	Update output variable name for Q3
+- 2020-07-17, jgliss	web/utils/compute_model_average_and_diversity now also outputs fields for 1. and 3. quantiles
+- 2020-07-17, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-07-17, Jonas	Merge pull request #177 from metno/fix176
+- 2020-07-17, Jonas	Update pyaerocom/griddeddata.py
+- 2020-07-17, jgliss	Remove fixed numpy version from pyaerocom_env.yml
+- 2020-07-17, jgliss	Fix #176 (and remove a dangerous try/except block in GriddedData.stop)
+- 2020-07-17, Jonas	Update pyaerocom_env.yml
+- 2020-07-17, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-07-17, Jonas	Merge pull request #172 from metno/fix171
+- 2020-07-17, Jonas	Merge pull request #170 from metno/set-datadir-readungridded
+- 2020-07-16, jgliss	Fix #171 and add some tests for units_helpers.py
+- 2020-07-16, jgliss	Add and updates some tests in test_colocation_auto
+- 2020-07-16, jgliss	Add method _infer_start_stop in Colocator and implement in colocation routines
+- 2020-07-16, jgliss	Update setter for ReadGridded.data_dir to accept pathlib.Path instances
+- 2020-07-16, jgliss	Remove BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAA prints in colocation.py
+- 2020-07-16, jgliss	Implement handling of obs_data_dir in Colocator (both gridded and ungridded colocation)
+- 2020-07-16, jgliss	Add units and standard_name to lat / lon coordinates of ColocatedData object in lowlevel colocation routines
+- 2020-07-16, jgliss	Add print_log output in ReadGridded for cases where data_dir is specified explicitely
+- 2020-07-16, jgliss	Add input arg cbar_ax in plot method df_to_heatmap; minor code cleanup therein
+- 2020-07-16, jgliss	Add alias abs550du for abs550dust
+- 2020-07-10, jgliss	Add test for new option to set data_dir in ReadUngridded
+- 2020-07-10, jgliss	CacheHandlerUngridded now only stores latest filename and not full path anymore, for outdated check
+- 2020-07-10, jgliss	Add input option data_dir to ReadUngridded (to specify source dir explicitely)
+- 2020-07-10, jgliss	Minor updates in method web.utils.compute_model_average_and_diversity
+- 2020-07-09, Jonas	Merge pull request #168 from metno/fix-ebas-abs-wrong-wvlg
+- 2020-07-09, Eirik gallefoss	Specify ts_type in readgridded tests
+- 2020-07-08, jgliss	Fix failing test for ReadEbas
+- 2020-07-08, jgliss	Add ac550dryaer to web/web_naming_conventions.py
+- 2020-07-08, jgliss	Add docstring in ReadGridded._check_var_match_pattern
+- 2020-07-08, jgliss	Minor reformatting in colocation.py
+- 2020-07-08, jgliss	Fix typo in docstring
+- 2020-07-08, jgliss	Add new property decorator is_wavelength_dependent in Variable class
+- 2020-07-08, jgliss	Add option in ReadEbas to correct for wrong wavelength in abs. coeff. measurement for some instruments
+- 2020-07-07, Eirik Gallefoss	Merge pull request #161 from metno/emep_hourly_res
+- 2020-07-02, Augustin Mortier	Add sconcpm25 and sconcpm2p5 to aliases for concpm25
+- 2020-07-02, Augustin Mortier	Rename variable mmrpm2p5 to mmrpm25 and add alias mmrpm2p5
+- 2020-07-02, jgliss	Fix minor bug in AerocomEvaluation.clean_json_files method (crashed when webname of one obsconfig entry was changed)
+- 2020-07-02, jgliss	Improve robustness in lowlevel method merge_dicts
+- 2020-06-29, jgliss	Remove unneeded imports in web/aerocom_evaluation.py
+- 2020-06-29, jgliss	Minor reformatting in colocation.py
+- 2020-06-29, jgliss	Minor change in __main__ of config.py
+- 2020-06-29, Eirik gallefoss	Add hourly resolution to ReadEMEP
+- 2020-06-25, Jonas	Merge pull request #160 from metno/manual-caching-ungriddeddata
+- 2020-06-25, jgliss	Remove cutoff text in docstring
+- 2020-06-24, jgliss	Implement save_as and from_cache in UngriddedData
+- 2020-06-24, jgliss	CacheHandlerUngridded.write now returns file path
+- 2020-06-24, jgliss	Add tests for upcoming methods UngriddedData.save_as and from_cache
+- 2020-06-24, jgliss	Add tests for CacheHandlerUngridded
+- 2020-06-24, jgliss	Modify CacheHandlerUngridded so that it can also handle custom filenames; update affected code in ReadUngridded
+- 2020-06-24, jgliss	Add 2 fixtures tempdir and aeronet_sun_subset_reader to conftest
+- 2020-06-24, Jonas	Merge pull request #159 from metno/helper-colocation-station
+- 2020-06-23, jgliss	Add one test for new helper method _colocate_site_data_helper
+- 2020-06-23, jgliss	Move colocation of 2 StationData objects for gridded/ungridded colocation into separate helper method
+- 2020-06-23, Jonas	Merge pull request #155 from metno/webopt-gridded-constraints
+- 2020-06-23, jgliss	Resolve merge conflict arising from diverging changes in colocation_auto.py
+- 2020-06-23, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-06-23, jgliss	Make sure obs_filters is instatiated in gridded/gridded colocation in Colocator
+- 2020-06-23, Hans Brenna	removed some commented out code
+- 2020-06-23, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-06-23, Hans Brenna	removed retry decorators from main dev branch
+- 2020-06-22, Eirik Gallefoss	Merge pull request #142 from metno/reduce_warnings_pytest
+- 2020-06-19, jgliss	(BETA feature): Minor adjustments in colocation_auto so that #152 works; remove some commented code blocks (cf 154)
+- 2020-06-19, Hans Brenna	another step
+- 2020-06-19, jgliss	Add inplace=True in when removing outliers from GriddedData in colocate_gridded_gridded
+- 2020-06-19, Hans Brenna	tracking down a bug
+- 2020-06-19, Eirik Gallefoss	Merge pull request #145 from metno/add_tests_colocation_auto
+- 2020-06-19, Eirik gallefoss	Minor changes to Colocator
+- 2020-06-17, Eirik gallefoss	Add tests for colocation_auto
+- 2020-06-19, Hans Brenna	testing a feature for simple parallelization of web processing
+- 2020-06-19, jgliss	Merge branch 'gliss-paper-modifications' of git+ssh://github.com/metno/pyaerocom into gliss-paper-modifications
+- 2020-06-19, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-06-19, Jonas	Merge pull request #150 from metno/readgridded-varfilter
+- 2020-06-19, jgliss	Update some docstrings and minor reorganisation in ReadGridded`
+- 2020-06-19, Jonas	Update pyaerocom/io/readgridded.py
+- 2020-06-18, alpsjur	Merge pull request #151 from alpsjur/v090dev
+- 2020-06-18, jgliss	Add some tests for ReadGridded.read_var (using testdata); includes tests for new input arg constraints
+- 2020-06-18, alpsjur	Added NHEMISPHERE and SHEMISPHERE to regions
+- 2020-06-18, jgliss	Add first implementation to apply constraint filtering in ReadGridded (related to #150); NO TESTS YET
+- 2020-06-18, jgliss	Merge branch 'gliss-paper-modifications' into readgridded-varfilter
+- 2020-06-18, Jonas	Merge pull request #149 from metno/review-outlier-removal-gridded
+- 2020-06-18, jgliss	Fix minor bug in updated GriddedData.remove_outliers
+- 2020-06-18, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-06-18, jgliss	New method GriddedData._ensure_is_masked_array; make use of masked array in GriddedData.remove_outliers and add option to modify inplace
+- 2020-06-18, jgliss	Start implementing new filter method ReadGridded.apply_var_filter (not finished)
+- 2020-06-18, Hans Brenna	Fixed incompatibility with Hans_main_dev
+- 2020-06-18, Jonas	Merge pull request #148 from MichaelSchulzMETNO/v090dev
+- 2020-06-18, jgliss	Remove code block that raises an exception that does not seem to be needed in df_to_heatmapæ
+- 2020-06-18, jgliss	MAJOR ANALYSIS CHANGE: outliers in gridded / gridded colocation are now removed in original resolution
+- 2020-06-18, jgliss	Increase flexibility in allowed dimensionality in ColocatedData
+- 2020-06-18, MichaelSchulzMETNO	Update Asia to avoid overlap w N Africa
+- 2020-06-18, Hans Brenna	Changed diurnal resolution to seasonal/annual
+- 2020-06-17, Eirik Gallefoss	Merge pull request #129 from metno/flexible_gridded_reader
+- 2020-06-16, Eirik gallefoss	Add option of setting gridded reader for observations in Colocator
+- 2020-06-16, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-06-15, Eirik gallefoss	Update gitignore, remove cf_units
+- 2020-06-15, Hans Brenna	added support for country-regional diurnal time series
+- 2020-06-15, Eirik gallefoss	chore: Update deprecated variable unit calls
+- 2020-06-15, Eirik gallefoss	chore: Update deprecated print_log.warn calls
+- 2020-06-15, Eirik gallefoss	Restructuring tests and small changes to code after review
+- 2020-06-15, Eirik gallefoss	Merge branch 'v090dev' into flexible_gridded_reader
+- 2020-06-15, Eirik Gallefoss	Merge pull request #137 from metno/add_test_extract_latlon_dataarray
+- 2020-06-12, Hans Brenna	Merge branch 'Hans_main_dev' into dev_process_diurnal_cycle
+- 2020-06-12, Hans Brenna	Merge branch 'v090dev' into Hans_main_dev
+- 2020-06-12, Hans Brenna	initial implementation of diurnal processing
+- 2020-06-11, Hans Brenna	Merge branch 'Hans_main_dev' into dev_process_diurnal_cycle
+- 2020-06-11, Hans Brenna	Merge pull request #139 from metno/dev_add_web_interface_name
+- 2020-06-11, Hans Brenna	some small updates after code review of pull request #139
+- 2020-06-11, Jonas	Merge pull request #140 from metno/add-some-tests
+- 2020-06-11, Eirik Gallefoss	Refactor does_not_raise_exception
+- 2020-06-11, Eirik Gallefoss	Merge branch 'v090dev' into add_test_extract_latlon_dataarray
+- 2020-06-11, Eirik Gallefoss	Merge branch 'ReadEMEP' into flexible_gridded_reader
+- 2020-06-11, Eirik Gallefoss	Merging v090dev into flexible_gridded_reader
+- 2020-06-11, Eirik Gallefoss	Merge branch 'v090dev' into ReadEMEP
+- 2020-06-11, jgliss	Add some tests for GriddedData and low level colocation methods
+- 2020-06-10, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-06-10, jgliss	Fix bug in TimeResampler (failed to generate resample index if min_num_obs is numerical, after recent update to consider resample_how); increase verbosity in Colocator if colocation fails
+- 2020-06-10, jgliss	Merge branch 'v090dev' into gliss-paper-modifications
+- 2020-06-10, jgliss	Fix bug in aerocom_evaluation (skip missing heatmaps file (e.g. daily) when updating interface)
+- 2020-06-10, Hans Brenna	initial implementation of web_interface_name option for obs_config in web processing
+- 2020-06-10, jgliss	Modify df_to_heatmap
+- 2020-06-10, Jonas	Merge pull request #136 from metno/add-coldata-testdata
+- 2020-06-10, Eirik gallefoss	Add tests extract_latlon_dataarray
+- 2020-06-08, jgliss	Merge branch 'v090dev' into add-coldata-testdata
+- 2020-06-08, jgliss	Remove empty lines in conftest.py
+- 2020-06-08, jgliss	Add tests for ObsConfigEval
+- 2020-06-08, Jonas	Merge pull request #135 from metno/colocation-regrid-latlon-flex
+- 2020-06-08, Eirik Gallefoss	Remove code that leaked in when merging.
+- 2020-06-08, Eirik gallefoss	Merge branch 'ReadEMEP' into flexible_gridded_reader
+- 2020-06-08, jgliss	Add tests in test_colocation.py
+- 2020-06-08, jgliss	Move regridding before colocation in separate helper function _regrid_gridded
+- 2020-06-08, Eirik gallefoss	Merge branch 'v090dev' into flexible_gridded_reader
+- 2020-06-08, Hans Brenna	merged in whitespace changes
+- 2020-06-08, Eirik gallefoss	Merge branch 'v090dev' into flexible_gridded_reader
+- 2020-06-08, jgliss	Update info in docstrings accordingly
+- 2020-06-08, jgliss	Fix import error in colocation.py introduced when resolving local merge conflict after whitespace updates in remote v090dev
+- 2020-06-08, jgliss	Merge remote-tracking branch 'remotes/origin/v090dev' into colocation-regrid-latlon-flex
+- 2020-06-08, Jonas	Merge pull request #128 from metno/fix_127
+- 2020-06-08, Eirik gallefoss	Merge branch 'v090dev' into ReadEMEP
+- 2020-06-08, Eirik gallefoss	Merge branch 'v090dev' into fix_127
+- 2020-06-08, Jonas	Merge pull request #134 from metno/strip_extra_whitespace
+- 2020-06-08, jgliss	Allow lat/lon specific input for regrid_res_deg (via dict) in low level colocation functions
+- 2020-06-08, Eirik gallefoss	Merge branch 'v090dev' into flexible_gridded_reader
+- 2020-06-08, Eirik gallefoss	Strip extra whitespace from all .ini files
+- 2020-06-08, Eirik gallefoss	Strip extra whitespace from all .py files
+- 2020-06-08, Eirik gallefoss	Merge branch 'v090dev' into fix_127
+- 2020-06-08, Eirik gallefoss	Use filter_by_meta instead of cluttering method
+- 2020-06-05, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-06-05, jgliss	Minor updates in plot/heatmaps.py (NEEDS REVISION AT SOME POINT; NEEDED FOR GLISS et al. paper)
+- 2020-06-05, Hans Brenna	implementing diurnal data format
+- 2020-06-05, Eirik gallefoss	Ignore stations outside of lat/lon range of gridded data when colocating
+- 2020-06-05, Eirik gallefoss	Add option to ignore stations outside of lat/lon range in to_station_…
+- 2020-06-04, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/v090dev' into v090dev
+- 2020-06-04, Jan Jurgen Griesfeller	make use og the tempdir switch from command line
+- 2020-06-04, Hans Brenna	Merge branch 'v090dev' into dev_process_diurnal_cycle
+- 2020-06-04, Hans Brenna	implemented processing of hourly colocated data into bimonthly representative weekly cycles, written to json in ts/dw/ (diurnal weekly)
+- 2020-06-03, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-06-03, jgliss	Minor updats in heatmap plot
+- 2020-06-03, jgliss	Raise and catch proper error when searching var_matches fails in Colocator
+- 2020-06-03, Eirik gallefoss	Small restructure
+- 2020-06-03, Eirik gallefoss	Change structure of emep test setup
+- 2020-06-03, Eirik Gallefoss	Fix copypaste mistake
+- 2020-06-02, Eirik gallefoss	Ensure extract_latlon_dataarray handles lat/lon as pair
+- 2020-05-28, Jonas	Merge pull request #126 from metno/check-gridded-domain
+- 2020-05-28, jgliss	Add new option check_domain in helpers/extract_latlon_dataarray which defaults to True (should fix #123 and fix #125)
+- 2020-05-27, Eirik gallefoss	Fix instantiate_model_reader() and add test
+- 2020-05-27, Eirik gallefoss	Add self when calling class method
+- 2020-05-27, Eirik gallefoss	Fix missing funtion braces
+- 2020-05-27, Eirik gallefoss	Update tests
+- 2020-05-27, Eirik gallefoss	Add flexible selection of model reader in Colocator
+- 2020-05-27, Eirik gallefoss	Merge branch 'emep' into emep_web
+- 2020-05-26, Eirik gallefoss	Change sconc to conc in emep variable mapping to match aerocom standard
+- 2020-05-26, Eirik gallefoss	Add test colocating gridded ungridded with EMEP data
+- 2020-05-26, Jonas	Merge pull request #111 from ejgal/emep
+- 2020-05-26, Eirik gallefoss	Change lustre dependent ReadEMEP tests to use testdata-minimal
+- 2020-05-26, Eirik gallefoss	Merge branch 'emep' into emep_web
+- 2020-05-26, Eirik gallefoss	Add self to ReadEMEP header attributes
+- 2020-05-25, Eirik gallefoss	Merge branch 'v090dev' into emep
+- 2020-05-25, Hans Brenna	Merge pull request #119 from metno/quickfix_joly_peuch
+- 2020-05-25, Hans Brenna	Fixed the ghost meta key Joly_Peuch_classification_code
+- 2020-05-25, Eirik gallefoss	Test changing model reader in colocator
+- 2020-05-25, Eirik gallefoss	Change surface variable names to Aerocom standard
+- 2020-05-25, Eirik gallefoss	Merge branch 'v090dev' into emep
+- 2020-05-22, jgliss	Fix failing GHOST tests
+- 2020-05-22, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-05-22, jgliss	Allow both str and dict as type of attr. obs_id in ObsConfigEval (related to #114)
+- 2020-05-22, Hans Brenna	Merge pull request #116 from metno/fix_ghost_reader
+- 2020-05-22, Hans Brenna	empty commit to retrigger CI tests
+- 2020-05-20, Hans Brenna	updated unit conversion method and test_ghost_meta_keys
+- 2020-05-20, Hans Brenna	fix to ghost reader due to changed metadata keys
+- 2020-05-20, Hans Brenna	Merge pull request #115 from metno/update_paths_ini
+- 2020-05-20, Hans Brenna	Update pyaerocom/io/read_ghost.py
+- 2020-05-20, Hans Brenna	updated ghost readerto handle new GHOST format
+- 2020-05-20, Eirik gallefoss	Add unit test get_emep_variable
+- 2020-05-20, Eirik gallefoss	Parametrize unit test
+- 2020-05-20, Eirik gallefoss	Remove duplicated import
+- 2020-05-20, Eirik gallefoss	Further work needed on implicit_to_explicit_rates
+- 2020-05-20, Eirik gallefoss	Merge suggested changes from review
+- 2020-05-20, Eirik gallefoss	Move AUX dicts to header of class
+- 2020-05-20, Eirik gallefoss	Add docstring and move import to header
+- 2020-05-20, Eirik Gallefoss	Apply suggestions from code review
+- 2020-05-19, Eirik gallefoss	Merge branch 'ReadEMEP' of github.com:metno/pyaerocom into emep
+- 2020-05-19, jgliss	Add sc550dryaer to ReadGridded.AUX_REQUIRES and AUX_FUNS
+- 2020-05-19, Eirik gallefoss	Add parameter data_dir in ReadEMEP
+- 2020-05-19, Eirik gallefoss	Add surface ozone variable
+- 2020-05-14, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-05-14, jgliss	Remove unused import in test_colocation
+- 2020-05-14, Hans Brenna	Merge pull request #108 from metno/auto_regions_reverse
+- 2020-05-13, jgliss	Trigger checks
+- 2020-05-13, jgliss	Remove recently introduced test for numerical value of pref_attr when merging StationData
+- 2020-05-11, Eirik gallefoss	Add test for new unit function and test reading a computed variable
+- 2020-05-11, Eirik gallefoss	Cleaner flow. Add function to fix units before converting to GriddedData
+- 2020-05-08, jgliss	Bump version
+- 2020-05-08, jgliss	Add GHOST.hourly to data_sources.ini
+- 2020-05-08, jgliss	Add updated data_sources.ini from branch perfomance_colocation to auto_regions_reverse
+- 2020-05-08, jgliss	Fix #106
+- 2020-05-08, jgliss	Add check for numerical pref_attr in merge_station_data and raise NotImplementedError if value of pref_attr is not numeric
+- 2020-05-08, jgliss	Add GHOST.hourly to paths_local_database.ini
+- 2020-05-07, Eirik gallefoss	Add test + update docstring implicit_to_explicit_rates
+- 2020-05-07, Eirik gallefoss	Move and update docstring
+- 2020-05-07, Eirik gallefoss	Add function to convert implicit rates to explicitly defined rates
+- 2020-05-07, Eirik gallefoss	Use correct object when testing
+- 2020-05-07, Eirik gallefoss	Add properties and setters to read_emep. Add tests to read_emep
+- 2020-05-07, jgliss	Implement new resample_how option in high level colocation routines
+- 2020-05-07, jgliss	Implement new resample_how option in low level colocation routines
+- 2020-05-07, jgliss	Improve flexibility in TimeResampler so that it can now also handle flexible and hierarchical input for aggregation arg how (related to #88)
+- 2020-05-07, jgliss	Implement usage of input arg "how" in helpers.resample_time_dataarray (related to #88)
+- 2020-05-06, jgliss	Add option only_cached in ReadUngridded read and read_dataset methods (enables to read only cached objects, fixes #84)
+- 2020-05-06, jgliss	Add option force_use_outdated in CacheHandlerUngridded (related to #84)
+- 2020-05-06, jgliss	Remove passing region_groups when calling compute_json_files_from_colocateddata in AerocomEvaluation (since this is not yet implemented and pushed)
+- 2020-05-06, jgliss	Add new attr. region_groups to AerocomEvaluation class (intended to be used in conversion of colocateddata objects to json files)
+- 2020-05-06, jgliss	New property method country_codes_available in ColocatedData; allow region filtering also via country codes (as well as country names)
+- 2020-05-06, jgliss	Rename helper method valid_region to valid_default_region in region.py and fix minor bug related to plotting of binary regions
+- 2020-05-06, jgliss	Fix #103: correct all calls of DATA_ID to data_id in ReadGhost
+- 2020-05-04, Eirik gallefoss	Uncomment function calls
+- 2020-05-04, Eirik gallefoss	Uncomment function calls
+- 2020-05-04, Eirik gallefoss	Remove emep dev scripts
+- 2020-04-30, jgliss	(BETA): new method get_regional_timeseries in ColocatedData
+- 2020-04-30, jgliss	(BETA, NEEDS TESTING): Implement output of regional timeseries json files for Aerocom web evaluation (prelim. fix for #96)
+- 2020-04-30, jgliss	Reorganise processing of colocated data to json, now for regions_how=country, also WORLD will be included; 2 heatmap files will be created (daily and monthly, NEEDS TESTING, related to #95, fixes #97)
+- 2020-04-30, jgliss	Update code related to heatmap files in AerocomEvaluation (since from now, there are 2, daily and monthly
+- 2020-04-30, jgliss	Add names for daily and monthly heatmap files in web/const.py
+- 2020-04-30, jgliss	Reorder attr. OLD_AEROCOM_REGIONS in Config class
+- 2020-04-29, jgliss	helpers_evaluation_iface.py: regions.json is now dynamically updated whenever a colocated data file is converted to json (Should finalise country based regions filtering for web, cf. #95)
+- 2020-04-29, jgliss	AerocomEvaluation: remove unused method make_regions_json and change default location of regions.json file to be stored now in experiment directory (cf. #95)
+- 2020-04-29, jgliss	New method in get_country_codes in ColocatedData (related to #90 and #95)
+- 2020-04-29, jgliss	Parse new arg regions_how in AerocomEvaluation when calling compute_json_files_from_colocatedddata
+- 2020-04-29, jgliss	Fix minor bug due to recent changes in web processing (related to #90)
+- 2020-04-28, jgliss	Improve compute_json_files_from_colocateddata: can now also use countries as regions and add option to set 0 values to NaN; separate method into individual submethods to improve clarity (NEEDS TESTING, related to #90)
+- 2020-04-28, jgliss	(UNDER DEVELOPMENT): add new attrs. resample_how to AerocomEvalation (not being used so far, related to #88) and regions_how, which is used in processing of json files from colocateddata (upcoming commit, related to #90)
+- 2020-04-28, jgliss	(UNDER DEVELOPMENT): add new attr. resample_how to ColocationSetup (not being used so far, related to #88)
+- 2020-04-28, jgliss	ColodatedData: New method set_zeros_nan; generalised _get_stat_coords (works now also for 4D) and add proper error messages in check_set_countries for 4D data
+- 2020-04-28, jgliss	Set min_num_valid=1 (before 5) in mathutils.calc_statistics and calc. correlation only if at least 2 data points are available (THIS MAY CHANGE SOME RESULTS, related to #90)
+- 2020-04-28, jgliss	Fix handling of ndarray in geodesy.get_country_info_coords (Related to #90)
+- 2020-04-27, jgliss	(NotImplemented, work in progress): Add input arg regions_by_country in function compute_json_files_from_colocateddata
+- 2020-04-27, jgliss	Rename input var s to ts in helpers.resample_timeseries
+- 2020-04-27, jgliss	Fix minor bug in colocation.py (colocate_time did not work anymore due to recent changes in handling of ts_types, etc.)
+- 2020-04-27, Eirik gallefoss	Try generating json files for evaluation and trends
+- 2020-04-27, Eirik gallefoss	Move functions out of notebook
+- 2020-04-27, Eirik gallefoss	Check for variable aliases
+- 2020-04-27, Eirik gallefoss	Merge v090dev
+- 2020-04-24, jgliss	Fix minor bug for downloading of testdata, introduced in recent refactor of conftest.py
+- 2020-04-24, jgliss	New methods in ColocatedData; _filter_country, apply_country_filter, countries_available, check_set_countries, _get_stat_coords and implement country filtering in filter_region (so far only for 3D ColocatedData objects); NO TESTS YET; Related to #90
+- 2020-04-24, jgliss	Add docstring and warning in UngriddedData.countries_available
+- 2020-04-24, jgliss	Add .../AEROCOM_OBSDATA/PYAEROCOM to search dirs in paths.ini
+- 2020-04-24, jgliss	Minor improvements in mapping plot methods
+- 2020-04-24, jgliss	Move helper methods from conftest into new module _conftest_helpers.py
+- 2020-04-23, jgliss	Remove option to provide filter_name in UngriddedData.plot_station_coordinates (filtering should be done before)
+- 2020-04-23, jgliss	(Work in progress for #90): UngriddedData.filter_region can now also handle country names (add tests in test_ungriddeddata.py)
+- 2020-04-23, jgliss	New property method countries_available in UngriddedData (and test), is related to #90
+- 2020-04-23, jgliss	Add new methods check_get_country (and _get_stat_coords) in UngriddedData; add corresponding test in test_ungriddeddata (work related to #90)
+- 2020-04-23, jgliss	Fix failing test due to new attr. country_code in StationMetaData
+- 2020-04-23, jgliss	Fix wrong name of reverse-geocode in pyaerocom_env.yml
+- 2020-04-23, jgliss	Merge colocation_auto.py from auto_regions_reverse into v090dev
+- 2020-04-23, jgliss	Minor changes in __main__ of colocation.py
+- 2020-04-23, jgliss	Add new helper method get_country_info_coords in geodesy.py and test in test_geodesy.py
+- 2020-04-23, jgliss	Add skipif marker for availability of reverse_geocode in conftest.py
+- 2020-04-23, jgliss	Add country_code to StationMetaData in metastandards.py
+- 2020-04-23, jgliss	Add reverse_geocode to pyaerocom_env.yml
+- 2020-04-23, jgliss	Fix #93 introduced in PR #92
+- 2020-04-22, jgliss	Catch exception properly in colocation_auto.py
+- 2020-04-22, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-04-22, jgliss	Start implementing option to add customised metadata from observations to colocated NetCDF files in web tools
+- 2020-04-22, Jonas	Merge pull request #92 from metno/change_auto_colocation_GHOST
+- 2020-04-21, Hans Brenna	fixed a bug in the revised flow for colocation_auto.py to work with GHOST data
+- 2020-04-20, Eirik gallefoss	Add .swp and .spyproject to gitignore
+- 2020-04-20, Eirik gallefoss	Add new variables, add __str__ method in ReadEMEP
+- 2020-04-17, Eirik gallefoss	Restructure notebooks and organize content in functions
+- 2020-04-17, jgliss	Checkout and merge updated AERONET tests from performance_colocation branch
+- 2020-04-17, jgliss	Remove start / stop from input in _read_gridded in Colocator and handle via kwargs instead
+- 2020-04-17, Eirik gallefoss	Restructure script into function
+- 2020-04-17, Eirik gallefoss	Fix missing from_files metadata
+- 2020-04-17, jgliss	Add option to specify year in web.utils.compute_model_average_and_diversity
+- 2020-04-17, jgliss	ReadGridded: Improve flexibility related to multiple vert_code matches using new method get_vert_code in Variable class
+- 2020-04-17, jgliss	Add alias abs550oa = abs550oc
+- 2020-04-17, jgliss	Add new method get_default_vert_code to classes VarNameInfo and Variable and retrieval is used based on wildcard variable name patterns in VarNameInfo.DEFAULT_VERT_CODE_PATTERNS
+- 2020-04-17, Eirik gallefoss	Restructure notebook
+- 2020-04-17, Eirik gallefoss	Merge branch 'v090dev' into emep
+- 2020-04-16, jgliss	Minor stuff
+- 2020-04-16, jgliss	Further work on EBAS tests
+- 2020-04-16, Hans Brenna	Changed flow in colocation_auto.py to avoid reading observational data for obs-model combinations which are not going to be computed anyway
+- 2020-04-16, Hans Brenna	Merge branch 'v090dev' into change_auto_colocation_GHOST
+- 2020-04-15, jgliss	Update handling of default input how in TimeResampler.resample
+- 2020-04-15, jgliss	Merge README from v090dev
+- 2020-04-15, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-04-15, jgliss	Add test_read_ebas.py (main tests are missing, will cause failiing tests in CI as EBASSubset is not yet uploaded to test dataset)
+- 2020-04-15, jgliss	(BETA DEV): add multimap grid init method(s) in mapping.py, not finished
+- 2020-04-15, jgliss	Comment out some code for debugging in web/utils.py
+- 2020-04-15, jgliss	Bump version in ReadEbas
+- 2020-04-15, jgliss	ReadEbas: remove log_read_stats; get_file_list now returns only files that are actually available
+- 2020-04-15, jgliss	Minor reformatting
+- 2020-04-15, Jonas	Update README.rst
+- 2020-04-14, Hans Brenna	Merge branch 'v090dev' into change_auto_colocation_GHOST
+- 2020-04-08, jgliss	Remove var_info for variables that are not added to UngriddedData in ReadGhost, closes #86
+- 2020-04-08, jgliss	Add check for invalid variables in var_info dicts in UngriddedData._check_index
+- 2020-04-08, Hans Brenna	Changed the way ungrtidded data is read during auto co-location so that only one variable is loaded into the UngriddedData object at a time
+- 2020-04-07, jgliss	Remove filelog property from ReadEbas
+- 2020-04-07, jgliss	Change behaviour of data_id access in ReadUngriddedBase (before it was through DATA_ID, which was overwritten, now DATA_ID is not changed and return of data_id is either via new priv. attr _data_id or else DATA_ID)
+- 2020-04-06, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-04-06, jgliss	Add tqdm progress bar to ReadAeronetBase
+- 2020-04-02, Eirik gallefoss	Add variables
+- 2020-04-02, Eirik gallefoss	Add variables for choosing between daily and monthly files
+- 2020-04-02, Eirik gallefoss	Add standard name to time dimension
+- 2020-04-01, Eirik gallefoss	Update ReadEMEP to use EMEP variable ini file instead of .sh file
+- 2020-04-01, Eirik gallefoss	Remove old function providing path to EMEP variable mapping
+- 2020-04-01, Eirik gallefoss	Add functions to parse and read EMEP variables ini file
+- 2020-04-01, Eirik gallefoss	Store EMEP variable information in ini file
+- 2020-04-01, Eirik gallefoss	Merge branch 'v090dev' into emep
+- 2020-04-01, Hans Brenna	added outlier maximum for variables concpm10 and concpm25
+- 2020-03-31, jgliss	Update chunksize in ReadGhost
+- 2020-03-30, jgliss	Increase chunksize of UngriddedData in ReadGhost
+- 2020-03-24, jgliss	Add first version of pya CLI (currently 2 things you can do with it)
+- 2020-03-23, jgliss	Fix bug in GriddedData._resample_time_xarray (check dimcoords was not in try / except block
+- 2020-03-23, Eirik Gallefoss	Update README.md
+- 2020-03-23, Eirik gallefoss	Update EMEP examples
+- 2020-03-23, Eirik gallefoss	Add EMEP example - read EMEP files and colocate with Aasetal
+- 2020-03-23, Eirik gallefoss	Add EMEP examples and change paths in read_emep to lustre
+- 2020-03-23, jgliss	Fix bug related to col_freq vs. ts_type in colocate_gridded_ungridded (fixes #85)
+- 2020-03-23, Eirik gallefoss	Change sconc to conc in variable names
+- 2020-03-21, Eirik gallefoss	seconds_in_periods working with year and daily ts_type
+- 2020-03-21, Eirik gallefoss	Add test for seconds_in_periods()
+- 2020-03-21, Eirik gallefoss	Cleanup and move time conversion to function
+- 2020-03-21, Eirik gallefoss	Update EMEP -> Aerocom variable mapping
+- 2020-03-19, jgliss	Bump version
+- 2020-03-19, jgliss	Fix some tests
+- 2020-03-19, jgliss	Minor reformatting
+- 2020-03-19, jgliss	Bump version in ReadGhost
+- 2020-03-19, jgliss	(ReadGhost BETA -> needs testing): update variable names concXX -> vmrXX and add support for STP conversion of vmrXX to concXX which are now also supported in the correct units
+- 2020-03-19, jgliss	Minor reformatting
+- 2020-03-19, jgliss	Update Config class: supports now local-db (MyPyaerocom/data/) and update search locs for paths.ini; fix bug
+- 2020-03-19, jgliss	Modify paths.ini (add CAMS61 location and update base paths); add new file data/paths_local_database.ini (for data under ~/MyPyaerocom/data)
+- 2020-03-16, Eirik gallefoss	Add class for reading EMEP data
+- 2020-03-16, Eirik gallefoss	Add new function for calculating number of seconds in a period
+- 2020-03-16, Eirik gallefoss	Add missing variables
+- 2020-03-13, jgliss	Add docstring
+- 2020-03-13, jgliss	Add method vmrx_to_concx in mathutils and add test
+- 2020-03-13, jgliss	(NEW MODULE): add new module molmasses.py and corresponding test module
+- 2020-03-12, jgliss	Update LOCAL_TMP_DIR and add DOWNLOAD_DATADIR in Config
+- 2020-03-10, jgliss	Fix test
+- 2020-03-10, jgliss	Remove / from station_name in ReadGhost; work on tests for ReadGhost (not finalised)
+- 2020-03-10, jgliss	Make sure lats, lons, alts in coldata to json method are float64 (json does not like float32)
+- 2020-03-10, jgliss	Add tqdm progressbar to ReadEbas.read
+- 2020-03-10, jgliss	(TEMPFIX | NEED REVISION): temporarily fix auto colocation for optional arg update_baseyear_gridded
+- 2020-03-10, jgliss	Fix minor bug in AerocomDataID
+- 2020-03-10, jgliss	Add tqdm to pyaerocom_env.yml
+- 2020-03-09, jgliss	Improve performance of find_station_metadata_indices in UngriddedData (only use fnmatch wildcard check if needed)
+- 2020-03-09, Eirik gallefoss	Merge branch 'v090dev' into emep
+- 2020-03-09, Eirik gallefoss	Add function to provide path to emep variable mapping
+- 2020-03-09, jgliss	Remove unused import in iris_io.py; update one test
+- 2020-03-09, jgliss	Move import of correct_time_coord into method body of GriddedData.change_base_year
+- 2020-03-09, jgliss	Update docstring in ColocatedData
+- 2020-03-09, jgliss	Fix bug in method GriddedData.change_base_year (affecting daily and higher resolution data in case leap years were affecting computed shift in time dimension) -> still not finally solved, cf. docstring of method
+- 2020-03-09, jgliss	Updated docstring in iris_io.py
+- 2020-03-05, jgliss	Register ReadGhost in ReadUngridded and update and add some tests
+- 2020-03-05, jgliss	Finalise first working version of ReadGhost (still missing some details related to units and metadata though)
+- 2020-03-05, jgliss	Replace occurrences of meta[variables] with meta[var_info] in UngriddedData
+- 2020-03-05, jgliss	Add first version of ReadGhost, new files in io: ghost_meta_keys.py, read_ghost.py
+- 2020-03-05, jgliss	Minor fix
+- 2020-03-04, jgliss	Include new tests and reorganise existing
+- 2020-03-04, jgliss	Update obs IDs of Aeronet subsets in conftest.py for test setup
+- 2020-03-04, jgliss	Improve flexibility of AerocomDataID wrt data_ids that do not match convention
+- 2020-03-04, jgliss	Move set outlier range print info from print_log to logger in GriddedData and UngriddedData
+- 2020-03-04, jgliss	(API): ReadGridded now uses new class AerocomDataID to extract metadata from filenames and pass on to GriddedData objects returned
+- 2020-03-04, jgliss	Remove an elif statement that is never entered in ReadAeronetSunV3
+- 2020-03-04, jgliss	Add automatic retrieval of ts_type from DATA_ID in method TS_TYPE in  ReadAeronetBase (works for data IDs that end with .<ts_type>, e.g. AeronetSun.daily)
+- 2020-03-04, jgliss	(API EBAS IO): move access to EBAS related information (SQLite database, dataset directory) into ReadEbas (lowlevel stuff that does not impact common API directly)
+- 2020-03-03, jgliss	Add option INIT_TESTDATA in conftest.py
+- 2020-03-03, jgliss	Update some tests
+- 2020-03-03, jgliss	Add try/except in init of testdata and set flag TESTDATA_AVAIL=False if init fails
+- 2020-03-03, jgliss	Remove temporary Exception in conftest _download_test_data
+- 2020-03-03, jgliss	Add skipif marker in test
+- 2020-03-03, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-03-03, jgliss	Work on setup of minimal testdata in conftest.py
+- 2020-03-03, jgliss	Remove some comments in AerocomBrowser
+- 2020-03-03, jgliss	Updated one test; added new test module test_aerocom_browser.py
+- 2020-03-03, jgliss	Add docstrings in new methods in GriddedData
+- 2020-03-03, jgliss	Add tests for metastandards.py
+- 2020-03-03, jgliss	Add new class AerocomDataID in metastandards.py (will be used to check latest convention <model_name>-<meteo>_<experiment>-<perturbation>) and extract metadata
+- 2020-03-02, Jonas	Merge pull request #79 from ejgal/emep
+- 2020-03-02, Eirik gallefoss	Merge branch 'v090dev' into emep
+- 2020-03-02, Eirik gallefoss	Fixed bug in mathutils.calc_statistics
+- 2020-03-02, jgliss	Finalise updated beta version of GriddedData.to_netcdf
+- 2020-03-02, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-03-02, jgliss	New methods years_avail and split_years in GriddedData; update to_netcdf method to allow storing multiyear data in AeroCom format
+- 2020-02-28, Jan Jurgen Griesfeller	added aeolus interpolation to model grid
+- 2020-02-28, Jan Jurgen Griesfeller	moved grid definitions to readsatellitel2base.py
+- 2020-02-28, jgliss	Minor reformatting in aerocom_evaluation and main_aerocom_evaluation
+- 2020-02-28, jgliss	Increase verbosity in Colocator
+- 2020-02-28, jgliss	(Docs) stationdata
+- 2020-02-28, jgliss	Fix some minor bug in ReadGridded arising from recent refactor changes and related to computation of auxiliary variables
+- 2020-02-27, jgliss	Remove applying minimum outlier threshold in mathutils._calc_od_helper
+- 2020-02-27, jgliss	Add varlist_aerocom(vars_to_retrieve) in the beginning of read method in ReadAeronetBase
+- 2020-02-26, jgliss	Minor changes in stationdata and colocation_auto; bumped version
+- 2020-02-26, jgliss	Update all occurences of "except:" with "except Exception:" in package modules; remove try/except blocks for import of CongigParser
+- 2020-02-26, jgliss	New optional input arg default_regs in region.py in methods find_closest_region_coord and get_regions_coord
+- 2020-02-26, jgliss	UngriddedData.extract_var can now also handle alias input variable names
+- 2020-02-26, jgliss	(API web): update some imports; replace occurences of "except:" with "except Exception:" in affected modules
+- 2020-02-26, jgliss	(API): outsourced some code from web/aerocom_evaluation.py to web/helpers_aerocom_evaluation.py with a significant increase in performance of json file creation
+- 2020-02-26, jgliss	Update imports in web/trends_evaluation.py
+- 2020-02-26, jgliss	Update variables in web/web_naming_conventions.py
+- 2020-02-26, jgliss	(API web): seperate helper methods for trends and evaluation interfaces into new modules, add module const.py for global constants of web subpackage
+- 2020-02-26, jgliss	Update all occurences of "except:" with "except Exception:" in all affected plot modules
+- 2020-02-26, jgliss	Update all occurences of "except:" with "except Exception:" in all affected plot modules
+- 2020-02-26, jgliss	Update all occurences of "except:" with "except Exception:" in all affected io modules
+- 2020-02-26, jgliss	Update some io tests
+- 2020-02-26, jgliss	(API): ReadUngridded now always first converts input variables to AeroCom variable names using new method helpers.varlist_aerocom
+- 2020-02-26, jgliss	Minor bug fix in readaeronetbase (unit retrieval); Replaced "except:" with "except Exception:" in all Aeronet reading routines
+- 2020-02-26, jgliss	Minor updates in variable and metadata handling in readungriddedbase, read_ebas and read_earlinet
+- 2020-02-26, jgliss	New method varlist_aerocom in helpers.py
+- 2020-02-26, jgliss	Improve resolving of var_matches in colocation_auto.py
+- 2020-02-26, jgliss	(API): largely improved handling and logical order of resolving which variable to read in case of multiple possibilities (i.e. auxiliary functions and / or aliases)
+- 2020-02-26, jgliss	Update variables.ini (ang4487dryaer, mmrso2)
+- 2020-02-21, jgliss	Updated method test_filter_griddeddata (now using testdata)
+- 2020-02-21, jgliss	Fixed failing region mask filter in GriddedData
+- 2020-02-21, jgliss	Minor reformatting
+- 2020-02-21, jgliss	Update call of const.MODELDIRS to const.DATA_SEARCH_DIRS in io/aerocom_browser.py and io/helpers.py
+- 2020-02-21, jgliss	ReadUngriddedBase.get_file_list throws DataSourceError now instead of IOError in case no data files can be detected
+- 2020-02-21, jgliss	Add io/test/test_utils.py
+- 2020-02-21, jgliss	Add new method get_ungridded_reader in io/utils.py
+- 2020-02-21, jgliss	Finalise first version of add_ungridded_obs in Config class
+- 2020-02-21, jgliss	(API config.py): Major updates and improvements in Config class: remove attrs. MODELBASEDIR, OBSBASEDIR and BASEDIR; new methods add_data_search_dir and add_ungridded_obs (NOT TESTED); much clearer handling of config_file imports
+- 2020-02-21, jgliss	Add custom exception DeprecationError
+- 2020-02-21, jgliss	Minor updates in path ini files
+- 2020-02-21, jgliss	Update usage of former OBSCONFIG and OBS_IDS in modules affected (cf. prev. commit)
+- 2020-02-21, jgliss	(API config.py): OBSCONFIG dict is replaced with OBSLOCS_UNGRIDDED, as are OBSDIRS, OBS_IDS (wrappers of prev. names still work and give warning); import of obsstartyears from ini files deprecated (not used)
+- 2020-02-21, jgliss	Remove python=3.7 from pyaerocom_env.yml
+- 2020-02-21, jgliss	Set default GridIO settings the same as AeroCom to prevent failing tests
+- 2020-02-20, jgliss	Update skipif in test_griddeddata
+- 2020-02-20, jgliss	Update test_stationdata
+- 2020-02-20, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-02-20, jgliss	Update docstring in aerocom_evaluation.py
+- 2020-02-20, jgliss	Update occurrences of scatc->sc and absc->ac in web/*.py and add new variable to web naming conventions
+- 2020-02-20, jgliss	Add missing matplotlib import in stationdata.py
+- 2020-02-20, jgliss	UngriddedData can now also filter by wildcard string patterns and apply_filters can handle region_id
+- 2020-02-20, jgliss	GriddedData can now also handle pathlib.Path as input, minor cleanup wrt imports
+- 2020-02-20, jgliss	Add filename in meta blocks of UngriddedData for Aeronet reading routines
+- 2020-02-20, jgliss	(API read_ebas.py): Update all occurences of scatc->sc and absc->ac and improve handling of alias variable names
+- 2020-02-20, jgliss	(API mathutils.py): rename all occurrences of scatc to sc and absc to ac (also in function definitions)
+- 2020-02-20, jgliss	check_vars_to_retrieve in ReadUngriddedBase now first checks for aliases and replaces aliases with AeroCom var_name
+- 2020-02-20, jgliss	Improve variable access in EbasVarInfo; new propery decorator var_name_aerocom (cf. Variable class in variable.py); remove attr aliases
+- 2020-02-20, jgliss	database is now a property decorator in EbasFileIndex
+- 2020-02-20, jgliss	Update imports and skipif markers in tests, since content of test/settings.py was moved to conftest.py and data_tm5 fixture now uses testdata-minimal and not lustre; add new test modules test/test_variable.py and io/test/test_ebas_varinfo.py
+- 2020-02-20, jgliss	Major improvements in variables.py: __str__ now returns string var_name; __repr__ returns previous __str__ info; implement __eq__; (API) dry is kept now as separate variable; ini file parsing much cleaner now and allows for using info from other variable via use = <other_var_name> in ini file (e.g. sc550dryaer); more dynamic with new property decorators is_3d, is_dry, var_name_input, var_name_aerocom, is_alias
+- 2020-02-20, jgliss	Update scale_factor entries 100./365 with actual value for some variables in ebas_config.ini
+- 2020-02-20, jgliss	Add separate variables for dry scattering and absorption and add scrh and acrh in variables.ini and aliases.ini
+- 2020-02-20, jgliss	Update header in paths_testdata.ini
+- 2020-02-20, jgliss	Update imports in files affected from API update in prev. commit
+- 2020-02-20, jgliss	(API): Add property decorators BASEMAP_AVAILABLE, GEONUM_AVAILABLE, ETOPO1_AVAILABLE, TESTDATADIR to Config class; update pyaerocom.__init__.py and _init_helpers.py accordingly
+- 2020-02-20, jgliss	(API): started reorganising test suite, moving away from lustre dependency
+- 2020-02-19, jgliss	Renamed all variables absc -> ac and scatc -> sc and bscatc -> bsc in variables.ini and ebas_config.ini and swapped aliases accordingly
+- 2020-02-19, jgliss	Remove comment in aux_read_cubes.py
+- 2020-02-18, jgliss	Update warning message in aux_read_cubes.py
+- 2020-02-18, jgliss	Merge README from v090dev into master
+- 2020-02-18, Jonas	Update README.rst
+- 2020-02-18, jgliss	Merge README from v090dev into master
+- 2020-02-18, Jonas	Update README.rst
+- 2020-02-18, Jonas	Update README.rst
+- 2020-02-18, Jonas	Update README.rst
+- 2020-02-18, Jonas	Update README.rst
+- 2020-02-18, jgliss	Merge CI workflow file from master into v090dev
+- 2020-02-18, Jonas	Update CI.yml
+- 2020-02-18, jgliss	Merge test_helpers.py from v090dev into master
+- 2020-02-18, jgliss	Minor fix in test_helpers.py
+- 2020-02-18, jgliss	Update test_helpers.py from v090dev into master
+- 2020-02-18, jgliss	Fixed failing or erroneous tests when not connected to lustre
+- 2020-02-18, Jonas	Create CI.yml
+- 2020-02-14, jgliss	Fixed minor bug in change_verbosity
+- 2020-02-12, jgliss	Worked on docstrings and cleaned up / reorganised library import statements throughout all modules
+- 2020-02-12, jgliss	Implemented recent updates for region and altitude filtering in ColocatedData (i.e. methods apply_region_mask, filter_region, filter_altitude)
+- 2020-02-12, jgliss	Renamed available_region_masks to available_htap_masks and refactored; updated tests and did some docs cleanup and updates
+- 2020-02-12, jgliss	Moved TrendsEngine class from trends_helpers.py to new module trends_engine.py and reorganised a little
+- 2020-02-12, jgliss	Cleaned up some import statements
+- 2020-02-12, jgliss	Updated docs
+- 2020-02-12, jgliss	Updated docs
+- 2020-02-12, jgliss	Added __repr__ for ReadGridded (same as __str__)
+- 2020-02-11, jgliss	Bumped version
+- 2020-02-11, jgliss	Added conftest.py for defining session wide test fixtures and updated/reafctured all relevant tests accordingly
+- 2020-02-11, jgliss	Added option EBAS_DB_LOCAL_CACHE in Config class to automatically cache EBAS SQL database in CACHEDIR (since queries with mounted server location were incredibly slow) -> defaults to True
+- 2020-02-11, jgliss	Fixed some tests
+- 2020-02-11, jgliss	Fixed some tests and added new ones; bumped version
+- 2020-02-11, jgliss	Updated name of ReadAasEtal in ReadUngridded' @
+- 2020-02-11, jgliss	(API REFACTOR): Renamed class ReadSulphurAasEtAl to ReadAasEtal (old name still works) and fixed some bugs and did some cleanup in that class
+- 2020-02-11, jgliss	Minor reformatting
+- 2020-02-11, jgliss	Minor reformatting in some io modules
+- 2020-02-11, jgliss	Added OUTDATED info string in scripts/main (CURRENTLY NOT IN USE)
+- 2020-02-11, jgliss	Update scripts/__init__.py (ultimately closes #19)
+- 2020-02-11, jgliss	Added module scripts/highlevel_utils, currently with one method (clear_cache, closes #19)
+- 2020-02-11, jgliss	Added method delete_all_cache_files in CacheHanglerUngridded
+- 2020-02-11, jgliss	Updated docs in UngriddedData
+- 2020-02-11, jgliss	Removed unused import TS_TYPE_SECS in units_helpers.py'
+- 2020-02-11, jgliss	Added subpackage scripts to setup.py
+- 2020-02-11, jgliss	Outsourced some definitions from pyaerocom/__init__.py to pyaerocom/_init_helpers.py
+- 2020-02-07, jgliss	Minor cleanup in ReadSulphurAasEtAl
+- 2020-02-07, jgliss	Minor cleanup in ReadEbas
+- 2020-02-07, jgliss	Added new decorator method vars_available in StationData
+- 2020-02-07, jgliss	Merge branch 'v090dev' of git+ssh://github.com/metno/pyaerocom into v090dev
+- 2020-02-07, jgliss	Minor generalisations in UngriddedData related to availability of "variables" entry in metadata
+- 2020-02-07, Jan Jurgen Griesfeller	deleted run config again since it does not work as intended
+- 2020-02-07, Jan Jurgen Griesfeller	added 1st pycharm run config file as test
+- 2020-02-07, Jan Jurgen Griesfeller	added inclusion of .idea/runConfigurations to enable sharing of pycharm run configs via git
+- 2020-02-06, Jan Jurgen Griesfeller	made the profile plot work correctly (heights)
+- 2020-02-06, jgliss	Added data_dir check in ReadGridded and corresponding Exception
+- 2020-02-06, jgliss	Renamed input file_pattern to pattern in ReadEarlinet in affected methods
+- 2020-02-06, jgliss	Updated some tests
+- 2020-02-06, jgliss	Updated some tests and worked on efficiency of test suite
+- 2020-02-06, jgliss	Removed get_tot_number_of_seconds from units_helpers
+- 2020-02-06, jgliss	Changed > to >= in min_num_valid check in mathutils.calc_statistics
+- 2020-02-06, jgliss	Updated gitignore
+- 2020-02-06, jgliss	New method check_all_htap_available in helpers_landsea_masks
+- 2020-02-06, jgliss	Minor quick fix in get_tot_number_of_seconds in helpers.py
+- 2020-02-06, jgliss	Reviewed and generalised region filtering methods in UngriddedData
+- 2020-02-06, jgliss	Redefined and largely simplified and cleaned up Filter class
+- 2020-02-06, jgliss	Improved handling of region filters and included missing functionality related to landseamask filtering
+- 2020-02-05, jgliss	Merge branch 'v090dev' of https://github.com/metno/pyaerocom into v090dev
+- 2020-02-05, jgliss	Updated imports in colocateddata.py
+- 2020-02-05, jgliss	Removed method get_mask from helpers_landsea_masks
+- 2020-02-05, jgliss	Updated some tests in io/test/
+- 2020-02-05, jgliss	(BETA): added _dataset_path attr to ReadUngriddedBase so that this may also be set flexibly (not tested)
+- 2020-02-05, jgliss	Added a custom exception
+- 2020-02-05, jgliss	Added attr URL_HTAP_MASKS to Config class
+- 2020-02-05, jgliss	Updated imports in region.py
+- 2020-02-05, jgliss	Updated some deprecated method calls and imports in UngriddedData
+- 2020-02-05, jgliss	Added tests for module helpers_landsea_masks
+- 2020-02-05, jgliss	Fixed some bugs and code cleanup in module land_sea_mask which was renamed to helpers_landsea_masks
+- 2020-02-04, Jan Jurgen Griesfeller	adjusted plots to also show the negative values and work with a single height with data
+- 2020-01-31, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/v081dev' into v090dev
+- 2020-01-31, Jan Jurgen Griesfeller	command line tool to read and plot aeolus colocation files
+- 2020-01-31, Jan Jurgen Griesfeller	added qa_index, several other updates
+- 2020-01-24, Jan Jurgen Griesfeller	progress towards colocation
+- 2020-01-23, jgliss	Merge branch 'v081dev' into v090dev
+- 2020-01-23, jgliss	Merge branch 'v081dev' of https://github.com/metno/pyaerocom into v081dev
+- 2020-01-23, jgliss	Deleted docs/config_files.rst
+- 2020-01-23, jgliss	Fixed some tests
+- 2020-01-23, jgliss	Typo correction in land_sea_mask
+- 2020-01-23, jgliss	New  method nonunique_station_names in UngriddedData
+- 2020-01-23, jgliss	Improved flexibility of variable retrieval for cases of combined alias and alias family usage (e.g. sconcdu)
+- 2020-01-23, jgliss	Minor changes in region.py (initiated more generalised region plotting, NOT FINISHED)
+- 2020-01-23, jgliss	Fixed some import statements of __dir__ (due to failing docs build) and cleaned up some docstrings in modules in io subpackage; removed automatic altitude retrieval for AasEtAl data in reading routine (related to #74, which still needs fix...)
+- 2020-01-23, jgliss	Fixed minor bug in GriddedData.to_time_series (if used for single coordinate)
+- 2020-01-23, jgliss	Minor update in geodesy.py
+- 2020-01-23, jgliss	Generalised path environment identification in Config class
+- 2020-01-23, Jonas Gliss	Removed NEWS section from README
+- 2020-01-20, Jonas Gliss	 Fixed minor bug in colocation.py (that was introduced very recently and identified via failing getting started tutorial)
+- 2020-01-17, Jan Jurgen Griesfeller	added some debugging stuff for testing the data
+- 2020-01-17, Jonas Gliss	Updated docs and fixed issues causing build break (was due to import of pyaerocom. __dir__ in some python modules)
+- 2020-01-14, Jonas Gliss	Commented outdated function call in test_aas_et_al.py
+- 2020-01-14, Jonas Gliss	Merge branch 'v081dev' into hanna_dev
+- 2020-01-14, Jonas Gliss	Updated version to 090dev1
+- 2020-01-14, Jonas Gliss	Merge branch 'v081dev' into hanna_dev
+- 2020-01-13, Jonas Gliss	Minor change in land_sea_mask.py
+- 2020-01-13, Jonas Gliss	Fixed minor import bug in filter.py
+- 2020-01-07, Jan Jurgen Griesfeller	updated aeolus L2 writing as netcdf; to be tested
+- 2019-12-20, Jonas Gliss	Merge branch 'hanna_dev' of https://github.com/metno/pyaerocom into hanna_dev
+- 2019-12-20, Jonas Gliss	Added info string in Exception
+- 2019-12-20, Jonas Gliss	Added option to specify colorbar fontsize in df_to_heatmap method
+- 2019-12-20, Jonas Gliss	Updated computation of diversity for median model
+- 2019-12-19, hannasv	added comments and cleaned directories.
+- 2019-12-17, Jonas Gliss	Merge branch 'v081dev' into hanna_dev
+- 2019-12-17, Jonas Gliss	Updated json file creation in web/helpers.py (more flexible for different metadata types)
+- 2019-12-17, Jonas Gliss	Added arg annot_fontsize in df_to_heatmap
+- 2019-12-17, Jonas Gliss	Updated gridded/gridded colocation so that it regrids to the lowest of both resolutions
+- 2019-12-14, Jonas Gliss	AerocomEvaluation now applies weighted statistics to gridded/gridded colocated objects, in heatmap
+- 2019-12-14, Jonas Gliss	Minor updates in plotting routines; heatmap plot can now also apply rowwise number formatting (BETA)
+- 2019-12-14, Jonas Gliss	Added computation of wetoa and dryoa from poa and soa variables in ReadGridded
+- 2019-12-14, Jonas Gliss	Added model STP correction in Colocator class
+- 2019-12-14, Jonas Gliss	Fixed minor bug in extract_latlon_dataarray in helpers.py
+- 2019-12-14, Jonas Gliss	Added private method to convert iris style sample points to coord lists
+- 2019-12-14, Jonas Gliss	Added some more metadata to output colocated data object for STP correction method in colocation.py
+- 2019-12-14, Jonas Gliss	Added handling of area weights to 4D ColocatedData
+- 2019-12-11, Jonas Gliss	Fixed bug in handling source ts_type in gridded/gridded colocation routine and added new (BETA) helper method correct_model_stp_coldata to colocation.py
+- 2019-12-11, Jonas Gliss	(BETA): Added option in EBAS reading to shift wavelengths and consider all wavelengths (not only the one within tolerance range)
+- 2019-12-11, Jonas Gliss	Added functionality in mathutils to compute weighted statistics
+- 2019-12-11, Jonas Gliss	Added ERA5 surface temperature file access to Config class
+- 2019-12-11, Jonas Gliss	Updated ini files
+- 2019-12-10, hannasv	worked on filter region fixed bug in plotting routine regions
+- 2019-12-10, hannasv	added functionalty which checks if all available masks are downloaded and downloads those
+- 2019-12-05, Jonas Gliss	Added attr. IGNORE_FILES to ReadEbas and added code that handles this in get_file_list; added problematic aethelometer file from Alert to the file flag list
+- 2019-12-04, Jonas Gliss	Fixed bug related to column selection for wavelength range which identified data columns as valid if there was only one column match for var of interest
+- 2019-12-03, hannasv	worked on testing filter class
+- 2019-12-03, Jonas Gliss	Added tests for interpolation and timeseries conversion of GriddedData
+- 2019-12-03, Jonas Gliss	Minor updates in scatter and map plotting routines
+- 2019-12-03, Jonas Gliss	Updated to_station_data due to API change in StationData (prev. commit)
+- 2019-12-03, Jonas Gliss	(API CHANGE): StationData.resample_timeseries is deprecated (but still works) and usage of new method resample_time is recommended (which returns instance of StationData other than pd.Series); new method copy in StationData
+- 2019-12-03, Jonas Gliss	Fixed bug in ColocatedData.calc_nmb_array
+- 2019-12-03, Jonas Gliss	GriddedData timeseries extraction is now more robust against memory errors and uses xarray; new processing method mean_at_coords
+- 2019-12-03, Jonas Gliss	Added flexibility and improved robustness of ungridded colocation routine
+- 2019-12-03, Jonas Gliss	New helper methods tuple_list_to_lists, lists_to_tuple_list and extract_latlon_dataarray in helpers.py
+- 2019-12-03, Jonas Gliss	Improved flexibility and robustness of time resampling in TimeResampler (now also possible to resample to 3hourly, 5monthly, etc)
+- 2019-12-03, Jonas Gliss	Merge branch 'v081dev' of https://github.com/metno/pyaerocom into v081dev
+- 2019-12-03, Jonas Gliss	Cleaned up method to download htap masks in Filter
+- 2019-12-03, Jonas Gliss	Minor updates in variables and aliases ini files
+- 2019-12-02, Jonas Gliss	Increased robustness of AERONET reading routine
+- 2019-11-29, Jan Jurgen Griesfeller	added qa_index checking; not yet entirely functional
+- 2019-11-27, Jan Jurgen Griesfeller	worked on gridding
+- 2019-11-27, Jan Jurgen Griesfeller	added grid definition
+- 2019-11-26, Jonas Gliss	Cleaned up GriddedData.filter_region method and improved robustness
+- 2019-11-26, Jonas Gliss	Generalised and cleaned up filter_region method and fixed bug (wrong return value) therein; added new (BETA)  methods to ColocatedData: calc_nmb_array, _iter_stats, unstack, stack, flatten_latlondim_station_name
+- 2019-11-26, Jonas Gliss	Cleaned up unused imports in colocation.py
+- 2019-11-26, Jonas Gliss	(WORK IN PROGRESS): Minor updates in AERONET read base class and V3 read class to read all points data
+- 2019-11-26, Jonas Gliss	Updated _FILEMASK handling ReadUngriddedBase class and file list retrieval
+- 2019-11-26, Jonas Gliss	(BETA): New method in plot/mapping.py for plotting bias maps from ColocatedData
+- 2019-11-26, Jonas Gliss	Cleaned up unused imports in filter.py
+- 2019-11-26, Jonas Gliss	Cleaned up unused imports in region.py
+- 2019-11-26, Jonas Gliss	Refactored get_mask to get_mask_value in ungriddeddata.py
+- 2019-11-26, Jonas Gliss	(API UPDATE): rewrote and renamed method get_mask to get_mask_value in land_sea_mask.py'
+- 2019-11-25, Jonas Gliss	Merge branch 'hanna_dev' into v081dev
+- 2019-11-25, Jonas Gliss	Fixed imports in new colocation test module
+- 2019-11-25, Jonas Gliss	Fixed failing tests and added test module for colocation.py (currently only 2 highlevel tests)
+- 2019-11-25, Jonas Gliss	Removed MEC vars from aux variabels in ReadGridded and updated stop timestamp that is generated for file match search (subtract 1 sec if user inputs year)
+- 2019-11-25, Jonas Gliss	Changed input args of GriddedData.mean from how (str) to areaweighted (bool)
+- 2019-11-25, Jonas Gliss	Fixed bug in helpers.resample_time_dataarray (only relevant for multiyear datasets)
+- 2019-11-25, Jonas Gliss	Merge v081dev in hanna_dev
+- 2019-11-25, Jonas Gliss	(NOTE: last commit was related to Colocator and not AerocomEvaluation class). This commit: added new method read_ungridded_obsdata to AerocomEvaluation; BE AWARE: json heatmap file stats now use data in colocation time resolution, before always monthly
+- 2019-11-25, Jonas Gliss	Updated method _update_var_outlier_ranges and added new method read_ungridded to AerocomEvaluation class
+- 2019-11-25, Jonas Gliss	Fixed minor bug in colocate_gridded_ungridded
+- 2019-11-25, Jonas Gliss	Added possibility to separately specify annotation fontsize in plot_scatter_aerocom via arg fontsize_annot
+- 2019-11-25, Jonas Gliss	(NOT FINISHED): reviewed and slightly reorganised plot_gridded_data_on_map method
+- 2019-11-25, Jonas Gliss	Added logger output to TimeResampler.resample method
+- 2019-11-25, hannasv	cleaned files
+- 2019-11-25, hannasv	added package for downloadig the enionment
+- 2019-11-25, hannasv	minor adjustments
+- 2019-11-25, hannasv	fixed bug with import of const
+- 2019-11-25, hannasv	working version filter by square and masked region
+- 2019-11-25, hannasv	working version downloading masks
+- 2019-11-22, hannasv	worked on applying masks
+- 2019-11-21, hannasv	worked on masks
+- 2019-11-21, hannasv	added option to filter inplace
+- 2019-11-21, hannasv	removed htap from names in ini files
+- 2019-11-21, hannasv	fixed bug related to import of const from pyaercom
+- 2019-11-21, hannasv	implemented mulitple regiong for ungridded data
+- 2019-11-21, hannasv	Merge branch 'v081dev' into hanna_dev
+- 2019-11-21, hannasv	fixed bug for reding multiple regions using xarray
+- 2019-11-21, Jonas Gliss	New methods in AerocomEvaluation: get_model_name, read_model_data, all_obs_vars; new module utils.py in web subpackage (containing method to compute ensemble model)
+- 2019-11-21, Jonas Gliss	Minor improvements in UngriddedData.plot_station_coordinates
+- 2019-11-21, Jonas Gliss	Improved robustness and flexibility of heatmap and map plots
+- 2019-11-21, Jonas Gliss	GriddedData.regrid can now also handle custom resolution; updated regridding in colocation routines; new method read_model_data in Colocator (should fix #58)
+- 2019-11-21, hannasv	add plot region functionality in region and worked on implementing multiple regions in gridded data
+- 2019-11-20, Jonas Gliss	New io/helper method aerocom_savename; ReadGridded more robust wrt to selection of files in case of conflicts related to vert_code
+- 2019-11-20, Jonas Gliss	New exception ResampingError
+- 2019-11-20, Jonas Gliss	Added new attr. default_vert_code to Variable class (and in variables.ini assigned Column to abs550aer due to naming conflicts with absc550aer)
+- 2019-11-20, Jonas Gliss	New helper methods numpy_to_cube, check_coord_circular and make_dummy_cube_latlon in helpers.py
+- 2019-11-14, hannasv	worked on downloading data and implementing masks filter
+- 2019-11-13, Hanna Svennevik	Merge pull request #65 from metno/v081dev
+- 2019-11-12, Jonas Gliss	Increased robustness of cube load operations in aux_read_cubes
+- 2019-11-12, Jonas Gliss	Added mec550* variables to ReadGridded and removed storage of loaded data objects from that class
+- 2019-11-12, Jonas Gliss	Increased robustness of map plots (computation of pseudo log bounds)
+- 2019-11-12, Jonas Gliss	Added mec550 and tau variables for each species, added some aliases
+- 2019-11-08, Jonas Gliss	(Minor API changes): refactored some code related to handling of time frequencies (everything goes through TsType now, which has some nice new helpers); added some related tests
+- 2019-11-07, Jonas Gliss	(BETA): added first version of climatological colocation (ONLY FOR UNGRIDDED OBS SO FAR). Default values are 2005-2015, with at least 30 daily values per month required (as specified by @MichaelSchulzMETNO in #51)
+- 2019-11-07, Jonas Gliss	Added default settings for computation of climatological timeseries in Config class
+- 2019-11-07, Jonas Gliss	Removed default ts_type 3hourly in grid_io.py, since this is covered automatically by new flexible scheme provided via TsType
+- 2019-11-07, Jonas Gliss	Improved handling of supported  ts_types in ReadGridded
+- 2019-11-07, Jonas Gliss	New method valid in TsType and new helper method sort_ts_types in tstype.py
+- 2019-11-07, Jonas Gliss	Fixed minor bug in AerocomEvaluation cleanup method
+- 2019-11-06, Jonas Gliss	Merge branch 'v081dev' of https://github.com/metno/pyaerocom into v081dev
+- 2019-11-06, Jonas Gliss	Added new method calc_climatology to StationData (related to #51, cf. also previous commits from same day -> NOT YET READY FOR AUTOMATIC EVALUATION)
+- 2019-11-06, Jonas Gliss	Further refined new helper method calc_climatology
+- 2019-11-06, hannasv	fixed mergeconflict
+- 2019-11-06, hannasv	worked on applying htap masks
+- 2019-11-06, Jonas Gliss	Updated new helper method calc_climatology (returns now DataFrame with more info than mean)
+- 2019-11-06, Jonas	Merge pull request #62 from metno/augustin
+- 2019-11-06, Jonas	Update time_resampler.py
+- 2019-11-06, hannasv	implemented filter region htap
+- 2019-11-06, Augustin Mortier	TsType related stuff
+- 2019-11-06, hannasv	added path to masks on MyPyaerocom
+- 2019-11-06, hannasv	fixed bug in NAFRICA
+- 2019-11-06, hannasv	changed names and added functionality to get mask as iris cube
+- 2019-11-06, hannasv	added filter region function to colocated data object
+- 2019-11-06, Jonas Gliss	Added lowlevel method calc_climatology in helpers.py; method helpers.start_stop now subtracts one second from stop if input is numerical
+- 2019-11-06, Jonas Gliss	Added method read_obsdata in AerocomEvaluation class
+- 2019-11-06, Jonas Gliss	Removed unnecessary check in Colocator class
+- 2019-11-06, hannasv	added function for downloading htap mask if they are not available. FIX PATH
+- 2019-11-05, Augustin Mortier	Merged v081dev into augustin_dev
+- 2019-11-05, Augustin Mortier	Improved handling of time resampling and TsType
+- 2019-11-01, Jonas Gliss	(QUICK FIX): Fixed bug arising from HTAP regions being available in regions.ini now that lead to crash in method regions.find_closest_region_coord (@hannasv: please check)
+- 2019-11-01, Jonas Gliss	Fixed minor bug in config.py arising from merge with hannas changes
+- 2019-11-01, Jonas Gliss	Merge branch 'v081dev' of https://github.com/metno/pyaerocom into v081dev
+- 2019-11-01, Jonas Gliss	Harmonised and improved colocation strategy to make sure that resampling constraints are applied appropriately for all possible cases
+- 2019-11-01, Jonas Gliss	(FEATURE): GriddedData.resample_time can now also apply resampling constraints; fixed minor bug in reordering of dimensions of GriddedData when one dimension definition was missing
+- 2019-11-01, Jonas Gliss	Added attr. DEFAULT_REG_FILTER in Config class
+- 2019-11-01, Jonas Gliss	Update creation of DatetimeIndex in iris_io.py  due to pandas deprecation, now using date_range function
+- 2019-11-01, Jonas Gliss	Updated docstring in time_resampler
+- 2019-10-31, Jonas	Merge pull request #52 from metno/hanna_dev
+- 2019-10-31, Hanna Svennevik	Merge branch 'v081dev' into hanna_dev
+- 2019-10-31, hannasv	WV of filtering ungridded data object by local htap files
+- 2019-10-30, Jan Jurgen Griesfeller	added scaling for variables and 0.5 degree gridding
+- 2019-10-30, Jonas Gliss	Added some aliases for dust variables (some models use "du" instead of "dust")
+- 2019-10-29, Jonas Gliss	Fixed some tests due to minor changes arising from 0550bc4d6a6f2271bd818c869d0317a99e1fa972
+- 2019-10-29, Jonas Gliss	(API -> BETA): Updated major parts of pyaerocom initiation logic in Config class, including more robust checks for database accesses, accelerated import and more flexibility wrt. different path environments
+- 2019-10-29, Jonas Gliss	Loosened strictness related to menu update wrt existing entries from prev. runs for Evaluation iface
+- 2019-10-29, Jonas Gliss	removed .loc[s.index[0]:s.index[-1]] at the end of resample_timeseries in helpers.py
+- 2019-10-29, Jonas Gliss	Added load_default() at end of __init__ of GridIO class;
+- 2019-10-29, Jonas Gliss	Commented out unneeded code in gridded vs. ungridded colocation routine
+- 2019-10-29, Jonas Gliss	Added two methods check_write_access and check_dir_access to _lowlevel_helpers.py
+- 2019-10-28, Jonas Gliss	Improved robustness of helper method for removal of an experiment in Aerocom Evaluation iface
+- 2019-10-28, Jonas Gliss	Added method for reordering experiments in menu.json for Aerocom Evaluation interface
+- 2019-10-28, Jonas Gliss	Improved robustness of gridded reading wrt computation of variables related to availability of req. variables
+- 2019-10-28, Jonas Gliss	Refined time resampling strategy in colocate_gridded_ungridded (resampling constraints are now applied also in main loop)
+- 2019-10-28, Jonas Gliss	Added new method make_datetime_index in helpers.py
+- 2019-10-28, Jonas Gliss	Improved flexibility and robustness of init of Variable class (now also alternative names for alias variables are supported, e.g. sc550dryaer3D -> scatc550aer)
+- 2019-10-28, Jonas Gliss	Added alias sc550aer for scatc550aer
+- 2019-10-28, Jonas Gliss	Merge branch 'v081dev' of https://github.com/metno/pyaerocom into v081dev
+- 2019-10-28, Jonas Gliss	Added CMIP6 directory in environment ini files; bumped version
+- 2019-10-24, Jan Jurgen Griesfeller	small error corrections
+- 2019-10-24, Jan Jurgen Griesfeller	set executable flag
+- 2019-10-24, Jan Jurgen Griesfeller	complete rewrite of data reading
+- 2019-10-23, hannasv	worked on filters for masks
+- 2019-10-23, hannasv	Merge branch 'v081dev' into hanna_dev
+- 2019-10-23, hannasv	Merge remote-tracking branch 'origin/master' into hanna_dev
+- 2019-10-19, Jonas Gliss	Fix #54
+- 2019-10-19, Jonas Gliss	Fixed minor bug in GriddedData.load_input
+- 2019-10-19, Jonas Gliss	Minor bug fix (introduced in last commit)
+- 2019-10-19, Jonas Gliss	Merge branch 'v081dev' of https://github.com/metno/pyaerocom into v081dev
+- 2019-10-19, Jonas Gliss	Bumped version
+- 2019-10-19, Jonas Gliss	Removed file size checks in memory heavy operations in GriddedData and added meta cleanup for netcdf output
+- 2019-10-19, Jonas Gliss	Fixed minor bug in colocation routine arising in cases where model data var_name is not known by AeroCom
+- 2019-10-18, hannasv	worked on land sea mask
+- 2019-10-18, Jan Griesfeller	major rewrite to include S5P averaging kernel reading
+- 2019-10-18, Jonas Gliss	Fixed minor bug in trends computation for storage of metadata in TrendsEngine)
+- 2019-10-17, Jonas Gliss	Fixed minor bug in trends computation helper routine
+- 2019-10-17, Jonas Gliss	Improved search strategy of browse_database (AerocomBrowser) and added some observations (e.g. Aas et al sulphur data) to paths_testdata.ini
+- 2019-10-17, jgliss	(CHECK): fixed bug in GriddedData.crop due to time bounds not removed correctly (Abisko, pyaerocom-testdata)
+- 2019-10-16, Jonas Gliss	Bumped version
+- 2019-10-16, Jonas Gliss	Merged master
+- 2019-10-15, Jonas Gliss	Added method to_xarray to GriddedData object
+- 2019-10-15, Jonas Gliss	Merge branch 'v081dev' into abisko_dev
+- 2019-10-15, Jonas Gliss	Bumped version
+- 2019-10-15, Jonas Gliss	Improved robustness of library import and database access check timeout
+- 2019-10-12, Jonas Gliss	Updated README
+- 2019-10-12, Jonas Gliss	Finalised release v0.8.0
+- 2019-10-12, Jonas Gliss	Bumped version (v080rc5)
+- 2019-10-12, Jonas Gliss	ReadGridded.data_id is no property decorator and is set automatically when initiating via data_dir (based on filenames), if applicable
+- 2019-10-11, Jonas Gliss	Generalised ReadGridded: data_dir can now be provided on input (if no access to any AeroCom database is provided
+- 2019-10-11, Jonas Gliss	Bumped version (v0.8.0rc4) and removed global flag USE_RENAMED_DIR from GridIO class (is now handled automatically in AerocomBrowser)
+- 2019-10-10, Jonas Gliss	Added option try_load_json in init of AerocomEvaluation class to avoid automatic preloading of json files
+- 2019-10-10, Jonas Gliss	Updated colocation routines (colocation.py and colocation_auto.py): now outlier removal (and ranges) can be controlled independently for model and obs
+- 2019-10-10, Jonas Gliss	Updated README
+- 2019-10-10, Jonas Gliss	Added support for variable concoc (provided by EBAS) and fixed minor bug in creation of hierarchical resamling index of TimeResampler class
+- 2019-10-09, hannasv	forgot to commit unsaved changes
+- 2019-10-09, hannasv	worked on land sea mask, altered SAFRICA and EUROPE in region ini file
+- 2019-10-09, Jonas Gliss	Bumped version
+- 2019-10-09, Jonas Gliss	Added test directories in setup.py packages and updated version to 2nd release candidate
+- 2019-10-09, Jonas Gliss	Removed some unused imports in aerocom_evaluation.py
+- 2019-10-09, Jonas Gliss	Merge branch 'master' into hanna_dev
+- 2019-10-09, hannasv	fixed syntax bug, added an extra space
+- 2019-10-09, hannasv	fixed unit bug in test_aasetal and added unitconversion back to units_helpers
+- 2019-10-09, Jonas Gliss	Merge branch 'master' into v080DEV
+- 2019-10-09, Jonas Gliss	Updated release summary for v080
+- 2019-10-09, Jonas Gliss	Added od550cslt1aer to aliases of var od550lt1aer
+- 2019-10-09, Jonas Gliss	Removed return type annotations in some methods in region.py
+- 2019-10-08, Jan Jurgen Griesfeller	Merge branch 'v080DEV' of github.com:metno/pyaerocom into v080DEV
+- 2019-10-08, Jan Jurgen Griesfeller	latest updates to be merged into master; not finished
+- 2019-10-08, Jonas Gliss	Fixed some subpackage imports in pyaerocom init
+- 2019-10-08, Jonas Gliss	Fixed bug in mathutils.calc_statistics, that arose from recent changes (i.e. only pos. values for bias computation and case where num_points_pos is 0 -> division by zero)
+- 2019-10-07, Jonas Gliss	Fixed minor bug in colocation_auto.py (init param ignore_stats=None if not specified in colocation config)
+- 2019-10-07, Jonas Gliss	Flagged some failing tests and removed a link from README that was accidentally copied in
+- 2019-10-07, Jonas Gliss	Updated links in readme
+- 2019-10-07, Jonas Gliss	Updated version for tagging pre-release
+- 2019-10-04, Jonas Gliss	Updated version for first pre-release of version 0.8.0
+- 2019-10-04, Jonas Gliss	Bumped version
+- 2019-10-04, Jonas Gliss	Fixed some tests and made init of ReadUngridded class more flexible in case no obsdata is found
+- 2019-10-04, Jonas Gliss	Updated README
+- 2019-10-04, Jonas Gliss	Removed import of multiproc module
+- 2019-10-04, Jonas Gliss	Deleted outdated modules station.py, tools dir and multiproc.py
+- 2019-10-04, Jonas Gliss	Deleted notebooks directory (ALL notebooks, tutorials, etc. go into pyaerocom-tutorials repository)
+- 2019-10-04, Jonas Gliss	Replaced occurrences of sconc with conc in most modules
+- 2019-10-04, Jonas Gliss	Updated MANIFEST.in and changelog / release note for upcoming release of v080
+- 2019-10-04, Jonas Gliss	Replaced all occurrences of sconc with conc in mod. test_aas_et_al.py after merging #43 due to failing tests
+- 2019-10-04, Jonas Gliss	Merge branch 'hanna_dev' into v080DEV
+- 2019-10-04, Jonas Gliss	Merge branch 'v080DEV' into hanna_dev
+- 2019-10-04, Jonas Gliss	Merge branch 'paulina' into v080DEV
+- 2019-10-04, Jonas Gliss	Merged v080DEV into paulina
+- 2019-10-03, Jonas Gliss	Fixed merge conflict in .gitignore
+- 2019-10-03, Jonas Gliss	Bumped version
+- 2019-10-03, Jonas Gliss	Minor improvements in user-friendliness of trends computation and plotting
+- 2019-10-03, Jonas Gliss	Added start / stop check against refdata in gridded / gridded colocation routine
+- 2019-10-03, Jonas Gliss	Added new metod get_metadata_from_filename in io/helpers.py
+- 2019-10-03, Jonas Gliss	Scatter plot can now handle more controls on style (e.g. marker, transparency, color, etc.)
+- 2019-10-03, Jonas Gliss	Added new global option  PERFORM_FMT_CHECKS in GridIO class (for checking files against naming convention) and updated reading of gridded data accordingly in other modules affected; minor changes in GriddedData reading and plotting
+- 2019-10-03, Jonas Gliss	Fixed some tests
+- 2019-10-03, Jonas Gliss	(MAJOR) Revised method calc_statistics: now biases and FGE are computed based on only positive values
+- 2019-10-02, Jonas Gliss	Fixed minor bug in json file computation in Aerocom Evaluation (arose from very recent changes) and added number of stations to calc_statistics in ColcatedData
+- 2019-10-02, hannasv	updated sconcsoX to concsoX
+- 2019-10-02, hannasv	fixed but with unitconversion and in reading precipitation in read aas et al
+- 2019-10-02, hannasv	fixed comments and removed printstatements
+- 2019-10-02, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-10-02, hannasv	extended functionality in heatmaps allow one columned multiindex or single index df
+- 2019-10-01, Jonas Gliss	Added changelog and first draft of release summary for v0.8.0
+- 2019-09-29, Jonas Gliss	Added method load_default_config in Config class
+- 2019-09-20, Jonas Gliss	Improved data processing flow in AerocomEvaluation and added new time resampling constraints for computation of json files (e.g. computation of monthly averages if colocated data object is daily)
+- 2019-09-20, Jonas Gliss	Added option model_keep_outliers in Colocator and new (UNTESTED) attribute obs_vars_rename
+- 2019-09-20, Jonas Gliss	Added NetCDF I/O for ColocatedData meta attr. min_num_obs in case it is nested dict (hierarchical constraints)
+- 2019-09-20, Jonas Gliss	Added new resampling strategy to lowlevel colocation methods and added new option var_keep_outliers that can be set True if outliers are only supposed to be removed from obs and not from model
+- 2019-09-20, Jonas Gliss	Minor cleanup in UngriddedData
+- 2019-09-20, Jonas Gliss	New test module for ColocatedData object (only one test so far)
+- 2019-09-20, Jonas Gliss	Replaced some print statements with logger calls in helpers.py
+- 2019-09-20, Jonas Gliss	Added method apply_rh_thresh_cubes in aux_read_cubes.py
+- 2019-09-20, Jonas Gliss	Minor cleanup in ReadEbas
+- 2019-09-20, Jonas Gliss	New method has_var in ReadGridded
+- 2019-09-20, Jonas Gliss	Added ang5587aer variable
+- 2019-09-20, Jonas Gliss	Fixed map plotting issues (horizontal bar at longitude border) in GriddedData.quickplot_map
+- 2019-09-20, Jonas Gliss	Set scientific colorbar ticks option False in map plots
+- 2019-09-20, Jonas Gliss	Added some aliases
+- 2019-09-20, Jonas Gliss	Added time resampling info in StationData.var_info when resampling
+- 2019-09-20, Jonas Gliss	TimeResampler has apply_constraints option set to False now (prev. None), added info attr dict last_setup
+- 2019-09-11, hannasv	added drop duplicate entries of same moth (dtime) in reading routine. Keeps first value
+- 2019-09-11, hannasv	working on heatmaps with circles and annotations
+- 2019-09-10, Jonas Gliss	Deactivated multiprocessing reading of many cubes and added output in case of large number of files
+- 2019-09-06, Jonas Gliss	Added transparency in scatter plots
+- 2019-09-06, Jonas Gliss	(MAJOR): improved handling of time resampling, now all unified in new TimeResampler class in time_resampler.py module, used in StationData and ColocatedData, using hierarchical resampling strategy; improved TsType
+- 2019-09-05, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
+- 2019-09-05, Jonas Gliss	Bumped version
+- 2019-09-05, Jonas Gliss	ReadEbas can now handle minutely resolution and can retrieve angstrom exponents; new helper method var_info, put wavelength column selection in separate helper method
+- 2019-09-05, Jonas Gliss	EbasVarInfo can now also handle variable requirements for hierarchical computation (e.g. compute variables from computed variables)
+- 2019-09-05, Jonas Gliss	Added new helper methods for computation of new scattering and angstrom coefficients
+- 2019-09-05, Jonas Gliss	Added new ts_type minutely to relevant definitions in time_config.cfg
+- 2019-09-05, Jonas Gliss	Added new ts_type minutely (EBAS equivalent black carbon comes minutely sometimes)
+- 2019-09-05, Jonas	Merge pull request #41 from metno/augustin
+- 2019-09-05, Jonas Gliss	Fixed configparser error of RH unit % (needs escape), changed default value of dry_rh_max to 40% in variables.ini
+- 2019-09-05, Jonas Gliss	Added scattering coeffs. at 440 and 700 nm and ang4470dryaer to ebas_config.ini
+- 2019-09-05, Augustin Mortier	Merge branch 'augustin' of https://github.com/metno/pyaerocom into augustin
+- 2019-09-05, Augustin Mortier	Reversed latest commit (cf. #41)
+- 2019-09-05, Augustin Mortier	write only the region name in the metadata instead of the complete region object
+- 2019-09-05, Jonas Gliss	Minor bug fix: GriddedData.crop now assigns region name to metadata, not instance of Region class itself (caused problems in iris with deepcopy)
+- 2019-09-05, Jonas Gliss	Added attribute RH_MAX_PERCENT_DRY=40 to Config class
+- 2019-09-05, Jonas Gliss	Removed invalid string in definition DEFAULT variable and added new variables scatc440aer, scatc700aer, ang4470aer; changed unit of [rh] variable from 1 to %
+- 2019-09-04, Augustin Mortier	Included variable alias check (e.g. check for sconcpm10 if concpm10 is not available) in ReadGridded
+- 2019-09-04, Jonas Gliss	(API REFACTOR): Moved global dicts for time conversion from helpers.py to new module time_config.py and updated all affected imports
+- 2019-09-04, hannasv	worked on updating unitconversion aas et al
+- 2019-09-04, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-09-04, hannasv	updating unitconversion
+- 2019-09-04, Jonas Gliss	Improved flexibility of time resampling now supporting flexible ts_types (e.g.3daily)
+- 2019-09-04, Jonas Gliss	Improved handling of more flexible ts_types
+- 2019-09-04, Jonas Gliss	(BETA): TsType class can now also handle more flexible ts_types such as 4daily
+- 2019-09-04, Jonas Gliss	Fix #40
+- 2019-09-04, Jonas Gliss	Added conctc to units_helpers for custom conversion
+- 2019-09-04, Jonas Gliss	Added conctc to variables.ini
+- 2019-09-04, Jonas Gliss	Added conctc to ebas_config.ini
+- 2019-09-04, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-09-04, Jonas Gliss	dumped version
+- 2019-09-04, Jonas Gliss	(BETA): support multiple source ts_types for obsdata in colocation routine gridded/ungridded
+- 2019-09-04, Jonas Gliss	Major improvements in ReadEbas: flexible support for time frequencies (e.g. 4d); applying of scale factors defined in ebas_config.ini; conversion of non CF conform units (e.g. ug S/m3 to ug/m3)
+- 2019-09-04, Jonas Gliss	Fixed some tests
+- 2019-09-04, Jonas Gliss	Minor updates and bug fixes in plot/plotscatter.py
+- 2019-09-04, Jonas Gliss	Updated import of unit helper method in ungriddeddata.py
+- 2019-09-04, Jonas Gliss	Updated StationData.convert_unit
+- 2019-09-04, Jonas Gliss	Updated import of unit helper method in read_earlinet
+- 2019-09-04, Jonas Gliss	Fixed retrieval of scale_factor in EbasVarInfo
+- 2019-09-04, Jonas Gliss	New test module for new module units_helpers.py
+- 2019-09-04, Jonas Gliss	Updated information in ebas_config.ini (scale factors of concXX vars)
+- 2019-09-04, Jonas Gliss	(API): new module units_helpers.py that contains custom unit conversion information and methods (i.e. non CF conform units) and moved relevant helper methods for unit conversion from helpers.py
+- 2019-09-04, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-09-04, hannasv	WV Structuring dataframe for model intercomparison
+- 2019-09-04, hannasv	WV Structuring dataframe for model intercomparison
+- 2019-09-04, hannasv	fixed wetso4 unit again, works -- compared to model data
+- 2019-09-04, hannasv	added import of ReadSulphurAasEtAl
+- 2019-09-04, hannasv	updated with x y ticklabels and standform if user ask for to many digits
+- 2019-08-30, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
+- 2019-08-30, Jonas Gliss	AerocomEvaluation: added more support for autoupdating and checking outdated, now also properly handling the newly introduced heatmap files
+- 2019-08-30, Jonas Gliss	Added more support for handling missing vertical codes in Colocator (e.g. due to old naming convention)
+- 2019-08-30, Jonas Gliss	ReadGridded: improved flexibility, can now handle computation of variable families such as computing concso4 from mmrso4 and rho
+- 2019-08-30, Jonas Gliss	Added passing of **kwargs to resample_time call of ColocatedData object at the end of the colocation routines
+- 2019-08-30, Jonas Gliss	Updated default axes size for map plots (cbar labels were vanishing)
+- 2019-08-30, Jonas Gliss	Added dict UNIT_ALIASES in GridIO class
+- 2019-08-30, Jonas Gliss	aux_read_cubes.py: Unified cube arithmetic methods (+, -, *, /, etc) and added handling and merging of cube.attributes dicts
+- 2019-08-30, Jonas Gliss	Renamed sconcXX to concXX in ebas_config.ini
+- 2019-08-30, Jonas Gliss	variables.py: relevant classes can now also handle variable families (i.e. sconcso4 -> concso4, cf. prev. commits); added some helper methods and improved cleanliness and efficiency of code
+- 2019-08-30, Jonas Gliss	New section alias_families in aliases.ini with one entry conc = sconc that allows to still use variable names like sconcso4 for concso4
+- 2019-08-30, Jonas Gliss	Renamed all sconcXX variables to concXX in variables.ini (sconc is deprecated but still supported)
+- 2019-08-30, Jonas Gliss	GriddedData: new method extract_surface_level and minor bug fix in handling of metadata
+- 2019-08-30, Jonas Gliss	New method merge_dicts in _lowlevel_helpers.py (used to merge metadata in GriddedData)
+- 2019-08-27, Jan Jurgen Griesfeller	added LOCAL_TMP_DIR to config class and paths.ini
+- 2019-08-23, Jan Jurgen Griesfeller	added proper command line interface and mad L2 writing work
+- 2019-08-23, hannasv	worked on intercomparrison to aas et al and heatmaps
+- 2019-08-23, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
+- 2019-08-23, Jonas Gliss	Updated version
+- 2019-08-23, Jonas Gliss	(MAJOR REFACTOR): GriddedData is now storing metadata directly in underlying Cube (suppl_info -> metadata); var_name uses original one, aerocom var_name via new attr var_name_aerocom, var_info more flexible; new methods copy_coordinates, delete_coordinates, copy, delete_aux_vars; more robust unit check and __init__
+- 2019-08-23, Jonas Gliss	UngriddedData.__next__ now returns empty StationData object on DataCoverageError, code cleanup
+- 2019-08-23, Jonas Gliss	Updates in colocation_auto.py: Improved robustness and flexibility wrt time handling, variable names (and renaming options), processing of climatological data and handling of additional model variables (i.e. now multiple model variables can be analysed against the same obs var)
+- 2019-08-23, Jonas Gliss	Cleared __main__ in test mod for Aeronet v3
+- 2019-08-23, Jonas Gliss	Major improvements in colocation routines: option to colocate in time before downsampling, improved colocation processing strategy for gridded/ungridded and handling of minimum number of observations
+- 2019-08-23, Jonas Gliss	Filter class can now also handle ColocatedData
+- 2019-08-23, Jonas Gliss	New features in ColocatedData: renaming of variables, filtering by region and some convenience properties (e.g. coords, dims)
+- 2019-08-23, Jonas Gliss	2 new helper methods in helpers.py: copy_coords_cube and delete_all_coords_cube
+- 2019-08-23, Jonas Gliss	Changed logger in warnings in io/iris_io.py
+- 2019-08-23, Jonas Gliss	mathutils.calc_statistics returns now all values as float (easier for dumping json)
+- 2019-08-23, Jonas Gliss	Fixed minor bug in StationData.select_altitude
+- 2019-08-23, Jonas Gliss	Import cleanup in trends_helpers
+- 2019-08-23, Jonas Gliss	Improved flexibility of related to access of _LEV_INCREASES_WITH_ALT parameter for different vertical coordinates
+- 2019-08-23, Jonas Gliss	AerocomEvaluation class now also creates global heatmap json file and has improved handling of file management
+- 2019-08-23, Jonas Gliss	Improved robustness of map plots and added some options for tick formatting
+- 2019-08-23, Jonas Gliss	Added option to delete experiment data in CLI of evaluation interface
+- 2019-08-23, Jonas Gliss	Updated code for removing existing experiment data
+- 2019-08-23, Jonas Gliss	(BETA UNTESTED): New method delete_experiment_data in /web/helpers.py
+- 2019-08-23, Jonas Gliss	New helper method valid_region in region.py
+- 2019-08-23, Jonas Gliss	Added aliases for clear-sky variables
+- 2019-08-23, Jonas Gliss	Added clear-sky AE and AOD to web naming conventions
+- 2019-08-23, Jonas Gliss	Added geonum to pyaerocom_env.yml
+- 2019-08-22, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-08-22, hannasv	corrected bug in unitconversion of wetso4
+- 2019-08-19, Jonas Gliss	Added more support for reading of climatological data
+- 2019-08-19, Jonas Gliss	Added clear-sky aliases for absorption coefficient
+- 2019-08-19, Jonas Gliss	ColocatedData: new methods coords_with_data and resample_time
+- 2019-08-16, Jan Jurgen Griesfeller	added methods to_netcdf_simple and to_grid
+- 2019-08-16, Jonas Gliss	helpers.py: added more support for handling of climatological timestamps
+- 2019-08-16, Jonas Gliss	Added iris unify_time_units in add_cubes method in case of failure due to different time dimensions
+- 2019-08-16, Jonas Gliss	GriddedData.quickplot_map has now option to include weighted average mean value
+- 2019-08-16, Jonas Gliss	UngriddedData: improved to_station_data and to_station_data_all with respect to resampling and added option to ignore individual stations; improved method plot_station_coordinates
+- 2019-08-16, Jonas Gliss	StationData: Improved time resampling in StationData, now using new TsType class and possibility to infer ts_type from data (if it is not set)
+- 2019-08-16, Jonas Gliss	Added new attr color_map_text to ColorTheme class
+- 2019-08-15, Jonas Gliss	Changed logger for warning
+- 2019-08-15, Jonas Gliss	Minor update GriddedData.resample_time (uses new class TsType now)
+- 2019-08-15, Jonas Gliss	plot/mapping.py: plot_griddeddata_on_map can now also use GriddedData directly (BETA, NEEDS TESTING)
+- 2019-08-15, Jonas Gliss	added new variable sconcdust
+- 2019-08-15, Jonas Gliss	config.py: new global attributes OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS and OBS_MIN_NUM_RESAMPLE
+- 2019-08-15, Jonas Gliss	helpers.py: new method infer_time_resolution and new global dicts TS_TYPE_SECS and XARR_TIME_GROUPERS
+- 2019-08-15, Jonas Gliss	AerocomEvaluation: can now also be run for single variable; minor bug fixes
+- 2019-08-15, Jonas Gliss	New test module for TsType class
+- 2019-08-15, Jonas Gliss	New module tstype which includes new class TsType (for easier handling of different time resolutions)
+- 2019-08-14, hannasv	first day back
+- 2019-08-13, Jonas Gliss	New option ignore_station_names in colocation.py (ungridded/gridded) and included option to pass kwargs in to_station_data_all of UngriddedData (e.g. for min_num_obs in resampling of timeseries)
+- 2019-08-13, Jonas Gliss	New method remove_variable in StationData
+- 2019-08-13, Jonas Gliss	change_verbosity can now also get another logger as input
+- 2019-08-08, Jonas Gliss	Fixed obsdata version test module
+- 2019-08-02, Jan Jurgen Griesfeller	introduced base class for satellite level 2 reading that will contain some commodities for Sentinel5P and Aeolus reading
+- 2019-08-02, Jan Jurgen Griesfeller	added very basic Sentinel5P reading; data has no metadata at this point.
+- 2019-08-02, Jan Jurgen Griesfeller	added option to define chunksize to speed up satellite data reading where
+- 2019-08-01, Jan Jurgen Griesfeller	added data set names for Aeolus and Sentinel5p satellite data
+- 2019-07-24, Paulina Souza Tedesco	deleted some old comments
+- 2019-07-24, Paulina Souza Tedesco	ran notebook for latest version of the reading routine
+- 2019-07-24, Paulina Souza Tedesco	changes made to reading routine work on notebook
+- 2019-07-24, Paulina Souza Tedesco	reads all the files in the PYAEROCOM/DMS_AMS_CVO DIRECTORY. However, some files need to be edited, standarized, and then the readig routine can be simplified
+- 2019-07-24, Paulina Souza Tedesco	added variable sconcmsa
+- 2019-07-17, Paulina Souza Tedesco	reading routine works for all variables but MSA; decide what to do with this (name and units)
+- 2019-07-17, Paulina Souza Tedesco	 generalized reading routine for SO4
+- 2019-07-17, Paulina Souza Tedesco	fixed format of dtime in data_out. In read_file, intersected vars_to_retrieve with the variables available in the file. TODO: intersect variables in the read()
+- 2019-07-10, Paulina Souza Tedesco	added property DEFAULT_VARS
+- 2019-07-10, Paulina Souza Tedesco	removed comment
+- 2019-07-10, Paulina Souza Tedesco	update file with remote version
+- 2019-07-10, Paulina Souza Tedesco	new version with var_info['units']
+- 2019-07-10, Paulina Souza Tedesco	corrected units
+- 2019-07-09, Jonas Gliss	Fixed time dimension check leap year issue
+- 2019-07-09, Jonas Gliss	Merge branch 'hanna_dev' into v080DEV
+- 2019-07-09, Jonas Gliss	Merge branch 'v080DEV' into hanna_dev
+- 2019-07-09, Jonas Gliss	Refined check and correction of time dimension when reading cubes (BETA)
+- 2019-07-09, Jonas Gliss	Minor cosmetics in io/aux_read_cubes
+- 2019-07-09, Jonas Gliss	Added climatology handling to gridded / gridded colocation method in Colocator
+- 2019-07-09, Jonas Gliss	Added new methods in AerocomEvaluation: check_read_model and clean_json_files
+- 2019-07-09, Jonas Gliss	Added new exception UnresolvableTimeDefinitionError
+- 2019-07-09, Jonas Gliss	Added new alias ac550aer for absc550aer
+- 2019-07-09, Jonas Gliss	Added methods read_json and write_json in web/helpers.py
+- 2019-07-05, Jonas Gliss	Added check for outdated experiments in update menu method of Aerocom Evaluation routine
+- 2019-07-05, Jonas Gliss	New option update_baseyear_gridded in colocation methods and new option model_use_climatology in ColocationSetup
+- 2019-07-05, Jonas Gliss	Added property attr base_year (getter and setter) and new method change_base_year in GriddedData
+- 2019-07-05, Jonas Gliss	ReadGridded can now also handle AeroCom climatology data (year 9999)
+- 2019-07-05, Jonas Gliss	(API CHANGE): fixed ReadGriddedMulti class due to recent changes in ReadGridded
+- 2019-07-05, Jonas Gliss	Added data check in map plot
+- 2019-07-04, hannasv	fixed shape in test_ungridded
+- 2019-07-04, hannasv	unitconversion last unit sconcso4pr
+- 2019-07-04, hannasv	updated days_in month to pandas and added unitconversions to more variable, obs one left
+- 2019-07-04, hannasv	Merge remote-tracking branch 'origin/v080DEV' into hanna_dev
+- 2019-07-04, hannasv	added helpers units file
+- 2019-07-04, Jonas Gliss	Worked on trends processing and automated processing routines; cleaned up some code
+- 2019-07-03, Paulina Souza Tedesco	iterate over variables in VAR_NAMES_FILE to generate data_out. Write units in var_info, and confert ppt to mol/mol
+- 2019-07-01, Jonas Gliss	Worked on harmonisation of trends computation; BETA version available in StationData -> compute_trend
+- 2019-07-01, Jonas Gliss	Updated test in test_aas_et_al.py, after fixing #34
+- 2019-07-01, Jonas Gliss	Removed revision data test from test_ebas_sample_stats.py
+- 2019-07-01, Jonas Gliss	ts_type can now be passed to StationData.to_timeseries via kwargs (in addition to freq -> raises Exception if both freq and ts_type are specified)
+- 2019-07-01, Jonas Gliss	New method dataset_str in DataSource class
+- 2019-07-01, Jonas Gliss	Updated EARLINET test module
+- 2019-07-01, Jonas Gliss	Minor bugfix arising from recent changes in UngriddedData
+- 2019-07-01, Jonas Gliss	Updated reading of data from Aas et al paper, fixes #34
+- 2019-06-28, Jonas Gliss	Removed some empty lines in test_aas_et_al
+- 2019-06-28, Jonas Gliss	(API): data_revision is now written into each metadata block in UngriddedData
+- 2019-06-28, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
+- 2019-06-28, Jonas Gliss	Updated some helper methods in TrendsEvaluation that have been moved to trends_helpers.py
+- 2019-06-28, Jonas Gliss	(NEW MOD): Started migrating helper methods for trends computation in TrendsEvaluation into new helper module trends_helpers.py
+- 2019-06-28, Jonas Gliss	Added input check in UngriddedData.__getitem__ method
+- 2019-06-28, Jonas Gliss	Fixed some tests after recent updates
+- 2019-06-28, Jonas Gliss	Added new option add_none_vals to StationData.get_meta method (used in ReadEbas, cf. 2 commits earlier)
+- 2019-06-28, Jonas Gliss	Added name of input arg var_names to vars_to_retrieve in ReadGridded.read method
+- 2019-06-28, Jonas Gliss	Updated version of ReadEbas and added parameter "add_none_vals" in read method for meta retrieval from StationData
+- 2019-06-28, Jonas Gliss	Removed individual list of valid ts types from default dicts
+- 2019-06-27, Jonas	Update pyaerocom_env.yml
+- 2019-06-27, Jonas Gliss	Updated TrendsEvaluation class: now, outlier filtering and other ungridded filters (e.g. flag removal, data level selection) is done in UngriddedData object directly, before time series conversion
+- 2019-06-27, Jonas Gliss	Changed version of UngriddedData and added new method first_meta_idx
+- 2019-06-27, Jonas Gliss	Changed version of ReadEbas class
+- 2019-06-26, Paulina Souza Tedesco	added var_info with units to metadata. TODO: change units to mol mol-1
+- 2019-06-26, Jonas	Merge pull request #33 from metno/paulina
+- 2019-06-26, Paulina Souza Tedesco	Merge branch 'paulina' into v080DEV
+- 2019-06-26, Paulina Souza Tedesco	Added some comments
+- 2019-06-26, Paulina Souza Tedesco	browsing for model data to compare with observations
+- 2019-06-26, Jonas Gliss	Reverted recent change in call of station_data.get_meta (ignore_keys is not used anymore)
+- 2019-06-26, Jonas Gliss	Added data_flagged attr. to StationData (NOTE: only temporary solution for ReadEbas as StationData will be redesigned soon)
+- 2019-06-26, Jonas Gliss	Changes in UngriddedData: new method clear_meta_no_data and added some checks in _check_index (var_info should exist) and filter_by_meta (dont run through filter routine if input filters will not affect the data)
+- 2019-06-26, Jonas Gliss	Added try/except block for conversion of data_level to integer (as some files have empty entry there and added call of UngriddedData.clear_meta_no_data() at the end of read method
+- 2019-06-26, Jonas Gliss	Minor reformatting in colocation.py
+- 2019-06-26, Paulina Souza Tedesco	raised exceptions and changed files argument in the read method to only read the old vmrdms files (the method has to be generalized so that it reads all the files
+- 2019-06-25, Jonas Gliss	Changes in UngriddedData: Improved metadata filtering method (supports now also numerical values); new methods set_flags_nan and has_flag_data
+- 2019-06-25, Jonas Gliss	Improved EBAS reading routine and API clarity: outlier removal, datalevel selection and flag evaluation is should from now on be performed in UngriddedData and not during reading (renamed option remove_invalid_flags to eval_flags)
+- 2019-06-25, Jonas Gliss	Added date, time, day_of_year to attr. IGNORE_META_KEYS inn ReadAeronetBase
+- 2019-06-25, Jonas Gliss	(API) ReadUngriddedBase.compute_additional_vars now only assigns var_info data if it can be computed
+- 2019-06-25, Jonas Gliss	Minor reformatting in ebas_file_index.py
+- 2019-06-24, Jonas Gliss	Updated version of ReadEbas
+- 2019-06-24, Jonas Gliss	Added some output info in ebas_file_index.py; and tested options to improve performance of SQL request
+- 2019-06-21, Jonas Gliss	Call _check_index at end of UngriddedData.merge method
+- 2019-06-21, Jonas Gliss	Added property attr. data_id (wrapper for DATA_ID) in ReadUngriddedBase
+- 2019-06-21, Jonas Gliss	Added new attr. model_vert_type_alt to Colocator class (for cases like BCC-CUACE_HIST 2019 where od550aer has Surface in filename)
+- 2019-06-21, Jonas Gliss	(ANA) Changes in ReadGridded: new attr. ignore_vert_code and VERT_ALT; vert_which is ignored if none of the files has it specified (e.g. AeroCom 2 convention), else more strict; include meteo identifier and experiment in file_info table
+- 2019-06-21, Jonas Gliss	(ANA) merge station data now only attempts to harmonise units if they differ between 2 StationData objects
+- 2019-06-21, Jonas Gliss	Added try / except block in reading of ts json file in AerocomEvaluation
+- 2019-06-21, Jonas Gliss	Remove obs_vert_type_alt in EBAS-Lev3 entry of OBS_SOURCES in web/obs_config_default.py
+- 2019-06-21, Jonas Gliss	(API CHANGE) Updated caching strategy -> now only single variable files
+- 2019-06-21, Jonas Gliss	Added sconcco
+- 2019-06-21, Jonas Gliss	Added caching specific errors
+- 2019-06-20, Jonas Gliss	Moved method compute_angstrom_coeff_cubes from mathutils.py to io/aux_read_cubes.py
+- 2019-06-20, Jonas Gliss	Minort reformatting
+- 2019-06-20, Jonas Gliss	Added new module aux_read_cubes.py in io; updated method compute_vars and find_common_ts_type in ReadGridded
+- 2019-06-20, Jonas Gliss	Removed start and stop in init of ReadGridded in Colocator class
+- 2019-06-20, Jonas Gliss	Updated method get_obsvar_name_and_type in AerocomEvaluation
+- 2019-06-20, Jonas Gliss	Experiments can now be accessed in ReadGridded; removed outdated methods for file retrieval in ReadGridded
+- 2019-06-20, Jonas Gliss	Removed "expereriment" access from fileconventions.py, as this is handled in ReadGridded by splitting data_id
+- 2019-06-20, Jonas Gliss	Updated dim-coordinate check for cubes (checking valid names for lat, lon and time and overwriting, where applicable)
+- 2019-06-20, Jonas Gliss	Moved GridIO class from config.py into new file grid_io.py
+- 2019-06-20, Jonas Gliss	Moved GridIO class from config.py into new file grid_io.py
+- 2019-06-19, Paulina Souza Tedesco	raise ValueError if variable is not in PROVIDED VARIABLES
+- 2019-06-19, Jonas Gliss	Temporarily moved back file test_dms_gaw.py from io/test to /test to avoid merge conflicts
+- 2019-06-19, Jonas Gliss	New method extract_var in UngriddedData (BETA)
+- 2019-06-19, Jonas Gliss	Reformatting in readungridded.py
+- 2019-06-19, Jonas Gliss	trends evaluation can now use predefined variable groups to avoid reading many different variables into a single UngriddedData object
+- 2019-06-19, Jonas Gliss	Added variable category to methods that create menus and preferred obs list for menu of trends interface
+- 2019-06-19, Jonas Gliss	Remove tests for readgriddedmulti as it is deprecated
+- 2019-06-19, Jonas Gliss	Fixed some tests
+- 2019-06-19, Jonas Gliss	Fixed some tests
+- 2019-06-19, Jonas Gliss	Added option to add preference list in method sort_dict_by_name
+- 2019-06-18, Jonas Gliss	Fixed failing test in test_aas_et_al.py after recent data update;
+- 2019-06-18, Jonas Gliss	Fixed minor bug leading to crash if model variable is not available in TrendsEvaluation
+- 2019-06-18, Jonas Gliss	(API REDESIGN): redesigned file retrieval strategy and query handling in ReadGridded class, for more flexibility (BETA version)
+- 2019-06-18, Jonas Gliss	Worked on documentation in io/helpers.py
+- 2019-06-18, Jonas Gliss	Added new method get_highest_resolution to helpers.py
+- 2019-06-18, Jonas Gliss	Added new expecptions DataQueryError and DataSourceError
+- 2019-06-17, Jonas Gliss	Added CLI tool for trends eval
+- 2019-06-17, Jonas Gliss	Added model colocation to automatic trends evaluation and added command line interface
+- 2019-06-17, Jonas Gliss	Added website attr. to DataSource class in metastandards.py
+- 2019-06-17, Jonas Gliss	Added some data definitions in data_sources.ini
+- 2019-06-17, Jonas Gliss	(API CHANG): Passed fileconventions parameter vert_pos was renamed to vert_code (to avoid confusion); to_timeseries in GriddedData can now add flexible metadata to StationData objects created
+- 2019-06-13, hannasv	added unittest for unitconversion
+- 2019-06-13, hannasv	added unit conversion read, and unitconversion back in test
+- 2019-06-13, hannasv	Merge remote-tracking branch 'origin/v080DEV' into hanna_dev
+- 2019-06-13, hannasv	updated units to include weight of oxygen.
+- 2019-06-13, Jonas Gliss	Added some import in web/__init__.py
+- 2019-06-13, Jonas Gliss	Updated call of renamed method from helpers.py
+- 2019-06-13, Jonas Gliss	Finished first working version of TrendsEvaluation class with all relevant medhods and updated file names and directory setups
+- 2019-06-13, Jonas Gliss	Moved initialisation methods from __init__ to update in AerocomEvaluation
+- 2019-06-13, Jonas Gliss	Added trends-helper methods in web/helpers.py and renamed some existing one for Evaluation interface for clarity
+- 2019-06-13, Jonas Gliss	Added file web_naming_conventions.py to web subpackage (so far contains dict with variable names and categories)
+- 2019-06-11, Jonas Gliss	Removed file aerosol_trends.py
+- 2019-06-11, Jonas Gliss	Added first version of automatic trends analysis code in web subpackage in module trends_evaluation.py
+- 2019-06-11, Jonas Gliss	region.py: added option to add custom regions in methods find_closest_region_coord and get_regions_coord and fixed init bug in Region class when creating custom region
+- 2019-06-11, Jonas Gliss	Added information in docstring of AerocomEvaluation class
+- 2019-06-11, Jonas Gliss	Updated ObsConfigEval
+- 2019-06-07, Jonas Gliss	Bumped version and added / fixed some tests
+- 2019-06-07, Jonas Gliss	Minor update in method ReadGridded.vars_provided (avoid duplicates)
+- 2019-06-07, Jonas Gliss	Removed DATASET_PATH from header in ReadSulphurAasEtAl and simplified datetime conversion from files
+- 2019-06-07, Jonas Gliss	Removed ref sect. in api.rst for docs
+- 2019-06-05, hannasv	debug tests and change units
+- 2019-06-05, Jonas Gliss	Added all tutorial rst output to gitignore
+- 2019-06-05, Jonas Gliss	Deleted all output from jupyter notebooks
+- 2019-06-05, Jonas Gliss	Minor changes in index.rst
+- 2019-06-05, Jonas Gliss	Removed all deleted files
+- 2019-06-05, Jonas Gliss	Added method _check_index in UngriddedData and declared new method split_vars
+- 2019-06-04, Jonas Gliss	Updated tutorials.rst
+- 2019-06-04, Jonas Gliss	Updated EBAS test method due to recent data update
+- 2019-06-04, Jonas Gliss	(FEATURE): New methods in GriddedData: get_area_weighted_timeseries, delta_t, check_frequency, infer_ts_type and _get_info_from_filenames (the latter, NOT finished)
+- 2019-06-04, Jonas Gliss	(FEATURE): VarCollection is now iterable and has new method "find"
+- 2019-06-04, Jonas Gliss	Fixed bug in merging of StationData.merge_other (merge_vardata has to be called befor merge_meta_same_station for ts_type harmonisation)
+- 2019-06-04, Jonas Gliss	(API CHANGE): Update attribute "name" in fileconventions to "data_id"
+- 2019-06-03, Jonas Gliss	Updated links in README
+- 2019-06-03, Jonas Gliss	Updated link in README
+- 2019-06-03, Jonas Gliss	Updated argparse options in notebooks/run_all.py
+- 2019-06-03, Jonas Gliss	Fixed test for obsdata versions after EBAS update
+- 2019-06-03, Jonas Gliss	API: updated name of units attribute of ColocatedData in AerocomEvaluation class
+- 2019-06-03, Jonas Gliss	Bumped version of UngriddedData class
+- 2019-06-03, Jonas Gliss	Updated output display in ReadAeronetBase.read
+- 2019-06-03, Jonas Gliss	API: Update assignment name of attr. units to var_units in colocation methods
+- 2019-06-03, Jonas Gliss	Update access name unit information in units method from units to var_units
+- 2019-05-29, Paulina Souza Tedesco	todo: _make_ungridded_data()
+- 2019-05-29, Paulina Souza Tedesco	expore available model data
+- 2019-05-29, hannasv	imporved documentation
+- 2019-05-28, Jonas Gliss	Fixed some further issues related to unit attr name
+- 2019-05-28, Jonas Gliss	Fixed minor bug introduced in last commit
+- 2019-05-28, Jonas Gliss	Fixed some bugs related recent API refactor for var attr. "unit", which is now named "units", following CF conventions
+- 2019-05-28, Jonas Gliss	Added first version of CLI for AerocomEvaluation interface
+- 2019-05-28, Jonas Gliss	Added method get_all_config_files to helpers.py in sub-package web
+- 2019-05-27, Jonas Gliss	Added module test_readungridded.py
+- 2019-05-27, Jonas Gliss	Added some tests for AeronetSunV3Lev2 data
+- 2019-05-27, Jonas Gliss	Added __iter__ and __next__ to UngriddedData (it is now iterable over metadata blocks -> StationData) and fixed minor bug in to_station_data
+- 2019-05-27, Jonas Gliss	Added new decorator attr. dataset_to_read to ReadUngridded class (for convenience) and updated some defaults in helper methods
+- 2019-05-27, Jonas Gliss	Updated logger warning string in CacheHandlerUngridded
+- 2019-05-27, Jonas Gliss	Merge branch 'hanna_dev' into v080DEV
+- 2019-05-27, Jonas Gliss	Fixed tests in test_obsdata_versions.py; added missing revision string in ReadUngriddedBase from n/a to n/d
+- 2019-05-27, Jonas Gliss	Merge branch 'hanna_dev' of https://github.com/metno/pyaerocom into hanna_dev
+- 2019-05-27, Jonas Gliss	Merge branch 'paulina' into v080DEV
+- 2019-05-27, Jonas Gliss	Add Revision.txt to new DMS (GAW) dataset and fixed tests in test_obsdata_versions.py
+- 2019-05-27, Jonas Gliss	Merge branch 'v080DEV' into paulina
+- 2019-05-22, hannasv	Added description on functions to be implemented to test the trends.
+- 2019-05-22, Paulina Souza Tedesco	test ReadGAW
+- 2019-05-22, Paulina Souza Tedesco	deleted comments
+- 2019-05-22, hannasv	removed _cache directory
+- 2019-05-17, Jonas Gliss	Merged v080DEV
+- 2019-05-16, hannasv	added a few test, prepared for regional filtering and std calc
+- 2019-05-15, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
+- 2019-05-15, Jonas Gliss	minor changes
+- 2019-05-15, Jonas Gliss	Updated version
+- 2019-05-15, Jonas Gliss	TEMPORARY CHANGE in ReadEbas: raises Exception now if time resolution code (ts_type) is not valid (i.e. cannot be converted into  pyaerocom ts_type) in read_file
+- 2019-05-15, Jonas Gliss	Changed logger for geonum warning in calc_distance from print_log to logger
+- 2019-05-15, Jonas Gliss	Generalised reading output for many files in new method _print_read_info in io.helpers module, so that it can be implemented also in other reading classes than EBAS
+- 2019-05-15, Jonas Gliss	Generalised reading output for many files in new method _print_read_info in io.helpers module, so that it can be implemented also in other reading classes than EBAS
+- 2019-05-15, Jonas Gliss	Added time info output in ReadEbas.read
+- 2019-05-15, Jonas Gliss	Added time info output in ReadEbas.read
+- 2019-05-15, hannasv	added test function aas et al paper
+- 2019-05-15, hannasv	Merge remote-tracking branch 'remotes/origin/v080DEV' into hanna_dev
+- 2019-05-15, hannasv	Addes help functions for unitconversion back and forth.
+- 2019-05-14, Jonas Gliss	Removed one test method that was temporary
+- 2019-05-14, Jonas Gliss	Fixed minor error in VerticalProfile.plot method that occurred when errors where missing in data
+- 2019-05-14, Jonas Gliss	Updated version
+- 2019-05-14, Jonas Gliss	Worked on test suite and added more tests
+- 2019-05-14, Jonas Gliss	Fixed Aeronet SDA v3 test
+- 2019-05-14, Jonas Gliss	API changes in StationData -> renamed var attr. unit to units; new methods/attrs: has_var, _update_var_timeinfo, check_var_unit_aerocom, _ensure_same_var_ts_type_other; fixed some bugs and inconsistencies and increased robustness of merge_other method
+- 2019-05-14, Jonas Gliss	API update in io subpackage: updated all reading routines and base modules for API renaming of unit -> units; added pattern arg to default get_file_list method in ungridded reading template and updated correspondingly in ReadAeronetBase; started with implementation of more flexible variable reading in Aeronet routines (using variable name patterns -> NOT FINISHED); ReadEbas: 1. can now also read weekly data, 2. started implementing parallel reading; updated default data_id for Aeronet SDA v3 from Lev1.5 to Lev2 dataset
+- 2019-05-14, Jonas Gliss	Added support for new ts_type: weekly in config.py and helpers.py; temporarily increased lustre access timeout on lib import
+- 2019-05-14, Jonas Gliss	Removed geonum import in __main__ of geodesy.py
+- 2019-05-14, Jonas Gliss	Updated variables.ini (removed  around units definitions) and ebas_config.ini (updated matrix of sconcpm10 and sconcpm25)
+- 2019-05-14, Jonas Gliss	API refactor unit -> units: started to rename all occurrences of metadata parameter unit to units (following CF conventions). Former (unit) will still work where required
+- 2019-05-10, Jonas Gliss	Fixed minor bug related to instatiation of model evaluation setup in aerocom_evaluation.py
+- 2019-05-10, Jonas Gliss	Added new option flex_ts_type_gridded in ColocationSetup (module colocation_auto.py)
+- 2019-05-10, Jonas Gliss	Fixed minor bug in ungridded / gridded colocation routine that led to exception in StationData when harmonise_units was False and remove_outliers is True
+- 2019-05-10, Jonas Gliss	Changed default values of model_use_vars and model_read_aux in class ModelConfigEval from None to {}
+- 2019-05-10, Jonas Gliss	Added option check_unit in StationData.remove_outliers (before it was always checked)
+- 2019-05-09, Jonas Gliss	Renamed one of the additional notebooks
+- 2019-05-08, Hanna Svennevik	fixed unit wetso4
+- 2019-05-08, Jonas Gliss	Renamed notebooks/convert_all_rst.py to run_all.py and removed default conversion to rst (is now input arg)
+- 2019-05-08, Jonas Gliss	Added new notebook that shows add04_example_format_read_ModelLevel.ipynb that should show the perfect ModelLevel model data file (i.e. especially how vertical coordinates should be represented) (UNDER DEVELOPMENT)
+- 2019-05-08, Jonas Gliss	Updated version
+- 2019-05-08, Jonas Gliss	Added testmodule for Aeronet Inv V3 Lev2 data (one test so far) and updated RTOL parameter for tests from 1e-5 to 1e-4
+- 2019-05-08, Paulina Souza Tedesco	completed the dictionary VAR_NAMES_FILE with more variable names
+- 2019-05-08, Jonas Gliss	Added string replacement / ->
+- 2019-05-08, Jonas Gliss	Changes in vert_coords.py (WORK IN PROGRESS): commented out currently unneeded methods in AltitudeAccess (to keep overview); worked on access strategy
+- 2019-05-08, Jonas Gliss	Method to_time_series_single_coord in GriddedData (deprecated); changed how input sample_points and **coords is handled in to_time_series (now: either / or; before, a mix of both was possible)
+- 2019-05-08, Jonas Gliss	Added try/except block in loading of gridded data in Colocator class, so that it does not break the processing of other variables if one variable is not available
+- 2019-05-08, Jonas Gliss	Updated header ID string for station_name from Site to AERONET_Site in read_aeronet_invv3.py due to recent updates in data files
+- 2019-05-08, Jonas Gliss	Updated iris_io.py and readgridded.py: added support for parallel reading of multiple cubes; removed method concatentate_possible_cubes in ReadGridded class
+- 2019-05-08, Jonas Gliss	Added method to convert Variable.dimensions attribute from string to list when reading from ini file in variables.py
+- 2019-05-08, Jonas Gliss	Added import statement for new obs-defaults in aerocom_evaluation.py
+- 2019-05-08, Jonas Gliss	Added new module obs_config_default.py in pyaerocom.web module (FIRST DRAFT, UNDER DEVELOPMENT) -> is supposed to specify defaults / categories and options for observation datasets that go into online interfaces
+- 2019-05-08, Hanna Svennevik	merged in newest changes from dev brach
+- 2019-05-08, Hanna Svennevik	Merge remote-tracking branch 'origin/v080DEV' into hanna_dev
+- 2019-05-03, Jonas Gliss	Removed overwriting of empty string value in dict_to_str
+- 2019-05-03, Jonas Gliss	Reorganised handling of plot related attributes in Variable class due to recent updates
+- 2019-05-03, Jonas Gliss	Minor changes in readgridded test module
+- 2019-05-03, Jonas Gliss	Added option to specify experiment to ReadGridded.read method
+- 2019-05-03, Jonas Gliss	Changes in GriddedData: new attr. concatenated, new methods _check_coordinate_access, _update_coord_info, search_other (for searching other variable); new property method for attrs. concatenated and computed(set in suppl_info)
+- 2019-05-03, Jonas Gliss	Minor changes in load_cube_custom of iris_io.py module: checks of time and lon / lat dimensions can now be activated / deactivated using input param perform_checks; time correction is now attempted in try / except block but does not raise Exception anymore if it fails
+- 2019-05-03, Jonas Gliss	Added support to specify experiment ID in ReadGridded and relevant code in FileConventionRead class (cf. new str representation of ReadGridded class)
+- 2019-05-03, Jonas Gliss	Minor changes in colocatin_auto.py
+- 2019-05-03, Jonas Gliss	Fixed tests after recent updates of obsdata
+- 2019-05-03, Jonas Gliss	Added new exception CoorindateNotFoundError in exceptions.py
+- 2019-05-03, Jonas Gliss	Cleaned up initial version of coords.ini file, added new AeroCom variable names ahspc (for atm. hybrid sigma pres. coord) and asc (for atm. sigma coord)
+- 2019-05-03, Jonas Gliss	Added option in dict_to_str to ignore null values
+- 2019-05-03, Jonas Gliss	Variable class does not inherit from BrowseDict anymore and has plot settings in attr plot_info now (not directly in __dict__)
+- 2019-04-25, Jonas Gliss	Added new attr COORDINFO (VarCollection) to Config class (which accesses coordinate definitions from new coords.ini file)
+- 2019-04-25, Jonas Gliss	Added property attr long_name to Variable (wrapper for attr description); cleaned up some stuff
+- 2019-04-25, Jonas Gliss	API CHANGE (NBC): renamed class AllVariables to VarCollection since it may be used in the future to separate a bit more different types of variable families (and not all of them) through different config files (e.g. like with planned coords.ini file)
+- 2019-04-25, Jonas Gliss	API CHANGE: renamed all occurrences of VAR_PARAM to VARS since the attribute was renamed (cf. last commit)
+- 2019-04-25, Jonas Gliss	Changed name of attribute VAR_PARAM to VARS (old one still works) in Config class
+- 2019-04-25, Jonas Gliss	Removed unused attribute var_csv from AllVariables
+- 2019-04-25, Jonas Gliss	Worked on altitude access in GriddedData and improved user-friendliness: renamed  method _check_altitude_access to check_altitude_access (now only a wrapper for same method in class AltitudeAccess); added support for numerical time stamps in sel() method; new propery attr altitude_access (handles access and initiation of AltitudeAccess class in attr _altitude_access); removed method init_reader and moved corresponding code to property attr reader (getter); new propery attributes standard_name and long_name
+- 2019-04-25, Jonas Gliss	Adder two methods in helpers.py: get_standard_name and get_standard_unit
+- 2019-04-25, Jonas Gliss	Worked on altitude access schemes in vert_coords.py (IN PROGRESS). Main changes: introduced geopotential_height, worked on altitude retrieval schemes in class AltitudeAccess and supported variables and corresponding AeroCom standard names
+- 2019-04-25, Jonas Gliss	Added AEROCOM-PHASE-III-2019 folder to paths_user_server.ini
+- 2019-04-25, Jonas Gliss	Added AEROCOM-PHASE-III-2019 folder to paths.ini
+- 2019-04-25, Jonas Gliss	Minor changes in docstrings
+- 2019-04-25, Jonas Gliss	Added new file coords.ini which contains variable definitions for dimensional coordinates in the same format as variables in variables.ini. These will be made accessible via pyaerocom.const.COORDINFO
+- 2019-04-24, Paulina Souza Tedesco	commented most parts of the code + refactory
+- 2019-04-24, Jonas Gliss	Included setter method for unit propery attr
+- 2019-04-24, Jonas Gliss	Improved robustness of gridded reading in case of invalid unit
+- 2019-04-24, Hanna Svennevik	added documentation and function to pad month
+- 2019-04-23, Jonas Gliss	Added option in AerocomEvaluation to parse config_dir on init and automatically load existing config file if a match can be found; updated method update_menu and added new method make_info_table_web
+- 2019-04-23, Jonas Gliss	Added methods update_menu and make_info_table in module web/helpers.py
+- 2019-04-17, Hanna Svennevik	cleaned read function
+- 2019-04-17, Paulina Souza Tedesco	fixed time bug: chenged dtime to np.datetime64 's'
+- 2019-04-16, Jonas Gliss	Updated version
+- 2019-04-16, Jonas Gliss	Added new web-subpackage to docs
+- 2019-04-16, Jonas Gliss	Worked on docs of AerocomEvaluation class
+- 2019-04-16, Jonas Gliss	Fixed minor bug that arose from recent changes in Colocator class
+- 2019-04-16, Jonas Gliss	Added new subpackage web to pyaerocom and included processing routines for Aerocom Evaluation interface
+- 2019-04-16, Jonas Gliss	Updated string representation method in StationData
+- 2019-04-16, Jonas Gliss	Added possibility to provide vert_which parameter variable dependent (as dict) when reading of gridded data in ReadGridded
+- 2019-04-16, Jonas Gliss	Added ang4487aer to default variables for Aeronet Sun v3 data
+- 2019-04-16, Jonas Gliss	New method save_dict_json in io.helpers.py
+- 2019-04-16, Jonas Gliss	Minor changes related to altitude access in vert_coords.py (work in progress...)
+- 2019-04-16, Jonas Gliss	Worked on altitude access in GriddedData -> new property methods: has_time_dim and has_latlon_dims
+- 2019-04-16, Jonas Gliss	New exception AltitudeAccessError
+- 2019-04-16, Jonas Gliss	Major updates in colocation_auto.py: renamed REANALYSE_EXISTING and RAISE_EXCEPTIONS to lowercase, worked on docs and cleaned up old stuff, harmonised and unified some tasks, removed definitions of getter and setter methods __getitem__ and similar in Colocator class (which now inherits from ColocationSetup)
+- 2019-04-16, Jonas Gliss	Worked on documentation in colocation.py
+- 2019-04-16, Jonas Gliss	Added some  helper methods (e.g. sort_dict_by_name) and improved output generated by methods dict_to_str and list_to_short_str in _lowlevelhelpers.py
+- 2019-04-10, Jonas Gliss	Updated docs
+- 2019-04-10, Jonas Gliss	Minor updates in tutorials; reran and converted all tutorials
+- 2019-04-10, Jonas Gliss	Reorganised api.rst for better toc-tree in documentation
+- 2019-04-10, Jonas Gliss	Minor updates in README
+- 2019-04-10, Jonas Gliss	Removed old flowchart image from suppl folder
+- 2019-04-10, Jonas Gliss	Worked on docs
+- 2019-04-10, Jonas Gliss	Worked on docs
+- 2019-04-10, Jonas Gliss	Added 2 new flowcharts in suppl
+- 2019-04-10, Paulina Souza Tedesco	Fixed bug related to ts_type when resampling one variable in a multivar StationData object
+- 2019-04-10, Hanna Svennevik	 WV for retrieving one varieble
+- 2019-04-10, Paulina Souza Tedesco	added dataerr and dataflag to the station_data object in the read function
+- 2019-04-10, Paulina Souza Tedesco	cleaned code
+- 2019-04-09, Jonas Gliss	Minor update in getting started tutorial
+- 2019-04-09, Jonas Gliss	Updated version
+- 2019-04-09, Jonas Gliss	Minor updates related to pyaerocom initialisation in config.py; changed name of default output directory (in HOME) from pyaerocom to MyPyaerocom
+- 2019-04-09, Jonas Gliss	Minor updates in docs
+- 2019-04-03, Paulina Souza Tedesco	added DMS_AMS_CVO_NAME to config.py. Check whether it is correct
+- 2019-04-02, Jonas Gliss	Improved robustness of colocation routine; minor cleanup
+- 2019-04-02, Jonas Gliss	Generalised quickplot_map and added some dimensionality checks; renamed downscale_time to resample_time (old name still works but gives Deprecation warning)
+- 2019-03-28, Jonas Gliss	Fixed minor bug in new routine for automatic surface level retrieval for 4D data
+- 2019-03-28, Jonas Gliss	Added new default colocation option model_ts_type_read in ColocationSetup class (and handling of it in Colocator)
+- 2019-03-28, Jonas Gliss	Added original gridded data filenames in colocation methods (stored in ColocatedData object)
+- 2019-03-28, Jonas Gliss	New method get_lowest_resolution in helpers.py
+- 2019-03-28, Jonas Gliss	Minor formatting changes in io suboackage
+- 2019-03-27, Hanna Svennevik	WV included in pyaerocom
+- 2019-03-27, Hanna Svennevik	fixed bug with var_idx
+- 2019-03-27, Hanna Svennevik	no changes
+- 2019-03-26, Jonas Gliss	Updated version
+- 2019-03-26, Jonas Gliss	Reorganised and cleaned up code related to timeseries retrieval for 4D data; new feature: surface level can now also be inferred by comparing mean values of data for first and last vertical index (assuming that the data values are higher at the surface than at the top of the model regime)
+- 2019-03-26, Jonas Gliss	Updated version
+- 2019-03-26, Jonas Gliss	New method _updated_var_outlier_ranges in Colocator, to properly handle alias variable names; minor reorganisation of class methods order
+- 2019-03-26, Jonas Gliss	added method check_unit in StationData
+- 2019-03-26, Jonas Gliss	Updated ungridded / gridded colocation routine: moved outlier removal routine for gridded data after unit harmonisation
+- 2019-03-26, Jonas Gliss	Added new global option INFER_SURFACE_LEVEL in GridIO class
+- 2019-03-26, Jonas Gliss	Added handling of Exception in function unit_conversion_fac in helpers.py
+- 2019-03-26, Jonas Gliss	Added method check_unit in UngriddedData
+- 2019-03-23, Jonas Gliss	Harmonised gridded/gridded and gridded/ungridded colocation methods and added some new features, such as outlier removal, units harmonisation option, registration of computation schemes for aux variables in GriddedData; harmonsied API of the ColocationSetup class accordingly
+- 2019-03-23, Jonas Gliss	New feature in GriddedData: property attribute data that points to numpy data array of underlying cube; new property attribute cube that points to attribute grid (iris.Cube); new method remove_outliers; worked on timesereis retrieval for 4D data (in progress...)
+- 2019-03-23, Jonas Gliss	Added method remove_outliers in StationData
+- 2019-03-23, Jonas Gliss	Added exception in declared method _set_invalid_flags_nan_col that is not implemented yet
+- 2019-03-23, Jonas Gliss	Improved map plot routines and increased robustness of different color mapping options against various input combinations
+- 2019-03-23, Jonas Gliss	Improved verbosity in read_ebas.py
+- 2019-03-23, Jonas Gliss	Minor restructuring in CacheHandlerUngridded
+- 2019-03-23, Jonas Gliss	Added new alias aec550aer for variable absc550aer
+- 2019-03-23, Jonas Gliss	NEW features and improvements in ReadGridded: specification of vertical type in file retrieval (vert_which); computation of additional variables can now be specified dynamically (method add_aux_compute) and is more robust (cf. new method find_common_ts_type) called in compute_var)
+- 2019-03-23, Jonas Gliss	Added handling of input argument vert_which in FileConventionRead.string_mask method
+- 2019-03-20, Paulina Souza Tedesco	added reading routine for gaw data
+- 2019-03-20, Hanna Svennevik	minor changes
+- 2019-03-18, Jonas Gliss	Updated version
+- 2019-03-18, Jonas Gliss	Removed one Exception
+- 2019-03-18, Jonas Gliss	Updated desription of some variables
+- 2019-03-18, Jonas Gliss	Improved colocation strategy and improved handling of non-global model data
+- 2019-03-18, Jonas Gliss	Improved performance of UngriddedData.filter_by_meta method (new helper _find_meta_matches
+- 2019-03-18, Jonas Gliss	Added datalevel to StationData in ReadEbas.read_file and to UngriddedData object in read method
+- 2019-03-18, Jonas Gliss	Changed vmro3 and similar to sconc variables
+- 2019-03-18, Jonas Gliss	Added sconco3 in variables.ini
+- 2019-03-18, Jonas Gliss	Added conversion of bias values to percent in scatter plot
+- 2019-03-18, Jonas Gliss	Added overlap check in StationData.plot_timeseries
+- 2019-03-15, Jonas Gliss	Fixed bug in ReadEbas (some meta parameters are missing in NASA Ames files sometimes)
+- 2019-03-15, Jonas Gliss	Fixed bug in ReadEbas (station_altitude sometimes not available in sconc variables)
+- 2019-03-15, Jonas Gliss	Added EBAS surface concentrations sconc* to variables.ini and reviewed ebas_config.ini; updated version
+- 2019-03-14, Jonas Gliss	Updated __repr__ method of Variable class
+- 2019-03-14, Jonas Gliss	Updated README
+- 2019-03-14, Jonas Gliss	Updated README
+- 2019-03-14, Jonas Gliss	Updated README
+- 2019-03-14, Jonas Gliss	Updated README
+- 2019-03-14, Jonas Gliss	Updated getting started tutorial
+- 2019-03-14, Jonas Gliss	Updated name of statistical parameter success -> num_valid
+- 2019-03-14, Jonas Gliss	Updated version
+- 2019-03-14, Jonas Gliss	Changes in colocation_auto.py: finished first working version of gridded / gridded colocation and cleaned up some things; added option to parse colocation options
+- 2019-03-14, Jonas Gliss	Minor updates in ColocatedData (validity check on reading of NetCDF is now done using method ColocatedData.get_meta_from_filename
+- 2019-03-14, Jonas Gliss	Added option regrid_res_deg in function colocate_gridded_gridded and slightly changed coordinate setup and meta information in writing of ColocatedData object
+- 2019-03-14, Jonas Gliss	Clean up in ReadEbas.PROVIDES_VARIABLES
+- 2019-03-14, Jonas Gliss	Changes in region.py: New methods get_regions_coord and find_closest_region_coord and Region.center_coordinate and Region.distance_to_center
+- 2019-03-13, Jonas Gliss	Updated VERSION.md
+- 2019-03-13, Jonas Gliss	Deleted module analysis.py and updated pyaerocom/__init__.py (added ColocationSetup and Colocator classes from new colocation_auto.py module)
+- 2019-03-13, Jonas Gliss	Changes in colocation_auto.py: finished first running version of ColocationSetup and Colocator classes for gridded / ungridded combination (gridded / gridded not working yet but follows soon); removed VarSetup class (was part of original analysis module
+- 2019-03-13, Jonas Gliss	Changes in GriddedData: added attr. SUPPORTED_VERT_SCHEMES in class header; added variable unit in StationData objects created in method _to_timeseries_2D
+- 2019-03-13, Jonas Gliss	Changes in ColocatedData class: renamed all occurences of save_name to savename; removed ending _COLL from default save name
+- 2019-03-13, Jonas Gliss	Changes in method colocate_gridded_ungridded: new input option harmonise_units (defaults to True); fixed some issues related to handling of start/stop time for multiannual input; fixed bug in writing of unit; added vert_scheme to metadata of ColocatedData object; added check for valid vert_scheme
+- 2019-03-13, Jonas Gliss	Inserted dummy method _apply_colocated in Filter class (not yet implemented)
+- 2019-03-13, Jonas Gliss	Fixed minort bug in writing of altitude unit in ReadEarlinet
+- 2019-03-13, Jonas Gliss	Minor update in output of cachehandler_ungridded.py
+- 2019-03-13, Jonas Gliss	Minor changes in read_ebas.py in __main__ script (caching of large UngriddedData objects fails)
+- 2019-03-13, Jonas Gliss	New method get_unit and convert_unit in StationData
+- 2019-03-13, Jonas Gliss	Updated method mathutils.calc_statistics: now minimum number of valid measurements is required and can be specified by input param via min_num_valid (defaults to 5); API change: nmb and mnmb are NOT returned as percentage anymore
+- 2019-03-13, Jonas Gliss	Minor updates in vert_coords.py module (WORK IN PROGRESS)
+- 2019-03-13, Jonas Gliss	New exception: UnitConversionError
+- 2019-03-11, Jonas Gliss	Fixed failing tests
+- 2019-03-11, Jonas Gliss	Convert input vars_to_retrieve to list if str in ReadEarlinet.read_file
+- 2019-03-11, Jonas Gliss	Updated version
+- 2019-03-11, Jonas Gliss	Further worked on automatic colocaiton routine (WORK IN PROGRESS)
+- 2019-03-11, Jonas Gliss	New variable scatc550gt1aer; added minimum and maximum attrs to variable absc550aer
+- 2019-03-11, Jonas Gliss	New IO helper method: get_all_supported_ids_ungridded
+- 2019-03-11, Jonas Gliss	Further improvements in ReadEbas routine: automatic outlier removal, keeping of auxiliary variables; API changes: all options were change from all capital letters to all lowercase; NEW defaults for reading strategy: evaluate flag column and remove invalid, datalevel = 2 (file request), keep auxiliary=True;
+- 2019-03-08, Jonas Gliss	Created new module colocation_auto.py which is based on analysis.py and will be modified for sole colocation (may be a temporary solution to migrate code to colocation.py)
+- 2019-03-08, Jonas Gliss	Fixe bug in read method (variable list was not parsed to get_file_list) and included variable accessibility check based on file ending in read_file
+- 2019-03-08, Jonas Gliss	Set default EBAS reading option REMOVE_INVALID_FLAGS to True
+- 2019-03-08, Jonas Gliss	New features in StationData: handling of profile timeseries data (stored as xarray.DataArray) including conversion to timeseries
+- 2019-03-08, Jonas Gliss	Updated parsing of data_revision string when converting to StationData
+- 2019-03-08, Jonas Gliss	Fixed minor bug isrange method
+- 2019-03-08, Jonas Gliss	Changes all occurences of Sr->sr in variables, due to failing conversion in cfunits module when using capital S
+- 2019-03-07, Jonas Gliss	Updated version
+- 2019-03-07, Jonas Gliss	Added some tests for ReadEarlinet routine
+- 2019-03-07, Jonas Gliss	Further refined, optimised and tested Earlinet reading routine
+- 2019-03-07, Jonas Gliss	StationData.resample_timeseries can now also handle instances of xarray.DataArraythat have a time dimension
+- 2019-03-07, Jonas Gliss	Minor updates in VerticalProfile
+- 2019-03-07, Jonas Gliss	Added helper method to resample time dimension in a xarray.DataArray
+- 2019-03-06, Jonas Gliss	Reran all notebooks and converted to rst for docs
+- 2019-03-06, Jonas Gliss	Added png files in docs to gitignore
+- 2019-03-06, Jonas Gliss	Refactured some methods that used UngriddedData.to_station_data_all
+- 2019-03-06, Jonas Gliss	Updated tests
+- 2019-03-06, Jonas Gliss	Renamed attr "name" to "data_id" (backwards compatible) in ReadGridded
+- 2019-03-06, Jonas Gliss	Renamed attr "name" to "data_id" (backwards compatible)
+- 2019-03-06, Jonas Gliss	Updated colocation strategy in colocate_gridded_ungridded (now multiple station data per station are merged into one and sampling overlaps in time are handled automatically, cf. UngriddedData.to_station_data_all and methods therein)
+- 2019-03-06, Jonas Gliss	Updated docstrint in UngriddedData.to_station_data_all
+- 2019-03-06, Jonas Gliss	Updated method to_station_data_all to be more robust (NOTE: changes related API as return value is different)
+- 2019-03-05, Jonas Gliss	Udpdated version
+- 2019-03-05, Jonas Gliss	Removed type check in setter or GriddedData.reader metod
+- 2019-03-05, Jonas Gliss	Updated initial value of attr computed in suppl_info dict of GriddedData object
+- 2019-03-05, Jonas Gliss	Minor update in tutorial
+- 2019-03-05, Jonas Gliss	Updated version
+- 2019-03-05, Jonas Gliss	Fixed minor bug in ColocatedData in assignment of metadata
+- 2019-03-05, Jonas Gliss	Tried implementing new version of to_station_data_all method in UngriddedData (iterate over unique_station_names and merge multiple occurrences directly rather than looping over metadata indices (NOT FINISHED: WILL AFFECT COLOCATION)
+- 2019-03-05, Jonas Gliss	Fixed one test
+- 2019-03-05, Jonas Gliss	Fixed bug in GriddedData.downscale_time for multi-annual datasets (added aggregator for yearly)
+- 2019-03-05, Jonas Gliss	Added and updated some tests
+- 2019-03-05, Jonas Gliss	Added stat_merge_pref_attr to merged StationData object in merge_station_data function
+- 2019-03-05, Jonas Gliss	Set revision_date as preferred metadata attribute for overlap handling for EBAS specs in data_sources.ini
+- 2019-03-05, Jonas Gliss	Added new attribute stat_merge_pref_attr in DataSource class, that can be used to specify metadata that may be used preferred when trying to merge multiple StationData objects into one and if there occur sampling overlaps
+- 2019-03-05, Jonas Gliss	Added deprecation info in analysis.py (will soon refactured into pure colocation module)
+- 2019-03-05, Jonas Gliss	Added test case for basic access of station coordinates in UngriddedData
+- 2019-03-05, Jonas Gliss	Changed attr. station_coordinates (now dictionary with coord names and lists containing coordinates); increased robustness of to_station_data in case data object does not contain any variable data
+- 2019-03-04, Jonas Gliss	Merge README from v080DEV
+- 2019-03-04, Jonas Gliss	Updated formatting of README
+- 2019-03-04, Jonas Gliss	Updated formatting of README
+- 2019-03-04, Jonas Gliss	Merge README from master
+- 2019-03-04, Jonas Gliss	Updated formatting of README for more friendly display in GitHub (md instead of rst).
+- 2019-03-04, Jonas Gliss	Merge README from branch v080DEV
+- 2019-03-04, Jonas Gliss	Added link to pyaerocom_env.yml in README
+- 2019-03-04, Jonas Gliss	Merge README and .gitignore from branch v080DEV
+- 2019-03-04, Jonas Gliss	Merge pyaerocom_env.yml from branch v080DEV
+- 2019-03-04, Jonas Gliss	Updated installation information in README
+- 2019-03-04, Jonas Gliss	Removed environment name from pyaerocom_env.yml
+- 2019-02-28, Jonas Gliss	Updated version
+- 2019-02-28, Jonas Gliss	Removed former rst files from colocation tutorial
+- 2019-02-28, Jonas Gliss	Added rst versions of new tutorials
+- 2019-02-28, Jonas Gliss	Updated tutorials.rst in docs
+- 2019-02-28, Jonas Gliss	Added new introduction tutorial for UngriddedData and StationData objects (tut06) and renamed colocation tutorial accordingly (tut06 -> tut07)
+- 2019-02-28, Jonas Gliss	Added new tutorial for ungridded reading (tut05)
+- 2019-02-28, Jonas Gliss	Minor changes in plot module; preparing new naming of high-level AeroCom plotting methods by including aerocom in name of method (to avoid confusion with more low level plotting methods)
+- 2019-02-28, Jonas Gliss	Changes in UngriddedData class: made access decorator methods for station_name, longitude, latitude and altitude more robust; new helper attrs /  methods: station_coordinates and find_station_meta_indices(); renamed input parameter name station to station_name in some relevant methods (for harmonisation of naming); updated method get_timeseries
+- 2019-02-28, Jonas Gliss	Added new min_num_obs option to StationData.resample_timeseries method and some minor changes in plotting
+- 2019-02-28, Jonas Gliss	Added option min_num_obs in helper method resample_timeseries
+- 2019-02-28, Jonas Gliss	Added attr STANDARD_COORD_NAMES in Config class
+- 2019-02-28, Jonas Gliss	Fixed minor bug in AllVariables to access DEFAULT variable
+- 2019-02-26, Jonas Gliss	Updated rst versions of recent notebooks
+- 2019-02-26, Jonas Gliss	Updated notebooks to account for recent API changes
+- 2019-02-26, Jonas Gliss	Fixed minor bug
+- 2019-02-26, Jonas Gliss	Updated colocation method accounting for newly introduced offsets in timeseries resampling method
+- 2019-02-26, Jonas Gliss	Renamed and refactored  module plotscatter.py to plotscatter_v0.py and plotscatter_new.py to plotscatter.py
+- 2019-02-26, Jonas Gliss	Renamed and refactored  module plotscatter.py to plotscatter_v0.py and plotscatter_new.py to plotscatter.py
+- 2019-02-26, Jonas Gliss	Updated docstring
+- 2019-02-26, Jonas Gliss	Changed init of dataarray in UngriddedData from np.empty to np.ones due to RuntimeWarning
+- 2019-02-26, Jonas Gliss	Explicitely set inplace=True in UngriddedData.to_station_data if freq is input
+- 2019-02-26, Jonas Gliss	Added optional args in StationData.to_timeseries and set default arg inplace=False in StationData.resample_timeseries
+- 2019-02-26, Jonas Gliss	Updated EBAS timeseries tests and changed monthly datetimeoffset for resampling from 15 to 14 days
+- 2019-02-26, Jonas Gliss	Updated version
+- 2019-02-26, Jonas Gliss	Minor update in plot_station_coordinates method in UngriddedData
+- 2019-02-26, Jonas Gliss	Added loffset to resample_timeseries in helpers.py so that the new time-indices are sample in the middle of the frequency interval (for now only for monthly and yearly)
+- 2019-02-26, Jonas Gliss	Updated version
+- 2019-02-26, Jonas Gliss	Added EBAS timeseries tests for Jungfraujoch
+- 2019-02-26, Jonas Gliss	Updated TS_TYPE to daily in ReadEarlinet
+- 2019-02-26, Jonas Gliss	Changes in UngriddedData class: frequency resample in get_station_data is now done at the end of that method (previously it was done in _metablock_to_stationdata; cleaned up and simplified _metablock_to_stationdata which now also import altitude info (for profile data); fixed bug in plot_station_coordinates (arising from recent API changes in get_station_data)
+- 2019-02-26, Jonas Gliss	Updated StationData for better handling of 3D profile timeseries data (ALL CHANGES ARE BETA CURRENTLY). New methods/attrs: default_vert_grid, station_coords (dict), check_if_3d, _merge_vardata_2d, _merge_vardata_3d (NOT READY); fixed some bugs
+- 2019-02-26, Jonas Gliss	Updated method merge_station_data to handle also profile data (DRAFT)
+- 2019-02-26, Jonas Gliss	Added Earlinet to data_sources.ini
+- 2019-02-26, Jonas Gliss	Added settings for default vertical coordinate grid for homogenisation of lidar profile data
+- 2019-02-26, Jonas Gliss	Added test method to keep track of observation data versions
+- 2019-02-22, Jonas Gliss	Started redesigning and reviewing of vert_coords module (will result in major API changes in that module)
+- 2019-02-22, Jonas Gliss	Minor cleanup
+- 2019-02-22, Jonas Gliss	Fixed some warning issues and started redesigning strategy in UngriddedData.get_station_data (not finished)
+- 2019-02-22, Jonas Gliss	Fixed some warning issues
+- 2019-02-22, Jonas Gliss	Fixed some warning issues
+- 2019-02-22, Jonas Gliss	Added pytest to environment file
+- 2019-02-22, Jonas Gliss	Added some new tests and updated existsing
+- 2019-02-22, Jonas Gliss	Removed adding timezone-offset string to datetimestring for conversion to datetime64 in aeronet reading routines (due to numpy deprecation)
+- 2019-02-22, Jonas Gliss	Fixed some Deprectation warnings and cleaned up some stuff
+- 2019-02-21, Jonas Gliss	Added test module for EBAS station timeseries checks
+- 2019-02-21, Jonas Gliss	Fixed failing test
+- 2019-02-21, Jonas Gliss	Updated pyaerocom_env.yml file
+- 2019-02-21, Jonas Gliss	Added .travis.yml file (NOT TESTED YET)
+- 2019-02-21, Jonas Gliss	Added test-requirements.txt file
+- 2019-02-21, Jonas Gliss	Changed server access check timeout to 10s
+- 2019-02-21, Jonas Gliss	Updated automatic notebook conversion scripts
+- 2019-02-21, Jonas Gliss	Added global markers to test environment to make sure tests are skipped that require access to the AEROCOM database; tests run now more flexibly (WE NEED MORE OF THEM!!!)
+- 2019-02-21, Jonas Gliss	Changed import strategy to infer the database configuration, now using timeout of 0.1 s to check access to luster or users-database
+- 2019-02-21, Jonas Gliss	Added method to check function timeout in _lowlevelhelpers module (used in Config class to check access to mounted database locations)
+- 2019-02-21, Jonas Gliss	Changed helper method isnumeric, now using isinstance check against Number type from numbers module
+- 2019-02-20, Jonas Gliss	Updated version
+- 2019-02-20, Jonas Gliss	Minor updates due to recent API changes
+- 2019-02-20, Jonas Gliss	Changes in UngriddedData: renamed var->varidx and data_err->dataerr; updated method to_station_data (and methods therein) for support of profile data conversion (not finished yet)
+- 2019-02-20, Jonas Gliss	Added plotting of uncertainties in VerticalProfile plot method and updated class init and attribute access now using more decorators
+- 2019-02-20, Jonas Gliss	Further worked on updated Earlinet reading routine
+- 2019-02-20, Jonas Gliss	Added tests for new topography data access methods
+- 2019-02-20, Jonas Gliss	Added 2 new methods get_topo_data and get_topo_altitude in geodesy module
+- 2019-02-20, Jonas Gliss	Added import of information from new section supplfolders in config file
+- 2019-02-20, Jonas Gliss	Added path for ETOPO1 dataset in new section supplfolders
+- 2019-02-20, Jonas Gliss	Added pytest.ini
+- 2019-02-20, Jonas Gliss	Added writing of data unit in Aeronet routines when reading into UngriddedData (changes applied in header of ReadAeronetBase and method read therein)
+- 2019-02-20, Jonas Gliss	Added inverted dicts for conversion of time frequency strings, minor update in merge_station_data arising from recent API changes in StationData object
+- 2019-02-20, Jonas Gliss	API changes in StationData: renamed plot_variable -> plot_timeseries, insert_nans -> insert_nans_timeseries, resample_vardata -> resample_timeseries, attr errs -> data_err; new method interpolate_timeseries
+- 2019-02-20, Jonas Gliss	Minor style update in __setattr__ and __getattr__ methods of BrowseDict
+- 2019-02-20, Jonas Gliss	Updated how (and if) unit is displayed in plot_scatter method
+- 2019-02-20, Jonas Gliss	Minor changes in __main__ scripting part of colocation module
+- 2019-02-20, Jonas Gliss	Added new decorator attribute unitstr in ColocatedData object and updated plot_scatter method correspondingly
+- 2019-02-20, Jonas Gliss	Added new exception: StationNotFoundError
+- 2019-02-18, Jonas Gliss	Added handler for automatic deletion of outdated cache files in CacheHandlerUngridded
+- 2019-02-18, Jonas Gliss	Added new environment variable RM_CACHE_OUTDATED in Config class (defaults to True and means that outdated cache files are removed automatically in CacheHandlerUngridded
+- 2019-02-18, Jonas Gliss	Added station_id and country as new default standard metadata attributes in StationMetaData
+- 2019-02-13, Jonas Gliss	Updated unit tests and added new test module for AERONET Sun V3 data
+- 2019-02-13, Jonas Gliss	Fixed bug in is_within_radius_km in geodesy.py
+- 2019-02-13, Jonas Gliss	Added new unit test module for ungriddeddata (only one test so far)
+- 2019-02-13, Jonas Gliss	Increased column index flexibility and user-friendliness in UngriddedData object. New default no. of columns is 12 (formerly 11) since recently the following indices were added: _DATAERRINDEX=8, _DATAFLAGINDEX=9, _STOPTIMEINDEX=10, _TRASHINDEX=11; No. of columns can be dynamically extended on init by providing additional column names; assignment of data in reading routines should now preferably done via new attribute index (and corresponding names)
+- 2019-02-13, Jonas Gliss	Corrected some typos in docs
+- 2019-02-12, Jonas Gliss	Minor import changes
+- 2019-02-12, Jonas Gliss	New method plot in VerticalProfile and support for data uncertainties
+- 2019-02-12, Jonas Gliss	Assign self (ReadGridded) to reader attr. of GriddedData class when calling read_var
+- 2019-02-12, Jonas Gliss	Removed unused imports
+- 2019-02-12, Jonas Gliss	Removed calling get_station_coords() in read methods since this is now included in get_meta() method of StationData objects
+- 2019-02-12, Jonas Gliss	Added retrieval of station coordinates to method get_meta; added new default attr errs (dict that can be used to store uncertainties for each variable)
+- 2019-02-12, Jonas Gliss	New decorator attr. aliases in Variable class (reads aliases.ini on call and returns all aliases for variable); renamed _var_name attr. to _var_name_input (currently not used)
+- 2019-02-12, Jonas Gliss	Worked on improved and updated Earlinet reading routine: handling of exclude files (cf. new attrs EXCLUDE_FILES and EXCLUDE_CASES in header); reading of errors (NOT FINISHED) ; replacement of NetCDF default fill value with NaNs; unit check and conversion
+- 2019-02-12, Jonas Gliss	helpers.py: Removed var_name from get_constraint; new method to_datetime64
+- 2019-02-12, Jonas Gliss	New features in GriddedData class: BETA version of isel method finished; new helper method find_closest_index; added reader class as new attribute for retrieval of additional data (e.g. altitude fields)
+- 2019-02-12, Jonas Gliss	Updated helpers.py module: two new methods isnumeric and isrange; renamed methods get_lon_constraint, get_lat_constraint, get_time_constraint to get_lon_rng_constraint, get_lat_rng_constraint, get_time_rng_constraint, respectively
+- 2019-02-12, Jonas Gliss	Updated info in variables.ini
+- 2019-02-12, Jonas Gliss	Added aliases for pres, z, deltaz, ta, bscatc550aer
+- 2019-02-08, Jonas Gliss	Added pressure as new alias for pres variable
+- 2019-02-08, Jonas Gliss	Renamed altitude variable name to alt (in line with longitude and latitude whos svar_names are lon, lat)
+- 2019-02-08, Jonas Gliss	Added altitude and backscatter coefficients to variables.ini, corrected some units
+- 2019-02-08, Jonas Gliss	Minor changes in interactive notebook for UngriddedData
+- 2019-02-06, Jonas Gliss	Added new notebook add04_stationdata_merging to docs
+- 2019-02-06, Jonas Gliss	Updated tutorial in docs
+- 2019-02-06, Jonas Gliss	Minor updates due to recent API changes related to StationData object plot method
+- 2019-02-06, Jonas Gliss	Changed version of UngriddedData class
+- 2019-02-06, Jonas Gliss	Added empty draft for tutorial notebook regarding ungridded reading
+- 2019-02-06, Jonas Gliss	New notebook that illustrates merging of multiple StationData objects and how overlapping data is handled
+- 2019-02-06, Jonas Gliss	Included new merging method of several StationData objects into one into method to_station_data of UngriddedData object: by default, this method now tries to merge if multiple matches occur
+- 2019-02-06, Jonas Gliss	Added new convenience method merge_other and improved plot_variable method
+- 2019-02-06, Jonas Gliss	Improved robustness of new method merge_station_data
+- 2019-02-06, Jonas Gliss	New method in helpers.py: merge_station_data (BETA); removed inital draft of this method (station_data_to_timeseries)
+- 2019-02-06, Jonas Gliss	Further improved user friendliness in StationData
+- 2019-02-05, Jonas Gliss	StationData: fixed a temporary bug
+- 2019-02-05, Jonas Gliss	Major changes in StationData: Finished first version of merging methods merge_varinfo, merge_meta_same_station, merge_vardata; new helper methods resample_vardata, insert_nans, get_var_ts_type, dist_other, same_coords; updated to_timeseries method; removed global attr. dict COORD_MAX_VAR; new attr. _COORD_MAX_VAR; new attr. overlap (for storing overlapping timeseries)
+- 2019-02-05, Jonas Gliss	Declared new data selection / subsetting / indexing methods sel and isel for GriddedData object (following xarray.DataArray syntax)
+- 2019-02-05, Jonas Gliss	Started updating EARLINET reading routine due to recent database changes;
+- 2019-02-05, Jonas Gliss	Added filename as new default attribute in StationMetaData class
+- 2019-02-05, Jonas Gliss	Moved methods related to geographic calculations into new module geodesy.py (as well as tests)
+- 2019-02-05, Jonas Gliss	Updated EARLINET data path on lustre
+- 2019-02-05, Jonas Gliss	Added new geodesy.py module to lib init
+- 2019-02-05, Jonas Gliss	New module geodesy.py (and test_geodesy.py in test folder) for geographical calculations
+- 2019-02-04, Jonas Gliss	New attribute revision_date in DataSource class
+- 2019-02-01, Jonas Gliss	Fixed minor bug related to timestamps calculation in case only one datapoint is available in file
+- 2019-01-31, Jonas Gliss	updated version
+- 2019-01-31, Jonas Gliss	Reran notebooks and converted them for docs
+- 2019-01-31, Jonas Gliss	Added extended timeout to preprocessor for auto conversion of notebooks
+- 2019-01-31, Jonas Gliss	Added new module metastandards to API section in docs
+- 2019-01-31, Jonas Gliss	Removed StationData from API in docs
+- 2019-01-31, Jonas Gliss	Updated notebook and added more detailed explanations and information
+- 2019-01-31, Jonas Gliss	Class EbasNasaAmesFile: Added check in retrieval of timestamps to ensure that the second column is endtime and has the same unit as the first column (since the timestamps are computed in the middle of the averaging start/stop interval; removed try except blocks for failures related to timestamps computation and assignment of NaN-equivalent values
+- 2019-01-31, Jonas Gliss	Generalised get_meta method to support also numerical metadata
+- 2019-01-31, Jonas Gliss	Changes in UngriddedData: assigned free row indices (8, 9 10) for data error, flags, and trash, respecively; new methods copy, remove_outliers, get_timeseries (the latter currently under development); reorganised deprecated methods and renamed all occurrences of stat_lon, stat_lat, stat_alt to longitude, latitude and altitude, respectively; updated version of class
+- 2019-01-31, Jonas Gliss	Added try/except block for reading of Cache files
+- 2019-01-31, Jonas Gliss	Renamed all occurences of dataset_name->data_id
+- 2019-01-31, Jonas Gliss	Renamed all occurences of stat_lon->longitude, stat_lat->latitude, stat_alt->altitude, dataset_name->data_id, DATASET_NAME->DATA_ID
+- 2019-01-31, Jonas Gliss	Renamed all occurences of dataset_name->data_id, DATASET_NAME->DATA_ID
+- 2019-01-31, Jonas Gliss	Updated versions of reading classes;
+- 2019-01-31, Jonas Gliss	Renamed all occurences of stat_lon->longitude, stat_lat->latitude, stat_alt->altitude, dataset_name->data_id, DATASET_NAME->DATA_ID
+- 2019-01-31, Jonas Gliss	Changed API: inherits from StationMetaData now and not from old Station class anymore (which is deprecated, see prev. commit); moved all relevant code from Station object; has more clearly defined metadata now via new base class; usage and general structure remains unchanges; removed stat_lon, stat_lat, stat_alt coordinates
+- 2019-01-31, Jonas Gliss	Renamed all occurences of stat_lon->longitude, stat_lat->latitude, stat_alt->altitude; NOTE: this object is deprecated from now on (cf. associated changes in StationData)
+- 2019-01-31, Jonas Gliss	Started working on a method that converts multiple instances of StationData objects into one StationData object (not finished yet)
+- 2019-01-31, Jonas Gliss	Renamed all occurences of stat_lon->longitude, stat_lat->latitude, stat_alt->altitude
+- 2019-01-31, Jonas Gliss	Added some more tests
+- 2019-01-31, Jonas Gliss	Added method is_within_radius_km
+- 2019-01-31, Jonas Gliss	Removed backup of old reading routines in io/OLD_TEMP/
+- 2019-01-31, Jonas Gliss	Added new module metastandards to lib init
+- 2019-01-31, Jonas Gliss	Added new property decorator DIR_INI_FILES
+- 2019-01-31, Jonas Gliss	Added documentation
+- 2019-01-31, Jonas Gliss	Created file trends_interface.py in new directory tools. The file will contain code for creating json files for aerosol trends interface (not ready yet); the tools directory will contain high level scripts and tools for standard products (and CLI)
+- 2019-01-31, Jonas Gliss	Updated docstring
+- 2019-01-31, Jonas Gliss	Added new ini file data_sources.ini and created new module metastandards.py defining classes StationMetaData and DataSource for more intuitive handling of standard metadata
+- 2019-01-29, Jonas Gliss	Deactivated merging og metadata for better handling of occurring overlaps
+- 2019-01-29, Jonas Gliss	Removed, for now, first draft of Colocator factory class
+- 2019-01-29, Jonas Gliss	Added reading constraints to filter_hist of UngriddedData class; remove data_revision from keys that are ignored when merging metadata blocks in UngriddedData
+- 2019-01-28, Jonas Gliss	Updated some min/max values for variables
+- 2019-01-28, Jonas Gliss	Started rewriting to_timeseries method based on Aerosol trends interface code
+- 2019-01-28, Jonas Gliss	Updated docstrings
+- 2019-01-28, Jonas Gliss	Updated docstrings
+- 2019-01-24, Jonas Gliss	Added method remove_outliers to ReadUngriddedBase class (and updated version of class)
+- 2019-01-24, Jonas Gliss	Updated version of reading class and of pyaerocom
+- 2019-01-24, Jonas Gliss	Updated the way, unit conversion is performed on init of GriddedData class and how exceptions are handled
+- 2019-01-24, Jonas Gliss	Minor changes
+- 2019-01-24, Jonas Gliss	Changed method compute_additional_vars: now, variables that cannot be computed, are not anymore attached as an array containing NaNs, but info is written in var_info dictionary of that variable
+- 2019-01-24, Jonas Gliss	Added two new EBAS read options MERGE_META and LOG_READ_STATS and applied these in ReadEbas class; changed reading strategy for computed vars: variables that cannot be computed are now not attached as NaN array anymore but are ignored
+- 2019-01-24, Jonas Gliss	Changed method to_dict in EbasVarInfo: now all keys are written
+- 2019-01-24, Jonas Gliss	Added info in docstring
+- 2019-01-17, Jonas Gliss	Added info string in class header
+- 2019-01-11, Jonas Gliss	Added draft file read_airbase for AIRBASE import (not functional yet)
+- 2019-01-10, Jonas Gliss	Added special case 100 in EBAS flag treatment, fixed bug related to valid / invalid flag assignment
+- 2018-12-19, Jonas Gliss	Minor reformatting
+- 2018-12-19, Jonas Gliss	Added check for timestamps overlap when extracting StationData, arising from merging of common metadata
+- 2018-12-19, Jonas Gliss	Removed parent class BrowseDict and updated features in VerticalProfile class, updated reading of Earlinet data
+- 2018-12-17, Jonas Gliss	Moved EBAS read options from class header into new dict-like class ReadEbasOptions which is now stored in attr. opts of ReadEbas and can be changed in read method via **constraints (used in trends interface)
+- 2018-12-14, Jonas Gliss	Removed pyaerocom/_sorted_out
+- 2018-12-14, Jonas Gliss	Removed dev_scripts (now in separate repo metno/pyaerocom-dev-scripts)
+- 2018-12-14, Jonas Gliss	Removed docs/_build and updated version
+- 2018-12-14, Jonas Gliss	Added new attributes EBAS_FLAG_FILE and EBAS_FLAG_INFO in Config class (automatic reading and accessing of EBAS flags, supposed to be used in ReadEbas method)
+- 2018-12-14, Jonas Gliss	Added method for reading ebas_flags.csv data file
+- 2018-12-14, Jonas Gliss	Improved logic and performance in order to handle flag and interpret flag columns for each variable in an efficient way (NOTE: this includes non-backward compatible changes to the EBAS read API)
+- 2018-12-14, Jonas Gliss	Added ebas_flags.csv file; minor bug fix in ungriddeddata station plot (avoid that stations get plotted several times if available more than once)
+- 2018-12-07, Jonas	Delete CHANGELOG.md
+- 2018-12-07, Jonas Gliss	Reran and converted notebooks for docs; add docs/_build to gitignore (note new repo pyaerocom-docs which now contains the html documentation files
+- 2018-12-07, Jonas Gliss	Updated version
+- 2018-12-07, Jonas Gliss	Fixed lowlevel bug arising from time conversion in to_station_data (now, start and stop are converted into datetime64 rather than pandas.Timestamp
+- 2018-12-07, Jonas Gliss	Minor changes and updates
+- 2018-12-07, Jonas Gliss	Implemented framework for computation of variables that from one (or more) other variables in the file during read. This was implemented and tested for variables scatc- and absc550dryaer
+- 2018-12-07, Jonas Gliss	Added method to_dict to EbasVarInfo class and updated method make_sql_request
+- 2018-12-07, Jonas Gliss	Updated conversion method for reading of PI line in file
+- 2018-12-07, Jonas Gliss	Added attr. dry_rh_max to Variable class
+- 2018-12-07, Jonas Gliss	Added new methods compute_scatc550dryaer, compute_absc550dryaer, _compute_dry_helper
+- 2018-12-07, Jonas Gliss	Updated information for retrieval of dry scattering and absorption
+- 2018-12-07, Jonas Gliss	Added aliases scatcrh and abscrh for rh variable
+- 2018-11-30, Jonas Gliss	Fixed minor bug
+- 2018-11-30, Jonas Gliss	Removed dry variables from ebas_config.ini (is defined in class header of ReadEbas)
+- 2018-11-29, Jonas Gliss	Added info for scatc550dryaer
+- 2018-11-29, Jonas Gliss	Minor updates in variables.ini
+- 2018-11-29, Jonas Gliss	Updated attr. NAN_VAL in Aeronet v3 read (was set 9999., now 999.); included logic for handling dry variables in variable.py module
+- 2018-11-27, Jonas Gliss	Removed ec550dryaer as alias for ec550aer

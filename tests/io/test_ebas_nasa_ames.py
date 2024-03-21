@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 from pyaerocom.io.ebas_nasa_ames import EbasColDef, EbasFlagCol, EbasNasaAmesFile, NasaAmesHeader
-from tests.fixtures.ebas import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")
@@ -48,12 +47,12 @@ def test_NasaAmesHeader_CONV_PI(head):
     assert head.CONV_PI("bla;blub") == "bla; blub"
 
 
-def test_EbasNasaAmesFile_instance(filedata):
-    assert isinstance(filedata, NasaAmesHeader)
-    assert isinstance(filedata, EbasNasaAmesFile)
+def test_EbasNasaAmesFile_instance(loaded_nasa_ames_example: EbasNasaAmesFile):
+    assert isinstance(loaded_nasa_ames_example, NasaAmesHeader)
+    assert isinstance(loaded_nasa_ames_example, EbasNasaAmesFile)
 
 
-def test_EbasNasaAmesFile_head_fix(filedata):
+def test_EbasNasaAmesFile_head_fix(loaded_nasa_ames_example: EbasNasaAmesFile):
     HEAD_FIX = dict(
         num_head_lines=93,
         num_head_fmt=1001,
@@ -75,67 +74,67 @@ def test_EbasNasaAmesFile_head_fix(filedata):
         + [9.999999],
         descr_first_col="end_time of measurement, days from the file reference point",
     )
-    assert isinstance(filedata.head_fix, dict)
-    assert filedata.head_fix == HEAD_FIX
+    assert isinstance(loaded_nasa_ames_example.head_fix, dict)
+    assert loaded_nasa_ames_example.head_fix == HEAD_FIX
 
 
-def test_EbasNasaAmesFile_head_fix_error(filedata):
+def test_EbasNasaAmesFile_head_fix_error(loaded_nasa_ames_example: EbasNasaAmesFile):
     with pytest.raises(AttributeError) as e:
-        filedata.head_fix = "Blaaaaaaaaaaaaaaa"
+        loaded_nasa_ames_example.head_fix = "Blaaaaaaaaaaaaaaa"
     if sys.version_info < (3, 11):
         assert str(e.value).startswith("can't set attribute")
     else:
         assert str(e.value).endswith("object has no setter")
 
 
-def test_EbasNasaAmesFile_data(filedata):
-    assert isinstance(filedata.data, np.ndarray)
-    assert filedata.data.ndim == 2
+def test_EbasNasaAmesFile_data(loaded_nasa_ames_example: EbasNasaAmesFile):
+    assert isinstance(loaded_nasa_ames_example.data, np.ndarray)
+    assert loaded_nasa_ames_example.data.ndim == 2
 
 
-def test_EbasNasaAmesFile_shape(filedata):
-    assert filedata.shape == (8760, 24)
+def test_EbasNasaAmesFile_shape(loaded_nasa_ames_example: EbasNasaAmesFile):
+    assert loaded_nasa_ames_example.shape == (8760, 24)
 
 
-def test_EbasNasaAmesFile_col_num(filedata):
-    assert filedata.col_num == 24
+def test_EbasNasaAmesFile_col_num(loaded_nasa_ames_example: EbasNasaAmesFile):
+    assert loaded_nasa_ames_example.col_num == 24
 
 
-def test_EbasNasaAmesFile_col_names(filedata):
+def test_EbasNasaAmesFile_col_names(loaded_nasa_ames_example: EbasNasaAmesFile):
     COLUMN_NAMES = (
         ["starttime", "endtime", "pressure", "relative_humidity", "temperature"]
         + ["aerosol_light_backscattering_coefficient"] * 9
         + ["aerosol_light_scattering_coefficient"] * 9
         + ["numflag"]
     )
-    assert filedata.col_names == COLUMN_NAMES
+    assert loaded_nasa_ames_example.col_names == COLUMN_NAMES
 
 
-def test_EbasNasaAmesFile_get_time_gaps_meas(filedata):
-    gaps = filedata.get_time_gaps_meas()
+def test_EbasNasaAmesFile_get_time_gaps_meas(loaded_nasa_ames_example: EbasNasaAmesFile):
+    gaps = loaded_nasa_ames_example.get_time_gaps_meas()
     assert len(gaps) == 8759
     assert np.unique(gaps).sum() == 0
 
 
-def test_EbasNasaAmesFile_get_dt_meas(filedata):
-    dt = filedata.get_dt_meas()
+def test_EbasNasaAmesFile_get_dt_meas(loaded_nasa_ames_example: EbasNasaAmesFile):
+    dt = loaded_nasa_ames_example.get_dt_meas()
     assert len(dt) == 8759
     assert list(np.unique(dt)) == [3599.0, 3600.0, 3601.0]
 
 
 @pytest.mark.parametrize("update", [{"bla": 42}, {"vol_num": 42}])
-def test_EbasNasaAmesFile_update(filedata: EbasNasaAmesFile, update: dict):
-    data = EbasNasaAmesFile(filedata.file)
+def test_EbasNasaAmesFile_update(loaded_nasa_ames_example: EbasNasaAmesFile, update: dict):
+    data = EbasNasaAmesFile(loaded_nasa_ames_example.file)
     data.update(**update)
     for key, val in update.items():
-        if key in filedata._head_fix:
+        if key in loaded_nasa_ames_example._head_fix:
             assert data._head_fix[key] == val
         else:
             assert data._meta[key] == val
 
 
-def test_EbasNasaAmesFile___str__(filedata):
-    assert isinstance(filedata.__str__(), str)
+def test_EbasNasaAmesFile___str__(loaded_nasa_ames_example: EbasNasaAmesFile):
+    assert isinstance(loaded_nasa_ames_example.__str__(), str)
 
 
 @pytest.mark.parametrize(
@@ -145,13 +144,15 @@ def test_EbasNasaAmesFile___str__(filedata):
         (8, 550),
     ],
 )
-def test_EbasColDef_get_wavelength_nm(filedata, colnum, value):
-    coldef = filedata.var_defs[colnum]
+def test_EbasColDef_get_wavelength_nm(
+    loaded_nasa_ames_example: EbasNasaAmesFile, colnum: int, value: int
+):
+    coldef = loaded_nasa_ames_example.var_defs[colnum]
     assert isinstance(coldef, EbasColDef)
     assert coldef.get_wavelength_nm() == value
 
 
-def test_EbasColDef_get_wavelength_nm_error(filedata):
+def test_EbasColDef_get_wavelength_nm_error(loaded_nasa_ames_example: EbasNasaAmesFile):
     with pytest.raises(KeyError) as e:
-        filedata.var_defs[0].get_wavelength_nm()
+        loaded_nasa_ames_example.var_defs[0].get_wavelength_nm()
     assert str(e.value) == "'Column variable starttime does not contain wavelength information'"

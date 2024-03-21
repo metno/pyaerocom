@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -26,7 +27,6 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from tests.fixtures.ebas import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")
@@ -436,7 +436,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-    reader: ReadEbas, val, exception: type[Exception], error: str
+    reader: ReadEbas, val: Literal["Bla", 42], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -490,9 +490,9 @@ def test_get_ebas_var_error(
     assert str(e.value) == error
 
 
-def test__get_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
+def test__get_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
     info = EbasVarInfo("sc550aer")
-    cols = reader._get_var_cols(info, filedata)
+    cols = reader._get_var_cols(info, loaded_nasa_ames_example)
     assert cols == [14, 17, 20]
 
 
@@ -503,16 +503,18 @@ def test__get_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
         ("sc550dryaer", ""),
     ],
 )
-def test__get_var_cols_error(reader: ReadEbas, filedata: EbasNasaAmesFile, var: str, error: str):
+def test__get_var_cols_error(
+    reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
+):
     info = EbasVarInfo(var)
     with pytest.raises(NotInFileError) as e:
-        reader._get_var_cols(info, filedata)
+        reader._get_var_cols(info, loaded_nasa_ames_example)
     assert str(e.value) == error
 
 
-def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
+def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
     vars_to_read = ["sc550aer", "scrh", "ts"]
-    columns = reader.find_var_cols(vars_to_read, filedata)
+    columns = reader.find_var_cols(vars_to_read, loaded_nasa_ames_example)
     assert columns["sc550aer"] == 17
     assert columns["scrh"] == 3
     assert columns["ts"] == 4
@@ -527,18 +529,18 @@ def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
     ],
 )
 def test__flag_incorrect_frequencies(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     reader: ReadEbas,
-    filedata: EbasNasaAmesFile,
+    loaded_nasa_ames_example: EbasNasaAmesFile,
     ts_type: str,
     tol_percent: int,
     num_flagged: int,
 ):
     station = StationData()
-    station.start_meas = filedata.start_meas
-    station.stop_meas = filedata.stop_meas
+    station.start_meas = loaded_nasa_ames_example.start_meas
+    station.stop_meas = loaded_nasa_ames_example.stop_meas
     station.var_info["bla"] = dict(units="1")
-    station.bla = np.ones_like(filedata.start_meas)
+    station.bla = np.ones_like(loaded_nasa_ames_example.start_meas)
     station.ts_type = ts_type
 
     monkeypatch.setattr("pyaerocom.TsType.TOL_SECS_PERCENT", tol_percent)
@@ -559,7 +561,7 @@ conco3_tower_var_info = {
         "volume_std._temperature": "293.15 K",
         "volume_std._pressure": "1013.25 hPa",
         "detection_limit": "1.995 ug/m3",
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        "comment": "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K, 1013.25 hPa), conversion factor 1.99534. Variable metadata detection limit converted.",
         "matrix": "air",
         "statistics": "arithmetic mean",
         "ts_type": "hourly",
@@ -573,7 +575,7 @@ vmro3_tower_var_info = {
         "measurement_height": "50.0 m",
         "instrument_name": "uv_abs_kre_0050",
         "detection_limit": "1.0 nmol/mol",
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        "comment": "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K, 1013.25 hPa), conversion factor 1.99534. Variable metadata detection limit converted.",
         "matrix": "air",
         "statistics": "arithmetic mean",
         "ts_type": "hourly",
@@ -594,7 +596,15 @@ def test_read_file(reader: ReadEbas, ebas_issue_files: Path, vars_to_retrieve: s
     data = reader.read_file(ebas_issue_files, vars_to_retrieve)
     assert isinstance(data, StationData)
     for key, val in check.items():
-        assert data[key] == val
+        if isinstance(val, dict):
+            for subkey, subval in val.items():
+                for subsubkey, subsubval in subval.items():
+                    if subsubkey == "comment":
+                        assert data[key][subkey][subsubkey].startswith(subsubval)
+                    else:
+                        assert data[key][subkey][subsubkey] == subsubval
+        else:
+            assert data[key] == val
 
 
 @pytest.mark.parametrize(

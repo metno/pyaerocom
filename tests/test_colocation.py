@@ -15,7 +15,7 @@ from pyaerocom.colocation import (
 )
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
-from pyaerocom.plugins.mscw_ctm.reader import ReadMscwCtm
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32
 from tests.fixtures.stations import create_fake_station_data
 
@@ -247,8 +247,8 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats["refdata_mean"] == stats["data_mean"]
     assert stats["nmb"] == 0
     assert stats["mnmb"] == 0
-    assert stats["R"] == 1
-    assert stats["R_spearman"] == 1
+    assert stats["R"] == pytest.approx(1, rel=1e-6)
+    assert stats["R_spearman"] == pytest.approx(1, rel=1e-6)
 
 
 @pytest.mark.xfail(raises=UnresolvableTimeDefinitionError)

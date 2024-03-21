@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
-from tests.fixtures.ebas import EBAS_FILEDIR
 
 
 def test_EbasSQLRequest___init__():

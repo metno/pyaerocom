@@ -12,7 +12,7 @@ The following are some guidelines for contributing to pyaerocom, a Python packag
 
 ## Setting up a development environment
 
-If you want to do changes to your pyaerocom code you should follow the [installation guide in the documentation](https://pyaerocom.readthedocs.io/en/latest/install.html) for "Installing from source into a conda environment" after setting up your environment in accordance with the requirements in the [pyaerocom_env.yml](https://github.com/metno/pyaerocom/blob/main-dev/pyaerocom_env.yml) file. Use the following installation command after cloning the repository
+If you want to do changes to your pyaerocom code you should follow the [installation guide in the documentation](https://pyaerocom.readthedocs.io/en/latest/install.html) for "Installing from source ..." after setting up your environment in accordance with the requirements in the [pyaerocom_env.yml](https://github.com/metno/pyaerocom/blob/main-dev/pyaerocom_env.yml) file. Use the following installation command after cloning the repository
 
 ``` bash
 pip install --no-deps -e .
@@ -38,7 +38,9 @@ You are welcome to contribute code to implement new features, fix bugs or contri
 
 ### Tests
 
-Any new functions/methods you add must be covered by tests. Tests are wirtten and run using pytest and are found under pyaerocom/tests. Missing test coverage will trigger a warning in the GitHub CI.
+Any new functions/methods you add must be covered by tests. Tests are wirtten and run using `pytest` and/or `tox` and are found under pyaerocom/tests. Please run tests before locally (and if working at MET also on PPI) before making a PR.
+
+Missing test coverage will trigger a warning in the GitHub CI.
 
 ### Documentation
 
@@ -50,10 +52,12 @@ We are in the process of moving to the code style enforced by [black](https://gi
 
 ## Pyaerocom team
 
-* [Jan Griesfeller](https://github.com/jgriesfeller)
-* [Alvaro Valdebenito](https://github.com/avaldebe)
-* [Daniel Heinesen](https://github.com/dulte)
-* [Augustin Mortier](https://github.com/AugustinMortier)
 * [Lewis Blake](https://github.com/lewisblake)
+* [Jan Griesfeller](https://github.com/jgriesfeller)
+* [Daniel Heinesen](https://github.com/dulte)
+* [Heiko Klein](https://github.com/heikoklein)
+* [Augustin Mortier](https://github.com/AugustinMortier)
+* [Alvaro Valdebenito](https://github.com/avaldebe)
+
 * [Jonas Gliß](https://github.com/jgliss) - former member
 * [Hans Brenna](https://github.com/hansbrenna) - former member
