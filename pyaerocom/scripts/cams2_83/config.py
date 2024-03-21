@@ -65,7 +65,7 @@ GLOBAL_CONFIG = dict(
     forecast_evaluation=True,
     forecast_days=4,
     use_fairmode=True,
-    drop_stats = ("mb", "mab"),
+    drop_stats=("mb", "mab"),
     # This is just the order at which the different species will be shown in the web interface
     # Species that are not evaluated can still be in this list. The web interface will not show them if they are not evaluated
     var_order_menu=[
@@ -176,8 +176,8 @@ species_list = [
 ]
 
 
-get_ignore_list = (
-    lambda species: ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
+get_ignore_list = lambda species: (
+    ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
 )
 
 obs_filters = {
