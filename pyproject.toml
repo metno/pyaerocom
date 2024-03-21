@@ -99,25 +99,22 @@ exclude = [
 minversion = "7.4"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = [
-    "--failed-first",
-    "--import-mode=importlib",
-    "--pythonwarnings=ignore", # comment to raise errors from warnings, see filterwarnings
-]
+addopts = ["--failed-first", "--import-mode=importlib"]
 xfail_strict = true
 testpaths = ["tests"]
-filterwarnings = [
-    # all warnings are errors
-    "error",
-    "ignore::pytest.PytestUnraisableExceptionWarning",
-    # except deprecation and future warnings ouside this packege
-    'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
-    'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
-    'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
-    # and not on this list
-    "ignore:.*please install Basemap:UserWarning:geonum.*:",
-    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",
-]
+##  uncomment to raise errors from warnings
+#filterwarnings = [
+#    # all warnings are errors
+#    "error",
+#    "ignore::pytest.PytestUnraisableExceptionWarning",
+#    # except deprecation and future warnings ouside this packege
+#    'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
+#    'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
+#    'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+#    # and not on this list
+#    "ignore:.*please install Basemap:UserWarning:geonum.*:",
+#    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",
+#]
 
 [tool.coverage.run]
 source = ["pyaerocom"]
