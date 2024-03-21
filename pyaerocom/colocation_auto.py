@@ -556,9 +556,6 @@ class Colocator(ColocationSetup):
         "ReadMscwCtm": ReadMscwCtm,
         "ReadCAMS2_83": ReadCAMS2_83,
     }
-    SUPPORTED_GRIDDED_READERS.update(
-        {ep.name: ep.load() for ep in metadata.entry_points(group="pyaerocom.gridded")}
-    )
 
     STATUS_CODES = {
         1: "SUCCESS",
