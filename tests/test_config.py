@@ -115,11 +115,11 @@ def test_Config_has_access_users_database():
 @pytest.mark.parametrize(
     "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs,data_searchdirno",
     [
-        ("metno", None, False, False, 0),
-        ("metno", None, True, False, 0),
-        ("metno", None, True, True, 0),
-        ("metno", f"/home/{USER}", True, True, 2),
-        ("users-db", None, False, False, 0),
+        ("metno", None, False, False, 30),
+        ("metno", None, True, False, 30),
+        ("metno", None, True, True, 30),
+        ("metno", f"/home/{USER}", True, True, 30),
+        ("users-db", None, False, False, 30),
     ],
 )
 def test_Config_read_config(
@@ -132,7 +132,7 @@ def test_Config_read_config(
     if not cfg.has_access_lustre:
         pytest.skip(f"Skipping since {cfg._LUSTRE_CHECK_PATH} directory not accessible")
     assert len(cfg.DATA_SEARCH_DIRS) == data_searchdirno
-    assert len(cfg.OBSLOCS_UNGRIDDED) == 0
+    assert len(cfg.OBSLOCS_UNGRIDDED) == 38
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()

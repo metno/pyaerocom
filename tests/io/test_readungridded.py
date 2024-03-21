@@ -34,7 +34,14 @@ def test_supported():
         "EARLINET",
         "EBASMC",
         "EBASSubset",
+        "DMS_AMS_CVO",
         "GAWTADsubsetAasEtAl",
+        "GHOST.EEA.monthly",
+        "GHOST.EEA.hourly",
+        "GHOST.EEA.daily",
+        "GHOST.EBAS.monthly",
+        "GHOST.EBAS.hourly",
+        "GHOST.EBAS.daily",
     }
     assert datasets <= set(supported_datasets)
 
