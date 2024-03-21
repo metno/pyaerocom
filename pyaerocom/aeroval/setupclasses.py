@@ -234,9 +234,8 @@ class WebDisplaySetup(ConstrainedContainer):
         self.obs_order_menu = []
         self.model_order_menu = []
         self.hide_charts = []
-        self.hide_pages = []
         self.ts_annotations = {}
-        self.add_pages = []
+        self.pages = ["maps", "evaluation", "intercomp", "overall", "infos"]
         self.update(**kwargs)
 
 
