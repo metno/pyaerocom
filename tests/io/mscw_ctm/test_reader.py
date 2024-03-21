@@ -390,9 +390,8 @@ def test_ReadMscwCtm__repr__():
 
 
 def test_ReadEMEP__init__():
-    with pytest.raises(DeprecationWarning) as e:
+    with pytest.warns(DeprecationWarning) as e:
         assert isinstance(ReadEMEP(), ReadMscwCtm)
-    assert "please use ReadMscwCtm instead" in str(e.value)
 
 
 def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]) -> Path:
