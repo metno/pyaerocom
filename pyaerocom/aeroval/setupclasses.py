@@ -165,6 +165,9 @@ class StatisticsSetup(ConstrainedContainer):
         setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
+    stats_decimals: int, optional
+        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a deault of 3.
+        Setting this higher of lower changes the number of decimals shown on the Aeroval webpage.
     round_floats_precision: int, optional
         Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`
 
@@ -278,8 +281,6 @@ class EvalRunOptions(ConstrainedContainer):
         #: If True, process only maps (skip obs evaluation)
         self.only_model_maps = False
         self.obs_only = False
-        self.drop_stats = ()
-        self.stats_decimals = None
         self.update(**kwargs)
 
 
