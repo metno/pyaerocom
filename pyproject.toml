@@ -258,9 +258,12 @@ deps =
 [testenv:lint]
 ignore_outcome = True
 commands =
+    ruff check --statistics
     mypy pyaerocom/
 extras =
     lint
+deps =
+    ruff
 
 [testenv:docs]
 commands =
