@@ -9,9 +9,12 @@
 
 ## Checklist
 
+* [ ] Tests pass locally
+* [ ] Tests for the changes exist where applicable
 * [ ] Start with a draft-PR
 * [ ] The pull request title is a good summary of the changes
+* [ ] PR is set to AeroTools and milestone
 * [ ] Documentation reflects the changes where applicable
-* [ ] Tests for the changes exist where applicable
-* [ ] Tests pass first locally and then on CI
-* [ ] My PR is ready to review and I have selected a reviewer
+* [ ] Tests pass on CI
+* [ ] At least 1 reviewer is selected
+* [ ] My PR is ready to review
