@@ -82,10 +82,13 @@ def write_json(data_dict, file_path, **kwargs):
         additional keyword args, e.g.
         indent=int
         (ignore_nan, forced to True)
+        round_floats=True/False round floating numbers, default True
     """
     kwargs.update(ignore_nan=True)
+    if kwargs.pop("round_floats", True):
+        data_dict = round_floats(in_data=data_dict)
     with open(file_path, "w") as f:
-        simplejson.dump(round_floats(in_data=data_dict), f, allow_nan=True, **kwargs)
+        simplejson.dump(data_dict, f, allow_nan=True, **kwargs)
 
 
 def check_make_json(fp, indent=4):
