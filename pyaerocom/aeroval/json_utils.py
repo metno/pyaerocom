@@ -79,8 +79,9 @@ def write_json(data_dict, file_path, **kwargs):
     file_path : str
         output file path
     **kwargs
-        additional keyword args passed to :func:`simplejson.dumps` (e.g.
-        indent, )
+        additional keyword args, e.g.
+        indent=int
+        (ignore_nan, forced to True)
     """
     kwargs.update(ignore_nan=True)
     with open(file_path, "w") as f:
