@@ -94,7 +94,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         rms=[], R=[], nmb=[], mnmb=[], fge=[]
                     )
                     logger.info(f"Making subset for {regid}, {per} and {season}")
-                    if season not in coldata[0].data["season"].data and season is not "all":
+                    if season not in coldata[0].data["season"].data and season != "all":
                         logger.info(
                             f"Season {season} is not available for {per} and will be skipped"
                         )
