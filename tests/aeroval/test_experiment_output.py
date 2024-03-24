@@ -329,8 +329,7 @@ def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutp
 def test_Experiment_Output_drop_stats_and_decimals(
     eval_config: dict, drop_stats, stats_decimals: int
 ):
-    eval_config["drop_stats"] = drop_stats
-    eval_config["stats_decimals"] = stats_decimals
+    eval_config["drop_stats"], eval_config["stats_decimals"] = drop_stats, stats_decimals
     cfg = EvalSetup(**eval_config)
     cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
     proc = ExperimentProcessor(cfg)
