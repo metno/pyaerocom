@@ -354,7 +354,7 @@ statistics_defaults = {
         "forecast": True,
     },
     "mb": {
-        "name": "Mean Bias",
+        "name": "MB",
         "longname": "Mean Bias",
         "scale": [
             -0.15,
