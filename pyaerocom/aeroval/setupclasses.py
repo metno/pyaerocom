@@ -46,13 +46,33 @@ class OutputPaths(BaseModel):
 
     JSON_SUBDIRS : list[str] = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour", "profiles"]
 
-    json_basedir : DirLoc | str = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
-        assert_exists=True,
-        auto_create=True,
-        logger=logger,
-        tooltip="Base directory for json output files",
-    )
+    @computed_field
+    @property
+    def json_basedir(self) -> DirLoc:
+        #if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(DirLoc.__dict__.keys()))):
+            #subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+        if hasattr(self, "model_extra") and isinstance(self.model_extra, dict) and "json_basdir" in self.model_extra: #and self.model_extra.get("json_basedir", False):
+            out_json_basedir_filepath = self.model_extra["json_basedir"]
+            #out_json_basedir_filepath = os.path.join(const.OUTPUTDIR, "aeroval/data")
+        else:
+            out_json_basedir_filepath = os.path.join(const.OUTPUTDIR, "aeroval/data")
+        DirLoc(
+            default=out_json_basedir_filepath,
+            assert_exists=True,
+            auto_create=True,
+            logger=logger,
+            tooltip="Base directory for json output files",
+            )
+        return out_json_basedir_filepath
+    
+    # json_basedir : DirLoc | str = DirLoc(
+    #     default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
+    #     assert_exists=True,
+    #     auto_create=True,
+    #     logger=logger,
+    #     tooltip="Base directory for json output files",
+    # )
+
 
     # json_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
     # json_basedir = Path(json_basedir).mkdir(parents=True, exist_ok=True)
@@ -65,6 +85,7 @@ class OutputPaths(BaseModel):
         logger=logger,
         tooltip="Base directory for colocated data output files (NetCDF)",
     )
+    
     
     # coldata_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
     # coldata_basedir = Path(coldata_basedir).mkdir(parents=True, exists_ok=True)
