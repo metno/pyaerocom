@@ -15,7 +15,7 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator, field_serializer
+from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator, field_serializer, PositiveInt
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 from typing import Optional, Tuple, Literal
@@ -94,7 +94,7 @@ class OutputPaths(BaseModel):
 #@dataclass        
 class ModelMapsSetup(BaseModel):
     maps_freq : Literal["monthly", "yearly"] = "monthly"
-    maps_res_deg : int = 5
+    maps_res_deg : PositiveInt = 5
              
     
 class StatisticsSetup(BaseModel, extra="allow"):
@@ -141,6 +141,9 @@ class StatisticsSetup(BaseModel, extra="allow"):
         setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
+    stats_decimals: int, optional
+        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a deault of 3.
+        Setting this higher of lower changes the number of decimals shown on the Aeroval webpage.
     round_floats_precision: int, optional
         Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`
 
@@ -153,11 +156,11 @@ class StatisticsSetup(BaseModel, extra="allow"):
 
     """
 
-    MIN_NUM : int = 1
+    MIN_NUM : PositiveInt = 1
     weighted_stats: bool = True
     annual_stats_constrained : bool = False
     add_trends : bool = False
-    trends_min_yrs : int = 7
+    trends_min_yrs : PositiveInt = 7
     stats_tseries_base_freq : str | None = None
     use_fairmode : bool = False
     use_diurnal : bool = False
@@ -244,9 +247,6 @@ class EvalRunOptions(BaseModel):
     #: If True, process only maps (skip obs evaluation)
     only_model_maps : bool = False
     obs_only : bool = False
-    # LB: Not sure why these stats options are being delcared twice
-    # drop_stats : tuple[str] = ()
-    # stats_decimals : bool = None
 
 @dataclass
 class ProjectInfo:
@@ -300,7 +300,11 @@ class EvalSetup(BaseModel):
     @computed_field
     @property
     def path_manager(self) -> OutputPaths:
-        return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
+        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(OutputPaths.model_fields))):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id, **subset_dict)
+        else:
+            return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
     
     #time_cfg : TimeSetup = TimeSetup()
     
@@ -331,7 +335,6 @@ class EvalSetup(BaseModel):
         
         
     # # Etc. etc... could do above many times. Is there a way to do it with an update function??
-    # #@classmethod
     # def _update(self, obj: Generic[T]) -> Generic[T]:
     #     if hasattr(self, "model_extra"):
     #         extra_obj_cfg_keys = set(self.model_extra).intersection(set(obj.__fields__))
