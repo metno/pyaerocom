@@ -248,12 +248,12 @@ class EvalRunOptions(BaseModel):
     only_model_maps : bool = False
     obs_only : bool = False
 
-@dataclass
-class ProjectInfo:
+#@dataclass
+class ProjectInfo(BaseModel):
     proj_id : str
 
-@dataclass
-class ExperimentInfo:
+#@dataclass
+class ExperimentInfo(BaseModel):
     exp_id : str 
     exp_name : str = ""
     exp_descr : str = ""
