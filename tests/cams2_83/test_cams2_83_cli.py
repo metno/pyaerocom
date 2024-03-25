@@ -6,8 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from pyaerocom.scripts.cams2_83.cli import app
-
-from . import cfg_test, cfg_test_full
+from tests.cams2_83 import cfg_test, cfg_test_full
 
 runner = CliRunner()
 
