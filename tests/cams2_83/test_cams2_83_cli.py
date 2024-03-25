@@ -14,9 +14,10 @@ def test_clearcache(
     monkeypatch,
     fake_obs: List,
     fake_cache_path: Path,
+    tmp_path: Path,
     fake_basedir_path: Path,
     patched_full_config,
-    caplog
+    caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
 
@@ -32,7 +33,7 @@ def test_clearcache(
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.ExperimentProcessor.run", do_not_run)
-    options = f"2024-03-16 2024-03-23 --data-path {fake_basedir_path} --coldata-path {fake_basedir_path} --name 'Test'"
+    options = f"2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {fake_basedir_path} --coldata-path {fake_basedir_path} --name 'Test'"
     result = runner.invoke(app, options.split())
     print(result.stdout)
     print(caplog.text)
