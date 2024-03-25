@@ -395,7 +395,7 @@ def runner(
 
     start = time.time()
 
-    logging.info(f"Clearing cache at {const.CACHEDIR}")
+    logger.info(f"Clearing cache at {const.CACHEDIR}")
     clear_cache()
 
     if pool > 1:
