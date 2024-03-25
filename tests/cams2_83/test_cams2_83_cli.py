@@ -11,12 +11,12 @@ from tests.cams2_83 import cfg_test, cfg_test_full
 runner = CliRunner()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def fake_model_path(tmp_path_factory) -> Path:
     return tmp_path_factory.mktemp("modeldata")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def fake_obs_path(tmp_path_factory) -> Path:
     return tmp_path_factory.mktemp("obsdata")
 
@@ -48,6 +48,7 @@ def test_clearcache(monkeypatch, fake_obs: List, tmp_path: Path, fake_cache: Pat
 
     def patched_config(*args, **kwargs):
         cfg = cfg_test_full.CFG
+        assert cfg["proj_info"]["proj_id"] == "cams2-83"
         cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = fake_obs
         cfg["colocation_opts"]["basedir_coldata"] = tmp_path
         cfg["model_cfg"]["EMEP"]["model_data_dir"] = fake_model_path
