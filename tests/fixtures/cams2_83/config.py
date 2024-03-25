@@ -6,6 +6,7 @@ import pytest
 
 from . import cfg_test, cfg_test_full
 
+
 @pytest.fixture()
 def fake_model_path(tmp_path_factory) -> Path:
     return tmp_path_factory.mktemp("modeldata")
@@ -15,9 +16,11 @@ def fake_model_path(tmp_path_factory) -> Path:
 def fake_obs_path(tmp_path_factory) -> Path:
     return tmp_path_factory.mktemp("obsdata")
 
+
 @pytest.fixture()
 def fake_basedir_path(tmp_path_factory) -> Path:
     return tmp_path_factory.mktemp("basedir")
+
 
 @pytest.fixture()
 def fake_cache_path(monkeypatch, tmp_path: Path):
@@ -28,6 +31,7 @@ def fake_cache_path(monkeypatch, tmp_path: Path):
     cache_file.write_bytes(b"")
     assert cache_file.exists()
     return tmp_path
+
 
 @pytest.fixture()
 def fake_obs(fake_obs_path: Path):
@@ -50,4 +54,3 @@ def patched_full_config(fake_obs_path: Path, fake_model_path: Path, fake_basedir
     cfg["path_manager"]["coldata_basedir"] = fake_basedir_path
     cfg["path_manager"]["json_basedir"] = fake_basedir_path
     return cfg
-

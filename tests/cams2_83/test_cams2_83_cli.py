@@ -10,7 +10,13 @@ from pyaerocom.scripts.cams2_83.cli import app
 runner = CliRunner()
 
 
-def test_clearcache(monkeypatch, fake_obs: List, fake_cache_path: Path, fake_basedir_path: Path, patched_full_config):
+def test_clearcache(
+    monkeypatch,
+    fake_obs: List,
+    fake_cache_path: Path,
+    fake_basedir_path: Path,
+    patched_full_config,
+):
     assert list(fake_cache_path.glob("*.pkl"))
 
     def fake_make_config(*args, **kwargs):
@@ -25,10 +31,9 @@ def test_clearcache(monkeypatch, fake_obs: List, fake_cache_path: Path, fake_bas
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.ExperimentProcessor.run", do_not_run)
-    options = (
-        f"2024-03-16 2024-03-23 --data-path {fake_basedir_path} --coldata-path {fake_basedir_path} --name 'Test'"
-    )
+    options = f"2024-03-16 2024-03-23 --data-path {fake_basedir_path} --coldata-path {fake_basedir_path} --name 'Test'"
     result = runner.invoke(app, options.split())
+    print(result)
     assert result.exit_code == 0
     # Check that clearcache actually cleared the cache
     assert not list(fake_cache_path.glob("*.pkl"))
