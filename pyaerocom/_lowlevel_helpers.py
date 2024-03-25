@@ -11,6 +11,8 @@ import numpy as np
 
 from pyaerocom._warnings import ignore_warnings
 
+from pydantic import BaseModel, ConfigDict
+
 logger = logging.getLogger(__name__)
 
 
@@ -249,6 +251,16 @@ class AsciiFileLoc(Loc):
         self.logger.info(f"create ascii file {value}")
         open(value, "w").close()
 
+
+# class AsciiFileLoc2(BaseModel):
+#     model_config = ConfigDict(arbitrary_types_allowed=True)
+#     assert_exits : bool = False
+#     auto_create : bool = False
+#     tooltip : str = ""
+#     logger : logging.Logger = logging.getLogger(f"{__name__}.{__qualname__}")
+#     def create(self, value):
+#         self.logger.info(f"create ascii file {value}")
+#         open(value, "w").close()
 
 class BrowseDict(MutableMapping):
     """Dictionary-like object with getattr and setattr options

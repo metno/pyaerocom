@@ -91,7 +91,7 @@ def write_json(data_dict, file_path, **kwargs):
         simplejson.dump(data_dict, f, allow_nan=True, **kwargs)
 
 
-def check_make_json(fp, indent=4):
+def check_make_json(fp, indent=4) -> str:
     """
     Make sure input json file exists
 
