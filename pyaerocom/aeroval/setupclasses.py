@@ -65,30 +65,37 @@ class OutputPaths(BaseModel):
     #         )
     #     return out_json_basedir_filepath
     
-    json_basedir : DirLoc | str = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
-        assert_exists=True,
-        auto_create=True,
-        logger=logger,
-        tooltip="Base directory for json output files",
-    )
+    # json_basedir : DirLoc | str = DirLoc(
+    #     default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
+    #     assert_exists=True,
+    #     auto_create=True,
+    #     logger=logger,
+    #     tooltip="Base directory for json output files",
+    # )
 
 
-    # json_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
-    # json_basedir = Path(json_basedir).mkdir(parents=True, exist_ok=True)
+    json_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
+    coldata_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
+    
+    @field_validator("json_basedir", "coldata_basedir")
+    def validate_basedirs(cls, v):
+        if not os.path.exists(v):
+            tmp = Path(v) if isinstance(v, str) else v
+            tmp.mkdir(parents=True, exist_ok=True)
+        return v
     
     
-    coldata_basedir : DirLoc | str = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
-        assert_exists=True,
-        auto_create=True,
-        logger=logger,
-        tooltip="Base directory for colocated data output files (NetCDF)",
-    )
+    # coldata_basedir : DirLoc | str = DirLoc(
+    #     default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
+    #     assert_exists=True,
+    #     auto_create=True,
+    #     logger=logger,
+    #     tooltip="Base directory for colocated data output files (NetCDF)",
+    # )
     
     
-    # coldata_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
-    # coldata_basedir = Path(coldata_basedir).mkdir(parents=True, exists_ok=True)
+    
+
 
     ADD_GLOB : list[str] = ["coldata_basedir", "json_basedir"]
     
