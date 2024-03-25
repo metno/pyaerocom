@@ -16,6 +16,7 @@ def test_clearcache(
     fake_cache_path: Path,
     fake_basedir_path: Path,
     patched_full_config,
+    caplog
 ):
     assert list(fake_cache_path.glob("*.pkl"))
 
@@ -33,7 +34,8 @@ def test_clearcache(
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.ExperimentProcessor.run", do_not_run)
     options = f"2024-03-16 2024-03-23 --data-path {fake_basedir_path} --coldata-path {fake_basedir_path} --name 'Test'"
     result = runner.invoke(app, options.split())
-    print(result)
+    print(result.stdout)
+    print(caplog.text)
     assert result.exit_code == 0
     # Check that clearcache actually cleared the cache
     assert not list(fake_cache_path.glob("*.pkl"))
