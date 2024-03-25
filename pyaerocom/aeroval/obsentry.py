@@ -49,6 +49,15 @@ class ObsEntry(BrowseDict):
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
+    only_json : bool
+        Only to be set if the obs entry already has colocated data files which were
+        preprocessed outside of pyaerocom. Setting to True will skip the colcoation
+        and just create the JSON output.
+    coldata_dir : str
+        Only to be set if the obs entry already has colocated data files which were
+        preprocessed outside of pyaerocom. This is the directory in which the
+        colocated data files are located.
+
     """
 
     SUPPORTED_VERT_CODES = ["Column", "Profile", "Surface"]  # , "2D"]
@@ -74,6 +83,9 @@ class ObsEntry(BrowseDict):
         self.profile_layer_limits = None
 
         self.read_opts_ungridded = {}
+        # attributes for reading colocated data files made outside of pyaerocom
+        self.only_json = False
+        self.coldata_dir = None
 
         self.update(**kwargs)
         self.check_cfg()
