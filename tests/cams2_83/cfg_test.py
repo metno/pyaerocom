@@ -70,4 +70,3 @@ CFG = dict(
         daily=dict(hourly=18),
     ),
 )
-
