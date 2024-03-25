@@ -8,7 +8,6 @@ from collections.abc import MutableMapping
 from pathlib import Path
 
 import numpy as np
-import simplejson
 
 from pyaerocom._warnings import ignore_warnings
 
