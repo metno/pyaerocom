@@ -106,7 +106,10 @@ def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
 
 def get_seasons_in_period(start_date: datetime, end_date: datetime) -> List[str]:
     seasons = ["DJF", "DJF", "MAM", "MAM", "MAM", "JJA", "JJA", "JJA", "SON", "SON", "SON", "DJF"]
-    get_season = lambda date: seasons[date.month - 1]
+
+    def get_season(date):
+        return seasons[date.month - 1]
+
     daterange = pd.date_range(start_date, end_date, freq="d")
 
     periods = []
