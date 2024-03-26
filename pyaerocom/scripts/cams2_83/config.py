@@ -197,7 +197,7 @@ OBS_CONFIG["EEA"] = dict(
     obs_id="CAMS2_83.NRT",
     # obs_id="EEAAQeRep.NRT",
     obs_vars=species_list,
-    web_interface_name="Obs",
+    web_interface_name="EEA-NRT",
     obs_vert_type="Surface",
     read_opts_ungridded=dict(files=[], force_caching=True),
     obs_filters=obs_filters,
