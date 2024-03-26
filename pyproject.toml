@@ -128,7 +128,6 @@ omit = [
     "pyaerocom/plugins/gaw/*",
     "pyaerocom/extras/satellite_l2/*",
     "pyaerocom/vert_coords.py",
-    "pyaerocom/scripts/cams2_83/*",
 ]
 
 [tool.coverage.report]
