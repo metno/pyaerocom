@@ -116,7 +116,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         add_trends = self.cfg.statistics_opts.add_trends
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
-        use_diurnal = self.cfg.statistics_opts.use_diurnal
         use_fairmode = self.cfg.statistics_opts.use_fairmode
         use_diurnal = self.cfg.statistics_opts.use_diurnal
 

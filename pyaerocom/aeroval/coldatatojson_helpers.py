@@ -24,7 +24,8 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     TemporalResolutionError,
 )
-from pyaerocom.helpers import start_stop
+
+# from pyaerocom.helpers import start_stop
 from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
@@ -863,15 +864,15 @@ def _process_map_and_scat(
                             obs_vals, mod_vals, min_num=min_num, drop_stats=drop_stats
                         )
 
-                        if use_fairmode and not np.isnan(obs_vals).all():
+                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
 
                             stats["fairmode"] = fairmode_stats(obs_var, stats)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
-                            # (start, stop) = _get_min_max_year_periods([per])
-                            (start, stop) = _start_stop_from_periods(per)
+                            (start, stop) = _get_min_max_year_periods([per])
+                            # (start, stop) = _start_stop_from_periods(per)
 
                             if stop - start >= trends_min_yrs:
                                 try:
@@ -1153,8 +1154,8 @@ def _process_heatmap_data(
                             trends_successful = False
                             if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                # (start, stop) = _get_min_max_year_periods([per])
-                                (start, stop) = _start_stop_from_periods(per)
+                                (start, stop) = _get_min_max_year_periods([per])
+                                # (start, stop) = _start_stop_from_periods(per)
 
                                 if stop - start >= trends_min_yrs:
                                     try:
@@ -1378,23 +1379,18 @@ def _init_data_default_frequencies(coldata, to_ts_types):
     return data_arrs
 
 
-def _start_stop_from_periods(period):
-    yrs = period.split("-")
-    if len(yrs) == 1:
-        start = stop = yrs[0]
-    elif len(yrs) == 2:
-        start = yrs[0]
-        stop = yrs[1]
-    else:
-        raise ValueError(f"{period} needs to be one or two years, sparated by a '-'")
+# def _start_stop_from_periods(period):
+#    yrs = period.split("-")
+#    if len(yrs) == 1:
+#        start = stop = yrs[0]
+#    elif len(yrs) == 2:
+#        start = yrs[0]
+#        stop = yrs[1]
+#    else:
+#        raise ValueError(f"{period} needs to be one or two years, sparated by a '-'")
 
-    start, stop = start_stop(start, stop)
-    return start.year, stop.year
-
-
-# def _start_stop_from_periods(periods):
-#    start, stop = _get_min_max_year_periods(periods)
-#    return start_stop(start, stop + 1)
+#    start, stop = start_stop(start, stop)
+#    return start.year, stop.year
 
 
 def get_profile_filename(station_or_region_name, obs_name, var_name_web):

@@ -10,10 +10,7 @@ FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together a
 This module contains methods to compute the relevant FAIRMODE statistics.
 """
 
-from math import isclose, sqrt
-
 import numpy as np
-from numpy import isclose, isnan, nan, sqrt
 
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
