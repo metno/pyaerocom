@@ -129,7 +129,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         data = self.read_model_data(model_name, var)
         check_var_ranges_avail(data, var)
 
-        if var in var_ranges_defaults:
+        if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
             varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:

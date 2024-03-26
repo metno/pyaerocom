@@ -209,7 +209,7 @@ class TimeResampler:
                 f"Cannot resample time-series from {from_ts_type} to {to_ts_type}"
             )
         elif to_ts_type == from_ts_type:
-            logger.info(
+            logger.debug(
                 f"Input time frequency {to_ts_type.val} equals current frequency of data. "
                 f"Resampling will be applied anyways which will introduce NaN values "
                 f"at missing time stamps"

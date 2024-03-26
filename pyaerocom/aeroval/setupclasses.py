@@ -1,6 +1,9 @@
 import logging
 import os
+from datetime import timedelta
 from getpass import getuser
+
+import pandas as pd
 
 from pyaerocom import __version__, const
 from pyaerocom._lowlevel_helpers import (
@@ -14,10 +17,15 @@ from pyaerocom._lowlevel_helpers import (
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
-from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
+from pyaerocom.aeroval.helpers import (
+    _check_statistics_periods,
+    _get_min_max_year_periods,
+    check_if_year,
+)
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
+from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +46,17 @@ class OutputPaths(ConstrainedContainer):
 
     """
 
-    JSON_SUBDIRS = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour", "profiles"]
+    JSON_SUBDIRS = [
+        "map",
+        "ts",
+        "ts/diurnal",
+        "scat",
+        "hm",
+        "hm/ts",
+        "contour",
+        "forecast",
+        "profiles",
+    ]
 
     json_basedir = DirLoc(
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
@@ -94,6 +112,14 @@ class ModelMapsSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.maps_res_deg = 5
         self.update(**kwargs)
+
+
+class CAMS2_83Setup(ConstrainedContainer):
+    def __init__(self, **kwargs):
+        self.use_cams2_83 = False
+        self.cams2_83_daterange = None
+        self.cams2_83_model = ModelName.EMEP
+        self.cams2_83_dateshift = 0
 
 
 class StatisticsSetup(ConstrainedContainer):
@@ -161,7 +187,10 @@ class StatisticsSetup(ConstrainedContainer):
         self.annual_stats_constrained = False
         self.add_trends = False
         self.trends_min_yrs = 7
+        self.use_diurnal = True
         self.stats_tseries_base_freq = None
+        self.forecast_evaluation = False
+        self.forecast_days = 4
         self.use_fairmode = False
         self.use_diurnal = False
         self.obs_only_stats = False
@@ -309,6 +338,8 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
         self.processing_opts = EvalRunOptions()
 
+        self.cams2_83_cfg = CAMS2_83Setup()
+
         self.obs_cfg = ObsCollection()
         self.model_cfg = ModelCollection()
 
@@ -421,9 +452,27 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
         self.time_cfg["periods"] = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
-        if colstart is None:
-            self.colocation_opts["start"] = start
-        if colstop is None:
-            self.colocation_opts["stop"] = (
-                stop + 1
-            )  # add 1 year since we want to include stop year
+        start_yr = start.year
+        stop_yr = stop.year
+        years = check_if_year(periods)
+        if not years:
+            if start == stop and isinstance(start, pd.Timestamp):
+                stop = start + timedelta(hours=23)
+            elif isinstance(start, pd.Timestamp):
+                stop = stop + timedelta(hours=23)
+
+            if stop_yr == start_yr:
+                stop_yr += 1
+            if colstart is None:
+                self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
+            if colstop is None:
+                self.colocation_opts["stop"] = stop.strftime(
+                    "%Y/%m/%d %H:%M:%S"
+                )  # + 1  # add 1 year since we want to include stop year
+        else:
+            if colstart is None:
+                self.colocation_opts["start"] = start_yr
+            if colstop is None:
+                self.colocation_opts["stop"] = (
+                    stop_yr + 1
+                )  # add 1 year since we want to include stop year

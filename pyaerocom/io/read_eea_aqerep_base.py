@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from pyaerocom import const
 from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase

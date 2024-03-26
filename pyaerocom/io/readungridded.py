@@ -11,6 +11,7 @@ from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, Netw
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
 from pyaerocom.io.gaw.reader import ReadGAW
 from pyaerocom.io.ghost.reader import ReadGhost
 from pyaerocom.io.icos.reader import ReadICOS
@@ -64,6 +65,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        ReadCAMS2_83,
         ReadGAW,
         ReadGhost,
         ReadMEP,
@@ -486,8 +488,12 @@ class ReadUngridded:
         UngriddedData
             data object
         """
+        force_caching = False
+        if "force_caching" in kwargs:
+            force_caching = kwargs.pop("force_caching")
+
         _caching = None
-        if len(kwargs) > 0:
+        if len(kwargs) > 0 and not force_caching:
             _caching = const.CACHING
             const.CACHING = False
 
