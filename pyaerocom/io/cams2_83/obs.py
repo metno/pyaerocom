@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone, tzinfo
+
+# from datetime import datetime, timezone, tzinfo
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Protocol
@@ -32,7 +33,7 @@ def in_domain(df: pd.DataFrame, *, domain: Domain) -> pd.Series:
 
 def add_time(df: pd.DataFrame) -> pd.DataFrame:
     """combine year/month/day/hour into a singre datetime column"""
-    dt = lambda row: datetime(row.Y, row.M, row.D, row.H, tzinfo=timezone.utc)
+    # dt = lambda row: datetime(row.Y, row.M, row.D, row.H, tzinfo=timezone.utc) # what the hell is this?
 
     df = df.rename(columns={"Y": "year", "M": "month", "D": "day", "H": "hour"})
     time = pd.to_datetime(df[["year", "month", "day", "hour"]], utc=True)

@@ -15,7 +15,8 @@ from tqdm import tqdm
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
-from pyaerocom.units_helpers import UALIASES
+
+# from pyaerocom.units_helpers import UALIASES
 
 """
 TODO:
@@ -128,7 +129,8 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     #     return xr.Dataset()
     try:
         ds = ds.sel(time=dateselect)
-    except:
+    except Exception as e:
+        logger.debug(f"{e}")
         logger.debug(f"Interpolating NaNs for {ds.encoding['source']}")
         ds = ds.interp(time=dateselect)
         ds = ds.sel(time=dateselect)
@@ -271,7 +273,7 @@ class ReadCAMS2_83:
         Directory containing netcdf files
         """
         if self._data_dir is None:
-            raise AttributeError(f"data_dir needs to be set before accessing")
+            raise AttributeError("data_dir needs to be set before accessing")
         return self._data_dir
 
     @data_dir.setter
@@ -288,7 +290,7 @@ class ReadCAMS2_83:
     @property
     def data_id(self):
         if self._data_id is None:
-            raise AttributeError(f"data_id needs to be set before accessing")
+            raise AttributeError("data_id needs to be set before accessing")
         return self._data_id
 
     @data_id.setter
@@ -312,13 +314,13 @@ class ReadCAMS2_83:
     @property
     def run_type(self):
         if self._run_type is None:
-            raise AttributeError(f"run_type needs to be set before accessing")
+            raise AttributeError("run_type needs to be set before accessing")
         return self._run_type
 
     @run_type.setter
     def run_type(self, val):
         if val is None:
-            raise AttributeError(f"run_type cannot be set as None")
+            raise AttributeError("run_type cannot be set as None")
         elif type(val) != RunType:
             raise AttributeError(f"run_type cannot be set as {type(val)}, but must be a RunType")
 
@@ -364,7 +366,7 @@ class ReadCAMS2_83:
     @property
     def model(self) -> str:
         if self._model is None:
-            raise ValueError(f"Model not set")
+            raise ValueError("Model not set")
         return self._model
 
     @model.setter
@@ -436,7 +438,7 @@ class ReadCAMS2_83:
             raise ValueError(f"No 'daterange' in kwargs={kwargs}")
 
         if ts_type != "hourly":
-            raise ValueError(f"Only hourly ts_type is supported")
+            raise ValueError("Only hourly ts_type is supported")
 
         cube = self.filedata[var_name].to_iris()
 
@@ -452,7 +454,7 @@ class ReadCAMS2_83:
 
 
 if __name__ == "__main__":
-    from time import perf_counter
+    # from time import perf_counter
 
     data_dir = str(DATA_FOLDER_PATH)
     data_id = "CAMS2-83.EMEP.day0.AN"

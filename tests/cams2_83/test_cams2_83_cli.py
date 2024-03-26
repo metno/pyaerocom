@@ -23,13 +23,9 @@ def test_clearcache(
     fake_cache_path: Path,
     tmp_path: Path,
     fake_config,
+    caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
-
-    # def fake_make_config(*args, **kwargs):
-    #    return patched_full_config
-
-    # monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.make_config", fake_make_config)
 
     def do_not_run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
         assert model_name is None
@@ -40,8 +36,9 @@ def test_clearcache(
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.ExperimentProcessor.run", do_not_run)
     options = f"2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
     result = runner.invoke(app, options.split())
+    assert "Running Statistics" in caplog.text
     assert result.exit_code == 0
-    # Check that clearcache actually cleared the cache
+    # Check that the cache is cleared
     assert not list(fake_cache_path.glob("*.pkl"))
 
 
@@ -50,6 +47,7 @@ def test_not_cleared_cache(
     fake_cache_path: Path,
     tmp_path: Path,
     fake_config,
+    caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
 
@@ -65,7 +63,7 @@ def test_not_cleared_cache(
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.CAMS2_83_Processer.run", do_not_run)
     options = f"2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --eval-type long --medianscores"
     result = runner.invoke(app, options.split())
-    print(result.stdout)
+    assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
     assert result.exit_code == 0
-    # Check that clearcache actually cleared the cache
+    # Check that the cache is not cleared
     assert list(fake_cache_path.glob("*.pkl"))

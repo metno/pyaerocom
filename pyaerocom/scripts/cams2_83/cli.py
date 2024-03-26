@@ -19,11 +19,11 @@ from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
-from pyaerocom.io.cams2_83.models import ModelName, RunType
+from pyaerocom.io.cams2_83.models import ModelName  # , RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
-from pyaerocom.scripts.cams2_83.config import CFG, obs_filters, species_list
+from pyaerocom.scripts.cams2_83.config import CFG, species_list  # , obs_filters
 from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
 
 """
@@ -141,7 +141,7 @@ def get_years_starting_in_november(start_date: datetime, end_date: datetime) -> 
     start_yr = start_date.year
     end_yr = end_date.year
 
-    found_last_yr = False
+    # found_last_yr = False
 
     prev_date = start_date
     new_yr = datetime(start_yr, 12, 1, 00, 00, 00)
@@ -180,8 +180,8 @@ def make_period(
     start_date: datetime,
     end_date: datetime,
 ) -> List[str]:
-    start_yr = start_date.year
-    end_yr = end_date.year
+    # start_yr = start_date.year
+    # end_yr = end_date.year
     start_dt = start_date.strftime("%Y%m%d")  # .year
     end_dt = end_date.strftime("%Y%m%d")  # .year
 
@@ -393,7 +393,7 @@ def runner(
 
     stp = EvalSetup(**cfg)
 
-    start = time.time()
+    # start = time.time()
 
     logger.info(f"Clearing cache at {const.CACHEDIR}")
     clear_cache()
@@ -411,7 +411,7 @@ def runner(
         for future in as_completed(futures):
             future.result()
 
-    logger.info(f"Running Statistics")
+    logger.info("Running Statistics")
     ExperimentProcessor(stp).run()
     print("Done Running Statistics")
 
@@ -439,7 +439,7 @@ def runnermedianscores(
     start = time.time()
 
     logger.info(
-        f"Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
+        "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
     if pool > 1:
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
@@ -591,7 +591,7 @@ def main(
     )
 
     quiet = not verbose
-    if medianscores == True:
+    if medianscores:
         if eval_type not in {"season", "long"}:
             logger.error(
                 "Median scores calculations are only consistent with a season/long kind of evaluation"

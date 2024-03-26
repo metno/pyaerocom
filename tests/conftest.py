@@ -13,7 +13,6 @@ pytest_plugins = [
     "tests.fixtures.stations",
     "tests.fixtures.collocated_data",
     "tests.fixtures.aeroval.config",
-    "tests.fixtures.cams2_83.config",
     "tests.fixtures.pyaro",
 ]
 
