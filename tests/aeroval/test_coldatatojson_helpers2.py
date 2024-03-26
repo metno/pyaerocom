@@ -15,6 +15,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _make_trends,
     _map_indices,
     _process_statistics_timeseries,
+    _start_stop_from_periods,
     get_heatmap_filename,
     get_json_mapname,
     get_profile_filename,
@@ -313,3 +314,16 @@ def test__map_indices():
     out = _map_indices(outer_idx, inner_idx)
     assert isinstance(out, np.ndarray)
     assert len(out) == len(outer_idx)
+
+
+@pytest.mark.parametrize(
+    "periods,result",
+    [
+        ("2024/03/16-2024/03/23", (2024, 2024)),
+        ("2023/06/01-2023/08/31", (2023, 2023)),
+        ("2023/06/01-2023/06/01", (2023, 2023)),
+        ("2021-2024", (2021, 2024)),
+    ],
+)
+def test___start_stop_from_periods(periods: str, result: tuple[int, int]):
+    assert _start_stop_from_periods(periods) == result
