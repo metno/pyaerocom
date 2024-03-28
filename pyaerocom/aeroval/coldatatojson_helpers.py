@@ -15,7 +15,7 @@ import xarray as xr
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
-from pyaerocom.aeroval.json_utils import read_json, write_json
+from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import (
@@ -78,8 +78,8 @@ def _write_stationdata_json(ts_data, out_dir):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, ignore_nan=True)
+    current[ts_data["model_name"]] = round_floats(ts_data)
+    write_json(current, fp, round_floats=False)
 
 
 def _write_site_data(ts_objs, dirloc):
@@ -120,8 +120,8 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, ignore_nan=True)
+    current[ts_data["model_name"]] = round_floats(ts_data)
+    write_json(current, fp, round_floats=False)
 
 
 def _add_heatmap_entry_json(
@@ -143,8 +143,8 @@ def _add_heatmap_entry_json(
     if not model_name in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
-    mn[model_var] = result
-    write_json(current, heatmap_file, ignore_nan=True)
+    mn[model_var] = round_floats(result)
+    write_json(current, heatmap_file, round_floats=False)
 
 
 def _prepare_regions_json_helper(region_ids):
@@ -239,8 +239,8 @@ def update_regions_json(region_defs, regions_json):
 
     for region_name, region_info in region_defs.items():
         if not region_name in current:
-            current[region_name] = region_info
-    write_json(current, regions_json)
+            current[region_name] = round_floats(region_info)
+    write_json(current, regions_json, round_floats=False)
     return current
 
 
@@ -1587,5 +1587,5 @@ def add_profile_entry_json(
                 "z_long_description": "Altitude Above Sea Level",
                 "unit": coldata.unitstr,
             }
-
-    write_json(current, profile_file, ignore_nan=True)
+        current[model_name] = round_floats(current[model_name])
+    write_json(current, profile_file, round_floats=False)
