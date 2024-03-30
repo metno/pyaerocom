@@ -20,6 +20,7 @@ from pydantic import (
     field_validator,
     field_serializer,
     PositiveInt,
+    Field,
 )
 from dataclasses import field
 from typing import Optional, Literal
@@ -59,10 +60,11 @@ class OutputPaths(BaseModel):
         "profiles",
     ]
 
-    json_basedir: Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
-    coldata_basedir: Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
+    json_basedir: Path | str =  Field(default = os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True)
+    coldata_basedir: Path | str = Field(default = os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True)
 
     @field_validator("json_basedir", "coldata_basedir")
+    @classmethod
     def validate_basedirs(cls, v):
         if not os.path.exists(v):
             tmp = Path(v) if isinstance(v, str) else v

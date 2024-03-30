@@ -203,9 +203,11 @@ def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: b
     setup = EvalSetup(
         proj_id="proj",
         exp_id="exp",
-        coldata_basedir=str(coldata_path),
-        json_basedir=str(json_path),
+        coldata_basedir=coldata_path,
+        json_basedir=json_path,
     )
+    assert setup.path_manager.coldata_basedir == coldata_path
+    assert setup.path_manager.json_basedir == json_path
     assert coldata_path.exists()
 
     out = ExperimentOutput(setup)
