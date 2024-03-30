@@ -523,7 +523,7 @@ class ExperimentOutput(ProjectOutput):
     def _create_statistics_json(self) -> None:
         if self.cfg.statistics_opts.obs_only_stats:
             stats_info = statistics_obs_only
-        elif self.cfg.statistics_opts.only_stats_for_model:
+        elif self.cfg.statistics_opts.model_only_stats:
             stats_info = statistics_model_only
         else:
             stats_info = statistics_defaults
