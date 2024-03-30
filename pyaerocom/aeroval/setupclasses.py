@@ -384,6 +384,12 @@ class EvalSetup(BaseModel):
     def colocation_opts(self) -> ColocationSetup:
         if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(ColocationSetup().__dict__.keys()))):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            # need to pass some default values to the ColocationSetup if not provided in config 
+            default_dict = {"save_coldata" : True, "keep_data": False, "resample_how": "mean"}
+            for key in default_dict:
+                if key not in subset_dict:
+                    subset_dict[key] = default_dict[key]
+            
             return ColocationSetup(**subset_dict)
         else:
             return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
