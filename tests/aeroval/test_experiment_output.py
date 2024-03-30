@@ -334,7 +334,7 @@ def test_Experiment_Output_drop_stats_and_decimals(
     cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
     proc = ExperimentProcessor(cfg)
     proc.run()
-    path = Path(proc.exp_output.exp_dir) 
+    path = Path(proc.exp_output.exp_dir)
     files = [f for f in path.iterdir() if f.is_file()]
     assert any(["statistics.json" in f.name for f in files])
     statistics_json = read_json(path / "statistics.json")

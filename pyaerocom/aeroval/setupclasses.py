@@ -15,17 +15,22 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
-from pydantic import BaseModel, ConfigDict, computed_field, Field, validator, field_validator, field_serializer, PositiveInt
-from pydantic.dataclasses import dataclass
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    computed_field,
+    field_validator,
+    field_serializer,
+    PositiveInt,
+)
 from dataclasses import field
-from typing import Optional, Tuple, Literal
+from typing import Optional, Literal
 
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-#T = TypeVar('T')
-    
+
 class OutputPaths(BaseModel):
     """
     Setup class for output paths of json files and co-located data
@@ -41,66 +46,35 @@ class OutputPaths(BaseModel):
     json_basedir : str
 
     """
+
     # Pydantic ConfigDict
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    JSON_SUBDIRS : list[str] = ["map", "ts", "ts/diurnal", "scat", "hm", "hm/ts", "contour", "profiles"]
+    JSON_SUBDIRS: list[str] = [
+        "map",
+        "ts",
+        "ts/diurnal",
+        "scat",
+        "hm",
+        "hm/ts",
+        "contour",
+        "profiles",
+    ]
 
-    #@computed_field
-    # @property
-    # def json_basedir(self) -> DirLoc:
-    #     #if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(DirLoc.__dict__.keys()))):
-    #         #subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
-    #     if hasattr(self, "model_extra") and isinstance(self.model_extra, dict) and "json_basdir" in self.model_extra: #and self.model_extra.get("json_basedir", False):
-    #         out_json_basedir_filepath = self.model_extra["json_basedir"]
-    #         #out_json_basedir_filepath = os.path.join(const.OUTPUTDIR, "aeroval/data")
-    #     else:
-    #         out_json_basedir_filepath = os.path.join(const.OUTPUTDIR, "aeroval/data")
-    #     DirLoc(
-    #         default=out_json_basedir_filepath,
-    #         assert_exists=True,
-    #         auto_create=True,
-    #         logger=logger,
-    #         tooltip="Base directory for json output files",
-    #         )
-    #     return out_json_basedir_filepath
-    
-    # json_basedir : DirLoc | str = DirLoc(
-    #     default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
-    #     assert_exists=True,
-    #     auto_create=True,
-    #     logger=logger,
-    #     tooltip="Base directory for json output files",
-    # )
+    json_basedir: Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
+    coldata_basedir: Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
 
-
-    json_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/data")
-    coldata_basedir : Path | str = os.path.join(const.OUTPUTDIR, "aeroval/coldata")
-    
     @field_validator("json_basedir", "coldata_basedir")
     def validate_basedirs(cls, v):
         if not os.path.exists(v):
             tmp = Path(v) if isinstance(v, str) else v
             tmp.mkdir(parents=True, exist_ok=True)
         return v
-    
-    
-    # coldata_basedir : DirLoc | str = DirLoc(
-    #     default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
-    #     assert_exists=True,
-    #     auto_create=True,
-    #     logger=logger,
-    #     tooltip="Base directory for colocated data output files (NetCDF)",
-    # )
-    
-    
-    
 
+    ADD_GLOB: list[str] = ["coldata_basedir", "json_basedir"]
 
-    ADD_GLOB : list[str] = ["coldata_basedir", "json_basedir"]
-    
-    proj_id : str 
-    exp_id : str
+    proj_id: str
+    exp_id: str
 
     def _check_init_dir(self, loc, assert_exists):
         if assert_exists and not os.path.exists(loc):
@@ -118,13 +92,13 @@ class OutputPaths(BaseModel):
             loc = self._check_init_dir(os.path.join(base, subdir), assert_exists)
             out[subdir] = loc
         return out
-        
-#@dataclass        
+
+
 class ModelMapsSetup(BaseModel):
-    maps_freq : Literal["monthly", "yearly"] = "monthly"
-    maps_res_deg : PositiveInt = 5
-             
-    
+    maps_freq: Literal["monthly", "yearly"] = "monthly"
+    maps_res_deg: PositiveInt = 5
+
+
 class StatisticsSetup(BaseModel, extra="allow"):
     """
     Setup options for statistical calculations
@@ -184,33 +158,32 @@ class StatisticsSetup(BaseModel, extra="allow"):
 
     """
 
-    MIN_NUM : PositiveInt = 1
+    MIN_NUM: PositiveInt = 1
     weighted_stats: bool = True
-    annual_stats_constrained : bool = False
-    add_trends : bool = False
-    trends_min_yrs : PositiveInt = 7
-    stats_tseries_base_freq : str | None = None
-    use_fairmode : bool = False
-    use_diurnal : bool = False
-    obs_only_stats : bool = False
-    only_stats_for_model : bool = False # LB: casues namespace conflicts. see if way around
-    drop_stats : tuple[str, ...] = ()
-    stats_decimals : int | None = None
-    round_floats_precision : Optional[int] = None
+    annual_stats_constrained: bool = False
+    add_trends: bool = False
+    trends_min_yrs: PositiveInt = 7
+    stats_tseries_base_freq: str | None = None
+    use_fairmode: bool = False
+    use_diurnal: bool = False
+    obs_only_stats: bool = False
+    only_stats_for_model: bool = False  # LB: casues namespace conflicts. see if way around
+    drop_stats: tuple[str, ...] = ()
+    stats_decimals: int | None = None
+    round_floats_precision: Optional[int] = None
 
     if round_floats_precision:
         set_float_serialization_precision(round_floats_precision)
-    
-    
+
+
 class TimeSetup(BaseModel):
-    
-    DEFAULT_FREQS : Literal["monthly", "yearly"] = "monthly"
-    SEASONS : list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
-    main_freq : str = "monthly"
-    freqs : list[str] = ["monthly", "yearly"]
-    periods : list[str] = []
-    add_seasons : bool = True
-    
+
+    DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
+    SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
+    main_freq: str = "monthly"
+    freqs: list[str] = ["monthly", "yearly"]
+    periods: list[str] = []
+    add_seasons: bool = True
 
     def get_seasons(self):
         """
@@ -244,124 +217,126 @@ class TimeSetup(BaseModel):
                 perstr = f"{per}-{season}"
                 output.append(perstr)
         return output
-        
-#@dataclass
+
+
 class WebDisplaySetup(BaseModel):
     # Pydantic ConfigDict
     model_config = ConfigDict()
-    model_config['protected_namespaces'] = ()
+    model_config["protected_namespaces"] = ()
     # WebDisplaySetup attributes
-    map_zoom : Literal["World", "Europe", "xEMEP"] = "World"
-    regions_how : Literal["default", "aerocom", "htap", "country"] = "default"
-    map_zoom : str = "World"
-    add_model_maps : bool = False
-    modelorder_from_config : bool = True
-    obsorder_from_config : bool = True
-    var_order_menu : tuple[str, ...] = ()
-    obs_order_menu : tuple[str, ...] = ()
-    model_order_menu : tuple[str, ...] = ()
-    hide_charts : tuple[str, ...] = ()
-    hide_pages : tuple[str, ...] = ()
-    ts_annotations : dict[str, str] = field(default_factory=dict)
-    add_pages : tuple[str, ...] = ()
-           
-# Can't be dataclasses if computed_fields.
-#@dataclass
+    map_zoom: Literal["World", "Europe", "xEMEP"] = "World"
+    regions_how: Literal["default", "aerocom", "htap", "country"] = "default"
+    map_zoom: str = "World"
+    add_model_maps: bool = False
+    modelorder_from_config: bool = True
+    obsorder_from_config: bool = True
+    var_order_menu: tuple[str, ...] = ()
+    obs_order_menu: tuple[str, ...] = ()
+    model_order_menu: tuple[str, ...] = ()
+    hide_charts: tuple[str, ...] = ()
+    hide_pages: tuple[str, ...] = ()
+    ts_annotations: dict[str, str] = field(default_factory=dict)
+    add_pages: tuple[str, ...] = ()
+
+
 class EvalRunOptions(BaseModel):
 
-    clear_existing_json : bool = True
-    only_json : bool = False
-    only_colocation : bool = False
+    clear_existing_json: bool = True
+    only_json: bool = False
+    only_colocation: bool = False
     #: If True, process only maps (skip obs evaluation)
-    only_model_maps : bool = False
-    obs_only : bool = False
+    only_model_maps: bool = False
+    obs_only: bool = False
 
-#@dataclass
+
 class ProjectInfo(BaseModel):
-    proj_id : str
+    proj_id: str
 
-#@dataclass
+
 class ExperimentInfo(BaseModel):
-    exp_id : str 
-    exp_name : str = ""
-    exp_descr : str = ""
-    public : bool = False
-    exp_pi : str = getuser()
-    pyaerocom_version : str = __version__
-                  
+    exp_id: str
+    exp_name: str = ""
+    exp_descr: str = ""
+    public: bool = False
+    exp_pi: str = getuser()
+    pyaerocom_version: str = __version__
+
+
 class EvalSetup(BaseModel):
     """Composite class representing a whole analysis setup
 
     This represents the level at which json I/O happens for configuration
     setup files.
-    """ 
-    # Pydantic ConfigDict
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces = ())
+    """
 
-    IGNORE_JSON : list[str] = ["_aux_funs"]
-    ADD_GLOB : list[str] = ["io_aux_file"]
-    # # LB: will need to address 
-    io_aux_file : AsciiFileLoc | str = AsciiFileLoc(
+    # Pydantic ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
+
+    IGNORE_JSON: list[str] = ["_aux_funs"]
+    ADD_GLOB: list[str] = ["io_aux_file"]
+    # # LB: will need to address
+    io_aux_file: AsciiFileLoc | str = AsciiFileLoc(
         default="",
         assert_exists=False,
         auto_create=False,
         logger=logger,
         tooltip=".py file containing additional read methods for modeldata",
     )
-    #io_aux_file : Path
+    # io_aux_file : Path
     _aux_funs: dict = {}
 
-    proj_id : str
-    exp_id : str
-    
+    proj_id: str
+    exp_id: str
+
     @computed_field
     @property
     def proj_info(self) -> ProjectInfo:
         return ProjectInfo(proj_id=self.proj_id)
-    
-    # LB: This will need updating with additional fields as well like time_cfg
+
     @computed_field
     @property
     def exp_info(self) -> ExperimentInfo:
         return ExperimentInfo(exp_id=self.exp_id)
-    
+
     @computed_field
     @property
     def path_manager(self) -> OutputPaths:
-        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(OutputPaths.model_fields))):
+        if hasattr(self, "model_extra") & bool(
+            cfg_extra_keys := set(self.model_extra).intersection(set(OutputPaths.model_fields))
+        ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id, **subset_dict)
         else:
             return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
-    
-    #time_cfg : TimeSetup = TimeSetup()
-    
+
     # This is an attempt at a hack to get keys from a general CFG into their appropriate respective classes
     # It's hard to come up with a way to do this that doesn't introduce breaking changes
     # Introducing breaking changes only seems appropriate after a config format is settled.
-    # Note: all these computed fields could be more easily defined if the config were 
+    # Note: all these computed fields could be more easily defined if the config were
     # rigid enough to have they explicitly defined (e.g., in a TOML file), rather than dumping everything
     # into one large config dict and then dishing out get the relevant parts to each class.
     @computed_field
     @property
     def time_cfg(self) -> TimeSetup:
-        if hasattr(self, "model_extra") & bool(time_cfg_keys := set(self.model_extra).intersection(set(TimeSetup.model_fields))):
+        if hasattr(self, "model_extra") & bool(
+            time_cfg_keys := set(self.model_extra).intersection(set(TimeSetup.model_fields))
+        ):
             subset_dict = {k: self.model_extra[k] for k in time_cfg_keys}
             return TimeSetup(**subset_dict)
         else:
             return TimeSetup()
-    
-    #modelmaps_opts : ModelMapsSetup = ModelMapsSetup()
+
     @computed_field
     @property
     def modelmaps_opts(self) -> ModelMapsSetup:
-        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(ModelMapsSetup.model_fields))):
+        if hasattr(self, "model_extra") & bool(
+            cfg_extra_keys := set(self.model_extra).intersection(set(ModelMapsSetup.model_fields))
+        ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             return ModelMapsSetup(**subset_dict)
         else:
             return ModelMapsSetup()
-        
-        
+
     # # Etc. etc... could do above many times. Is there a way to do it with an update function??
     # def _update(self, obj: Generic[T]) -> Generic[T]:
     #     if hasattr(self, "model_extra"):
@@ -373,91 +348,91 @@ class EvalSetup(BaseModel):
     #             return obj()
     #     else:
     #         return obj()
-    
-    # colocation_opts : ColocationSetup = ColocationSetup(
-    #     save_coldata=True, keep_data=False, resample_how="mean"
-    # )
 
     # TODO: Use Pydantic for ColocationSetup
     @computed_field
     @property
     def colocation_opts(self) -> ColocationSetup:
-        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(ColocationSetup().__dict__.keys()))):
+        if hasattr(self, "model_extra") & bool(
+            cfg_extra_keys := set(self.model_extra).intersection(
+                set(ColocationSetup().__dict__.keys())
+            )
+        ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
-            # need to pass some default values to the ColocationSetup if not provided in config 
-            default_dict = {"save_coldata" : True, "keep_data": False, "resample_how": "mean"}
+            # need to pass some default values to the ColocationSetup if not provided in config
+            default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
             for key in default_dict:
                 if key not in subset_dict:
                     subset_dict[key] = default_dict[key]
-            
+
             return ColocationSetup(**subset_dict)
         else:
             return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
-        
+
     @field_serializer("colocation_opts")
-    def serialize_colocation_opts(self, colocation_opts : ColocationSetup):
+    def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
         return colocation_opts.json_repr()
-    
-    #webdisp_opts : WebDisplaySetup= WebDisplaySetup()
+
     @computed_field
     @property
     def webdisp_opts(self) -> WebDisplaySetup:
-        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(WebDisplaySetup.model_fields))):
+        if hasattr(self, "model_extra") & bool(
+            cfg_extra_keys := set(self.model_extra).intersection(set(WebDisplaySetup.model_fields))
+        ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             return WebDisplaySetup(**subset_dict)
         else:
             return WebDisplaySetup()
-    
-    
-    #processing_opts : EvalRunOptions = EvalRunOptions()
+
     @computed_field
     @property
     def processing_opts(self) -> EvalRunOptions:
-        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(EvalRunOptions.model_fields))):
+        if hasattr(self, "model_extra") & bool(
+            cfg_extra_keys := set(self.model_extra).intersection(set(EvalRunOptions.model_fields))
+        ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             return EvalRunOptions(**subset_dict)
         else:
             return EvalRunOptions()
 
-    
-    var_web_info : dict = {}
-    
-    #statistics_opts : StatisticsSetup = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+    var_web_info: dict = {}
+
     @computed_field
     @property
     def statistics_opts(self) -> StatisticsSetup:
-        if hasattr(self, "model_extra") & bool(cfg_extra_keys := set(self.model_extra).intersection(set(StatisticsSetup.model_fields))):
+        if hasattr(self, "model_extra") & bool(
+            cfg_extra_keys := set(self.model_extra).intersection(set(StatisticsSetup.model_fields))
+        ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             return StatisticsSetup(**subset_dict)
         else:
             return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
-    
-    # LB: ObsCollection and ModelCollection require special attention b/c they're not based on Pydantic.
+
+    # ObsCollection and ModelCollection require special attention b/c they're not based on Pydantic.
     # TODO Use Pydantic for ObsCollection and ModelCollection
-    obs_cfg : ObsCollection | dict = ObsCollection() 
-    
+    obs_cfg: ObsCollection | dict = ObsCollection()
+
     @field_validator("obs_cfg")
     def validate_obs_cfg(cls, v):
         if not isinstance(v, ObsCollection):
             return ObsCollection(v)
         return v
-    
+
     @field_serializer("obs_cfg")
-    def serialize_obs_cfg(self, obs_cfg : ObsCollection):
+    def serialize_obs_cfg(self, obs_cfg: ObsCollection):
         return obs_cfg.json_repr()
-    
-    
-    model_cfg : ModelCollection | dict = ModelCollection()
+
+    model_cfg: ModelCollection | dict = ModelCollection()
+
     @field_validator("model_cfg")
     def validate_model_cfg(cls, v):
         if not isinstance(v, ModelCollection):
             return ModelCollection(v)
         return v
-    
+
     @field_serializer("model_cfg")
-    def serialize_model_cfg(self, model_cfg : ModelCollection):
+    def serialize_model_cfg(self, model_cfg: ModelCollection):
         return model_cfg.json_repr()
-    
 
     @property
     def json_filename(self) -> str:
@@ -529,9 +504,7 @@ class EvalSetup(BaseModel):
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
-    
-    
-    # LB. experimental feature
+
     def json_repr(self):
         return self.model_dump()
 

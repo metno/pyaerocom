@@ -21,22 +21,20 @@ from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
-# from pydantic import BaseModel, ConfigDict, computed_field, field_validator
-# from pydantic.dataclasses import dataclass
-
 
 logger = logging.getLogger(__name__)
 
+
 class ProjectOutput:
     """JSON output for project"""
-    
+
     proj_id = StrType()
 
     json_basedir = DirLoc(assert_exists=True)
-    
+
     def __init__(self, proj_id: str, json_basedir: str):
         self.proj_id = proj_id
-        self.json_basedir = json_basedir    
+        self.json_basedir = json_basedir
 
     @property
     def proj_dir(self) -> str:
@@ -66,7 +64,6 @@ class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
 
     cfg = TypeValidator(EvalSetup)
-
 
     def __init__(self, cfg):
         self.cfg = cfg
