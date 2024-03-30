@@ -60,8 +60,12 @@ class OutputPaths(BaseModel):
         "profiles",
     ]
 
-    json_basedir: Path | str =  Field(default = os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True)
-    coldata_basedir: Path | str = Field(default = os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True)
+    json_basedir: Path | str = Field(
+        default=os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True
+    )
+    coldata_basedir: Path | str = Field(
+        default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True
+    )
 
     @field_validator("json_basedir", "coldata_basedir")
     @classmethod
@@ -177,7 +181,6 @@ class StatisticsSetup(BaseModel, extra="allow"):
 
 
 class TimeSetup(BaseModel):
-
     DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
     SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
     main_freq: str = "monthly"
@@ -240,7 +243,6 @@ class WebDisplaySetup(BaseModel):
 
 
 class EvalRunOptions(BaseModel):
-
     clear_existing_json: bool = True
     only_json: bool = False
     only_colocation: bool = False
