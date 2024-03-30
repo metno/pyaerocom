@@ -39,7 +39,6 @@ def test_EvalSetup___init__(eval_config: dict, update: dict):
 )
 def test_EvalSetup___init__INVALID_ENTRY_NAMES(eval_config: dict, update: dict, error: str):
     eval_config.update(update)
-    # '"Invalid name: WRONG_MODEL. Must not contain any of the following characters: [\'_\']"'
     with pytest.raises(EvalEntryNameError) as e:
         EvalSetup(**eval_config)
     assert error in str(e.value)
