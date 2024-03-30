@@ -4,10 +4,8 @@ import os
 from getpass import getuser
 
 from pyaerocom import __version__, const
-from pyaerocom._lowlevel_helpers import (
-    AsciiFileLoc,
-    DirLoc,
-)
+from pyaerocom._lowlevel_helpers import AsciiFileLoc
+
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods

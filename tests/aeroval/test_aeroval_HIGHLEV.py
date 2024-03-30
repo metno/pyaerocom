@@ -104,7 +104,6 @@ def test_reanalyse_existing(eval_config: dict, reanalyse_existing: bool):
     assert list(output.glob("**/*.nc"))
 
 
-
 @pytest.mark.parametrize("cfg", ["cfgexp4"])
 def test_superobs_different_resolutions(eval_config: dict):
     cfg = EvalSetup(**eval_config)
