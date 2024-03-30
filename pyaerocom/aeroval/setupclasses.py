@@ -6,7 +6,6 @@ from dataclasses import field
 from getpass import getuser
 from pathlib import Path
 from typing import Literal, Optional
-from typing_extensions import Annotated
 
 from pydantic import (
     BaseModel,
@@ -17,6 +16,7 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
+from typing_extensions import Annotated
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
@@ -276,8 +276,10 @@ class EvalSetup(BaseModel):
     IGNORE_JSON: list[str] = ["_aux_funs"]
     ADD_GLOB: list[str] = ["io_aux_file"]
 
-    io_aux_file : Annotated[Path | str, ".py file containing additional read methods for modeldata"] = ""
-    
+    io_aux_file: Annotated[
+        Path | str, ".py file containing additional read methods for modeldata"
+    ] = ""
+
     _aux_funs: dict = {}
 
     proj_id: str
