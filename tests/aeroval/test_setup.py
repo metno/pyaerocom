@@ -5,12 +5,11 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 from tests.fixtures.aeroval import CAMS84_CONFIG
-
-from pydantic import ValidationError
 
 
 @pytest.fixture()

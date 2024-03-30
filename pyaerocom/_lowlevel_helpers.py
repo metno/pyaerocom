@@ -12,7 +12,6 @@ import numpy as np
 
 from pyaerocom._warnings import ignore_warnings
 
-
 logger = logging.getLogger(__name__)
 
 

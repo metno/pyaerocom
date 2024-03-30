@@ -1,31 +1,30 @@
 from __future__ import annotations
+
 import logging
 import os
+from dataclasses import field
 from getpass import getuser
+from pathlib import Path
+from typing import Literal, Optional
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PositiveInt,
+    computed_field,
+    field_serializer,
+    field_validator,
+)
 
 from pyaerocom import __version__, const
 from pyaerocom._lowlevel_helpers import AsciiFileLoc
-
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
-
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    computed_field,
-    field_validator,
-    field_serializer,
-    PositiveInt,
-    Field,
-)
-from dataclasses import field
-from typing import Optional, Literal
-
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

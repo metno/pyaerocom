@@ -21,7 +21,6 @@ from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
-
 logger = logging.getLogger(__name__)
 
 
