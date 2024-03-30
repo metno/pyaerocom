@@ -17,7 +17,7 @@ def mep_path() -> Path:
     try:
         path = Path(const.OBSLOCS_UNGRIDDED[const.MEP_NAME])
     except KeyError:
-        pytest.skip("MEP path is not registeded")
+        pytest.skip("MEP path is not registered")
 
     if not path.exists():
         pytest.skip(f"missing {path}, this os OK on CI")
