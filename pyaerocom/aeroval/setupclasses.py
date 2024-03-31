@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-from dataclasses import field
 from getpass import getuser
 from pathlib import Path
 from typing import Literal, Optional
@@ -237,7 +236,7 @@ class WebDisplaySetup(BaseModel):
     model_order_menu: tuple[str, ...] = ()
     hide_charts: tuple[str, ...] = ()
     hide_pages: tuple[str, ...] = ()
-    ts_annotations: dict[str, str] = field(default_factory=dict)
+    ts_annotations: dict[str, str] = Field(default_factory=dict)
     add_pages: tuple[str, ...] = ()
 
 
