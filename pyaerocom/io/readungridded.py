@@ -891,14 +891,3 @@ class ReadUngridded:
 
     def __str__(self):
         return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
-
-    def __str__(self):
-        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
-        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
-
-    def __str__(self):
-        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
-        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
-
-    def __str__(self):
-        return "\n".join(str(self.get_lowlevel_reader(ds)) for ds in self.data_ids)
