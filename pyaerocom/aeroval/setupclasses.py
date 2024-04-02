@@ -4,7 +4,7 @@ import sys
 from getpass import getuser
 from pathlib import Path
 
-if sys.version_info < (3, 10):
+if sys.version_info < (3, 11):
     from typing_extensions import Self
 else:
     from typing import Self
