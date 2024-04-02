@@ -4,7 +4,7 @@ import logging
 import os
 from getpass import getuser
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -183,7 +183,7 @@ class TimeSetup(BaseModel):
     SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
     main_freq: str = "monthly"
     freqs: list[str] = ["monthly", "yearly"]
-    periods: list[str] = []
+    periods: list[str] = Field(default_factory=list)
     add_seasons: bool = True
 
     def get_seasons(self):
@@ -269,8 +269,14 @@ class EvalSetup(BaseModel):
     setup files.
     """
 
-    # Pydantic ConfigDict
+    ###########################
+    ##   Pydantic ConfigDict
+    ###########################
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
+
+    ########################################
+    ## Regular & BaseModel-based Attributes
+    ########################################
 
     IGNORE_JSON: list[str] = ["_aux_funs"]
     ADD_GLOB: list[str] = ["io_aux_file"]
@@ -283,6 +289,7 @@ class EvalSetup(BaseModel):
 
     proj_id: str
     exp_id: str
+    var_web_info: dict = {}
 
     @computed_field
     @property
@@ -293,6 +300,19 @@ class EvalSetup(BaseModel):
     @property
     def exp_info(self) -> ExperimentInfo:
         return ExperimentInfo(exp_id=self.exp_id)
+
+    @property
+    def json_filename(self) -> str:
+        """
+        str: Savename of config file: cfg_<proj_id>_<exp_id>.json
+        """
+        return f"cfg_{self.proj_id}_{self.exp_id}.json"
+
+    @property
+    def gridded_aux_funs(self) -> dict:
+        if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
+            self._import_aux_funs()
+        return self._aux_funs
 
     @computed_field
     @property
@@ -305,17 +325,15 @@ class EvalSetup(BaseModel):
         else:
             return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
 
-    # This is an attempt at a hack to get keys from a general CFG into their appropriate respective classes
-    # It's hard to come up with a way to do this that doesn't introduce breaking changes
-    # Introducing breaking changes only seems appropriate after a config format is settled.
-    # Note: all these computed fields could be more easily defined if the config were
+    # This is a hack to get keys from a general CFG into their appropriate respective classes
+    # TODO: all these computed fields could be more easily defined if the config were
     # rigid enough to have they explicitly defined (e.g., in a TOML file), rather than dumping everything
-    # into one large config dict and then dishing out get the relevant parts to each class.
+    # into one large config dict and then dishing out the relevant parts to each class.
     @computed_field
     @property
     def time_cfg(self) -> TimeSetup:
-        if hasattr(self, "model_extra") & bool(
-            time_cfg_keys := set(self.model_extra).intersection(set(TimeSetup.model_fields))
+        if hasattr(self, "model_extra") and bool(
+            time_cfg_keys := set(self.model_extra) & set(TimeSetup.model_fields)
         ):
             subset_dict = {k: self.model_extra[k] for k in time_cfg_keys}
             return TimeSetup(**subset_dict)
@@ -325,34 +343,59 @@ class EvalSetup(BaseModel):
     @computed_field
     @property
     def modelmaps_opts(self) -> ModelMapsSetup:
-        if hasattr(self, "model_extra") & bool(
-            cfg_extra_keys := set(self.model_extra).intersection(set(ModelMapsSetup.model_fields))
+        if hasattr(self, "model_extra") and bool(
+            cfg_extra_keys := set(self.model_extra) & set(ModelMapsSetup.model_fields)
         ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             return ModelMapsSetup(**subset_dict)
         else:
             return ModelMapsSetup()
 
-    # # Etc. etc... could do above many times. Is there a way to do it with an update function??
-    # def _update(self, obj: Generic[T]) -> Generic[T]:
-    #     if hasattr(self, "model_extra"):
-    #         extra_obj_cfg_keys = set(self.model_extra).intersection(set(obj.__fields__))
-    #         if extra_obj_cfg_keys:
-    #             subset_dict = {k: self.model_extra[k] for k in extra_obj_cfg_keys}
-    #             return obj(**subset_dict)
-    #         else:
-    #             return obj()
-    #     else:
-    #         return obj()
+    @computed_field
+    @property
+    def webdisp_opts(self) -> WebDisplaySetup:
+        if hasattr(self, "model_extra") and bool(
+            cfg_extra_keys := set(self.model_extra) & set(WebDisplaySetup.model_fields)
+        ):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return WebDisplaySetup(**subset_dict)
+        else:
+            return WebDisplaySetup()
+
+    @computed_field
+    @property
+    def processing_opts(self) -> EvalRunOptions:
+        if hasattr(self, "model_extra") and bool(
+            cfg_extra_keys := set(self.model_extra) & set(EvalRunOptions.model_fields)
+        ):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return EvalRunOptions(**subset_dict)
+        else:
+            return EvalRunOptions()
+
+    @computed_field
+    @property
+    def statistics_opts(self) -> StatisticsSetup:
+        if hasattr(self, "model_extra") and bool(
+            cfg_extra_keys := set(self.model_extra) & set(StatisticsSetup.model_fields)
+        ):
+            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
+            return StatisticsSetup(**subset_dict)
+        else:
+            return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+
+    ##################################
+    ## Non-BaseModel-based attributes
+    ##################################
+
+    # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
 
     # TODO: Use Pydantic for ColocationSetup
     @computed_field
     @property
     def colocation_opts(self) -> ColocationSetup:
-        if hasattr(self, "model_extra") & bool(
-            cfg_extra_keys := set(self.model_extra).intersection(
-                set(ColocationSetup().__dict__.keys())
-            )
+        if hasattr(self, "model_extra") and bool(
+            cfg_extra_keys := set(self.model_extra) & set(ColocationSetup().__dict__.keys())
         ):
             subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
             # need to pass some default values to the ColocationSetup if not provided in config
@@ -369,50 +412,16 @@ class EvalSetup(BaseModel):
     def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
         return colocation_opts.json_repr()
 
-    @computed_field
-    @property
-    def webdisp_opts(self) -> WebDisplaySetup:
-        if hasattr(self, "model_extra") & bool(
-            cfg_extra_keys := set(self.model_extra).intersection(set(WebDisplaySetup.model_fields))
-        ):
-            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
-            return WebDisplaySetup(**subset_dict)
-        else:
-            return WebDisplaySetup()
-
-    @computed_field
-    @property
-    def processing_opts(self) -> EvalRunOptions:
-        if hasattr(self, "model_extra") & bool(
-            cfg_extra_keys := set(self.model_extra).intersection(set(EvalRunOptions.model_fields))
-        ):
-            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
-            return EvalRunOptions(**subset_dict)
-        else:
-            return EvalRunOptions()
-
-    var_web_info: dict = {}
-
-    @computed_field
-    @property
-    def statistics_opts(self) -> StatisticsSetup:
-        if hasattr(self, "model_extra") & bool(
-            cfg_extra_keys := set(self.model_extra).intersection(set(StatisticsSetup.model_fields))
-        ):
-            subset_dict = {k: self.model_extra[k] for k in cfg_extra_keys}
-            return StatisticsSetup(**subset_dict)
-        else:
-            return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
-
-    # ObsCollection and ModelCollection require special attention b/c they're not based on Pydantic.
+    # ObsCollection and ModelCollection
     # TODO Use Pydantic for ObsCollection and ModelCollection
+
     obs_cfg: ObsCollection | dict = ObsCollection()
 
     @field_validator("obs_cfg")
     def validate_obs_cfg(cls, v):
-        if not isinstance(v, ObsCollection):
-            return ObsCollection(v)
-        return v
+        if isinstance(v, ObsCollection):
+            return v
+        return ObsCollection(v)
 
     @field_serializer("obs_cfg")
     def serialize_obs_cfg(self, obs_cfg: ObsCollection):
@@ -422,26 +431,17 @@ class EvalSetup(BaseModel):
 
     @field_validator("model_cfg")
     def validate_model_cfg(cls, v):
-        if not isinstance(v, ModelCollection):
-            return ModelCollection(v)
-        return v
+        if isinstance(v, ModelCollection):
+            return v
+        return ModelCollection(v)
 
     @field_serializer("model_cfg")
     def serialize_model_cfg(self, model_cfg: ModelCollection):
         return model_cfg.json_repr()
 
-    @property
-    def json_filename(self) -> str:
-        """
-        str: Savename of config file: cfg_<proj_id>_<exp_id>.json
-        """
-        return f"cfg_{self.proj_id}_{self.exp_id}.json"
-
-    @property
-    def gridded_aux_funs(self) -> dict:
-        if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
-            self._import_aux_funs()
-        return self._aux_funs
+    ###########################
+    ##       Methods
+    ###########################
 
     def get_obs_entry(self, obs_name) -> dict:
         return self.obs_cfg.get_entry(obs_name).to_dict()
@@ -496,7 +496,7 @@ class EvalSetup(BaseModel):
         return filepath
 
     @staticmethod
-    def from_json(filepath: str) -> EvalSetup:
+    def from_json(filepath: str) -> Self:
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
