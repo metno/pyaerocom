@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
-from pyaerocom.plugins.icpforests.metadata import MetadataReader as ReadICPForestMeta
-from pyaerocom.plugins.icpforests.reader import ReadICPForest
+from pyaerocom.io.icpforests.metadata import MetadataReader as ReadICPForestMeta
+from pyaerocom.io.icpforests.reader import ReadICPForest
 from tests.fixtures.data_access import TEST_DATA, DataForTests
 
 # station names are not consistent between variables!

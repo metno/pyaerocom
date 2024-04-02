@@ -6,41 +6,14 @@ on:
   - cron:  '0 12 1 * *'  # 12:00, first day of the month
 
 jobs:
-  lint:
+  lint-docs-package:
     runs-on: ubuntu-latest
     env:
       PYTHON: "3.10"
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ env.PYTHON }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON }}
-    - name: Python info
-      run: |
-        which python
-        python --version
-    - name: Install system packages
-      run: |
-        sudo apt update
-        sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
-    - name: Install Tox
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox
-    - name: Check format
-      run: tox -e format
-    - name: Run linters
-      run: tox -e lint
-
-  docs:
-    runs-on: ubuntu-latest
-    env:
-      PYTHON: "3.10"
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ env.PYTHON }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
     - name: Python info
@@ -55,68 +28,67 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install tox
+    - name: Check format
+      run: tox -e format
+    - name: Run linters
+      run: tox -e lint
     - name: Build docs
       run: tox -e docs
+    - name: Build package
+      run: tox -e build
 
   venv:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12']
         experimental: [false]
         os: [ubuntu-22.04]
-        include:
-          - python-version: '3.12'
-            experimental: true
-            os: ubuntu-22.04
+        #include:
+        #  - python-version: '3.13'
+        #    experimental: true
+        #    os: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Python info
-      run: |
-        which python
-        python --version
+        cache: 'pip' # caching pip dependencies
     - name: Install system packages
       run: |
         sudo apt update
         sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
-    - name: Cache pip and tox
-      uses: actions/cache@v3
-      if: ${{ ! matrix.experimental }}
-      with:
-        path: |
-          ~/.cache/pip
-          ~/.cache/srtm
-          .tox
-        key: ${{ matrix.os }}-tox-${{ matrix.python-version }}-${{ hashFiles('setup.cfg', 'pyproject.toml') }}
-    - name: Install Tox
+    - name: Tox environment
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox
-    - name: Run test
+        pip install --upgrade pip
+        pip install tox
+        tox -e py --notest
+    - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
-      run: tox -e py
+      run: tox -e py -- --cov --no-cov-on-fail --cov-report xml
+    - name: Upload coverage to Codecov
+      if: ${{ success() }}
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
 
   conda:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.10', '3.11']
-        experimental: [false]
+    env:
+      PYTHON: "3.11"
     defaults:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: conda-incubator/setup-miniconda@v2
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ env.PYTHON }}
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ env.PYTHON }}
         activate-environment: pya
         environment-file: pyaerocom_env.yml
     - name: Conda info
@@ -128,11 +100,4 @@ jobs:
     - name: Install pyaerocom
       run: python -m pip install . --no-deps
     - name: Run pytest
-      continue-on-error: ${{ matrix.experimental }}
       run: python -m pytest -ra -q --cov --no-cov-on-fail --cov-report xml
-    - name: Upload coverage to Codecov
-      if: ${{ success() }}
-      uses: codecov/codecov-action@v3
-      with:
-          file: ./coverage.xml
-          flags: unittests

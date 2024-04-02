@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from pyaerocom import const
-from pyaerocom.plugins.icos.reader import ReadICOS
+from pyaerocom.io.icos.reader import ReadICOS
 
 if not const.has_access_lustre:
     pytestmark = pytest.skip(
