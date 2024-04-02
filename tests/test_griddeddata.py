@@ -370,7 +370,6 @@ def fake_dataset_path(tmp_path: Path, var_name: str, units: str) -> Path:
     "var_name,units,data_unit",
     [
         ("od550aer", "1", "1"),
-        # ("od550aer", "no_unit", "1"),
         ("concso4", "ug S m-3", "ug S m-3"),
         ("concco", "ugC/m3", "ug C m-3"),
     ],
