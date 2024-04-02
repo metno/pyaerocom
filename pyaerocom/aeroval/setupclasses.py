@@ -1,10 +1,15 @@
-from __future__ import annotations
-
 import logging
 import os
+import sys
 from getpass import getuser
 from pathlib import Path
-from typing import Literal, Self
+
+if sys.version_info < (3, 10):
+    from typing_extensions import Self
+else:
+    from typing import Self
+
+from typing import Literal
 
 from pydantic import (
     BaseModel,
