@@ -4,7 +4,7 @@ import logging
 import os
 from getpass import getuser
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import (
     BaseModel,
@@ -172,7 +172,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
     model_only_stats: bool = False
     drop_stats: tuple[str, ...] = ()
     stats_decimals: int | None = None
-    round_floats_precision: Optional[int] = None
+    round_floats_precision: int | None = None
 
     if round_floats_precision:
         set_float_serialization_precision(round_floats_precision)
