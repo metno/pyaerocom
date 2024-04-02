@@ -59,7 +59,7 @@ provided here:
    handlers=file
    qualname=pyaerocom.io.readungriddedbase
    level=DEBUG
-   propagate=1
+   propagate=0
 
 
 

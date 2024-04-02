@@ -25,12 +25,12 @@ def version_callback(value: bool):
 def callback(
     version: Optional[bool] = typer.Option(None, "--version", "-V", callback=version_callback)
 ):
-    """Pyaerocom Command Line Interface"""
+    """🦄 Pyaerocom Command Line Interface"""
 
 
 @main.command()
 def browse(database: str = typer.Argument(..., help="Provide database name.")):
-    """Browse database e.g., browse <DATABASE>"""
+    """Browse database (e.g., browse <DATABASE>)"""
     print(f"Searching database for matches of {database}")
     print(browse_database(database))
 
@@ -41,11 +41,11 @@ def clearcache():
 
     delete = typer.confirm("Are you sure you want to delete all cached data objects?")
     if delete:
-        print("OK then.... here we go!")
+        print("Okay then.... Here we go!")
         for path in list_cache_files():
             path.unlink()
     else:
-        print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
+        print("Wise decision, pyaerocom will handle it for you automatically anyways 😜")
 
 
 @main.command()
@@ -57,7 +57,7 @@ def listcache():
 
 @main.command()
 def ppiaccess():
-    """Check if MetNO PPI can be accessed"""
+    """Check if MET Norway's PPI can be accessed"""
     print("True") if const.has_access_lustre else print("False")
 
 
@@ -81,7 +81,7 @@ def aeroval(
     ),
     verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
 ):
-    """run AeroVal experiment as descried on config file"""
+    """Run an AeroVal experiment as described in a config file"""
 
     if config.suffix != ".json":  # pragma:no cover
         typer.echo(f"{config.suffix=}  != '.json'")
