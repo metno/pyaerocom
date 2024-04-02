@@ -1,28 +1,20 @@
 from __future__ import annotations
 
 import logging
-import os
 import re
 import time
 import warnings
 from pathlib import Path
 from reprlib import repr
 from typing import Tuple
-from unittest import result
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import _add_heatmap_entry_json as _add_entry_json
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _select_period_season_coldata,
-    init_regions_web,
-    write_json,
-)
+from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
 
@@ -160,9 +152,6 @@ class CAMS2_83_Engine(ProcessingEngine):
         obsvals = data.data[0]
         modvals = data.data[1]
 
-        total_mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
-        num_points = np.sum(total_mask, axis=0)
-
         diff = modvals - obsvals
         diffsquare = diff**2
         sum_obs = np.nansum(obsvals, axis=0)
@@ -170,8 +159,6 @@ class CAMS2_83_Engine(ProcessingEngine):
         sum_vals = obsvals + modvals
 
         tmp = diff / sum_vals
-        mask = ~np.isnan(sum_vals)
-        N = np.sum(mask, axis=0)
 
         nmb = np.where(sum_obs == 0, np.nan, sum_diff / sum_obs)
 
