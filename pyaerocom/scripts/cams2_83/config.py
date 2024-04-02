@@ -3,10 +3,6 @@
 ##################################################
 from pathlib import Path
 
-from pyaerocom.io.cams2_83.models import ModelName
-from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
-from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH
-
 GLOBAL_CONFIG = dict(
     # Description of the experiment
     proj_id="cams2-83",
@@ -112,7 +108,7 @@ GLOBAL_CONFIG = dict(
 #        The model configs
 ##################################################
 # folder_CAMS2_83 = f'/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data'
-folder_CAMS2_83 = f"/lustre/storeB/project/fou/kl/CAMS2_83/model"
+folder_CAMS2_83 = "/lustre/storeB/project/fou/kl/CAMS2_83/model"
 
 
 MODELS_CONFIG = {
@@ -176,9 +172,9 @@ species_list = [
 ]
 
 
-get_ignore_list = lambda species: (
-    ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
-)
+def get_ignore_list(species):
+    return ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
+
 
 obs_filters = {
     key: dict(
