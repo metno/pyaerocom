@@ -194,7 +194,9 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     # h5 chunk cache is 1 MB, netcdf4 chunk-cache is 64MB
     # using h5netcdf saves therefore up to 63MB/file
     # in our case only ~20MB/file, i.e. 0.5GB/month
-    ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False, engine="h5netcdf")
+    ds = xr.open_mfdataset(
+        paths, preprocess=preprocess, parallel=False, engine="h5netcdf", chunks={"time": 1}
+    )
     return ds.pipe(fix_coord).pipe(fix_names)
 
 
