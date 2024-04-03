@@ -6,6 +6,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
+from multiprocessing import cpu_count
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
@@ -48,12 +49,11 @@ def make_model_entry(
     end_date: datetime,
     leap: int,
     model_path: Path,
-    obs_path: Path,
     model: ModelName,
-    runtype: RunType,
+    run_type: RunType,
 ) -> dict:
     return dict(
-        model_id=f"CAMS2-83.{model.name}.day{leap}.{runtype}",
+        model_id=f"CAMS2-83.{model.name}.day{leap}.{run_type}",
         model_data_dir=str(model_path.resolve()),
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
@@ -232,47 +232,34 @@ def runnermedianscores(
 
 @app.command()
 def main(
+    run_type: RunType = typer.Argument(...),
+    eval_type: EvalType = typer.Argument(...),
     start_date: datetime = typer.Argument(
-        f"{datetime.today():%F}",
-        formats=["%Y-%m-%d", "%Y%m%d"],
-        help="Start date for the evaluation",
+        ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
     end_date: datetime = typer.Argument(
-        f"{datetime.today():%F}",
-        formats=["%Y-%m-%d", "%Y%m%d"],
-        help="End date for the evaluation",
+        ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),
-    leap: int = typer.Argument(
-        0,
-        min=0,
-        max=3,
-        help="Which forecast day to use",
-    ),
+    leap: int = typer.Argument(0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"),
     model_path: Path = typer.Option(
-        DEFAULT_MODEL_PATH,
-        exists=True,
-        readable=True,
-        help="Path where the model data is found",
+        DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
     obs_path: Path = typer.Option(
-        DEFAULT_OBS_PATH,
-        exists=True,
-        readable=True,
-        help="Path where the obs data is found",
+        DEFAULT_OBS_PATH, exists=True, readable=True, help="path to observation data"
     ),
     data_path: Path = typer.Option(
         Path("../../data").resolve(),
         exists=True,
         readable=True,
         writable=True,
-        help="Path where the results are stored",
+        help="where results are stored",
     ),
     coldata_path: Path = typer.Option(
         Path("../../coldata").resolve(),
         exists=True,
         readable=True,
         writable=True,
-        help="Path where the coldata are stored",
+        help="where collocated data are stored",
     ),
     model: List[ModelName] = typer.Option(
         [],
@@ -281,29 +268,12 @@ def main(
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
-    id: Optional[str] = typer.Option(
-        None,
-        help="Experiment name. If none are given, the id from the default config is used",
-    ),
-    name: Optional[str] = typer.Option(
-        None,
-        help="Experiment name. If none are given, the name from the default config is used",
-    ),
-    description: Optional[str] = typer.Option(
-        None,
-        help="Experiment description. If none given, the description from the default config is used",
-    ),
-    analysis: bool = typer.Option(
-        False,
-        help="Sets the flag which tells the code to use the analysis model data. If false, the forecast model data is used",
-    ),
-    addmap: bool = typer.Option(
-        False,
-        help="Sets the flag which tells the code to set add_model_maps=True. Option is set to False otherwise",
-    ),
-    onlymap: bool = typer.Option(
-        False,
-        help="Sets the flag which tells the code to set add_model_maps=True and only_model_maps=True. Option is set to False otherwise",
+    id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
+    name: str = typer.Option(CFG["exp_name"], help="experiment name"),
+    description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
+    add_map: bool = typer.Option(False, "--addmap", help="set add_model_maps"),
+    only_map: bool = typer.Option(
+        False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
     medianscores: bool = typer.Option(
         False,
@@ -320,17 +290,8 @@ def main(
         "-n",
         help="Will only make and print the config without running the evaluation",
     ),
-    eval_type: Optional[EvalType] = typer.Option(
-        None,
-        "--eval-type",
-        "-e",
-        help="Type of evaluation.",
-    ),
     pool: int = typer.Option(
-        1,
-        "--pool",
-        "-p",
-        help="Number of CPUs to be used for reading OBS and creating forecast plots",
+        1, "--pool", "-p", min=1, max=cpu_count(), help="CPUs for reading OBS"
     ),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
@@ -358,12 +319,17 @@ def main(
         name,
         description,
         eval_type,
-        analysis,
-        onlymap,
-        addmap,
+        run_type,
+        only_map,
+        add_map,
     )
 
     quiet = not verbose
+
+    analysis = False
+    if run_type == RunType.AN:
+        analysis = True
+
     if medianscores:
         if eval_type not in {"season", "long"}:
             logger.error(

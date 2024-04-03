@@ -34,7 +34,7 @@ def test_clearcache(
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.ExperimentProcessor.run", do_not_run)
-    options = f"2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
+    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --verbose"
     result = runner.invoke(app, options.split())
     assert "Running Statistics" in caplog.text
     assert result.exit_code == 0
@@ -61,7 +61,7 @@ def test_not_cleared_cache(
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.CAMS2_83_Processer.run", do_not_run)
-    options = f"2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --eval-type long --medianscores"
+    options = f"forecast long 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores --verbose"
     result = runner.invoke(app, options.split())
     assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
     assert result.exit_code == 0
