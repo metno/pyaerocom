@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import Literal
 
@@ -99,7 +99,7 @@ def seasons_in_period(start_date: date, end_date: date) -> list[str]:
 def years_starting_in_november(start_date: date, end_date: date) -> list[str]:
     periods = []
     prev_date = start_date
-    new_yr = date(start_date.year, 12, 1)
+    new_yr = datetime(start_yr, 12, 1, 00, 00, 00)
 
     if new_yr > start_date:
         periods.append(f"{start_date:%Y%m%d}-{new_yr-timedelta(days=1):%Y%m%d}")
