@@ -205,7 +205,6 @@ def check_files(paths: list[Path]) -> list[Path]:
     new_paths: list[Path] = []
 
     for p in tqdm(paths, disable=const.QUIET):
-
         try:
             with xr.open_dataset(p) as ds:
                 if len(ds.time.data) < 2:
