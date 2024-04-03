@@ -3,13 +3,12 @@ import os
 import sys
 from getpass import getuser
 from pathlib import Path
-
-if sys.version_info < (3, 11):
-    from typing_extensions import Self
-else:
-    from typing import Self
-
 from typing import Literal
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from pydantic import (
     BaseModel,
