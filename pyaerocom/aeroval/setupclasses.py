@@ -163,6 +163,10 @@ class StatisticsSetup(BaseModel, extra="allow"):
 
     """
 
+    # Pydantic ConfigDict
+    model_config = ConfigDict()
+    model_config["protected_namespaces"] = ()
+    # StatisticsSetup attributes
     MIN_NUM: PositiveInt = 1
     weighted_stats: bool = True
     annual_stats_constrained: bool = False
