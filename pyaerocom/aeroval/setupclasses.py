@@ -328,7 +328,6 @@ class EvalSetup(BaseModel):
             key: val for key, val in self.model_extra.items() if key in OutputPaths.model_fields
         }
         return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id, **model_args)
-            
 
     # This is a hack to get keys from a general CFG into their appropriate respective classes
     # TODO: all these computed fields could be more easily defined if the config were
@@ -343,7 +342,6 @@ class EvalSetup(BaseModel):
             key: val for key, val in self.model_extra.items() if key in TimeSetup.model_fields
         }
         return TimeSetup(**model_args)
-            
 
     @computed_field
     @property
