@@ -3,7 +3,7 @@ import os
 import sys
 from getpass import getuser
 from pathlib import Path
-from typing import Literal, Annotated
+from typing import Annotated, Literal
 
 if sys.version_info >= (3, 11):
     from typing import Self
