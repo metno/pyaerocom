@@ -191,7 +191,10 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day).pipe(fix_missing_vars)
 
-    ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False)
+    # h5 chunk cache is 1 MB, netcdf4 chunk-cache is 64MB
+    # using h5netcdf saves therefore up to 63MB/file
+    # in our case only ~20MB/file, i.e. 0.5GB/month
+    ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False, engine="h5netcdf")
     return ds.pipe(fix_coord).pipe(fix_names)
 
 
@@ -202,40 +205,21 @@ def check_files(paths: list[Path]) -> list[Path]:
     new_paths: list[Path] = []
 
     for p in tqdm(paths, disable=const.QUIET):
-        import signal
-
-        command = ["python", "-c", f"from netCDF4 import Dataset; Dataset('{p}')"]
-        # command = ["python", "-c", f"import xarray as xr; xr.open_dataset('{p}')"]
-        # command = ["python", "-c", f"import signal; import os; signal.raise_signal(signal.SIGSEGV) "]
-        # command = ["python", "--version"]
-
-        output = subprocess.run(command, capture_output=True)
-        # print(str(output))
-        if output.returncode == -signal.SIGSEGV or "NetCDF: HDF error" in str(output.stderr):
-            logger.warning(f"Error when opening {p}. Skipping file")
-            continue
-
         try:
-            ds = xr.open_dataset(p)
-            if len(ds.time.data) < 2:
-                logger.warning(f"To few timestamps in {p}. Skipping file")
-                continue
-            # nb_vars = len([i for i in ds.data_vars])
-            # if nb_vars < 6:
-            #     logger.warning(f"Found only {nb_vars} variables for {p}. Skipping file")
-            #     continue
-
-            if len(set(np.array(ds.time))) != len(np.array(ds.time)):
-                if len(np.array(ds.time)) != 24:
-                    logger.warning(
-                        f"Ambiguous time dimension: Duplicate timestamps in {p}, with less that 24 step. Skipping file"
-                    )
+            with xr.open_dataset(p) as ds:
+                if len(ds.time.data) < 2:
+                    logger.warning(f"To few timestamps in {p}. Skipping file")
                     continue
+                if len(set(np.array(ds.time))) != len(np.array(ds.time)):
+                    if len(np.array(ds.time)) != 24:
+                        logger.warning(
+                            f"Ambiguous time dimension: Duplicate timestamps in {p}, with less that 24 step. Skipping file"
+                        )
+                        continue
 
             new_paths.append(p)
-            ds.close()
-        except OSError:
-            logger.warning(f"Error when opening {p}. Skipping file")
+        except Exception as ex:
+            logger.warning(f"Error when opening {p}: {ex}. Skipping file")
 
     return new_paths
 
