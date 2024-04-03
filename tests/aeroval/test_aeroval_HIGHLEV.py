@@ -84,10 +84,11 @@ def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
             assert len(files) == check
 
 
-@pytest.mark.parametrize("cfg", ["cfgexp4"])
-def test_reanalyse_existing(eval_config: dict):
+@pytest.mark.parametrize("cfg,reanalyse_existing", [("cfgexp4", True), ("cfgexp4", False)])
+def test_reanalyse_existing(eval_config: dict, reanalyse_existing: bool):
+    eval_config["reanalyse_existing"] = reanalyse_existing
     cfg = EvalSetup(**eval_config)
-    assert cfg.colocation_opts.reanalyse_existing == True
+    assert cfg.colocation_opts.reanalyse_existing == reanalyse_existing
     output = Path(cfg.path_manager.coldata_basedir) / cfg.proj_id / cfg.exp_id
 
     proc = ExperimentProcessor(cfg)
@@ -99,21 +100,6 @@ def test_reanalyse_existing(eval_config: dict):
     assert list(output.glob("**/*.nc"))
 
     proc.exp_output.delete_experiment_data(also_coldata=False)
-    assert output.is_dir()
-    assert list(output.glob("**/*.nc"))
-
-    cfg.colocation_opts.reanalyse_existing = False
-    proc = ExperimentProcessor(cfg)
-    assert proc.reanalyse_existing == False
-
-    proc.run()
-    assert output.is_dir()
-    assert list(output.glob("**/*.nc"))
-
-    proc.exp_output.delete_experiment_data(also_coldata=True)
-    assert not output.exists()
-
-    proc.run()
     assert output.is_dir()
     assert list(output.glob("**/*.nc"))
 

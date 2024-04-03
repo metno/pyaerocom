@@ -1,6 +1,7 @@
 """
 Small helper utility functions for pyaerocom
 """
+
 import abc
 import logging
 import os
