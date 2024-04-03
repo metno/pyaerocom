@@ -6,24 +6,22 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from enum import Enum
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
 
-import pandas as pd
 import typer
-from dateutil.relativedelta import relativedelta
 
 from pyaerocom import change_verbosity, const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
-from pyaerocom.io.cams2_83.models import ModelName  # , RunType
+from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 from pyaerocom.scripts.cams2_83.config import CFG, species_list  # , obs_filters
+from pyaerocom.scripts.cams2_83.evaluation import EvalType, date_range
 from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
 
 """
@@ -35,203 +33,14 @@ TODO:
 """
 
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
-
-
-class Eval_Type(str, Enum):
-    LONG = "long"
-    SEASON = "season"
-    WEEK = "week"
-    DAY = "day"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 def clear_cache():
     """Delete cached data objects"""
     for path in list_cache_files():
         path.unlink()
-
-
-def check_dates_from_eval(
-    eval_type: Eval_Type | None, start_date: datetime, end_date: datetime
-) -> None:
-    if eval_type == "day" and start_date != end_date:
-        raise ValueError(
-            f"For single day, start and stop must be the same and not {start_date}-{end_date}"
-        )
-    elif eval_type == "week" and (end_date - start_date).days < 7:
-        raise ValueError(
-            f"For week, more than 7 days must be given. Only {(end_date-start_date).days} days were given"
-        )
-
-
-def update_freqs_from_eval_type(eval_type: Eval_Type | None) -> dict:
-    if eval_type is None:
-        return {}
-
-    if eval_type == "long":
-        return dict(
-            freqs=["daily", "monthly"],
-            ts_type="hourly",
-            main_freq="daily",
-            forecast_evaluation=True,
-        )
-    elif eval_type == "season":
-        return dict(
-            freqs=["hourly", "daily", "monthly"],
-            ts_type="hourly",
-            main_freq="hourly",
-            forecast_evaluation=True,
-        )
-    elif eval_type == "week":
-        return dict(
-            freqs=["hourly", "daily"],
-            ts_type="hourly",
-            main_freq="hourly",
-            forecast_evaluation=False,
-        )
-    elif eval_type == "day":
-        return dict(
-            freqs=["hourly"],
-            ts_type="hourly",
-            main_freq="hourly",
-            forecast_evaluation=False,
-        )
-    else:
-        return {}
-
-
-def get_seasons_in_period(start_date: datetime, end_date: datetime) -> List[str]:
-    seasons = ["DJF", "DJF", "MAM", "MAM", "MAM", "JJA", "JJA", "JJA", "SON", "SON", "SON", "DJF"]
-
-    def get_season(date):
-        return seasons[date.month - 1]
-
-    daterange = pd.date_range(start_date, end_date, freq="d")
-
-    periods = []
-    prev_date = daterange[0]
-    start_period = daterange[0]
-    prev_season = get_season(prev_date)
-    for date in daterange[1:]:
-        if get_season(date) == prev_season:
-            prev_date = date
-        else:
-            periods.append(
-                f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}-{pd.to_datetime(str(prev_date)).strftime('%Y%m%d')}"
-            )
-            prev_date = date
-            prev_season = get_season(date)
-            start_period = date
-
-    else:
-        if start_period == daterange[-1]:
-            periods.append(f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}")
-        else:
-            periods.append(
-                f"{pd.to_datetime(str(start_period)).strftime('%Y%m%d')}-{pd.to_datetime(str(daterange[-1])).strftime('%Y%m%d')}"
-            )
-
-    return periods
-
-
-def get_years_starting_in_november(start_date: datetime, end_date: datetime) -> List[str]:
-    periods = []
-
-    start_yr = start_date.year
-    end_yr = end_date.year
-
-    # found_last_yr = False
-
-    prev_date = start_date
-    new_yr = datetime(start_yr, 12, 1, 00, 00, 00)
-
-    if new_yr > start_date:
-        periods.append(
-            f"{start_date.strftime('%Y%m%d')}-{(new_yr-timedelta(days=1)).strftime('%Y%m%d')}"
-        )
-        prev_date = new_yr
-        new_yr += relativedelta(years=1)
-    else:
-        if end_date < new_yr + relativedelta(years=1):
-            return []
-        periods.append(
-            f"{start_date.strftime('%Y%m%d')}-{(new_yr+relativedelta(years=1)-timedelta(days=1)).strftime('%Y%m%d')}"
-        )
-
-        prev_date = new_yr + relativedelta(years=1)
-        new_yr += relativedelta(years=2)
-
-    for i in range(end_yr - start_yr):
-        if new_yr < end_date:
-            periods.append(
-                f"{prev_date.strftime('%Y%m%d')}-{(new_yr-timedelta(days=1)).strftime('%Y%m%d')}"
-            )
-            prev_date = new_yr
-            new_yr += relativedelta(years=1)
-        else:
-            periods.append(f"{prev_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}")
-            break
-
-    return periods
-
-
-def make_period(
-    start_date: datetime,
-    end_date: datetime,
-) -> List[str]:
-    # start_yr = start_date.year
-    # end_yr = end_date.year
-    start_dt = start_date.strftime("%Y%m%d")  # .year
-    end_dt = end_date.strftime("%Y%m%d")  # .year
-
-    season_periods = get_seasons_in_period(start_date, end_date)
-
-    nov_periods = get_years_starting_in_november(start_date, end_date)
-
-    if start_dt == end_dt:
-        return [f"{start_dt}"]
-
-    periods = [f"{start_dt}-{end_dt}"]
-
-    if periods != season_periods:
-        periods += nov_periods  # season_periods
-
-    # if end_yr == start_yr:
-    #     return periods
-
-    # periods.append(f"{start_dt}-{start_yr}1231")  # append first year portion
-
-    # if (end_yr - start_yr) >= 2:  # append full years in between if any
-    #     for y in range(start_yr + 1, end_yr):
-    #         periods.append(f"{y}0101-{y}1231")
-
-    # periods.append(f"{end_yr}0101-{end_dt}")  # append last year portion
-    return periods
-
-
-def make_period_ys(
-    start_date: datetime,
-    end_date: datetime,
-) -> List[str]:
-    start_yr = start_date.year
-    end_yr = end_date.year
-    periods = [f"{start_yr}-{end_yr}"]
-    periods += [str(yr) for yr in range(start_yr, end_yr + 1)]
-    return periods
-
-
-def date_range(start_date: datetime | date, end_date: datetime | date) -> tuple[date, ...]:
-    if isinstance(start_date, datetime):
-        start_date = start_date.date()
-    if isinstance(end_date, datetime):
-        end_date = end_date.date()
-    days = (end_date - start_date) // timedelta(days=1)
-    assert days >= 0
-    return tuple(start_date + timedelta(days=day) for day in range(days + 1))
 
 
 def make_model_entry(
@@ -241,7 +50,7 @@ def make_model_entry(
     model_path: Path,
     obs_path: Path,
     model: ModelName,
-    runtype: str,
+    runtype: RunType,
 ) -> dict:
     return dict(
         model_id=f"CAMS2-83.{model.name}.day{leap}.{runtype}",
@@ -254,36 +63,26 @@ def make_model_entry(
 
 
 def make_config(
-    start_date: datetime,
-    end_date: datetime,
+    start_date: date,
+    end_date: date,
     leap: int,
     model_path: Path,
     obs_path: Path,
     data_path: Path,
     coldata_path: Path,
-    models: List[ModelName],
-    id: str | None,
-    name: str | None,
-    description: str | None,
-    eval_type: Eval_Type | None,
-    analysis: bool,
-    onlymap: bool,
-    addmap: bool,
+    models: list[ModelName],
+    id: str,
+    name: str,
+    description: str,
+    eval_type: EvalType,
+    run_type: RunType,
+    only_map: bool,
+    add_map: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
     if not models:
         models = list(ModelName)
-
-    if analysis:
-        runtype = "AN"
-    else:
-        runtype = "FC"
-
-    if eval_type == "long":
-        periods = make_period_ys(start_date, end_date)
-    else:
-        periods = make_period(start_date, end_date)
 
     cfg = deepcopy(CFG)
     cfg.update(
@@ -293,66 +92,42 @@ def make_config(
                 end_date,
                 leap,
                 model_path,
-                obs_path,
                 model,
-                runtype=runtype,
+                run_type=run_type,
             )
             for model in models
         },
-        periods=periods,
+        periods=eval_type.periods(start_date, end_date),
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
-    check_dates_from_eval(eval_type, start_date, end_date)
-    cfg.update(update_freqs_from_eval_type(eval_type))
-    if eval_type == "season" or eval_type == "long":
-        extra_obs_days = 4
-    else:
-        extra_obs_days = 0
-    cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [
-        str(p)
-        for p in obs_paths(
-            *date_range(start_date, end_date + timedelta(days=extra_obs_days)),
-            root_path=obs_path,
-            analysis=analysis,
-        )
-    ]  # type:ignore[index]
 
-    if analysis:
-        cfg["forecast_days"] = 1
+    if eval_type is not None:
+        eval_type.check_dates(start_date, end_date)
+        cfg.update(eval_type.freqs_config())
 
-    if id is not None:
-        cfg["exp_id"] = id
-    if name is not None:
-        cfg["exp_name"] = name
-    if description is not None:
-        cfg["exp_descr"] = description
-    if addmap:
-        cfg["add_model_maps"] = True
-    if onlymap:
-        cfg["add_model_maps"] = True
-        cfg["only_model_maps"] = True
+    extra_obs_days = 4 if eval_type in {"season", "long"} else 0
+    obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
+    cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
+        str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
+    ]
+
+    if run_type == RunType.AN:
+        cfg.update(forecast_days=1)
+
+    cfg.update(exp_id=id, exp_name=name, exp_descr=description)
+
+    if add_map:
+        cfg.update(add_model_maps=True)
+
+    if only_map:
+        cfg.update(add_model_maps=True, only_model_maps=True)
 
     return cfg
 
 
-# def read_observations(data: list) -> None:
 def read_observations(specie: str, *, files: List, cache: str | Path | None) -> None:
-    # logger.info(f"Running {data[0]}")
-    # cache = data[2]
-    # if cache is not None:
-    #    const.CACHEDIR = str(cache)
 
-    # reader = ReadUngridded()
-
-    # reader.read(
-    #    data_ids="CAMS2_83.NRT",
-    #    vars_to_retrieve=data[0],
-    #    files=data[1],
-    #    force_caching=True,
-    # )
-
-    # logger.info(f"Finished {data[0]}")
     logger.info(f"Running {specie}")
     if cache is not None:
         const.CACHEDIR = str(cache)
@@ -377,9 +152,6 @@ def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
 def runner(
     cfg: dict,
     cache: str | Path | None,
-    eval_type: Eval_Type | None,
-    *,
-    analysis: bool = False,
     dry_run: bool = False,
     quiet: bool = False,
     pool: int = 1,
@@ -395,8 +167,6 @@ def runner(
         const.QUIET = True
 
     stp = EvalSetup(**cfg)
-
-    # start = time.time()
 
     logger.info(f"Clearing cache at {const.CACHEDIR}")
     clear_cache()
@@ -550,7 +320,7 @@ def main(
         "-n",
         help="Will only make and print the config without running the evaluation",
     ),
-    eval_type: Optional[Eval_Type] = typer.Option(
+    eval_type: Optional[EvalType] = typer.Option(
         None,
         "--eval-type",
         "-e",
@@ -609,4 +379,4 @@ def main(
             )
     else:
         logger.info("Standard run")
-        runner(cfg, cache, eval_type, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool)
+        runner(cfg, cache, dry_run=dry_run, quiet=quiet, pool=pool)
