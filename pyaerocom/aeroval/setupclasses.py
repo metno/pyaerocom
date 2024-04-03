@@ -3,7 +3,7 @@ import os
 import sys
 from getpass import getuser
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Annotated
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -19,7 +19,6 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
-from typing_extensions import Annotated
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
