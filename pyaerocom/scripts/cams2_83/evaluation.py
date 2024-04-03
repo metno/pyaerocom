@@ -74,7 +74,6 @@ def season(date: date) -> Literal["DJF", "MAM", "JJA", "SON"]:
 
 
 def seasons_in_period(start_date: date, end_date: date) -> list[str]:
-
     dates = date_range(start_date, end_date)
     periods = []
     prev_date = start_period = dates[0]

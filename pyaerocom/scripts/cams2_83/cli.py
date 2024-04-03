@@ -127,8 +127,8 @@ def make_config(
 
 
 def read_observations(specie: str, *, files: List, cache: str | Path | None) -> None:
-
     logger.info(f"Running {specie}")
+
     if cache is not None:
         const.CACHEDIR = str(cache)
 
