@@ -48,8 +48,8 @@ def fake_obs(fake_obs_path: Path):
 def patched_full_config(fake_obs_path: Path, fake_model_path: Path, fake_basedir_path: Path):
     cfg = cfg_test_full.CFG
     assert cfg["proj_id"] == "cams2-83"
-    #cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = fake_obs
-    #cfg["colocation_opts"]["basedir_coldata"] = fake_basedir_path
+    # cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = fake_obs
+    # cfg["colocation_opts"]["basedir_coldata"] = fake_basedir_path
     # cfg.model_cfg.EMEP.model_data_dir = fake_model_path
     # cfg.path_manager.coldata_basedir = fake_basedir_path
     # cfg.path_manager.json_basedir = fake_basedir_path
