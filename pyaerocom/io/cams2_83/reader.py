@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import re
-import subprocess
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterator
