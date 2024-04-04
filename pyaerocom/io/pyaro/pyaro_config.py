@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import ClassVar, Optional
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 import pyaerocom as pya
 
@@ -14,12 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 class PyaroConfig(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     _DEFAULT_CATALOG: ClassVar[Path] = resources.files(pya) / Path(
         "data/pyaro_catalogs/default.yaml"
     )
-
-    class Config:
-        arbitrary_types_allowed = True
 
     ##########################
     #   Model fields
