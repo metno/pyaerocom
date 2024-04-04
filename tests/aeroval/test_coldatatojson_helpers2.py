@@ -244,7 +244,7 @@ def test__make_trends(
             "yearly",
             "all",
             7,
-            AeroValTrendsError,
+            TrendsError,
             "min_yrs (7) larger than time between start and stop",
             id="wrong min_yrs",
         ),
