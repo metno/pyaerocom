@@ -11,9 +11,9 @@ runner = CliRunner()
 
 
 @pytest.fixture()
-def fake_config(monkeypatch, patched_full_config):
+def fake_config(monkeypatch, patched_config):
     def fake_make_config(*args, **kwargs):
-        return patched_full_config
+        return patched_config
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.make_config", fake_make_config)
 
