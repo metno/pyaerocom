@@ -21,7 +21,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "scitools-iris>=3.6.0, <3.8",
+    "scitools-iris>=3.7.1",
     "xarray<=2022.10.0",
     "h5netcdf>=1.0.0",               # xarray backend, no chunk-cache
     "cartopy>=0.21.1",
@@ -44,6 +44,7 @@ dependencies = [
     # python < 3.11
     'tomli>=2.0.1; python_version < "3.11"',
     'importlib-resources>=5.10; python_version < "3.11"',
+    'typing-extensions>=4.0.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
     "pyaro",

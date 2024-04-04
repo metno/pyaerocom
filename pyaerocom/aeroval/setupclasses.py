@@ -1,20 +1,28 @@
 import logging
 import os
+import sys
 from datetime import timedelta
 from getpass import getuser
+from pathlib import Path
+from typing import Annotated, Literal
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 import pandas as pd
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PositiveInt,
+    computed_field,
+    field_serializer,
+    field_validator,
+)
 
 from pyaerocom import __version__, const
-from pyaerocom._lowlevel_helpers import (
-    AsciiFileLoc,
-    ConstrainedContainer,
-    DirLoc,
-    EitherOf,
-    ListOfStrings,
-    NestedContainer,
-    StrType,
-)
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import (
@@ -25,12 +33,11 @@ from pyaerocom.aeroval.helpers import (
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
-from pyaerocom.io.cams2_83.models import ModelName
 
 logger = logging.getLogger(__name__)
 
 
-class OutputPaths(ConstrainedContainer):
+class OutputPaths(BaseModel):
     """
     Setup class for output paths of json files and co-located data
 
@@ -46,7 +53,10 @@ class OutputPaths(ConstrainedContainer):
 
     """
 
-    JSON_SUBDIRS = [
+    # Pydantic ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    JSON_SUBDIRS: list[str] = [
         "map",
         "ts",
         "ts/diurnal",
@@ -58,35 +68,25 @@ class OutputPaths(ConstrainedContainer):
         "profiles",
     ]
 
-    json_basedir = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/data"),
-        assert_exists=True,
-        auto_create=True,
-        logger=logger,
-        tooltip="Base directory for json output files",
+    json_basedir: Path | str = Field(
+        default=os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True
+    )
+    coldata_basedir: Path | str = Field(
+        default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True
     )
 
-    coldata_basedir = DirLoc(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"),
-        assert_exists=True,
-        auto_create=True,
-        logger=logger,
-        tooltip="Base directory for colocated data output files (NetCDF)",
-    )
+    @field_validator("json_basedir", "coldata_basedir")
+    @classmethod
+    def validate_basedirs(cls, v):
+        if not os.path.exists(v):
+            tmp = Path(v) if isinstance(v, str) else v
+            tmp.mkdir(parents=True, exist_ok=True)
+        return v
 
-    ADD_GLOB = ["coldata_basedir", "json_basedir"]
-    proj_id = StrType()
-    exp_id = StrType()
+    ADD_GLOB: list[str] = ["coldata_basedir", "json_basedir"]
 
-    def __init__(
-        self, proj_id: str, exp_id: str, json_basedir: str = None, coldata_basedir: str = None
-    ):
-        self.proj_id = proj_id
-        self.exp_id = exp_id
-        if coldata_basedir:
-            self.coldata_basedir = coldata_basedir
-        if json_basedir:
-            self.json_basedir = json_basedir
+    proj_id: str
+    exp_id: str
 
     def _check_init_dir(self, loc, assert_exists):
         if assert_exists and not os.path.exists(loc):
@@ -106,23 +106,16 @@ class OutputPaths(ConstrainedContainer):
         return out
 
 
-class ModelMapsSetup(ConstrainedContainer):
-    maps_freq = EitherOf(["monthly", "yearly"])
-
-    def __init__(self, **kwargs):
-        self.maps_res_deg = 5
-        self.update(**kwargs)
+class ModelMapsSetup(BaseModel):
+    maps_freq: Literal["monthly", "yearly"] = "monthly"
+    maps_res_deg: PositiveInt = 5
 
 
-class CAMS2_83Setup(ConstrainedContainer):
-    def __init__(self, **kwargs):
-        self.use_cams2_83 = False
-        self.cams2_83_daterange = None
-        self.cams2_83_model = ModelName.EMEP
-        self.cams2_83_dateshift = 0
+class CAMS2_83Setup(BaseModel):
+    use_cams2_83: bool = False
 
 
-class StatisticsSetup(ConstrainedContainer):
+class StatisticsSetup(BaseModel, extra="allow"):
     """
     Setup options for statistical calculations
 
@@ -135,6 +128,7 @@ class StatisticsSetup(ConstrainedContainer):
         if True, then only sites are considered that satisfy a potentially
         specified annual resampling constraint (see
         :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs`). E.g.
+
         lets say you want to calculate statistics (bias,
         correlation, etc.) for monthly model / obs data for a given site and
         year. Lets further say, that there are only 8 valid months of data, and
@@ -180,43 +174,33 @@ class StatisticsSetup(ConstrainedContainer):
 
     """
 
-    MIN_NUM = 1
+    MIN_NUM: PositiveInt = 1
+    weighted_stats: bool = True
+    annual_stats_constrained: bool = False
+    add_trends: bool = False
+    trends_min_yrs: PositiveInt = 7
+    stats_tseries_base_freq: str | None = None
+    forecast_evaluation: bool = False
+    forecast_days: PositiveInt = 4
+    use_fairmode: bool = False
+    use_diurnal: bool = False
+    obs_only_stats: bool = False
+    model_only_stats: bool = False
+    drop_stats: tuple[str, ...] = ()
+    stats_decimals: int | None = None
+    round_floats_precision: int | None = None
 
-    def __init__(self, **kwargs):
-        self.weighted_stats = True
-        self.annual_stats_constrained = False
-        self.add_trends = False
-        self.trends_min_yrs = 7
-        self.use_diurnal = True
-        self.stats_tseries_base_freq = None
-        self.forecast_evaluation = False
-        self.forecast_days = 4
-        self.use_fairmode = False
-        self.use_diurnal = False
-        self.obs_only_stats = False
-        self.model_only_stats = False
-        self.drop_stats = ()
-        self.stats_decimals = None
-
-        if "round_floats_precision" in kwargs:
-            precision = kwargs.pop("round_floats_precision")
-            set_float_serialization_precision(precision)
-
-        self.update(**kwargs)
+    if round_floats_precision:
+        set_float_serialization_precision(round_floats_precision)
 
 
-class TimeSetup(ConstrainedContainer):
-    DEFAULT_FREQS = ["monthly", "yearly"]
-    SEASONS = ["all", "DJF", "MAM", "JJA", "SON"]
-    main_freq = StrType()
-    freqs = ListOfStrings()
-    periods = ListOfStrings()
-
-    def __init__(self, **kwargs):
-        self.main_freq = self.DEFAULT_FREQS[0]
-        self.freqs = self.DEFAULT_FREQS
-        self.add_seasons = True
-        self.periods = []
+class TimeSetup(BaseModel):
+    DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
+    SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
+    main_freq: str = "monthly"
+    freqs: list[str] = ["monthly", "yearly"]
+    periods: list[str] = Field(default_factory=list)
+    add_seasons: bool = True
 
     def get_seasons(self):
         """
@@ -252,114 +236,86 @@ class TimeSetup(ConstrainedContainer):
         return output
 
 
-class WebDisplaySetup(ConstrainedContainer):
-    map_zoom = EitherOf(["World", "Europe"])
-    regions_how = EitherOf(["default", "aerocom", "htap", "country"])
-
-    def __init__(self, **kwargs):
-        self.regions_how = "default"
-        self.map_zoom = "World"
-        self.add_model_maps = False
-        self.modelorder_from_config = True
-        self.obsorder_from_config = True
-        self.var_order_menu = []
-        self.obs_order_menu = []
-        self.model_order_menu = []
-        self.hide_charts = []
-        self.hide_pages = []
-        self.ts_annotations = {}
-        self.add_pages = []
-        self.update(**kwargs)
-
-
-class EvalRunOptions(ConstrainedContainer):
-    def __init__(self, **kwargs):
-        # bool options run (do not affect results)
-        self.clear_existing_json = True
-        self.only_json = False
-        self.only_colocation = False
-        #: If True, process only maps (skip obs evaluation)
-        self.only_model_maps = False
-        self.obs_only = False
-        self.update(**kwargs)
+class WebDisplaySetup(BaseModel):
+    # Pydantic ConfigDict
+    model_config = ConfigDict()
+    model_config["protected_namespaces"] = ()
+    # WebDisplaySetup attributes
+    map_zoom: Literal["World", "Europe", "xEMEP"] = "World"
+    regions_how: Literal["default", "aerocom", "htap", "country"] = "default"
+    map_zoom: str = "World"
+    add_model_maps: bool = False
+    modelorder_from_config: bool = True
+    obsorder_from_config: bool = True
+    var_order_menu: tuple[str, ...] = ()
+    obs_order_menu: tuple[str, ...] = ()
+    model_order_menu: tuple[str, ...] = ()
+    hide_charts: tuple[str, ...] = ()
+    hide_pages: tuple[str, ...] = ()
+    ts_annotations: dict[str, str] = Field(default_factory=dict)
+    add_pages: tuple[str, ...] = ()
 
 
-class ProjectInfo(ConstrainedContainer):
-    def __init__(self, proj_id: str):
-        self.proj_id = proj_id
+class EvalRunOptions(BaseModel):
+    clear_existing_json: bool = True
+    only_json: bool = False
+    only_colocation: bool = False
+    #: If True, process only maps (skip obs evaluation)
+    only_model_maps: bool = False
+    obs_only: bool = False
 
 
-class ExperimentInfo(ConstrainedContainer):
-    def __init__(self, exp_id: str, **kwargs):
-        self.exp_id = exp_id
-        self.exp_name = ""
-        self.exp_descr = ""
-        self.public = False
-        self.exp_pi = getuser()
-        self.pyaerocom_version = __version__
-        self.update(**kwargs)
+class ProjectInfo(BaseModel):
+    proj_id: str
 
 
-class EvalSetup(NestedContainer, ConstrainedContainer):
+class ExperimentInfo(BaseModel):
+    exp_id: str
+    exp_name: str = ""
+    exp_descr: str = ""
+    public: bool = False
+    exp_pi: str = getuser()
+    pyaerocom_version: str = __version__
+
+
+class EvalSetup(BaseModel):
     """Composite class representing a whole analysis setup
 
     This represents the level at which json I/O happens for configuration
     setup files.
     """
 
-    IGNORE_JSON = ["_aux_funs"]
-    ADD_GLOB = ["io_aux_file"]
-    io_aux_file = AsciiFileLoc(
-        default="",
-        assert_exists=False,
-        auto_create=False,
-        logger=logger,
-        tooltip=".py file containing additional read methods for modeldata",
-    )
-    _aux_funs = {}
+    ###########################
+    ##   Pydantic ConfigDict
+    ###########################
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
 
-    def __init__(self, proj_id: str = None, exp_id: str = None, **kwargs):
-        if proj_id is None:
-            proj_id = kwargs["proj_info"]["proj_id"]
-        if exp_id is None:
-            exp_id = kwargs["exp_info"]["exp_id"]
+    ########################################
+    ## Regular & BaseModel-based Attributes
+    ########################################
 
-        self.proj_info = ProjectInfo(proj_id=proj_id)
-        self.exp_info = ExperimentInfo(exp_id=exp_id)
+    IGNORE_JSON: list[str] = ["_aux_funs"]
+    ADD_GLOB: list[str] = ["io_aux_file"]
 
-        self.time_cfg = TimeSetup()
+    io_aux_file: Annotated[
+        Path | str, ".py file containing additional read methods for modeldata"
+    ] = ""
 
-        self.modelmaps_opts = ModelMapsSetup()
-        self.colocation_opts = ColocationSetup(
-            save_coldata=True, keep_data=False, resample_how="mean"
-        )
-        self.statistics_opts = StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
-        self.webdisp_opts = WebDisplaySetup()
+    _aux_funs: dict = {}
 
-        self.processing_opts = EvalRunOptions()
+    proj_id: str
+    exp_id: str
+    var_web_info: dict = {}
 
-        self.cams2_83_cfg = CAMS2_83Setup()
-
-        self.obs_cfg = ObsCollection()
-        self.model_cfg = ModelCollection()
-
-        self.var_web_info = {}
-        self.path_manager = OutputPaths(self.proj_id, self.exp_id)
-        self.update(**kwargs)
-
+    @computed_field
     @property
-    def proj_id(self) -> str:
-        """
-        str: proj ID (wrapper to :attr:`proj_info.proj_id`)
-        """
-        return self.proj_info.proj_id
+    def proj_info(self) -> ProjectInfo:
+        return ProjectInfo(proj_id=self.proj_id)
 
+    @computed_field
     @property
-    def exp_id(self) -> str:
-        """
-        str: experiment ID (wrapper to :attr:`exp_info.exp_id`)
-        """
-        return self.exp_info.exp_id
+    def exp_info(self) -> ExperimentInfo:
+        return ExperimentInfo(exp_id=self.exp_id)
 
     @property
     def json_filename(self) -> str:
@@ -369,15 +325,154 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         return f"cfg_{self.proj_id}_{self.exp_id}.json"
 
     @property
-    def gridded_aux_funs(self):
+    def gridded_aux_funs(self) -> dict:
         if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
             self._import_aux_funs()
         return self._aux_funs
 
-    def get_obs_entry(self, obs_name):
+    @computed_field
+    @property
+    def path_manager(self) -> OutputPaths:
+        if not hasattr(self, "model_extra"):
+            return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in OutputPaths.model_fields
+        }
+        return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id, **model_args)
+
+    # This is a hack to get keys from a general CFG into their appropriate respective classes
+    # TODO: all these computed fields could be more easily defined if the config were
+    # rigid enough to have they explicitly defined (e.g., in a TOML file), rather than dumping everything
+    # into one large config dict and then dishing out the relevant parts to each class.
+    @computed_field
+    @property
+    def time_cfg(self) -> TimeSetup:
+        if not hasattr(self, "model_extra"):
+            return TimeSetup()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in TimeSetup.model_fields
+        }
+        return TimeSetup(**model_args)
+
+    @computed_field
+    @property
+    def modelmaps_opts(self) -> ModelMapsSetup:
+        if not hasattr(self, "model_extra"):
+            return ModelMapsSetup()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in ModelMapsSetup.model_fields
+        }
+        return ModelMapsSetup(**model_args)
+
+    @computed_field
+    @property
+    def cams2_83_cfg(self) -> CAMS2_83Setup:
+        if not hasattr(self, "model_extra"):
+            return CAMS2_83Setup()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in CAMS2_83Setup.model_fields
+        }
+        return CAMS2_83Setup(**model_args)
+
+    @computed_field
+    @property
+    def webdisp_opts(self) -> WebDisplaySetup:
+        if not hasattr(self, "model_extra"):
+            return WebDisplaySetup()
+        model_args = {
+            key: val
+            for key, val in self.model_extra.items()
+            if key in WebDisplaySetup.model_fields
+        }
+        return WebDisplaySetup(**model_args)
+
+    @computed_field
+    @property
+    def processing_opts(self) -> EvalRunOptions:
+        if not hasattr(self, "model_extra"):
+            return EvalRunOptions()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in EvalRunOptions.model_fields
+        }
+        return EvalRunOptions(**model_args)
+
+    @computed_field
+    @property
+    def statistics_opts(self) -> StatisticsSetup:
+        if not hasattr(self, "model_extra"):
+            return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
+        model_args = {
+            key: val
+            for key, val in self.model_extra.items()
+            if key in StatisticsSetup.model_fields
+        }
+        return StatisticsSetup(**model_args)
+
+    ##################################
+    ## Non-BaseModel-based attributes
+    ##################################
+
+    # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
+
+    # TODO: Use Pydantic for ColocationSetup
+    @computed_field
+    @property
+    def colocation_opts(self) -> ColocationSetup:
+        if not hasattr(self, "model_extra"):
+            return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
+
+        model_args = {
+            key: val
+            for key, val in self.model_extra.items()
+            if key in ColocationSetup().__dict__.keys()
+        }
+        # need to pass some default values to the ColocationSetup if not provided in config
+        default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
+        for key in default_dict:
+            if key not in model_args:
+                model_args[key] = default_dict[key]
+
+        return ColocationSetup(**model_args)
+
+    @field_serializer("colocation_opts")
+    def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
+        return colocation_opts.json_repr()
+
+    # ObsCollection and ModelCollection
+    # TODO Use Pydantic for ObsCollection and ModelCollection
+
+    obs_cfg: ObsCollection | dict = ObsCollection()
+
+    @field_validator("obs_cfg")
+    def validate_obs_cfg(cls, v):
+        if isinstance(v, ObsCollection):
+            return v
+        return ObsCollection(v)
+
+    @field_serializer("obs_cfg")
+    def serialize_obs_cfg(self, obs_cfg: ObsCollection):
+        return obs_cfg.json_repr()
+
+    model_cfg: ModelCollection | dict = ModelCollection()
+
+    @field_validator("model_cfg")
+    def validate_model_cfg(cls, v):
+        if isinstance(v, ModelCollection):
+            return v
+        return ModelCollection(v)
+
+    @field_serializer("model_cfg")
+    def serialize_model_cfg(self, model_cfg: ModelCollection):
+        return model_cfg.json_repr()
+
+    ###########################
+    ##       Methods
+    ###########################
+
+    def get_obs_entry(self, obs_name) -> dict:
         return self.obs_cfg.get_entry(obs_name).to_dict()
 
-    def get_model_entry(self, model_name):
+    def get_model_entry(self, model_name) -> dict:
         """Get model entry configuration
 
         Since the configuration files for experiments are in json format, they
@@ -427,16 +522,19 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         return filepath
 
     @staticmethod
-    def from_json(filepath: str) -> "EvalSetup":
+    def from_json(filepath: str) -> Self:
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
 
-    def _import_aux_funs(self):
+    def json_repr(self):
+        return self.model_dump()
+
+    def _import_aux_funs(self) -> None:
         h = ReadAuxHandler(self.io_aux_file)
         self._aux_funs.update(**h.import_all())
 
-    def _check_time_config(self):
+    def _check_time_config(self) -> None:
         periods = self.time_cfg.periods
         colstart = self.colocation_opts["start"]
         colstop = self.colocation_opts["stop"]
@@ -450,7 +548,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
                 f"periods is not set, inferred {per} from start / stop colocation settings."
             )
 
-        self.time_cfg["periods"] = _check_statistics_periods(periods)
+        self.time_cfg.periods = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
         start_yr = start.year
         stop_yr = stop.year

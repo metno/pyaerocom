@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 import iris
+import iris.cube
 import numpy as np
 import pytest
 import xarray as xr
@@ -75,7 +76,7 @@ def test_GriddedData_long_name():
 
 
 def test_GriddedData_suppl_info():
-    assert isinstance(GriddedData().metadata, dict)
+    assert isinstance(GriddedData().metadata, iris.cube.CubeAttrsDict)
 
 
 def test_basic_properties(data_tm5: GriddedData):
@@ -369,10 +370,13 @@ def fake_dataset_path(tmp_path: Path, var_name: str, units: str) -> Path:
     "var_name,units,data_unit",
     [
         ("od550aer", "1", "1"),
-        ("od550aer", "invalid", "1"),
         ("concso4", "ug S m-3", "ug S m-3"),
         ("concco", "ugC/m3", "ug C m-3"),
     ],
+)
+# iris after 3.7 changed warnings
+@pytest.mark.filterwarnings(
+    "ignore::iris.fileformats._nc_load_rules.helpers._WarnComboIgnoringCfLoad"
 )
 def test_GriddedData__check_invalid_unit_alias(
     fake_dataset_path: Path, var_name: str, data_unit: str

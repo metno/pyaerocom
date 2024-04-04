@@ -95,7 +95,7 @@ def test_ExperimentOutput():
     cfg = EvalSetup(proj_id="proj", exp_id="exp")
     val = ExperimentOutput(cfg)
     assert isinstance(val.cfg, EvalSetup)
-    assert val.proj_id == cfg["proj_info"]["proj_id"]
+    assert val.proj_id == cfg.proj_info.proj_id
 
     path = Path(val.json_basedir)
     assert path == BASEDIR_DEFAULT
@@ -203,9 +203,11 @@ def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: b
     setup = EvalSetup(
         proj_id="proj",
         exp_id="exp",
-        coldata_basedir=str(coldata_path),
-        json_basedir=str(json_path),
+        coldata_basedir=coldata_path,
+        json_basedir=json_path,
     )
+    assert setup.path_manager.coldata_basedir == coldata_path
+    assert setup.path_manager.json_basedir == json_path
     assert coldata_path.exists()
 
     out = ExperimentOutput(setup)
@@ -329,10 +331,9 @@ def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutp
 def test_Experiment_Output_drop_stats_and_decimals(
     eval_config: dict, drop_stats, stats_decimals: int
 ):
+    eval_config["drop_stats"], eval_config["stats_decimals"] = drop_stats, stats_decimals
     cfg = EvalSetup(**eval_config)
     cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
-    cfg["statistics_opts"]["drop_stats"] = drop_stats
-    cfg["statistics_opts"]["stats_decimals"] = stats_decimals
     proc = ExperimentProcessor(cfg)
     proc.run()
     path = Path(proc.exp_output.exp_dir)
