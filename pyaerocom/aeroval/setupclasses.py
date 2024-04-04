@@ -164,8 +164,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
     """
 
     # Pydantic ConfigDict
-    model_config = ConfigDict()
-    model_config["protected_namespaces"] = ()
+    model_config = ConfigDict(protected_namespaces=())
     # StatisticsSetup attributes
     MIN_NUM: PositiveInt = 1
     weighted_stats: bool = True
@@ -229,8 +228,7 @@ class TimeSetup(BaseModel):
 
 class WebDisplaySetup(BaseModel):
     # Pydantic ConfigDict
-    model_config = ConfigDict()
-    model_config["protected_namespaces"] = ()
+    model_config = ConfigDict(protected_namespaces=())
     # WebDisplaySetup attributes
     map_zoom: Literal["World", "Europe", "xEMEP"] = "World"
     regions_how: Literal["default", "aerocom", "htap", "country"] = "default"
