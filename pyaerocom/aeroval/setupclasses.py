@@ -23,10 +23,10 @@ from pydantic import (
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
+from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
-from pyaerocom.exceptions import AeroValConfigError
 
 logger = logging.getLogger(__name__)
 
@@ -518,7 +518,7 @@ class EvalSetup(BaseModel):
 
         if len(periods) == 0:
             if colstart is None:
-                raise AeroValConfigError("Either periods or start must be set...")
+                raise ConfigError("Either periods or start must be set...")
             per = self.colocation_opts._period_from_start_stop()
             periods = [per]
             logger.info(

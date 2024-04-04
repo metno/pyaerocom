@@ -13,17 +13,13 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom._warnings import ignore_warnings
+from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.exceptions import (
-    AeroValConfigError,
-    AeroValTrendsError,
-    DataCoverageError,
-    TemporalResolutionError,
-)
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop
 from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
@@ -732,7 +728,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     Raises
     ------
-    AeroValTrendsError
+    TrendsError
         If stop - start is smaller than min_yrs
 
     AeroValError
@@ -745,7 +741,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
 
     if stop - start < min_yrs:
-        raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
+        raise TrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
 
     te = TrendsEngine
 
@@ -762,7 +758,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     # Makes pd.Series serializable
     if obs_trend["data"] is None or mod_trend["data"] is None:
-        raise AeroValTrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
+        raise TrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
@@ -799,7 +795,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
     Raises
     ------
-    AeroValTrendsError
+    TrendsError
         If stop - start is smaller than min_yrs
 
     AeroValError
@@ -889,7 +885,7 @@ def _process_map_and_scat(
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
 
-                                except AeroValTrendsError as e:
+                                except TrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                     logger.warning(msg)
 
@@ -986,7 +982,7 @@ def _apply_annual_constraint(data):
 
     Raises
     ------
-    AeroValConfigError
+    ConfigError
         If colocated data in yearly resolution is not available in input data
 
     Returns
@@ -997,7 +993,7 @@ def _apply_annual_constraint(data):
     """
     output = {}
     if not "yearly" in data or data["yearly"] is None:
-        raise AeroValConfigError(
+        raise ConfigError(
             "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
             '"statistics_json" in AerocomEvaluation class)'
@@ -1170,7 +1166,7 @@ def _process_heatmap_data(
                                         )
 
                                         trends_successful = True
-                                    except AeroValTrendsError as e:
+                                    except TrendsError as e:
                                         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                         logger.warning(msg)
 

@@ -21,7 +21,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_stationfile_name,
     get_timeseries_file_name,
 )
-from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
+from pyaerocom.aeroval.exceptions import TrendsError
+from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
 
 
