@@ -67,3 +67,16 @@ def test_not_cleared_cache(
     assert result.exit_code == 0
     # Check that the cache is not cleared
     assert list(fake_cache_path.glob("*.pkl"))
+
+def test_eval(
+    fake_cache_path: Path,
+    tmp_path: Path,
+    #fake_config,
+    caplog,
+):
+    assert list(fake_cache_path.glob("*.pkl"))
+
+    options = f"forecast day 2024-03-16 2024-03-16 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --verbose"
+    result = runner.invoke(app, options.split())
+    assert result.exit_code != 0
+    assert "Failed to read model variable" in caplog.text
