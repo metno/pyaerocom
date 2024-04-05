@@ -7,7 +7,6 @@ from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.helpers import delete_dummy_model, make_dummy_model
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
-from pyaerocom.io import cams2_83
 
 logger = logging.getLogger(__name__)
 
@@ -58,12 +57,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                if self.cfg.cams2_83_cfg.use_cams2_83:
-                    col.run(
-                        var_list,
-                    )
-                else:
-                    col.run(var_list)
+                col.run(var_list)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
