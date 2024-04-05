@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from functools import cached_property
 from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
@@ -297,30 +298,30 @@ class EvalSetup(BaseModel):
     var_web_info: dict = {}
 
     @computed_field
-    @property
+    @cached_property
     def proj_info(self) -> ProjectInfo:
         return ProjectInfo(proj_id=self.proj_id)
 
     @computed_field
-    @property
+    @cached_property
     def exp_info(self) -> ExperimentInfo:
         return ExperimentInfo(exp_id=self.exp_id)
 
-    @property
+    @cached_property
     def json_filename(self) -> str:
         """
         str: Savename of config file: cfg_<proj_id>_<exp_id>.json
         """
         return f"cfg_{self.proj_id}_{self.exp_id}.json"
 
-    @property
+    @cached_property
     def gridded_aux_funs(self) -> dict:
         if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
             self._import_aux_funs()
         return self._aux_funs
 
     @computed_field
-    @property
+    @cached_property
     def path_manager(self) -> OutputPaths:
         if not hasattr(self, "model_extra"):
             return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
@@ -334,7 +335,7 @@ class EvalSetup(BaseModel):
     # rigid enough to have they explicitly defined (e.g., in a TOML file), rather than dumping everything
     # into one large config dict and then dishing out the relevant parts to each class.
     @computed_field
-    @property
+    @cached_property
     def time_cfg(self) -> TimeSetup:
         if not hasattr(self, "model_extra"):
             return TimeSetup()
@@ -344,7 +345,7 @@ class EvalSetup(BaseModel):
         return TimeSetup(**model_args)
 
     @computed_field
-    @property
+    @cached_property
     def modelmaps_opts(self) -> ModelMapsSetup:
         if not hasattr(self, "model_extra"):
             return ModelMapsSetup()
@@ -354,7 +355,7 @@ class EvalSetup(BaseModel):
         return ModelMapsSetup(**model_args)
 
     @computed_field
-    @property
+    @cached_property
     def webdisp_opts(self) -> WebDisplaySetup:
         if not hasattr(self, "model_extra"):
             return WebDisplaySetup()
@@ -366,7 +367,7 @@ class EvalSetup(BaseModel):
         return WebDisplaySetup(**model_args)
 
     @computed_field
-    @property
+    @cached_property
     def processing_opts(self) -> EvalRunOptions:
         if not hasattr(self, "model_extra"):
             return EvalRunOptions()
@@ -376,7 +377,7 @@ class EvalSetup(BaseModel):
         return EvalRunOptions(**model_args)
 
     @computed_field
-    @property
+    @cached_property
     def statistics_opts(self) -> StatisticsSetup:
         if not hasattr(self, "model_extra"):
             return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
@@ -395,7 +396,7 @@ class EvalSetup(BaseModel):
 
     # TODO: Use Pydantic for ColocationSetup
     @computed_field
-    @property
+    @cached_property
     def colocation_opts(self) -> ColocationSetup:
         if not hasattr(self, "model_extra"):
             return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
