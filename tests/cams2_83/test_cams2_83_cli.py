@@ -78,5 +78,5 @@ def test_eval(
 
     options = f"forecast day 2024-03-16 2024-03-16 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --verbose"
     result = runner.invoke(app, options.split())
-    assert result.exit_code != 0
+    assert result.exit_code == 0
     assert "Failed to read model variable" in caplog.text

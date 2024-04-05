@@ -31,9 +31,7 @@ dependencies = [
     "numpy>=1.24.3",
     "seaborn>=0.12.2",
     "dask",
-    "geonum",
-    "LatLon23",                       # required by geonum
-    "SRTM.py",                        # required by geonum
+    "geonum @ git+https://github.com/jgliss/geonum.git",  # https://github.com/jgliss/geonum/issues/26
     "simplejson",
     "requests",
     "geocoder_reverse_natural_earth",

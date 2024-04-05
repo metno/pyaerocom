@@ -30,8 +30,9 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     process_profile_data_for_stations,
     update_regions_json,
 )
+from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import write_json
-from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
+from pyaerocom.exceptions import TemporalResolutionError
 
 logger = logging.getLogger(__name__)
 
