@@ -300,12 +300,19 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def proj_info(self) -> ProjectInfo:
-        return ProjectInfo(proj_id=self.proj_id)
+        return ProjectInfo(
+            proj_id=self.proj_id
+        )  # special case because ProjectInfo only has one attrbibute proj_id which is required by EvalSetup
 
     @computed_field
     @cached_property
     def exp_info(self) -> ExperimentInfo:
-        return ExperimentInfo(exp_id=self.exp_id)
+        if not hasattr(self, "model_extra"):
+            return ExperimentInfo(exp_id=self.exp_id)
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in ExperimentInfo.model_fields
+        }
+        return ExperimentInfo(**model_args)
 
     @cached_property
     def json_filename(self) -> str:
@@ -330,9 +337,9 @@ class EvalSetup(BaseModel):
         }
         return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id, **model_args)
 
-    # This is a hack to get keys from a general CFG into their appropriate respective classes
+    # Many computed_fields here have this hack to get keys from a general CFG into their appropriate respective classes
     # TODO: all these computed fields could be more easily defined if the config were
-    # rigid enough to have they explicitly defined (e.g., in a TOML file), rather than dumping everything
+    # rigid enough to have them explicitly defined (e.g., in a TOML file), rather than dumping everything
     # into one large config dict and then dishing out the relevant parts to each class.
     @computed_field
     @cached_property
