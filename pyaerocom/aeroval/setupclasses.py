@@ -312,6 +312,7 @@ class EvalSetup(BaseModel):
         model_args = {
             key: val for key, val in self.model_extra.items() if key in ExperimentInfo.model_fields
         }
+        model_args["exp_id"] = self.exp_id
         return ExperimentInfo(**model_args)
 
     @cached_property
