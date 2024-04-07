@@ -68,10 +68,11 @@ def test_not_cleared_cache(
     # Check that the cache is not cleared
     assert list(fake_cache_path.glob("*.pkl"))
 
+
 def test_eval(
     fake_cache_path: Path,
     tmp_path: Path,
-    #fake_config,
+    # fake_config,
     caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
