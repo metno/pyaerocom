@@ -16,7 +16,7 @@ def setup() -> EvalSetup:
         obs1=dict(obs_id="obs1", obs_vars=["od550aer"], obs_vert_type="Column"),
         obs2=dict(obs_id="obs2", obs_vars=["od550aer"], obs_vert_type="Column", diurnal_only=True),
     )
-    return EvalSetup("bla", "blub", obs_cfg=obs_cfg)
+    return EvalSetup(proj_id="bla", exp_id="blub", obs_cfg=obs_cfg)
 
 
 @pytest.fixture(scope="module")

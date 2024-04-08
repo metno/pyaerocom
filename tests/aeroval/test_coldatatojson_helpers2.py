@@ -21,7 +21,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     get_stationfile_name,
     get_timeseries_file_name,
 )
-from pyaerocom.exceptions import AeroValTrendsError, TemporalResolutionError, UnknownRegion
+from pyaerocom.aeroval.exceptions import TrendsError
+from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
 
 
@@ -243,7 +244,7 @@ def test__make_trends(
             "yearly",
             "all",
             7,
-            AeroValTrendsError,
+            TrendsError,
             "min_yrs (7) larger than time between start and stop",
             id="wrong min_yrs",
         ),

@@ -5,7 +5,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 import os
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 import numpy as np
@@ -13,17 +13,13 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom._warnings import ignore_warnings
+from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
-from pyaerocom.aeroval.json_utils import read_json, write_json
+from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.exceptions import (
-    AeroValConfigError,
-    AeroValTrendsError,
-    DataCoverageError,
-    TemporalResolutionError,
-)
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop
 from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
@@ -78,8 +74,8 @@ def _write_stationdata_json(ts_data, out_dir):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, ignore_nan=True)
+    current[ts_data["model_name"]] = round_floats(ts_data)
+    write_json(current, fp, round_floats=False)
 
 
 def _write_site_data(ts_objs, dirloc):
@@ -120,8 +116,8 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, ignore_nan=True)
+    current[ts_data["model_name"]] = round_floats(ts_data)
+    write_json(current, fp, round_floats=False)
 
 
 def _add_heatmap_entry_json(
@@ -143,8 +139,8 @@ def _add_heatmap_entry_json(
     if not model_name in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
-    mn[model_var] = result
-    write_json(current, heatmap_file, ignore_nan=True)
+    mn[model_var] = round_floats(result)
+    write_json(current, heatmap_file, round_floats=False)
 
 
 def _prepare_regions_json_helper(region_ids):
@@ -239,8 +235,8 @@ def update_regions_json(region_defs, regions_json):
 
     for region_name, region_info in region_defs.items():
         if not region_name in current:
-            current[region_name] = region_info
-    write_json(current, regions_json)
+            current[region_name] = round_floats(region_info)
+    write_json(current, regions_json, round_floats=False)
     return current
 
 
@@ -276,7 +272,7 @@ def _init_meta_glob(coldata, **kwargs):
         meta_glob["obs_revision"] = meta["revision_ref"]
     except KeyError:
         meta_glob["obs_revision"] = NDSTR
-    meta_glob["processed_utc"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    meta_glob["processed_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     meta_glob.update(kwargs)
     return meta_glob
 
@@ -732,7 +728,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     Raises
     ------
-    AeroValTrendsError
+    TrendsError
         If stop - start is smaller than min_yrs
 
     AeroValError
@@ -745,7 +741,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
 
     if stop - start < min_yrs:
-        raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
+        raise TrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
 
     te = TrendsEngine
 
@@ -762,7 +758,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     # Makes pd.Series serializable
     if obs_trend["data"] is None or mod_trend["data"] is None:
-        raise AeroValTrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
+        raise TrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
@@ -799,7 +795,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
     Raises
     ------
-    AeroValTrendsError
+    TrendsError
         If stop - start is smaller than min_yrs
 
     AeroValError
@@ -889,7 +885,7 @@ def _process_map_and_scat(
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
 
-                                except AeroValTrendsError as e:
+                                except TrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                     logger.warning(msg)
 
@@ -986,7 +982,7 @@ def _apply_annual_constraint(data):
 
     Raises
     ------
-    AeroValConfigError
+    ConfigError
         If colocated data in yearly resolution is not available in input data
 
     Returns
@@ -997,7 +993,7 @@ def _apply_annual_constraint(data):
     """
     output = {}
     if not "yearly" in data or data["yearly"] is None:
-        raise AeroValConfigError(
+        raise ConfigError(
             "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
             '"statistics_json" in AerocomEvaluation class)'
@@ -1170,7 +1166,7 @@ def _process_heatmap_data(
                                         )
 
                                         trends_successful = True
-                                    except AeroValTrendsError as e:
+                                    except TrendsError as e:
                                         msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                         logger.warning(msg)
 
@@ -1587,5 +1583,5 @@ def add_profile_entry_json(
                 "z_long_description": "Altitude Above Sea Level",
                 "unit": coldata.unitstr,
             }
-
-    write_json(current, profile_file, ignore_nan=True)
+        current[model_name] = round_floats(current[model_name])
+    write_json(current, profile_file, round_floats=False)

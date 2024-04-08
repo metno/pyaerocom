@@ -3,7 +3,7 @@
 channels:
   - conda-forge
 dependencies:
-  - iris >=3.6.0, <3.8.0
+  - iris >=3.7.1
   - xarray <=2022.10.0
   - cartopy >=0.21.1
   - matplotlib-base >=3.7.1
@@ -18,12 +18,11 @@ dependencies:
   - tqdm
   - openpyxl
   - typer >=0.7.0
-  - pydantic
-## python < 3.10
-  - importlib-metadata >=3.6
+  - pydantic > 2.0.0
 ## python < 3.11
   - tomli >=2.0.1
   - importlib-resources >=5.10
+  - typing-extensions >=4.0.1
 ## from pip
   - pip
   - pip:

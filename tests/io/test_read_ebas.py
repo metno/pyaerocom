@@ -27,7 +27,6 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from tests.fixtures.ebas import loaded_nasa_ames_example as filedata
 
 
 @pytest.fixture(scope="module")
@@ -491,9 +490,9 @@ def test_get_ebas_var_error(
     assert str(e.value) == error
 
 
-def test__get_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
+def test__get_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
     info = EbasVarInfo("sc550aer")
-    cols = reader._get_var_cols(info, filedata)
+    cols = reader._get_var_cols(info, loaded_nasa_ames_example)
     assert cols == [14, 17, 20]
 
 
@@ -504,16 +503,18 @@ def test__get_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
         ("sc550dryaer", ""),
     ],
 )
-def test__get_var_cols_error(reader: ReadEbas, filedata: EbasNasaAmesFile, var: str, error: str):
+def test__get_var_cols_error(
+    reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
+):
     info = EbasVarInfo(var)
     with pytest.raises(NotInFileError) as e:
-        reader._get_var_cols(info, filedata)
+        reader._get_var_cols(info, loaded_nasa_ames_example)
     assert str(e.value) == error
 
 
-def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
+def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
     vars_to_read = ["sc550aer", "scrh", "ts"]
-    columns = reader.find_var_cols(vars_to_read, filedata)
+    columns = reader.find_var_cols(vars_to_read, loaded_nasa_ames_example)
     assert columns["sc550aer"] == 17
     assert columns["scrh"] == 3
     assert columns["ts"] == 4
@@ -530,16 +531,16 @@ def test_find_var_cols(reader: ReadEbas, filedata: EbasNasaAmesFile):
 def test__flag_incorrect_frequencies(
     monkeypatch: pytest.MonkeyPatch,
     reader: ReadEbas,
-    filedata: EbasNasaAmesFile,
+    loaded_nasa_ames_example: EbasNasaAmesFile,
     ts_type: str,
     tol_percent: int,
     num_flagged: int,
 ):
     station = StationData()
-    station.start_meas = filedata.start_meas
-    station.stop_meas = filedata.stop_meas
+    station.start_meas = loaded_nasa_ames_example.start_meas
+    station.stop_meas = loaded_nasa_ames_example.stop_meas
     station.var_info["bla"] = dict(units="1")
-    station.bla = np.ones_like(filedata.start_meas)
+    station.bla = np.ones_like(loaded_nasa_ames_example.start_meas)
     station.ts_type = ts_type
 
     monkeypatch.setattr("pyaerocom.TsType.TOL_SECS_PERCENT", tol_percent)

@@ -8,14 +8,6 @@ class AeronetReadError(IOError):
     pass
 
 
-class AeroValConfigError(ValueError):
-    pass
-
-
-class AeroValTrendsError(ValueError):
-    pass
-
-
 class CachingError(IOError):
     pass
 

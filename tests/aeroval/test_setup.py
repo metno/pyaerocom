@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
@@ -20,7 +21,7 @@ def aeroval_path(tmp_path: Path) -> None:
 
 
 def test_evalsetup_args():
-    setup = EvalSetup("project", "experiment")
+    setup = EvalSetup(proj_id="project", exp_id="experiment")
     assert setup
     assert setup.proj_id == setup.proj_info.proj_id == "project"
     assert setup.exp_id == setup.exp_info.exp_id == "experiment"
@@ -34,16 +35,16 @@ def test_evalsetup_kwargs():
 
 
 def test_evalsetup_missing_arguments():
-    with pytest.raises((KeyError, ValueError)):
+    with pytest.raises(ValidationError):
         EvalSetup()
 
-    with pytest.raises((KeyError, ValueError)):
-        EvalSetup("project")
-
-    with pytest.raises((KeyError, ValueError)):
+    with pytest.raises(ValidationError):
         EvalSetup(proj_id="project")
 
-    with pytest.raises((KeyError, ValueError)):
+    with pytest.raises(ValidationError):
+        EvalSetup(proj_id="project")
+
+    with pytest.raises(ValidationError):
         EvalSetup(exp_id="experiment")
 
 

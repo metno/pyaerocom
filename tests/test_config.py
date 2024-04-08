@@ -112,7 +112,6 @@ def test_Config_has_access_users_database():
     assert not cfg.has_access_users_database
 
 
-@lustre_avail
 @pytest.mark.parametrize(
     "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs,data_searchdirno",
     [
@@ -130,6 +129,8 @@ def test_Config_read_config(
     cfg_file = cfg._config_files[cfg_id]
     assert Path(cfg_file).exists()
     cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
+    if not cfg.has_access_lustre:
+        pytest.skip(f"Skipping since {cfg._LUSTRE_CHECK_PATH} directory not accessible")
     assert len(cfg.DATA_SEARCH_DIRS) == data_searchdirno
     assert len(cfg.OBSLOCS_UNGRIDDED) == 0
     assert Path(cfg.OUTPUTDIR).exists()
