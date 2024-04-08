@@ -851,12 +851,13 @@ class Colocator(ColocationSetup):
         # ToDo: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_list)
-        except Exception:
+        except Exception as ex:
+            logger.exception(ex)
             if self.raise_exceptions:
                 self._print_processing_status()
-                self._write_log("ABORTED: raise_exceptions is True\n")
+                self._write_log(f"ABORTED: raise_exceptions is True: {traceback.format_exc()}\n")
                 self._close_log()
-                raise
+                raise ex
             vars_to_process = {}
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
