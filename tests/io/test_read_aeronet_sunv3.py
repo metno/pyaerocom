@@ -29,6 +29,8 @@ def test_read_file(reader):
     assert data.station_name[0] == "Thessaloniki"
     assert "od550aer" in data
     assert data["od550aer"][:10].mean() == pytest.approx(0.287, rel=1e-3)
+    assert "proxyzdust" in data
+    assert data["proxyzdust"][:10].mean() == pytest.approx(0.287, rel=1e-3)
     assert "ang4487aer" in data
     assert data["ang4487aer"][:10].mean() == pytest.approx(1.787, rel=1e-3)
 
