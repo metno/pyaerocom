@@ -7,7 +7,7 @@ GLOBAL_CONFIG = dict(
     # Description of the experiment
     proj_id="cams2-83",
     exp_id="prototype",
-    exp_name="Prototype-daily"
+    exp_name="Prototype-daily",
     exp_descr=("Evaluation using EEA-MF NRT obs."),
     exp_pi="<a href='https://atmosphere.copernicus.eu/help-and-support'>CAMS user support</a>",
     # Whether or not the experiment is visible in the web interface
