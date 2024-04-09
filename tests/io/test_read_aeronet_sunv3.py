@@ -29,8 +29,6 @@ def test_read_file(reader):
     assert data.station_name[0] == "Thessaloniki"
     assert "od550aer" in data
     assert data["od550aer"][:10].mean() == pytest.approx(0.287, rel=1e-3)
-    assert "proxyzdust" in data
-    assert data["proxyzdust"][:10].mean() == pytest.approx(0.287, rel=1e-3)
     assert "ang4487aer" in data
     assert data["ang4487aer"][:10].mean() == pytest.approx(1.787, rel=1e-3)
 
@@ -39,13 +37,16 @@ def test_read(reader):
     reader.get_file_list()
     files = reader.files[2:4]
     assert [Path(file).name for file in files] == ["Agoufou.lev30", "Alta_Floresta.lev30"]
-    data = reader.read(files=files, vars_to_retrieve=["od550aer", "ang4487aer", "proxyod550oa"])
+    # proxyzdust is essentially od550aer
+    data = reader.read(
+        files=files, vars_to_retrieve=["od550aer", "ang4487aer", "proxyod550oa", "proxyzdust"]
+    )
     assert isinstance(data, UngriddedData)
     assert data.unique_station_names == ["Agoufou", "Alta_Floresta"]
-    assert data.contains_vars == ["od550aer", "ang4487aer", "proxyod550oa"]
+    assert data.contains_vars == ["od550aer", "ang4487aer", "proxyod550oa", "proxyzdust"]
     assert data.contains_instruments == ["sun_photometer"]
-    assert data.shape == (17985, 12)
-    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(0.577, rel=1e-3)
+    assert data.shape == (23980, 12)
+    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(0.527, rel=1e-3)
 
 
 def test_read_add_common_meta(reader):
