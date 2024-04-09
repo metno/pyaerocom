@@ -30,6 +30,8 @@ dependencies = [
     "numpy>=1.24.3",
     "seaborn>=0.12.2",
     "dask",
+    "LatLon23",
+    "SRTM.py",
     "geonum==1.5.0.dev9",  # https://github.com/jgliss/geonum/issues/26
     "simplejson",
     "requests",
