@@ -21,7 +21,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "scitools-iris>=3.7.1",
+    "scitools-iris>=3.8.1",
     "xarray<=2022.10.0",
     "h5netcdf>=1.0.0",               # xarray backend, no chunk-cache
     "cartopy>=0.21.1",
