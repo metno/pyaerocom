@@ -1,10 +1,24 @@
-import json
+from copy import deepcopy
 
 import pytest
 
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG
+
+
+@pytest.fixture
+def cfg_exp1(update: dict | None) -> dict:
+    cfg = deepcopy(CFG)
+    if update:
+        cfg.update(update)
+
+    return cfg
+
+
+@pytest.fixture
+def eval_setup(cfg_exp1: dict) -> EvalSetup:
+    return EvalSetup.model_validate(cfg_exp1)
 
 
 @pytest.mark.parametrize(
@@ -53,110 +67,148 @@ def test_EvalSetup_ProjectInfo():
         assert getattr(eval_setup.proj_info, k, None) == CFG[k]
 
 
+@pytest.mark.parametrize("update", ((None),))
+def test_EvalSetup_ExperimentInfo(eval_setup: EvalSetup, cfg_exp1: dict):
+    exp_info = eval_setup.exp_info
+    assert exp_info.exp_id == cfg_exp1["exp_id"]
+    assert exp_info.exp_descr == cfg_exp1["exp_descr"]
+    assert exp_info.exp_name == cfg_exp1["exp_name"]
+    assert exp_info.public == cfg_exp1["public"]
+
+
+@pytest.mark.parametrize("update", ((None),))
+def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
+    time_cfg = eval_setup.time_cfg
+    assert time_cfg.freqs == cfg_exp1["freqs"]
+    assert time_cfg.main_freq == cfg_exp1["main_freq"]
+    assert time_cfg.periods == cfg_exp1["periods"]
+
+
 @pytest.mark.parametrize(
     "update",
-    [
-        ({}),
-    ],
+    (
+        pytest.param(None, id="defaults"),
+        pytest.param(dict(maps_freq="yearly", maps_res_deg=10), id="custom"),
+    ),
 )
-def test_EvalSetup_ExperimentInfo(update):
-    cfg = CFG
-    cfg.update(update)
-
-    eval_setup = EvalSetup.model_validate(cfg)
-
-    for k in ["exp_id", "exp_descr", "exp_name", "public"]:
-        assert getattr(eval_setup.exp_info, k, None) == cfg[k]
-
-
-@pytest.mark.parametrize(
-    "update",
-    [
-        ({}),
-    ],
-)
-def test_EvalSetup_TimeSetup(update):
-    cfg = CFG
-    cfg.update(update)
-    eval_setup = EvalSetup.model_validate(cfg)
-
-    assert eval_setup.time_cfg.freqs == cfg["freqs"]
-    assert eval_setup.time_cfg.main_freq == cfg["main_freq"]
-    assert eval_setup.time_cfg.periods == cfg["periods"]
-
-
-@pytest.mark.parametrize("update", [({}), ({"maps_freq": "yearly", "maps_res_deg": 10})])
-def test_EvalSetup_ModelMapsSetup(update):
-    cfg = CFG
-    cfg.update(update)
-    eval_setup = EvalSetup.model_validate(cfg)
-
-    assert eval_setup.modelmaps_opts.maps_freq == cfg.get("maps_freq", "monthly")
-    assert eval_setup.modelmaps_opts.maps_res_deg == cfg.get("maps_res_deg", 5)
-
-
-@pytest.mark.parametrize("update", [({}), ({"obs_only": True, "only_colocation": True})])
-def test_EvalSetup_EvalRunOptions(update):
-    cfg = CFG
+def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update: dict):
+    modelmaps_opts = eval_setup.modelmaps_opts
     if update:
-        cfg.update(update)
-    cfg.update(update)
-    eval_setup = EvalSetup.model_validate(cfg)
-
-    assert eval_setup.processing_opts.clear_existing_json == cfg["clear_existing_json"]
-    assert eval_setup.processing_opts.obs_only == cfg.get("obs_only", False)
-    assert eval_setup.processing_opts.only_colocation == cfg.get("only_colocation", False)
-    assert eval_setup.processing_opts.only_json == cfg["only_json"]
-    assert eval_setup.processing_opts.only_model_maps == cfg["only_model_maps"]
+        assert modelmaps_opts.maps_freq == cfg_exp1["maps_freq"] == update["maps_freq"]
+        assert modelmaps_opts.maps_res_deg == cfg_exp1["maps_res_deg"] == update["maps_res_deg"]
+    else:  # defaults
+        assert "maps_freq" not in cfg_exp1
+        assert modelmaps_opts.maps_freq == "monthly"
+        assert "maps_res_deg" not in cfg_exp1
+        assert modelmaps_opts.maps_res_deg == 5
 
 
 @pytest.mark.parametrize(
     "update",
-    [
-        ({}),
-        (
-            {
-                "trends_min_yrs": 10,
-                "use_diurnal": True,
-                "use_fairmode": True,
-                "weighted_stats": False,
-                "model_only_stats": True,
-                "obs_only_stats": True,
-                "add_trends": True,
-                "annual_stats_constrained": True,
-            }
-        ),
-    ],
+    (
+        pytest.param(None, id="defaults"),
+        pytest.param(dict(obs_only=True, only_colocation=True), id="custom"),
+    ),
 )
-def test_EvalSetup_StatisticsSetup(update):
-    cfg = CFG
-    cfg.update(update)
+def test_EvalSetup_EvalRunOptions(eval_setup: EvalSetup, cfg_exp1: dict, update: dict):
+    processing_opts = eval_setup.processing_opts
+    assert processing_opts.clear_existing_json == cfg_exp1["clear_existing_json"]
+    assert processing_opts.only_json == cfg_exp1["only_json"]
+    assert processing_opts.only_model_maps == cfg_exp1["only_model_maps"]
+    if update:
+        assert processing_opts.obs_only == cfg_exp1["obs_only"] == update["obs_only"]
+        assert (
+            processing_opts.only_colocation
+            == cfg_exp1["only_colocation"]
+            == update["only_colocation"]
+        )
+    else:  # defaults
+        assert "obs_only" not in cfg_exp1
+        assert processing_opts.obs_only is False
+        assert "only_colocation" not in cfg_exp1
+        assert processing_opts.only_colocation is False
 
-    eval_setup = EvalSetup.model_validate(cfg)
 
-    assert eval_setup.statistics_opts.trends_min_yrs == cfg.get("trends_min_yrs", 7)
-    assert eval_setup.statistics_opts.use_diurnal == cfg.get("use_diurnal", False)
-    assert eval_setup.statistics_opts.use_fairmode == cfg.get("use_fairmode", False)
-    assert eval_setup.statistics_opts.weighted_stats == cfg.get("weighted_stats", True)
-    assert eval_setup.statistics_opts.model_only_stats == cfg.get("model_only_stats", False)
-    assert eval_setup.statistics_opts.obs_only_stats == cfg.get("obs_only_stats", False)
-    assert eval_setup.statistics_opts.add_trends == cfg.get("add_trends", False)
-    assert eval_setup.statistics_opts.annual_stats_constrained == cfg.get(
-        "annual_stats_constrained", True
-    )
+@pytest.mark.parametrize(
+    "update",
+    (
+        pytest.param(None, id="default"),
+        pytest.param(
+            dict(
+                trends_min_yrs=10,
+                use_diurnal=True,
+                use_fairmode=True,
+                weighted_stats=False,
+                model_only_stats=True,
+                obs_only_stats=True,
+                add_trends=True,
+                annual_stats_constrained=True,
+            ),
+            id="custom",
+        ),
+    ),
+)
+def test_EvalSetup_StatisticsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update: dict):
+    statistics_opts = eval_setup.statistics_opts
+    if update:
+        assert (
+            statistics_opts.trends_min_yrs
+            == cfg_exp1["trends_min_yrs"]
+            == update["trends_min_yrs"]
+        )
+        assert statistics_opts.use_diurnal == cfg_exp1["use_diurnal"] == update["use_diurnal"]
+        assert statistics_opts.use_fairmode == cfg_exp1["use_fairmode"] == update["use_fairmode"]
+        assert (
+            statistics_opts.weighted_stats
+            == cfg_exp1["weighted_stats"]
+            == update["weighted_stats"]
+        )
+        assert (
+            statistics_opts.model_only_stats
+            == cfg_exp1["model_only_stats"]
+            == update["model_only_stats"]
+        )
+        assert (
+            statistics_opts.obs_only_stats
+            == cfg_exp1["obs_only_stats"]
+            == update["obs_only_stats"]
+        )
+        assert statistics_opts.add_trends == cfg_exp1["add_trends"] == update["add_trends"]
+        assert (
+            statistics_opts.annual_stats_constrained
+            == cfg_exp1["annual_stats_constrained"]
+            == update["annual_stats_constrained"]
+        )
+    else:  # defaults
+        assert "trends_min_yrs" not in cfg_exp1
+        assert statistics_opts.trends_min_yrs == 7
+        assert "use_diurnal" not in cfg_exp1
+        assert statistics_opts.use_diurnal is False
+        assert "use_fairmode" not in cfg_exp1
+        assert statistics_opts.use_fairmode is False
+        assert statistics_opts.weighted_stats == cfg_exp1["weighted_stats"] == True  # noqa: E712
+        assert "model_only_stats" not in cfg_exp1
+        assert statistics_opts.model_only_stats is False
+        assert "obs_only_stats" not in cfg_exp1
+        assert statistics_opts.obs_only_stats is False
+        assert "add_trends" not in cfg_exp1
+        assert statistics_opts.add_trends is False
+        assert (
+            statistics_opts.annual_stats_constrained  # noqa: E712
+            == cfg_exp1["annual_stats_constrained"]
+            == True
+        )
 
 
-@pytest.mark.parametrize("update", [({})])
-def test_EvalSetup_WebDisplaySetup(update):
-    cfg = CFG
-    cfg.update(update)
-
-    eval_setup = EvalSetup.model_validate(cfg)
-
-    assert eval_setup.webdisp_opts.add_model_maps == cfg.get("add_model_maps", False)
-    assert eval_setup.webdisp_opts.map_zoom == cfg.get("map_zoom", "World")
-    assert eval_setup.webdisp_opts.modelorder_from_config == cfg.get(
-        "modelorder_from_config", True
-    )
-    assert eval_setup.webdisp_opts.obsorder_from_config == cfg.get("obsorder_from_config", True)
-    assert eval_setup.webdisp_opts.add_model_maps == cfg.get("add_model_maps", False)
+@pytest.mark.parametrize("update", ((None),))
+def test_EvalSetup_WebDisplaySetup(eval_setup: EvalSetup, cfg_exp1: dict):
+    webdisp_opts = eval_setup.webdisp_opts
+    # from config
+    assert webdisp_opts.add_model_maps == cfg_exp1["add_model_maps"]
+    assert webdisp_opts.map_zoom == cfg_exp1["map_zoom"]
+    assert webdisp_opts.add_model_maps == cfg_exp1["add_model_maps"]
+    # defaults
+    assert "modelorder_from_config" not in cfg_exp1
+    assert webdisp_opts.modelorder_from_config is True
+    assert "obsorder_from_config" not in cfg_exp1
+    assert webdisp_opts.obsorder_from_config is True
