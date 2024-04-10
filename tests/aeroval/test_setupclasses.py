@@ -60,11 +60,9 @@ def test_EvalSetup___init__INVALID_ENTRY_NAMES(eval_config: dict, update: dict, 
     assert error in str(e.value)
 
 
-def test_EvalSetup_ProjectInfo():
-    eval_setup = EvalSetup.model_validate(CFG)
-
-    for k in ["proj_id"]:
-        assert getattr(eval_setup.proj_info, k, None) == CFG[k]
+@pytest.mark.parametrize("update", ((None),))
+def test_EvalSetup_ProjectInfo(eval_setup: EvalSetup, cfg_exp1: dict):
+    assert eval_setup.proj_info.proj_id == cfg_exp1["proj_id"]
 
 
 @pytest.mark.parametrize("update", ((None),))

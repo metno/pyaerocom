@@ -307,7 +307,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def exp_info(self) -> ExperimentInfo:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return ExperimentInfo(exp_id=self.exp_id)
         model_args = {
             key: val for key, val in self.model_extra.items() if key in ExperimentInfo.model_fields
@@ -331,7 +331,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def path_manager(self) -> OutputPaths:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
         model_args = {
             key: val for key, val in self.model_extra.items() if key in OutputPaths.model_fields
@@ -345,7 +345,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def time_cfg(self) -> TimeSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return TimeSetup()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in TimeSetup.model_fields
@@ -355,7 +355,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def modelmaps_opts(self) -> ModelMapsSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return ModelMapsSetup()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in ModelMapsSetup.model_fields
@@ -365,7 +365,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def webdisp_opts(self) -> WebDisplaySetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return WebDisplaySetup()
         model_args = {
             key: val
@@ -377,7 +377,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def processing_opts(self) -> EvalRunOptions:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return EvalRunOptions()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in EvalRunOptions.model_fields
@@ -387,7 +387,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def statistics_opts(self) -> StatisticsSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
         model_args = {
             key: val
@@ -406,7 +406,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def colocation_opts(self) -> ColocationSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
 
         model_args = {
