@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.17.0"
+version = "0.17.1"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -31,7 +31,9 @@ dependencies = [
     "numpy>=1.24.3",
     "seaborn>=0.12.2",
     "dask",
-    "geonum @ git+https://github.com/jgliss/geonum.git",  # https://github.com/jgliss/geonum/issues/26
+    "LatLon23",
+    "SRTM.py",
+    "geonum==1.5.0.dev9",  # https://github.com/jgliss/geonum/issues/26
     "simplejson",
     "requests",
     "geocoder_reverse_natural_earth",
