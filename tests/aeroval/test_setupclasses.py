@@ -4,7 +4,7 @@ import pytest
 
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
-from tests.fixtures.aeroval.cfg_test_exp1 import CFG
+from tests.fixtures.aeroval.cfg_test_exp1 import CFG, MODELS, OBS_GROUNDBASED
 
 
 @pytest.fixture
@@ -21,51 +21,50 @@ def eval_setup(cfg_exp1: dict) -> EvalSetup:
     return EvalSetup.model_validate(cfg_exp1)
 
 
-@pytest.mark.parametrize(
-    "cfg,update",
-    [
-        ("cfgexp1", dict()),
-        ("cfgexp1", dict(obs_cfg=dict(OBS=CFG["obs_cfg"]["AERONET-Sun"]))),
-    ],
-)
-def test_EvalSetup___init__(eval_config: dict, update: dict):
-    eval_config.update(update)
-    EvalSetup(**eval_config)
+default_config = pytest.mark.parametrize("update", (pytest.param(None, id="default"),))
+
+
+@default_config
+def test_EvalSetup(cfg_exp1: dict):
+    assert EvalSetup(**cfg_exp1) == EvalSetup.model_validate(cfg_exp1)
 
 
 @pytest.mark.parametrize(
-    "cfg,update,error",
+    "update,error",
     [
-        (
-            "cfgexp1",
-            dict(model_cfg=dict(WRONG_MODEL=CFG["model_cfg"]["TM5-AP3-CTRL"])),
+        pytest.param(
+            dict(model_cfg=dict(WRONG_MODEL=MODELS["TM5-AP3-CTRL"])),
             "Invalid name: WRONG_MODEL",
+            id="model_cfg",
         ),
-        (
-            "cfgexp1",
-            dict(obs_cfg=dict(WRONG_OBS=CFG["obs_cfg"]["AERONET-Sun"])),
+        pytest.param(
+            dict(obs_cfg=dict(WRONG_OBS=OBS_GROUNDBASED["AERONET-Sun"])),
             "Invalid name: WRONG_OBS",
+            id="obs_cfg",
         ),
-        (
-            "cfgexp1",
+        pytest.param(
             dict(obs_cfg=dict(OBS=dict(web_interface_name="WRONG_OBS"))),
             "Invalid name: WRONG_OBS",
+            id="web_interface_name",
         ),
     ],
 )
-def test_EvalSetup___init__INVALID_ENTRY_NAMES(eval_config: dict, update: dict, error: str):
-    eval_config.update(update)
+def test_EvalSetup_INVALID_ENTRY_NAMES(cfg_exp1: dict, error: str):
     with pytest.raises(EvalEntryNameError) as e:
-        EvalSetup(**eval_config)
+        EvalSetup(**cfg_exp1)
+    assert error in str(e.value)
+
+    with pytest.raises(EvalEntryNameError) as e:
+        EvalSetup.model_validate(cfg_exp1)
     assert error in str(e.value)
 
 
-@pytest.mark.parametrize("update", ((None),))
+@default_config
 def test_EvalSetup_ProjectInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     assert eval_setup.proj_info.proj_id == cfg_exp1["proj_id"]
 
 
-@pytest.mark.parametrize("update", ((None),))
+@default_config
 def test_EvalSetup_ExperimentInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     exp_info = eval_setup.exp_info
     assert exp_info.exp_id == cfg_exp1["exp_id"]
@@ -74,7 +73,7 @@ def test_EvalSetup_ExperimentInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     assert exp_info.public == cfg_exp1["public"]
 
 
-@pytest.mark.parametrize("update", ((None),))
+@default_config
 def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
     time_cfg = eval_setup.time_cfg
     assert time_cfg.freqs == cfg_exp1["freqs"]
@@ -198,7 +197,7 @@ def test_EvalSetup_StatisticsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update
         )
 
 
-@pytest.mark.parametrize("update", ((None),))
+@default_config
 def test_EvalSetup_WebDisplaySetup(eval_setup: EvalSetup, cfg_exp1: dict):
     webdisp_opts = eval_setup.webdisp_opts
     # from config
