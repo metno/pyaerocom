@@ -290,77 +290,76 @@ def calc_statistics(
         result["R"] = np.nan
         result["R_spearman"] = np.nan
 
-        return result
-
-    if lowlim is not None:
-        valid = np.logical_and(data > lowlim, ref_data > lowlim)
-        data = data[valid]
-        ref_data = ref_data[valid]
-    if highlim is not None:
-        valid = np.logical_and(data < highlim, ref_data < highlim)
-        data = data[valid]
-        ref_data = ref_data[valid]
-
-    difference = data - ref_data
-
-    diffsquare = difference**2
-
-    if weights is not None:
-        weights = weights[mask]
-        weights = weights / weights.max()
-        result[
-            "NOTE"
-        ] = "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
-
-    result["rms"] = np.sqrt(np.average(diffsquare, weights=weights))
-
-    # NO implementation to apply weights yet ...
-    if num_points > 1:
-        result["R"] = corr(data, ref_data, weights)
-        result["R_spearman"] = spearmanr(data, ref_data)[0]
-        result["R_kendall"] = kendalltau(data, ref_data)[0]
     else:
-        result["R"] = np.nan
-        result["R_spearman"] = np.nan
-        result["R_kendall"] = np.nan
+        if lowlim is not None:
+            valid = np.logical_and(data > lowlim, ref_data > lowlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+        if highlim is not None:
+            valid = np.logical_and(data < highlim, ref_data < highlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
 
-    sum_diff = sum(difference, weights=weights)
-    sum_refdata = sum(ref_data, weights=weights)
+        difference = data - ref_data
 
-    if sum_refdata == 0:
-        if sum_diff == 0:
-            nmb = 0
-            mb = 0
-        else:
-            nmb = np.nan
-            mb = np.nan
-    else:
-        nmb = sum_diff / sum_refdata
-        mb = sum_diff
+        diffsquare = difference**2
 
-    sum_data_refdata = data + ref_data
-    # for MNMB, and FGE: don't divide by 0 ...
-    mask = ~np.isnan(sum_data_refdata)
-    num_points = mask.sum()
-    if num_points == 0:
-        mnmb = np.nan
-        fge = np.nan
-        mb = np.nan
-        mab = np.nan
-    else:
-        tmp = difference[mask] / sum_data_refdata[mask]
         if weights is not None:
             weights = weights[mask]
-        mnmb = 2.0 / num_points * sum(tmp, weights=weights)
-        fge = 2.0 / num_points * sum(np.abs(tmp), weights=weights)
-        mb = sum(difference[mask]) / num_points
-        mab = sum(np.abs(difference[mask])) / num_points
+            weights = weights / weights.max()
+            result[
+                "NOTE"
+            ] = "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
 
-    result["nmb"] = nmb
-    result["mnmb"] = mnmb
-    result["fge"] = fge
-    result["mb"] = mb
-    result["mab"] = mab
+        result["rms"] = np.sqrt(np.average(diffsquare, weights=weights))
+
+        # NO implementation to apply weights yet ...
+        if num_points > 1:
+            result["R"] = corr(data, ref_data, weights)
+            result["R_spearman"] = spearmanr(data, ref_data)[0]
+            result["R_kendall"] = kendalltau(data, ref_data)[0]
+        else:
+            result["R"] = np.nan
+            result["R_spearman"] = np.nan
+            result["R_kendall"] = np.nan
+
+        sum_diff = sum(difference, weights=weights)
+        sum_refdata = sum(ref_data, weights=weights)
+
+        if sum_refdata == 0:
+            if sum_diff == 0:
+                nmb = 0
+                mb = 0
+            else:
+                nmb = np.nan
+                mb = np.nan
+        else:
+            nmb = sum_diff / sum_refdata
+            mb = sum_diff
+
+        sum_data_refdata = data + ref_data
+        # for MNMB, and FGE: don't divide by 0 ...
+        mask = ~np.isnan(sum_data_refdata)
+        num_points = mask.sum()
+        if num_points == 0:
+            mnmb = np.nan
+            fge = np.nan
+            mb = np.nan
+            mab = np.nan
+        else:
+            tmp = difference[mask] / sum_data_refdata[mask]
+            if weights is not None:
+                weights = weights[mask]
+            mnmb = 2.0 / num_points * sum(tmp, weights=weights)
+            fge = 2.0 / num_points * sum(np.abs(tmp), weights=weights)
+            mb = sum(difference[mask]) / num_points
+            mab = sum(np.abs(difference[mask])) / num_points
+
+        result["nmb"] = nmb
+        result["mnmb"] = mnmb
+        result["fge"] = fge
+        result["mb"] = mb
+        result["mab"] = mab
 
     if drop_stats:
         for istat in drop_stats:
