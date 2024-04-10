@@ -161,9 +161,9 @@ def test_calc_statistics(data, ref_data, expected):
 @pytest.mark.parametrize(
     "data,ref_data,drop",
     (
-        (tuple(), tuple(), tuple()),
-        (tuple(), tuple(), ("R", "R_kendall")),
-        ((1, 2, 3, 4), (1, 2, 3, 4), ("R", "R_kendall")),
+        pytest.param(tuple(), tuple(), tuple(), id="empty-data"),
+        pytest.param(tuple(), tuple(), ("R", "R_kendall"), id="empty-data-with-drop"),
+        pytest.param((1, 2, 3, 4), (1, 2, 3, 4), ("R", "R_kendall"), id="small-data"),
         (
             (1,),
             (2,),
