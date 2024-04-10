@@ -158,6 +158,39 @@ def test_calc_statistics(data, ref_data, expected):
         assert stats[key] == pytest.approx(val, abs=0.02, rel=0.01, nan_ok=True)
 
 
+@pytest.mark.parametrize(
+    "data,ref_data,drop",
+    (
+        (tuple(), tuple(), tuple()),
+        (tuple(), tuple(), ("R", "R_kendall")),
+        ((1, 2, 3, 4), (1, 2, 3, 4), ("R", "R_kendall")),
+        (
+            (1,),
+            (2,),
+            (
+                "nmb",
+                "mnmb",
+                "mb",
+                "mab",
+                "R",
+                "R_spearman",
+                "R_kendall",
+                "fge",
+                "nrms",
+                "rms",
+                "data_mean",
+                "data_std",
+                "weighted",
+            ),
+        ),
+    ),
+)
+def test_calc_statistics_drop_stats(data, ref_data, drop):
+    stats = calc_statistics(data, ref_data, drop_stats=drop)
+
+    assert all([x not in stats.keys() for x in drop])
+
+
 def test_calc_statistics_error():
     with pytest.raises(IndexError) as e:
         calc_statistics([1], [1, np.nan])
