@@ -59,12 +59,29 @@ def test_EvalSetup_INVALID_ENTRY_NAMES(cfg_exp1: dict, error: str):
     assert error in str(e.value)
 
 
-@default_config
+@pytest.mark.parametrize(
+    "update", (pytest.param(None, id="defaults"), pytest.param(dict(proj_id="blah"), id="custom"))
+)
 def test_EvalSetup_ProjectInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     assert eval_setup.proj_info.proj_id == cfg_exp1["proj_id"]
 
 
-@default_config
+@pytest.mark.parametrize(
+    "update",
+    (
+        pytest.param(None, id="defaults"),
+        pytest.param(
+            dict(exp_id="exp42", exp_descr="Hello world!", exp_name="Lorem Ipsum...", public=True),
+            id="custom1",
+        ),
+        pytest.param(
+            dict(
+                exp_id="exp54", exp_descr="Hello world!", exp_name="Lorem Ipsum...", public=False
+            ),
+            id="custom2",
+        ),
+    ),
+)
 def test_EvalSetup_ExperimentInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     exp_info = eval_setup.exp_info
     assert exp_info.exp_id == cfg_exp1["exp_id"]
@@ -73,7 +90,19 @@ def test_EvalSetup_ExperimentInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     assert exp_info.public == cfg_exp1["public"]
 
 
-@default_config
+@pytest.mark.parametrize(
+    "update",
+    (
+        pytest.param(None, id="defaults"),
+        pytest.param(
+            dict(freqs=["yearly", "monthly"], main_freq="yearly", periods=[]), id="custom1"
+        ),
+        pytest.param(
+            dict(freqs=["monthly"], main_freq="monthly", periods=["2010", "2011", "2016"]),
+            id="custom2",
+        ),
+    ),
+)
 def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
     time_cfg = eval_setup.time_cfg
     assert time_cfg.freqs == cfg_exp1["freqs"]
