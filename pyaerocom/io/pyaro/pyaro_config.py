@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class PyaroConfig(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
     _DEFAULT_CATALOG: ClassVar[Path] = resources.files(pya) / Path(
         "data/pyaro_catalogs/default.yaml"

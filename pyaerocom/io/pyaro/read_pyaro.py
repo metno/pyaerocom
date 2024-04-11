@@ -105,15 +105,16 @@ class PyaroToUngriddedData:
 
     def _open_reader(self) -> Reader:
         data_id = self.config.data_id
+        kwargs = self.config.model_extra
 
         if self.config.name_map is None:
             return open_timeseries(
-                data_id, self.config.filename_or_obj_or_url, filters=self.config.filters
+                data_id, self.config.filename_or_obj_or_url, filters=self.config.filters, **kwargs,
             )
         else:
             return VariableNameChangingReader(
                 open_timeseries(
-                    data_id, self.config.filename_or_obj_or_url, filters=self.config.filters
+                    data_id, self.config.filename_or_obj_or_url, filters=self.config.filters, **kwargs,
                 ),
                 self.config.name_map,
             )
