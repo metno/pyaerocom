@@ -7,17 +7,17 @@ from pyaerocom.aerocom_stats import *
 def test_calc_stats_exceptions():
     with pytest.raises(ValueError):
         calc_statistics(
-            np.asarray([[1, 2, 3, 4], [1, 2, 3, 4]]),
-            np.asarray([[1, 2, 3, 4], [1, 2, 3, 4]]),
-            statistics=None,
+            np.asarray([[1, 2, 3, 4], [1, 2, 3, 4]]), np.asarray([[1, 2, 3, 4], [1, 2, 3, 4]])
         )
 
     with pytest.raises(ValueError):
         calc_statistics([1, 2, 3, 4], [1, 2, 3, 4], weights=[1, 2, 3])
 
-    # TODO: Fix
-    # with pytest.raises(ValueError):
-    #    calc_statistics(np.array([1, 2, 3]), np.asarray([1, 2]), statistics=None)
+    with pytest.raises(ValueError):
+        calc_statistics([1, 2, 3], [1, 2])
+
+    with pytest.raises(ValueError):
+        calc_statistics([1, 2, 3], [1, 2, 3], weights=[1, 2])
 
 
 @pytest.mark.parametrize(
@@ -186,9 +186,3 @@ def test_calc_statistics_drop_stats(data, ref_data, drop):
     stats = calc_statistics(data, ref_data, drop_stats=drop)
 
     assert all([x not in stats.keys() for x in drop])
-
-
-def test_calc_statistics_error():
-    with pytest.raises(IndexError) as e:
-        calc_statistics([1], [1, np.nan])
-    assert str(e.value).startswith("boolean index did not match indexed array")

@@ -230,7 +230,7 @@ def calc_statistics(
         Deprecated. Use data_filters with FilterByLimit instead.
     min_num_valid : int
         minimum number of valid measurements required to compute statistical
-        parameters. Stats will be returned as NaN if length(data) is below this threshold.
+        parameters. Stat will be returned as NaN if length(data) is below this threshold.
     weights: ndarray
         array containing weights if computing weighted statistics.
     drop_stats: tuple
@@ -249,7 +249,10 @@ def calc_statistics(
     ------
     ValueError
         if either of the input arrays has dimension other than 1
-
+    ValueError
+        if length of data is different to length of ref_data.
+    ValueError
+        if length of weights is different to length of data (assuming weights != None)
     """
     data = np.asarray(data)
     ref_data = np.asarray(ref_data)
@@ -258,13 +261,12 @@ def calc_statistics(
     if not data.ndim == 1 or not ref_data.ndim == 1:
         raise ValueError("Invalid input. Data arrays must be one dimensional")
 
+    if len(data) != len(ref_data):
+        raise ValueError("Length mismatch between data and ref_data.")
+
     if weights is not None:
         if len(weights) != len(data):
             raise ValueError("Invalid input. Length of weights must match length of data.")
-    # TODO: Should check length of weights as well if provided.
-    # TODO: Currently not testing this because broken backwards compat.
-    # if len(data) != len(ref_data):
-    #     raise ValueError("Length mismatch between data and ref_data.")
 
     #### ----- BACKWARDS COMPATIBILITY ------
     # TODO: This logic ensures backwards compatibility with the old mathutils.calc_stats()
