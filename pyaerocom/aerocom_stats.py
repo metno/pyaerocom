@@ -49,7 +49,7 @@ class LimitConstraint:
         return (data, ref_data, weights)
 
 
-class NaNConstraint:
+class FilterNaN:
     """
     Excludes data for which either data or ref_data is NaN.
     """
@@ -178,6 +178,30 @@ class DropStats:
         return stats
 
 
+class FilterByLimit:
+    def __init__(self, lowlim: float | None, highlim: float | None):
+        self.lowlim = lowlim
+        self.highlim = highlim
+
+    def __call__(
+        self, data: np.array, ref_data: np.array, weights: Optional[np.array]
+    ) -> tuple[np.array, np.array, Optional[np.array]]:
+        if self.lowlim is not None:
+            valid = np.logical_and(data > self.lowlim, ref_data > self.lowlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+            if weights is not None:
+                weights = weights[valid]
+        if self.highlim is not None:
+            valid = np.logical_and(data < self.highlim, ref_data < self.highlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+            if weights is not None:
+                weights = weights[valid]
+
+        return (data, ref_data, weights)
+
+
 def calc_statistics(
     data,
     ref_data,
@@ -187,7 +211,75 @@ def calc_statistics(
     min_num_valid=1,
     weights: list | None = None,
     drop_stats=None,
+    lowlim=None,
+    highlim=None,
 ) -> StatsDict:
+    """Calc statistical properties from two data arrays
+
+    Calculates the following statistical properties based on the two provided
+    1-dimensional data arrays and returns them in a dictionary (keys are
+    provided after the arrows):
+
+        - Mean value of both arrays -> refdata_mean, data_mean
+        - Standard deviation of both arrays -> refdata_std, data_std
+        - RMS (Root mean square) -> rms
+        - NMB (Normalised mean bias) -> nmb
+        - MNMB (Modified normalised mean bias) -> mnmb
+        - MB (Mean Bias) -> mb
+        - MAB (Mean Absolute Bias) -> mab
+        - FGE (Fractional gross error) -> fge
+        - R (Pearson correlation coefficient) -> R
+        - R_spearman (Spearman corr. coeff) -> R_spearman
+        - R_kendall (Kendall's tau) ->
+
+    Note
+    ----
+    Nans are removed from the input arrays, information about no. of removed
+    points can be inferred from keys `totnum` and `num_valid` in return dict.
+
+    Parameters
+    ----------
+    data : ndarray
+        array containing data, that is supposed to be compared with reference
+        data
+    ref_data : ndarray
+        array containing data, that is used to compare `data` array with
+    data_filters : Optional[list[DataFilter]]
+        list of filter functions applied to the data arrays before calculating stats.
+    statistics : dict[str, StatisticsCalculator]
+        mapping between statistics name and functions to calculate that statistics.
+    stats_filter : Optional[list[StatisticsFilter]]
+        list of filter functions applied to the stats dictionary before returning the dict.
+    lowlim : float
+        lower end of considered value range (e.g. if set 0, then all datapoints
+        where either ``data`` or ``ref_data`` is smaller than 0 are removed).
+        Deprecated. Use data_filters with FilterByLimit instead.
+    highlim : float
+        upper end of considered value range
+        Deprecated. Use data_filters with FilterByLimit instead.
+    min_num_valid : int
+        minimum number of valid measurements required to compute statistical
+        parameters. Stats will be returned as NaN if length(data) is below this threshold.
+    weights: ndarray
+        array containing weights if computing weighted statistics.
+    drop_stats: tuple
+        tuple which drops the provided statistics from computed json files.
+        For example, setting drop_stats = ("mb", "mab"), results in json files
+        in hm/ts with entries which do not contain the mean bias and mean
+        absolute bias, but the other statistics are preserved.
+        Deprecated. Use stats_filter with instance of DropStats instead.
+    Returns
+    -------
+    StatsDict
+        dictionary containing computed statistics. Return mapping is the same as
+        provided in `statistics`.
+
+    Raises
+    ------
+    ValueError
+        if either of the input arrays has dimension other than 1
+
+    """
     data = np.asarray(data)
     ref_data = np.asarray(ref_data)
 
@@ -202,7 +294,7 @@ def calc_statistics(
 
     #### ----- BACKWARDS COMPATIBILITY ------
     # TODO: This logic ensures backwards compatibility with the old mathutils.calc_stats()
-    # version. It may be removed at a later date.
+    # version. It should be removed at a later date.
 
     if statistics is None:
         statistics = {
@@ -222,12 +314,15 @@ def calc_statistics(
         }
 
     if data_filters is None:
-        data_filters = [NaNConstraint()]
+        data_filters = [FilterNaN()]
 
     if (stats_filters is None) and (drop_stats is not None):
         stats_filters = [DropStats(drop_stats)]
 
+    if (lowlim is not None) or (highlim is not None):
+        data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))
     #### ----- END BACKWARDS COMPATIBILITY
+
     result = dict()
 
     result["totnum"] = float(len(data))
