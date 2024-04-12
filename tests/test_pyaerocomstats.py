@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 
-from pyaerocom.aerocom_stats import *
+from pyaerocom.stats.implementations import *
+from pyaerocom.stats.stats import calc_statistics_helper
 
 
 def test_calc_stats_exceptions():

@@ -1,117 +1,11 @@
-from typing import Callable, Mapping, Optional
+from typing import Mapping, Optional
 
 import numpy as np
-from scipy.stats import kendalltau, spearmanr
 
-from .mathutils import corr, sum
-
-# Type definition for a callable which filters (ie. excludes) data before calculating stats.
-DataFilter = Callable[
-    [np.array, np.array, Optional[np.array]], tuple[np.array, np.array, Optional[np.array]]
-]
-
-# Type definition for a callable which calculates a statistic.
-StatisticsCalculator = Callable[[np.array, np.array, Optional[np.array]], np.float64]
-
-# Type definition for a callable which filters out statistics from the resulting stats dictionary.
-StatisticsFilter = Callable[[dict[str, np.float64]], dict[str, np.float64]]
-
-# Type definition for a stats dictionary.
-StatsDict = dict[str, np.float64]
-
-
-class FilterNaN:
-    """
-    Excludes data for which either data or ref_data is NaN.
-    """
-
-    def __call__(
-        self, data: np.array, ref_data: np.array, weights: Optional[np.array]
-    ) -> tuple[np.array, np.array, Optional[np.array]]:
-        mask = ~np.isnan(ref_data) * ~np.isnan(data)
-
-        if weights is not None:
-            return (data[mask], ref_data[mask], weights[mask])
-
-        return (data[mask], ref_data[mask], None)
-
-
-## Statistics
-def stat_R(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Pearson correlation coefficient implementation.
-    """
-    return corr(data, ref_data, weights)
-
-
-def stat_rms(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Root mean square implementation.
-    """
-    difference = data - ref_data
-    return np.sqrt(np.average(difference**2, weights=weights))
-
-
-def stat_mb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Mean bias implementation.
-    """
-    difference = data - ref_data
-    return sum(difference, weights=weights) / len(data)
-
-
-def stat_nmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Normalised mean bias implementation.
-    """
-    sum_ref_data = sum(ref_data, weights=weights)
-    if sum_ref_data == 0:
-        return 0
-    return sum(data - ref_data, weights) / sum_ref_data
-
-
-def stat_mab(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Mean absolute bias implementation.
-    """
-    difference = data - ref_data
-    return sum(np.abs(difference)) / len(data)
-
-
-def stat_mnmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Modified normalised mean bias implementation.
-    """
-    difference = data - ref_data
-    if np.all(np.isnan(difference)):
-        return np.nan
-
-    return 2 / len(data) * sum(difference / (data + ref_data))
-
-
-def stat_fge(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Fractional gross error implementation.
-    """
-    difference = data - ref_data
-    if np.all(np.isnan(difference)):
-        return np.nan
-
-    return 2 / len(data) * sum(np.abs(difference / (data + ref_data)), weights=weights)
-
-
-def stat_R_spearman(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Spearman corr. coefficient implementation.
-    """
-    return spearmanr(data, ref_data)[0]
-
-
-def stat_R_kendall(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
-    """
-    Kendall's tau implementation.
-    """
-    return kendalltau(data, ref_data)[0]
+from pyaerocom.stats.data_filters import FilterByLimit, FilterNaN
+from pyaerocom.stats.implementations import *
+from pyaerocom.stats.stat_filters import FilterDropStats
+from pyaerocom.stats.types import DataFilter, StatisticsCalculator, StatisticsFilter, StatsDict
 
 
 def filter_data(
@@ -205,50 +99,6 @@ def filter_stats(
             stats = f(stats)
 
     return stats
-
-
-class FilterDropStats:
-    """
-    Drops stats from a StatsDict which are in a provided list of values.
-    """
-
-    def __init__(self, stats_to_drop: list[str]):
-        self.stats_to_drop = stats_to_drop
-
-    def __call__(self, stats: StatsDict) -> StatsDict:
-        for k in self.stats_to_drop:
-            if k in stats.keys():
-                del stats[k]
-
-        return stats
-
-
-class FilterByLimit:
-    """
-    Filters out data which is outside of a lower and / or upper limit.
-    """
-
-    def __init__(self, lowlim: float | None, highlim: float | None):
-        self.lowlim = lowlim
-        self.highlim = highlim
-
-    def __call__(
-        self, data: np.array, ref_data: np.array, weights: Optional[np.array]
-    ) -> tuple[np.array, np.array, Optional[np.array]]:
-        if self.lowlim is not None:
-            valid = np.logical_and(data > self.lowlim, ref_data > self.lowlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-            if weights is not None:
-                weights = weights[valid]
-        if self.highlim is not None:
-            valid = np.logical_and(data < self.highlim, ref_data < self.highlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-            if weights is not None:
-                weights = weights[valid]
-
-        return (data, ref_data, weights)
 
 
 def calc_statistics_helper(

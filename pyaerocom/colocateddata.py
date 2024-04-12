@@ -11,7 +11,6 @@ import pandas as pd
 import xarray
 
 from pyaerocom import const
-from pyaerocom.aerocom_stats import calc_statistics_helper
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,
@@ -28,6 +27,7 @@ from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
+from pyaerocom.stats.stats import calc_statistics_helper
 from pyaerocom.time_resampler import TimeResampler
 
 logger = logging.getLogger(__name__)

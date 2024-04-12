@@ -6,9 +6,9 @@ import numpy as np
 
 from pyaerocom import const
 from pyaerocom._warnings import ignore_warnings
-from pyaerocom.aerocom_stats import calc_statistics_helper
 from pyaerocom.helpers import start_stop_str
 from pyaerocom.mathutils import exponent
+from pyaerocom.stats.stats import calc_statistics_helper
 
 
 def plot_scatter(x_vals, y_vals, **kwargs):

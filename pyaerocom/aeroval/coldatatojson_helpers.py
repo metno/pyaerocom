@@ -13,7 +13,6 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom._warnings import ignore_warnings
-from pyaerocom.aerocom_stats import _init_stats_dummy, calc_statistics_helper
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
@@ -32,6 +31,7 @@ from pyaerocom.mathutils import _init_stats_dummy
 >>>>>>> 58e8ca2c (WIP)
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
+from pyaerocom.stats.stats import _init_stats_dummy, calc_statistics_helper
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.tstype import TsType
