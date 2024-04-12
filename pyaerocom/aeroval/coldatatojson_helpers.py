@@ -13,7 +13,7 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom._warnings import ignore_warnings
-from pyaerocom.aerocom_stats import calc_statistics
+from pyaerocom.aerocom_stats import calc_statistics_helper
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
@@ -704,7 +704,9 @@ def _process_sites(data, regions, regions_how, meta_glob):
 
 
 def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
-    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
+    stats = calc_statistics_helper(
+        mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats
+    )
     return _prep_stats_json(stats)
 
 

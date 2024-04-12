@@ -120,6 +120,11 @@ def filter_data(
     weights: Optional[np.array],
     filters=Optional[list[DataFilter]],
 ) -> tuple[np.array, np.array, np.array]:
+    """
+    Applies filtering functions provided in filters to data, ref_data, and weights.
+    filters should be a list of functions, which take in data, ref_data and weights,
+    returning the filtered versions of these lists as a tuple.
+    """
     if filters is not None:
         for f in filters:
             data, ref_data, weights = f(data, ref_data, weights)
@@ -127,9 +132,33 @@ def filter_data(
     return (data, ref_data, weights)
 
 
+def calculate_statistics(
+    data: np.array,
+    ref_data: np.array,
+    weights: np.array,
+    statistics=dict[str, StatisticsCalculator],
+    min_numvalid: int = 1,
+) -> StatsDict:
+    """
+    Calculates the statistics configured by statistics returning them as a StatsDict.
+    """
+    result = dict()
+    for name, stat in statistics.items():
+        if len(data) >= min_numvalid:
+            result[name] = stat(data, ref_data, weights)
+        else:
+            result[name] = np.nan
+
+    return result
+
+
 def filter_stats(
     stats: StatsDict, filters: Optional[list[StatisticsFilter]]
 ) -> dict[str, np.float64]:
+    """
+    Filters a StatsDict, dropping values or stats according to filter
+    functions provided in filters.
+    """
     if filters is not None:
         for f in filters:
             stats = f(stats)
@@ -173,7 +202,7 @@ class FilterByLimit:
         return (data, ref_data, weights)
 
 
-def calc_statistics(
+def calc_statistics_helper(
     data,
     ref_data,
     statistics: Mapping[str, StatisticsCalculator] | None = None,
@@ -314,11 +343,10 @@ def calc_statistics(
     if len(weights) > 0:
         weights = weights / np.max(weights)
 
-    for name, stat in statistics.items():
-        if result["num_valid"] >= min_num_valid:
-            result[name] = stat(data, ref_data, weights)
-        else:
-            result[name] = np.nan
+    additional_stats = calculate_statistics(
+        data, ref_data, weights, statistics, min_numvalid=min_num_valid
+    )
+    result.update(additional_stats)
 
     result = filter_stats(result, stats_filters)
 

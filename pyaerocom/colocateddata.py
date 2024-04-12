@@ -11,7 +11,7 @@ import pandas as pd
 import xarray
 
 from pyaerocom import const
-from pyaerocom.aerocom_stats import calc_statistics
+from pyaerocom.aerocom_stats import calc_statistics_helper
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,
@@ -828,7 +828,7 @@ class ColocatedData:
             ncd = np.nan
         obsvals = self.data.values[0].flatten()
         modvals = self.data.values[1].flatten()
-        stats = calc_statistics(modvals, obsvals, **kwargs)
+        stats = calc_statistics_helper(modvals, obsvals, **kwargs)
 
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
@@ -879,7 +879,7 @@ class ColocatedData:
         else:
             raise ValueError("So far only mean and median are supported aggregators")
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
-        stats = calc_statistics(mod, obs, **kwargs)
+        stats = calc_statistics_helper(mod, obs, **kwargs)
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
@@ -935,7 +935,7 @@ class ColocatedData:
             raise ValueError("So far only mean and median are supported aggregators")
 
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
-        stats = calc_statistics(mod, obs, **kwargs)
+        stats = calc_statistics_helper(mod, obs, **kwargs)
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
