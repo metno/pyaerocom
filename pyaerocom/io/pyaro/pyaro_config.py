@@ -12,6 +12,8 @@ import pyaerocom as pya
 
 logger = logging.getLogger(__name__)
 
+# TODO Check a validator if extra/kwarg is serializable. Either in json_repr or as a @field_validator on extra
+
 
 class PyaroConfig(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
