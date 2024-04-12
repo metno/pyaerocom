@@ -74,6 +74,19 @@ def test_calc_stats_keys(data, ref_data, statistics, constraints, expected_keys)
         assert k in expected_keys
 
 
+def test_custom_stats():
+    stats = calc_statistics_helper(
+        [1, 2, 3, 4],
+        [1, 2, 3, 4],
+        {"test_statistic1": lambda x, y, w: 5, "test_statistic2": lambda x, y, w: 3},
+    )
+
+    assert "test_statistic1" in stats.keys()
+    assert "test_statistic2" in stats.keys()
+    assert stats["test_statistic1"] == 5
+    assert stats["test_statistic2"] == 3
+
+
 ## BACKWARDS_COMPATIBILITY
 
 perfect_stats_num1_mean1 = {
