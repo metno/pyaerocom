@@ -11,6 +11,7 @@ import pandas as pd
 import xarray
 
 from pyaerocom import const
+from pyaerocom.aerocom_stats import calc_statistics
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,
@@ -24,7 +25,6 @@ from pyaerocom.exceptions import (
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-from pyaerocom.mathutils import calc_statistics
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
