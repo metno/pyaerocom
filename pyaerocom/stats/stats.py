@@ -115,9 +115,9 @@ def calc_statistics_helper(
 ) -> StatsDict:
     """Calc statistical properties from two data arrays
 
-    Calculates the following statistical properties based on the two provided
-    1-dimensional data arrays and returns them in a dictionary (keys are
-    provided after the arrows):
+    Filters data, calculates statistics and filters the resulting dict. If
+    `statistics` is None the following statistics will be calculated by
+    default.
 
         - Mean value of both arrays -> refdata_mean, data_mean
         - Standard deviation of both arrays -> refdata_std, data_std
