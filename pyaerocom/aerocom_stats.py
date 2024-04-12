@@ -120,10 +120,19 @@ def filter_data(
     weights: Optional[np.array],
     filters=Optional[list[DataFilter]],
 ) -> tuple[np.array, np.array, np.array]:
-    """
-    Applies filtering functions provided in filters to data, ref_data, and weights.
-    filters should be a list of functions, which take in data, ref_data and weights,
-    returning the filtered versions of these lists as a tuple.
+    """Filter data arrays using provided filter functions.
+
+    Parameters
+    ----------
+    data : np.array
+    ref_data : np.array
+    weights : np.array | None
+    filters : list[DataFilter] | None
+
+    Returns
+    -------
+    Tuple
+        tuple consisting of the modified data, ref_data and weights array.
     """
     if filters is not None:
         for f in filters:
@@ -139,7 +148,26 @@ def calculate_statistics(
     statistics=dict[str, StatisticsCalculator],
     min_numvalid: int = 1,
 ) -> StatsDict:
-    """
+    """Calculates configured statistics for two one-dimensional data arrays.
+
+    Parameters
+    ----------
+    data : np.array
+    ref_data : np.array
+    weights : np.array | None
+        Optional list of weights which will be used for weighted statistics.
+    statistics : dict[str, StatisticsCalculator]
+        Mapping between names and functions that calculate individual statistics.
+    min_numvalid: int
+        Minmium number of data points required. If data is lower than this threshold,
+        stats will be set to NaN.
+
+    Returns
+    -------
+    StatsDict
+        Dictionary with the calculated statistics. The structure of the return dictionary mirrors
+        the statistics parameter.
+
     Calculates the statistics configured by statistics returning them as a StatsDict.
     """
     result = dict()
@@ -155,9 +183,22 @@ def calculate_statistics(
 def filter_stats(
     stats: StatsDict, filters: Optional[list[StatisticsFilter]]
 ) -> dict[str, np.float64]:
-    """
-    Filters a StatsDict, dropping values or stats according to filter
-    functions provided in filters.
+    """Filter a StatsDict
+
+    Filters a StatsDict, dropping values or statistics.
+
+    Parameters
+    ----------
+    stats : StatsDict
+        The StatsDict to be filtered.
+    filters
+        A list of filter callables which are applied to the dict. The functions
+        should take a dict and return the modified dict.
+
+    Returns
+    -------
+    StatsDict
+        The filtered StatsDict.
     """
     if filters is not None:
         for f in filters:
@@ -298,7 +339,7 @@ def calc_statistics_helper(
             raise ValueError("Invalid input. Length of weights must match length of data.")
 
     #### ----- BACKWARDS COMPATIBILITY ------
-    # TODO: This logic ensures backwards compatibility with the old mathutils.calc_stats()
+    # TODO: This logic ensures backward compatibility with the old mathutils.calc_stats()
     # version. It should be removed at a later date.
 
     if statistics is None:
