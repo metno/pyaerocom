@@ -109,12 +109,18 @@ class PyaroToUngriddedData:
 
         if self.config.name_map is None:
             return open_timeseries(
-                data_id, self.config.filename_or_obj_or_url, filters=self.config.filters, **kwargs,
+                data_id,
+                self.config.filename_or_obj_or_url,
+                filters=self.config.filters,
+                **kwargs,
             )
         else:
             return VariableNameChangingReader(
                 open_timeseries(
-                    data_id, self.config.filename_or_obj_or_url, filters=self.config.filters, **kwargs,
+                    data_id,
+                    self.config.filename_or_obj_or_url,
+                    filters=self.config.filters,
+                    **kwargs,
                 ),
                 self.config.name_map,
             )
