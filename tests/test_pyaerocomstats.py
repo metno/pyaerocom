@@ -23,13 +23,42 @@ def test_calc_stats_exceptions():
 @pytest.mark.parametrize(
     "data,ref_data,statistics,constraints,expected_keys",
     (
-        ([1, 2, 3, 4], [1, 2, 3, 4], {}, [], ["totnum", "weighted", "num_valid"]),
-        (
+        pytest.param(
+            [1, 2, 3, 4], [1, 2, 3, 4], {}, [], ["totnum", "weighted", "num_valid"], id="empty"
+        ),
+        pytest.param(
             [1, 2, 3, 4],
             [1, 2, 3, 4],
             {"R": stat_R, "R_kendall": stat_R_kendall, "mb": stat_mb},
             [],
             ["totnum", "weighted", "num_valid", "R", "R_kendall", "mb"],
+            id="custom1",
+        ),
+        pytest.param(
+            [1, 2, 3, 4],
+            [1, 2, 3, 4],
+            None,
+            None,
+            [
+                "totnum",
+                "weighted",
+                "num_valid",
+                "R",
+                "R_kendall",
+                "R_spearman",
+                "fge",
+                "mab",
+                "mab",
+                "mb",
+                "mnmb",
+                "nmb",
+                "rms",
+                "data_mean",
+                "data_std",
+                "refdata_mean",
+                "refdata_std",
+            ],
+            id="stats-none",
         ),
     ),
 )
@@ -40,6 +69,9 @@ def test_calc_stats_keys(data, ref_data, statistics, constraints, expected_keys)
 
     for k in expected_keys:
         assert k in stats.keys()
+
+    for k in stats.keys():
+        assert k in expected_keys
 
 
 ## BACKWARDS_COMPATIBILITY

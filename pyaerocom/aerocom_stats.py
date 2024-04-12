@@ -207,7 +207,11 @@ def filter_stats(
     return stats
 
 
-class DropStats:
+class FilterDropStats:
+    """
+    Drops stats from a StatsDict which are in a provided list of values.
+    """
+
     def __init__(self, stats_to_drop: list[str]):
         self.stats_to_drop = stats_to_drop
 
@@ -220,6 +224,10 @@ class DropStats:
 
 
 class FilterByLimit:
+    """
+    Filters out data which is outside of a lower and / or upper limit.
+    """
+
     def __init__(self, lowlim: float | None, highlim: float | None):
         self.lowlim = lowlim
         self.highlim = highlim
@@ -363,7 +371,7 @@ def calc_statistics_helper(
         data_filters = [FilterNaN()]
 
     if (stats_filters is None) and (drop_stats is not None):
-        stats_filters = [DropStats(drop_stats)]
+        stats_filters = [FilterDropStats(drop_stats)]
 
     if (lowlim is not None) or (highlim is not None):
         data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))
