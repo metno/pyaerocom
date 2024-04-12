@@ -303,16 +303,16 @@ def estimate_value_range(vmin, vmax, extend_percent=0):
     return vmin, vmax
 
 
-def _init_stats_dummy(drop_stats=None):
-    # dummy for statistics dictionary for locations without data
-    stats_dummy = {}
-    for k in calc_statistics([1], [1], drop_stats=drop_stats):
-        stats_dummy[k] = np.nan
-
-    # Test to make sure these variables are defined even when yearly and season != all
-    stats_dummy["R_spatial_mean"] = np.nan
-    stats_dummy["R_spatial_median"] = np.nan
-    stats_dummy["R_temporal_mean"] = np.nan
-    stats_dummy["R_temporal_median"] = np.nan
-
-    return stats_dummy
+# def _init_stats_dummy(drop_stats=None):
+#    # dummy for statistics dictionary for locations without data
+#    stats_dummy = {}
+#    for k in calc_statistics([1], [1], drop_stats=drop_stats):
+#        stats_dummy[k] = np.nan
+#
+#    # Test to make sure these variables are defined even when yearly and season != all
+#    stats_dummy["R_spatial_mean"] = np.nan
+#    stats_dummy["R_spatial_median"] = np.nan
+#    stats_dummy["R_temporal_mean"] = np.nan
+#    stats_dummy["R_temporal_median"] = np.nan
+#
+#    return stats_dummy
