@@ -20,35 +20,6 @@ StatisticsFilter = Callable[[dict[str, np.float64]], dict[str, np.float64]]
 StatsDict = dict[str, np.float64]
 
 
-## Constraints
-class LimitConstraint:
-    """
-    Excludes data that lies outside of a lower and/or upper limit.
-    """
-
-    def __init__(self, lowlim: int = None, highlim: int = None):
-        self.lowlim = lowlim
-        self.highlim = highlim
-
-    def __call__(
-        self, data: np.array, ref_data: np.array, weights: Optional[np.array]
-    ) -> tuple[np.array, np.array, Optional[np.array]]:
-        if self.lowlim is not None:
-            valid = np.logical_and(data > self.lowlim, ref_data > self.lowlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-            if weights is not None:
-                weights = weights[valid]
-        if self.highlim is not None:
-            valid = np.logical_and(data < self.highlim, ref_data < self.highlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-            if weights is not None:
-                weights = weights[valid]
-
-        return (data, ref_data, weights)
-
-
 class FilterNaN:
     """
     Excludes data for which either data or ref_data is NaN.
@@ -86,7 +57,7 @@ def stat_mb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> 
     Mean bias implementation.
     """
     difference = data - ref_data
-    return sum(difference, weights=weights)
+    return sum(difference, weights=weights) / len(data)
 
 
 def stat_nmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
@@ -96,7 +67,7 @@ def stat_nmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) ->
     sum_ref_data = sum(ref_data, weights=weights)
     if sum_ref_data == 0:
         return 0
-    return stat_mb(data, ref_data, weights) / sum_ref_data
+    return sum(data - ref_data, weights) / sum_ref_data
 
 
 def stat_mab(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
@@ -287,6 +258,9 @@ def calc_statistics(
     if not data.ndim == 1 or not ref_data.ndim == 1:
         raise ValueError("Invalid input. Data arrays must be one dimensional")
 
+    if weights is not None:
+        if len(weights) != len(data):
+            raise ValueError("Invalid input. Length of weights must match length of data.")
     # TODO: Should check length of weights as well if provided.
     # TODO: Currently not testing this because broken backwards compat.
     # if len(data) != len(ref_data):

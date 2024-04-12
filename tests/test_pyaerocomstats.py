@@ -12,6 +12,9 @@ def test_calc_stats_exceptions():
             statistics=None,
         )
 
+    with pytest.raises(ValueError):
+        calc_statistics([1, 2, 3, 4], [1, 2, 3, 4], weights=[1, 2, 3])
+
     # TODO: Fix
     # with pytest.raises(ValueError):
     #    calc_statistics(np.array([1, 2, 3]), np.asarray([1, 2]), statistics=None)
