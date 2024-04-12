@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import random
 
 from pyaerocom.io import PyaroConfig, ReadPyaro
 
@@ -28,9 +29,12 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     with open(file, "w") as f:
         for s in species:
             for i, station in enumerate(stations):
-                for date in dates:
+                for j, date in enumerate(dates):
+                    delta_t = ["1h", "3D", "2D", "2h"][
+                        j % 4
+                    ]  # Rotates over the freqs in a deterministic fashion
                     f.write(
-                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta('1D')} \n"
+                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)} \n"
                     )
 
     return file
