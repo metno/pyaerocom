@@ -348,7 +348,8 @@ def calc_statistics_helper(
 
     #### ----- BACKWARDS COMPATIBILITY ------
     # TODO: This logic ensures backward compatibility with the old mathutils.calc_stats()
-    # version. It should be removed at a later date.
+    # version. It should be removed at a later date but this requires changes where this
+    # function is used.
 
     if statistics is None:
         statistics = {
