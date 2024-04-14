@@ -269,19 +269,19 @@ class ColocationSetup(BaseModel):
     ##########################
     # Pydantic ConfigDict
     ##########################
-    model_config = ConfigDict(arbitrary_types_allowed=True, allow="extra")
+    model_config = ConfigDict(arbitrary_types_allowed=True, allow="extra", protected_namespaces=())
 
     #########################
     # Required Input
     #########################
 
     # LB: remains to be seen if this can actually be required without chaning the code elsewhere
-    model_id: str
-    obs_id: str
-    obs_vars: list[str]
-    ts_type: str
-    start: pd.Timestamp | int
-    stop: pd.Timestamp | int
+    model_id: str | None = None
+    obs_id: str | None = None
+    obs_vars: list[str] | None = None
+    ts_type: str | None = None
+    start: pd.Timestamp | int | None = None
+    stop: pd.Timestamp | int | None = None
 
     ###############################
     # Attributes with defaults
@@ -325,8 +325,8 @@ class ColocationSetup(BaseModel):
 
     save_coldata: bool = False
 
-    # END OF ASSIGNMENT OF MOST COMMON PARAMETERS - BELOW ARE FURTHER
-    # CONFIG ATTRIBUTES, THAT ARE OPTIONAL AND LESS FREQUENTLY USED
+    # # END OF ASSIGNMENT OF MOST COMMON PARAMETERS - BELOW ARE FURTHER
+    # # CONFIG ATTRIBUTES, THAT ARE OPTIONAL AND LESS FREQUENTLY USED
 
     # Options related to obs reading and processing
     obs_name: str | None = None
@@ -339,7 +339,7 @@ class ColocationSetup(BaseModel):
     obs_ts_type_read: str | dict | None = None
     obs_filters: dict = {}
     _obs_is_vertical_profile: bool = False
-    colocation_layer_limits: dict[str:float] | None = None
+    colocation_layer_limits: dict[str, float] | None = None
     profile_layer_limits: dict | None = None
     read_opts_ungridded: dict | None = {}
 
@@ -351,7 +351,7 @@ class ColocationSetup(BaseModel):
 
     model_use_vars: dict[str, str] | None = {}
     model_rename_vars: dict[str, str] | None = {}
-    model_add_vars: dict[str, list[str]] | None = {}
+    model_add_vars: dict[str, list] | None = {}
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None
@@ -373,8 +373,8 @@ class ColocationSetup(BaseModel):
     model_remove_outliers: bool = False
 
     # Custom outlier ranges for model and obs
-    obs_outlier_ranges: dict[str : tuple[float, float]] | None = {}
-    model_outlier_ranges: dict[str : tuple[float, float]] | None = {}
+    obs_outlier_ranges: dict[str, tuple[float, float]] | None = {}
+    model_outlier_ranges: dict[str, tuple[float, float]] | None = {}
     zeros_to_nan: bool = False
     harmonise_units: bool = False
     regrid_res_deg: float | None = None
