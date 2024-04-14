@@ -11,7 +11,7 @@ COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 default_setup = {
     "model_id": None,
     "obs_id": None,
-    "obs_vars": [],
+    "obs_vars": None,
     "ts_type": "monthly",
     "start": None,
     "stop": None,
@@ -21,7 +21,7 @@ default_setup = {
     "obs_name": None,
     "obs_data_dir": None,
     "obs_use_climatology": False,
-    "_obs_cache_only": False,
+    "obs_cache_only": False,
     "obs_vert_type": None,
     "obs_ts_type_read": None,
     "obs_filters": {},
@@ -57,9 +57,10 @@ default_setup = {
 
 @pytest.mark.parametrize("stp,should_be", [(ColocationSetup(), default_setup)])
 def test_ColocationSetup(stp: ColocationSetup, should_be: dict):
+    stp_dict = stp.model_dump()
     for key, val in should_be.items():
-        assert key in stp
+        assert key in stp_dict
         if key == "basedir_coldata":
-            assert Path(val) == Path(stp["basedir_coldata"])
+            assert Path(val) == Path(stp_dict["basedir_coldata"])
         else:
-            assert val == stp[key], key
+            assert val == stp_dict[key], key

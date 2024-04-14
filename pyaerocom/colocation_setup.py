@@ -2,10 +2,10 @@ import logging
 import os
 from functools import cached_property
 from pathlib import Path
-from typing import Literal
+from typing import Iterable, Literal
 
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME
@@ -271,6 +271,15 @@ class ColocationSetup(BaseModel):
     ##########################
     model_config = ConfigDict(arbitrary_types_allowed=True, allow="extra", protected_namespaces=())
 
+    # @model_validator('*', mode="before")
+    # def convert_to_none(cls, v):
+    #     if isinstance(v, str) and v.strip() == "":
+    #         return None
+    #     if isinstance(v, Iterable) and len(v) == 0:
+    #         return None
+    #     else:
+    #         return v
+
     #########################
     # Required Input
     #########################
@@ -334,11 +343,11 @@ class ColocationSetup(BaseModel):
 
     obs_use_climatology: bool = False
 
-    _obs_cache_only: bool = False  # only relevant if obs is ungridded
+    obs_cache_only: bool = False  # only relevant if obs is ungridded
     obs_vert_type: str | None = None
     obs_ts_type_read: str | dict | None = None
     obs_filters: dict = {}
-    _obs_is_vertical_profile: bool = False
+    obs_is_vertical_profile: bool = False
     colocation_layer_limits: dict[str, float] | None = None
     profile_layer_limits: dict | None = None
     read_opts_ungridded: dict | None = {}
