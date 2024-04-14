@@ -379,6 +379,8 @@ class ColocationSetup(BaseModel):
     # TODO: implelent field validators
     # self.update(**kwargs)
 
+    # TODO: validator for extra arguments. what are they?
+
     def _check_input_basedir_coldata(self, basedir_coldata):
         """
         Make sure input basedir_coldata is str and exists
