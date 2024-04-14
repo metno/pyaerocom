@@ -57,4 +57,9 @@ default_setup = {
 
 @pytest.mark.parametrize("stp,should_be", [(ColocationSetup(), default_setup)])
 def test_ColocationSetup(stp: ColocationSetup, should_be: dict):
-    pass
+    for key, val in should_be.items():
+        assert key in stp
+        if key == "basedir_coldata":
+            assert Path(val) == Path(stp["basedir_coldata"])
+        else:
+            assert val == stp[key], key
