@@ -354,7 +354,7 @@ class ColocationSetup(BaseModel):
     model_add_vars: dict[str, list[str]] | None = {}
     model_to_stp: bool = False
 
-    model_ts_type_read = None
+    model_ts_type_read: str | dict | None = None
     # LB: need to check this declaration
     model_read_aux: dict[str, dict[Literal["vars_required", "fun"], list[str]]] | None = {}
     model_use_climatology: bool = False
@@ -373,8 +373,8 @@ class ColocationSetup(BaseModel):
     model_remove_outliers: bool = False
 
     # Custom outlier ranges for model and obs
-    obs_outlier_ranges = {}
-    model_outlier_ranges = {}
+    obs_outlier_ranges: dict[str : tuple[float, float]] | None = {}
+    model_outlier_ranges: dict[str : tuple[float, float]] | None = {}
     zeros_to_nan: bool = False
     harmonise_units: bool = False
     regrid_res_deg: float | None = None

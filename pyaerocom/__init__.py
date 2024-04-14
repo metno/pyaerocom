@@ -48,7 +48,8 @@ from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
 from .filter import Filter
 from .colocateddata import ColocatedData
-from .colocation_auto import ColocationSetup, Colocator
+from .colocation_setup import ColocationSetup
+from .colocation_auto import Colocator
 from .tstype import TsType
 from .time_resampler import TimeResampler
 from .io.helpers import search_data_dir_aerocom
