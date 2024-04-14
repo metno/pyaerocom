@@ -1,5 +1,6 @@
 import logging
 import os
+from functools import cached_property
 from pathlib import Path
 from typing import Literal
 
@@ -7,7 +8,6 @@ import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import chk_make_subdir
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
@@ -271,6 +271,24 @@ class ColocationSetup(BaseModel):
     ##########################
     model_config = ConfigDict(arbitrary_types_allowed=True, allow="extra")
 
+    #########################
+    # Required Input
+    #########################
+
+    # LB: remains to be seen if this can actually be required without chaning the code elsewhere
+    model_id: str
+    obs_id: str
+    obs_vars: list[str]
+    ts_type: str
+    start: pd.Timestamp | int
+    stop: pd.Timestamp | int
+
+    ###############################
+    # Attributes with defaults
+    ###############################
+
+    obs_config: PyaroConfig | None = None
+
     #: Dictionary specifying alternative vertical types that may be used to
     #: read model data. E.g. consider the variable is  ec550aer,
     #: obs_vert_type='Surface' and obs_vert_type_alt=dict(Surface='ModelLevel').
@@ -291,21 +309,11 @@ class ColocationSetup(BaseModel):
     ]
 
     ts_type: str = "monthly"
-    obs_vars: list[str]
-
-    model_id: str
-    # _obs_id : str | None = None
-    # _obs_config: PyaroConfig | None = None
-    obs_id: str
-    obs_config: PyaroConfig | None
-    ts_type: str
-    start: pd.Timestamp
-    stop: pd.Timestamp
 
     # crashes if input filter name is invalid
     filter_name: str = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
-    basedir_coldata: Path | str = Field(default=const.COLOCATEDDATADIR, validate_default=True)
+    basedir_coldata: str = Field(default=const.COLOCATEDDATADIR, validate_default=True)
 
     @field_validator("basedir_coldata")
     @classmethod
@@ -381,104 +389,39 @@ class ColocationSetup(BaseModel):
 
     # TODO: validator for extra arguments. what are they?
 
-    def _check_input_basedir_coldata(self, basedir_coldata):
-        """
-        Make sure input basedir_coldata is str and exists
-
-        Parameters
-        ----------
-        basedir_coldata : str or Path
-            basic output directory for colocated data
-
-        Raises
-        ------
-        ValueError
-            If input is invalid.
-
-        Returns
-        -------
-        str
-            valid output directory
-
-        """
-        if isinstance(basedir_coldata, Path):
-            basedir_coldata = str(basedir_coldata)
-        if isinstance(basedir_coldata, str):
-            if not os.path.exists(basedir_coldata):
-                os.mkdir(basedir_coldata)
-            return basedir_coldata
-        raise ValueError(f"Invalid input for basedir_coldata: {basedir_coldata}")
-
-    def _check_basedir_coldata(self):
-        """
-        Make sure output directory for colocated data files exists
-
-        Raises
-        ------
-        FileNotFoundError
-            If :attr:`basedir_coldata` does not exist and cannot be created.
-
-        Returns
-        -------
-        str
-            current value of :attr:`basedir_coldata`
-
-        """
-        basedir_coldata = self.basedir_coldata
-        if basedir_coldata is None:
-            basedir_coldata = const.COLOCATEDDATADIR
-            if not os.path.exists(basedir_coldata):
-                logger.info(f"Creating directory: {basedir_coldata}")
-                os.mkdir(basedir_coldata)
-        elif isinstance(basedir_coldata, Path):
-            basedir_coldata = str(basedir_coldata)
-        if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
-            os.mkdir(basedir_coldata)
-        if not os.path.exists(basedir_coldata):
-            raise FileNotFoundError(
-                f"Output directory for colocated data files {basedir_coldata} does not exist"
-            )
-        self.basedir_coldata = basedir_coldata
-        return basedir_coldata
-
-    @property
+    @cached_property
     def basedir_logfiles(self):
-        """Base directory for storing logfiles"""
-        p = chk_make_subdir(self.basedir_coldata, "logfiles")
-        return p
+        p = Path(self.basedir_coldata) / "logfiles"
+        if not p.exists():
+            p.mkdir(parents=True, exist_ok=True)
+        return str(p)  # LB: not sure why pyaerocom insists these be strings as this point
 
-    @property
-    def obs_id(self) -> str:
-        return self._obs_id
+    @field_validator("obs_id")
+    def validate_obs_id(cls, v: str):
+        if cls.obs_config is not None and v != cls.obs.config.name:
+            logger
 
-    @obs_id.setter
-    def obs_id(self, val: str | None) -> None:
-        if self.obs_config is not None and val != self.obs_config.name:
+    # LB: Think we need a validator on the PyaroConfig, not the obs_id.
+    # Combining the validation logic from those two things here. needs testing.
+    @field_validator("obs_config")
+    def validate_obs_config(cls, v: PyaroConfig):
+        if cls.obs_config is not None and cls.obs.config.name != cls.obs_id:
             logger.info(
-                f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {val}. Setting Pyaro config to None!"
+                f"Data ID in Pyaro config {cls.obs_config.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
             )
-            self.obs_config = None
-
-        self._obs_id = val
-
-    @property
-    def obs_config(self) -> PyaroConfig:
-        return self._obs_config
-
-    @obs_config.setter
-    def obs_config(self, val: PyaroConfig | None) -> None:
-        if val is not None:
-            if isinstance(val, dict):
+            cls.obs_config = None
+        if v is not None:
+            if isinstance(v, dict):
                 logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
-                val = PyaroConfig(**val)
-            if self.obs_id is not None and val.name != self.obs_id:
+                v = PyaroConfig(**v)
+            if v.name != cls.obs_id:
                 logger.info(
-                    f"Data ID in Pyaro config {val.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
+                    f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Obs ID to match Pyaro Config!"
                 )
-                self.obs_id = val.name
-            if self.obs_id is None:
-                self.obs_id = val.name
-        self._obs_config = val
+                cls.obs_id = v.name
+            if cls.obs_id is None:
+                cls.obs_id = v.name
+        return v
 
     def add_glob_meta(self, **kwargs):
         """
@@ -495,11 +438,6 @@ class ColocationSetup(BaseModel):
 
         """
         self.add_meta.update(**kwargs)
-
-    def __setitem__(self, key, val):
-        if key == "basedir_coldata":
-            val = self._check_input_basedir_coldata(val)
-        super().__setitem__(key, val)
 
     def _period_from_start_stop(self) -> str:
         start, stop = start_stop(self.start, self.stop, stop_sub_sec=False)
