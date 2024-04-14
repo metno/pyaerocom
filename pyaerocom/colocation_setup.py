@@ -1,9 +1,10 @@
 import logging
 import os
 from pathlib import Path
+from typing import Literal
 
-import numpy as np
-from pydantic import BaseModel
+import pandas as pd
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import chk_make_subdir
@@ -265,6 +266,11 @@ class ColocationSetup(BaseModel):
         :class:`ColocatedData` object.
     """
 
+    ##########################
+    # Pydantic ConfigDict
+    ##########################
+    model_config = ConfigDict(arbitrary_types_allowed=True, allow="extra")
+
     #: Dictionary specifying alternative vertical types that may be used to
     #: read model data. E.g. consider the variable is  ec550aer,
     #: obs_vert_type='Surface' and obs_vert_type_alt=dict(Surface='ModelLevel').
@@ -287,103 +293,91 @@ class ColocationSetup(BaseModel):
     ts_type: str = "monthly"
     obs_vars: list[str]
 
-    def __init__(
-        self,
-        model_id=None,
-        obs_config: PyaroConfig | None = None,
-        obs_id=None,
-        obs_vars=None,
-        ts_type=None,
-        start=None,
-        stop=None,
-        basedir_coldata=None,
-        save_coldata=False,
-        **kwargs,
-    ):
-        self.model_id = model_id
-        self._obs_id = None
-        self._obs_config = None
+    model_id: str
+    # _obs_id : str | None = None
+    # _obs_config: PyaroConfig | None = None
+    obs_id: str
+    obs_config: PyaroConfig | None
+    ts_type: str
+    start: pd.Timestamp
+    stop: pd.Timestamp
 
-        self.obs_id = obs_id
-        self.obs_config = obs_config
+    # crashes if input filter name is invalid
+    filter_name: str = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
-        self.obs_vars = obs_vars
+    basedir_coldata: Path | str = Field(default=const.COLOCATEDDATADIR, validate_default=True)
 
-        self.ts_type = ts_type
-        self.start = start
-        self.stop = stop
+    @field_validator("basedir_coldata")
+    @classmethod
+    def validate_basedirs(cls, v):
+        if not os.path.exists(v):
+            tmp = Path(v) if isinstance(v, str) else v
+            tmp.mkdir(parents=True, exist_ok=True)
+        return v
 
-        # crashes if input filter name is invalid
-        self.filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
+    save_coldata: bool = False
 
-        if basedir_coldata is not None:
-            basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)
-        else:
-            basedir_coldata = const.COLOCATEDDATADIR
-        self.basedir_coldata = basedir_coldata
-        self.save_coldata = save_coldata
+    # END OF ASSIGNMENT OF MOST COMMON PARAMETERS - BELOW ARE FURTHER
+    # CONFIG ATTRIBUTES, THAT ARE OPTIONAL AND LESS FREQUENTLY USED
 
-        # END OF ASSIGNMENT OF MOST COMMON PARAMETERS - BELOW ARE FURTHER
-        # CONFIG ATTRIBUTES, THAT ARE OPTIONAL AND LESS FREQUENTLY USED
+    # Options related to obs reading and processing
+    obs_name: str | None = None
+    obs_data_dir: str | None = None
 
-        # Options related to obs reading and processing
-        self.obs_name = None
-        self.obs_data_dir = None
+    obs_use_climatology: bool = False
 
-        self.obs_use_climatology = False
+    _obs_cache_only: bool = False  # only relevant if obs is ungridded
+    obs_vert_type: str | None = None
+    obs_ts_type_read: str | dict | None = None
+    obs_filters: dict = {}
+    _obs_is_vertical_profile: bool = False
+    colocation_layer_limits: dict[str:float] | None = None
+    profile_layer_limits: dict | None = None
+    read_opts_ungridded: dict | None = {}
 
-        self._obs_cache_only = False  # only relevant if obs is ungridded
-        self.obs_vert_type = None
-        self.obs_ts_type_read = None
-        self.obs_filters = {}
-        self._obs_is_vertical_profile = False
-        self.colocation_layer_limits = None
-        self.profile_layer_limits = None
+    # Attributes related to model data
+    model_name: str | None = None
+    model_data_dir: Path | str = None
 
-        self.read_opts_ungridded = {}
+    model_read_opts: dict | None = {}
 
-        # Attributes related to model data
-        self.model_name = None
-        self.model_data_dir = None
+    model_use_vars: dict[str, str] | None = {}
+    model_rename_vars: dict[str, str] | None = {}
+    model_add_vars: dict[str, list[str]] | None = {}
+    model_to_stp: bool = False
 
-        self.model_read_opts = {}
+    model_ts_type_read = None
+    # LB: need to check this declaration
+    model_read_aux: dict[str, dict[Literal["vars_required", "fun"], list[str]]] | None = {}
+    model_use_climatology: bool = False
 
-        self.model_use_vars = {}
-        self.model_rename_vars = {}
-        self.model_add_vars = {}
-        self.model_to_stp = False
+    # LB: check this as well
+    gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
 
-        self.model_ts_type_read = None
-        self.model_read_aux = {}
-        self.model_use_climatology = False
+    flex_ts_type: bool = True
 
-        self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
+    # Options related to time resampling
+    min_num_obs: int | None = None
+    resample_how: str | dict | None = "mean"
 
-        self.flex_ts_type = True
+    # Options related to outlier removal
+    obs_remove_outliers: bool = False
+    model_remove_outliers: bool = False
 
-        # Options related to time resampling
-        self.min_num_obs = None
-        self.resample_how = "mean"
+    # Custom outlier ranges for model and obs
+    obs_outlier_ranges = {}
+    model_outlier_ranges = {}
+    zeros_to_nan: bool = False
+    harmonise_units: bool = False
+    regrid_res_deg: float | None = None
+    colocate_time: bool = False
+    reanalyse_existing: bool = True
+    raise_exceptions: bool = False
+    keep_data: bool = True
+    add_meta: dict | None = {}
 
-        # Options related to outlier removal
-        self.obs_remove_outliers = False
-        self.model_remove_outliers = False
-
-        # Custom outlier ranges for model and obs
-        self.obs_outlier_ranges = {}
-        self.model_outlier_ranges = {}
-
-        self.zeros_to_nan = False
-        self.harmonise_units = False
-        self.regrid_res_deg = None
-        self.colocate_time = False
-
-        self.reanalyse_existing = True
-        self.raise_exceptions = False
-        self.keep_data = True
-
-        self.add_meta = {}
-        self.update(**kwargs)
+    # TODO: implelent field validators
+    # self.update(**kwargs)
 
     def _check_input_basedir_coldata(self, basedir_coldata):
         """
