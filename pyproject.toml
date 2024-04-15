@@ -30,8 +30,6 @@ dependencies = [
     "numpy>=1.24.3",
     "seaborn>=0.12.2",
     "dask",
-    "LatLon23",
-    "SRTM.py",
     "geonum==1.5.0",
     "simplejson",
     "requests",
