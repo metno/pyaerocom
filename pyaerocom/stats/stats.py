@@ -38,7 +38,7 @@ def _filter_data(
             mask = f(data, ref_data, weights)
             if len(mask) != len(data):
                 raise IndexError(
-                    f"Filter mask length ({len(mask)}) does not match length of data {len(data)}."
+                    f"Filter mask length ({len(mask)}) does not match length of data ({len(data)})."
                 )
             if weights is None:
                 data, ref_data, weights = data[mask], ref_data[mask], None
@@ -186,7 +186,9 @@ def calculate_statistics(
     -------
     StatsDict
         dictionary containing computed statistics. Return mapping is the same as
-        provided in `statistics`.
+        provided in `statistics`. Additionally a value for `totnum` (the unfiltered
+        length of the data) and `weighted` (whether calculations was performed
+        weighted or not) will be included.
 
     Raises
     ------
@@ -211,11 +213,7 @@ def calculate_statistics(
         if len(weights) != len(data):
             raise ValueError("Invalid input. Length of weights must match length of data.")
 
-    #### ----- BACKWARDS COMPATIBILITY ------
-    # TODO: This logic ensures backward compatibility with the old mathutils.calc_stats()
-    # version. It should be removed at a later date but this requires changes where this
-    # function is used.
-
+    # Set defaults
     if statistics is None:
         statistics = {
             "refdata_mean": lambda x, y, w: np.nanmean(y),
@@ -240,8 +238,10 @@ def calculate_statistics(
         stats_filters = [FilterDropStats(drop_stats)]
 
     if (lowlim is not None) or (highlim is not None):
-        data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))
-    #### ----- END BACKWARDS COMPATIBILITY
+        if not any(isinstance(x, FilterByLimit) for x in data_filters):
+            data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))
+        else:
+            raise
 
     result = dict()
 
