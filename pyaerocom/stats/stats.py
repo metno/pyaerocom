@@ -8,7 +8,7 @@ from pyaerocom.stats.stat_filters import FilterDropStats
 from pyaerocom.stats.types import DataFilter, StatisticsCalculator, StatisticsFilter, StatsDict
 
 
-def filter_data(
+def _filter_data(
     data: np.ndarray,
     ref_data: np.ndarray,
     weights: np.ndarray,
@@ -35,7 +35,7 @@ def filter_data(
     return (data, ref_data, weights)
 
 
-def calculate_statistics(
+def _prepare_statistics(
     data: np.ndarray,
     ref_data: np.ndarray,
     weights: np.ndarray,
@@ -74,7 +74,7 @@ def calculate_statistics(
     return result
 
 
-def filter_stats(
+def _filter_stats(
     stats: StatsDict, filters: list[StatisticsFilter] | None
 ) -> dict[str, np.float64]:
     """Filter a StatsDict
@@ -101,7 +101,7 @@ def filter_stats(
     return stats
 
 
-def calc_statistics_helper(
+def calculate_statistics(
     data,
     ref_data,
     statistics: Mapping[str, StatisticsCalculator] | None = None,
@@ -233,7 +233,7 @@ def calc_statistics_helper(
     result["totnum"] = len(data)
     result["weighted"] = False if weights is None else True
 
-    data, ref_data, weights = filter_data(data, ref_data, weights, data_filters)
+    data, ref_data, weights = _filter_data(data, ref_data, weights, data_filters)
 
     result["num_valid"] = float(len(data))
 
@@ -243,12 +243,12 @@ def calc_statistics_helper(
     if len(weights) > 0:
         weights = weights / np.max(weights)
 
-    additional_stats = calculate_statistics(
+    additional_stats = _prepare_statistics(
         data, ref_data, weights, statistics, min_numvalid=min_num_valid
     )
     result.update(additional_stats)
 
-    result = filter_stats(result, stats_filters)
+    result = _filter_stats(result, stats_filters)
 
     return result
 
@@ -256,7 +256,7 @@ def calc_statistics_helper(
 def _init_stats_dummy(drop_stats=None):
     # dummy for statistics dictionary for locations without data
     stats_dummy = {}
-    for k in calc_statistics_helper([1], [1], drop_stats=drop_stats):
+    for k in calculate_statistics([1], [1], drop_stats=drop_stats):
         stats_dummy[k] = np.nan
 
     # Test to make sure these variables are defined even when yearly and season != all

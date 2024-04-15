@@ -2,23 +2,23 @@ import numpy as np
 import pytest
 
 from pyaerocom.stats.implementations import *
-from pyaerocom.stats.stats import calc_statistics_helper
+from pyaerocom.stats.stats import calculate_statistics
 
 
 def test_calc_stats_exceptions():
     with pytest.raises(ValueError):
-        calc_statistics_helper(
+        calculate_statistics(
             np.asarray([[1, 2, 3, 4], [1, 2, 3, 4]]), np.asarray([[1, 2, 3, 4], [1, 2, 3, 4]])
         )
 
     with pytest.raises(ValueError):
-        calc_statistics_helper([1, 2, 3, 4], [1, 2, 3, 4], weights=[1, 2, 3])
+        calculate_statistics([1, 2, 3, 4], [1, 2, 3, 4], weights=[1, 2, 3])
 
     with pytest.raises(ValueError):
-        calc_statistics_helper([1, 2, 3], [1, 2])
+        calculate_statistics([1, 2, 3], [1, 2])
 
     with pytest.raises(ValueError):
-        calc_statistics_helper([1, 2, 3], [1, 2, 3], weights=[1, 2])
+        calculate_statistics([1, 2, 3], [1, 2, 3], weights=[1, 2])
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def test_calc_stats_exceptions():
     ),
 )
 def test_calc_stats_keys(data, ref_data, statistics, constraints, expected_keys):
-    stats = calc_statistics_helper(data, ref_data, statistics, constraints)
+    stats = calculate_statistics(data, ref_data, statistics, constraints)
 
     assert isinstance(stats, dict)
 
@@ -76,7 +76,7 @@ def test_calc_stats_keys(data, ref_data, statistics, constraints, expected_keys)
 
 
 def test_custom_stats():
-    stats = calc_statistics_helper(
+    stats = calculate_statistics(
         [1, 2, 3, 4],
         [1, 2, 3, 4],
         {"test_statistic1": lambda x, y, w: 5, "test_statistic2": lambda x, y, w: 3},
@@ -193,7 +193,7 @@ sin_signal = np.sin(idx)
     ],
 )
 def test_calc_statistics(data, ref_data, expected):
-    stats = calc_statistics_helper(data, ref_data)
+    stats = calculate_statistics(data, ref_data)
     assert isinstance(stats, dict)
     assert len(stats) == len(expected)
     for key, val in expected.items():
@@ -229,6 +229,6 @@ def test_calc_statistics(data, ref_data, expected):
     ),
 )
 def test_calc_statistics_drop_stats(data, ref_data, drop):
-    stats = calc_statistics_helper(data, ref_data, drop_stats=drop)
+    stats = calculate_statistics(data, ref_data, drop_stats=drop)
 
     assert all([x not in stats.keys() for x in drop])

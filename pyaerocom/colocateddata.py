@@ -27,7 +27,7 @@ from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
-from pyaerocom.stats.stats import calc_statistics_helper
+from pyaerocom.stats.stats import calculate_statistics
 from pyaerocom.time_resampler import TimeResampler
 
 logger = logging.getLogger(__name__)
@@ -828,7 +828,7 @@ class ColocatedData:
             ncd = np.nan
         obsvals = self.data.values[0].flatten()
         modvals = self.data.values[1].flatten()
-        stats = calc_statistics_helper(modvals, obsvals, **kwargs)
+        stats = calculate_statistics(modvals, obsvals, **kwargs)
 
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
@@ -879,7 +879,7 @@ class ColocatedData:
         else:
             raise ValueError("So far only mean and median are supported aggregators")
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
-        stats = calc_statistics_helper(mod, obs, **kwargs)
+        stats = calculate_statistics(mod, obs, **kwargs)
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
@@ -935,7 +935,7 @@ class ColocatedData:
             raise ValueError("So far only mean and median are supported aggregators")
 
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
-        stats = calc_statistics_helper(mod, obs, **kwargs)
+        stats = calculate_statistics(mod, obs, **kwargs)
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats

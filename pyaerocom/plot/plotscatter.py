@@ -8,7 +8,7 @@ from pyaerocom import const
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.helpers import start_stop_str
 from pyaerocom.mathutils import exponent
-from pyaerocom.stats.stats import calc_statistics_helper
+from pyaerocom.stats.stats import calculate_statistics
 
 
 def plot_scatter(x_vals, y_vals, **kwargs):
@@ -141,7 +141,7 @@ def plot_scatter_aerocom(
     if var_name is None:
         var_name = "n/d"
 
-    statistics = calc_statistics_helper(y_vals, x_vals, lowlim=lowlim_stats, highlim=highlim_stats)
+    statistics = calculate_statistics(y_vals, x_vals, lowlim=lowlim_stats, highlim=highlim_stats)
 
     if loglog:
         ax.loglog(x_vals, y_vals, ls="none", color=color, marker=marker, alpha=alpha, **kwargs)
