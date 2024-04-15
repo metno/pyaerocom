@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 
 
@@ -9,8 +7,8 @@ class FilterNaN:
     """
 
     def __call__(
-        self, data: np.array, ref_data: np.array, weights: Optional[np.array]
-    ) -> tuple[np.array, np.array, Optional[np.array]]:
+        self, data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
         mask = ~np.isnan(ref_data) * ~np.isnan(data)
 
         if weights is not None:
@@ -29,8 +27,8 @@ class FilterByLimit:
         self.highlim = highlim
 
     def __call__(
-        self, data: np.array, ref_data: np.array, weights: Optional[np.array]
-    ) -> tuple[np.array, np.array, Optional[np.array]]:
+        self, data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
         if self.lowlim is not None:
             valid = np.logical_and(data > self.lowlim, ref_data > self.lowlim)
             data = data[valid]

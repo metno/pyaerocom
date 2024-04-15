@@ -1,19 +1,17 @@
-from typing import Optional
-
 import numpy as np
 from scipy.stats import kendalltau, spearmanr
 
 from pyaerocom.mathutils import corr, sum
 
 
-def stat_R(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_R(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Pearson correlation coefficient implementation.
     """
     return corr(data, ref_data, weights)
 
 
-def stat_rms(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_rms(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Root mean square implementation.
     """
@@ -21,7 +19,7 @@ def stat_rms(data: np.array, ref_data: np.array, weights: Optional[np.array]) ->
     return np.sqrt(np.average(difference**2, weights=weights))
 
 
-def stat_mb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_mb(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Mean bias implementation.
     """
@@ -29,7 +27,7 @@ def stat_mb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> 
     return sum(difference, weights=weights) / len(data)
 
 
-def stat_nmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_nmb(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Normalised mean bias implementation.
     """
@@ -39,7 +37,7 @@ def stat_nmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) ->
     return sum(data - ref_data, weights) / sum_ref_data
 
 
-def stat_mab(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_mab(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Mean absolute bias implementation.
     """
@@ -47,7 +45,7 @@ def stat_mab(data: np.array, ref_data: np.array, weights: Optional[np.array]) ->
     return sum(np.abs(difference)) / len(data)
 
 
-def stat_mnmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_mnmb(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Modified normalised mean bias implementation.
     """
@@ -58,7 +56,7 @@ def stat_mnmb(data: np.array, ref_data: np.array, weights: Optional[np.array]) -
     return 2 / len(data) * sum(difference / (data + ref_data))
 
 
-def stat_fge(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_fge(data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None) -> np.float64:
     """
     Fractional gross error implementation.
     """
@@ -69,14 +67,18 @@ def stat_fge(data: np.array, ref_data: np.array, weights: Optional[np.array]) ->
     return 2 / len(data) * sum(np.abs(difference / (data + ref_data)), weights=weights)
 
 
-def stat_R_spearman(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_R_spearman(
+    data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
+) -> np.float64:
     """
     Spearman corr. coefficient implementation.
     """
     return spearmanr(data, ref_data)[0]
 
 
-def stat_R_kendall(data: np.array, ref_data: np.array, weights: Optional[np.array]) -> np.float64:
+def stat_R_kendall(
+    data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
+) -> np.float64:
     """
     Kendall's tau implementation.
     """

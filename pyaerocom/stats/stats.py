@@ -1,4 +1,4 @@
-from typing import Mapping, Optional
+from typing import Mapping
 
 import numpy as np
 
@@ -9,18 +9,18 @@ from pyaerocom.stats.types import DataFilter, StatisticsCalculator, StatisticsFi
 
 
 def filter_data(
-    data: np.array,
-    ref_data: np.array,
-    weights: Optional[np.array],
-    filters=Optional[list[DataFilter]],
-) -> tuple[np.array, np.array, np.array]:
+    data: np.ndarray,
+    ref_data: np.ndarray,
+    weights: np.ndarray,
+    filters=list[DataFilter] | None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Filter data arrays using provided filter functions.
 
     Parameters
     ----------
-    data : np.array
-    ref_data : np.array
-    weights : np.array | None
+    data : np.ndarray
+    ref_data : np.ndarray
+    weights : np.ndarray | None
     filters : list[DataFilter] | None
 
     Returns
@@ -36,9 +36,9 @@ def filter_data(
 
 
 def calculate_statistics(
-    data: np.array,
-    ref_data: np.array,
-    weights: np.array,
+    data: np.ndarray,
+    ref_data: np.ndarray,
+    weights: np.ndarray,
     statistics=dict[str, StatisticsCalculator],
     min_numvalid: int = 1,
 ) -> StatsDict:
@@ -46,9 +46,9 @@ def calculate_statistics(
 
     Parameters
     ----------
-    data : np.array
-    ref_data : np.array
-    weights : np.array | None
+    data : np.ndarray
+    ref_data : np.ndarray
+    weights : np.ndarray | None
         Optional list of weights which will be used for weighted statistics.
     statistics : dict[str, StatisticsCalculator]
         Mapping between names and functions that calculate individual statistics.
@@ -75,7 +75,7 @@ def calculate_statistics(
 
 
 def filter_stats(
-    stats: StatsDict, filters: Optional[list[StatisticsFilter]]
+    stats: StatsDict, filters: list[StatisticsFilter] | None
 ) -> dict[str, np.float64]:
     """Filter a StatsDict
 
@@ -143,11 +143,11 @@ def calc_statistics_helper(
         data
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
-    data_filters : Optional[list[DataFilter]]
+    data_filters : list[DataFilter] | None
         list of filter functions applied to the data arrays before calculating stats.
     statistics : dict[str, StatisticsCalculator]
         mapping between statistics name and functions to calculate that statistics.
-    stats_filter : Optional[list[StatisticsFilter]]
+    stats_filter : list[StatisticsFilter] | None
         list of filter functions applied to the stats dictionary before returning the dict.
     lowlim : float
         lower end of considered value range (e.g. if set 0, then all datapoints
@@ -230,7 +230,7 @@ def calc_statistics_helper(
 
     result = dict()
 
-    result["totnum"] = float(len(data))
+    result["totnum"] = len(data)
     result["weighted"] = False if weights is None else True
 
     data, ref_data, weights = filter_data(data, ref_data, weights, data_filters)

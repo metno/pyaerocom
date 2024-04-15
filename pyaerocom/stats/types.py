@@ -1,17 +1,17 @@
-from typing import Callable, Optional
+from typing import Callable
 
 import numpy as np
 
 # Type definition for a callable which filters (ie. excludes) data before calculating stats.
 DataFilter = Callable[
-    [np.array, np.array, Optional[np.array]], tuple[np.array, np.array, Optional[np.array]]
+    [np.ndarray, np.ndarray, np.ndarray | None], tuple[np.ndarray, np.ndarray, np.ndarray | None]
 ]
 
 # Type definition for a callable which calculates a statistic.
-StatisticsCalculator = Callable[[np.array, np.array, Optional[np.array]], np.float64]
-
-# Type definition for a callable which filters out statistics from the resulting stats dictionary.
-StatisticsFilter = Callable[[dict[str, np.float64]], dict[str, np.float64]]
+StatisticsCalculator = Callable[[np.ndarray, np.ndarray, np.ndarray | None], np.float64]
 
 # Type definition for a stats dictionary.
 StatsDict = dict[str, np.float64]
+
+# Type definition for a callable which filters out statistics from the resulting stats dictionary.
+StatisticsFilter = Callable[[StatsDict], StatsDict]
