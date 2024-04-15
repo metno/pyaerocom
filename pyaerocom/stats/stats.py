@@ -118,8 +118,6 @@ def calculate_statistics(
     data,
     ref_data,
     statistics: Mapping[str, StatisticsCalculator] | None = None,
-    data_filters: list[DataFilter] | None = None,
-    stats_filters: list[StatisticsFilter] | None = None,
     min_num_valid=1,
     weights: list | None = None,
     drop_stats=None,
@@ -156,14 +154,8 @@ def calculate_statistics(
         data
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
-    data_filters : list[DataFilter] | None
-        list of filter functions applied to the data arrays before calculating stats. Each
-        function should produce a mask array of equal length to the data where each entry
-        that should be keept evaluates to True.
     statistics : dict[str, StatisticsCalculator]
         mapping between statistics name and functions to calculate that statistics.
-    stats_filter : list[StatisticsFilter] | None
-        list of filter functions applied to the stats dictionary before returning the dict.
     lowlim : float
         lower end of considered value range (e.g. if set 0, then all datapoints
         where either ``data`` or ``ref_data`` is smaller than 0 are removed).
@@ -231,17 +223,13 @@ def calculate_statistics(
             "R_kendall": stat_R_kendall,
         }
 
-    if data_filters is None:
-        data_filters = [FilterNaN()]
-
-    if (stats_filters is None) and (drop_stats is not None):
-        stats_filters = [FilterDropStats(drop_stats)]
-
+    data_filters = [FilterNaN()]
     if (lowlim is not None) or (highlim is not None):
-        if not any(isinstance(x, FilterByLimit) for x in data_filters):
-            data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))
-        else:
-            raise
+        data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))
+
+    stats_filters = None
+    if drop_stats is not None:
+        stats_filters = [FilterDropStats(drop_stats)]
 
     result = dict()
 

@@ -22,23 +22,21 @@ def test_calc_stats_exceptions():
 
 
 @pytest.mark.parametrize(
-    "data,ref_data,statistics,constraints,expected_keys",
+    "data,ref_data,statistics,expected_keys",
     (
         pytest.param(
-            [1, 2, 3, 4], [1, 2, 3, 4], {}, [], ["totnum", "weighted", "num_valid"], id="empty"
+            [1, 2, 3, 4], [1, 2, 3, 4], {}, ["totnum", "weighted", "num_valid"], id="empty"
         ),
         pytest.param(
             [1, 2, 3, 4],
             [1, 2, 3, 4],
             {"R": stat_R, "R_kendall": stat_R_kendall, "mb": stat_mb},
-            [],
             ["totnum", "weighted", "num_valid", "R", "R_kendall", "mb"],
             id="custom1",
         ),
         pytest.param(
             [1, 2, 3, 4],
             [1, 2, 3, 4],
-            None,
             None,
             [
                 "totnum",
@@ -63,8 +61,8 @@ def test_calc_stats_exceptions():
         ),
     ),
 )
-def test_calc_stats_keys(data, ref_data, statistics, constraints, expected_keys):
-    stats = calculate_statistics(data, ref_data, statistics, constraints)
+def test_calc_stats_keys(data, ref_data, statistics, expected_keys):
+    stats = calculate_statistics(data, ref_data, statistics)
 
     assert isinstance(stats, dict)
 
