@@ -8,7 +8,7 @@ class FilterNaN:
 
     def __call__(
         self, data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
+    ) -> np.ndarray:
         mask = ~np.isnan(ref_data) * ~np.isnan(data)
 
         return mask
