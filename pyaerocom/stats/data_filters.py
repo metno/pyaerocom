@@ -26,6 +26,9 @@ class FilterByLimit:
     def __call__(
         self, data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
     ) -> np.ndarray:
+        valid1 = np.repeat([True], len(data))
+        valid2 = np.repeat([True], len(data))
+
         if self.lowlim is not None:
             valid1 = np.logical_and(data > self.lowlim, ref_data > self.lowlim)
         if self.highlim is not None:
