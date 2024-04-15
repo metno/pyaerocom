@@ -46,6 +46,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 files = self._run_model(model, var_list)
             except VarNotAvailableError:
                 files = []
+            if not files:
+                logger.warning(f"no data for model {model}, skipping")
+                continue
             all_files.extend(files)
         return files
 
@@ -85,6 +88,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
 
+            except TypeError as ex:
+                logger.warning(f"{ex}")
+                return files
             except (
                 TemporalResolutionError,
                 DataCoverageError,
@@ -135,7 +141,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         check_var_ranges_avail(data, var)
 
-        if var in var_ranges_defaults:
+        if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
             varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:
