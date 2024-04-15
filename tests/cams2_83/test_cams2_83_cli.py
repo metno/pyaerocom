@@ -69,7 +69,7 @@ def test_not_cleared_cache(
     assert list(fake_cache_path.glob("*.pkl"))
 
 
-def test_eval(
+def test_eval_dummy(
     fake_cache_path: Path,
     tmp_path: Path,
     # fake_config,
@@ -80,4 +80,19 @@ def test_eval(
     options = f"forecast day 2024-03-16 2024-03-16 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --verbose"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
+    assert "Failed to read model variable" in caplog.text
+
+
+def test_eval_medianscores_dummy(
+    fake_cache_path: Path,
+    tmp_path: Path,
+    # fake_config,
+    caplog,
+):
+    assert list(fake_cache_path.glob("*.pkl"))
+
+    options = f"analysis long 2023-03-01 2024-02-28 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores --verbose"
+    result = runner.invoke(app, options.split())
+    assert result.exit_code == 0
+    assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
     assert "Failed to read model variable" in caplog.text
