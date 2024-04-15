@@ -196,7 +196,6 @@ def calculate_statistics(
         For example, setting drop_stats = ("mb", "mab"), results in json files
         in hm/ts with entries which do not contain the mean bias and mean
         absolute bias, but the other statistics are preserved.
-        Deprecated. Use stats_filter with instance of DropStats instead.
     Returns
     -------
     StatsDict
