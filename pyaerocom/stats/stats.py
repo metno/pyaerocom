@@ -114,6 +114,29 @@ def _filter_stats(
     return stats
 
 
+def _get_default_statistic_config() -> dict[str, StatisticsCalculator]:
+    """
+    Returns a base configuration dictionary to be used with `calculate_statistics`
+    which calculates all implemented statistics. Can be used as a starting
+    point for adding additional stats using `dict.update()`
+    """
+    return {
+        "refdata_mean": lambda x, y, w: np.nanmean(y),
+        "refdata_std": lambda x, y, w: np.nanstd(y),
+        "data_mean": lambda x, y, w: np.nanmean(x),
+        "data_std": lambda x, y, w: np.nanstd(x),
+        "rms": stat_rms,
+        "nmb": stat_nmb,
+        "mnmb": stat_mnmb,
+        "mb": stat_mb,
+        "mab": stat_mab,
+        "fge": stat_fge,
+        "R": stat_R,
+        "R_spearman": stat_R_spearman,
+        "R_kendall": stat_R_kendall,
+    }
+
+
 def calculate_statistics(
     data,
     ref_data,
@@ -155,7 +178,7 @@ def calculate_statistics(
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
     statistics : dict[str, StatisticsCalculator]
-        mapping between statistics name and functions to calculate that statistics.
+        mapping between statistics name and Callable to calculate that statistics.
     lowlim : float
         lower end of considered value range (e.g. if set 0, then all datapoints
         where either ``data`` or ``ref_data`` is smaller than 0 are removed).
@@ -207,21 +230,7 @@ def calculate_statistics(
 
     # Set defaults
     if statistics is None:
-        statistics = {
-            "refdata_mean": lambda x, y, w: np.nanmean(y),
-            "refdata_std": lambda x, y, w: np.nanstd(y),
-            "data_mean": lambda x, y, w: np.nanmean(x),
-            "data_std": lambda x, y, w: np.nanstd(x),
-            "rms": stat_rms,
-            "nmb": stat_nmb,
-            "mnmb": stat_mnmb,
-            "mb": stat_mb,
-            "mab": stat_mab,
-            "fge": stat_fge,
-            "R": stat_R,
-            "R_spearman": stat_R_spearman,
-            "R_kendall": stat_R_kendall,
-        }
+        statistics = _get_default_statistic_config()
 
     data_filters = [FilterNaN()]
     if (lowlim is not None) or (highlim is not None):
