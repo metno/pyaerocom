@@ -126,7 +126,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
         """
-        data = self.read_model_data(model_name, var)
+
+        try:
+            data = self.read_model_data(model_name, var)
+        except Exception as e:
+            logger.warning(f"{e}")
+            return
+
         check_var_ranges_avail(data, var)
 
         if var in var_ranges_defaults.keys():
@@ -173,6 +179,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
 
-        write_json(datajson, fp_json, ignore_nan=True)
-        write_json(contourjson, fp_geojson, ignore_nan=True)
+        write_json(datajson, fp_json, round_floats=False)
+        write_json(contourjson, fp_geojson, round_floats=False)
         return [fp_json, fp_geojson]
