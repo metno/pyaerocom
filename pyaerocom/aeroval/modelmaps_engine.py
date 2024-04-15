@@ -5,7 +5,7 @@ from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
-from pyaerocom.aeroval.json_utils import round_floats, write_json
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
@@ -126,12 +126,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
         """
+
         try:
             data = self.read_model_data(model_name, var)
         except Exception as e:
             logger.warning(f"{e}")
-
-        data = round_floats(data)
+            return
 
         check_var_ranges_avail(data, var)
 
