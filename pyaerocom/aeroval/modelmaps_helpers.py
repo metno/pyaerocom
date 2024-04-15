@@ -70,7 +70,7 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
     for i, (lat, lon) in enumerate(stacked.station_name.values):
         coord = lat, lon
         vals = nparr[:, i]
-        vals = round(vals,5)
+        vals = round(vals, 5)
         dd[str(coord)] = sd = {}
         sd["lat"] = lat
         sd["lon"] = lon
