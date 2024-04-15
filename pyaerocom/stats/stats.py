@@ -26,11 +26,24 @@ def _filter_data(
     Returns
     -------
     Tuple
-        tuple consisting of the modified data, ref_data and weights array.
+        tuple consisting of the modified data, ref_data and optional weights array.
+
+    Raises:
+    -------
+    IndexError:
+        If the length of a produced mask does not match the length of the data.
     """
     if filters is not None:
         for f in filters:
-            data, ref_data, weights = f(data, ref_data, weights)
+            mask = f(data, ref_data, weights)
+            if len(mask) != len(data):
+                raise IndexError(
+                    f"Filter mask length ({len(mask)}) does not match length of data {len(data)}."
+                )
+            if weights is None:
+                data, ref_data, weights = data[mask], ref_data[mask], None
+            else:
+                data, ref_data, weights = data[mask], ref_data[mask], weights[mask]
 
     return (data, ref_data, weights)
 
@@ -144,7 +157,9 @@ def calculate_statistics(
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
     data_filters : list[DataFilter] | None
-        list of filter functions applied to the data arrays before calculating stats.
+        list of filter functions applied to the data arrays before calculating stats. Each
+        function should produce a mask array of equal length to the data where each entry
+        that should be keept evaluates to True.
     statistics : dict[str, StatisticsCalculator]
         mapping between statistics name and functions to calculate that statistics.
     stats_filter : list[StatisticsFilter] | None

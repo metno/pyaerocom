@@ -3,9 +3,7 @@ from typing import Callable
 import numpy as np
 
 # Type definition for a callable which filters (ie. excludes) data before calculating stats.
-DataFilter = Callable[
-    [np.ndarray, np.ndarray, np.ndarray | None], tuple[np.ndarray, np.ndarray, np.ndarray | None]
-]
+DataFilter = Callable[[np.ndarray, np.ndarray, np.ndarray | None], np.ndarray]
 
 # Type definition for a callable which calculates a statistic.
 StatisticsCalculator = Callable[[np.ndarray, np.ndarray, np.ndarray | None], np.float64]
