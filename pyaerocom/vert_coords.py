@@ -59,7 +59,7 @@ def atmosphere_sigma_coordinate_to_pressure(
     if not isinstance(ptop, float):
         try:
             ptop = float(ptop)
-        except Exception as e:
+        except ValueError as e:
             raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
     return ptop + sigma * (ps - ptop)
 
@@ -253,12 +253,12 @@ class VerticalCoordinate:
         return self.CONVERSION_REQUIRES[self.var_name]
 
     @property
-    def conversion_supported(self):
+    def conversion_supported(self) -> bool:
         """Boolean specifying whether a conversion scheme is provided"""
         return True if self.standard_name in self.NAMES_SUPPORTED else False
 
     @property
-    def lev_increases_with_alt(self):
+    def lev_increases_with_alt(self) -> bool:
         """Boolean specifying whether coordinate levels increase with altitude
 
         Returns
@@ -274,12 +274,12 @@ class VerticalCoordinate:
             )
         return self._LEV_INCREASES_WITH_ALT[self.var_name]
 
-    def calc_pressure(self, lev, **kwargs):
+    def calc_pressure(self, lev: np.ndarray, **kwargs) -> np.ndarray:
         """Compute pressure levels for input vertical coordinate
 
         Parameters
         ----------
-        vals
+        vals : ndarray
             level values that are supposed to be converted into pressure
         **kwargs
             additional  keyword args required for computation of pressure
@@ -302,7 +302,7 @@ class VerticalCoordinate:
         return self.fun(coord_values, **kwargs)
 
     @property
-    def vars_supported_str(self):
+    def vars_supported_str(self) -> str:
         from pyaerocom._lowlevel_helpers import dict_to_str
 
         return dict_to_str(self.NAMES_SUPPORTED)
@@ -360,7 +360,7 @@ class AltitudeAccess:
         return True if key in self.__dict__ else False
 
     @property
-    def has_access(self):
+    def has_access(self) -> bool:
         """Boolean specifying whether altitudes can be accessed
 
         Note
@@ -422,7 +422,7 @@ class AltitudeAccess:
         self._subset1d = subset
         return subset
 
-    def search_aux_coords(self, coord_list):
+    def search_aux_coords(self, coord_list) -> bool:
         """Search and assign coordinates provided by input list
 
         All coordinates that are found are assigned to this object and can
@@ -493,7 +493,7 @@ class AltitudeAccess:
             if std_name in self.data_obj:
                 self[var_name] = self.data_obj[std_name]
 
-    def check_altitude_access(self, **coord_info):
+    def check_altitude_access(self, **coord_info) -> bool:
         """Checks if altitude levels can be accessed
 
         Parameters
@@ -517,7 +517,7 @@ class AltitudeAccess:
             self._checked_and_failed.append(coord)
         return False
 
-    def _check_altitude_access_helper(self, coord_name, **coord_info):
+    def _check_altitude_access_helper(self, coord_name, **coord_info) -> bool:
         cstd_name = const.COORDINFO[coord_name].standard_name
 
         if not self.search_aux_coords(coord_name):
@@ -532,7 +532,7 @@ class AltitudeAccess:
                     return True
         return False
 
-    def _verify_altitude_access(self, coord, **coord_info):
+    def _verify_altitude_access(self, coord, **coord_info) -> bool:
         """Verify access of altitude data
 
         Parameters
