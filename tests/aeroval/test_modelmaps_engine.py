@@ -13,6 +13,7 @@ def test__process_map_var():
         engine._process_map_var("LOTOS", "concco", False)
     assert "no such entry LOTOS" in str(excinfo.value)
 
+
 def test__run(caplog):
     stp = EvalSetup(**CFG)
     engine = ModelMapsEngine(stp)
