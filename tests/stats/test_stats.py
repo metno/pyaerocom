@@ -86,8 +86,6 @@ def test_custom_stats():
     assert stats["test_statistic2"] == 3
 
 
-## BACKWARDS_COMPATIBILITY
-
 perfect_stats_num1_mean1 = {
     "totnum": 1,
     "num_valid": 1,
