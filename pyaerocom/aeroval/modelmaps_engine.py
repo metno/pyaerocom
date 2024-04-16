@@ -12,6 +12,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
     DataQueryError,
+    ModelVarNotAvailable,
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
@@ -88,9 +89,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
 
-            except TypeError as ex:
+            except ModelVarNotAvailable as ex:
                 logger.warning(f"{ex}")
-                return files
             except (
                 TemporalResolutionError,
                 DataCoverageError,
@@ -131,13 +131,16 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         AttributeError
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
+        ModelVarNotAvailable
+            If model/var data cannot be read
         """
 
         try:
             data = self.read_model_data(model_name, var)
         except Exception as e:
-            logger.warning(f"{e}")
-            return
+            raise ModelVarNotAvailable(
+                f"Cannot read data for model {model_name} (variable {var}): {e}"
+            )
 
         check_var_ranges_avail(data, var)
 

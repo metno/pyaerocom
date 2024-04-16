@@ -2,10 +2,10 @@ import cartopy.crs as ccrs
 import dask
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
-from numpy import round
 from seaborn import color_palette
 
 try:
@@ -70,7 +70,7 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
     for i, (lat, lon) in enumerate(stacked.station_name.values):
         coord = lat, lon
         vals = nparr[:, i]
-        vals = round(vals, 5)
+        vals = np.round(vals, 5)
         dd[str(coord)] = sd = {}
         sd["lat"] = lat
         sd["lon"] = lon
