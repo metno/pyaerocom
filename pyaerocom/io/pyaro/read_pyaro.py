@@ -232,11 +232,7 @@ class PyaroToUngriddedData:
         return metadata
 
     def _get_additional_metadata(self, station: Station) -> list[dict[str, str]]:
-        metadata = {}
-        extra_fields = station.metadata_keys()
-        for key in extra_fields:
-            metadata[key] = station[key]
-        return metadata
+        return station.metadata
 
     def _make_single_ungridded_metadata(
         self, station: Station, name: str, ts_type: Optional[TsType], units: dict[str, str]
