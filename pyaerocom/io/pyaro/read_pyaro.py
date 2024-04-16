@@ -233,7 +233,7 @@ class PyaroToUngriddedData:
 
     def _get_additional_metadata(self, station: Station) -> list[dict[str, str]]:
         metadata = {}
-        extra_fields = tuple(set(station.keys()) - set(self.STATION_KEYS))
+        extra_fields = station.metadata_keys()
         for key in extra_fields:
             metadata[key] = station[key]
         return metadata
