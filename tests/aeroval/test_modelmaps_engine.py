@@ -1,18 +1,19 @@
-from copy import deepcopy
-
-import pytest
-
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.exceptions import ModelVarNotAvailable
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG
 
 
-def test__process_map_var(caplog):
+def test__process_map_var():
     stp = EvalSetup(**CFG)
     engine = ModelMapsEngine(stp)
-    engine._process_map_var("LOTOS", "concco", False)
-    print(caplog.text)
-    assert "no such entry LOTOS" in caplog.text
+    try:
+        engine._process_map_var("LOTOS", "concco", False)
+    except ModelVarNotAvailable as e:
+        # print(e)
+        assert "no such entry LOTOS" in str(e)
+    else:
+        assert False
 
 
 def test__run(caplog):
