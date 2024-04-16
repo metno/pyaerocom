@@ -793,11 +793,11 @@ class ColocatedData:
 
         Calculate standard statistics for model assessment. This is done by
         taking all model and obs data points in this object as input for
-        :func:`pyaerocom.mathutils.calc_statistics`. For instance, if the
+        :func:`pyaerocom.stats.stats.calculate_statistics`. For instance, if the
         object is 3D with dimensions `data_source` (obs, model), `time` (e.g.
         12 monthly values) and `station_name` (e.g. 4 sites), then the input
         arrays for model and obs into
-        :func:`pyaerocom.mathutils.calc_statistics` will be each of size
+        :func:`pyaerocom.stats.stats.calculate_statistics` will be each of size
         12x4.
 
         See also :func:`calc_temporal_statistics` and
@@ -811,7 +811,7 @@ class ColocatedData:
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
+            :func:`pyaerocom.stats.stats.calculate_statistics`
 
         Returns
         -------
@@ -841,7 +841,7 @@ class ColocatedData:
         dimension(s) (that is, `station_name` for 3D data, and
         `latitude` and `longitude` for 4D data), so that only `data_source` and
         `time` remains as dimensions. These 2D data are then used to calculate
-        standard statistics using :func:`pyaerocom.mathutils.calc_statistics`.
+        standard statistics using :func:`pyaerocom.stats.stats.calculate_statistics`.
 
         See also :func:`calc_statistics` and
         :func:`calc_spatial_statistics`.
@@ -853,7 +853,7 @@ class ColocatedData:
             supported. Defaults to mean.
         **kwargs
             additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
+            :func:`pyaerocom.stats.stats.calculate_statistics`
 
         Returns
         -------
@@ -892,7 +892,7 @@ class ColocatedData:
         new station_name dimension, so that the resulting dimensions are
         `data_source` and `station_name`. These 2D data are then used to
         calculate standard statistics using
-        :func:`pyaerocom.mathutils.calc_statistics`.
+        :func:`pyaerocom.stats.stats.calculate_statistics`.
 
         See also :func:`calc_statistics` and
         :func:`calc_temporal_statistics`.
@@ -908,7 +908,7 @@ class ColocatedData:
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
+            :func:`pyaerocom.stats.stats.calculate_statistics`
 
         Returns
         -------
