@@ -12,6 +12,7 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 import logging
 
+import numpy as np
 from geonum import atmosphere as atm
 
 from pyaerocom import const
@@ -25,7 +26,9 @@ from pyaerocom.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
+def atmosphere_sigma_coordinate_to_pressure(
+    sigma: np.ndarray | float, ps: float, ptop: float
+) -> np.ndarray | float:
     """Convert atmosphere sigma coordinate to pressure in Pa
 
     Note
@@ -61,7 +64,9 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
     return ptop + sigma * (ps - ptop)
 
 
-def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0=None):
+def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(
+    a: np.ndarray, b: np.ndarray, ps: float, p0: float | None = None
+) -> np.ndarray:
     """Convert atmosphere_hybrid_sigma_pressure_coordinate to  pressure in Pa
 
     **Formula**:
@@ -112,7 +117,7 @@ def geopotentialheight2altitude(geopotential_height):
 
     Parameters
     ----------
-    geopotential_height
+    geopotential_height : float
         input geopotential height values in m
 
     Returns
@@ -129,7 +134,7 @@ def geopotentialheight2altitude(geopotential_height):
     return geopotential_height
 
 
-def pressure2altitude(p, *args, **kwargs):
+def pressure2altitude(p: float, *args, **kwargs) -> float:
     """General formula to convert atm. pressure to altitude
 
     Wrapper method for :func:`geonum.atmosphere.pressure2altitude`
@@ -152,7 +157,7 @@ def pressure2altitude(p, *args, **kwargs):
 
     Parameters
     ----------
-    p
+    p : float
         pressure in Pa
     *args
         additional non-keyword args passed to
@@ -168,7 +173,7 @@ def pressure2altitude(p, *args, **kwargs):
     return atm.pressure2altitude(p, *args, **kwargs)
 
 
-def is_supported(standard_name):
+def is_supported(standard_name: str) -> bool:
     """Checks if input coordinate standard name is supported by pyaerocom
 
     Parameters
