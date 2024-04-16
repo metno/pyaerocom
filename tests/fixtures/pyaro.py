@@ -25,16 +25,18 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     countries = ["NO", "GB"]
     coords = [(58, 8), (60, -1)]
     species = ["NOx", "SOx"]
+    area_type = ["Rural", "Urban"]
 
     with open(file, "w") as f:
         for s in species:
             for i, station in enumerate(stations):
                 for j, date in enumerate(dates):
+
                     delta_t = ["1h", "3D", "2D", "2h"][
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
                     f.write(
-                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)}, {countries[i]} \n"
+                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
                     )
 
     return file
@@ -76,6 +78,7 @@ def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
         "country": 8,
         "standard_deviation": "NaN",
         "flag": "0",
+        "area_classification": 9,
     }
 
     config = PyaroConfig(
@@ -105,6 +108,7 @@ def pyaro_kwargs() -> dict:
         "country": 8,
         "standard_deviation": "NaN",
         "flag": "0",
+        "area_classification": 9,
     }
     return columns
 
