@@ -7,16 +7,16 @@ from tests.fixtures.tm5 import data_tm5
 
 
 @pytest.fixture
-def alt(data_tm5: GriddedData):
+def alt(data_tm5: GriddedData) -> AltitudeAccess:
     return AltitudeAccess(data_tm5)
 
 
 @pytest.fixture
-def sin_wave():
+def sin_wave() -> np.ndarray:
     return np.sin(np.arange(1000))
 
 
-def test_atmosphere_sigma_coordinate_to_pressure(sin_wave):
+def test_atmosphere_sigma_coordinate_to_pressure(sin_wave: np.ndarray):
     assert isinstance(atmosphere_sigma_coordinate_to_pressure(0.5, 1, 1), float)
 
     result = atmosphere_sigma_coordinate_to_pressure(sin_wave, 1, 1)
@@ -25,7 +25,7 @@ def test_atmosphere_sigma_coordinate_to_pressure(sin_wave):
     assert len(result) == len(sin_wave)
 
 
-def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(sin_wave):
+def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(sin_wave: np.ndarray):
     with pytest.raises(ValueError):
         atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(np.ones(5), np.ones(4), 1, 1)
 
@@ -36,25 +36,6 @@ def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(sin_wave):
 def test_geopotentialheight2altitude():
     with pytest.raises(NotImplementedError):
         geopotentialheight2altitude(5)
-
-
-def test_pressure2altitude():
-    result = pressure2altitude(7)
-
-    assert isinstance(result, float)
-
-
-@pytest.mark.parametrize(
-    "name,expected",
-    (
-        ("altitude", True),
-        ("air_pressure", True),
-        ("model_level_number", True),
-        ("hfjlkfhldsa", False),
-    ),
-)
-def test_is_supported(name: str, expected: bool):
-    assert is_supported(name) == expected
 
 
 def test_VerticalCoordinate_exceptions():

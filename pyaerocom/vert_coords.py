@@ -134,64 +134,6 @@ def geopotentialheight2altitude(geopotential_height):
     return geopotential_height
 
 
-def pressure2altitude(p: float, *args, **kwargs) -> float:
-    """General formula to convert atm. pressure to altitude
-
-    Wrapper method for :func:`geonum.atmosphere.pressure2altitude`
-
-    **Formula:**
-
-    .. math::
-
-        h = h_{ref} + \\frac{T_{ref}}{L} \\left(\\exp\\left[-\\frac{\\ln\\left(\\frac{p}{p_{ref}} \\right)}{\\beta}\\right] - 1\\right) \\quad [m]
-
-    where:
-
-        - :math:`$h_{ref}$` is a reference altitude
-        - :math:`$T_{ref}$` is a reference temperature
-        - :math:`$L$` is the atmospheric lapse-rate (cf. :attr:`L_STD_ATM`, \
-                                                     :attr:`L_DRY_AIR`)
-        - :math:`$p$` is the pressure (cf. :func:`pressure`)
-        - :math:`$p_{ref}$` is a reference pressure
-        - :math:`$\\beta$` is computed using :func:`beta_exp`
-
-    Parameters
-    ----------
-    p : float
-        pressure in Pa
-    *args
-        additional non-keyword args passed to
-        :func:`geonum.atmosphere.pressure2altitude`
-    **kwargs
-        additional keyword args passed to
-        :func:`geonum.atmosphere.pressure2altitude`
-
-    Returns
-    -------
-    altitudes in m corresponding to input pressure levels in defined atmosphere
-    """
-    return atm.pressure2altitude(p, *args, **kwargs)
-
-
-def is_supported(standard_name: str) -> bool:
-    """Checks if input coordinate standard name is supported by pyaerocom
-
-    Parameters
-    ----------
-    standard_name : str
-        standard name of vertical coordinate
-
-    Returns
-    -------
-    bool
-        True, if this coordinate is supported, else False
-    """
-    # TODO: This logic is strange. REGISTERED is a combination of SUPPORTED values
-    # and NOT_SUPPORTED. Either this function has the wrong logic or it has a misleading
-    # name.
-    return True if standard_name in VerticalCoordinate.REGISTERED else False
-
-
 class VerticalCoordinate:
     NAMES_SUPPORTED = {
         "altitude": "z",
