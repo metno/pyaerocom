@@ -77,3 +77,10 @@ class TestAltitudeAccess:
     def test_exceptions(self):
         with pytest.raises(ValueError):
             AltitudeAccess(None)
+
+    def test_extract_1D_subset_from_data(self, alt: AltitudeAccess):
+        test = alt.extract_1D_subset_from_data()
+
+        assert test.ndim == 1
+
+        # TODO: More extensive testing should be done here.
