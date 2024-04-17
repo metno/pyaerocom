@@ -78,6 +78,7 @@ def make_config(
     run_type: RunType,
     only_map: bool,
     add_map: bool,
+    fairmode: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -122,6 +123,9 @@ def make_config(
 
     if only_map:
         cfg.update(add_model_maps=True, only_model_maps=True)
+
+    if fairmode:
+        cfg.update(use_fairmode=True)
 
     return cfg
 
@@ -275,6 +279,7 @@ def main(
     only_map: bool = typer.Option(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
+    fairmode: bool = typer.Option(False, "--fairmode", help="set use_fairmode"),
     medianscores: bool = typer.Option(
         False,
         "--medianscores",
@@ -322,6 +327,7 @@ def main(
         run_type,
         only_map,
         add_map,
+        fairmode,
     )
 
     quiet = not verbose
