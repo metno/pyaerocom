@@ -3,6 +3,7 @@ import pytest
 
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.vert_coords import *
+from tests.conftest import lustre_unavail
 from tests.fixtures.tm5 import data_tm5
 
 
@@ -84,3 +85,15 @@ class TestAltitudeAccess:
         assert test.ndim == 1
 
         # TODO: More extensive testing should be done here.
+
+    def test_get_altitude(self, alt: AltitudeAccess):
+        with pytest.raises(NotImplementedError):
+            alt.get_altitude(None, None)
+
+    @lustre_unavail
+    @pytest.mark.xfail
+    # TODO: This test is currently failing because of a ValueError caused by
+    # a variable name containing an underscore. This seems like an unrelated
+    # issue to me, so I have marked it xfail for now.
+    def test_check_access(self, alt: AltitudeAccess):
+        assert alt.check_altitude_access()
