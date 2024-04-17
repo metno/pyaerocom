@@ -38,21 +38,42 @@ def test_geopotentialheight2altitude():
         geopotentialheight2altitude(5)
 
 
-def test_VerticalCoordinate_exceptions():
-    # Unsupported variable name during initialization.
-    with pytest.raises(ValueError):
-        VerticalCoordinate("jtlkjhsklrg")
+class TestVerticalCoordinate:
+    def test_exceptions(self):
+        # Unsupported variable name during initialization.
+        with pytest.raises(ValueError):
+            VerticalCoordinate("jtlkjhsklrg")
 
-    # Attempt calculating pressure for unsupported variable.
-    vert = VerticalCoordinate("asc")
-    with pytest.raises(CoordinateNameError):
-        vert.calc_pressure(np.ones(5))
+        # Attempt calculating pressure for unsupported variable.
+        vert = VerticalCoordinate("asc")
+        with pytest.raises(CoordinateNameError):
+            vert.calc_pressure(np.ones(5))
+
+    @pytest.mark.parametrize(
+        "name,expected,exception",
+        (
+            pytest.param("altitude", True, None, id="var-name-1"),
+            pytest.param("atmosphere_sigma_coordinate", False, None, id="var-name-2"),
+            pytest.param(
+                "atmosphere_hybrid_sigma_pressure_coordinate", False, None, id="var-name-3"
+            ),
+            pytest.param("asc", False, None, id="standard-name-1"),
+            pytest.param("z", True, None, id="standard-name-2"),
+            pytest.param("gph", None, ValueError, id="valueerror"),
+        ),
+    )
+    def test_lev_increases_with_alt(
+        self, name: str, expected: bool | None, exception: Exception | None
+    ):
+        vert = VerticalCoordinate(name)
+        if exception:
+            with pytest.raises(exception):
+                vert.lev_increases_with_alt
+        else:
+            assert vert.lev_increases_with_alt == expected
 
 
-def test_AltitudeAccess_exceptions():
-    with pytest.raises(ValueError):
-        AltitudeAccess(None)
-
-
-def test_AltitudeAccess(alt: AltitudeAccess):
-    assert True
+class TestAltitudeAccess:
+    def test_exceptions(self):
+        with pytest.raises(ValueError):
+            AltitudeAccess(None)
