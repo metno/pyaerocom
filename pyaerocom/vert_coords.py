@@ -124,7 +124,7 @@ def geopotentialheight2altitude(geopotential_height):
     -------
     Computed altitude levels
     """
-
+    raise NotImplementedError("This function is a dummy function")
     logger.warning(
         "Conversion method of geopotential height to "
         "altitude is not yet implemented and returns the "
@@ -186,6 +186,9 @@ def is_supported(standard_name: str) -> bool:
     bool
         True, if this coordinate is supported, else False
     """
+    # TODO: This logic is strange. REGISTERED is a combination of SUPPORTED values
+    # and NOT_SUPPORTED. Either this function has the wrong logic or it has a misleading
+    # name.
     return True if standard_name in VerticalCoordinate.REGISTERED else False
 
 
