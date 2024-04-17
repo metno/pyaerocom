@@ -83,6 +83,7 @@ class TestAltitudeAccess:
         test = alt.extract_1D_subset_from_data()
 
         assert test.ndim == 1
+        assert alt.data_obj.cube.shape[2] == test.cube.shape[0]
 
         # TODO: More extensive testing should be done here.
 
