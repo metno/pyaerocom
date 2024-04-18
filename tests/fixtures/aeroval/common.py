@@ -8,8 +8,8 @@ from cf_units import Unit
 
 from pyaerocom import GriddedData
 
-# to make things work from iris 3.7
-# iris.FUTURE.save_split_attrs = True
+# to make things work from iris 3.8
+iris.FUTURE.save_split_attrs = True
 
 
 def make_dummy_cube_3D_daily(
