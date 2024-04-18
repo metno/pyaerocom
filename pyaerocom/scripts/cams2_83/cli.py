@@ -290,9 +290,8 @@ def main(
     pool: int = typer.Option(
         1, "--pool", "-p", min=1, max=cpu_count(), help="CPUs for reading OBS"
     ),
-    verbose: bool = typer.Option(False, "--verbose", "-v"),
 ):
-    if verbose or dry_run:
+    if dry_run:
         change_verbosity(logging.INFO)
 
     if pool > mp.cpu_count():
