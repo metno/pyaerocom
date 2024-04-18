@@ -157,7 +157,6 @@ def runner(
     cfg: dict,
     cache: str | Path | None,
     dry_run: bool = False,
-    quiet: bool = False,
     pool: int = 1,
 ):
     logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
@@ -166,9 +165,6 @@ def runner(
 
     if cache is not None:
         const.CACHEDIR = str(cache)
-
-    if quiet:
-        const.QUIET = True
 
     stp = EvalSetup(**cfg)
 
@@ -199,7 +195,6 @@ def runnermedianscores(
     *,
     analysis: bool = False,
     dry_run: bool = False,
-    quiet: bool = False,
     pool: int = 1,
 ):
     if dry_run:
@@ -207,9 +202,6 @@ def runnermedianscores(
 
     if cache is not None:
         const.CACHEDIR = str(cache)
-
-    if quiet:
-        const.QUIET = True
 
     stp = EvalSetup(**cfg)
 
@@ -330,8 +322,6 @@ def main(
         fairmode,
     )
 
-    quiet = not verbose
-
     analysis = False
     if run_type == RunType.AN:
         analysis = True
@@ -346,9 +336,7 @@ def main(
             )
         else:
             logger.info("Special run for median scores only")
-            runnermedianscores(
-                cfg, cache, analysis=analysis, dry_run=dry_run, quiet=quiet, pool=pool
-            )
+            runnermedianscores(cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool)
     else:
         logger.info("Standard run")
-        runner(cfg, cache, dry_run=dry_run, quiet=quiet, pool=pool)
+        runner(cfg, cache, dry_run=dry_run, pool=pool)

@@ -1935,6 +1935,7 @@ class ReadEbas(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
 
-        if self.files_failed:
-            logger.warning(f"{len(self.files_failed)} out of {len(files)} could not be read...")
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            logger.warning(f"{num_failed} out of {num_files} could not be read...")
         return data_obj
