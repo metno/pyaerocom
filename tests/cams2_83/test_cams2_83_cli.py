@@ -34,7 +34,7 @@ def test_clearcache(
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.ExperimentProcessor.run", do_not_run)
-    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --verbose"
+    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
     result = runner.invoke(app, options.split())
     assert "Running Statistics" in caplog.text
     assert result.exit_code == 0
@@ -61,7 +61,7 @@ def test_not_cleared_cache(
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.CAMS2_83_Processer.run", do_not_run)
-    options = f"forecast long 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores --verbose"
+    options = f"forecast long 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores"
     result = runner.invoke(app, options.split())
     assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
     assert result.exit_code == 0
@@ -77,7 +77,7 @@ def test_eval_dummy(
 ):
     assert list(fake_cache_path.glob("*.pkl"))
 
-    options = f"forecast day 2024-03-16 2024-03-16 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --verbose"
+    options = f"forecast day 2024-03-16 2024-03-16 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
     assert "Failed to read model variable" in caplog.text
@@ -91,7 +91,7 @@ def test_eval_medianscores_dummy(
 ):
     assert list(fake_cache_path.glob("*.pkl"))
 
-    options = f"analysis long 2023-03-01 2024-02-28 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores --verbose"
+    options = f"analysis long 2023-03-01 2024-02-28 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
     assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
