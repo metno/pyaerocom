@@ -22,7 +22,6 @@ def test_clearcache(
     monkeypatch,
     fake_cache_path: Path,
     tmp_path: Path,
-    fake_config,
     caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
@@ -46,7 +45,6 @@ def test_not_cleared_cache(
     monkeypatch,
     fake_cache_path: Path,
     tmp_path: Path,
-    fake_config,
     caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
@@ -72,7 +70,6 @@ def test_not_cleared_cache(
 def test_eval_dummy(
     fake_cache_path: Path,
     tmp_path: Path,
-    # fake_config,
     caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
@@ -86,7 +83,6 @@ def test_eval_dummy(
 def test_eval_medianscores_dummy(
     fake_cache_path: Path,
     tmp_path: Path,
-    # fake_config,
     caplog,
 ):
     assert list(fake_cache_path.glob("*.pkl"))
