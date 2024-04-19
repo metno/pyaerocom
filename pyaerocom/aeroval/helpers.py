@@ -84,6 +84,7 @@ def _check_statistics_periods(periods: list) -> list:
         if not isinstance(per, str):
             raise ValueError("All periods need to be strings")
         spl = [x.strip() for x in per.split("-")]
+        # periods can be also dates or date ranges since cams2_83
         if len(spl) == 2:
             if len(spl[0]) != len(spl[1]):
                 raise ValueError(f"{spl[0]} not on the same format as {spl[1]}")
@@ -91,7 +92,7 @@ def _check_statistics_periods(periods: list) -> list:
         if len(spl) > 2:
             raise ValueError(
                 f"Invalid value for period ({per}), can be either single "
-                f"years or period of years (e.g. 2000-2010)."
+                f"years/dates or range of years/dates (e.g. 2000-2010)."
             )
         years = True if len(spl[0]) == 4 else False
         if years:

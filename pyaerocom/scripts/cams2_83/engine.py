@@ -55,9 +55,6 @@ class CAMS2_83_Engine(ProcessingEngine):
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
         seasons = self.cfg.time_cfg.get_seasons()
 
-        # for i in range(1, forecast_days):
-        #     coldata[i].data["country"] = coldata[0].data["country"]
-
         regions_how = "country"
         use_country = True
         for i in range(forecast_days):
@@ -65,8 +62,6 @@ class CAMS2_83_Engine(ProcessingEngine):
             (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
 
         results = {}
-
-        # seasons = [s for s in seasons if s in coldata[0].data["season"].data] + ["all"]
 
         for regid, regname in regnames.items():
             results[regname] = {}

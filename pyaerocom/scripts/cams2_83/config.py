@@ -17,7 +17,7 @@ GLOBAL_CONFIG = dict(
     json_basedir=str(Path("../../data").absolute()),
     coldata_basedir=str(Path("../../coldata").absolute()),
     # io_aux_file=os.path.abspath("../eval_py/gridded_io_aux.py"),
-    # Some infor about the output
+    # Some info about the output
     reanalyse_existing=True,
     only_json=False,
     add_model_maps=False,
@@ -107,20 +107,8 @@ GLOBAL_CONFIG = dict(
 ##################################################
 #        The model configs
 ##################################################
-# folder_CAMS2_83 = f'/home/danielh/lustre/storeB/project/fou/kl/CAMS2_83/test_data'
-folder_CAMS2_83 = "/lustre/storeB/project/fou/kl/CAMS2_83/model"
 
-
-MODELS_CONFIG = {
-    # "CAMS2-83": dict(
-    #     model_id="CAMS2-83.EMEP.day0",  # ID of the model
-    #     model_data_dir=folder_CAMS2_83,  # Where (on PPI) the netCDF file is found
-    #     gridded_reader_id={"model": "ReadCAMS2_83"},  #
-    #     # model_kwargs=dict(
-    #     #     cams2_83_daterange=["20190601", "20190603"]#list(pd.date_range(start="20190601", end="20190703")),
-    #     # )
-    # ),
-}
+MODELS_CONFIG = {}
 
 
 ##################################################
