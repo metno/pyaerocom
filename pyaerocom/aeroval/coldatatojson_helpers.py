@@ -1374,20 +1374,6 @@ def _init_data_default_frequencies(coldata, to_ts_types):
     return data_arrs
 
 
-# def _start_stop_from_periods(period):
-#    yrs = period.split("-")
-#    if len(yrs) == 1:
-#        start = stop = yrs[0]
-#    elif len(yrs) == 2:
-#        start = yrs[0]
-#        stop = yrs[1]
-#    else:
-#        raise ValueError(f"{period} needs to be one or two years, sparated by a '-'")
-
-#    start, stop = start_stop(start, stop)
-#    return start.year, stop.year
-
-
 def get_profile_filename(station_or_region_name, obs_name, var_name_web):
     return f"{station_or_region_name}_{obs_name}_{var_name_web}.json"
 
