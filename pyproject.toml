@@ -80,7 +80,7 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
-cams2_83_run = "pyaerocom.scripts.cams2_83.cli:app"
+cams2_83 = "pyaerocom.scripts.cams2_83.cli:app"
 
 
 [tool.flit.sdist]
