@@ -55,7 +55,7 @@ def test__check_statistics_periods():
         ),
         pytest.param(
             ["2010-2010-20"],
-            "Invalid value for period (2010-2010-20), can be either single years or period of years (e.g. 2000-2010).",
+            "Invalid value for period (2010-2010-20), can be either single years/dates or range of years/dates (e.g. 2000-2010).",
             id="wrong period",
         ),
     ],
