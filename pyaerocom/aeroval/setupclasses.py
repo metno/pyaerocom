@@ -376,7 +376,7 @@ class EvalSetup(BaseModel):
         return ModelMapsSetup(**model_args)
 
     @computed_field
-    @property
+    @cached_property
     def cams2_83_cfg(self) -> CAMS2_83Setup:
         if not hasattr(self, "model_extra"):
             return CAMS2_83Setup()
