@@ -21,7 +21,7 @@ from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
-from pyaerocom.scripts.cams2_83.config import CFG, species_list  # , obs_filters
+from pyaerocom.scripts.cams2_83.config import CFG, species_list
 from pyaerocom.scripts.cams2_83.evaluation import EvalType, date_range
 from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
 
@@ -174,13 +174,11 @@ def runner(
     if pool > 1:
         logger.info(f"Running observation reading with pool {pool}")
         files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
-        # pool_data = [[s, files, cache] for s in species_list]
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
                 executor.submit(read_observations, specie, files=files, cache=cache)
                 for specie in species_list
             ]
-            # executor.map(read_observations, pool_data)
         for future in as_completed(futures):
             future.result()
 
@@ -300,8 +298,6 @@ def main(
         )
         pool = mp.cpu_count()
 
-    # mp.set_start_method('forkserver')
-
     cfg = make_config(
         start_date,
         end_date,
@@ -321,7 +317,7 @@ def main(
         fairmode,
     )
 
-    # we do not want the cache produced in previous runs to be silently cleared 
+    # we do not want the cache produced in previous runs to be silently cleared
     const.RM_CACHE_OUTDATED = False
 
     analysis = False
