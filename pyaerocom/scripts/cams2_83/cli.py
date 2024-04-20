@@ -321,6 +321,9 @@ def main(
         fairmode,
     )
 
+    # we do not want the cache produced in previous runs to be silently cleared 
+    const.RM_CACHE_OUTDATED = False
+
     analysis = False
     if run_type == RunType.AN:
         analysis = True
