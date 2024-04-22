@@ -19,11 +19,8 @@ from pyaerocom.io.mep.reader import ReadMEP
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
-from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
 from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
-from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
-from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
@@ -53,10 +50,7 @@ class ReadUngridded:
 
     SUPPORTED_READERS = [
         ReadAeronetInvV3,
-        ReadAeronetInvV2,
-        ReadAeronetSdaV2,
         ReadAeronetSdaV3,
-        ReadAeronetSunV2,
         ReadAeronetSunV3,
         ReadEarlinet,
         ReadEbas,
@@ -254,8 +248,6 @@ class ReadUngridded:
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
-        if config is None:
-            config = self.config
         if not data_id in self._readers:
             reader = self.get_lowlevel_reader(data_id)
         else:
