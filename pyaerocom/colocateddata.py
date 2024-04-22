@@ -43,11 +43,13 @@ class ColocatedData(BaseModel):
 
     Note
     ----
-    Currently, it is not foreseen, that this object is instantiated from
-    scratch, but it is rather created in and returned by objects / methods
-    that perform colocation.
+    It is intended that this object can either be instantiated from
+    scratch OR created in and returned by pyaerocom objects / methods
+    that perform colocation. This is particauarly true as pyaerocom will
+    now be expected to read in colocated files created outside of pyaerocom.
+    (Related CAMS2_82 development)
 
-    The purpose of this object is thus, not the creation of colocated objects,
+    The purpose of this object is not the creation of colocated objects,
     but solely the analysis of such data as well as I/O features (e.g. save as
     / read from .nc files, convert to pandas.DataFrame, plot station time
     series overlays, scatter plots, etc.).
@@ -93,31 +95,14 @@ class ColocatedData(BaseModel):
         validate_assignment=True,
     )
 
+    # versions lower than 1.0 are not based on Pydantic's BaseModel
     __version__ = "1.0"
 
     #################################
     ##   Pydantic-based Attributes
     #################################
 
-    # LB: This data argument is allowed to be too many things IMO
     data: Path | str | xr.DataArray | np.ndarray | None = None
-
-    # @model_validator(mode="after")
-    # def check_filepath_xor_data(self):
-    #     # if not self.filepath and not self.data:
-    #     #     raise ValueError("Either filepath or data is required")
-    #     if self.filepath and self.data:
-    #         raise ValueError("Can not set both the filepath and data. Not sure how to resolve.")
-
-    # @model_validator(mode="after")
-    # def validate_filepath(self):
-    #     # make sure the filepath is not None
-    #     if self.filepath is not None:
-    #         # if filepath is not None, data must be None
-    #         assert self.data is None
-    #         # use this class's open() method to open the filepath str
-    #         # this will internally call self.read_netcf() and set self.data
-    #         self.open(self.filepath)
 
     @model_validator(mode="after")
     def validate_data(self):
@@ -150,8 +135,6 @@ class ColocatedData(BaseModel):
                     extra_args_from_class_initialization = {}
                 data = xr.DataArray(self.data, **extra_args_from_class_initialization)
                 self.data = data
-        # if self.data is None:
-        #     raise AttributeError("No data available in this object")
 
     #################################
     ##     Computed Attributes
@@ -202,8 +185,6 @@ class ColocatedData(BaseModel):
     @property
     def longitude(self):
         """Array of longitude coordinates"""
-        # if "longitude" not in self.data.coords:
-        #     raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
     @property
@@ -215,8 +196,6 @@ class ColocatedData(BaseModel):
     @property
     def latitude(self):
         """Array of latitude coordinates"""
-        # if "latitude" not in self.data.coords:
-        #     raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
     @property
@@ -228,8 +207,6 @@ class ColocatedData(BaseModel):
     @property
     def time(self):
         """Array containing time stamps"""
-        # if "time" not in self.data.dims:
-        #     raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
     @property
