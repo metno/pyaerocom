@@ -4,11 +4,13 @@ import logging
 import os
 import warnings
 from ast import literal_eval
+from functools import cached_property
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import xarray
+import xarray as xr
+from pydantic import BaseModel, ConfigDict, computed_field, field_validator, model_validator
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -33,7 +35,7 @@ from pyaerocom.time_resampler import TimeResampler
 logger = logging.getLogger(__name__)
 
 
-class ColocatedData:
+class ColocatedData(BaseModel):
     """Class representing colocated and unified data from two sources
 
     Sources may be instances of :class:`UngriddedData` or
@@ -81,170 +83,201 @@ class ColocatedData:
         if init fails
     """
 
-    __version__ = "0.11"
+    ###########################
+    ##   Pydantic ConfigDict
+    ###########################
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
 
-    def __init__(self, data=None, **kwargs):
-        self._data = None
-        if data is not None:
-            if isinstance(data, Path):
-                # make sure path is str instance
-                data = str(data)
-            if isinstance(data, str):
-                self.open(data)
-            elif isinstance(data, xarray.DataArray):
-                self.data = data
-            elif isinstance(data, np.ndarray):
-                if not data.ndim in (3, 4):
+    __version__ = "1.0"
+
+    #################################
+    ##   Pydantic-based Attributes
+    #################################
+
+    # redesign: you either give me a filepath or you give me a dataset, but not neither
+    filepath: str | None = None
+    data: xr.DataArray | np.ndarray | None = None
+
+    @model_validator(mode="before")
+    def check_filepath_xor_data(self):
+        if not self.filepath and not self.data:
+            raise ValueError("Either filepath or data is required")
+        if self.filepath and self.data:
+            raise ValueError("Can not set both the filepath and data. Not sure how to resolve.")
+
+    @model_validator(mode="after")
+    def validate_filepath(self):
+        # make sure the filepath is not None
+        if self.filepath is not None:
+            # if filepath is not None, data must be None
+            assert self.data is None
+            # use this class's open() method to open the filepath str
+            # this will internally call self.read_netcf() and set self.data
+            self.open(self.filepath)
+
+    @model_validator(mode="after")
+    def validate_data(self, v):
+        if (
+            self.data is not None
+        ):  # LB: Check that this is needed. may be covered by the model_validator
+            assert self.filename is None
+            if isinstance(v, xr.DataArray):
+                return v
+            if isinstance(v, np.ndarray):
+                if v.ndim not in (3, 4):
                     raise DataDimensionError("invalid input, need 3D or 4D numpy array")
-                elif not data.shape[0] == 2:
+                elif not v.shape[0] == 2:
                     raise DataDimensionError(
                         "first dimension (data_source) must be of length 2(obs, model)"
                     )
-                data = xarray.DataArray(data, **kwargs)
+                if hasattr("model_extra", self):
+                    da_keys = dir(xr.DataArray)
+                    extra_args_from_class_initialization = {
+                        key: val for key, val in self.model_extra.items() if key in da_keys
+                    }
+                else:
+                    extra_args_from_class_initialization = {}
+                data = xr.DataArray(v, **extra_args_from_class_initialization)
                 self.data = data
-            else:
-                raise ValueError(f"Failed to interpret input {data}")
 
-    @property
-    def data(self):
-        """:class:`xarray.DataArray` containing colocated data
+    #################################
+    ##     Computed Attributes
+    #################################
 
-        Raises
-        ------
-        AttributeError
-            if data is not available
-
-        Returns
-        -------
-        xarray.DataArray
-            array containing colocated data and metadata (in fact, there is no
-            additional attributes to `ColocatedData` and everything is contained
-            in :attr:`data`).
-        """
-        if self._data is None:
-            raise AttributeError("No data available in this object")
-        return self._data
-
-    @data.setter
-    def data(self, val):
-        if not isinstance(val, xarray.DataArray):
-            raise ValueError("Invalid input for data attribute, need instance of xarray.DataArray")
-        self._data = val
-
-    @property
+    @cached_property
+    @computed_field
     def ndim(self):
         """Dimension of data array"""
         return self.data.ndim
 
-    @property
+    @cached_property
+    @computed_field
     def coords(self):
         """Coordinates of data array"""
         return self.data.coords
 
-    @property
+    @cached_property
+    @computed_field
     def dims(self):
         """Names of dimensions"""
         return self.data.dims
 
-    @property
+    @cached_property
+    @computed_field
     def shape(self):
         """Shape of data array"""
         return self.data.shape
 
-    @property
+    @cached_property
+    @computed_field
     def data_source(self):
         """Coordinate array containing data sources (z-axis)"""
         return self.data.data_source
 
-    @property
+    @cached_property
+    @computed_field
     def model_name(self):
         if "model_name" in self.metadata:
             return self.metadata["model_name"]
         return self.data_source[1]
 
-    @property
+    @cached_property
+    @computed_field
     def obs_name(self):
         if "obs_name" in self.metadata:
             return self.metadata["obs_name"]
         return self.data_source[0]
 
-    @property
+    @cached_property
+    @computed_field
     def var_name(self):
         """Coordinate array containing data sources (z-axis)"""
         return self.data.var_name
 
-    @property
+    @cached_property
+    @computed_field
     def longitude(self):
         """Array of longitude coordinates"""
-        if not "longitude" in self.data.coords:
+        if "longitude" not in self.data.coords:
             raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
-    @property
+    @cached_property
+    @computed_field
     def lon_range(self):
         """Longitude range covered by this data object"""
         lons = self.longitude.values
         return (np.nanmin(lons), np.nanmax(lons))
 
-    @property
+    @cached_property
+    @computed_field
     def latitude(self):
         """Array of latitude coordinates"""
-        if not "latitude" in self.data.coords:
+        if "latitude" not in self.data.coords:
             raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
-    @property
+    @cached_property
+    @computed_field
     def lat_range(self):
         """Latitude range covered by this data object"""
         lats = self.latitude.values
         return (np.nanmin(lats), np.nanmax(lats))
 
-    @property
+    @cached_property
+    @computed_field
     def time(self):
         """Array containing time stamps"""
-        if not "time" in self.data.dims:
+        if "time" not in self.data.dims:
             raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
-    @property
+    @cached_property
+    @computed_field
     def start(self):
         """Start datetime of data"""
         return self.time.values[0]
 
-    @property
+    @cached_property
+    @computed_field
     def stop(self):
         """Stop datetime of data"""
         return self.time.values[-1]
 
-    @property
+    @cached_property
+    @computed_field
     def ts_type(self):
         """String specifying temporal resolution of data"""
-        if not "ts_type" in self.metadata:
+        if "ts_type" not in self.metadata:
             raise ValueError(
                 "Colocated data object does not contain information about temporal resolution"
             )
         return self.metadata["ts_type"]
 
-    @property
+    @cached_property
+    @computed_field
     def start_str(self):
         """
         str: Start date of data as str with format YYYYMMDD
         """
         return to_datestring_YYYYMMDD(self.start)
 
-    @property
+    @cached_property
+    @computed_field
     def stop_str(self):
         """
         str: Stop date of data as str with format YYYYMMDD
         """
         return to_datestring_YYYYMMDD(self.stop)
 
-    @property
+    @cached_property
+    @computed_field
     def units(self):
         """Unit of data"""
         return self.data.attrs["var_units"]
 
-    @property
+    @cached_property
+    @computed_field
     def unitstr(self):
         """String representation of obs and model units in this object"""
         unique = []
@@ -254,24 +287,27 @@ class ColocatedData:
                 val = "N/D"
             elif not isinstance(val, str):
                 val = str(val)
-            if not val in unique:
+            if val not in unique:
                 unique.append(val)
         return ", ".join(unique)
 
-    @property
+    @cached_property
+    @computed_field
     def metadata(self):
         """Meta data dictionary (wrapper to :attr:`data.attrs`"""
         return self.data.attrs
 
-    @property
+    @cached_property
+    @computed_field
     def num_coords(self):
         """Total number of lat/lon coordinate pairs"""
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
-        if not "station_name" in obj.coords:
+        if "station_name" not in obj.coords:
             raise DataDimensionError("Need dimension station_name")
         return len(obj.data.station_name)
 
-    @property
+    @cached_property
+    @computed_field
     def num_coords_with_data(self):
         """Number of lat/lon coordinate pairs that contain at least one datapoint
 
@@ -282,12 +318,12 @@ class ColocatedData:
         """
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
         dims = obj.dims
-        if not "station_name" in dims:
+        if "station_name" not in dims:
             raise DataDimensionError("Need dimension station_name")
         obs = obj.data[0]
         if len(dims) > 3:  # additional dimensions
             default_dims = ("data_source", "time", "station_name")
-            add_dims = tuple(x for x in dims if not x in default_dims)
+            add_dims = tuple(x for x in dims if x not in default_dims)
             raise DataDimensionError(
                 f"Can only unambiguously retrieve no of coords with obs data "
                 f"for colocated data with dims {default_dims}, please reduce "
@@ -301,17 +337,20 @@ class ColocatedData:
             val = (~np.isnan(obs.data)).sum()
         return val
 
-    @property
+    @cached_property
+    @computed_field
     def has_time_dim(self):
         """Boolean specifying whether data has a time dimension"""
         return True if "time" in self.dims else False
 
-    @property
+    @cached_property
+    @computed_field
     def has_latlon_dims(self):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return all([dim in self.dims for dim in ["latitude", "longitude"]])
 
-    @property
+    @cached_property
+    @computed_field
     def countries_available(self):
         """
         Alphabetically sorted list of country names available
@@ -326,7 +365,7 @@ class ColocatedData:
         list
             list of countries available in these data
         """
-        if not "country" in self.coords:
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -335,7 +374,8 @@ class ColocatedData:
             )
         return sorted(dict.fromkeys(self.data["country"].data))
 
-    @property
+    @cached_property
+    @computed_field
     def country_codes_available(self):
         """
         Alphabetically sorted list of country codes available
@@ -350,7 +390,7 @@ class ColocatedData:
         list
             list of countries available in these data
         """
-        if not "country_code" in self.coords:
+        if "country_code" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -359,12 +399,35 @@ class ColocatedData:
             )
         return sorted(dict.fromkeys(self.data["country_code"].data))
 
-    @property
+    @cached_property
+    @computed_field
     def area_weights(self):
         """
         Wrapper for :func:`calc_area_weights`
         """
         return self.calc_area_weights()
+
+    @cached_property
+    @computed_field
+    def savename_aerocom(self):
+        """Default save name for data object following AeroCom convention"""
+        obsid, modid = self.metadata["data_source"]
+        obsvar, modvar = self.metadata["var_name"]
+
+        return self._aerocom_savename(
+            obsvar,
+            obsid,
+            modvar,
+            modid,
+            self.start_str,
+            self.stop_str,
+            self.ts_type,
+            self.metadata["filter_name"],
+        )
+
+    #################################
+    ##          Methods
+    #################################
 
     def get_meta_item(self, key: str):
         """
@@ -407,7 +470,7 @@ class ColocatedData:
             dictionary of unique country names (keys) and corresponding country
             codes (values)
         """
-        if not "country" in self.coords:
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -436,9 +499,9 @@ class ColocatedData:
             raise DataDimensionError(
                 "Can only compute area weights for data with latitude and longitude dimension"
             )
-        if not "units" in self.data.latitude.attrs:
+        if "units" not in self.data.latitude.attrs:
             self.data.latitude.attrs["units"] = "degrees"
-        if not "units" in self.data.longitude.attrs:
+        if "units" not in self.data.longitude.attrs:
             self.data.longitude.attrs["units"] = "degrees"
         arr = self.data
         from pyaerocom import GriddedData
@@ -660,7 +723,7 @@ class ColocatedData:
             list containing 3-element tuples, one for each site i, comprising
             (latitude[i], longitude[i], station_name[i]).
         """
-        if not "station_name" in self.data.dims:
+        if "station_name" not in self.data.dims:
             raise AttributeError(
                 "ColocatedData object has no dimension station_name. Consider stacking..."
             )
@@ -738,7 +801,7 @@ class ColocatedData:
         if assign_to_dim is None:
             assign_to_dim = "station_name"
 
-        if not assign_to_dim in self.dims:
+        if assign_to_dim not in self.dims:
             raise DataDimensionError("No such dimension", assign_to_dim)
 
         coldata = self if inplace else self.copy()
@@ -818,7 +881,7 @@ class ColocatedData:
         dict
             dictionary containing statistical parameters
         """
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
+        if use_area_weights and "weights" not in kwargs and self.has_latlon_dims:
             kwargs["weights"] = self.area_weights[0].flatten()
 
         nc = self.num_coords
@@ -917,7 +980,7 @@ class ColocatedData:
         """
         if aggr is None:
             aggr = "mean"
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
+        if use_area_weights and "weights" not in kwargs and self.has_latlon_dims:
             weights = self.area_weights[0]  # 3D (time, lat, lon)
             assert self.dims[1] == "time"
             kwargs["weights"] = np.nanmean(weights, axis=0).flatten()
@@ -1037,9 +1100,9 @@ class ColocatedData:
         DataSourceError
             if input data_source is not available in this object
         """
-        if not data_source in self.metadata["data_source"]:
+        if data_source not in self.metadata["data_source"]:
             raise DataSourceError(f"No such data source {data_source} in ColocatedData")
-        if not var_name in self.metadata["var_name"]:
+        if var_name not in self.metadata["var_name"]:
             raise VarNotAvailableError(f"No such variable {var_name} in ColocatedData")
 
         if inplace:
@@ -1080,23 +1143,6 @@ class ColocatedData:
                 f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
                 f"{start_str}_{stop_str}_{ts_type}_{filter_name}"
             )
-
-    @property
-    def savename_aerocom(self):
-        """Default save name for data object following AeroCom convention"""
-        obsid, modid = self.metadata["data_source"]
-        obsvar, modvar = self.metadata["var_name"]
-
-        return self._aerocom_savename(
-            obsvar,
-            obsid,
-            modvar,
-            modid,
-            self.start_str,
-            self.stop_str,
-            self.ts_type,
-            self.metadata["filter_name"],
-        )
 
     @staticmethod
     def get_meta_from_filename(file_path):
@@ -1265,7 +1311,7 @@ class ColocatedData:
                 f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
 
-        arr = xarray.open_dataarray(file_path)
+        arr = xr.open_dataarray(file_path)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr
         return self
@@ -1468,7 +1514,7 @@ class ColocatedData:
 
         """
         what = "country" if not use_country_code else "country_code"
-        if not what in arr.coords:
+        if what not in arr.coords:
             raise DataDimensionError(
                 f"Cannot filter country {country}. No country information available in DataArray"
             )
@@ -1835,7 +1881,7 @@ class ColocatedData:
         """
         if not len(self.data_source) == 2:
             raise DataDimensionError("data_source dimension needs exactly 2 entries")
-        elif not "time" in self.dims:
+        elif "time" not in self.dims:
             raise DataDimensionError("data needs to have time dimension")
         _arr = self.data
         mod, obs = _arr[1], _arr[0]
