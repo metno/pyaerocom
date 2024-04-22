@@ -45,9 +45,7 @@ def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
 
 def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
     """Get base name of json file"""
-    # period might contain slashes (e.g. in cams2_83) and the web server expects filenames withouth them
-    periodmod = period.replace("/", "")
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{period}.json"
 
 
 def _write_stationdata_json(ts_data, out_dir):
