@@ -168,7 +168,7 @@ def test_config_map(pyaro_testconfig):
 def test_get_vars_supported_pyaro(pyaro_testconfig):
     config = pyaro_testconfig[0]
     reader = ReadUngridded(configs=config)
-    assert reader.get_vars_supported(obs_id=config.name, vars_desired="concso4")
+    assert reader.get_vars_supported(obs_id=config.name, vars_desired=["concso4"])
 
 
 ##
