@@ -393,12 +393,21 @@ def check_ts_type(data, ts_type):
 
 
 def _colocate_site_data_helper(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+    start_data: StationData,
+    start_data_ref: StationData,
+    var: str,
+    var_ref: str,
+    ts_type: str,
+    resample_how: dict or str,
+    min_num_obs: int,
+    use_climatology_kwargs: dict = None,
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
 
     Used in main loop of :func:`colocate_gridded_ungridded`
+
+    
 
     Parameters
     ----------
@@ -419,8 +428,13 @@ def _colocate_site_data_helper(
         to aggregate from hourly to daily, rather than the mean.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
-    use_climatology_ref : bool
-        if True, climatological timeseries are used from observations
+    use_climatology_kwargs : dict
+        if provided, climatology is calculated from obs data following the
+        kwargs provided in this dict. e.g {'resample_how': 'mean',
+                                            'set_year': 2000, 'min_num_obs': 10,
+                                            'clim_mincount': 10,
+                                            'clim_freq': 'monthly'}
+        climatology is only calculed use_climatology_kwargs is not None
 
     Raises
     ------
@@ -440,8 +454,11 @@ def _colocate_site_data_helper(
         var, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
     )[var]
 
-    if use_climatology_ref:
-        obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[var_ref]
+    if isinstance(use_climatology_ref, dict):
+        clim_min_obs = use_climatology_kwargs.get('min_num_obs', None)
+        if clim_min_obs is None:
+            use_climatology_kwargs['min_num_obs'] = min_num_obs
+        obs_ts = stat_data_ref.calc_climatology(var_ref, **use_climatology_kwargs)[var_ref]
     else:
         obs_ts = stat_data_ref.resample_time(
             var_ref, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
@@ -452,7 +469,14 @@ def _colocate_site_data_helper(
 
 
 def _colocate_site_data_helper_timecol(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+    stat_data: StationData,
+    stat_data_ref: StationData,
+    var: str,
+    var_ref: str,
+    ts_type: str,
+    resample_how: dict or str,
+    min_num_obs: int,
+    use_climatology_kwargs: dict   
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -482,8 +506,8 @@ def _colocate_site_data_helper_timecol(
         to aggregate from hourly to daily, rather than the mean.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
-    use_climatology_ref : bool
-        if True, NotImplementedError is raised
+    use_climatology_kwargs: dict
+        if provided, NotImplementedError is raised
 
     Raises
     ------
@@ -498,7 +522,7 @@ def _colocate_site_data_helper_timecol(
         dataframe containing the colocated input data (column names are
         data and ref)
     """
-    if use_climatology_ref:
+    if use_climatology_kwargs is not None:
         raise NotImplementedError(
             "Using observation climatology in colocation with option "
             "colocate_time=True is not available yet ..."
@@ -587,7 +611,7 @@ def colocate_gridded_ungridded(
     update_baseyear_gridded=None,
     min_num_obs=None,
     colocate_time=False,
-    use_climatology_ref=False,
+    use_climatology_kwargs=None,
     resample_how=None,
     **kwargs,
 ):
@@ -649,8 +673,12 @@ def colocate_gridded_ungridded(
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time
         *before* resampling to lower resolution.
-    use_climatology_ref : bool
-        if True, climatological timeseries are used from observations
+    use_climatology_kwargs : dict
+        if provided, climatology is calculated from obs data following the
+        kwargs provided in this dict. e.g {'resample_how': 'mean',
+                                            'set_year': 2000, 'min_num_obs': 10,
+                                            'clim_mincount': 10,
+                                            'clim_freq': 'monthly'}
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -864,7 +892,7 @@ def colocate_gridded_ungridded(
                     ts_type=col_freq,
                     resample_how=resample_how,
                     min_num_obs=min_num_obs,
-                    use_climatology_ref=use_climatology_ref,
+                    use_climatology_kwargs=use_climatology_kwargs,
                 )
 
             # this try/except block was introduced on 23/2/2021 as temporary fix from
