@@ -13,19 +13,14 @@ def test_invalid_init_data_dirs():
 
 def test_supported():
     supported_datasets = ReadUngridded().supported_datasets
-    assert len(supported_datasets) >= 17
+    assert len(supported_datasets) >= 12
     datasets = {
         "AeronetInvV3Lev2.daily",
         "AeronetInvV3Lev1.5.daily",
         "AeronetInvV3L2Subset.daily",
-        "AeronetInvV2Lev2.daily",
-        "AeronetInvV2Lev1.5.daily",
-        "AeronetSDAV2Lev2.daily",
         "AeronetSDAV3Lev1.5.daily",
         "AeronetSDAV3Lev2.daily",
         "AeronetSDAV3L2Subset.daily",
-        "AeronetSunV2Lev2.daily",
-        "AeronetSunV2Lev2.AP",
         "AeronetSunV3Lev1.5.daily",
         "AeronetSunV3Lev1.5.AP",
         "AeronetSunV3Lev2.daily",
