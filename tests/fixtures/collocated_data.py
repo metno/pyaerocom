@@ -267,14 +267,14 @@ def _create_fake_coldata_5d():
     dims = ["data_source", "time", "latitude", "longitude", "wvl"]
     # set all NaN in one obs coordinate
     arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
-    cd = ColocatedData(np.ones((2, 2, 2)))
+    cd = ColocatedData(data=np.ones((2, 2, 2)))
     cd.data = arr
     return cd
 
 
 COLDATA = dict(
-    tm5_aeronet=lambda: ColocatedData(str(EXAMPLE_FILE)),
-    fake_nodims=lambda: ColocatedData(np.ones((2, 1, 1))),
+    tm5_aeronet=lambda: ColocatedData(data=str(EXAMPLE_FILE)),
+    fake_nodims=lambda: ColocatedData(data=np.ones((2, 1, 1))),
     fake_3d=_create_fake_coldata_3d,
     fake_4d=_create_fake_coldata_4d,
     fake_5d=_create_fake_coldata_5d,

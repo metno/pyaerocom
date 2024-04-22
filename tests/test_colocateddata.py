@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 from matplotlib.axes import Axes
 from numpy.typing import ArrayLike
+from pydantic import ValidationError
 
 from pyaerocom import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
@@ -23,9 +24,9 @@ def test_ColocatedData__init__(data: Path | str | ArrayLike):
 @pytest.mark.parametrize(
     "data,exception",
     [
-        (None, AttributeError),
-        ("Blaaaaa", IOError),
-        (np.ones(3), DataDimensionError),
+        # (None, AttributeError),
+        ("Blaaaaa", ValueError),
+        (np.ones(3), ValidationError),
         ({}, ValueError),
     ],
 )

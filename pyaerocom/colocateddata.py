@@ -86,7 +86,12 @@ class ColocatedData(BaseModel):
     ###########################
     ##   Pydantic ConfigDict
     ###########################
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow",
+        protected_namespaces=(),
+        validate_assignment=True,
+    )
 
     __version__ = "1.0"
 
@@ -94,107 +99,115 @@ class ColocatedData(BaseModel):
     ##   Pydantic-based Attributes
     #################################
 
-    # redesign: you either give me a filepath or you give me a dataset, but not neither
-    filepath: str | None = None
-    data: xr.DataArray | np.ndarray | None = None
+    # LB: This data argument is allowed to be too many things IMO
+    data: Path | str | xr.DataArray | np.ndarray | None = None
 
-    @model_validator(mode="before")
-    def check_filepath_xor_data(self):
-        if not self.filepath and not self.data:
-            raise ValueError("Either filepath or data is required")
-        if self.filepath and self.data:
-            raise ValueError("Can not set both the filepath and data. Not sure how to resolve.")
+    # @model_validator(mode="after")
+    # def check_filepath_xor_data(self):
+    #     # if not self.filepath and not self.data:
+    #     #     raise ValueError("Either filepath or data is required")
+    #     if self.filepath and self.data:
+    #         raise ValueError("Can not set both the filepath and data. Not sure how to resolve.")
+
+    # @model_validator(mode="after")
+    # def validate_filepath(self):
+    #     # make sure the filepath is not None
+    #     if self.filepath is not None:
+    #         # if filepath is not None, data must be None
+    #         assert self.data is None
+    #         # use this class's open() method to open the filepath str
+    #         # this will internally call self.read_netcf() and set self.data
+    #         self.open(self.filepath)
 
     @model_validator(mode="after")
-    def validate_filepath(self):
-        # make sure the filepath is not None
-        if self.filepath is not None:
-            # if filepath is not None, data must be None
-            assert self.data is None
-            # use this class's open() method to open the filepath str
-            # this will internally call self.read_netcf() and set self.data
-            self.open(self.filepath)
-
-    @model_validator(mode="after")
-    def validate_data(self, v):
+    def validate_data(self):
         if (
             self.data is not None
         ):  # LB: Check that this is needed. may be covered by the model_validator
-            assert self.filename is None
-            if isinstance(v, xr.DataArray):
-                return v
-            if isinstance(v, np.ndarray):
-                if v.ndim not in (3, 4):
+            if isinstance(self.data, Path):
+                # make sure path is str instance
+                self.data = str(self.data)
+            if isinstance(self.data, str):
+                assert self.data.endswith("nc"), ValueError(
+                    "Invalid data filepath str, must point to a .nc file"
+                )
+                self.open(self.data)
+            elif isinstance(self.data, xr.DataArray):
+                return self.data
+            elif isinstance(self.data, np.ndarray):
+                if self.data.ndim not in (3, 4):
                     raise DataDimensionError("invalid input, need 3D or 4D numpy array")
-                elif not v.shape[0] == 2:
+                elif not self.data.shape[0] == 2:
                     raise DataDimensionError(
                         "first dimension (data_source) must be of length 2(obs, model)"
                     )
-                if hasattr("model_extra", self):
+                if hasattr(self, "model_extra"):
                     da_keys = dir(xr.DataArray)
                     extra_args_from_class_initialization = {
                         key: val for key, val in self.model_extra.items() if key in da_keys
                     }
                 else:
                     extra_args_from_class_initialization = {}
-                data = xr.DataArray(v, **extra_args_from_class_initialization)
+                data = xr.DataArray(self.data, **extra_args_from_class_initialization)
                 self.data = data
+        # if self.data is None:
+        #     raise AttributeError("No data available in this object")
 
     #################################
     ##     Computed Attributes
     #################################
 
-    @cached_property
+    @property
     @computed_field
     def ndim(self):
         """Dimension of data array"""
         return self.data.ndim
 
-    @cached_property
+    @property
     @computed_field
     def coords(self):
         """Coordinates of data array"""
         return self.data.coords
 
-    @cached_property
+    @property
     @computed_field
     def dims(self):
         """Names of dimensions"""
         return self.data.dims
 
-    @cached_property
+    @property
     @computed_field
     def shape(self):
         """Shape of data array"""
         return self.data.shape
 
-    @cached_property
+    @property
     @computed_field
     def data_source(self):
         """Coordinate array containing data sources (z-axis)"""
         return self.data.data_source
 
-    @cached_property
+    @property
     @computed_field
     def model_name(self):
         if "model_name" in self.metadata:
             return self.metadata["model_name"]
         return self.data_source[1]
 
-    @cached_property
+    @property
     @computed_field
     def obs_name(self):
         if "obs_name" in self.metadata:
             return self.metadata["obs_name"]
         return self.data_source[0]
 
-    @cached_property
+    @property
     @computed_field
     def var_name(self):
         """Coordinate array containing data sources (z-axis)"""
         return self.data.var_name
 
-    @cached_property
+    @property
     @computed_field
     def longitude(self):
         """Array of longitude coordinates"""
@@ -202,14 +215,14 @@ class ColocatedData(BaseModel):
             raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
-    @cached_property
+    @property
     @computed_field
     def lon_range(self):
         """Longitude range covered by this data object"""
         lons = self.longitude.values
         return (np.nanmin(lons), np.nanmax(lons))
 
-    @cached_property
+    @property
     @computed_field
     def latitude(self):
         """Array of latitude coordinates"""
@@ -217,14 +230,14 @@ class ColocatedData(BaseModel):
             raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
-    @cached_property
+    @property
     @computed_field
     def lat_range(self):
         """Latitude range covered by this data object"""
         lats = self.latitude.values
         return (np.nanmin(lats), np.nanmax(lats))
 
-    @cached_property
+    @property
     @computed_field
     def time(self):
         """Array containing time stamps"""
@@ -232,19 +245,19 @@ class ColocatedData(BaseModel):
             raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
-    @cached_property
+    @property
     @computed_field
     def start(self):
         """Start datetime of data"""
         return self.time.values[0]
 
-    @cached_property
+    @property
     @computed_field
     def stop(self):
         """Stop datetime of data"""
         return self.time.values[-1]
 
-    @cached_property
+    @property
     @computed_field
     def ts_type(self):
         """String specifying temporal resolution of data"""
@@ -254,7 +267,7 @@ class ColocatedData(BaseModel):
             )
         return self.metadata["ts_type"]
 
-    @cached_property
+    @property
     @computed_field
     def start_str(self):
         """
@@ -262,7 +275,7 @@ class ColocatedData(BaseModel):
         """
         return to_datestring_YYYYMMDD(self.start)
 
-    @cached_property
+    @property
     @computed_field
     def stop_str(self):
         """
@@ -270,13 +283,13 @@ class ColocatedData(BaseModel):
         """
         return to_datestring_YYYYMMDD(self.stop)
 
-    @cached_property
+    @property
     @computed_field
     def units(self):
         """Unit of data"""
         return self.data.attrs["var_units"]
 
-    @cached_property
+    @property
     @computed_field
     def unitstr(self):
         """String representation of obs and model units in this object"""
@@ -291,13 +304,13 @@ class ColocatedData(BaseModel):
                 unique.append(val)
         return ", ".join(unique)
 
-    @cached_property
+    @property
     @computed_field
     def metadata(self):
         """Meta data dictionary (wrapper to :attr:`data.attrs`"""
         return self.data.attrs
 
-    @cached_property
+    @property
     @computed_field
     def num_coords(self):
         """Total number of lat/lon coordinate pairs"""
@@ -306,7 +319,7 @@ class ColocatedData(BaseModel):
             raise DataDimensionError("Need dimension station_name")
         return len(obj.data.station_name)
 
-    @cached_property
+    @property
     @computed_field
     def num_coords_with_data(self):
         """Number of lat/lon coordinate pairs that contain at least one datapoint
@@ -337,19 +350,19 @@ class ColocatedData(BaseModel):
             val = (~np.isnan(obs.data)).sum()
         return val
 
-    @cached_property
+    @property
     @computed_field
     def has_time_dim(self):
         """Boolean specifying whether data has a time dimension"""
         return True if "time" in self.dims else False
 
-    @cached_property
+    @property
     @computed_field
     def has_latlon_dims(self):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return all([dim in self.dims for dim in ["latitude", "longitude"]])
 
-    @cached_property
+    @property
     @computed_field
     def countries_available(self):
         """
@@ -639,7 +652,7 @@ class ColocatedData(BaseModel):
         arr = self.stack(station_name=["latitude", "longitude"], inplace=False).data
 
         arr = arr.transpose(*newdims)
-        return ColocatedData(arr)
+        return ColocatedData(data=arr)
 
     def stack(self, inplace=False, **kwargs):
         """Stack one or more dimensions
@@ -827,7 +840,7 @@ class ColocatedData(BaseModel):
 
     def copy(self):
         """Copy this object"""
-        return ColocatedData(self.data.copy())
+        return ColocatedData(data=self.data.copy())
 
     def set_zeros_nan(self, inplace=True):
         """
@@ -1423,7 +1436,7 @@ class ColocatedData(BaseModel):
         if inplace:
             self.data = filtered
             return self
-        return ColocatedData(filtered)
+        return ColocatedData(data=filtered)
 
     @staticmethod
     def _filter_altitude_2d(arr, alt_range):
@@ -1924,20 +1937,20 @@ class ColocatedData(BaseModel):
             **kwargs,
         )
 
-    def __contains__(self, val):
-        return self.data.__contains__(val)
+    # def __contains__(self, val):
+    #     return self.data.__contains__(val)
 
-    def __repr__(self):
-        tp = type(self).__name__
-        dstr = "<empty>" if self._data is None else repr(self._data)
-        return f"pyaerocom.{tp}: data: {dstr}"
+    # def __repr__(self):
+    #     tp = type(self).__name__
+    #     dstr = "<empty>" if self.data is None else repr(self.data)
+    #     return f"pyaerocom.{tp}: data: {dstr}"
 
-    def __str__(self):
-        tp = type(self).__name__
-        head = f"pyaerocom.{tp}"
-        underline = len(head) * "-"
-        dstr = "<empty>" if self._data is None else str(self._data)
-        return f"{head}\n{underline}\ndata (DataArray): {dstr}"
+    # def __str__(self):
+    #     tp = type(self).__name__
+    #     head = f"pyaerocom.{tp}"
+    #     underline = len(head) * "-"
+    #     dstr = "<empty>" if self.data is None else str(self.data)
+    #     return f"{head}\n{underline}\ndata (DataArray): {dstr}"
 
     ### Deprecated (but still supported) stuff
     # ToDo: v0.12.0
