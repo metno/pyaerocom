@@ -98,7 +98,8 @@ def _check_statistics_periods(periods: list) -> list:
         if years:
             _per = "-".join([str(int(val)) for val in spl])
         else:
-            _per = "-".join([to_pandas_timestamp(val).strftime("%Y%m%d") for val in spl])
+            # slash in the period string here is required by the aeroval web server logic
+            _per = "-".join([to_pandas_timestamp(val).strftime("%Y/%m/%d") for val in spl])
         checked.append(_per)
 
     return checked
