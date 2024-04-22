@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from pyaerocom import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.exceptions import DataCoverageError, DataDimensionError, MetaDataError
+from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 from tests.fixtures.collocated_data import EXAMPLE_FILE
 
 
