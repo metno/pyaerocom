@@ -1115,7 +1115,7 @@ def _select_period_season_coldata(coldata, period, season):
         mask = arr["season"] == season
         arr = arr.sel(time=arr["time"][mask])
 
-    return ColocatedData(arr)
+    return ColocatedData(data=arr)
 
 
 def _process_heatmap_data(
