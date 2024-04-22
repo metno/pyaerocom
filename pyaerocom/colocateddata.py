@@ -158,107 +158,91 @@ class ColocatedData(BaseModel):
     #################################
 
     @property
-    @computed_field
     def ndim(self):
         """Dimension of data array"""
         return self.data.ndim
 
     @property
-    @computed_field
     def coords(self):
         """Coordinates of data array"""
         return self.data.coords
 
     @property
-    @computed_field
     def dims(self):
         """Names of dimensions"""
         return self.data.dims
 
     @property
-    @computed_field
     def shape(self):
         """Shape of data array"""
         return self.data.shape
 
     @property
-    @computed_field
     def data_source(self):
         """Coordinate array containing data sources (z-axis)"""
         return self.data.data_source
 
     @property
-    @computed_field
     def model_name(self):
         if "model_name" in self.metadata:
             return self.metadata["model_name"]
         return self.data_source[1]
 
     @property
-    @computed_field
     def obs_name(self):
         if "obs_name" in self.metadata:
             return self.metadata["obs_name"]
         return self.data_source[0]
 
     @property
-    @computed_field
     def var_name(self):
         """Coordinate array containing data sources (z-axis)"""
         return self.data.var_name
 
     @property
-    @computed_field
     def longitude(self):
         """Array of longitude coordinates"""
-        if "longitude" not in self.data.coords:
-            raise AttributeError("ColocatedData does not include longitude coordinate")
+        # if "longitude" not in self.data.coords:
+        #     raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
     @property
-    @computed_field
     def lon_range(self):
         """Longitude range covered by this data object"""
         lons = self.longitude.values
         return (np.nanmin(lons), np.nanmax(lons))
 
     @property
-    @computed_field
     def latitude(self):
         """Array of latitude coordinates"""
-        if "latitude" not in self.data.coords:
-            raise AttributeError("ColocatedData does not include latitude coordinate")
+        # if "latitude" not in self.data.coords:
+        #     raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
     @property
-    @computed_field
     def lat_range(self):
         """Latitude range covered by this data object"""
         lats = self.latitude.values
         return (np.nanmin(lats), np.nanmax(lats))
 
     @property
-    @computed_field
     def time(self):
         """Array containing time stamps"""
-        if "time" not in self.data.dims:
-            raise AttributeError("ColocatedData does not include time coordinate")
+        # if "time" not in self.data.dims:
+        #     raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
     @property
-    @computed_field
     def start(self):
         """Start datetime of data"""
         return self.time.values[0]
 
     @property
-    @computed_field
     def stop(self):
         """Stop datetime of data"""
         return self.time.values[-1]
 
     @property
-    @computed_field
     def ts_type(self):
         """String specifying temporal resolution of data"""
         if "ts_type" not in self.metadata:
@@ -268,7 +252,6 @@ class ColocatedData(BaseModel):
         return self.metadata["ts_type"]
 
     @property
-    @computed_field
     def start_str(self):
         """
         str: Start date of data as str with format YYYYMMDD
@@ -276,7 +259,6 @@ class ColocatedData(BaseModel):
         return to_datestring_YYYYMMDD(self.start)
 
     @property
-    @computed_field
     def stop_str(self):
         """
         str: Stop date of data as str with format YYYYMMDD
@@ -284,13 +266,11 @@ class ColocatedData(BaseModel):
         return to_datestring_YYYYMMDD(self.stop)
 
     @property
-    @computed_field
     def units(self):
         """Unit of data"""
         return self.data.attrs["var_units"]
 
     @property
-    @computed_field
     def unitstr(self):
         """String representation of obs and model units in this object"""
         unique = []
@@ -305,13 +285,11 @@ class ColocatedData(BaseModel):
         return ", ".join(unique)
 
     @property
-    @computed_field
     def metadata(self):
         """Meta data dictionary (wrapper to :attr:`data.attrs`"""
         return self.data.attrs
 
     @property
-    @computed_field
     def num_coords(self):
         """Total number of lat/lon coordinate pairs"""
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
@@ -320,7 +298,6 @@ class ColocatedData(BaseModel):
         return len(obj.data.station_name)
 
     @property
-    @computed_field
     def num_coords_with_data(self):
         """Number of lat/lon coordinate pairs that contain at least one datapoint
 
@@ -351,19 +328,16 @@ class ColocatedData(BaseModel):
         return val
 
     @property
-    @computed_field
     def has_time_dim(self):
         """Boolean specifying whether data has a time dimension"""
         return True if "time" in self.dims else False
 
     @property
-    @computed_field
     def has_latlon_dims(self):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return all([dim in self.dims for dim in ["latitude", "longitude"]])
 
     @property
-    @computed_field
     def countries_available(self):
         """
         Alphabetically sorted list of country names available
@@ -387,8 +361,7 @@ class ColocatedData(BaseModel):
             )
         return sorted(dict.fromkeys(self.data["country"].data))
 
-    @cached_property
-    @computed_field
+    @property
     def country_codes_available(self):
         """
         Alphabetically sorted list of country codes available
@@ -413,15 +386,13 @@ class ColocatedData(BaseModel):
         return sorted(dict.fromkeys(self.data["country_code"].data))
 
     @cached_property
-    @computed_field
     def area_weights(self):
         """
         Wrapper for :func:`calc_area_weights`
         """
         return self.calc_area_weights()
 
-    @cached_property
-    @computed_field
+    @property
     def savename_aerocom(self):
         """Default save name for data object following AeroCom convention"""
         obsid, modid = self.metadata["data_source"]

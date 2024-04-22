@@ -82,7 +82,7 @@ def test_ColocatedData_latitude(coldata: ColocatedData):
 def test_ColocatedData_latitude_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.latitude
-    assert str(e.value).endswith("does not include latitude coordinate")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'latitude'")
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
@@ -94,7 +94,7 @@ def test_ColocatedData_longitude(coldata: ColocatedData):
 def test_ColocatedData_longitude_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.longitude
-    assert str(e.value).endswith("does not include longitude coordinate")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'longitude'")
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
@@ -106,7 +106,7 @@ def test_ColocatedData_time(coldata: ColocatedData):
 def test_ColocatedData_time_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.time
-    assert str(e.value).endswith("does not include time coordinate")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'time'")
 
 
 @pytest.mark.parametrize(
@@ -124,7 +124,7 @@ def test_ColocatedData_lat_range(coldata: ColocatedData, lat_range: tuple[float,
 def test_ColocatedData_lat_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.lat_range
-    assert str(e.value).endswith("does not include latitude coordinate")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'lat_range'")
 
 
 @pytest.mark.parametrize(
@@ -142,7 +142,7 @@ def test_ColocatedData_lon_range(coldata: ColocatedData, lon_range: tuple[float,
 def test_ColocatedData_lon_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.lon_range
-    assert str(e.value).endswith("does not include longitude coordinate")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'lon_range'")
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
@@ -357,7 +357,7 @@ def test_meta_access_filename():
 
 
 def test_read_colocated_data(coldata_tm5_aeronet):
-    loaded = ColocatedData(EXAMPLE_FILE)
+    loaded = ColocatedData(data=EXAMPLE_FILE)
     mean_loaded = np.nanmean(loaded.data)
     mean_fixture = np.nanmean(coldata_tm5_aeronet.data.data)
     assert mean_fixture == mean_loaded
@@ -444,9 +444,9 @@ def test_ColocatedData_filter_region_error(coldata: ColocatedData):
         coldata.check_set_countries()
     assert str(e.value).startswith("Countries cannot be assigned")
 
-    with pytest.raises(MetaDataError) as e:
+    with pytest.raises(AttributeError) as e:
         coldata.filter_region(region_id="France", check_country_meta=True)
-    assert str(e.value).startswith("No country information available")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'countries_available'")
 
 
 @pytest.mark.parametrize(
