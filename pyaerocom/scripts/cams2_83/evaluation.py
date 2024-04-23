@@ -15,10 +15,15 @@ class EvalType(str, Enum):
 
     def check_dates(self, start_date: date, end_date: date) -> None:
         if self == "day" and start_date != end_date:
-            raise ValueError(f"For single day {start_date=} and {end_date=} should be the same")
+            raise ValueError(
+                f"Evaluation type 'day' should have the same {start_date=} and {end_date=}"
+            )
 
-        if self == "week" and (days := (end_date - start_date) // timedelta(days=1)) < 7:
-            raise ValueError(f"For week needs {days=} >= 7")
+        if (
+            self == "week"
+            and (days := (end_date - start_date) // timedelta(days=1)) < 7
+        ):
+            raise ValueError(f"Evaluation type 'week' should have {days=} >= 7")
 
     def freqs_config(self) -> dict:
         if self == "long":
