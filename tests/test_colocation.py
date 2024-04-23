@@ -75,7 +75,7 @@ S4["concpm10"][0:5] = range(5)
 
 
 @pytest.mark.parametrize(
-    "stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref,num_valid",
+    "stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_kwargs,num_valid",
     [
         (S4, S3, "concpm10", "concpm10", "monthly", "mean", {"monthly": {"daily": 25}}, False, 10),
         (S3, S4, "concpm10", "concpm10", "monthly", "mean", {"monthly": {"daily": 25}}, False, 24),
@@ -91,7 +91,7 @@ def test__colocate_site_data_helper_timecol(
     ts_type,
     resample_how,
     min_num_obs,
-    use_climatology_ref,
+    use_climatology_kwargs,
     num_valid,
 ):
     result = _colocate_site_data_helper_timecol(
@@ -102,7 +102,7 @@ def test__colocate_site_data_helper_timecol(
         ts_type,
         resample_how,
         min_num_obs,
-        use_climatology_ref,
+        use_climatology_kwargs,
     )
 
     assert isinstance(result, pd.DataFrame)
@@ -162,7 +162,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         (
             dict(
                 filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
-                use_climatology_ref=True,
+                use_climatology_kwargs={'clim_freq':'monthly'},
                 min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
             "monthly",
