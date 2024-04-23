@@ -11,7 +11,6 @@ from pyaerocom.helpers import (
     get_max_period_range,
     make_dummy_cube,
     start_stop,
-    start_stop_str,
     to_pandas_timestamp,
 )
 from pyaerocom.io import ReadGridded
@@ -142,9 +141,9 @@ def _get_min_max_year_periods(statistics_periods):
 
     Returns
     -------
-    int
+    pd.Timestamp
         start year
-    int
+    pd.Timestamp
         stop year (may be the same as start year, e.g. if periods suggest
         single year analysis).
     """

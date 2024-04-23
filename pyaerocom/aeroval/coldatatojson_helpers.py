@@ -867,6 +867,7 @@ def _process_map_and_scat(
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
                             (start, stop) = _get_min_max_year_periods([per])
+                            (start, stop) = (start.year, stop.year)
 
                             if stop - start >= trends_min_yrs:
                                 try:
@@ -1147,8 +1148,9 @@ def _process_heatmap_data(
 
                             trends_successful = False
                             if add_trends and freq != "daily":
-                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                # Calculates the start and stop years.
                                 (start, stop) = _get_min_max_year_periods([per])
+                                (start, stop) = (start.year, stop.year)
 
                                 if stop - start >= trends_min_yrs:
                                     try:
