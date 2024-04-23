@@ -20,7 +20,6 @@ from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from pyaerocom.helpers import start_stop
 from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
@@ -45,8 +44,10 @@ def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
 
 
 def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
-    """Get name base name of json file"""
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{period}.json"
+    """Get base name of json file"""
+    # for cams2_83 the periods contain slashes at this point
+    periodmod = period.replace("/", "")
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
 
 
 def _write_stationdata_json(ts_data, out_dir):
@@ -866,6 +867,7 @@ def _process_map_and_scat(
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
                             (start, stop) = _get_min_max_year_periods([per])
+                            (start, stop) = (start.year, stop.year)
 
                             if stop - start >= trends_min_yrs:
                                 try:
@@ -1146,8 +1148,9 @@ def _process_heatmap_data(
 
                             trends_successful = False
                             if add_trends and freq != "daily":
-                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                # Calculates the start and stop years.
                                 (start, stop) = _get_min_max_year_periods([per])
+                                (start, stop) = (start.year, stop.year)
 
                                 if stop - start >= trends_min_yrs:
                                     try:
@@ -1369,11 +1372,6 @@ def _init_data_default_frequencies(coldata, to_ts_types):
         data_arrs[to] = cd
 
     return data_arrs
-
-
-def _start_stop_from_periods(periods):
-    start, stop = _get_min_max_year_periods(periods)
-    return start_stop(start, stop + 1)
 
 
 def get_profile_filename(station_or_region_name, obs_name, var_name_web):

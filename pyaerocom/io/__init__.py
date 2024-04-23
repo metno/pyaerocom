@@ -4,6 +4,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Submodule
+from . import cams2_83
+
 from .aerocom_browser import AerocomBrowser
 from .ebas_file_index import EbasFileIndex, EbasSQLRequest
 
@@ -29,6 +32,7 @@ from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+from pyaerocom.io.cams2_83.reader import ReadCAMS2_83
 
 # Pyaro classes
 from .pyaro.read_pyaro import ReadPyaro

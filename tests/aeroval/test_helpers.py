@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from pandas import Timestamp
 
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
@@ -54,7 +55,7 @@ def test__check_statistics_periods():
         ),
         pytest.param(
             ["2010-2010-20"],
-            "Invalid value for period (2010-2010-20), can be either single years or period of years (e.g. 2000-2010).",
+            "Invalid value for period (2010-2010-20), can be either single years/dates or range of years/dates (e.g. 2000-2010).",
             id="wrong period",
         ),
     ],
@@ -86,11 +87,14 @@ def test__period_str_to_timeslice_error():
     "periods,result",
     [
         (["2005", "2000"], (2000, 2005)),
+        (["2024/03/16-2024/03/23"], (2024, 2024)),
+        (["2024/03/16-2024/03/16"], (2024, 2024)),
+        (["2021-2024", "2021", "2022", "2023", "2024"], (2021, 2024)),
         (["2005", "2000", "1999-2021"], (1999, 2021)),
     ],
 )
 def test__get_min_max_year_periods(periods: list[str], result: tuple[int, int]):
-    assert _get_min_max_year_periods(periods) == result
+    assert tuple(int(itm.strftime("%Y")) for itm in _get_min_max_year_periods(periods)) == result
 
 
 def test__get_min_max_year_periods_error():
