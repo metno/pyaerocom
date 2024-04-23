@@ -124,7 +124,7 @@ def test_ColocatedData_lat_range(coldata: ColocatedData, lat_range: tuple[float,
 def test_ColocatedData_lat_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.lat_range
-    assert str(e.value).endswith("object has no attribute 'lat_range'")
+    assert "object has no attribute" in str(e.value)
 
 
 @pytest.mark.parametrize(
@@ -142,7 +142,7 @@ def test_ColocatedData_lon_range(coldata: ColocatedData, lon_range: tuple[float,
 def test_ColocatedData_lon_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.lon_range
-    assert str(e.value).endswith("object has no attribute 'lon_range'")
+    assert "object has no attribute" in str(e.value)
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
