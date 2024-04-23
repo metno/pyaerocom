@@ -5,7 +5,7 @@ from pathlib import Path
 
 GLOBAL_CONFIG = dict(
     # Description of the experiment
-    proj_id="cams2-83",
+    proj_id="cams2-83",  # cannot be changed because it has a role in determining the output subfolders
     exp_id="prototype",
     exp_name="Prototype-daily",
     exp_descr=("Evaluation using EEA-MF NRT obs."),
