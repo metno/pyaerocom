@@ -116,9 +116,9 @@ class ColocationSetup(BrowseDict):
     obs_data_dir : str, optional
         location of obs data. If None, attempt to infer obs location based on
         obs ID.
-    obs_use_climatology_kwargs : dict
+    obs_use_climatology : dict
         dictionary with keyword arguments that are passed used when caluclating
-        climatology for obs data. Climatology is only calculated if obs_use_climatology_kwargs
+        climatology for obs data. Climatology is only calculated if obs_use_climatology
         is provided.
     obs_vert_type : str
         AeroCom vertical code encoded in the model filenames (only AeroCom 3
@@ -355,7 +355,7 @@ class ColocationSetup(BrowseDict):
         self.obs_name = None
         self.obs_data_dir = None
 
-        self.obs_use_climatology_kwargs= None
+        self.obs_use_climatology = None
 
         self._obs_cache_only = False  # only relevant if obs is ungridded
         self.obs_vert_type = None
@@ -1488,7 +1488,7 @@ class Colocator(ColocationSetup):
             args.update(
                 ts_type=ts_type,
                 var_ref=obs_var,
-                obs_use_climatology_kwargs=self.obs_use_climatology_kwargs,
+                use_climatology_kwargs=self.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)

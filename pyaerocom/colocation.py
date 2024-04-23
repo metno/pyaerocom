@@ -32,6 +32,7 @@ from pyaerocom.helpers import (
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
+from pyaerocom.stationdata import StationData
 
 logger = logging.getLogger(__name__)
 
@@ -393,14 +394,14 @@ def check_ts_type(data, ts_type):
 
 
 def _colocate_site_data_helper(
-    start_data: StationData,
-    start_data_ref: StationData,
+    stat_data: StationData,
+    stat_data_ref: StationData,
     var: str,
     var_ref: str,
     ts_type: str,
     resample_how: dict or str,
     min_num_obs: int,
-    use_climatology_kwargs: dict = None,
+    use_climatology_kwargs: dict,
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -454,7 +455,7 @@ def _colocate_site_data_helper(
         var, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
     )[var]
 
-    if isinstance(use_climatology_ref, dict):
+    if isinstance(use_climatology_kwargs, dict):
         clim_min_obs = use_climatology_kwargs.get('min_num_obs', None)
         if clim_min_obs is None:
             use_climatology_kwargs['min_num_obs'] = min_num_obs
@@ -514,7 +515,7 @@ def _colocate_site_data_helper_timecol(
     TemporalResolutionError
         if model or obs sampling frequency is lower than desired output frequency
     NotImplementedError
-        if input arg `use_climatology_ref` is True.
+        if input arg `use_climatology_kwargs` is provided.
 
     Returns
     -------
@@ -522,11 +523,15 @@ def _colocate_site_data_helper_timecol(
         dataframe containing the colocated input data (column names are
         data and ref)
     """
-    if use_climatology_kwargs is not None:
-        raise NotImplementedError(
+    print("use_climatology_kwargs", use_climatology_kwargs)
+    if use_climatology_kwargs is not None: 
+        if use_climatology_kwargs == False:
+            pass
+        else:
+            raise NotImplementedError(
             "Using observation climatology in colocation with option "
-            "colocate_time=True is not available yet ..."
-        )
+            "use_climatology_kwargs=True is not available yet ..."
+            )
 
     grid_tst = stat_data.get_var_ts_type(var)
     obs_tst = stat_data_ref.get_var_ts_type(var_ref)
@@ -673,9 +678,10 @@ def colocate_gridded_ungridded(
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time
         *before* resampling to lower resolution.
-    use_climatology_kwargs : dict
-        if provided, climatology is calculated from obs data following the
-        kwargs provided in this dict. e.g {'resample_how': 'mean',
+    use_climatology_kwargs : dict or str, optional. If str = 'default' then default values
+        are used. 
+        Climatology is calculated from obs data following the
+        kwargs provided e.g like this {'resample_how': 'mean',
                                             'set_year': 2000, 'min_num_obs': 10,
                                             'clim_mincount': 10,
                                             'clim_freq': 'monthly'}
@@ -759,11 +765,24 @@ def colocate_gridded_ungridded(
     if not colocate_time and ts_type < ts_type_data:
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
+    if use_climatology_kwargs == "default" or use_climatology_kwargs == True:
+        use_climatology_kwargs = dict()
+    elif use_climatology_kwargs == False:
+        use_climatology_kwargs = None
+    if use_climatology_kwargs is not None:
+        if use_climatology_kwargs.get("clim_freq") is None:
+            use_climatology_kwargs["clim_freq"] = const.CLIM_FREQ
+        if use_climatology_kwargs.get("start") is None:
+            use_climatology_kwargs["start"] = const.CLIM_START
+        if use_climatology_kwargs.get("stop") is None:
+            use_climatology_kwargs["stop"] = const.CLIM_STOP
+            obs_start = const.CLIM_START
+        if use_climatology_kwargs.get('resample_how') is None:
+            use_climatology_kwargs['resample_how'] = const.CLIM_RESAMPLE_HOW
+        if use_climatology_kwargs.get('clim_mincount') is None:
+            use_climatology_kwargs['clim_mincount'] = const.CLIM_MIN_COUNT 
 
-    if use_climatology_ref:
-        col_freq = "monthly"
-        obs_start = const.CLIM_START
-        obs_stop = const.CLIM_STOP
+        obs_start, obs_stop, col_freq = use_climatology_kwargs["start"], use_climatology_kwargs["stop"], use_climatology_kwargs["clim_freq"]
     else:
         col_freq = str(ts_type)
         obs_start = start
@@ -780,7 +799,6 @@ def colocate_gridded_ungridded(
 
     # filter_by_meta wipes is_vertical_profile
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
-
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = data_ref.to_station_data_all(
@@ -881,7 +899,7 @@ def colocate_gridded_ungridded(
                     ts_type=col_freq,
                     resample_how=resample_how,
                     min_num_obs=min_num_obs,
-                    use_climatology_ref=use_climatology_ref,
+                    use_climatology_kwargs=use_climatology_kwargs,
                 )
             else:
                 _df = _colocate_site_data_helper(
@@ -946,7 +964,7 @@ def colocate_gridded_ungridded(
         "from_files": files,
         "from_files_ref": None,
         "colocate_time": colocate_time,
-        "obs_is_clim": use_climatology_ref,
+        "obs_is_clim": use_climatology_kwargs is not None,
         "pyaerocom": pya_ver,
         "min_num_obs": min_num_obs,
         "resample_how": resample_how,
