@@ -21,11 +21,8 @@ from .readungriddedbase import ReadUngriddedBase
 from .readungridded import ReadUngridded
 
 # Pyaerocom reading interface classes
-from .read_aeronet_invv2 import ReadAeronetInvV2
 from .read_aeronet_invv3 import ReadAeronetInvV3
-from .read_aeronet_sdav2 import ReadAeronetSdaV2
 from .read_aeronet_sdav3 import ReadAeronetSdaV3
-from .read_aeronet_sunv2 import ReadAeronetSunV2
 from .read_aeronet_sunv3 import ReadAeronetSunV3
 from .read_airnow import ReadAirNow
 from .read_earlinet import ReadEarlinet
