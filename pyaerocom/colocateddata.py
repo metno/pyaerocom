@@ -137,7 +137,7 @@ class ColocatedData(BaseModel):
                 self.data = data
 
     #################################
-    ##     Computed Attributes
+    ##        Attributes
     #################################
 
     @property
