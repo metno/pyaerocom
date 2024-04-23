@@ -147,11 +147,9 @@ def _get_min_max_year_periods(statistics_periods):
         stop year (may be the same as start year, e.g. if periods suggest
         single year analysis).
     """
-    # startyr, stopyr = 1e16, -1e16
     startyr, stopyr = start_stop("2100", "1900")
     for per in statistics_periods:
         sl = _period_str_to_timeslice(per)
-        # perstart, perstop = sl.start, sl.stop
         perstart, perstop = start_stop(sl.start, sl.stop)
         if perstart < startyr:
             startyr = perstart

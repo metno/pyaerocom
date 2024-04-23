@@ -68,7 +68,6 @@ def date_range(start_date: date, end_date: date) -> tuple[date, ...]:
 
 
 def make_period(start_date: date, end_date: date) -> list[str]:
-
     if start_date == end_date:
         return [f"{start_date:%Y%m%d}"]
     periods = [f"{start_date:%Y%m%d}-{end_date:%Y%m%d}"]
