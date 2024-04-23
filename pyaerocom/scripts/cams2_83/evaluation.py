@@ -19,10 +19,7 @@ class EvalType(str, Enum):
                 f"Evaluation type 'day' should have the same {start_date=} and {end_date=}"
             )
 
-        if (
-            self == "week"
-            and (days := (end_date - start_date) // timedelta(days=1)) < 7
-        ):
+        if self == "week" and (days := (end_date - start_date) // timedelta(days=1)) < 7:
             raise ValueError(f"Evaluation type 'week' should have {days=} >= 7")
 
     def freqs_config(self) -> dict:

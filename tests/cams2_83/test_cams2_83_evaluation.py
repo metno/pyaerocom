@@ -24,14 +24,10 @@ from pyaerocom.scripts.cams2_83.evaluation import EvalType
             ["20231228-20240112"],
             id="week",
         ),
-        pytest.param(
-            "day", datetime(2024, 1, 12), datetime(2024, 1, 12), ["20240112"], id="day"
-        ),
+        pytest.param("day", datetime(2024, 1, 12), datetime(2024, 1, 12), ["20240112"], id="day"),
     ],
 )
-def test_periods(
-    eval_type: str, start_date: datetime, end_date: datetime, result: tuple
-):
+def test_periods(eval_type: str, start_date: datetime, end_date: datetime, result: tuple):
     eval = EvalType(eval_type)
     assert eval.periods(start_date, end_date) == result
 
@@ -55,9 +51,7 @@ def test_periods(
         ),
     ],
 )
-def test_check_dates(
-    eval_type: str, start_date: datetime, end_date: datetime, error: str
-):
+def test_check_dates(eval_type: str, start_date: datetime, end_date: datetime, error: str):
     eval = EvalType(eval_type)
     with pytest.raises(ValueError) as excinfo:
         eval.check_dates(start_date, end_date)
