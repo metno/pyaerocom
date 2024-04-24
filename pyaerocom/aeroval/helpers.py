@@ -172,7 +172,7 @@ def check_if_year(periods: list[str]) -> bool:
         if len(spl) > 2:
             raise ValueError(
                 f"Invalid value for period ({per}), can be either single "
-                f"years or period of years (e.g. 2000-2010)."
+                f"years/dates or range of years/dates (e.g. 2000-2010)."
             )
         years.append(True if len(spl[0]) == 4 else False)
 
