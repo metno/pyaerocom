@@ -37,8 +37,15 @@ def test_check_var_ranges_avail_error(data_tm5: GriddedData):
     assert str(e.value) == "Error (VarCollection): input variable bla is not supported"
 
 
-def test__check_statistics_periods():
-    assert _check_statistics_periods(["2010-2010", "2005"]) == ["2010-2010", "2005"]
+@pytest.mark.parametrize(
+    "period,result",
+    [
+        (["2010-2010", "2005"], ["2010-2010", "2005"]),
+        (["20100221-20100912", "20230209"], ["2010/02/21-2010/09/12", "2023/02/09"]),
+    ],
+)
+def test__check_statistics_periods(period: list[str], result: list[str]):
+    assert _check_statistics_periods(period) == result
 
 
 @pytest.mark.parametrize(
