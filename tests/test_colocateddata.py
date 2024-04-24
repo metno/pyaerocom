@@ -28,7 +28,7 @@ def test_ColocatedData_initialization(data: Path | str | ArrayLike):
         ("Blaaaaa", ValueError),
         (np.ones(3), ValidationError),
         ({}, ValueError),
-        (xr.DataArray(np.ones((2, 2, 2, 2, 1))), DataDimensionError),
+        (xr.DataArray(np.ones((2, 2, 2, 2, 1))), ValidationError),
     ],
 )
 def test_ColocatedData_initialization_error(data, exception: type[Exception]):
