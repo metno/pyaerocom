@@ -16,7 +16,7 @@ from tests.fixtures.collocated_data import EXAMPLE_FILE
 
 
 @pytest.mark.parametrize("data", [EXAMPLE_FILE, str(EXAMPLE_FILE), np.ones((2, 3, 4))])
-def test_ColocatedData__init__(data: Path | str | ArrayLike):
+def test_ColocatedData_initialization(data: Path | str | ArrayLike):
     cd = ColocatedData(data=data)
     assert isinstance(cd.data, xr.DataArray)
 
@@ -24,13 +24,14 @@ def test_ColocatedData__init__(data: Path | str | ArrayLike):
 @pytest.mark.parametrize(
     "data,exception",
     [
-        # (None, AttributeError),
+        (None, AttributeError),
         ("Blaaaaa", ValueError),
         (np.ones(3), ValidationError),
         ({}, ValueError),
+        (xr.DataArray(np.ones((2, 2, 2, 2, 1))), DataDimensionError),
     ],
 )
-def test_ColocatedData__init___error(data, exception: type[Exception]):
+def test_ColocatedData_initialization_error(data, exception: type[Exception]):
     with pytest.raises(exception):
         ColocatedData(data=data).data
 
