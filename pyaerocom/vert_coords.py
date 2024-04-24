@@ -264,8 +264,6 @@ class VerticalCoordinate:
         -------
         """
         raise NotImplementedError("Coming soon...")
-        # pressure2altitude(p, **kwargs)
-        return
 
 
 class AltitudeAccess:
@@ -322,50 +320,6 @@ class AltitudeAccess:
         """List of AeroCom coordinate names for altitude access"""
         l = self.ADD_FILE_VARS + list(VerticalCoordinate.NAMES_SUPPORTED.values())
         return list(dict.fromkeys(l))
-
-    def extract_1D_subset_from_data(self, **coord_info):
-        """Extract 1D subset containing only vertical coordinate dimension
-
-        Note
-        ----
-        So far this Works only for 4D or 3D data that contains latitude and
-        longitude dimension and a vertical coordinate, optionally also a time
-        dimension.
-
-        The subset is extracted for a test coordinate (latitude, longitude)
-        that may be specified optinally via :attr:`coord_info`.
-
-        Parameters
-        ----------
-        **coord_info
-            optional test coordinate specifications for other than vertical
-            dimension. For all dimensions that are not specified explicitely,
-            the first available coordinate in :attr:`data_obj` is used.
-        """
-
-        d = self.data_obj
-        if not d.has_latlon_dims:
-            raise DataDimensionError(
-                "Gridded data object needs both latitude and longitude dimensions"
-            )
-        try:
-            d.check_dimcoords_tseries()
-        except DataDimensionError:
-            d.reorder_dimensions_tseries()
-        test_coord = {}
-        for dim_coord in d.dimcoord_names[:-1]:
-            if dim_coord in coord_info:
-                test_coord[dim_coord] = coord_info[dim_coord]
-            else:
-                test_coord[dim_coord] = d[dim_coord].points[0]
-        subset = d.sel(**test_coord)
-        if not subset.ndim == 1:
-            raise DataDimensionError(
-                f"Something went wrong with extraction of 1D subset at coordinate {test_coord}. "
-                f"Resulting data object has {subset.ndim} dimensions instead"
-            )
-        self._subset1d = subset
-        return subset
 
     def search_aux_coords(self, coord_list) -> bool:
         """Search and assign coordinates provided by input list

@@ -79,14 +79,6 @@ class TestAltitudeAccess:
         with pytest.raises(ValueError):
             AltitudeAccess(None)
 
-    def test_extract_1D_subset_from_data(self, alt: AltitudeAccess):
-        test = alt.extract_1D_subset_from_data()
-
-        assert test.ndim == 1
-        assert alt.data_obj.cube.shape[2] == test.cube.shape[0]
-
-        # TODO: More extensive testing should be done here.
-
     def test_get_altitude(self, alt: AltitudeAccess):
         with pytest.raises(NotImplementedError):
             alt.get_altitude(None, None)
