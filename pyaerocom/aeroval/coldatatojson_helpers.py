@@ -20,15 +20,7 @@ from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-<<<<<<< HEAD
-from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
-=======
 from pyaerocom.helpers import start_stop
-<<<<<<< HEAD
-from pyaerocom.mathutils import _init_stats_dummy
->>>>>>> 7bf1fe5e (Fix imports)
-=======
->>>>>>> 58e8ca2c (WIP)
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
