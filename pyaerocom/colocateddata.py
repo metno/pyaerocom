@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
-from pydantic import BaseModel, ConfigDict, computed_field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -33,6 +33,25 @@ from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.time_resampler import TimeResampler
 
 logger = logging.getLogger(__name__)
+
+
+def ensure_correct_dimensions(data: np.ndarray | xr.DataArray):
+    """
+    Ensure the dimensions on either a numpy aray or xarray passed to ColocatedData.
+    If a ColocatedData object is created outside of pyaerocom, this checking is needed.
+    This function is used as part of the model validator.
+    """
+    shape = data.shape[0]
+    if isinstance(data, np.ndarray):
+        num_dims = data.ndim
+    elif isinstance(data, xr.DataArray):
+        num_dims = len(data.dims)
+    else:
+        raise ValueError("Could not interpret data")
+    if num_dims not in (3, 4):
+        raise DataDimensionError("invalid input, need 3D or 4D numpy array")
+    elif not shape == 2:
+        raise DataDimensionError("first dimension (data_source) must be of length 2(obs, model)")
 
 
 class ColocatedData(BaseModel):
@@ -106,9 +125,6 @@ class ColocatedData(BaseModel):
 
     @model_validator(mode="after")
     def validate_data(self):
-        # if (
-        #     self.data is not None
-        # ):  # LB: Check that this is needed. may be covered by the model_validator
         if isinstance(self.data, Path):
             # make sure path is str instance
             self.data = str(self.data)
@@ -120,12 +136,7 @@ class ColocatedData(BaseModel):
         elif isinstance(self.data, xr.DataArray):
             return self.data
         elif isinstance(self.data, np.ndarray):
-            if self.data.ndim not in (3, 4):
-                raise DataDimensionError("invalid input, need 3D or 4D numpy array")
-            elif not self.data.shape[0] == 2:
-                raise DataDimensionError(
-                    "first dimension (data_source) must be of length 2(obs, model)"
-                )
+            ensure_correct_dimensions(self.data)
             if hasattr(self, "model_extra"):
                 da_keys = dir(xr.DataArray)
                 extra_args_from_class_initialization = {
@@ -1274,6 +1285,7 @@ class ColocatedData(BaseModel):
 
         arr = xr.open_dataarray(file_path)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
+        ensure_correct_dimensions(arr)
         self.data = arr
         return self
 
@@ -1885,55 +1897,17 @@ class ColocatedData(BaseModel):
             **kwargs,
         )
 
-    # def __contains__(self, val):
-    #     return self.data.__contains__(val)
+    def __contains__(self, val):
+        return self.data.__contains__(val)
 
-    # def __repr__(self):
-    #     tp = type(self).__name__
-    #     dstr = "<empty>" if self.data is None else repr(self.data)
-    #     return f"pyaerocom.{tp}: data: {dstr}"
+    def __repr__(self):
+        tp = type(self).__name__
+        dstr = "<empty>" if self.data is None else repr(self.data)
+        return f"pyaerocom.{tp}: data: {dstr}"
 
-    # def __str__(self):
-    #     tp = type(self).__name__
-    #     head = f"pyaerocom.{tp}"
-    #     underline = len(head) * "-"
-    #     dstr = "<empty>" if self.data is None else str(self.data)
-    #     return f"{head}\n{underline}\ndata (DataArray): {dstr}"
-
-    ### Deprecated (but still supported) stuff
-    # ToDo: v0.12.0
-    @property
-    def unit(self):
-        """DEPRECATED -> use :attr:`units`"""
-        warnings.warn(
-            "Attr. ColocatedData.unit is deprecated (but still works), "
-            "please use ColocatedData.units. "
-            "Support guaranteed until pyaerocom v0.12.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.units
-
-    @property
-    def meta(self):
-        """DEPRECATED -> use :attr:`metadata`"""
-        warnings.warn(
-            "Attr. ColocatedData.meta is deprecated, "
-            "use ColocatedData.metadata instread."
-            "Support guaranteed until pyaerocom v0.12.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.metadata
-
-    @property
-    def num_grid_points(self):
-        """DEPRECATED -> use :attr:`num_coords`"""
-        warnings.warn(
-            "ColocatedData.num_grid_points is deprecated, "
-            "please use ColocatedData.num_coords"
-            "Support guaranteed until pyaerocom v0.12.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.num_coords
+    def __str__(self):
+        tp = type(self).__name__
+        head = f"pyaerocom.{tp}"
+        underline = len(head) * "-"
+        dstr = "<empty>" if self.data is None else str(self.data)
+        return f"{head}\n{underline}\ndata (DataArray): {dstr}"
