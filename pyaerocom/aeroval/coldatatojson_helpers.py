@@ -20,9 +20,10 @@ from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
+from pyaerocom.helpers import start_stop
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
+from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.tstype import TsType
@@ -698,7 +699,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
 
 
 def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
-    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
+    stats = calculate_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
     return _prep_stats_json(stats)
 
 
