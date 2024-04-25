@@ -113,3 +113,13 @@ class TestAltitudeAccess:
     # issue to me, so I have marked it xfail for now.
     def test_check_access(self, alt: AltitudeAccess):
         assert alt.check_altitude_access()
+
+    def test_search_aux_coords(self, alt: AltitudeAccess):
+        with pytest.raises(CoordinateNameError):
+            alt.search_aux_coords(["gkjfdshglk"])
+
+        assert alt.search_aux_coords(["lat"])
+        assert alt.search_aux_coords("lon")
+        assert not alt.search_aux_coords("z")
+        assert alt.search_aux_coords(["lat", "lon", "time"])
+        assert not alt.search_aux_coords(["lat", "lon", "time", "z"])
