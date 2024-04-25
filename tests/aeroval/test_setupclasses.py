@@ -111,6 +111,29 @@ def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
 
 
 @pytest.mark.parametrize(
+    "update,start,stop",
+    (
+        pytest.param(
+            dict(periods=["2022"]),
+            "2022",
+            "2023",
+            id="custom1",
+        ),
+        pytest.param(
+            dict(periods=["20220112"]),
+            "2022/01/12 00:00:00",
+            "2022/01/12 23:00:00",
+            id="custom2",
+        ),
+    ),
+)
+def test_EvalSetup__check_time_config(eval_setup: EvalSetup, start, stop):
+    eval_setup._check_time_config()
+    assert str(eval_setup.colocation_opts["start"]) == start
+    assert str(eval_setup.colocation_opts["stop"]) == stop
+
+
+@pytest.mark.parametrize(
     "update",
     (
         pytest.param(None, id="defaults"),
