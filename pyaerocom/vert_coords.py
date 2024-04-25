@@ -101,7 +101,7 @@ def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(
         computed pressure levels in Pa (standard_name=air_pressure)
 
     """
-    if not len(a) == len(b):
+    if len(a) != len(b):
         raise ValueError("Invalid input: a and b must have the same length")
     if p0 is None:
         return a + b * ps

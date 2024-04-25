@@ -17,28 +17,6 @@ def sin_wave() -> np.ndarray:
     return np.sin(np.arange(1000))
 
 
-def test_atmosphere_sigma_coordinate_to_pressure(sin_wave: np.ndarray):
-    assert isinstance(atmosphere_sigma_coordinate_to_pressure(0.5, 1, 1), float)
-
-    result = atmosphere_sigma_coordinate_to_pressure(sin_wave, 1, 1)
-    assert isinstance(result, np.ndarray)
-
-    assert len(result) == len(sin_wave)
-
-
-def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(sin_wave: np.ndarray):
-    with pytest.raises(ValueError):
-        atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(np.ones(5), np.ones(4), 1, 1)
-
-    result = atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(sin_wave, sin_wave, 1, 1)
-    assert len(result) == len(sin_wave)
-
-
-def test_geopotentialheight2altitude():
-    with pytest.raises(NotImplementedError):
-        geopotentialheight2altitude(5)
-
-
 @pytest.mark.parametrize(
     "sigma,ps,ptop,exception",
     (
@@ -57,6 +35,31 @@ def test_atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop, exception):
         assert type(result) == type(ptop)
         if isinstance(result, np.ndarray):
             assert len(result) == len(ptop)
+
+
+@pytest.mark.parametrize(
+    "a,b,ps,p0,exception",
+    (
+        pytest.param(np.ones(10), np.ones(5), 1, 0, ValueError, id="test-ab-length-mismatch"),
+        pytest.param(np.ones(10), np.ones(10), 1, None, None, id="test-p0-is-none"),
+        pytest.param(np.ones(10), np.ones(10), 1, 1, None, id="test-p0-is-not-none"),
+    ),
+)
+def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(
+    a: np.ndarray, b: np.ndarray, ps: float, p0: float | None, exception
+):
+    if exception is not None:
+        with pytest.raises(exception):
+            atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0)
+    else:
+        result = atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0)
+
+        assert len(a) == len(b) == len(result)
+
+
+def test_geopotentialheight2altitude():
+    with pytest.raises(NotImplementedError):
+        geopotentialheight2altitude(5)
 
 
 class TestVerticalCoordinate:
