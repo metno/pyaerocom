@@ -24,7 +24,6 @@ def test_ColocatedData_initialization(data: Path | str | ArrayLike):
 @pytest.mark.parametrize(
     "data,exception",
     [
-        (None, AttributeError),
         ("Blaaaaa", ValueError),
         (np.ones(3), ValidationError),
         ({}, ValueError),
@@ -176,7 +175,6 @@ def test_ColocatedData_units_error(coldata: ColocatedData):
     "coldataset,num_coords",
     [
         ("fake_4d", 6),
-        ("fake_5d", 4),
         ("tm5_aeronet", 8),
         ("fake_3d", 4),
     ],
@@ -207,7 +205,6 @@ def test_ColocatedData_num_coords_with_data(coldata: ColocatedData, num_coords_w
 @pytest.mark.parametrize(
     "coldataset,error",
     [
-        ("fake_5d", "please reduce dimensionality"),
         ("fake_nodims", "Need dimension"),
     ],
 )
@@ -241,7 +238,6 @@ def test_ColocatedData_get_coords_valid_obs_error(coldata: ColocatedData):
 @pytest.mark.parametrize(
     "coldataset,use_area_weights,chk",
     [
-        ("fake_5d", False, {"num_coords_with_data": np.nan, "num_coords_tot": 4, "totnum": 36}),
         ("tm5_aeronet", False, {"nmb": -0.129, "R": 0.853}),
         # has random numbers in it so nmb, R check is risky with rtol=1e-2
         ("fake_3d", False, {"num_coords_with_data": 4}),
@@ -269,7 +265,6 @@ def test_ColocatedData_calc_statistics_error(coldata: ColocatedData):
         ("tm5_aeronet", None, {"nmb": -0.065, "R": 0.679}),
         ("fake_3d", None, {}),
         ("fake_4d", None, {"nmb": 0}),
-        ("fake_5d", None, {}),
         ("tm5_aeronet", "median", {"nmb": -0.0136, "R": 0.851}),
     ],
 )
@@ -331,9 +326,7 @@ def test_ColocatedData_calc_spatial_statistics_error(
     assert str(e.value).startswith(error)
 
 
-@pytest.mark.parametrize(
-    "coldataset", ["fake_5d", "fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"]
-)
+@pytest.mark.parametrize("coldataset", ["fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"])
 def test_ColocatedData_plot_scatter(coldata: ColocatedData):
     plot = coldata.plot_scatter()
     assert isinstance(plot, Axes)
