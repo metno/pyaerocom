@@ -125,31 +125,28 @@ class ColocatedData(BaseModel):
 
     @model_validator(mode="after")
     def validate_data(self):
-        if self.data is not None:
-            if isinstance(self.data, Path):
-                # make sure path is str instance
-                self.data = str(self.data)
-            if isinstance(self.data, str):
-                assert self.data.endswith("nc"), ValueError(
-                    "Invalid data filepath str, must point to a .nc file"
-                )
-                self.open(self.data)
-            elif isinstance(self.data, xr.DataArray):
-                ensure_correct_dimensions(self.data)
-                return self.data
-            elif isinstance(self.data, np.ndarray):
-                ensure_correct_dimensions(self.data)
-                if hasattr(self, "model_extra"):
-                    da_keys = dir(xr.DataArray)
-                    extra_args_from_class_initialization = {
-                        key: val for key, val in self.model_extra.items() if key in da_keys
-                    }
-                else:
-                    extra_args_from_class_initialization = {}
-                data = xr.DataArray(self.data, **extra_args_from_class_initialization)
-                self.data = data
-        else:
-            raise AttributeError("No data available in this object.")
+        if isinstance(self.data, Path):
+            # make sure path is str instance
+            self.data = str(self.data)
+        if isinstance(self.data, str):
+            assert self.data.endswith("nc"), ValueError(
+                "Invalid data filepath str, must point to a .nc file"
+            )
+            self.open(self.data)
+        elif isinstance(self.data, xr.DataArray):
+            ensure_correct_dimensions(self.data)
+            return self.data
+        elif isinstance(self.data, np.ndarray):
+            ensure_correct_dimensions(self.data)
+            if hasattr(self, "model_extra"):
+                da_keys = dir(xr.DataArray)
+                extra_args_from_class_initialization = {
+                    key: val for key, val in self.model_extra.items() if key in da_keys
+                }
+            else:
+                extra_args_from_class_initialization = {}
+            data = xr.DataArray(self.data, **extra_args_from_class_initialization)
+            self.data = data
 
     #################################
     ##        Attributes

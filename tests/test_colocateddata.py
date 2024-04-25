@@ -37,8 +37,8 @@ def test_ColocatedData_initialization_error(data, exception: type[Exception]):
 
 
 def test_ColocatedData_data():
-    col = ColocatedData()
-    col.data = data = xr.DataArray()
+    data = xr.DataArray(np.ones((2, 2, 1)))
+    col = ColocatedData(data=data)
     assert col.data is data
 
 
