@@ -57,10 +57,11 @@ def atmosphere_sigma_coordinate_to_pressure(
         computed pressure levels in Pa (standard_name=air_pressure)
     """
     if not isinstance(ptop, float):
-        try:
-            ptop = float(ptop)
-        except ValueError as e:
-            raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
+        if not isinstance(ptop, np.ndarray):
+            try:
+                ptop = float(ptop)
+            except ValueError as e:
+                raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
     return ptop + sigma * (ps - ptop)
 
 

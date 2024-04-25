@@ -39,6 +39,26 @@ def test_geopotentialheight2altitude():
         geopotentialheight2altitude(5)
 
 
+@pytest.mark.parametrize(
+    "sigma,ps,ptop,exception",
+    (
+        pytest.param(1.0, 0, "", ValueError, id="value-error"),
+        pytest.param(1.0, 0, 0.0, None, id="ptop-is-float"),
+        pytest.param(1.0, 0, np.ones(10), None, id="ptop-is-ndarray"),
+    ),
+)
+def test_atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop, exception):
+    if exception is not None:
+        with pytest.raises(exception):
+            atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop)
+    else:
+        result = atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop)
+
+        assert type(result) == type(ptop)
+        if isinstance(result, np.ndarray):
+            assert len(result) == len(ptop)
+
+
 class TestVerticalCoordinate:
     def test_exceptions(self):
         # Unsupported variable name during initialization.
