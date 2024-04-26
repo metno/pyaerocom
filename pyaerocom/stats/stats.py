@@ -164,7 +164,6 @@ def register_custom_statistic(name: str, fun: StatisticsCalculator) -> None:
 def calculate_statistics(
     data,
     ref_data,
-    # statistics: Mapping[str, StatisticsCalculator] | None = None,
     min_num_valid=1,
     weights: list | None = None,
     drop_stats=None,
@@ -201,9 +200,6 @@ def calculate_statistics(
         data
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
-    statistics : dict[str, StatisticsCalculator]
-        mapping between statistics name and Callable to calculate that statistics. If None,
-        the dictionary provided by `_get_default_statistic_config()` is used.
     lowlim : float
         lower end of considered value range (e.g. if set 0, then all datapoints
         where either ``data`` or ``ref_data`` is smaller than 0 are removed).
@@ -250,10 +246,9 @@ def calculate_statistics(
         if len(weights) != len(data):
             raise ValueError("Invalid input. Length of weights must match length of data.")
 
-    # Set defaults
-    if statistics is None:
-        statistics = _get_default_statistic_config()
+    statistics = _stats_configuration
 
+    # Set defaults
     data_filters = [FilterNaN()]
     if (lowlim is not None) or (highlim is not None):
         data_filters.append(FilterByLimit(lowlim=lowlim, highlim=highlim))

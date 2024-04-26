@@ -2,7 +2,12 @@ import numpy as np
 import pytest
 
 from pyaerocom.stats.implementations import *
-from pyaerocom.stats.stats import calculate_statistics
+from pyaerocom.stats.stats import (
+    _get_default_statistic_config,
+    _stats_configuration,
+    calculate_statistics,
+    register_custom_statistic,
+)
 
 
 def test_calc_stats_exceptions():
@@ -21,69 +26,53 @@ def test_calc_stats_exceptions():
         calculate_statistics([1, 2, 3], [1, 2, 3], weights=[1, 2])
 
 
-@pytest.mark.parametrize(
-    "data,ref_data,statistics,expected_keys",
-    (
-        pytest.param(
-            [1, 2, 3, 4], [1, 2, 3, 4], {}, ["totnum", "weighted", "num_valid"], id="empty"
-        ),
-        pytest.param(
-            [1, 2, 3, 4],
-            [1, 2, 3, 4],
-            {"R": stat_R, "R_kendall": stat_R_kendall, "mb": stat_mb},
-            ["totnum", "weighted", "num_valid", "R", "R_kendall", "mb"],
-            id="custom1",
-        ),
-        pytest.param(
-            [1, 2, 3, 4],
-            [1, 2, 3, 4],
-            None,
-            [
-                "totnum",
-                "weighted",
-                "num_valid",
-                "R",
-                "R_kendall",
-                "R_spearman",
-                "fge",
-                "mab",
-                "mab",
-                "mb",
-                "mnmb",
-                "nmb",
-                "rms",
-                "data_mean",
-                "data_std",
-                "refdata_mean",
-                "refdata_std",
-            ],
-            id="stats-none",
-        ),
-    ),
-)
-def test_calc_stats_keys(data, ref_data, statistics, expected_keys):
-    stats = calculate_statistics(data, ref_data, statistics)
+def test_calc_stats_keys():
+    stats = calculate_statistics([1, 2, 3, 4], [1, 2, 3, 4])
 
     assert isinstance(stats, dict)
 
-    for k in expected_keys:
-        assert k in stats.keys()
-
-    for k in stats.keys():
-        assert k in expected_keys
-
-
-def test_custom_stats():
-    stats = calculate_statistics(
-        [1, 2, 3, 4],
-        [1, 2, 3, 4],
-        {"test_statistic1": lambda x, y, w: 5, "test_statistic2": lambda x, y, w: 3},
+    expected_keys = set(
+        [
+            "totnum",
+            "weighted",
+            "num_valid",
+            "R",
+            "R_kendall",
+            "R_spearman",
+            "fge",
+            "mab",
+            "mab",
+            "mb",
+            "mnmb",
+            "nmb",
+            "rms",
+            "data_mean",
+            "data_std",
+            "refdata_mean",
+            "refdata_std",
+        ]
     )
 
-    assert "test_statistic1" in stats.keys()
-    assert "test_statistic2" in stats.keys()
-    assert stats["test_statistic1"] == 5
-    assert stats["test_statistic2"] == 3
+    assert set(stats.keys()) == expected_keys
+
+
+class TestCustomStats:
+    def setup_method(self):
+        register_custom_statistic("test_statsitic1", lambda x, y, w: 5)
+        register_custom_statistic("test_statistic2", lambda x, y, w: 3)
+
+    def teardown_method(self):
+        _stats_configuration = _get_default_statistic_config()
+
+    def test_customstats(self):
+        stats = calculate_statistics(
+            [1, 2, 3, 4],
+            [1, 2, 3, 4],
+        )
+        assert "test_statistic1" in stats.keys()
+        assert "test_statistic2" in stats.keys()
+        assert stats["test_statistic1"] == 5
+        assert stats["test_statistic2"] == 3
 
 
 perfect_stats_num1_mean1 = {
