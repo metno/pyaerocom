@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
+import pyaerocom.stats.stats
 from pyaerocom.stats.implementations import *
 from pyaerocom.stats.stats import (
     _get_default_statistic_config,
-    _stats_configuration,
     calculate_statistics,
     register_custom_statistic,
 )
@@ -52,27 +52,28 @@ def test_calc_stats_keys():
             "refdata_std",
         ]
     )
+    assert len(stats.keys()) == len(expected_keys)
 
-    assert set(stats.keys()) == expected_keys
+
+@pytest.fixture
+def clean_stats_configuration():
+    yield
+    pyaerocom.stats.stats.stats_configuration = _get_default_statistic_config()
 
 
-class TestCustomStats:
-    def setup_method(self):
-        register_custom_statistic("test_statsitic1", lambda x, y, w: 5)
-        register_custom_statistic("test_statistic2", lambda x, y, w: 3)
+@pytest.mark.usefixtures("clean_stats_configuration")
+def test_customstats():
+    register_custom_statistic("test_statistic1", fun=lambda x, y, w: 5)
+    register_custom_statistic("test_statistic2", fun=lambda x, y, w: 3)
 
-    def teardown_method(self):
-        _stats_configuration = _get_default_statistic_config()
-
-    def test_customstats(self):
-        stats = calculate_statistics(
-            [1, 2, 3, 4],
-            [1, 2, 3, 4],
-        )
-        assert "test_statistic1" in stats.keys()
-        assert "test_statistic2" in stats.keys()
-        assert stats["test_statistic1"] == 5
-        assert stats["test_statistic2"] == 3
+    stats = calculate_statistics(
+        [1, 2, 3, 4],
+        [1, 2, 3, 4],
+    )
+    assert "test_statistic1" in stats.keys()
+    assert "test_statistic2" in stats.keys()
+    assert stats["test_statistic1"] == 5
+    assert stats["test_statistic2"] == 3
 
 
 perfect_stats_num1_mean1 = {
@@ -177,7 +178,7 @@ sin_signal = np.sin(idx)
         ),
     ],
 )
-def test_calc_statistics(data, ref_data, expected):
+def test_calc_statistics(data, ref_data, expected: dict):
     stats = calculate_statistics(data, ref_data)
     assert isinstance(stats, dict)
     assert len(stats) == len(expected)

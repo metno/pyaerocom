@@ -120,24 +120,24 @@ def _get_default_statistic_config() -> dict[str, StatisticsCalculator]:
     which calculates all implemented statistics. Can be used as a starting
     point for adding additional stats using `dict.update()`
     """
-    return {
-        "refdata_mean": lambda x, y, w: np.nanmean(y),
-        "refdata_std": lambda x, y, w: np.nanstd(y),
-        "data_mean": lambda x, y, w: np.nanmean(x),
-        "data_std": lambda x, y, w: np.nanstd(x),
-        "rms": stat_rms,
-        "nmb": stat_nmb,
-        "mnmb": stat_mnmb,
-        "mb": stat_mb,
-        "mab": stat_mab,
-        "fge": stat_fge,
-        "R": stat_R,
-        "R_spearman": stat_R_spearman,
-        "R_kendall": stat_R_kendall,
-    }
+    return dict(
+        refdata_mean=lambda x, y, w: np.nanmean(y),
+        refdata_std=lambda x, y, w: np.nanstd(y),
+        data_mean=lambda x, y, w: np.nanmean(x),
+        data_std=lambda x, y, w: np.nanstd(x),
+        rms=stat_rms,
+        nmb=stat_nmb,
+        mnmb=stat_mnmb,
+        mb=stat_mb,
+        mab=stat_mab,
+        fge=stat_fge,
+        R=stat_R,
+        R_spearman=stat_R_spearman,
+        R_kendall=stat_R_kendall,
+    )
 
 
-_stats_configuration = _get_default_statistic_config()
+stats_configuration = _get_default_statistic_config()
 
 
 def register_custom_statistic(name: str, fun: StatisticsCalculator) -> None:
@@ -155,10 +155,10 @@ def register_custom_statistic(name: str, fun: StatisticsCalculator) -> None:
     ValueError:
         if name has already been registered, or is otherwise invalid.
     """
-    if (name in _stats_configuration) or (name in ["totnum", "weighted"]):
-        raise ValueError(f"Name {name} is already registered in _stats_configuration.")
+    if (name in stats_configuration) or (name in ["totnum", "weighted"]):
+        raise ValueError(f"Name {name} is already registered in stats_configuration.")
 
-    _stats_configuration[name] = fun
+    stats_configuration[name] = fun
 
 
 def calculate_statistics(
@@ -246,7 +246,7 @@ def calculate_statistics(
         if len(weights) != len(data):
             raise ValueError("Invalid input. Length of weights must match length of data.")
 
-    statistics = _stats_configuration
+    statistics = stats_configuration
 
     # Set defaults
     data_filters = [FilterNaN()]
