@@ -178,14 +178,13 @@ def calculate_statistics(
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
     statistics : dict[str, StatisticsCalculator]
-        mapping between statistics name and Callable to calculate that statistics.
+        mapping between statistics name and Callable to calculate that statistics. If None,
+        the dictionary provided by `_get_default_statistic_config()` is used.
     lowlim : float
         lower end of considered value range (e.g. if set 0, then all datapoints
         where either ``data`` or ``ref_data`` is smaller than 0 are removed).
-        Deprecated. Use data_filters with FilterByLimit instead.
     highlim : float
         upper end of considered value range
-        Deprecated. Use data_filters with FilterByLimit instead.
     min_num_valid : int
         minimum number of valid measurements required to compute statistical
         parameters. Stat will be returned as NaN if length(data) is below this threshold.
@@ -194,8 +193,8 @@ def calculate_statistics(
     drop_stats: tuple
         tuple which drops the provided statistics from computed json files.
         For example, setting drop_stats = ("mb", "mab"), results in json files
-        in hm/ts with entries which do not contain the mean bias and mean
-        absolute bias, but the other statistics are preserved.
+        with entries which do not contain the mean bias and mean absolute bias, but
+        the other statistics are preserved.
     Returns
     -------
     StatsDict
