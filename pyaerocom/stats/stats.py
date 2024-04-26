@@ -137,10 +137,34 @@ def _get_default_statistic_config() -> dict[str, StatisticsCalculator]:
     }
 
 
+_stats_configuration = _get_default_statistic_config()
+
+
+def register_custom_statistic(name: str, fun: StatisticsCalculator) -> None:
+    """Registers a new custom statistic
+
+    Parameters
+    ----------
+    name:
+        The name as which the custom statistic will be registered.
+    fun:
+        A function which implements the calculation of the statistics.
+
+    Raises
+    ------
+    ValueError:
+        if name has already been registered, or is otherwise invalid.
+    """
+    if (name in _stats_configuration) or (name in ["totnum", "weighted"]):
+        raise ValueError(f"Name {name} is already registered in _stats_configuration.")
+
+    _stats_configuration[name] = fun
+
+
 def calculate_statistics(
     data,
     ref_data,
-    statistics: Mapping[str, StatisticsCalculator] | None = None,
+    # statistics: Mapping[str, StatisticsCalculator] | None = None,
     min_num_valid=1,
     weights: list | None = None,
     drop_stats=None,
