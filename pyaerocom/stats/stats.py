@@ -1,5 +1,3 @@
-from typing import Mapping
-
 import numpy as np
 
 from pyaerocom.stats.data_filters import FilterByLimit, FilterNaN
@@ -119,6 +117,11 @@ def _get_default_statistic_config() -> dict[str, StatisticsCalculator]:
     Returns a base configuration dictionary to be used with `calculate_statistics`
     which calculates all implemented statistics. Can be used as a starting
     point for adding additional stats using `dict.update()`
+
+    Returns
+    -------
+    dict :
+        A fresh copy of the default statistics config dictionary.
     """
     return dict(
         refdata_mean=lambda x, y, w: np.nanmean(y),
