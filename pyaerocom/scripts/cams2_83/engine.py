@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore")
 class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
-        coldata = [ColocatedData(file) for file in files]
+        coldata = [ColocatedData(data=file) for file in files]
         coldata, found_vars = self._sort_coldata(coldata)
         start = time.time()
         if var_list is None:
@@ -129,7 +129,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         station_list = data.station_name.data
         for station in station_list:
             d = data.sel(station_name=[station])
-            arr = ColocatedData(d)
+            arr = ColocatedData(data=d)
             stats = arr.calc_statistics(use_area_weights=use_weights)
             for key in stats_list.keys():
                 stats_list[key].append(stats[key])
@@ -180,7 +180,9 @@ class CAMS2_83_Engine(ProcessingEngine):
         normym = np.sqrt(np.nansum(ym * ym, axis=0))
 
         r = np.where(
-            normxm * normym == 0.0, np.nan, np.nansum(xm * ym, axis=0) / (normxm * normym)
+            normxm * normym == 0.0,
+            np.nan,
+            np.nansum(xm * ym, axis=0) / (normxm * normym),
         )
 
         return r
