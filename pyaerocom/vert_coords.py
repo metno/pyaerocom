@@ -18,7 +18,6 @@ from geonum import atmosphere as atm
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
-    DataDimensionError,
     VariableDefinitionError,
     VariableNotFoundError,
 )
@@ -56,12 +55,13 @@ def atmosphere_sigma_coordinate_to_pressure(
     ndarray or float
         computed pressure levels in Pa (standard_name=air_pressure)
     """
-    if not isinstance(ptop, float):
-        if not isinstance(ptop, np.ndarray):
-            try:
-                ptop = float(ptop)
-            except ValueError as e:
-                raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
+    if not isinstance(ptop, float | np.ndarray):
+        try:
+            ptop = float(ptop)
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid input for ptop. Need floating point\nError: {repr(e)}"
+            ) from e
     return ptop + sigma * (ps - ptop)
 
 
@@ -108,33 +108,6 @@ def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(
     return a * p0 + b * ps
 
 
-def geopotentialheight2altitude(geopotential_height):
-    """Convert geopotential height in m to altitude in m
-
-    Note
-    ----
-    This is a dummy function that returns the input, as the conversion is not
-    yet implemented.
-
-    Parameters
-    ----------
-    geopotential_height : float
-        input geopotential height values in m
-
-    Returns
-    -------
-    Computed altitude levels
-    """
-    raise NotImplementedError("This function is a dummy function")
-    logger.warning(
-        "Conversion method of geopotential height to "
-        "altitude is not yet implemented and returns the "
-        "input values. The introduced error is small at "
-        "tropospheric altitudes"
-    )
-    return geopotential_height
-
-
 class VerticalCoordinate:
     NAMES_SUPPORTED = {
         "altitude": "z",
@@ -154,7 +127,6 @@ class VerticalCoordinate:
     CONVERSION_METHODS = {
         "asc": atmosphere_sigma_coordinate_to_pressure,
         "ahspc": atmosphere_hybrid_sigma_pressure_coordinate_to_pressure,
-        "gph": geopotentialheight2altitude,
     }
 
     CONVERSION_REQUIRES = {
