@@ -14,7 +14,7 @@ def alt(data_tm5: GriddedData) -> AltitudeAccess:
 
 @pytest.fixture
 def sin_wave() -> np.ndarray:
-    return np.sin(np.arange(1000))
+    return np.sin(np.arange(20))
 
 
 def test_atmosphere_sigma_coordinate_to_pressure_exceptions():
@@ -27,6 +27,26 @@ def test_atmosphere_sigma_coordinate_to_pressure_exceptions():
     (
         pytest.param(1.0, 0, 0.0, 0.0, id="ptop-is-float"),
         pytest.param(1.0, 0, np.ones(10), np.zeros(10), id="ptop-is-ndarray"),
+        pytest.param(
+            0.5,
+            0.2,
+            np.sin(np.arange(10)),
+            np.asarray(
+                [
+                    0.1,
+                    0.52073549,
+                    0.55464871,
+                    0.17056,
+                    -0.27840125,
+                    -0.37946214,
+                    -0.03970775,
+                    0.4284933,
+                    0.59467912,
+                    0.30605924,
+                ]
+            ),
+            id="sin",
+        ),
     ),
 )
 def test_atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop, expected):
@@ -45,18 +65,40 @@ def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure_exceptions():
 
 
 @pytest.mark.parametrize(
-    "a,b,ps,p0",
+    "a,b,ps,p0,expected",
     (
-        pytest.param(np.ones(10), np.ones(10), 1, None, id="test-p0-is-none"),
-        pytest.param(np.ones(10), np.ones(10), 1, 1, id="test-p0-is-not-none"),
+        pytest.param(np.ones(10), np.ones(10), 1, None, 2, id="test-p0-is-none"),
+        pytest.param(np.ones(10), np.ones(10), 1, 1, 2, id="test-p0-is-not-none"),
+        pytest.param(
+            np.sin(np.arange(10)),
+            np.sin(np.arange(10)),
+            0.5,
+            0.5,
+            np.asarray(
+                [
+                    0.0,
+                    0.84147098,
+                    0.90929743,
+                    0.14112001,
+                    -0.7568025,
+                    -0.95892427,
+                    -0.2794155,
+                    0.6569866,
+                    0.98935825,
+                    0.41211849,
+                ]
+            ),
+            id="sin",
+        ),
     ),
 )
 def test_atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(
-    a: np.ndarray, b: np.ndarray, ps: float, p0: float | None
+    a: np.ndarray, b: np.ndarray, ps: float, p0: float | None, expected: np.ndarray
 ):
     result = atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0)
 
     assert len(a) == len(b) == len(result)
+    assert result == pytest.approx(expected)
 
 
 def test_VerticalCoordinate_exceptions():
