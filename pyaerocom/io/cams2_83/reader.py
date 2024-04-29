@@ -96,7 +96,7 @@ def model_paths(
 
 
 def parse_daterange(
-    dates: pd.DatetimeIndex | list[datetime] | tuple[datetime, datetime]
+    dates: pd.DatetimeIndex | list[datetime] | tuple[datetime, datetime],
 ) -> pd.DatetimeIndex:
     if isinstance(dates, pd.DatetimeIndex):
         return dates
@@ -194,7 +194,10 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     # using h5netcdf saves therefore up to 63MB/file
     # in our case only ~20MB/file, i.e. 0.5GB/month
     ds = xr.open_mfdataset(
-        paths, preprocess=preprocess, parallel=False, engine="h5netcdf", chunks={"time": 1}
+        paths,
+        preprocess=preprocess,
+        parallel=False,
+        engine="h5netcdf",  # chunks={"time": 1}
     )
     return ds.pipe(fix_coord).pipe(fix_names)
 
@@ -321,7 +324,10 @@ class ReadCAMS2_83:
         if self._filepaths is None:
             paths = list(
                 model_paths(
-                    self.model, *self.daterange, root_path=self.data_dir, run=self.run_type
+                    self.model,
+                    *self.daterange,
+                    root_path=self.data_dir,
+                    run=self.run_type,
                 )
             )
             if not paths:
