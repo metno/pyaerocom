@@ -160,6 +160,8 @@ def test_AltitudeAccess_search_aux_coords(alt: AltitudeAccess):
     with pytest.raises(CoordinateNameError):
         alt.search_aux_coords(["gkjfdshglk"])
 
+
+def test_AltitudeAccess_search_aux_coords(alt: AltitudeAccess):
     assert alt.search_aux_coords(["lat"])
     assert alt.search_aux_coords("lon")
     assert not alt.search_aux_coords("z")
