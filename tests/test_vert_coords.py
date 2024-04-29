@@ -114,26 +114,27 @@ def test_VerticalCoordinate_calc_pressure_exceptions():
         vert.calc_pressure(np.ones(5))
 
 
+@pytest.mark.parametrize("name,exception", (("gph", ValueError),))
+def test_VerticalCoordinate_lev_increases_with_alt_exception(name: str, exception: Exception):
+    vert = VerticalCoordinate(name)
+    with pytest.raises(exception):
+        vert.lev_increases_with_alt
+
+
 @pytest.mark.parametrize(
-    "name,expected,exception",
+    "name,expected",
     (
-        pytest.param("altitude", True, None, id="var-name-1"),
-        pytest.param("atmosphere_sigma_coordinate", False, None, id="var-name-2"),
-        pytest.param("atmosphere_hybrid_sigma_pressure_coordinate", False, None, id="var-name-3"),
-        pytest.param("asc", False, None, id="standard-name-1"),
-        pytest.param("z", True, None, id="standard-name-2"),
-        pytest.param("gph", None, ValueError, id="valueerror"),
+        pytest.param("altitude", True, id="var-name-1"),
+        pytest.param("atmosphere_sigma_coordinate", False, id="var-name-2"),
+        pytest.param("atmosphere_hybrid_sigma_pressure_coordinate", False, id="var-name-3"),
+        pytest.param("asc", False, id="standard-name-1"),
+        pytest.param("z", True, id="standard-name-2"),
     ),
 )
-def test_VerticalCoordinate_lev_increases_with_alt(
-    name: str, expected: bool | None, exception: Exception | None
-):
+def test_VerticalCoordinate_lev_increases_with_alt(name: str, expected: bool):
     vert = VerticalCoordinate(name)
-    if exception:
-        with pytest.raises(exception):
-            vert.lev_increases_with_alt
-    else:
-        assert vert.lev_increases_with_alt == expected
+
+    assert vert.lev_increases_with_alt == expected
 
 
 def test_AltitudeAccess_exceptions():
