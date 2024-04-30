@@ -228,3 +228,22 @@ def test_calc_statistics_drop_stats(data, ref_data, drop):
     stats = calculate_statistics(data, ref_data, drop_stats=drop)
 
     assert all([x not in stats.keys() for x in drop])
+
+
+def test_fairmode_R_in_expected_range():
+    # This test is meant to test for a specific issue where
+    # using fairmode=true would result in errors due to the calculated
+    # R values being slightly out of range -1<=R<=1. The error is caused
+    # because fairmode_stats() expects R values exactly in the range, but
+    # values may be outside due to floating point shenanigans.
+    # https://xkcd.com/217/
+    # As of the time of writing this test, all the parametrizations
+    # surface the error, if rounding is *not* applied in
+    # `stats.stats._prepare_stats()`.
+    # https://github.com/metno/pyaerocom/pull/1142
+    data1 = np.asarray([17.2073523845202, 15.543783901903302, np.nan])
+    data2 = np.asarray([15.046913580246915, 18.462202650290884, np.nan])
+
+    stats = calculate_statistics(data1, data2)
+
+    assert -1 <= stats["R"] <= 1
