@@ -190,14 +190,10 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day).pipe(fix_missing_vars)
 
-    # h5 chunk cache is 1 MB, netcdf4 chunk-cache is 64MB
-    # using h5netcdf saves therefore up to 63MB/file
-    # in our case only ~20MB/file, i.e. 0.5GB/month
     ds = xr.open_mfdataset(
         paths,
         preprocess=preprocess,
         parallel=False,
-        engine="h5netcdf",  # chunks={"time": 1}
     )
     return ds.pipe(fix_coord).pipe(fix_names)
 
@@ -210,7 +206,7 @@ def check_files(paths: list[Path]) -> list[Path]:
 
     for p in tqdm(paths, disable=None):
         try:
-            with xr.open_dataset(p, engine="h5netcdf") as ds:
+            with xr.open_dataset(p) as ds:
                 if len(ds.time.data) < 2:
                     logger.warning(f"To few timestamps in {p}. Skipping file")
                     continue
