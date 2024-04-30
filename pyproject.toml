@@ -127,7 +127,6 @@ omit = [
     "pyaerocom/io/read_aeronet_sunv2.py",
     "pyaerocom/plugins/gaw/*",
     "pyaerocom/extras/satellite_l2/*",
-    "pyaerocom/vert_coords.py",
 ]
 
 [tool.coverage.report]

@@ -1346,12 +1346,6 @@ class GriddedData:
             vert_index = self._infer_index_surface_level()
             return self[:, :, :, vert_index]
         elif vert_scheme == "altitude":
-            if not "altitude" in [sp[0] for sp in sample_points]:
-                raise ValueError(
-                    "Require altitude specification in sample points for vert_scheme altitude"
-                )
-            if not self.check_altitude_access():
-                raise DataDimensionError("Cannot access altitude information")
             raise NotImplementedError(
                 "Cannot yet retrieve timeseries at altitude levels. Coming soon..."
             )
@@ -1370,24 +1364,6 @@ class GriddedData:
         raise NotImplementedError(
             f"Cannot yet retrieve timeseries from 4D data for vert_scheme {vert_scheme}."
         )
-
-    def check_altitude_access(self):
-        """Checks if altitude levels can be accessed
-
-        Returns
-        -------
-        bool
-            True, if altitude access is provided, else False
-
-        """
-        return self.altitude_access.check_altitude_access()
-
-    def get_altitude(self, **coords):
-        """Extract (or try to compute) altitude values at input coordinates"""
-        if not isinstance(self._altitude_access, AltitudeAccess):
-            self.check_altitude_access()
-        self._altitude_access.get_altitude(**coords)
-        raise NotImplementedError("Coming soon...")
 
     def extract_surface_level(self):
         """Extract surface level from 4D field"""
