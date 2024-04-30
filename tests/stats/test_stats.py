@@ -237,9 +237,9 @@ def test_fairmode_R_in_expected_range():
     # because fairmode_stats() expects R values exactly in the range, but
     # values may be outside due to floating point shenanigans.
     # https://xkcd.com/217/
-    # As of the time of writing this test, all the parametrizations
-    # surface the error, if rounding is *not* applied in
-    # `stats.stats._prepare_stats()`.
+    # As of the time of writing this test, the data used for this test is
+    # known to result in a failing test, IF *no* rounding is applied in
+    # `stats.stats._prepare_statistics().`
     # https://github.com/metno/pyaerocom/pull/1142
     data1 = np.asarray([17.2073523845202, 15.543783901903302, np.nan])
     data2 = np.asarray([15.046913580246915, 18.462202650290884, np.nan])
