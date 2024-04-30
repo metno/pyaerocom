@@ -142,20 +142,6 @@ def test_AltitudeAccess_exceptions():
         AltitudeAccess(None)
 
 
-def test_AltitudeAccess_get_altitude(alt: AltitudeAccess):
-    with pytest.raises(NotImplementedError):
-        alt.get_altitude(None, None)
-
-
-@lustre_unavail
-@pytest.mark.xfail
-# TODO: This test is currently failing because of a ValueError caused by
-# a variable name containing an underscore. This seems like an unrelated
-# issue to me, so I have marked it xfail for now.
-def test_AltitudeAccess_check_access(alt: AltitudeAccess):
-    assert alt.check_altitude_access()
-
-
 def test_AltitudeAccess_search_aux_coords(alt: AltitudeAccess):
     with pytest.raises(CoordinateNameError):
         alt.search_aux_coords(["gkjfdshglk"])

@@ -263,7 +263,6 @@ class AltitudeAccess:
         self.data_obj = gridded_data
         self._subset1d = None
         self._checked_and_failed = []
-        self._has_access = False
         self.logger = logger
 
     def __setitem__(self, key, val):
@@ -274,19 +273,6 @@ class AltitudeAccess:
 
     def __contains__(self, key):
         return True if key in self.__dict__ else False
-
-    @property
-    def has_access(self) -> bool:
-        """Boolean specifying whether altitudes can be accessed
-
-        Note
-        ----
-        Performs access check using :func:`check_altitude_access` if access
-        flag is False
-        """
-        if not self._has_access:
-            self._has_access = self.check_altitude_access()
-        return self._has_access
 
     @property
     def coord_list(self):
@@ -343,27 +329,3 @@ class AltitudeAccess:
     def reader(self):
         """Instance of :class:`ReadGridded`"""
         return self.data_obj.reader
-
-    def _check_vars_in_data_obj(self):
-        for var in self.ADD_FILE_VARS:
-            try:
-                self._check_var_in_data_obj(var_name=var)
-                return var
-            except Exception:
-                pass
-        raise VariableNotFoundError()
-
-    # ToDo: check alias names
-    def _check_var_in_data_obj(self, var_name):
-        c = VerticalCoordinate(var_name)
-
-        if c.var_name in self.data_obj:
-            self[var_name] = self.data_obj[var_name]
-            self._verify_altitude_access()
-        elif var_name in c.STANDARD_NAMES:
-            std_name = c.STANDARD_NAMES[var_name]
-            if std_name in self.data_obj:
-                self[var_name] = self.data_obj[std_name]
-
-    def get_altitude(self, latitude, longitude):
-        raise NotImplementedError
