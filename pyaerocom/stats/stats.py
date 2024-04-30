@@ -80,7 +80,7 @@ def _prepare_statistics(
     result = dict()
     for name, stat in statistics.items():
         if len(data) >= min_numvalid:
-            result[name] = stat(data, ref_data, weights)
+            result[name] = round(stat(data, ref_data, weights), 10)
         else:
             result[name] = np.nan
 
