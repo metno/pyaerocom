@@ -220,6 +220,9 @@ class Config:
         self._var_param = None
         self._coords = None
 
+        # Custom variables
+        self._custom_var_dict = None
+
         # Attributes that are used to store search directories
         self.OBSLOCS_UNGRIDDED = {}
         self.OBS_UNGRIDDED_POST = {}
@@ -307,6 +310,10 @@ class Config:
                     if self._check_access(_chk_dir):
                         return (basedir, self._config_files[cfg_id])
         raise FileNotFoundError("Could not establish access to any registered database")
+
+    def register_custom_variables(self, vars: dict) -> None:
+        self._custom_var_dict = vars
+        self._var_param = None
 
     @property
     def has_access_users_database(self):
@@ -482,6 +489,10 @@ class Config:
         """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None:  # has not been accessed before
             self._var_param = VarCollection(self._var_info_file)
+
+            if self._custom_var_dict is not None:
+                for var in self._custom_var_dict:
+                    self._var_param.add_var(self._custom_var_dict[var])
         return self._var_param
 
     @property
