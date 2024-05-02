@@ -108,7 +108,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
         )
         df: pd.DataFrame
         for station, df in data.groupby("station"):
-            logging.info(f"Reading obs for station {station} and variables {vars_to_retrieve}")
+            logger.info(f"Reading obs for station {station} and variables {vars_to_retrieve}")
             output = dict(
                 station_id=station,
                 station_name=station,
