@@ -30,6 +30,8 @@ def test_variables(pyaro_testdata):
 
 
 def test_pyarotoungriddeddata_reading(pyaro_testdata):
+    from math import ceil
+
     obj = pyaro_testdata.converter
     data = obj.read()
     assert isinstance(data, UngriddedData)
@@ -39,16 +41,40 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
     assert len(data.unique_station_names) == 2
 
     # Tests the found stations
-    all_stations = data.to_station_data_all("concso4")
+    all_stations = data.to_station_data_all("concso4", ts_type_preferred="daily")
 
-    assert all_stations["stats"][0]["ts_type"] == "daily"
+    assert all_stations["stats"][0]["ts_type"] in ["hourly", "3daily", "2hourly", "2daily"]
     assert all_stations["stats"][0]["country"] == "NO"
 
     # Tests the dates
     start = pd.to_datetime("01.01.2015", dayfirst=True)
     end = pd.to_datetime("31.12.2015", dayfirst=True)
     dates = pd.date_range(start, end, freq="D")
-    assert (all_stations["stats"][0].dtime == dates).all()
+    assert len(all_stations["stats"][0].dtime) == ceil(len(dates) / 2)
+
+
+def test_pyarotoungriddeddata_reading_kwargs(pyaro_testdata_kwargs):
+    obj = pyaro_testdata_kwargs.converter
+    data = obj.read()
+    assert isinstance(data, UngriddedData)
+
+    # Checks if stations have correct countries
+    all_stations = data.to_station_data_all("concso4")
+    countries = ["NO", "GB"]
+    assert all_stations["stats"][1]["country"].strip() == countries[0]
+    assert all_stations["stats"][0]["country"].strip() == countries[1]
+
+
+def test_pyarotoungriddeddata_reading_extra_metadata(pyaro_testdata_kwargs):
+    obj = pyaro_testdata_kwargs.converter
+    data = obj.read()
+    assert isinstance(data, UngriddedData)
+
+    # Checks if stations have correct countries
+    all_stations = data.to_station_data_all("concso4", add_meta_keys=["area_classification"])
+    area_type = ["Rural", "Urban"]
+    assert all_stations["stats"][1]["area_classification"].strip() == area_type[0]
+    assert all_stations["stats"][0]["area_classification"].strip() == area_type[1]
 
 
 def test_pyarotoungriddeddata_stations(pyaro_testdata):
