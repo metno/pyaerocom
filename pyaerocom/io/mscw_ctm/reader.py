@@ -37,6 +37,7 @@ from .additional_variables import (
     identity,
     subtract_dataarrays,
     update_EC_units,
+    calc_concpolyol,
 )
 from .model_variables import emep_variables
 
@@ -103,6 +104,9 @@ class ReadMscwCtm:
         "concNno2": ["concno2"],
         "concSso2": ["concso2"],
         "vmro3": ["conco3"],
+
+        # For Pollen
+        "concpolyol": ["concspores"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -145,6 +149,7 @@ class ReadMscwCtm:
         "concNno2": calc_concNno2,
         "concSso2": calc_concSso2,
         "vmro3": calc_vmro3,
+        "concpolyol": calc_concpolyol,
     }
 
     #: supported filename masks, placeholder is for frequencies
