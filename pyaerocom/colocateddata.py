@@ -1284,7 +1284,7 @@ class ColocatedData(BaseModel):
                 f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
 
-        arr = xr.open_dataarray(file_path)
+        arr = xr.open_dataarray(file_path, engine="h5netcdf")
         ensure_correct_dimensions(arr)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr
