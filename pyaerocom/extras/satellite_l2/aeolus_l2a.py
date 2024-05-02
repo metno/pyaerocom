@@ -384,8 +384,9 @@ class ReadL2Data(ReadL2DataBase):
         # variable name of the topography in the topography file
         self.EMEP_TOPO_FILE_VAR_NAME = "topography"
 
+        # ensure logging shows this file
+        self.logger = logging.getLogger(__name__)
         if loglevel is not None:
-            # self.logger = logging.getLogger(__name__)
             # if self.logger.hasHandlers():
             #     # Logger is already configured, remove all handlers
             #     self.logger.handlers = []
@@ -1159,7 +1160,7 @@ class ReadL2Data(ReadL2DataBase):
                         end_index = index_counter + matching_length
                         if end_index > len(ret_data):
                             # append the needed elements
-                            logging.info(
+                            self.logger.info(
                                 f"adding {end_index - len(ret_data)} elements to ret_data"
                             )
                             ret_data = np.append(
@@ -1178,9 +1179,11 @@ class ReadL2Data(ReadL2DataBase):
                         index_counter += matching_length
 
             elif isinstance(location, tuple):
-                logging.error("passing one location as tuple not supported at this point")
+                self.logger.error("passing one location as tuple not supported at this point")
             else:
-                logging.error("locations have to be passed as a list of tuples with (lat, lon)")
+                self.logger.error(
+                    "locations have to be passed as a list of tuples with (lat, lon)"
+                )
             # return only the part of the array containing some values
             if cut_flag:
                 ret_data = ret_data[:index_counter, :]
@@ -1278,7 +1281,7 @@ class ReadL2Data(ReadL2DataBase):
         lon_max = 360.0
 
         if bbox is not None:
-            logging.info(bbox)
+            self.logger.info(bbox)
             lat_min = bbox[0]
             lat_max = bbox[1]
             lon_min = bbox[2]
@@ -1299,16 +1302,16 @@ class ReadL2Data(ReadL2DataBase):
             # np.where can unfortunately only work with a single criterion
             matching_indexes = np.where(ret_data[:, self._LATINDEX] <= lat_max)
             ret_data = ret_data[matching_indexes[0], :]
-            # logging.warning('len after lat_max: {}'.format(len(ret_data)))
+            # self.logger.warning('len after lat_max: {}'.format(len(ret_data)))
             matching_indexes = np.where(ret_data[:, self._LATINDEX] >= lat_min)
             ret_data = ret_data[matching_indexes[0], :]
-            # logging.warning('len after lat_min: {}'.format(len(ret_data)))
+            # self.logger.warning('len after lat_min: {}'.format(len(ret_data)))
             matching_indexes = np.where(ret_data[:, self._LONINDEX] <= lon_max)
             ret_data = ret_data[matching_indexes[0], :]
-            # logging.warning('len after lon_max: {}'.format(len(ret_data)))
+            # self.logger.warning('len after lon_max: {}'.format(len(ret_data)))
             matching_indexes = np.where(ret_data[:, self._LONINDEX] >= lon_min)
             ret_data = ret_data[matching_indexes[0], :]
-            # logging.warning('len after lon_min: {}'.format(len(ret_data)))
+            # self.logger.warning('len after lon_min: {}'.format(len(ret_data)))
             # matching_length = len(matching_indexes[0])
 
             # end_time = time.perf_counter()
@@ -1324,7 +1327,7 @@ class ReadL2Data(ReadL2DataBase):
             #     data_lat_max = np.nanmax(self.data[:,self._LATINDEX])
             #     data_lon_min = np.nanmin(self.data[:,self._LONINDEX])
             #     data_lon_max = np.nanmax(self.data[:,self._LONINDEX])
-            #     logging.info('[lat_min, lat_max, lon_min, lon_max in data]: '.format([data_lat_min, data_lat_max, data_lon_min, data_lon_max]))
+            #     self.logger.info('[lat_min, lat_max, lon_min, lon_max in data]: '.format([data_lat_min, data_lat_max, data_lon_min, data_lon_max]))
             return ret_data
 
     ###################################################################################
