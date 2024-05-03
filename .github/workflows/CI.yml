@@ -123,7 +123,7 @@ jobs:
     - name: Tox environment
       run: |
         pip install --upgrade pdm
-        pdm install --strategy direct_minimal_versions .
+        pdm lock --strategy direct_minimal_versions .
         pdm install
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
