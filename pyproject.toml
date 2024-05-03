@@ -23,6 +23,7 @@ requires-python = ">=3.10"
 dependencies = [
     "scitools-iris>=3.8.1",
     "xarray",
+    "h5netcdf>1.0.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
@@ -46,7 +47,6 @@ dependencies = [
     'cf-units>=3.1',
     "pyaro",
     "pydantic>2",
-    "h5netcdf>1.0.0"
 ]
 
 [project.readme]
