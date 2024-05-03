@@ -46,7 +46,7 @@ dependencies = [
     'cf-units>=3.1',
     "pyaro",
     "pydantic>2",
-
+    "h5netcdf>1.0.0"
 ]
 
 [project.readme]
