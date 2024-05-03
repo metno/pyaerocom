@@ -339,68 +339,70 @@ class ReadGhost(ReadUngriddedBase):
         if var_to_write is None:
             var_to_write = self.var_names_data_inv[var_to_read]
 
-        ds = xr.open_dataset(filename)
+        with xr.open_dataset(filename) as ds:
 
-        if not {"station", "time"}.issubset(ds.dims):  # pragma: no cover
-            raise AttributeError("Missing dimensions")
-        if not "station_name" in ds:  # pragma: no cover
-            raise AttributeError("No variable station_name found")
+            if not {"station", "time"}.issubset(ds.dims):  # pragma: no cover
+                raise AttributeError("Missing dimensions")
+            if not "station_name" in ds:  # pragma: no cover
+                raise AttributeError("No variable station_name found")
 
-        stats = []
+            stats = []
 
-        # get all station metadata values as numpy arrays, since xarray isel,
-        # __getitem__, __getattr__ are slow... this can probably be solved
-        # more elegantly
-        meta_glob = {}
-        for meta_key in self.META_KEYS:
-            try:
-                meta_glob[meta_key] = ds[meta_key].values
-            except KeyError:  # pragma: no cover
-                logger.warning(f"No such metadata key in GHOST data file: {Path(filename).name}")
+            # get all station metadata values as numpy arrays, since xarray isel,
+            # __getitem__, __getattr__ are slow... this can probably be solved
+            # more elegantly
+            meta_glob = {}
+            for meta_key in self.META_KEYS:
+                try:
+                    meta_glob[meta_key] = ds[meta_key].values
+                except KeyError:  # pragma: no cover
+                    logger.warning(
+                        f"No such metadata key in GHOST data file: {Path(filename).name}"
+                    )
 
-        for meta_key, to_unit in self.CONVERT_UNITS_META.items():
-            from_unit = ds[meta_key].attrs["units"]
+            for meta_key, to_unit in self.CONVERT_UNITS_META.items():
+                from_unit = ds[meta_key].attrs["units"]
 
-            if from_unit != to_unit:
-                cfac = cf_units.Unit(from_unit).convert(1, to_unit)
-                meta_glob[meta_key] *= cfac
+                if from_unit != to_unit:
+                    cfac = cf_units.Unit(from_unit).convert(1, to_unit)
+                    meta_glob[meta_key] *= cfac
 
-        tvals = ds["time"].values
+            tvals = ds["time"].values
 
-        vardata = ds[var_to_read]  # DataArray
-        varinfo = vardata.attrs
+            vardata = ds[var_to_read]  # DataArray
+            varinfo = vardata.attrs
 
-        # ToDo: it is important that station comes first since we use numpy
-        # indexing below and not xarray.isel or similar, due to performance
-        # issues. This may need to be updated in case of profile data.
-        assert vardata.dims == ("station", "time")
-        data_np = vardata.values
+            # ToDo: it is important that station comes first since we use numpy
+            # indexing below and not xarray.isel or similar, due to performance
+            # issues. This may need to be updated in case of profile data.
+            assert vardata.dims == ("station", "time")
+            data_np = vardata.values
 
-        # evaluate flags
-        invalid = self._eval_flags(vardata, invalidate_flags, ds)
+            # evaluate flags
+            invalid = self._eval_flags(vardata, invalidate_flags, ds)
 
-        for idx in ds.station.values:
-            stat = {}
-            meta = StationMetaData()
-            meta["ts_type"] = self.TS_TYPE
-            stat["time"] = tvals
-            stat["meta"] = meta
-            meta["var_info"] = {}
+            for idx in ds.station.values:
+                stat = {}
+                meta = StationMetaData()
+                meta["ts_type"] = self.TS_TYPE
+                stat["time"] = tvals
+                stat["meta"] = meta
+                meta["var_info"] = {}
 
-            for meta_key, vals in meta_glob.items():
-                meta[meta_key] = vals[idx]
+                for meta_key, vals in meta_glob.items():
+                    meta[meta_key] = vals[idx]
 
-            # vardata = subset[var_name]
-            stat[var_to_write] = data_np[idx]
+                # vardata = subset[var_name]
+                stat[var_to_write] = data_np[idx]
 
-            meta["var_info"][var_to_write] = {}
-            meta["var_info"][var_to_write].update(varinfo)
+                meta["var_info"][var_to_write] = {}
+                meta["var_info"][var_to_write].update(varinfo)
 
-            # import flagdata (2D array with time and flag dimensions)
-            # invalid = self._eval_flags(vardata, invalidate_flags)
-            stat["data_flagged"] = {}
-            stat["data_flagged"][var_to_write] = invalid[idx]
-            stats.append(stat)
+                # import flagdata (2D array with time and flag dimensions)
+                # invalid = self._eval_flags(vardata, invalidate_flags)
+                stat["data_flagged"] = {}
+                stat["data_flagged"][var_to_write] = invalid[idx]
+                stats.append(stat)
 
         return stats
 

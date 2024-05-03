@@ -3179,16 +3179,15 @@ class ReadL2Data(ReadL2DataBase):
         if topofile is not None:
             # read topography since that needs to be added to the ground following height of the model
             self.logger.info("reading topography file {}".format(options["topofile"]))
-            topo_data = xr.open_dataset(options["topofile"])
-            topo_altitudes = np.squeeze(topo_data[self.EMEP_TOPO_FILE_VAR_NAME])
-            topo_data.close()
+            with xr.open_dataset(options["topofile"]) as topo_data:
+                topo_altitudes = np.squeeze(topo_data[self.EMEP_TOPO_FILE_VAR_NAME])
 
         if not os.path.exists(file_name):
             obj.logger.info(f"file does not exist: {file_name}. skipping colocation ...")
             return False
         # read netcdf file if it has not yet been loaded
         obj.logger.info(f"reading model file {file_name}")
-        nc_data = xr.open_dataset(file_name)
+        nc_data = xr.load_dataset(file_name)
         nc_data[self._LATITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]]
         nc_data[self._LONGITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]]
         nc_data[self._TIME_NAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._TIME_NAME]]
