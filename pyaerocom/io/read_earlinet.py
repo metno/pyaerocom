@@ -229,7 +229,6 @@ class ReadEarlinet(ReadUngriddedBase):
         self.logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4") as data_in:
-
             # getting the coords since no longer in metadata
             # Put also just in the attributes. not sure why appears twice
             data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
