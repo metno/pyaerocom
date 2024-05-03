@@ -22,7 +22,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "scitools-iris>=3.8.1",
-    "xarray<=2022.10.0",
+    "xarray",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
