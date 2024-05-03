@@ -1283,7 +1283,7 @@ class ColocatedData(BaseModel):
             raise NetcdfError(
                 f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
-        arr =  xr.load_dataarray(file_path)
+        arr = xr.load_dataarray(file_path)
         ensure_correct_dimensions(arr)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr
