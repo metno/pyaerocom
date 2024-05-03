@@ -31,7 +31,7 @@ dependencies = [
     "seaborn>=0.12.2",
     "dask",
     "geonum==1.5.0",
-    "simplejson>=1.1",
+    "simplejson>=3.17.2",
     "requests",
     "geocoder_reverse_natural_earth",
     "tqdm",
