@@ -124,10 +124,8 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install pdm
-        pdm config python.use_venv true
-        pdm use -f .venv
-        pdm lock --strategy direct_minimal_versions
-        pdm install
+        pdm lock --strategy direct_minimal_versions -v
+        pdm install -v
         pip install pytest
         pip freeze
     - name: Run tests
