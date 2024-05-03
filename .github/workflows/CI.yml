@@ -63,6 +63,7 @@ jobs:
     - name: Tox environment
       run: |
         pip install --upgrade pip
+        pip freeze
         pip install tox
         tox -e py --notest
     - name: Run tests
@@ -99,5 +100,7 @@ jobs:
         python --version
     - name: Install pyaerocom
       run: python -m pip install . --no-deps
+    - name: pip freeze
+      run: pip freeze
     - name: Run pytest
       run: python -m pytest -ra -q --cov --no-cov-on-fail --cov-report xml
