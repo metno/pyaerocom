@@ -125,6 +125,7 @@ jobs:
         pip install --upgrade pip
         pip install pdm
         pdm config python.use_venv true
+        pdm use -f .venv
         pdm lock --strategy direct_minimal_versions
         pdm install
         pip install pytest
