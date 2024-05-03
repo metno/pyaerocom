@@ -4,7 +4,7 @@ channels:
   - conda-forge
 dependencies:
   - iris >=3.8.1
-  - xarray <=2022.10.0
+  - xarray
   - h5netcdf >1.0.0
   - cartopy >=0.21.1
   - matplotlib-base >=3.7.1
