@@ -149,10 +149,10 @@ def load_region_mask_xr(*regions):
     for i, fil in enumerate(get_htap_mask_files(*regions)):
         r = regions[i]
         if i == 0:
-            masks = xr.open_dataset(fil)[r + "htap"]
+            masks = xr.load_dataset(fil)[r + "htap"]
             name = r
         else:
-            masks += xr.open_dataset(fil)[r + "htap"]
+            masks += xr.load_dataset(fil)[r + "htap"]
             name += f"-{r}"
     if masks is not None:
         mask = masks.where(masks < 1, 1)
