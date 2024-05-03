@@ -38,10 +38,13 @@ dependencies = [
     "openpyxl>=3.0.7",
     "geojsoncontour>=0.4.0",
     "typer>=0.7.0",
-    # python < 3.11
-    'tomli>=2.0.1; python_version < "3.11"',
-    'importlib-resources>=5.10; python_version < "3.11"',
-    'typing-extensions>=4.0.1; python_version < "3.11"',
+    "tomli>=2.0.1",
+    "importlib-resources>=5.10",
+    "typing-extensions>=4.0.1",
+#    # python < 3.11
+#    'tomli>=2.0.1; python_version < "3.11"',
+#    'importlib-resources>=5.10; python_version < "3.11"',
+#    'typing-extensions>=4.0.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
     "pyaro",
