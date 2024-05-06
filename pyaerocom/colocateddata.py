@@ -148,6 +148,12 @@ class ColocatedData(BaseModel):
             data = xr.DataArray(self.data, **extra_args_from_class_initialization)
             self.data = data
 
+    # Override __init__ to allow for positional arguments
+    def __init__(
+        self, data: Path | str | xr.DataArray | np.ndarray | None = None, **kwargs
+    ) -> None:
+        super(ColocatedData, self).__init__(data=data, **kwargs)
+
     #################################
     ##        Attributes
     #################################
