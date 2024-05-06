@@ -4,11 +4,13 @@ import logging
 import os
 import warnings
 from ast import literal_eval
+from functools import cached_property
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import xarray
+import xarray as xr
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -24,16 +26,35 @@ from pyaerocom.exceptions import (
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-from pyaerocom.mathutils import calc_statistics
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
+from pyaerocom.stats.stats import calculate_statistics
 from pyaerocom.time_resampler import TimeResampler
 
 logger = logging.getLogger(__name__)
 
 
-class ColocatedData:
+def ensure_correct_dimensions(data: np.ndarray | xr.DataArray):
+    """
+    Ensure the dimensions on either a numpy aray or xarray passed to ColocatedData.
+    If a ColocatedData object is created outside of pyaerocom, this checking is needed.
+    This function is used as part of the model validator.
+    """
+    shape = data.shape[0]
+    if isinstance(data, np.ndarray):
+        num_dims = data.ndim
+    elif isinstance(data, xr.DataArray):
+        num_dims = len(data.dims)
+    else:
+        raise ValueError("Could not interpret data")
+    if num_dims not in (3, 4):
+        raise DataDimensionError("invalid input, need 3D or 4D numpy array")
+    elif not shape == 2:
+        raise DataDimensionError("first dimension (data_source) must be of length 2(obs, model)")
+
+
+class ColocatedData(BaseModel):
     """Class representing colocated and unified data from two sources
 
     Sources may be instances of :class:`UngriddedData` or
@@ -41,11 +62,13 @@ class ColocatedData:
 
     Note
     ----
-    Currently, it is not foreseen, that this object is instantiated from
-    scratch, but it is rather created in and returned by objects / methods
-    that perform colocation.
+    It is intended that this object can either be instantiated from
+    scratch OR created in and returned by pyaerocom objects / methods
+    that perform colocation. This is particauarly true as pyaerocom will
+    now be expected to read in colocated files created outside of pyaerocom.
+    (Related CAMS2_82 development)
 
-    The purpose of this object is thus, not the creation of colocated objects,
+    The purpose of this object is not the creation of colocated objects,
     but solely the analysis of such data as well as I/O features (e.g. save as
     / read from .nc files, convert to pandas.DataFrame, plot station time
     series overlays, scatter plots, etc.).
@@ -81,55 +104,53 @@ class ColocatedData:
         if init fails
     """
 
-    __version__ = "0.11"
+    ###########################
+    ##   Pydantic ConfigDict
+    ###########################
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow",
+        protected_namespaces=(),
+        validate_assignment=True,
+    )
 
-    def __init__(self, data=None, **kwargs):
-        self._data = None
-        if data is not None:
-            if isinstance(data, Path):
-                # make sure path is str instance
-                data = str(data)
-            if isinstance(data, str):
-                self.open(data)
-            elif isinstance(data, xarray.DataArray):
-                self.data = data
-            elif isinstance(data, np.ndarray):
-                if not data.ndim in (3, 4):
-                    raise DataDimensionError("invalid input, need 3D or 4D numpy array")
-                elif not data.shape[0] == 2:
-                    raise DataDimensionError(
-                        "first dimension (data_source) must be of length 2(obs, model)"
-                    )
-                data = xarray.DataArray(data, **kwargs)
-                self.data = data
+    # versions lower than 1.0 are not based on Pydantic's BaseModel
+    __version__ = "1.0"
+
+    #################################
+    ##   Pydantic-based Attributes
+    #################################
+
+    data: Path | str | xr.DataArray | np.ndarray | None = None
+
+    @model_validator(mode="after")
+    def validate_data(self):
+        if isinstance(self.data, Path):
+            # make sure path is str instance
+            self.data = str(self.data)
+        if isinstance(self.data, str):
+            assert self.data.endswith("nc"), ValueError(
+                "Invalid data filepath str, must point to a .nc file"
+            )
+            self.open(self.data)
+        elif isinstance(self.data, xr.DataArray):
+            ensure_correct_dimensions(self.data)
+            return self.data
+        elif isinstance(self.data, np.ndarray):
+            ensure_correct_dimensions(self.data)
+            if hasattr(self, "model_extra"):
+                da_keys = dir(xr.DataArray)
+                extra_args_from_class_initialization = {
+                    key: val for key, val in self.model_extra.items() if key in da_keys
+                }
             else:
-                raise ValueError(f"Failed to interpret input {data}")
+                extra_args_from_class_initialization = {}
+            data = xr.DataArray(self.data, **extra_args_from_class_initialization)
+            self.data = data
 
-    @property
-    def data(self):
-        """:class:`xarray.DataArray` containing colocated data
-
-        Raises
-        ------
-        AttributeError
-            if data is not available
-
-        Returns
-        -------
-        xarray.DataArray
-            array containing colocated data and metadata (in fact, there is no
-            additional attributes to `ColocatedData` and everything is contained
-            in :attr:`data`).
-        """
-        if self._data is None:
-            raise AttributeError("No data available in this object")
-        return self._data
-
-    @data.setter
-    def data(self, val):
-        if not isinstance(val, xarray.DataArray):
-            raise ValueError("Invalid input for data attribute, need instance of xarray.DataArray")
-        self._data = val
+    #################################
+    ##        Attributes
+    #################################
 
     @property
     def ndim(self):
@@ -176,8 +197,6 @@ class ColocatedData:
     @property
     def longitude(self):
         """Array of longitude coordinates"""
-        if not "longitude" in self.data.coords:
-            raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
     @property
@@ -189,8 +208,6 @@ class ColocatedData:
     @property
     def latitude(self):
         """Array of latitude coordinates"""
-        if not "latitude" in self.data.coords:
-            raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
     @property
@@ -202,8 +219,6 @@ class ColocatedData:
     @property
     def time(self):
         """Array containing time stamps"""
-        if not "time" in self.data.dims:
-            raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
     @property
@@ -219,7 +234,7 @@ class ColocatedData:
     @property
     def ts_type(self):
         """String specifying temporal resolution of data"""
-        if not "ts_type" in self.metadata:
+        if "ts_type" not in self.metadata:
             raise ValueError(
                 "Colocated data object does not contain information about temporal resolution"
             )
@@ -254,7 +269,7 @@ class ColocatedData:
                 val = "N/D"
             elif not isinstance(val, str):
                 val = str(val)
-            if not val in unique:
+            if val not in unique:
                 unique.append(val)
         return ", ".join(unique)
 
@@ -267,7 +282,7 @@ class ColocatedData:
     def num_coords(self):
         """Total number of lat/lon coordinate pairs"""
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
-        if not "station_name" in obj.coords:
+        if "station_name" not in obj.coords:
             raise DataDimensionError("Need dimension station_name")
         return len(obj.data.station_name)
 
@@ -282,12 +297,12 @@ class ColocatedData:
         """
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
         dims = obj.dims
-        if not "station_name" in dims:
+        if "station_name" not in dims:
             raise DataDimensionError("Need dimension station_name")
         obs = obj.data[0]
         if len(dims) > 3:  # additional dimensions
             default_dims = ("data_source", "time", "station_name")
-            add_dims = tuple(x for x in dims if not x in default_dims)
+            add_dims = tuple(x for x in dims if x not in default_dims)
             raise DataDimensionError(
                 f"Can only unambiguously retrieve no of coords with obs data "
                 f"for colocated data with dims {default_dims}, please reduce "
@@ -326,7 +341,7 @@ class ColocatedData:
         list
             list of countries available in these data
         """
-        if not "country" in self.coords:
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -350,7 +365,7 @@ class ColocatedData:
         list
             list of countries available in these data
         """
-        if not "country_code" in self.coords:
+        if "country_code" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -359,12 +374,33 @@ class ColocatedData:
             )
         return sorted(dict.fromkeys(self.data["country_code"].data))
 
-    @property
+    @cached_property
     def area_weights(self):
         """
         Wrapper for :func:`calc_area_weights`
         """
         return self.calc_area_weights()
+
+    @property
+    def savename_aerocom(self):
+        """Default save name for data object following AeroCom convention"""
+        obsid, modid = self.metadata["data_source"]
+        obsvar, modvar = self.metadata["var_name"]
+
+        return self._aerocom_savename(
+            obsvar,
+            obsid,
+            modvar,
+            modid,
+            self.start_str,
+            self.stop_str,
+            self.ts_type,
+            self.metadata["filter_name"],
+        )
+
+    #################################
+    ##          Methods
+    #################################
 
     def get_meta_item(self, key: str):
         """
@@ -407,7 +443,7 @@ class ColocatedData:
             dictionary of unique country names (keys) and corresponding country
             codes (values)
         """
-        if not "country" in self.coords:
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -436,9 +472,9 @@ class ColocatedData:
             raise DataDimensionError(
                 "Can only compute area weights for data with latitude and longitude dimension"
             )
-        if not "units" in self.data.latitude.attrs:
+        if "units" not in self.data.latitude.attrs:
             self.data.latitude.attrs["units"] = "degrees"
-        if not "units" in self.data.longitude.attrs:
+        if "units" not in self.data.longitude.attrs:
             self.data.longitude.attrs["units"] = "degrees"
         arr = self.data
         from pyaerocom import GriddedData
@@ -576,7 +612,7 @@ class ColocatedData:
         arr = self.stack(station_name=["latitude", "longitude"], inplace=False).data
 
         arr = arr.transpose(*newdims)
-        return ColocatedData(arr)
+        return ColocatedData(data=arr)
 
     def stack(self, inplace=False, **kwargs):
         """Stack one or more dimensions
@@ -660,7 +696,7 @@ class ColocatedData:
             list containing 3-element tuples, one for each site i, comprising
             (latitude[i], longitude[i], station_name[i]).
         """
-        if not "station_name" in self.data.dims:
+        if "station_name" not in self.data.dims:
             raise AttributeError(
                 "ColocatedData object has no dimension station_name. Consider stacking..."
             )
@@ -738,7 +774,7 @@ class ColocatedData:
         if assign_to_dim is None:
             assign_to_dim = "station_name"
 
-        if not assign_to_dim in self.dims:
+        if assign_to_dim not in self.dims:
             raise DataDimensionError("No such dimension", assign_to_dim)
 
         coldata = self if inplace else self.copy()
@@ -764,7 +800,7 @@ class ColocatedData:
 
     def copy(self):
         """Copy this object"""
-        return ColocatedData(self.data.copy())
+        return ColocatedData(data=self.data.copy())
 
     def set_zeros_nan(self, inplace=True):
         """
@@ -793,11 +829,11 @@ class ColocatedData:
 
         Calculate standard statistics for model assessment. This is done by
         taking all model and obs data points in this object as input for
-        :func:`pyaerocom.mathutils.calc_statistics`. For instance, if the
+        :func:`pyaerocom.stats.stats.calculate_statistics`. For instance, if the
         object is 3D with dimensions `data_source` (obs, model), `time` (e.g.
         12 monthly values) and `station_name` (e.g. 4 sites), then the input
         arrays for model and obs into
-        :func:`pyaerocom.mathutils.calc_statistics` will be each of size
+        :func:`pyaerocom.stats.stats.calculate_statistics` will be each of size
         12x4.
 
         See also :func:`calc_temporal_statistics` and
@@ -811,14 +847,14 @@ class ColocatedData:
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
+            :func:`pyaerocom.stats.stats.calculate_statistics`
 
         Returns
         -------
         dict
             dictionary containing statistical parameters
         """
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
+        if use_area_weights and "weights" not in kwargs and self.has_latlon_dims:
             kwargs["weights"] = self.area_weights[0].flatten()
 
         nc = self.num_coords
@@ -828,7 +864,7 @@ class ColocatedData:
             ncd = np.nan
         obsvals = self.data.values[0].flatten()
         modvals = self.data.values[1].flatten()
-        stats = calc_statistics(modvals, obsvals, **kwargs)
+        stats = calculate_statistics(modvals, obsvals, **kwargs)
 
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
@@ -841,7 +877,7 @@ class ColocatedData:
         dimension(s) (that is, `station_name` for 3D data, and
         `latitude` and `longitude` for 4D data), so that only `data_source` and
         `time` remains as dimensions. These 2D data are then used to calculate
-        standard statistics using :func:`pyaerocom.mathutils.calc_statistics`.
+        standard statistics using :func:`pyaerocom.stats.stats.calculate_statistics`.
 
         See also :func:`calc_statistics` and
         :func:`calc_spatial_statistics`.
@@ -853,7 +889,7 @@ class ColocatedData:
             supported. Defaults to mean.
         **kwargs
             additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
+            :func:`pyaerocom.stats.stats.calculate_statistics`
 
         Returns
         -------
@@ -879,7 +915,7 @@ class ColocatedData:
         else:
             raise ValueError("So far only mean and median are supported aggregators")
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
-        stats = calc_statistics(mod, obs, **kwargs)
+        stats = calculate_statistics(mod, obs, **kwargs)
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
@@ -892,7 +928,7 @@ class ColocatedData:
         new station_name dimension, so that the resulting dimensions are
         `data_source` and `station_name`. These 2D data are then used to
         calculate standard statistics using
-        :func:`pyaerocom.mathutils.calc_statistics`.
+        :func:`pyaerocom.stats.stats.calculate_statistics`.
 
         See also :func:`calc_statistics` and
         :func:`calc_temporal_statistics`.
@@ -908,7 +944,7 @@ class ColocatedData:
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
-            :func:`pyaerocom.mathutils.calc_statistics`
+            :func:`pyaerocom.stats.stats.calculate_statistics`
 
         Returns
         -------
@@ -917,7 +953,7 @@ class ColocatedData:
         """
         if aggr is None:
             aggr = "mean"
-        if use_area_weights and not "weights" in kwargs and self.has_latlon_dims:
+        if use_area_weights and "weights" not in kwargs and self.has_latlon_dims:
             weights = self.area_weights[0]  # 3D (time, lat, lon)
             assert self.dims[1] == "time"
             kwargs["weights"] = np.nanmean(weights, axis=0).flatten()
@@ -935,7 +971,7 @@ class ColocatedData:
             raise ValueError("So far only mean and median are supported aggregators")
 
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
-        stats = calc_statistics(mod, obs, **kwargs)
+        stats = calculate_statistics(mod, obs, **kwargs)
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
@@ -1037,9 +1073,9 @@ class ColocatedData:
         DataSourceError
             if input data_source is not available in this object
         """
-        if not data_source in self.metadata["data_source"]:
+        if data_source not in self.metadata["data_source"]:
             raise DataSourceError(f"No such data source {data_source} in ColocatedData")
-        if not var_name in self.metadata["var_name"]:
+        if var_name not in self.metadata["var_name"]:
             raise VarNotAvailableError(f"No such variable {var_name} in ColocatedData")
 
         if inplace:
@@ -1080,23 +1116,6 @@ class ColocatedData:
                 f"{mod_var}_{obs_var}_MOD-{mod_id}_REF-{obs_id}_"
                 f"{start_str}_{stop_str}_{ts_type}_{filter_name}"
             )
-
-    @property
-    def savename_aerocom(self):
-        """Default save name for data object following AeroCom convention"""
-        obsid, modid = self.metadata["data_source"]
-        obsvar, modvar = self.metadata["var_name"]
-
-        return self._aerocom_savename(
-            obsvar,
-            obsid,
-            modvar,
-            modid,
-            self.start_str,
-            self.stop_str,
-            self.ts_type,
-            self.metadata["filter_name"],
-        )
 
     @staticmethod
     def get_meta_from_filename(file_path):
@@ -1264,8 +1283,8 @@ class ColocatedData:
             raise NetcdfError(
                 f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
-
-        arr = xarray.open_dataarray(file_path)
+        arr = xr.load_dataarray(file_path)
+        ensure_correct_dimensions(arr)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr
         return self
@@ -1377,7 +1396,7 @@ class ColocatedData:
         if inplace:
             self.data = filtered
             return self
-        return ColocatedData(filtered)
+        return ColocatedData(data=filtered)
 
     @staticmethod
     def _filter_altitude_2d(arr, alt_range):
@@ -1468,7 +1487,7 @@ class ColocatedData:
 
         """
         what = "country" if not use_country_code else "country_code"
-        if not what in arr.coords:
+        if what not in arr.coords:
             raise DataDimensionError(
                 f"Cannot filter country {country}. No country information available in DataArray"
             )
@@ -1835,7 +1854,7 @@ class ColocatedData:
         """
         if not len(self.data_source) == 2:
             raise DataDimensionError("data_source dimension needs exactly 2 entries")
-        elif not "time" in self.dims:
+        elif "time" not in self.dims:
             raise DataDimensionError("data needs to have time dimension")
         _arr = self.data
         mod, obs = _arr[1], _arr[0]
@@ -1883,50 +1902,12 @@ class ColocatedData:
 
     def __repr__(self):
         tp = type(self).__name__
-        dstr = "<empty>" if self._data is None else repr(self._data)
+        dstr = "<empty>" if self.data is None else repr(self.data)
         return f"pyaerocom.{tp}: data: {dstr}"
 
     def __str__(self):
         tp = type(self).__name__
         head = f"pyaerocom.{tp}"
         underline = len(head) * "-"
-        dstr = "<empty>" if self._data is None else str(self._data)
+        dstr = "<empty>" if self.data is None else str(self.data)
         return f"{head}\n{underline}\ndata (DataArray): {dstr}"
-
-    ### Deprecated (but still supported) stuff
-    # ToDo: v0.12.0
-    @property
-    def unit(self):
-        """DEPRECATED -> use :attr:`units`"""
-        warnings.warn(
-            "Attr. ColocatedData.unit is deprecated (but still works), "
-            "please use ColocatedData.units. "
-            "Support guaranteed until pyaerocom v0.12.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.units
-
-    @property
-    def meta(self):
-        """DEPRECATED -> use :attr:`metadata`"""
-        warnings.warn(
-            "Attr. ColocatedData.meta is deprecated, "
-            "use ColocatedData.metadata instread."
-            "Support guaranteed until pyaerocom v0.12.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.metadata
-
-    @property
-    def num_grid_points(self):
-        """DEPRECATED -> use :attr:`num_coords`"""
-        warnings.warn(
-            "ColocatedData.num_grid_points is deprecated, "
-            "please use ColocatedData.num_coords"
-            "Support guaranteed until pyaerocom v0.12.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.num_coords

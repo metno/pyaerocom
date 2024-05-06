@@ -104,13 +104,13 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
             darrs.append(self._get_dataarray(fp, to_freq, obs_name))
 
         merged = xr.concat(darrs, dim="station_name")
-        coldata = ColocatedData(merged)
+        coldata = ColocatedData(data=merged)
         engine = ColdataToJsonEngine(self.cfg)
         engine.process_coldata(coldata)
 
     def _get_dataarray(self, fp, to_freq, obs_name):
         """Get dataarray needed for combination to superobs"""
-        data = ColocatedData(fp)
+        data = ColocatedData(data=fp)
         if data.ts_type != to_freq:
             data.resample_time(to_ts_type=to_freq, settings_from_meta=True, inplace=True)
         arr = data.data

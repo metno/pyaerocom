@@ -12,12 +12,12 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 import logging
 
+import numpy as np
 from geonum import atmosphere as atm
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
-    DataDimensionError,
     VariableDefinitionError,
     VariableNotFoundError,
 )
@@ -25,7 +25,9 @@ from pyaerocom.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
+def atmosphere_sigma_coordinate_to_pressure(
+    sigma: np.ndarray | float, ps: float, ptop: float
+) -> np.ndarray | float:
     """Convert atmosphere sigma coordinate to pressure in Pa
 
     Note
@@ -53,15 +55,19 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
     ndarray or float
         computed pressure levels in Pa (standard_name=air_pressure)
     """
-    if not isinstance(ptop, float):
+    if not isinstance(ptop, float | np.ndarray):
         try:
             ptop = float(ptop)
-        except Exception as e:
-            raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid input for ptop. Need floating point\nError: {repr(e)}"
+            ) from e
     return ptop + sigma * (ps - ptop)
 
 
-def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0=None):
+def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(
+    a: np.ndarray, b: np.ndarray, ps: float, p0: float | None = None
+) -> np.ndarray:
     """Convert atmosphere_hybrid_sigma_pressure_coordinate to  pressure in Pa
 
     **Formula**:
@@ -95,93 +101,11 @@ def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0=None):
         computed pressure levels in Pa (standard_name=air_pressure)
 
     """
-    if not len(a) == len(b):
+    if len(a) != len(b):
         raise ValueError("Invalid input: a and b must have the same length")
     if p0 is None:
         return a + b * ps
     return a * p0 + b * ps
-
-
-def geopotentialheight2altitude(geopotential_height):
-    """Convert geopotential height in m to altitude in m
-
-    Note
-    ----
-    This is a dummy function that returns the input, as the conversion is not
-    yet implemented.
-
-    Parameters
-    ----------
-    geopotential_height
-        input geopotential height values in m
-
-    Returns
-    -------
-    Computed altitude levels
-    """
-
-    logger.warning(
-        "Conversion method of geopotential height to "
-        "altitude is not yet implemented and returns the "
-        "input values. The introduced error is small at "
-        "tropospheric altitudes"
-    )
-    return geopotential_height
-
-
-def pressure2altitude(p, *args, **kwargs):
-    """General formula to convert atm. pressure to altitude
-
-    Wrapper method for :func:`geonum.atmosphere.pressure2altitude`
-
-    **Formula:**
-
-    .. math::
-
-        h = h_{ref} + \\frac{T_{ref}}{L} \\left(\\exp\\left[-\\frac{\\ln\\left(\\frac{p}{p_{ref}} \\right)}{\\beta}\\right] - 1\\right) \\quad [m]
-
-    where:
-
-        - :math:`$h_{ref}$` is a reference altitude
-        - :math:`$T_{ref}$` is a reference temperature
-        - :math:`$L$` is the atmospheric lapse-rate (cf. :attr:`L_STD_ATM`, \
-                                                     :attr:`L_DRY_AIR`)
-        - :math:`$p$` is the pressure (cf. :func:`pressure`)
-        - :math:`$p_{ref}$` is a reference pressure
-        - :math:`$\\beta$` is computed using :func:`beta_exp`
-
-    Parameters
-    ----------
-    p
-        pressure in Pa
-    *args
-        additional non-keyword args passed to
-        :func:`geonum.atmosphere.pressure2altitude`
-    **kwargs
-        additional keyword args passed to
-        :func:`geonum.atmosphere.pressure2altitude`
-
-    Returns
-    -------
-    altitudes in m corresponding to input pressure levels in defined atmosphere
-    """
-    return atm.pressure2altitude(p, *args, **kwargs)
-
-
-def is_supported(standard_name):
-    """Checks if input coordinate standard name is supported by pyaerocom
-
-    Parameters
-    ----------
-    standard_name : str
-        standard name of vertical coordinate
-
-    Returns
-    -------
-    bool
-        True, if this coordinate is supported, else False
-    """
-    return True if standard_name in VerticalCoordinate.REGISTERED else False
 
 
 class VerticalCoordinate:
@@ -203,7 +127,6 @@ class VerticalCoordinate:
     CONVERSION_METHODS = {
         "asc": atmosphere_sigma_coordinate_to_pressure,
         "ahspc": atmosphere_hybrid_sigma_pressure_coordinate_to_pressure,
-        "gph": geopotentialheight2altitude,
     }
 
     CONVERSION_REQUIRES = {
@@ -248,12 +171,12 @@ class VerticalCoordinate:
         return self.CONVERSION_REQUIRES[self.var_name]
 
     @property
-    def conversion_supported(self):
+    def conversion_supported(self) -> bool:
         """Boolean specifying whether a conversion scheme is provided"""
         return True if self.standard_name in self.NAMES_SUPPORTED else False
 
     @property
-    def lev_increases_with_alt(self):
+    def lev_increases_with_alt(self) -> bool:
         """Boolean specifying whether coordinate levels increase with altitude
 
         Returns
@@ -269,12 +192,12 @@ class VerticalCoordinate:
             )
         return self._LEV_INCREASES_WITH_ALT[self.var_name]
 
-    def calc_pressure(self, lev, **kwargs):
+    def calc_pressure(self, lev: np.ndarray, **kwargs) -> np.ndarray:
         """Compute pressure levels for input vertical coordinate
 
         Parameters
         ----------
-        vals
+        vals : ndarray
             level values that are supposed to be converted into pressure
         **kwargs
             additional  keyword args required for computation of pressure
@@ -297,7 +220,7 @@ class VerticalCoordinate:
         return self.fun(coord_values, **kwargs)
 
     @property
-    def vars_supported_str(self):
+    def vars_supported_str(self) -> str:
         from pyaerocom._lowlevel_helpers import dict_to_str
 
         return dict_to_str(self.NAMES_SUPPORTED)
@@ -314,8 +237,6 @@ class VerticalCoordinate:
         -------
         """
         raise NotImplementedError("Coming soon...")
-        # pressure2altitude(p, **kwargs)
-        return
 
 
 class AltitudeAccess:
@@ -342,7 +263,6 @@ class AltitudeAccess:
         self.data_obj = gridded_data
         self._subset1d = None
         self._checked_and_failed = []
-        self._has_access = False
         self.logger = logger
 
     def __setitem__(self, key, val):
@@ -355,69 +275,12 @@ class AltitudeAccess:
         return True if key in self.__dict__ else False
 
     @property
-    def has_access(self):
-        """Boolean specifying whether altitudes can be accessed
-
-        Note
-        ----
-        Performs access check using :func:`check_altitude_access` if access
-        flag is False
-        """
-        if not self._has_access:
-            self._has_access = self.check_altitude_access()
-        return self._has_access
-
-    @property
     def coord_list(self):
         """List of AeroCom coordinate names for altitude access"""
         l = self.ADD_FILE_VARS + list(VerticalCoordinate.NAMES_SUPPORTED.values())
         return list(dict.fromkeys(l))
 
-    def extract_1D_subset_from_data(self, **coord_info):
-        """Extract 1D subset containing only vertical coordinate dimension
-
-        Note
-        ----
-        So far this Works only for 4D or 3D data that contains latitude and
-        longitude dimension and a vertical coordinate, optionally also a time
-        dimension.
-
-        The subset is extracted for a test coordinate (latitude, longitude)
-        that may be specified optinally via :attr:`coord_info`.
-
-        Parameters
-        ----------
-        **coord_info
-            optional test coordinate specifications for other than vertical
-            dimension. For all dimensions that are not specified explicitely,
-            the first available coordinate in :attr:`data_obj` is used.
-        """
-
-        d = self.data_obj
-        if not d.has_latlon_dims:
-            raise DataDimensionError(
-                "Gridded data object needs both latitude and longitude dimensions"
-            )
-        try:
-            d.check_dimcoords_tseries()
-        except DataDimensionError:
-            d.reorder_dimensions_tseries()
-        test_coord = {}
-        for dim_coord in d.dimcoord_names[:-1]:
-            if dim_coord in coord_info:
-                test_coord[dim_coord] = coord_info[dim_coord]
-            else:
-                test_coord[dim_coord] = d[dim_coord].points[0]
-        subset = d.sel(**test_coord)
-        if not subset.ndim == 1:
-            raise DataDimensionError(
-                f"Something went wrong with extraction of 1D subset at coordinate {test_coord}. "
-                f"Resulting data object has {subset.ndim} dimensions instead"
-            )
-        self._subset1d = subset
-        return subset
-
-    def search_aux_coords(self, coord_list):
+    def search_aux_coords(self, coord_list) -> bool:
         """Search and assign coordinates provided by input list
 
         All coordinates that are found are assigned to this object and can
@@ -445,7 +308,7 @@ class AltitudeAccess:
         d = self.data_obj
         for coord in coord_list:
             if coord in self:
-                pass
+                continue
             try:
                 coord_info = const.COORDINFO[coord]
             except VariableDefinitionError:
@@ -466,194 +329,3 @@ class AltitudeAccess:
     def reader(self):
         """Instance of :class:`ReadGridded`"""
         return self.data_obj.reader
-
-    def _check_vars_in_data_obj(self):
-        for var in self.ADD_FILE_VARS:
-            try:
-                self._check_var_in_data_obj(var_name=var)
-                return var
-            except Exception:
-                pass
-        raise VariableNotFoundError()
-
-    # ToDo: check alias names
-    def _check_var_in_data_obj(self, var_name):
-        c = VerticalCoordinate(var_name)
-
-        if c.var_name in self.data_obj:
-            self[var_name] = self.data_obj[var_name]
-            self._verify_altitude_access()
-        elif var_name in c.STANDARD_NAMES:
-            std_name = c.STANDARD_NAMES[var_name]
-            if std_name in self.data_obj:
-                self[var_name] = self.data_obj[std_name]
-
-    def check_altitude_access(self, **coord_info):
-        """Checks if altitude levels can be accessed
-
-        Parameters
-        ----------
-        **coord_info
-            test coordinate specifications for extraction of 1D data object.
-            Passed to :func:`extract_1D_subset_from_data`.
-
-        Returns
-        -------
-        bool
-            True, if altitude access is provided, else False
-        """
-        # 1. check if altitude or pressure field is available in data object as
-        # variable
-        for coord in self.coord_list:
-            if coord in self._checked_and_failed:
-                continue
-            elif self._check_altitude_access_helper(coord, **coord_info):
-                return True
-            self._checked_and_failed.append(coord)
-        return False
-
-    def _check_altitude_access_helper(self, coord_name, **coord_info):
-        cstd_name = const.COORDINFO[coord_name].standard_name
-
-        if not self.search_aux_coords(coord_name):
-            if isinstance(cstd_name, str):
-                if not self.search_aux_coords(cstd_name):
-                    return False
-
-        coord = VerticalCoordinate(cstd_name)
-        if coord.conversion_supported:
-            if self.search_aux_coords(coord.conversion_requires):
-                if self._verify_altitude_access(coord):
-                    return True
-        return False
-
-    def _verify_altitude_access(self, coord, **coord_info):
-        """Verify access of altitude data
-
-        Parameters
-        ----------
-        subset : GriddedData
-            1-dimensional subset of input data object
-        coord : VerticalCoordinate
-            instance of vertical coordinate that is used to specify requirements
-            for altitude computation
-
-        Returns
-        -------
-        bool
-            True, if altitude access was sueccessful, else False
-        """
-        subset = self._subset1d
-        if subset is None:
-            subset = self.extract_1D_subset_from_data(**coord_info)
-
-        subset._update_coord_info()
-        cstd_name = coord.standard_name
-        if not subset[cstd_name].ndim == 1:
-            raise DataDimensionError(
-                f"Unexpected error: dimension of variable {cstd_name} should be 1"
-            )
-        raise NotImplementedError
-
-    def get_altitude(self, latitude, longitude):
-        raise NotImplementedError
-
-
-# =============================================================================
-#     ### ToDo: CHECK IF THE FOLLOWING METHODS WILL BE REQUIRED
-#     def find_and_import_auxvars(self, reader=None):
-#         """Find and read auxiliary variables for altitude access
-#
-#         This directory (if available) is used to check if potential files with
-#         altitude information are available
-#
-#         Parameters
-#         ----------
-#         reader : ReadGridded
-#             instance of reader class, if None, then the reader is accessed from
-#             :attr:`data_obj` (instance of :class:`GriddedData`)
-#         """
-#         if reader is None:
-#             reader = self.data_obj.reader
-#         for add_var in self.ADD_FILE_VARS:
-#             try:
-#                 self.check_and_import_add_var(add_var)
-#             except (VariableNotFoundError, AltitudeAccessError) as e:
-#                 self.logger.warning(repr(e))
-#         raise CoordinateError('Could not find required additional coordinate '
-#                               'information for the computation of altitude '
-#                               'levels')
-#
-#     def check_and_import_add_var(self, add_var):
-#
-#         add_var_data = self._find_and_read_add_var(add_var)
-#         _req = []
-#         if add_var in self.ADD_FILE_REQ:
-#             for aux_var in self.ADD_FILE_REQ[add_var]:
-#                 _req[aux_var] = self._find_and_read_add_var(aux_var)
-#         _opt = []
-#         if add_var in self.ADD_FILE_OPT:
-#             for aux_opt in self.ADD_FILE_OPT[add_var]:
-#                 try:
-#                     _opt[aux_opt] = self._find_and_read_add_var(aux_opt)
-#                 except Exception:
-#                     pass
-#
-#         self._check_altitude_access(add_var_data,
-#                                     add_var_data_req=_req,
-#                                     add_var_data_opt=_opt)
-#         self[add_var] = add_var_data
-#         for item in _req:
-#             self[item.var_name] = item
-#         for item in _opt:
-#             self[item.var_name] = item
-#
-#     def _find_and_read_add_var(self, add_var_name):
-#         """Search an additionally required variable in external file
-#
-#         Parameter
-#         --------
-#         add_var_name : str
-#             Variable name in AEROCOM convention
-#
-#         Returns
-#         -------
-#         GriddedData
-#             additional data file
-#         """
-#         _search = [add_var_name]
-#         _search.extend(const.VARS[add_var_name].aliases)
-#         r = self.data_obj.reader
-#         d = self.data_obj
-#         for _var in _search:
-#             if _var in r.vars:
-#                 return r.read_var(_var, start=d.start, stop=d.stop,
-#                                   ts_type=d.ts_type, flex_ts_type=False)
-#         raise VariableNotFoundError(f'Auxiliary variable {add_var_name} could not be found')
-#
-#     def _check_coord_conversion(self, add_var_data, add_var_data_req,
-#                                 add_var_data_opt):
-#
-#         coord = VerticalCoordinate(add_var_data.standard_name)
-#
-#     def _check_altitude_access(self, add_var_data, add_var_data_req=None,
-#                                add_var_data_opt=None):
-#         """Checks if altitude can be computed based on input fields
-#
-#         See :func:`check_and_import_add_var` for details on usage.
-#
-#         """
-#         var = add_var_data.var_name
-#         if var == 'z':
-#             if not add_var_data.shape == self.data_obj.shape:
-#                 raise NotImplementedError('Altitude field must have the same '
-#                                           'shape as input data object')
-#             unit_std = get_standard_unit(add_var_data.var_name)
-#             if not add_var_data.unit == unit_std:
-#                 add_var_data.convert_unit(unit_std)
-#             if add_var_data.standard_name == 'altitude':
-#                 return True
-#             elif add_var_data.standard_name == 'geopotential_height':
-#                 self._check_coord_conversion(add_var_data, add_var_data_req,
-#                                              add_var_data_opt)
-# =============================================================================
