@@ -247,7 +247,7 @@ class UngriddedData:
 
         Parameters
         ----------
-        stats : list or StationData
+        stats : iterator or StationData
             input data object(s)
         add_meta_keys : list, optional
             list of metadata keys that are supposed to be imported from the
