@@ -100,7 +100,7 @@ class ColocatedData(BaseModel):
 
     Raises
     ------
-    IOError
+    ValidationError
         if init fails
     """
 
