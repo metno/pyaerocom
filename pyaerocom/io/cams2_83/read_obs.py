@@ -104,7 +104,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
         # lazy data_iterator returns immediately, unpacked in from_station_data
         data_iterator = self.__reader(vars_to_retrieve, files)
         ungriddeddata = UngriddedData.from_station_data(data_iterator)
-        logger.info(f"Time needed to convert obs to ungridded: {time.time() - end}s")
+        logger.info(f"Time needed to convert obs to ungridded: {time.time() - start}s")
         return ungriddeddata
 
     def read_file(self, filename, vars_to_retrieve=None):
