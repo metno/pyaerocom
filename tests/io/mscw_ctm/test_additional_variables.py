@@ -1,3 +1,6 @@
+import numpy as np
+import xarray as xr
+
 from pyaerocom.io.mscw_ctm.additional_variables import (
     calc_concNhno3,
     calc_concNnh3,
@@ -126,3 +129,14 @@ def test_update_EC_units():
 
     assert (concCecpm25 == concCecpm25_from_func).all()
     assert concCecpm25.units == concCecpm25_from_func.units
+
+
+def test_calc_conco3mda8max():
+    time = xr.DataArray(xr.date_range("2024-01-01", "2024-12-31", freq="1h"), dims=("time"))
+    conco3 = xr.DataArray(np.linspace(start=0, stop=100, num=len(time)), dims=("time"))
+
+    fdata = xr.Dataset({"time": time, "conco3": conco3})
+
+    result = calc_conco3mda8max(fdata)
+
+    assert len(result["conco3mda8max"]) == 366

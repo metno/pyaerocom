@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom import const
+from pyaerocom.aux_var_helpers import CalcDailyMax, CalcRollingAverage
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
@@ -106,6 +107,8 @@ class ReadMscwCtm:
         "vmro3": ["conco3"],
         # For Pollen
         # "concpolyol": ["concspores"],
+        "conco3mda8": ["conco3"],
+        "conco3mda8max": ["conco3mda8"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -149,6 +152,9 @@ class ReadMscwCtm:
         "concSso2": calc_concSso2,
         "vmro3": calc_vmro3,
         # "concpolyol": calc_concpolyol,
+        "conco3mda8": CalcRollingAverage(
+            window=8, min_periods=6, invarname="conco3", outvarname="conco3mda8"
+        ),
     }
 
     #: supported filename masks, placeholder is for frequencies

@@ -1,5 +1,7 @@
 import cf_units
 import numpy as np
+import pandas as pd
+import xarray as xr
 
 from pyaerocom import const
 from pyaerocom.variable_helpers import get_variable
@@ -835,3 +837,64 @@ def make_proxy_wetdep_from_O3(data):
 
     data.data_flagged[new_var_name] = flags
     return new_var_data
+
+
+class CalcRollingAverage:
+    """
+    This class implements a callable interface for calculating rolling averages
+    for variables.
+    """
+
+    def __init__(self, window, *, min_periods: int = 1, invarname: str, outvarname: str):
+        """
+        Parameters:
+        -----------
+        window : pd.Timedelta | int | float
+            A window for calculating the rolling average. If numeric type it is
+            assumed to be an interval in hours.
+        min_periods : int
+            Minimum observation count required for a valid rolling avg to be
+            calculated.
+
+        """
+        if min_periods <= 0:
+            raise ValueError(f"minobs must be >=1. Provided value is {min_periods}")
+        self._min_periods = min_periods
+        self._window = self.sanitize_window(window)
+        self._invarname = invarname
+        self._outvarname = outvarname
+
+    def sanitize_window(self, window) -> pd.Timedelta:
+        """Sanitation logic for the window parameter."""
+        if isinstance(window, pd.Timedelta):
+            return window
+
+        if isinstance(window, int | float):
+            return pd.Timedelta(window, "hours")
+
+        raise ValueError(f"Unexpected value of time window {window}.")
+
+    def __call__(self, ds: xr.Dataset) -> xr.DataArray:
+        """Calculates a rolling average based on the configuration provided
+        in the constructor.
+
+        Parameters:
+        -----------
+        ds : xr.Dataset
+            Dataset from which to get required variables.
+
+        Returns : xr.DataArray
+            The calculated rolling avg.
+        """
+        if not self._invarname in ds:
+            raise ValueError("Variable {self.invarname} is missing in dataset.")
+
+        df = ds[[self._invarname, "time"]].to_pandas()
+
+        rolling = df.rolling(window=self._window, min_periods=self._min_periods)
+
+        ravg = rolling.mean()
+
+        df[self._outvarname] = ravg
+
+        return df.to_xarray()
