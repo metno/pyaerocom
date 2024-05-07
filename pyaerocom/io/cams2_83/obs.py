@@ -52,7 +52,9 @@ def poll_names(df: pd.DataFrame) -> pd.DataFrame:
     return df.assign(poll=poll)
 
 
-def read_csv(path: str | Path, *, domain: Domain = CAMS2_50_DOMAIN) -> pd.DataFrame:
+def read_csv(
+    path: str | Path, *, domain: Domain = CAMS2_50_DOMAIN, polls: list[str] = None
+) -> pd.DataFrame:
     df = pd.read_csv(
         path,
         sep=";",
@@ -61,6 +63,8 @@ def read_csv(path: str | Path, *, domain: Domain = CAMS2_50_DOMAIN) -> pd.DataFr
         usecols=lambda x: x != "_",
     )
     df = df.pipe(add_time).pipe(conc_units).pipe(poll_names)
+    if polls is not None:
+        df = df[df.poll.isin(polls)]
     if not in_domain(df, domain=domain).all():
         logger.warning("found obs outside the model domain")
         df = df[in_domain(df, domain=domain)]
