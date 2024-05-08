@@ -469,11 +469,11 @@ def mos(
         pool = mp.cpu_count()
 
     cfg = make_config_mos(
-        eval_type,
         start_date,
         end_date,
         data_path,
         coldata_path,
+        eval_type,
         id,
         name,
         description,
