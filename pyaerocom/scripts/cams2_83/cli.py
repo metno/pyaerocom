@@ -153,7 +153,7 @@ def make_config_mos(
             f"{model}": dict(
                 model_id=f"CAMS2-83.{model}.day0.FC",
                 model_kwargs=dict(
-                    daterange=[f"{start_date:%F}", f"{end_date:%F}"],
+                    daterange=[f"{start_date}", f"{end_date}"],
                 ),
             )
             for model in models
