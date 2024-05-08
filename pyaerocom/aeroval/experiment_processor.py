@@ -60,7 +60,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 )
             else:
                 preprocessed_coldata_dir = ocfg["coldata_dir"]
-                mask = f"{preprocessed_coldata_dir}/*/*.nc"
+                mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
                 files_to_convert = glob.glob(mask)
                 engine = ColdataToJsonEngine(self.cfg)
                 engine.run(files_to_convert)
