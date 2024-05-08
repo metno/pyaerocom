@@ -170,7 +170,7 @@ def make_config_mos(
     cfg.update(only_json=True)
 
     cfg["obs_cfg"]["EEA"]["only_json"] = True
-    cfg["obs_cfg"]["EEA"]["col_datadir"] = coldata_path
+    cfg["obs_cfg"]["EEA"]["coldata_dir"] = coldata_path
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
