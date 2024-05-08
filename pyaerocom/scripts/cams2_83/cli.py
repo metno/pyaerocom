@@ -444,7 +444,6 @@ def mos(
         Path("../../coldata").resolve(),
         exists=True,
         readable=True,
-        writable=True,
         help="where pre-made colocated data are stored",
     ),
     cache: Optional[Path] = typer.Option(
