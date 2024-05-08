@@ -110,7 +110,10 @@ def make_config(
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
     obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
-        str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
+        str(p)
+        for p in obs_paths(
+            *obs_dates, root_path=obs_path, analysis=run_type == RunType.AN
+        )
     ]
 
     if run_type == RunType.AN:
@@ -142,13 +145,13 @@ def make_config_mos(
 ) -> dict:
     logger.info("Making the configuration")
 
-    models = ["ENSEMBLE", "MOS"]
+    models = ["ENS", "MOS"]
 
     cfg = deepcopy(CFG)
     cfg.update(
         model_cfg={
             f"{model.name}": dict(
-                model_id=f"CAMS2-83.{model.name}.day0.FC",
+                model_id=f"CAMS2-83.{model}.day0.FC",
                 model_kwargs=dict(
                     daterange=[f"{start_date:%F}", f"{end_date:%F}"],
                 ),
@@ -277,7 +280,9 @@ def runnermedianscores(
         "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
     if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
                 executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
@@ -286,7 +291,9 @@ def runnermedianscores(
         for future in as_completed(futures):
             future.result()
     else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         CAMS2_83_Processer(stp).run(analysis=analysis)
 
     print(f"Long run: {time.time() - start} sec")
@@ -302,7 +309,9 @@ def main(
     end_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),
-    leap: int = typer.Argument(0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"),
+    leap: int = typer.Argument(
+        0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"
+    ),
     model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
@@ -354,7 +363,12 @@ def main(
         help="Will only make and print the config without running the evaluation",
     ),
     pool: int = typer.Option(
-        1, "--pool", "-p", min=1, max=cpu_count(), help="CPUs for reading OBS"
+        1,
+        "--pool",
+        "-p",
+        min=1,
+        max=cpu_count(),
+        help="CPUs for reading OBS and running median scores",
     ),
 ):
     if dry_run:
@@ -402,14 +416,16 @@ def main(
             )
         else:
             logger.info("Special run for median scores only")
-            runnermedianscores(cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool)
+            runnermedianscores(
+                cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool
+            )
     else:
         logger.info("Standard run")
         runner(cfg, cache, dry_run=dry_run, pool=pool)
 
 
 @app.command()
-def mos_eval(
+def mos(
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
@@ -438,7 +454,12 @@ def mos_eval(
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
     pool: int = typer.Option(
-        1, "--pool", "-p", min=1, max=cpu_count(), help="CPUs for reading OBS"
+        1,
+        "--pool",
+        "-p",
+        min=1,
+        max=cpu_count(),
+        help="CPUs for running the median scores",
     ),
 ):
     if pool > mp.cpu_count():
