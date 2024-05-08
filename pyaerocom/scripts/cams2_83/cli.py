@@ -426,6 +426,7 @@ def main(
 
 @app.command()
 def mos(
+    eval_type: EvalType = typer.Argument(...),
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
@@ -469,6 +470,7 @@ def mos(
         pool = mp.cpu_count()
 
     cfg = make_config_mos(
+        eval_type,
         start_date,
         end_date,
         data_path,
