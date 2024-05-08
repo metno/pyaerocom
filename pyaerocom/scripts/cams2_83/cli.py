@@ -110,7 +110,10 @@ def make_config(
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
     obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
-        str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
+        str(p)
+        for p in obs_paths(
+            *obs_dates, root_path=obs_path, analysis=run_type == RunType.AN
+        )
     ]
 
     if run_type == RunType.AN:
@@ -134,6 +137,7 @@ def make_config_mos(
     start_date: date,
     end_date: date,
     data_path: Path,
+    coldata_path: Path,
     coldata_dir: Path,
     eval_type: EvalType,
     id: str,
@@ -157,6 +161,7 @@ def make_config_mos(
         },
         periods=eval_type.periods(start_date, end_date),
         json_basedir=str(data_path),
+        coldata_basedir=str(coldata_path),
     )
 
     if eval_type is not None:
@@ -276,7 +281,9 @@ def runnermedianscores(
         "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
     if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
                 executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
@@ -285,7 +292,9 @@ def runnermedianscores(
         for future in as_completed(futures):
             future.result()
     else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         CAMS2_83_Processer(stp).run(analysis=analysis)
 
     print(f"Long run: {time.time() - start} sec")
@@ -301,7 +310,9 @@ def main(
     end_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),
-    leap: int = typer.Argument(0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"),
+    leap: int = typer.Argument(
+        0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"
+    ),
     model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
@@ -406,7 +417,9 @@ def main(
             )
         else:
             logger.info("Special run for median scores only")
-            runnermedianscores(cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool)
+            runnermedianscores(
+                cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool
+            )
     else:
         logger.info("Standard run")
         runner(cfg, cache, dry_run=dry_run, pool=pool)
@@ -427,6 +440,13 @@ def mos(
         readable=True,
         writable=True,
         help="where results are stored",
+    ),
+    coldata_path: Path = typer.Option(
+        Path("../../coldata").resolve(),
+        exists=True,
+        readable=True,
+        writable=True,
+        help="where colocated data are stored, this is useless here but this path needs to exist",
     ),
     coldata_dir: Path = typer.Option(
         Path("../../coldata").resolve(),
@@ -460,6 +480,7 @@ def mos(
         start_date,
         end_date,
         data_path,
+        coldata_path,
         coldata_dir,
         eval_type,
         id,
