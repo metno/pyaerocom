@@ -168,10 +168,10 @@ def make_config_mos(
         eval_type.check_dates(start_date, end_date)
         cfg.update(eval_type.freqs_config())
 
-    cfg.update(only_json=True)
+    # cfg.update(only_json=True) # this works if coldata_path has the data in place I suspect
 
     cfg["obs_cfg"]["EEA"]["only_json"] = True
-    cfg["obs_cfg"]["EEA"]["coldata_dir"] = coldata_dir
+    cfg["obs_cfg"]["EEA"]["coldata_dir"] = str(coldata_dir)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 

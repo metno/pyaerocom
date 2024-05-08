@@ -60,7 +60,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 )
             else:
                 preprocessed_coldata_dir = ocfg["coldata_dir"]
-                mask = f"{preprocessed_coldata_dir}/*.nc"
+                mask = f"{preprocessed_coldata_dir}/*/*.nc"
                 files_to_convert = glob.glob(mask)
                 engine = ColdataToJsonEngine(self.cfg)
                 engine.run(files_to_convert)
@@ -122,7 +122,11 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         if not self.cfg.model_cfg:
             logger.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
-            self.cfg.webdisp_opts.hide_pages = ["maps.php", "intercomp.php", "overall.php"]
+            self.cfg.webdisp_opts.hide_pages = [
+                "maps.php",
+                "intercomp.php",
+                "overall.php",
+            ]
             model_id = make_dummy_model(obs_list, self.cfg)
             self.cfg.processing_opts.obs_only = True
             use_dummy_model = True
