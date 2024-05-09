@@ -164,9 +164,7 @@ def make_config_mos(
         eval_type.check_dates(start_date, end_date)
         cfg.update(eval_type.freqs_config())
 
-    cfg.update(
-        only_json=True
-    )  
+    cfg.update(only_json=True)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
