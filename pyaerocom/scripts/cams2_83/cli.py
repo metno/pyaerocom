@@ -135,7 +135,6 @@ def make_config_mos(
     end_date: date,
     data_path: Path,
     coldata_path: Path,
-    coldata_dir: Path,
     eval_type: EvalType,
     id: str,
     name: str,
@@ -167,10 +166,7 @@ def make_config_mos(
 
     cfg.update(
         only_json=True
-    )  # this is needed for the median scores run also to start from colocated data in place
-
-    cfg["obs_cfg"]["EEA"]["only_json"] = True
-    cfg["obs_cfg"]["EEA"]["coldata_dir"] = str(coldata_dir)
+    )  
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
@@ -439,12 +435,6 @@ def mos(
         writable=True,
         help="where colocated data are stored, this is useless here but this path needs to exist",
     ),
-    coldata_dir: Path = typer.Option(
-        Path("../../coldata").resolve(),
-        exists=True,
-        readable=True,
-        help="where pre-made colocated data are stored",
-    ),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
@@ -472,7 +462,6 @@ def mos(
         end_date,
         data_path,
         coldata_path,
-        coldata_dir,
         eval_type,
         id,
         name,
