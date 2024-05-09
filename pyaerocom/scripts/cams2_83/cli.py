@@ -165,7 +165,9 @@ def make_config_mos(
         eval_type.check_dates(start_date, end_date)
         cfg.update(eval_type.freqs_config())
 
-    # cfg.update(only_json=True) # this works if coldata_path has the data in place I suspect
+    cfg.update(
+        only_json=True
+    )  # this is needed for the median scores run also to start from colocated data in place
 
     cfg["obs_cfg"]["EEA"]["only_json"] = True
     cfg["obs_cfg"]["EEA"]["coldata_dir"] = str(coldata_dir)
