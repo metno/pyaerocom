@@ -3,6 +3,7 @@ import logging
 import os
 from configparser import ConfigParser
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 
@@ -14,6 +15,7 @@ from pyaerocom._lowlevel_helpers import (
     list_to_shortstr,
 )
 from pyaerocom.data import resources
+from pyaerocom.variable import Variable
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
 from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
@@ -311,8 +313,23 @@ class Config:
                         return (basedir, self._config_files[cfg_id])
         raise FileNotFoundError("Could not establish access to any registered database")
 
-    def register_custom_variables(self, vars: dict) -> None:
-        self._custom_var_dict = vars
+    def register_custom_variables(
+        self, vars: Union[dict[str, Variable], dict[str, dict[str, str]]]
+    ) -> None:
+        var_dict = {}
+        for key, item in vars.items():
+            if isinstance(item, Variable):
+                var_dict[key] = item
+            elif isinstance(item, dict):
+                if "var_name" in item and "units" in item:
+                    var_dict[key] = Variable(**item)
+                else:
+                    raise ValueError(
+                        f"Dict item {item} must atleast have the keys 'var_name' and 'units'"
+                    )
+            else:
+                raise ValueError(f"Item {item} must be either dict or Variable")
+        self._custom_var_dict = var_dict.copy()
         self._var_param = None
 
     @property
