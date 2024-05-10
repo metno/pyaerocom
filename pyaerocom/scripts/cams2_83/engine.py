@@ -13,8 +13,13 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import _add_heatmap_entry_json as _add_entry_json
-from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web
+from pyaerocom.aeroval.coldatatojson_helpers import (
+    _add_heatmap_entry_json as _add_entry_json,
+)
+from pyaerocom.aeroval.coldatatojson_helpers import (
+    _select_period_season_coldata,
+    init_regions_web,
+)
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
 
@@ -48,10 +53,20 @@ class CAMS2_83_Engine(ProcessingEngine):
         else:
             obs_var = model_var = "UNDEFINED"
 
-        model = ModelName[coldata[0].model_name.split("-")[2]]
+        # for the MOS/ENS evaluation experiment the models are just strings
+        # we do not want them added to the ModelName class
+        # so we need a bunch of ugly special cases here
+        modelname = coldata[0].model_name.split("-")[2]
+        if modelname == "ENS" or modelname == "MOS":
+            model = modelname
+        else:
+            model = ModelName[modelname]
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
-        mcfg = self.cfg.model_cfg.get_entry(model.name)
+        if modelname == "ENS" or modelname == "MOS":  # MOS/ENS evaluation special case
+            mcfg = self.cfg.model_cfg.get_entry(modelname)
+        else:
+            mcfg = self.cfg.model_cfg.get_entry(model.name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
         seasons = self.cfg.time_cfg.get_seasons()
 
@@ -120,7 +135,9 @@ class CAMS2_83_Engine(ProcessingEngine):
                 obs_name,
                 var_name_web,
                 vert_code,
-                model.name,
+                (
+                    modelname if (modelname == "ENS" or modelname == "MOS") else model.name
+                ),  # MOS/ENS evaluation special case
                 model_var,
             )
 
