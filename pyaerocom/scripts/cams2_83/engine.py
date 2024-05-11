@@ -13,13 +13,8 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_heatmap_entry_json as _add_entry_json,
-)
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _select_period_season_coldata,
-    init_regions_web,
-)
+from pyaerocom.aeroval.coldatatojson_helpers import _add_heatmap_entry_json as _add_entry_json
+from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
 
