@@ -449,7 +449,12 @@ class ColocationSetup(BaseModel):
     @field_validator("obs_id")
     def validate_obs_id(cls, v: str):
         if cls.obs_config is not None and v != cls.obs.config.name:
-            logger
+            logger.info(
+                f"Data ID in Pyaro config {cls.obs_config.name} does not match obs_id {v}. Setting Pyaro config to None!"
+            )
+            cls.obs_config = None
+
+        cls.obs_id = v
 
     # LB: Think we need a validator on the PyaroConfig, not the obs_id.
     # Combining the validation logic from those two things here. needs testing.

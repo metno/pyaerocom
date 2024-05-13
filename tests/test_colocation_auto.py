@@ -2,9 +2,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
-from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom.colocation_auto import Colocator
+from pyaerocom.colocation_setup import ColocationSetup
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
@@ -16,7 +18,7 @@ COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 default_setup = {
     "model_id": None,
     "obs_id": None,
-    "obs_vars": [],
+    "obs_vars": None,
     "ts_type": "monthly",
     "start": None,
     "stop": None,
@@ -26,7 +28,7 @@ default_setup = {
     "obs_name": None,
     "obs_data_dir": None,
     "obs_use_climatology": False,
-    "_obs_cache_only": False,
+    "obs_cache_only": False,
     "obs_vert_type": None,
     "obs_ts_type_read": None,
     "obs_filters": {},
@@ -79,21 +81,22 @@ def col():
 
 @pytest.mark.parametrize("stp,should_be", [(ColocationSetup(), default_setup)])
 def test_colocation_setup(stp: ColocationSetup, should_be: dict):
+    stp_dict = stp.model_dump()
     for key, val in should_be.items():
-        assert key in stp
+        assert key in stp_dict
         if key == "basedir_coldata":
-            assert Path(val) == Path(stp["basedir_coldata"])
+            assert Path(val) == Path(stp_dict["basedir_coldata"])
         else:
-            assert val == stp[key], key
+            assert val == stp_dict[key], key
 
 
 @pytest.mark.parametrize(
     "key,val,raises",
     [
-        ("obs_vars", 42, pytest.raises(ValueError)),
-        ("var_ref_outlier_ranges", [41, 42], pytest.raises(KeyError)),
-        ("var_outlier_ranges", [41, 42], pytest.raises(KeyError)),
-        ("remove_outliers", True, pytest.raises(KeyError)),
+        ("obs_vars", 42, ValidationError),
+        ("var_ref_outlier_ranges", [41, 42], ValidationError),
+        ("var_outlier_ranges", [41, 42], ValidationError),
+        ("remove_outliers", True, ValidationError),
     ],
 )
 def test_ColocationSetup_invalid_input(key, val, raises):
