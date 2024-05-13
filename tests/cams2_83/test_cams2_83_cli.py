@@ -50,7 +50,12 @@ def test_not_cleared_cache(
     assert list(fake_cache_path.glob("*.pkl"))
 
     def do_not_run(
-        self, model_name=None, obs_name=None, var_list=None, update_interface=True, analysis=False
+        self,
+        model_name=None,
+        obs_name=None,
+        var_list=None,
+        update_interface=True,
+        analysis=False,
     ):
         assert model_name is None
         assert obs_name is None
@@ -92,3 +97,16 @@ def test_eval_medianscores_dummy(
     assert result.exit_code == 0
     assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
     assert "Failed to read model variable" in caplog.text
+
+
+def test_eval_mos_dummy(
+    fake_cache_path: Path,
+    tmp_path: Path,
+    caplog,
+):
+    assert list(fake_cache_path.glob("*.pkl"))
+
+    options = f"mos season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
+    result = runner.invoke(app, options.split())
+    assert result.exit_code == 0
+    assert "no output available" in caplog.text

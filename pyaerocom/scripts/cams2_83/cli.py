@@ -355,7 +355,6 @@ def main(
         "--pool",
         "-p",
         min=1,
-        max=cpu_count(),
         help="CPUs for reading OBS and running median scores",
     ),
 ):
@@ -364,9 +363,8 @@ def main(
 
     if pool > mp.cpu_count():
         logger.warning(
-            f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}. Using that instead"
+            f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}."
         )
-        pool = mp.cpu_count()
 
     cfg = make_config(
         start_date,
@@ -445,7 +443,6 @@ def mos(
         "--pool",
         "-p",
         min=1,
-        max=cpu_count(),
         help="CPUs for running the median scores",
     ),
 ):
@@ -453,7 +450,7 @@ def mos(
         logger.warning(
             f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}. Using that instead"
         )
-        pool = mp.cpu_count()
+        pool = 1
 
     cfg = make_config_mos(
         start_date,
