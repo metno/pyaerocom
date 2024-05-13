@@ -30,7 +30,8 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded, ReadUngridded
+from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
+from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
@@ -381,6 +382,8 @@ class ColocationSetup(BrowseDict):
         self.model_read_aux = {}
         self.model_use_climatology = False
 
+        self.model_kwargs = {}
+
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
 
         self.flex_ts_type = True
@@ -548,7 +551,11 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm}
+    SUPPORTED_GRIDDED_READERS = {
+        "ReadGridded": ReadGridded,
+        "ReadMscwCtm": ReadMscwCtm,
+        "ReadCAMS2_83": ReadCAMS2_83,
+    }
 
     STATUS_CODES = {
         1: "SUCCESS",
@@ -1237,6 +1244,8 @@ class Colocator(ColocationSetup):
         if is_model:
             reader = self.model_reader
             vert_which = self.obs_vert_type
+
+            kwargs.update(**self.model_kwargs)
             if self.model_use_climatology:
                 # overwrite start and stop to read climatology file for model
                 start, stop = 9999, None

@@ -132,7 +132,7 @@ class TestReadGhost:
         reader = self.default_reader
         file = reader.files[-1]
         assert Path(file).name == "sconco3_201810.nc"
-        ds = xr.open_dataset(file)
+        ds = xr.load_dataset(file)
 
         flagvar = "qa"
         numvalid = 3

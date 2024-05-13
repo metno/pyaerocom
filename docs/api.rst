@@ -14,6 +14,10 @@ Logging
 2. ``warning``-messages or worse are also printed on stdout.
    (dynamic feature) Output to stdout is disabled if the script is called non-interactive.
 
+Besides the default records as defined in https://docs.python.org/3/library/logging.html#logrecord-attributes
+pyaerocom also adds a special `mem_usage` keyword to be able to detect memory-leaks of the
+python process early.
+
 Putting a file with the name ``logging.ini`` in the scripts current working directory will use that
 configuration instead of above described default. An example ``logging.ini`` doing about the same as
 described above, except for the dynamic features, and enable ``debug`` logging on one package (``pyaerocom.io.ungridded``), is
@@ -34,7 +38,7 @@ provided here:
    format=%(message)s
 
    [formatter_detailed]
-   format=%(asctime)s:%(name)s:%(levelname)s:%(message)s
+   format=%(asctime)s:%(name)s:%(mem_usage)s:%(levelname)s:%(message)s
    datefmt=%F %T
 
    [handler_console]

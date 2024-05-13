@@ -6,7 +6,15 @@ from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import get_highest_resolution, get_max_period_range, make_dummy_cube
+from pyaerocom.helpers import (
+    get_highest_resolution,
+    get_max_period_range,
+    make_dummy_cube,
+    start_stop,
+    to_pandas_timestamp,
+)
+from pyaerocom.io import ReadGridded
+from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
@@ -75,13 +83,24 @@ def _check_statistics_periods(periods: list) -> list:
         if not isinstance(per, str):
             raise ValueError("All periods need to be strings")
         spl = [x.strip() for x in per.split("-")]
+        # periods can be also dates or date ranges since cams2_83
+        if len(spl) == 2:
+            if len(spl[0]) != len(spl[1]):
+                raise ValueError(f"{spl[0]} not on the same format as {spl[1]}")
+
         if len(spl) > 2:
             raise ValueError(
                 f"Invalid value for period ({per}), can be either single "
-                f"years or period of years (e.g. 2000-2010)."
+                f"years/dates or range of years/dates (e.g. 2000-2010)."
             )
-        _per = "-".join([str(int(val)) for val in spl])
+        years = True if len(spl[0]) == 4 else False
+        if years:
+            _per = "-".join([str(int(val)) for val in spl])
+        else:
+            # slash in the period string here is required by the aeroval web server logic
+            _per = "-".join([to_pandas_timestamp(val).strftime("%Y/%m/%d") for val in spl])
         checked.append(_per)
+
     return checked
 
 
@@ -122,21 +141,44 @@ def _get_min_max_year_periods(statistics_periods):
 
     Returns
     -------
-    int
+    pd.Timestamp
         start year
-    int
+    pd.Timestamp
         stop year (may be the same as start year, e.g. if periods suggest
         single year analysis).
     """
-    startyr, stopyr = 1e6, -1e6
+    startyr, stopyr = start_stop("2100", "1900")
     for per in statistics_periods:
         sl = _period_str_to_timeslice(per)
-        perstart, perstop = int(sl.start), int(sl.stop)
+        perstart, perstop = start_stop(sl.start, sl.stop)
         if perstart < startyr:
             startyr = perstart
         if perstop > stopyr:
             stopyr = perstop
     return startyr, stopyr
+
+
+def check_if_year(periods: list[str]) -> bool:
+    """
+    Checks if the periods in the periods list are years or dates
+    """
+    years = []
+    for per in periods:
+        spl = [x.strip() for x in per.split("-")]
+        if len(spl) == 2:
+            if len(spl[0]) != len(spl[1]):
+                raise ValueError(f"{spl[0]} not on the same format as {spl[1]}")
+
+        if len(spl) > 2:
+            raise ValueError(
+                f"Invalid value for period ({per}), can be either single "
+                f"years/dates or range of years/dates (e.g. 2000-2010)."
+            )
+        years.append(True if len(spl[0]) == 4 else False)
+
+    if len(set(years)) != 1:
+        raise ValueError(f"Found mix of years and dates in {periods}")
+    return list(set(years))[0]
 
 
 def make_dummy_model(obs_list: list, cfg) -> str:

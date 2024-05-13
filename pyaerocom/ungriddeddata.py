@@ -247,7 +247,7 @@ class UngriddedData:
 
         Parameters
         ----------
-        stats : list or StationData
+        stats : iterator or StationData
             input data object(s)
         add_meta_keys : list, optional
             list of metadata keys that are supposed to be imported from the
@@ -325,7 +325,14 @@ class UngriddedData:
                     if not len(times) == len(values):
                         raise ValueError
 
-                times = np.asarray([np.datetime64(x, "s") for x in times])
+                times = np.asarray(
+                    [
+                        np.datetime64(x.replace(tzinfo=None), "s")
+                        if isinstance(x, datetime)
+                        else np.datetime64(x, "s")
+                        for x in times
+                    ]
+                )
                 times = np.float64(times)
 
                 num_times = len(times)
@@ -935,7 +942,7 @@ class UngriddedData:
                         raise KeyError("Could not find ts_type in stat")
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
-                logger.info(f"Skipping meta index {idx}. Reason: {repr(e)}")
+                logger.debug(f"Skipping meta index {idx}. Reason: {repr(e)}")
         if merge_if_multi and len(stats) > 1:
             if len(vars_to_convert) > 1:
                 raise NotImplementedError(
@@ -1040,7 +1047,7 @@ class UngriddedData:
             try:
                 rev = self.data_revision[meta["data_id"]]
             except Exception:
-                logger.warning("Data revision could not be accessed")
+                logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
         try:
             vars_avail = list(meta["var_info"])
@@ -1104,7 +1111,7 @@ class UngriddedData:
 
             # make sure there is some valid data
             if tmask.sum() == 0:
-                logger.info(
+                logger.debug(
                     f"Ignoring station {sd['station_name']}, var {var} ({sd['data_id']}): "
                     f"no data available in specified time interval {start} - {stop}"
                 )
@@ -1115,7 +1122,7 @@ class UngriddedData:
 
             vals = subset[:, self._DATAINDEX]
             if np.all(np.isnan(vals)):
-                logger.warning(
+                logger.debug(
                     f"Ignoring station {sd['station_name']}, var {var} ({sd['data_id']}): "
                     f"All values are NaN"
                 )
@@ -1270,7 +1277,7 @@ class UngriddedData:
                 NotImplementedError,
                 StationCoordinateError,
             ) as e:
-                logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
+                logger.debug(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
         return out_data
 
@@ -1681,10 +1688,10 @@ class UngriddedData:
 
         for i, meta in self.metadata.items():
             if not "station_name" in meta:
-                logger.warning(f"Skipping meta-block {i}: station_name is not defined")
+                logger.debug(f"Skipping meta-block {i}: station_name is not defined")
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
-                logger.warning(
+                logger.debug(
                     f"Skipping meta-block {i} (station {meta['station_name']}): "
                     f"one or more of the coordinates is not defined"
                 )
@@ -1736,7 +1743,7 @@ class UngriddedData:
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
-                        logger.warning(
+                        logger.debug(
                             f"Ignoring variable {var} in meta block {meta_idx} "
                             f"since no data could be found"
                         )
@@ -2974,7 +2981,7 @@ class UngriddedData:
         try:
             return self[self._idx]
         except DataCoverageError:
-            logger.warning(
+            logger.debug(
                 f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
             )
             return StationData()

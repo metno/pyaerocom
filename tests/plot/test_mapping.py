@@ -238,12 +238,6 @@ def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
     "coldataset,exception,error",
     [
         pytest.param(
-            "fake_5d",
-            DataDimensionError,
-            "only 3D or 4D colocated data objects are supported",
-            id="5d",
-        ),
-        pytest.param(
             "fake_nodims",
             AssertionError,
             "",

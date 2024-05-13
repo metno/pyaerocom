@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from datetime import timedelta
 from functools import cached_property
 from getpass import getuser
 from pathlib import Path
@@ -11,6 +12,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+import pandas as pd
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -25,7 +27,11 @@ from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.helpers import _check_statistics_periods, _get_min_max_year_periods
+from pyaerocom.aeroval.helpers import (
+    _check_statistics_periods,
+    _get_min_max_year_periods,
+    check_if_year,
+)
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
 from pyaerocom.colocation_auto import ColocationSetup
 
@@ -97,12 +103,20 @@ class OutputPaths(BaseModel):
         for subdir in self.JSON_SUBDIRS:
             loc = self._check_init_dir(os.path.join(base, subdir), assert_exists)
             out[subdir] = loc
+        # for cams2_83 the extra 'forecast' folder will contain the median scores if computed
+        if self.proj_id == "cams2-83":
+            loc = self._check_init_dir(os.path.join(base, "forecast"), assert_exists)
+            out["forecast"] = loc
         return out
 
 
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["monthly", "yearly"] = "monthly"
     maps_res_deg: PositiveInt = 5
+
+
+class CAMS2_83Setup(BaseModel):
+    use_cams2_83: bool = False
 
 
 class StatisticsSetup(BaseModel, extra="allow"):
@@ -173,6 +187,8 @@ class StatisticsSetup(BaseModel, extra="allow"):
     add_trends: bool = False
     trends_min_yrs: PositiveInt = 7
     stats_tseries_base_freq: str | None = None
+    forecast_evaluation: bool = False
+    forecast_days: PositiveInt = 4
     use_fairmode: bool = False
     use_diurnal: bool = False
     obs_only_stats: bool = False
@@ -307,7 +323,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def exp_info(self) -> ExperimentInfo:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return ExperimentInfo(exp_id=self.exp_id)
         model_args = {
             key: val for key, val in self.model_extra.items() if key in ExperimentInfo.model_fields
@@ -331,7 +347,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def path_manager(self) -> OutputPaths:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
         model_args = {
             key: val for key, val in self.model_extra.items() if key in OutputPaths.model_fields
@@ -345,7 +361,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def time_cfg(self) -> TimeSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return TimeSetup()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in TimeSetup.model_fields
@@ -355,7 +371,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def modelmaps_opts(self) -> ModelMapsSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return ModelMapsSetup()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in ModelMapsSetup.model_fields
@@ -364,8 +380,18 @@ class EvalSetup(BaseModel):
 
     @computed_field
     @cached_property
-    def webdisp_opts(self) -> WebDisplaySetup:
+    def cams2_83_cfg(self) -> CAMS2_83Setup:
         if not hasattr(self, "model_extra"):
+            return CAMS2_83Setup()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in CAMS2_83Setup.model_fields
+        }
+        return CAMS2_83Setup(**model_args)
+
+    @computed_field
+    @cached_property
+    def webdisp_opts(self) -> WebDisplaySetup:
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return WebDisplaySetup()
         model_args = {
             key: val
@@ -377,7 +403,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def processing_opts(self) -> EvalRunOptions:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return EvalRunOptions()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in EvalRunOptions.model_fields
@@ -387,7 +413,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def statistics_opts(self) -> StatisticsSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return StatisticsSetup(weighted_stats=True, annual_stats_constrained=False)
         model_args = {
             key: val
@@ -406,7 +432,7 @@ class EvalSetup(BaseModel):
     @computed_field
     @cached_property
     def colocation_opts(self) -> ColocationSetup:
-        if not hasattr(self, "model_extra"):
+        if not hasattr(self, "model_extra") or self.model_extra is None:
             return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
 
         model_args = {
@@ -538,9 +564,27 @@ class EvalSetup(BaseModel):
 
         self.time_cfg.periods = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
-        if colstart is None:
-            self.colocation_opts["start"] = start
-        if colstop is None:
-            self.colocation_opts["stop"] = (
-                stop + 1
-            )  # add 1 year since we want to include stop year
+        start_yr = start.year
+        stop_yr = stop.year
+        years = check_if_year(periods)
+        if not years:
+            if start == stop and isinstance(start, pd.Timestamp):
+                stop = start + timedelta(hours=23)
+            elif isinstance(start, pd.Timestamp):
+                stop = stop + timedelta(hours=23)
+
+            if stop_yr == start_yr:
+                stop_yr += 1
+            if colstart is None:
+                self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
+            if colstop is None:
+                self.colocation_opts["stop"] = stop.strftime(
+                    "%Y/%m/%d %H:%M:%S"
+                )  # + 1  # add 1 year since we want to include stop year
+        else:
+            if colstart is None:
+                self.colocation_opts["start"] = start_yr
+            if colstop is None:
+                self.colocation_opts["stop"] = (
+                    stop_yr + 1
+                )  # add 1 year since we want to include stop year

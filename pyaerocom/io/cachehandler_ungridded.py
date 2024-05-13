@@ -235,35 +235,36 @@ class CacheHandlerUngridded:
 
         delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
 
-        in_handle = open(fp, "rb")
-        if force_use_outdated:
-            last_meta = pickle.load(in_handle)
-            assert len(last_meta) == len(self.CACHE_HEAD_KEYS)
-            ok = True
-        else:
-            try:
-                ok = self._check_pkl_head_vs_database(in_handle)
-            except Exception as e:
-                ok = False
-                delete_existing = True
-                logger.exception(
-                    f"File error in cached data file {fp}. "
-                    f"File will be removed and data reloaded. Error: {repr(e)}"
-                )
+        with open(fp, "rb") as in_handle:
+            if force_use_outdated:
+                last_meta = pickle.load(in_handle)
+                assert len(last_meta) == len(self.CACHE_HEAD_KEYS)
+                ok = True
+            else:
+                try:
+                    ok = self._check_pkl_head_vs_database(in_handle)
+                except Exception as e:
+                    ok = False
+                    delete_existing = True
+                    logger.exception(
+                        f"File error in cached data file {fp}. "
+                        f"File will be removed and data reloaded. Error: {repr(e)}"
+                    )
+            if ok:
+                # everything is okay, or forced
+                data = pickle.load(in_handle)
+
         if not ok:
-            # TODO: Should we delete the cache file if it is outdated ???
+            # Delete the cache file if it is outdated, after handle is closed
             logger.info(
                 f"Aborting reading cache file {fp}. Aerocom database "
                 f"or pyaerocom version has changed compared to cached version"
             )
-            in_handle.close()
             if delete_existing:  # something was wrong
                 logger.info(f"Deleting outdated cache file: {fp}")
                 os.remove(fp)
             return False
 
-        # everything is okay
-        data = pickle.load(in_handle)
         if not isinstance(data, UngriddedData):
             raise TypeError(
                 f"Unexpected data type stored in cache file, need instance of UngriddedData, "
