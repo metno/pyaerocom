@@ -31,7 +31,6 @@ def make_csv_test_file(tmp_path: Path) -> Path:
         for s in species:
             for i, station in enumerate(stations):
                 for j, date in enumerate(dates):
-
                     delta_t = ["1h", "3D", "2D", "2h"][
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
