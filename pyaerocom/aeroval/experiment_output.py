@@ -18,7 +18,7 @@ from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.mathutils import _init_stats_dummy
+from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
 logger = logging.getLogger(__name__)

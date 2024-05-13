@@ -12,6 +12,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
     DataQueryError,
+    ModelVarNotAvailable,
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
@@ -46,6 +47,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 files = self._run_model(model, var_list)
             except VarNotAvailableError:
                 files = []
+            if not files:
+                logger.warning(f"no data for model {model}, skipping")
+                continue
             all_files.extend(files)
         return files
 
@@ -85,6 +89,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
 
+            except ModelVarNotAvailable as ex:
+                logger.warning(f"{ex}")
             except (
                 TemporalResolutionError,
                 DataCoverageError,
@@ -125,11 +131,20 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         AttributeError
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
+        ModelVarNotAvailable
+            If model/var data cannot be read
         """
-        data = self.read_model_data(model_name, var)
+
+        try:
+            data = self.read_model_data(model_name, var)
+        except Exception as e:
+            raise ModelVarNotAvailable(
+                f"Cannot read data for model {model_name} (variable {var}): {e}"
+            )
+
         check_var_ranges_avail(data, var)
 
-        if var in var_ranges_defaults:
+        if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
             varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:
@@ -173,6 +188,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
 
-        write_json(datajson, fp_json, ignore_nan=True)
-        write_json(contourjson, fp_geojson, ignore_nan=True)
+        write_json(datajson, fp_json, round_floats=False)
+        write_json(contourjson, fp_geojson, round_floats=False)
         return [fp_json, fp_geojson]

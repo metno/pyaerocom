@@ -33,6 +33,11 @@ def test_default_path_exist():
     assert PyaroConfig._DEFAULT_CATALOG.exists()
 
 
+def test_kwargs(pyaro_testconfig_kwargs, pyaro_kwargs):
+    kwargs = pyaro_testconfig_kwargs.model_extra["columns"]
+    assert kwargs == pyaro_kwargs
+
+
 def test_save(tmp_path):
     config = get_test_config()
     config.save(path=Path(tmp_path))

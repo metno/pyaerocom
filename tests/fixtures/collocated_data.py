@@ -249,35 +249,11 @@ def _create_fake_coldata_4d():
     return ColocatedData(data=_data_fake, coords=coords, dims=dims, attrs=meta)
 
 
-def _create_fake_coldata_5d():
-    _lats_fake = [10, 20]
-    _lons_fake = [42, 43]
-    _time_fake = pd.date_range("2010-01", "2010-03", freq="MS")
-    _wvl_fake = [100, 200, 300]
-    _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake), len(_wvl_fake)))
-
-    coords = {
-        "data_source": ["fakeobs", "fakemod"],
-        "time": _time_fake,
-        "latitude": _lats_fake,
-        "longitude": _lons_fake,
-        "wvl": _wvl_fake,
-    }
-
-    dims = ["data_source", "time", "latitude", "longitude", "wvl"]
-    # set all NaN in one obs coordinate
-    arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
-    cd = ColocatedData(np.ones((2, 2, 2)))
-    cd.data = arr
-    return cd
-
-
 COLDATA = dict(
-    tm5_aeronet=lambda: ColocatedData(str(EXAMPLE_FILE)),
-    fake_nodims=lambda: ColocatedData(np.ones((2, 1, 1))),
+    tm5_aeronet=lambda: ColocatedData(data=str(EXAMPLE_FILE)),
+    fake_nodims=lambda: ColocatedData(data=np.ones((2, 1, 1))),
     fake_3d=_create_fake_coldata_3d,
     fake_4d=_create_fake_coldata_4d,
-    fake_5d=_create_fake_coldata_5d,
     fake_3d_hr=_create_fake_coldata_3d_hourly,
     fake_3d_trends=_create_fake_trends_coldata_3d,
 )

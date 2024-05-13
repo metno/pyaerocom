@@ -972,7 +972,6 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
 
     if not inplace:
         coldata = coldata.copy()
-    temp = xr.open_dataset(const.ERA5_SURFTEMP_FILE)["t2m"]
 
     arr = coldata.data
 
@@ -987,37 +986,38 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     mintemps = []
     maxtemps = []
     ps = []
-    for i, (lat, lon, alt, name) in enumerate(coords):
-        logger.info(name, ", Lat", lat, ", Lon", lon)
-        p = pressure(alt)
-        logger.info("Alt", alt)
-        logger.info("P=", p / 100, "hPa")
+    with xr.open_dataset(const.ERA5_SURFTEMP_FILE)["t2m"] as temp:
+        for i, (lat, lon, alt, name) in enumerate(coords):
+            logger.info(name, ", Lat", lat, ", Lon", lon)
+            p = pressure(alt)
+            logger.info("Alt", alt)
+            logger.info("P=", p / 100, "hPa")
 
-        ps.append(p / 100)
+            ps.append(p / 100)
 
-        temps = temp.sel(latitude=lat, longitude=lon, method="nearest").data
+            temps = temp.sel(latitude=lat, longitude=lon, method="nearest").data
 
-        meantemps.append(temps.mean())
-        mintemps.append(temps.min())
-        maxtemps.append(temps.min())
+            meantemps.append(temps.mean())
+            mintemps.append(temps.min())
+            maxtemps.append(temps.min())
 
-        if not len(temps) == len(arr.time):
-            raise NotImplementedError("Check timestamps")
-        logger.info("Mean Temp: ", temps.mean() - t0, " C")
+            if not len(temps) == len(arr.time):
+                raise NotImplementedError("Check timestamps")
+            logger.info("Mean Temp: ", temps.mean() - t0, " C")
 
-        corrfacs = (p0 / p) * (temps / t0)
+            corrfacs = (p0 / p) * (temps / t0)
 
-        logger.info("Corr fac:", corrfacs.mean(), "+/-", corrfacs.std())
+            logger.info("Corr fac:", corrfacs.mean(), "+/-", corrfacs.std())
 
-        cfacs.append(corrfacs.mean())
+            cfacs.append(corrfacs.mean())
 
-        # mularr = xr.DataArray(corrfacs)
+            # mularr = xr.DataArray(corrfacs)
 
-        if not arr.station_name.values[i] == name:
-            raise Exception
-        elif not arr.dims[1] == "time":
-            raise Exception
-        arr[1, :, i] *= corrfacs
+            if not arr.station_name.values[i] == name:
+                raise Exception
+            elif not arr.dims[1] == "time":
+                raise Exception
+            arr[1, :, i] *= corrfacs
 
     cfacs = np.asarray(cfacs)
 

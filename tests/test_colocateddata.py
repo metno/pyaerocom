@@ -7,15 +7,16 @@ import pytest
 import xarray as xr
 from matplotlib.axes import Axes
 from numpy.typing import ArrayLike
+from pydantic import ValidationError
 
 from pyaerocom import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
-from pyaerocom.exceptions import DataCoverageError, DataDimensionError, MetaDataError
+from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 from tests.fixtures.collocated_data import EXAMPLE_FILE
 
 
 @pytest.mark.parametrize("data", [EXAMPLE_FILE, str(EXAMPLE_FILE), np.ones((2, 3, 4))])
-def test_ColocatedData__init__(data: Path | str | ArrayLike):
+def test_ColocatedData_initialization(data: Path | str | ArrayLike):
     cd = ColocatedData(data=data)
     assert isinstance(cd.data, xr.DataArray)
 
@@ -23,20 +24,27 @@ def test_ColocatedData__init__(data: Path | str | ArrayLike):
 @pytest.mark.parametrize(
     "data,exception",
     [
-        (None, AttributeError),
-        ("Blaaaaa", IOError),
-        (np.ones(3), DataDimensionError),
+        ("Blaaaaa", ValueError),
+        (np.ones(3), ValidationError),
         ({}, ValueError),
+        (xr.DataArray(np.ones((2, 2, 2, 2, 1))), ValidationError),
     ],
 )
-def test_ColocatedData__init___error(data, exception: type[Exception]):
+def test_ColocatedData_initialization_error(data, exception: type[Exception]):
     with pytest.raises(exception):
         ColocatedData(data=data).data
 
 
+def test_ColocatedData__init__():
+    # test that ColocatedData can be given positional arguments
+    data = np.ones((2, 2, 1))
+    col_data = ColocatedData(data)
+    assert col_data
+
+
 def test_ColocatedData_data():
-    col = ColocatedData()
-    col.data = data = xr.DataArray()
+    data = xr.DataArray(np.ones((2, 2, 1)))
+    col = ColocatedData(data=data)
     assert col.data is data
 
 
@@ -81,7 +89,7 @@ def test_ColocatedData_latitude(coldata: ColocatedData):
 def test_ColocatedData_latitude_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.latitude
-    assert str(e.value).endswith("does not include latitude coordinate")
+    assert str(e.value).endswith("object has no attribute 'latitude'")
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
@@ -93,7 +101,7 @@ def test_ColocatedData_longitude(coldata: ColocatedData):
 def test_ColocatedData_longitude_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.longitude
-    assert str(e.value).endswith("does not include longitude coordinate")
+    assert str(e.value).endswith("object has no attribute 'longitude'")
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
@@ -105,7 +113,7 @@ def test_ColocatedData_time(coldata: ColocatedData):
 def test_ColocatedData_time_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.time
-    assert str(e.value).endswith("does not include time coordinate")
+    assert str(e.value).endswith("object has no attribute 'time'")
 
 
 @pytest.mark.parametrize(
@@ -123,7 +131,7 @@ def test_ColocatedData_lat_range(coldata: ColocatedData, lat_range: tuple[float,
 def test_ColocatedData_lat_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.lat_range
-    assert str(e.value).endswith("does not include latitude coordinate")
+    assert "object has no attribute" in str(e.value)
 
 
 @pytest.mark.parametrize(
@@ -141,7 +149,7 @@ def test_ColocatedData_lon_range(coldata: ColocatedData, lon_range: tuple[float,
 def test_ColocatedData_lon_range_error(coldata: ColocatedData):
     with pytest.raises(AttributeError) as e:
         coldata.lon_range
-    assert str(e.value).endswith("does not include longitude coordinate")
+    assert "object has no attribute" in str(e.value)
 
 
 @pytest.mark.parametrize("coldataset", ["tm5_aeronet"])
@@ -174,7 +182,6 @@ def test_ColocatedData_units_error(coldata: ColocatedData):
     "coldataset,num_coords",
     [
         ("fake_4d", 6),
-        ("fake_5d", 4),
         ("tm5_aeronet", 8),
         ("fake_3d", 4),
     ],
@@ -205,7 +212,6 @@ def test_ColocatedData_num_coords_with_data(coldata: ColocatedData, num_coords_w
 @pytest.mark.parametrize(
     "coldataset,error",
     [
-        ("fake_5d", "please reduce dimensionality"),
         ("fake_nodims", "Need dimension"),
     ],
 )
@@ -239,7 +245,6 @@ def test_ColocatedData_get_coords_valid_obs_error(coldata: ColocatedData):
 @pytest.mark.parametrize(
     "coldataset,use_area_weights,chk",
     [
-        ("fake_5d", False, {"num_coords_with_data": np.nan, "num_coords_tot": 4, "totnum": 36}),
         ("tm5_aeronet", False, {"nmb": -0.129, "R": 0.853}),
         # has random numbers in it so nmb, R check is risky with rtol=1e-2
         ("fake_3d", False, {"num_coords_with_data": 4}),
@@ -267,7 +272,6 @@ def test_ColocatedData_calc_statistics_error(coldata: ColocatedData):
         ("tm5_aeronet", None, {"nmb": -0.065, "R": 0.679}),
         ("fake_3d", None, {}),
         ("fake_4d", None, {"nmb": 0}),
-        ("fake_5d", None, {}),
         ("tm5_aeronet", "median", {"nmb": -0.0136, "R": 0.851}),
     ],
 )
@@ -329,9 +333,7 @@ def test_ColocatedData_calc_spatial_statistics_error(
     assert str(e.value).startswith(error)
 
 
-@pytest.mark.parametrize(
-    "coldataset", ["fake_5d", "fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"]
-)
+@pytest.mark.parametrize("coldataset", ["fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"])
 def test_ColocatedData_plot_scatter(coldata: ColocatedData):
     plot = coldata.plot_scatter()
     assert isinstance(plot, Axes)
@@ -356,7 +358,7 @@ def test_meta_access_filename():
 
 
 def test_read_colocated_data(coldata_tm5_aeronet):
-    loaded = ColocatedData(EXAMPLE_FILE)
+    loaded = ColocatedData(data=EXAMPLE_FILE)
     mean_loaded = np.nanmean(loaded.data)
     mean_fixture = np.nanmean(coldata_tm5_aeronet.data.data)
     assert mean_fixture == mean_loaded
@@ -443,9 +445,9 @@ def test_ColocatedData_filter_region_error(coldata: ColocatedData):
         coldata.check_set_countries()
     assert str(e.value).startswith("Countries cannot be assigned")
 
-    with pytest.raises(MetaDataError) as e:
+    with pytest.raises(AttributeError) as e:
         coldata.filter_region(region_id="France", check_country_meta=True)
-    assert str(e.value).startswith("No country information available")
+    assert str(e.value).endswith("'ColocatedData' object has no attribute 'countries_available'")
 
 
 @pytest.mark.parametrize(

@@ -4,11 +4,11 @@ channels:
   - conda-forge
 dependencies:
   - iris >=3.8.1
-  - xarray <=2022.10.0
+  - xarray
   - cartopy >=0.21.1
   - matplotlib-base >=3.7.1
   - scipy >=1.10.0
-  - pandas <=1.5.3
+  - pandas
   - numpy >=1.24.3
   - seaborn >=0.12.2
   - dask

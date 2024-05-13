@@ -8,7 +8,7 @@ from cf_units import Unit
 
 from pyaerocom import GriddedData
 
-# to make things work from iris 3.7
+# to make things work from iris 3.8
 iris.FUTURE.save_split_attrs = True
 
 

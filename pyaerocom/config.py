@@ -70,6 +70,10 @@ class Config:
     AERONET_INV_V3L15_DAILY_NAME = "AeronetInvV3Lev1.5.daily"
     AERONET_INV_V3L2_DAILY_NAME = "AeronetInvV3Lev2.daily"
 
+    #: CAMS2_83 name
+
+    CAMS2_83_NRT_NAME = "CAMS2_83.NRT"
+
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = "EBASMC"
 
