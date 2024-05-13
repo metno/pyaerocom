@@ -5,7 +5,14 @@ from pathlib import Path
 from typing import Iterable, Literal
 
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME
@@ -395,6 +402,40 @@ class ColocationSetup(BaseModel):
 
     # TODO: implelent field validators
     # self.update(**kwargs)
+
+    # Override __init__ to allow for positional arguments
+    def __init__(
+        self,
+        model_id=None,
+        obs_config=None,
+        obs_id=None,
+        obs_vars=None,
+        ts_type=None,
+        start=None,
+        stop=None,
+        basedir_coldata=None,
+        save_coldata=False,
+        **kwargs,
+    ) -> None:
+        super(ColocationSetup, self).__init__(
+            model_id=model_id,
+            obs_config=obs_config,
+            obs_id=obs_id,
+            obs_vars=obs_vars,
+            ts_type=ts_type,
+            start=start,
+            stop=stop,
+            basedir_coldata=basedir_coldata,
+            save_coldata=save_coldata,
+            **kwargs,
+        )
+
+    # Model validator for forbidden keys
+    @model_validator(mode="after")
+    def validate_no_forbidden_keys(self):
+        for key in self.FORBIDDEN_KEYS:
+            if key in self.model_fields:  # LB: Check this is where they will be found
+                raise ValidationError
 
     # TODO: validator for extra arguments. what are they?
 
