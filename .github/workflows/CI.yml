@@ -121,14 +121,18 @@ jobs:
       run: |
         sudo apt update
         sudo apt install libudunits2-dev libgeos-dev libproj-dev proj-data proj-bin
-    - name: Tox Environment
+    - name: Environment Setup
       run: |
-        pip install uv tox
-        tox -e py --notest
-        uv pip install --resolution=lowest-direct .
+        pip install uv
+        uv venv
+        . .venv/bin/activate
+        uv pip install --resolution=lowest-direct --prerelease=allow .
+        uv pip install pytest pytest-dependency pytest-cov pooch
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
-      run: tox -e py -- --cov --no-cov-on-fail --cov-report xml    
+      run: |
+        . .venv/bin/activate
+        python -m pytest --cov --no-cov-on-fail --cov-report xml  
     - name: Upload coverage to Codecov
       if: ${{ success() }}
       uses: codecov/codecov-action@v4
