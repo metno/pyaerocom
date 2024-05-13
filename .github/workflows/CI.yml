@@ -125,7 +125,7 @@ jobs:
       run: |
         pip install uv tox
         tox -e py --notest
-        uv install --resolution=lowest-direct .
+        uv pip install --resolution=lowest-direct .
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
       run: tox -e py -- --cov --no-cov-on-fail --cov-report xml    
