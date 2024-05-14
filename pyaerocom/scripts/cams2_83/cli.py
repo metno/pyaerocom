@@ -6,7 +6,6 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from multiprocessing import cpu_count
 from pathlib import Path
 from pprint import pformat
 from typing import List, Optional
