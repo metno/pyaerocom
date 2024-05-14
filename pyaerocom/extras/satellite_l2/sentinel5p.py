@@ -421,8 +421,9 @@ class ReadL2Data(ReadL2DataBase):
         # field name whose size determines the number of time steps in a product
         self.TSSIZENAME = self._TIME_OFFSET_NAME
 
+        # ensure logging shows this file
+        self.logger = logging.getLogger(__name__)
         if loglevel is not None:
-            # self.logger = logging.getLogger(__name__)
             # if self.logger.hasHandlers():
             #     # Logger is already configured, remove all handlers
             #     self.logger.handlers = []
@@ -1108,7 +1109,7 @@ class ReadL2Data(ReadL2DataBase):
             # data = _data._data
 
             if bbox is not None:
-                logging.info(bbox)
+                self.logger.info(bbox)
                 lat_min = bbox[0]
                 lat_max = bbox[1]
                 lon_min = bbox[2]
@@ -1127,16 +1128,16 @@ class ReadL2Data(ReadL2DataBase):
 
                 matching_indexes = np.where(ret_data[:, self._LATINDEX] <= lat_max)
                 ret_data = ret_data[matching_indexes[0], :]
-                # logging.warning('len after lat_max: {}'.format(len(ret_data)))
+                # self.logger.warning('len after lat_max: {}'.format(len(ret_data)))
                 matching_indexes = np.where(ret_data[:, self._LATINDEX] >= lat_min)
                 ret_data = ret_data[matching_indexes[0], :]
-                # logging.warning('len after lat_min: {}'.format(len(ret_data)))
+                # self.logger.warning('len after lat_min: {}'.format(len(ret_data)))
                 matching_indexes = np.where(ret_data[:, self._LONINDEX] <= lon_max)
                 ret_data = ret_data[matching_indexes[0], :]
-                # logging.warning('len after lon_max: {}'.format(len(ret_data)))
+                # self.logger.warning('len after lon_max: {}'.format(len(ret_data)))
                 matching_indexes = np.where(ret_data[:, self._LONINDEX] >= lon_min)
                 ret_data = ret_data[matching_indexes[0], :]
-                # logging.warning('len after lon_min: {}'.format(len(ret_data)))
+                # self.logger.warning('len after lon_min: {}'.format(len(ret_data)))
                 # matching_length = len(matching_indexes[0])
                 _data._data = ret_data
                 return _data

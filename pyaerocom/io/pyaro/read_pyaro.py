@@ -144,18 +144,16 @@ class PyaroToUngriddedData:
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
         units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-        ts_types: dict[str, dict[str, Optional[TsType]]] = {}  # {k: None for k in stations}
+        ts_types: dict[str, dict[str, Optional[TsType]]] = {}
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
-        metadata: Metadata = (
-            {}
-        )  # = self._make_ungridded_metadata(stations=stations, var_idx=var_idx, units=units)
+        metadata: Metadata = {}
         meta_idx: dict = {}  # = {s: {v: [] for v in vars} for s in metadata}
         data_array = np.zeros([total_size, 12])
 
         # Helper objects
-        station_idx = {}  # {metadata[idx]["station_name"]: idx for idx in metadata}
+        station_idx = {}
 
         idx = 0
         metadata_idx = 0
@@ -204,7 +202,7 @@ class PyaroToUngriddedData:
 
         self.data._data = data_array
         self.data.meta_idx = new_meta_idx
-        self.data.metadata = metadata  # self._add_ts_type_to_metadata(metadata, ts_types)
+        self.data.metadata = metadata
         self.data.var_idx = var_idx
 
         return self.data

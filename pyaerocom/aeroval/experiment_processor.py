@@ -121,7 +121,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
         if not self.cfg.model_cfg:
-            logging.info("No model found, will make dummy model data")
+            logger.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
             self.cfg.webdisp_opts.hide_pages = ["maps.php", "intercomp.php", "overall.php"]
             model_id = make_dummy_model(obs_list, self.cfg)

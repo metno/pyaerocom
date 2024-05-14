@@ -48,8 +48,8 @@ def ensure_correct_dimensions(data: np.ndarray | xr.DataArray):
         num_dims = len(data.dims)
     else:
         raise ValueError("Could not interpret data")
-    if num_dims not in (3, 4):
-        raise DataDimensionError("invalid input, need 3D or 4D numpy array")
+    if num_dims not in (2, 3, 4):
+        raise DataDimensionError("invalid input, need 2D, 3D or 4D numpy array")
     elif not shape == 2:
         raise DataDimensionError("first dimension (data_source) must be of length 2(obs, model)")
 
@@ -100,7 +100,7 @@ class ColocatedData(BaseModel):
 
     Raises
     ------
-    IOError
+    ValidationError
         if init fails
     """
 
@@ -147,6 +147,12 @@ class ColocatedData(BaseModel):
                 extra_args_from_class_initialization = {}
             data = xr.DataArray(self.data, **extra_args_from_class_initialization)
             self.data = data
+
+    # Override __init__ to allow for positional arguments
+    def __init__(
+        self, data: Path | str | xr.DataArray | np.ndarray | None = None, **kwargs
+    ) -> None:
+        super(ColocatedData, self).__init__(data=data, **kwargs)
 
     #################################
     ##        Attributes
@@ -1283,8 +1289,7 @@ class ColocatedData(BaseModel):
             raise NetcdfError(
                 f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
-
-        arr = xr.open_dataarray(file_path)
+        arr = xr.load_dataarray(file_path)
         ensure_correct_dimensions(arr)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr

@@ -35,6 +35,13 @@ def test_ColocatedData_initialization_error(data, exception: type[Exception]):
         ColocatedData(data=data).data
 
 
+def test_ColocatedData__init__():
+    # test that ColocatedData can be given positional arguments
+    data = np.ones((2, 2, 1))
+    col_data = ColocatedData(data)
+    assert col_data
+
+
 def test_ColocatedData_data():
     data = xr.DataArray(np.ones((2, 2, 1)))
     col = ColocatedData(data=data)
