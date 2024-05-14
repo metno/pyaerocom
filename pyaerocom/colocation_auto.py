@@ -383,6 +383,7 @@ class ColocationSetup(BrowseDict):
         self.model_use_climatology = False
 
         self.model_kwargs = {}
+        self.model_read_kwargs = {}
 
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
 
@@ -1090,7 +1091,7 @@ class Colocator(ColocationSetup):
             data_dir = self.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
-            reader = reader_class(data_id=data_id, data_dir=data_dir, **self.model_kwargs)
+            reader = reader_class(data_id=data_id, data_dir=data_dir, **self.model_read_kwargs)
         else:
             reader = reader_class(data_id=data_id, data_dir=data_dir)
         return reader

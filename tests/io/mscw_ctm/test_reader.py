@@ -83,6 +83,7 @@ VAR_MAP = {
     "concss": "SURF_ug_SS",
     "concssf": "SURF_ug_SEASALT_F",
     "concCocpm25": "SURF_ugC_PM_OM25",
+    "concspores": "SURF_ug_FUNGAL_SPORES",
     "vmro32m": "SURF_2MO3",
     "vmro3max": "SURF_MAXO3",
     "vmro3": "SURF_ppb_O3",

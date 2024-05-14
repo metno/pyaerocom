@@ -70,8 +70,8 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                model_kwargs = self.cfg.model_cfg[model_name]["kwargs"]
-                col.run(var_list, model_kwargs=model_kwargs)
+                model_read_kwargs = self.cfg.model_cfg[model_name]["kwargs"]
+                col.run(var_list, model_read_kwargs=model_read_kwargs)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
