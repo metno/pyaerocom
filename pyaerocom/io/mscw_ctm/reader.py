@@ -24,6 +24,7 @@ from .additional_variables import (
     calc_concno3pm10,
     calc_concno3pm25,
     calc_concNtnh,
+    calc_concpolyol,
     calc_concso4t,
     calc_concSso2,
     calc_concsspm25,
@@ -37,7 +38,6 @@ from .additional_variables import (
     identity,
     subtract_dataarrays,
     update_EC_units,
-    calc_concpolyol,
 )
 from .model_variables import emep_variables
 
