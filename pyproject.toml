@@ -192,7 +192,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, format, lint, docs, build, old
+envlist = py310, py311, py312, format, lint, docs, build
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -200,6 +200,8 @@ requires =
     cython > 0.29.15
 
 [testenv]
+deps =
+    -e .[dev]
 commands_pre =
     python --version
     uv pip freeze
@@ -211,7 +213,11 @@ setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 allowlist_externals =
     uv
-    
+
+[testenv:py310]
+uv_resolution = lowest-direct
+python -I -m uv pip install --resolution=lowest-direct {opts} {packages}
+
 [testenv:format]
 commands =
     pre-commit run --all-files --show-diff-on-failure
@@ -236,7 +242,4 @@ commands =
     python -m build
 deps =
     build
-
-[testenv:old]
-uv_resolution = lowest-direct
 """
