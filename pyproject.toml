@@ -21,23 +21,23 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "scitools-iris>=3.9.0",
-    "xarray>=2024.3.0",
-    "cartopy>=0.23.0",
-    "matplotlib>=3.8.4",
-    "scipy>=1.13.0",
-    "pandas>=2.2.2",
-    "numpy>=1.26.4",
-    "seaborn>=0.13.2",
-    "dask>=2024.4.2",
-    "geonum>=1.5.0",
-    "simplejson>=3.19.2",
-    "requests>=2.31.0",
-    "geocoder_reverse_natural_earth>=0.0.2",
-    "tqdm>=4.66.4",
-    "openpyxl>=3.1.2",
-    "geojsoncontour>=0.4.0",
-    "typer>=0.12.3",
+    "scitools-iris>=3.8.1",
+    "xarray",
+    "cartopy>=0.21.1",
+    "matplotlib>=3.7.1",
+    "scipy>=1.10.1",
+    "pandas",
+    "numpy>=1.24.3",
+    "seaborn>=0.12.2",
+    "dask",
+    "geonum==1.5.0",
+    "simplejson",
+    "requests",
+    "geocoder_reverse_natural_earth",
+    "tqdm",
+    "openpyxl",
+    "geojsoncontour",
+    "typer>=0.7.0",
     # python < 3.11
     'tomli>=2.0.1; python_version < "3.11"',
     'importlib-resources>=5.10; python_version < "3.11"',
@@ -192,7 +192,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, format, lint, docs, build
+envlist = py310, py311, py312, format, lint, docs, build, old
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -233,4 +233,17 @@ commands =
     python -m build
 deps =
     build
+
+[testenv:old]
+description = run unit tests with old dependencies
+commands_pre =
+    python --version
+    uv pip freeze
+commands = 
+    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
+extras = 
+    test
+allowlist_externals = 
+    uv
+uv_resolution = lowest-direct
 """
