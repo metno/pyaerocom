@@ -202,13 +202,16 @@ requires =
 [testenv]
 commands_pre =
     python --version
+    uv pip freeze
 commands =
     python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
-
+allowlist_externals =
+    uv
+    
 [testenv:format]
 commands =
     pre-commit run --all-files --show-diff-on-failure
@@ -235,15 +238,5 @@ deps =
     build
 
 [testenv:old]
-description = run unit tests with old dependencies
-commands_pre =
-    python --version
-    uv pip freeze
-commands = 
-    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
-extras = 
-    test
-allowlist_externals = 
-    uv
 uv_resolution = lowest-direct
 """

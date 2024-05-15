@@ -63,8 +63,8 @@ jobs:
     - name: Tox environment
       run: |
         pip install --upgrade pip
-        pip install tox
-        tox -e py --notest
+        pip install tox-uv
+        tox -e py
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
       run: tox -e py -- --cov --no-cov-on-fail --cov-report xml
@@ -126,7 +126,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install tox-uv
-        tox -e old --notest
+        tox -e old
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
       run: tox -e old -- --cov --no-cov-on-fail --cov-report xml
