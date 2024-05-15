@@ -288,22 +288,21 @@ class ColocationSetup(BaseModel):
     #         return v
 
     #########################
-    # Required Input
+    # Init Input
     #########################
 
     # LB: remains to be seen if this can actually be required without chaning the code elsewhere
-    model_id: str | None = None
-    obs_id: str | None = None
-    obs_vars: list[str] | None = None
-    ts_type: str | None = None
-    start: pd.Timestamp | int | None = None
-    stop: pd.Timestamp | int | None = None
+    model_id: str | None  # = None
+    obs_id: str | None  # = None
+    obs_vars: list[str] | str | None  # = None
+    ts_type: str  # = None
+    start: pd.Timestamp | int | None  # = None
+    stop: pd.Timestamp | int | None  # = None
+    obs_config: PyaroConfig | None  # = None
 
     ###############################
     # Attributes with defaults
     ###############################
-
-    obs_config: PyaroConfig | None = None
 
     #: Dictionary specifying alternative vertical types that may be used to
     #: read model data. E.g. consider the variable is  ec550aer,
@@ -324,12 +323,10 @@ class ColocationSetup(BaseModel):
         "remove_outliers",  # deprecated since v0.12.0
     ]
 
-    ts_type: str = "monthly"
-
     # crashes if input filter name is invalid
     filter_name: str = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
-    basedir_coldata: str = Field(default=const.COLOCATEDDATADIR, validate_default=True)
+    basedir_coldata: str  # = Field(default=const.COLOCATEDDATADIR, validate_default=True)
 
     @field_validator("basedir_coldata")
     @classmethod
@@ -406,15 +403,15 @@ class ColocationSetup(BaseModel):
     # Override __init__ to allow for positional arguments
     def __init__(
         self,
-        model_id=None,
-        obs_config=None,
-        obs_id=None,
-        obs_vars=None,
-        ts_type=None,
-        start=None,
-        stop=None,
-        basedir_coldata=None,
-        save_coldata=False,
+        model_id: str | None = None,
+        obs_config: PyaroConfig | None = None,
+        obs_id: str | None = None,
+        obs_vars: list[str] | None = None,
+        ts_type: str = "monthly",
+        start: pd.Timestamp | int | None = None,
+        stop: pd.Timestamp | int | None = None,
+        basedir_coldata: str = const.COLOCATEDDATADIR,
+        save_coldata: bool = False,
         **kwargs,
     ) -> None:
         super(ColocationSetup, self).__init__(
@@ -446,19 +443,21 @@ class ColocationSetup(BaseModel):
             p.mkdir(parents=True, exist_ok=True)
         return str(p)  # LB: not sure why pyaerocom insists these be strings as this point
 
-    @field_validator("obs_id")
-    def validate_obs_id(cls, v: str):
-        if cls.obs_config is not None and v != cls.obs.config.name:
-            logger.info(
-                f"Data ID in Pyaro config {cls.obs_config.name} does not match obs_id {v}. Setting Pyaro config to None!"
-            )
-            cls.obs_config = None
+    # @field_validator("obs_id")
+    # def validate_obs_id(cls, v: str):
+    #     if cls.obs_config is not None and v != cls.obs.config.name:
+    #         logger.info(
+    #             f"Data ID in Pyaro config {cls.obs_config.name} does not match obs_id {v}. Setting Pyaro config to None!"
+    #         )
+    #         cls.obs_config = None
 
-        cls.obs_id = v
+    #     cls.obs_id = v
 
     # LB: Think we need a validator on the PyaroConfig, not the obs_id.
     # Combining the validation logic from those two things here. needs testing.
+    # LB: this needs serious work
     @field_validator("obs_config")
+    @classmethod
     def validate_obs_config(cls, v: PyaroConfig):
         if cls.obs_config is not None and cls.obs.config.name != cls.obs_id:
             logger.info(

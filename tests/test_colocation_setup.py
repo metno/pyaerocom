@@ -12,7 +12,7 @@ default_setup = {
     "model_id": None,
     "obs_id": None,
     "obs_vars": None,
-    "obs_config": None,
+    # "obs_config": None,
     "ts_type": "monthly",
     "start": None,
     "stop": None,
