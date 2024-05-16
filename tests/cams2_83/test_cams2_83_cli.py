@@ -26,9 +26,7 @@ def test_clearcache(
 ):
     assert list(fake_cache_path.glob("*.pkl"))
 
-    def do_not_run(
-        self, model_name=None, obs_name=None, var_list=None, update_interface=True
-    ):
+    def do_not_run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
         assert model_name is None
         assert obs_name is None
         assert var_list is None
@@ -67,9 +65,7 @@ def test_not_cleared_cache(
         assert analysis is False
         assert update_interface is True
 
-    monkeypatch.setattr(
-        "pyaerocom.scripts.cams2_83.evaluation.CAMS2_83_Processer.run", do_not_run
-    )
+    monkeypatch.setattr("pyaerocom.scripts.cams2_83.evaluation.CAMS2_83_Processer.run", do_not_run)
     options = f"forecast long 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --medianscores"
     result = runner.invoke(app, options.split())
     assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
