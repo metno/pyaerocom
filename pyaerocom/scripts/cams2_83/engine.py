@@ -48,10 +48,20 @@ class CAMS2_83_Engine(ProcessingEngine):
         else:
             obs_var = model_var = "UNDEFINED"
 
-        model = ModelName[coldata[0].model_name.split("-")[2]]
+        # for the MOS/ENS evaluation experiment the models are just strings
+        # we do not want them added to the ModelName class
+        # so we need a bunch of ugly special cases here
+        modelname = coldata[0].model_name.split("-")[2]
+        if modelname == "ENS" or modelname == "MOS":
+            model = modelname
+        else:
+            model = ModelName[modelname]
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
-        mcfg = self.cfg.model_cfg.get_entry(model.name)
+        if modelname == "ENS" or modelname == "MOS":  # MOS/ENS evaluation special case
+            mcfg = self.cfg.model_cfg.get_entry(modelname)
+        else:
+            mcfg = self.cfg.model_cfg.get_entry(model.name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
         seasons = self.cfg.time_cfg.get_seasons()
 
@@ -120,7 +130,9 @@ class CAMS2_83_Engine(ProcessingEngine):
                 obs_name,
                 var_name_web,
                 vert_code,
-                model.name,
+                (
+                    modelname if (modelname == "ENS" or modelname == "MOS") else model.name
+                ),  # MOS/ENS evaluation special case
                 model_var,
             )
 
