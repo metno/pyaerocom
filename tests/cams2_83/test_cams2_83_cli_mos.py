@@ -44,7 +44,7 @@ def test_eval_mos(
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
     ranges_file = os.path.join(tmp_path, "cams2-83/mos-colocated-data/ranges.json")
-    assert ranges_file.is_file()
+    assert Path(ranges_file).is_file()
     assert (
         "pyaerocom.aeroval.experiment_processor:experiment_processor.py:156 Finished processing"
         in caplog.text
