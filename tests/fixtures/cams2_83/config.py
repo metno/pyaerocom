@@ -35,7 +35,8 @@ def patched_config_mos():
 
 @pytest.fixture(scope="session")
 def dataDir():
-    """A path to the reference files folder."""
+    """Path to the folder with test data, intended to be used as the --coldata-path argument in the mos evaluation tests.
+    This means it has to contain the expected colocated data at the subpath /cams2_83/{exp-id}"""
     testDir = os.path.dirname(__file__)
     theDir = os.path.join(testDir, "data")
     return theDir
