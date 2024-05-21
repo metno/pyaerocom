@@ -213,10 +213,7 @@ setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 allowlist_externals =
     uv
-
-[testenv:py310]
 uv_resolution = lowest-direct
-python -I -m uv pip install --resolution=lowest-direct {opts} {packages}
 
 [testenv:format]
 commands =
