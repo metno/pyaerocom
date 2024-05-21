@@ -67,7 +67,9 @@ jobs:
         tox -e py --notest
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
-      run: tox -e py -- --cov --no-cov-on-fail --cov-report xml
+      run: |
+        tox -e py -- tests/cams2_83/ 
+        tox -e py -- --cov --no-cov-on-fail --cov-report xml
     - name: Upload coverage to Codecov
       if: ${{ success() }}
       uses: codecov/codecov-action@v4
