@@ -95,6 +95,7 @@ def test_eval_mos_standard(
     assert f"Processing: {colfileE}" in caplog.text
     assert f"Processing: {colfileM}" in caplog.text
     assert "Finished processing" in caplog.text
+    assert "Done Running Statistics (MOS)" in caplog.text
 
 
 def test_eval_mos_medianscores(
@@ -124,3 +125,4 @@ def test_eval_mos_medianscores(
     assert "Processing Component: concno2"
     assert "Making subset for ALL, 2024/03/01-2024/03/05 and all" in caplog.text
     assert "Finished processing" in caplog.text
+    assert "Median scores run finished" in caplog.text
