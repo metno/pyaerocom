@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from pyaerocom import const
+
 from . import cfg_test, cfg_test_mos
 
 
@@ -17,6 +19,13 @@ def fake_cache_path(monkeypatch, tmp_path: Path):
     cache_file.write_bytes(b"")
     assert cache_file.exists()
     return tmp_path
+
+
+@pytest.fixture
+def reset_cachedir():
+    cache = const.CACHEDIR
+    yield
+    const.CACHEDIR = cache
 
 
 @pytest.fixture
@@ -38,5 +47,7 @@ def dataDir():
     """Path to the folder with test data, intended to be used as the --coldata-path argument in the mos evaluation tests.
     This means it has to contain the expected colocated data at the subpath /cams2_83/{exp-id}"""
     testDir = os.path.dirname(__file__)
+    theDir = os.path.join(testDir, "data")
+    return theDir
     theDir = os.path.join(testDir, "data")
     return theDir

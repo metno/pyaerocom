@@ -35,7 +35,7 @@ def test_clearcache(
     monkeypatch.setattr(
         "pyaerocom.scripts.cams2_83.evaluation.ExperimentProcessor.run", do_not_run
     )
-    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
+    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --cache {fake_cache_path} --name 'Test'"
     result = runner.invoke(app, options.split())
     assert "Running Statistics" in caplog.text
     assert result.exit_code == 0

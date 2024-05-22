@@ -6,17 +6,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from pyaerocom import const
 from pyaerocom.scripts.cams2_83.cli_mos import app
 
 runner = CliRunner()
-
-
-@pytest.fixture
-def reset_cachedir():
-    cache = const.CACHEDIR
-    yield
-    const.CACHEDIR = cache
 
 
 @pytest.fixture
@@ -60,13 +52,10 @@ def fake_config(monkeypatch, patched_config_mos):
 
 
 def test_eval_mos_dummy(
-    fake_cache_path: Path,
     tmp_path: Path,
     caplog,
 ):
-    assert list(fake_cache_path.glob("*.pkl"))
-
-    options = f"season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --cache {fake_cache_path} --name 'Test'"
+    options = f"season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --cache {tmp_path} --name 'Test'"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
     assert "no output available" in caplog.text
@@ -74,12 +63,11 @@ def test_eval_mos_dummy(
 
 @pytest.mark.usefixtures("fake_CAMS2_83_Processer", "reset_cachedir")
 def test_eval_mos_standard(
-    fake_cache_path: Path,
     tmp_path,
     dataDir,
     caplog,
 ):
-    options = f"day 2024-03-01 2024-03-01 --data-path {tmp_path} --coldata-path {dataDir} --cache {fake_cache_path} --id mos-colocated-data --name 'Test'"
+    options = f"day 2024-03-01 2024-03-01 --data-path {tmp_path} --coldata-path {dataDir} --cache {tmp_path} --id mos-colocated-data --name 'Test'"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
 
@@ -122,19 +110,15 @@ def test_eval_mos_standard(
 
 @pytest.mark.usefixtures("fake_ExperimentProcessor", "reset_cachedir")
 def test_eval_mos_medianscores(
-    fake_cache_path: Path,
     tmp_path,
     dataDir,
     caplog,
 ):
-    options = f"season 2024-03-01 2024-03-05 --data-path {tmp_path} --coldata-path {dataDir} --cache {fake_cache_path} --id mos-colocated-data --name 'Test'"
+    options = f"season 2024-03-01 2024-03-05 --data-path {tmp_path} --coldata-path {dataDir} --cache {tmp_path} --id mos-colocated-data --name 'Test'"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
-    fc_out = os.path.join(
-        tmp_path,
-        "cams2-83/mos-colocated-data/forecast/ALL_EEA-NRT-concno2_Surface.json",
-    )
-    assert Path(fc_out).is_file()
+    fc_out = tmp_path / "cams2-83/mos-colocated-data/forecast/ALL_EEA-NRT-concno2_Surface.json"
+    assert fc_out.is_file()
     assert "Running CAMS2_83 Specific Statistics" in caplog.text
     assert "Processing Component: concno2"
     assert "Making subset for ALL, 2024/03/01-2024/03/05 and all" in caplog.text
