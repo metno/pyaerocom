@@ -274,7 +274,7 @@ def test_Colocator_run_gridded_ungridded(
     tm5_aero_stp, update, chk_mvar, chk_ovar, sh, mean_obs, mean_mod
 ):
     stp = ColocationSetup(**tm5_aero_stp)
-    stp.update(**update)
+    stp.update(update)
 
     result = Colocator(**stp).run()
     assert isinstance(result, dict)
@@ -308,7 +308,7 @@ def test_Colocator_run_gridded_ungridded(
 )
 def test_Colocator_run_gridded_ungridded_error(tm5_aero_stp, update, error):
     stp = ColocationSetup(**tm5_aero_stp)
-    stp.update(**update)
+    stp.update(update)
     with pytest.raises(ColocationSetupError) as e:
         Colocator(**stp).run()
     assert str(e.value).startswith(error)

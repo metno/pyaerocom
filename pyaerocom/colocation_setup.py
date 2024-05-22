@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from functools import cached_property
 from pathlib import Path
 from typing import Iterable, Literal
@@ -20,6 +21,12 @@ from pyaerocom.helpers import start_stop
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
+
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 
 class ColocationSetup(BaseModel):
@@ -298,7 +305,7 @@ class ColocationSetup(BaseModel):
     ts_type: str  # = None
     start: pd.Timestamp | int | None  # = None
     stop: pd.Timestamp | int | None  # = None
-    obs_config: PyaroConfig | None  # = None
+    obs_config: PyaroConfig | None = None
 
     ###############################
     # Attributes with defaults
@@ -358,7 +365,7 @@ class ColocationSetup(BaseModel):
 
     # Attributes related to model data
     model_name: str | None = None
-    model_data_dir: Path | str = None
+    model_data_dir: Path | str | None = None
 
     model_read_opts: dict | None = {}
 
@@ -456,14 +463,15 @@ class ColocationSetup(BaseModel):
     # LB: Think we need a validator on the PyaroConfig, not the obs_id.
     # Combining the validation logic from those two things here. needs testing.
     # LB: this needs serious work
-    @field_validator("obs_config")
+    # @field_validator("obs_config")
+    @model_validator(mode="after")
     @classmethod
     def validate_obs_config(cls, v: PyaroConfig):
-        if cls.obs_config is not None and cls.obs.config.name != cls.obs_id:
+        if v is not None and cls.obs.config.name != cls.obs_id:
             logger.info(
-                f"Data ID in Pyaro config {cls.obs_config.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
+                f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
             )
-            cls.obs_config = None
+            v = None
         if v is not None:
             if isinstance(v, dict):
                 logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
@@ -501,3 +509,13 @@ class ColocationSetup(BaseModel):
             return str(y0)
         else:
             return f"{y0}-{y1}"
+
+    def update(self, data: dict) -> Self:
+        # provide an update() method analogous to MutableMapping's one
+        update = self.model_dump()
+        update.update(data)
+        self.model_validate(update)
+        for k, v in self.model_dump(exclude_defaults=True).items():
+            logger.debug(f"updating value of '{k}' from '{getattr(self, k, None)}' to '{v}'")
+            setattr(self, k, v)
+        return self
