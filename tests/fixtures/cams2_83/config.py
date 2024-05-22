@@ -49,5 +49,35 @@ def dataDir():
     testDir = os.path.dirname(__file__)
     theDir = os.path.join(testDir, "data")
     return theDir
-    theDir = os.path.join(testDir, "data")
-    return theDir
+
+
+@pytest.fixture
+def fake_CAMS2_83_Processer(monkeypatch):
+    def do_not_run(
+        self,
+        model_name=None,
+        obs_name=None,
+        var_list=None,
+        update_interface=True,
+        analysis=False,
+    ):
+        assert model_name is None
+        assert obs_name is None
+        assert var_list is None
+        assert analysis is False
+        assert update_interface is True
+
+    monkeypatch.setattr("pyaerocom.scripts.cams2_83.evaluation.CAMS2_83_Processer.run", do_not_run)
+
+
+@pytest.fixture
+def fake_ExperimentProcessor(monkeypatch):
+    def do_not_run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
+        assert model_name is None
+        assert obs_name is None
+        assert var_list is None
+        assert update_interface is True
+
+    monkeypatch.setattr(
+        "pyaerocom.scripts.cams2_83.evaluation.ExperimentProcessor.run", do_not_run
+    )

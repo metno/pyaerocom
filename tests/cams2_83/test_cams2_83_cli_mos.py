@@ -11,38 +11,6 @@ from pyaerocom.scripts.cams2_83.cli_mos import app
 runner = CliRunner()
 
 
-@pytest.fixture
-def fake_CAMS2_83_Processer(monkeypatch):
-    def do_not_run(
-        self,
-        model_name=None,
-        obs_name=None,
-        var_list=None,
-        update_interface=True,
-        analysis=False,
-    ):
-        assert model_name is None
-        assert obs_name is None
-        assert var_list is None
-        assert analysis is False
-        assert update_interface is True
-
-    monkeypatch.setattr("pyaerocom.scripts.cams2_83.evaluation.CAMS2_83_Processer.run", do_not_run)
-
-
-@pytest.fixture
-def fake_ExperimentProcessor(monkeypatch):
-    def do_not_run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
-        assert model_name is None
-        assert obs_name is None
-        assert var_list is None
-        assert update_interface is True
-
-    monkeypatch.setattr(
-        "pyaerocom.scripts.cams2_83.evaluation.ExperimentProcessor.run", do_not_run
-    )
-
-
 @pytest.fixture()
 def fake_config(monkeypatch, patched_config_mos):
     def fake_make_config(*args, **kwargs):
@@ -55,7 +23,7 @@ def test_eval_mos_dummy(
     tmp_path: Path,
     caplog,
 ):
-    options = f"season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --cache {tmp_path} --name 'Test'"
+    options = f"season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
     assert "no output available" in caplog.text
