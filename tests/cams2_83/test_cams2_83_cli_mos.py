@@ -6,9 +6,17 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+from pyaerocom import const
 from pyaerocom.scripts.cams2_83.cli_mos import app
 
 runner = CliRunner()
+
+
+@pytest.fixture
+def reset_cachedir():
+    cache = const.CACHEDIR
+    yield
+    const.CACHEDIR = cache
 
 
 @pytest.fixture
@@ -64,7 +72,7 @@ def test_eval_mos_dummy(
     assert "no output available" in caplog.text
 
 
-@pytest.mark.usefixtures("fake_CAMS2_83_Processer")
+@pytest.mark.usefixtures("fake_CAMS2_83_Processer", "reset_cachedir")
 def test_eval_mos_standard(
     fake_cache_path: Path,
     tmp_path,
@@ -112,7 +120,7 @@ def test_eval_mos_standard(
     assert "Done Running Statistics (MOS)" in caplog.text
 
 
-@pytest.mark.usefixtures("fake_ExperimentProcessor")
+@pytest.mark.usefixtures("fake_ExperimentProcessor", "reset_cachedir")
 def test_eval_mos_medianscores(
     fake_cache_path: Path,
     tmp_path,
