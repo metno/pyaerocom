@@ -100,9 +100,11 @@ def test_colocation_setup(stp: ColocationSetup, should_be: dict):
     ],
 )
 def test_ColocationSetup_invalid_input(key, val, raises):
-    with raises:
-        stp = ColocationSetup(**{key: val})
-        assert stp[key] == val
+    # with raises:
+    #     stp = ColocationSetup(**{key: val})
+    #     assert stp[key] == val
+    with pytest.raises(ValidationError):
+        ColocationSetup(**{key: val})
 
 
 def test_Colocator__obs_vars__setter(col):
@@ -276,7 +278,7 @@ def test_Colocator_run_gridded_ungridded(
     stp = ColocationSetup(**tm5_aero_stp)
     stp.update(update)
 
-    result = Colocator(**stp).run()
+    result = Colocator(**stp.model_dump()).run()
     assert isinstance(result, dict)
 
     coldata = result[chk_mvar][chk_ovar]

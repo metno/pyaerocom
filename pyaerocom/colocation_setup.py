@@ -283,7 +283,12 @@ class ColocationSetup(BaseModel):
     ##########################
     # Pydantic ConfigDict
     ##########################
-    model_config = ConfigDict(arbitrary_types_allowed=True, allow="extra", protected_namespaces=())
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        allow="extra",
+        protected_namespaces=(),
+        validate_assignment=True,
+    )
 
     # @model_validator('*', mode="before")
     # def convert_to_none(cls, v):
@@ -379,6 +384,8 @@ class ColocationSetup(BaseModel):
     model_read_aux: dict[str, dict[Literal["vars_required", "fun"], list[str]]] | None = {}
     model_use_climatology: bool = False
 
+    model_kwargs: dict = {}
+
     # LB: check this as well
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
 
@@ -435,7 +442,7 @@ class ColocationSetup(BaseModel):
         )
 
     # Model validator for forbidden keys
-    @model_validator(mode="after")
+    @model_validator(mode="wrap")
     def validate_no_forbidden_keys(self):
         for key in self.FORBIDDEN_KEYS:
             if key in self.model_fields:  # LB: Check this is where they will be found
@@ -512,10 +519,14 @@ class ColocationSetup(BaseModel):
 
     def update(self, data: dict) -> Self:
         # provide an update() method analogous to MutableMapping's one
+
+        # validate values in data
         update = self.model_dump()
         update.update(data)
         self.model_validate(update)
-        for k, v in self.model_dump(exclude_defaults=True).items():
+        # for k, v in self.model_dump(exclude_defaults=False).items():
+        # assign values from
+        for k, v in data.items():
             logger.debug(f"updating value of '{k}' from '{getattr(self, k, None)}' to '{v}'")
             setattr(self, k, v)
         return self

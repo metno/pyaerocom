@@ -8,7 +8,7 @@ import os
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Callable, Optional
 
 import pandas as pd
 from cf_units import Unit
@@ -22,9 +22,7 @@ from pyaerocom.colocation import (
     correct_model_stp_coldata,
 )
 from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
-from pyaerocom.colocation_setup import ColocationSetup
-
-# from pyaerocom.colocation_setup import ColocationSetup
+from pyaerocom.colocation_setup import ColocationSetup  # New
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
@@ -567,19 +565,53 @@ class Colocator(ColocationSetup):
         5: "NOT OK: Colocation failed",
     }
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    # def __init__(self, **kwargs):
+    #     super().__init__(**kwargs)
 
-        self._log = None
-        self.logging = True
-        self._loaded_model_data = {}
-        self.data = {}
+    #     self._log = None
+    #     self.logging = True
+    #     self._loaded_model_data = {}
+    #     self.data = {}
 
-        self._processing_status = []
-        self.files_written = []
+    #     self._processing_status = []
+    #     self.files_written = []
 
-        self._model_reader = None
-        self._obs_reader = None
+    #     self._model_reader = None
+    #     self._obs_reader = None
+
+    # Logging in this class needs serious work
+    _log: Callable | None = None
+    logging: bool = True
+    _loaded_model_data: dict | None = {}
+    data: dict = {}  # think about this typing
+    _processing_status: list[str] = []
+    files_written: list[str] = []
+    _model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None
+    _obs_reader: Any | None = None  # LB: Should be improved
+
+    def __init__(
+        self,
+        _log: Callable | None = None,
+        logging: bool = True,
+        _loaded_model_data: dict | None = {},
+        data: dict = {},
+        _processing_status: list[str] = [],
+        files_written: list[str] = [],
+        _model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None,
+        _obs_reader: Any | None = None,
+        **kwargs,
+    ) -> None:
+        super(Colocator, self).__init__(
+            _log=_log,
+            logging=logging,
+            _loaded_model_data=_loaded_model_data,
+            data=data,
+            _processing_status=_processing_status,
+            files_written=files_written,
+            _model_reader=_model_reader,
+            _obs_reader=_obs_reader,
+            **kwargs,
+        )
 
     @property
     def model_vars(self):
@@ -855,7 +887,7 @@ class Colocator(ColocationSetup):
             dictionaries comprising key / value pairs of obs variables and
             associated instances of :class:`ColocatedData`.
         """
-        self.update(**opts)
+        self.update(opts)
         data_out = {}
         # ToDo: see if the following could be solved via custom context manager
         try:
@@ -982,7 +1014,7 @@ class Colocator(ColocationSetup):
         obs_data = obs_reader.read(
             data_ids=[self.obs_id],
             vars_to_retrieve=var_name,
-            only_cached=self._obs_cache_only,
+            only_cached=self.obs_cache_only,
             filter_post=obs_filters_post,
             **self.read_opts_ungridded,
         )
@@ -1317,7 +1349,7 @@ class Colocator(ColocationSetup):
         return data
 
     def _eval_obs_filters(self, var_name):
-        obs_filters = self["obs_filters"]
+        obs_filters = self.obs_filters
         if var_name in obs_filters:
             obs_filters = obs_filters[var_name]
         remaining = {}
@@ -1593,7 +1625,7 @@ class Colocator(ColocationSetup):
         log.write(f"Timestamp: {datetimestr}\n\n")
         log.write("Analysis configuration\n")
         ignore = ["_log", "logging", "data", "_model_reader", "_obs_reader"]
-        for key, val in self.items():
+        for key, val in self.model_dump().items():
             if key in ignore:
                 continue
             log.write(f"{key}: {val}\n")
