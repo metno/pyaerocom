@@ -307,6 +307,13 @@ class ColocationSetup(BaseModel):
     model_id: str | None  # = None
     obs_id: str | None  # = None
     obs_vars: list[str] | str | None  # = None
+
+    @field_validator("obs_vars")
+    @classmethod
+    def validate_obs_vars(cls, v):
+        if isinstance(v, str):
+            return [v]
+
     ts_type: str  # = None
     start: pd.Timestamp | int | None  # = None
     stop: pd.Timestamp | int | None  # = None
@@ -442,7 +449,7 @@ class ColocationSetup(BaseModel):
         )
 
     # Model validator for forbidden keys
-    @model_validator(mode="wrap")
+    @model_validator(mode="after")
     def validate_no_forbidden_keys(self):
         for key in self.FORBIDDEN_KEYS:
             if key in self.model_fields:  # LB: Check this is where they will be found

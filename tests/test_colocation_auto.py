@@ -93,18 +93,16 @@ def test_colocation_setup(stp: ColocationSetup, should_be: dict):
 @pytest.mark.parametrize(
     "key,val,raises",
     [
-        ("obs_vars", 42, ValidationError),
-        ("var_ref_outlier_ranges", [41, 42], ValidationError),
-        ("var_outlier_ranges", [41, 42], ValidationError),
-        ("remove_outliers", True, ValidationError),
+        ("obs_vars", 42, pytest.raises(ValidationError)),
+        ("var_ref_outlier_ranges", [41, 42], pytest.raises(KeyError)),
+        ("var_outlier_ranges", [41, 42], pytest.raises(KeyError)),
+        ("remove_outliers", True, pytest.raises(KeyError)),
     ],
 )
 def test_ColocationSetup_invalid_input(key, val, raises):
-    # with raises:
-    #     stp = ColocationSetup(**{key: val})
-    #     assert stp[key] == val
-    with pytest.raises(ValidationError):
-        ColocationSetup(**{key: val})
+    with raises:
+        stp = ColocationSetup(**{key: val})
+        assert stp.model_dump()[key] == val
 
 
 def test_Colocator__obs_vars__setter(col):
