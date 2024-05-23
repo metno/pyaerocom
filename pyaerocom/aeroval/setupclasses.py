@@ -33,7 +33,9 @@ from pyaerocom.aeroval.helpers import (
     check_if_year,
 )
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
-from pyaerocom.colocation_auto import ColocationSetup
+
+# from pyaerocom.colocation_auto import ColocationSetup # Old
+from pyaerocom.colocation_setup import ColocationSetup  # New
 
 logger = logging.getLogger(__name__)
 
@@ -422,13 +424,6 @@ class EvalSetup(BaseModel):
         }
         return StatisticsSetup(**model_args)
 
-    ##################################
-    ## Non-BaseModel-based attributes
-    ##################################
-
-    # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
-
-    # TODO: Use Pydantic for ColocationSetup
     @computed_field
     @cached_property
     def colocation_opts(self) -> ColocationSetup:
@@ -438,7 +433,7 @@ class EvalSetup(BaseModel):
         model_args = {
             key: val
             for key, val in self.model_extra.items()
-            if key in ColocationSetup().__dict__.keys()
+            if key in ColocationSetup.model_fields
         }
         # need to pass some default values to the ColocationSetup if not provided in config
         default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
@@ -448,9 +443,35 @@ class EvalSetup(BaseModel):
 
         return ColocationSetup(**model_args)
 
-    @field_serializer("colocation_opts")
-    def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
-        return colocation_opts.json_repr()
+    ##################################
+    ## Non-BaseModel-based attributes
+    ##################################
+
+    # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
+
+    # TODO: Use Pydantic for ColocationSetup
+    # @computed_field
+    # @cached_property
+    # def colocation_opts(self) -> ColocationSetup:
+    #     if not hasattr(self, "model_extra") or self.model_extra is None:
+    #         return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
+
+    #     model_args = {
+    #         key: val
+    #         for key, val in self.model_extra.items()
+    #         if key in ColocationSetup().__dict__.keys()
+    #     }
+    #     # need to pass some default values to the ColocationSetup if not provided in config
+    #     default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
+    #     for key in default_dict:
+    #         if key not in model_args:
+    #             model_args[key] = default_dict[key]
+
+    #     return ColocationSetup(**model_args)
+
+    # @field_serializer("colocation_opts")
+    # def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
+    #     return colocation_opts.json_repr()
 
     # ObsCollection and ModelCollection
     # TODO Use Pydantic for ObsCollection and ModelCollection
