@@ -110,6 +110,7 @@ def test_Colocator__obs_vars__setter(col):
     assert col.obs_vars == ["var"]
 
 
+# LB: Not sure if Colocator should be allowed to accept objects
 def test_Colocator__add_attr(col):
     col.bla = "blub"
     col["blub"] = 42
@@ -191,6 +192,9 @@ def test_Colocator__coldata_savename():
     assert savename == n
 
 
+# LB: Not clear if this is intended functionality or what or we can remove.
+# Currently set up to revalidate the basedir_coldata everytime
+# validation creates this directory
 def test_Colocator_basedir_coldata(tmp_path: Path):
     base_path = tmp_path / "test"
     col = Colocator(raise_exceptions=True)
@@ -372,6 +376,7 @@ def test_colocator__find_var_matches_model_add_vars():
     assert var_matches == {"abs550aer": ovar, ovar: ovar}
 
 
+# LB: This test breaks the way I want this class to work because it implies allowing adding of attributes.
 def test_colocator_instantiate_gridded_reader(path_emep):
     col = Colocator(gridded_reader_id={"model": "ReadMscwCtm", "obs": "ReadGridded"})
     col.filepath = path_emep["daily"]

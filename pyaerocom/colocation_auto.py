@@ -12,6 +12,7 @@ from typing import Any, Callable, Optional
 
 import pandas as pd
 from cf_units import Unit
+from pydantic import ConfigDict
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
@@ -550,6 +551,16 @@ class Colocator(ColocationSetup):
     This object inherits from :class:`ColocationSetup` and is also instantiated
     as such. For setup attributes, please see base class.
     """
+
+    # ##########################
+    # # Pydantic ConfigDict
+    # ##########################
+    # model_config = ConfigDict(
+    #     arbitrary_types_allowed=True,
+    #     allow="extra",
+    #     protected_namespaces=(),
+    #     validate_assignment=True,
+    # )
 
     SUPPORTED_GRIDDED_READERS: dict = {
         "ReadGridded": ReadGridded,

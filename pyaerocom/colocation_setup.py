@@ -313,6 +313,7 @@ class ColocationSetup(BaseModel):
     def validate_obs_vars(cls, v):
         if isinstance(v, str):
             return [v]
+        return v
 
     ts_type: str  # = None
     start: pd.Timestamp | int | None  # = None
@@ -345,7 +346,7 @@ class ColocationSetup(BaseModel):
     # crashes if input filter name is invalid
     filter_name: str = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
-    basedir_coldata: str  # = Field(default=const.COLOCATEDDATADIR, validate_default=True)
+    basedir_coldata: str | Path = Field(default=const.COLOCATEDDATADIR, validate_default=True)
 
     @field_validator("basedir_coldata")
     @classmethod
