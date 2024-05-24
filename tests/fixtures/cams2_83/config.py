@@ -47,15 +47,6 @@ def patched_config_mos():
     return cfg
 
 
-@pytest.fixture(scope="session")
-def dataDir():
-    """Path to the folder with test data, intended to be used as the --coldata-path argument in the mos evaluation tests.
-    This means it has to contain the expected colocated data at the subpath /cams2_83/{exp-id}"""
-    testDir = os.path.dirname(__file__)
-    theDir = os.path.join(testDir, "data")
-    return theDir
-
-
 @pytest.fixture
 def fake_CAMS2_83_Processer(monkeypatch):
     def do_not_run(
