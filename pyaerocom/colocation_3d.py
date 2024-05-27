@@ -51,7 +51,7 @@ def _colocate_vertical_profile_gridded(
     var_ref=None,
     min_num_obs=None,
     colocate_time=False,
-    use_climatology_ref=False,
+    use_climatology_kwargs=None,
     resample_how=None,
     layer_limits: dict[str, dict[str, float]] = None,
     obs_stat_data=None,
@@ -197,7 +197,7 @@ def _colocate_vertical_profile_gridded(
                         ts_type=col_freq,
                         resample_how=resample_how,
                         min_num_obs=min_num_obs,
-                        use_climatology_ref=use_climatology_ref,
+                        use_climatology_kwargs=use_climatology_kwargs,
                     )
                 else:
                     _df = _colocate_site_data_helper(
@@ -208,7 +208,7 @@ def _colocate_vertical_profile_gridded(
                         ts_type=col_freq,
                         resample_how=resample_how,
                         min_num_obs=min_num_obs,
-                        use_climatology_ref=use_climatology_ref,
+                        use_climatology_kwargs=use_climatology_kwargs,
                     )
 
                 try:
@@ -258,7 +258,7 @@ def _colocate_vertical_profile_gridded(
             "from_files": files,
             "from_files_ref": None,
             "colocate_time": colocate_time,
-            "obs_is_clim": use_climatology_ref,
+            "obs_is_clim": use_climatology_kwargs,
             "pyaerocom": pya_ver,
             "min_num_obs": min_num_obs,
             "resample_how": resample_how,
@@ -308,7 +308,7 @@ def colocate_vertical_profile_gridded(
     update_baseyear_gridded: int = None,
     min_num_obs: int | dict | None = None,
     colocate_time: bool = False,
-    use_climatology_ref: bool = False,
+    use_climatology_kwargs: bool = False,
     resample_how: str | dict = None,
     colocation_layer_limits: list[dict] = None,
     profile_layer_limits: list[dict] = None,
@@ -409,7 +409,7 @@ def colocate_vertical_profile_gridded(
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
 
-    if use_climatology_ref:  # pragma: no cover
+    if use_climatology_kwargs:  # pragma: no cover
         col_freq = "monthly"
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
@@ -464,7 +464,7 @@ def colocate_vertical_profile_gridded(
             var_ref=var_ref,
             min_num_obs=min_num_obs,
             colocate_time=colocate_time,
-            use_climatology_ref=use_climatology_ref,
+            use_climatology_kwargs=use_climatology_kwargs,
             resample_how=resample_how,
             layer_limits=layer_limits,
             obs_stat_data=all_stats["stats"],

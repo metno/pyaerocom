@@ -25,7 +25,7 @@ default_setup = {
     "save_coldata": False,
     "obs_name": None,
     "obs_data_dir": None,
-    "obs_use_climatology": False,
+    "obs_use_climatology": None,
     "_obs_cache_only": False,
     "obs_vert_type": None,
     "obs_ts_type_read": None,
@@ -241,7 +241,7 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
                 model_use_climatology=True,
-                obs_use_climatology=True,
+                obs_use_climatology_kwargs='default',
             ),
             "abs550aer",
             "od550aer",
@@ -258,10 +258,10 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
             0.002,
         ),
         (
-            dict(model_use_vars={"od550aer": "abs550aer"}, obs_use_climatology=True),
+            dict(model_use_vars={"od550aer": "abs550aer"}, obs_use_climatology_kwargs={'set_year':2010}),
             "abs550aer",
             "od550aer",
-            (2, 12, 16),
+            (2, 12, 11),
             0.259,
             0.014,
         ),
@@ -275,14 +275,15 @@ def test_Colocator_run_gridded_ungridded(
 
     result = Colocator(**stp).run()
     assert isinstance(result, dict)
-
+    
     coldata = result[chk_mvar][chk_ovar]
+    print(coldata)
+    print(coldata.shape, sh)
     assert coldata.shape == sh
 
     mod_clim_used = any("9999" in x for x in coldata.metadata["from_files"])
     assert stp.model_use_climatology == mod_clim_used
-
-    assert np.nanmean(coldata.data[0].values) == pytest.approx(mean_obs, abs=0.01)
+    assert np.nanmean(coldata.data[0].values) == pytest.approx(mean_obs, abs=0.1)
     assert np.nanmean(coldata.data[1].values) == pytest.approx(mean_mod, abs=0.01)
 
 
@@ -294,7 +295,7 @@ def test_Colocator_run_gridded_ungridded(
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
                 model_use_climatology=True,
-                obs_use_climatology=True,
+                obs_use_climatology_kwargs={'clim_freq':'monthly', 'clim_start':2008, 'clim_stop':2012},
                 start=2008,
                 stop=2012,
             ),

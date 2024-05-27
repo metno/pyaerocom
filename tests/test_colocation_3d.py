@@ -60,7 +60,7 @@ def example_earlinet_ungriddeddata():
 
 
 @pytest.mark.parametrize(
-    "ts_type,resample_how,min_num_obs,use_climatology_ref,colocation_layer_limits,profile_layer_limits",
+    "ts_type,resample_how,min_num_obs,use_climatology_kwargs,colocation_layer_limits,profile_layer_limits",
     [
         pytest.param(
             "daily",
@@ -83,7 +83,7 @@ def test_colocate_vertical_profile_gridded(
     ts_type,
     resample_how,
     min_num_obs,
-    use_climatology_ref,
+    use_climatology_kwargs,
     colocation_layer_limits,
     profile_layer_limits,
 ):
@@ -93,7 +93,7 @@ def test_colocate_vertical_profile_gridded(
         ts_type=ts_type,
         resample_how=resample_how,
         min_num_obs=min_num_obs,
-        use_climatology_ref=use_climatology_ref,
+        use_climatology_kwargs=use_climatology_kwargs,
         colocation_layer_limits=colocation_layer_limits,
         profile_layer_limits=profile_layer_limits,
     )

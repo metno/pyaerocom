@@ -163,7 +163,7 @@ def _combine_2_sites(
         to_ts_type,
         resample_how=resample_how,
         min_num_obs=min_num_obs,
-        use_climatology_ref=False,
+        use_climatology_kwargs=None,
     )
 
     # remove timestamps where both observations are NaN
