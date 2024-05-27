@@ -10,14 +10,6 @@ from pyaerocom.scripts.cams2_83.cli import app
 runner = CliRunner()
 
 
-# @pytest.fixture()
-# def fake_config(monkeypatch, patched_config):
-#    def fake_make_config(*args, **kwargs):
-#        return patched_config
-
-#    monkeypatch.setattr("pyaerocom.scripts.cams2_83.cli.make_config", fake_make_config)
-
-
 @pytest.mark.usefixtures("fake_ExperimentProcessor", "reset_cachedir")
 def test_clearcache(
     monkeypatch,
