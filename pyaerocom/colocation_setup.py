@@ -3,7 +3,7 @@ import os
 import sys
 from functools import cached_property
 from pathlib import Path
-from typing import Iterable, Literal
+from typing import Callable, Iterable, Literal
 
 import pandas as pd
 from pydantic import (
@@ -287,7 +287,9 @@ class ColocationSetup(BaseModel):
         arbitrary_types_allowed=True,
         allow="extra",
         protected_namespaces=(),
-        validate_assignment=True,
+        frozen=True,  # make immutable
+        # validate_assignment=True,
+        # property_set_methods = {"obs_config": "set_obs_config"}
     )
 
     # @model_validator('*', mode="before")
@@ -318,7 +320,18 @@ class ColocationSetup(BaseModel):
     ts_type: str  # = None
     start: pd.Timestamp | int | None  # = None
     stop: pd.Timestamp | int | None  # = None
+
     obs_config: PyaroConfig | None = None
+
+    # def set_obs_config(self, obs_config):
+    #     self.obs_config = obs_config
+
+    # def __setattr__(self, key, val):
+    #     method = self.__config__.property_set_methods.get(key)
+    #     if method is None:
+    #         super().__setattr__(key, val)
+    #     else:
+    #         getattr(self, method)(val)
 
     ###############################
     # Attributes with defaults
@@ -363,7 +376,7 @@ class ColocationSetup(BaseModel):
 
     # Options related to obs reading and processing
     obs_name: str | None = None
-    obs_data_dir: str | None = None
+    obs_data_dir: Path | str | None = None
 
     obs_use_climatology: bool = False
 
@@ -389,7 +402,9 @@ class ColocationSetup(BaseModel):
 
     model_ts_type_read: str | dict | None = None
     # LB: need to check this declaration
-    model_read_aux: dict[str, dict[Literal["vars_required", "fun"], list[str]]] | None = {}
+    model_read_aux: dict[
+        str, dict[Literal["vars_required", "fun"], list[str] | Callable]
+    ] | None = {}
     model_use_climatology: bool = False
 
     model_kwargs: dict = {}
@@ -465,7 +480,9 @@ class ColocationSetup(BaseModel):
             p.mkdir(parents=True, exist_ok=True)
         return str(p)  # LB: not sure why pyaerocom insists these be strings as this point
 
-    # @field_validator("obs_id")
+    # #@field_validator("obs_id")
+    # @model_validator(mode="after")
+    # @classmethod
     # def validate_obs_id(cls, v: str):
     #     if cls.obs_config is not None and v != cls.obs.config.name:
     #         logger.info(
