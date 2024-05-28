@@ -252,30 +252,6 @@ class PyaroToUngriddedData:
 
         return MetadataEntry(entry)
 
-    # def _make_ungridded_metadata(
-    #     self, stations: dict[str, Station], var_idx: dict[str, int], units: dict[str, str]
-    # ) -> Metadata:
-    #     idx = 0
-    #     metadata = {}
-    #     for name, station in stations.items():
-    #         metadata[idx] = dict(
-    #             data_id=self.config.name,
-    #             variables=list(self.get_variables()),
-    #             var_info=units,
-    #             latitude=station["latitude"],
-    #             longitude=station["longitude"],
-    #             altitude=station["altitude"],
-    #             station_name=station["long_name"],
-    #             station_id=name,
-    #             country=station["country"],
-    #             ts_type="undefined",  # TEMP: Changes dynamically below
-    #         )
-
-    #         metadata[idx].update(self._get_metadata_from_pyaro(station))
-    #         idx += 1
-
-    #     return Metadata(metadata)
-
     def _pyaro_dataline_to_ungriddeddata_dataline(
         self, data: np.void, idx: int, var_idx: int
     ) -> np.ndarray:
