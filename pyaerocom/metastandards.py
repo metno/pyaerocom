@@ -348,9 +348,11 @@ class AerocomDataID:
         values = [""] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
-            logger.info(
-                f"Invalid or old data ID {val}. Consider format <model-name>-<meteo-config>_<experiment>-<perturbation>"
+            logger.debug(
+                "Invalid or old data ID %s. Consider format <model-name>-<meteo-config>_<experiment>-<perturbation>",
+                val,
             )
+
             values[0] = val
             return values
 
@@ -362,8 +364,8 @@ class AerocomDataID:
             if meteo.startswith("met"):
                 values[1] = meteo  # meteo_config
             else:
-                logger.warning(
-                    f"Meteorology config substring in data_id {meteo} needs to start with met."
+                logger.debug(
+                    "Meteorology config substring in data_id %s needs to start with met.", meteo
                 )
                 values[0] = spl[0]
         else:

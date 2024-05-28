@@ -1,0 +1,209 @@
+- 2024-04-09, Lewis Blake	update pyproject.toml
+- 2024-04-09, Thorbjørn	Merge pull request #1105 from metno/fix-config-tests
+- 2024-04-09, Lewis Blake	dont test that poaths exist within pyaerocom
+- 2024-04-08, Heiko Klein	Merge pull request #1098 from metno/colocation-exceptions
+- 2024-04-08, Heiko Klein	Merge pull request #1099 from metno/1019-support-latest-iris-38-the-2nd
+- 2024-04-08, Jan Griesfeller	bump minimal iris version to 3.8.1
+- 2024-04-08, Jan Griesfeller	bump minimal iris version to 3.8.1
+- 2024-04-08, Heiko Klein	ensure exceptions are not silently suppressed
+- 2024-04-08, Heiko Klein	Merge pull request #1094 from metno/fix1067
+- 2024-04-08, Lewis Blake	Merge pull request #1057 from metno/1030-make-the-variable-ratpm25pm10-usable
+- 2024-04-07, Lewis Blake	Merge pull request #1095 from metno/pydantic-setupclasses
+- 2024-04-06, Lewis Blake	put exp_id in ExperimentInfo model_args
+- 2024-04-06, Lewis Blake	Put other inputs from EvalSetup in ExperimentInfo
+- 2024-04-05, thorbjoernl (Thorbjørn)	Change metastandards log messages to debug
+- 2024-04-05, Lewis Blake	Merge pull request #1093 from metno/pydantic-setupclasses
+- 2024-04-05, Lewis Blake	Merge pull request #1092 from metno/fix1050
+- 2024-04-05, Lewis Blake	used cachced_property
+- 2024-04-05, Thorbjørn Lundin	Temporary fix for #1050
+- 2024-04-05, Thorbjørn	Merge pull request #1090 from metno/fix1084
+- 2024-04-04, Daniel Heinesen	Merge pull request #1081 from metno/fix-pydantic-deprecation
+- 2024-04-04, Alvaro Valdebenito	Merge pull request #1088 from metno/pydantic-setupclasses
+- 2024-04-04, Thorbjørn Lundin	Fix wrong exception in test.
+- 2024-04-04, Lewis Blake	set on object instantiation
+- 2024-04-04, Thorbjørn Lundin	WIP
+- 2024-04-03, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses
+- 2024-04-03, Lewis Blake	no protected_namespaces in StatisticsSetup
+- 2024-04-03, Alvaro Valdebenito	Merge pull request #1017 from metno/pydantic-setupclasses
+- 2024-04-03, Lewis Blake	isort
+- 2024-04-03, Lewis Blake	try importing Annotated from typing
+- 2024-04-03, Lewis Blake	typing_extensions import improvements
+- 2024-04-03, Lewis Blake	typing-extensions for python <3.11
+- 2024-04-03, Lewis Blake	linters
+- 2024-04-03, Lewis Blake	more alvaro updates
+- 2024-04-02, Lewis Blake	correct sys.version_info <3.11
+- 2024-04-02, Lewis Blake	attempt Self import based on python version
+- 2024-04-02, Lewis Blake	alvaro feedback
+- 2024-04-02, Lewis Blake	PEP 604
+- 2024-04-02, Lewis Blake	Merge pull request #1083 from metno/pr_todo
+- 2024-04-02, Heiko Klein	updated with reviewers comments
+- 2024-04-02, Heiko Klein	PR checklist to be ordered and have only one task per item
+- 2024-04-02, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into 1030-make-the-variable-ratpm25pm10-usable
+- 2024-04-02, Lewis Blake	Merge pull request #1061 from metno/1019-support-latest-iris-38
+- 2024-04-02, Jan Jurgen Griesfeller	added ratpm10pm25 clor scale
+- 2024-04-02, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into 1030-make-the-variable-ratpm25pm10-usable
+- 2024-04-02, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into 1019-support-latest-iris-38
+- 2024-04-02, Jan Jurgen Griesfeller	removed clutter
+- 2024-03-31, Lewis Blake	rm dataclasses import
+- 2024-03-30, Lewis Blake	bring back model_only_stats
+- 2024-03-30, Lewis Blake	rm comment
+- 2024-03-30, Lewis Blake	linting
+- 2024-03-30, Lewis Blake	rm use of AsciiFileLoc
+- 2024-03-30, Lewis Blake	isort
+- 2024-03-30, Lewis Blake	linters
+- 2024-03-30, Lewis Blake	passing local tests
+- 2024-03-30, Lewis Blake	rm unused imports
+- 2024-03-30, Lewis Blake	unrelated MEP path typo
+- 2024-03-30, Lewis Blake	clean up and linters
+- 2024-03-30, Lewis Blake	test_reanalyse_existing
+- 2024-03-30, Lewis Blake	assign ColocationSetup defaults if not given
+- 2024-03-28, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses
+- 2024-03-26, Alvaro Valdebenito	fix Pydantic DeprecationWarning
+- 2024-03-26, Lewis Blake	Merge pull request #1079 from metno/fix-pip-cache-on-ci
+- 2024-03-25, Lewis Blake	rm dead code
+- 2024-03-25, Lewis Blake	basedirs just needed a validator
+- 2024-03-25, Alvaro Valdebenito	clean up remeated method
+- 2024-03-25, Alvaro Valdebenito	combine pip/tox env CI steps
+- 2024-03-25, Alvaro Valdebenito	cache pip w/setup-python GH action
+- 2024-03-25, Alvaro Valdebenito	create tox env on separate CI job step
+- 2024-03-25, Alvaro Valdebenito	remove setup.cfg fro cache key
+- 2024-03-25, Alvaro Valdebenito	Merge pull request #1072 from metno/fix-cli-typo
+- 2024-03-25, Lewis Blake	Merge pull request #1075 from metno/json_write_speedup
+- 2024-03-24, Lewis Blake	json_basedir  WIP
+- 2024-03-24, Lewis Blake	json_basedir computed property WIP
+- 2024-03-24, Lewis Blake	Make ProjectInfo and ExperimentInfo BaseModels
+- 2024-03-24, Lewis Blake	OutputPaths needed extra keys
+- 2024-03-24, Lewis Blake	comment out AsciiFileLoc2
+- 2024-03-24, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses
+- 2024-03-23, Heiko Klein	avoid round_floats on previously rounded data
+- 2024-03-23, Heiko Klein	cleanup imports; avoid exposing internals to docs
+- 2024-03-21, Heiko Klein	Merge pull request #1070 from metno/clean-up-deprecations
+- 2024-03-21, Alvaro Valdebenito	comment pytest  filterwarnings config
+- 2024-03-21, Heiko Klein	Merge pull request #1073 from metno/drop_stats-multiple-containers
+- 2024-03-20, Alvaro Valdebenito	ingore warnings on tests, close #1065
+- 2024-03-21, Lewis Blake	Merge pull request #1071 from metno/heikoklein-patch-1
+- 2024-03-21, lewisblake	remove drop_stats and stat_decimals duplication
+- 2024-03-21, lewisblake	Clean up CLI
+- 2024-03-20, Heiko Klein	Update api.rst
+- 2024-03-20, Lewis Blake	Merge pull request #1069 from metno/meanbias-mb
+- 2024-03-20, Alvaro Valdebenito	clean up warnings config
+- 2024-03-20, Heiko Klein	Merge pull request #1062 from metno/support-python3.12
+- 2024-03-20, Lewis Blake	Mean Bias -> MB
+- 2024-03-20, Alvaro Valdebenito	add package build step to CI
+- 2024-03-20, Alvaro Valdebenito	combine lint and docs CI jobs
+- 2024-03-20, Alvaro Valdebenito	build tox env
+- 2024-03-20, Alvaro Valdebenito	test conda CI only on Python 3.11
+- 2024-03-20, Alvaro Valdebenito	mv codecov GH action to venv  jobs
+- 2024-03-19, Alvaro Valdebenito	test against Python 3.12 on CI
+- 2024-03-19, Alvaro Valdebenito	support python 3.12
+- 2024-03-19, Alvaro Valdebenito	datetime.utcnow() DeprecationWarning on Python 3.12
+- 2024-03-19, Lewis Blake	OutputPath in EvalSetup not being set correctly
+- 2024-03-19, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses
+- 2024-03-19, Heiko Klein	Merge pull request #1063 from metno/remove-entry-points
+- 2024-03-19, Alvaro Valdebenito	remove extrnsion etry points
+- 2024-03-19, Lewis Blake	Merge pull request #1064 from metno/update_vert_profile_ranges
+- 2024-03-19, Jan Griesfeller	bump minimal iris version
+- 2024-03-19, Jan Griesfeller	prepare for iris > 3.7 only
+- 2024-03-19, Jan Griesfeller	prepare for iris > 3.7 only
+- 2024-03-19, Jan Griesfeller	pin xarray again
+- 2024-03-19, Jan Griesfeller	unpin xarray
+- 2024-03-19, Jan Griesfeller	make things work with older iris versions
+- 2024-03-19, Alvaro Valdebenito	clean up plugins
+- 2024-03-19, Alvaro Valdebenito	load ReadGAW directly
+- 2024-03-19, Alvaro Valdebenito	mv plugins.gaw module to io
+- 2024-03-19, Alvaro Valdebenito	load ReadGhost directly
+- 2024-03-19, Alvaro Valdebenito	mv plugins.ghost module to io
+- 2024-03-19, Jan Griesfeller	iris changed its warnings
+- 2024-03-19, Jan Griesfeller	adjust non CF unit to CF conform unit
+- 2024-03-19, Alvaro Valdebenito	load ReadMEP directly
+- 2024-03-19, Alvaro Valdebenito	mv plugins.mep module to io
+- 2024-03-19, Alvaro Valdebenito	tidy up ReadUngridded
+- 2024-03-19, Alvaro Valdebenito	load ReadICOS directly
+- 2024-03-19, Alvaro Valdebenito	mv plugins.icos module to io
+- 2024-03-19, Alvaro Valdebenito	remove ReadICPForest entry point
+- 2024-03-19, Alvaro Valdebenito	mv plugins.icpforests module to io
+- 2024-03-19, lewisblake	bsc532aer and ec532aer ranges
+- 2024-03-19, Alvaro Valdebenito	deprecate pyaerocom.ungridded entry points
+- 2024-03-19, Alvaro Valdebenito	load ReadMscwCtm directly
+- 2024-03-19, Alvaro Valdebenito	mv plugins.mscw_ctm module to io
+- 2024-03-19, Alvaro Valdebenito	deprecate pyaerocom.gridded entry points
+- 2024-03-18, Heiko Klein	Merge pull request #1040 from metno/update-action-version
+- 2024-03-18, Heiko Klein	Merge pull request #1055 from metno/prtemplate
+- 2024-03-18, Lewis Blake	must specify arguments to eval_config before EvalSetup
+- 2024-03-18, Lewis Blake	custom serializers for BaseModel-based feilds in EvalSetup
+- 2024-03-18, Jan Jurgen Griesfeller	focus on iris for now
+- 2024-03-18, Jan Jurgen Griesfeller	1st try for latest iris and no pinning of xarray
+- 2024-03-18, Jan Jurgen Griesfeller	remove last commit
+- 2024-03-18, Jan Jurgen Griesfeller	1st try to use iris 3.8 and remove pinning of xarray
+- 2024-03-18, Alvaro Valdebenito	add codecov token
+- 2024-03-18, Lewis Blake	Template agreed upon at meeting
+- 2024-03-18, Jan Jurgen Griesfeller	Merge remote-tracking branch 'origin/main-dev' into 1030-make-the-variable-ratpm25pm10-usable
+- 2024-03-18, Jan Jurgen Griesfeller	linting
+- 2024-03-18, Jan Jurgen Griesfeller	make ratpm25pm10 usable @ aeroval
+- 2024-03-16, Lewis Blake	ObsCollection and ModelCollection must be made JSON serializable
+- 2024-03-16, Lewis Blake	type annotate tuple as any length- ColocationSetup not serializable
+- 2024-03-16, Lewis Blake	Introduce a PR template
+- 2024-03-16, Lewis Blake	converting to json: Unexpected extra items present in tuple
+- 2024-03-16, Lewis Blake	time_cfg seems to be working
+- 2024-03-16, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses
+- 2024-03-15, Heiko Klein	Merge pull request #1052 from metno/pydantic_version
+- 2024-03-15, Heiko Klein	Merge pull request #1053 from metno/conda_env_doc
+- 2024-03-15, Heiko Klein	adding installations to conda-envs and fixing contributions
+- 2024-03-15, Heiko Klein	force pydantic>2
+- 2024-03-15, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses
+- 2024-03-15, Alvaro Valdebenito	Merge pull request #1051 from metno/fix_pytest_entrypoints
+- 2024-03-15, Heiko Klein	running pytest as module to ensure local-path for plugins
+- 2024-03-15, Heiko Klein	running pytest as module to ensure local-path for plugins
+- 2024-03-15, Heiko Klein	fix test with /lustre, but with different content
+- 2024-03-15, Heiko Klein	fixing entry-point imports under pytest
+- 2024-03-14, Heiko Klein	Merge pull request #1041 from metno/fix-lustre-tests
+- 2024-03-14, Lewis Blake	Merge pull request #1048 from metno/typo1046
+- 2024-03-14, Alvaro Valdebenito	update GH codecov/codecov-action
+- 2024-03-13, Alvaro Valdebenito	update GH actions/cache
+- 2024-03-13, Alvaro Valdebenito	update GH conda-incubator/setup-miniconda
+- 2024-03-13, Alvaro Valdebenito	update GH actions/setup-python
+- 2024-03-13, Alvaro Valdebenito	update GH actions/checkout
+- 2024-03-14, lewisblake	fix "vertical" typo
+- 2024-03-13, Heiko Klein	Merge pull request #1035 from metno/drop-py39
+- 2024-03-13, Alvaro Valdebenito	update RTD config
+- 2024-03-13, Daniel Heinesen	Merge pull request #1039 from metno/Fix-browse
+- 2024-03-13, Daniel Heinesen	Merge pull request #1045 from metno/Fix-aeroval-pyaro
+- 2024-03-13, Jan Griesfeller	Merge pull request #1043 from metno/1042-adjust-url-for-testdata
+- 2024-03-13, Daniel Heinesen	Adds check if obs config is given as dict
+- 2024-03-12, Alvaro Valdebenito	remove importlib_metadata dependency
+- 2024-03-12, Alvaro Valdebenito	config black, isort & mypy for Python 3.10
+- 2024-03-12, Alvaro Valdebenito	drop Python 3.9 on CI
+- 2024-03-13, Jan Griesfeller	adjust URL to pyaerocom.met.no
+- 2024-03-12, Alvaro Valdebenito	drop Python 3.9 support
+- 2024-03-13, Alvaro Valdebenito	use full fixture name instad of imporing from test.fixtures
+- 2024-03-13, Alvaro Valdebenito	empty test file
+- 2024-03-13, Alvaro Valdebenito	remove unused imports
+- 2024-03-12, Alvaro Valdebenito	register pyaro test fixtures
+- 2024-03-12, Alvaro Valdebenito	update test_years_available
+- 2024-03-13, Ove Haugvaldstad	fixes wrongly assigned var_name when using use keyword closes #1027 (#1028)
+- 2024-03-13, Daniel Heinesen	Removes configs parameters from get_lowlevel_reader
+- 2024-03-12, Heiko Klein	Merge pull request #1033 from metno/update-action-version
+- 2024-03-12, Heiko Klein	Merge pull request #1032 from metno/ci-tests-only-on-PR
+- 2024-03-12, Heiko Klein	Merge pull request #1029 from avaldebe/fix-pytest8-warning
+- 2024-03-12, Alvaro Valdebenito	update GH action version
+- 2024-03-12, Alvaro Valdebenito	run CI tests only on PRs
+- 2024-03-12, Alvaro Valdebenito	redundant lustre_unavail skip decorator
+- 2024-03-12, Alvaro Valdebenito	move test skip logic to fixture
+- 2024-03-11, Lewis Blake	args for EvalSetuip in test__processing_base
+- 2024-03-11, Lewis Blake	rm _invalid
+- 2024-03-11, Lewis Blake	test_experiment_output don't use dict accessing
+- 2024-03-11, Lewis Blake	go back tol old experiment_output
+- 2024-03-11, Lewis Blake	use field_validators for Obs and Model Collection
+- 2024-03-11, Lewis Blake	ObsCollection needs init?
+- 2024-03-10, Lewis Blake	using pydantic ValidationError in test_setup
+- 2024-03-10, Lewis Blake	allow io_aux_file to be a string
+- 2024-03-10, Lewis Blake	Attempting to remove DIrLoc from setupclasses
+- 2024-03-10, Lewis Blake	Attempting a pydantic ProjectOutput
+- 2024-03-10, Lewis Blake	go back in ProjectOutput
+- 2024-03-08, Lewis Blake	ExperimentOutput: json_basedir WIP
+- 2024-03-08, Lewis Blake	WIP EvalSetup
+- 2024-03-07, Lewis Blake	from __future__ import annotations
+- 2024-03-07, Lewis Blake	rm unused imports
+- 2024-03-07, Lewis Blake	rm setupclasses2.py
+- 2024-03-07, Lewis Blake	test_setupclasses passing
+- 2024-03-07, Lewis Blake	Merge branch 'main-dev' into pydantic-setupclasses

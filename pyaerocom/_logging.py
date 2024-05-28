@@ -14,11 +14,33 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import resource
 import sys
 import time
 from logging.config import fileConfig
 
 from pyaerocom.data import resources
+
+
+class MemUsageFilter(logging.Filter):
+    """
+    This is a filter which injects mem_usage information
+    """
+
+    def filter(self, record):
+        mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        if mem < 1024:
+            record.mem_usage = f"{mem:.0f}M"
+        else:
+            record.mem_usage = f"{mem / 1024:.1f}G"
+        return True
+
+
+def _add_memusage_filter():
+    logger = logging.getLogger("")
+    muf = MemUsageFilter()
+    for h in logger.handlers:
+        h.addFilter(muf)
 
 
 def change_verbosity(level: str | int) -> None:
@@ -58,12 +80,14 @@ LOGGING_CONFIG = dict(
 cwd_log_path = pathlib.Path.cwd() / "logging.ini"
 if cwd_log_path.exists():
     fileConfig(cwd_log_path, defaults=LOGGING_CONFIG, disable_existing_loggers=True)
+    _add_memusage_filter()
 else:
     file_name = pathlib.Path(LOGGING_CONFIG["file_name"])
     log_path = file_name.parent
     log_path.mkdir(exist_ok=True, parents=True)
     with resources.path("pyaerocom", "logging.ini") as path:
         fileConfig(path, defaults=LOGGING_CONFIG, disable_existing_loggers=False)
+    _add_memusage_filter()
     if not sys.stdout.isatty():  # disable stdout when non-interactive
         change_verbosity(logging.CRITICAL)
     # cleanup of old default logging files

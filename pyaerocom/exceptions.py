@@ -116,6 +116,10 @@ class MetaDataError(AttributeError):
     pass
 
 
+class ModelVarNotAvailable(IOError):
+    pass
+
+
 class NetworkNotSupported(NotImplementedError):
     pass
 

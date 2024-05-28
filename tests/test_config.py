@@ -11,6 +11,7 @@ from pyaerocom.config import ALL_REGION_NAME, Config
 from pyaerocom.data import resources
 from pyaerocom.grid_io import GridIO
 from pyaerocom.varcollection import VarCollection
+from pyaerocom.variable import Variable
 from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
@@ -113,26 +114,24 @@ def test_Config_has_access_users_database():
 
 
 @pytest.mark.parametrize(
-    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs,data_searchdirno",
+    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
     [
-        ("metno", None, False, False, 0),
-        ("metno", None, True, False, 0),
-        ("metno", None, True, True, 0),
-        ("metno", f"/home/{USER}", True, True, 2),
-        ("users-db", None, False, False, 0),
+        ("metno", None, False, False),
+        ("metno", None, True, False),
+        ("metno", None, True, True),
+        ("metno", f"/home/{USER}", True, True),
+        ("users-db", None, False, False),
     ],
 )
-def test_Config_read_config(
-    cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, data_searchdirno
-):
+def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs):
     cfg = testmod.Config(try_infer_environment=False)
     cfg_file = cfg._config_files[cfg_id]
     assert Path(cfg_file).exists()
     cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
     if not cfg.has_access_lustre:
         pytest.skip(f"Skipping since {cfg._LUSTRE_CHECK_PATH} directory not accessible")
-    assert len(cfg.DATA_SEARCH_DIRS) == data_searchdirno
-    assert len(cfg.OBSLOCS_UNGRIDDED) == 0
+    assert all([Path(idir).exists() for idir in cfg.DATA_SEARCH_DIRS])
+    assert cfg.OBSLOCS_UNGRIDDED
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()
@@ -344,3 +343,33 @@ def test_default_config():
     assert cfg.WRITE_FILEIO_ERR_LOG
 
     assert isinstance(cfg.GRID_IO, GridIO)
+
+
+def test_register_variable_with_dict():
+    test_var_name = "conctestvariabledict"
+    variables = {
+        test_var_name: {
+            "var_name": test_var_name,
+            "units": "ug m-3",
+        }
+    }
+    const.register_custom_variables(variables)
+
+    vars = const.VARS
+
+    assert test_var_name in vars.find(test_var_name)
+
+
+def test_register_variable_with_Variable():
+    test_var_name = "testvariableVariable"
+    variables = {
+        test_var_name: Variable(
+            var_name=test_var_name,
+            units="ug m-3",
+        ),
+    }
+    const.register_custom_variables(variables)
+
+    vars = const.VARS
+
+    assert test_var_name in vars.all_vars

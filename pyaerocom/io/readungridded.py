@@ -11,6 +11,7 @@ from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, Netw
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
 from pyaerocom.io.gaw.reader import ReadGAW
 from pyaerocom.io.ghost.reader import ReadGhost
 from pyaerocom.io.icos.reader import ReadICOS
@@ -19,11 +20,8 @@ from pyaerocom.io.mep.reader import ReadMEP
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
-from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
 from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
-from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
-from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
@@ -53,10 +51,7 @@ class ReadUngridded:
 
     SUPPORTED_READERS = [
         ReadAeronetInvV3,
-        ReadAeronetInvV2,
-        ReadAeronetSdaV2,
         ReadAeronetSdaV3,
-        ReadAeronetSunV2,
         ReadAeronetSunV3,
         ReadEarlinet,
         ReadEbas,
@@ -64,6 +59,7 @@ class ReadUngridded:
         ReadAirNow,
         ReadEEAAQEREP,
         ReadEEAAQEREP_V2,
+        ReadCAMS2_83,
         ReadGAW,
         ReadGhost,
         ReadMEP,
@@ -254,8 +250,6 @@ class ReadUngridded:
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
-        if config is None:
-            config = self.config
         if not data_id in self._readers:
             reader = self.get_lowlevel_reader(data_id)
         else:
@@ -486,8 +480,12 @@ class ReadUngridded:
         UngriddedData
             data object
         """
+        force_caching = False
+        if "force_caching" in kwargs:
+            force_caching = kwargs.pop("force_caching")
+
         _caching = None
-        if len(kwargs) > 0:
+        if len(kwargs) > 0 and not force_caching:
             _caching = const.CACHING
             const.CACHING = False
 

@@ -63,6 +63,8 @@ class ReadAeronetInvV3(ReadAeronetBase):
     VAR_NAMES_FILE["angabs4487aer"] = "Absorption_Angstrom_Exponent_440-870nm"
     VAR_NAMES_FILE["od440aer"] = "AOD_Extinction-Total[440nm]"
     VAR_NAMES_FILE["ang4487aer"] = "Extinction_Angstrom_Exponent_440-870nm-Total"
+    VAR_NAMES_FILE["ssa675aer"] = "Single_Scattering_Albedo[675nm]"
+    VAR_NAMES_FILE["ssa670aer"] = "Single_Scattering_Albedo[675nm]"
 
     #: dictionary specifying the file column names (values) for each
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
@@ -125,7 +127,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
         # Iterate over the lines of the file
         self.logger.debug(f"Reading file {filename}")
 
-        with open(filename) as in_file:
+        with open(filename, encoding="ISO-8859-1") as in_file:
             data_out["dataset_info"] = in_file.readline().strip()
             self.logger.debug(f"Skipping line: {in_file.readline()}")
             data_out["algorithm_info"] = in_file.readline().strip()

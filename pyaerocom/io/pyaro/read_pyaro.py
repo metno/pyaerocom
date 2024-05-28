@@ -17,7 +17,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 logger = logging.getLogger(__name__)
 
 
-Metadata = NewType("Metadata", dict[str, dict[str, Union[str, list[str]]]])
+MetadataEntry = NewType("MetadataEntry", dict[str, Union[str, list[str]]])
+Metadata = NewType("Metadata", dict[str, MetadataEntry])
 
 
 class ReadPyaro(ReadUngriddedBase):
@@ -98,6 +99,17 @@ class PyaroToUngriddedData:
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
     _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
+    # List of keys needed by every station from Pyaro. Used to find extra metadata
+    STATION_KEYS = (
+        "station",
+        "latitude",
+        "longitude",
+        "altitude",
+        "long_name",
+        "country",
+        "url",
+    )
+
     def __init__(self, config: PyaroConfig) -> None:
         self.data: UngriddedData = UngriddedData()
         self.config = config
@@ -105,15 +117,22 @@ class PyaroToUngriddedData:
 
     def _open_reader(self) -> Reader:
         data_id = self.config.data_id
+        kwargs = self.config.model_extra
 
         if self.config.name_map is None:
             return open_timeseries(
-                data_id, self.config.filename_or_obj_or_url, filters=self.config.filters
+                data_id,
+                self.config.filename_or_obj_or_url,
+                filters=self.config.filters,
+                **kwargs,
             )
         else:
             return VariableNameChangingReader(
                 open_timeseries(
-                    data_id, self.config.filename_or_obj_or_url, filters=self.config.filters
+                    data_id,
+                    self.config.filename_or_obj_or_url,
+                    filters=self.config.filters,
+                    **kwargs,
                 ),
                 self.config.name_map,
             )
@@ -125,22 +144,23 @@ class PyaroToUngriddedData:
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
         units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-        ts_types: dict[str, Optional[TsType]] = {k: None for k in stations}
+        ts_types: dict[str, dict[str, Optional[TsType]]] = {}
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
-        metadata = self._make_ungridded_metadata(stations=stations, var_idx=var_idx, units=units)
-        meta_idx = {s: {v: [] for v in vars} for s in metadata}
+        metadata: Metadata = {}
+        meta_idx: dict = {}  # = {s: {v: [] for v in vars} for s in metadata}
         data_array = np.zeros([total_size, 12])
 
         # Helper objects
-        station_idx = {metadata[idx]["station_name"]: idx for idx in metadata}
+        station_idx = {}
 
         idx = 0
+        metadata_idx = 0
         for var, var_data in pyaro_data.items():
             size = var_size[var]
             for i in range(
-                1, size
+                0, size
             ):  # The 1 start is a temp fix for the empty first row of the current Data implementation from pyaro
                 data_line = var_data[i]
                 current_station = data_line["stations"]
@@ -152,18 +172,25 @@ class PyaroToUngriddedData:
 
                 # Finds the ts_type of the stations. Raises error of same station has different types
                 start, stop = data_line["start_times"], data_line["end_times"]
-                ts_type = self._calculate_ts_type(start, stop)
-                if ts_types[current_station] is None:
-                    ts_types[current_station] = ts_type
-                elif ts_types[current_station] != ts_type:
-                    msg = f"TS type {ts_type} of station {current_station} is different from already found value {ts_types[current_station]}"
-                    logger.error(msg)
-                    raise ValueError(msg)
+                ts_type = str(self._calculate_ts_type(start, stop))
+
+                if current_station not in station_idx:
+                    station_idx[current_station] = {}
+
+                if ts_type not in station_idx[current_station]:
+                    station_idx[current_station][ts_type] = metadata_idx
+                    metadata[metadata_idx] = self._make_single_ungridded_metadata(
+                        stations[current_station], current_station, ts_type, units
+                    )
+                    metadata_idx += 1
 
                 data_array[idx, :] = ungriddeddata_line
 
                 #  Fills meta_idx
-                meta_idx[station_idx[current_station]][var].append(idx)
+                if station_idx[current_station][ts_type] not in meta_idx:
+                    meta_idx[station_idx[current_station][ts_type]] = {v: [] for v in vars}
+
+                meta_idx[station_idx[current_station][ts_type]][var].append(idx)
 
                 idx += 1
 
@@ -175,7 +202,7 @@ class PyaroToUngriddedData:
 
         self.data._data = data_array
         self.data.meta_idx = new_meta_idx
-        self.data.metadata = self._add_ts_type_to_metadata(metadata, ts_types)
+        self.data.metadata = metadata
         self.data.var_idx = var_idx
 
         return self.data
@@ -202,29 +229,28 @@ class PyaroToUngriddedData:
 
         return metadata
 
-    def _make_ungridded_metadata(
-        self, stations: dict[str, Station], var_idx: dict[str, int], units: dict[str, str]
-    ) -> Metadata:
-        idx = 0
-        metadata = {}
-        for name, station in stations.items():
-            metadata[idx] = dict(
-                data_id=self.config.name,
-                variables=list(self.get_variables()),
-                var_info=units,
-                latitude=station["latitude"],
-                longitude=station["longitude"],
-                altitude=station["altitude"],
-                station_name=station["long_name"],
-                station_id=name,
-                country=station["country"],
-                ts_type="undefined",  # TEMP: Changes dynamically below
-            )
+    def _get_additional_metadata(self, station: Station) -> list[dict[str, str]]:
+        return station.metadata
 
-            metadata[idx].update(self._get_metadata_from_pyaro(station))
-            idx += 1
+    def _make_single_ungridded_metadata(
+        self, station: Station, name: str, ts_type: Optional[TsType], units: dict[str, str]
+    ) -> MetadataEntry:
+        entry = dict(
+            data_id=self.config.name,
+            variables=list(self.get_variables()),
+            var_info=units,
+            latitude=station["latitude"],
+            longitude=station["longitude"],
+            altitude=station["altitude"],
+            station_name=station["long_name"],
+            station_id=name,
+            country=station["country"],
+            ts_type=str(ts_type) if ts_type is not None else "undefined",
+        )
+        entry.update(self._get_metadata_from_pyaro(station=station))
+        entry.update(self._get_additional_metadata(station=station))
 
-        return Metadata(metadata)
+        return MetadataEntry(entry)
 
     def _pyaro_dataline_to_ungriddeddata_dataline(
         self, data: np.void, idx: int, var_idx: int

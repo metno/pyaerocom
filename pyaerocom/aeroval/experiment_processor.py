@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import logging
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
@@ -52,12 +53,25 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 f"marked to be used only as part of a superobs "
                 f"network"
             )
+        elif ocfg["only_json"]:
+            if not ocfg["coldata_dir"]:
+                raise Exception(
+                    f"No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
+                )
+            else:
+                preprocessed_coldata_dir = ocfg["coldata_dir"]
+                mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
+                files_to_convert = glob.glob(mask)
+                engine = ColdataToJsonEngine(self.cfg)
+                engine.run(files_to_convert)
+
         else:
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                col.run(var_list)
+                model_read_kwargs = self.cfg.model_cfg[model_name]["kwargs"]
+                col.run(var_list, model_read_kwargs=model_read_kwargs)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
@@ -107,7 +121,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
         if not self.cfg.model_cfg:
-            logging.info("No model found, will make dummy model data")
+            logger.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
             self.cfg.webdisp_opts.pages = ["evaluation", "infos"]
             model_id = make_dummy_model(obs_list, self.cfg)

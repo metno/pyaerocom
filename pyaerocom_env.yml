@@ -3,12 +3,12 @@
 channels:
   - conda-forge
 dependencies:
-  - iris >=3.7.1
-  - xarray <=2022.10.0
+  - iris >=3.8.1
+  - xarray
   - cartopy >=0.21.1
   - matplotlib-base >=3.7.1
   - scipy >=1.10.0
-  - pandas <=1.5.3
+  - pandas
   - numpy >=1.24.3
   - seaborn >=0.12.2
   - dask
@@ -28,7 +28,7 @@ dependencies:
   - pip:
     - geojsoncontour
     - geocoder_reverse_natural_earth >= 0.0.2
-    - pyaro
+    - pyaro >= 0.0.8
 ## testing
   - pytest >=7.4
   - pytest-dependency

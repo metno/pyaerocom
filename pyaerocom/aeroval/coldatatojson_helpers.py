@@ -21,9 +21,9 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop
-from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
+from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.tstype import TsType
@@ -45,8 +45,10 @@ def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
 
 
 def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
-    """Get name base name of json file"""
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{period}.json"
+    """Get base name of json file"""
+    # for cams2_83 the periods contain slashes at this point
+    periodmod = period.replace("/", "")
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
 
 
 def _write_stationdata_json(ts_data, out_dir):
@@ -697,7 +699,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
 
 
 def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
-    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
+    stats = calculate_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
     return _prep_stats_json(stats)
 
 
@@ -866,6 +868,7 @@ def _process_map_and_scat(
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
                             (start, stop) = _get_min_max_year_periods([per])
+                            (start, stop) = (start.year, stop.year)
 
                             if stop - start >= trends_min_yrs:
                                 try:
@@ -1113,7 +1116,7 @@ def _select_period_season_coldata(coldata, period, season):
         mask = arr["season"] == season
         arr = arr.sel(time=arr["time"][mask])
 
-    return ColocatedData(arr)
+    return ColocatedData(data=arr)
 
 
 def _process_heatmap_data(
@@ -1146,8 +1149,9 @@ def _process_heatmap_data(
 
                             trends_successful = False
                             if add_trends and freq != "daily":
-                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                # Calculates the start and stop years.
                                 (start, stop) = _get_min_max_year_periods([per])
+                                (start, stop) = (start.year, stop.year)
 
                                 if stop - start >= trends_min_yrs:
                                     try:
@@ -1310,7 +1314,7 @@ def _process_statistics_timeseries(
         for i, js in enumerate(jsdate):
             per = to_idx_str[i]
             try:
-                arr = ColocatedData(subset.data.sel(time=per))
+                arr = ColocatedData(data=subset.data.sel(time=per))
                 stats = arr.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
                 output[regname][str(js)] = _prep_stats_json(stats)
             except DataCoverageError:
@@ -1369,11 +1373,6 @@ def _init_data_default_frequencies(coldata, to_ts_types):
         data_arrs[to] = cd
 
     return data_arrs
-
-
-def _start_stop_from_periods(periods):
-    start, stop = _get_min_max_year_periods(periods)
-    return start_stop(start, stop + 1)
 
 
 def get_profile_filename(station_or_region_name, obs_name, var_name_web):

@@ -3,6 +3,7 @@ import logging
 import os
 from configparser import ConfigParser
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 
@@ -18,6 +19,7 @@ from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
 from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
+from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +71,10 @@ class Config:
     #: Aeronet V3 inversions
     AERONET_INV_V3L15_DAILY_NAME = "AeronetInvV3Lev1.5.daily"
     AERONET_INV_V3L2_DAILY_NAME = "AeronetInvV3Lev2.daily"
+
+    #: CAMS2_83 name
+
+    CAMS2_83_NRT_NAME = "CAMS2_83.NRT"
 
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = "EBASMC"
@@ -216,6 +222,9 @@ class Config:
         self._var_param = None
         self._coords = None
 
+        # Custom variables
+        self._custom_var_dict = None
+
         # Attributes that are used to store search directories
         self.OBSLOCS_UNGRIDDED = {}
         self.OBS_UNGRIDDED_POST = {}
@@ -303,6 +312,25 @@ class Config:
                     if self._check_access(_chk_dir):
                         return (basedir, self._config_files[cfg_id])
         raise FileNotFoundError("Could not establish access to any registered database")
+
+    def register_custom_variables(
+        self, vars: Union[dict[str, Variable], dict[str, dict[str, str]]]
+    ) -> None:
+        var_dict = {}
+        for key, item in vars.items():
+            if isinstance(item, Variable):
+                var_dict[key] = item
+            elif isinstance(item, dict):
+                if "var_name" in item and "units" in item:
+                    var_dict[key] = Variable(**item)
+                else:
+                    raise ValueError(
+                        f"Dict item {item} must atleast have the keys 'var_name' and 'units'"
+                    )
+            else:
+                raise ValueError(f"Item {item} must be either dict or Variable")
+        self._custom_var_dict = var_dict.copy()
+        self._var_param = None
 
     @property
     def has_access_users_database(self):
@@ -478,6 +506,10 @@ class Config:
         """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None:  # has not been accessed before
             self._var_param = VarCollection(self._var_info_file)
+
+            if self._custom_var_dict is not None:
+                for var in self._custom_var_dict:
+                    self._var_param.add_var(self._custom_var_dict[var])
         return self._var_param
 
     @property

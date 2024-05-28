@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.16.0"
+version = "0.19.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -21,16 +21,16 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "scitools-iris>=3.7.1",
-    "xarray<=2022.10.0",
+    "scitools-iris>=3.8.1",
+    "xarray",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
-    "pandas<=1.5.3",
+    "pandas",
     "numpy>=1.24.3",
     "seaborn>=0.12.2",
     "dask",
-    "geonum @ git+https://github.com/jgliss/geonum.git",  # https://github.com/jgliss/geonum/issues/26
+    "geonum==1.5.0",
     "simplejson",
     "requests",
     "geocoder_reverse_natural_earth",
@@ -44,7 +44,7 @@ dependencies = [
     'typing-extensions>=4.0.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
-    "pyaro",
+    "pyaro>=0.0.8",
     "pydantic>2",
 
 ]
@@ -79,6 +79,8 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
+cams2_83 = "pyaerocom.scripts.cams2_83.cli:app"
+cams2_83_mos = "pyaerocom.scripts.cams2_83.cli_mos:app"
 
 
 [tool.flit.sdist]
@@ -125,7 +127,6 @@ omit = [
     "pyaerocom/io/read_aeronet_sunv2.py",
     "pyaerocom/plugins/gaw/*",
     "pyaerocom/extras/satellite_l2/*",
-    "pyaerocom/vert_coords.py",
 ]
 
 [tool.coverage.report]

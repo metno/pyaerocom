@@ -228,192 +228,195 @@ class ReadEarlinet(ReadUngriddedBase):
         # Iterate over the lines of the file
         self.logger.debug(f"Reading file {filename}")
 
-        data_in = xarray.open_dataset(filename, engine="netcdf4")
-
-        # getting the coords since no longer in metadata
-        # Put also just in the attributes. not sure why appears twice
-        data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
-            data_in["longitude"].values
-        )
-        data_out["station_coords"]["latitude"] = data_out["latitude"] = np.float64(
-            data_in["latitude"].values
-        )
-        data_out["altitude"] = np.float64(
-            data_in[
-                "altitude"
-            ].values  # altitude is defined in EARLINET in terms of altitude above sea level
-        )  # Note altitude is an array for the data, station altitude is different
-        data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
-        data_out["altitude_attrs"] = data_in[
-            "altitude"
-        ].attrs  # get attrs for altitude units + extra
-
-        # get intersection of metadaa in ddataa_out and data_in
-        for k, v in self.META_NAMES_FILE.items():
-            if v in self.META_NEEDED:
-                _meta = data_in.attrs[v]
-            else:
-                try:
-                    _meta = data_in.attrs[v]
-                except Exception:  # pragma: no cover
-                    _meta = None
-            data_out[k] = _meta
-
-        # get metadata expected in StationData but not in data_in's metadata
-        data_out["wavelength_emis"] = data_in["wavelength"]
-        data_out["shots"] = np.float64(data_in["shots"])
-        data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
-        data_out["filename"] = filename
-        if "Lev02" in filename:
-            data_out["data_level"] = 2
-        loc_split = data_in.attrs["location"].split(", ")
-        data_out["station_name"] = loc_split[0]
-        if len(loc_split) > 1:
-            data_out["country"] = loc_split[1]
-
-        dtime = pd.Timestamp(data_in.measurement_start_datetime).to_numpy().astype("datetime64[s]")
-        stop = pd.Timestamp(data_in.measurement_stop_datetime).to_numpy().astype("datetime64[s]")
-
-        # in case measurement goes over midnight into a new day
-        if stop < dtime:
-            stop = stop + np.timedelta64(1, "[D]")
-
-        data_out["dtime"] = [dtime]
-        data_out["stopdtime"] = [stop]
-        data_out["has_zdust"] = False
-
-        for var in vars_to_read:
-            data_out["var_info"][var] = {}
-            err_read = False
-            unit_ok = False
-            outliers_removed = False
-            has_altitude = False
-
-            netcdf_var_name = self.VAR_NAMES_FILE[var]
-            # check if the desired variable is in the file
-            if netcdf_var_name not in data_in.variables:
-                self.logger.warning(f"Variable {var} not found in file {filename}")
-                continue
-
-            info = var_info[var]
-            # xarray.DataArray
-            arr = data_in.variables[netcdf_var_name]
-            # the actual data as numpy array (or float if 0-D data, e.g. zdust)
-            val = np.squeeze(np.float64(arr))  # squeeze to 1D array
-
-            # CONVERT UNIT
-            unit = None
-
-            unames = self.VAR_UNIT_NAMES[netcdf_var_name]
-            for u in unames:
-                if u in arr.attrs:
-                    unit = arr.attrs[u]
-            if unit is None:
-                raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
-            unit_fac = None
-            try:
-                to_unit = self._var_info[var].units
-                unit_fac = get_unit_conversion_fac(unit, to_unit)
-                val *= unit_fac
-                unit = to_unit
-                unit_ok = True
-            except Exception as e:
-                logger.warning(
-                    f"Failed to convert unit of {var} in file {filename} (Earlinet): "
-                    f"Error: {repr(e)}"
-                )
-
-            # import errors if applicable
-            err = np.nan
-            if read_err and var in self.ERR_VARNAMES:
-                err_name = self.ERR_VARNAMES[var]
-                if err_name in data_in.variables:
-                    err = np.squeeze(np.float64(data_in.variables[err_name]))
-                    if unit_ok:
-                        err *= unit_fac
-                    err_read = True
-
-            # 1D variable
-            if var == "zdust":
-                if not val.ndim == 0:
-                    raise ValueError("Fatal: dust layer height data must be single value")
-
-                if unit_ok and info.minimum < val < info.maximum:
-                    logger.warning(f"zdust value {val} out of range, setting to NaN")
-                    val = np.nan
-
-                if np.isnan(val):
-                    self.logger.warning(
-                        f"Invalid value of variable zdust in file {filename}. Skipping...!"
-                    )
-                    continue
-
-                data_out["has_zdust"] = True
-                data_out[var] = val
-
-            else:
-                if not val.ndim == 1:
-                    raise ValueError("Extinction data must be one dimensional")
-                elif len(val) == 0:
-                    continue  # no data
-                # Remove NaN equivalent values
-                val[val > self._MAX_VAL_NAN] = np.nan
-
-                wvlg = var_info[var].wavelength_nm
-                wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
-
-                if not wvlg == float(data_in[wvlg_str]):
-                    self.logger.info("No wavelength match")
-                    continue
-
-                alt_id = self.ALTITUDE_ID
-                alt_data = data_in.variables[alt_id]
-
-                alt_vals = np.float64(alt_data)
-                alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                to_alt_unit = const.VARS["alt"].units
-                if not alt_unit == to_alt_unit:
-                    try:
-                        alt_unit_fac = get_unit_conversion_fac(alt_unit, to_alt_unit)
-                        alt_vals *= alt_unit_fac
-                        alt_unit = to_alt_unit
-                    except Exception as e:
-                        self.logger.warning(f"Failed to convert unit: {repr(e)}")
-                has_altitude = True
-
-                # remove outliers from data, if applicable
-                if remove_outliers and unit_ok:
-                    # REMOVE OUTLIERS
-                    outlier_mask = np.logical_or(val < info.minimum, val > info.maximum)
-                    val[outlier_mask] = np.nan
-
-                    if err_read:
-                        err[outlier_mask] = np.nan
-                    outliers_removed = True
-                # remove outliers from errors if applicable
-                if err_read:
-                    err[err > self._MAX_VAL_NAN] = np.nan
-
-                # create instance of ProfileData
-                profile = VerticalProfile(
-                    data=val,
-                    altitude=alt_vals,
-                    dtime=dtime,
-                    var_name=var,
-                    data_err=err,
-                    var_unit=unit,
-                    altitude_unit=alt_unit,
-                )
-
-                # Write everything into profile
-                data_out[var] = profile
-
-            data_out["var_info"][var].update(
-                unit_ok=unit_ok,
-                err_read=err_read,
-                outliers_removed=outliers_removed,
-                has_altitute=has_altitude,
+        with xarray.open_dataset(filename, engine="netcdf4") as data_in:
+            # getting the coords since no longer in metadata
+            # Put also just in the attributes. not sure why appears twice
+            data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
+                data_in["longitude"].values
             )
+            data_out["station_coords"]["latitude"] = data_out["latitude"] = np.float64(
+                data_in["latitude"].values
+            )
+            data_out["altitude"] = np.float64(
+                data_in[
+                    "altitude"
+                ].values  # altitude is defined in EARLINET in terms of altitude above sea level
+            )  # Note altitude is an array for the data, station altitude is different
+            data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
+            data_out["altitude_attrs"] = data_in[
+                "altitude"
+            ].attrs  # get attrs for altitude units + extra
+
+            # get intersection of metadaa in ddataa_out and data_in
+            for k, v in self.META_NAMES_FILE.items():
+                if v in self.META_NEEDED:
+                    _meta = data_in.attrs[v]
+                else:
+                    try:
+                        _meta = data_in.attrs[v]
+                    except Exception:  # pragma: no cover
+                        _meta = None
+                data_out[k] = _meta
+
+            # get metadata expected in StationData but not in data_in's metadata
+            data_out["wavelength_emis"] = data_in["wavelength"]
+            data_out["shots"] = np.float64(data_in["shots"])
+            data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
+            data_out["filename"] = filename
+            if "Lev02" in filename:
+                data_out["data_level"] = 2
+            loc_split = data_in.attrs["location"].split(", ")
+            data_out["station_name"] = loc_split[0]
+            if len(loc_split) > 1:
+                data_out["country"] = loc_split[1]
+
+            dtime = (
+                pd.Timestamp(data_in.measurement_start_datetime).to_numpy().astype("datetime64[s]")
+            )
+            stop = (
+                pd.Timestamp(data_in.measurement_stop_datetime).to_numpy().astype("datetime64[s]")
+            )
+
+            # in case measurement goes over midnight into a new day
+            if stop < dtime:
+                stop = stop + np.timedelta64(1, "[D]")
+
+            data_out["dtime"] = [dtime]
+            data_out["stopdtime"] = [stop]
+            data_out["has_zdust"] = False
+
+            for var in vars_to_read:
+                data_out["var_info"][var] = {}
+                err_read = False
+                unit_ok = False
+                outliers_removed = False
+                has_altitude = False
+
+                netcdf_var_name = self.VAR_NAMES_FILE[var]
+                # check if the desired variable is in the file
+                if netcdf_var_name not in data_in.variables:
+                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    continue
+
+                info = var_info[var]
+                # xarray.DataArray
+                arr = data_in.variables[netcdf_var_name]
+                # the actual data as numpy array (or float if 0-D data, e.g. zdust)
+                val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+
+                # CONVERT UNIT
+                unit = None
+
+                unames = self.VAR_UNIT_NAMES[netcdf_var_name]
+                for u in unames:
+                    if u in arr.attrs:
+                        unit = arr.attrs[u]
+                if unit is None:
+                    raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
+                unit_fac = None
+                try:
+                    to_unit = self._var_info[var].units
+                    unit_fac = get_unit_conversion_fac(unit, to_unit)
+                    val *= unit_fac
+                    unit = to_unit
+                    unit_ok = True
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to convert unit of {var} in file {filename} (Earlinet): "
+                        f"Error: {repr(e)}"
+                    )
+
+                # import errors if applicable
+                err = np.nan
+                if read_err and var in self.ERR_VARNAMES:
+                    err_name = self.ERR_VARNAMES[var]
+                    if err_name in data_in.variables:
+                        err = np.squeeze(np.float64(data_in.variables[err_name]))
+                        if unit_ok:
+                            err *= unit_fac
+                        err_read = True
+
+                # 1D variable
+                if var == "zdust":
+                    if not val.ndim == 0:
+                        raise ValueError("Fatal: dust layer height data must be single value")
+
+                    if unit_ok and info.minimum < val < info.maximum:
+                        logger.warning(f"zdust value {val} out of range, setting to NaN")
+                        val = np.nan
+
+                    if np.isnan(val):
+                        self.logger.warning(
+                            f"Invalid value of variable zdust in file {filename}. Skipping...!"
+                        )
+                        continue
+
+                    data_out["has_zdust"] = True
+                    data_out[var] = val
+
+                else:
+                    if not val.ndim == 1:
+                        raise ValueError("Extinction data must be one dimensional")
+                    elif len(val) == 0:
+                        continue  # no data
+                    # Remove NaN equivalent values
+                    val[val > self._MAX_VAL_NAN] = np.nan
+
+                    wvlg = var_info[var].wavelength_nm
+                    wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
+
+                    if not wvlg == float(data_in[wvlg_str]):
+                        self.logger.info("No wavelength match")
+                        continue
+
+                    alt_id = self.ALTITUDE_ID
+                    alt_data = data_in.variables[alt_id]
+
+                    alt_vals = np.float64(alt_data)
+                    alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
+                    to_alt_unit = const.VARS["alt"].units
+                    if not alt_unit == to_alt_unit:
+                        try:
+                            alt_unit_fac = get_unit_conversion_fac(alt_unit, to_alt_unit)
+                            alt_vals *= alt_unit_fac
+                            alt_unit = to_alt_unit
+                        except Exception as e:
+                            self.logger.warning(f"Failed to convert unit: {repr(e)}")
+                    has_altitude = True
+
+                    # remove outliers from data, if applicable
+                    if remove_outliers and unit_ok:
+                        # REMOVE OUTLIERS
+                        outlier_mask = np.logical_or(val < info.minimum, val > info.maximum)
+                        val[outlier_mask] = np.nan
+
+                        if err_read:
+                            err[outlier_mask] = np.nan
+                        outliers_removed = True
+                    # remove outliers from errors if applicable
+                    if err_read:
+                        err[err > self._MAX_VAL_NAN] = np.nan
+
+                    # create instance of ProfileData
+                    profile = VerticalProfile(
+                        data=val,
+                        altitude=alt_vals,
+                        dtime=dtime,
+                        var_name=var,
+                        data_err=err,
+                        var_unit=unit,
+                        altitude_unit=alt_unit,
+                    )
+
+                    # Write everything into profile
+                    data_out[var] = profile
+
+                data_out["var_info"][var].update(
+                    unit_ok=unit_ok,
+                    err_read=err_read,
+                    outliers_removed=outliers_removed,
+                    has_altitute=has_altitude,
+                )
         return data_out
 
     def read(

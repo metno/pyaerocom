@@ -17,6 +17,14 @@ var_ranges_defaults = {
         "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
         "colmap": "coolwarm",
     },
+    "ratpm25pm10": {
+        "scale": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        "colmap": "coolwarm",
+    },
+    "ratpm10pm25": {
+        "scale": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+        "colmap": "coolwarm",
+    },
     "od550dust": {
         "scale": [0, 0.0125, 0.025, 0.0375, 0.05, 0.0625, 0.075, 0.0875, 0.1],
         "colmap": "coolwarm",
@@ -32,6 +40,10 @@ var_ranges_defaults = {
     },
     "extinction": {
         "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
+        "colmap": "coolwarm",
+    },
+    "ssa670aer": {
+        "scale": [0.75, 0.775, 0.8, 0.825, 0.85, 0.875, 0.9, 0.925, 0.95, 0.975, 1],
         "colmap": "coolwarm",
     },
     "backscatter": {
@@ -135,7 +147,7 @@ var_ranges_defaults = {
     "dryoxn": {"scale": [0, 0.1, 0.2, 0.5, 1, 2.0, 5, 10, 20, 50], "colmap": "coolwarm"},
     "dryrdn": {"scale": [0, 0.1, 0.2, 0.5, 1, 2.0, 5, 10, 20, 50], "colmap": "coolwarm"},
     "depdust": {
-        "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
+        "scale": [0.01, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
         "colmap": "coolwarm",
     },
     "drydust": {
@@ -180,6 +192,22 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
     "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
+    "proxyzdust": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
+    "zdust": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
+    "proxyzaerosol": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
+    "zaerosol": {
+        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
+        "colmap": "coolwarm",
+    },
     "proxydryo3": {"scale": [0, 0.5, 1, 5, 10, 15, 20, 25, 30, 40, 50], "colmap": "coolwarm"},
     "dryo3": {"scale": [0, 0.5, 1, 5, 10, 15, 20, 25, 30, 40, 50], "colmap": "coolwarm"},
     "proxydrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
@@ -541,6 +569,7 @@ statistics_model_only = {
 
 #: Mapping of pyaerocom variable names to web naming conventions
 ## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
+
 var_web_info = dict(
     od550aer=["AOD", "2D", "Optical properties"],
     od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
@@ -548,6 +577,7 @@ var_web_info = dict(
     od550gt1aer=["AODc", "2D", "Optical properties"],
     od550dust=["AODdust", "2D", "Optical properties"],
     abs550aer=["AAOD", "2D", "Optical properties"],
+    ssa670aer=["SSA", "2D", "Optical properties"],
     ang4487aer=["AE", "2D", "Optical properties"],
     angabs4487aer=["AAE", "2D", "Optical properties"],
     ang4487csaer=["AE (clear sky)", "2D", "Optical properties"],
@@ -571,6 +601,10 @@ var_web_info = dict(
     proxyod550ss=["OD (Sea Salt)", "2D", "Optical properties"],
     proxyod550nh4=["OD (NH4)", "2D", "Optical properties"],
     proxyod550no3=["OD (NO3)", "2D", "Optical properties"],
+    proxyzdust=["DLH", "2D", "Height"],
+    zdust=["DLH", "2D", "Height"],
+    proxyzaerosol=["ALH", "2D", "Height"],
+    zaerosol=["ALH", "2D", "Height"],
     # Gases
     concNno=["NO", "3D", "Concentration"],
     concno2=["NO2", "3D", "Gas concentrations"],
@@ -696,4 +730,7 @@ var_web_info = dict(
     proxyweto3=["proxyWetO3", "3D", "Deposition"],
     proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
     proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
+    # other stuff
+    ratpm25pm10=["ratio PM2.5 PM10", "3D", "Particle ratio"],
+    ratpm10pm25=["ratio PM10 PM2.5", "3D", "Particle ratio"],
 )

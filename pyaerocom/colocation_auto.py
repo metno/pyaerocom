@@ -30,7 +30,8 @@ from pyaerocom.helpers import (
     to_datestring_YYYYMMDD,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded, ReadUngridded
+from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
+from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
@@ -381,6 +382,9 @@ class ColocationSetup(BrowseDict):
         self.model_read_aux = {}
         self.model_use_climatology = False
 
+        self.model_kwargs = {}
+        self.model_read_kwargs = {}
+
         self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
 
         self.flex_ts_type = True
@@ -548,7 +552,13 @@ class Colocator(ColocationSetup):
     as such. For setup attributes, please see base class.
     """
 
-    SUPPORTED_GRIDDED_READERS = {"ReadGridded": ReadGridded, "ReadMscwCtm": ReadMscwCtm}
+    SUPPORTED_GRIDDED_READERS = {
+        "ReadGridded": ReadGridded,
+        "ReadMscwCtm": ReadMscwCtm,
+        "ReadCAMS2_83": ReadCAMS2_83,
+    }
+
+    MODELS_WITH_KWARGS = [ReadMscwCtm]
 
     STATUS_CODES = {
         1: "SUCCESS",
@@ -851,12 +861,13 @@ class Colocator(ColocationSetup):
         # ToDo: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_list)
-        except Exception:
+        except Exception as ex:
+            logger.exception(ex)
             if self.raise_exceptions:
                 self._print_processing_status()
-                self._write_log("ABORTED: raise_exceptions is True\n")
+                self._write_log(f"ABORTED: raise_exceptions is True: {traceback.format_exc()}\n")
                 self._close_log()
-                raise
+                raise ex
             vars_to_process = {}
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
@@ -1079,7 +1090,10 @@ class Colocator(ColocationSetup):
             data_id = self.obs_id
             data_dir = self.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
-        reader = reader_class(data_id=data_id, data_dir=data_dir)
+        if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
+            reader = reader_class(data_id=data_id, data_dir=data_dir, **self.model_read_kwargs)
+        else:
+            reader = reader_class(data_id=data_id, data_dir=data_dir)
         return reader
 
     def _get_gridded_reader_class(self, what):
@@ -1236,6 +1250,8 @@ class Colocator(ColocationSetup):
         if is_model:
             reader = self.model_reader
             vert_which = self.obs_vert_type
+
+            kwargs.update(**self.model_kwargs)
             if self.model_use_climatology:
                 # overwrite start and stop to read climatology file for model
                 start, stop = 9999, None
