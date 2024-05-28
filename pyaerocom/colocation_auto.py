@@ -642,11 +642,11 @@ class Colocator:
             list of all model variables specified in this setup.
 
         """
-        ovars = self.obs_vars
+        ovars = self.self.colocation_setup.obs_vars
         model_vars = []
         for ovar in ovars:
-            if ovar in self.model_use_vars:
-                model_vars.append(self.model_use_vars[ovar])
+            if ovar in self.colocation_setup.model_add_vars:
+                model_vars.append(self.colocation_setup.model_add_vars[ovar])
             else:
                 model_vars.append(ovar)
 
@@ -1173,7 +1173,7 @@ class Colocator:
         return True
 
     def _check_obs_vars_available(self):
-        if self.colocation_setup.obs_vars == []:
+        if not len(self.colocation_setup.obs_vars) > 0:
             raise ColocationSetupError("no observation variables specified...")
         oreader = self.obs_reader
         if self.obs_is_ungridded:
@@ -1188,7 +1188,7 @@ class Colocator:
 
         if len(self.colocation_setup.obs_vars) > len(avail):
             for ovar in self.colocation_setup.obs_vars:
-                if not ovar in avail:
+                if ovar not in avail:
                     logger.warning(
                         f"Obs variable {ovar} is not available in {self.colocation_setup.obs_id} "
                         f"and will be ignored"
@@ -1196,7 +1196,7 @@ class Colocator:
                     self._processing_status.append([None, ovar, 3])
 
             if self.colocation_setup.raise_exceptions:
-                invalid = [var for var in self.colocation_setup.obs_vars if not var in avail]
+                invalid = [var for var in self.colocation_setup.obs_vars if var not in avail]
                 invalid = "; ".join(invalid)
                 raise DataCoverageError(
                     f"Invalid obs var(s) for {self.colocation_setup.obs_id}: {invalid}"
@@ -1284,7 +1284,7 @@ class Colocator:
             tst = self.colocation_setup.model_ts_type_read
             if tst == "":
                 tst = self.colocation_setup.ts_type
-        elif not is_model and self.obs_ts_type_read is not None:
+        elif not is_model and self.colocation_setup.obs_ts_type_read is not None:
             tst = self.obs_ts_type_read
         if isinstance(tst, dict):
             if var_name in tst:
@@ -1294,7 +1294,7 @@ class Colocator:
         return tst
 
     def _read_gridded(self, var_name, is_model):
-        start, stop = self.start, self.stop
+        start, stop = self.colocation_setup.start, self.colocation_setup.stop
         ts_type_read = self._get_ts_type_read(var_name, is_model)
         kwargs = {}
         if is_model:
@@ -1373,23 +1373,25 @@ class Colocator:
     def _eval_obs_filters(self, var_name):
         obs_filters = self.obs_filters
         if var_name in obs_filters:
+            # return obs_filters[var_name]
             obs_filters = obs_filters[var_name]
-        remaining = {}
         if not isinstance(obs_filters, dict):
             raise AttributeError(
                 f"Detected obs_filters attribute in Colocator class, "
                 f"which is not a dictionary: {obs_filters}"
             )
-        for key, val in obs_filters.items():
-            # keep ts_type filter in remaining (added on 17.2.21, 0.10.0 -> 0.10.1)
-            if key in self and not key == "ts_type":  # can be handled
-                if isinstance(self[key], dict) and isinstance(val, dict):
-                    self[key].update(val)
-                else:
-                    self[key] = val
-            else:
-                remaining[key] = val
-        return remaining
+        # remaining = {}
+        # for key, val in obs_filters.items():
+        #     # keep ts_type filter in remaining (added on 17.2.21, 0.10.0 -> 0.10.1)
+        #     if key in self.colocation_setup.obs_filters and not key == "ts_type":  # can be handled
+        #         #if isinstance(self[key], dict) and isinstance(val, dict):
+        #             #self[key].update(val)
+        #         #else:
+        #             #self[key] = val
+        #         pass
+        #     else:
+        #         remaining[key] = val
+        return obs_filters if len(obs_filters) > 0 else {}
 
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
@@ -1492,7 +1494,7 @@ class Colocator:
             start_str=self.get_start_str(),
             stop_str=self.get_stop_str(),
             ts_type=ts_type,
-            filter_name=self.filter_name,
+            filter_name=self.colocation_setup.filter_name,
             vertical_layer=vertical_layer,
         )
         return f"{name}.nc"

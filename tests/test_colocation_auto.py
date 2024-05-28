@@ -141,14 +141,12 @@ def test_ColocationSetup_invalid_input(key, val, raises):
 @pytest.mark.parametrize("ts_type", ["monthly"])
 @pytest.mark.parametrize("flex", [False, True])
 def test_Colocator_model_ts_type_read(setup, ts_type_desired, ts_type, flex):
-    setup["model_ts_type_read"] = {"obs_var": ts_type_desired}
-
-    setup.update(dict(ts_type=ts_type, flex=flex))
-    col_stp = ColocationSetup(**setup)
-
-    col = Colocator(col_stp)
     obs_var = "od550aer"
+    setup["model_ts_type_read"] = {obs_var: ts_type_desired}
+    setup.update(dict(ts_type=ts_type, flex=flex))
     assert setup["obs_vars"] == obs_var
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     # Problem with saving since obs_id is different
     # from obs_data.contains_dataset[0]...
     data = col.run()
@@ -161,23 +159,23 @@ def test_Colocator_model_ts_type_read(setup, ts_type_desired, ts_type, flex):
         assert coldata.metadata["ts_type_src"][1] == ts_type_desired
 
 
-def test_Colocator_model_ts_type_read_error(tm5_aero_col_stp):
-    col = Colocator(tm5_aero_col_stp)
-    col.model_ts_type_read = {"od550aer": "minutely"}
+def test_Colocator_model_ts_type_read_error(setup):
+    setup["model_ts_type_read"] = {"od550aer": "minutely"}
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     with pytest.raises(ColocationError) as e:
         col.run()
     assert str(e.value).startswith("Failed to load model data: TM5-met2010_CTRL-TEST (od550aer)")
 
 
-def test_Colocator_model_add_vars(tm5_aero_col_stp):
-    col = Colocator(tm5_aero_col_stp)
+def test_Colocator_model_add_vars(setup):
     model_var = "abs550aer"
     obs_var = "od550aer"
-    col.save_coldata = False
+    setup["model_add_vars"] = {obs_var: [model_var]}
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     # Problem with saving since obs_id is different
-
-    col.model_add_vars = {obs_var: [model_var]}
-    data = col.run(var_name=model_var)
+    data = col.run(var_list=[model_var])
     assert isinstance(data, dict)
     assert model_var in data
     coldata = data[model_var][obs_var]
@@ -188,7 +186,8 @@ def test_Colocator_init_basedir_coldata(setup, tmp_path: Path):
     base_path = tmp_path / "basedir"
     setup["basedir_coldata"] = base_path
     setup["raise_exceptions"] = True
-    Colocator(setup)
+    col_stp = ColocationSetup(**setup)
+    Colocator(col_stp)
 
     assert base_path.is_dir()
 
@@ -201,12 +200,14 @@ def test_Colocator__infer_start_stop_yr_from_model_reader(tm5_aero_col_stp):
     assert col.stop == None
 
 
-def test_Colocator__coldata_savename(tm5_aero_col_stp):
-    col = Colocator(tm5_aero_col_stp, raise_exceptions=True)
-    col.obs_name = "obs"
-    col.model_name = "model"
-    col.filter_name = ALL_REGION_NAME
-    col.start = 2015
+def test_Colocator__coldata_savename(setup):
+    setup["raise_exceptions"] = True
+    setup["obs_name"] = "obs"
+    setup["model_name"] = "model"
+    setup["filter_name"] = ALL_REGION_NAME
+    setup["start"] = 2015
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     col._check_set_start_stop()
     savename = col._coldata_savename("od550aer", "od550ss", "daily")
     assert isinstance(savename, str)
@@ -224,37 +225,43 @@ def test_Colocator__coldata_savename(tm5_aero_col_stp):
 #     assert not base_path.is_dir()
 
 
-def test_Colocator_update_basedir_coldata(tmp_path: Path):
-    col = Colocator(raise_exceptions=True)
+# def test_Colocator_update_basedir_coldata(setup, tmp_path: Path):
+#     base_path = tmp_path / "basedir"
+#     setup.update(basedir_coldata = base_path)
+#     col_stp = ColocationSetup(**setup)
 
-    base_path = tmp_path / "basedir"
-    assert not base_path.is_dir()
-    col.update(basedir_coldata=base_path)
-    assert base_path.is_dir()
+#     col = Colocator(col_stp)
+#     # LB: This is not how the new one works
+#     # assert not base_path.is_dir()
+#     # col.update(basedir_coldata=base_path)
+#     assert base_path.is_dir()
+
+# Lb: We should not test this because we don't support this functionality
+# @pytest.mark.parametrize(
+#     "what",
+#     [
+#         dict(blaa=42),
+#         dict(obs_id="test", model_id="test"),
+#         dict(gridded_reader_id="test"),
+#         dict(gridded_reader_id={"test": 42}),
+#         dict(resample_how={"daily": {"hourly": "max"}}),
+#     ],
+# )
+# def test_Colocator_update(what, setup):
+#     setup["raise_exceptions"] = True
+#     setup.update(**what)
+#     col_stp = ColocationSetup(**setup)
+#     col = Colocator(col_stp)
+#     for key, val in what.items():
+#         assert col[key] == val
 
 
-@pytest.mark.parametrize(
-    "what",
-    [
-        dict(blaa=42),
-        dict(obs_id="test", model_id="test"),
-        dict(gridded_reader_id="test"),
-        dict(gridded_reader_id={"test": 42}),
-        dict(resample_how={"daily": {"hourly": "max"}}),
-    ],
-)
-def test_Colocator_update(what):
-    col = Colocator(raise_exceptions=True)
-    col.update(**what)
-    for key, val in what.items():
-        assert col[key] == val
-
-
-def test_Colocator_run_gridded_gridded(tm5_aero_col_stp):
-    col = Colocator(**tm5_aero_col_stp)
-    col.obs_id = col.model_id
+def test_Colocator_run_gridded_gridded(setup):
+    setup["obs_id"] = setup["model_id"]
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     col.run()
-    var = col.obs_vars[0]
+    var = col.colocation_setup.obs_vars[0]
     coldata = col.data[var][var]
     assert isinstance(coldata, ColocatedData)
     assert coldata.ndim == 4
@@ -341,17 +348,21 @@ def test_Colocator_run_gridded_ungridded_error(setup, update, error):
 
 
 def test_colocator_filter_name(setup):
-    col = Colocator(setup, filter_name=ALL_REGION_NAME)
-    assert col.filter_name == ALL_REGION_NAME
+    setup["filter_name"] = ALL_REGION_NAME
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
+    assert col.colocation_setup.filter_name == ALL_REGION_NAME
 
 
 def test_colocator_read_ungridded(setup):
-    col = Colocator(setup, raise_exceptions=True)
-    obs_id = "AeronetSunV3L2Subset.daily"
+    # obs_id = "AeronetSunV3L2Subset.daily"
     obs_var = "od550aer"
-    col.obs_filters = {"longitude": [-30, 30]}
-    col.obs_id = obs_id
-    col.read_opts_ungridded = {"last_file": 1}
+    # setup["obs_id"] =
+    setup["raise_exceptions"] = True
+    setup["obs_filters"] = {"longitude": [-30, 30]}
+    setup["read_opts_ungridded"] = {"last_file": 1}
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
 
     data = col._read_ungridded(obs_var)
     assert isinstance(data, UngriddedData)
@@ -363,58 +374,69 @@ def test_colocator_read_ungridded(setup):
 
 
 def test_colocator_get_model_data(setup):
-    col = Colocator(setup, raise_exceptions=True)
-    model_id = "TM5-met2010_CTRL-TEST"
-    col.model_id = model_id
+    setup["raise_exceptions"] = True
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    col_stp = ColocationSetup(**setup)
+
+    col = Colocator(col_stp)
     data = col.get_model_data("od550aer")
     assert isinstance(data, GriddedData)
 
 
 def test_colocator__find_var_matches(setup):
-    col = Colocator(setup)
-    col.model_id = "TM5-met2010_CTRL-TEST"
-    col.obs_id = "AeronetSunV3L2Subset.daily"
-    col.obs_vars = "od550aer"
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    setup["obs_id"] = "AeronetSunV3L2Subset.daily"
+    setup2 = setup.copy()
+    setup["obs_vars"] = "od550aer"
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
 
     var_matches = col._find_var_matches()
     assert var_matches == {"od550aer": "od550aer"}
 
     obs_var = "conco3"
-    col.obs_vars = [obs_var]
-    col.model_use_vars = {obs_var: "od550aer"}
-    var_matches = col._find_var_matches()
+    setup2["obs_vars"] = obs_var
+    setup2["model_use_vars"] = {obs_var: "od550aer"}
+    col_stp2 = ColocationSetup(**setup2)
+    col2 = Colocator(col_stp2)
+
+    var_matches = col2._find_var_matches()
     assert var_matches == {"od550aer": "conco3"}
 
 
 def test_colocator__find_var_matches_model_add_vars(setup):
-    col = Colocator(setup)
-    col.model_id = "TM5-met2010_CTRL-TEST"
-    col.obs_id = "AeronetSunV3L2Subset.daily"
     ovar = "od550aer"
-    col.obs_vars = [ovar]
-
-    col.model_add_vars = {ovar: ["abs550aer"]}
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    setup["obs_id"] = "AeronetSunV3L2Subset.daily"
+    setup["obs_vars"] = [ovar]
+    setup["model_add_vars"] = {ovar: ["abs550aer"]}
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     var_matches = col._find_var_matches()
     assert var_matches == {"abs550aer": ovar, ovar: ovar}
 
 
 # LB: This test breaks the way I want this class to work because it implies allowing adding of attributes.
 def test_colocator_instantiate_gridded_reader(setup, path_emep):
-    col = Colocator(setup, gridded_reader_id={"model": "ReadMscwCtm", "obs": "ReadGridded"})
-    # col.filepath = path_emep["daily"]
     model_id = "model"
-    col.model_id = model_id
+    setup["gridded_reader_id"] = {"model": "ReadMscwCtm", "obs": "ReadGridded"}
+    setup["model_id"] = model_id
+    setup["filepath"] = path_emep
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     r = col._instantiate_gridded_reader(what="model")
     assert isinstance(r, ReadMscwCtm)
     assert r.data_id == model_id
 
 
 def test_colocator_instantiate_gridded_reader_model_data_dir(setup, path_emep):
-    col = Colocator(setup, gridded_reader_id={"model": "ReadMscwCtm", "obs": "ReadGridded"})
     model_data_dir = path_emep["data_dir"]
-    col.model_data_dir = path_emep["data_dir"]
     model_id = "model"
-    col.model_id = model_id
+    setup["gridded_reader_id"] = {"model": "ReadMscwCtm", "obs": "ReadGridded"}
+    setup["model_data_dir"] = model_data_dir
+    setup["model_id"] = model_id
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     r = col._instantiate_gridded_reader(what="model")
     assert isinstance(r, ReadMscwCtm)
     assert r.data_dir == model_data_dir
@@ -422,29 +444,34 @@ def test_colocator_instantiate_gridded_reader_model_data_dir(setup, path_emep):
 
 
 def test_colocator__get_gridded_reader_class(setup):
-    gridded_reader_id = {"model": "ReadMscwCtm", "obs": "ReadMscwCtm"}
-    col = Colocator(setup, gridded_reader_id=gridded_reader_id)
+    setup["gridded_reader_id"] = {"model": "ReadMscwCtm", "obs": "ReadMscwCtm"}
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     for what in ["model", "obs"]:
         assert col._get_gridded_reader_class(what=what) == ReadMscwCtm
 
 
 def test_colocator__check_add_model_read_aux(setup):
-    col = Colocator(setup, raise_exceptions=True)
-    col.model_id = "TM5-met2010_CTRL-TEST"
+    setup["raise_exceptions"] = True
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     assert not col._check_add_model_read_aux("od550aer")
-    col.model_read_aux = {"od550aer": dict(vars_required=["od550aer", "od550aer"], fun=add_cubes)}
-    assert col._check_add_model_read_aux("od550aer")
+    setup["model_read_aux"] = {
+        "od550aer": dict(vars_required=["od550aer", "od550aer"], fun=add_cubes)
+    }
+    col_stp2 = ColocationSetup(**setup)
+    col2 = Colocator(col_stp2)
+    assert col2._check_add_model_read_aux("od550aer")
 
 
 def test_colocator_with_obs_data_dir_ungridded(setup):
-    col = Colocator(setup, save_coldata=False)
-    col.model_id = "TM5-met2010_CTRL-TEST"
-    col.obs_id = "AeronetSunV3L2Subset.daily"
-    col.obs_vars = "od550aer"
-    col.ts_type = "monthly"
-
-    col.obs_data_dir = TEST_DATA["AeronetSunV3L2Subset.daily"].path
-
+    setup["obs_id"] = "AeronetSunV3L2Subset.daily"
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    setup["obs_vars"] = "od550aer"
+    setup["obs_data_dir"] = TEST_DATA["AeronetSunV3L2Subset.daily"].path
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     data = col.run()
     assert len(data) == 1
     cd = data["od550aer"]["od550aer"]
@@ -455,14 +482,12 @@ def test_colocator_with_obs_data_dir_ungridded(setup):
 
 
 def test_colocator_with_model_data_dir_ungridded(setup):
-    col = Colocator(setup, save_coldata=False)
-    col.model_id = "TM5-met2010_CTRL-TEST"
-    col.obs_id = "AeronetSunV3L2Subset.daily"
-    col.obs_vars = "od550aer"
-    col.ts_type = "monthly"
-
-    col.model_data_dir = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
-
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    setup["obs_id"] = "AeronetSunV3L2Subset.daily"
+    setup["obs_vars"] = "od550aer"
+    setup["model_data_dir"] = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     data = col.run()
     assert len(data) == 1
     cd = data["od550aer"]["od550aer"]
@@ -472,16 +497,13 @@ def test_colocator_with_model_data_dir_ungridded(setup):
     assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
 
 
-def test_colocator_with_obs_data_dir_gridded():
-    col = Colocator(save_coldata=False)
-    col.model_id = "TM5-met2010_CTRL-TEST"
-    col.obs_id = "TM5-met2010_CTRL-TEST"
-    col.obs_vars = "od550aer"
-    col.ts_type = "monthly"
-
-    obs_dir = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
-    col.obs_data_dir = str(obs_dir)
-
+def test_colocator_with_obs_data_dir_gridded(setup):
+    setup["model_id"] = "TM5-met2010_CTRL-TEST"
+    setup["obs_id"] = "TM5-met2010_CTRL-TEST"
+    setup["obs_vars"] = "od550aer"
+    setup["obs_dir"] = TEST_DATA["MODELS"].path / "TM5-met2010_CTRL-TEST/renamed"
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
     data = col.run()
     assert len(data) == 1
     cd = data["od550aer"]["od550aer"]
@@ -496,15 +518,16 @@ def test_colocator_with_obs_data_dir_gridded():
 ###################################
 
 
-def test_colocation_pyaro(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
-    col = Colocator(save_coldata=False)
+def test_colocation_pyaro(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015, setup) -> None:
     config = pyaro_testconfig[0]
-    col.obs_config = config
-    col.model_id = "EMEP"
-    col.gridded_reader_id = {"model": "ReadMscwCtm"}
-    col.model_data_dir = fake_MSCWCtm_data_monthly_2015
-    col.obs_vars = "concso4"
-    col.ts_type = "monthly"
+    setup["obs_config"] = config
+    setup["model_id"] = "EMEP"
+    setup["gridded_reader_id"] = {"model": "ReadMscwCtm"}
+    setup["model_data_dir"] = fake_MSCWCtm_data_monthly_2015
+    setup["obs_vars"] = "concso4"
+
+    col_stp = ColocationSetup(**setup)
+    col = Colocator(col_stp)
 
     data = col.run()
 
