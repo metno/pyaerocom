@@ -2,46 +2,23 @@ from __future__ import annotations
 
 import logging
 import multiprocessing as mp
-import time
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from multiprocessing import cpu_count
 from pathlib import Path
-from pprint import pformat
 from typing import List, Optional
 
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-from pyaerocom.io import ReadUngridded
-from pyaerocom.io.cachehandler_ungridded import list_cache_files
 from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
-from pyaerocom.scripts.cams2_83.config import CFG, species_list
-from pyaerocom.scripts.cams2_83.evaluation import EvalType, date_range
-from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
-
-"""
-TODO:
-    - Add option for species
-    - Add option for periodes [Done]
-    - Add option for running only som observations/models/species
-    - Add options with defaults for the different folders (data/coldata/cache)
-"""
-
+from pyaerocom.scripts.cams2_83.config import CFG
+from pyaerocom.scripts.cams2_83.evaluation import EvalType, date_range, runner, runnermedianscores
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
-
-
-def clear_cache():
-    """Delete cached data objects"""
-    for path in list_cache_files():
-        path.unlink()
 
 
 def make_model_entry(
@@ -130,100 +107,6 @@ def make_config(
     return cfg
 
 
-def read_observations(specie: str, *, files: List, cache: str | Path | None) -> None:
-    logger.info(f"Running {specie}")
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    reader = ReadUngridded()
-
-    reader.read(
-        data_ids="CAMS2_83.NRT",
-        vars_to_retrieve=specie,
-        files=files,
-        force_caching=True,
-    )
-
-    logger.info(f"Finished {specie}")
-
-
-def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
-    ana_cams2_83 = CAMS2_83_Processer(stp)
-    ana_cams2_83.run(analysis=analysis, var_list=specie)
-
-
-def runner(
-    cfg: dict,
-    cache: str | Path | None,
-    dry_run: bool = False,
-    pool: int = 1,
-):
-    logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
-    if dry_run:
-        return
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    stp = EvalSetup(**cfg)
-
-    logger.info(f"Clearing cache at {const.CACHEDIR}")
-    clear_cache()
-
-    if pool > 1:
-        logger.info(f"Running observation reading with pool {pool}")
-        files = cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"]
-        with ProcessPoolExecutor(max_workers=pool) as executor:
-            futures = [
-                executor.submit(read_observations, specie, files=files, cache=cache)
-                for specie in species_list
-            ]
-        for future in as_completed(futures):
-            future.result()
-
-    logger.info("Running Statistics")
-    ExperimentProcessor(stp).run()
-    print("Done Running Statistics")
-
-
-def runnermedianscores(
-    cfg: dict,
-    cache: str | Path | None,
-    *,
-    analysis: bool = False,
-    dry_run: bool = False,
-    pool: int = 1,
-):
-    if dry_run:
-        return
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    stp = EvalSetup(**cfg)
-
-    start = time.time()
-
-    logger.info(
-        "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
-    )
-    if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        with ProcessPoolExecutor(max_workers=pool) as executor:
-            futures = [
-                executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
-                for specie in species_list
-            ]
-        for future in as_completed(futures):
-            future.result()
-    else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        CAMS2_83_Processer(stp).run(analysis=analysis)
-
-    print(f"Long run: {time.time() - start} sec")
-
-
 @app.command()
 def main(
     run_type: RunType = typer.Argument(...),
@@ -286,7 +169,11 @@ def main(
         help="Will only make and print the config without running the evaluation",
     ),
     pool: int = typer.Option(
-        1, "--pool", "-p", min=1, max=cpu_count(), help="CPUs for reading OBS"
+        1,
+        "--pool",
+        "-p",
+        min=1,
+        help="CPUs for reading OBS and running median scores",
     ),
 ):
     if dry_run:
@@ -294,9 +181,8 @@ def main(
 
     if pool > mp.cpu_count():
         logger.warning(
-            f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}. Using that instead"
+            f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}."
         )
-        pool = mp.cpu_count()
 
     cfg = make_config(
         start_date,
@@ -338,3 +224,7 @@ def main(
     else:
         logger.info("Standard run")
         runner(cfg, cache, dry_run=dry_run, pool=pool)
+
+
+if __name__ == "__main__":
+    main()

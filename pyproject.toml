@@ -44,7 +44,7 @@ dependencies = [
     'typing-extensions>=4.0.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
-    "pyaro",
+    "pyaro>=0.0.8",
     "pydantic>2",
 
 ]
@@ -80,6 +80,7 @@ dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
 cams2_83 = "pyaerocom.scripts.cams2_83.cli:app"
+cams2_83_mos = "pyaerocom.scripts.cams2_83.cli_mos:app"
 
 
 [tool.flit.sdist]

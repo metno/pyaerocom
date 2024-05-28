@@ -1,3 +1,4 @@
+import glob
 import logging
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
@@ -13,7 +14,10 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         forecast_days = self.cfg.statistics_opts.forecast_days
 
         if self.cfg.processing_opts.only_json:
-            files_to_convert = col.get_available_coldata_files(var_list)
+            # files_to_convert = col.get_available_coldata_files(var_list) # this reads data only from standard subfolders, not folders like CAMS2-83-[model_name]-day0-FC, which are the only relevant here
+            preprocessed_coldata_dir = self.cfg.path_manager.get_coldata_dir()
+            mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-day*/*.nc"
+            files_to_convert = glob.glob(mask)
         else:
             files_to_convert = []
             for leap in range(forecast_days):
