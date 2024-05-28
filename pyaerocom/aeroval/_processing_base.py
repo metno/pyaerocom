@@ -4,6 +4,7 @@ from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation_auto import Colocator
+from pyaerocom.colocation_setup import ColocationSetup
 
 
 class HasConfig:
@@ -116,13 +117,14 @@ class HasColocator(HasConfig):
         if obs_name:
             obs_cfg = self.cfg.get_obs_entry(obs_name)
             pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
-            col_cfg = {**self.cfg.colocation_opts}
+            col_cfg = {**self.cfg.colocation_opts.model_dump()}
             col_cfg["obs_config"] = pyaro_config
-            col = Colocator(**col_cfg)
+            col_stp = ColocationSetup(**col_cfg)
+            col = Colocator(col_stp)
             col.import_from(obs_cfg)
             col.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
         else:
-            col = Colocator(**self.cfg.colocation_opts)
+            col = Colocator(self.cfg.colocation_opts)
         if model_name:
             mod_cfg = self.cfg.get_model_entry(model_name)
             col.import_from(mod_cfg)

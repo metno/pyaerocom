@@ -62,18 +62,6 @@ default_setup = {
 }
 
 
-# @pytest.fixture(scope="function")
-# def tm5_aero_stp():
-#     return dict(
-#         model_id="TM5-met2010_CTRL-TEST",
-#         obs_id="AeronetSunV3L2Subset.daily",
-#         obs_vars="od550aer",
-#         start=2010,
-#         raise_exceptions=True,
-#         reanalyse_existing=True,
-#     )
-
-
 @pytest.fixture(scope="function")
 def setup():
     return dict(
@@ -121,20 +109,6 @@ def test_ColocationSetup_invalid_input(key, val, raises):
     with raises:
         stp = ColocationSetup(**{key: val})
         assert stp.model_dump()[key] == val
-
-
-# def test_Colocator__obs_vars__setter(col):
-#     col.colocation_setup.obs_vars = "var"
-#     assert col.obs_vars == ["var"]
-
-
-# # LB: Not sure if Colocator should be allowed to accept objects
-# def test_Colocator__add_attr(col):
-#     col.bla = "blub"
-#     col.blub = 42
-
-#     assert col.bla == "blub"
-#     assert "blub" in col
 
 
 @pytest.mark.parametrize("ts_type_desired", ["daily", "monthly"])
@@ -213,47 +187,6 @@ def test_Colocator__coldata_savename(setup):
     assert isinstance(savename, str)
     n = f"od550ss_od550aer_MOD-model_REF-obs_20150101_20151231_daily_{ALL_REGION_NAME}.nc"
     assert savename == n
-
-
-# LB: Not clear if this is intended functionality or what or we can remove.
-# Currently set up to revalidate the basedir_coldata everytime
-# validation creates this directory
-# def test_Colocator_basedir_coldata(tmp_path: Path):
-#     base_path = tmp_path / "test"
-#     col = Colocator(raise_exceptions=True)
-#     col.basedir_coldata = base_path
-#     assert not base_path.is_dir()
-
-
-# def test_Colocator_update_basedir_coldata(setup, tmp_path: Path):
-#     base_path = tmp_path / "basedir"
-#     setup.update(basedir_coldata = base_path)
-#     col_stp = ColocationSetup(**setup)
-
-#     col = Colocator(col_stp)
-#     # LB: This is not how the new one works
-#     # assert not base_path.is_dir()
-#     # col.update(basedir_coldata=base_path)
-#     assert base_path.is_dir()
-
-# Lb: We should not test this because we don't support this functionality
-# @pytest.mark.parametrize(
-#     "what",
-#     [
-#         dict(blaa=42),
-#         dict(obs_id="test", model_id="test"),
-#         dict(gridded_reader_id="test"),
-#         dict(gridded_reader_id={"test": 42}),
-#         dict(resample_how={"daily": {"hourly": "max"}}),
-#     ],
-# )
-# def test_Colocator_update(what, setup):
-#     setup["raise_exceptions"] = True
-#     setup.update(**what)
-#     col_stp = ColocationSetup(**setup)
-#     col = Colocator(col_stp)
-#     for key, val in what.items():
-#         assert col[key] == val
 
 
 def test_Colocator_run_gridded_gridded(setup):
@@ -341,7 +274,7 @@ def test_Colocator_run_gridded_ungridded(
 )
 def test_Colocator_run_gridded_ungridded_error(setup, update, error):
     setup.update(update)
-    col_stp = ColocationSetup(setup)
+    col_stp = ColocationSetup(**setup)
     with pytest.raises(ColocationSetupError) as e:
         Colocator(col_stp).run()
     assert str(e.value).startswith(error)
@@ -518,46 +451,25 @@ def test_colocator_with_obs_data_dir_gridded(setup):
 ###################################
 
 
-def test_colocation_pyaro(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015, setup) -> None:
+def test_colocation_pyaro(pyaro_testconfig, fake_aod_MSCWCtm_data_monthly_2010, setup) -> None:
     config = pyaro_testconfig[0]
     setup["obs_config"] = config
     setup["model_id"] = "EMEP"
     setup["gridded_reader_id"] = {"model": "ReadMscwCtm"}
-    setup["model_data_dir"] = fake_MSCWCtm_data_monthly_2015
-    setup["obs_vars"] = "concso4"
+    setup["model_data_dir"] = fake_aod_MSCWCtm_data_monthly_2010
+    setup["obs_vars"] = "od550aer"  # This obs does not exist in Aeronet
 
     col_stp = ColocationSetup(**setup)
     col = Colocator(col_stp)
 
     data = col.run()
 
-    cd = data["concso4"]["concso4"]
+    cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2015-01-15T00:00:00.000000000"
-    assert str(cd.stop) == "2015-12-15T00:00:00.000000000"
+    assert str(cd.start) == "2010-01-15T00:00:00.000000000"
+    assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
 
     assert np.sum(np.isnan(cd.data[0, :].data)) == 0
 
     assert cd.data[0, :].data.shape[0] == 12
-
-
-def test_colocation_pyaro_change_obs_id(pyaro_testconfig, fake_MSCWCtm_data_monthly_2015) -> None:
-    col = Colocator(save_coldata=False)
-    config = pyaro_testconfig[0]
-    col.obs_id = "undefined"
-    col.obs_config = config
-    col.obs_id = "undefined"
-    col.obs_config = config
-
-    col.model_id = "EMEP"
-    col.gridded_reader_id = {"model": "ReadMscwCtm"}
-    col.model_data_dir = fake_MSCWCtm_data_monthly_2015
-    col.obs_vars = "concso4"
-    col.ts_type = "monthly"
-
-    data = col.run()
-
-    cd = data["concso4"]["concso4"]
-    assert isinstance(cd, ColocatedData)
-    assert cd.ts_type == "monthly"
