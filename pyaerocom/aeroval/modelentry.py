@@ -1,3 +1,4 @@
+import inspect
 from copy import deepcopy
 
 from pyaerocom._lowlevel_helpers import BrowseDict, DictStrKeysListVals, DictType, StrType
@@ -55,6 +56,8 @@ class ModelEntry(BrowseDict):
         self.model_rename_vars = {}
         self.model_read_aux = {}
 
+        self.kwargs = kwargs
+
         self.update(**kwargs)
 
     @property
@@ -63,6 +66,16 @@ class ModelEntry(BrowseDict):
         Boolean specifying whether this entry requires auxiliary variables
         """
         return True if bool(self.model_read_aux) else False
+
+    def json_repr(self) -> dict:
+        sup_rep = super().json_repr()
+
+        for key in sup_rep["model_read_aux"]:
+            sup_rep["model_read_aux"][key]["fun"] = inspect.getsource(
+                deepcopy(sup_rep["model_read_aux"][key]["fun"])
+            )
+
+        return sup_rep
 
     def get_vars_to_process(self, obs_vars: list) -> tuple:
         """
