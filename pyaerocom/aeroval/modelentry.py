@@ -68,7 +68,6 @@ class ModelEntry(BrowseDict):
         return True if bool(self.model_read_aux) else False
 
     def json_repr(self) -> dict:
-
         sup_rep = super().json_repr()
 
         for key in sup_rep["model_read_aux"]:
