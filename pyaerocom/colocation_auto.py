@@ -868,8 +868,8 @@ class Colocator:
         #     self.colocation_setup.obs_vars = [self.colocation_setup.obs_vars]
 
         # LB: obs_vars should be defined by here
-        if not isinstance(self.colocation_setup.obs_vars, list):
-            raise AttributeError("obs_vars not defined or invalid, need list with strings...")
+        if not isinstance(self.colocation_setup.obs_vars, tuple):
+            raise AttributeError("obs_vars not defined or invalid, need tuple with strings...")
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()

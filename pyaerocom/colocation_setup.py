@@ -308,7 +308,7 @@ class ColocationSetup(BaseModel):
     # LB: remains to be seen if this can actually be required without chaning the code elsewhere
     model_id: str | None  # = None
     obs_id: str | None  # = None
-    obs_vars: list[str] | str | None  # = None
+    obs_vars: tuple[str, ...] | str  # = None
 
     @field_validator("obs_vars")
     @classmethod
@@ -443,7 +443,7 @@ class ColocationSetup(BaseModel):
         model_id: str | None = None,
         obs_config: PyaroConfig | None = None,
         obs_id: str | None = None,
-        obs_vars: list[str] | None = None,
+        obs_vars: tuple[str, ...] | None = (),
         ts_type: str = "monthly",
         start: pd.Timestamp | int | None = None,
         stop: pd.Timestamp | int | None = None,
