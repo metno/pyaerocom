@@ -287,7 +287,7 @@ class ColocationSetup(BaseModel):
         arbitrary_types_allowed=True,
         allow="extra",
         protected_namespaces=(),
-        frozen=True,  # make immutable
+        # frozen=True,  # make immutable
         # validate_assignment=True,
         # property_set_methods = {"obs_config": "set_obs_config"}
     )
@@ -415,7 +415,7 @@ class ColocationSetup(BaseModel):
     flex_ts_type: bool = True
 
     # Options related to time resampling
-    min_num_obs: int | None = None
+    min_num_obs: dict | int | None = None
     resample_how: str | dict | None = "mean"
 
     # Options related to outlier removal

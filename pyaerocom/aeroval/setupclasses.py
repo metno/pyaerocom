@@ -571,8 +571,8 @@ class EvalSetup(BaseModel):
 
     def _check_time_config(self) -> None:
         periods = self.time_cfg.periods
-        colstart = self.colocation_opts["start"]
-        colstop = self.colocation_opts["stop"]
+        colstart = self.colocation_opts.start
+        colstop = self.colocation_opts.stop
 
         if len(periods) == 0:
             if colstart is None:
@@ -597,15 +597,15 @@ class EvalSetup(BaseModel):
             if stop_yr == start_yr:
                 stop_yr += 1
             if colstart is None:
-                self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
+                self.colocation_opts.start = start.strftime("%Y/%m/%d %H:%M:%S")
             if colstop is None:
-                self.colocation_opts["stop"] = stop.strftime(
+                self.colocation_opts.stop = stop.strftime(
                     "%Y/%m/%d %H:%M:%S"
                 )  # + 1  # add 1 year since we want to include stop year
         else:
             if colstart is None:
-                self.colocation_opts["start"] = start_yr
+                self.colocation_opts.start = start_yr
             if colstop is None:
-                self.colocation_opts["stop"] = (
+                self.colocation_opts.stop = (
                     stop_yr + 1
                 )  # add 1 year since we want to include stop year

@@ -114,22 +114,27 @@ class HasColocator(HasConfig):
         Colocator
 
         """
+        # LB: In general I don't like what this function is doing. Ideally define the Colocator object once and just use that.
+        col_cfg = {**self.cfg.colocation_opts.model_dump()}
+        outdir = self.cfg.path_manager.get_coldata_dir()
+        col_cfg["basedir_coldata"] = outdir
         if obs_name:
             obs_cfg = self.cfg.get_obs_entry(obs_name)
             pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
-            col_cfg = {**self.cfg.colocation_opts.model_dump()}
             col_cfg["obs_config"] = pyaro_config
             col_stp = ColocationSetup(**col_cfg)
             col = Colocator(col_stp)
-            col.import_from(obs_cfg)
-            col.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
+            # col.import_from(obs_cfg) # LB: Not sure if needed or works anymore original from lowlevel_helpers.py
+            col.colocation_setup.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
         else:
-            col = Colocator(self.cfg.colocation_opts)
+            col_stp = ColocationSetup(**col_cfg)
+            col = Colocator(col_stp)
         if model_name:
             mod_cfg = self.cfg.get_model_entry(model_name)
-            col.import_from(mod_cfg)
-        outdir = self.cfg.path_manager.get_coldata_dir()
-        col.basedir_coldata = outdir
+            col_cfg["model_cfg"] = mod_cfg  # LB: this is untested and just a guess at this point
+            col_stp = ColocationSetup(**col_cfg)
+            col = Colocator(col_stp)
+            # col.import_from(mod_cfg) # LB: also not sure if needed or works anymore
         return col
 
 

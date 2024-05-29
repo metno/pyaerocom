@@ -866,8 +866,8 @@ class Colocator:
         # LB: SHould be covered by ColocationSetup validator
         # if isinstance(self.colocation_setup.obs_vars, str):
         #     self.colocation_setup.obs_vars = [self.colocation_setup.obs_vars]
-        if not isinstance(self.colocation_setup.obs_vars, list):
-            raise AttributeError("obs_vars not defined or invalid, need list with strings...")
+        # if not isinstance(self.colocation_setup.obs_vars, list):
+        #     raise AttributeError("obs_vars not defined or invalid, need list with strings...")
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()
