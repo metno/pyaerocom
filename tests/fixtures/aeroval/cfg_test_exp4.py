@@ -9,20 +9,20 @@ MODELS = {
 OBS_GROUNDBASED = {
     "AERONET-Sun": dict(
         obs_id="AeronetSunV3L2Subset.daily",
-        obs_vars=["od550aer"],
+        obs_vars=("od550aer",),
         only_superobs=True,
         obs_vert_type="Column",
     ),
     "AERONET-SDA": dict(
         obs_id="AeronetSDAV3L2Subset.daily",
-        obs_vars=["od550aer"],
+        obs_vars=("od550aer",),
         only_superobs=True,
         obs_vert_type="Column",
     ),
     "SDA-and-Sun": dict(
         is_superobs=True,
         obs_id=("AERONET-Sun", "AERONET-SDA"),
-        obs_vars=["od550aer"],
+        obs_vars=("od550aer",),
         obs_vert_type="Column",
     ),
 }
