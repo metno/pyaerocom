@@ -122,9 +122,15 @@ class HasColocator(HasConfig):
             obs_cfg = self.cfg.get_obs_entry(obs_name)
             pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
             col_cfg["obs_config"] = pyaro_config
+
+            # LB: Hack and at what lowlevel_helpers's import_from was doing
+            for key, val in obs_cfg.items():
+                if key in ColocationSetup.model_fields:
+                    col_cfg[key] = val
+
             col_stp = ColocationSetup(**col_cfg)
             col = Colocator(col_stp)
-            # col.import_from(obs_cfg) # LB: Not sure if needed or works anymore original from lowlevel_helpers.py
+            # col.import_from(obs_cfg) # LB: This is functionality might be needed. Want to get keys from the obs_cfg into ColocationSetup.
             col.colocation_setup.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
         else:
             col_stp = ColocationSetup(**col_cfg)
