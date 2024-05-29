@@ -1173,8 +1173,9 @@ class Colocator:
         return True
 
     def _check_obs_vars_available(self):
-        if not len(self.colocation_setup.obs_vars) > 0:
-            raise ColocationSetupError("no observation variables specified...")
+        # LB: This is what I would like but not sure if it will work with current setup
+        # if not len(self.colocation_setup.obs_vars) > 0:
+        #     raise ColocationSetupError("no observation variables specified...")
         oreader = self.obs_reader
         if self.obs_is_ungridded:
             avail = oreader.get_vars_supported(
