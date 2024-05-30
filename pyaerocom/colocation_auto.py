@@ -1644,7 +1644,7 @@ class Colocator:
             logger.info(f"{key}\t{val}")
 
     def _init_log(self):
-        logdir = chk_make_subdir(self.basedir_logfiles, self.get_model_name())
+        logdir = chk_make_subdir(self.colocation_setup.basedir_coldata, self.get_model_name())
         oname = self.get_obs_name()
         datestr = datetime.today().strftime("%Y%m%d")
         datetimestr = datetime.today().strftime("%d-%m-%Y %H:%M")
