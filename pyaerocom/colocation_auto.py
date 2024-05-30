@@ -642,7 +642,7 @@ class Colocator:
             list of all model variables specified in this setup.
 
         """
-        ovars = self.self.colocation_setup.obs_vars
+        ovars = self.colocation_setup.obs_vars
         model_vars = []
         for ovar in ovars:
             if ovar in self.colocation_setup.model_add_vars:
@@ -738,8 +738,8 @@ class Colocator:
         """
         str: Output directory for colocated data NetCDF files
         """
-        self._check_basedir_coldata()
-        loc = os.path.join(self.basedir_coldata, self.get_model_name())
+        # self._check_basedir_coldata() # LB: don't need as force construction in ColocationSetup
+        loc = os.path.join(self.colocation_setup.basedir_coldata, self.get_model_name())
         if not os.path.exists(loc):
             logger.info(f"Creating dir {loc}")
             os.mkdir(loc)
@@ -972,7 +972,9 @@ class Colocator:
         mname = self.get_model_name()
         oname = self.get_obs_name()
         model_vars = self.model_vars
-        obs_vars = self.obs_vars
+        # LB: Not entirely sure. There may be a deeper problem here.
+        # obs_vars = self.obs_vars
+        obs_vars = self.colocation_setup.obs_vars
         start, stop = self.get_start_str(), self.get_stop_str()
         valid = []
         all_files = self.get_nc_files_in_coldatadir()
@@ -1399,13 +1401,13 @@ class Colocator:
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
         obs_var, mod_var = coldata.metadata["var_name_input"]
-        if mod_var in self.model_rename_vars:
-            mvar = self.model_rename_vars[mod_var]
+        if mod_var in self.colocation_setup.model_rename_vars:
+            mvar = self.colocation_setup.model_rename_vars[mod_var]
             logger.info(
                 f"Renaming model variable from {mod_var} to {mvar} in "
                 f"ColocatedData before saving to NetCDF."
             )
-            coldata.rename_variable(mod_var, mvar, self.model_id)
+            coldata.rename_variable(mod_var, mvar, self.colocation_setup.model_id)
         else:
             mvar = mod_var
 

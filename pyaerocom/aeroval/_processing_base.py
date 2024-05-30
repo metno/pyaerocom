@@ -120,6 +120,19 @@ class HasColocator(HasConfig):
         }  # LB: obs_vars is a list, should be a tuple
         outdir = self.cfg.path_manager.get_coldata_dir()
         col_cfg["basedir_coldata"] = outdir
+
+        if not model_name and obs_name:
+            col_stp = ColocationSetup(**col_cfg)
+            return Colocator(col_stp)
+
+        if model_name:
+            mod_cfg = self.cfg.get_model_entry(model_name)
+            col_cfg["model_cfg"] = mod_cfg  # LB: this is untested and just a guess at this point
+
+            # LB: Hack and at what lowlevel_helpers's import_from was doing
+            for key, val in mod_cfg.items():
+                if key in ColocationSetup.model_fields:
+                    col_cfg[key] = val
         if obs_name:
             obs_cfg = self.cfg.get_obs_entry(obs_name)
             pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
@@ -130,25 +143,15 @@ class HasColocator(HasConfig):
                 if key in ColocationSetup.model_fields:
                     col_cfg[key] = val
 
-            col_stp = ColocationSetup(**col_cfg)
-            col = Colocator(col_stp)
+            # col_stp = ColocationSetup(**col_cfg)
+            # col = Colocator(col_stp)
+            # col_cfg.add_meta
             # col.import_from(obs_cfg) # LB: This is functionality might be needed. Want to get keys from the obs_cfg into ColocationSetup.
-            col.colocation_setup.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
-        elif model_name:
-            mod_cfg = self.cfg.get_model_entry(model_name)
-            col_cfg["model_cfg"] = mod_cfg  # LB: this is untested and just a guess at this point
+            # col.colocation_setup.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
+            col_cfg["add_meta"] = dict(diurnal_only=self._get_diurnal_only(obs_name))
 
-            # LB: Hack and at what lowlevel_helpers's import_from was doing
-            for key, val in mod_cfg.items():
-                if key in ColocationSetup.model_fields:
-                    col_cfg[key] = val
-
-            col_stp = ColocationSetup(**col_cfg)
-            col = Colocator(col_stp)
-            # col.import_from(mod_cfg) # LB: also not sure if needed or works anymore
-        else:
-            col_stp = ColocationSetup(**col_cfg)
-            col = Colocator(col_stp)
+        col_stp = ColocationSetup(**col_cfg)
+        col = Colocator(col_stp)
 
         return col
 
