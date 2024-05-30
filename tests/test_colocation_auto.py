@@ -341,8 +341,8 @@ def test_colocator__find_var_matches_model_add_vars(setup):
     ovar = "od550aer"
     setup["model_id"] = "TM5-met2010_CTRL-TEST"
     setup["obs_id"] = "AeronetSunV3L2Subset.daily"
-    setup["obs_vars"] = [ovar]
-    setup["model_add_vars"] = {ovar: ["abs550aer"]}
+    setup["obs_vars"] = (ovar,)
+    setup["model_add_vars"] = {ovar: ("abs550aer",)}
     col_stp = ColocationSetup(**setup)
     col = Colocator(col_stp)
     var_matches = col._find_var_matches()

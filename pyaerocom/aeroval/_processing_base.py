@@ -115,7 +115,9 @@ class HasColocator(HasConfig):
 
         """
         # LB: In general I don't like what this function is doing. Ideally define the Colocator object once and just use that.
-        col_cfg = {**self.cfg.colocation_opts.model_dump()}
+        col_cfg = {
+            **self.cfg.colocation_opts.model_dump()
+        }  # LB: obs_vars is a list, should be a tuple
         outdir = self.cfg.path_manager.get_coldata_dir()
         col_cfg["basedir_coldata"] = outdir
         if obs_name:

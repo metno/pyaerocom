@@ -397,7 +397,7 @@ class ColocationSetup(BaseModel):
 
     model_use_vars: dict[str, str] | None = {}
     model_rename_vars: dict[str, str] | None = {}
-    model_add_vars: dict[str, list] | None = {}
+    model_add_vars: dict[str, str | tuple[str, ...]] | None = {}  # LB: WIP / guess
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None

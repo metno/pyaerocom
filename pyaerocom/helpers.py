@@ -80,7 +80,7 @@ def varlist_aerocom(varlist):
             logger.warning(repr(e))
     if len(output) == 0:
         raise ValueError("None of the input variables appears to be valid")
-    return output
+    return tuple(output)
 
 
 def delete_all_coords_cube(cube, inplace=True):
