@@ -449,33 +449,6 @@ class EvalSetup(BaseModel):
 
     # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
 
-    # TODO: Use Pydantic for ColocationSetup
-    # @computed_field
-    # @cached_property
-    # def colocation_opts(self) -> ColocationSetup:
-    #     if not hasattr(self, "model_extra") or self.model_extra is None:
-    #         return ColocationSetup(save_coldata=True, keep_data=False, resample_how="mean")
-
-    #     model_args = {
-    #         key: val
-    #         for key, val in self.model_extra.items()
-    #         if key in ColocationSetup().__dict__.keys()
-    #     }
-    #     # need to pass some default values to the ColocationSetup if not provided in config
-    #     default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
-    #     for key in default_dict:
-    #         if key not in model_args:
-    #             model_args[key] = default_dict[key]
-
-    #     return ColocationSetup(**model_args)
-
-    # @field_serializer("colocation_opts")
-    # def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
-    #     return colocation_opts.json_repr()
-
-    # ObsCollection and ModelCollection
-    # TODO Use Pydantic for ObsCollection and ModelCollection
-
     obs_cfg: ObsCollection | dict = ObsCollection()
 
     @field_validator("obs_cfg")

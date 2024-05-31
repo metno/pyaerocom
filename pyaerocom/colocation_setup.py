@@ -291,9 +291,9 @@ class ColocationSetup(BaseModel):
         arbitrary_types_allowed=True,
         allow="extra",
         protected_namespaces=(),
+        # TODO
         # frozen=True,  # make immutable
         # validate_assignment=True,
-        # property_set_methods = {"obs_config": "set_obs_config"}
     )
 
     #########################
@@ -517,8 +517,7 @@ class ColocationSetup(BaseModel):
         update = self.model_dump()
         update.update(data)
         self.model_validate(update)
-        # for k, v in self.model_dump(exclude_defaults=False).items():
-        # assign values from
+        # assign values from data
         for k, v in data.items():
             logger.debug(f"updating value of '{k}' from '{getattr(self, k, None)}' to '{v}'")
             setattr(self, k, v)

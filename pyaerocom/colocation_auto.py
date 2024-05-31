@@ -837,17 +837,6 @@ class Colocator:
                 f"Detected obs_filters attribute in Colocator class, "
                 f"which is not a dictionary: {obs_filters}"
             )
-        # remaining = {}
-        # for key, val in obs_filters.items():
-        #     # keep ts_type filter in remaining (added on 17.2.21, 0.10.0 -> 0.10.1)
-        #     if key in self.colocation_setup.obs_filters and not key == "ts_type":  # can be handled
-        #         #if isinstance(self[key], dict) and isinstance(val, dict):
-        #             #self[key].update(val)
-        #         #else:
-        #             #self[key] = val
-        #         pass
-        #     else:
-        #         remaining[key] = val
         return obs_filters if len(obs_filters) > 0 else {}
 
     def _save_coldata(self, coldata):
