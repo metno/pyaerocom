@@ -195,6 +195,10 @@ class ColocationSetup(BaseModel):
         fields are indicated with 9999 as year in the filename) and if this is
         active, only single year analysis are supported (i.e. provide int to
         :attr:`start` to specify the year and leave :attr:`stop` empty).
+    model_kwargs: dict
+        Key word arguments to be given to the model reader class's read_var function
+    model_read_kwargs: dict
+        Key word arguments to be given to the model reader class's init function
     gridded_reader_id : dict
         BETA: dictionary specifying which gridded reader is supposed to be used
         for model (and gridded obs) reading. Note: this is a workaround
@@ -392,6 +396,8 @@ class ColocationSetup(BaseModel):
     model_use_climatology: bool = False
 
     model_kwargs: dict = {}
+    # model_read_kwargs are arguments that are sent to the model reader
+    model_read_kwargs: dict = {}
 
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
 

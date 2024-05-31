@@ -350,9 +350,6 @@ class Colocator:
         var_list : list, optional
             list of variables supposed to be analysed. The default is None,
             in which case all defined variables are attempted to be colocated.
-        **opts
-            keyword args that may be specified to change the current setup
-            before colocation
 
         Returns
         -------
@@ -595,7 +592,9 @@ class Colocator:
             data_dir = self.colocation_setup.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
-            reader = reader_class(data_id=data_id, data_dir=data_dir, **self.model_read_kwargs)
+            reader = reader_class(
+                data_id=data_id, data_dir=data_dir, **self.colocation_setup.model_read_kwargs
+            )
         else:
             reader = reader_class(data_id=data_id, data_dir=data_dir)
         return reader
