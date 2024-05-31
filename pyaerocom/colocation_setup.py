@@ -313,7 +313,7 @@ class ColocationSetup(BaseModel):
 
     @field_validator("start", "stop")
     @classmethod
-    def validate_basedirs(cls, v):
+    def validate_start_stop(cls, v):
         if isinstance(v, int):
             return v
         if isinstance(v, str):

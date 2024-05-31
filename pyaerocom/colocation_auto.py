@@ -6,6 +6,7 @@ import glob
 import logging
 import os
 import traceback
+import warnings
 from datetime import datetime
 from typing import Any, Callable
 
@@ -58,9 +59,18 @@ class Colocator:
         5: "NOT OK: Colocation failed",
     }
 
-    def __init__(self, colocation_setup: ColocationSetup, **kwargs):
+    def __init__(self, colocation_setup: ColocationSetup | dict, **kwargs):
         if not colocation_setup:
-            raise ValueError("An instance ColocationSetup must be provided to Colocator.")
+            raise ValueError(
+                "An instance ColocationSetup or a dict must be provided to Colocator."
+            )
+        if not isinstance(colocation_setup, ColocationSetup):
+            colocation_setup = ColocationSetup(**colocation_setup)
+            warnings.warn(
+                DeprecationWarning(
+                    "Future versions of Pyaerocom will require Colocator to injest an instance of ColocationSetup."
+                )
+            )
 
         self.colocation_setup = colocation_setup
         self._log: Callable | None = None
