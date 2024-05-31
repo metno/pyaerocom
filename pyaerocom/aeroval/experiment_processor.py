@@ -114,7 +114,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             to json files.
         """
         if isinstance(var_list, str):
-            var_list = (var_list,)
+            var_list = [var_list]
 
         self.cfg._check_time_config()
 
