@@ -24,6 +24,7 @@ from .additional_variables import (
     calc_concno3pm10,
     calc_concno3pm25,
     calc_concNtnh,
+    calc_concpolyol,
     calc_concso4t,
     calc_concSso2,
     calc_concsspm25,
@@ -103,6 +104,8 @@ class ReadMscwCtm:
         "concNno2": ["concno2"],
         "concSso2": ["concso2"],
         "vmro3": ["conco3"],
+        # For Pollen
+        # "concpolyol": ["concspores"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -145,6 +148,7 @@ class ReadMscwCtm:
         "concNno2": calc_concNno2,
         "concSso2": calc_concSso2,
         "vmro3": calc_vmro3,
+        # "concpolyol": calc_concpolyol,
     }
 
     #: supported filename masks, placeholder is for frequencies
@@ -167,7 +171,7 @@ class ReadMscwCtm:
 
     DEFAULT_FILE_NAME = "Base_day.nc"
 
-    def __init__(self, data_id=None, data_dir=None):
+    def __init__(self, data_id=None, data_dir=None, **kwargs):
         self._data_dir = None
         # opened dataset (for performance boost), will be reset if data_dir is
         # changed
@@ -180,6 +184,12 @@ class ReadMscwCtm:
         self._files = None
 
         self.var_map = emep_variables()
+        if "emep_vars" in kwargs:
+            new_map = kwargs["emep_vars"]
+            if isinstance(new_map, dict):
+                self.var_map.update(new_map)
+            else:
+                logger.warn(f"New map {new_map} is not a dict. Skipping")
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -764,6 +774,30 @@ class ReadMscwCtm:
         elif units == "" and prefix == "AbsCoef":
             return "m-1"
         return units
+
+    def add_aux_compute(self, var_name, vars_required, fun):
+        """Register new variable to be computed
+
+        Parameters
+        ----------
+        var_name : str
+            variable name to be computed
+        vars_required : list
+            list of variables to read, that are required to compute `var_name`
+        fun : callable
+            function that takes a list of `GriddedData` objects as input and
+            that are read using variable names specified by `vars_required`.
+        """
+        if isinstance(vars_required, str):
+            vars_required = [vars_required]
+        if not isinstance(vars_required, list):
+            raise ValueError(
+                f"Invalid input for vars_required. Need str or list. Got: {vars_required}"
+            )
+        elif not callable(fun):
+            raise ValueError("Invalid input for fun. Input is not a callable object")
+        self.AUX_REQUIRES[var_name] = vars_required
+        self.AUX_FUNS[var_name] = fun
 
 
 class ReadEMEP(ReadMscwCtm):

@@ -37,7 +37,9 @@ from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 logger = logging.getLogger(__name__)
 
 
+
 class Colocator:
+
     """High level class for running co-location
 
     Note
@@ -51,6 +53,9 @@ class Colocator:
         "ReadCAMS2_83": ReadCAMS2_83,
     }
 
+
+    MODELS_WITH_KWARGS = [ReadMscwCtm]
+    
     STATUS_CODES: dict[int, str] = {
         1: "SUCCESS",
         2: "NOT OK: Missing/invalid model variable",
@@ -592,7 +597,10 @@ class Colocator:
             data_id = self.colocation_setup.obs_id
             data_dir = self.colocation_setup.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
-        reader = reader_class(data_id=data_id, data_dir=data_dir)
+        if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
+            reader = reader_class(data_id=data_id, data_dir=data_dir, **self.model_read_kwargs)
+        else:
+            reader = reader_class(data_id=data_id, data_dir=data_dir)
         return reader
 
     def _get_gridded_reader_class(self, what):

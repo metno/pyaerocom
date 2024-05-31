@@ -83,6 +83,7 @@ VAR_MAP = {
     "concss": "SURF_ug_SS",
     "concssf": "SURF_ug_SEASALT_F",
     "concCocpm25": "SURF_ugC_PM_OM25",
+    "concspores": "SURF_ug_FUNGAL_SPORES",
     "vmro32m": "SURF_2MO3",
     "vmro3max": "SURF_MAXO3",
     "vmro3": "SURF_ppb_O3",
@@ -673,3 +674,37 @@ def test_ts_types(data_path: Path, year: str, freq: list[str]):
     reader.data_dir = str(data_path / year)
     ts_types = reader.ts_types
     assert len(ts_types) == len(freq)
+
+
+def test_add_aux_compute(tmp_path: Path):
+    data_path = emep_data_path(
+        tmp_path, "day", vars_and_units={"concno3c": "ug m-3", "concno3f": "ug m-3"}
+    )
+    reader = ReadMscwCtm(data_dir=str(data_path / "2017"))
+
+    def calc_concno3(concno3c, concno3f):
+        concno3 = concno3c.copy(deep=True) + concno3f.copy(deep=True)
+        concno3.attrs["units"] = "ug m-3"
+        return concno3
+
+    new_var_name = "concno3"
+    vars_required = ["concno3c", "concno3f"]
+    func = calc_concno3
+
+    reader.add_aux_compute(new_var_name, vars_required=vars_required, fun=func)
+
+    assert reader.has_var(new_var_name)
+
+    data = reader.read_var(new_var_name, "daily")
+
+    assert data.var_name == new_var_name
+
+
+def test_emep_vars():
+    new_var_name = "concno3"
+    new_mapping = "SURF_ug_NO3_C"
+
+    reader = ReadMscwCtm(emep_vars={new_var_name: new_mapping})
+
+    assert new_var_name in reader.var_map
+    assert reader.var_map[new_var_name] == new_mapping

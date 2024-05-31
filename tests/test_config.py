@@ -11,6 +11,7 @@ from pyaerocom.config import ALL_REGION_NAME, Config
 from pyaerocom.data import resources
 from pyaerocom.grid_io import GridIO
 from pyaerocom.varcollection import VarCollection
+from pyaerocom.variable import Variable
 from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
@@ -342,3 +343,33 @@ def test_default_config():
     assert cfg.WRITE_FILEIO_ERR_LOG
 
     assert isinstance(cfg.GRID_IO, GridIO)
+
+
+def test_register_variable_with_dict():
+    test_var_name = "conctestvariabledict"
+    variables = {
+        test_var_name: {
+            "var_name": test_var_name,
+            "units": "ug m-3",
+        }
+    }
+    const.register_custom_variables(variables)
+
+    vars = const.VARS
+
+    assert test_var_name in vars.find(test_var_name)
+
+
+def test_register_variable_with_Variable():
+    test_var_name = "testvariableVariable"
+    variables = {
+        test_var_name: Variable(
+            var_name=test_var_name,
+            units="ug m-3",
+        ),
+    }
+    const.register_custom_variables(variables)
+
+    vars = const.VARS
+
+    assert test_var_name in vars.all_vars
