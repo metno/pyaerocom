@@ -171,7 +171,7 @@ def test_Colocator__infer_start_stop_yr_from_model_reader(tm5_aero_col_stp):
     col.model_id = "TM5-met2010_CTRL-TEST"
     col._infer_start_stop_yr_from_model_reader()
     assert col.start == 2010
-    assert col.stop == None
+    assert col.stop is None
 
 
 def test_Colocator__coldata_savename(setup):
