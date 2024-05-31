@@ -56,26 +56,6 @@ def create_fake_MSCWCtm_data(year="2019", numval=1, tst=None):
     return arr
 
 
-# @pytest.fixture
-# def fake_so4_MSCWCtm_data_monthly_2015(tmp_path) -> str:
-#     path = tmp_path / "EMEP_fake" / "2015"
-
-#     if not path.exists():
-#         path.mkdir(parents=True)
-#     data = create_fake_MSCWCtm_data(year=2015, numval=1)
-
-#     var_name = "SURF_ug_SO4"
-#     units = "ug m-3"
-#     ds = xr.Dataset()
-
-#     ds[var_name] = data
-#     ds[var_name].attrs.update(units=units, var_name=var_name)
-
-#     ds.to_netcdf(path=path / "Base_month.nc")
-
-#     return str(path)
-
-
 @pytest.fixture
 def fake_aod_MSCWCtm_data_monthly_2010(tmp_path) -> str:
     path = tmp_path / "EMEP_fake" / "2010"
