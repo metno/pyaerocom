@@ -349,7 +349,6 @@ def test_colocator__find_var_matches_model_add_vars(setup):
     assert var_matches == {"abs550aer": ovar, ovar: ovar}
 
 
-# LB: This test breaks the way I want this class to work because it implies allowing adding of attributes.
 def test_colocator_instantiate_gridded_reader(setup, path_emep):
     model_id = "model"
     setup["gridded_reader_id"] = {"model": "ReadMscwCtm", "obs": "ReadGridded"}

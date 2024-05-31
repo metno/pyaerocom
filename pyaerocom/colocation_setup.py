@@ -3,7 +3,7 @@ import os
 import sys
 from functools import cached_property
 from pathlib import Path
-from typing import Callable, Iterable, Literal
+from typing import Callable, Literal
 
 import pandas as pd
 from pydantic import (
@@ -292,23 +292,13 @@ class ColocationSetup(BaseModel):
         # property_set_methods = {"obs_config": "set_obs_config"}
     )
 
-    # @model_validator('*', mode="before")
-    # def convert_to_none(cls, v):
-    #     if isinstance(v, str) and v.strip() == "":
-    #         return None
-    #     if isinstance(v, Iterable) and len(v) == 0:
-    #         return None
-    #     else:
-    #         return v
-
     #########################
     # Init Input
     #########################
 
-    # LB: remains to be seen if this can actually be required without chaning the code elsewhere
-    model_id: str | None  # = None
-    obs_id: str | None  # = None
-    obs_vars: tuple[str, ...] | str  # = None
+    model_id: str | None
+    obs_id: str | None
+    obs_vars: tuple[str, ...] | str
 
     @field_validator("obs_vars")
     @classmethod
@@ -317,9 +307,9 @@ class ColocationSetup(BaseModel):
             return [v]
         return v
 
-    ts_type: str  # = None
-    start: pd.Timestamp | int | str | None  # = None
-    stop: pd.Timestamp | int | str | None  # = None
+    ts_type: str
+    start: pd.Timestamp | int | str | None
+    stop: pd.Timestamp | int | str | None
 
     @field_validator("start", "stop")
     @classmethod
@@ -330,16 +320,6 @@ class ColocationSetup(BaseModel):
             return pd.Timestamp(v)
 
     obs_config: PyaroConfig | None = None
-
-    # def set_obs_config(self, obs_config):
-    #     self.obs_config = obs_config
-
-    # def __setattr__(self, key, val):
-    #     method = self.__config__.property_set_methods.get(key)
-    #     if method is None:
-    #         super().__setattr__(key, val)
-    #     else:
-    #         getattr(self, method)(val)
 
     ###############################
     # Attributes with defaults
@@ -379,9 +359,6 @@ class ColocationSetup(BaseModel):
 
     save_coldata: bool = False
 
-    # # END OF ASSIGNMENT OF MOST COMMON PARAMETERS - BELOW ARE FURTHER
-    # # CONFIG ATTRIBUTES, THAT ARE OPTIONAL AND LESS FREQUENTLY USED
-
     # Options related to obs reading and processing
     obs_name: str | None = None
     obs_data_dir: Path | str | None = None
@@ -405,11 +382,10 @@ class ColocationSetup(BaseModel):
 
     model_use_vars: dict[str, str] | None = {}
     model_rename_vars: dict[str, str] | None = {}
-    model_add_vars: dict[str, tuple[str, ...]] | None = {}  # LB: WIP / guess
+    model_add_vars: dict[str, tuple[str, ...]] | None = {}
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None
-    # LB: need to check this declaration
     model_read_aux: dict[
         str, dict[Literal["vars_required", "fun"], list[str] | Callable]
     ] | None = {}
@@ -417,7 +393,6 @@ class ColocationSetup(BaseModel):
 
     model_kwargs: dict = {}
 
-    # LB: check this as well
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
 
     flex_ts_type: bool = True
@@ -441,9 +416,6 @@ class ColocationSetup(BaseModel):
     raise_exceptions: bool = False
     keep_data: bool = True
     add_meta: dict | None = {}
-
-    # TODO: implelent field validators
-    # self.update(**kwargs)
 
     # Override __init__ to allow for positional arguments
     def __init__(
@@ -476,34 +448,16 @@ class ColocationSetup(BaseModel):
     @model_validator(mode="after")
     def validate_no_forbidden_keys(self):
         for key in self.FORBIDDEN_KEYS:
-            if key in self.model_fields:  # LB: Check this is where they will be found
+            if key in self.model_fields:
                 raise ValidationError
-
-    # TODO: validator for extra arguments. what are they?
 
     @cached_property
     def basedir_logfiles(self):
         p = Path(self.basedir_coldata) / "logfiles"
         if not p.exists():
             p.mkdir(parents=True, exist_ok=True)
-        return str(p)  # LB: not sure why pyaerocom insists these be strings as this point
+        return str(p)
 
-    # #@field_validator("obs_id")
-    # @model_validator(mode="after")
-    # @classmethod
-    # def validate_obs_id(cls, v: str):
-    #     if cls.obs_config is not None and v != cls.obs.config.name:
-    #         logger.info(
-    #             f"Data ID in Pyaro config {cls.obs_config.name} does not match obs_id {v}. Setting Pyaro config to None!"
-    #         )
-    #         cls.obs_config = None
-
-    #     cls.obs_id = v
-
-    # LB: Think we need a validator on the PyaroConfig, not the obs_id.
-    # Combining the validation logic from those two things here. needs testing.
-    # LB: this needs serious work
-    # @field_validator("obs_config")
     @model_validator(mode="after")
     @classmethod
     def validate_obs_config(cls, v: PyaroConfig):
