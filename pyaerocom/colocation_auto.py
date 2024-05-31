@@ -864,12 +864,12 @@ class Colocator:
             self.logging = False
 
         # LB: SHould be covered by ColocationSetup validator
-        # if isinstance(self.colocation_setup.obs_vars, str):
-        #     self.colocation_setup.obs_vars = [self.colocation_setup.obs_vars]
+        if isinstance(self.colocation_setup.obs_vars, str):
+            self.colocation_setup.obs_vars = (self.colocation_setup.obs_vars,)
 
-        # LB: obs_vars should be defined by here
-        if not isinstance(self.colocation_setup.obs_vars, tuple):
-            raise AttributeError("obs_vars not defined or invalid, need tuple with strings...")
+        # # LB: obs_vars should be defined by here
+        # if not isinstance(self.colocation_setup.obs_vars, tuple):
+        #     raise AttributeError("obs_vars not defined or invalid, need tuple with strings...")
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()
@@ -1178,8 +1178,8 @@ class Colocator:
 
     def _check_obs_vars_available(self):
         # LB: This is what I would like but not sure if it will work with current setup
-        # if not len(self.colocation_setup.obs_vars) > 0:
-        #     raise ColocationSetupError("no observation variables specified...")
+        if not len(self.colocation_setup.obs_vars) > 0:
+            raise ColocationSetupError("no observation variables specified...")
         oreader = self.obs_reader
         if self.obs_is_ungridded:
             avail = oreader.get_vars_supported(

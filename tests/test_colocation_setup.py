@@ -11,7 +11,7 @@ COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 default_setup = {
     "model_id": None,
     "obs_id": None,
-    "obs_vars": None,
+    "obs_vars": (),
     # "obs_config": None,
     "ts_type": "monthly",
     "start": None,
