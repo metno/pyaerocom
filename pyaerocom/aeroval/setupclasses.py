@@ -261,7 +261,7 @@ class WebDisplaySetup(BaseModel):
     hide_charts: tuple[str, ...] = ()
     hide_pages: tuple[str, ...] = ()
     ts_annotations: dict[str, str] = Field(default_factory=dict)
-    add_pages: tuple[str, ...] = ()
+    pages: tuple[str, ...] = ["maps", "evaluation", "intercomp", "overall", "infos"]
 
 
 class EvalRunOptions(BaseModel):

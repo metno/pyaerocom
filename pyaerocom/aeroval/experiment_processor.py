@@ -70,7 +70,8 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                col.run(var_list)
+                model_read_kwargs = self.cfg.model_cfg[model_name]["kwargs"]
+                col.run(var_list, model_read_kwargs=model_read_kwargs)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
@@ -122,11 +123,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         if not self.cfg.model_cfg:
             logger.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
-            self.cfg.webdisp_opts.hide_pages = [
-                "maps.php",
-                "intercomp.php",
-                "overall.php",
-            ]
+            self.cfg.webdisp_opts.pages = ["evaluation", "infos"]
             model_id = make_dummy_model(obs_list, self.cfg)
             self.cfg.processing_opts.obs_only = True
             use_dummy_model = True

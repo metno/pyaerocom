@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import date, timedelta
 from enum import Enum
@@ -179,7 +178,7 @@ def runnermos(
 
     logger.info("Running Statistics (MOS)")
     ExperimentProcessor(stp).run()
-    print("Done Running Statistics (MOS)")
+    logger.info("Done Running Statistics (MOS)")
 
 
 def runnermedianscores(
@@ -198,8 +197,6 @@ def runnermedianscores(
 
     stp = EvalSetup(**cfg)
 
-    start = time.time()
-
     logger.info(
         "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
@@ -216,4 +213,4 @@ def runnermedianscores(
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
         CAMS2_83_Processer(stp).run(analysis=analysis)
 
-    print(f"Long run: {time.time() - start} sec")
+    logger.info("Median scores run finished")
