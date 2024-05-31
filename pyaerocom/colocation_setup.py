@@ -318,8 +318,16 @@ class ColocationSetup(BaseModel):
         return v
 
     ts_type: str  # = None
-    start: pd.Timestamp | int | None  # = None
-    stop: pd.Timestamp | int | None  # = None
+    start: pd.Timestamp | int | str | None  # = None
+    stop: pd.Timestamp | int | str | None  # = None
+
+    @field_validator("start", "stop")
+    @classmethod
+    def validate_basedirs(cls, v):
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            return pd.Timestamp(v)
 
     obs_config: PyaroConfig | None = None
 

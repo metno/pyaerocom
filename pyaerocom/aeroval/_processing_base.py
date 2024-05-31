@@ -121,7 +121,7 @@ class HasColocator(HasConfig):
         outdir = self.cfg.path_manager.get_coldata_dir()
         col_cfg["basedir_coldata"] = outdir
 
-        if not model_name and obs_name:
+        if not model_name and not obs_name:
             col_stp = ColocationSetup(**col_cfg)
             return Colocator(col_stp)
 
