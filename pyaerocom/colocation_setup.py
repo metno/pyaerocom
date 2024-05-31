@@ -72,7 +72,7 @@ class ColocationSetup(BaseModel):
         is ignored and only the config is used.
     obs_id : str
         ID of observation network to be used.
-    obs_vars : list
+    obs_vars : tuple[str, ...]
         Variables to be analysed (need to be available in input obs dataset).
         Variables that are not available in the model data output will be
         skipped. Alternatively, model variables to be used for a given obs
@@ -97,7 +97,7 @@ class ColocationSetup(BaseModel):
         (to be precise, if None, then
          :attr:`pyaerocom.const.DEFAULT_REG_FILTER` is used which should
          default to `ALL-wMOUNTAINS`, that is, no filtering).
-    basedir_coldata : str
+    basedir_coldata : str | Path
         Base directory for storing of colocated data files.
     save_coldata : bool
         if True, colocated data objects are saved as NetCDF file.

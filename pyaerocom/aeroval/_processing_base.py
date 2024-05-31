@@ -114,10 +114,7 @@ class HasColocator(HasConfig):
         Colocator
 
         """
-        # LB: In general I don't like what this function is doing. Ideally define the Colocator object once and just use that.
-        col_cfg = {
-            **self.cfg.colocation_opts.model_dump()
-        }  # LB: obs_vars is a list, should be a tuple
+        col_cfg = {**self.cfg.colocation_opts.model_dump()}
         outdir = self.cfg.path_manager.get_coldata_dir()
         col_cfg["basedir_coldata"] = outdir
 
@@ -127,7 +124,7 @@ class HasColocator(HasConfig):
 
         if model_name:
             mod_cfg = self.cfg.get_model_entry(model_name)
-            col_cfg["model_cfg"] = mod_cfg  # LB: this is untested and just a guess at this point
+            col_cfg["model_cfg"] = mod_cfg
 
             # LB: Hack and at what lowlevel_helpers's import_from was doing
             for key, val in mod_cfg.items():
@@ -143,11 +140,6 @@ class HasColocator(HasConfig):
                 if key in ColocationSetup.model_fields:
                     col_cfg[key] = val
 
-            # col_stp = ColocationSetup(**col_cfg)
-            # col = Colocator(col_stp)
-            # col_cfg.add_meta
-            # col.import_from(obs_cfg) # LB: This is functionality might be needed. Want to get keys from the obs_cfg into ColocationSetup.
-            # col.colocation_setup.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
             col_cfg["add_meta"].update(diurnal_only=self._get_diurnal_only(obs_name))
 
         col_stp = ColocationSetup(**col_cfg)

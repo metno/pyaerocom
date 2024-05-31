@@ -52,7 +52,7 @@ class OutputPaths(BaseModel):
         project ID
     exp_id : str
         experiment ID
-    json_basedir : str
+    json_basedir : str, Path
 
     """
 
