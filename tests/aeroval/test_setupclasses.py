@@ -129,8 +129,8 @@ def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
 )
 def test_EvalSetup__check_time_config(eval_setup: EvalSetup, start, stop):
     eval_setup._check_time_config()
-    assert str(eval_setup.colocation_opts["start"]) == start
-    assert str(eval_setup.colocation_opts["stop"]) == stop
+    assert str(eval_setup.colocation_opts.start) == start
+    assert str(eval_setup.colocation_opts.stop) == stop
 
 
 @pytest.mark.parametrize(

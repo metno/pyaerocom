@@ -22,11 +22,11 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             files_to_convert = []
             for leap in range(forecast_days):
                 runtype = "AN" if analysis else "FC"
-                model = col.model_id.split(".")[1]
+                model = col.colocation_setup.model_id.split(".")[1]
                 model_id = f"CAMS2-83.{model}.day{leap}.{runtype}"
                 model_name = f"CAMS2-83-{model}-day{leap}-{runtype}"
-                col.model_id = model_id
-                col.model_name = model_name
+                col.colocation_setup.model_id = model_id
+                col.colocation_setup.model_name = model_name
                 col.run(var_list)
 
             files_to_convert = col.files_written

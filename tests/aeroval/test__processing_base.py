@@ -31,11 +31,11 @@ def test_HasConfig_setup(config: HasConfig):
 
 
 def test_HasConfig_raise_exceptions(config: HasConfig):
-    assert config.raise_exceptions == False
+    assert not config.raise_exceptions
 
 
 def test_HasConfig_reanalyse_existing(config: HasConfig):
-    assert config.reanalyse_existing == True
+    assert config.reanalyse_existing
 
 
 @pytest.fixture(scope="module")
@@ -45,8 +45,8 @@ def collocator(setup: EvalSetup) -> HasColocator:
 
 
 def test_HasColocator_get_diurnal_only(collocator: HasColocator):
-    assert collocator._get_diurnal_only("obs1") == False
-    assert collocator._get_diurnal_only("obs2") == True
+    assert not collocator._get_diurnal_only("obs1")
+    assert collocator._get_diurnal_only("obs2")
 
 
 @pytest.mark.parametrize("obs_name", [None, "obs1", "obs2"])

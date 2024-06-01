@@ -33,7 +33,7 @@ from pyaerocom.aeroval.helpers import (
     check_if_year,
 )
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
-from pyaerocom.colocation_auto import ColocationSetup
+from pyaerocom.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class OutputPaths(BaseModel):
         project ID
     exp_id : str
         experiment ID
-    json_basedir : str
+    json_basedir : str, Path
 
     """
 
@@ -422,13 +422,6 @@ class EvalSetup(BaseModel):
         }
         return StatisticsSetup(**model_args)
 
-    ##################################
-    ## Non-BaseModel-based attributes
-    ##################################
-
-    # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
-
-    # TODO: Use Pydantic for ColocationSetup
     @computed_field
     @cached_property
     def colocation_opts(self) -> ColocationSetup:
@@ -438,7 +431,7 @@ class EvalSetup(BaseModel):
         model_args = {
             key: val
             for key, val in self.model_extra.items()
-            if key in ColocationSetup().__dict__.keys()
+            if key in ColocationSetup.model_fields
         }
         # need to pass some default values to the ColocationSetup if not provided in config
         default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
@@ -448,12 +441,11 @@ class EvalSetup(BaseModel):
 
         return ColocationSetup(**model_args)
 
-    @field_serializer("colocation_opts")
-    def serialize_colocation_opts(self, colocation_opts: ColocationSetup):
-        return colocation_opts.json_repr()
+    ##################################
+    ## Non-BaseModel-based attributes
+    ##################################
 
-    # ObsCollection and ModelCollection
-    # TODO Use Pydantic for ObsCollection and ModelCollection
+    # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
 
     obs_cfg: ObsCollection | dict = ObsCollection()
 
@@ -550,8 +542,8 @@ class EvalSetup(BaseModel):
 
     def _check_time_config(self) -> None:
         periods = self.time_cfg.periods
-        colstart = self.colocation_opts["start"]
-        colstop = self.colocation_opts["stop"]
+        colstart = self.colocation_opts.start
+        colstop = self.colocation_opts.stop
 
         if len(periods) == 0:
             if colstart is None:
@@ -576,15 +568,15 @@ class EvalSetup(BaseModel):
             if stop_yr == start_yr:
                 stop_yr += 1
             if colstart is None:
-                self.colocation_opts["start"] = start.strftime("%Y/%m/%d %H:%M:%S")
+                self.colocation_opts.start = start.strftime("%Y/%m/%d %H:%M:%S")
             if colstop is None:
-                self.colocation_opts["stop"] = stop.strftime(
+                self.colocation_opts.stop = stop.strftime(
                     "%Y/%m/%d %H:%M:%S"
                 )  # + 1  # add 1 year since we want to include stop year
         else:
             if colstart is None:
-                self.colocation_opts["start"] = start_yr
+                self.colocation_opts.start = start_yr
             if colstop is None:
-                self.colocation_opts["stop"] = (
+                self.colocation_opts.stop = (
                     stop_yr + 1
                 )  # add 1 year since we want to include stop year

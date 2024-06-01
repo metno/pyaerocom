@@ -52,7 +52,7 @@ def fake_obs_data(tmp_path: str | Path) -> dict:
     return dict(
         DUMMY=dict(
             obs_id="DUMMY-OBS",
-            obs_vars=["prmm"],
+            obs_vars=("prmm",),
             obs_data_dir=obs_data_dir,
             obs_vert_type="Surface",
         )

@@ -18,7 +18,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "concso4"]
+    variables = ["NOx", "concso4", "od550aer"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
@@ -47,8 +47,8 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
     assert all_stations["stats"][0]["country"] == "NO"
 
     # Tests the dates
-    start = pd.to_datetime("01.01.2015", dayfirst=True)
-    end = pd.to_datetime("31.12.2015", dayfirst=True)
+    start = pd.to_datetime("01.01.2010", dayfirst=True)
+    end = pd.to_datetime("31.12.2010", dayfirst=True)
     dates = pd.date_range(start, end, freq="D")
     assert len(all_stations["stats"][0].dtime) == ceil(len(dates) / 2)
 

@@ -6,15 +6,15 @@ import glob
 import logging
 import os
 import traceback
+import warnings
 from datetime import datetime
-from pathlib import Path
-from typing import Optional
+from typing import Any, Callable
 
 import pandas as pd
 from cf_units import Unit
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
+from pyaerocom._lowlevel_helpers import chk_make_subdir
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
@@ -22,7 +22,7 @@ from pyaerocom.colocation import (
     correct_model_stp_coldata,
 )
 from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.colocation_setup import ColocationSetup
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
     get_lowest_resolution,
@@ -31,528 +31,21 @@ from pyaerocom.helpers import (
     to_pandas_timestamp,
 )
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
-from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
-from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
 
 
-class ColocationSetup(BrowseDict):
-    """
-    Setup class for high-level model / obs co-location.
-
-    An instance of this setup class can be used to run a colocation analysis
-    between a model and an observation network and will create a number of
-    :class:`pya.ColocatedData` instances, which can be saved automatically
-    as NetCDF files.
-
-    Apart from co-location, this class also handles reading of the input data
-    for co-location. Supported co-location options are:
-
-    1. gridded vs. ungridded data
-    For instance 3D model data (instance of :class:`GriddedData`) with lat,
-    lon and time dimension that is co-located with station based observations
-    which are represented in pyaerocom through :class:`UngriddedData` objects.
-    The co-location function used is
-    :func:`pyaerocom.colocation.colocated_gridded_ungridded`. For this type of
-    co-location, the output co-located data object will be 3-dimensional,
-    with dimensions `data_source` (index 0: obs, index 1: model), `time` and
-    `station_name`.
-
-    2. gridded vs. gridded data
-    For instance 3D model data that is co-located with 3D satellite data
-    (both instances of :class:`GriddedData`), both objects with lat,
-    lon and time dimensions. The co-location function used
-    is :func:`pyaerocom.colocation.colocated_gridded_gridded`.
-    For this type of co-location, the output co-located data object will be
-    4-dimensional,  with dimensions `data_source` (index 0: obs, index 1:
-    model), `time` and `latitude` and `longitude`.
-
-
-
-    Attributes
-    ----------
-    model_id : str
-        ID of model to be used.
-
-    obs_config: PyaroConfig
-        In the case Pyaro is used, a config must be provided. In that case obs_id(see below)
-        is ignored and only the config is used.
-    obs_id : str
-        ID of observation network to be used.
-    obs_vars : list
-        Variables to be analysed (need to be available in input obs dataset).
-        Variables that are not available in the model data output will be
-        skipped. Alternatively, model variables to be used for a given obs
-        variable can also be specified via attributes :attr:`model_use_vars`
-        and :attr:`model_add_vars`.
-    ts_type : str
-        String specifying colocation output frequency.
-    start
-        Start time of colocation. Input can be integer denoting the year or
-        anything that can be converted  into :class:`pandas.Timestamp` using
-        :func:`pyaerocom.helpers.to_pandas_timestamp`. If None, than the first
-        available date in the model data is used.
-    stop
-        stop time of colocation. int or anything that can be converted into
-        :class:`pandas.Timestamp` using
-        :func:`pyaerocom.helpers.to_pandas_timestamp` or None. If None and if
-        ``start`` is on resolution of year (e.g. ``start=2010``) then ``stop``
-        will be automatically set to the end of that year. Else, it will be
-        set to the last available timestamp in the model data.
-    filter_name : str
-        name of filter to be applied. If None, no filter is used
-        (to be precise, if None, then
-         :attr:`pyaerocom.const.DEFAULT_REG_FILTER` is used which should
-         default to `ALL-wMOUNTAINS`, that is, no filtering).
-    basedir_coldata : str
-        Base directory for storing of colocated data files.
-    save_coldata : bool
-        if True, colocated data objects are saved as NetCDF file.
-    obs_name : str, optional
-        if provided, this string will be used in colocated data filename to
-        specify obsnetwork, else obs_id will be used.
-    obs_data_dir : str, optional
-        location of obs data. If None, attempt to infer obs location based on
-        obs ID.
-    obs_use_climatology : bool
-        BETA if True, pyaerocom default climatology is computed from observation
-        stations (so far only possible for unrgidded / gridded colocation).
-    obs_vert_type : str
-        AeroCom vertical code encoded in the model filenames (only AeroCom 3
-        and later). Specifies which model file should be read in case there are
-        multiple options (e.g. surface level data can be read from a
-        *Surface*.nc file as well as from a *ModelLevel*.nc file). If input is
-        string (e.g. 'Surface'), then the corresponding vertical type code is
-        used for reading of all variables that are colocated (i.e. that are
-        specified in :attr:`obs_vars`).
-    obs_ts_type_read : str or dict, optional
-        may be specified to explicitly define the reading frequency of the
-        observation data (so far, this does only apply to gridded obsdata such
-        as satellites), either as str (same for all obs variables) or variable
-        specific as dict. For ungridded reading, the frequency may be specified
-        via :attr:`obs_id`, where applicable (e.g. AeronetSunV3Lev2.daily).
-        Not to be confused with :attr:`ts_type`, which specifies the
-        frequency used for colocation. Can be specified variable specific in
-        form of dictionary.
-    obs_filters : dict
-        filters applied to the observational dataset before co-location.
-        In case of gridded / gridded, these are filters that can be passed to
-        :func:`pyaerocom.io.ReadGridded.read_var`, for instance, `flex_ts_type`,
-        or `constraints`. In case the obsdata is ungridded (gridded / ungridded
-        co-locations) these are filters that are handled through keyword
-        `filter_post` in :func:`pyaerocom.io.ReadUngridded.read`. These filters
-        are applied to the :class:`UngriddedData` objects after reading and
-        caching the data, so changing them, will not invalidate the latest
-        cache of the :class:`UngriddedData`.
-    read_opts_ungridded : dict, optional
-        dictionary that specifies reading constraints for ungridded reading,
-        and are passed as `**kwargs` to :func:`pyaerocom.io.ReadUngridded.read`.
-        Note that - other than for `obs_filters` these filters are applied
-        during the reading of the :class:`UngriddedData` objects and specifying
-        them will deactivate caching.
-    model_name : str, optional
-        if provided, this string will be used in colocated data filename to
-        specify model, else obs_id will be used.
-    model_data_dir : str, optional
-        Location of model data. If None, attempt to infer model location based
-        on model ID.
-    model_read_opts : dict, optional
-        options for model reading (passed as keyword args to
-        :func:`pyaerocom.io.ReadUngridded.read`).
-    model_use_vars : dict, optional
-        dictionary that specifies mapping of model variables. Keys are
-        observation variables, values are the corresponding model variables
-        (e.g. model_use_vars=dict(od550aer='od550csaer')). Example: your
-        observation has var *od550aer* but your model model uses a different
-        variable name for that variable, say *od550*. Then, you can specify
-        this via `model_use_vars = {'od550aer' : 'od550'}`. NOTE: in this case,
-        a model variable *od550aer* will be ignored, even if it exists
-        (cf :attr:`model_add_vars`).
-    model_rename_vars : dict, optional
-        rename certain model variables **after** co-location, before storing
-        the associated :class:`ColocatedData` object on disk. Keys are model
-        variables, values are new names
-        (e.g. `model_rename_vars={'od550aer':'MyAOD'}`).
-        Note: this does not impact which variables are read from the model.
-    model_add_vars : dict, optional
-        additional model variables to be processed for one obs variable. E.g.
-        `model_add_vars={'od550aer': ['od550so4', 'od550gt1aer']}` would
-        co-locate both model SO4 AOD (od550so4) and model coarse mode AOD
-        (od550gt1aer) with total AOD (od550aer) from obs (in addition to
-        od550aer vs od550aer if applicable).
-    model_to_stp : bool
-        ALPHA (please do not use): convert model data values to STP conditions
-        after co-location. Note: this only works for very particular settings
-        at the moment and needs revision, as it relies on access to
-        meteorological data.
-    model_ts_type_read : str or dict, optional
-        may be specified to explicitly define the reading frequency of the
-        model data, either as str (same for all obs variables) or variable
-        specific as dict. Not to be confused with :attr:`ts_type`, which
-        specifies the output frequency of the co-located data.
-    model_read_aux : dict, optional
-        may be used to specify additional computation methods of variables from
-        models. Keys are variables to be computed, values are dictionaries with
-        keys `vars_required` (list of required variables for computation of var
-        and `fun` (method that takes list of read data objects and computes
-        and returns var).
-    model_use_climatology : bool
-        if True, attempt to use climatological model data field. Note: this
-        only works if model data is in AeroCom conventions (climatological
-        fields are indicated with 9999 as year in the filename) and if this is
-        active, only single year analysis are supported (i.e. provide int to
-        :attr:`start` to specify the year and leave :attr:`stop` empty).
-    gridded_reader_id : dict
-        BETA: dictionary specifying which gridded reader is supposed to be used
-        for model (and gridded obs) reading. Note: this is a workaround
-        solution and will likely be removed in the future when the gridded
-        reading API is more harmonised
-        (see https://github.com/metno/pyaerocom/issues/174).
-    flex_ts_type : bool
-        Bboolean specifying whether reading frequency of gridded data is
-        allowed to be flexible. This includes all gridded data, whether it is
-        model or gridded observation (e.g. satellites). Defaults to True.
-    min_num_obs : dict or int, optional
-        time resampling constraints applied, defaults to None, in which case
-        no constraints are applied. For instance, say your input is in daily
-        resolution and you want output in monthly and you want to make sure to
-        have roughly 50% daily coverage for the monthly averages. Then you may
-        specify `min_num_obs=15` which will ensure that at least 15 daily
-        averages are available to compute a monthly average. However, you may
-        also define a hierarchical scheme that first goes from daily to
-        weekly and then from weekly to monthly, via a dict. E.g.
-        `min_num_obs=dict(monthly=dict(weekly=4), weekly=dict(daily=3))` would
-        ensure that each week has at least 3 daily values, as well as that each
-        month has at least 4 weekly values.
-    resample_how : str or dict, optional
-        string specifying how data should be aggregated when resampling in time.
-        Default is "mean". Can also be a nested dictionary, e.g.
-        `resample_how={'conco3': 'daily': {'hourly' : 'max'}}` would use the
-        maximum value to aggregate from hourly to daily for variable conco3,
-        rather than the mean.
-    obs_remove_outliers : bool
-        if True, outliers are removed from obs data before colocation,
-        else not. Default is False.
-        Custom outlier ranges for each variable can be specified via
-        :attr:`obs_outlier_ranges`, and for all other variables, the pyaerocom
-        default outlier ranges are used. The latter are specified in
-        `variables.ini` file via `minimum` and `maximum` attributes and can
-        also be accessed through :attr:`pyaerocom.variable.Variable.minimum`
-        and :attr:`pyaerocom.variable.Variable.maximum`, respectively.
-    model_remove_outliers : bool
-        if True, outliers are removed from model data (normally this should be
-        set to False, as the models are supposed to be assessed, including
-        outlier cases). Default is False.
-        Custom outlier ranges for each variable can be specified via
-        :attr:`model_outlier_ranges`, and for all other variables, the pyaerocom
-        default outlier ranges are used. The latter are specified in
-        `variables.ini` file via `minimum` and `maximum` attributes and can
-        also be accessed through :attr:`pyaerocom.variable.Variable.minimum`
-        and :attr:`pyaerocom.variable.Variable.maximum`, respectively.
-    obs_outlier_ranges : dict, optional
-        dictionary specifying outlier ranges for individual obs variables.
-        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4])). Only relevant
-        if :attr:`obs_remove_outliers` is True.
-    model_outlier_ranges : dict, optional
-        like :attr:`obs_outlier_ranges` but for model variables. Only relevant
-        if :attr:`model_remove_outliers` is True.
-    zeros_to_nan : bool
-        If True, zero's in output co-located data object will be converted to
-        NaN. Default is False.
-    harmonise_units : bool
-        if True, units are attempted to be harmonised during co-location
-        (note: raises Exception if True and in case units cannot be harmonised).
-    regrid_res_deg : int, optional
-        resolution in degrees for regridding of model grid (done before
-        co-location). Default is None.
-    colocate_time : bool
-        if True and if obs and model sampling frequency (e.g. daily) are higher
-        than output colocation frequency (e.g. monthly), then the datasets are
-        first colocated in time (e.g. on a daily basis), before the monthly
-        averages are calculated. Default is False.
-    reanalyse_existing : bool
-        if True, always redo co-location, even if there is already an existing
-        co-located NetCDF file (under the output location specified by
-        :attr:`basedir_coldata` ) for the given variable combination to be
-        co-located. If False and output already exists, then co-location is
-        skipped for the associated variable. Default is True.
-    raise_exceptions : bool
-        if True, Exceptions that may occur for individual variables to be
-        processed, are raised, else the analysis is skipped for such cases.
-    keep_data : bool
-        if True, then all colocated data objects computed when running
-        :func:`run` will be stored in :attr:`data`. Defaults to True.
-    add_meta : dict
-        additional metadata that is supposed to be added to each output
-        :class:`ColocatedData` object.
-    """
-
-    #: Dictionary specifying alternative vertical types that may be used to
-    #: read model data. E.g. consider the variable is  ec550aer,
-    #: obs_vert_type='Surface' and obs_vert_type_alt=dict(Surface='ModelLevel').
-    #: Now, if a model that is used for the analysis does not contain a data
-    #: file for ec550aer at the surface ('*ec550aer*Surface*.nc'), then, the
-    #: colocation routine will look for '*ec550aer*ModelLevel*.nc' and if this
-    #: exists, it will load it and extract the surface level.
-    OBS_VERT_TYPES_ALT = {"Surface": "ModelLevel", "2D": "2D"}
-
-    #: do not raise Exception if invalid item is attempted to be assigned
-    #: (Overwritten from base class)
-    CRASH_ON_INVALID = False
-
-    FORBIDDEN_KEYS = [
-        "var_outlier_ranges",  # deprecated since v0.12.0
-        "var_ref_outlier_ranges",  # deprecated since v0.12.0
-        "remove_outliers",  # deprecated since v0.12.0
-    ]
-
-    ts_type = StrWithDefault("monthly")
-    obs_vars = ListOfStrings()
-
-    def __init__(
-        self,
-        model_id=None,
-        obs_config: Optional[PyaroConfig] = None,
-        obs_id=None,
-        obs_vars=None,
-        ts_type=None,
-        start=None,
-        stop=None,
-        basedir_coldata=None,
-        save_coldata=False,
-        **kwargs,
-    ):
-        self.model_id = model_id
-        self._obs_id = None
-        self._obs_config = None
-
-        self.obs_id = obs_id
-        self.obs_config = obs_config
-
-        self.obs_vars = obs_vars
-
-        self.ts_type = ts_type
-        self.start = start
-        self.stop = stop
-
-        # crashes if input filter name is invalid
-        self.filter_name = f"{ALL_REGION_NAME}-wMOUNTAINS"
-
-        if basedir_coldata is not None:
-            basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)
-        else:
-            basedir_coldata = const.COLOCATEDDATADIR
-        self.basedir_coldata = basedir_coldata
-        self.save_coldata = save_coldata
-
-        # END OF ASSIGNMENT OF MOST COMMON PARAMETERS - BELOW ARE FURTHER
-        # CONFIG ATTRIBUTES, THAT ARE OPTIONAL AND LESS FREQUENTLY USED
-
-        # Options related to obs reading and processing
-        self.obs_name = None
-        self.obs_data_dir = None
-
-        self.obs_use_climatology = False
-
-        self._obs_cache_only = False  # only relevant if obs is ungridded
-        self.obs_vert_type = None
-        self.obs_ts_type_read = None
-        self.obs_filters = {}
-        self._obs_is_vertical_profile = False
-        self.colocation_layer_limits = None
-        self.profile_layer_limits = None
-
-        self.read_opts_ungridded = {}
-
-        # Attributes related to model data
-        self.model_name = None
-        self.model_data_dir = None
-
-        self.model_read_opts = {}
-
-        self.model_use_vars = {}
-        self.model_rename_vars = {}
-        self.model_add_vars = {}
-        self.model_to_stp = False
-
-        self.model_ts_type_read = None
-        self.model_read_aux = {}
-        self.model_use_climatology = False
-
-        self.model_kwargs = {}
-        self.model_read_kwargs = {}
-
-        self.gridded_reader_id = {"model": "ReadGridded", "obs": "ReadGridded"}
-
-        self.flex_ts_type = True
-
-        # Options related to time resampling
-        self.min_num_obs = None
-        self.resample_how = "mean"
-
-        # Options related to outlier removal
-        self.obs_remove_outliers = False
-        self.model_remove_outliers = False
-
-        # Custom outlier ranges for model and obs
-        self.obs_outlier_ranges = {}
-        self.model_outlier_ranges = {}
-
-        self.zeros_to_nan = False
-        self.harmonise_units = False
-        self.regrid_res_deg = None
-        self.colocate_time = False
-
-        self.reanalyse_existing = True
-        self.raise_exceptions = False
-        self.keep_data = True
-
-        self.add_meta = {}
-        self.update(**kwargs)
-
-    def _check_input_basedir_coldata(self, basedir_coldata):
-        """
-        Make sure input basedir_coldata is str and exists
-
-        Parameters
-        ----------
-        basedir_coldata : str or Path
-            basic output directory for colocated data
-
-        Raises
-        ------
-        ValueError
-            If input is invalid.
-
-        Returns
-        -------
-        str
-            valid output directory
-
-        """
-        if isinstance(basedir_coldata, Path):
-            basedir_coldata = str(basedir_coldata)
-        if isinstance(basedir_coldata, str):
-            if not os.path.exists(basedir_coldata):
-                os.mkdir(basedir_coldata)
-            return basedir_coldata
-        raise ValueError(f"Invalid input for basedir_coldata: {basedir_coldata}")
-
-    def _check_basedir_coldata(self):
-        """
-        Make sure output directory for colocated data files exists
-
-        Raises
-        ------
-        FileNotFoundError
-            If :attr:`basedir_coldata` does not exist and cannot be created.
-
-        Returns
-        -------
-        str
-            current value of :attr:`basedir_coldata`
-
-        """
-        basedir_coldata = self.basedir_coldata
-        if basedir_coldata is None:
-            basedir_coldata = const.COLOCATEDDATADIR
-            if not os.path.exists(basedir_coldata):
-                logger.info(f"Creating directory: {basedir_coldata}")
-                os.mkdir(basedir_coldata)
-        elif isinstance(basedir_coldata, Path):
-            basedir_coldata = str(basedir_coldata)
-        if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
-            os.mkdir(basedir_coldata)
-        if not os.path.exists(basedir_coldata):
-            raise FileNotFoundError(
-                f"Output directory for colocated data files {basedir_coldata} does not exist"
-            )
-        self.basedir_coldata = basedir_coldata
-        return basedir_coldata
-
-    @property
-    def basedir_logfiles(self):
-        """Base directory for storing logfiles"""
-        p = chk_make_subdir(self.basedir_coldata, "logfiles")
-        return p
-
-    @property
-    def obs_id(self) -> str:
-        return self._obs_id
-
-    @obs_id.setter
-    def obs_id(self, val: Optional[str]) -> None:
-        if self.obs_config is not None and val != self.obs_config.name:
-            logger.info(
-                f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {val}. Setting Pyaro config to None!"
-            )
-            self.obs_config = None
-
-        self._obs_id = val
-
-    @property
-    def obs_config(self) -> PyaroConfig:
-        return self._obs_config
-
-    @obs_config.setter
-    def obs_config(self, val: Optional[PyaroConfig]) -> None:
-        if val is not None:
-            if isinstance(val, dict):
-                logger.info(f"Obs config was given as dict. Will try to convert to PyaroConfig")
-                val = PyaroConfig(**val)
-            if self.obs_id is not None and val.name != self.obs_id:
-                logger.info(
-                    f"Data ID in Pyaro config {val.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
-                )
-                self.obs_id = val.name
-            if self.obs_id is None:
-                self.obs_id = val.name
-        self._obs_config = val
-
-    def add_glob_meta(self, **kwargs):
-        """
-        Add global metadata to :attr:`add_meta`
-
-        Parameters
-        ----------
-        kwargs
-            metadata to be added
-
-        Returns
-        -------
-        None
-
-        """
-        self.add_meta.update(**kwargs)
-
-    def __setitem__(self, key, val):
-        if key == "basedir_coldata":
-            val = self._check_input_basedir_coldata(val)
-        super().__setitem__(key, val)
-
-    def _period_from_start_stop(self) -> str:
-        start, stop = start_stop(self.start, self.stop, stop_sub_sec=False)
-        y0, y1 = start.year, stop.year
-        assert y0 <= y1
-        if y0 == y1:
-            return str(y0)
-        else:
-            return f"{y0}-{y1}"
-
-
-class Colocator(ColocationSetup):
+class Colocator:
     """High level class for running co-location
 
     Note
     ----
-    This object inherits from :class:`ColocationSetup` and is also instantiated
-    as such. For setup attributes, please see base class.
+    This object requires and instance from :class:`ColocationSetup`.
     """
 
-    SUPPORTED_GRIDDED_READERS = {
+    SUPPORTED_GRIDDED_READERS: dict = {
         "ReadGridded": ReadGridded,
         "ReadMscwCtm": ReadMscwCtm,
         "ReadCAMS2_83": ReadCAMS2_83,
@@ -560,7 +53,7 @@ class Colocator(ColocationSetup):
 
     MODELS_WITH_KWARGS = [ReadMscwCtm]
 
-    STATUS_CODES = {
+    STATUS_CODES: dict[int, str] = {
         1: "SUCCESS",
         2: "NOT OK: Missing/invalid model variable",
         3: "NOT OK: Missing/invalid obs variable",
@@ -568,19 +61,31 @@ class Colocator(ColocationSetup):
         5: "NOT OK: Colocation failed",
     }
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, colocation_setup: ColocationSetup | dict, **kwargs):
+        if not colocation_setup:
+            raise ValueError(
+                "An instance ColocationSetup or a dict must be provided to Colocator."
+            )
+        if not isinstance(colocation_setup, ColocationSetup):
+            colocation_setup = ColocationSetup(**colocation_setup)
+            warnings.warn(
+                DeprecationWarning(
+                    "Future versions of Pyaerocom will require Colocator to injest an instance of ColocationSetup."
+                )
+            )
 
-        self._log = None
-        self.logging = True
-        self._loaded_model_data = {}
-        self.data = {}
+        self.colocation_setup = colocation_setup
+        self._log: Callable | None = None
+        self.logging: bool = True
+        self._loaded_model_data: dict | None = {}
+        self.data: dict = {}
 
-        self._processing_status = []
-        self.files_written = []
+        self._processing_status: list[str] = []
+        self.files_written: list[str] = []
 
-        self._model_reader = None
-        self._obs_reader = None
+        self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None
+        self._obs_reader: Any | None = None
+        self.obs_filters: dict = colocation_setup.obs_filters.copy()
 
     @property
     def model_vars(self):
@@ -597,16 +102,16 @@ class Colocator(ColocationSetup):
             list of all model variables specified in this setup.
 
         """
-        ovars = self.obs_vars
+        ovars = self.colocation_setup.obs_vars
         model_vars = []
         for ovar in ovars:
-            if ovar in self.model_use_vars:
-                model_vars.append(self.model_use_vars[ovar])
+            if ovar in self.colocation_setup.model_add_vars:
+                model_vars.append(self.colocation_setup.model_add_vars[ovar])
             else:
                 model_vars.append(ovar)
 
-        for ovar, mvars in self.model_add_vars.items():
-            if not ovar in ovars:
+        for ovar, mvars in self.colocation_setup.model_add_vars.items():
+            if ovar not in ovars:
                 logger.warning(
                     f"Found entry in model_add_vars for obsvar {ovar} which "
                     f"is not specified in attr obs_vars, and will thus be "
@@ -620,17 +125,17 @@ class Colocator(ColocationSetup):
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
-        if self.obs_config is not None:
+        if self.colocation_setup.obs_config is not None:
             return True
 
-        return True if self.obs_id in get_all_supported_ids_ungridded() else False
+        return True if self.colocation_setup.obs_id in get_all_supported_ids_ungridded() else False
 
     @property
     def obs_is_vertical_profile(self):
         """
         bool: True if obs_id refers to a VerticalProfile, else False
         """
-        return self._obs_is_vertical_profile
+        return self.colocation_setup._obs_is_vertical_profile
 
     @obs_is_vertical_profile.setter
     def obs_is_vertical_profile(self, value):
@@ -642,11 +147,11 @@ class Colocator(ColocationSetup):
         Model data reader
         """
         if self._model_reader is not None:
-            if self._model_reader.data_id == self.model_id:
+            if self._model_reader.data_id == self.colocation_setup.model_id:
                 return self._model_reader
             logger.info(
                 f"Reloading outdated model reader. ID of current reader: "
-                f"{self._model_reader.data_id}. New ID: {self.model_id}"
+                f"{self._model_reader.data_id}. New ID: {self.colocation_setup.model_id}"
             )
         self._model_reader = self._instantiate_gridded_reader(what="model")
         self._loaded_model_data = {}
@@ -664,9 +169,9 @@ class Colocator(ColocationSetup):
         reader = self._obs_reader
         if reader is None:
             return False
-        elif self.obs_is_ungridded and self.obs_id in reader.data_ids:
+        elif self.obs_is_ungridded and self.colocation_setup.obs_id in reader.data_ids:
             return True
-        elif self.obs_id == reader.data_id:
+        elif self.colocation_setup.obs_id == reader.data_id:
             return True
 
     @property
@@ -678,10 +183,10 @@ class Colocator(ColocationSetup):
         if not self._check_data_id_obs_reader():
             if self.obs_is_ungridded:
                 self._obs_reader = ReadUngridded(
-                    data_ids=[self.obs_id],
-                    data_dirs=self.obs_data_dir,
+                    data_ids=[self.colocation_setup.obs_id],
+                    data_dirs=self.colocation_setup.obs_data_dir,
                     configs=[
-                        self.obs_config,
+                        self.colocation_setup.obs_config,
                     ],
                 )
             else:
@@ -693,8 +198,7 @@ class Colocator(ColocationSetup):
         """
         str: Output directory for colocated data NetCDF files
         """
-        self._check_basedir_coldata()
-        loc = os.path.join(self.basedir_coldata, self.get_model_name())
+        loc = os.path.join(self.colocation_setup.basedir_coldata, self.get_model_name())
         if not os.path.exists(loc):
             logger.info(f"Creating dir {loc}")
             os.mkdir(loc)
@@ -729,11 +233,13 @@ class Colocator(ColocationSetup):
             preferably :attr:`model_name`, else :attr:`model_id`
 
         """
-        if self.model_name is None:
-            if self.model_id is None:
-                raise AttributeError("Neither model_name nor model_id are set")
-            return self.model_id
-        return self.model_name
+        if self.colocation_setup.model_name is None:
+            if self.colocation_setup.model_id is None:
+                raise AttributeError(
+                    "Neither model_name nor model_id are set. These must be set in ColocationSetup."
+                )
+            return self.colocation_setup.model_id
+        return self.colocation_setup.model_name
 
     def get_obs_name(self):
         """
@@ -756,16 +262,16 @@ class Colocator(ColocationSetup):
             preferably :attr:`obs_name`, else :attr:`obs_id`
 
         """
-        if self.obs_name is None:
-            if self.obs_id is None:
+        if self.colocation_setup.obs_name is None:
+            if self.colocation_setup.obs_id is None:
                 raise AttributeError("Neither obs_name nor obs_id are set")
-            return self.obs_id
-        return self.obs_name
+            return self.colocation_setup.obs_id
+        return self.colocation_setup.obs_name
 
     def get_model_data(self, model_var):
         if model_var in self._loaded_model_data:
             mdata = self._loaded_model_data[model_var]
-            if mdata.data_id == self.model_id:
+            if mdata.data_id == self.colocation_setup.model_id:
                 return mdata
         self._check_add_model_read_aux(model_var)
         mdata = self._read_gridded(var_name=model_var, is_model=True)
@@ -816,10 +322,9 @@ class Colocator(ColocationSetup):
             logger.warning("Deactivating logging in Colocator")
             self.logging = False
 
-        if isinstance(self.obs_vars, str):
-            self.obs_vars = [self.obs_vars]
-        elif not isinstance(self.obs_vars, list):
-            raise AttributeError("obs_vars not defined or invalid, need list with strings...")
+        if isinstance(self.colocation_setup.obs_vars, str):
+            self.colocation_setup.obs_vars = (self.colocation_setup.obs_vars,)
+
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()
@@ -831,11 +336,11 @@ class Colocator(ColocationSetup):
 
         (vars_to_process, ts_types) = self._check_load_model_data(vars_to_process)
 
-        if self.save_coldata and not self.reanalyse_existing:
+        if self.colocation_setup.save_coldata and not self.colocation_setup.reanalyse_existing:
             vars_to_process = self._filter_var_matches_files_not_exist(vars_to_process, ts_types)
         return vars_to_process
 
-    def run(self, var_list: list = None, **opts):
+    def run(self, var_list: list = None):
         """Perform colocation for current setup
 
         See also :func:`prepare_run`.
@@ -845,9 +350,6 @@ class Colocator(ColocationSetup):
         var_list : list, optional
             list of variables supposed to be analysed. The default is None,
             in which case all defined variables are attempted to be colocated.
-        **opts
-            keyword args that may be specified to change the current setup
-            before colocation
 
         Returns
         -------
@@ -856,14 +358,13 @@ class Colocator(ColocationSetup):
             dictionaries comprising key / value pairs of obs variables and
             associated instances of :class:`ColocatedData`.
         """
-        self.update(**opts)
         data_out = {}
         # ToDo: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_list)
         except Exception as ex:
             logger.exception(ex)
-            if self.raise_exceptions:
+            if self.colocation_setup.raise_exceptions:
                 self._print_processing_status()
                 self._write_log(f"ABORTED: raise_exceptions is True: {traceback.format_exc()}\n")
                 self._close_log()
@@ -875,7 +376,7 @@ class Colocator(ColocationSetup):
                 coldata = self._run_helper(
                     mod_var, obs_var
                 )  # note this can be ColocatedData or ColocatedDataLists
-                if not mod_var in data_out:
+                if mod_var not in data_out:
                     data_out[mod_var] = {}
                 data_out[mod_var][obs_var] = coldata
                 self._processing_status.append([mod_var, obs_var, 1])
@@ -884,7 +385,7 @@ class Colocator(ColocationSetup):
                 logger.warning(msg)
                 self._processing_status.append([mod_var, obs_var, 5])
                 self._write_log(msg)
-                if self.raise_exceptions:
+                if self.colocation_setup.raise_exceptions:
                     self._print_processing_status()
                     self._write_log("ABORTED: raise_exceptions is True\n")
                     self._close_log()
@@ -892,7 +393,7 @@ class Colocator(ColocationSetup):
         self._write_log("Colocation finished")
         self._close_log()
         self._print_processing_status()
-        if self.keep_data:
+        if self.colocation_setup.keep_data:
             self.data = data_out
         return data_out
 
@@ -921,7 +422,7 @@ class Colocator(ColocationSetup):
         mname = self.get_model_name()
         oname = self.get_obs_name()
         model_vars = self.model_vars
-        obs_vars = self.obs_vars
+        obs_vars = self.colocation_setup.obs_vars
         start, stop = self.get_start_str(), self.get_stop_str()
         valid = []
         all_files = self.get_nc_files_in_coldatadir()
@@ -981,15 +482,15 @@ class Colocator(ColocationSetup):
         obs_filters_post = self._eval_obs_filters(var_name)
 
         obs_data = obs_reader.read(
-            data_ids=[self.obs_id],
+            data_ids=[self.colocation_setup.obs_id],
             vars_to_retrieve=var_name,
-            only_cached=self._obs_cache_only,
+            only_cached=self.colocation_setup.obs_cache_only,
             filter_post=obs_filters_post,
-            **self.read_opts_ungridded,
+            **self.colocation_setup.read_opts_ungridded,
         )
 
-        if self.obs_remove_outliers:
-            oor = self.obs_outlier_ranges
+        if self.colocation_setup.obs_remove_outliers:
+            oor = self.colocation_setup.obs_outlier_ranges
             if var_name in oor:
                 low, high = oor[var_name]
             else:
@@ -1001,11 +502,11 @@ class Colocator(ColocationSetup):
         return obs_data
 
     def _check_obs_filters(self):
-        obs_vars = self.obs_vars
-        if any([x in self.obs_filters for x in obs_vars]):
+        obs_vars = self.colocation_setup.obs_vars
+        if any([x in self.colocation_setup.obs_filters for x in obs_vars]):
             # variable specific obs_filters
             for ovar in obs_vars:
-                if not ovar in self.obs_filters:
+                if ovar not in self.colocation_setup.obs_filters:
                     self.obs_filters[ovar] = {}
 
     def _check_load_model_data(self, var_matches):
@@ -1045,11 +546,11 @@ class Colocator(ColocationSetup):
                 filtered[mvar] = ovar
                 ts_types[mvar] = mdata.ts_type
             except Exception as e:
-                msg = f"Failed to load model data: {self.model_id} ({mvar}). Reason {e}"
+                msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
                 logger.warning(msg)
                 self._write_log(msg + "\n")
                 self._processing_status.append([mvar, ovar, 4])
-                if self.raise_exceptions:
+                if self.colocation_setup.raise_exceptions:
                     raise ColocationError(msg)
         return filtered, ts_types
 
@@ -1064,9 +565,9 @@ class Colocator(ColocationSetup):
         return filtered
 
     def _check_model_add_vars(self):
-        for ovar, mvars in self.model_add_vars.items():
-            if not isinstance(mvars, list):
-                raise ValueError("Values of model_add_vars need to be list")
+        for ovar, mvars in self.colocation_setup.model_add_vars.items():
+            if not isinstance(mvars, (list, tuple)):
+                raise ValueError("Values of model_add_vars need to be list or tuple")
             elif not all([isinstance(x, str) for x in mvars]):
                 raise ValueError("Values of model_add_vars need to be list of strings")
 
@@ -1084,14 +585,16 @@ class Colocator(ColocationSetup):
         Instance of reader class defined in self.SUPPORTED_GRIDDED_READERS
         """
         if what == "model":
-            data_id = self.model_id
-            data_dir = self.model_data_dir
+            data_id = self.colocation_setup.model_id
+            data_dir = self.colocation_setup.model_data_dir
         else:
-            data_id = self.obs_id
-            data_dir = self.obs_data_dir
+            data_id = self.colocation_setup.obs_id
+            data_dir = self.colocation_setup.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
-            reader = reader_class(data_id=data_id, data_dir=data_dir, **self.model_read_kwargs)
+            reader = reader_class(
+                data_id=data_id, data_dir=data_dir, **self.colocation_setup.model_read_kwargs
+            )
         else:
             reader = reader_class(data_id=data_id, data_dir=data_dir)
         return reader
@@ -1099,17 +602,17 @@ class Colocator(ColocationSetup):
     def _get_gridded_reader_class(self, what):
         """Returns the class of the reader for gridded data."""
         try:
-            reader = self.SUPPORTED_GRIDDED_READERS[self.gridded_reader_id[what]]
+            reader = self.SUPPORTED_GRIDDED_READERS[self.colocation_setup.gridded_reader_id[what]]
         except KeyError as e:
             raise NotImplementedError(
-                f"Reader {self.gridded_reader_id[what]} is not supported: {e}"
+                f"Reader {self.colocation_setup.gridded_reader_id[what]} is not supported: {e}"
             )
         return reader
 
     def _check_add_model_read_aux(self, model_var):
-        if not model_var in self.model_read_aux:
+        if model_var not in self.colocation_setup.model_read_aux:
             return False
-        info = self.model_read_aux[model_var]
+        info = self.colocation_setup.model_read_aux[model_var]
         if not isinstance(info, dict):
             raise ValueError(
                 f"Invalid value for model_read_aux of variable {model_var}. "
@@ -1127,30 +630,34 @@ class Colocator(ColocationSetup):
         return True
 
     def _check_obs_vars_available(self):
-        if self.obs_vars == []:
+        if not len(self.colocation_setup.obs_vars) > 0:
             raise ColocationSetupError("no observation variables specified...")
         oreader = self.obs_reader
         if self.obs_is_ungridded:
-            avail = oreader.get_vars_supported(self.obs_id, self.obs_vars)
+            avail = oreader.get_vars_supported(
+                self.colocation_setup.obs_id, self.colocation_setup.obs_vars
+            )
         else:
             avail = []
-            for ovar in self.obs_vars:
+            for ovar in self.colocation_setup.obs_vars:
                 if oreader.has_var(ovar):
                     avail.append(ovar)
 
-        if len(self.obs_vars) > len(avail):
-            for ovar in self.obs_vars:
-                if not ovar in avail:
+        if len(self.colocation_setup.obs_vars) > len(avail):
+            for ovar in self.colocation_setup.obs_vars:
+                if ovar not in avail:
                     logger.warning(
-                        f"Obs variable {ovar} is not available in {self.obs_id} "
+                        f"Obs variable {ovar} is not available in {self.colocation_setup.obs_id} "
                         f"and will be ignored"
                     )
                     self._processing_status.append([None, ovar, 3])
 
-            if self.raise_exceptions:
-                invalid = [var for var in self.obs_vars if not var in avail]
+            if self.colocation_setup.raise_exceptions:
+                invalid = [var for var in self.colocation_setup.obs_vars if var not in avail]
                 invalid = "; ".join(invalid)
-                raise DataCoverageError(f"Invalid obs var(s) for {self.obs_id}: {invalid}")
+                raise DataCoverageError(
+                    f"Invalid obs var(s) for {self.colocation_setup.obs_id}: {invalid}"
+                )
 
             self.obs_vars = avail
 
@@ -1177,9 +684,9 @@ class Colocator(ColocationSetup):
         var_matches = {}
 
         all_ok = True
-        muv = self.model_use_vars
+        muv = self.colocation_setup.model_use_vars
         modreader = self.model_reader
-        for ovar in self.obs_vars:
+        for ovar in self.colocation_setup.obs_vars:
             if ovar in muv:
                 mvar = muv[ovar]
             else:
@@ -1191,8 +698,8 @@ class Colocator(ColocationSetup):
                 self._processing_status.append([mvar, ovar, 2])
                 all_ok = False
 
-            if ovar in self.model_add_vars:  # observation variable
-                addvars = self.model_add_vars[ovar]
+            if ovar in self.colocation_setup.model_add_vars:  # observation variable
+                addvars = self.colocation_setup.model_add_vars[ovar]
                 for addvar in addvars:
                     self._check_add_model_read_aux(addvar)
                     if modreader.has_var(addvar):
@@ -1201,7 +708,7 @@ class Colocator(ColocationSetup):
                         self._processing_status.append([addvar, ovar, 2])
                         all_ok = False
 
-        if not all_ok and self.raise_exceptions:
+        if not all_ok and self.colocation_setup.raise_exceptions:
             raise DataCoverageError("Some model variables are not available")
 
         return var_matches
@@ -1229,38 +736,38 @@ class Colocator(ColocationSetup):
             frequency to be read.
 
         """
-        tst = self.ts_type  # default
-        if is_model and self.model_ts_type_read is not None:
-            tst = self.model_ts_type_read
+        tst = self.colocation_setup.ts_type  # default
+        if is_model and self.colocation_setup.model_ts_type_read is not None:
+            tst = self.colocation_setup.model_ts_type_read
             if tst == "":
-                tst = self.ts_type
-        elif not is_model and self.obs_ts_type_read is not None:
+                tst = self.colocation_setup.ts_type
+        elif not is_model and self.colocation_setup.obs_ts_type_read is not None:
             tst = self.obs_ts_type_read
         if isinstance(tst, dict):
             if var_name in tst:
                 tst = tst[var_name]
             else:
-                tst = self.ts_type
+                tst = self.colocation_setup.ts_type
         return tst
 
     def _read_gridded(self, var_name, is_model):
-        start, stop = self.start, self.stop
+        start, stop = self.colocation_setup.start, self.colocation_setup.stop
         ts_type_read = self._get_ts_type_read(var_name, is_model)
         kwargs = {}
         if is_model:
             reader = self.model_reader
-            vert_which = self.obs_vert_type
+            vert_which = self.colocation_setup.obs_vert_type
 
-            kwargs.update(**self.model_kwargs)
-            if self.model_use_climatology:
+            kwargs.update(**self.colocation_setup.model_kwargs)
+            if self.colocation_setup.model_use_climatology:
                 # overwrite start and stop to read climatology file for model
                 start, stop = 9999, None
-            if var_name in self.model_read_opts:
-                kwargs.update(self.model_read_opts[var_name])
+            if var_name in self.colocation_setup.model_read_opts:
+                kwargs.update(self.colocation_setup.model_read_opts[var_name])
         else:
             reader = self.obs_reader
             vert_which = None
-            ts_type_read = self.obs_ts_type_read
+            ts_type_read = self.colocation_setup.obs_ts_type_read
             kwargs.update(self._eval_obs_filters(var_name))
 
         try:
@@ -1270,7 +777,7 @@ class Colocator(ColocationSetup):
                 stop=stop,
                 ts_type=ts_type_read,
                 vert_which=vert_which,
-                flex_ts_type=self.flex_ts_type,
+                flex_ts_type=self.colocation_setup.flex_ts_type,
                 **kwargs,
             )
         except DataCoverageError:
@@ -1280,7 +787,7 @@ class Colocator(ColocationSetup):
                 start=start,
                 stop=stop,
                 ts_type=ts_type_read,
-                flex_ts_type=self.flex_ts_type,
+                flex_ts_type=self.colocation_setup.flex_ts_type,
                 vert_which=vert_which_alt,
             )
 
@@ -1289,17 +796,17 @@ class Colocator(ColocationSetup):
 
     def _try_get_vert_which_alt(self, is_model, var_name):
         if is_model:
-            if self.obs_vert_type in self.OBS_VERT_TYPES_ALT:
-                return self.OBS_VERT_TYPES_ALT[self.obs_vert_type]
+            if self.colocation_setup.obs_vert_type in self.colocation_setup.OBS_VERT_TYPES_ALT:
+                return self.OBS_VERT_TYPES_ALT[self.colocation_setup.obs_vert_type]
         raise DataCoverageError(f"No alternative vert type found for {var_name}")
 
     def _check_remove_outliers_gridded(self, data, var_name, is_model):
         if is_model:
-            rm_outliers = self.model_remove_outliers
-            outlier_ranges = self.model_outlier_ranges
+            rm_outliers = self.colocation_setup.model_remove_outliers
+            outlier_ranges = self.colocation_setup.model_outlier_ranges
         else:
-            rm_outliers = self.obs_remove_outliers
-            outlier_ranges = self.obs_outlier_ranges
+            rm_outliers = self.colocation_setup.obs_remove_outliers
+            outlier_ranges = self.colocation_setup.obs_outlier_ranges
 
         if len(outlier_ranges) > 0 and not rm_outliers:
             logger.warning(
@@ -1321,36 +828,27 @@ class Colocator(ColocationSetup):
         return data
 
     def _eval_obs_filters(self, var_name):
-        obs_filters = self["obs_filters"]
+        obs_filters = self.obs_filters
         if var_name in obs_filters:
+            # return obs_filters[var_name]
             obs_filters = obs_filters[var_name]
-        remaining = {}
         if not isinstance(obs_filters, dict):
             raise AttributeError(
                 f"Detected obs_filters attribute in Colocator class, "
                 f"which is not a dictionary: {obs_filters}"
             )
-        for key, val in obs_filters.items():
-            # keep ts_type filter in remaining (added on 17.2.21, 0.10.0 -> 0.10.1)
-            if key in self and not key == "ts_type":  # can be handled
-                if isinstance(self[key], dict) and isinstance(val, dict):
-                    self[key].update(val)
-                else:
-                    self[key] = val
-            else:
-                remaining[key] = val
-        return remaining
+        return obs_filters if len(obs_filters) > 0 else {}
 
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
         obs_var, mod_var = coldata.metadata["var_name_input"]
-        if mod_var in self.model_rename_vars:
-            mvar = self.model_rename_vars[mod_var]
+        if mod_var in self.colocation_setup.model_rename_vars:
+            mvar = self.colocation_setup.model_rename_vars[mod_var]
             logger.info(
                 f"Renaming model variable from {mod_var} to {mvar} in "
                 f"ColocatedData before saving to NetCDF."
             )
-            coldata.rename_variable(mod_var, mvar, self.model_id)
+            coldata.rename_variable(mod_var, mvar, self.colocation_setup.model_id)
         else:
             mvar = mod_var
 
@@ -1380,7 +878,7 @@ class Colocator(ColocationSetup):
         logger.info(msg)
 
     def _eval_resample_how(self, model_var, obs_var):
-        rshow = self.resample_how
+        rshow = self.colocation_setup.resample_how
         if not isinstance(rshow, dict):
             return rshow
 
@@ -1401,7 +899,7 @@ class Colocator(ColocationSetup):
         # get sorted list of years available in model data (files with year
         # 9999 denote climatological data)
         yrs_avail = self.model_reader.years_avail
-        if self.model_use_climatology:
+        if self.colocation_setup.model_use_climatology:
             if not 9999 in yrs_avail:
                 raise DataCoverageError("No climatology files available")
             first, last = 9999, None
@@ -1415,16 +913,18 @@ class Colocator(ColocationSetup):
         self.stop = last
 
     def _check_set_start_stop(self):
-        if self.start is None:
+        if self.colocation_setup.start is None:
             self._infer_start_stop_yr_from_model_reader()
-        if self.model_use_climatology:
-            if self.stop is not None or not isinstance(self.start, int):
+        if self.colocation_setup.model_use_climatology:
+            if self.colocation_setup.stop is not None or not isinstance(
+                self.colocation_setup.start, int
+            ):
                 raise ColocationSetupError(
                     "Conflict: only single year analyses are support for model "
                     'climatology fields, please specify "start" as integer '
                     'denoting the year, and set "stop"=None'
                 )
-        self.start, self.stop = start_stop(self.start, self.stop)
+        self.start, self.stop = start_stop(self.colocation_setup.start, self.colocation_setup.stop)
 
     def _coldata_savename(self, obs_var, mod_var, ts_type, **kwargs):
         """Get filename of colocated data file for saving"""
@@ -1440,13 +940,13 @@ class Colocator(ColocationSetup):
             start_str=self.get_start_str(),
             stop_str=self.get_stop_str(),
             ts_type=ts_type,
-            filter_name=self.filter_name,
+            filter_name=self.colocation_setup.filter_name,
             vertical_layer=vertical_layer,
         )
         return f"{name}.nc"
 
     def _get_colocation_ts_type(self, model_ts_type, obs_ts_type=None):
-        chk = [self.ts_type, model_ts_type]
+        chk = [self.colocation_setup.ts_type, model_ts_type]
         if obs_ts_type is not None:
             chk.append(obs_ts_type)
         return get_lowest_resolution(*chk)
@@ -1479,7 +979,7 @@ class Colocator(ColocationSetup):
 
         rshow = self._eval_resample_how(model_var, obs_var)
 
-        if self.model_use_climatology:
+        if self.colocation_setup.model_use_climatology:
             baseyr = self.start.year
         else:
             baseyr = None
@@ -1489,12 +989,12 @@ class Colocator(ColocationSetup):
             data_ref=obs_data,
             start=self.start,
             stop=self.stop,
-            filter_name=self.filter_name,
-            regrid_res_deg=self.regrid_res_deg,
-            harmonise_units=self.harmonise_units,
+            filter_name=self.colocation_setup.filter_name,
+            regrid_res_deg=self.colocation_setup.regrid_res_deg,
+            harmonise_units=self.colocation_setup.harmonise_units,
             update_baseyear_gridded=baseyr,
-            min_num_obs=self.min_num_obs,
-            colocate_time=self.colocate_time,
+            min_num_obs=self.colocation_setup.min_num_obs,
+            colocate_time=self.colocation_setup.colocate_time,
             resample_how=rshow,
         )
         if self.obs_is_ungridded:
@@ -1502,15 +1002,15 @@ class Colocator(ColocationSetup):
             args.update(
                 ts_type=ts_type,
                 var_ref=obs_var,
-                use_climatology_ref=self.obs_use_climatology,
+                use_climatology_ref=self.colocation_setup.obs_use_climatology,
             )
         else:
             ts_type = self._get_colocation_ts_type(model_data.ts_type, obs_data.ts_type)
             args.update(ts_type=ts_type)
         if self.obs_is_vertical_profile:
             args.update(
-                colocation_layer_limits=self.colocation_layer_limits,
-                profile_layer_limits=self.profile_layer_limits,
+                colocation_layer_limits=self.colocation_setup.colocation_layer_limits,
+                profile_layer_limits=self.colocation_setup.profile_layer_limits,
             )
         return args
 
@@ -1520,12 +1020,12 @@ class Colocator(ColocationSetup):
         from pyaerocom.exceptions import DataDimensionError
         from pyaerocom.griddeddata import GriddedData
 
-        if mdata.ndim == 4 and self.obs_vert_type == "Surface":
+        if mdata.ndim == 4 and self.colocation_setup.obs_vert_type == "Surface":
             mdata = mdata.extract_surface_level()
             args["data"] = mdata
 
         if isinstance(odata, GriddedData):
-            if odata.ndim == 4 and self.obs_vert_type == "Surface":
+            if odata.ndim == 4 and self.colocation_setup.obs_vert_type == "Surface":
                 odata = odata.extract_surface_level()
                 args["data_ref"] = odata
             elif odata.ndim > 3:
@@ -1535,7 +1035,9 @@ class Colocator(ColocationSetup):
         return args
 
     def _run_helper(self, model_var: str, obs_var: str):
-        logger.info(f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})")
+        logger.info(
+            f"Running {self.colocation_setup.model_id} ({model_var}) vs. {self.colocation_setup.obs_id} ({obs_var})"
+        )
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
@@ -1543,15 +1045,15 @@ class Colocator(ColocationSetup):
         if isinstance(coldata, ColocatedData):
             coldata.data.attrs["model_name"] = self.get_model_name()
             coldata.data.attrs["obs_name"] = self.get_obs_name()
-            coldata.data.attrs["vert_code"] = self.obs_vert_type
+            coldata.data.attrs["vert_code"] = self.colocation_setup.obs_vert_type
 
-            coldata.data.attrs.update(**self.add_meta)
+            coldata.data.attrs.update(**self.colocation_setup.add_meta)
 
-            if self.zeros_to_nan:
+            if self.colocation_setup.zeros_to_nan:
                 coldata = coldata.set_zeros_nan()
-            if self.model_to_stp:
+            if self.colocation_setup.model_to_stp:
                 coldata = correct_model_stp_coldata(coldata)
-            if self.save_coldata:
+            if self.colocation_setup.save_coldata:
                 self._save_coldata(coldata)
 
         elif isinstance(coldata, ColocatedDataLists):  # look into intertools chain.from_iterable
@@ -1559,13 +1061,13 @@ class Colocator(ColocationSetup):
                 for coldata_obj in i_list:
                     coldata_obj.data.attrs["model_name"] = self.get_model_name()
                     coldata_obj.data.attrs["obs_name"] = self.get_obs_name()
-                    coldata_obj.data.attrs["vert_code"] = self.obs_vert_type
-                    coldata_obj.data.attrs.update(**self.add_meta)
-                    if self.zeros_to_nan:
+                    coldata_obj.data.attrs["vert_code"] = self.colocation_setup.obs_vert_type
+                    coldata_obj.data.attrs.update(**self.colocation_setup.add_meta)
+                    if self.colocation_setup.zeros_to_nan:
                         coldata_obj = coldata_obj.set_zeros_nan()
-                    if self.model_to_stp:  # TODO: check is this needs modifying
+                    if self.colocation_setup.model_to_stp:  # TODO: check is this needs modifying
                         coldata = correct_model_stp_coldata(coldata_obj)
-                    if self.save_coldata:
+                    if self.colocation_setup.save_coldata:
                         self._save_coldata(coldata_obj)
 
         else:
@@ -1585,7 +1087,7 @@ class Colocator(ColocationSetup):
             logger.info(f"{key}\t{val}")
 
     def _init_log(self):
-        logdir = chk_make_subdir(self.basedir_logfiles, self.get_model_name())
+        logdir = chk_make_subdir(self.colocation_setup.basedir_coldata, self.get_model_name())
         oname = self.get_obs_name()
         datestr = datetime.today().strftime("%Y%m%d")
         datetimestr = datetime.today().strftime("%d-%m-%Y %H:%M")
@@ -1597,7 +1099,7 @@ class Colocator(ColocationSetup):
         log.write(f"Timestamp: {datetimestr}\n\n")
         log.write("Analysis configuration\n")
         ignore = ["_log", "logging", "data", "_model_reader", "_obs_reader"]
-        for key, val in self.items():
+        for key, val in self.model_dump().items():
             if key in ignore:
                 continue
             log.write(f"{key}: {val}\n")

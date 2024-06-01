@@ -57,15 +57,15 @@ def create_fake_MSCWCtm_data(year="2019", numval=1, tst=None):
 
 
 @pytest.fixture
-def fake_MSCWCtm_data_monthly_2015(tmp_path) -> str:
-    path = tmp_path / "EMEP_fake" / "2015"
+def fake_aod_MSCWCtm_data_monthly_2010(tmp_path) -> str:
+    path = tmp_path / "EMEP_fake" / "2010"
 
     if not path.exists():
         path.mkdir(parents=True)
-    data = create_fake_MSCWCtm_data(year=2015, numval=1)
+    data = create_fake_MSCWCtm_data(year=2010, numval=1)
 
-    var_name = "SURF_ug_SO4"
-    units = "ug m-3"
+    var_name = "AOD_550nm"
+    units = "1"
     ds = xr.Dataset()
 
     ds[var_name] = data

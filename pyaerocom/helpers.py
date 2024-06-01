@@ -65,13 +65,13 @@ STR_TO_IRIS = dict(
 def varlist_aerocom(varlist):
     if isinstance(varlist, str):
         varlist = [varlist]
-    elif not isinstance(varlist, list):
-        raise ValueError("Need string or list")
+    elif not (isinstance(varlist, list) or isinstance(varlist, tuple)):
+        raise ValueError("Need string or list or tuple")
     output = []
     for var in varlist:
         try:
             _var = const.VARS[var].var_name_aerocom
-            if not _var in output:
+            if _var not in output:
                 output.append(_var)
         except VariableDefinitionError as e:
             logger.warning(repr(e))

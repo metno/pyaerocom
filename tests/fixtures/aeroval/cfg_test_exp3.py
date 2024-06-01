@@ -38,7 +38,7 @@ def fake_model_data(tmp_path: str | Path) -> dict:
     )
 
 
-OBS_GROUNDBASED = {"EBAS": dict(obs_id="EBASSubset", obs_vars=["vmro3"], obs_vert_type="Surface")}
+OBS_GROUNDBASED = {"EBAS": dict(obs_id="EBASSubset", obs_vars=("vmro3",), obs_vert_type="Surface")}
 
 CFG = dict(
     model_cfg=dict(),  # fake_model_data("PATH_TO_MODEL_DATA"),

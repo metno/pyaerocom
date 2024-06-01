@@ -56,7 +56,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         elif ocfg["only_json"]:
             if not ocfg["coldata_dir"]:
                 raise Exception(
-                    f"No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
+                    "No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
                 )
             else:
                 preprocessed_coldata_dir = ocfg["coldata_dir"]
@@ -70,8 +70,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                model_read_kwargs = self.cfg.model_cfg[model_name]["kwargs"]
-                col.run(var_list, model_read_kwargs=model_read_kwargs)
+                col.run(var_list)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
