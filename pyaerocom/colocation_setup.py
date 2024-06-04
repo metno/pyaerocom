@@ -424,10 +424,9 @@ class ColocationSetup(BaseModel):
     def validate_kwargs(cls, v):
         forbidden = [
             "vert_which",
-            "ts_type",
-        ]  # Forbidden key names which is not found in colocation_setup, or has another name there
+        ]  # Forbidden key names which are not found in colocation_setup.model_field, or has another name there
         for key in v:
-            if key in dir(cls) or key in forbidden:
+            if key in list(cls.model_fields.keys()) + forbidden:
                 raise ValueError(f"Key {key} not allowed in model_kwargs")
         return v
 
