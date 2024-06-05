@@ -1,6 +1,7 @@
 """
 High level I/O utility methods for pyaerocom
 """
+
 import pytest
 
 from pyaerocom.io import utils

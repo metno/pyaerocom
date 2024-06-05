@@ -390,9 +390,9 @@ class ColocationSetup(BaseModel):
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None
-    model_read_aux: dict[
-        str, dict[Literal["vars_required", "fun"], list[str] | Callable]
-    ] | None = {}
+    model_read_aux: (
+        dict[str, dict[Literal["vars_required", "fun"], list[str] | Callable]] | None
+    ) = {}
     model_use_climatology: bool = False
 
     model_kwargs: dict = {}

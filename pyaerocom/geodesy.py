@@ -4,6 +4,7 @@ Module for geographical calculations
 This module contains low-level methods to perform geographical calculations,
 (e.g. distance between two coordinates)
 """
+
 import logging
 import os
 from copy import deepcopy

@@ -327,9 +327,11 @@ class UngriddedData:
 
                 times = np.asarray(
                     [
-                        np.datetime64(x.replace(tzinfo=None), "s")
-                        if isinstance(x, datetime)
-                        else np.datetime64(x, "s")
+                        (
+                            np.datetime64(x.replace(tzinfo=None), "s")
+                            if isinstance(x, datetime)
+                            else np.datetime64(x, "s")
+                        )
                         for x in times
                     ]
                 )
