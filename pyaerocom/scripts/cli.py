@@ -102,10 +102,7 @@ def getdata(
     ),
     verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
 ):
-    if extract_dir is not None:
-        download_minimal_dataset(extract_dir_override=extract_dir)
-    else:
-        download_minimal_dataset(extract_dir_override="./data")
+    download_minimal_dataset(extract_dir_override=extract_dir)
 
 
 if __name__ == "__main__":
