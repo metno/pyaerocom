@@ -18,7 +18,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 
 logger = logging.getLogger(__name__)
 
-from pyaerocom.data_access import download_minimal_dataset
+from pyaerocom import download_minimal_dataset
 from pyaerocom.data_access.minimal_dataset import minimal_dataset
 
 

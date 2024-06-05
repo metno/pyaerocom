@@ -56,3 +56,5 @@ from .variable_helpers import get_variable
 from .utils import create_varinfo_table
 
 from . import aeroval
+
+from .data_access import download_minimal_dataset
