@@ -5,7 +5,7 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import __package__, __version__, change_verbosity, const
+from pyaerocom import __package__, __version__, change_verbosity, const, download_minimal_dataset
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
 from pyaerocom.io.utils import browse_database
@@ -93,6 +93,19 @@ def aeroval(
     proc = ExperimentProcessor(stp)
     proc.exp_output.delete_experiment_data(also_coldata=not reuse_coldata)
     proc.run()
+
+
+@main.command()
+def getdata(
+    extract_dir: Path = typer.Option(
+        default="./data", help="Folder where data should be extracted", writable=True
+    ),
+    verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
+):
+    if extract_dir is not None:
+        download_minimal_dataset(extract_dir_override=extract_dir)
+    else:
+        download_minimal_dataset(extract_dir_override="./data")
 
 
 if __name__ == "__main__":
