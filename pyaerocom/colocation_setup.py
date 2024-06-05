@@ -196,9 +196,7 @@ class ColocationSetup(BaseModel):
         active, only single year analysis are supported (i.e. provide int to
         :attr:`start` to specify the year and leave :attr:`stop` empty).
     model_kwargs: dict
-        Key word arguments to be given to the model reader class's read_var function
-    model_read_kwargs: dict
-        Key word arguments to be given to the model reader class's init function
+        Key word arguments to be given to the model reader class's read_var and init function
     gridded_reader_id : dict
         BETA: dictionary specifying which gridded reader is supposed to be used
         for model (and gridded obs) reading. Note: this is a workaround
@@ -390,14 +388,10 @@ class ColocationSetup(BaseModel):
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None
-    model_read_aux: dict[
-        str, dict[Literal["vars_required", "fun"], list[str] | Callable]
-    ] | None = {}
+    model_read_aux: (
+        dict[str, dict[Literal["vars_required", "fun"], list[str] | Callable]] | None
+    ) = {}
     model_use_climatology: bool = False
-
-    model_kwargs: dict = {}
-    # model_read_kwargs are arguments that are sent to the model reader
-    model_read_kwargs: dict = {}
 
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
 
@@ -422,6 +416,19 @@ class ColocationSetup(BaseModel):
     raise_exceptions: bool = False
     keep_data: bool = True
     add_meta: dict | None = {}
+
+    model_kwargs: dict = {}
+
+    @field_validator("model_kwargs")
+    @classmethod
+    def validate_kwargs(cls, v):
+        forbidden = [
+            "vert_which",
+        ]  # Forbidden key names which are not found in colocation_setup.model_field, or has another name there
+        for key in v:
+            if key in list(cls.model_fields.keys()) + forbidden:
+                raise ValueError(f"Key {key} not allowed in model_kwargs")
+        return v
 
     # Override __init__ to allow for positional arguments
     def __init__(
