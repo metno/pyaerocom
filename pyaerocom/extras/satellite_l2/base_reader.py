@@ -1,6 +1,7 @@
 """
 base class for satellite level2 data reading conversion
 """
+
 import logging
 
 import geopy

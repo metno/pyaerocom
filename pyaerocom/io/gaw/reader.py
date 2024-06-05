@@ -1,6 +1,7 @@
 """
 Interface for reading GAW files.
 """
+
 import numpy as np
 import pandas as pd
 
