@@ -1,4 +1,5 @@
 import logging
+import os
 
 import pooch
 
@@ -24,8 +25,23 @@ minimal_dataset = pooch.create(
 )
 
 
-def download_minimal_dataset(file_name: str = TESTDATA_FILE):
-    """download tar file to ~/MyPyaerocom/ unpack contents into ~/MyPyaerocom/testdata-minimal/"""
+def download_minimal_dataset(
+    file_name: str = TESTDATA_FILE, /, extract_dir_override: str | None = None
+):
+    """Download test_data_file and extracts it.
+
+    :param file_name : The file name to be downloaded.
+    :param extract_dir : An optional folder override to where to extract the file. By
+    default files are extracted into ~/MyPyaerocom
+    """
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
+
+    if extract_dir_override is not None:
+        extract_dir = os.path.abspath(extract_dir_override)
+    else:
+        extract_dir = "."
+
     minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
-    minimal_dataset.fetch(file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir="./"))
+    minimal_dataset.fetch(
+        file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir=extract_dir)
+    )
