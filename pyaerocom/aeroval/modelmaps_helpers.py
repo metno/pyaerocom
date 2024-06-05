@@ -127,7 +127,7 @@ def calc_contour_json(data, cmap, cmap_bins):
     for i, date in enumerate(tst):
         datamon = nparr[i]
         contour = ax.contourf(
-            lons, lats, datamon, transform=proj, colors=cm.colors, levels=cmap_bins
+            lons, lats, datamon, transform=proj, colors=cm.colors, levels=cmap_bins, extend="max"
         )
 
         result = contourf_to_geojson(contourf=contour)
