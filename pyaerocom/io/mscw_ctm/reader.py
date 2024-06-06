@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom.aux_var_helpers import CalcDailyMax, CalcRollingAverage
+from pyaerocom.aux_var_helpers import CalcRollingAverage
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES

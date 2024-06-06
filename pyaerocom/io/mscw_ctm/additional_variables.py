@@ -2,7 +2,7 @@ import pandas as pd
 import xarray as xr
 from geonum.atmosphere import T0_STD, p0
 
-from pyaerocom.aux_var_helpers import CalcDailyMax, CalcRollingAverage, concx_to_vmrx
+from pyaerocom.aux_var_helpers import CalcRollingAverage, concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
 

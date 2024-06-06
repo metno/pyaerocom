@@ -866,6 +866,7 @@ class CalcRollingAverage:
 
     def sanitize_window(self, window) -> pd.Timedelta:
         """Sanitation logic for the window parameter."""
+
         if isinstance(window, pd.Timedelta):
             return window
 
@@ -891,10 +892,8 @@ class CalcRollingAverage:
 
         df = ds[[self._invarname, "time"]].to_pandas()
 
-        rolling = df.rolling(window=self._window, min_periods=self._min_periods)
+        ravg = df.rolling(window=self._window, min_periods=self._min_periods).mean()
 
-        ravg = rolling.mean()
+        renamed = ravg.rename({self._invarname: self._outvarname}, axis="columns")
 
-        df[self._outvarname] = ravg
-
-        return df.to_xarray()
+        return renamed.to_xarray()

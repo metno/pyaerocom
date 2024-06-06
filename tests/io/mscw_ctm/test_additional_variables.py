@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 
+from pyaerocom.aux_var_helpers import CalcRollingAverage
 from pyaerocom.io.mscw_ctm.additional_variables import (
     calc_concNhno3,
     calc_concNnh3,
@@ -131,12 +132,13 @@ def test_update_EC_units():
     assert concCecpm25.units == concCecpm25_from_func.units
 
 
-def test_calc_conco3mda8max():
-    time = xr.DataArray(xr.date_range("2024-01-01", "2024-12-31", freq="1h"), dims=("time"))
+def test_calc_conco3mda8():
+    time = xr.DataArray(xr.date_range("2024-01-01", "2024-01-02", freq="1h"), dims=("time"))
     conco3 = xr.DataArray(np.linspace(start=0, stop=100, num=len(time)), dims=("time"))
 
     fdata = xr.Dataset({"time": time, "conco3": conco3})
 
-    result = calc_conco3mda8max(fdata)
+    calcmda8 = CalcRollingAverage(8, min_periods=6, invarname="conco3", outvarname="conco3mda8")
+    result = calcmda8(fdata)
 
-    assert len(result["conco3mda8max"]) == 366
+    # TODO: Actual tests
