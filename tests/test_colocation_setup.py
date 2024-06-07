@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from pyaerocom import const
 from pyaerocom.colocation_setup import ColocationSetup
@@ -65,3 +66,15 @@ def test_ColocationSetup(stp: ColocationSetup, should_be: dict):
             assert Path(val) == Path(stp_dict["basedir_coldata"])
         else:
             assert val == stp_dict[key], key
+
+
+def test_ColocationSetup_model_kwargs_validationerror() -> None:
+    stp_dict = default_setup
+
+    with pytest.raises(ValidationError):
+        stp_dict["model_kwargs"] = "not a dict"
+        stp = ColocationSetup(**stp_dict)
+
+    with pytest.raises(ValidationError):
+        stp_dict["model_kwargs"] = {"emep_vars": {}, "ts_type": "daily"}
+        stp = ColocationSetup(**stp_dict)

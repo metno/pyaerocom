@@ -593,7 +593,7 @@ class Colocator:
         reader_class = self._get_gridded_reader_class(what=what)
         if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
             reader = reader_class(
-                data_id=data_id, data_dir=data_dir, **self.colocation_setup.model_read_kwargs
+                data_id=data_id, data_dir=data_dir, **self.colocation_setup.model_kwargs
             )
         else:
             reader = reader_class(data_id=data_id, data_dir=data_dir)
