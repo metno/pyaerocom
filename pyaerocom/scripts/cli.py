@@ -81,7 +81,7 @@ def aeroval(
     ),
     verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
 ):
-    """Run an AeroVal experiment as described in a config file"""
+    """Run an AeroVal experiment as described in a json config file"""
 
     if config.suffix != ".json":  # pragma:no cover
         typer.echo(f"{config.suffix=}  != '.json'")
@@ -96,12 +96,13 @@ def aeroval(
 
 
 @main.command()
-def getdata(
+def getsampledata(
     extract_dir: Path = typer.Option(
         default="./data", help="Folder where data should be extracted", writable=True
     ),
     verbosity: Verbosity = typer.Option(Verbosity.ERROR, help="console logger level"),
 ):
+    """Downloads a minimal sample dataset."""
     download_minimal_dataset(extract_dir_override=extract_dir)
 
 
