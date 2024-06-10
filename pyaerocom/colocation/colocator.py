@@ -15,14 +15,11 @@ from cf_units import Unit
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import chk_make_subdir
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.colocation import (
+from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
-from pyaerocom.colocation_setup import ColocationSetup
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
 from pyaerocom.helpers import (
     get_lowest_resolution,
@@ -33,6 +30,10 @@ from pyaerocom.helpers import (
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
+
+from .colocateddata import ColocatedData
+from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
+from .colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
 

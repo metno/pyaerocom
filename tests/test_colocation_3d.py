@@ -5,7 +5,10 @@ import numpy as np
 import pytest
 
 from pyaerocom import GriddedData
-from pyaerocom.colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
+from pyaerocom.colocation.colocation_3d import (
+    ColocatedDataLists,
+    colocate_vertical_profile_gridded,
+)
 from pyaerocom.io.read_earlinet import ReadEarlinet
 from tests.fixtures.data_access import TEST_DATA
 

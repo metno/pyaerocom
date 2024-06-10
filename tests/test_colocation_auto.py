@@ -5,8 +5,8 @@ import pytest
 from pydantic import ValidationError
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
-from pyaerocom.colocation_auto import Colocator
-from pyaerocom.colocation_setup import ColocationSetup
+from pyaerocom.colocation.colocation_setup import ColocationSetup
+from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes

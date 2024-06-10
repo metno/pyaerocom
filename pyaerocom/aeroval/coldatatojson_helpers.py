@@ -17,7 +17,7 @@ from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocation.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop

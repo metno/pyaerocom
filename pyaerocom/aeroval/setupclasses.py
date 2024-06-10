@@ -33,7 +33,7 @@ from pyaerocom.aeroval.helpers import (
     check_if_year,
 )
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision, write_json
-from pyaerocom.colocation_setup import ColocationSetup
+from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
 

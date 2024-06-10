@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import invalid_input_err_str
-from pyaerocom.colocation import _colocate_site_data_helper
+from pyaerocom.colocation.colocation_utils import _colocate_site_data_helper
 from pyaerocom.geodesy import find_coord_indices_within_distance
 from pyaerocom.helpers import sort_ts_types
 from pyaerocom.obs_io import ObsVarCombi

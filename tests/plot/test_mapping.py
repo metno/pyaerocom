@@ -6,7 +6,7 @@ import pytest
 from matplotlib.figure import Figure
 
 from pyaerocom import GriddedData
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocation.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import ColorTheme, get_color_theme
