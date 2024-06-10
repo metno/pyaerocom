@@ -48,7 +48,7 @@ from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
 from .colocation.colocated_data import ColocatedData
 from .colocation.colocator import Colocator
-from .colocation.colocated_data import ColocationSetup
+from .colocation.colocation_setup import ColocationSetup
 from .filter import Filter
 from .tstype import TsType
 from .time_resampler import TimeResampler
