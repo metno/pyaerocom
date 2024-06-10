@@ -247,7 +247,7 @@ def test_TsType_to_numpy_freq_error():
 @pytest.mark.parametrize(
     "tst,freq",
     [
-        pytest.param(TsType("3hourly"), "3H", id="3hourly"),
+        pytest.param(TsType("3hourly"), "3h", id="3hourly"),
         pytest.param(TsType("daily"), "D", id="daily"),
     ],
 )

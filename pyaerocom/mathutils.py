@@ -115,6 +115,7 @@ def weighted_cov(ref_data, data, weights):
     return np.sum(weights * (ref_data - avgx) * (data - avgy)) / np.sum(weights)
 
 
+@ignore_warnings(RuntimeWarning, "invalid value encountered in scalar divide")
 def weighted_corr(ref_data, data, weights):
     """Compute weighted correlation
 
