@@ -26,6 +26,8 @@ MapInfo = namedtuple(
     "MapInfo", ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"]
 )
 
+VariableInfo = namedtuple("VariableInfo", ["menu_name", "vertical_type", "category"])
+
 logger = logging.getLogger(__name__)
 
 
@@ -560,7 +562,7 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
-    def _get_var_name_and_type(self, var_name: str) -> tuple[str, str, str]:
+    def _get_var_name_and_type(self, var_name: str) -> VariableInfo:
         """Get menu name and type of observation variable
 
         Parameters
@@ -570,20 +572,19 @@ class ExperimentOutput(ProjectOutput):
 
         Returns
         -------
-        str
-            menu name of this variable
-        str
-            vertical type of this variable (2D, 3D)
-        str
-            variable category
-
+        VariableInfo :
+            named tuple containing
+            - menu name of this variable.
+            - Vertical type of this variable (ie. 2D, 3D).
+            - Category of this variable.
         """
         if var_name in var_web_info:
             name, tp, cat = var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
             logger.warning(f"Missing menu name definition for var {var_name}.")
-        return (name, tp, cat)
+
+        return VariableInfo(name, tp, cat)
 
     def _init_menu_entry(self, var: str) -> dict:
         name, tp, cat = self._get_var_name_and_type(var)
@@ -751,7 +752,7 @@ class ExperimentOutput(ProjectOutput):
                 )
         return new
 
-    def _sort_menu_entries(self, avail) -> dict:
+    def _sort_menu_entries(self, avail: dict) -> dict:
         """
         Used in method :func:`update_menu_evaluation_iface`
 
@@ -762,8 +763,6 @@ class ExperimentOutput(ProjectOutput):
         ----------
         avail : dict
             nested dictionary contining info about available results
-        config : AerocomEvaluation
-            Configuration class
 
         Returns
         -------
