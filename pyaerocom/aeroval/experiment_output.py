@@ -69,7 +69,7 @@ class ExperimentOutput(ProjectOutput):
 
     cfg = TypeValidator(EvalSetup)
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
         super().__init__(cfg.proj_id, cfg.path_manager.json_basedir)
 
@@ -285,23 +285,27 @@ class ExperimentOutput(ProjectOutput):
 
         return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
 
-    def _results_summary(self) -> dict:
+    def _results_summary(self) -> dict[str, list[str]]:
         res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
         tab = []
         for file in files:
-            item = self._info_from_map_file(file)
-            for i, entry in enumerate(item):
+            map_info = self._info_from_map_file(file)
+            for i, entry in enumerate(map_info):
                 res[i].append(entry)
         output = {}
         for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar", "per"]):
             output[name] = list(set(res[i]))
         return output
 
-    def clean_json_files(self) -> list:
+    def clean_json_files(self) -> list[str]:
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
+
+        Returns:
+        list[str] :
+            The list of file paths that where modified / removed.
         """
         modified = []
         logger.info(
@@ -312,46 +316,46 @@ class ExperimentOutput(ProjectOutput):
         mapfiles = self._get_json_output_files("map")
         rmmap = []
         vert_codes = self.cfg.obs_cfg.all_vert_types
-        for file in mapfiles:
+        for file_path in mapfiles:
             try:
                 (
-                    obs_name,
+                    obs_network,
                     obs_var,
                     vert_code,
                     mod_name,
                     mod_var,
-                    period,
-                ) = self._info_from_map_file(file)
+                    time_period,
+                ) = self._info_from_map_file(file_path)
             except Exception as e:
                 logger.warning(
                     f"FATAL: invalid file convention for map json file:"
-                    f" {file}. This file will be deleted. Error message: "
+                    f" {file_path}. This file will be deleted. Error message: "
                     f"{repr(e)}"
                 )
-                rmmap.append(file)
+                rmmap.append(file_path)
                 continue
-            if not self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
-                rmmap.append(file)
+            if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
+                rmmap.append(file_path)
             elif not vert_code in vert_codes:
-                rmmap.append(file)
+                rmmap.append(file_path)
 
         scatfiles = os.listdir(outdirs["scat"])
-        for file in rmmap:  # delete map files
-            logger.info(f"Deleting outdated map json file: {file}.")
-            os.remove(file)
-            modified.append(file)
-            fname = os.path.basename(file)
+        for file_path in rmmap:  # delete map files
+            logger.info(f"Deleting outdated map json file: {file_path}.")
+            os.remove(file_path)
+            modified.append(file_path)
+            fname = os.path.basename(file_path)
             if fname in scatfiles:
                 scfp = os.path.join(outdirs["scat"], fname)
-                logger.info(f"Deleting outdated scatter json file: {file}.")
+                logger.info(f"Deleting outdated scatter json file: {scfp}.")
                 os.remove(scfp)
-                modified.append(file)
+                modified.append(file_path)
 
         tsfiles = self._get_json_output_files("ts")
 
-        for file in tsfiles:
-            if self._check_clean_ts_file(file):
-                modified.append(file)
+        for file_path in tsfiles:
+            if self._check_clean_ts_file(file_path):
+                modified.append(file_path)
         modified.extend(self._clean_modelmap_files())
         self.update_interface()  # will take care of heatmap data
         return modified
@@ -556,7 +560,7 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
-    def _get_var_name_and_type(self, var_name) -> str:
+    def _get_var_name_and_type(self, var_name: str) -> tuple[str, str, str]:
         """Get menu name and type of observation variable
 
         Parameters
@@ -574,9 +578,7 @@ class ExperimentOutput(ProjectOutput):
             variable category
 
         """
-        if var_name in self.cfg.var_web_info:
-            name, tp, cat = self.cfg.var_mapping[var_name]
-        elif var_name in var_web_info:
+        if var_name in var_web_info:
             name, tp, cat = var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
