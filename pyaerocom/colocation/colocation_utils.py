@@ -12,7 +12,6 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -32,6 +31,8 @@ from pyaerocom.helpers import (
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
+
+from .colocateddata import ColocatedData
 
 logger = logging.getLogger(__name__)
 

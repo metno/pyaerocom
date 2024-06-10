@@ -14,15 +14,6 @@ from cf_units import Unit
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.colocation import (
-    _colocate_site_data_helper,
-    _colocate_site_data_helper_timecol,
-    _regrid_gridded,
-    check_time_ival,
-    check_ts_type,
-    resolve_var_name,
-)
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -33,6 +24,16 @@ from pyaerocom.exceptions import (
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
+
+from .colocateddata import ColocatedData
+from .colocation_utils import (
+    _colocate_site_data_helper,
+    _colocate_site_data_helper_timecol,
+    _regrid_gridded,
+    check_time_ival,
+    check_ts_type,
+    resolve_var_name,
+)
 
 logger = logging.getLogger(__name__)
 
