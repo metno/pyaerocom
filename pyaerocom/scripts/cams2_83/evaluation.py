@@ -156,7 +156,7 @@ def runner(
 
     logger.info("Running Statistics")
     ExperimentProcessor(stp).run()
-    print("Done Running Statistics")
+    logger.info("Done Running Statistics")
 
 
 def runnermos(
