@@ -5,7 +5,7 @@ import pytest
 from cf_units import Unit
 
 from pyaerocom import GriddedData, const, helpers
-from pyaerocom.colocation.colocateddata import ColocatedData
+from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_utils import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,

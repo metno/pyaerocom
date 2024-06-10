@@ -25,7 +25,7 @@ from pyaerocom.filter import Filter
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
 
-from .colocateddata import ColocatedData
+from .colocated_data import ColocatedData
 from .colocation_utils import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,

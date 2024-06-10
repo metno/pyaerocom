@@ -12,12 +12,12 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from pyaerocom import ColocatedData, TsType
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
-from pyaerocom.colocation.colocateddata import ColocatedData
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop
@@ -26,7 +26,6 @@ from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _get_season_from_months
-from pyaerocom.tstype import TsType
 
 logger = logging.getLogger(__name__)
 

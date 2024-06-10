@@ -46,9 +46,10 @@ from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
+from .colocation.colocated_data import ColocatedData
+from .colocation.colocator import Colocator
+from .colocation.colocated_data import ColocationSetup
 from .filter import Filter
-from .colocateddata import ColocatedData
-from .colocation_auto import ColocationSetup, Colocator
 from .tstype import TsType
 from .time_resampler import TimeResampler
 from .io.helpers import search_data_dir_aerocom

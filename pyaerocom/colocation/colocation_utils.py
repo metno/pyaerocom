@@ -30,9 +30,8 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
-from pyaerocom.variable import Variable
 
-from .colocateddata import ColocatedData
+from .colocated_data import ColocatedData
 
 logger = logging.getLogger(__name__)
 
