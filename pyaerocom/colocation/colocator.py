@@ -31,7 +31,7 @@ from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 
-from .colocateddata import ColocatedData
+from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
 from .colocation_setup import ColocationSetup
 

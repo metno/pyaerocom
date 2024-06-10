@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import xarray as xr
 
 from pyaerocom import ColocatedData, Filter
 from pyaerocom.config import ALL_REGION_NAME
