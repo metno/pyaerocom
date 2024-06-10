@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import shutil
+from collections import namedtuple
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
@@ -20,6 +21,10 @@ from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
+
+MapInfo = namedtuple(
+    "MapInfo", ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"]
+)
 
 logger = logging.getLogger(__name__)
 
@@ -201,16 +206,16 @@ class ExperimentOutput(ProjectOutput):
                 for obs, vdict in obs_dict.items():
                     if not obs in hm[vardisp]:
                         hm[vardisp][obs] = {}
-                    for vc, mdict in vdict.items():
-                        if not vc in hm[vardisp][obs]:
-                            hm[vardisp][obs][vc] = {}
+                    for vert_code, mdict in vdict.items():
+                        if not vert_code in hm[vardisp][obs]:
+                            hm[vardisp][obs][vert_code] = {}
                         for mod, minfo in mdict.items():
-                            if not mod in hm[vardisp][obs][vc]:
-                                hm[vardisp][obs][vc][mod] = {}
+                            if not mod in hm[vardisp][obs][vert_code]:
+                                hm[vardisp][obs][vert_code][mod] = {}
                             modvar = minfo["model_var"]
-                            hm_data = data[vardisp][obs][vc][mod][modvar]
+                            hm_data = data[vardisp][obs][vert_code][mod][modvar]
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
-                            hm[vardisp][obs][vc][mod][modvar] = hm_data
+                            hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
             write_json(hm, fp, ignore_nan=True)
 
@@ -228,7 +233,7 @@ class ExperimentOutput(ProjectOutput):
         return hm_data
 
     @staticmethod
-    def _info_from_map_file(filename) -> tuple[str]:
+    def _info_from_map_file(filename: str) -> MapInfo:
         """
         Separate map filename into meta info on obs and model content
 
@@ -255,6 +260,8 @@ class ExperimentOutput(ProjectOutput):
             name of model
         str
             name of model variable
+        str
+            Time period
         """
         spl = os.path.basename(filename).split(".json")[0].split("_")
         if len(spl) != 4:
@@ -266,17 +273,17 @@ class ExperimentOutput(ProjectOutput):
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
-        per = spl[3]
+        time_period = spl[3]
 
         mspl = modinfo.split("-")
-        mvar = mspl[-1]
-        mname = "-".join(mspl[:-1])
+        mod_var = mspl[-1]
+        mod_id = "-".join(mspl[:-1])
 
         ospl = obsinfo.split("-")
-        ovar = ospl[-1]
-        oname = "-".join(ospl[:-1])
+        obs_var = ospl[-1]
+        obs_network = "-".join(ospl[:-1])
 
-        return (oname, ovar, vert_code, mname, mvar, per)
+        return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
 
     def _results_summary(self) -> dict:
         res = [[], [], [], [], [], []]
@@ -352,10 +359,10 @@ class ExperimentOutput(ProjectOutput):
     def _check_clean_ts_file(self, fp) -> bool:
         fname = os.path.basename(fp)
         spl = fname.split(".json")[0].split("_")
-        vc, obsinfo = spl[-1], spl[-2]
-        if not vc in self.cfg.obs_cfg.all_vert_types:
+        vert_code, obsinfo = spl[-1], spl[-2]
+        if not vert_code in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vc} in ts file {fp}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {fp}. File will be deleted."
             )
             os.remove(fp)
             return True
