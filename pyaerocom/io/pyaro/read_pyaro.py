@@ -5,14 +5,13 @@ from copy import deepcopy
 from typing import NewType, Optional, Union
 
 import numpy as np
-from pyaro import list_timeseries_engines, open_timeseries
-from pyaro.timeseries import Data, Reader, Station
-from pyaro.timeseries.Wrappers import VariableNameChangingReader
-
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaro import list_timeseries_engines, open_timeseries
+from pyaro.timeseries import Data, Reader, Station
+from pyaro.timeseries.Wrappers import VariableNameChangingReader
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +116,10 @@ class PyaroToUngriddedData:
 
     def _open_reader(self) -> Reader:
         data_id = self.config.data_id
-        kwargs = self.config.model_extra
+        if self.config.model_extra is not None:
+            kwargs = self.config.model_extra
+        else:
+            kwargs = {}
 
         if self.config.name_map is None:
             return open_timeseries(
