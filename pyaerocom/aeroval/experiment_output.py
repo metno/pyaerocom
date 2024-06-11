@@ -794,21 +794,6 @@ class ExperimentOutput(ProjectOutput):
                     new_sorted[var]["obs"][obs_name][vert_code] = models_sorted
         return new_sorted
 
-    def _get_valid_obs_vars(self, obs_name) -> dict:
-        if obs_name in self._valid_obs_vars:
-            return self._valid_obs_vars[obs_name]
-
-        obs_vars = self.obs_config[obs_name]["obs_vars"]
-        add = []
-        for mname, mcfg in self.model_config.items():
-            if "model_add_vars" in mcfg:
-                for ovar, mvar in mcfg["model_add_vars"].items():
-                    if ovar in obs_vars and not mvar in add:
-                        add.append(mvar)
-        obs_vars.extend(add)
-        self._valid_obs_vars[obs_name] = obs_vars
-        return obs_vars
-
     def _add_entry_experiments_json(self, exp_id, data) -> None:
         fp = self.experiments_file
         current = read_json(fp)
