@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
+from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
@@ -16,6 +17,7 @@ from pyaerocom.aeroval.glob_defaults import (
     var_web_info,
 )
 from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
+from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
@@ -604,7 +606,9 @@ class ExperimentOutput(ProjectOutput):
             pass
         return out
 
-    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var) -> bool:
+    def _check_ovar_mvar_entry(
+        self, mcfg: ModelEntry, mod_var, ocfg: ObsCollection, obs_var
+    ) -> bool:
         muv = mcfg.model_use_vars
         mrv = mcfg.model_rename_vars
 

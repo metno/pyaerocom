@@ -112,7 +112,7 @@ class ObsCollection(BaseCollection):
         except (KeyError, AttributeError):
             raise EntryNotAvailable(f"no such entry {key}")
 
-    def get_all_vars(self) -> list:
+    def get_all_vars(self) -> list[str]:
         """
         Get unique list of all obs variables from all entries
 
@@ -190,7 +190,7 @@ class ModelCollection(BaseCollection):
 
     SETTER_CONVERT = {dict: ModelEntry}
 
-    def get_entry(self, key) -> object:
+    def get_entry(self, key) -> ModelEntry:
         """Get model entry configuration
 
         Since the configuration files for experiments are in json format, they
