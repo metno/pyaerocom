@@ -5,13 +5,14 @@ from copy import deepcopy
 from typing import NewType, Optional, Union
 
 import numpy as np
+from pyaro import list_timeseries_engines, open_timeseries
+from pyaro.timeseries import Data, Reader, Station
+from pyaro.timeseries.Wrappers import VariableNameChangingReader
+
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaro import list_timeseries_engines, open_timeseries
-from pyaro.timeseries import Data, Reader, Station
-from pyaro.timeseries.Wrappers import VariableNameChangingReader
 
 logger = logging.getLogger(__name__)
 
