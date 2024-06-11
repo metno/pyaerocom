@@ -2,9 +2,11 @@ import glob
 import logging
 import os
 import shutil
+from collections import namedtuple
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
+from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     extended_statistics,
     statistics_defaults,
@@ -15,11 +17,18 @@ from pyaerocom.aeroval.glob_defaults import (
     var_web_info,
 )
 from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
+from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
+
+MapInfo = namedtuple(
+    "MapInfo", ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"]
+)
+
+VariableInfo = namedtuple("VariableInfo", ["menu_name", "vertical_type", "category"])
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +73,7 @@ class ExperimentOutput(ProjectOutput):
 
     cfg = TypeValidator(EvalSetup)
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
         super().__init__(cfg.proj_id, cfg.path_manager.json_basedir)
 
@@ -201,16 +210,16 @@ class ExperimentOutput(ProjectOutput):
                 for obs, vdict in obs_dict.items():
                     if not obs in hm[vardisp]:
                         hm[vardisp][obs] = {}
-                    for vc, mdict in vdict.items():
-                        if not vc in hm[vardisp][obs]:
-                            hm[vardisp][obs][vc] = {}
+                    for vert_code, mdict in vdict.items():
+                        if not vert_code in hm[vardisp][obs]:
+                            hm[vardisp][obs][vert_code] = {}
                         for mod, minfo in mdict.items():
-                            if not mod in hm[vardisp][obs][vc]:
-                                hm[vardisp][obs][vc][mod] = {}
+                            if not mod in hm[vardisp][obs][vert_code]:
+                                hm[vardisp][obs][vert_code][mod] = {}
                             modvar = minfo["model_var"]
-                            hm_data = data[vardisp][obs][vc][mod][modvar]
+                            hm_data = data[vardisp][obs][vert_code][mod][modvar]
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
-                            hm[vardisp][obs][vc][mod][modvar] = hm_data
+                            hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
             write_json(hm, fp, ignore_nan=True)
 
@@ -228,7 +237,7 @@ class ExperimentOutput(ProjectOutput):
         return hm_data
 
     @staticmethod
-    def _info_from_map_file(filename) -> tuple[str]:
+    def _info_from_map_file(filename: str) -> MapInfo:
         """
         Separate map filename into meta info on obs and model content
 
@@ -255,6 +264,8 @@ class ExperimentOutput(ProjectOutput):
             name of model
         str
             name of model variable
+        str
+            Time period
         """
         spl = os.path.basename(filename).split(".json")[0].split("_")
         if len(spl) != 4:
@@ -266,35 +277,39 @@ class ExperimentOutput(ProjectOutput):
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
-        per = spl[3]
+        time_period = spl[3]
 
         mspl = modinfo.split("-")
-        mvar = mspl[-1]
-        mname = "-".join(mspl[:-1])
+        mod_var = mspl[-1]
+        mod_id = "-".join(mspl[:-1])
 
         ospl = obsinfo.split("-")
-        ovar = ospl[-1]
-        oname = "-".join(ospl[:-1])
+        obs_var = ospl[-1]
+        obs_network = "-".join(ospl[:-1])
 
-        return (oname, ovar, vert_code, mname, mvar, per)
+        return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
 
-    def _results_summary(self) -> dict:
+    def _results_summary(self) -> dict[str, list[str]]:
         res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
         tab = []
         for file in files:
-            item = self._info_from_map_file(file)
-            for i, entry in enumerate(item):
+            map_info = self._info_from_map_file(file)
+            for i, entry in enumerate(map_info):
                 res[i].append(entry)
         output = {}
         for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar", "per"]):
             output[name] = list(set(res[i]))
         return output
 
-    def clean_json_files(self) -> list:
+    def clean_json_files(self) -> list[str]:
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
+
+        Returns:
+        list[str] :
+            The list of file paths that where modified / removed.
         """
         modified = []
         logger.info(
@@ -305,46 +320,46 @@ class ExperimentOutput(ProjectOutput):
         mapfiles = self._get_json_output_files("map")
         rmmap = []
         vert_codes = self.cfg.obs_cfg.all_vert_types
-        for file in mapfiles:
+        for file_path in mapfiles:
             try:
                 (
-                    obs_name,
+                    obs_network,
                     obs_var,
                     vert_code,
                     mod_name,
                     mod_var,
-                    period,
-                ) = self._info_from_map_file(file)
+                    time_period,
+                ) = self._info_from_map_file(file_path)
             except Exception as e:
                 logger.warning(
                     f"FATAL: invalid file convention for map json file:"
-                    f" {file}. This file will be deleted. Error message: "
+                    f" {file_path}. This file will be deleted. Error message: "
                     f"{repr(e)}"
                 )
-                rmmap.append(file)
+                rmmap.append(file_path)
                 continue
-            if not self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
-                rmmap.append(file)
+            if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
+                rmmap.append(file_path)
             elif not vert_code in vert_codes:
-                rmmap.append(file)
+                rmmap.append(file_path)
 
         scatfiles = os.listdir(outdirs["scat"])
-        for file in rmmap:  # delete map files
-            logger.info(f"Deleting outdated map json file: {file}.")
-            os.remove(file)
-            modified.append(file)
-            fname = os.path.basename(file)
+        for file_path in rmmap:  # delete map files
+            logger.info(f"Deleting outdated map json file: {file_path}.")
+            os.remove(file_path)
+            modified.append(file_path)
+            fname = os.path.basename(file_path)
             if fname in scatfiles:
                 scfp = os.path.join(outdirs["scat"], fname)
-                logger.info(f"Deleting outdated scatter json file: {file}.")
+                logger.info(f"Deleting outdated scatter json file: {scfp}.")
                 os.remove(scfp)
-                modified.append(file)
+                modified.append(file_path)
 
         tsfiles = self._get_json_output_files("ts")
 
-        for file in tsfiles:
-            if self._check_clean_ts_file(file):
-                modified.append(file)
+        for file_path in tsfiles:
+            if self._check_clean_ts_file(file_path):
+                modified.append(file_path)
         modified.extend(self._clean_modelmap_files())
         self.update_interface()  # will take care of heatmap data
         return modified
@@ -352,10 +367,10 @@ class ExperimentOutput(ProjectOutput):
     def _check_clean_ts_file(self, fp) -> bool:
         fname = os.path.basename(fp)
         spl = fname.split(".json")[0].split("_")
-        vc, obsinfo = spl[-1], spl[-2]
-        if not vc in self.cfg.obs_cfg.all_vert_types:
+        vert_code, obsinfo = spl[-1], spl[-2]
+        if not vert_code in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vc} in ts file {fp}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {fp}. File will be deleted."
             )
             os.remove(fp)
             return True
@@ -549,7 +564,7 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
-    def _get_var_name_and_type(self, var_name) -> str:
+    def _get_var_name_and_type(self, var_name: str) -> VariableInfo:
         """Get menu name and type of observation variable
 
         Parameters
@@ -559,22 +574,19 @@ class ExperimentOutput(ProjectOutput):
 
         Returns
         -------
-        str
-            menu name of this variable
-        str
-            vertical type of this variable (2D, 3D)
-        str
-            variable category
-
+        VariableInfo :
+            named tuple containing
+            - menu name of this variable.
+            - Vertical type of this variable (ie. 2D, 3D).
+            - Category of this variable.
         """
-        if var_name in self.cfg.var_web_info:
-            name, tp, cat = self.cfg.var_mapping[var_name]
-        elif var_name in var_web_info:
+        if var_name in var_web_info:
             name, tp, cat = var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
             logger.warning(f"Missing menu name definition for var {var_name}.")
-        return (name, tp, cat)
+
+        return VariableInfo(name, tp, cat)
 
     def _init_menu_entry(self, var: str) -> dict:
         name, tp, cat = self._get_var_name_and_type(var)
@@ -594,7 +606,9 @@ class ExperimentOutput(ProjectOutput):
             pass
         return out
 
-    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var) -> bool:
+    def _check_ovar_mvar_entry(
+        self, mcfg: ModelEntry, mod_var, ocfg: ObsCollection, obs_var
+    ) -> bool:
         muv = mcfg.model_use_vars
         mrv = mcfg.model_rename_vars
 
@@ -742,7 +756,7 @@ class ExperimentOutput(ProjectOutput):
                 )
         return new
 
-    def _sort_menu_entries(self, avail) -> dict:
+    def _sort_menu_entries(self, avail: dict) -> dict:
         """
         Used in method :func:`update_menu_evaluation_iface`
 
@@ -753,8 +767,6 @@ class ExperimentOutput(ProjectOutput):
         ----------
         avail : dict
             nested dictionary contining info about available results
-        config : AerocomEvaluation
-            Configuration class
 
         Returns
         -------
@@ -781,21 +793,6 @@ class ExperimentOutput(ProjectOutput):
                     models_sorted = sort_dict_by_name(models, pref_list=model_order)
                     new_sorted[var]["obs"][obs_name][vert_code] = models_sorted
         return new_sorted
-
-    def _get_valid_obs_vars(self, obs_name) -> dict:
-        if obs_name in self._valid_obs_vars:
-            return self._valid_obs_vars[obs_name]
-
-        obs_vars = self.obs_config[obs_name]["obs_vars"]
-        add = []
-        for mname, mcfg in self.model_config.items():
-            if "model_add_vars" in mcfg:
-                for ovar, mvar in mcfg["model_add_vars"].items():
-                    if ovar in obs_vars and not mvar in add:
-                        add.append(mvar)
-        obs_vars.extend(add)
-        self._valid_obs_vars[obs_name] = obs_vars
-        return obs_vars
 
     def _add_entry_experiments_json(self, exp_id, data) -> None:
         fp = self.experiments_file
