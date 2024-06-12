@@ -1,6 +1,7 @@
 """
 High level test methods that check AasEtAl time series data for selected stations
 """
+
 from __future__ import annotations
 
 from pathlib import Path

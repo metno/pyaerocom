@@ -1,6 +1,7 @@
 """
 This module contains scatter plot routines for Aerocom data.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 

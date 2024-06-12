@@ -12,7 +12,7 @@ MODELS = {
 ODCSFUN = "AeronetSDAV3L2Subset.daily;od550lt1aer+AeronetSDAV3L2Subset.daily;od550gt1aer"
 OBS_GROUNDBASED = {
     "AERONET-Sun": dict(
-        obs_id="AeronetSunV3L2Subset.daily", obs_vars=["od550aer"], obs_vert_type="Column"
+        obs_id="AeronetSunV3L2Subset.daily", obs_vars=("od550aer",), obs_vert_type="Column"
     ),
     "AERONET-SDA": dict(
         obs_id="AERONET-SDA",

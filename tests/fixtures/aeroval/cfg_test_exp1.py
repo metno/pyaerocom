@@ -4,7 +4,7 @@ MODELS = {"TM5-AP3-CTRL": dict(model_id="TM5-met2010_CTRL-TEST")}
 
 OBS_GROUNDBASED = {
     "AERONET-Sun": dict(
-        obs_id="AeronetSunV3L2Subset.daily", obs_vars=["od550aer"], obs_vert_type="Column"
+        obs_id="AeronetSunV3L2Subset.daily", obs_vars=("od550aer",), obs_vert_type="Column"
     )
 }
 

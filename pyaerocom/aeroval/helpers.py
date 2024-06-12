@@ -13,8 +13,6 @@ from pyaerocom.helpers import (
     start_stop,
     to_pandas_timestamp,
 )
-from pyaerocom.io import ReadGridded
-from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)

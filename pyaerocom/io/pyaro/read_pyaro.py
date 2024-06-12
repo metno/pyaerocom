@@ -99,6 +99,17 @@ class PyaroToUngriddedData:
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
     _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
+    # List of keys needed by every station from Pyaro. Used to find extra metadata
+    STATION_KEYS = (
+        "station",
+        "latitude",
+        "longitude",
+        "altitude",
+        "long_name",
+        "country",
+        "url",
+    )
+
     def __init__(self, config: PyaroConfig) -> None:
         self.data: UngriddedData = UngriddedData()
         self.config = config
@@ -218,6 +229,9 @@ class PyaroToUngriddedData:
 
         return metadata
 
+    def _get_additional_metadata(self, station: Station) -> list[dict[str, str]]:
+        return station.metadata
+
     def _make_single_ungridded_metadata(
         self, station: Station, name: str, ts_type: Optional[TsType], units: dict[str, str]
     ) -> MetadataEntry:
@@ -233,33 +247,10 @@ class PyaroToUngriddedData:
             country=station["country"],
             ts_type=str(ts_type) if ts_type is not None else "undefined",
         )
-        entry.update(self._get_metadata_from_pyaro(station))
+        entry.update(self._get_metadata_from_pyaro(station=station))
+        entry.update(self._get_additional_metadata(station=station))
 
         return MetadataEntry(entry)
-
-    def _make_ungridded_metadata(
-        self, stations: dict[str, Station], var_idx: dict[str, int], units: dict[str, str]
-    ) -> Metadata:
-        idx = 0
-        metadata = {}
-        for name, station in stations.items():
-            metadata[idx] = dict(
-                data_id=self.config.name,
-                variables=list(self.get_variables()),
-                var_info=units,
-                latitude=station["latitude"],
-                longitude=station["longitude"],
-                altitude=station["altitude"],
-                station_name=station["long_name"],
-                station_id=name,
-                country=station["country"],
-                ts_type="undefined",  # TEMP: Changes dynamically below
-            )
-
-            metadata[idx].update(self._get_metadata_from_pyaro(station))
-            idx += 1
-
-        return Metadata(metadata)
 
     def _pyaro_dataline_to_ungriddeddata_dataline(
         self, data: np.void, idx: int, var_idx: int

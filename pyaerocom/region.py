@@ -1,6 +1,7 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
+
 from __future__ import annotations
 
 import numpy as np

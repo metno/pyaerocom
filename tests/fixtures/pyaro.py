@@ -18,13 +18,14 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     if file.exists():
         return file
 
-    start = pd.to_datetime("01.01.2015", dayfirst=True)
-    end = pd.to_datetime("31.12.2015", dayfirst=True)
+    start = pd.to_datetime("01.01.2010", dayfirst=True)
+    end = pd.to_datetime("31.12.2010", dayfirst=True)
     dates = pd.date_range(start, end, freq="D")
     stations = ["NO0002", "GB0881"]
     countries = ["NO", "GB"]
     coords = [(58, 8), (60, -1)]
-    species = ["NOx", "SOx"]
+    species = ["NOx", "SOx", "AOD"]
+    area_type = ["Rural", "Urban"]
 
     with open(file, "w") as f:
         for s in species:
@@ -34,7 +35,7 @@ def make_csv_test_file(tmp_path: Path) -> Path:
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
                     f.write(
-                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)}, {countries[i]} \n"
+                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
                     )
 
     return file
@@ -48,7 +49,7 @@ def testconfig(tmp_path: Path) -> PyaroConfig:
         data_id=data_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
-        name_map={"SOx": "concso4"},
+        name_map={"SOx": "concso4", "AOD": "od550aer"},
     )
 
     config2 = PyaroConfig(
@@ -56,7 +57,7 @@ def testconfig(tmp_path: Path) -> PyaroConfig:
         data_id=data_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
-        name_map={"SOx": "concso4"},
+        name_map={"SOx": "concso4", "AOD": "od550aer"},
     )
     return [config1, config2]
 
@@ -76,6 +77,7 @@ def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
         "country": 8,
         "standard_deviation": "NaN",
         "flag": "0",
+        "area_classification": 9,
     }
 
     config = PyaroConfig(
@@ -105,6 +107,7 @@ def pyaro_kwargs() -> dict:
         "country": 8,
         "standard_deviation": "NaN",
         "flag": "0",
+        "area_classification": 9,
     }
     return columns
 

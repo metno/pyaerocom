@@ -546,7 +546,7 @@ class Variable:
         return self.__dict__[key]
 
     def __repr__(self):
-        return "{self.var_name}\nstandard_name: {self.standard_name}; Unit: {self.units}"
+        return f"{self.var_name}\nstandard_name: {self.standard_name}; Unit: {self.units}"
 
     def __eq__(self, other):
         if isinstance(other, str):

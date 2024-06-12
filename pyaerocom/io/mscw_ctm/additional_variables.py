@@ -385,3 +385,12 @@ def calc_concSso2(concso2):
     concSso2.attrs["units"] = "ug S m-3"
 
     return concSso2
+
+
+def calc_concpolyol(concspores):
+    # polyol is 4.5% of spores. Spores is in ug/cm3 in Gunnars run, eventhough the unit is marked as ugm-3, so a factor of 1000 is needed for unit change
+    factor = 45.0 / 1000.0
+
+    concpolyol = concspores.copy(deep=True) * factor
+    concpolyol.attrs["units"] = "ug m-3"
+    return concpolyol

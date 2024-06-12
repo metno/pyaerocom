@@ -88,7 +88,7 @@ Ungridded data
 Co-located data
 ^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.colocateddata
+.. automodule:: pyaerocom.colocation.colocated_data
    :members:
    :undoc-members:
 
@@ -112,13 +112,20 @@ Co-location routines
 High-level co-location engine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.colocation_auto
+.. automodule:: pyaerocom.colocation.colocator
+   :members:
+
+.. automodule:: pyaerocom.colocation.colocation_setup
    :members:
 
 Low-level co-location functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.colocation
+.. automodule:: pyaerocom.colocation.colocation_utils
+   :members:
+   :undoc-members:
+
+.. automodule:: pyaerocom.colocation.colocation_3d
    :members:
    :undoc-members:
 

@@ -56,7 +56,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         elif ocfg["only_json"]:
             if not ocfg["coldata_dir"]:
                 raise Exception(
-                    f"No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
+                    "No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
                 )
             else:
                 preprocessed_coldata_dir = ocfg["coldata_dir"]
@@ -122,11 +122,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         if not self.cfg.model_cfg:
             logger.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
-            self.cfg.webdisp_opts.hide_pages = [
-                "maps.php",
-                "intercomp.php",
-                "overall.php",
-            ]
+            self.cfg.webdisp_opts.pages = ["evaluation", "infos"]
             model_id = make_dummy_model(obs_list, self.cfg)
             self.cfg.processing_opts.obs_only = True
             use_dummy_model = True

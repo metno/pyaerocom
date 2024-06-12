@@ -6,6 +6,7 @@ Note
 Most methods here are private and not to be used directly. Please use
 :class:`TrendsEngine` instead.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

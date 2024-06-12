@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.19.dev0"
+version = "0.20.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -44,9 +44,9 @@ dependencies = [
     'typing-extensions>=4.6.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
-    "pyaro",
     "pydantic>=2.7.1",
-
+    "pyaro>=0.0.10",
+    "pooch>=1.7.0"
 ]
 
 [project.readme]
@@ -72,7 +72,6 @@ test = [
     "pytest-dependency",
     "pytest-cov",
     "packaging",
-    "pooch>=1.7.0",
 ]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
@@ -223,6 +222,7 @@ deps =
     typing-extensions ==4.6.1; python_version < "3.11"
     cf-units ==3.1; python_version < "3.11"
     pydantic ==2.7.1; python_version < "3.11"
+    pooch ==1.7.0; python_version < "3.11"
 
 [testenv:format]
 commands =

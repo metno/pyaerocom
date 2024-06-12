@@ -1,6 +1,7 @@
 """
 Definitions and helpers related to time conversion
 """
+
 from datetime import datetime
 
 from iris import coord_categorisation
@@ -31,16 +32,16 @@ IRIS_AGGREGATORS = {
 # some helper dictionaries for conversion of temporal resolution
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 TS_TYPE_TO_PANDAS_FREQ = {
-    "minutely": "T",
-    "hourly": "H",
+    "minutely": "min",
+    "hourly": "h",
     "daily": "D",
     "weekly": "W-MON",
     "monthly": "MS",  # Month start !
     "season": "Q",
-    "yearly": "AS",
+    "yearly": "YS",
 }
 
-PANDAS_RESAMPLE_OFFSETS = {"AS": "181D", "MS": "14D", "D": "12H", "H": "30T"}
+PANDAS_RESAMPLE_OFFSETS = {"YS": "181D", "MS": "14D", "D": "12h", "h": "30min"}
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 

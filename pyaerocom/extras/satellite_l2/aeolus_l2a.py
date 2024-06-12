@@ -1,6 +1,7 @@
 """
 read binary ESA L2B files of the ADM Aeolus mission
 """
+
 import glob
 import logging
 import os
@@ -2961,7 +2962,8 @@ class ReadL2Data(ReadL2DataBase):
                                     gridded_var_data[var]["mean"][
                                         lat_idx, lon_idx, height_idx
                                     ] = _data[
-                                        match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]
+                                        match_indexes[less_than_zero_indexes],
+                                        self.INDEX_DICT[var],
                                     ]
                                     gridded_var_data[var]["stddev"][
                                         lat_idx, lon_idx, height_idx
