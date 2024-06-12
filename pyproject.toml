@@ -222,6 +222,7 @@ deps =
     typing-extensions ==4.6.1; python_version < "3.11"
     cf-units ==3.1; python_version < "3.11"
     pydantic ==2.7.1; python_version < "3.11"
+    pyaro == 0.0.10; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
 
 [testenv:format]

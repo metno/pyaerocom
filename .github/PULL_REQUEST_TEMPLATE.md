@@ -13,11 +13,6 @@
 * [ ] The PR title is a good summary of the changes
 * [ ] PR is set to AeroTools and a tentative milestone
 * [ ] Documentation reflects the changes where applicable
-* [ ] New dependencies have minimum version
-* [ ] Dependencies are consistent across:
-  1. `pyproject.toml` [dependencies] section
-  1. `pyproject.toml` [tool.tox] section
-  1. `pyaerocom_env.yml`
 * [ ] Tests for the changes exist where applicable
 * [ ] Tests pass locally
 * [ ] Tests pass on CI
