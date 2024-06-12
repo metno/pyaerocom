@@ -9,7 +9,7 @@ dependencies:
   - matplotlib-base >=3.7.1
   - scipy >=1.10.0
   - pandas
-  - numpy >=1.24.3
+  - numpy >=1.24.4
   - seaborn >=0.12.2
   - dask
   - geonum
@@ -22,7 +22,7 @@ dependencies:
 ## python < 3.11
   - tomli >=2.0.1
   - importlib-resources >=5.10
-  - typing-extensions >=4.0.1
+  - typing-extensions >=4.6.1
 ## from pip
   - pip
   - pip:
