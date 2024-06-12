@@ -27,7 +27,7 @@ dependencies = [
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
     "pandas",
-    "numpy>=1.24.3",
+    "numpy>=1.24.4",
     "seaborn>=0.12.2",
     "dask",
     "geonum==1.5.0",
@@ -41,11 +41,11 @@ dependencies = [
     # python < 3.11
     'tomli>=2.0.1; python_version < "3.11"',
     'importlib-resources>=5.10; python_version < "3.11"',
-    'typing-extensions>=4.0.1; python_version < "3.11"',
+    'typing-extensions>=4.6.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.1',
+    "pydantic>=2.7.1",
     "pyaro>=0.0.10",
-    "pydantic>2",
     "pooch>=1.7.0"
 ]
 
@@ -201,12 +201,29 @@ requires =
 [testenv]
 commands_pre =
     python --version
+    python -m pip freeze --all 
 commands =
     python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
+deps =
+    scitools-iris ==3.8.1; python_version < "3.11"
+    cartopy ==0.21.1; python_version < "3.11"
+    matplotlib ==3.7.1; python_version < "3.11"
+    scipy ==1.10.1; python_version < "3.11"
+    numpy ==1.24.4; python_version < "3.11"
+    seaborn ==0.12.2; python_version < "3.11"
+    geonum ==1.5.0; python_version < "3.11"
+    typer ==0.7.0; python_version < "3.11"
+    tomli ==2.0.1; python_version < "3.11"
+    importlib-resources ==5.10; python_version < "3.11"
+    typing-extensions ==4.6.1; python_version < "3.11"
+    cf-units ==3.1; python_version < "3.11"
+    pydantic ==2.7.1; python_version < "3.11"
+    pyaro == 0.0.10; python_version < "3.11"
+    pooch ==1.7.0; python_version < "3.11"
 
 [testenv:format]
 commands =
