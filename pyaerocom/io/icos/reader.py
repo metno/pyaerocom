@@ -8,18 +8,18 @@ from pathlib import Path
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom.io.mep.reader import ReadMEP
+from pyaerocom.io.cnemc.reader import ReadCNEMC
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
 
-class ReadICOS(ReadMEP):
-    """Class for reading ICOS (CO2) observations. HARP format so based on MEP reader
+class ReadICOS(ReadCNEMC):
+    """Class for reading ICOS (CO2) observations. HARP format so based on CNEMC reader
 
     Args:
-        ReadMEP (class): Base class for this reader, based on ReadUngriddedBase
+        ReadCNEMC (class): Base class for this reader, based on ReadUngriddedBase
 
     """
 
