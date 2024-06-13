@@ -56,7 +56,7 @@ class ReadCNEMC(ReadUngriddedBase):
     __version__ = "0.02"
 
     #: Name of the dataset (OBS_ID)
-    DATA_ID = const.MEP_NAME
+    DATA_ID = const.CNEMC_NAME
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
