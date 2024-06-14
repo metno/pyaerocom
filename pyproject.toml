@@ -22,11 +22,11 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "scitools-iris>=3.8.1",
-    "xarray",
+    "xarray>=2022.10.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
-    "pandas",
+    "pandas>=1.5.3",
     "numpy>=1.24.4",
     "seaborn>=0.12.2",
     "dask",
@@ -224,6 +224,8 @@ deps =
     pydantic ==2.7.1; python_version < "3.11"
     pyaro == 0.0.10; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
+    xarray ==2022.10.0; python_version < "3.11"
+    pandas ==1.5.3; python_version < "3.11"
 
 [testenv:format]
 commands =
