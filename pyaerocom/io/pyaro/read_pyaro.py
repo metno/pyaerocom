@@ -117,7 +117,10 @@ class PyaroToUngriddedData:
 
     def _open_reader(self) -> Reader:
         data_id = self.config.data_id
-        kwargs = self.config.model_extra
+        if self.config.model_extra is not None:
+            kwargs = self.config.model_extra
+        else:
+            kwargs = {}
 
         if self.config.name_map is None:
             return open_timeseries(
