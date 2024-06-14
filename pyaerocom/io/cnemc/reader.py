@@ -40,8 +40,8 @@ ALLOWED_FREQS = {
 }
 
 
-class ReadMEP(ReadUngriddedBase):
-    """Class for reading MEP observations (formerly MarcoPolo)
+class ReadCNEMC(ReadUngriddedBase):
+    """Class for reading CNEMC observations (formerly MEP and before that MarcoPolo)
 
     Note
     ----
@@ -56,7 +56,7 @@ class ReadMEP(ReadUngriddedBase):
     __version__ = "0.02"
 
     #: Name of the dataset (OBS_ID)
-    DATA_ID = const.MEP_NAME
+    DATA_ID = const.CNEMC_NAME
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]

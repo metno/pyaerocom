@@ -12,11 +12,11 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.io.cams2_83.read_obs import ReadCAMS2_83
+from pyaerocom.io.cnemc.reader import ReadCNEMC
 from pyaerocom.io.gaw.reader import ReadGAW
 from pyaerocom.io.ghost.reader import ReadGhost
 from pyaerocom.io.icos.reader import ReadICOS
 from pyaerocom.io.icpforests.reader import ReadICPForest
-from pyaerocom.io.mep.reader import ReadMEP
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 from pyaerocom.io.read_aasetal import ReadAasEtal
@@ -62,7 +62,7 @@ class ReadUngridded:
         ReadCAMS2_83,
         ReadGAW,
         ReadGhost,
-        ReadMEP,
+        ReadCNEMC,
         ReadICOS,
         ReadICPForest,
     ]

@@ -97,8 +97,8 @@ class Config:
     #: DMS
     DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
 
-    #: MEP name
-    MEP_NAME = "MEP"
+    #: CNEMC name (formally MEP)
+    CNEMC_NAME = "CNEMC"
 
     #: ICOS name
     ICOS_NAME = "ICOS"

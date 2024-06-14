@@ -53,7 +53,7 @@ def test_unitconv_sfc_conc(dummy_data):
 
 
 def test_unitconv_wet_depo_bck(dummy_data):
-    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="ME"))
+    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M"))
     result = unitconv_wet_depo_bck(dummy_data, time)
     assert len(result) == len(
         dummy_data
@@ -61,7 +61,7 @@ def test_unitconv_wet_depo_bck(dummy_data):
 
 
 def test_unitconv_wet_depo_from_emep(dummy_data):
-    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="ME"))
+    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M"))
     result = unitconv_wet_depo_from_emep(dummy_data, time)
     assert len(result) == len(
         dummy_data
@@ -69,6 +69,6 @@ def test_unitconv_wet_depo_from_emep(dummy_data):
 
 
 def test_unitconv_wet_depo_from_emep_time_not_pandas_series(dummy_data):
-    time = pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="ME")
+    time = pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M")
     result = unitconv_wet_depo_from_emep(dummy_data, time)
     assert len(result) == len(dummy_data)
