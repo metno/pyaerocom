@@ -211,7 +211,6 @@ class ReadUngriddedBase(abc.ABC):
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
     def __init__(self, data_id: str | None = None, data_dir: str | None = None):
-        self.data = None  # object that holds the loaded data
         self._data_id = None
         self.files = []
         # list that will be updated in read method to store all files that

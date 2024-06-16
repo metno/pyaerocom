@@ -739,7 +739,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # Shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         # data_obj.data_revision[self.DATASET_NAME] = self.data_revision
-        self.data = data_obj
         self._metadata = None
         self.files = files
 
