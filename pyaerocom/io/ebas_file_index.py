@@ -319,10 +319,14 @@ class EbasFileIndex:
         else:
             raise ValueError(f"Unsupported request type {type(request)}")
 
-        with sqlite3.connect(self.database) as con:
-            cur = con.cursor()
-            cur.execute(sql_str)
-            return [f for f in cur.fetchall()]
+        try:
+            with sqlite3.connect(self.database) as con:
+                cur = con.cursor()
+                cur.execute(sql_str)
+                return [f for f in cur.fetchall()]
+        except Exception as ex:
+            logger.error(f"Error with {self.database} and {sql_str}")
+            raise ex
 
     def get_file_names(self, request):
         """Get all files that match the request specifications
