@@ -504,7 +504,7 @@ class ReadMscwCtm:
         if len(fps) > 1 and ts_type == "hourly":
             raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps)
+        ds = xr.open_mfdataset(fps, chunks={"time": 24})
 
         self._filedata = ds
 
