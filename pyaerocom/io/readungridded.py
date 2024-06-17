@@ -555,6 +555,9 @@ class ReadUngridded:
             if data_read is not None:
                 data_out.append(data_read)
 
+        # close the cache-object, keeps otherwise data-references
+        cache = None
+
         if _caching is not None:
             const.CACHING = _caching
 
