@@ -38,7 +38,7 @@ def station_files(mep_path: Path, station: str) -> list[Path]:
 
 
 def test_DATASET_NAME(reader: ReadCNEMC):
-    assert reader.DATASET_NAME == "MEP"
+    assert reader.DATASET_NAME == "CNEMC"
 
 
 def test_DEFAULT_VARS(reader: ReadCNEMC):
