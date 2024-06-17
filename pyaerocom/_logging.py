@@ -20,6 +20,8 @@ import sys
 import time
 from logging.config import fileConfig
 
+import psutil
+
 from pyaerocom.data import resources
 
 
@@ -30,10 +32,11 @@ class MemUsageFilter(logging.Filter):
 
     def filter(self, record):
         mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        curmem = psutil.Process().memory_info().rss / (1024 * 1024)
         if mem < 1024:
-            record.mem_usage = f"{mem:.0f}M"
+            record.mem_usage = f"{curmem:.0f}/{mem:.0f}M"
         else:
-            record.mem_usage = f"{mem / 1024:.1f}G"
+            record.mem_usage = f"{curmem / 1024:.1f}/{mem / 1024:.1f}G"
         return True
 
 
