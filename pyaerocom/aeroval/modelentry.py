@@ -9,7 +9,7 @@ class ModelEntry(BrowseDict):
     """Modeln configuration for evaluation (dictionary)
 
     Note
-    ----
+    ----model_read_aux
     Only :attr:`model_id` is mandatory, the rest is optional.
 
     Attributes
@@ -70,10 +70,14 @@ class ModelEntry(BrowseDict):
     def json_repr(self) -> dict:
         sup_rep = super().json_repr()
 
-        for key in sup_rep["model_read_aux"]:
-            sup_rep["model_read_aux"][key]["fun"] = inspect.getsource(
-                deepcopy(sup_rep["model_read_aux"][key]["fun"])
-            )
+        # a little hacky, but makes the cams2-82 configs work
+        try:
+            for key in sup_rep["model_read_aux"]:
+                sup_rep["model_read_aux"][key]["fun"] = inspect.getsource(
+                    deepcopy(sup_rep["model_read_aux"][key]["fun"])
+                )
+        except TypeError:
+            pass
 
         return sup_rep
 
