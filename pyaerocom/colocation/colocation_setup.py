@@ -463,6 +463,7 @@ class ColocationSetup(BaseModel):
         for key in self.FORBIDDEN_KEYS:
             if key in self.model_fields:
                 raise ValidationError
+
         return self
 
     @model_validator(mode="after")
@@ -471,28 +472,29 @@ class ColocationSetup(BaseModel):
         if not (self.start and self.stop):
             if self.start or self.stop:
                 raise ValueError("Both start and stop need to be provided or both not provided.")
-        return self
 
-    # @model_validator(mode="after")
-    # @classmethod
-    # def validate_obs_config(cls, v: PyaroConfig):
-    #     if v is not None and cls.obs.config.name != cls.obs_id:
-    #         logger.info(
-    #             f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
-    #         )
-    #         v = None
-    #     if v is not None:
-    #         if isinstance(v, dict):
-    #             logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
-    #             v = PyaroConfig(**v)
-    #         if v.name != cls.obs_id:
-    #             logger.info(
-    #                 f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Obs ID to match Pyaro Config!"
-    #             )
-    #             cls.obs_id = v.name
-    #         if cls.obs_id is None:
-    #             cls.obs_id = v.name
-    #     return v
+    #     return self
+
+    @model_validator(mode="after")
+    @classmethod
+    def validate_obs_config(cls, v: PyaroConfig):
+        if v is not None and cls.obs.config.name != cls.obs_id:
+            logger.info(
+                f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
+            )
+            v = None
+        if v is not None:
+            if isinstance(v, dict):
+                logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
+                v = PyaroConfig(**v)
+            if v.name != cls.obs_id:
+                logger.info(
+                    f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Obs ID to match Pyaro Config!"
+                )
+                cls.obs_id = v.name
+            if cls.obs_id is None:
+                cls.obs_id = v.name
+        return v
 
     @cached_property
     def basedir_logfiles(self):
