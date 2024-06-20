@@ -194,6 +194,7 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
         paths,
         preprocess=preprocess,
         parallel=False,
+        chunks={"time": 24}
     )
     return ds.pipe(fix_coord).pipe(fix_names)
 
