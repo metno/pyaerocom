@@ -316,7 +316,6 @@ class ReadAasEtal(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         # sanity check
         data_obj._check_index()
-        self.data = data_obj  # initalizing a pointer to it selves
         return data_obj
 
 

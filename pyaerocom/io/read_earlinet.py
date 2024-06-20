@@ -614,7 +614,6 @@ class ReadEarlinet(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
 
-        self.data = data_obj
         return data_obj
 
     def _get_exclude_filelist(self):  # pragma: no cover

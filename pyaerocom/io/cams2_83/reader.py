@@ -190,11 +190,7 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day).pipe(fix_missing_vars)
 
-    ds = xr.open_mfdataset(
-        paths,
-        preprocess=preprocess,
-        parallel=False,
-    )
+    ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False, chunks={"time": 24})
     return ds.pipe(fix_coord).pipe(fix_names)
 
 

@@ -46,7 +46,8 @@ dependencies = [
     'cf-units>=3.1',
     "pydantic>=2.7.1",
     "pyaro>=0.0.10",
-    "pooch>=1.7.0"
+    "pooch>=1.7.0",
+    "psutil>=5.0.0"
 ]
 
 [project.readme]
@@ -201,7 +202,7 @@ requires =
 [testenv]
 commands_pre =
     python --version
-    python -m pip freeze --all 
+    python -m pip freeze --all
 commands =
     python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
