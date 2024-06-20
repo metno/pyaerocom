@@ -139,9 +139,8 @@ def calc_concno3pm10(concno3f, concno3c):
 def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.134):
     M_N = 14.006
     M_O = 15.999
-    M_H = 1.007
 
-    fac = M_N / (M_H + M_N + M_O * 3)
+    fac = M_N / (M_N + M_O * 3)
     mult_fun = CUBE_MATHS["multiply"]
     concno3f, concno3c = _check_input_iscube(concno3f, concno3c)
     concno3f, concno3c = _check_same_units(concno3f, concno3c)
@@ -153,9 +152,8 @@ def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.1
 def calc_concNno3pm10(concno3f, concno3c):
     M_N = 14.006
     M_O = 15.999
-    M_H = 1.007
 
-    fac = M_N / (M_H + M_N + M_O * 3)
+    fac = M_N / (M_N + M_O * 3)
     mult_fun = CUBE_MATHS["multiply"]
     concno3f, concno3c = _check_input_iscube(concno3f, concno3c)
     concno3f, concno3c = _check_same_units(concno3f, concno3c)
