@@ -104,7 +104,7 @@ def coldata_mos(tmp_path_factory) -> Path:
                         "pyaerocom": "0.18.dev0",
                         "CONV!min_num_obs": str(dict(daily=dict(hourly=18))),
                         "resample_how": "None",
-                        "obs_name": "EEA-NRT",
+                        "obs_name": "EEA-UTD",
                         "vert_code": "Surface",
                         "diurnal_only": 0,
                         "zeros_to_nan": 1,
@@ -136,7 +136,7 @@ def coldata_mos(tmp_path_factory) -> Path:
     for model, day in product(("ENS", "MOS"), range(4)):
         path = (
             root
-            / f"cams2-83/mos-colocated-data/CAMS2-83-{model}-day{day}-FC/concno2_concno2_MOD-CAMS2-83-{model}-day{day}-FC_REF-EEA-NRT_{start:%Y%m%d}_{end:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
+            / f"cams2-83/mos-colocated-data/CAMS2-83-{model}-day{day}-FC/concno2_concno2_MOD-CAMS2-83-{model}-day{day}-FC_REF-EEA-UTD_{start:%Y%m%d}_{end:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
         )
         path.parent.mkdir(exist_ok=True, parents=True)
         dataset(model, day, start, end).to_netcdf(path)
@@ -145,7 +145,7 @@ def coldata_mos(tmp_path_factory) -> Path:
     for model in ("ENS", "MOS"):
         path = (
             root
-            / f"cams2-83/mos-colocated-data/{model}/concno2_concno2_MOD-{model}_REF-EEA-NRT_{start:%Y%m%d}_{start:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
+            / f"cams2-83/mos-colocated-data/{model}/concno2_concno2_MOD-{model}_REF-EEA-UTD_{start:%Y%m%d}_{start:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
         )
         path.parent.mkdir(exist_ok=True, parents=True)
         ds = dataset(model, 0, start, end)
