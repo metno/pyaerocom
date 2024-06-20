@@ -104,7 +104,7 @@ class ReadCNEMC(ReadUngriddedBase):
 
     def __init__(self, data_id: str | None = None, data_dir: str | None = None):
         if data_dir is None:
-            data_dir = const.OBSLOCS_UNGRIDDED[const.MEP_NAME]
+            data_dir = const.OBSLOCS_UNGRIDDED[const.CNEMC_NAME]
 
         super().__init__(data_id=data_id, data_dir=data_dir)
         self.files = sorted(map(str, self.FOUND_FILES))
