@@ -43,8 +43,9 @@ def check_var_ranges_avail(model_data, var_name):
     """
     try:
         VarinfoWeb(var_name)
-    except AttributeError:
+    except AttributeError as aex:
         if model_data.var_name_aerocom == var_name:
+            logger.info(f"re-registering var {var_name} due to: {aex}")
             model_data.register_var_glob(delete_existing=True)
         else:
             raise ValueError(
