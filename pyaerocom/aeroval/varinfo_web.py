@@ -42,8 +42,8 @@ class VarinfoWeb:
         var_name: str,
         cmap: str = None,
         cmap_bins: list = None,
-        vmin: float = None,
-        vmax: float = None,
+        vmin: float|None = None,
+        vmax: float|None = None,
     ):
         if cmap_bins is not None:
             if vmin is not None or vmax is not None:
