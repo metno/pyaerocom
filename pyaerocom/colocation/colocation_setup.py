@@ -270,7 +270,8 @@ class ColocationSetup(BaseModel):
         co-located NetCDF file (under the output location specified by
         :attr:`basedir_coldata` ) for the given variable combination to be
         co-located. If False and output already exists, then co-location is
-        skipped for the associated variable. Default is True.
+        skipped for the associated variable. This flag is also used for contour-plots.
+        Default is True.
     raise_exceptions : bool
         if True, Exceptions that may occur for individual variables to be
         processed, are raised, else the analysis is skipped for such cases.
