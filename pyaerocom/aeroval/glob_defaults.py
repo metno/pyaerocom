@@ -70,7 +70,9 @@ var_ranges_defaults = {
     "concpm25": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40, 45], "colmap": "coolwarm"},
     "conco3": {"scale": [0, 15, 30, 45, 60, 75, 90, 105, 120], "colmap": "coolwarm"},
     "vmro3": {"scale": [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70], "colmap": "coolwarm"},
+    "vmrox": {"scale": [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70], "colmap": "coolwarm"},
     "concno2": {"scale": [0, 10, 20, 30, 40, 50, 60, 70, 80], "colmap": "coolwarm"},
+    "concNno2": {"scale": [0, 0.3, 0.5, 1, 1.3, 1.5, 2, 3, 5], "colmap": "coolwarm"},
     "vmrno2": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40], "colmap": "coolwarm"},
     "vmro3max": {"scale": [0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60], "colmap": "coolwarm"},
     "concNhno3": {
