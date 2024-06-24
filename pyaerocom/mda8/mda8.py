@@ -2,8 +2,17 @@ import numpy as np
 import xarray as xr
 
 
-def calc_mda8(data: xr.DataArray) -> float:
-    def min_periods_max(x: np.ndarray, /, min_periods=1):
+def calc_mda8(data: xr.DataArray) -> xr.DataArray:
+    """Calculates the daily max 8h average for an array:
+
+    :param data: The DataArray for which to calculate the mda8. Input
+    should be a DataArray with dimensions ["data_source", "time", "station_name"]
+    (ie. the format of ColocatedData.data) representing hourly data.
+    :return: Equivalently structured DataArray, resampled along the "time"
+    dimension.
+    """
+
+    def min_periods_max(x: np.ndarray, /, min_periods=1) -> float:
         """Calculates the max of a 1-dimensional array, returning
         nan if not a minimum set of valid values exist.
 
@@ -22,6 +31,9 @@ def calc_mda8(data: xr.DataArray) -> float:
 
         else:
             return np.nan
+
+    # TODO: This function should check some underlying assumptions such as the dimensions,
+    # that the data represents hourly data and so on.
 
     ravg = data.rolling(time=8, min_periods=6).mean()
 
