@@ -37,13 +37,13 @@ def test_eval_mos_standard(tmp_path: Path, coldata_mos: Path, caplog):
     map_dir = tmp_path / "cams2-83/mos-colocated-data/map"
     assert map_dir.is_dir()
 
-    ts_st1 = tmp_path / "cams2-83/mos-colocated-data/ts/AT0ENK1_EEA-NRT-concno2_Surface.json"
+    ts_st1 = tmp_path / "cams2-83/mos-colocated-data/ts/AT0ENK1_EEA-UTD-concno2_Surface.json"
     assert ts_st1.is_file()
 
-    ts_st2 = tmp_path / "cams2-83/mos-colocated-data/ts/AT0ILL1_EEA-NRT-concno2_Surface.json"
+    ts_st2 = tmp_path / "cams2-83/mos-colocated-data/ts/AT0ILL1_EEA-UTD-concno2_Surface.json"
     assert ts_st2.is_file()
 
-    ts_st3 = tmp_path / "cams2-83/mos-colocated-data/ts/XK0012A_EEA-NRT-concno2_Surface.json"
+    ts_st3 = tmp_path / "cams2-83/mos-colocated-data/ts/XK0012A_EEA-UTD-concno2_Surface.json"
     assert ts_st3.is_file()
 
     hm_dir = tmp_path / "cams2-83/mos-colocated-data/hm"
@@ -61,8 +61,8 @@ def test_eval_mos_standard(tmp_path: Path, coldata_mos: Path, caplog):
     cfg_out = tmp_path / "cams2-83/mos-colocated-data/cfg_cams2-83_mos-colocated-data.json"
     assert cfg_out.is_file()
 
-    colfileE = f"{coldata_mos}/cams2-83/mos-colocated-data/ENS/concno2_concno2_MOD-ENS_REF-EEA-NRT_20240301_20240301_hourly_ALL-wMOUNTAINS.nc"
-    colfileM = f"{coldata_mos}/cams2-83/mos-colocated-data/MOS/concno2_concno2_MOD-MOS_REF-EEA-NRT_20240301_20240301_hourly_ALL-wMOUNTAINS.nc"
+    colfileE = f"{coldata_mos}/cams2-83/mos-colocated-data/ENS/concno2_concno2_MOD-ENS_REF-EEA-UTD_20240301_20240301_hourly_ALL-wMOUNTAINS.nc"
+    colfileM = f"{coldata_mos}/cams2-83/mos-colocated-data/MOS/concno2_concno2_MOD-MOS_REF-EEA-UTD_20240301_20240301_hourly_ALL-wMOUNTAINS.nc"
 
     assert "Running Statistics (MOS)" in caplog.text
     assert f"Processing: {colfileE}" in caplog.text
@@ -76,7 +76,7 @@ def test_eval_mos_medianscores(tmp_path: Path, coldata_mos: Path, caplog):
     options = f"season 2024-03-01 2024-03-05 --data-path {tmp_path} --coldata-path {coldata_mos} --cache {tmp_path} --id mos-colocated-data --name 'Test'"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
-    fc_out = tmp_path / "cams2-83/mos-colocated-data/forecast/ALL_EEA-NRT-concno2_Surface.json"
+    fc_out = tmp_path / "cams2-83/mos-colocated-data/forecast/ALL_EEA-UTD-concno2_Surface.json"
     assert fc_out.is_file()
     assert "Running CAMS2_83 Specific Statistics" in caplog.text
     assert "Processing Component: concno2"
