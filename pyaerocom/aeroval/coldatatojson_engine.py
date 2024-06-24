@@ -32,7 +32,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 )
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import write_json
-from pyaerocom.aeroval.mda8 import calc_mda8
 from pyaerocom.exceptions import TemporalResolutionError
 
 logger = logging.getLogger(__name__)
@@ -151,10 +150,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             model_var = coldata.metadata["var_name_input"][1]
         else:
             obs_var = model_var = "UNDEFINED"
-
-        if use_fairmode:
-            if "conco3" in coldata.data.variable:
-                coldata = calc_mda8(coldata, "conco3mda8", "conco3mda8")
 
         model_name = coldata.model_name
         obs_name = coldata.obs_name
