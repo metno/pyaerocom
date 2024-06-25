@@ -2,17 +2,22 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
+from pyaerocom.colocation.colocation_3d import ColocatedDataLists
 
 
-def mda8_colocated_data(coldat: ColocatedData) -> ColocatedData:
+def mda8_colocated_data(
+    coldat: ColocatedData | ColocatedDataLists,
+) -> ColocatedData | ColocatedDataLists:
     """Applies the mda8 calculation to a colocated data object,
     returning the new colocated data object.
 
     :param data: The colocated data object.
     :return: Colocated data object containing
     """
+    if isinstance(coldat, ColocatedDataLists):
+        raise NotImplementedError("ColocatedDataLists not currently supported.")
 
-    new_data = ColocatedData(calc_mda8(coldat))
+    new_data = ColocatedData(calc_mda8(coldat.data))
     return new_data
 
 
