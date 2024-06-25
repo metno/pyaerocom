@@ -1,6 +1,20 @@
 import numpy as np
 import xarray as xr
 
+from pyaerocom.colocation.colocated_data import ColocatedData
+
+
+def mda8_colocated_data(coldat: ColocatedData) -> ColocatedData:
+    """Applies the mda8 calculation to a colocated data object,
+    returning the new colocated data object.
+
+    :param data: The colocated data object.
+    :return: Colocated data object containing
+    """
+
+    new_data = ColocatedData(calc_mda8(coldat))
+    return new_data
+
 
 def calc_mda8(data: xr.DataArray) -> xr.DataArray:
     """Calculates the daily max 8h average for an array:
