@@ -148,7 +148,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             cmapinfo = var_ranges_defaults[var]
             varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:
-            varinfo = VarinfoWeb(var)
+            cmapinfo = var_ranges_defaults["default"]
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
         data = self._check_dimensions(data)
 

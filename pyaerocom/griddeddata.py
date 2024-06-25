@@ -669,23 +669,26 @@ class GriddedData:
             minimum=vmin,
             maximum=vmax,
         )
+        var_existed = False
         if delete_existing:
             varcol = const.VARS
             if self.var_name in varcol:
                 varcol.delete_variable(self.var_name)
+                var_existed = True
         const.VARS.add_var(vardef)
-        logger.warning(
-            f"Adding variable {self.var_name} in pyaerocom.const.VARS. "
-            f"since such a  "
-            f"variable is not defined in pyaerocom. Minimum and maximum "
-            f"values are added automatically based on value range in "
-            f"associated GriddedData object to: minimum={vmin}, maximum="
-            f"{vmax}. Since this will add the variable only temporarily "
-            f"during this run, this might interrupt the processing "
-            f"workflow unexpectedly when rerunning parts of the code without "
-            f"explictly calling GriddedData.register_var_glob. It may be best "
-            f"to add this variable to pyaerocom/data/variables.ini."
-        )
+        if not var_existed:
+            logger.warning(
+                f"Adding variable {self.var_name} in pyaerocom.const.VARS. "
+                f"since such a  "
+                f"variable is not defined in pyaerocom. Minimum and maximum "
+                f"values are added automatically based on value range in "
+                f"associated GriddedData object to: minimum={vmin}, maximum="
+                f"{vmax}. Since this will add the variable only temporarily "
+                f"during this run, this might interrupt the processing "
+                f"workflow unexpectedly when rerunning parts of the code without "
+                f"explictly calling GriddedData.register_var_glob. It may be best "
+                f"to add this variable to pyaerocom/data/variables.ini."
+            )
         return vardef
 
     @ignore_warnings(UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
