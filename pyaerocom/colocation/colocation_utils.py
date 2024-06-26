@@ -100,7 +100,7 @@ def _regrid_gridded(gridded, regrid_scheme: str, regrid_res_deg: RegridResDeg):
         regridded data object
 
     """
-    if not isinstance(regrid_res_deg, (dict, RegridResDeg)):
+    if not isinstance(regrid_res_deg, dict):  # at runtime RegridResDeg is a dict
         if not isnumeric(regrid_res_deg):
             raise ValueError(
                 "Invalid input for regrid_res_deg. Need integer "
