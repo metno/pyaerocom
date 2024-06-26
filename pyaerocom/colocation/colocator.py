@@ -382,9 +382,9 @@ class Colocator:
                 )  # note this can be ColocatedData or ColocatedDataLists
                 data_out[mod_var][obs_var] = coldata
 
-                # TODO: Currently applies mda8 to every variable. Should only apply to the ones we care about.
-                if isinstance(coldata, ColocatedData):
-                    data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8_colocated_data(coldata)
+                if obs_var in ["conco3", "vmro3"]:
+                    if isinstance(coldata, ColocatedData):
+                        data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8_colocated_data(coldata)
 
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:

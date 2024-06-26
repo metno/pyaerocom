@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from pyaerocom.mda8.mda8 import calc_mda8
+from pyaerocom.mda8.mda8 import _calc_mda8
 
 
 @pytest.mark.parametrize(
@@ -43,7 +43,7 @@ def test_calc_mda8(time, values, exp_mda8):
         coords={"time": time},
     )
 
-    mda8 = calc_mda8(arr)
+    mda8 = _calc_mda8(arr)
 
     assert mda8.shape[1] == len(exp_mda8)
 
@@ -65,7 +65,7 @@ def test_calc_mda8_with_gap():
 
     arr = xr.concat((arr1, arr2), dim="time")
 
-    mda8 = calc_mda8(arr)
+    mda8 = _calc_mda8(arr)
 
     assert mda8.shape == (1, 6, 1)
     np.testing.assert_array_equal(mda8[0, :, 0], [20.5, 44.5, np.nan, 41.25, 44.5, np.nan])
