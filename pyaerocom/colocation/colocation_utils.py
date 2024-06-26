@@ -12,6 +12,7 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -69,7 +70,7 @@ def resolve_var_name(data):
     return (var, vardef.var_name_aerocom)
 
 
-def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
+def _regrid_gridded(gridded, regrid_scheme: str, regrid_res_deg: RegridResDeg):
     """
     Regrid instance of `GriddedData`
 
@@ -99,7 +100,7 @@ def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
         regridded data object
 
     """
-    if not isinstance(regrid_res_deg, dict):
+    if not isinstance(regrid_res_deg, dict):  # at runtime RegridResDeg is a dict
         if not isnumeric(regrid_res_deg):
             raise ValueError(
                 "Invalid input for regrid_res_deg. Need integer "
@@ -158,9 +159,9 @@ def colocate_gridded_gridded(
     start=None,
     stop=None,
     filter_name=None,
-    regrid_res_deg=None,
+    regrid_res_deg: float | RegridResDeg | None = None,
     harmonise_units=True,
-    regrid_scheme="areaweighted",
+    regrid_scheme: str = "areaweighted",
     update_baseyear_gridded=None,
     min_num_obs=None,
     colocate_time=False,
@@ -580,9 +581,9 @@ def colocate_gridded_ungridded(
     start=None,
     stop=None,
     filter_name=None,
-    regrid_res_deg=None,
+    regrid_res_deg: float | RegridResDeg | None = None,
     harmonise_units=True,
-    regrid_scheme="areaweighted",
+    regrid_scheme: str = "areaweighted",
     var_ref=None,
     update_baseyear_gridded=None,
     min_num_obs=None,

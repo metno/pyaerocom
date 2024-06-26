@@ -9,6 +9,7 @@ from collections.abc import MutableMapping
 from pathlib import Path
 
 import numpy as np
+from typing_extensions import TypedDict
 
 from pyaerocom._warnings import ignore_warnings
 
@@ -704,3 +705,10 @@ def str_underline(title: str, indent: int = 0):
     length = indent + len(title)
     underline = "-" * len(title)
     return f"{title:>{length}}\n{underline:>{length}}"
+
+
+class RegridResDeg(TypedDict):
+    """Typed dict for regridding resolution degrees"""
+
+    lat_res_deg: float
+    lon_res_deg: float
