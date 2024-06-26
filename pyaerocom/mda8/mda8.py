@@ -24,7 +24,7 @@ def min_periods_max(x: np.ndarray, /, min_periods=1) -> float:
 
 
 def mda8_colocated_data(
-    coldat: ColocatedData | ColocatedDataLists,
+    coldat: ColocatedData | ColocatedDataLists, /, obs_var: str, mod_var: str
 ) -> ColocatedData | ColocatedDataLists:
     """Applies the mda8 calculation to a colocated data object,
     returning the new colocated data object.
@@ -48,14 +48,21 @@ def mda8_colocated_data(
                 f"Unexpected dimensions. Got {coldat.dims}, expected ['data_source', 'time', 'station_name']."
             )
 
-        return ColocatedData(_calc_mda8(coldat.data))
+        cd = ColocatedData(_calc_mda8(coldat.data))
+        cd.ts_type = "daily"
+        cd.var_name = [obs_var, mod_var]
+        return
 
     colocateddata_for_statistics = []
     colocateddata_for_profile_viz = []
     for cd in coldat.colocateddata_for_statistics:
-        colocateddata_for_statistics.append(mda8_colocated_data(cd))
+        colocateddata_for_statistics.append(
+            mda8_colocated_data(cd, obs_var=obs_var, mod_var=mod_var)
+        )
     for cd in coldat.colocateddata_for_profile_viz:
-        colocateddata_for_profile_viz.append(mda8_colocated_data(cd))
+        colocateddata_for_profile_viz.append(
+            mda8_colocated_data(cd, obs_var=obs_var, mod_var=mod_var)
+        )
 
     return ColocatedDataLists(colocateddata_for_statistics, colocateddata_for_profile_viz)
 

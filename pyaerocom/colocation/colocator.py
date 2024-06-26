@@ -383,8 +383,17 @@ class Colocator:
                 data_out[mod_var][obs_var] = coldata
 
                 if obs_var in ["conco3", "vmro3"]:
-                    if isinstance(coldata, ColocatedData):
-                        data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8_colocated_data(coldata)
+                    mda8 = None
+                    try:
+                        mda8 = mda8_colocated_data(
+                            coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
+                        )
+                    except ValueError:
+                        logger.warning(
+                            "Tried calculating mda8 for [{obs_var}, {mod_var}], but failed."
+                        )
+                    finally:
+                        data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
