@@ -257,9 +257,12 @@ class ColocationSetup(BaseModel):
     harmonise_units : bool
         if True, units are attempted to be harmonised during co-location
         (note: raises Exception if True and in case units cannot be harmonised).
-    regrid_res_deg : int, optional
-        resolution in degrees for regridding of model grid (done before
-        co-location). Default is None.
+    regrid_res_deg : float or dict, optional
+        regrid resolution in degrees. If specified, the input gridded data
+        objects will be regridded in lon / lat dimension to the input
+        resolution (if input is float, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively). Default is None.
     colocate_time : bool
         if True and if obs and model sampling frequency (e.g. daily) are higher
         than output colocation frequency (e.g. monthly), then the datasets are
@@ -411,7 +414,7 @@ class ColocationSetup(BaseModel):
     model_outlier_ranges: dict[str, tuple[float, float]] | None = {}
     zeros_to_nan: bool = False
     harmonise_units: bool = False
-    regrid_res_deg: float | None = None
+    regrid_res_deg: float | dict[Literal["lat_res_deg", "lon_res_deg"], float] | None = None
     colocate_time: bool = False
     reanalyse_existing: bool = True
     raise_exceptions: bool = False
