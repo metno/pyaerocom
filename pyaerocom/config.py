@@ -370,8 +370,7 @@ class Config:
     @property
     def OUTPUTDIR(self):
         """Default output directory"""
-        if not check_write_access(self._outputdir):
-            self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
+        self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
         return self._outputdir
 
     @property
