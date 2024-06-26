@@ -14,6 +14,7 @@ from cf_units import Unit
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -303,7 +304,7 @@ def colocate_vertical_profile_gridded(
     start: str | None = None,
     stop: str | None = None,
     filter_name: str = None,
-    regrid_res_deg: int | dict | None = None,
+    regrid_res_deg: float | RegridResDeg | None = None,
     harmonise_units: bool = True,
     regrid_scheme: str = "areaweighted",
     var_ref: str = None,

@@ -16,6 +16,7 @@ from pydantic import (
 )
 
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
@@ -414,7 +415,7 @@ class ColocationSetup(BaseModel):
     model_outlier_ranges: dict[str, tuple[float, float]] | None = {}
     zeros_to_nan: bool = False
     harmonise_units: bool = False
-    regrid_res_deg: float | dict[Literal["lat_res_deg", "lon_res_deg"], float] | None = None
+    regrid_res_deg: float | RegridResDeg | None = None
     colocate_time: bool = False
     reanalyse_existing: bool = True
     raise_exceptions: bool = False

@@ -7,6 +7,7 @@ import logging
 import os
 from collections.abc import MutableMapping
 from pathlib import Path
+from typing import TypedDict
 
 import numpy as np
 
@@ -704,3 +705,10 @@ def str_underline(title: str, indent: int = 0):
     length = indent + len(title)
     underline = "-" * len(title)
     return f"{title:>{length}}\n{underline:>{length}}"
+
+
+class RegridResDeg(TypedDict):
+    """Typed dict for regridding resolution degrees"""
+
+    lat_res_deg: float
+    lon_res_deg: float
