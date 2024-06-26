@@ -7,9 +7,9 @@ import logging
 import os
 from collections.abc import MutableMapping
 from pathlib import Path
-from typing import TypedDict
 
 import numpy as np
+from typing_extensions import TypedDict
 
 from pyaerocom._warnings import ignore_warnings
 
