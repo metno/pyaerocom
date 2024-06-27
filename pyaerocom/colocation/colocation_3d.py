@@ -313,8 +313,8 @@ def colocate_vertical_profile_gridded(
     colocate_time: bool = False,
     use_climatology_ref: bool = False,
     resample_how: str | dict = None,
-    colocation_layer_limits: tuple[LayerLimits, ...] = None,
-    profile_layer_limits: tuple[LayerLimits, ...] = None,
+    colocation_layer_limits: tuple[LayerLimits, ...] | None = None,
+    profile_layer_limits: tuple[LayerLimits, ...] | None = None,
     **kwargs,
 ) -> ColocatedDataLists:
     """

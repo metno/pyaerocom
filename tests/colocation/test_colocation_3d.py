@@ -71,12 +71,8 @@ def example_earlinet_ungriddeddata():
             "mean",
             {"monthly": {"daily": 25}},
             False,
-            [
-                {"start": 0, "end": 6000},
-            ],
-            [
-                {"start": 0, "end": 6000},
-            ],
+            ({"start": 0, "end": 6000},),
+            ({"start": 0, "end": 6000},),
             id="fake_data",
         )
     ],
