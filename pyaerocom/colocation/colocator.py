@@ -136,7 +136,7 @@ class Colocator:
         """
         bool: True if obs_id refers to a VerticalProfile, else False
         """
-        return self.colocation_setup._obs_is_vertical_profile
+        return self._obs_is_vertical_profile
 
     @obs_is_vertical_profile.setter
     def obs_is_vertical_profile(self, value):

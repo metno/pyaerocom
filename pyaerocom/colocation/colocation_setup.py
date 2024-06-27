@@ -376,7 +376,6 @@ class ColocationSetup(BaseModel):
     obs_vert_type: str | None = None
     obs_ts_type_read: str | dict | None = None
     obs_filters: dict = {}
-    _obs_is_vertical_profile: bool = False
     colocation_layer_limits: tuple[LayerLimits, ...] | None = None
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
     read_opts_ungridded: dict | None = {}
