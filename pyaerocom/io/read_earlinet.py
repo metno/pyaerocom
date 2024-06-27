@@ -24,7 +24,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = "*.*"
 
     #: version log of this class (for caching)
-    __version__ = "0.16_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.17_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -48,22 +48,12 @@ class ReadEarlinet(ReadUngriddedBase):
     # at an hourly reoslution. Some files are a little less, but typically this is the case
     TS_TYPE = "hourly"
 
-    #: dictionary specifying the file search patterns for each variable
-    # VAR_PATTERNS_FILE = {
-    #     "ec532aer": "*.e532",
-    #     "ec355aer": "*.e355",
-    #     "bsc532aer": "*.b532",
-    #     "bsc355aer": "*.b355",
-    #     "bsc1064aer": "*.b1064",
-    #     "zdust": "*.e*",
-    # }
-
     VAR_PATTERNS_FILE = {
-        "ec532aer": "_Lev02_e0532",
-        "ec355aer": "_Lev02_e0355",
-        "bsc532aer": "_Lev02_b0532",
-        "bsc355aer": "_Lev02_b0355",
-        "bsc1064aer": "_Lev02_b1064",
+        "ec532aer": "_e0532",
+        "ec355aer": "_e0355",
+        "bsc532aer": "_b0532",
+        "bsc355aer": "_b0355",
+        "bsc1064aer": "_b1064",
         # "zdust": "*.e*", # not sure if EARLINET has this anymore
     }
 
