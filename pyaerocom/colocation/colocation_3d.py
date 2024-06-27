@@ -479,7 +479,7 @@ def colocate_vertical_profile_gridded(
             var_aerocom=var_aerocom,
             var_ref_aerocom=var_ref_aerocom,
         )
-        for layer_limits in colocation_layer_limits + profile_layer_limits
+        for layer_limits in (colocation_layer_limits, profile_layer_limits)
     ]
     # Create a namedtuple for output.
     # Each element in the tuple is a list of ColocatedData objects.
