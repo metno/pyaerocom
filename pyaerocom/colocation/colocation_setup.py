@@ -16,7 +16,7 @@ from pydantic import (
 )
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import RegridResDeg
+from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
@@ -377,8 +377,8 @@ class ColocationSetup(BaseModel):
     obs_ts_type_read: str | dict | None = None
     obs_filters: dict = {}
     _obs_is_vertical_profile: bool = False
-    colocation_layer_limits: dict[str, float] | None = None
-    profile_layer_limits: dict | None = None
+    colocation_layer_limits: tuple[LayerLimits, ...] | None = None
+    profile_layer_limits: tuple[LayerLimits, ...] | None = None
     read_opts_ungridded: dict | None = {}
 
     # Attributes related to model data

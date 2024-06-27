@@ -14,7 +14,7 @@ from cf_units import Unit
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import RegridResDeg
+from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -56,7 +56,7 @@ def _colocate_vertical_profile_gridded(
     colocate_time=False,
     use_climatology_ref=False,
     resample_how=None,
-    layer_limits: dict[str, dict[str, float]] = None,
+    layer_limits: LayerLimits | None = None,
     obs_stat_data=None,
     ungridded_lons=None,
     ungridded_lats=None,
@@ -313,8 +313,8 @@ def colocate_vertical_profile_gridded(
     colocate_time: bool = False,
     use_climatology_ref: bool = False,
     resample_how: str | dict = None,
-    colocation_layer_limits: list[dict] = None,
-    profile_layer_limits: list[dict] = None,
+    colocation_layer_limits: tuple[LayerLimits, ...] = None,
+    profile_layer_limits: tuple[LayerLimits, ...] = None,
     **kwargs,
 ) -> ColocatedDataLists:
     """
@@ -479,7 +479,7 @@ def colocate_vertical_profile_gridded(
             var_aerocom=var_aerocom,
             var_ref_aerocom=var_ref_aerocom,
         )
-        for layer_limits in [colocation_layer_limits, profile_layer_limits]
+        for layer_limits in colocation_layer_limits + profile_layer_limits
     ]
     # Create a namedtuple for output.
     # Each element in the tuple is a list of ColocatedData objects.
