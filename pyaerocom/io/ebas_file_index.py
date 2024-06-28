@@ -287,7 +287,7 @@ class EbasFileIndex:
     def get_table_columns(self, table_name):
         """Get all columns of a table in SQLite database file"""
         req = f"select * from {table_name} where 1=0;"
-        with sqlite3.connect(self.database) as con:
+        with sqlite3.connect(f"file:{self.database}?mode=ro", uri=True) as con:
             cur = con.cursor()
             cur.execute(req)
             return [f[0] for f in cur.description]
@@ -320,7 +320,7 @@ class EbasFileIndex:
             raise ValueError(f"Unsupported request type {type(request)}")
 
         try:
-            with sqlite3.connect(self.database) as con:
+            with sqlite3.connect(f"file:{self.database}?mode=ro", uri=True) as con:
                 cur = con.cursor()
                 cur.execute(sql_str)
                 return [f for f in cur.fetchall()]
