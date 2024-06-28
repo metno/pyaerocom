@@ -197,7 +197,7 @@ class ReadEbas(ReadUngriddedBase):
     FILE_SUBDIR_NAME = "data"
 
     #: Name of sqlite database file
-    SQL_DB_NAME = "ebas_file_index.sqlite3"
+    SQL_DB_NAME = "ebas_file_index.sqlite3?mode=readonly"
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EBAS_MULTICOLUMN_NAME]
