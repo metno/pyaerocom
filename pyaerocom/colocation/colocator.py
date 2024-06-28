@@ -86,6 +86,7 @@ class Colocator:
 
         self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None
         self._obs_reader: Any | None = None
+        self._obs_is_vertical_profile: bool = False
         self.obs_filters: dict = colocation_setup.obs_filters.copy()
 
     @property
@@ -136,7 +137,7 @@ class Colocator:
         """
         bool: True if obs_id refers to a VerticalProfile, else False
         """
-        return self.colocation_setup._obs_is_vertical_profile
+        return self._obs_is_vertical_profile
 
     @obs_is_vertical_profile.setter
     def obs_is_vertical_profile(self, value):

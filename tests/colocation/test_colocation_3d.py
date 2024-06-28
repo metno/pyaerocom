@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from pyaerocom import GriddedData
+from pyaerocom._lowlevel_helpers import LayerLimits
 from pyaerocom.colocation.colocation_3d import (
     ColocatedDataLists,
     colocate_vertical_profile_gridded,
@@ -70,12 +71,8 @@ def example_earlinet_ungriddeddata():
             "mean",
             {"monthly": {"daily": 25}},
             False,
-            [
-                {"start": 0, "end": 6000},
-            ],
-            [
-                {"start": 0, "end": 6000},
-            ],
+            ({"start": 0, "end": 6000},),
+            ({"start": 0, "end": 6000},),
             id="fake_data",
         )
     ],
@@ -87,8 +84,8 @@ def test_colocate_vertical_profile_gridded(
     resample_how,
     min_num_obs,
     use_climatology_ref,
-    colocation_layer_limits,
-    profile_layer_limits,
+    colocation_layer_limits: tuple[LayerLimits, ...],
+    profile_layer_limits: tuple[LayerLimits, ...],
 ):
     colocated_data_list = colocate_vertical_profile_gridded(
         data=fake_model_data_with_altitude,

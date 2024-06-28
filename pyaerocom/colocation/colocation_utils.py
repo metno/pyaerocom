@@ -170,7 +170,7 @@ def colocate_gridded_gridded(
 ):
     """Colocate 2 gridded data objects
 
-    Todo
+    TODO
     ----
     - think about vertical dimension (vert_scheme input not used at the moment)
 

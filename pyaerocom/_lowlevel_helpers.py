@@ -712,3 +712,10 @@ class RegridResDeg(TypedDict):
 
     lat_res_deg: float
     lon_res_deg: float
+
+
+class LayerLimits(TypedDict):
+    """Typed dict of 3D colocation layer limits"""
+
+    start: float
+    end: float
