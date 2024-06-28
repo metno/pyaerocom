@@ -86,6 +86,7 @@ class Colocator:
 
         self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None
         self._obs_reader: Any | None = None
+        self._obs_is_vertical_profile: bool = False
         self.obs_filters: dict = colocation_setup.obs_filters.copy()
 
     @property
