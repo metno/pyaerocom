@@ -642,6 +642,7 @@ var_web_info = dict(
     vmrch4=["CH4", "3D", "Volume mixing ratios"],
     # PMs
     concpm10=["PM10", "3D", "Particle concentrations"],
+    concpm10pbap=["PM10 PBAP", "3D", "Particle concentrations incl. spores"],
     concpm25=["PM2.5", "3D", "Particle concentrations"],
     concNno3pm10=["NO3 PM10", "3D", "Particle concentration"],
     concNno3pm25=["NO3 PM25", "3D", "Particle concentration"],
