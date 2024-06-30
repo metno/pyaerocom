@@ -325,7 +325,7 @@ class Config:
                     var_dict[key] = Variable(**item)
                 else:
                     raise ValueError(
-                        f"Dict item {item} must atleast have the keys 'var_name' and 'units'"
+                        f"Dict item {item} must at least have the keys 'var_name' and 'units'"
                     )
             else:
                 raise ValueError(f"Item {item} must be either dict or Variable")
