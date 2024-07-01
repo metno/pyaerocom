@@ -306,7 +306,7 @@ class ReadMscwCtm:
 
         if len(found_yrs) != len(yrs):
             raise ValueError(
-                f"A different amount of years {found_yrs} were found compared tp {yrs}"
+                f"A different amount of years {found_yrs} were found compared to {yrs} in {filepaths}"
             )
 
         return [d for _, d in sorted(zip(found_yrs, clean_paths))]
