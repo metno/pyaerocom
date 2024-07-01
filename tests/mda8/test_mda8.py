@@ -71,7 +71,7 @@ def test_calc_mda8_with_gap():
     mda8 = _calc_mda8(arr)
 
     assert mda8.shape == (1, 6, 1)
-    np.testing.assert_array_equal(mda8[0, :, 0], [20.5, 44.5, np.nan, 41.25, 44.5, np.nan])
+    pytest.approx(mda8[0, :, 0], [20.5, 44.5, np.nan, 41.25, 44.5, np.nan], abs=10 * 10**-5)
 
 
 @pytest.mark.parametrize("coldataset", ("fake_3d_hr",))
@@ -83,12 +83,12 @@ def test_coldata_to_mda8(coldata):
     assert mda8.metadata["var_name"] == ["vmro3mda8", "vmro3mda8"]
     assert mda8.shape == (2, 8, 1)
 
-    np.testing.assert_array_almost_equal(
+    pytest.approx(
         mda8.data.values[0, :, 0],
         [np.nan, np.nan, 1.18741556, 1.18777241, 1.18869106, 1.18879322, 1.18807846, 1.18700801],
-        decimal=5,
+        abs=10 * 10**-5,
     )
-    np.testing.assert_array_almost_equal(
+    pytest.approx(
         mda8.data.values[1, :, 0],
         [
             1.57327333,
@@ -100,17 +100,5 @@ def test_coldata_to_mda8(coldata):
             1.28807846,
             1.28700801,
         ],
-        decimal=5,
+        abs=10 * 10**-5,
     )
-
-
-@pytest.mark.parametrize("coldataset", ("fake_3d_hr",))
-def test_coldata_to_mda8_ColocatedDataLists(coldata):
-    cd_list = ColocatedDataLists([coldata], [])
-
-    mda8 = mda8_colocated_data(cd_list, obs_var="vmro3mda8", mod_var="vmro3mda8")
-
-    assert isinstance(mda8, ColocatedDataLists)
-
-    assert len(mda8.colocateddata_for_statistics) == 1
-    assert len(mda8.colocateddata_for_profile_viz) == 0

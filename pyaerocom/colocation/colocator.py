@@ -390,7 +390,7 @@ class Colocator:
                         )
                     except ValueError:
                         logger.warning(
-                            "Tried calculating mda8 for [{obs_var}, {mod_var}], but failed."
+                            "Tried calculating mda8 for [%s, %s], but failed.", obs_var, mod_var
                         )
                     finally:
                         data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8

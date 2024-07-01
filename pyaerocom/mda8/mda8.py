@@ -2,7 +2,6 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
-from pyaerocom.colocation.colocation_3d import ColocatedDataLists
 
 
 def min_periods_max(x: np.ndarray, /, min_periods=1) -> float:
@@ -23,47 +22,29 @@ def min_periods_max(x: np.ndarray, /, min_periods=1) -> float:
     return np.nanmax(x)
 
 
-def mda8_colocated_data(
-    coldat: ColocatedData | ColocatedDataLists, /, obs_var: str, mod_var: str
-) -> ColocatedData | ColocatedDataLists:
+def mda8_colocated_data(coldat: ColocatedData, /, obs_var: str, mod_var: str) -> ColocatedData:
     """Applies the mda8 calculation to a colocated data object,
     returning the new colocated data object.
 
     :param data: The colocated data object.
     :return: Colocated data object containing
     """
-    if not isinstance(coldat, ColocatedDataLists | ColocatedData):
+    if not isinstance(coldat, ColocatedData):
+        raise ValueError(f"Unexpected type {type(coldat)}. Expected ColocatedData")
+
+    if coldat.ts_type != "hourly":
+        raise ValueError(f"Expected hourly timeseries. Got {coldat.ts_type}.")
+
+    # TODO: Currently order of dims matter in the implementation, so this check is
+    # stricter than it probably should be.
+    if coldat.dims != ("data_source", "time", "station_name"):
         raise ValueError(
-            f"Unexpected type {type(coldat)}. Expected ColocatedData or ColocatedDataLists"
+            f"Unexpected dimensions. Got {coldat.dims}, expected ['data_source', 'time', 'station_name']."
         )
 
-    if isinstance(coldat, ColocatedData):
-        if coldat.ts_type != "hourly":
-            raise ValueError(f"Expected hourly timeseries. Got {coldat.ts_type}.")
-
-        # TODO: Currently order of dims matter in the implementation, so this check is
-        # stricter than it probably should be.
-        if coldat.dims != ("data_source", "time", "station_name"):
-            raise ValueError(
-                f"Unexpected dimensions. Got {coldat.dims}, expected ['data_source', 'time', 'station_name']."
-            )
-
-        cd = ColocatedData(_calc_mda8(coldat.data))
-        cd.data.attrs["var_name"] = [obs_var, mod_var]
-        return cd
-
-    colocateddata_for_statistics = []
-    colocateddata_for_profile_viz = []
-    for cd in coldat.colocateddata_for_statistics:
-        colocateddata_for_statistics.append(
-            mda8_colocated_data(cd, obs_var=obs_var, mod_var=mod_var)
-        )
-    for cd in coldat.colocateddata_for_profile_viz:
-        colocateddata_for_profile_viz.append(
-            mda8_colocated_data(cd, obs_var=obs_var, mod_var=mod_var)
-        )
-
-    return ColocatedDataLists(colocateddata_for_statistics, colocateddata_for_profile_viz)
+    cd = ColocatedData(_calc_mda8(coldat.data))
+    cd.data.attrs["var_name"] = [obs_var, mod_var]
+    return cd
 
 
 def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
@@ -74,6 +55,22 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     (ie. the format of ColocatedData.data) representing hourly data.
     :return: Equivalently structured DataArray, resampled along the "time"
     dimension.
+
+    Note:
+    -----
+    The calculation for mda8 is defined as follows:
+    > Eight hours values:         75 % of values (i.e. 6 hours)
+
+    > Maximum daily 8-hour mean:  75 % of the hourly running eight hour
+                             averages (i.e. 18 eight hour averages per
+                             day)
+
+    > The maximum daily eight hour mean concentration will be selected by examining
+    > eight hour running averages, calculated from hourly data and updated each hour.
+    > Each eight hour average so calculated will be assigned to the day on which it
+    > ends i.e. the first calculation period for any one day will be the period from
+    > 17:00 on the previous day to 01:00 on that day; the last calculation period for
+    > any one day will be the period from 16:00 to 24:00 on that day.
     """
     ravg = data.rolling(time=8, min_periods=6).mean()
 
