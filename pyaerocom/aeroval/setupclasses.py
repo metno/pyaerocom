@@ -309,34 +309,41 @@ class EvalSetup(BaseModel):
 
     _aux_funs: dict = {}
 
-    proj_id: str
-    exp_id: str
+    # proj_id: str
+    # exp_id: str
     var_web_info: dict = {}
 
     @computed_field
     @cached_property
     def proj_info(self) -> ProjectInfo:
-        return ProjectInfo(
-            proj_id=self.proj_id
-        )  # special case because ProjectInfo only has one attrbibute proj_id which is required by EvalSetup
+        # return ProjectInfo(
+        #     proj_id=self.proj_id
+        # )  # special case because ProjectInfo only has one attrbibute proj_id which is required by EvalSetup
+        if not hasattr(self, "model_extra") or self.model_extra is None:
+            return ProjectInfo()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in ProjectInfo.model_fields
+        }
+        return ProjectInfo(**model_args)
 
     @computed_field
     @cached_property
     def exp_info(self) -> ExperimentInfo:
-        if not hasattr(self, "model_extra") or self.model_extra is None:
-            return ExperimentInfo(exp_id=self.exp_id)
+        # if not hasattr(self, "model_extra") or self.model_extra is None:
+        #     return ExperimentInfo(exp_id=self.exp_id)
         model_args = {
             key: val for key, val in self.model_extra.items() if key in ExperimentInfo.model_fields
         }
-        model_args["exp_id"] = self.exp_id
+        # model_args["exp_id"] = self.exp_id
         return ExperimentInfo(**model_args)
 
+    @computed_field
     @cached_property
     def json_filename(self) -> str:
         """
         str: Savename of config file: cfg_<proj_id>_<exp_id>.json
         """
-        return f"cfg_{self.proj_id}_{self.exp_id}.json"
+        return f"cfg_{self.proj_info.proj_id}_{self.exp_info.exp_id}.json"
 
     @cached_property
     def gridded_aux_funs(self) -> dict:
