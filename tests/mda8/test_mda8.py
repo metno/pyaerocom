@@ -2,7 +2,9 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from pyaerocom.mda8.mda8 import _calc_mda8
+from pyaerocom.colocation.colocated_data import ColocatedData
+from pyaerocom.mda8.mda8 import _calc_mda8, mda8_colocated_data
+from tests.fixtures.collocated_data import coldata
 
 
 @pytest.mark.parametrize(
@@ -69,3 +71,13 @@ def test_calc_mda8_with_gap():
 
     assert mda8.shape == (1, 6, 1)
     np.testing.assert_array_equal(mda8[0, :, 0], [20.5, 44.5, np.nan, 41.25, 44.5, np.nan])
+
+
+@pytest.mark.parametrize("coldataset", ("fake_3d_hr",))
+def test_coldata_to_mda8(coldata):
+    mda8 = mda8_colocated_data(coldata, obs_var="vmro3mda8", mod_var="vmro3mda8")
+
+    assert isinstance(mda8, ColocatedData)
+    assert mda8.metadata["ts_type"] == "daily"
+    assert mda8.metadata["var_name"] == ["vmro3mda8", "vmro3mda8"]
+    assert mda8.shape == (2, 8, 1)

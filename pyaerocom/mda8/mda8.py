@@ -43,15 +43,14 @@ def mda8_colocated_data(
 
         # TODO: Currently order of dims matter in the implementation, so this check is
         # stricter than it probably should be.
-        if coldat.dims != ["data_source", "time", "station_name"]:
+        if coldat.dims != ("data_source", "time", "station_name"):
             raise ValueError(
                 f"Unexpected dimensions. Got {coldat.dims}, expected ['data_source', 'time', 'station_name']."
             )
 
         cd = ColocatedData(_calc_mda8(coldat.data))
-        cd.ts_type = "daily"
-        cd.var_name = [obs_var, mod_var]
-        return
+        cd.data.attrs["var_name"] = [obs_var, mod_var]
+        return cd
 
     colocateddata_for_statistics = []
     colocateddata_for_profile_viz = []
@@ -81,5 +80,7 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     daily_max = ravg.resample(time="1D").reduce(
         lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=16)
     )
+
+    daily_max.attrs["ts_type"] = "daily"
 
     return daily_max
