@@ -3,6 +3,7 @@ import pytest
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
+from pyaerocom.colocation.colocation_3d import ColocatedDataLists
 from pyaerocom.mda8.mda8 import _calc_mda8, mda8_colocated_data
 from tests.fixtures.collocated_data import coldata
 
@@ -101,3 +102,15 @@ def test_coldata_to_mda8(coldata):
         ],
         decimal=5,
     )
+
+
+@pytest.mark.parametrize("coldataset", ("fake_3d_hr",))
+def test_coldata_to_mda8_ColocatedDataLists(coldata):
+    cd_list = ColocatedDataLists([coldata], [])
+
+    mda8 = mda8_colocated_data(cd_list, obs_var="vmro3mda8", mod_var="vmro3mda8")
+
+    assert isinstance(mda8, ColocatedDataLists)
+
+    assert len(mda8.colocateddata_for_statistics) == 1
+    assert len(mda8.colocateddata_for_profile_viz) == 0
