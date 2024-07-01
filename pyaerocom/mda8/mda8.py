@@ -78,7 +78,7 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     ravg = data.rolling(time=8, min_periods=6).mean()
 
     daily_max = ravg.resample(time="1D").reduce(
-        lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=16)
+        lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=18)
     )
 
     daily_max.attrs["ts_type"] = "daily"
