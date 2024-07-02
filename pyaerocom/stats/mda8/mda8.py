@@ -82,6 +82,6 @@ def _rolling_average_8hr(arr: xr.DataArray) -> xr.DataArray:
 
 
 def _daily_max(arr: xr.DataArray) -> xr.DataArray:
-    return arr.resample(time="24h", offset="1h").reduce(
+    return arr.resample(time="24H", offset="1H").reduce(
         lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=18)
     )
