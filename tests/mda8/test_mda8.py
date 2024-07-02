@@ -124,6 +124,21 @@ def test_coldata_to_mda8(coldata):
             [0, 1, 2, 3, 4, 5, 6, 7] * 6,
             [np.nan] * 5 + [2.5, 3] + [3.5] * 41,
         ),
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=24, freq="1h"),
+            [np.nan, 1, 2, 3, 4, 5, 6, 7] * 3,
+            [np.nan] * 6 + [3.5] + [4] * 17,
+        ),
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=24, freq="1h"),
+            [np.nan, np.nan, 2, 3, 4, 5, 6, 7] * 3,
+            [np.nan] * 7 + [4.5] * 17,
+        ),
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=24, freq="1h"),
+            [np.nan, np.nan, np.nan, 3, 4, 5, 6, 7] * 3,
+            [np.nan] * 24,
+        ),
     ),
 )
 def test_rollingaverage(test_data, exp_ravg):
