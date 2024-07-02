@@ -72,12 +72,16 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     > 17:00 on the previous day to 01:00 on that day; the last calculation period for
     > any one day will be the period from 16:00 to 24:00 on that day.
     """
-    ravg = data.rolling(time=8, min_periods=6).mean()
+    mda8 = _daily_max(_rolling_average_8hr(data))
+    mda8.attrs["ts_type"] = "daily"
+    return mda8
 
-    daily_max = ravg.resample(time="1D").reduce(
+
+def _rolling_average_8hr(arr: xr.DataArray) -> xr.DataArray:
+    return arr.rolling(time=8, min_periods=6).mean()
+
+
+def _daily_max(arr: xr.DataArray) -> xr.DataArray:
+    return arr.resample(time="24h", offset="1h").reduce(
         lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=18)
     )
-
-    daily_max.attrs["ts_type"] = "daily"
-
-    return daily_max

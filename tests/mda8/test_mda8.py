@@ -4,27 +4,36 @@ import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_3d import ColocatedDataLists
-from pyaerocom.mda8.mda8 import _calc_mda8, mda8_colocated_data
+from pyaerocom.mda8.mda8 import _calc_mda8, _daily_max, _rolling_average_8hr, mda8_colocated_data
 from tests.fixtures.collocated_data import coldata
+
+
+@pytest.fixture
+def test_data(time, values) -> xr.DataArray:
+    return xr.DataArray(
+        [[[x] for x in values]],
+        dims=["data_source", "time", "station_name"],
+        coords={"time": time},
+    )
 
 
 @pytest.mark.parametrize(
     "time,values,exp_mda8",
     (
         pytest.param(
-            xr.date_range(start="2024-01-01", periods=49, freq="1h"),
+            xr.date_range(start="2024-01-01 01:00", periods=49, freq="1h"),
             [0] * 49,
             [0, 0, np.nan],
             id="zeros",
         ),
         pytest.param(
-            xr.date_range(start="2024-01-01", periods=49, freq="1h"),
+            xr.date_range(start="2024-01-01 01:00", periods=49, freq="1h"),
             np.linspace(start=1, stop=49, num=49),
             [20.5, 44.5, np.nan],
             id="incrementing-by-1",
         ),
         pytest.param(
-            xr.date_range(start="2024-01-01 12:00:00", periods=49, freq="1h"),
+            xr.date_range(start="2024-01-01 13:00:00", periods=49, freq="1h"),
             np.concatenate(  # Sequence 1-7, 3x nan, 11-14, 3x nan, 28-49
                 (
                     np.arange(start=1, stop=8),
@@ -39,14 +48,8 @@ from tests.fixtures.collocated_data import coldata
         ),
     ),
 )
-def test_calc_mda8(time, values, exp_mda8):
-    arr = xr.DataArray(
-        [[[x] for x in values]],
-        dims=["data_source", "time", "station_name"],
-        coords={"time": time},
-    )
-
-    mda8 = _calc_mda8(arr)
+def test_calc_mda8(test_data, exp_mda8):
+    mda8 = _calc_mda8(test_data)
 
     assert mda8.shape[1] == len(exp_mda8)
 
@@ -57,13 +60,13 @@ def test_calc_mda8_with_gap():
     arr1 = xr.DataArray(
         [[[x] for x in np.linspace(start=1, stop=50, num=50)]],
         dims=["data_source", "time", "station_name"],
-        coords={"time": xr.date_range(start="2024-01-01", periods=50, freq="1h")},
+        coords={"time": xr.date_range(start="2024-01-01 01:00", periods=50, freq="1h")},
     )
 
     arr2 = xr.DataArray(
         [[[x] for x in np.linspace(start=1, stop=50, num=50)]],
         dims=["data_source", "time", "station_name"],
-        coords={"time": xr.date_range(start="2024-01-04", periods=50, freq="1h")},
+        coords={"time": xr.date_range(start="2024-01-04 01:00", periods=50, freq="1h")},
     )
 
     arr = xr.concat((arr1, arr2), dim="time")
@@ -81,16 +84,26 @@ def test_coldata_to_mda8(coldata):
     assert isinstance(mda8, ColocatedData)
     assert mda8.metadata["ts_type"] == "daily"
     assert mda8.metadata["var_name"] == ["vmro3mda8", "vmro3mda8"]
-    assert mda8.shape == (2, 8, 1)
+    assert mda8.shape == (2, 9, 1)
 
-    pytest.approx(
+    np.testing.assert_array_almost_equal(
         mda8.data.values[0, :, 0],
-        [np.nan, np.nan, 1.18741556, 1.18777241, 1.18869106, 1.18879322, 1.18807846, 1.18700801],
-        abs=10 * 10**-5,
+        [
+            np.nan,
+            np.nan,
+            np.nan,
+            1.18741556,
+            1.18777241,
+            1.18869106,
+            1.18879322,
+            1.18807846,
+            1.18700801,
+        ],
     )
-    pytest.approx(
+    np.testing.assert_array_almost_equal(
         mda8.data.values[1, :, 0],
         [
+            np.nan,
             1.57327333,
             1.28884431,
             1.28741556,
@@ -100,5 +113,46 @@ def test_coldata_to_mda8(coldata):
             1.28807846,
             1.28700801,
         ],
-        abs=10 * 10**-5,
     )
+
+
+@pytest.mark.parametrize(
+    "time,values,exp_ravg",
+    (
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=48, freq="1h"),
+            [0, 1, 2, 3, 4, 5, 6, 7] * 6,
+            [np.nan] * 5 + [2.5, 3] + [3.5] * 41,
+        ),
+    ),
+)
+def test_rollingaverage(test_data, exp_ravg):
+    ravg = _rolling_average_8hr(test_data)
+
+    np.testing.assert_array_almost_equal(ravg[0, :, 0], exp_ravg)
+
+
+@pytest.mark.parametrize(
+    "time,values,exp_daily_max",
+    (
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=48, freq="1h"),
+            np.linspace(1, 48, num=48),
+            [24, 48],
+        ),
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=24, freq="1h"),
+            [np.nan] * 6 + list(range(7, 25)),
+            [24],
+        ),
+        (
+            xr.date_range(start="2024-01-01 01:00", periods=24, freq="1h"),
+            [np.nan] * 7 + list(range(8, 25)),
+            [np.nan],
+        ),
+    ),
+)
+def test_daily_max(test_data, exp_daily_max):
+    dmax = _daily_max(test_data)
+
+    np.testing.assert_array_equal(dmax[0, :, 0], exp_daily_max)
