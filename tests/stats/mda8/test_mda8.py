@@ -4,7 +4,12 @@ import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_3d import ColocatedDataLists
-from pyaerocom.mda8.mda8 import _calc_mda8, _daily_max, _rolling_average_8hr, mda8_colocated_data
+from pyaerocom.stats.mda8.mda8 import (
+    _calc_mda8,
+    _daily_max,
+    _rolling_average_8hr,
+    mda8_colocated_data,
+)
 from tests.fixtures.collocated_data import coldata
 
 
@@ -53,7 +58,7 @@ def test_calc_mda8(test_data, exp_mda8):
 
     assert mda8.shape[1] == len(exp_mda8)
 
-    np.testing.assert_array_equal(mda8[0, :, 0], exp_mda8)
+    assert all(mda8[0, :, 0] == pytest.approx(exp_mda8, abs=0, nan_ok=True))
 
 
 def test_calc_mda8_with_gap():
@@ -86,8 +91,7 @@ def test_coldata_to_mda8(coldata):
     assert mda8.metadata["var_name"] == ["vmro3mda8", "vmro3mda8"]
     assert mda8.shape == (2, 9, 1)
 
-    np.testing.assert_array_almost_equal(
-        mda8.data.values[0, :, 0],
+    assert mda8.data.values[0, :, 0] == pytest.approx(
         [
             np.nan,
             np.nan,
@@ -99,9 +103,11 @@ def test_coldata_to_mda8(coldata):
             1.18807846,
             1.18700801,
         ],
+        abs=10**-5,
+        nan_ok=True,
     )
-    np.testing.assert_array_almost_equal(
-        mda8.data.values[1, :, 0],
+
+    assert mda8.data.values[1, :, 0] == pytest.approx(
         [
             np.nan,
             1.57327333,
@@ -113,6 +119,8 @@ def test_coldata_to_mda8(coldata):
             1.28807846,
             1.28700801,
         ],
+        abs=10**-5,
+        nan_ok=True,
     )
 
 
@@ -142,9 +150,12 @@ def test_coldata_to_mda8(coldata):
     ),
 )
 def test_rollingaverage(test_data, exp_ravg):
+    """
+    Test of rolling average calculation
+    """
     ravg = _rolling_average_8hr(test_data)
 
-    np.testing.assert_array_almost_equal(ravg[0, :, 0], exp_ravg)
+    assert all(ravg[0, :, 0] == pytest.approx(exp_ravg, abs=0, nan_ok=True))
 
 
 @pytest.mark.parametrize(
@@ -168,6 +179,12 @@ def test_rollingaverage(test_data, exp_ravg):
     ),
 )
 def test_daily_max(test_data, exp_daily_max):
+    """
+    Tests the daily max calculation. Note that "the first calculation period
+    for any one day will be the period from 17:00 on the previous day to 01:00
+    on that day; the last calculation period for any one day will be the period
+    from 16:00 to 24:00 on that day
+    """
     dmax = _daily_max(test_data)
 
-    np.testing.assert_array_equal(dmax[0, :, 0], exp_daily_max)
+    assert all(dmax[0, :, 0] == pytest.approx(exp_daily_max, abs=0, nan_ok=True))
