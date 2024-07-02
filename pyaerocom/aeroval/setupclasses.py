@@ -355,11 +355,12 @@ class EvalSetup(BaseModel):
     @cached_property
     def path_manager(self) -> OutputPaths:
         if not hasattr(self, "model_extra") or self.model_extra is None:
-            return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
+            # return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id)
+            return OutputPaths()
         model_args = {
             key: val for key, val in self.model_extra.items() if key in OutputPaths.model_fields
         }
-        return OutputPaths(proj_id=self.proj_id, exp_id=self.exp_id, **model_args)
+        return OutputPaths(**model_args)
 
     # Many computed_fields here have this hack to get keys from a general CFG into their appropriate respective classes
     # TODO: all these computed fields could be more easily defined if the config were
