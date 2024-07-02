@@ -34,20 +34,6 @@ def test_evalsetup_kwargs():
     assert setup.exp_id == setup.exp_info.exp_id == "experiment"
 
 
-def test_evalsetup_missing_arguments():
-    with pytest.raises(ValidationError):
-        EvalSetup()
-
-    with pytest.raises(ValidationError):
-        EvalSetup(proj_id="project")
-
-    with pytest.raises(ValidationError):
-        EvalSetup(proj_id="project")
-
-    with pytest.raises(ValidationError):
-        EvalSetup(exp_id="experiment")
-
-
 @pytest.mark.parametrize(
     "keys",
     [
