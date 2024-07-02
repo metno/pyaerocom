@@ -7,6 +7,7 @@ import logging
 import os
 import traceback
 import warnings
+from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable
 
@@ -30,6 +31,8 @@ from pyaerocom.helpers import (
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
+from pyaerocom.stats.mda8.const import MDA_VARS
+from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -360,7 +363,7 @@ class Colocator:
             dictionaries comprising key / value pairs of obs variables and
             associated instances of :class:`ColocatedData`.
         """
-        data_out = {}
+        data_out = defaultdict(lambda: dict())
         # ToDo: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_list)
@@ -378,9 +381,21 @@ class Colocator:
                 coldata = self._run_helper(
                     mod_var, obs_var
                 )  # note this can be ColocatedData or ColocatedDataLists
-                if mod_var not in data_out:
-                    data_out[mod_var] = {}
                 data_out[mod_var][obs_var] = coldata
+
+                if obs_var in MDA_VARS:
+                    mda8 = None
+                    try:
+                        mda8 = mda8_colocated_data(
+                            coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
+                        )
+                    except ValueError:
+                        logger.warning(
+                            "Tried calculating mda8 for [%s, %s], but failed.", obs_var, mod_var
+                        )
+                    finally:
+                        data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
+
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
                 msg = f"Failed to perform analysis: {traceback.format_exc()}\n"
@@ -397,7 +412,7 @@ class Colocator:
         self._print_processing_status()
         if self.colocation_setup.keep_data:
             self.data = data_out
-        return data_out
+        return dict(data_out)
 
     def get_nc_files_in_coldatadir(self):
         """

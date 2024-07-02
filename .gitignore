@@ -156,3 +156,6 @@ sorted_out
 
 # Vim temp files
 *.swp
+
+
+pytest.ini
