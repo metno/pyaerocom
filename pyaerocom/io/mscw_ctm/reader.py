@@ -239,7 +239,7 @@ class ReadMscwCtm:
         yrs = []
 
         for d in dirs:
-            if re.match(r".*20\d\d.*", d) is None:
+            if re.match(r".*(?:19|20)\d\d.*", d) is None:
                 continue
             yrs.append(d.split("/")[-1])
 
@@ -256,7 +256,7 @@ class ReadMscwCtm:
         yrs = []
         for fp in fps:
             try:
-                yr = re.search(r".*(20\d\d).*", fp).group(1)
+                yr = re.search(r".*((?:19|20)\d\d).*", fp).group(1)
             except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {fp}")
 
@@ -290,7 +290,7 @@ class ReadMscwCtm:
 
             yrs_dir = ddir.split(os.sep)[-1]
             try:
-                yr = re.search(r".*(20\d\d).*", yrs_dir).group(1)
+                yr = re.search(r".*((?:19|20)\d\d).*", yrs_dir).group(1)
             except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {yrs_dir}")
 
