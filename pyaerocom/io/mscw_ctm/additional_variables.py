@@ -53,15 +53,12 @@ def subtract_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
     return result
 
 
-def calc_concNhno3(*arrs: xr.DataArray) -> xr.DataArray:
-    if len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Shoul only be given 1 array")
-
+def calc_concNhno3(conchno3: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_O = 15.999
     M_H = 1.007
 
-    conchno3 = arrs[0].copy(deep=True)
+    conchno3 = conchno3.copy(deep=True)
     fac = M_N / (M_H + M_N + M_O * 3)
     concNhno3 = conchno3 * fac
     concNhno3.attrs["units"] = "ug N m-3"
