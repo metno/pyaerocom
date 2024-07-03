@@ -5,63 +5,57 @@ from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
 
-def add_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
+def add_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
     """
     Add a bunch of :class:`xarray.DataArray` instances
 
     Parameters
     ----------
+    *arr0
+        first input array (instance of :class:`xarray.DataArray` with same shape).
     *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape)
+        Additional input arrays (instances of :class:`xarray.DataArray` with same shape)
 
     Returns
     -------
     xarray.DataArray
         Added array
-
     """
-    if not len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Need at least 2 input arrays to add")
-    result = arrs[0].copy(deep=True)
-    for arr in arrs[1:]:
+    result = arr0.copy(deep=True)
+    for arr in arrs:
         result += arr
     return result
 
 
-def subtract_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
+def subtract_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
     """
     Subtract a bunch of :class:`xarray.DataArray` instances from an array
 
     Parameters
     ----------
+    arr0
+        Input array (instance of :class:`xarray.DataArray` with same shape).
     *arrs
         input arrays (instances of :class:`xarray.DataArray` with same shape).
-        Subtraction is performed with respect to the first input array.
-
+        Subtraction is performed with respect to `arr0`.
 
     Returns
     -------
     xarray.DataArray
-        Diff array (all additional ones are subtracted from first array)
-
+        Diff array (all additional ones are subtracted from `arr0`)
     """
-    if not len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Need at least 2 input arrays to add")
-    result = arrs[0].copy(deep=True)
-    for arr in arrs[1:]:
+    result = arr0.copy(deep=True)
+    for arr in arrs:
         result -= arr
     return result
 
 
-def calc_concNhno3(*arrs: xr.DataArray) -> xr.DataArray:
-    if len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Shoul only be given 1 array")
-
+def calc_concNhno3(conchno3: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_O = 15.999
     M_H = 1.007
 
-    conchno3 = arrs[0].copy(deep=True)
+    conchno3 = conchno3.copy(deep=True)
     fac = M_N / (M_H + M_N + M_O * 3)
     concNhno3 = conchno3 * fac
     concNhno3.attrs["units"] = "ug N m-3"
@@ -127,28 +121,22 @@ def calc_conNtno3(
 
 
 # ToDo: add docstring
-def calc_concNnh3(*arrs: xr.DataArray) -> xr.DataArray:
-    if len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Shoul only be given 1 array")
-
+def calc_concNnh3(concnh3: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_H = 1.007
 
-    concnh3 = arrs[0].copy(deep=True)
+    concnh3 = concnh3.copy(deep=True)
     concNnh3 = concnh3 * (M_N / (M_H * 3 + M_N))
     concNnh3.attrs["units"] = "ug N m-3"
     return concNnh3
 
 
 # ToDo: add docstring
-def calc_concNnh4(*arrs: xr.DataArray) -> xr.DataArray:
-    if len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Shoul only be given 1 array")
-
+def calc_concNnh4(concnh4: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_H = 1.007
 
-    concnh4 = arrs[0].copy(deep=True)
+    concnh4 = concnh4.copy(deep=True)
     concNnh4 = concnh4 * (M_N / (M_H * 4 + M_N))
     concNnh4.attrs["units"] = "ug N m-3"
     return concNnh4
