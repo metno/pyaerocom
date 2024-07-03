@@ -5,50 +5,47 @@ from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
 
-def add_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
+def add_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
     """
     Add a bunch of :class:`xarray.DataArray` instances
 
     Parameters
     ----------
+    *arr0
+        first input array (instance of :class:`xarray.DataArray` with same shape).
     *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape)
+        Additional input arrays (instances of :class:`xarray.DataArray` with same shape)
 
     Returns
     -------
     xarray.DataArray
         Added array
-
     """
-    if not len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Need at least 2 input arrays to add")
-    result = arrs[0].copy(deep=True)
-    for arr in arrs[1:]:
+    result = arr0.copy(deep=True)
+    for arr in arrs:
         result += arr
     return result
 
 
-def subtract_dataarrays(*arrs: xr.DataArray) -> xr.DataArray:
+def subtract_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
     """
     Subtract a bunch of :class:`xarray.DataArray` instances from an array
 
     Parameters
     ----------
+    arr0
+        Input array (instance of :class:`xarray.DataArray` with same shape).
     *arrs
         input arrays (instances of :class:`xarray.DataArray` with same shape).
-        Subtraction is performed with respect to the first input array.
-
+        Subtraction is performed with respect to `arr0`.
 
     Returns
     -------
     xarray.DataArray
-        Diff array (all additional ones are subtracted from first array)
-
+        Diff array (all additional ones are subtracted from `arr0`)
     """
-    if not len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Need at least 2 input arrays to add")
-    result = arrs[0].copy(deep=True)
-    for arr in arrs[1:]:
+    result = arr0.copy(deep=True)
+    for arr in arrs:
         result -= arr
     return result
 
