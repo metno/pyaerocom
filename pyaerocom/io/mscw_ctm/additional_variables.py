@@ -124,28 +124,22 @@ def calc_conNtno3(
 
 
 # ToDo: add docstring
-def calc_concNnh3(*arrs: xr.DataArray) -> xr.DataArray:
-    if len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Shoul only be given 1 array")
-
+def calc_concNnh3(concnh3: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_H = 1.007
 
-    concnh3 = arrs[0].copy(deep=True)
+    concnh3 = concnh3.copy(deep=True)
     concNnh3 = concnh3 * (M_N / (M_H * 3 + M_N))
     concNnh3.attrs["units"] = "ug N m-3"
     return concNnh3
 
 
 # ToDo: add docstring
-def calc_concNnh4(*arrs: xr.DataArray) -> xr.DataArray:
-    if len(arrs) > 1:  # pragma: no cover
-        raise ValueError("Shoul only be given 1 array")
-
+def calc_concNnh4(concnh4: xr.DataArray) -> xr.DataArray:
     M_N = 14.006
     M_H = 1.007
 
-    concnh4 = arrs[0].copy(deep=True)
+    concnh4 = concnh4.copy(deep=True)
     concNnh4 = concnh4 * (M_N / (M_H * 4 + M_N))
     concNnh4.attrs["units"] = "ug N m-3"
     return concNnh4
