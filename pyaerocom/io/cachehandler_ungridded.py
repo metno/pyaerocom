@@ -149,19 +149,27 @@ class CacheHandlerUngridded:
         head = pickle.load(in_handle)
         if not isinstance(head, dict):
             raise CacheReadError("Invalid cache file")
+        pya_version = "pyaerocom_version"
         for k, v in head.items():
             if not k in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
-            elif not v == current[k]:
-                logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
-                return False
+            else:
+                if k == pya_version:
+                    continue
+                elif v != current[k]:
+                    logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
+                    return False
+        if current[pya_version] != head[pya_version]:
+            logger.info(
+                f"cache generated with pyaerocom {head[pya_version]}, current is {current[pya_version]}"
+            )
         return True
 
     def cache_meta_info(self):
         """Dictionary containing relevant caching meta-info"""
         try:
-            newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getctime)
-            newest_date = os.path.getctime(newestp)
+            newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getmtime)
+            newest_date = os.path.getmtime(newestp)
             newest = os.path.basename(newestp)
 
         except Exception:
