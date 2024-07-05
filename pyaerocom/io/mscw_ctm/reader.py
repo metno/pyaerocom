@@ -223,7 +223,7 @@ class ReadMscwCtm:
         to search deeper.
 
         The only qualification of being a valid subfolder is whether or not
-        the subfolder has contains a number >= 2000. There are no check if there
+        the subfolder has contains a number >= 1900 < 2100. There are no check if there
         are any emep files in the folder
 
         Returns
