@@ -358,30 +358,6 @@ def test_ReadMscwCtm_has_var_error(reader):
     assert str(e.value) == "Error (VarCollection): input variable blaa is not supported"
 
 
-def test_ReadMscwCtm_filepath(reader, data_dir: str):
-    path = Path(data_dir) / "Base_month.nc"
-    reader.filepath = str(path)
-    assert Path(reader.filepath) == path
-
-
-@pytest.mark.parametrize(
-    "value, exception, error",
-    [
-        (None, TypeError, "needs to be a string"),
-        ("", FileNotFoundError, ""),
-        (
-            "/tmp",
-            FileNotFoundError,
-            "No valid model files could be found in / for any of the supported file masks: ['Base_*.nc']",
-        ),
-    ],
-)
-def test_ReadMscwCtm_filepath_error(reader, value, exception, error):
-    with pytest.raises(exception) as e:
-        reader.filepath = value
-    assert str(e.value) == error
-
-
 def test_ReadMscwCtm__str__():
     assert str(ReadMscwCtm()) == "ReadMscwCtm"
 

@@ -50,8 +50,6 @@ class ReadMscwCtm:
 
     Parameters
     ----------
-    filepath : str
-        Path to netcdf file.
     data_id : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
     data_dir : str, optional
@@ -178,7 +176,6 @@ class ReadMscwCtm:
         self._filename = None
         self._filedata = None
         self._filepaths = None
-        self._filepath = None
 
         self._file_mask = self.FILE_MASKS[0]
         self._files = None
@@ -350,25 +347,6 @@ class ReadMscwCtm:
             return
         self._filename = val
         self._filedata = None
-
-    @property
-    def filepath(self):
-        """
-        Path to data file
-        """
-        if self.data_dir is None and self._filepaths is None:  # pragma: no cover
-            raise AttributeError("data_dir or filepaths needs to be set before accessing")
-        return self._filepath
-
-    @filepath.setter
-    def filepath(self, value):
-        if not isinstance(value, str):
-            raise TypeError("needs to be a string")
-
-        self._filepath = value
-        ddir, fname = os.path.split(value)
-        self.data_dir = ddir
-        self.filename = fname
 
     @property
     def filepaths(self):
