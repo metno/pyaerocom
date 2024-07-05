@@ -169,6 +169,8 @@ class ReadMscwCtm:
 
     DEFAULT_FILE_NAME = "Base_day.nc"
 
+    YEAR_PATTERN = r".*((?:19|20)\d\d).*"
+
     def __init__(self, data_id=None, data_dir=None, **kwargs):
         self._data_dir = None
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -225,38 +227,37 @@ class ReadMscwCtm:
 
         Returns
         -------
-        List
-         List of the names of the subfolder
+        Tuple
+         Tuple of the names of the subfolder
 
         """
         dd = self.data_dir
 
-        dirs = glob.glob(dd + "/*/")
         namelist = []
         yrs = []
-
-        for d in dirs:
-            if re.match(r".*(?:19|20)\d\d.*", d) is None:
+        for d in os.listdir(dd):
+            if not os.path.isdir(os.path.join(dd, d)):
                 continue
-            yrs.append(d.split("/")[-1])
-
-            namelist.append(d)
+            m = re.match(self.YEAR_PATTERN, d)
+            if m is not None:
+                yrs.append(int(m.group(1)))
+                namelist.append(os.path.join(dd, d))
 
         if len(namelist) == 0:
             namelist = [dd]
         else:
             namelist = [d for _, d in sorted(zip(yrs, namelist))]
-        return list(set(namelist))
+        return tuple(set(namelist))
 
     def _get_yrs_from_filepaths(self):
         fps = self.filepaths
         yrs = []
         for fp in fps:
-            try:
-                yr = re.search(r".*((?:19|20)\d\d).*", fp).group(1)
-            except:  # pragma: no cover
+            basedir = os.path.basename(os.path.normpath(os.path.split(fp)[0]))
+            if m := re.search(self.YEAR_PATTERN, basedir):
+                yr = m.group(1)
+            else:
                 raise ValueError(f"Could not find any year in {fp}")
-
             yrs.append(yr)
 
         return sorted(list(set(yrs)))
@@ -285,9 +286,9 @@ class ReadMscwCtm:
             if self._get_tst_from_file(file) != ts_type:
                 continue
 
-            yrs_dir = ddir.split(os.sep)[-1]
+            yrs_dir = os.path.basename(os.path.normpath(ddir))
             try:
-                yr = re.search(r".*((?:19|20)\d\d).*", yrs_dir).group(1)
+                yr = re.search(self.YEAR_PATTERN, yrs_dir).group(1)
             except:  # pragma: no cover
                 raise ValueError(f"Could not find any year in {yrs_dir}")
 
