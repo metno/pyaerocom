@@ -150,8 +150,6 @@ class ReadMscwCtm:
         # "concpolyol": calc_concpolyol,
     }
 
-    #: supported filename masks, placeholder is for frequencies
-    FILE_MASKS = ["Base_*.nc"]
     #: supported filename template, freq-placeholder is for frequencies
     FILE_FREQ_TEMPLATE = "Base_{freq}.nc"
 
@@ -384,9 +382,6 @@ class ReadMscwCtm:
 
         Returns
         -------
-        str
-            file mask used (is identified automatically based on
-            :attr:`FILE_MASKS`)
         list
             list of file matches
 
@@ -548,20 +543,19 @@ class ReadMscwCtm:
         Raises
         ------
         ValueError
-            If no file could be inferred.
+            On wrong ts_type.
 
         Returns
         -------
         fname : str
-            Name of data file inferred based on current file mask and input
+            Name of data file based on ts_type
             freq.
 
         """
-        for substr, tst in self.FREQ_CODES.items():
-            if tst == ts_type:
-                fname = self.FILE_FREQ_TEMPLATE.format(freq=substr)
-                return fname
-        raise ValueError(f"failed to infer filename from input ts_type={ts_type}")
+        if not ts_type in self.REVERSE_FREQ_CODES:
+            raise ValueError(f"unknown ts_type={ts_type}")
+        freq = self.REVERSE_FREQ_CODES[ts_type]
+        return self.FILE_FREQ_TEMPLATE.format(freq=freq)
 
     def _compute_var(self, var_name_aerocom, ts_type):
         """Compute auxiliary variable

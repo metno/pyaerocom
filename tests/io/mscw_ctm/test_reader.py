@@ -306,15 +306,13 @@ def test_ReadMscwCtm_ts_type_from_filename_error(reader):
     ],
 )
 def test_ReadMscwCtm_filename_from_ts_type(reader, filename, ts_type):
-    reader._file_mask = reader.FILE_MASKS[0]
     assert reader.filename_from_ts_type(ts_type) == filename
 
 
 def test_ReadMscwCtm_filename_from_ts_type_error(reader):
-    reader._file_mask = reader.FILE_MASKS[0]
     with pytest.raises(ValueError) as e:
         reader.filename_from_ts_type("blaaa")
-    assert str(e.value) == "failed to infer filename from input ts_type=blaaa"
+    assert str(e.value) == "unknown ts_type=blaaa"
 
 
 def test_ReadMscwCtm_years_avail(data_dir: str):
