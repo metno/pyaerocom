@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -135,6 +136,15 @@ def reader() -> ReadMscwCtm:
 def data_dir(path_emep: dict[str, str]) -> str:
     """path to EMEP test data"""
     return path_emep["data_dir"]
+
+
+def test_ReadMscwCtm__get_year_from_nc(data_dir: str):
+    yr = ReadMscwCtm._get_year_from_nc(os.path.join(data_dir, "Base_fullrun.nc"))
+    assert yr == 2017
+    yr = ReadMscwCtm._get_year_from_nc(os.path.join(data_dir, "Base_day.nc"))
+    assert yr == 2017
+    yr = ReadMscwCtm._get_year_from_nc(os.path.join(data_dir, "Base_month.nc"))
+    assert yr == 2017
 
 
 def test_ReadMscwCtm__init__(data_dir: str):

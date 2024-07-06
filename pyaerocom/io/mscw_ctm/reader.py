@@ -1,3 +1,4 @@
+import functools
 import glob
 import logging
 import os
@@ -219,16 +220,24 @@ class ReadMscwCtm:
         to search deeper.
 
         The only qualification of being a valid subfolder is whether or not
-        the subfolder has contains a number >= 1900 < 2100. There are no check if there
-        are any emep files in the folder
+        the subfolder has contains a number >= 1900 < 2100. There are checks if there
+        are emep files in the folder
+
+        Raises
+        ------
+        FileNotFoundError if no mscw-files can be found in data-dir
 
         Returns
         -------
-        Tuple
-         Tuple of the names of the subfolder
+        List
+         List of the names of the subfolder
 
         """
         dd = self.data_dir
+
+        mscwfiles = []
+        for freq in self.FREQ_CODES.keys():
+            mscwfiles.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
 
         folders = []
         yrs = []
@@ -237,25 +246,44 @@ class ReadMscwCtm:
                 continue
             m = re.match(self.YEAR_PATTERN, d)
             if m is not None:
-                yrs.append(int(m.group(1)))
-                folders.append(os.path.join(dd, d))
+                has_mscwfiles = False
+                for f in mscwfiles:
+                    if os.path.exists(os.path.join(dd, d, f)):
+                        has_mscwfiles = True
+                if has_mscwfiles:
+                    yrs.append(int(m.group(1)))
+                    folders.append(os.path.join(dd, d))
 
-        if len(folders) == 0:
-            folders = [dd]
+        if len(folders) == 0:  # no trends, use folder
+            for f in mscwfiles:
+                if os.path.exists(os.path.join(dd, f)):
+                    folders = [dd]
+            if len(folders) == 0:
+                raise FileNotFoundError(f"no files like {mscwfiles} found in {dd}")
         else:
             folders = [d for _, d in sorted(zip(yrs, folders))]
-        return tuple(set(folders))
+        return list(set(folders))
 
-    def _get_yrs_from_filepaths(self):
+    @staticmethod
+    @functools.cache
+    def _get_year_from_nc(filename: str) -> int:
+        with xr.open_dataset(filename) as nc:
+            return np.mean(nc["time"][:]).data.astype("datetime64[Y]").astype(int) + 1970
+
+    def _get_yrs_from_filepaths(self) -> list[str]:
+        """Get available years of data from the filepaths. The year of the first
+        Base_*.nc dataset in the filepath is read from the time-variable of the nc-file.
+
+        :return: list of years as str
+        """
         fps = self.filepaths
         yrs = []
         for fp in fps:
-            basedir = os.path.basename(os.path.normpath(os.path.split(fp)[0]))
-            if m := re.search(self.YEAR_PATTERN, basedir):
-                yr = m.group(1)
-            else:
-                raise ValueError(f"Could not find any year in {fp}")
-            yrs.append(yr)
+            try:
+                yr = ReadMscwCtm._get_year_from_nc(fp)
+            except Exception as ex:
+                raise ValueError(f"Could not find any year in {fp}: {ex}")
+            yrs.append(str(yr))
 
         return sorted(list(set(yrs)))
 
@@ -274,26 +302,24 @@ class ReadMscwCtm:
 
         yrs = [int(yr) for yr in yrs]
         for path in filepaths:
-            ddir, file = os.path.split(path)
+            file = os.path.split(path)[1]
 
             if self._get_tst_from_file(file) != ts_type:
                 logger.info(f"ignoring file {path}: not of type {ts_type}")
                 continue
 
-            yrs_dir = os.path.basename(os.path.normpath(ddir))
-            if m := re.search(self.YEAR_PATTERN, yrs_dir):
-                yr = m.group(1)
-            else:
-                raise ValueError(f"Could not find any year in {yrs_dir}")
+            try:
+                yr = ReadMscwCtm._get_year_from_nc(path)
+            except Exception as ex:
+                raise ValueError(f"Could not find any year in {path}: {ex}")
 
-            if int(yr) not in yrs:
+            if yr not in yrs:
                 raise ValueError(f"The year {yr} of {path} is not in {yrs}")
 
-            if int(yr) in found_yrs:
+            if yr in found_yrs:
                 raise ValueError(f"The year {yr} of {path} is already found: {found_yrs}")
 
-            found_yrs.append(int(yr))
-
+            found_yrs.append(yr)
             clean_paths.append(path)
 
         if len(found_yrs) != len(yrs):
