@@ -172,8 +172,7 @@ def test_ReadMscwCtm_data_dir_error(value, exception, error: str):
 
 def test__ReadMscwCtm__check_files_in_data_dir(data_dir: str):
     reader = ReadMscwCtm()
-    mask, matches = reader._check_files_in_data_dir(data_dir)
-    assert mask == "Base_*.nc"
+    matches = reader._check_files_in_data_dir(data_dir)
     assert len(matches) == 3
 
 
@@ -558,16 +557,18 @@ def test_read_emep_wrong_tst(data_path: Path, wrong_tst: str):
         wrong_path = Path(filepaths[0]).with_name(f"Base_{wrong_tst}.nc")
         reader._get_tst_from_file(str(wrong_path))
 
-    assert str(e.value) == f"The ts_type {wrong_tst} is not supported"
+    assert str(e.value) == f"The file {wrong_path} is not supported"
 
 
 def test_read_emep_LF_tst(tmp_path: Path):
     data_path = emep_data_path(tmp_path, "month", vars_and_units={"prmm": "mm"})
     reader = ReadMscwCtm(data_dir=str(data_path))
-    filepaths = reader.filepaths
-    wrong_path = Path(filepaths[0]).with_name(f"Base_LF_month.nc")
+    with pytest.raises(ValueError) as e:
+        filepaths = reader.filepaths
+        wrong_path = Path(filepaths[0]).with_name(f"Base_LF_month.nc")
+        reader._get_tst_from_file(str(wrong_path))
 
-    assert reader._get_tst_from_file(str(wrong_path)) is None
+    assert str(e.value) == f"The file {wrong_path} is not supported"
 
 
 def test_read_emep_year_defined_twice(tmp_path: Path):
