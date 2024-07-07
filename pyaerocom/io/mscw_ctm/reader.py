@@ -305,7 +305,7 @@ class ReadMscwCtm:
             file = os.path.split(path)[1]
 
             if self._get_tst_from_file(file) != ts_type:
-                logger.info(f"ignoring file {path}: not of type {ts_type}")
+                logger.debug(f"ignoring file {path}: not of type {ts_type}")
                 continue
 
             try:
