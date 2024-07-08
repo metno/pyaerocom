@@ -66,6 +66,17 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 engine.run(files_to_convert)
 
         else:
+            # If a var_list is given, only run on the obs networks which contain that variable
+            if var_list:
+                var_list_asked = var_list
+                obs_vars = ocfg["obs_vars"]
+                var_list = list(set(obs_vars) & set(var_list))
+                if not var_list:
+                    logger.warning(
+                        "var_list %s and obs_vars %s mismatch.", var_list_asked, obs_vars
+                    )
+                    return
+
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
@@ -100,7 +111,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         var_list : list, optional
             list variables supposed to be analysed. If None, then all
             variables available are used. Defaults to None. Can also be
-            `str` type.
+            `str` type. Must match at least some of the variables provided by a observation network.
         update_interface : bool
             if true, relevant json files that determine what is displayed
             online are updated after the run, including the the menu.json file
@@ -144,7 +155,6 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             for obs_name in obs_list:
                 for model_name in model_list:
                     self._run_single_entry(model_name, obs_name, var_list)
-
         if update_interface:
             self.update_interface()
         if use_dummy_model:
