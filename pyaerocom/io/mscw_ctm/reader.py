@@ -171,6 +171,7 @@ class ReadMscwCtm:
 
     DEFAULT_FILE_NAME = "Base_day.nc"
 
+    #: pattern for 4-digit years for 19XX and 20XX used for trend subdirectories
     YEAR_PATTERN = r".*((?:19|20)\d\d).*"
 
     def __init__(self, data_id=None, data_dir=None, **kwargs):
