@@ -316,7 +316,7 @@ def calc_conNtnh_emep(*arrs):
 
 
 def calc_concso4t(concso4, concss):
-    factor = 0.007
+    factor = 0.077  # 7.7% SO4+ in seasalt
     concso4t = concso4 + factor * concss
     concso4t.attrs["units"] = "ug m-3"
 
