@@ -1,3 +1,4 @@
+import functools
 import glob
 import logging
 import os
@@ -50,19 +51,18 @@ class ReadMscwCtm:
 
     Parameters
     ----------
-    filepath : str
-        Path to netcdf file.
     data_id : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
     data_dir : str, optional
-        Base directory of EMEP data, containing one or more netcdf files
+        Base directory of EMEP data, containing one or more netcdf files.
+        data_dir must contain at least one of Base_(hour|day|month|fullrun).nc
+        For multi-year analysis/trends, datadir may contain subdirectories named by trend-year,
+        e.g. 2010 or trend2010.
 
     Attributes
     ----------
     data_id : str
         ID of model
-    filename : str
-        name of data file to be read.
     """
 
     # dictionary containing information about additionally required variables
@@ -151,8 +151,8 @@ class ReadMscwCtm:
         # "concpolyol": calc_concpolyol,
     }
 
-    #: supported filename masks, placeholder is for frequencies
-    FILE_MASKS = ["Base_*.nc"]
+    #: supported filename template, freq-placeholder is for frequencies
+    FILE_FREQ_TEMPLATE = "Base_{freq}.nc"
 
     #: frequencies encoded in filenames
     FREQ_CODES = {
@@ -171,6 +171,9 @@ class ReadMscwCtm:
 
     DEFAULT_FILE_NAME = "Base_day.nc"
 
+    #: pattern for 4-digit years for 19XX and 20XX used for trend subdirectories
+    YEAR_PATTERN = r".*((?:19|20)\d\d).*"
+
     def __init__(self, data_id=None, data_dir=None, **kwargs):
         self._data_dir = None
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -178,9 +181,7 @@ class ReadMscwCtm:
         self._filename = None
         self._filedata = None
         self._filepaths = None
-        self._filepath = None
 
-        self._file_mask = self.FILE_MASKS[0]
         self._files = None
 
         self.var_map = emep_variables()
@@ -198,22 +199,19 @@ class ReadMscwCtm:
             self.data_dir = data_dir
 
         self.data_id = data_id
-
-        self.filename = self.DEFAULT_FILE_NAME
+        self._filename = self.DEFAULT_FILE_NAME
 
     def search_all_files(self):
-        namelist = self._get_namelist_from_folder()
-        self.filepaths = self._get_files_from_namelist(namelist)
+        folders = self._get_trend_folders_from_folder()
+        self.filepaths = self._get_files_from_folders(folders)
 
-    def _get_files_from_namelist(self, namelist):
+    def _get_files_from_folders(self, folders):
         files = []
-        for d in namelist:
-            mask, f = self._check_files_in_data_dir(d)
-            files += f
-
+        for d in folders:
+            files += self._check_files_in_data_dir(d)
         return files
 
-    def _get_namelist_from_folder(self):
+    def _get_trend_folders_from_folder(self):
         """
         Finds all the subfolders where a emep file for one year might be.
 
@@ -223,8 +221,12 @@ class ReadMscwCtm:
         to search deeper.
 
         The only qualification of being a valid subfolder is whether or not
-        the subfolder has contains a number >= 1900 < 2100. There are no check if there
-        are any emep files in the folder
+        the subfolder has contains a number >= 1900 < 2100. There are checks if there
+        are emep files in the folder
+
+        Raises
+        ------
+        FileNotFoundError if no mscw-files can be found in data-dir
 
         Returns
         -------
@@ -234,48 +236,66 @@ class ReadMscwCtm:
         """
         dd = self.data_dir
 
-        dirs = glob.glob(dd + "/*/")
-        namelist = []
+        mscwfiles = []
+        for freq in self.FREQ_CODES.keys():
+            mscwfiles.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
+
+        folders = []
         yrs = []
-
-        for d in dirs:
-            if re.match(r".*(?:19|20)\d\d.*", d) is None:
+        for d in os.listdir(dd):
+            if not os.path.isdir(os.path.join(dd, d)):
                 continue
-            yrs.append(d.split("/")[-1])
+            m = re.match(self.YEAR_PATTERN, d)
+            if m is not None:
+                has_mscwfiles = False
+                for f in mscwfiles:
+                    if os.path.exists(os.path.join(dd, d, f)):
+                        has_mscwfiles = True
+                if has_mscwfiles:
+                    yrs.append(int(m.group(1)))
+                    folders.append(os.path.join(dd, d))
 
-            namelist.append(d)
-
-        if len(namelist) == 0:
-            namelist = [dd]
+        if len(folders) == 0:  # no trends, use folder
+            for f in mscwfiles:
+                if os.path.exists(os.path.join(dd, f)):
+                    folders = [dd]
+            if len(folders) == 0:
+                raise FileNotFoundError(f"no files like {mscwfiles} found in {dd}")
         else:
-            namelist = [d for _, d in sorted(zip(yrs, namelist))]
-        return list(set(namelist))
+            folders = [d for _, d in sorted(zip(yrs, folders))]
+        return list(set(folders))
 
-    def _get_yrs_from_filepaths(self):
+    @staticmethod
+    @functools.cache
+    def _get_year_from_nc(filename: str) -> int:
+        with xr.open_dataset(filename) as nc:
+            return np.mean(nc["time"][:]).data.astype("datetime64[Y]").astype(int) + 1970
+
+    def _get_yrs_from_filepaths(self) -> list[str]:
+        """Get available years of data from the filepaths. The year of the first
+        Base_*.nc dataset in the filepath is read from the time-variable of the nc-file.
+
+        :return: list of years as str
+        """
         fps = self.filepaths
         yrs = []
         for fp in fps:
             try:
-                yr = re.search(r".*((?:19|20)\d\d).*", fp).group(1)
-            except:  # pragma: no cover
-                raise ValueError(f"Could not find any year in {fp}")
-
-            yrs.append(yr)
+                yr = ReadMscwCtm._get_year_from_nc(fp)
+            except Exception as ex:
+                raise ValueError(f"Could not find any year in {fp}: {ex}")
+            yrs.append(str(yr))
 
         return sorted(list(set(yrs)))
 
     def _get_tst_from_file(self, file):
-        # tst = re.search("Base_(.*).nc", file).group(1)
-        mask = self._file_mask.replace("*", "(.*)")
-        tst = re.search(mask, file).group(1)
+        _, fname = os.path.split(file)
 
-        if "LF_" in tst:
-            return None
-
-        if tst not in list(self.FREQ_CODES):
-            raise ValueError(f"The ts_type {tst} is not supported")
-
-        return self.FREQ_CODES[tst]
+        for freq, tst in self.FREQ_CODES.items():
+            freq_name = self.FILE_FREQ_TEMPLATE.format(freq=freq)
+            if freq_name == fname:
+                return tst
+        raise ValueError(f"The file {file} is not supported")
 
     def _clean_filepaths(self, filepaths, yrs, ts_type):
         clean_paths = []
@@ -283,25 +303,24 @@ class ReadMscwCtm:
 
         yrs = [int(yr) for yr in yrs]
         for path in filepaths:
-            ddir, file = os.path.split(path)
+            file = os.path.split(path)[1]
 
             if self._get_tst_from_file(file) != ts_type:
+                logger.debug(f"ignoring file {path}: not of type {ts_type}")
                 continue
 
-            yrs_dir = ddir.split(os.sep)[-1]
             try:
-                yr = re.search(r".*((?:19|20)\d\d).*", yrs_dir).group(1)
-            except:  # pragma: no cover
-                raise ValueError(f"Could not find any year in {yrs_dir}")
+                yr = ReadMscwCtm._get_year_from_nc(path)
+            except Exception as ex:
+                raise ValueError(f"Could not find any year in {path}: {ex}")
 
-            if int(yr) not in yrs:
-                raise ValueError(f"The year {yr} is not in {yrs}")
+            if yr not in yrs:
+                raise ValueError(f"The year {yr} of {path} is not in {yrs}")
 
-            if int(yr) in found_yrs:
-                raise ValueError(f"The year {yr} is already found: {found_yrs}")
+            if yr in found_yrs:
+                raise ValueError(f"The year {yr} of {path} is already found: {found_yrs}")
 
-            found_yrs.append(int(yr))
-
+            found_yrs.append(yr)
             clean_paths.append(path)
 
         if len(found_yrs) != len(yrs):
@@ -326,7 +345,6 @@ class ReadMscwCtm:
             raise ValueError(f"Data dir {val} needs to be a dictionary or a file")
         if not os.path.isdir(val):
             raise FileNotFoundError(val)
-        self._file_mask = self.FILE_MASKS[0]
         self._data_dir = val
         self._filedata = None
         self.search_all_files()
@@ -335,7 +353,7 @@ class ReadMscwCtm:
     @property
     def filename(self):
         """
-        Name of netcdf file
+        Name of latest netcdf file read
         """
         return self._filename
 
@@ -350,25 +368,6 @@ class ReadMscwCtm:
             return
         self._filename = val
         self._filedata = None
-
-    @property
-    def filepath(self):
-        """
-        Path to data file
-        """
-        if self.data_dir is None and self._filepaths is None:  # pragma: no cover
-            raise AttributeError("data_dir or filepaths needs to be set before accessing")
-        return self._filepath
-
-    @filepath.setter
-    def filepath(self, value):
-        if not isinstance(value, str):
-            raise TypeError("needs to be a string")
-
-        self._filepath = value
-        ddir, fname = os.path.split(value)
-        self.data_dir = ddir
-        self.filename = fname
 
     @property
     def filepaths(self):
@@ -410,22 +409,25 @@ class ReadMscwCtm:
 
         Returns
         -------
-        str
-            file mask used (is identified automatically based on
-            :attr:`FILE_MASKS`)
         list
             list of file matches
 
         """
+        files = []
+        for freq in self.FREQ_CODES.keys():
+            files.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
 
-        for fmask in self.FILE_MASKS:
-            matches = glob.glob(f"{data_dir}/{fmask}")
-            if len(matches) > 0:
-                return fmask, matches
-        raise FileNotFoundError(
-            f"No valid model files could be found in {data_dir} for any of the "
-            f"supported file masks: {self.FILE_MASKS}"
-        )
+        matches = []
+        for f in files:
+            fpath = os.path.join(data_dir, f)
+            if os.path.exists(fpath):
+                matches.append(fpath)
+        if len(matches) == 0:
+            raise FileNotFoundError(
+                f"No valid model files could be found in {data_dir} for any of the "
+                f"supported files: {files}"
+            )
+        return matches
 
     @property
     def ts_type(self):
@@ -568,21 +570,19 @@ class ReadMscwCtm:
         Raises
         ------
         ValueError
-            If no file could be inferred.
+            On wrong ts_type.
 
         Returns
         -------
         fname : str
-            Name of data file inferred based on current file mask and input
+            Name of data file based on ts_type
             freq.
 
         """
-        mask = self._file_mask
-        for substr, tst in self.FREQ_CODES.items():
-            if tst == ts_type:
-                fname = mask.replace("*", substr)
-                return fname
-        raise ValueError(f"failed to infer filename from input ts_type={ts_type}")
+        if not ts_type in self.REVERSE_FREQ_CODES:
+            raise ValueError(f"unknown ts_type={ts_type}")
+        freq = self.REVERSE_FREQ_CODES[ts_type]
+        return self.FILE_FREQ_TEMPLATE.format(freq=freq)
 
     def _compute_var(self, var_name_aerocom, ts_type):
         """Compute auxiliary variable

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -137,6 +138,15 @@ def data_dir(path_emep: dict[str, str]) -> str:
     return path_emep["data_dir"]
 
 
+def test_ReadMscwCtm__get_year_from_nc(data_dir: str):
+    yr = ReadMscwCtm._get_year_from_nc(os.path.join(data_dir, "Base_fullrun.nc"))
+    assert yr == 2017
+    yr = ReadMscwCtm._get_year_from_nc(os.path.join(data_dir, "Base_day.nc"))
+    assert yr == 2017
+    yr = ReadMscwCtm._get_year_from_nc(os.path.join(data_dir, "Base_month.nc"))
+    assert yr == 2017
+
+
 def test_ReadMscwCtm__init__(data_dir: str):
     reader = ReadMscwCtm("EMEP_2017", data_dir)
     assert getattr(reader, "data_id") == "EMEP_2017"
@@ -172,8 +182,7 @@ def test_ReadMscwCtm_data_dir_error(value, exception, error: str):
 
 def test__ReadMscwCtm__check_files_in_data_dir(data_dir: str):
     reader = ReadMscwCtm()
-    mask, matches = reader._check_files_in_data_dir(data_dir)
-    assert mask == "Base_*.nc"
+    matches = reader._check_files_in_data_dir(data_dir)
     assert len(matches) == 3
 
 
@@ -307,15 +316,13 @@ def test_ReadMscwCtm_ts_type_from_filename_error(reader):
     ],
 )
 def test_ReadMscwCtm_filename_from_ts_type(reader, filename, ts_type):
-    reader._file_mask = reader.FILE_MASKS[0]
     assert reader.filename_from_ts_type(ts_type) == filename
 
 
 def test_ReadMscwCtm_filename_from_ts_type_error(reader):
-    reader._file_mask = reader.FILE_MASKS[0]
     with pytest.raises(ValueError) as e:
         reader.filename_from_ts_type("blaaa")
-    assert str(e.value) == "failed to infer filename from input ts_type=blaaa"
+    assert str(e.value) == "unknown ts_type=blaaa"
 
 
 def test_ReadMscwCtm_years_avail(data_dir: str):
@@ -356,30 +363,6 @@ def test_ReadMscwCtm_has_var_error(reader):
     with pytest.raises(exc.VariableDefinitionError) as e:
         reader.has_var("blaa")
     assert str(e.value) == "Error (VarCollection): input variable blaa is not supported"
-
-
-def test_ReadMscwCtm_filepath(reader, data_dir: str):
-    path = Path(data_dir) / "Base_month.nc"
-    reader.filepath = str(path)
-    assert Path(reader.filepath) == path
-
-
-@pytest.mark.parametrize(
-    "value, exception, error",
-    [
-        (None, TypeError, "needs to be a string"),
-        ("", FileNotFoundError, ""),
-        (
-            "/tmp",
-            FileNotFoundError,
-            "No valid model files could be found in / for any of the supported file masks: ['Base_*.nc']",
-        ),
-    ],
-)
-def test_ReadMscwCtm_filepath_error(reader, value, exception, error):
-    with pytest.raises(exception) as e:
-        reader.filepath = value
-    assert str(e.value) == error
 
 
 def test_ReadMscwCtm__str__():
@@ -582,16 +565,18 @@ def test_read_emep_wrong_tst(data_path: Path, wrong_tst: str):
         wrong_path = Path(filepaths[0]).with_name(f"Base_{wrong_tst}.nc")
         reader._get_tst_from_file(str(wrong_path))
 
-    assert str(e.value) == f"The ts_type {wrong_tst} is not supported"
+    assert str(e.value) == f"The file {wrong_path} is not supported"
 
 
 def test_read_emep_LF_tst(tmp_path: Path):
     data_path = emep_data_path(tmp_path, "month", vars_and_units={"prmm": "mm"})
     reader = ReadMscwCtm(data_dir=str(data_path))
-    filepaths = reader.filepaths
-    wrong_path = Path(filepaths[0]).with_name(f"Base_LF_month.nc")
+    with pytest.raises(ValueError) as e:
+        filepaths = reader.filepaths
+        wrong_path = Path(filepaths[0]).with_name(f"Base_LF_month.nc")
+        reader._get_tst_from_file(str(wrong_path))
 
-    assert reader._get_tst_from_file(str(wrong_path)) is None
+    assert str(e.value) == f"The file {wrong_path} is not supported"
 
 
 def test_read_emep_year_defined_twice(tmp_path: Path):
