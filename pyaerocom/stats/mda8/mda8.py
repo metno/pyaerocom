@@ -1,7 +1,11 @@
+import logging
+
 import numpy as np
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
+
+logger = logging.getLogger(__name__)
 
 
 def min_periods_max(x: np.ndarray, /, min_periods=1) -> float:
@@ -30,20 +34,24 @@ def mda8_colocated_data(coldat: ColocatedData, /, obs_var: str, mod_var: str) ->
     :return: Colocated data object containing
     """
     if not isinstance(coldat, ColocatedData):
+        logger.warning(f"Unexpected data type {type(coldat)}, expected ColocatedData.")
         raise ValueError(f"Unexpected type {type(coldat)}. Expected ColocatedData")
 
     if coldat.ts_type != "hourly":
+        logger.warning(f"Unexpected ts_type {coldat.ts_type}, expected 'hourly'.")
         raise ValueError(f"Expected hourly timeseries. Got {coldat.ts_type}.")
 
     # TODO: Currently order of dims matter in the implementation, so this check is
     # stricter than it probably should be.
     if coldat.dims != ("data_source", "time", "station_name"):
+        logger.info(f"Unexpected dimensions, {coldat.dims}.")
         raise ValueError(
             f"Unexpected dimensions. Got {coldat.dims}, expected ['data_source', 'time', 'station_name']."
         )
 
     cd = ColocatedData(_calc_mda8(coldat.data))
     cd.data.attrs["var_name"] = [obs_var, mod_var]
+    cd.metadata["var_name_input"] = [obs_var, mod_var]
     return cd
 
 

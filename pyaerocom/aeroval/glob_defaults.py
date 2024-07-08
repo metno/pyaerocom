@@ -629,6 +629,7 @@ var_web_info = dict(
     vmrso2=["SO2", "3D", "Gas volume mixing ratio"],
     concso4=["SO4", "3D", "Particle concentrations"],
     vmro3=["O3", "3D", "Volume mixing ratios"],
+    vmro3mda8=["O3 (MDA8)", "3D", "Valume mixing ratios"],
     vmro3max=["O3Max", "3D", "Volume mixing ratios"],
     vmrox=["OX", "3D", "Gas volume mixing ratio"],
     concco=["CO", "3D", "Particle concentration"],

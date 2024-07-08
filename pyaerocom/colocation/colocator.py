@@ -384,16 +384,20 @@ class Colocator:
                 data_out[mod_var][obs_var] = coldata
 
                 if obs_var in MDA_VARS:
-                    mda8 = None
                     try:
                         mda8 = mda8_colocated_data(
                             coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
                         )
-                    except ValueError:
+                    except ValueError as e:
                         logger.warning(
                             "Tried calculating mda8 for [%s, %s], but failed.", obs_var, mod_var
                         )
-                    finally:
+                        logger.error(e)
+                    else:
+                        self._save_coldata(mda8)
+                        logger.warning(
+                            "Successfully calculated mda8 for [%s, %s].", obs_var, mod_var
+                        )
                         data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
                 self._processing_status.append([mod_var, obs_var, 1])
