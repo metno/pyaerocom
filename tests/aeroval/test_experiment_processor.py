@@ -43,3 +43,17 @@ def test_ExperimentProcessor_run_error(processor: ExperimentProcessor, kwargs: d
     with pytest.raises(KeyError) as e:
         processor.run(**kwargs)
     assert str(e.value) == error
+
+
+@geojson_unavail
+@pytest.mark.parametrize(
+    "cfg,kwargs,error",
+    [
+        ("cfgexp2", dict(var_list="BLUB"), "var_list %s and obs_vars %s mismatch."),
+    ],
+)
+def test_ExperimentProcessor_catch_wrong_var_list(
+    processor: ExperimentProcessor, kwargs: dict, error: str, caplog
+):
+    processor.run(**kwargs)
+    assert any([error in str(record) for record in caplog.records])
