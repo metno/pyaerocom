@@ -687,7 +687,7 @@ class Colocator:
     def _filter_var_matches_var_name(self, var_matches, var_name):
         filtered = {}
         for mvar, ovar in var_matches.items():
-            if mvar in var_name or ovar in var_name:
+            if mvar == var_name or ovar == var_name:
                 filtered[mvar] = ovar
         if len(filtered) == 0:
             raise DataCoverageError(var_name)
