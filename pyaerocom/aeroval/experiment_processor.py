@@ -111,7 +111,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         var_list : list, optional
             list variables supposed to be analysed. If None, then all
             variables available are used. Defaults to None. Can also be
-            `str` type.
+            `str` type. Must match at least some of the variables provided by a observation network.
         update_interface : bool
             if true, relevant json files that determine what is displayed
             online are updated after the run, including the the menu.json file
