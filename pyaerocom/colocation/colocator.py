@@ -389,10 +389,7 @@ class Colocator:
                             coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
                         )
                     except ValueError as e:
-                        logger.warning(
-                            "Tried calculating mda8 for [%s, %s], but failed.", obs_var, mod_var
-                        )
-                        logger.error(e)
+                        logger.debug(e)
                     else:
                         self._save_coldata(mda8)
                         logger.warning(
