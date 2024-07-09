@@ -21,7 +21,7 @@ from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.stats.mda8.const import MDA_OUTPUT_VARS
+from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
@@ -699,7 +699,7 @@ class ExperimentOutput(ProjectOutput):
             True if this combination is valid, else False.
 
         """
-        if obs_var in MDA_OUTPUT_VARS and mod_var in MDA_OUTPUT_VARS:
+        if obs_var in MDA8_OUTPUT_VARS and mod_var in MDA8_OUTPUT_VARS:
             return True
         # get model entry for model name
         try:
