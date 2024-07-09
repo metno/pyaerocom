@@ -699,8 +699,8 @@ class ExperimentOutput(ProjectOutput):
             True if this combination is valid, else False.
 
         """
-        # if obs_var in ["vmro3mda8"] and mod_var in ["vmro3mda8"]:
-        #    return True
+        if obs_var in ["vmro3mda8"] and mod_var in ["vmro3mda8"]:
+            return True
         # get model entry for model name
         try:
             mcfg = self.cfg.model_cfg.get_entry(mod_name)
