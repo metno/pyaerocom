@@ -31,7 +31,7 @@ from pyaerocom.helpers import (
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
-from pyaerocom.stats.mda8.const import MDA_VARS
+from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 
 from .colocated_data import ColocatedData
@@ -383,17 +383,16 @@ class Colocator:
                 )  # note this can be ColocatedData or ColocatedDataLists
                 data_out[mod_var][obs_var] = coldata
 
-                if obs_var in MDA_VARS:
-                    mda8 = None
+                if obs_var in MDA8_INPUT_VARS:
                     try:
                         mda8 = mda8_colocated_data(
                             coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
                         )
-                    except ValueError:
-                        logger.warning(
-                            "Tried calculating mda8 for [%s, %s], but failed.", obs_var, mod_var
-                        )
-                    finally:
+                    except ValueError as e:
+                        logger.debug(e)
+                    else:
+                        self._save_coldata(mda8)
+                        logger.info("Successfully calculated mda8 for [%s, %s].", obs_var, mod_var)
                         data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
                 self._processing_status.append([mod_var, obs_var, 1])

@@ -1,7 +1,11 @@
+import logging
+
 import numpy as np
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
+
+logger = logging.getLogger(__name__)
 
 
 def min_periods_max(x: np.ndarray, /, min_periods=1) -> float:
@@ -44,6 +48,7 @@ def mda8_colocated_data(coldat: ColocatedData, /, obs_var: str, mod_var: str) ->
 
     cd = ColocatedData(_calc_mda8(coldat.data))
     cd.data.attrs["var_name"] = [obs_var, mod_var]
+    cd.metadata["var_name_input"] = [obs_var, mod_var]
     return cd
 
 
