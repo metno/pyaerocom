@@ -45,7 +45,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "pyaerocom"
-copyright = f"2018-{datetime.date.today().strftime('%Y')}, MET Norway"
+copyright = f"2018-{datetime.date.today():%Y}, MET Norway"
 author = "pyaerocom developers"
 
 
