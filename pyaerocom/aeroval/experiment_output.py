@@ -8,6 +8,7 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
+    VariableInfo,
     extended_statistics,
     statistics_defaults,
     statistics_model_only,
@@ -28,8 +29,6 @@ from pyaerocom.variable_helpers import get_aliases
 MapInfo = namedtuple(
     "MapInfo", ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"]
 )
-
-VariableInfo = namedtuple("VariableInfo", ["menu_name", "vertical_type", "category"])
 
 logger = logging.getLogger(__name__)
 

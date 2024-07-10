@@ -1,4 +1,12 @@
 #: Default variable ranges for web display
+import copy
+import os
+from configparser import ConfigParser
+from enum import Enum
+from typing import NamedTuple
+
+from pydantic import BaseModel
+
 var_ranges_defaults = {
     "default": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "ang4487aer": {
@@ -571,171 +579,117 @@ statistics_model_only = {
 }
 
 #: Mapping of pyaerocom variable names to web naming conventions
-## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
 
-var_web_info = dict(
-    od550aer=["AOD", "2D", "Optical properties"],
-    od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
-    od550lt1aer=["AODf", "2D", "Optical properties"],
-    od550gt1aer=["AODc", "2D", "Optical properties"],
-    od550dust=["AODdust", "2D", "Optical properties"],
-    abs550aer=["AAOD", "2D", "Optical properties"],
-    ssa670aer=["SSA", "2D", "Optical properties"],
-    ang4487aer=["AE", "2D", "Optical properties"],
-    angabs4487aer=["AAE", "2D", "Optical properties"],
-    ang4487csaer=["AE (clear sky)", "2D", "Optical properties"],
-    sc550dryaer=["Scat. coef. (dry)", "3D", "Optical properties"],
-    sc550aer=["Scat. coef.", "3D", "Optical properties"],
-    ac550aer=["Abs. coef.", "3D", "Optical properties"],
-    ac550dryaer=["Abs. coef. (dry)", "3D", "Optical properties"],
-    ec532aer=["Ext. coeff.", "3D", "Optical properties"],
-    bsc532aer=["Backscat. coeff.", "3D", "Optical properties"],
-    concso4pr=["SO4 (precip.)", "3D", "Particle concentrations"],
-    concbc=["BC", "3D", "Particle concentrations"],
-    concoa=["OA", "3D", "Particle concentrations"],
-    concss=["SS", "3D", "Particle concentrations"],
-    conco3=["O3", "3D", "Gas concentrations"],
-    concno310=["NO3_PM10", "3D", "Particle concentration"],
-    concno325=["NO3_PM25", "3D", "Particle concentration"],
-    proxyod550bc=["OD (Black Carbon)", "2D", "Optical properties"],
-    proxyod550dust=["OD (Dust)", "2D", "Optical properties"],
-    proxyod550oa=["OD (Organic Matter)", "2D", "Optical properties"],
-    proxyod550so4=["OD (SO4)", "2D", "Optical properties"],
-    proxyod550ss=["OD (Sea Salt)", "2D", "Optical properties"],
-    proxyod550nh4=["OD (NH4)", "2D", "Optical properties"],
-    proxyod550no3=["OD (NO3)", "2D", "Optical properties"],
-    proxyzdust=["DLH", "2D", "Height"],
-    zdust=["DLH", "2D", "Height"],
-    proxyzaerosol=["ALH", "2D", "Height"],
-    zaerosol=["ALH", "2D", "Height"],
-    # Gases
-    concNno=["NO", "3D", "Concentration"],
-    concno2=["NO2", "3D", "Gas concentrations"],
-    concNno2=["NO2", "3D", "Gas concentrations"],
-    vmrno=["NO", "3D", "Volume mixing ratios"],
-    vmrno2=["NO2", "3D", "Volume mixing ratios"],
-    concno3=["NO3", "3D", "Gas concentrations"],
-    conctno3=["tNO3", "3D", "Concentration"],
-    concNtno3=["tNO3", "3D", "Concentration"],
-    conchno3=["HNO3", "3D", "Concentration"],
-    concNhno3=["HNO3", "3D", "Concentration"],
-    concnh3=["NH3", "3D", "Concentration"],
-    concNnh3=["NH3", "3D", "Concentration"],
-    conctnh=["tNH", "3D", "Concentration"],
-    concNtnh=["tNH", "3D", "Concentration"],
-    concnh4=["NH4", "3D", "Gas concentrations"],
-    concNnh4=["NH4", "3D", "Gas concentrations"],
-    concso2=["SO2", "3D", "Gas concentrations"],
-    concSso2=["SO2", "3D", "Gas concentrations"],
-    vmrso2=["SO2", "3D", "Gas volume mixing ratio"],
-    concso4=["SO4", "3D", "Particle concentrations"],
-    vmro3=["O3", "3D", "Volume mixing ratios"],
-    vmro3mda8=["O3 (MDA8)", "3D", "Valume mixing ratios"],
-    vmro3max=["O3Max", "3D", "Volume mixing ratios"],
-    vmrox=["OX", "3D", "Gas volume mixing ratio"],
-    concco=["CO", "3D", "Particle concentration"],
-    vmrco=["CO", "3D", "Volume mixing ratios"],
-    vmrco2=["CO2", "3D", "Volume mixing ratios"],
-    vmrc2h2=["Ethyne", "3D", "Volume mixing ratios"],
-    vmrc2h4=["Ethylene", "3D", "Volume mixing ratios"],
-    vmrc2h6=["Ethane", "3D", "Volume mixing ratios"],
-    vmrhcho=["Formaldehyde", "3D", "Volume mixing ratios"],
-    vmrisop=["Isoprene", "3D", "Volume mixing ratios"],
-    vmrch4=["CH4", "3D", "Volume mixing ratios"],
-    # PMs
-    concpm10=["PM10", "3D", "Particle concentrations"],
-    concpm10pbap=["PM10 PBAP", "3D", "Particle concentrations incl. spores"],
-    concpm25=["PM2.5", "3D", "Particle concentrations"],
-    concNno3pm10=["NO3 PM10", "3D", "Particle concentration"],
-    concNno3pm25=["NO3 PM25", "3D", "Particle concentration"],
-    concno3pm10=["NO3 PM10", "3D", "Particle concentration"],
-    concno3pm25=["NO3 PM25", "3D", "Particle concentration"],
-    concnh4coarse=["NH4 PM10", "3D", "Particle concentrations"],
-    concnh4fine=["NH4 PM2.5", "3D", "Particle concentrations"],
-    concso4t=["SO4 total", "3D", "Particle concentration"],
-    concso4c=["SO4 sea salt corrected", "3D", "Particle concentration"],
-    concso4coarse=["SO4 PM10", "3D", "Particle concentration"],
-    concso4fine=["SO4 PM2.5", "3D", "Particle concentration"],
-    concss10=["SS PM10", "3D", "Particle concentration"],
-    concss25=["SS PM25", "3D", "Particle concentration"],
-    concec=["EC", "3D", "Particle concentration"],
-    conccoc=["OC", "3D", "Particle concentration"],
-    concsspm10=["SS PM10", "3D", "Particle concentration"],
-    concsspm25=["SS PM25", "3D", "Particle concentration"],
-    concCecpm25=["EC PM2.5", "3D", "Particle concentration"],
-    concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
-    concCec25=["EC PM2.5", "3D", "Particle concentration"],
-    concCoc25=["OC PM2.5", "3D", "Particle concentration"],
-    concom25=["OM PM2.5", "3D", "Particle concentration"],
-    concCecpm10=["EC PM10", "3D", "Particle concentration"],
-    concCocpm10=["OC PM10", "3D", "Particle concentration"],
-    concdust=["Dust concentration", "3D", "Particle concentration"],
-    # Depositions
-    depoxs=["TotDepOXS", "3D", "Deposition"],
-    deprdn=["TotDepRDN", "3D", "Deposition"],
-    depoxn=["TotDepOXN", "3D", "Deposition"],
-    depoxsf=["TotDepOXSforr", "3D", "Deposition"],
-    deprdnf=["TotDepRDNforr", "3D", "Deposition"],
-    depoxnf=["TotDepOXNforr", "3D", "Deposition"],
-    depss=["TotDepSS", "3D", "Deposition"],
-    depssf=["TotDepSSforr", "3D", "Deposition"],
-    depna=["TotDepNa", "3D", "Deposition"],
-    depnaf=["TotDepNaforr", "3D", "Deposition"],
-    drysox=["DryOXS", "3D", "Deposition"],
-    dryoxs=["DryOXS", "3D", "Deposition"],
-    dryoxn=["DryOXN", "3D", "Deposition"],
-    dryrdn=["DryRDN", "3D", "Deposition"],
-    depdust=["TotDustDep", "3D", "Deposition"],
-    drydust=["DryDustDep", "3D", "Deposition"],
-    wetdust=["WetDustDep", "3D", "Deposition"],
-    wetoxs=["WetOXS", "3D", "Deposition"],
-    wetna=["WetNa", "3D", "Deposition"],
-    wetoxsc=["WetOXScorr", "3D", "Deposition"],
-    wetoxst=["WetOXStot", "3D", "Deposition"],
-    wetoxn=["WetOXN", "3D", "Deposition"],
-    wetrdn=["WetRDN", "3D", "Deposition"],
-    prmm=["Precipitation", "3D", "Deposition"],
-    # Temperature
-    ts=["Surface Temperature", "3D", "Temperature"],
-    # proxy drydep
-    proxydryoxs=["proxyDryOXS", "3D", "Deposition"],
-    proxydryss=["proxyDrySS", "3D", "Deposition"],
-    proxydryna=["proxyDryNa", "3D", "Deposition"],
-    proxydryso2=["proxyDrySO2", "3D", "Deposition"],
-    proxydryso4=["proxyDrySO4", "3D", "Deposition"],
-    proxydryoxn=["proxyDryOXN", "3D", "Deposition"],
-    proxydryno2=["proxyDryNO2", "3D", "Deposition"],
-    proxydryno2no2=["proxyDryNO2NO2", "3D", "Deposition"],
-    proxydryhono=["proxyDryHONO", "3D", "Deposition"],
-    proxydryn2o5=["proxyDryN2O5", "3D", "Deposition"],
-    proxydryhno3=["proxyDryHNO3", "3D", "Deposition"],
-    proxydryno3c=["proxyDryNO3Coarse", "3D", "Deposition"],
-    proxydryno3f=["proxyDryNO3Fine", "3D", "Deposition"],
-    proxydryrdn=["proxyDryRDN", "3D", "Deposition"],
-    proxydrynh3=["proxyDryNH3", "3D", "Deposition"],
-    proxydrynh4=["proxyDryNH4", "3D", "Deposition"],
-    proxydryo3=["proxyDryO3", "3D", "Deposition"],
-    proxydrypm10=["proxyDryPM10", "3D", "Deposition"],
-    proxydrypm25=["proxyDryPM2.5", "3D", "Deposition"],
-    # proxy wetdep
-    proxywetoxs=["proxyWetOXS", "3D", "Deposition"],
-    proxywetso2=["proxyWetSO2", "3D", "Deposition"],
-    proxywetso4=["proxyWetSO4", "3D", "Deposition"],
-    proxywetoxn=["proxyWetOXN", "3D", "Deposition"],
-    proxywetno2=["proxyWetNO2", "3D", "Deposition"],
-    proxywetno2no2=["proxyWetNO2NO2", "3D", "Deposition"],
-    proxywethono=["proxyWetHONO", "3D", "Deposition"],
-    proxywetn2o5=["proxyWetN2O5", "3D", "Deposition"],
-    proxywethno3=["proxyWetHNO3", "3D", "Deposition"],
-    proxywetno3c=["proxyWetNO3Coarse", "3D", "Deposition"],
-    proxywetno3f=["proxyWetNO3Fine", "3D", "Deposition"],
-    proxywetrdn=["proxyWetRDN", "3D", "Deposition"],
-    proxywetnh3=["proxyWetNH3", "3D", "Deposition"],
-    proxywetnh4=["proxyWetNH4", "3D", "Deposition"],
-    proxyweto3=["proxyWetO3", "3D", "Deposition"],
-    proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
-    proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
-    # other stuff
-    ratpm25pm10=["ratio PM2.5 PM10", "3D", "Particle ratio"],
-    ratpm10pm25=["ratio PM10 PM2.5", "3D", "Particle ratio"],
-)
+
+class VerticalType(str, Enum):
+    """A 2D variable is defined under Column on the website, 3D is defined under Surface"""
+
+    T2D = "2D"
+    T3D = "3D"
+    UNDEFINED = "UNDEFINED"
+
+    def __str__(self):
+        return self.value
+
+
+class CategoryType(str, Enum):
+    optical = "Optical properties"
+    particle_conc = "Particle concentrations"
+    height = "Height"
+    concentration = "Concentration"
+    gas_conc = "Gas concentrations"
+    vmr = "Volume mixing ratios"
+    gas_vmr = "Gas volume mixing ratio"
+    deposition = "Deposition"
+    temperature = "Temperature"
+    particle_ratio = "Particle ratio"
+    UNDEFINED = "UNDEFINED"
+
+    def __str__(self):
+        return self.value
+
+
+class VariableInfo(NamedTuple):
+    menu_name: str
+    vertical_type: VerticalType
+    category: CategoryType
+
+
+class _VarWebInfo(BaseModel):
+    """Pydantic helper class to ensure the VarWebInfo container always contains the correct data
+
+    :param BaseModel: _description_
+    """
+
+    var_web_info: dict[str, VariableInfo]
+
+
+class VarWebInfo:
+    _var_web_info: _VarWebInfo
+
+    def __init__(self, ini_file=None, /, **kwargs):
+        """This class contains var_web_info and can be accessed like a read-only dict. It
+        reads it inital data from data/var_web_info.ini
+
+        :param ini_file: filename to additional or updated VariableInfo items, defaults to None
+        """
+        self._var_web_info = _VarWebInfo(var_web_info=dict())
+        file = os.path.join(os.path.dirname(__file__), "data", "var_web_info.ini")
+        self.update_from_ini(file)
+        if ini_file is not None:
+            self.update_from_ini(file)
+        self.update(**kwargs)
+
+    def update(self, *args, **kwargs):
+        d = copy.deepcopy(self._var_web_info.var_web_info)
+        d.update(*args, **kwargs)
+        self._var_web_info = _VarWebInfo(var_web_info=d)
+
+    def update_from_ini(self, filename):
+        cfg = ConfigParser()
+        cfg.read(filename)
+        # remove configparser default
+        cfg_dict = dict()
+        for s in cfg.sections():
+            cfg_dict[s] = tuple([cfg[s][x] for x in "menu_name,vertical_type,category".split(",")])
+        self.update(**cfg_dict)
+
+    ## below functions to behave like a read-only dict
+    def copy(self):
+        return self._var_web_info.var_web_info.copy()
+
+    def __getitem__(self, key):
+        return self._var_web_info.var_web_info[key]
+
+    def __len__(self, key):
+        return self._var_web_info.var_web_info.__len__()
+
+    def __repr__(self):
+        return repr(self._var_web_info.var_web_info)
+
+    def keys(self):
+        return self._var_web_info.var_web_info.keys()
+
+    def has_key(self, k):
+        return k in self._var_web_info.var_web_info
+
+    def values(self):
+        return self._var_web_info.var_web_info.values()
+
+    def items(self):
+        return self._var_web_info.var_web_info.items()
+
+    def __cmp__(self, dict_):
+        return self._var_web_info.var_web_info.__cmp__(dict_)
+
+    def __contains__(self, item):
+        return self._var_web_info.var_web_info.__contains__(item)
+
+    def __iter__(self):
+        return self._var_web_info.var_web_info.__iter__()
+
+    def __unicode__(self):
+        return self._var_web_info.var_web_info.__unicode__()
+
+
+var_web_info = VarWebInfo()
