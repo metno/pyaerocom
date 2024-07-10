@@ -1,7 +1,7 @@
 About
 ============
 
-pyaerocom is written and tested for python >= 3.10 and for-unix based systems. It provides tools for processing and plotting of data related to the the AeroTools project at the Norwegian Meteorological institute, which services projects such as the `Copernicus Atmosphere Monitoring Service <https://atmosphere.copernicus.eu/>`_, `EMEP <https://www.emep.int/>`_, `NorESM <https://www.noresm.org/>`_, and `AeroCom <https://aerocom.met.no/>`_.
+pyaerocom is written and tested for python >= 3.10 and for-unix based systems. It provides tools for processing and analyzing data related to the the AeroTools model evaluation project at the Norwegian Meteorological institute, which services projects such as the `Copernicus Atmosphere Monitoring Service <https://atmosphere.copernicus.eu/>`_, `EMEP <https://www.emep.int/>`_, `NorESM <https://www.noresm.org/>`_, and `AeroCom <https://aerocom.met.no/>`_.
 
 The AeroTools project has the following mandate:
 - Support for projects delivering model evaluation results
@@ -9,8 +9,8 @@ The AeroTools project has the following mandate:
 - Database management of observation data
 - Short and long-term development of evaluation tools, including web-pages showing evaluation results
 
-The pyaerocom software is core part of the AeroTools project and therefore it's scope  includes support for reading and processing of modeldata (e.g. AeroCom, EMEP), satellite data (e.g. MODIS, AATSR) and ground based observation datasets (e.g. AERONET, EBAS, EARLINET).
-In addition, pyaerocom provides tools for colocation and cross evaluation of different datasets using commonly used statistics such as several biases, gross-errors, or correlation coefficients.
+The pyaerocom software is core part of the AeroTools project and therefore it's scope includes support for reading and processing of model data (e.g. AeroCom, EMEP, IFS), satellite data (e.g. TROPOMI, MODIS, AATSR) and ground based observation datasets (e.g. AERONET, EBAS, EARLINET, ICOS).
+In addition, pyaerocom provides tools for colocation and cross evaluation of different datasets using commonly used statistics including several biases, gross-errors, and correlation coefficients.
 
 
 Main features
@@ -18,18 +18,18 @@ Main features
 
 - Reading routines for many ground based observation databases, such as:
 
-	- `AERONET <https://aeronet.gsfc.nasa.gov/>`_ Sun, SDA and Inversion products.
-	- `EBAS database <https://ebas.nilu.no/>`__.
-	- `EEA Air Quality e-Reporting (AQ e-Reporting) <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`__.
-	- `AirNow <https://www.airnow.gov/about-the-data/>`__.
-	- `China National Envrionmental Monitoring Service (CNEMC) <https://www.cnemc.cn/en/>`__.
+	- `AERONET <https://aeronet.gsfc.nasa.gov/>`_ Sun, SDA and Inversion products
+	- `EBAS database <https://ebas.nilu.no/>`__
+	- `EEA Air Quality e-Reporting (AQ e-Reporting) <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`__
+	- `AirNow <https://www.airnow.gov/about-the-data/>`__
+	- `China National Envrionmental Monitoring Service (CNEMC) <https://www.cnemc.cn/en/>`__
 	- `ICOS <https://www.icos-cp.eu/>`_
 
 - Reading routines for level 3 gridded satellite observations, such as:
 
-	- `MODIS Aerosol Product <https://modis.gsfc.nasa.gov/data/dataprod/mod04.php>`__.
-	- `CALIPSO CALIOP <https://www-calipso.larc.nasa.gov/>`__ Lidar observations.
-	- `ENVISAT AATSR <https://earth.esa.int/web/guest/missions/esa-operational-eo-missions/envisat/instruments/aatsr>`__.
+	- `MODIS Aerosol Product <https://modis.gsfc.nasa.gov/data/dataprod/mod04.php>`__
+	- `CALIPSO CALIOP <https://www-calipso.larc.nasa.gov/>`__ Lidar observations
+	- `ENVISAT AATSR <https://earth.esa.int/web/guest/missions/esa-operational-eo-missions/envisat/instruments/aatsr>`__
 
 - Data harmonization tools following the `CF conventions <https://cfconventions.org/>`__.
 - Intuitive data objects for analysis of gridded data and ungridded (point-cloud) observations.
@@ -56,7 +56,7 @@ Usage examples
 Access to AeroCom users database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The AeroCom users database contains model diagnostics from all AeroCom phases, ready for analysis.
+The AeroCom users database hosted on the MET Norway servers contains model diagnostics from all AeroCom phases, ready for analysis.
 
 If you wish to get access to the database, please follow the instructions provided in the following link:
 
