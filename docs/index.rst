@@ -6,8 +6,9 @@
 ***************************
 pyaerocom
 ***************************
+**A building block of AeroTools**
 
-Official website of pyaerocom, a Python package for climate and air quality model evaluation.
+Official website of pyaerocom, a Python package for climate and air quality model evaluation. 
 
 .. figure:: aerotools_workflow_202407.png
 

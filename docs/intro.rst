@@ -1,15 +1,16 @@
 About
 ============
 
-pyaerocom is written and tested for python >= 3.10 and for-unix based systems. It provides tools for processing and analyzing data related to the the AeroTools model evaluation project at the Norwegian Meteorological institute, which services projects such as the `Copernicus Atmosphere Monitoring Service <https://atmosphere.copernicus.eu/>`_, `EMEP <https://www.emep.int/>`_, `NorESM <https://www.noresm.org/>`_, and `AeroCom <https://aerocom.met.no/>`_.
+pyaerocom is written and tested for python >= 3.10 and for unix based systems. It provides tools for processing and analyzing data as part of the AeroTools model evaluation project at the `Norwegian Meteorological institute <https://www.met.no/>`_, which services projects such as the `Copernicus Atmosphere Monitoring Service <https://atmosphere.copernicus.eu/>`_, `EMEP <https://www.emep.int/>`_, `NorESM <https://www.noresm.org/>`_, and `AeroCom <https://aerocom.met.no/>`_.
 
 The AeroTools project has the following mandate:
+
 - Support for projects delivering model evaluation results
 - User support for model-evaluation
 - Database management of observation data
 - Short and long-term development of evaluation tools, including web-pages showing evaluation results
 
-The pyaerocom software is core part of the AeroTools project and therefore it's scope includes support for reading and processing of model data (e.g. AeroCom, EMEP, IFS), satellite data (e.g. TROPOMI, MODIS, AATSR) and ground based observation datasets (e.g. AERONET, EBAS, EARLINET, ICOS).
+The pyaerocom software is a core part of the AeroTools project and therefore it's scope includes support for reading and processing of model data (e.g. AeroCom, EMEP, IFS), satellite data (e.g. TROPOMI, MODIS, AATSR) and ground based observation datasets (e.g. AERONET, EBAS, EARLINET, ICOS).
 In addition, pyaerocom provides tools for colocation and cross evaluation of different datasets using commonly used statistics including several biases, gross-errors, and correlation coefficients.
 
 
@@ -70,3 +71,5 @@ Remark for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 pyaerocom is not tested on Windows systems and may only work in parts and thus some features may not work on Windows machines at the moment. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
+
+
