@@ -309,8 +309,6 @@ class EvalSetup(BaseModel):
 
     _aux_funs: dict = {}
 
-    var_web_info: dict = {}
-
     @computed_field
     @cached_property
     def proj_info(self) -> ProjectInfo:
