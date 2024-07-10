@@ -7,7 +7,7 @@
 pyaerocom
 ***************************
 
-Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AeroCom project <http://aerocom.met.no>`__.
+Official website of pyaerocom, a Python package for climate and air quality model evaluation.
 
 .. figure:: biasmaps_fig5_glissetal2021.png
 
