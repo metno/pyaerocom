@@ -44,7 +44,6 @@ Main features
 Usage examples
 ^^^^^^^^^^^^^^
 - Processing of data to display on `AeroVal <https://aeroval.met.no/>`_
-- Processing of data for the new AeroCom `Model Evaluation interface <https://aerocom-evaluation.met.no/>`__.
 - Processing and harmonization of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__.
 - pyaerocom was used for the model evaluation study by `Gliß et al., 2020 <https://acp.copernicus.org/preprints/acp-2019-1214/>`__.
 - pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__.
@@ -64,7 +63,7 @@ If you wish to get access to the database, please follow the instructions provid
 https://wiki.met.no/aerocom/data_retrieval
 
 **NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the AeroCom model data available in the database as well as some gridded level 3 satellite data which may be used for model evaluation.
-Once you have access to the user database you may mount the file-system locally (e.g. via `sshfs` and register the data-paths you need in pyaerocom, for details see tutorials, more info below).
+Once you have access to the user database you may mount the file-system locally (e.g. via `sshfs` and register the data-paths you need in pyaerocom, for details see tutorials).
 
 
 Remark for Windows users

@@ -1,16 +1,4 @@
 CLI
 ===
 
-Documentation of pyaerocom command line interface.
-
-\-\-help
-
--V, \-\-version: Version of pyaerocom
-
-Commands:
-
-browse: Browse database. e.g.,  browse <DATABASE>
-
-clearcache: Delete cached data objects
-
-ppiaccess: Check if MetNO PPI can be accessed
+The CLI aims to be slef-explanatory. Once pyaerocom is installed, and the command line you may run `pya --help` to see the full list of commands available.
