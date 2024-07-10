@@ -7,11 +7,11 @@
 pyaerocom
 ***************************
 
-Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AeroCom project <http://aerocom.met.no>`__.
+Official website of pyaerocom, a Python package for climate and air quality model evaluation.
 
-.. figure:: biasmaps_fig5_glissetal2021.png
+.. figure:: aerotools_workflow_202407.png
 
-  Bias maps of the AeroCom ensemble median compared to several observation records (Figure 5 from `Gliß et al., 2021 <https://acp.copernicus.org/articles/21/87/2021/acp-21-87-2021.html>`__, processed with pyaerocom)
+   MET Norway's AeroTools workflow
 
 .. toctree::
    :maxdepth: 1
