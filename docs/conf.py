@@ -27,11 +27,11 @@ def init_tutorials():
     if TUTREPO not in os.listdir():
         command = f"git clone {TUTURL}"
         print(command)
-        subprocess.call(command, shell=True, check=True)
+        subprocess.run(command, shell=True, check=True)
     else:
         command = f"cd {TUTREPO} && git pull"
         print(command)
-        subprocess.call(command, shell=True, check=True)
+        subprocess.run(command, shell=True, check=True)
 
 
 print("Initiating pyaerocom-tutorials repo under pyaerocom/docs")
