@@ -4,6 +4,8 @@ import os
 import shutil
 from collections import namedtuple
 
+import aerovaldb
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
 from pyaerocom.aeroval.collections import ObsCollection
@@ -16,7 +18,7 @@ from pyaerocom.aeroval.glob_defaults import (
     var_ranges_defaults,
     var_web_info,
 )
-from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
+from pyaerocom.aeroval.json_utils import check_make_json, write_json
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -45,6 +47,8 @@ class ProjectOutput:
         self.proj_id = proj_id
         self.json_basedir = json_basedir
 
+        self.avdb = aerovaldb.open(f"json_files:{json_basedir}")
+
     @property
     def proj_dir(self) -> str:
         """Project directory"""
@@ -66,7 +70,12 @@ class ProjectOutput:
         """
         List of available experiments
         """
-        return list(read_json(self.experiments_file))
+        try:
+            experiments = list(self.avdb.get_experiments(self.proj_id))
+        except FileNotFoundError:
+            experiments = []
+
+        return experiments
 
 
 class ExperimentOutput(ProjectOutput):
@@ -159,7 +168,7 @@ class ExperimentOutput(ProjectOutput):
         """
         avail = self._create_menu_dict()
         avail = self._sort_menu_entries(avail)
-        write_json(avail, self.menu_file, indent=4)
+        self.avdb.put_menu(avail, self.proj_id, self.exp_id)
 
     def update_interface(self) -> None:
         """
@@ -193,16 +202,22 @@ class ExperimentOutput(ProjectOutput):
         # AeroVal frontend needs periods to be set in config json file...
         # make sure they are
         self.cfg._check_time_config()
-        self.cfg.to_json(self.exp_dir)
+        self.avdb.put_config(self.cfg.json_repr(), self.proj_id, self.exp_id)
 
     def _sync_heatmaps_with_menu_and_regions(self) -> None:
         """
         Synchronise content of heatmap json files with content of menu.json
         """
-        menu = read_json(self.menu_file)
-        all_regions = read_json(self.regions_file)
-        for fp in self._get_json_output_files("hm"):
-            data = read_json(fp)
+        try:
+            menu = self.avdb.get_menu(self.proj_id, self.exp_id)
+        except FileNotFoundError:
+            menu = {}
+        try:
+            all_regions = self.avdb.get_regions(self.proj_id, self.exp_id)
+        except FileNotFoundError:
+            all_regions = {}
+        for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
+            data = self.avdb.get_by_uuid(fp)
             hm = {}
             for vardisp, info in menu.items():
                 obs_dict = info["obs"]
@@ -222,7 +237,7 @@ class ExperimentOutput(ProjectOutput):
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
                             hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-            write_json(hm, fp, ignore_nan=True)
+            self.avdb.put_by_uuid(hm, fp)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
@@ -385,7 +400,7 @@ class ExperimentOutput(ProjectOutput):
             return True
 
         try:
-            data = read_json(fp)
+            data = self.avdb.get_by_uuid(fp)
         except Exception:
             logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
             os.remove(fp)
@@ -448,20 +463,12 @@ class ExperimentOutput(ProjectOutput):
 
         Parameters
         ----------
-        base_dir : str, optional
-            basic output direcory (containing subdirs of all projects)
-        proj_name : str, optional
-            name of project, if None, then this project is used
-        exp_name : str, optional
-            name experiment, if None, then this project is used
         also_coldata : bool
             if True and if output directory for colocated data is default and
             specific for input experiment ID, then also all associated colocated
             NetCDF files are deleted. Defaults to True.
         """
-        if os.path.exists(self.exp_dir):
-            logger.info(f"Deleting everything under {self.exp_dir}")
-            shutil.rmtree(self.exp_dir)
+        self.avdb.rm_experiment_data(self.proj_id, self.exp_id)
 
         if also_coldata:
             coldir = self.cfg.path_manager.get_coldata_dir()
@@ -526,7 +533,7 @@ class ExperimentOutput(ProjectOutput):
 
     def _create_var_ranges_json(self) -> None:
         try:
-            ranges = read_json(self.var_ranges_file)
+            ranges = self.avdb.get_ranges(self.proj_id, self.exp_id)
         except FileNotFoundError:
             ranges = {}
         avail = self._results_summary()
@@ -534,7 +541,7 @@ class ExperimentOutput(ProjectOutput):
         for var in all_vars:
             if not var in ranges or ranges[var]["scale"] == []:
                 ranges[var] = self._get_cmap_info(var)
-        write_json(ranges, self.var_ranges_file, indent=4)
+        self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:
         if self.cfg.statistics_opts.obs_only_stats:
@@ -563,7 +570,8 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(obs_statistics_trend)
             else:
                 stats_info.update(statistics_trend)
-        write_json(stats_info, self.statistics_file, indent=4)
+
+        self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
 
     def _get_var_name_and_type(self, var_name: str) -> VariableInfo:
         """Get menu name and type of observation variable
@@ -801,15 +809,14 @@ class ExperimentOutput(ProjectOutput):
                     new_sorted[var]["obs"][obs_name][vert_code] = models_sorted
         return new_sorted
 
-    def _add_entry_experiments_json(self, exp_id, data) -> None:
-        fp = self.experiments_file
-        current = read_json(fp)
+    def _add_entry_experiments_json(self, exp_id: str, data) -> None:
+        try:
+            current = self.avdb.get_experiments(self.proj_id)
+        except FileNotFoundError:
+            current = {}
         current[exp_id] = data
-        write_json(
-            current,
-            self.experiments_file,
-            indent=4,
-        )
+
+        self.avdb.put_experiments(current, self.proj_id)
 
     def _del_entry_experiments_json(self, exp_id) -> None:
         """
@@ -825,16 +832,15 @@ class ExperimentOutput(ProjectOutput):
         None
 
         """
-        current = read_json(self.experiments_file)
+        try:
+            current = self.avdb.get_experiments(self.proj_id)
+        except FileNotFoundError:
+            current = {}
         try:
             del current[exp_id]
         except KeyError:
             logger.warning(f"no such experiment registered: {exp_id}")
-        write_json(
-            current,
-            self.experiments_file,
-            indent=4,
-        )
+        self.avdb.put_experiments(current, self.proj_id)
 
     def reorder_experiments(self, exp_order=None) -> None:
         """Reorder experiment order in evaluation interface
@@ -851,10 +857,10 @@ class ExperimentOutput(ProjectOutput):
             exp_order = []
         elif not isinstance(exp_order, list):
             raise ValueError("need list as input")
-        current = read_json(self.experiments_file)
+
+        try:
+            current = self.avdb.get_experiments(self.proj_id)
+        except FileNotFoundError:
+            current = {}
         current = sort_dict_by_name(current, pref_list=exp_order)
-        write_json(
-            current,
-            self.experiments_file,
-            indent=4,
-        )
+        self.avdb.put_experiments(current, self.proj_id)
