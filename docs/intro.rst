@@ -49,6 +49,11 @@ Usage examples
 - pyaerocom was used for the model evaluation study by `Gliß et al., 2020 <https://acp.copernicus.org/preprints/acp-2019-1214/>`__.
 - pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__.
 
+.. figure:: biasmaps_fig5_glissetal2021.png
+
+  Bias maps of the AeroCom ensemble median compared to several observation records (Figure 5 from `Gliß et al., 2021 <https://acp.copernicus.org/articles/21/87/2021/acp-21-87-2021.html>`__, processed with pyaerocom)
+
+
 Access to AeroCom users database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
