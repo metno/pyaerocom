@@ -18,7 +18,7 @@ from pyaerocom.aeroval.glob_defaults import (
     var_ranges_defaults,
     var_web_info,
 )
-from pyaerocom.aeroval.json_utils import check_make_json, write_json
+from pyaerocom.aeroval.json_utils import check_make_json
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -420,7 +420,7 @@ class ExperimentOutput(ProjectOutput):
                 modified = True
                 logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-        write_json(data_new, fp)
+        self.avdb.put_by_uuid(data_new, fp)
         return modified
 
     def _clean_modelmap_files(self) -> list[str]:
