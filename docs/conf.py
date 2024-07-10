@@ -29,7 +29,7 @@ def init_tutorials():
         print(command)
         subprocess.call(command, shell=True, check=True)
     else:
-        command = "git pull"
+        command = f"cd {TUTREPO} && git pull"
         print(command)
         subprocess.call(command, shell=True, check=True)
 
