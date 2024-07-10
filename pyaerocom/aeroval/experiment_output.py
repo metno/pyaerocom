@@ -70,12 +70,7 @@ class ProjectOutput:
         """
         List of available experiments
         """
-        try:
-            experiments = list(self.avdb.get_experiments(self.proj_id))
-        except FileNotFoundError:
-            experiments = []
-
-        return experiments
+        return list(self.avdb.get_experiments(self.proj_id, default={}))
 
 
 class ExperimentOutput(ProjectOutput):
@@ -208,14 +203,8 @@ class ExperimentOutput(ProjectOutput):
         """
         Synchronise content of heatmap json files with content of menu.json
         """
-        try:
-            menu = self.avdb.get_menu(self.proj_id, self.exp_id)
-        except FileNotFoundError:
-            menu = {}
-        try:
-            all_regions = self.avdb.get_regions(self.proj_id, self.exp_id)
-        except FileNotFoundError:
-            all_regions = {}
+        menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
+        all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
         for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
             data = self.avdb.get_by_uuid(fp)
             hm = {}
@@ -532,10 +521,8 @@ class ExperimentOutput(ProjectOutput):
         return info
 
     def _create_var_ranges_json(self) -> None:
-        try:
-            ranges = self.avdb.get_ranges(self.proj_id, self.exp_id)
-        except FileNotFoundError:
-            ranges = {}
+        ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
+
         avail = self._results_summary()
         all_vars = list(set(avail["ovar"] + avail["mvar"]))
         for var in all_vars:
@@ -810,10 +797,8 @@ class ExperimentOutput(ProjectOutput):
         return new_sorted
 
     def _add_entry_experiments_json(self, exp_id: str, data) -> None:
-        try:
-            current = self.avdb.get_experiments(self.proj_id)
-        except FileNotFoundError:
-            current = {}
+        current = self.avdb.get_experiments(self.proj_id, default={})
+
         current[exp_id] = data
 
         self.avdb.put_experiments(current, self.proj_id)
@@ -832,10 +817,8 @@ class ExperimentOutput(ProjectOutput):
         None
 
         """
-        try:
-            current = self.avdb.get_experiments(self.proj_id)
-        except FileNotFoundError:
-            current = {}
+        current = self.avdb.get_experiments(self.proj_id, default={})
+
         try:
             del current[exp_id]
         except KeyError:
@@ -858,9 +841,7 @@ class ExperimentOutput(ProjectOutput):
         elif not isinstance(exp_order, list):
             raise ValueError("need list as input")
 
-        try:
-            current = self.avdb.get_experiments(self.proj_id)
-        except FileNotFoundError:
-            current = {}
+        current = self.avdb.get_experiments(self.proj_id, default={})
+
         current = sort_dict_by_name(current, pref_list=exp_order)
         self.avdb.put_experiments(current, self.proj_id)
