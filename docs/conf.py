@@ -24,17 +24,14 @@ TUTURL = f"https://github.com/metno/{TUTREPO}.git"
 def init_tutorials():
     if "conf.py" not in os.listdir():
         raise FileNotFoundError("Wrong directory...")
-
     if TUTREPO not in os.listdir():
         command = f"git clone {TUTURL}"
         print(command)
-        subprocess.call(command, shell=True)
-    if TUTREPO not in os.listdir():
-        raise FileNotFoundError("Failed to clone pyaerocom-tutorials repo into pyaerocom/docs")
-    if TUTREPO in os.listdir():
+        subprocess.call(command, shell=True, check=True)
+    else:
         command = "git pull"
         print(command)
-        subprocess.call(command, shell=True)
+        subprocess.call(command, shell=True, check=True)
 
 
 print("Initiating pyaerocom-tutorials repo under pyaerocom/docs")
