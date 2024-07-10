@@ -507,7 +507,7 @@ class ExperimentOutput(ProjectOutput):
         dirloc = self.out_dirs_json[dirname]
         return glob.glob(f"{dirloc}/*.json")
 
-    def _get_cmap_info(self, var) -> list[float]:
+    def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
         if var in var_ranges_defaults:
             return var_ranges_defaults[var]
         try:

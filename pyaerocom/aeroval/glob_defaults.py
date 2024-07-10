@@ -7,7 +7,7 @@ from typing import NamedTuple
 
 from pydantic import BaseModel
 
-var_ranges_defaults = {
+_var_ranges_defaults = {
     "default": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
     "ang4487aer": {
         "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
@@ -371,6 +371,37 @@ var_ranges_defaults = {
         "colmap": "coolwarm",
     },
 }
+
+
+# basemodel-implementation for verification
+class _ScaleAndColmap(NamedTuple):
+    scale: list[float]
+    colmap: str
+
+
+class _WebVariableScalesAndColormaps(BaseModel):
+    scale_colmaps: dict[str, _ScaleAndColmap]
+
+
+# dict-implementation for json-serialization, namedtuple not stable with json/simplejson
+class ScaleAndColmap(dict[str, str | list[float]]):
+    """simple dictionary container with only two keys, scale and colmap
+
+    :param dict: initialization dictionary
+    """
+
+    pass
+
+
+class WebVariableScalesAndColormaps(dict[str, ScaleAndColmap]):
+    def __init__(self, *args, **kwargs):
+        # run arguments through pydantic
+        wvsc = _WebVariableScalesAndColormaps(scale_colmaps=kwargs)
+        super().__init__(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
+
+
+var_ranges_defaults = WebVariableScalesAndColormaps(**_var_ranges_defaults)
+
 
 #: Default information for statistical parameters
 statistics_defaults = {
