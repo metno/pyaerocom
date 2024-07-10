@@ -23,7 +23,7 @@ Main features
 	- `EEA Air Quality e-Reporting (AQ e-Reporting) <https://www.eea.europa.eu/data-and-maps/data/aqereporting-9>`__.
 	- `AirNow <https://www.airnow.gov/about-the-data/>`__.
 	- `China National Envrionmental Monitoring Service (CNEMC) <https://www.cnemc.cn/en/>`__.
-	- `ICOS <https://www.icos-cp.eu/>`
+	- `ICOS <https://www.icos-cp.eu/>`_
 
 - Reading routines for level 3 gridded satellite observations, such as:
 
