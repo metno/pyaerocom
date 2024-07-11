@@ -1,7 +1,7 @@
 About
 ============
 
-pyaerocom is written and tested for python >= 3.10 and for unix based systems. It provides tools for processing and analyzing data as part of the AeroTools model evaluation project at the `Norwegian Meteorological institute <https://www.met.no/>`_, which services projects such as the `Copernicus Atmosphere Monitoring Service <https://atmosphere.copernicus.eu/>`_, `EMEP <https://www.emep.int/>`_, `NorESM <https://www.noresm.org/>`_, and `AeroCom <https://aerocom.met.no/>`_.
+pyaerocom is written and tested for python >= 3.10 and for unix based systems. It provides tools for processing and analyzing data as part of the AeroTools model evaluation project at the `Norwegian Meteorological Institute <https://www.met.no/>`_, which services projects such as the `Copernicus Atmosphere Monitoring Service <https://atmosphere.copernicus.eu/>`_, `Copernicus Climate Change Service <https://climate.copernicus.eu/>`_, `EMEP <https://www.emep.int/>`_, `NorESM <https://www.noresm.org/>`_, and `AeroCom <https://aerocom.met.no/>`_.
 
 The AeroTools project has the following mandate:
 
