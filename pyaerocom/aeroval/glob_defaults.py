@@ -1,9 +1,9 @@
 #: Default variable ranges for web display
 import copy
 import json
+import logging
 from configparser import ConfigParser
 from enum import Enum
-import logging
 from typing import NamedTuple
 
 from pydantic import BaseModel
