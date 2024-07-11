@@ -131,8 +131,8 @@ def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
 )
 def test_EvalSetup__check_time_config(
     eval_setup: EvalSetup,
-    start: Literal["2022"] | Literal["2022/01/12 00:00:00"],
-    stop: Literal["2023"] | Literal["2022/01/12 23:00:00"],
+    start: Literal["2022", "2022/01/12 00:00:00"],
+    stop: Literal["2023", "2022/01/12 23:00:00"],
 ):
     eval_setup._check_time_config()
     assert str(eval_setup.colocation_opts.start) == start
