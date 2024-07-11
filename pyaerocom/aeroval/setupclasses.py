@@ -7,6 +7,8 @@ from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
 
+from pyaerocom.aeroval import glob_defaults
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
@@ -301,10 +303,16 @@ class EvalSetup(BaseModel):
     ########################################
 
     IGNORE_JSON: list[str] = ["_aux_funs"]
-    ADD_GLOB: list[str] = ["io_aux_file"]
+    ADD_GLOB: list[str] = ["io_aux_file", "var_web_info_file", "var_scale_colmap_file"]
 
     io_aux_file: Annotated[
         Path | str, ".py file containing additional read methods for modeldata"
+    ] = ""
+
+    var_web_info_file: Annotated[Path | str, "config file containing additional variables"] = ""
+
+    var_scale_colmap_file: Annotated[
+        Path | str, "config file containing scales/ranges for variables"
     ] = ""
 
     _aux_funs: dict = {}
@@ -340,6 +348,14 @@ class EvalSetup(BaseModel):
         if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
             self._import_aux_funs()
         return self._aux_funs
+
+    @cached_property
+    def var_web_info(self) -> glob_defaults.VarWebInfo:
+        return glob_defaults.VarWebInfo(config_file=self.var_web_info_file)
+
+    @cached_property
+    def var_scale_colmap(self) -> glob_defaults.VarWebScaleAndColormap:
+        return glob_defaults.VarWebScaleAndColormap(config_file=self.var_scale_colmap_file)
 
     @computed_field
     @cached_property

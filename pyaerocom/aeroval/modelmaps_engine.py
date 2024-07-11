@@ -3,7 +3,6 @@ import os
 
 from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
 from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
@@ -142,6 +141,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
             )
 
+        var_ranges_defaults = self.cfg.var_scale_colmap
         check_var_ranges_avail(data, var)
 
         if var in var_ranges_defaults.keys():

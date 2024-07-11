@@ -14,8 +14,6 @@ from pyaerocom.aeroval.glob_defaults import (
     statistics_model_only,
     statistics_obs_only,
     statistics_trend,
-    var_ranges_defaults,
-    var_web_info,
 )
 from pyaerocom.aeroval.json_utils import check_make_json, read_json, write_json
 from pyaerocom.aeroval.modelentry import ModelEntry
@@ -508,6 +506,7 @@ class ExperimentOutput(ProjectOutput):
         return glob.glob(f"{dirloc}/*.json")
 
     def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
+        var_ranges_defaults = self.cfg.var_scale_colmap
         if var in var_ranges_defaults:
             return var_ranges_defaults[var]
         try:
@@ -580,8 +579,8 @@ class ExperimentOutput(ProjectOutput):
             - Vertical type of this variable (ie. 2D, 3D).
             - Category of this variable.
         """
-        if var_name in var_web_info:
-            name, tp, cat = var_web_info[var_name]
+        if var_name in self.cfg.var_web_info:
+            name, tp, cat = self.cfg.var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
             logger.warning(f"Missing menu name definition for var {var_name}.")
