@@ -1,7 +1,7 @@
 Installation
 ============
 
-You can install pyaerocom via pip
+You can install pyaerocom via ``pip``
 
 Install from source into a new virtual environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
