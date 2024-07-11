@@ -70,7 +70,7 @@ The script below is grouped into the following sections:
 Section 1: Global setup for AeroVal output
 ------------------------------------------
 
-The global setup defines: 
+The global setup defines:
 
 - Project and experiment ID
 - Information about the purpose of the experiment and PI
@@ -83,7 +83,7 @@ The global setup defines:
     - Whether to add seasonal statistics
     - Which regions to use for regional statistics
     - Web display options (e.g. default map zoom)
-    
+
 """
 import os  # needed for specification of path locations below
 
@@ -133,6 +133,10 @@ GLOB_CFG = dict(
     # Exponent for NorESM2 model from 440nm and 870nm AOD, which are output
     # by the model.
     io_aux_file=os.path.abspath("../eval_py/gridded_io_aux.py"),
+    # user defined scales and colormaps like https://github.com/metno/pyaerocom/blob/cb01fc8f39fe8b3f63d4ddd858aa63f5f37a6759/pyaerocom/aeroval/data/var_scale_colmap.ini
+    var_scale_colmap_file=os.path.abspath("./var_scale_colmap.ini"),
+    # user defined variable names like https://github.com/metno/pyaerocom/blob/10cb76ce388ffc5c43f3f8e86f6dda81b594fb7d/pyaerocom/aeroval/data/var_web_info.ini
+    var_web_info_file=os.path.abspath("./var_web_info.ini"),
     # Frequencies for which statistical parameters are computed
     freqs=["daily", "monthly", "yearly"],
     # Main output frequency for AeroVal (some of the AeroVal processing
@@ -212,16 +216,16 @@ DEFAULT_COLOCATION_SETUP = dict(
 Section 3: Configuration of observations
 ----------------------------------------
 
-Each obs entry needs at least an obs ID specified, a list of variables 
-that are supposed to be analysed and a specification of the vertical type  
-of the data (e.g. Column, Surface). 
-You may search for observational data via the pyaerocom CLI. E.g. to search 
-for observations containing the strings "Aeronet" and "Sun" and "V3" you may 
+Each obs entry needs at least an obs ID specified, a list of variables
+that are supposed to be analysed and a specification of the vertical type
+of the data (e.g. Column, Surface).
+You may search for observational data via the pyaerocom CLI. E.g. to search
+for observations containing the strings "Aeronet" and "Sun" and "V3" you may
 search from the command line via:
 
 pya --browse *Aeronet*Sun*V3*
 
-This will list all data IDs matching this request and will also show 
+This will list all data IDs matching this request and will also show
 variables that are provided by each of the datasets that match the search.
 """
 
@@ -286,9 +290,9 @@ OBS_CFG = {
 Section 4: Configuration of models
 ----------------------------------
 
-Each model entry needs at least a model ID specified. If the model data is 
-available in the AeroCom database (in AeroCom file format) you may search 
-for data via the pyaerocom CLI. E.g. to search for model IDs containing 
+Each model entry needs at least a model ID specified. If the model data is
+available in the AeroCom database (in AeroCom file format) you may search
+for data via the pyaerocom CLI. E.g. to search for model IDs containing
 the strings "ECMWF" and "CAMS" you may search from the command line via:
 
 pya --browse *ECMWF*CAMS*
