@@ -61,7 +61,6 @@ def test_ProjectOutput_experiments_file(tmp_path: Path):
     val = ProjectOutput("test", str(tmp_path))
     path = tmp_path / "test" / "experiments.json"
     assert Path(val.experiments_file) == path
-    assert path.exists()
 
 
 def test_ProjectOutput_available_experiments(tmp_path: Path):

@@ -18,12 +18,11 @@ from pyaerocom.aeroval.glob_defaults import (
     var_ranges_defaults,
     var_web_info,
 )
-from pyaerocom.aeroval.json_utils import check_make_json
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS, MDA8_OUTPUT_VARS
+from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
@@ -62,7 +61,6 @@ class ProjectOutput:
     def experiments_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.proj_dir, "experiments.json")
-        fp = check_make_json(fp)
         return fp
 
     @property
@@ -104,28 +102,24 @@ class ExperimentOutput(ProjectOutput):
     def regions_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "regions.json")
-        fp = check_make_json(fp)
         return fp
 
     @property
     def statistics_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "statistics.json")
-        fp = check_make_json(fp)
         return fp
 
     @property
     def var_ranges_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "ranges.json")
-        check_make_json(fp)
         return fp
 
     @property
     def menu_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "menu.json")
-        check_make_json(fp)
         return fp
 
     @property
