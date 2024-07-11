@@ -1,367 +1,212 @@
 #: Default variable ranges for web display
-var_ranges_defaults = {
-    "default": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "ang4487aer": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-        "colmap": "coolwarm",
-    },
-    "od550aer": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "od550lt1aer": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "od550gt1aer": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "ratpm25pm10": {
-        "scale": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-        "colmap": "coolwarm",
-    },
-    "ratpm10pm25": {
-        "scale": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
-        "colmap": "coolwarm",
-    },
-    "od550dust": {
-        "scale": [0, 0.0125, 0.025, 0.0375, 0.05, 0.0625, 0.075, 0.0875, 0.1],
-        "colmap": "coolwarm",
-    },
-    "abs550aer": {
-        "scale": [0, 0.0125, 0.025, 0.0375, 0.05, 0.0625, 0.075, 0.0875, 0.1],
-        "colmap": "coolwarm",
-    },
-    "absc550aer": {"scale": [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100], "colmap": "coolwarm"},
-    "scatc550dryaer": {
-        "scale": [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100],
-        "colmap": "coolwarm",
-    },
-    "extinction": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
-        "colmap": "coolwarm",
-    },
-    "ssa670aer": {
-        "scale": [0.75, 0.775, 0.8, 0.825, 0.85, 0.875, 0.9, 0.925, 0.95, 0.975, 1],
-        "colmap": "coolwarm",
-    },
-    "backscatter": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
-        "colmap": "coolwarm",
-    },
-    "concso4": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25],
-        "colmap": "coolwarm",
-    },
-    "concso2": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25],
-        "colmap": "coolwarm",
-    },
-    "vmrno": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25],
-        "colmap": "coolwarm",
-    },
-    "vmrso2": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25],
-        "colmap": "coolwarm",
-    },
-    "concpm10": {"scale": [0, 10, 20, 30, 40, 50, 60, 70, 80], "colmap": "coolwarm"},
-    "concpm25": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40, 45], "colmap": "coolwarm"},
-    "conco3": {"scale": [0, 15, 30, 45, 60, 75, 90, 105, 120], "colmap": "coolwarm"},
-    "vmro3": {"scale": [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70], "colmap": "coolwarm"},
-    "vmrox": {"scale": [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70], "colmap": "coolwarm"},
-    "concno2": {"scale": [0, 10, 20, 30, 40, 50, 60, 70, 80], "colmap": "coolwarm"},
-    "concNno2": {"scale": [0, 0.3, 0.5, 1, 1.3, 1.5, 2, 3, 5], "colmap": "coolwarm"},
-    "vmrno2": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40], "colmap": "coolwarm"},
-    "vmro3max": {"scale": [0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60], "colmap": "coolwarm"},
-    "concNhno3": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 1],
-        "colmap": "coolwarm",
-    },
-    "concNno3pm10": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.5, 2, 5, 10],
-        "colmap": "coolwarm",
-    },
-    "concNno3pm25": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.5, 2, 5, 10],
-        "colmap": "coolwarm",
-    },
-    "concNnh3": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 7.5, 10.0, 20],
-        "colmap": "coolwarm",
-    },
-    "concNnh4": {
-        "scale": [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
-        "colmap": "coolwarm",
-    },
-    "concNtno3": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0, 1.5, 2, 5],
-        "colmap": "coolwarm",
-    },
-    "concNtnh": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 7.5, 10.0, 20, 50],
-        "colmap": "coolwarm",
-    },
-    "concsspm25": {
-        "scale": [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 5, 10],
-        "colmap": "coolwarm",
-    },
-    "concsspm10": {
-        "scale": [0, 0.75, 1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.0, 6.75, 7.5, 8.25, 10, 15, 20, 50],
-        "colmap": "coolwarm",
-    },
-    "concCecpm25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concCec25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concCocpm25": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 10],
-        "colmap": "coolwarm",
-    },
-    "concCoc25": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 10],
-        "colmap": "coolwarm",
-    },
-    "concom25": {
-        "scale": [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
-        "colmap": "coolwarm",
-    },
-    "wetoxs": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
-    "wetna": {
-        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10, 20, 50, 100],
-        "colmap": "coolwarm",
-    },
-    "wetoxn": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
-    "wetrdn": {
-        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10],
-        "colmap": "coolwarm",
-    },
-    "wetoxsf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
-    "wetoxnf": {"scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5], "colmap": "coolwarm"},
-    "wetrdnf": {
-        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5, 10],
-        "colmap": "coolwarm",
-    },
-    "prmm": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryoxs": {
-        "scale": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1, 1.5, 2, 5],
-        "colmap": "coolwarm",
-    },
-    "dryoxn": {"scale": [0, 0.1, 0.2, 0.5, 1, 2.0, 5, 10, 20, 50], "colmap": "coolwarm"},
-    "dryrdn": {"scale": [0, 0.1, 0.2, 0.5, 1, 2.0, 5, 10, 20, 50], "colmap": "coolwarm"},
-    "depdust": {
-        "scale": [0.01, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
-        "colmap": "coolwarm",
-    },
-    "drydust": {
-        # "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
-        "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
-        "colmap": "coolwarm",
-    },
-    "wetdust": {
-        "scale": [0.0, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0],
-        "colmap": "coolwarm",
-    },
-    "concdust": {
-        "scale": [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
-        "colmap": "coolwarm",
-    },
-    "vmrco": {
-        "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
-        "colmap": "coolwarm",
-    },
-    "vmrco2": {
-        "scale": [400.0, 405.0, 410.0, 415.0, 420.0, 425.0, 430.0, 435.0, 440.0, 445.0, 450.0],
-        "colmap": "coolwarm",
-    },
-    "vmrch4": {
-        "scale": [
-            1700,
-            1750,
-            1800,
-            1850,
-            1900,
-            1950,
-            2000,
-            2050,
-            2100,
-            2150,
-            2200,
-        ],
-        "colmap": "coolwarm",
-    },
-    "concco": {
-        "scale": [100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0],
-        "colmap": "coolwarm",
-    },
-    "ts": {"scale": [265, 270, 275, 280, 285, 290, 300, 305, 310, 315, 320], "colmap": "coolwarm"},
-    "proxyzdust": {
-        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
-        "colmap": "coolwarm",
-    },
-    "zdust": {
-        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
-        "colmap": "coolwarm",
-    },
-    "proxyzaerosol": {
-        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
-        "colmap": "coolwarm",
-    },
-    "zaerosol": {
-        "scale": [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.5, 10.0],
-        "colmap": "coolwarm",
-    },
-    "proxydryo3": {"scale": [0, 0.5, 1, 5, 10, 15, 20, 25, 30, 40, 50], "colmap": "coolwarm"},
-    "dryo3": {"scale": [0, 0.5, 1, 5, 10, 15, 20, 25, 30, 40, 50], "colmap": "coolwarm"},
-    "proxydrypm10": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "drypm10": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100],
-        "colmap": "coolwarm",
-    },
-    "proxydrypm25": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100],
-        "colmap": "coolwarm",
-    },
-    "drypm25": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10], "colmap": "coolwarm"},
-    "proxydryss": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "dryss": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "proxydryna": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100, 200],
-        "colmap": "coolwarm",
-    },
-    "dryna": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100, 200],
-        "colmap": "coolwarm",
-    },
-    "proxydryno2": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2],
-        "colmap": "coolwarm",
-    },
-    "dryno2": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2],
-        "colmap": "coolwarm",
-    },
-    "proxydryhono": {
-        "scale": [0.0, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.008, 0.01, 0.02],
-        "colmap": "coolwarm",
-    },
-    "dryhono": {
-        "scale": [0.0, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.008, 0.01, 0.02],
-        "colmap": "coolwarm",
-    },
-    "proxydryn2o5": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.1, 0.2],
-        "colmap": "coolwarm",
-    },
-    "dryn2o5": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.1, 0.2],
-        "colmap": "coolwarm",
-    },
-    "proxydryhno3": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2.0, 5.0],
-        "colmap": "coolwarm",
-    },
-    "dryhno3": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2.0, 5.0],
-        "colmap": "coolwarm",
-    },
-    "proxydryno3c": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.5],
-        "colmap": "coolwarm",
-    },
-    "dryno3c": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.5],
-        "colmap": "coolwarm",
-    },
-    "proxydryno3f": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.5],
-        "colmap": "coolwarm",
-    },
-    "dryno3f": {"scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.5], "colmap": "coolwarm"},
-    "proxydrynh3": {
-        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 1, 2, 5],
-        "colmap": "coolwarm",
-    },
-    "drynh3": {
-        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 1, 2, 5],
-        "colmap": "coolwarm",
-    },
-    "proxydrynh4": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0],
-        "colmap": "coolwarm",
-    },
-    "drynh4": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0],
-        "colmap": "coolwarm",
-    },
-    "proxydryso2": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2, 5],
-        "colmap": "coolwarm",
-    },
-    "dryso2": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1.0, 2, 5],
-        "colmap": "coolwarm",
-    },
-    "proxydryso4": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.5],
-        "colmap": "coolwarm",
-    },
-    "dryso4": {
-        "scale": [0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.5],
-        "colmap": "coolwarm",
-    },
-    "proxydryoxs": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "proxydryoxn": {
-        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
-        "colmap": "coolwarm",
-    },
-    "proxydryrdn": {
-        "scale": [0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
-        "colmap": "coolwarm",
-    },
-    "depoxs": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
-        "colmap": "coolwarm",
-    },
-    "depna": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100, 200],
-        "colmap": "coolwarm",
-    },
-    "depoxn": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
-        "colmap": "coolwarm",
-    },
-    "deprdn": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100, 200],
-        "colmap": "coolwarm",
-    },
-    "depoxsf": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
-        "colmap": "coolwarm",
-    },
-    "depnaf": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
-        "colmap": "coolwarm",
-    },
-    "depoxnf": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20],
-        "colmap": "coolwarm",
-    },
-    "deprdnf": {
-        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5, 10, 20, 50, 100, 200],
-        "colmap": "coolwarm",
-    },
-    "bsc532aer": {
-        "scale": [0.0, 0.0005, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004],
-        "colmap": "coolwarm",
-    },
-    "ec532aer": {
-        "scale": [0, 0.004, 0.008, 0.012, 0.016, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4],
-        "colmap": "coolwarm",
-    },
-}
+import copy
+import json
+import logging
+from configparser import ConfigParser
+from enum import Enum
+from typing import NamedTuple
+
+from pydantic import BaseModel
+
+from pyaerocom.data import resources
+
+logger = logging.getLogger(__name__)
+
+
+# basemodel-implementation for verification
+class _ScaleAndColmap(NamedTuple):
+    scale: list[float]
+    colmap: str
+
+
+class _VarWebScaleAndColormap(BaseModel):
+    scale_colmaps: dict[str, _ScaleAndColmap]
+
+
+# dict-implementation for json-serialization, namedtuple not stable with json/simplejson
+class ScaleAndColmap(dict[str, str | list[float]]):
+    """simple dictionary container with only two keys, scale and colmap"""
+
+    pass
+
+
+class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
+    def __init__(self, *args, **kwargs):
+        # run arguments through pydantic
+        wvsc = _VarWebScaleAndColormap(scale_colmaps=kwargs)
+        super().__init__(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
+
+    def __init__(self, config_file="", **kwargs):
+        """This class contains scale and colmap informations and is implemented as dict to allow
+        json serialization. It reads it inital data from data/var_scale_colmap.ini.
+
+        :param config_file: filename to additional or updated information, defaults to None
+        """
+        super().__init__()
+        with resources.path("pyaerocom.aeroval.data", "var_scale_colmap.ini") as file:
+            self.update_from_ini(file)
+        if config_file != "":
+            logger.info(f"Reading additional web-scales from '{config_file}'")
+            self.update_from_ini(config_file)
+        self.update(**kwargs)
+
+    def update(self, **kwargs):
+        wvsc = _VarWebScaleAndColormap(scale_colmaps=kwargs)
+        super().update(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
+
+    def update_from_ini(self, filename):
+        cfg = ConfigParser()
+        cfg.read(filename)
+        # remove configparser default
+        cfg_dict = dict()
+        keys = ("scale", "colmap")
+        for s in cfg.sections():
+            items = []
+            for k in keys:
+                if k in cfg[s]:
+                    if k == "scale":
+                        try:
+                            items.append(json.loads(cfg[s][k]))
+                        except Exception as ex:
+                            raise KeyError(
+                                f"wrong value for '{k}' of var '{s}' in {filename}: {ex}"
+                            )
+                    else:
+                        items.append(cfg[s][k])
+                else:
+                    raise KeyError(f"missing '{k}' for var '{s}' in {filename}")
+            cfg_dict[s] = tuple(items)
+        self.update(**cfg_dict)
+
+    def write(self, filename: str):
+        """write the scales and colormaps to a configuration file
+
+        :param filename: path to a filename, currently a .ini file
+        """
+        cfg = ConfigParser()
+        cfg.update(self)
+        with open(filename, "w") as fh:
+            cfg.write(fh)
+
+
+#: Mapping of pyaerocom variable names to web naming conventions
+class VerticalType(str, Enum):
+    """A 2D variable is defined under Column on the website, 3D is defined under Surface"""
+
+    T2D = "2D"
+    T3D = "3D"
+    UNDEFINED = "UNDEFINED"
+
+    def __str__(self):
+        return self.value
+
+
+class CategoryType(str, Enum):
+    optical = "Optical properties"
+    particle_conc = "Particle concentrations"
+    height = "Height"
+    concentration = "Concentration"
+    gas_conc = "Gas concentrations"
+    vmr = "Volume mixing ratios"
+    gas_vmr = "Gas volume mixing ratio"
+    deposition = "Deposition"
+    temperature = "Temperature"
+    particle_ratio = "Particle ratio"
+    UNDEFINED = "UNDEFINED"
+
+    def __str__(self):
+        return self.value
+
+
+class VariableInfo(NamedTuple):
+    menu_name: str
+    vertical_type: VerticalType
+    category: CategoryType
+
+
+class _VarWebInfo(BaseModel):
+    """Pydantic helper class to ensure the VarWebInfo container always contains the correct data
+
+    :param BaseModel: _description_
+    """
+
+    var_web_info: dict[str, VariableInfo]
+
+
+class VarWebInfo:
+    _var_web_info: _VarWebInfo
+
+    def __init__(self, config_file="", **kwargs):
+        """This class contains var_web_info and can be accessed like a read-only dict. It
+        reads it inital data from data/var_web_info.ini
+
+        :param config_file: filename to additional or updated VariableInfo items, defaults to None
+        """
+        self._var_web_info = _VarWebInfo(var_web_info=dict())
+        with resources.path("pyaerocom.aeroval.data", "var_web_info.ini") as file:
+            self.update_from_ini(file)
+        if config_file != "":
+            self.update_from_ini(config_file)
+        self.update(**kwargs)
+
+    def update(self, *args, **kwargs):
+        d = copy.deepcopy(self._var_web_info.var_web_info)
+        d.update(*args, **kwargs)
+        self._var_web_info = _VarWebInfo(var_web_info=d)
+
+    def update_from_ini(self, filename):
+        cfg = ConfigParser()
+        cfg.read(filename)
+        # remove configparser default
+        cfg_dict = dict()
+        keys = ("menu_name", "vertical_type", "category")
+        for s in cfg.sections():
+            items = []
+            for k in keys:
+                if k in cfg[s]:
+                    items.append(cfg[s][k])
+                else:
+                    raise KeyError(f"missing '{k}' for var '{s}' in {filename}")
+            cfg_dict[s] = tuple(items)
+        self.update(**cfg_dict)
+
+    ## below functions to behave like a read-only dict
+    def copy(self):
+        return self._var_web_info.var_web_info.copy()
+
+    def __getitem__(self, key):
+        return self._var_web_info.var_web_info[key]
+
+    def __len__(self, key):
+        return self._var_web_info.var_web_info.__len__()
+
+    def __repr__(self):
+        return repr(self._var_web_info.var_web_info)
+
+    def keys(self):
+        return self._var_web_info.var_web_info.keys()
+
+    def has_key(self, k):
+        return k in self._var_web_info.var_web_info
+
+    def values(self):
+        return self._var_web_info.var_web_info.values()
+
+    def items(self):
+        return self._var_web_info.var_web_info.items()
+
+    def __cmp__(self, dict_):
+        return self._var_web_info.var_web_info.__cmp__(dict_)
+
+    def __contains__(self, item):
+        return self._var_web_info.var_web_info.__contains__(item)
+
+    def __iter__(self):
+        return self._var_web_info.var_web_info.__iter__()
+
+    def __unicode__(self):
+        return self._var_web_info.var_web_info.__unicode__()
+
 
 #: Default information for statistical parameters
 statistics_defaults = {
@@ -568,173 +413,3 @@ statistics_model_only = {
         "decimals": 2,
     },
 }
-
-#: Mapping of pyaerocom variable names to web naming conventions
-## Note: A 2D variable is defined under Column on the website, 3D is defined under Surface
-
-var_web_info = dict(
-    od550aer=["AOD", "2D", "Optical properties"],
-    od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
-    od550lt1aer=["AODf", "2D", "Optical properties"],
-    od550gt1aer=["AODc", "2D", "Optical properties"],
-    od550dust=["AODdust", "2D", "Optical properties"],
-    abs550aer=["AAOD", "2D", "Optical properties"],
-    ssa670aer=["SSA", "2D", "Optical properties"],
-    ang4487aer=["AE", "2D", "Optical properties"],
-    angabs4487aer=["AAE", "2D", "Optical properties"],
-    ang4487csaer=["AE (clear sky)", "2D", "Optical properties"],
-    sc550dryaer=["Scat. coef. (dry)", "3D", "Optical properties"],
-    sc550aer=["Scat. coef.", "3D", "Optical properties"],
-    ac550aer=["Abs. coef.", "3D", "Optical properties"],
-    ac550dryaer=["Abs. coef. (dry)", "3D", "Optical properties"],
-    ec532aer=["Ext. coeff.", "3D", "Optical properties"],
-    bsc532aer=["Backscat. coeff.", "3D", "Optical properties"],
-    concso4pr=["SO4 (precip.)", "3D", "Particle concentrations"],
-    concbc=["BC", "3D", "Particle concentrations"],
-    concoa=["OA", "3D", "Particle concentrations"],
-    concss=["SS", "3D", "Particle concentrations"],
-    conco3=["O3", "3D", "Gas concentrations"],
-    concno310=["NO3_PM10", "3D", "Particle concentration"],
-    concno325=["NO3_PM25", "3D", "Particle concentration"],
-    proxyod550bc=["OD (Black Carbon)", "2D", "Optical properties"],
-    proxyod550dust=["OD (Dust)", "2D", "Optical properties"],
-    proxyod550oa=["OD (Organic Matter)", "2D", "Optical properties"],
-    proxyod550so4=["OD (SO4)", "2D", "Optical properties"],
-    proxyod550ss=["OD (Sea Salt)", "2D", "Optical properties"],
-    proxyod550nh4=["OD (NH4)", "2D", "Optical properties"],
-    proxyod550no3=["OD (NO3)", "2D", "Optical properties"],
-    proxyzdust=["DLH", "2D", "Height"],
-    zdust=["DLH", "2D", "Height"],
-    proxyzaerosol=["ALH", "2D", "Height"],
-    zaerosol=["ALH", "2D", "Height"],
-    # Gases
-    concNno=["NO", "3D", "Concentration"],
-    concno2=["NO2", "3D", "Gas concentrations"],
-    concNno2=["NO2", "3D", "Gas concentrations"],
-    vmrno=["NO", "3D", "Volume mixing ratios"],
-    vmrno2=["NO2", "3D", "Volume mixing ratios"],
-    concno3=["NO3", "3D", "Gas concentrations"],
-    conctno3=["tNO3", "3D", "Concentration"],
-    concNtno3=["tNO3", "3D", "Concentration"],
-    conchno3=["HNO3", "3D", "Concentration"],
-    concNhno3=["HNO3", "3D", "Concentration"],
-    concnh3=["NH3", "3D", "Concentration"],
-    concNnh3=["NH3", "3D", "Concentration"],
-    conctnh=["tNH", "3D", "Concentration"],
-    concNtnh=["tNH", "3D", "Concentration"],
-    concnh4=["NH4", "3D", "Gas concentrations"],
-    concNnh4=["NH4", "3D", "Gas concentrations"],
-    concso2=["SO2", "3D", "Gas concentrations"],
-    concSso2=["SO2", "3D", "Gas concentrations"],
-    vmrso2=["SO2", "3D", "Gas volume mixing ratio"],
-    concso4=["SO4", "3D", "Particle concentrations"],
-    vmro3=["O3", "3D", "Volume mixing ratios"],
-    vmro3mda8=["O3 (MDA8)", "3D", "Valume mixing ratios"],
-    vmro3max=["O3Max", "3D", "Volume mixing ratios"],
-    vmrox=["OX", "3D", "Gas volume mixing ratio"],
-    concco=["CO", "3D", "Particle concentration"],
-    vmrco=["CO", "3D", "Volume mixing ratios"],
-    vmrco2=["CO2", "3D", "Volume mixing ratios"],
-    vmrc2h2=["Ethyne", "3D", "Volume mixing ratios"],
-    vmrc2h4=["Ethylene", "3D", "Volume mixing ratios"],
-    vmrc2h6=["Ethane", "3D", "Volume mixing ratios"],
-    vmrhcho=["Formaldehyde", "3D", "Volume mixing ratios"],
-    vmrisop=["Isoprene", "3D", "Volume mixing ratios"],
-    vmrch4=["CH4", "3D", "Volume mixing ratios"],
-    # PMs
-    concpm10=["PM10", "3D", "Particle concentrations"],
-    concpm10pbap=["PM10 PBAP", "3D", "Particle concentrations incl. spores"],
-    concpm25=["PM2.5", "3D", "Particle concentrations"],
-    concNno3pm10=["NO3 PM10", "3D", "Particle concentration"],
-    concNno3pm25=["NO3 PM25", "3D", "Particle concentration"],
-    concno3pm10=["NO3 PM10", "3D", "Particle concentration"],
-    concno3pm25=["NO3 PM25", "3D", "Particle concentration"],
-    concnh4coarse=["NH4 PM10", "3D", "Particle concentrations"],
-    concnh4fine=["NH4 PM2.5", "3D", "Particle concentrations"],
-    concso4t=["SO4 total", "3D", "Particle concentration"],
-    concso4c=["SO4 sea salt corrected", "3D", "Particle concentration"],
-    concso4coarse=["SO4 PM10", "3D", "Particle concentration"],
-    concso4fine=["SO4 PM2.5", "3D", "Particle concentration"],
-    concss10=["SS PM10", "3D", "Particle concentration"],
-    concss25=["SS PM25", "3D", "Particle concentration"],
-    concec=["EC", "3D", "Particle concentration"],
-    conccoc=["OC", "3D", "Particle concentration"],
-    concsspm10=["SS PM10", "3D", "Particle concentration"],
-    concsspm25=["SS PM25", "3D", "Particle concentration"],
-    concCecpm25=["EC PM2.5", "3D", "Particle concentration"],
-    concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
-    concCec25=["EC PM2.5", "3D", "Particle concentration"],
-    concCoc25=["OC PM2.5", "3D", "Particle concentration"],
-    concom25=["OM PM2.5", "3D", "Particle concentration"],
-    concCecpm10=["EC PM10", "3D", "Particle concentration"],
-    concCocpm10=["OC PM10", "3D", "Particle concentration"],
-    concdust=["Dust concentration", "3D", "Particle concentration"],
-    # Depositions
-    depoxs=["TotDepOXS", "3D", "Deposition"],
-    deprdn=["TotDepRDN", "3D", "Deposition"],
-    depoxn=["TotDepOXN", "3D", "Deposition"],
-    depoxsf=["TotDepOXSforr", "3D", "Deposition"],
-    deprdnf=["TotDepRDNforr", "3D", "Deposition"],
-    depoxnf=["TotDepOXNforr", "3D", "Deposition"],
-    depss=["TotDepSS", "3D", "Deposition"],
-    depssf=["TotDepSSforr", "3D", "Deposition"],
-    depna=["TotDepNa", "3D", "Deposition"],
-    depnaf=["TotDepNaforr", "3D", "Deposition"],
-    drysox=["DryOXS", "3D", "Deposition"],
-    dryoxs=["DryOXS", "3D", "Deposition"],
-    dryoxn=["DryOXN", "3D", "Deposition"],
-    dryrdn=["DryRDN", "3D", "Deposition"],
-    depdust=["TotDustDep", "3D", "Deposition"],
-    drydust=["DryDustDep", "3D", "Deposition"],
-    wetdust=["WetDustDep", "3D", "Deposition"],
-    wetoxs=["WetOXS", "3D", "Deposition"],
-    wetna=["WetNa", "3D", "Deposition"],
-    wetoxsc=["WetOXScorr", "3D", "Deposition"],
-    wetoxst=["WetOXStot", "3D", "Deposition"],
-    wetoxn=["WetOXN", "3D", "Deposition"],
-    wetrdn=["WetRDN", "3D", "Deposition"],
-    prmm=["Precipitation", "3D", "Deposition"],
-    # Temperature
-    ts=["Surface Temperature", "3D", "Temperature"],
-    # proxy drydep
-    proxydryoxs=["proxyDryOXS", "3D", "Deposition"],
-    proxydryss=["proxyDrySS", "3D", "Deposition"],
-    proxydryna=["proxyDryNa", "3D", "Deposition"],
-    proxydryso2=["proxyDrySO2", "3D", "Deposition"],
-    proxydryso4=["proxyDrySO4", "3D", "Deposition"],
-    proxydryoxn=["proxyDryOXN", "3D", "Deposition"],
-    proxydryno2=["proxyDryNO2", "3D", "Deposition"],
-    proxydryno2no2=["proxyDryNO2NO2", "3D", "Deposition"],
-    proxydryhono=["proxyDryHONO", "3D", "Deposition"],
-    proxydryn2o5=["proxyDryN2O5", "3D", "Deposition"],
-    proxydryhno3=["proxyDryHNO3", "3D", "Deposition"],
-    proxydryno3c=["proxyDryNO3Coarse", "3D", "Deposition"],
-    proxydryno3f=["proxyDryNO3Fine", "3D", "Deposition"],
-    proxydryrdn=["proxyDryRDN", "3D", "Deposition"],
-    proxydrynh3=["proxyDryNH3", "3D", "Deposition"],
-    proxydrynh4=["proxyDryNH4", "3D", "Deposition"],
-    proxydryo3=["proxyDryO3", "3D", "Deposition"],
-    proxydrypm10=["proxyDryPM10", "3D", "Deposition"],
-    proxydrypm25=["proxyDryPM2.5", "3D", "Deposition"],
-    # proxy wetdep
-    proxywetoxs=["proxyWetOXS", "3D", "Deposition"],
-    proxywetso2=["proxyWetSO2", "3D", "Deposition"],
-    proxywetso4=["proxyWetSO4", "3D", "Deposition"],
-    proxywetoxn=["proxyWetOXN", "3D", "Deposition"],
-    proxywetno2=["proxyWetNO2", "3D", "Deposition"],
-    proxywetno2no2=["proxyWetNO2NO2", "3D", "Deposition"],
-    proxywethono=["proxyWetHONO", "3D", "Deposition"],
-    proxywetn2o5=["proxyWetN2O5", "3D", "Deposition"],
-    proxywethno3=["proxyWetHNO3", "3D", "Deposition"],
-    proxywetno3c=["proxyWetNO3Coarse", "3D", "Deposition"],
-    proxywetno3f=["proxyWetNO3Fine", "3D", "Deposition"],
-    proxywetrdn=["proxyWetRDN", "3D", "Deposition"],
-    proxywetnh3=["proxyWetNH3", "3D", "Deposition"],
-    proxywetnh4=["proxyWetNH4", "3D", "Deposition"],
-    proxyweto3=["proxyWetO3", "3D", "Deposition"],
-    proxywetpm10=["proxyWetPM10", "3D", "Deposition"],
-    proxywetpm25=["proxyWetPM2.5", "3D", "Deposition"],
-    # other stuff
-    ratpm25pm10=["ratio PM2.5 PM10", "3D", "Particle ratio"],
-    ratpm10pm25=["ratio PM10 PM2.5", "3D", "Particle ratio"],
-)

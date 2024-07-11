@@ -8,33 +8,9 @@ from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,
     check_if_year,
-    check_var_ranges_avail,
     make_dummy_model,
 )
 from pyaerocom.aeroval.setupclasses import EvalSetup
-from pyaerocom.exceptions import VariableDefinitionError
-from pyaerocom.griddeddata import GriddedData
-
-
-@pytest.mark.parametrize(
-    "dvar,var",
-    [
-        ("od550aer", "od550aer"),
-        ("od550aer", "od550gt1aer"),
-        ("pr", "prmm"),
-        ("prmm", "prmm"),
-    ],
-)
-def test_check_var_ranges_avail(data_tm5: GriddedData, dvar: str, var: str):
-    data = data_tm5.copy()
-    data.var_name = dvar
-    check_var_ranges_avail(data, var)
-
-
-def test_check_var_ranges_avail_error(data_tm5: GriddedData):
-    with pytest.raises(VariableDefinitionError) as e:
-        check_var_ranges_avail(data_tm5, "bla")
-    assert str(e.value) == "Error (VarCollection): input variable bla is not supported"
 
 
 @pytest.mark.parametrize(

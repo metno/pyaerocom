@@ -1,4 +1,6 @@
+import os
 from copy import deepcopy
+from typing import Literal
 
 import pytest
 
@@ -127,7 +129,11 @@ def test_EvalSetup_TimeSetup(eval_setup: EvalSetup, cfg_exp1: dict):
         ),
     ),
 )
-def test_EvalSetup__check_time_config(eval_setup: EvalSetup, start, stop):
+def test_EvalSetup__check_time_config(
+    eval_setup: EvalSetup,
+    start: Literal["2022", "2022/01/12 00:00:00"],
+    stop: Literal["2023", "2022/01/12 23:00:00"],
+):
     eval_setup._check_time_config()
     assert str(eval_setup.colocation_opts.start) == start
     assert str(eval_setup.colocation_opts.stop) == stop
@@ -261,3 +267,55 @@ def test_EvalSetup_WebDisplaySetup(eval_setup: EvalSetup, cfg_exp1: dict):
     assert webdisp_opts.modelorder_from_config is True
     assert "obsorder_from_config" not in cfg_exp1
     assert webdisp_opts.obsorder_from_config is True
+
+
+@default_config
+def test_user_var_scale_colmap(cfg_exp1: dict):
+    es1 = EvalSetup(**cfg_exp1)
+    assert "deprdn" in es1.var_scale_colmap
+
+    cfg = cfg_exp1.copy()
+    cfg["var_scale_colmap_file"] = os.path.join(
+        os.path.dirname(__file__), "data", "user_var_scale_colmap.ini"
+    )
+    esX = EvalSetup(**cfg)
+    assert "deprdn" in esX.var_scale_colmap
+    assert "newvar" in esX.var_scale_colmap
+    assert esX.var_scale_colmap["deprdn"]["colmap"] != es1.var_scale_colmap["deprdn"]["colmap"]
+    assert esX.var_scale_colmap["deprdn"]["scale"] != es1.var_scale_colmap["deprdn"]["scale"]
+
+    cfg_fail = cfg_exp1.copy()
+    cfg_fail["var_scale_colmap_file"] = os.path.join(
+        os.path.dirname(__file__), "data", "buggy_var_scale_colmap.ini"
+    )
+    esY = EvalSetup(**cfg_fail)
+    with pytest.raises(KeyError) as e:
+        _ = esY.var_scale_colmap
+    assert "buggy_var_scale_colmap.ini" in str(e.value)
+    assert "scale" in str(e.value)
+
+
+@default_config
+def test_user_var_web_info(cfg_exp1: dict):
+    es1 = EvalSetup(**cfg_exp1)
+    assert "deprdn" in es1.var_web_info
+
+    cfg = cfg_exp1.copy()
+    cfg["var_web_info_file"] = os.path.join(
+        os.path.dirname(__file__), "data", "user_var_web_info.ini"
+    )
+    esX = EvalSetup(**cfg)
+    assert "deprdn" in esX.var_web_info
+    assert "newvar" in esX.var_web_info
+    assert esX.var_web_info["deprdn"][0] != es1.var_web_info["deprdn"][0]
+
+    cfg_fail = cfg_exp1.copy()
+    cfg_fail["var_web_info_file"] = os.path.join(
+        os.path.dirname(__file__), "data", "buggy_var_web_info.ini"
+    )
+    esY = EvalSetup(**cfg_fail)
+    with pytest.raises(KeyError) as e:
+        _ = esY.var_web_info
+
+    assert "buggy_var_web_info.ini" in str(e.value)
+    assert "category" in str(e.value)
