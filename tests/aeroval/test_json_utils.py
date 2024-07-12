@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 
 from pyaerocom.aeroval.json_utils import (
-    check_make_json,
     read_json,
     round_floats,
     set_float_serialization_precision,
@@ -77,16 +76,3 @@ def test_write_json_error(json_path: Path):
     with pytest.raises(TypeError) as e:
         write_json({"bla": 42}, json_path, bla=42)
     assert str(e.value).endswith("unexpected keyword argument 'bla'")
-
-
-def test_check_make_json(json_path: Path):
-    json = check_make_json(json_path)
-    assert Path(json).exists()
-
-
-def test_check_make_json_error(tmp_path: Path):
-    path = tmp_path / "bla.txt"
-    assert not path.exists()
-    with pytest.raises(ValueError) as e:
-        check_make_json(path)
-    assert str(e.value) == "Input filepath must end with .json"
