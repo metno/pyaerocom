@@ -218,6 +218,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     regs=regs,
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
+                    avg_over_trends=avg_over_trends,
                 )
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
@@ -344,6 +345,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         regs: dict = None,
         stats_min_num: int = 1,
         use_fairmode: bool = False,
+        avg_over_trends: bool = False,
     ):
         input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
         for reg in regnames:
@@ -379,7 +381,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             seasons,
             add_trends,
             trends_min_yrs,
-                avg_over_trends,
+            avg_over_trends,
         )
 
         for freq, hm_data in hm_all.items():

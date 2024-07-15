@@ -6,12 +6,11 @@ import logging
 import os
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Literal, Callable
 
 import numpy as np
 import pandas as pd
 import xarray as xr
-from matplotlib.cbook import maxdict
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom._warnings import ignore_warnings
@@ -730,6 +729,7 @@ def _make_regional_trends(
     median: bool = False,
 ) -> tuple[dict, dict, bool]:
     (start, stop) = _get_min_max_year_periods([per])
+    (start, stop) = (start.year, stop.year)
     data = data.copy()
 
     station_mod_trends = []
@@ -852,9 +852,9 @@ def _combine_regional_trends(
 
 def _combine_statistic(data: list, key: str, func: Callable) -> float:
     cleaned = np.array([i[key] for i in data])
-    for i in data:
-        if i[key] is None:
-            print(i)
+    # for i in data:
+    #     if i[key] is None:
+    #         print(i)
     return float(func(cleaned))
 
 
@@ -912,7 +912,11 @@ def process_trends(
     if avg_over_trends:
         # logger.info(f"Adding trend for {regname} in {season} {per}")
 
-        (mean_obs_trend, mean_mod_trend, mean_trends_successful,) = _make_regional_trends(
+        (
+            mean_obs_trend,
+            mean_mod_trend,
+            mean_trends_successful,
+        ) = _make_regional_trends(
             subset,
             trends_min_yrs,
             per,
@@ -922,7 +926,11 @@ def process_trends(
             use_country,
         )
 
-        (median_obs_trend, median_mod_trend, median_trends_successful,) = _make_regional_trends(
+        (
+            median_obs_trend,
+            median_mod_trend,
+            median_trends_successful,
+        ) = _make_regional_trends(
             subset,
             trends_min_yrs,
             per,
@@ -935,6 +943,7 @@ def process_trends(
 
     # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
     (start, stop) = _get_min_max_year_periods([per])
+    (start, stop) = (start.year, stop.year)
 
     if stop - start >= trends_min_yrs:
         try:
