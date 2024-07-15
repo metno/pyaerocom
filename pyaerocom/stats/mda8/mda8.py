@@ -93,7 +93,7 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
 
     # Keep only values for days that existed in the original time series.
     mda8 = mda8.sel(
-        time=[x in set(data.coords["time.date"].values) for x in mda8.coords["time.date"].values]
+        time=np.isin(mda8.coords["time.date"].values, np.unique(data.coords["time.date"].values))
     )
 
     return mda8
