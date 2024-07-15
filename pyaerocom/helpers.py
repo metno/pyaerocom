@@ -2,6 +2,8 @@
 General helper methods for the pyaerocom library.
 """
 
+from __future__ import annotations
+
 import logging
 import math as ma
 from collections import Counter
@@ -17,6 +19,7 @@ import xarray as xr
 from cf_units import Unit
 
 from pyaerocom import const
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
@@ -61,16 +64,15 @@ STR_TO_IRIS = dict(
 
 
 def varlist_aerocom(varlist):
-
     if isinstance(varlist, str):
         varlist = [varlist]
-    elif not isinstance(varlist, list):
-        raise ValueError("Need string or list")
+    elif not (isinstance(varlist, list) or isinstance(varlist, tuple)):
+        raise ValueError("Need string or list or tuple")
     output = []
     for var in varlist:
         try:
             _var = const.VARS[var].var_name_aerocom
-            if not _var in output:
+            if _var not in output:
                 output.append(_var)
         except VariableDefinitionError as e:
             logger.warning(repr(e))
@@ -203,7 +205,12 @@ def tuple_list_to_lists(tuple_list):
     return list(map(list, zip(tuple_list)))
 
 
-def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None, lon_range=None):
+def make_dummy_cube_latlon(
+    lat_res_deg: float = 2,
+    lon_res_deg: float = 3,
+    lat_range: list[float] | tuple[float, float] = (-90, 90),
+    lon_range: list[float] | tuple[float, float] = (-180, 180),
+):
     """Make an empty Cube with given latitude and longitude resolution
 
     Dimensions will be lat, lon
@@ -226,13 +233,16 @@ def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None, lon_ran
     Cube
         dummy cube in input resolution
     """
-    if lat_range is None:
-        lat_range = (-90, 90)
-    if lon_range is None:
-        lon_range = (-180, 180)
 
-    lons = np.arange(lon_range[0] + lon_res_deg / 2, lon_range[1] + lon_res_deg / 2, lon_res_deg)
-    lats = np.arange(lat_range[0] + lat_res_deg / 2, lat_range[1] + lat_res_deg / 2, lat_res_deg)
+    # Accept lists for lat_range and lon_range, but make sure correct length
+    assert len(lat_range) == len(lon_range) == 2
+
+    lons = np.arange(
+        lon_range[0] + (lon_res_deg / 2), lon_range[1] + (lon_res_deg / 2), lon_res_deg
+    )
+    lats = np.arange(
+        lat_range[0] + (lat_res_deg / 2), lat_range[1] + (lat_res_deg / 2), lat_res_deg
+    )
 
     lon_circ = check_coord_circular(lons, modulus=360)
     latdim = iris.coords.DimCoord(
@@ -338,7 +348,6 @@ def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     sh = data.shape
     if dims is not None:
         if not len(dims) == data.ndim:
-
             raise DataDimensionError("Input number of dimensios must match array dimension number")
         for i, dim in enumerate(dims):
             if not isinstance(dim, iris.coords.DimCoord):
@@ -1233,6 +1242,7 @@ def str_to_iris(key, **kwargs):
     return val
 
 
+@ignore_warnings(UserWarning, r"Parsing .* in DD/MM/YYYY format")
 def to_pandas_timestamp(value):
     """Convert input to instance of :class:`pandas.Timestamp`
 
@@ -1245,6 +1255,8 @@ def to_pandas_timestamp(value):
     --------
     pandas.Timestamp
     """
+    if isinstance(value, np.str_):
+        value = str(value)
     if isinstance(value, pd.Timestamp):
         return value
     elif isinstance(value, (str, np.datetime64, datetime, date)):
@@ -1357,7 +1369,6 @@ def start_stop(start, stop=None, stop_sub_sec=True):
     except pd.errors.OutOfBoundsDatetime:  # probably climatology
         start = _check_climatology_timestamp(start)
         isclim = True
-
     if stop is None:
         if isclim:
             yr = 2222
@@ -1387,12 +1398,10 @@ def datetime2str(time, ts_type=None):
         time = to_pandas_timestamp(time).strftime(conv)
     except pd.errors.OutOfBoundsDatetime:
         logger.warning(f"Failed to convert time {time} to string")
-        pass
     return time
 
 
 def start_stop_str(start, stop=None, ts_type=None):
-
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(start) and stop is None:
         return str(start)
@@ -1705,17 +1714,21 @@ def make_dummy_cube(
     stop_str = f"{stop_yr}-12-31 00:00"
     times = pd.date_range(start_str, stop_str, freq=TS_TYPE_TO_PANDAS_FREQ[freq])
 
-    days_since_start = np.arange(len(times))
+    days_since_start = (times - times[0]).days
     unit = get_variable(var_name).units
 
-    lat_range = (-180, 180)
-    lon_range = (-90, 90)
-    lat_res_deg = 90
-    lon_res_deg = 45
+    lat_range = (-90, 90)
+    lon_range = (-180, 180)
+    lat_res_deg = 45
+    lon_res_deg = 90
     time_unit = Unit(startstr, calendar="gregorian")
 
-    lons = np.arange(lon_range[0] + lon_res_deg / 2, lon_range[1] + lon_res_deg / 2, lon_res_deg)
-    lats = np.arange(lat_range[0] + lat_res_deg / 2, lat_range[1] + lat_res_deg / 2, lat_res_deg)
+    lons = np.arange(
+        lon_range[0] + (lon_res_deg / 2), lon_range[1] + (lon_res_deg / 2), lon_res_deg
+    )
+    lats = np.arange(
+        lat_range[0] + (lat_res_deg / 2), lat_range[1] + (lat_res_deg / 2), lat_res_deg
+    )
 
     latdim = iris.coords.DimCoord(
         lats,
@@ -1752,5 +1765,4 @@ def make_dummy_cube(
     dummy.data = dummy.data.astype(dtype)
     for coord in dummy.coords():
         coord.points = coord.points.astype(dtype)
-
     return dummy

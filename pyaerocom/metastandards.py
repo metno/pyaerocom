@@ -1,10 +1,10 @@
 import logging
 from configparser import ConfigParser
-from importlib import resources
 
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.data import resources
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,6 @@ class DataSource(BrowseDict):
     _ini_file_name = "data_sources.ini"
 
     def __init__(self, **info):
-
         self.data_id = None
         self.dataset_name = None
         self.data_product = None
@@ -170,7 +169,6 @@ class StationMetaData(DataSource):
     """
 
     def __init__(self, **info):
-
         self.filename = None
 
         self.station_id = None
@@ -215,7 +213,6 @@ class AerocomDataID:
     KEYS = ["model_name", "meteo", "experiment", "perturbation"]
 
     def __init__(self, data_id=None, **meta_info):
-
         self._data_id = None
         self._values = None
 
@@ -351,9 +348,11 @@ class AerocomDataID:
         values = [""] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
-            logger.warning(
-                f"Invalid data ID {val}. Need format <model-name>_<meteo-config>_<eperiment-name>"
+            logger.debug(
+                "Invalid or old data ID %s. Consider format <model-name>-<meteo-config>_<experiment>-<perturbation>",
+                val,
             )
+
             values[0] = val
             return values
 
@@ -365,8 +364,8 @@ class AerocomDataID:
             if meteo.startswith("met"):
                 values[1] = meteo  # meteo_config
             else:
-                logger.warning(
-                    f"Meteorology config substring in data_id {meteo} needs to start with met."
+                logger.debug(
+                    "Meteorology config substring in data_id %s needs to start with met.", meteo
                 )
                 values[0] = spl[0]
         else:

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
+import glob
 import logging
-from multiprocessing import dummy
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
@@ -54,7 +53,30 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 f"marked to be used only as part of a superobs "
                 f"network"
             )
+        elif ocfg["only_json"]:
+            if not ocfg["coldata_dir"]:
+                raise Exception(
+                    "No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
+                )
+            else:
+                preprocessed_coldata_dir = ocfg["coldata_dir"]
+                mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
+                files_to_convert = glob.glob(mask)
+                engine = ColdataToJsonEngine(self.cfg)
+                engine.run(files_to_convert)
+
         else:
+            # If a var_list is given, only run on the obs networks which contain that variable
+            if var_list:
+                var_list_asked = var_list
+                obs_vars = ocfg["obs_vars"]
+                var_list = list(set(obs_vars) & set(var_list))
+                if not var_list:
+                    logger.warning(
+                        "var_list %s and obs_vars %s mismatch.", var_list_asked, obs_vars
+                    )
+                    return
+
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
@@ -89,7 +111,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         var_list : list, optional
             list variables supposed to be analysed. If None, then all
             variables available are used. Defaults to None. Can also be
-            `str` type.
+            `str` type. Must match at least some of the variables provided by a observation network.
         update_interface : bool
             if true, relevant json files that determine what is displayed
             online are updated after the run, including the the menu.json file
@@ -109,9 +131,9 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
         if not self.cfg.model_cfg:
-            logging.info("No model found, will make dummy model data")
+            logger.info("No model found, will make dummy model data")
             self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
-            self.cfg.webdisp_opts.hide_pages = ["maps.php", "intercomp.php", "overall.php"]
+            self.cfg.webdisp_opts.pages = ["evaluation", "infos"]
             model_id = make_dummy_model(obs_list, self.cfg)
             self.cfg.processing_opts.obs_only = True
             use_dummy_model = True
@@ -133,7 +155,6 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             for obs_name in obs_list:
                 for model_name in model_list:
                     self._run_single_entry(model_name, obs_name, var_list)
-
         if update_interface:
             self.update_interface()
         if use_dummy_model:

@@ -1,16 +1,20 @@
 """
 Caching class for reading and writing of ungridded data Cache objects
 """
+
 import glob
 import logging
 import os
 import pickle
+from collections.abc import Iterator
+from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
+
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
 # check if variables match the request
@@ -140,25 +144,32 @@ class CacheHandlerUngridded:
         return os.path.join(cache_dir, var_or_file_name)
 
     def _check_pkl_head_vs_database(self, in_handle):
-
         current = self.cache_meta_info()
 
         head = pickle.load(in_handle)
         if not isinstance(head, dict):
             raise CacheReadError("Invalid cache file")
+        pya_version = "pyaerocom_version"
         for k, v in head.items():
             if not k in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
-            elif not v == current[k]:
-                logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
-                return False
+            else:
+                if k == pya_version:
+                    continue
+                elif v != current[k]:
+                    logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
+                    return False
+        if current[pya_version] != head[pya_version]:
+            logger.info(
+                f"cache generated with pyaerocom {head[pya_version]}, current is {current[pya_version]}"
+            )
         return True
 
     def cache_meta_info(self):
         """Dictionary containing relevant caching meta-info"""
         try:
-            newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getctime)
-            newest_date = os.path.getctime(newestp)
+            newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getmtime)
+            newest_date = os.path.getmtime(newestp)
             newest = os.path.basename(newestp)
 
         except Exception:
@@ -232,35 +243,36 @@ class CacheHandlerUngridded:
 
         delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
 
-        in_handle = open(fp, "rb")
-        if force_use_outdated:
-            last_meta = pickle.load(in_handle)
-            assert len(last_meta) == len(self.CACHE_HEAD_KEYS)
-            ok = True
-        else:
-            try:
-                ok = self._check_pkl_head_vs_database(in_handle)
-            except Exception as e:
-                ok = False
-                delete_existing = True
-                logger.exception(
-                    f"File error in cached data file {fp}. "
-                    f"File will be removed and data reloaded. Error: {repr(e)}"
-                )
+        with open(fp, "rb") as in_handle:
+            if force_use_outdated:
+                last_meta = pickle.load(in_handle)
+                assert len(last_meta) == len(self.CACHE_HEAD_KEYS)
+                ok = True
+            else:
+                try:
+                    ok = self._check_pkl_head_vs_database(in_handle)
+                except Exception as e:
+                    ok = False
+                    delete_existing = True
+                    logger.exception(
+                        f"File error in cached data file {fp}. "
+                        f"File will be removed and data reloaded. Error: {repr(e)}"
+                    )
+            if ok:
+                # everything is okay, or forced
+                data = pickle.load(in_handle)
+
         if not ok:
-            # TODO: Should we delete the cache file if it is outdated ???
+            # Delete the cache file if it is outdated, after handle is closed
             logger.info(
                 f"Aborting reading cache file {fp}. Aerocom database "
                 f"or pyaerocom version has changed compared to cached version"
             )
-            in_handle.close()
             if delete_existing:  # something was wrong
                 logger.info(f"Deleting outdated cache file: {fp}")
                 os.remove(fp)
             return False
 
-        # everything is okay
-        data = pickle.load(in_handle)
         if not isinstance(data, UngriddedData):
             raise TypeError(
                 f"Unexpected data type stored in cache file, need instance of UngriddedData, "
@@ -270,18 +282,6 @@ class CacheHandlerUngridded:
         self.loaded_data[var_or_file_name] = data
         logger.info(f"Successfully loaded cache file {fp}")
         return True
-
-    def delete_all_cache_files(self):
-        """
-        Deletes all pickled data objects in cache directory
-
-        If not set differently, the cache directory is the pyaerocom default,
-        accessible via :attr:`pyaerocom.const.CACHEDIR`.
-
-        """
-        for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
-            os.remove(fp)
-            logger.info(f"Deleted {fp}")
 
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
@@ -358,3 +358,15 @@ class CacheHandlerUngridded:
 
     def __str__(self):
         return f"pyaerocom.CacheHandlerUngridded\nDefault cache dir: {self.cache_dir}"
+
+
+def list_cache_files() -> Iterator[Path]:
+    """
+    List all pickled data objects in cache directory
+
+    If not set differently, the cache directory is the pyaerocom default,
+    accessible via :attr:`pyaerocom.const.CACHEDIR`.
+
+    """
+    ch = CacheHandlerUngridded()
+    return Path(ch.cache_dir).glob("*.pkl")

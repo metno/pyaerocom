@@ -2,10 +2,16 @@ import cartopy.crs as ccrs
 import dask
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
+
+try:
+    from geojsoncontour import contourf_to_geojson
+except ModuleNotFoundError:
+    contourf_to_geojson = None
 
 from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 from pyaerocom.helpers import make_datetime_index
@@ -62,9 +68,9 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
     if isinstance(nparr, dask.array.core.Array):
         nparr = nparr.compute()
     for i, (lat, lon) in enumerate(stacked.station_name.values):
-
         coord = lat, lon
         vals = nparr[:, i]
+        vals = np.round(vals, 5)
         dd[str(coord)] = sd = {}
         sd["lat"] = lat
         sd["lon"] = lon
@@ -91,16 +97,15 @@ def calc_contour_json(data, cmap, cmap_bins):
         dictionary containing contour data
 
     """
-    matplotlib.use("Agg")
-    try:
-        import geojsoncontour
-    except ModuleNotFoundError:
+    if contourf_to_geojson is None:
         raise ModuleNotFoundError(
             "Map processing for aeroval interface requires "
-            "library geojsoncontour which is not part of the "
-            "standard installation of pyaerocom."
+            "the geojsoncontour package which is not part of the "
+            "standard conda installation of pyaerocom."
         )
 
+    plt.close("all")
+    matplotlib.use("Agg")
     GeoAxes._pcolormesh_patched = Axes.pcolormesh
 
     cm = ListedColormap(color_palette(cmap, len(cmap_bins) - 1))
@@ -110,7 +115,7 @@ def calc_contour_json(data, cmap, cmap_bins):
 
     try:
         data.check_dimcoords_tseries()
-    except:
+    except Exception:
         data.reorder_dimensions_tseries()
 
     nparr = data.cube.data
@@ -122,10 +127,10 @@ def calc_contour_json(data, cmap, cmap_bins):
     for i, date in enumerate(tst):
         datamon = nparr[i]
         contour = ax.contourf(
-            lons, lats, datamon, transform=proj, colors=cm.colors, levels=cmap_bins
+            lons, lats, datamon, transform=proj, colors=cm.colors, levels=cmap_bins, extend="max"
         )
 
-        result = geojsoncontour.contourf_to_geojson(contourf=contour)
+        result = contourf_to_geojson(contourf=contour)
 
         geojson[str(date)] = eval(result)
 

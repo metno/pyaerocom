@@ -17,7 +17,7 @@
 
 - Create a changelog file in *changelog* directory. You may use git log, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/CHANGELOG_v080_v0100.rst) for an example.
 - Create a release summary, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/v0100_release_summary.md) for an example (does not need to be a new file but can also be just specified in the provided text box when releasing on GitHub, see, e.g. [here]()). **NOTE**: You can use pycharm to compare diffs between 2 branches to see what are the main changes. Creating the release summary can be quite some work, but it is good to do it for documentation and also for a recap of what has actually happened since the last release.
-- Check that version is correct (file *setup.cfg*). For instance, for release of version 1.0.0 it should be set to either 1.0.0 or 1.0.0.rcX where X denotes iterations of release candidates.
+- Check that version is correct (file *pyproject.toml*). For instance, for release of version 1.0.0 it should be set to either 1.0.0 or 1.0.0.rcX where X denotes iterations of release candidates.
 
 ### Check code documentation
 
@@ -41,7 +41,7 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
 
 ### 2. Publish on PyPi
 
-- Make sure version on *setup.cfg* is correct
+- Make sure version on *pyproject.toml* is correct
 - Make sure there are no uncommited or unstaged changes in your local clone before running the next step, e.g. via:
 
     ``` bash
@@ -102,30 +102,3 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
     ```bash
     pipx install pyaerocom==***version***
     ```
-
-- **BUT**: you are almost there, but we also want to be able to install pyaerocom via conda (automatically with all requirements), so the beer has to wait !
-
-### 3. Publish on conda-forge
-
-- Fork [pyaerocom-feedstock](https://github.com/conda-forge/pyaerocom-feedstock) and clone your fork locally (if you have not already done so)
-- Update *recipe/meta.yaml*
-  - Update version
-  - Update SHA256 key for your release. You can get it on PyPi:
-    https://pypi.org/project/pyaerocom/*****version*****/#files
-    Under **Hashes**, make sure you have the correct version here.
-  - If the version has changed, set build number to 0.
-  - Check if any requirements need to be updated.
-- If *meta.yaml*  is in place, push to your remote fork.
-- Go to [pyaerocom-feedstock](https://github.com/conda-forge/pyaerocom-feedstock) and create a PR.
-- Follow all instructions and re-iterate if something is off. Else, merge PR.
-- ✨🌟✨You published the release as a conda package✨🌟✨.
-
-- **NOTE**: It may take a while (up to a day out of own experience) until the new version is available via
-
-    ``` bash
-    conda install -c conda-forge pyaerocom
-    ```
-
-- **But**: You can check if your version is available here:
-  https://anaconda.org/conda-forge/pyaerocom
-  or via `conda search -c conda-forge pyaerocom`

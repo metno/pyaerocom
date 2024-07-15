@@ -1,6 +1,7 @@
 """
 Test script for creating variables.ini from HTAP2 excel table
 """
+
 import os
 import string
 from configparser import ConfigParser
@@ -51,7 +52,6 @@ def main():
         CTRL_COL = "C"
 
         for i, item in enumerate(sheet["A"]):
-
             if sheet[CTRL_COL][i].value is None:
                 continue
 

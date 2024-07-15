@@ -285,7 +285,6 @@ class ReadAasEtal(ReadUngriddedBase):
 
                 metadata[meta_key]["var_info"] = {}
                 for var_count, var in enumerate(temp_vars):
-
                     values = stat[var]
                     start = idx + var_count * num_times
                     stop = start + num_times
@@ -317,7 +316,6 @@ class ReadAasEtal(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         # sanity check
         data_obj._check_index()
-        self.data = data_obj  # initalizing a pointer to it selves
         return data_obj
 
 

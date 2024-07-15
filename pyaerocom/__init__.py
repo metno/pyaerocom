@@ -2,6 +2,7 @@
 from importlib import metadata
 
 from ._logging import change_verbosity
+from ._warnings import ignore_basemap_warning, ignore_earth_radius_warning
 
 __version__ = metadata.version(__package__)
 
@@ -9,11 +10,12 @@ from .config import Config
 
 # Instantiate default configuration
 const = Config()
+ignore_basemap_warning()
+ignore_earth_radius_warning()
 
 # Sub-packages
 from . import io
 from . import plot
-from . import tools
 from . import scripts
 
 # Imports
@@ -44,17 +46,16 @@ from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
+from .colocation.colocated_data import ColocatedData
+from .colocation.colocator import Colocator
+from .colocation.colocation_setup import ColocationSetup
 from .filter import Filter
-from .colocateddata import ColocatedData
-from .colocation_auto import ColocationSetup, Colocator
 from .tstype import TsType
 from .time_resampler import TimeResampler
 from .io.helpers import search_data_dir_aerocom
 from .variable_helpers import get_variable
 from .utils import create_varinfo_table
-from .access_testdata import initialise as initialise_testdata
 
 from . import aeroval
 
-# toplevel functions
-from pyaerocom.tools import browse_database
+from .sample_data_access import download_minimal_dataset

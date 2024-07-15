@@ -1,8 +1,7 @@
-from importlib import resources
-
 import pytest
 
 from pyaerocom import const
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.varcollection import VarCollection
 from pyaerocom.variable import Variable
@@ -82,9 +81,9 @@ def test_VarCollection_get_var_error(collection: VarCollection):
     "search_pattern,num",
     [
         ("*blaaaaaaa*", 0),
-        ("dep*", 0),
-        ("od*", 25),
-        ("conc*", 71),
+        ("dep*", 9),
+        ("od*", 26),
+        ("conc*", 93),
     ],
 )
 def test_VarCollection_find(collection: VarCollection, search_pattern: str, num: int):

@@ -1,118 +1,19 @@
 """
 Small helper utility functions for pyaerocom
 """
+
 import abc
 import logging
 import os
 from collections.abc import MutableMapping
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
-import simplejson
+from typing_extensions import TypedDict
 
 from pyaerocom._warnings import ignore_warnings
 
 logger = logging.getLogger(__name__)
-
-
-def round_floats(in_data, precision=5):
-    """
-    simple helper method to change all floats of a data structure to a given precision.
-    For nested structures, this method is called recursively to go through
-    all levels
-
-    Parameters
-    ----------
-    in_data : float, dict, tuple, list
-        data structure whose numbers should be limited in precision
-
-    Returns
-    -------
-    in_data
-        all the floats in in_data with limited precision
-        tuples in the structure have been converted to lists to make them mutable
-
-    """
-
-    if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64)):
-        # np.float64, is an aliase for the Python float, but is mentioned here for completeness
-        # note that round and np.round yield different results with the Python round being mathematically correct
-        # details are here:
-        # https://numpy.org/doc/stable/reference/generated/numpy.around.html#numpy.around
-        # use numpy around for now
-        return np.around(in_data, precision)
-    elif isinstance(in_data, (list, tuple)):
-        return [round_floats(v, precision=precision) for v in in_data]
-    elif isinstance(in_data, dict):
-        return {k: round_floats(v, precision=precision) for k, v in in_data.items()}
-    return in_data
-
-
-def read_json(file_path):
-    """Read json file
-
-    Parameters
-    ----------
-    file_path : str
-        json file path
-
-    Returns
-    -------
-    dict
-        content as dictionary
-    """
-    with open(file_path) as f:
-        data = simplejson.load(f)
-    return data
-
-
-def write_json(data_dict, file_path, **kwargs):
-    """Save json file
-
-    Parameters
-    ----------
-    data_dict : dict
-        dictionary that can be written to json file
-    file_path : str
-        output file path
-    **kwargs
-        additional keyword args passed to :func:`simplejson.dumps` (e.g.
-        indent, )
-    """
-    with open(file_path, "w") as f:
-        simplejson.dump(round_floats(data_dict), f, **kwargs)
-
-
-def check_make_json(fp, indent=4):
-    """
-    Make sure input json file exists
-
-    Parameters
-    ----------
-    fp : str
-        filepath to be checked (must end with .json)
-    indent : int
-        indentation of json file
-
-    Raises
-    ------
-    ValueError
-        if filepath does not exist.
-
-    Returns
-    -------
-    str
-        input filepath.
-
-    """
-    fp = str(fp)
-    if not fp.endswith(".json"):
-        raise ValueError("Input filepath must end with .json")
-    if not os.path.exists(fp):
-        logger.info(f"Creating empty json file: {fp}")
-        write_json({}, fp, indent=indent)
-    return fp
 
 
 def invalid_input_err_str(argname, argval, argopts):
@@ -136,7 +37,7 @@ def invalid_input_err_str(argname, argval, argopts):
     return f"Invalid input for {argname} ({argval}), choose from {argopts}"
 
 
-def check_dir_access(path, timeout=0.1):
+def check_dir_access(path):
     """Uses multiprocessing approach to check if location can be accessed
 
     Parameters
@@ -151,53 +52,24 @@ def check_dir_access(path, timeout=0.1):
     """
     if not isinstance(path, str):
         return False
-    pool = ThreadPoolExecutor()
 
-    def try_ls(testdir, timeout):
-        future = pool.submit(os.listdir, testdir)
-        try:
-            future.result(timeout)
-            return True
-        except Exception:
-            return False
-
-    return try_ls(path, timeout)
+    return os.access(path, os.R_OK)
 
 
-def check_write_access(path, timeout=0.1):
+def check_write_access(path):
     """Check if input location provides write access
 
     Parameters
     ----------
     path : str
         directory to be tested
-    timeout : float
-        timeout in seconds (to avoid blockage at non-existing locations)
 
     """
     if not isinstance(path, str):
         # not a path
         return False
 
-    pool = ThreadPoolExecutor()
-
-    def _test_write_access(path):
-        test = os.path.join(path, "_tmp")
-        try:
-            os.mkdir(test)
-            os.rmdir(test)
-            return True
-        except Exception:
-            return False
-
-    def run_timeout(path, timeout):
-        future = pool.submit(_test_write_access, path)
-        try:
-            return future.result(timeout)
-        except Exception:
-            return False
-
-    return run_timeout(path, timeout)
+    return os.access(path, os.W_OK)
 
 
 def _class_name(obj):
@@ -378,17 +250,6 @@ class AsciiFileLoc(Loc):
     def create(self, value):
         self.logger.info(f"create ascii file {value}")
         open(value, "w").close()
-
-
-class JSONFile(Loc):
-    def create(self, value):
-        write_json({}, value)
-        self.logger.info(f"created json file {value}")
-
-    def validate(self, value):
-        value = super().validate(value)
-        if value is not None and not value.endswith("json"):
-            raise ValueError("need .json file ending")
 
 
 class BrowseDict(MutableMapping):
@@ -844,3 +705,17 @@ def str_underline(title: str, indent: int = 0):
     length = indent + len(title)
     underline = "-" * len(title)
     return f"{title:>{length}}\n{underline:>{length}}"
+
+
+class RegridResDeg(TypedDict):
+    """Typed dict for regridding resolution degrees"""
+
+    lat_res_deg: float
+    lon_res_deg: float
+
+
+class LayerLimits(TypedDict):
+    """Typed dict of 3D colocation layer limits"""
+
+    start: float
+    end: float

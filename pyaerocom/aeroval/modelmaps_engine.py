@@ -2,14 +2,15 @@ import logging
 import os
 
 from pyaerocom import GriddedData, TsType
-from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.helpers import check_var_ranges_avail
+from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
+    DataQueryError,
+    ModelVarNotAvailable,
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
@@ -44,11 +45,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 files = self._run_model(model, var_list)
             except VarNotAvailableError:
                 files = []
+            if not files:
+                logger.warning(f"no data for model {model}, skipping")
+                continue
             all_files.extend(files)
         return files
 
     def _get_vars_to_process(self, model_name, var_list):
-
         mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
             self.cfg.obs_cfg.get_all_vars()
         )[1]
@@ -84,7 +87,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
 
-            except (TemporalResolutionError, DataCoverageError, VariableDefinitionError) as e:
+            except ModelVarNotAvailable as ex:
+                logger.warning(f"{ex}")
+            except (
+                TemporalResolutionError,
+                DataCoverageError,
+                VariableDefinitionError,
+                DataQueryError,
+            ) as e:
                 if self.raise_exceptions:
                     raise
                 logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")
@@ -119,10 +129,24 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         AttributeError
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
+        ModelVarNotAvailable
+            If model/var data cannot be read
         """
-        data = self.read_model_data(model_name, var)
-        check_var_ranges_avail(data, var)
-        varinfo = VarinfoWeb(var)
+
+        try:
+            data = self.read_model_data(model_name, var)
+        except Exception as e:
+            raise ModelVarNotAvailable(
+                f"Cannot read data for model {model_name} (variable {var}): {e}"
+            )
+
+        var_ranges_defaults = self.cfg.var_scale_colmap
+        if var in var_ranges_defaults.keys():
+            cmapinfo = var_ranges_defaults[var]
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+        else:
+            cmapinfo = var_ranges_defaults["default"]
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
         data = self._check_dimensions(data)
 
@@ -137,12 +161,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
-        freq = self.cfg.time_cfg.main_freq
+        freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+        freq = min(freq, self.cfg.time_cfg.main_freq)
         tst = TsType(data.ts_type)
+
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            data = data.resample_time(freq)
+            data = data.resample_time(str(freq))
 
         data.check_unit()
         # first calcualate and save geojson with contour levels
@@ -160,6 +186,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
 
-        write_json(datajson, fp_json, ignore_nan=True)
-        write_json(contourjson, fp_geojson, ignore_nan=True)
+        write_json(datajson, fp_json, round_floats=False)
+        write_json(contourjson, fp_geojson, round_floats=False)
         return [fp_json, fp_geojson]

@@ -1,6 +1,7 @@
 """
 Module containing time resampling functionality
 """
+
 import logging
 
 import pandas as pd
@@ -78,7 +79,6 @@ class TimeResampler:
         return val
 
     def _get_idx_entry(self, fr, to, min_num_obs, how):
-
         min_num = fr.get_min_num_obs(to, min_num_obs)
 
         _how = self._get_resample_how(fr, to, how)
@@ -210,7 +210,7 @@ class TimeResampler:
                 f"Cannot resample time-series from {from_ts_type} to {to_ts_type}"
             )
         elif to_ts_type == from_ts_type:
-            logger.info(
+            logger.debug(
                 f"Input time frequency {to_ts_type.val} equals current frequency of data. "
                 f"Resampling will be applied anyways which will introduce NaN values "
                 f"at missing time stamps"

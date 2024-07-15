@@ -1,5 +1,4 @@
 import pytest
-from numpy.testing import assert_allclose
 
 from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass, get_species
 
@@ -13,9 +12,14 @@ from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass, get_species
         ("vmro3", "o3"),
         ("mmro3", "o3"),
         ("wetso4", "so4"),
+        ("concNnh4", "nh4"),
+        ("concNnh3", "nh3"),
+        ("concNtno3", "no3"),
+        ("proxydryno2", "no2"),
+        ("proxywetno2", "no2"),
     ],
 )
-def test_get_species(var_name, species):
+def test_get_species(var_name: str, species: str):
     assert get_species(var_name) == species
 
 
@@ -28,9 +32,13 @@ def test_get_species(var_name, species):
         ("vmro3", 48),
         ("mmro3", 48),
         ("wetso4", 96.06),
+        ("concNnh4", 18.039),
+        ("concNnh3", 17.031),
+        ("concNtno3", 62.0045),
+        ("proxydryno2", 46.0055),
     ],
 )
-def test_get_molmass(var_name, molmass):
+def test_get_molmass(var_name: str, molmass: float):
     assert get_molmass(var_name) == molmass
 
 
@@ -41,6 +49,5 @@ def test_get_molmass(var_name, molmass):
         ("conco3", 0.60343125),
     ],
 )
-def test_get_mmr_to_vmr_fac(var_name, result):
-    val = get_mmr_to_vmr_fac(var_name)
-    assert_allclose(val, result, rtol=1e-3)
+def test_get_mmr_to_vmr_fac(var_name: str, result: float):
+    assert get_mmr_to_vmr_fac(var_name) == pytest.approx(result, rel=1e-3)

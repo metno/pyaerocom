@@ -1,0 +1,29 @@
+# .readthedocs.yml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+---
+version: 2
+
+sphinx:
+  configuration: docs/conf.py
+
+formats:
+  - pdf
+
+build:
+  os: ubuntu-22.04
+  apt_packages:
+    - libudunits2-dev
+    - libgeos-dev
+    - libproj-dev
+    - proj-data
+    - proj-bin
+  tools:
+    python: "3.10"
+
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

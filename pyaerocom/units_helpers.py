@@ -39,6 +39,8 @@ HA_TO_SQM = 10000  # hectar to square metre.
 #: factor
 UCONV_MUL_FACS = pd.DataFrame(
     [
+        # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
+        # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
         # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
         # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
         # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
@@ -48,6 +50,10 @@ UCONV_MUL_FACS = pd.DataFrame(
         ["concoa", "ug C/m3", "ug m-3", 1.0],
         ["concoc", "ug C/m3", "ug m-3", 1.0],
         ["conctc", "ug C/m3", "ug m-3", 1.0],
+        # a little hacky for ratpm10pm25...
+        # ["ratpm10pm25", "ug m-3", "1", 1.0],
+        ["concpm25", "ug m-3", "1", 1.0],
+        ["concpm10", "ug m-3", "1", 1.0],
         ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
         # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
         ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
@@ -60,12 +66,13 @@ UCONV_MUL_FACS = pd.DataFrame(
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
+
 UALIASES = {
     # mass concentrations
     "ug S m-3": "ug S/m3",
     "ug C m-3": "ug C/m3",
     "ug N m-3": "ug N/m3",
-    "ugC/m3": "ug C/m3",
+    "ugC/m3": "ug C m-3",
     # deposition rates (implicit)
     ## sulphur species
     "mgS/m2": "mg S m-2",
@@ -76,6 +83,7 @@ UALIASES = {
     # deposition rates (explicit)
     ## sulphur species
     "mgS/m2/h": "mg S m-2 h-1",
+    "mg/m2/h": "mg m-2 h-1",
     "mgS/m**2/h": "mg S m-2 h-1",
     "mgSm-2h-1": "mg S m-2 h-1",
     "mgSm**-2h-1": "mg S m-2 h-1",

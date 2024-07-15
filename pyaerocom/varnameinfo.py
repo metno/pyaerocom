@@ -134,8 +134,9 @@ class VarNameInfo:
         s = (
             f"\nVariable {self.var_name}\n"
             f"is_wavelength_dependent: {self.is_wavelength_dependent}\n"
-            f"is_optical_density: {self.is_optical_density}"
         )
+        if hasattr(self, "is_optical_density"):  # pragma: no cover
+            s += f"is_optical_density: {self.is_optical_density}\n"  # can't find situation where this happens however not sure if depricated
         if self.is_wavelength_dependent:
             s += f"\nwavelength_nm: {self.wavelength_nm}"
         return s

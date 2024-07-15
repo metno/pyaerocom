@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import Type
-
 import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.axes import Axes
-from numpy.testing import assert_allclose
 from xarray import DataArray
 
 from pyaerocom.exceptions import (
@@ -19,8 +16,8 @@ from pyaerocom.exceptions import (
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-
-from .conftest import FAKE_STATION_DATA
+from tests.conftest import TEST_RTOL
+from tests.fixtures.stations import FAKE_STATION_DATA
 
 
 def get_earlinet_data(var_name):
@@ -54,7 +51,7 @@ stat3["station_coords"]["latitude"] = "blaaa"
 stat4 = stat2.copy()
 stat4["longitude"] = "42"
 
-ec_earlinet = get_earlinet_data("ec532aer")
+ec_earlinet = get_earlinet_data("ec355aer")
 
 
 def test_StationData_default_vert_grid():
@@ -116,7 +113,7 @@ def test_StationData_check_var_unit_aerocom():
     assert stat.get_unit("ec550aer") == "m-1"
 
     stat.check_var_unit_aerocom("ec550aer")
-    assert stat.get_unit("ec550aer") == "1/Mm"
+    assert stat.get_unit("ec550aer") == "1/km"
 
 
 @pytest.mark.parametrize(
@@ -139,7 +136,7 @@ def test_StationData_check_var_unit_aerocom():
     ],
 )
 def test_StationData_check_var_unit_aerocom_error(
-    stat: StationData, var_name: str, exception: Type[Exception], error: str
+    stat: StationData, var_name: str, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.check_var_unit_aerocom(var_name)
@@ -153,7 +150,7 @@ def test_StationData_check_unit():
 def test_StationData_check_unit_error():
     with pytest.raises(DataUnitError) as e:
         stat1.check_unit("ec550aer", None)
-    assert str(e.value) == "Invalid unit m-1 (expected 1/Mm)"
+    assert str(e.value) == "Invalid unit m-1 (expected 1/km)"
 
 
 def test_StationData_convert_unit():
@@ -168,7 +165,7 @@ def test_StationData_convert_unit_error():
 
 def test_StationData_dist_other():
     dist = stat1.dist_other(stat2)
-    assert_allclose(dist, 1.11, atol=0.1)
+    assert dist == pytest.approx(1.11, abs=0.1)
 
 
 @pytest.mark.parametrize(
@@ -234,7 +231,7 @@ def test_StationData_get_station_coords(
     ],
 )
 def test_StationData_get_station_coords_error(
-    stat: StationData, exception: Type[Exception], error: str
+    stat: StationData, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.get_station_coords(force_single_value=True)
@@ -331,7 +328,6 @@ def test_StationData_merge_varinfo_error(stat: StationData, other: StationData):
     [
         (stat1, "od550aer", False),
         (stat2, "od550aer", False),
-        (ec_earlinet, "ec532aer", True),
     ],
 )
 def test_StationData_check_if_3d(stat: StationData, var_name: str, result: bool):
@@ -339,7 +335,7 @@ def test_StationData_check_if_3d(stat: StationData, var_name: str, result: bool)
 
 
 def test_StationData__check_ts_types_for_merge():
-    assert stat1._check_ts_types_for_merge(stat2, "ec550aer") == "monthly"
+    assert stat1.copy()._check_ts_types_for_merge(stat2, "ec550aer") == "monthly"
 
 
 @pytest.mark.parametrize(
@@ -361,10 +357,7 @@ def test_StationData_remove_outliers(
 ):
     stat.remove_outliers(var_name, low, high, check_unit)
     avg = np.nanmean(stat[var_name])
-    if np.isnan(mean):
-        assert np.isnan(avg)
-    else:
-        assert_allclose(avg, mean)
+    assert avg == pytest.approx(mean, rel=TEST_RTOL, nan_ok=True)
 
 
 def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
@@ -373,7 +366,7 @@ def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
     assert clim is not site
     assert isinstance(clim, StationData)
     mean = np.nanmean(clim.od550aer)  # type:ignore[attr-defined]
-    assert_allclose(mean, 0.44, atol=0.01)
+    assert mean == pytest.approx(0.44, abs=0.01)
 
 
 def test_StationData_remove_variable():
@@ -395,15 +388,14 @@ def test_StationData_remove_variable_error():
 
 
 def test_StationData_select_altitude_DataArray():
-    selection = ec_earlinet.select_altitude("ec532aer", (1000, 2000))
-    assert isinstance(selection, DataArray)
-    assert selection.shape == (4, 5)
-    assert list(selection.altitude.values) == [1125, 1375, 1625, 1875]
+    selection = ec_earlinet.select_altitude("ec355aer", (1000, 2000))
+    assert isinstance(selection, DataArray) or isinstance(selection, pd.Series)
+    assert selection.shape == (16,)
 
 
 def test_StationData_select_altitude_DataArray_error():
     with pytest.raises(NotImplementedError) as e:
-        ec_earlinet.select_altitude("ec532aer", 1000)
+        ec_earlinet.select_altitude("ec355aer", 1000)
     assert str(e.value) == "So far only a range (low, high) is supported for altitude extraction."
 
 
@@ -420,7 +412,7 @@ def test_StationData_select_altitude_Series():
     ],
 )
 def test_StationData_select_altitude_Series_error(
-    stat: StationData, altitudes: tuple[int, int], exception: Type[Exception], error: str
+    stat: StationData, altitudes: tuple[int, int], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         stat.select_altitude("od550aer", altitudes)
@@ -431,33 +423,11 @@ def test_StationData_select_altitude_Series_error(
     "stat,var_name,kwargs",
     [
         (stat1, "od550aer", dict()),
-        (ec_earlinet, "ec532aer", dict(altitude=(0, 1000))),
     ],
 )
 def test_StationData_to_timeseries(stat: StationData, var_name: str, kwargs: dict):
     series = stat.to_timeseries(var_name, **kwargs)
     assert isinstance(series, pd.Series)
-
-
-@pytest.mark.parametrize(
-    "kwargs,error",
-    [
-        pytest.param(
-            dict(),
-            "please specify altitude range via input arg: altitude, e.g. altitude=(100,110)",
-            id="no altitude",
-        ),
-        pytest.param(
-            dict(altitude=(0, 10)),
-            "no data in specified altitude range",
-            id="no data",
-        ),
-    ],
-)
-def test_StationData_to_timeseries_error(kwargs: dict, error: str):
-    with pytest.raises(ValueError) as e:
-        ec_earlinet.to_timeseries("ec532aer", **kwargs)
-    assert str(e.value) == error
 
 
 def test_StationData_plot_timeseries():

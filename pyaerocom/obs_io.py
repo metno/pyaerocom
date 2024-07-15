@@ -5,6 +5,7 @@ Note
 ----
 Some settings like paths etc can be found in :mod:`pyaerocom.config.py`
 """
+
 from pyaerocom._lowlevel_helpers import dict_to_str, str_underline
 
 #: Wavelength tolerance for observations if data for required wavelength
@@ -35,7 +36,6 @@ class AuxInfoUngridded:
     def __init__(
         self, data_id, vars_supported, aux_requires, aux_merge_how, aux_funs=None, aux_units=None
     ):
-
         self.data_id = data_id
         self.vars_supported = vars_supported
 

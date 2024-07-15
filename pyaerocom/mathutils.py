@@ -1,6 +1,7 @@
 """
 Mathematical low level utility methods of pyaerocom
 """
+
 import numpy as np
 from scipy.stats import kendalltau, pearsonr, spearmanr
 
@@ -114,6 +115,7 @@ def weighted_cov(ref_data, data, weights):
     return np.sum(weights * (ref_data - avgx) * (data - avgy)) / np.sum(weights)
 
 
+@ignore_warnings(RuntimeWarning, "invalid value encountered in scalar divide")
 def weighted_corr(ref_data, data, weights):
     """Compute weighted correlation
 
@@ -162,187 +164,6 @@ def corr(ref_data, data, weights=None):
     if weights is None:
         return pearsonr(ref_data, data)[0]
     return weighted_corr(ref_data, data, weights)
-
-
-def _nanmean_and_std(data):
-    """
-    Calculate mean and std for input data (may contain NaN's')
-
-    Parameters
-    ----------
-    data : list or numpy.ndarray
-        input data
-
-    Returns
-    -------
-    float
-        mean value of input data.
-    float
-        standard deviation of input data.
-
-    """
-    if np.all(np.isnan(data)):
-        return (np.nan, np.nan)
-    return (np.nanmean(data), np.nanstd(data))
-
-
-@ignore_warnings(
-    RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
-)
-def calc_statistics(data, ref_data, lowlim=None, highlim=None, min_num_valid=1, weights=None):
-    """Calc statistical properties from two data arrays
-
-    Calculates the following statistical properties based on the two provided
-    1-dimensional data arrays and returns them in a dictionary (keys are
-    provided after the arrows):
-
-        - Mean value of both arrays -> refdata_mean, data_mean
-        - Standard deviation of both arrays -> refdata_std, data_std
-        - RMS (Root mean square) -> rms
-        - NMB (Normalised mean bias) -> nmb
-        - MNMB (Modified normalised mean bias) -> mnmb
-        - FGE (Fractional gross error) -> fge
-        - R (Pearson correlation coefficient) -> R
-        - R_spearman (Spearman corr. coeff) -> R_spearman
-
-    Note
-    ----
-    Nans are removed from the input arrays, information about no. of removed
-    points can be inferred from keys `totnum` and `num_valid` in return dict.
-
-    Parameters
-    ----------
-    data : ndarray
-        array containing data, that is supposed to be compared with reference
-        data
-    ref_data : ndarray
-        array containing data, that is used to compare `data` array with
-    lowlim : float
-        lower end of considered value range (e.g. if set 0, then all datapoints
-        where either ``data`` or ``ref_data`` is smaller than 0 are removed)
-    highlim : float
-        upper end of considered value range
-    min_num_valid : int
-        minimum number of valid measurements required to compute statistical
-        parameters.
-
-    Returns
-    -------
-    dict
-        dictionary containing computed statistics
-
-    Raises
-    ------
-    ValueError
-        if either of the input arrays has dimension other than 1
-
-    """
-    data = np.asarray(data)
-    ref_data = np.asarray(ref_data)
-
-    if not data.ndim == 1 or not ref_data.ndim == 1:
-        raise ValueError("Invalid input. Data arrays must be one dimensional")
-
-    result = {}
-
-    mask = ~np.isnan(ref_data) * ~np.isnan(data)
-    num_points = mask.sum()
-
-    data, ref_data = data[mask], ref_data[mask]
-
-    weighted = False if weights is None else True
-
-    result["totnum"] = float(len(mask))
-    result["num_valid"] = float(num_points)
-    ref_mean, ref_std = _nanmean_and_std(ref_data)
-    data_mean, data_std = _nanmean_and_std(data)
-    result["refdata_mean"] = ref_mean
-    result["refdata_std"] = ref_std
-    result["data_mean"] = data_mean
-    result["data_std"] = data_std
-    result["weighted"] = weighted
-
-    if not num_points >= min_num_valid:
-        if lowlim is not None:
-            valid = np.logical_and(data > lowlim, ref_data > lowlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-        if highlim is not None:
-            valid = np.logical_and(data < highlim, ref_data < highlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-
-        result["rms"] = np.nan
-        result["nmb"] = np.nan
-        result["mnmb"] = np.nan
-        result["fge"] = np.nan
-        result["R"] = np.nan
-        result["R_spearman"] = np.nan
-
-        return result
-
-    if lowlim is not None:
-        valid = np.logical_and(data > lowlim, ref_data > lowlim)
-        data = data[valid]
-        ref_data = ref_data[valid]
-    if highlim is not None:
-        valid = np.logical_and(data < highlim, ref_data < highlim)
-        data = data[valid]
-        ref_data = ref_data[valid]
-
-    difference = data - ref_data
-
-    diffsquare = difference**2
-
-    if weights is not None:
-        weights = weights[mask]
-        weights = weights / weights.max()
-        result[
-            "NOTE"
-        ] = "Weights were not applied to FGE and kendall and spearman corr (not implemented)"
-
-    result["rms"] = np.sqrt(np.average(diffsquare, weights=weights))
-
-    # NO implementation to apply weights yet ...
-    if num_points > 1:
-        result["R"] = corr(data, ref_data, weights)
-        result["R_spearman"] = spearmanr(data, ref_data)[0]
-        result["R_kendall"] = kendalltau(data, ref_data)[0]
-    else:
-        result["R"] = np.nan
-        result["R_spearman"] = np.nan
-        result["R_kendall"] = np.nan
-
-    sum_diff = sum(difference, weights=weights)
-    sum_refdata = sum(ref_data, weights=weights)
-
-    if sum_refdata == 0:
-        if sum_diff == 0:
-            nmb = 0
-        else:
-            nmb = np.nan
-    else:
-        nmb = sum_diff / sum_refdata
-
-    sum_data_refdata = data + ref_data
-    # for MNMB, and FGE: don't divide by 0 ...
-    mask = ~np.isnan(sum_data_refdata)
-    num_points = mask.sum()
-    if num_points == 0:
-        mnmb = np.nan
-        fge = np.nan
-    else:
-        tmp = difference[mask] / sum_data_refdata[mask]
-        if weights is not None:
-            weights = weights[mask]
-        mnmb = 2.0 / num_points * sum(tmp, weights=weights)
-        fge = 2.0 / num_points * sum(np.abs(tmp), weights=weights)
-
-    result["nmb"] = nmb
-    result["mnmb"] = mnmb
-    result["fge"] = fge
-
-    return result
 
 
 def closest_index(num_array, value):
@@ -481,18 +302,3 @@ def estimate_value_range(vmin, vmax, extend_percent=0):
     vmin = np.floor(vmin * 10 ** (-exp)) * 10.0 ** (exp)
     vmax = np.ceil(vmax * 10 ** (-exp)) * 10.0 ** (exp)
     return vmin, vmax
-
-
-def _init_stats_dummy():
-    # dummy for statistics dictionary for locations without data
-    stats_dummy = {}
-    for k in calc_statistics([1], [1]):
-        stats_dummy[k] = np.nan
-
-    # Test to make sure these variables are defined even when yearly and season != all
-    stats_dummy["R_spatial_mean"] = np.nan
-    stats_dummy["R_spatial_median"] = np.nan
-    stats_dummy["R_temporal_mean"] = np.nan
-    stats_dummy["R_temporal_median"] = np.nan
-
-    return stats_dummy

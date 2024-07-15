@@ -1,47 +1,49 @@
+from __future__ import annotations
+
 import getpass
-import os
-import tempfile
-from importlib import resources
 from pathlib import Path
 
 import pytest
 
 import pyaerocom.config as testmod
 from pyaerocom import const
-from pyaerocom.config import Config
-
-from .conftest import lustre_avail
+from pyaerocom.config import ALL_REGION_NAME, Config
+from pyaerocom.data import resources
+from pyaerocom.grid_io import GridIO
+from pyaerocom.varcollection import VarCollection
+from pyaerocom.variable import Variable
+from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
 
-_TEMPDIR = tempfile.mkdtemp()
-CFG_FILE_WRONG = os.path.join(_TEMPDIR, "paths.txt")
 
-LOCAL_DB_DIR = os.path.join(_TEMPDIR, "data")
-os.makedirs(os.path.join(LOCAL_DB_DIR, "modeldata"))
-os.makedirs(os.path.join(LOCAL_DB_DIR, "obsdata"))
-open(CFG_FILE_WRONG, "w").close()
+@pytest.fixture()
+def config_file(file: str | None, tmp_path: Path) -> str | None:
+    if file is None:
+        return None
 
+    if file.casefold() == "default":
+        assert resources.is_resource("pyaerocom.data", "paths.ini")
+        with resources.path("pyaerocom.data", "paths.ini") as path:
+            return str(path)
 
-def test_CFG_FILE_EXISTS():
-    assert resources.is_resource("pyaerocom.data", "paths.ini")
-    assert os.path.exists(CFG_FILE)
+    if file.casefold() == "wrong_suffix":
+        path = tmp_path / "paths.txt"
+        path.write_text("")
+        assert path.exists()
+        return str(path)
 
-
-with resources.path("pyaerocom.data", "paths.ini") as path:
-    CFG_FILE = str(path)
-
-
-def test_CFG_FILE_EXISTS():
-    assert os.path.exists(CFG_FILE)
+    return file
 
 
-def test_CFG_FILE_WRONG_EXISTS():
-    assert os.path.exists(CFG_FILE_WRONG)
-
-
-def test_LOCAL_DB_DIR_EXISTS():
-    assert os.path.exists(LOCAL_DB_DIR)
+@pytest.fixture()
+def local_db(tmp_path: Path) -> Path:
+    """temporary path to DB file structure"""
+    path = tmp_path / "data"
+    (path / "modeldata").mkdir(parents=True)
+    (path / "obsdata").mkdir()
+    assert path.is_dir()
+    return path
 
 
 @pytest.fixture(scope="module")
@@ -55,32 +57,43 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 
 
 @pytest.mark.parametrize(
-    "config_file,try_infer_environment",
+    "file,try_infer_environment",
     [
         (None, False),
         (None, True),
-        (CFG_FILE, False),
+        ("default", False),
     ],
 )
-def test_Config___init__(config_file, try_infer_environment):
+def test_Config___init__(config_file: str, try_infer_environment: bool):
     testmod.Config(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
-    "config_file,exception",
+    "file,exception,error",
     [
-        (CFG_FILE_WRONG, ValueError),
-        (f"/home/{USER}/blaaaa.ini", FileNotFoundError),
+        pytest.param(
+            "wrong_suffix",
+            ValueError,
+            "Need path to an ini file for input config_file",
+            id="wrong file extension",
+        ),
+        pytest.param(
+            f"/home/{USER}/blaaaa.ini",
+            FileNotFoundError,
+            f"input config file does not exist /home/{USER}/blaaaa.ini",
+            id="no such file",
+        ),
     ],
 )
-def test_Config___init___error(config_file, exception):
-    with pytest.raises(exception):
+def test_Config___init___error(config_file: str, exception: type[Exception], error: str):
+    with pytest.raises(exception) as e:
         testmod.Config(config_file, False)
+    assert str(e.value) == error
 
 
-def test_Config__infer_config_from_basedir():
+def test_Config__infer_config_from_basedir(local_db: Path):
     cfg = testmod.Config(try_infer_environment=False)
-    res = cfg._infer_config_from_basedir(LOCAL_DB_DIR)
+    res = cfg._infer_config_from_basedir(local_db)
     assert res[1] == "local-db"
 
 
@@ -100,7 +113,6 @@ def test_Config_has_access_users_database():
     assert not cfg.has_access_users_database
 
 
-@lustre_avail
 @pytest.mark.parametrize(
     "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
     [
@@ -116,8 +128,10 @@ def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_s
     cfg_file = cfg._config_files[cfg_id]
     assert Path(cfg_file).exists()
     cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
-    assert len(cfg.DATA_SEARCH_DIRS) == 0
-    assert len(cfg.OBSLOCS_UNGRIDDED) == 0
+    if not cfg.has_access_lustre:
+        pytest.skip(f"Skipping since {cfg._LUSTRE_CHECK_PATH} directory not accessible")
+    assert all([Path(idir).exists() for idir in cfg.DATA_SEARCH_DIRS])
+    assert cfg.OBSLOCS_UNGRIDDED
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()
@@ -150,13 +164,14 @@ def test_empty_class_header(empty_cfg):
     assert cfg.EARLINET_NAME == "EARLINET"
     assert cfg.GAWTADSUBSETAASETAL_NAME == "GAWTADsubsetAasEtAl"
     assert cfg.DMS_AMS_CVO_NAME == "DMS_AMS_CVO"
+    assert cfg.CNEMC_NAME == "CNEMC"
     assert cfg.EBAS_DB_LOCAL_CACHE
     assert cfg.MIN_YEAR == 0
     assert cfg.MAX_YEAR == 20000
     assert cfg.STANDARD_COORD_NAMES == ["latitude", "longitude", "altitude"]
     assert cfg.DEFAULT_VERT_GRID_DEF == dict(lower=0, upper=15000, step=250)
     assert cfg.RH_MAX_PERCENT_DRY == 40
-    assert cfg.DEFAULT_REG_FILTER == "WORLD-wMOUNTAINS"
+    assert cfg.DEFAULT_REG_FILTER == f"{ALL_REGION_NAME}-wMOUNTAINS"
     assert cfg.OBS_MIN_NUM_RESAMPLE == dict(
         yearly=dict(monthly=3),
         monthly=dict(daily=7),
@@ -180,7 +195,7 @@ def test_empty_class_header(empty_cfg):
     assert cfg.AEOLUS_NAME == "AeolusL2A"
 
     assert cfg.OLD_AEROCOM_REGIONS == [
-        "WORLD",
+        ALL_REGION_NAME,
         "ASIA",
         "AUSTRALIA",
         "CHINA",
@@ -248,7 +263,7 @@ def test_empty_class_header(empty_cfg):
         assert cfg._coords_info_file == str(path)
 
     dbdirs = {
-        "lustre/storeA/project": "metno",
+        "lustre/storeB/project": "metno",
         "metno/aerocom_users_database": "users-db",
         "MyPyaerocom/data": "local-db",
     }
@@ -297,45 +312,24 @@ def test_empty_init(empty_cfg):
 
 
 def test_default_config_HOMEDIR():
-    assert const.HOMEDIR == os.path.expanduser("~") + "/"
+    assert Path(const.HOMEDIR) == Path("~").expanduser()
+    assert const.HOMEDIR.endswith("/")
 
 
+@lustre_avail
 def test_default_config():
     cfg = Config()
-    home = os.path.abspath(cfg.HOMEDIR)
 
-    mkpath = lambda basepath, relpath: os.path.abspath(os.path.join(basepath, relpath))
-
-    mypydir = mkpath(home, "MyPyaerocom")
-    assert cfg.OUTPUTDIR == mypydir
-    assert cfg._outputdir == mypydir
-
-    assert cfg.CACHEDIR == mkpath(mypydir, f"_cache/{USER}")
-
-    check = mkpath(mypydir, "colocated_data")
-    assert cfg.COLOCATEDDATADIR == check
-    # now this should be assigned
-    assert cfg._colocateddatadir == check
-
-    check = mkpath(mypydir, "filtermasks")
-    assert cfg.FILTERMASKKDIR == check
-    # now this should be assigned
-    assert cfg._filtermaskdir == check
-
-    check = mkpath(mypydir, "tmp")
-    assert cfg.LOCAL_TMP_DIR == check
-    # now this should be assigned
-    assert cfg._local_tmp_dir == check
-
-    check = mkpath(mypydir, "data")
-    assert cfg.DOWNLOAD_DATADIR == check
-    # now this should be assigned
-    assert cfg._downloaddatadir == check
+    mypydir = Path(cfg.HOMEDIR).resolve() / "MyPyaerocom"
+    assert Path(cfg.OUTPUTDIR) == Path(cfg._outputdir) == mypydir
+    assert Path(cfg.CACHEDIR) == mypydir / f"_cache/{USER}"
+    assert Path(cfg.COLOCATEDDATADIR) == Path(cfg._colocateddatadir) == mypydir / "colocated_data"
+    assert Path(cfg.FILTERMASKKDIR) == Path(cfg._filtermaskdir) == mypydir / "filtermasks"
+    assert Path(cfg.LOCAL_TMP_DIR) == Path(cfg._local_tmp_dir) == mypydir / "tmp"
+    assert Path(cfg.DOWNLOAD_DATADIR) == Path(cfg._downloaddatadir) == mypydir / "data"
 
     assert cfg._caching_active
     assert cfg.CACHING
-
-    from pyaerocom.varcollection import VarCollection
 
     assert isinstance(cfg.VARS, VarCollection)
     assert cfg.VARS is cfg.VAR_PARAM
@@ -348,6 +342,34 @@ def test_default_config():
 
     assert cfg.WRITE_FILEIO_ERR_LOG
 
-    from pyaerocom.grid_io import GridIO
-
     assert isinstance(cfg.GRID_IO, GridIO)
+
+
+def test_register_variable_with_dict():
+    test_var_name = "conctestvariabledict"
+    variables = {
+        test_var_name: {
+            "var_name": test_var_name,
+            "units": "ug m-3",
+        }
+    }
+    const.register_custom_variables(variables)
+
+    vars = const.VARS
+
+    assert test_var_name in vars.find(test_var_name)
+
+
+def test_register_variable_with_Variable():
+    test_var_name = "testvariableVariable"
+    variables = {
+        test_var_name: Variable(
+            var_name=test_var_name,
+            units="ug m-3",
+        ),
+    }
+    const.register_custom_variables(variables)
+
+    vars = const.VARS
+
+    assert test_var_name in vars.all_vars

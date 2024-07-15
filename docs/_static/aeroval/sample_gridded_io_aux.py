@@ -16,6 +16,7 @@ new "Cube" can be defined in this file directly and then registered with a
 name (key) in FUNS and then used in configuration files to compute auxiliary
 model variables.
 """
+
 from pyaerocom.io.aux_read_cubes import compute_angstrom_coeff_cubes
 
 FUNS = {

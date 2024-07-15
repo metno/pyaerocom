@@ -138,6 +138,35 @@ def calc_od550lt1aer(data):
     )
 
 
+def calc_od550lt1ang(data):
+    """Compute AOD at 550 nm using Angstrom coeff. and 500 nm AOD,
+        that is filtered for angstrom coeff < 1 to get AOD representative
+        of coarse particles.
+
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
+    """
+
+    return _calc_od_helper(
+        data=data,
+        var_name="od550lt1ang",
+        to_lambda=0.55,
+        od_ref="od500aer",
+        lambda_ref=0.50,
+        od_ref_alt="od440aer",
+        lambda_ref_alt=0.44,
+        use_angstrom_coeff="ang4487aer",
+        treshold_angstrom=1.0,
+    )
+
+
 def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
     """Compute Angstrom coefficient based on 2 optical densities
 
@@ -195,6 +224,7 @@ def _calc_od_helper(
     od_ref_alt=None,
     lambda_ref_alt=None,
     use_angstrom_coeff="ang4487aer",
+    treshold_angstrom=None,
 ):
     """Helper method for computing ODs
 
@@ -221,6 +251,9 @@ def _calc_od_helper(
         wavelength corresponding to alternative reference AOD
     use_angstrom_coeff : str
         name of Angstrom coefficient in data, that is used for computation
+    threshold_angstrom : float
+        filter out observations that have angstrom exponent larger than a set
+        threshold.
 
     Returns
     -------
@@ -234,7 +267,7 @@ def _calc_od_helper(
         ``use_angstrom_coeff`` is missing
     """
     if not od_ref in data:
-        if od_ref_alt is None or not od_ref_alt in data:
+        if od_ref_alt is None and not od_ref_alt in data:
             raise AttributeError(f"No alternative OD found for computation of {var_name}")
         return compute_od_from_angstromexp(
             to_lambda=to_lambda,
@@ -250,6 +283,7 @@ def _calc_od_helper(
         lambda_ref=lambda_ref,
         angstrom_coeff=data[use_angstrom_coeff],
     )
+
     # optional if available
     if od_ref_alt in data:
         # fill up time steps that are nans with values calculated from the
@@ -263,6 +297,8 @@ def _calc_od_helper(
                 to_lambda=to_lambda, od_ref=ods_alt, lambda_ref=lambda_ref_alt, angstrom_coeff=ang
             )
             result[mask] = replace
+    if treshold_angstrom:
+        result = np.where(data[use_angstrom_coeff] < treshold_angstrom, result, np.nan)
 
     return result
 
@@ -527,6 +563,52 @@ def compute_wetoxs_from_concprcpoxs(data):
     return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxs", "pr")
 
 
+def compute_wetoxs_from_concprcpoxst(data):
+    """Compute wdep from conc in precip and precip data
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxst", "pr")
+
+
+def compute_wetoxs_from_concprcpoxsc(data):
+    """Compute wdep from conc in precip and precip data
+
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxsc", "pr")
+
+
 def compute_wetoxn_from_concprcpoxn(data):
     """Compute wdep from conc in precip and precip data
 
@@ -571,6 +653,22 @@ def compute_wetrdn_from_concprcprdn(data):
 
     """
     return _compute_wdep_from_concprcp_helper(data, "wetrdn", "concprcprdn", "pr")
+
+
+def compute_wetnh4_from_concprcpnh4(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetnh4", "concprcpnh4", "pr")
+
+
+def compute_wetno3_from_concprcpno3(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetno3", "concprcpno3", "pr")
+
+
+def compute_wetso4_from_concprcpso4(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetso4", "concprcpso4", "pr")
+
+
+def compute_wetna_from_concprcpna(data):
+    return _compute_wdep_from_concprcp_helper(data, "wetna", "concprcpna", "pr")
 
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, to_unit=None):
@@ -670,7 +768,6 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
 
 def calc_vmro3max(data):
-
     var_name = "vmro3"
     new_var_name = "vmro3max"
 
@@ -688,3 +785,51 @@ def calc_vmro3max(data):
     data.data_flagged[new_var_name] = flags
 
     return o3max
+
+
+def identity(data):
+    return data
+
+
+def make_proxy_drydep_from_O3(data):
+    # sort of prototype to add a compted variable
+    # one has to extend the data structures of the station data object
+    # 'right', but has to return just the data array
+    # That concept is a bit confusing (why not do everything in data here?)
+    var_name = "vmro3"
+    new_var_name = "proxydryo3"
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+
+def make_proxy_wetdep_from_O3(data):
+    # sort of prototype to add a compted variable
+    # one has to extend the data structures of the station data object
+    # 'right', but has to return just the data array
+    # That concept is a bit confusing (why not do everything in data here?)
+    var_name = "vmro3"
+    new_var_name = "proxyweto3"
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+    units = data.var_info[var_name]["units"]
+    # data.var_info[new_var_name]["units"] = units
+
+    if not new_var_name in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data

@@ -1,8 +1,8 @@
 from configparser import ConfigParser
-from importlib import resources
 from os.path import basename, splitext
 
 from pyaerocom import const
+from pyaerocom.data import resources
 from pyaerocom.exceptions import FileConventionError
 from pyaerocom.tstype import TsType
 
@@ -33,7 +33,7 @@ class FileConventionRead:
 
     _io_opts = const
     AEROCOM3_VERT_INFO = {
-        "2d": ["surface", "column", "modellevel"],
+        "2d": ["surface", "column", "modellevel", "2d"],
         "3d": ["modellevelatstations"],
     }
 
@@ -48,7 +48,6 @@ class FileConventionRead:
         data_id_pos=None,
         from_file=None,
     ):
-
         self.name = name
         self.file_sep = file_sep
 
@@ -72,7 +71,12 @@ class FileConventionRead:
         extracted from filenames
         """
         return dict(
-            year=None, var_name=None, ts_type=None, vert_code="", is_at_stations=False, data_id=""
+            year=None,
+            var_name=None,
+            ts_type=None,
+            vert_code="",
+            is_at_stations=False,
+            data_id="",
         )
 
     def from_file(self, file):
@@ -158,6 +162,7 @@ class FileConventionRead:
             )
         try:
             # include vars for the surface
+
             if spl[self.vert_pos].lower() in self.AEROCOM3_VERT_INFO["2d"]:
                 info["var_name"] = spl[self.var_pos]
             # also include 3d vars that provide station based data

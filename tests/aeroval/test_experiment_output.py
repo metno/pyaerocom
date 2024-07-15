@@ -1,24 +1,22 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type
 
 import pytest
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
+from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
-
-from ..conftest import geojson_unavail
-from .cfg_test_exp1 import CFG as cfgexp1
+from tests.conftest import geojson_unavail
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
 
 
 @pytest.fixture()
 def dummy_expout(tmp_path: Path) -> ExperimentOutput:
+    """ExperimentOutput instance"""
     setup = EvalSetup(proj_id="proj", exp_id="exp", json_basedir=str(tmp_path))
     return ExperimentOutput(setup)
 
@@ -46,7 +44,7 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
         ),
     ],
 )
-def test_ProjectOutput_error(proj_id, json_basedir, exception: Type[Exception], error: str):
+def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         ProjectOutput(proj_id, json_basedir)
     assert str(e.value) == error
@@ -63,7 +61,6 @@ def test_ProjectOutput_experiments_file(tmp_path: Path):
     val = ProjectOutput("test", str(tmp_path))
     path = tmp_path / "test" / "experiments.json"
     assert Path(val.experiments_file) == path
-    assert path.exists()
 
 
 def test_ProjectOutput_available_experiments(tmp_path: Path):
@@ -74,27 +71,21 @@ def test_ProjectOutput_available_experiments(tmp_path: Path):
     assert val.available_experiments == ["exp"]
 
 
-def test_ProjectOutput__add_entry_experiments_json(tmp_path: Path):
-    val = ProjectOutput("test", str(tmp_path))
-    assert val.available_experiments == []
+def test_ExperimentOutput__add_entry_experiments_json():
+    cfg = EvalSetup(proj_id="proj", exp_id="exp")
+    val = ExperimentOutput(cfg)
 
     val._add_entry_experiments_json("test", 42)
     assert val.available_experiments == ["test"]
 
 
-def test_ProjectOutput__del_entry_experiments_json(tmp_path: Path):
-    val = ProjectOutput("test", str(tmp_path))
+def test_ExperimentOutput__del_entry_experiments_json(tmp_path):
+    cfg = EvalSetup(proj_id="proj", exp_id="exp")
+    val = ExperimentOutput(cfg)
 
     exp_id = "test"
-    assert exp_id not in val.available_experiments
-
-    val._add_entry_experiments_json(exp_id, {})
     assert exp_id in val.available_experiments
 
-    val._del_entry_experiments_json(exp_id)
-    assert exp_id not in val.available_experiments
-
-    # to catch KeyError and make sure it passes
     val._del_entry_experiments_json(exp_id)
     assert exp_id not in val.available_experiments
 
@@ -103,7 +94,7 @@ def test_ExperimentOutput():
     cfg = EvalSetup(proj_id="proj", exp_id="exp")
     val = ExperimentOutput(cfg)
     assert isinstance(val.cfg, EvalSetup)
-    assert val.proj_id == cfg["proj_info"]["proj_id"]
+    assert val.proj_id == cfg.proj_info.proj_id
 
     path = Path(val.json_basedir)
     assert path == BASEDIR_DEFAULT
@@ -168,16 +159,17 @@ def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout: ExperimentOutp
 
 def test_ExperimentOutput__info_from_map_file():
     output = ExperimentOutput._info_from_map_file(
-        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer.json"
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer_2010.json"
     )
-    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer")
+
+    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer", "2010")
 
 
 @pytest.mark.parametrize(
     "filename",
     [
         "blaaaa",
-        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer.json",
+        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer_2010.json",  # has four underscores
     ],
 )
 def test_ExperimentOutput__info_from_map_file_error(filename: str):
@@ -185,12 +177,12 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
         ExperimentOutput._info_from_map_file(filename)
     assert str(e.value) == (
         f"invalid map filename: {filename}. "
-        "Must contain exactly 2 underscores _ to separate obsinfo, vertical and model info"
+        "Must contain exactly 3 underscores _ to separate obsinfo, vertical, model info, and periods"
     )
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
-    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[])
+    assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[], per=[])
 
 
 def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout: ExperimentOutput):
@@ -210,9 +202,11 @@ def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: b
     setup = EvalSetup(
         proj_id="proj",
         exp_id="exp",
-        coldata_basedir=str(coldata_path),
-        json_basedir=str(json_path),
+        coldata_basedir=coldata_path,
+        json_basedir=json_path,
     )
+    assert setup.path_manager.coldata_basedir == coldata_path
+    assert setup.path_manager.json_basedir == json_path
     assert coldata_path.exists()
 
     out = ExperimentOutput(setup)
@@ -233,7 +227,10 @@ def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: b
     [
         (
             "ang4487aer",
-            {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
+            {
+                "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+                "colmap": "coolwarm",
+            },
         ),
         (
             "concprcpso4",
@@ -248,8 +245,9 @@ def test_ExperimentOutput__get_cmap_info(dummy_expout: ExperimentOutput, var, va
 ### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
 
 
-def test_ExperimentOutput_delete_experiment_data_CFG1():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_ExperimentOutput_delete_experiment_data_CFG1(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.webdisp_opts.regions_how = "htap"
     cfg.webdisp_opts.add_model_maps = False
     cfg.statistics_opts.add_trends = False
@@ -263,8 +261,9 @@ def test_ExperimentOutput_delete_experiment_data_CFG1():
 
 
 @geojson_unavail
-def test_Experiment_Output_clean_json_files_CFG1():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_clean_json_files_CFG1(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     proc = ExperimentProcessor(cfg)
     proc.run()
     modified = proc.exp_output.clean_json_files()
@@ -272,8 +271,9 @@ def test_Experiment_Output_clean_json_files_CFG1():
 
 
 @geojson_unavail
-def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
     proc = ExperimentProcessor(cfg)
     proc.run()
@@ -283,8 +283,9 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
 
 
 @geojson_unavail
-def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
-    cfg = EvalSetup(**cfgexp1)
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
     cfg.obs_cfg["obs1"] = cfg.obs_cfg["AERONET-Sun"]
     proc = ExperimentProcessor(cfg)
     proc.run()
@@ -306,7 +307,6 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
 def test_ExperimentOutput_reorder_experiments(
     dummy_expout: ExperimentOutput, add_names, order, result
 ):
-
     path = Path(dummy_expout.experiments_file)
 
     data = dict().fromkeys(add_names, dict(public=True))
@@ -323,3 +323,21 @@ def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutp
     with pytest.raises(ValueError) as e:
         dummy_expout.reorder_experiments("b")
     assert str(e.value) == "need list as input"
+
+
+@geojson_unavail
+@pytest.mark.parametrize("cfg,drop_stats,stats_decimals", [("cfgexp1", ("mab", "R_spearman"), 2)])
+def test_Experiment_Output_drop_stats_and_decimals(
+    eval_config: dict, drop_stats, stats_decimals: int
+):
+    eval_config["drop_stats"], eval_config["stats_decimals"] = drop_stats, stats_decimals
+    cfg = EvalSetup(**eval_config)
+    cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    path = Path(proc.exp_output.exp_dir)
+    files = [f for f in path.iterdir() if f.is_file()]
+    assert any(["statistics.json" in f.name for f in files])
+    statistics_json = read_json(path / "statistics.json")
+    assert all([stat not in statistics_json for stat in drop_stats])
+    assert all([statistics_json[stat]["decimals"] == stats_decimals for stat in statistics_json])

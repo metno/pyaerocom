@@ -1,10 +1,11 @@
-import os
+from pathlib import Path
 
 import iris
 import xarray as xr
 
 import pyaerocom.helpers_landsea_masks as lsm
 from pyaerocom import const
+from tests.conftest import lustre_avail
 
 TEST_REGIONS = const.HTAP_REGIONS[:2]
 
@@ -33,36 +34,33 @@ def test_availabe_region_masks():
     ]
 
 
+@lustre_avail
 def test_download_htap_masks():
-
-    success = lsm.download_htap_masks(TEST_REGIONS)
-    mask_names = []
-    for path in success:
-        assert os.path.exists(path)
-        assert os.path.join("MyPyaerocom", "filtermasks") in path
-        mask_names.append(os.path.basename(path))
-    assert mask_names == ["PANhtap.0.1x0.1deg.nc", "EAShtap.0.1x0.1deg.nc"]
+    paths = [Path(mask) for mask in lsm.download_htap_masks(TEST_REGIONS)]
+    assert bool(paths)
+    assert all(path.exists() for path in paths)
+    assert {path.parts[-3] for path in paths} == {"MyPyaerocom"}
+    assert {path.parts[-2] for path in paths} == {"filtermasks"}
+    assert [path.name for path in paths] == ["PANhtap.0.1x0.1deg.nc", "EAShtap.0.1x0.1deg.nc"]
 
 
 def test_get_htap_mask_files():
-    mask_names = []
-    for file in lsm.get_htap_mask_files(*TEST_REGIONS):
-        mask_names.append(os.path.basename(file))
-    assert mask_names == ["PANhtap.0.1x0.1deg.nc", "EAShtap.0.1x0.1deg.nc"]
+    paths = [Path(mask) for mask in lsm.get_htap_mask_files(*TEST_REGIONS)]
+    assert [path.name for path in paths] == ["PANhtap.0.1x0.1deg.nc", "EAShtap.0.1x0.1deg.nc"]
 
 
 def test_load_region_mask_xr():
     mask = lsm.load_region_mask_xr(*TEST_REGIONS)
     assert isinstance(mask, xr.DataArray)
-    pixnum = int(mask.sum())
-    assert pixnum == 193355, pixnum
+    pixels = int(mask.sum())
+    assert pixels == 193355
 
 
 def test_load_region_mask_iris():
     mask = lsm.load_region_mask_iris(*TEST_REGIONS)
     assert isinstance(mask, iris.cube.Cube)
-    pixnum = int(mask.data.sum())
-    assert pixnum == 193355, pixnum
+    pixels = int(mask.data.sum())
+    assert pixels == 193355
 
 
 def test_get_mask_value():
@@ -96,4 +94,4 @@ def test_check_all_htap_available():
     ]
 
     files = lsm.check_all_htap_available()
-    assert sorted(os.path.basename(x) for x in files) == should_be
+    assert sorted(Path(file).name for file in files) == should_be

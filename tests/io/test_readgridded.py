@@ -1,15 +1,18 @@
-import os
+from __future__ import annotations
+
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
-from numpy.testing import assert_allclose, assert_almost_equal, assert_array_equal
-from pandas import DataFrame
 
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.readgridded import ReadGridded
+from tests.conftest import TEST_RTOL, lustre_unavail
+from tests.fixtures.tm5 import TM5_DATA_PATH
 
-from ..conftest import CHECK_PATHS, TEST_RTOL, TESTDATADIR, data_unavail, lustre_unavail
+path_tm5 = str(TM5_DATA_PATH)
 
 
 def init_reader():
@@ -24,9 +27,6 @@ def reader_reanalysis():
 @pytest.fixture(scope="module")
 def reader_tm5():
     return ReadGridded("TM5-met2010_CTRL-TEST")
-
-
-path_tm5 = str(TESTDATADIR.joinpath(CHECK_PATHS["tm5"]))
 
 
 @pytest.mark.parametrize(
@@ -62,15 +62,9 @@ path_tm5 = str(TESTDATADIR.joinpath(CHECK_PATHS["tm5"]))
         ),
     ],
 )
-def test_read_var(reader_tm5, input_args, mean_val):
+def test_read_var(reader_tm5: ReadGridded, input_args: dict, mean_val: float):
     data = reader_tm5.read_var(**input_args)
-    # ToDo: .mean() is broken since constrained filtering works lazy now and
-    # I did not figure out how to mask grid points in an dask array, thus, data
-    # that is invalid is set to NaN in which case GriddedData.mean() fails...
-    # Needs to be checked.
-    # mean = data.mean()
-    mean = np.nanmean(data.cube.data)
-    assert_allclose(mean, mean_val, rtol=1e-3)
+    assert data.cube.data.mean() == pytest.approx(mean_val, rel=1e-3)
 
 
 def test_ReadGridded_class_empty():
@@ -85,8 +79,7 @@ def test_ReadGridded_class_empty():
     assert r.vars_filename == []
 
 
-@data_unavail
-def test_ReadGridded_data_dir(reader_tm5):
+def test_ReadGridded_data_dir(reader_tm5: ReadGridded):
     assert reader_tm5.data_dir == path_tm5
     assert reader_tm5._vars_2d == ["abs550aer", "od550aer"]
     assert reader_tm5._vars_3d == []
@@ -97,11 +90,10 @@ def test_ReadGridded_ts_types():
     assert sorted(r.ts_types) == ["daily", "monthly"]
 
 
-@data_unavail
-def test_ReadGridded_read_var(reader_tm5):
+def test_ReadGridded_read_var(reader_tm5: ReadGridded):
     r = reader_tm5
     data = r.read_var("od550aer")
-    assert_almost_equal(data.mean(), 0.0960723)
+    assert data.mean() == pytest.approx(0.0960723)
     with pytest.raises(VarNotAvailableError):
         r.read_var("wetso4")
     from pyaerocom.io.aux_read_cubes import add_cubes
@@ -109,6 +101,15 @@ def test_ReadGridded_read_var(reader_tm5):
     gridded = r.read_var("new_var", aux_vars=["abs550aer", "od550aer"], aux_fun=add_cubes)
     assert gridded.var_name == "new_var"
     assert isinstance(gridded, GriddedData)
+
+    gridded_single_point = gridded.sel(
+        latitude=0.0,
+        longitude=0.0,
+    )
+    with pytest.raises(ValueError):
+        gridded_single_point.latitude.guess_bounds()
+    with pytest.raises(ValueError):
+        gridded_single_point.longitude.guess_bounds()
 
 
 @pytest.mark.parametrize(
@@ -118,12 +119,13 @@ def test_ReadGridded_read_var(reader_tm5):
         (["exp1", "exp2"]),
     ],
 )
-def test_ReadGridded_experiments(tmpdir, experiments):
+def test_ReadGridded_experiments(tmp_path: Path, experiments: list[str]):
     for exp in experiments:
-        filename = f"aerocom3_TM5-met2010_{exp}-CTRL2019_abs550aer_Column_2010_daily.nc"
-        open(os.path.join(tmpdir, filename), "a").close()
-    r = ReadGridded(data_dir=str(tmpdir))
-    assert r.experiments == experiments
+        path = tmp_path / f"aerocom3_TM5-met2010_{exp}-CTRL2019_abs550aer_Column_2010_daily.nc"
+        path.write_text("")
+
+    reader = ReadGridded(data_dir=str(tmp_path))
+    assert reader.experiments == experiments
 
 
 @pytest.mark.parametrize(
@@ -133,14 +135,15 @@ def test_ReadGridded_experiments(tmpdir, experiments):
         (["od440aer", "od870aer"], ["ang4487aer", "od440aer", "od870aer"]),
     ],
 )
-def test_ReadGridded_aux(tmpdir, vars, expected):
+def test_ReadGridded_aux(tmp_path: Path, vars, expected):
     for var in vars:
-        filename = f"aerocom3_TM5-met2010_AP3-CTRL2019_{var}_Column_2010_daily.nc"
-        open(os.path.join(tmpdir, filename), "a").close()
-    r = ReadGridded(data_dir=str(tmpdir))
+        path = tmp_path / f"aerocom3_TM5-met2010_AP3-CTRL2019_{var}_Column_2010_daily.nc"
+        path.write_text("")
+
+    reader = ReadGridded(data_dir=str(tmp_path))
     for var in expected:
-        assert r.has_var(var)  # calling has_var
-    assert sorted(r.vars_provided) == sorted(expected)
+        assert reader.has_var(var)  # calling has_var
+    assert sorted(reader.vars_provided) == sorted(expected)
     # assert r.has_var('conco3')
 
 
@@ -161,7 +164,7 @@ def test_ReadGridded_prefer_longer(options, expected):
     assert gridded.ts_type == expected
 
 
-def test_filter_query(reader_tm5):
+def test_filter_query(reader_tm5: ReadGridded):
     reader_tm5.filter_query("abs550aer", ts_type="yearly", flex_ts_type=True)
 
 
@@ -171,15 +174,16 @@ def test_filter_query(reader_tm5):
         ([2003, 2005], [2003, 2005]),
     ],
 )
-def test_ReadGridded_years_avail(tmpdir, years, expected):
+def test_ReadGridded_years_avail(tmp_path: Path, years, expected):
     for year in years:
-        filename = f"aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_{year}_daily.nc"
-        open(os.path.join(tmpdir, filename), "a").close()
-    r = ReadGridded(data_dir=str(tmpdir))
-    assert sorted(r.years_avail) == sorted(years)
+        path = tmp_path / f"aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_{year}_daily.nc"
+        path.write_text("")
+
+    reader = ReadGridded(data_dir=str(tmp_path))
+    assert sorted(reader.years_avail) == expected
 
 
-def test_ReadGridded_get_var_info_from_files(reader_tm5):
+def test_ReadGridded_get_var_info_from_files(reader_tm5: ReadGridded):
     info = reader_tm5.get_var_info_from_files()
     assert isinstance(info, dict)
     assert sorted(info) == ["abs550aer", "od550aer"]
@@ -191,55 +195,40 @@ STOP = "31-12-2007"
 
 
 @lustre_unavail
-def test_file_info(reader_reanalysis):
-    assert isinstance(reader_reanalysis.file_info, DataFrame)
-    assert len(reader_reanalysis.file_info.columns) == 12, "Mismatch colnum file_info (df)"
+def test_file_info(reader_reanalysis: ReadGridded):
+    assert isinstance(reader_reanalysis.file_info, pd.DataFrame)
+    assert len(reader_reanalysis.file_info.columns) == 12
 
 
 @lustre_unavail
-def test_years_available(reader_reanalysis):
-    years = list(range(2003, 2022)) + [9999]
-    assert_array_equal(reader_reanalysis.years_avail, years)
+def test_years_available(reader_reanalysis: ReadGridded):
+    # go up to 2023 because 2022 is now available. Will likely need to be updated in the future
+    years = list(range(2003, 2024))
+    assert reader_reanalysis.years_avail == years
 
 
 @lustre_unavail
-def test_data_dir(reader_reanalysis):
+def test_data_dir(reader_reanalysis: ReadGridded):
     assert reader_reanalysis.data_dir.endswith(
         "aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed"
     )
 
 
 @lustre_unavail
-def test_read_var_lustre(reader_reanalysis):
-    from numpy import datetime64
-
+def test_read_var_lustre(reader_reanalysis: ReadGridded):
     d = reader_reanalysis.read_var(var_name="od550aer", ts_type="daily", start=START, stop=STOP)
 
-    from pyaerocom import GriddedData
-
     assert isinstance(d, GriddedData)
-    assert_array_equal(
-        [d.var_name, sum(d.shape), d.start, d.stop],
-        [
-            "od550aer",
-            1826 + 161 + 320,
-            datetime64("2003-01-01T00:00:00.000000"),
-            datetime64("2007-12-31T23:59:59.999999"),
-        ],
-    )
-    vals = [
-        d.longitude.points[0],
-        d.longitude.points[-1],
-        d.latitude.points[0],
-        d.latitude.points[-1],
-    ]
-    nominal = [-180.0, 178.875, 90.0, -90.0]
-    assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
-    return d
+    assert d.var_name == "od550aer"
+    assert sum(d.shape) == 1826 + 161 + 320
+    assert d.start == np.datetime64("2003-01-01T00:00:00.000000")
+    assert d.stop == np.datetime64("2007-12-31T23:59:59.999999")
+    assert d.longitude.points[[0, -1]] == pytest.approx([-180.0, 178.875], rel=TEST_RTOL)
+    assert d.latitude.points[[0, -1]] == pytest.approx([90.0, -90.0], rel=TEST_RTOL)
 
 
 @lustre_unavail
-def test_prefer_longer(reader_reanalysis):
+def test_prefer_longer(reader_reanalysis: ReadGridded):
     daily = reader_reanalysis.read_var(
         "od550aer", ts_type="monthly", flex_ts_type=True, prefer_longer=True
     )
@@ -247,15 +236,14 @@ def test_prefer_longer(reader_reanalysis):
 
 
 @lustre_unavail
-def test_read_vars(reader_reanalysis):
+def test_read_vars(reader_reanalysis: ReadGridded):
     data = reader_reanalysis.read(
         ["od440aer", "od550aer", "od865aer"], ts_type="daily", start=START, stop=STOP
     )
-    vals = [len(data), sum(data[0].shape), sum(data[1].shape), sum(data[2].shape)]
-    nominal = [3, 2307, 2307, 2307]
-    assert_array_equal(vals, nominal)
+    assert len(data) == 3
+    assert all(d.shape == (1826, 161, 320) for d in data)
 
 
-def test_read_climatology_file(reader_tm5):
+def test_read_climatology_file(reader_tm5: ReadGridded):
     data = reader_tm5.read_var("abs550aer", start=9999)
     assert isinstance(data, GriddedData)

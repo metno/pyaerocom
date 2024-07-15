@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from configparser import ConfigParser
-from importlib import resources
 from pathlib import Path
 
+from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError
 
 
@@ -30,45 +30,6 @@ def parse_aliases_ini():
         fpath = path
 
     parser = ConfigParser()
-    parser.read(fpath)
-    return parser
-
-
-def get_emep_variables(parser: ConfigParser | None = None):
-    """Read variable definitions from emep_variables.ini file
-
-    Returns
-    -------
-    dict
-        keys are AEROCOM standard names of variable, values are EMEP variables
-    """
-    if parser is None:
-        parser = parse_emep_variables_ini()
-    variables = {}
-    items = parser["emep_variables"]
-    for var_name in items:
-        _variables = [x.strip() for x in items[var_name].strip().split(",")]
-        for variable in _variables:
-            variables[var_name] = variable
-    return variables
-
-
-def parse_emep_variables_ini(fpath: str | Path | None = None):
-    """Returns instance of ConfigParser to access information"""
-
-    if fpath is None:
-        with resources.path("pyaerocom.data", "emep_variables.ini") as path:
-            fpath = path
-
-    if isinstance(fpath, str):
-        fpath = Path(fpath)
-    if not fpath.exists():
-        raise FileNotFoundError(f"FATAL: emep_variables.ini file could not be found at {fpath}")
-
-    parser = ConfigParser()
-    # added 12.7.21 by jgliss for EMEP trends processing. See here:
-    # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
-    parser.optionxform = str
     parser.read(fpath)
     return parser
 

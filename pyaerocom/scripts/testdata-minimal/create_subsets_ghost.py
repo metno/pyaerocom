@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Create minimal testdataset for GHOST reader
 
@@ -63,10 +62,10 @@ for dsname in datasets:
                 print(file_out)
                 assert os.path.exists(file_in)
 
-                ds = xr.open_dataset(file_in)
-                subset = ds.isel(station=slice(0, numst))
-                if numts is not None:
-                    subset = subset.isel(time=slice(0, numts))
+                with xr.open_dataset(file_in) as ds:
+                    subset = ds.isel(station=slice(0, numst))
+                    if numts is not None:
+                        subset = subset.isel(time=slice(0, numts))
 
-                subset.to_netcdf(file_out)
+                    subset.to_netcdf(file_out)
                 print("Saved")

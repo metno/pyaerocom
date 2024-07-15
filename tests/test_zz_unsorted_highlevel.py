@@ -1,10 +1,7 @@
 import numpy as np
-from numpy.testing import assert_allclose
-
-from .conftest import data_unavail
+import pytest
 
 
-@data_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
     assert len(aeronetsunv3lev2_subset.metadata) == 22
     assert len(aeronetsunv3lev2_subset.unique_station_names) == 22
@@ -36,7 +33,6 @@ def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
     assert aeronetsunv3lev2_subset.unique_station_names == names
 
 
-@data_unavail
 def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
     no_odcount = 0
     mean_vals = []
@@ -53,11 +49,10 @@ def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
         mean_vals.append(mean)
         std_vals.append(np.std(td))
     assert no_odcount == 4
-    should_be = [0.2097, 0.1397]
-    assert_allclose(actual=[np.mean(mean_vals), np.mean(std_vals)], desired=should_be, atol=1e-2)
+    assert np.mean(mean_vals) == pytest.approx(0.2097, abs=1e-2)
+    assert np.mean(std_vals) == pytest.approx(0.1397, abs=1e-2)
 
 
-@data_unavail
 def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
     no_odcount = 0
     mean_vals = []
@@ -74,6 +69,5 @@ def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
         mean_vals.append(mean)
         std_vals.append(np.std(td))
     assert no_odcount == 0
-    got = [np.mean(mean_vals), np.mean(std_vals)]
-    should_be = [0.9196, 0.325]
-    assert_allclose(actual=got, desired=should_be, atol=1e-2)
+    assert np.mean(mean_vals) == pytest.approx(0.9196, abs=1e-2)
+    assert np.mean(std_vals) == pytest.approx(0.325, abs=1e-2)

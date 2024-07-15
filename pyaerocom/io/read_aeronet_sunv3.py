@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
+from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550lt1ang
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
@@ -30,7 +30,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     _FILEMASK = "*.lev*"
 
     #: version log of this class (for caching)
-    __version__ = "0.09_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.12_" + ReadAeronetBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
@@ -91,11 +91,41 @@ class ReadAeronetSunV3(ReadAeronetBase):
     AUX_REQUIRES = {
         "ang44&87aer": ["od440aer", "od870aer"],
         "od550aer": ["od440aer", "od500aer", "ang4487aer"],
+        "od550lt1ang": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550aerh2o": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550bc": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550dust": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550nh4": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550oa": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550so4": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550ss": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyod550no3": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyzaerosol": ["od440aer", "od500aer", "ang4487aer"],
+        "proxyzdust": ["od440aer", "od500aer", "ang4487aer"],
     }
 
     #: Functions that are used to compute additional variables (i.e. one
     #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {"ang44&87aer": calc_ang4487aer, "od550aer": calc_od550aer}
+    AUX_FUNS = {
+        "ang44&87aer": calc_ang4487aer,
+        "od550aer": calc_od550aer,
+        "od550lt1ang": calc_od550lt1ang,
+        "proxyod550aerh2o": calc_od550aer,
+        "proxyod550bc": calc_od550aer,
+        "proxyod550dust": calc_od550aer,
+        "proxyod550nh4": calc_od550aer,
+        "proxyod550oa": calc_od550aer,
+        "proxyod550so4": calc_od550aer,
+        "proxyod550ss": calc_od550aer,
+        "proxyod550no3": calc_od550aer,
+        "proxyzaerosol": calc_od550aer,
+        "proxyzdust": calc_od550aer,
+    }
+
+    UNITS = {
+        "proxyzdust": "km",
+        "proxyzaerosol": "km",
+    }
 
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -146,10 +176,10 @@ class ReadAeronetSunV3(ReadAeronetBase):
             f_out.close()
 
         try:
-            with open(filename, "rt") as in_file:
+            with open(filename) as in_file:
                 lines = in_file.readlines()
         except UnicodeDecodeError:
-            with open(filename, "rt", encoding="ISO-8859-1") as in_file:
+            with open(filename, encoding="ISO-8859-1") as in_file:
                 lines = in_file.readlines()
         except OSError:
             # faulty gzip file, but also the gzip class raises some exceptions

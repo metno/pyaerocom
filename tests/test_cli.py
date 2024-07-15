@@ -1,7 +1,7 @@
+import json
 from importlib import metadata
 from pathlib import Path
 
-import numpy as np
 import pytest
 from typer.testing import CliRunner
 
@@ -24,9 +24,15 @@ def fake_cache(monkeypatch, tmp_path: Path):
         "pyaerocom.io.cachehandler_ungridded.CacheHandlerUngridded.cache_dir", tmp_path
     )
     cache_file = tmp_path / "tmp.pkl"
-    cache_file.write_bytes(np.zeros(10))
+    cache_file.write_bytes(b"")
     assert cache_file.exists()
     return tmp_path
+
+
+def test_listcache(fake_cache: Path):
+    assert list(fake_cache.glob("*.pkl"))
+    result = runner.invoke(main, ["listcache"])
+    assert result.exit_code == 0
 
 
 def test_clearcache(fake_cache: Path):
@@ -59,4 +65,26 @@ def test_browse():
 
 def test_ppiaccess():
     result = runner.invoke(main, ["ppiaccess"])
+    assert result.exit_code == 0
+
+
+@pytest.fixture()
+def config_json(monkeypatch, tmp_path: Path, eval_config: dict) -> Path:
+    def do_not_run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
+        assert model_name is None
+        assert obs_name is None
+        assert var_list is None
+        assert update_interface is True
+
+    monkeypatch.setattr("pyaerocom.scripts.cli.ExperimentProcessor.run", do_not_run)
+
+    path = tmp_path / "conf.json"
+    path.write_text(json.dumps(eval_config))
+    return path
+
+
+@pytest.mark.parametrize("cfg", ("cfgexp1",))
+def test_aeroval(config_json: Path):
+    assert config_json.is_file()
+    result = runner.invoke(main, ["aeroval", str(config_json)])
     assert result.exit_code == 0

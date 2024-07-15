@@ -1,7 +1,7 @@
 import pytest
 
 from pyaerocom import const
-from pyaerocom.io import ReadUngridded
+from pyaerocom.io import ReadPyaro, ReadUngridded
 
 
 def test_invalid_init_data_dirs():
@@ -13,19 +13,14 @@ def test_invalid_init_data_dirs():
 
 def test_supported():
     supported_datasets = ReadUngridded().supported_datasets
-    assert len(supported_datasets) >= 17
-    datasets = (
+    assert len(supported_datasets) >= 12
+    datasets = {
         "AeronetInvV3Lev2.daily",
         "AeronetInvV3Lev1.5.daily",
         "AeronetInvV3L2Subset.daily",
-        "AeronetInvV2Lev2.daily",
-        "AeronetInvV2Lev1.5.daily",
-        "AeronetSDAV2Lev2.daily",
         "AeronetSDAV3Lev1.5.daily",
         "AeronetSDAV3Lev2.daily",
         "AeronetSDAV3L2Subset.daily",
-        "AeronetSunV2Lev2.daily",
-        "AeronetSunV2Lev2.AP",
         "AeronetSunV3Lev1.5.daily",
         "AeronetSunV3Lev1.5.AP",
         "AeronetSunV3Lev2.daily",
@@ -42,8 +37,8 @@ def test_supported():
         "GHOST.EBAS.monthly",
         "GHOST.EBAS.hourly",
         "GHOST.EBAS.daily",
-    )
-    assert all(dataset in supported_datasets for dataset in datasets)
+    }
+    assert datasets <= set(supported_datasets)
 
 
 @pytest.mark.parametrize("data_ids", [None, "Blaaaaaa"])
@@ -111,3 +106,84 @@ def test_basic_attributes():
         reader.get_lowlevel_reader()
     with pytest.raises(AttributeError):
         reader.dataset_provides_variables()
+
+
+#########################################
+# Tests for use of PyaroConfig
+#########################################
+
+
+def test_init_configs(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+
+    for i, reader_id in enumerate(reader.data_ids):
+        assert reader_id == pyaro_testconfig[i].name
+
+
+def test_get_lowlevel_reader_configs(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+
+    ll_reader = reader.get_lowlevel_reader(data_id=pyaro_testconfig[0].name)
+    assert isinstance(ll_reader, ReadPyaro)
+
+
+def test_supported_pyaro(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+
+    assert ReadPyaro in reader.SUPPORTED_READERS
+    assert pyaro_testconfig[0].data_id in reader.supported_datasets
+
+
+def test_read_pyaro_and_other(pyaro_testconfig):
+    data_ids = ["AeronetInvV3L2Subset.daily"]
+    reader = ReadUngridded(data_ids=data_ids)
+
+    data = reader.read(configs=pyaro_testconfig)
+    assert len(data.contains_datasets) == 3
+    assert pyaro_testconfig[0].name in data.contains_datasets
+
+
+def test_read_pyaro_valid_data(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+
+    data = reader.read(vars_to_retrieve=["concso4"])
+    station = data.to_station_data(0)
+
+    assert not station["concso4"].empty
+    assert not station["concso4"].hasnans
+
+    station = data.to_station_data(1)
+
+    assert not station["concso4"].empty
+    assert not station["concso4"].hasnans
+
+
+def test_config_map(pyaro_testconfig):
+    reader = ReadUngridded(configs=pyaro_testconfig)
+    m = reader.config_map
+    assert m[pyaro_testconfig[0].name] == pyaro_testconfig[0]
+    assert m[pyaro_testconfig[1].name] == pyaro_testconfig[1]
+
+
+def test_get_vars_supported_pyaro(pyaro_testconfig):
+    config = pyaro_testconfig[0]
+    reader = ReadUngridded(configs=config)
+    assert reader.get_vars_supported(obs_id=config.name, vars_desired=["concso4"])
+
+
+##
+# Tests that raises errors
+##
+
+
+def test_config_name_already_exists(pyaro_testconfig):
+    data_ids = ["AeronetInvV3L2Subset.daily"]
+    config = pyaro_testconfig[0]
+    config.name = data_ids[0]
+
+    with pytest.raises(NameError, match="cannot have the same name as an included dataset"):
+        reader = ReadUngridded(configs=pyaro_testconfig)
+
+    with pytest.raises(NameError, match="cannot have the same name as an included dataset"):
+        reader = ReadUngridded(data_ids=data_ids)
+        data = reader.read(configs=config)

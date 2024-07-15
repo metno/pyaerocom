@@ -6,6 +6,8 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import datetime
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -20,15 +22,16 @@ TUTURL = f"https://github.com/metno/{TUTREPO}.git"
 
 
 def init_tutorials():
-    if not "conf.py" in os.listdir():
+    if "conf.py" not in os.listdir():
         raise FileNotFoundError("Wrong directory...")
-
-    if not TUTREPO in os.listdir():
+    if TUTREPO not in os.listdir():
         command = f"git clone {TUTURL}"
         print(command)
-        subprocess.call(command, shell=True)
-    if not TUTREPO in os.listdir():
-        raise FileNotFoundError("Failed to clone pyaerocom-tutorials repo into pyaerocom/docs")
+        subprocess.run(command, shell=True, check=True)
+    else:
+        command = f"cd {TUTREPO} && git pull"
+        print(command)
+        subprocess.run(command, shell=True, check=True)
 
 
 print("Initiating pyaerocom-tutorials repo under pyaerocom/docs")
@@ -42,7 +45,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "pyaerocom"
-copyright = "2018, MET Norway"
+copyright = f"2018-{datetime.date.today():%Y}, MET Norway"
 author = "pyaerocom developers"
 
 
@@ -94,3 +97,8 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_logo = "aerotools_full_logo.png"
+html_theme_options = {
+    "logo_only": False,
+    "display_version": False,
+}

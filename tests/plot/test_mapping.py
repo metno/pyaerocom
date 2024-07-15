@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import Type
-
 import cartopy.mpl.geoaxes
 import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
 from pyaerocom import GriddedData
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.colocation.colocated_data import ColocatedData
+from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import ColorTheme, get_color_theme
 from pyaerocom.plot.mapping import (
@@ -80,7 +79,6 @@ def test_init_map(kwargs: dict):
     ],
 )
 def test_init_map_error(kwargs: dict, error: str):
-
     with pytest.raises(ValueError) as e:
         init_map(**kwargs)
     assert str(e.value) == error
@@ -198,7 +196,7 @@ class Fake4D(GriddedData):
 )
 @pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
 def test_plot_griddeddata_on_map_error(
-    gridded_data: GriddedData, kwargs: dict, exception: Type[Exception], error: str
+    gridded_data: GriddedData, kwargs: dict, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         plot_griddeddata_on_map(gridded_data, **kwargs)
@@ -208,7 +206,7 @@ def test_plot_griddeddata_on_map_error(
 @pytest.mark.parametrize(
     "region",
     [
-        "WORLD",
+        ALL_REGION_NAME,
         "EUROPE",
         pytest.param(
             "EEUROPE",
@@ -223,7 +221,7 @@ def test_plot_map_aerocom(data_tm5: GriddedData, region: str):
 
 def test_plot_map_aerocom_error():
     with pytest.raises(ValueError):
-        plot_map_aerocom(42, "WORLD")
+        plot_map_aerocom(42, ALL_REGION_NAME)
 
 
 def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet: ColocatedData):
@@ -237,14 +235,8 @@ def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
 
 
 @pytest.mark.parametrize(
-    "key,exception,error",
+    "coldataset,exception,error",
     [
-        pytest.param(
-            "fake_5d",
-            DataDimensionError,
-            "only 3D or 4D colocated data objects are supported",
-            id="5d",
-        ),
         pytest.param(
             "fake_nodims",
             AssertionError,
@@ -253,8 +245,9 @@ def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5: ColocatedData):
         ),
     ],
 )
-def test_plot_nmb_map_colocateddataFAIL(coldata, key: str, exception: Type[Exception], error: str):
-    data = coldata[key]
+def test_plot_nmb_map_colocateddataFAIL(
+    coldata: ColocatedData, exception: type[Exception], error: str
+):
     with pytest.raises(exception) as e:
-        plot_nmb_map_colocateddata(data)
+        plot_nmb_map_colocateddata(coldata)
     assert str(e.value) == error

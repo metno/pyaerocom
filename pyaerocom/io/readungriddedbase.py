@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import glob
 import logging
@@ -14,6 +16,7 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.helpers import get_obsnetwork_dir
 
 logger = logging.getLogger(__name__)
+
 
 # TODO: Proposal: include attribute ts_type that is by default undefined but
 # may be set to either of the defined
@@ -207,8 +210,7 @@ class ReadUngriddedBase(abc.ABC):
 
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
-    def __init__(self, data_id=None, data_dir=None):
-        self.data = None  # object that holds the loaded data
+    def __init__(self, data_id: str | None = None, data_dir: str | None = None):
         self._data_id = None
         self.files = []
         # list that will be updated in read method to store all files that
@@ -246,7 +248,7 @@ class ReadUngriddedBase(abc.ABC):
         return self.data_dir
 
     @property
-    def data_dir(self):
+    def data_dir(self) -> str:
         """
         str: Location of the dataset
 
@@ -265,7 +267,7 @@ class ReadUngriddedBase(abc.ABC):
         if self._data_dir is None:
             self._data_dir = get_obsnetwork_dir(self.data_id)
         if not os.path.exists(self._data_dir):
-            raise (f"{self._data_dir} does not exist.")
+            raise FileNotFoundError(f"{self._data_dir} does not exist.")
         return self._data_dir
 
     @property

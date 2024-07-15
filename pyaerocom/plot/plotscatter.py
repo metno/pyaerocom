@@ -1,13 +1,15 @@
 """
 This module contains scatter plot routines for Aerocom data.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 from pyaerocom import const
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.helpers import start_stop_str
-from pyaerocom.mathutils import calc_statistics, exponent
+from pyaerocom.mathutils import exponent
+from pyaerocom.stats.stats import calculate_statistics
 
 
 def plot_scatter(x_vals, y_vals, **kwargs):
@@ -140,7 +142,7 @@ def plot_scatter_aerocom(
     if var_name is None:
         var_name = "n/d"
 
-    statistics = calc_statistics(y_vals, x_vals, lowlim=lowlim_stats, highlim=highlim_stats)
+    statistics = calculate_statistics(y_vals, x_vals, lowlim=lowlim_stats, highlim=highlim_stats)
 
     if loglog:
         ax.loglog(x_vals, y_vals, ls="none", color=color, marker=marker, alpha=alpha, **kwargs)
@@ -164,11 +166,15 @@ def plot_scatter_aerocom(
         xlim[0] = low
         ylim[0] = low
     with ignore_warnings(
-        UserWarning, "Attempted to set non-positive left xlim on a log-scaled axis"
+        UserWarning,
+        "Attempted to set non-positive left xlim on a log-scaled axis",
+        "Attempt to set non-positive xlim on a log-scaled axis will be ignored.",
     ):
         ax.set_xlim(xlim)
     with ignore_warnings(
-        UserWarning, "Attempted to set non-positive bottom ylim on a log-scaled axis"
+        UserWarning,
+        "Attempted to set non-positive bottom ylim on a log-scaled axis",
+        "Attempt to set non-positive ylim on a log-scaled axis will be ignored.",
     ):
         ax.set_ylim(ylim)
     xlbl = f"{x_name}"

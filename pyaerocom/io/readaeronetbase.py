@@ -368,7 +368,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         num_files = len(files)
         logger.info("Reading AERONET data")
         skipped = 0
-        for i in tqdm(range(num_files)):
+        for i in tqdm(range(num_files), disable=None):
             _file = files[i]
             try:
                 station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
@@ -450,6 +450,10 @@ class ReadAeronetBase(ReadUngriddedBase):
                         from pyaerocom.exceptions import MetaDataError
 
                         raise MetaDataError("Metadata attr unit is deprecated, please use units")
+                    elif var in self.UNITS:
+                        # support other units coming from the reader class
+                        # needed for non 1 proxy data from aeronet
+                        u = self.UNITS[var]
                     else:
                         u = self.DEFAULT_UNIT
                 elif var in self.UNITS:
@@ -472,5 +476,4 @@ class ReadAeronetBase(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         # data_obj.data_revision[self.data_id] = self.data_revision
-        self.data = data_obj
         return data_obj

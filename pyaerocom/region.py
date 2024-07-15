@@ -1,13 +1,19 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
+
+from __future__ import annotations
+
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.helpers_landsea_masks import load_region_mask_xr
+from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
+
+POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
 
 
 class Region(BrowseDict):
@@ -45,9 +51,8 @@ class Region(BrowseDict):
     """
 
     def __init__(self, region_id=None, **kwargs):
-
         if region_id is None:
-            region_id = "WORLD"
+            region_id = ALL_REGION_NAME
 
         if region_id in REGION_NAMES:
             name = REGION_NAMES[region_id]
@@ -139,8 +144,23 @@ class Region(BrowseDict):
         bool
             True if coordinate is contained in this region, False if not
         """
-        lat_ok = self.lat_range[0] <= lat <= self.lat_range[1]
-        lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
+
+        lat_lb = self.lat_range[0]
+        lat_ub = self.lat_range[1]
+        lon_lb = self.lon_range[0]
+        lon_ub = self.lon_range[1]
+        # latitude bounding boxes should always be defined with the southern most boundary less than the northernmost
+        lat_ok = lat_lb <= lat <= lat_ub
+        # if the longitude bounding box has a lowerbound less than the upperbound
+        if lon_lb < lon_ub:
+            # it suffices to check that lon is between these values
+            lon_ok = lon_lb <= lon <= lon_ub
+        # if the longitude lowerbound has a value lessthan the upperbound
+        elif lon_ub < lon_lb:
+            # lon is contained in the bounding box in two cases
+            lon_ok = lon < lon_ub or lon > lon_lb
+        else:
+            lon_ok = False  # safeguard
         return lat_ok * lon_ok
 
     def mask_available(self):
@@ -156,7 +176,6 @@ class Region(BrowseDict):
         return self._mask_data
 
     def plot_mask(self, ax, color, alpha=0.2):
-
         mask = self.get_mask_data()
         # import numpy as np
         data = mask.data
@@ -307,7 +326,7 @@ def get_all_default_regions():
 
 #: ToDO: check how to handle methods properly with HTAP regions...
 def get_regions_coord(lat, lon, regions=None):
-    """Get all regions that contain input coordinate
+    """Get the region that contains an input coordinate
 
     Note
     ----
@@ -329,22 +348,31 @@ def get_regions_coord(lat, lon, regions=None):
     list
         list of regions that contain this coordinate
     """
-
     matches = []
     if regions is None:
         regions = get_all_default_regions()
+    ocean_mask = load_region_mask_xr("OCN")
+    on_ocean = bool(get_mask_value(lat, lon, ocean_mask))
     for rname, reg in regions.items():
-        if rname == "WORLD":  # always True
+        if rname == ALL_REGION_NAME:  # always True for ALL_REGION_NAME
+            matches.append(rname)
             continue
-        if reg.contains_coordinate(lat, lon):
+        # OCN needs special handling determined by the rname, not hardcoded to return OCN b/c of HTAP issues
+        if rname in POSSIBLE_REGION_OCEAN_NAMES:
+            if on_ocean:
+                matches.append(rname)
+            continue
+        if reg.contains_coordinate(lat, lon) and not on_ocean:
             matches.append(rname)
     if len(matches) == 0:
-        matches.append("WORLD")
+        matches.append(ALL_REGION_NAME)
     return matches
 
 
-def find_closest_region_coord(lat, lon, regions=None):
-    """Find region that has it's center closest to input coordinate
+def find_closest_region_coord(
+    lat: float, lon: float, regions: dict | None = None, **kwargs
+) -> list[str]:
+    """Finds list of regions sorted by their center closest to input coordinate
 
     Parameters
     ----------
@@ -358,23 +386,19 @@ def find_closest_region_coord(lat, lon, regions=None):
 
     Returns
     -------
-    str
-        region ID of identified region
+    list[str]
+        sorted list of region IDs of identified regions
     """
     if regions is None:
         regions = get_all_default_regions()
-
     matches = get_regions_coord(lat, lon, regions)
-
-    if len(matches) == 1:
-        return matches[0]
-
-    min_dist = 1e6
-    best = None
-    for match in matches:
-        region = regions[match]
-        dist = region.distance_to_center(lat, lon)
-        if dist < min_dist:
-            min_dist = dist
-            best = match
-    return best
+    matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
+    if kwargs.get("regions_how") == "htap":
+        # keep only first entry and Oceans if it exists
+        keep = matches[:1]
+        if "Oceans" in matches[1:]:
+            keep += ["Oceans"]
+        if ALL_REGION_NAME in matches[1:]:
+            keep += [ALL_REGION_NAME]
+        return list(set(keep))
+    return matches

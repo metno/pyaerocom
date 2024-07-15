@@ -1,6 +1,7 @@
 """
 General helper methods for the pyaerocom library.
 """
+
 import logging
 import re
 
@@ -34,6 +35,8 @@ class TsType:
         "monthly": 120,
     }  # up to 10yearly
 
+    # "monthly": "days" below is because each month does not have the same number of days
+    # netcdf does time calculation for you given starting day and days past (CF convention)
     TSTR_TO_CF = {"hourly": "hours", "daily": "days", "monthly": "days"}
 
     TOL_SECS_PERCENT = 5

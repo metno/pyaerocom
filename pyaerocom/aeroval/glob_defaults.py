@@ -1,62 +1,212 @@
 #: Default variable ranges for web display
-var_ranges_defaults = {
-    "default": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "ang4487aer": {"scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "colmap": "coolwarm"},
-    "od550aer": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "od550lt1aer": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "od550gt1aer": {
-        "scale": [0, 0.05, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "colmap": "coolwarm",
-    },
-    "abs550aer": {
-        "scale": [0, 0.0125, 0.025, 0.0375, 0.05, 0.0625, 0.075, 0.0875, 0.1],
-        "colmap": "coolwarm",
-    },
-    "absc550aer": {"scale": [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100], "colmap": "coolwarm"},
-    "scatc550dryaer": {
-        "scale": [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100],
-        "colmap": "coolwarm",
-    },
-    "extinction": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
-        "colmap": "coolwarm",
-    },
-    "backscatter": {
-        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
-        "colmap": "coolwarm",
-    },
-    "concso4": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concso2": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concpm10": {"scale": [0, 10, 20, 30, 40, 50, 60, 70, 80], "colmap": "coolwarm"},
-    "concpm25": {"scale": [0, 10, 20, 30, 40, 50, 60, 70, 80], "colmap": "coolwarm"},
-    "conco3": {"scale": [0, 15, 30, 45, 60, 75, 90, 105, 120], "colmap": "coolwarm"},
-    "vmro3": {"scale": [0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60], "colmap": "coolwarm"},
-    "concno2": {"scale": [0, 10, 20, 30, 40, 50, 60, 70, 80], "colmap": "coolwarm"},
-    "vmrno2": {"scale": [0, 5, 10, 15, 20, 25, 30, 35, 40], "colmap": "coolwarm"},
-    "concNhno3": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concNno3pm10": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concNno3pm25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concNnh3": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concNnh4": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concNtno3": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concNtnh": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concsspm25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concsspm10": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concCecpm25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "concCocpm25": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "wetoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "wetoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "wetrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryoxs": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryoxn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-    "dryrdn": {"scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10], "colmap": "coolwarm"},
-}
+import copy
+import json
+import logging
+from configparser import ConfigParser
+from enum import Enum
+from typing import NamedTuple
+
+from pydantic import BaseModel
+
+from pyaerocom.data import resources
+
+logger = logging.getLogger(__name__)
+
+
+# basemodel-implementation for verification
+class _ScaleAndColmap(NamedTuple):
+    scale: list[float]
+    colmap: str
+
+
+class _VarWebScaleAndColormap(BaseModel):
+    scale_colmaps: dict[str, _ScaleAndColmap]
+
+
+# dict-implementation for json-serialization, namedtuple not stable with json/simplejson
+class ScaleAndColmap(dict[str, str | list[float]]):
+    """simple dictionary container with only two keys, scale and colmap"""
+
+    pass
+
+
+class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
+    def __init__(self, *args, **kwargs):
+        # run arguments through pydantic
+        wvsc = _VarWebScaleAndColormap(scale_colmaps=kwargs)
+        super().__init__(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
+
+    def __init__(self, config_file="", **kwargs):
+        """This class contains scale and colmap informations and is implemented as dict to allow
+        json serialization. It reads it inital data from data/var_scale_colmap.ini.
+
+        :param config_file: filename to additional or updated information, defaults to None
+        """
+        super().__init__()
+        with resources.path("pyaerocom.aeroval.data", "var_scale_colmap.ini") as file:
+            self.update_from_ini(file)
+        if config_file != "":
+            logger.info(f"Reading additional web-scales from '{config_file}'")
+            self.update_from_ini(config_file)
+        self.update(**kwargs)
+
+    def update(self, **kwargs):
+        wvsc = _VarWebScaleAndColormap(scale_colmaps=kwargs)
+        super().update(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
+
+    def update_from_ini(self, filename):
+        cfg = ConfigParser()
+        cfg.read(filename)
+        # remove configparser default
+        cfg_dict = dict()
+        keys = ("scale", "colmap")
+        for s in cfg.sections():
+            items = []
+            for k in keys:
+                if k in cfg[s]:
+                    if k == "scale":
+                        try:
+                            items.append(json.loads(cfg[s][k]))
+                        except Exception as ex:
+                            raise KeyError(
+                                f"wrong value for '{k}' of var '{s}' in {filename}: {ex}"
+                            )
+                    else:
+                        items.append(cfg[s][k])
+                else:
+                    raise KeyError(f"missing '{k}' for var '{s}' in {filename}")
+            cfg_dict[s] = tuple(items)
+        self.update(**cfg_dict)
+
+    def write(self, filename: str):
+        """write the scales and colormaps to a configuration file
+
+        :param filename: path to a filename, currently a .ini file
+        """
+        cfg = ConfigParser()
+        cfg.update(self)
+        with open(filename, "w") as fh:
+            cfg.write(fh)
+
+
+#: Mapping of pyaerocom variable names to web naming conventions
+class VerticalType(str, Enum):
+    """A 2D variable is defined under Column on the website, 3D is defined under Surface"""
+
+    T2D = "2D"
+    T3D = "3D"
+    UNDEFINED = "UNDEFINED"
+
+    def __str__(self):
+        return self.value
+
+
+class CategoryType(str, Enum):
+    optical = "Optical properties"
+    particle_conc = "Particle concentrations"
+    height = "Height"
+    concentration = "Concentration"
+    gas_conc = "Gas concentrations"
+    vmr = "Volume mixing ratios"
+    gas_vmr = "Gas volume mixing ratio"
+    deposition = "Deposition"
+    temperature = "Temperature"
+    particle_ratio = "Particle ratio"
+    UNDEFINED = "UNDEFINED"
+
+    def __str__(self):
+        return self.value
+
+
+class VariableInfo(NamedTuple):
+    menu_name: str
+    vertical_type: VerticalType
+    category: CategoryType
+
+
+class _VarWebInfo(BaseModel):
+    """Pydantic helper class to ensure the VarWebInfo container always contains the correct data
+
+    :param BaseModel: _description_
+    """
+
+    var_web_info: dict[str, VariableInfo]
+
+
+class VarWebInfo:
+    _var_web_info: _VarWebInfo
+
+    def __init__(self, config_file="", **kwargs):
+        """This class contains var_web_info and can be accessed like a read-only dict. It
+        reads it inital data from data/var_web_info.ini
+
+        :param config_file: filename to additional or updated VariableInfo items, defaults to None
+        """
+        self._var_web_info = _VarWebInfo(var_web_info=dict())
+        with resources.path("pyaerocom.aeroval.data", "var_web_info.ini") as file:
+            self.update_from_ini(file)
+        if config_file != "":
+            self.update_from_ini(config_file)
+        self.update(**kwargs)
+
+    def update(self, *args, **kwargs):
+        d = copy.deepcopy(self._var_web_info.var_web_info)
+        d.update(*args, **kwargs)
+        self._var_web_info = _VarWebInfo(var_web_info=d)
+
+    def update_from_ini(self, filename):
+        cfg = ConfigParser()
+        cfg.read(filename)
+        # remove configparser default
+        cfg_dict = dict()
+        keys = ("menu_name", "vertical_type", "category")
+        for s in cfg.sections():
+            items = []
+            for k in keys:
+                if k in cfg[s]:
+                    items.append(cfg[s][k])
+                else:
+                    raise KeyError(f"missing '{k}' for var '{s}' in {filename}")
+            cfg_dict[s] = tuple(items)
+        self.update(**cfg_dict)
+
+    ## below functions to behave like a read-only dict
+    def copy(self):
+        return self._var_web_info.var_web_info.copy()
+
+    def __getitem__(self, key):
+        return self._var_web_info.var_web_info[key]
+
+    def __len__(self, key):
+        return self._var_web_info.var_web_info.__len__()
+
+    def __repr__(self):
+        return repr(self._var_web_info.var_web_info)
+
+    def keys(self):
+        return self._var_web_info.var_web_info.keys()
+
+    def has_key(self, k):
+        return k in self._var_web_info.var_web_info
+
+    def values(self):
+        return self._var_web_info.var_web_info.values()
+
+    def items(self):
+        return self._var_web_info.var_web_info.items()
+
+    def __cmp__(self, dict_):
+        return self._var_web_info.var_web_info.__cmp__(dict_)
+
+    def __contains__(self, item):
+        return self._var_web_info.var_web_info.__contains__(item)
+
+    def __iter__(self):
+        return self._var_web_info.var_web_info.__iter__()
+
+    def __unicode__(self):
+        return self._var_web_info.var_web_info.__unicode__()
+
 
 #: Default information for statistical parameters
 statistics_defaults = {
@@ -67,7 +217,7 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
-        "time_series": True,
+        "forecast": True,
     },
     "mnmb": {
         "name": "MNMB",
@@ -76,7 +226,39 @@ statistics_defaults = {
         "colmap": "bwr",
         "unit": "%",
         "decimals": 1,
-        "time_series": True,
+        "forecast": True,
+    },
+    "mb": {
+        "name": "MB",
+        "longname": "Mean Bias",
+        "scale": [
+            -0.15,
+            -0.1,
+            -0.05,
+            0,
+            0.05,
+            0.1,
+            0.15,
+        ],  # factor to be multiplied by range of data
+        "colmap": "bwr",
+        "unit": "var",
+        "decimals": 1,
+    },
+    "mab": {
+        "name": "MAB",
+        "longname": "Mean Absolute Bias",
+        "scale": [
+            0,
+            0.025,
+            0.05,
+            0.075,
+            0.1,
+            0.125,
+            0.15,
+        ],  # factor to be multiplied by range of data
+        "colmap": "bwr",
+        "unit": "var",
+        "decimals": 1,
     },
     "R": {
         "name": "R",
@@ -85,7 +267,7 @@ statistics_defaults = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
-        "time_series": True,
+        "forecast": True,
     },
     "R_spearman": {
         "name": "R Spearman",
@@ -103,7 +285,7 @@ statistics_defaults = {
         "colmap": "reverseColmap(RdYlGn)",
         "unit": "1",
         "decimals": 2,
-        "time_series": True,
+        "forecast": True,
     },
     "nrms": {
         "name": "NRMSE",
@@ -121,7 +303,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
-        "time_series": True,
+        "forecast": True,
     },
     "data_mean": {
         "name": "Mean-Mod",
@@ -140,6 +322,24 @@ statistics_defaults = {
         "unit": "1",
         "decimals": 2,
         "time_series": True,
+    },
+    "num_valid": {
+        "name": "Nb. Obs",
+        "longname": "Number of Valid Observations",
+        "scale": None,
+        "colmap": None,
+        "overall_only": True,
+        "unit": "1",
+        "decimals": 0,
+    },
+    "num_coords_with_data": {
+        "name": "Nb. Stations",
+        "longname": "Number of Stations with data",
+        "scale": None,
+        "colmap": None,
+        "overall_only": True,
+        "unit": "1",
+        "decimals": 0,
     },
 }
 
@@ -205,7 +405,7 @@ statistics_trend = {
         "unit": "%/yr",
         "decimals": 1,
         "category": "Regional Time Series",
-        "time_series": False,
+        "forecast": False,
     },
     "obs_trend": {
         "name": "Obs-Trends",
@@ -215,7 +415,7 @@ statistics_trend = {
         "unit": "%/yr",
         "decimals": 1,
         "category": "Regional Time Series",
-        "time_series": False,
+        "forecast": False,
     },
     "mod_trend": {
         "name": "Mod-Trends",
@@ -225,7 +425,7 @@ statistics_trend = {
         "unit": "%/yr",
         "decimals": 1,
         "category": "Regional Time Series",
-        "time_series": False,
+        "forecast": False,
     },
 }
 
@@ -294,73 +494,26 @@ statistics_median_trend = {
         "time_series": False,
     },
 }
+# If doing an obs_only experiement, the only statistics which make sense relate just to the observations
+statistics_obs_only = {
+    "refdata_mean": {
+        "name": "Mean-Obs",
+        "longname": "Observation Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
+    },
+}
 
-#: Mapping of pyaerocom variable names to web naming conventions
-var_web_info = dict(
-    od550aer=["AOD", "2D", "Optical properties"],
-    od550csaer=["AOD (clear sky)", "2D", "Optical properties"],
-    od550lt1aer=["AODf", "2D", "Optical properties"],
-    od550gt1aer=["AODc", "2D", "Optical properties"],
-    od550dust=["AODdust", "2D", "Optical properties"],
-    abs550aer=["AAOD", "2D", "Optical properties"],
-    ang4487aer=["AE", "2D", "Optical properties"],
-    angabs4487aer=["AAE", "2D", "Optical properties"],
-    ang4487csaer=["AE (clear sky)", "2D", "Optical properties"],
-    sc550dryaer=["Scat. coef. (dry)", "3D", "Optical properties"],
-    sc550aer=["Scat. coef.", "3D", "Optical properties"],
-    ac550aer=["Abs. coef.", "3D", "Optical properties"],
-    ac550dryaer=["Abs. coef. (dry)", "3D", "Optical properties"],
-    ec532aer=["Ext. coeff.", "3D", "Optical properties"],
-    bsc532aer=["Backscat. coeff.", "3D", "Optical properties"],
-    concpm10=["PM10", "3D", "Particle concentrations"],
-    concpm25=["PM2.5", "3D", "Particle concentrations"],
-    concso4=["SO4", "3D", "Particle concentrations"],
-    concso4pr=["SO4 (precip.)", "3D", "Particle concentrations"],
-    concbc=["BC", "3D", "Particle concentrations"],
-    concoa=["OA", "3D", "Particle concentrations"],
-    concss=["SS", "3D", "Particle concentrations"],
-    conco3=["O3", "3D", "Gas concentrations"],
-    concso2=["SO2", "3D", "Gas concentrations"],
-    vmrox=["OX", "3D", "Gas volume mixing ratio"],
-    vmrso2=["SO2", "3D", "Gas volume mixing ratio"],
-    conctno3=["tNO3", "3D", "Concentration"],
-    conctnh=["tNH", "3D", "Concentration"],
-    concnh3=["NH3", "3D", "Concentration"],
-    conchno3=["HNO3", "3D", "Concentration"],
-    concno310=["NO3_PM10", "3D", "Particle concentration"],
-    concno325=["NO3_PM25", "3D", "Particle concentration"],
-    concss10=["SS_PM10", "3D", "Particle concentration"],
-    concss25=["SS_PM25", "3D", "Particle concentration"],
-    concec=["EC", "3D", "Particle concentration"],
-    conccoc=["OC", "3D", "Particle concentration"],
-    wetoxs=["WetOXS", "3D", "Deposition"],
-    drysox=["DryOXS", "3D", "Deposition"],
-    concnh4=["NH4", "3D", "Gas concentrations"],
-    concno3=["NO3", "3D", "Gas concentrations"],
-    vmro3=["O3", "3D", "Volume mixing ratios"],
-    vmro3max=["O3Max", "3D", "Volume mixing ratios"],
-    concNtno3=["tNO3", "3D", "Concentration"],
-    concNtnh=["tNH4", "3D", "Concentration"],
-    concNnh3=["NH3", "3D", "Concentration"],
-    concNhno3=["HNO3", "3D", "Concentration"],
-    concNno3pm10=["NO3_PM10", "3D", "Particle concentration"],
-    concNno3pm25=["NO3_PM25", "3D", "Particle concentration"],
-    concsspm10=["SS_PM10", "3D", "Particle concentration"],
-    concsspm25=["SS_PM25", "3D", "Particle concentration"],
-    concCecpm25=["EC PM2.5", "3D", "Particle concentration"],
-    concCocpm25=["OC PM2.5", "3D", "Particle concentration"],
-    wetoxn=["WetOXN", "3D", "Deposition"],
-    wetrdn=["WetRDN", "3D", "Deposition"],
-    dryoxs=["FakeDryOXS", "3D", "Deposition"],
-    dryoxn=["FakeDryOXN", "3D", "Deposition"],
-    dryrdn=["FakeDryRDN", "3D", "Deposition"],
-    concno2=["NO2", "3D", "Gas concentrations"],
-    concNnh4=["NH4", "3D", "Gas concentrations"],
-    vmrco=["CO", "3D", "Volume mixing ratios"],
-    vmrno2=["NO2", "3D", "Volume mixing ratios"],
-    concco=["CO", "3D", "Particle concentration"],
-    prmm=["Precipitation", "3D", "Precipitation"],
-    conclevoglucosan=["Levoglucosan", "3D", "Particle concentration"],
-    concCecpm10=["EC_PM10", "3D", "Particle concentration"],
-    concCocpm10=["OC_PM10", "3D", "Particle concentration"],
-)
+# For experiments where only model data is interesting, as with proxy drydep
+statistics_model_only = {
+    "data_mean": {
+        "name": "Mean-Mod",
+        "longname": "Model Mean",
+        "scale": None,
+        "colmap": "coolwarm",
+        "unit": "1",
+        "decimals": 2,
+    },
+}

@@ -2,10 +2,7 @@ import pytest
 
 from pyaerocom.io.aerocom_browser import AerocomBrowser
 
-from ..conftest import data_unavail
 
-
-@data_unavail
 @pytest.mark.parametrize(
     "searchstr,endswith",
     [

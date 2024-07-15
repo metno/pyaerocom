@@ -4,9 +4,12 @@ Pyearocom module for reading and processing of EBAS NASA Ames files
 For details on the file format see `here <https://ebas-submit.nilu.no/
 Submit-Data/Getting-started>`__
 """
+
+import csv
 import logging
 import os
 from datetime import datetime
+from io import StringIO
 
 import numpy as np
 
@@ -487,7 +490,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def assign_flagcols(self):
         _prev = 0
-        for (idx, item) in enumerate(self.var_defs):
+        for idx, item in enumerate(self.var_defs):
             if item.is_flag:
                 for _idx in range(_prev, idx):
                     self.var_defs[_idx].flag_col = idx
@@ -495,7 +498,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def init_flags(self, evaluate=True):
         """Decode flag columns and store info in :attr:`flags`"""
-        for (idx, item) in enumerate(self.var_defs):
+        for idx, item in enumerate(self.var_defs):
             if item.is_flag:
                 data = self.data[:, idx]
                 flag = EbasFlagCol(raw_data=data, interpret_on_init=evaluate)
@@ -679,7 +682,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     logger.debug("REACHED DATA BLOCK")
                 elif lc >= END_VAR_DEF + 2:
                     try:
-                        name, val = line.split(":")
+                        name, val = line.split(
+                            ":", 1
+                        )  # Adding maxpslit=1 incase colon appears in url
                         key = name.strip().lower().replace(" ", "_")
                         self.meta[key] = val.strip()
                     except Exception as e:
@@ -718,7 +723,11 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def _read_vardef_line(self, line_from_file):
         """Import variable definition line from NASA Ames file"""
-        spl = [x.strip() for x in line_from_file.split(",")]
+        lineX = line_from_file.replace(", ", ",")  # avoid two-char delimiters
+        cr = csv.reader(StringIO(lineX), delimiter=",", quotechar='"')
+        row = next(cr)
+        spl = [x.strip() for x in row]
+        spl = [x.replace(",", ", ") for x in spl]  # add space after comma again in quoted fields
         name = spl[0]
         if not len(spl) > 1:
             unit = ""
@@ -758,7 +767,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def print_col_info(self):
         """Print information about individual columns"""
-        for (idx, coldef) in enumerate(self.var_defs):
+        for idx, coldef in enumerate(self.var_defs):
             print(f"Column {idx}\n{coldef}")
 
     def __str__(self):

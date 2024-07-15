@@ -4,10 +4,14 @@ Module for geographical calculations
 This module contains low-level methods to perform geographical calculations,
 (e.g. distance between two coordinates)
 """
+
 import logging
 import os
+from copy import deepcopy
 
+import geonum
 import numpy as np
+from geocoder_reverse_natural_earth import Geocoder_Reverse_Exception, Geocoder_Reverse_NE
 
 from pyaerocom import const
 from pyaerocom.helpers import isnumeric
@@ -84,8 +88,6 @@ def get_country_info_coords(coords):
 
     Raises
     ------
-    ModuleNotFoundError
-        if library reverse_geocode is not installed
     ValueError
         if input format is incorrect
 
@@ -95,23 +97,45 @@ def get_country_info_coords(coords):
         list of dictionaries containing country information for each input
         coordinate
     """
-    try:
-        import reverse_geocode as rg
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError(
-            "Cannot retrieve country information for "
-            "lat / lon coordinates. Please install "
-            "library reverse_geocode"
-        )
     if isinstance(coords, np.ndarray):
         coords = list(coords)
     if not isinstance(coords, (list, tuple)):
         raise ValueError("Invalid input for coords, need list or tuple or array")
 
-    if isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
-        return [rg.get(coords)]
+    geo = Geocoder_Reverse_NE()
+    ret_list = []
+    # that's what reverse_geocoder used to return
+    # (more a list of this)
+    ret_proto = {"city": "", "country_code": "", "code": ""}
 
-    return rg.search(coords)
+    if isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
+        lat, lon = coords
+        try:
+            dummy = geo.lookup(lat, lon)
+        except Geocoder_Reverse_Exception:
+            dummy = geo.lookup_nearest(lat, lon)
+            if dummy is None:
+                return [ret_proto]
+        # return [rg.get(coords)]
+        ret_dummy = deepcopy(ret_proto)
+        ret_dummy["country"] = dummy["NAME"]
+        ret_dummy["country_code"] = dummy["ISO_A2_EH"]
+        return [ret_dummy]
+    else:
+        for coord in coords:
+            ret_dummy = deepcopy(ret_proto)
+            lat, lon = coord
+            try:
+                dummy = geo.lookup(lat, lon)
+            except Geocoder_Reverse_Exception:
+                dummy = geo.lookup_nearest(lat, lon)
+            if dummy is not None:
+                ret_dummy["country"] = dummy["NAME"]
+                ret_dummy["country_code"] = dummy["ISO_A2_EH"]
+
+            ret_list.append(ret_dummy)
+    return ret_list
+    # return rg.search(coords)
 
 
 def get_topo_data(
@@ -119,11 +143,9 @@ def get_topo_data(
 ):
     """Retrieve topographic altitude for a certain location
 
-    Currently works only if :mod:`geonum` is installed. Supports topography
-    datasets supported by geonum. These are currently (20 Feb. 19) srtm
-    (SRTM dataset, default, automatic access if online) and etopo1
-    (ETOPO1 dataset, lower resolution, must be available on local machine or
-    server).
+    Supports topography datasets supported by geonum.
+    These are currently (20 Feb. 19) srtm (SRTM dataset, default, automatic access if online) and
+    etopo1 (ETOPO1 dataset, lower resolution, must be available on local machine or server).
 
     Parameters
     ----------
@@ -155,10 +177,6 @@ def get_topo_data(
     ValueError
         if altitude data cannot be accessed
     """
-    if not const.GEONUM_AVAILABLE:
-        raise ModuleNotFoundError("Feature disabled: geonum library is not installed")
-    import geonum
-
     if topodata_loc is None:
         if topo_dataset in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS[topo_dataset]):
             topodata_loc = const.SUPPLDIRS[topo_dataset]
@@ -190,11 +208,9 @@ def get_topo_data(
 def get_topo_altitude(lat, lon, topo_dataset="srtm", topodata_loc=None, try_etopo1=True):
     """Retrieve topographic altitude for a certain location
 
-    Currently works only if :mod:`geonum` is installed. Supports topography
-    datasets supported by geonum. These are currently (20 Feb. 19) srtm
-    (SRTM dataset, default, automatic access if online) and etopo1
-    (ETOPO1 dataset, lower resolution, must be available on local machine or
-    server).
+    Supports topography datasets supported by geonum.
+    These are currently (20 Feb. 19) srtm (SRTM dataset, default, automatic access if online) and
+    etopo1 (ETOPO1 dataset, lower resolution, must be available on local machine or server).
 
     Parameters
     ----------
@@ -246,45 +262,24 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None, auto_altitude_sr
     auto_altitude_srtm : bool
         if True, then all altitudes that are unspecified are set to the
         corresponding topographic altitude of that coordinate, using SRTM
-        (requires geonum to be available and works only for coordinates where
-        SRTM topographic data is accessible).
+        (only works for coordinates where SRTM topographic data is accessible).
 
     Returns
     -------
     float
         distance between points in km
     """
-    if not const.GEONUM_AVAILABLE and auto_altitude_srtm:
-        raise ModuleNotFoundError(
-            "Require Geonum library for accessing topographic altitude using SRTM database"
+    p0 = geonum.GeoPoint(lat0, lon0, alt0, auto_topo_access=auto_altitude_srtm)
+    p1 = geonum.GeoPoint(lat1, lon1, alt1, auto_topo_access=auto_altitude_srtm)
+    if auto_altitude_srtm and p0.altitude_err == p0._ALTERR_DEFAULT:
+        raise ValueError(
+            f"Failed to access topographic height for coord {p0} using SRTM topographic database"
         )
-    if const.GEONUM_AVAILABLE:
-        import geonum
-
-        p0 = geonum.GeoPoint(lat0, lon0, alt0, auto_topo_access=auto_altitude_srtm)
-        p1 = geonum.GeoPoint(lat1, lon1, alt1, auto_topo_access=auto_altitude_srtm)
-        if auto_altitude_srtm:
-            if p0.altitude_err == p0._ALTERR_DEFAULT:
-                raise ValueError(
-                    f"Failed to access topographic height for coord "
-                    f"{p0} using SRTM topographic database"
-                )
-            elif p1.altitude_err == p1._ALTERR_DEFAULT:
-                raise ValueError(
-                    f"Failed to access topographic height for coord "
-                    f"{p1} using SRTM topographic database"
-                )
-        return (p0 - p1).magnitude
-    else:
-        logger.warning(
-            "geonum is not installed, computing approximate distance using haversine formula"
+    if auto_altitude_srtm and p1.altitude_err == p1._ALTERR_DEFAULT:
+        raise ValueError(
+            f"Failed to access topographic height for coord {p1} using SRTM topographic database"
         )
-        hordist = haversine(lat0, lon0, lat1, lon1)
-        if alt0 == None:
-            alt0 = 0
-        if alt1 == None:
-            alt1 = 0
-        return np.linalg.norm((hordist, (alt0 - alt1) / 1000))
+    return (p0 - p1).magnitude
 
 
 def is_within_radius_km(lat0, lon0, lat1, lon1, maxdist_km, alt0=0, alt1=0, **kwargs):

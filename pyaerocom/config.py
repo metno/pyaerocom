@@ -2,8 +2,8 @@ import getpass
 import logging
 import os
 from configparser import ConfigParser
-from importlib import resources
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 
@@ -14,10 +14,12 @@ from pyaerocom._lowlevel_helpers import (
     chk_make_subdir,
     list_to_shortstr,
 )
+from pyaerocom.data import resources
 from pyaerocom.exceptions import DataIdError, DataSourceError
 from pyaerocom.grid_io import GridIO
-from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
+from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
+from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,9 @@ class Config:
     # NAMES
     # default names of the different obs networks
     # might get overwritten from paths.ini see func read_config
+
+    #: ICP Forests
+    ICPFORESTS_NAME = "ICPFORESTS"
 
     #: Aeronet Sun V2 access names
     AERONET_SUN_V2L15_AOD_DAILY_NAME = "AeronetSunV2Lev1.5.daily"
@@ -67,6 +72,10 @@ class Config:
     AERONET_INV_V3L15_DAILY_NAME = "AeronetInvV3Lev1.5.daily"
     AERONET_INV_V3L2_DAILY_NAME = "AeronetInvV3Lev2.daily"
 
+    #: CAMS2_83 name
+
+    CAMS2_83_NRT_NAME = "CAMS2_83.NRT"
+
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = "EBASMC"
 
@@ -91,6 +100,12 @@ class Config:
     #: DMS
     DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
 
+    #: CNEMC name (formally MEP)
+    CNEMC_NAME = "CNEMC"
+
+    #: ICOS name
+    ICOS_NAME = "ICOS"
+
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
@@ -108,7 +123,7 @@ class Config:
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
-    DEFAULT_REG_FILTER = "WORLD-wMOUNTAINS"
+    DEFAULT_REG_FILTER = f"{ALL_REGION_NAME}-wMOUNTAINS"
 
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations
@@ -182,7 +197,7 @@ class Config:
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = {}
-    _DB_SEARCH_SUBDIRS["lustre/storeA/project"] = "metno"
+    _DB_SEARCH_SUBDIRS["lustre/storeB/project"] = "metno"
     _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
     _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
 
@@ -193,7 +208,6 @@ class Config:
     _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
 
     def __init__(self, config_file=None, try_infer_environment=True):
-
         # Directories
         self._outputdir = None
         self._cache_basedir = None
@@ -210,6 +224,9 @@ class Config:
 
         self._var_param = None
         self._coords = None
+
+        # Custom variables
+        self._custom_var_dict = None
 
         # Attributes that are used to store search directories
         self.OBSLOCS_UNGRIDDED = {}
@@ -267,11 +284,8 @@ class Config:
         elif loc in self._rejected_access:
             return False
 
-        if timeout is None:
-            timeout = self.SERVER_CHECK_TIMEOUT
-
         logger.info(f"Checking access to: {loc}")
-        if check_dir_access(loc, timeout=timeout):
+        if check_dir_access(loc):
             self._confirmed_access.append(loc)
             return True
         self._rejected_access.append(loc)
@@ -281,7 +295,6 @@ class Config:
         return [self.ROOTDIR, self.HOMEDIR]
 
     def _infer_config_from_basedir(self, basedir):
-
         basedir = os.path.normpath(basedir)
         for env_id, chk_sub in self._check_subdirs_cfg.items():
             chkdir = os.path.join(basedir, chk_sub)
@@ -302,6 +315,25 @@ class Config:
                     if self._check_access(_chk_dir):
                         return (basedir, self._config_files[cfg_id])
         raise FileNotFoundError("Could not establish access to any registered database")
+
+    def register_custom_variables(
+        self, vars: Union[dict[str, Variable], dict[str, dict[str, str]]]
+    ) -> None:
+        var_dict = {}
+        for key, item in vars.items():
+            if isinstance(item, Variable):
+                var_dict[key] = item
+            elif isinstance(item, dict):
+                if "var_name" in item and "units" in item:
+                    var_dict[key] = Variable(**item)
+                else:
+                    raise ValueError(
+                        f"Dict item {item} must at least have the keys 'var_name' and 'units'"
+                    )
+            else:
+                raise ValueError(f"Item {item} must be either dict or Variable")
+        self._custom_var_dict = var_dict.copy()
+        self._var_param = None
 
     @property
     def has_access_users_database(self):
@@ -341,8 +373,7 @@ class Config:
     @property
     def OUTPUTDIR(self):
         """Default output directory"""
-        if not check_write_access(self._outputdir):
-            self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
+        self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
         return self._outputdir
 
     @property
@@ -477,6 +508,10 @@ class Config:
         """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None:  # has not been accessed before
             self._var_param = VarCollection(self._var_info_file)
+
+            if self._custom_var_dict is not None:
+                for var in self._custom_var_dict:
+                    self._var_param.add_var(self._custom_var_dict[var])
         return self._var_param
 
     @property
@@ -505,23 +540,6 @@ class Config:
         if "etopo1" in self.SUPPLDIRS and os.path.exists(self.SUPPLDIRS["etopo1"]):
             return True
         return False
-
-    @property
-    def GEONUM_AVAILABLE(self):
-        """
-        Boolean specifying if geonum library is installed
-
-        Returns
-        -------
-        bool
-
-        """
-        try:
-            import geonum
-
-            return True
-        except ModuleNotFoundError:
-            return False
 
     @property
     def EBAS_FLAGS_FILE(self):

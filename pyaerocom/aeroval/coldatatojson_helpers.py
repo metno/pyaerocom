@@ -1,32 +1,30 @@
 """
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
+
 import logging
 import os
-from datetime import datetime
-from distutils.log import debug
-from typing import Callable, Tuple
+from copy import deepcopy
+from datetime import datetime, timezone
+from typing import Literal
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 from matplotlib.cbook import maxdict
 
-from pyaerocom._lowlevel_helpers import read_json, write_json
+from pyaerocom import ColocatedData, TsType
 from pyaerocom._warnings import ignore_warnings
+from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.exceptions import (
-    AeroValConfigError,
-    AeroValTrendsError,
-    DataCoverageError,
-    TemporalResolutionError,
-)
+from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
+from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop
-from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
+from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import (
     _get_season,
@@ -44,14 +42,20 @@ def get_heatmap_filename(ts_type):
     return f"glob_stats_{ts_type}.json"
 
 
+def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
+    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
+
+
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
     """Get name of station timeseries file"""
     return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
 
 
-def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code):
-    """Get name base name of json file"""
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}.json"
+def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
+    """Get base name of json file"""
+    # for cams2_83 the periods contain slashes at this point
+    periodmod = period.replace("/", "")
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
 
 
 def _write_stationdata_json(ts_data, out_dir):
@@ -79,8 +83,8 @@ def _write_stationdata_json(ts_data, out_dir):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, ignore_nan=True)
+    current[ts_data["model_name"]] = round_floats(ts_data)
+    write_json(current, fp, round_floats=False)
 
 
 def _write_site_data(ts_objs, dirloc):
@@ -121,11 +125,11 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
         current = read_json(fp)
     else:
         current = {}
-    current[ts_data["model_name"]] = ts_data
-    write_json(current, fp, ignore_nan=True)
+    current[ts_data["model_name"]] = round_floats(ts_data)
+    write_json(current, fp, round_floats=False)
 
 
-def _add_entry_json(
+def _add_heatmap_entry_json(
     heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
 ):
     if os.path.exists(heatmap_file):
@@ -144,8 +148,8 @@ def _add_entry_json(
     if not model_name in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
-    mn[model_var] = result
-    write_json(current, heatmap_file, ignore_nan=True)
+    mn[model_var] = round_floats(result)
+    write_json(current, heatmap_file, round_floats=False)
 
 
 def _prepare_regions_json_helper(region_ids):
@@ -197,14 +201,14 @@ def init_regions_web(coldata, regions_how):
     elif regions_how == "aerocom":
         regborders, regs = _prepare_aerocom_regions_json()
     elif regions_how == "htap":
-        regborders["WORLD"] = regborders_default["WORLD"]
-        regs["WORLD"] = regs_default["WORLD"]
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         add_borders, add_regs = _prepare_htap_regions_json()
         regborders.update(add_borders)
         regs.update(add_regs)
     elif regions_how == "country":
-        regborders["WORLD"] = regborders_default["WORLD"]
-        regs["WORLD"] = regs_default["WORLD"]
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
@@ -240,8 +244,8 @@ def update_regions_json(region_defs, regions_json):
 
     for region_name, region_info in region_defs.items():
         if not region_name in current:
-            current[region_name] = region_info
-    write_json(current, regions_json)
+            current[region_name] = round_floats(region_info)
+    write_json(current, regions_json, round_floats=False)
     return current
 
 
@@ -277,7 +281,7 @@ def _init_meta_glob(coldata, **kwargs):
         meta_glob["obs_revision"] = meta["revision_ref"]
     except KeyError:
         meta_glob["obs_revision"] = NDSTR
-    meta_glob["processed_utc"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    meta_glob["processed_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     meta_glob.update(kwargs)
     return meta_glob
 
@@ -384,12 +388,16 @@ def _create_diurnal_weekly_data_object(coldata, resolution):
     return output_array
 
 
-def _get_period_keys(resolution):
-    if resolution == "seasonal":
-        period_keys = ["DJF", "MAM", "JJA", "SON"]
-    elif resolution == "yearly":
-        period_keys = ["Annual"]
-    return period_keys
+def _get_period_keys(resolution: Literal["seasonal", "yearly"]):
+    period_keys = dict(
+        seasonal=["DJF", "MAM", "JJA", "SON"],
+        yearly=["All"],
+    )
+
+    if resolution not in period_keys:
+        raise ValueError(f"Unknown {resolution=}")
+
+    return period_keys[resolution]
 
 
 def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
@@ -429,8 +437,8 @@ def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
 
     ts_data = {
         "time": time,
-        "seasonal": {"obs": yeardict, "mod": yeardict},
-        "yearly": {"obs": yeardict, "mod": yeardict},
+        "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+        "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
     }
     ts_data["station_name"] = stat_name
     ts_data.update(meta_glob)
@@ -529,8 +537,8 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
         for regid, regname in region_ids.items():
             ts_data = {
                 "time": time,
-                "seasonal": {"obs": yeardict, "mod": yeardict},
-                "yearly": {"obs": yeardict, "mod": yeardict},
+                "seasonal": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
+                "yearly": {"obs": deepcopy(yeardict), "mod": deepcopy(yeardict)},
             }
             ts_data["station_name"] = regname
             ts_data.update(meta_glob)
@@ -540,7 +548,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
                     repw = repw.transpose(
                         "year", "period", "data_source", "dummy_time", "station_name"
                     )
-                    if regid == "WORLD":
+                    if regid == ALL_REGION_NAME:
                         subset = repw
                     else:
                         subset = repw.where(repw.country == regid)
@@ -558,7 +566,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
                             period=period_num
                         ).values.tolist()
 
-            ts_objs_reg.append(ts_data)
+            ts_objs_reg.append(deepcopy(ts_data))
     return ts_objs_reg
 
 
@@ -635,20 +643,22 @@ def _init_site_coord_arrays(data):
     return (sites, lats, lons, alts, countries, jsdates)
 
 
-def _get_stat_regions(lats, lons, regions):
+def _get_stat_regions(lats, lons, regions, **kwargs):
     regs = []
-    for (lat, lon) in zip(lats, lons):
-        reg = find_closest_region_coord(lat, lon, regions=regions)
+    regions_how = kwargs.get("regions_how", None)
+    for lat, lon in zip(lats, lons):
+        reg = find_closest_region_coord(lat, lon, regions=regions, regions_how=regions_how)
         regs.append(reg)
     return regs
 
 
 def _process_sites(data, regions, regions_how, meta_glob):
-
     freqs = list(data)
     (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
         regs = countries
+    elif regions_how == "htap":
+        regs = _get_stat_regions(lats, lons, regions, regions_how=regions_how)
     else:
         regs = _get_stat_regions(lats, lons, regions)
 
@@ -663,8 +673,11 @@ def _process_sites(data, regions, regions_how, meta_glob):
             "latitude": lats[i],
             "longitude": lons[i],
             "altitude": alts[i],
-            "region": regs[i],
         }
+        if regions_how == "country":
+            site_meta["region"] = [regs[i]]
+        else:
+            site_meta["region"] = regs[i]
         ts_data = _init_ts_data(freqs)
         ts_data.update(meta_glob)
         ts_data.update(site_meta)
@@ -692,8 +705,8 @@ def _process_sites(data, regions, regions_how, meta_glob):
     return (ts_objs, map_meta, site_indices)
 
 
-def _get_statistics(obs_vals, mod_vals, min_num):
-    stats = calc_statistics(mod_vals, obs_vals, min_num_valid=min_num)
+def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
+    stats = calculate_statistics(mod_vals, obs_vals, min_num_valid=min_num, drop_stats=drop_stats)
     return _prep_stats_json(stats)
 
 
@@ -989,7 +1002,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     Raises
     ------
-    AeroValTrendsError
+    TrendsError
         If stop - start is smaller than min_yrs
 
     AeroValError
@@ -1002,7 +1015,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
 
     if stop - start < min_yrs:
-        raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
+        raise TrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
 
     te = TrendsEngine
 
@@ -1019,7 +1032,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
     # Makes pd.Series serializable
     if obs_trend["data"] is None or mod_trend["data"] is None:
-        raise AeroValTrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
+        raise TrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
@@ -1056,7 +1069,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
     Raises
     ------
-    AeroValTrendsError
+    TrendsError
         If stop - start is smaller than min_yrs
 
     AeroValError
@@ -1084,7 +1097,7 @@ def _process_map_and_scat(
     map_data,
     site_indices,
     periods,
-    main_freq,
+    scatter_freq,
     min_num,
     seasons,
     add_trends,
@@ -1092,15 +1105,15 @@ def _process_map_and_scat(
     avg_over_trends,
     use_fairmode,
     obs_var,
+    drop_stats,
 ):
-
-    stats_dummy = _init_stats_dummy()
+    stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
     for freq, cd in data.items():
-        use_dummy = True if cd is None else False
         for per in periods:
             for season in seasons:
+                use_dummy = cd is None
                 if not use_dummy:
                     try:
                         subset = _select_period_season_coldata(cd, per, season)
@@ -1116,7 +1129,9 @@ def _process_map_and_scat(
                     else:
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
-                        stats = _get_statistics(obs_vals, mod_vals, min_num)
+                        stats = _get_statistics(
+                            obs_vals, mod_vals, min_num=min_num, drop_stats=drop_stats
+                        )
 
                         if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
@@ -1125,11 +1140,10 @@ def _process_map_and_scat(
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
-
                             (start, stop) = _get_min_max_year_periods([per])
+                            (start, stop) = (start.year, stop.year)
 
                             if stop - start >= trends_min_yrs:
-
                                 try:
                                     time = subset.data.time.values
                                     (obs_trend, mod_trend) = _make_trends(
@@ -1154,13 +1168,13 @@ def _process_map_and_scat(
                                         stats["obs_median_trend"] = obs_trend
                                         stats["mod_median_trend"] = mod_trend
 
-                                except AeroValTrendsError as e:
+                                except TrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                     logger.warning(msg)
 
                     perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
-                    if freq == main_freq:
+                    if freq == scatter_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
                         site = map_stat["station_name"]
@@ -1251,7 +1265,7 @@ def _apply_annual_constraint(data):
 
     Raises
     ------
-    AeroValConfigError
+    ConfigError
         If colocated data in yearly resolution is not available in input data
 
     Returns
@@ -1262,7 +1276,7 @@ def _apply_annual_constraint(data):
     """
     output = {}
     if not "yearly" in data or data["yearly"] is None:
-        raise AeroValConfigError(
+        raise ConfigError(
             "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
             '"statistics_json" in AerocomEvaluation class)'
@@ -1287,9 +1301,8 @@ def _prep_stats_json(stats):
     return stats
 
 
-def _get_extended_stats(coldata, use_weights):
-
-    stats = coldata.calc_statistics(use_area_weights=use_weights)
+def _get_extended_stats(coldata, use_weights, drop_stats):
+    stats = coldata.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
 
     # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
     # (stats['R_spatial_mean'],
@@ -1351,12 +1364,15 @@ def _calc_temporal_corr(coldata):
         return np.nan, np.nan
     elif coldata.has_latlon_dims:
         coldata = coldata.flatten_latlondim_station_name()
-    arr = coldata.data
+
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
-    obs_ok = arr[0].count(dim="time") > 2
-    arr = arr.where(obs_ok, drop=True)
-    if np.prod(arr.shape) == 0:
+    obs_ok = coldata.data[0].count(dim="time") > 2
+    arr = []
+    arr.append(coldata.data[0].where(obs_ok, drop=True))
+    arr.append(coldata.data[1].where(obs_ok, drop=True))
+
+    if np.prod(arr[0].shape) == 0 or np.prod(arr[1].shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim="time")
     with ignore_warnings(RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"):
@@ -1380,13 +1396,14 @@ def _select_period_season_coldata(coldata, period, season):
         mask = arr["season"] == season
         arr = arr.sel(time=arr["time"][mask])
 
-    return ColocatedData(arr)
+    return ColocatedData(data=arr)
 
 
 def _process_heatmap_data(
     data,
     region_ids,
     use_weights,
+    drop_stats,
     use_country,
     meta_glob,
     periods,
@@ -1395,16 +1412,15 @@ def _process_heatmap_data(
     trends_min_yrs,
     avg_over_trends,
 ):
-
     output = {}
-    stats_dummy = _init_stats_dummy()
+    stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     for freq, coldata in data.items():
         output[freq] = hm_freq = {}
-        use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
             hm_freq[regname] = {}
             for per in periods:
                 for season in seasons:
+                    use_dummy = coldata is None
                     perstr = f"{per}-{season}"
                     if use_dummy:
                         stats = stats_dummy
@@ -1430,7 +1446,7 @@ def _process_heatmap_data(
                                 region_id=regid, check_country_meta=use_country
                             )
 
-                            stats = _get_extended_stats(subset, use_weights)
+                            stats = _get_extended_stats(subset, use_weights, drop_stats)
 
                             if add_trends and freq != "daily":
                                 stats.update(**trend_stats)
@@ -1491,7 +1507,9 @@ def _map_indices(outer_idx, inner_idx):
     return mapping.astype(int)
 
 
-def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_country, data_freq):
+def _process_statistics_timeseries(
+    data, freq, region_ids, use_weights, drop_stats, use_country, data_freq
+):
     """
     Compute statistics timeseries for input data
 
@@ -1562,8 +1580,8 @@ def _process_statistics_timeseries(data, freq, region_ids, use_weights, use_coun
         for i, js in enumerate(jsdate):
             per = to_idx_str[i]
             try:
-                arr = ColocatedData(subset.data.sel(time=per))
-                stats = arr.calc_statistics(use_area_weights=use_weights)
+                arr = ColocatedData(data=subset.data.sel(time=per))
+                stats = arr.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
                 output[regname][str(js)] = _prep_stats_json(stats)
             except DataCoverageError:
                 pass
@@ -1623,9 +1641,215 @@ def _init_data_default_frequencies(coldata, to_ts_types):
     return data_arrs
 
 
-def _start_stop_from_periods(periods):
-    start, stop = _get_min_max_year_periods(periods)
-    return start_stop(start, stop + 1)
+def get_profile_filename(station_or_region_name, obs_name, var_name_web):
+    return f"{station_or_region_name}_{obs_name}_{var_name_web}.json"
+
+
+def process_profile_data_for_regions(
+    data: ColocatedData,
+    region_id: str,
+    use_country: bool,
+    periods: list[str],
+    seasons: list[str],
+) -> dict:  # pragma: no cover
+    """
+    This method populates the json files in data/profiles which are use for visualization.
+    Analogous to _process_map_and_scat for profile data.
+    Each json file corresponds to a region or station, obs network, and variable.
+    Inside the json, it is broken up by model.
+    Each model has a key for "z" (the vertical dimension), "obs", and "mod"
+    Each "obs" and "mod" is broken up by period.
+
+
+    Args:
+        data (ColocatedData): ColocatedData object for this layer
+        region_id (str): Spatial subset to compute the mean profiles over
+        station_name (str): Station to compute mean profiles over for period
+        use_country (boolean): Passed to filter_region().
+        periods (str): Year part of the temporal range to average over
+        seasons (str): Sesonal part of the temporal range to average over
+
+    Returns:
+        output (dict): Dictionary to write to json
+    """
+    output = {"obs": {}, "mod": {}}
+
+    for freq, coldata in data.items():
+        if freq not in output["obs"]:
+            output["obs"][freq] = {}
+        if freq not in output["mod"]:
+            output["mod"][freq] = {}
+
+        for per in periods:
+            for season in seasons:
+                use_dummy = coldata is None
+                perstr = f"{per}-{season}"
+                if use_dummy:
+                    output["obs"][freq][perstr] = np.nan
+                    output["mod"][freq][perstr] = np.nan
+                else:
+                    try:
+                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+
+                        subset = per_season_subset.filter_region(
+                            region_id=region_id, check_country_meta=use_country
+                        )
+
+                        output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                        output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
+                        logger.warning(msg)
+
+                        output["obs"][freq][perstr] = np.nan
+                        output["mod"][freq][perstr] = np.nan
+
+    return output
+
+
+def process_profile_data_for_stations(
+    data: ColocatedData,
+    station_name: str,
+    use_country: bool,
+    periods: list[str],
+    seasons: list[str],
+) -> dict:  # pragma: no cover
+    """
+    This method populates the json files in data/profiles which are use for visualization.
+    Analogous to _process_map_and_scat for profile data.
+    Each json file corresponds to a region, obs network, and variable.
+    Inside the json, it is broken up by model.
+    Each model has a key for "z" (the vertical dimension), "obs", and "mod"
+    Each "obs" and "mod" is broken up by period.
+
+
+    Args:
+        data (ColocatedData): ColocatedData object for this layer
+        region_id (str): Spatial subset to compute the mean profiles over
+        station_name (str): Station to compute mean profiles over for period
+        use_country (boolean): Passed to filter_region().
+        periods (str): Year part of the temporal range to average over
+        seasons (str): Sesonal part of the temporal range to average over
+
+    Returns:
+        output (dict): Dictionary to write to json
+    """
+    output = {"obs": {}, "mod": {}}
+
+    for freq, coldata in data.items():
+        if freq not in output["obs"]:
+            output["obs"][freq] = {}
+        if freq not in output["mod"]:
+            output["mod"][freq] = {}
+
+        for per in periods:
+            for season in seasons:
+                use_dummy = coldata is None
+                perstr = f"{per}-{season}"
+                if use_dummy:
+                    output["obs"][freq][perstr] = np.nan
+                    output["mod"][freq][perstr] = np.nan
+                else:
+                    try:
+                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+
+                        subset = per_season_subset.data[
+                            :,
+                            :,
+                            per_season_subset.data.station_name.values
+                            == station_name,  # in this case a station
+                        ]  # Assumes ordering of station name matches
+
+                        output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                        output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
+                        logger.warning(msg)
+
+                        output["obs"][freq][perstr] = np.nan
+                        output["mod"][freq][perstr] = np.nan
+
+    return output
+
+
+def add_profile_entry_json(
+    profile_file: str,
+    data: ColocatedData,
+    profile_viz: dict,
+    periods: list[str],
+    seasons: list[str],
+):  # pragma: no cover
+    """
+    Analogous to _add_heatmap_entry_json for profile data.
+    Every time this function is called it checks to see if the profile_file exists.
+    If so, it reads it, if not it makes a new one.
+    This is because one can not add to json files and so everytime we want to add entries for profile layers
+    we must read in the old file, add the entries, and write a new file.
+
+    Args:
+        profile_file (str): Name of profile_file
+        data (ColocatedData): For this vertical layer
+        profile_viz (dict): Output of process_profile_data()
+        periods (list[str]): periods to compute over (years)
+        seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
+    """
+    if os.path.exists(profile_file):
+        current = read_json(profile_file)
+    else:
+        current = {}
+
+    for freq, coldata in data.items():
+        model_name = coldata.model_name
+        if not model_name in current:
+            current[model_name] = {}
+
+        midpoint = (
+            float(coldata.data.attrs["vertical_layer"]["end"])
+            + float(coldata.data.attrs["vertical_layer"]["start"])
+        ) / 2
+        if not "z" in current[model_name]:
+            current[model_name]["z"] = [midpoint]  # initalize with midpoint
+
+        if (
+            midpoint > current[model_name]["z"][-1]
+        ):  # only store incremental increases in the layers
+            current[model_name]["z"].append(midpoint)
+
+        if not "obs" in current[model_name]:
+            current[model_name]["obs"] = {}
+
+        if not freq in current[model_name]["obs"]:
+            current[model_name]["obs"][freq] = {}
+
+        if not "mod" in current[model_name]:
+            current[model_name]["mod"] = {}
+
+        if not freq in current[model_name]["mod"]:
+            current[model_name]["mod"][freq] = {}
+
+        for per in periods:
+            for season in seasons:
+                perstr = f"{per}-{season}"
+
+                if not perstr in current[model_name]["obs"][freq]:
+                    current[model_name]["obs"][freq][perstr] = []
+                if not perstr in current[model_name]["mod"][freq]:
+                    current[model_name]["mod"][freq][perstr] = []
+
+                current[model_name]["obs"][freq][perstr].append(profile_viz["obs"][freq][perstr])
+                current[model_name]["mod"][freq][perstr].append(profile_viz["mod"][freq][perstr])
+
+        if not "metadata" in current[model_name]:
+            current[model_name]["metadata"] = {
+                "z_unit": coldata.data.attrs["altitude_units"],
+                "z_description": "Altitude ASL",
+                "z_long_description": "Altitude Above Sea Level",
+                "unit": coldata.unitstr,
+            }
+        current[model_name] = round_floats(current[model_name])
+    write_json(current, profile_file, round_floats=False)
 
 
 def _remove_less_covered(

@@ -6,6 +6,7 @@ Note
 Most methods here are private and not to be used directly. Please use
 :class:`TrendsEngine` instead.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -77,7 +78,6 @@ def _compute_trend_error(m, m_err, v0, v0_err):
 
 
 def _get_season(mon):
-
     for seas, months in SEASONS.items():
         if mon in months:
             return seas
@@ -158,7 +158,7 @@ def _find_area(lat, lon, regions_dict=None):
     """
     from pyaerocom.region import find_closest_region_coord
 
-    reg = find_closest_region_coord(lat, lon)
+    reg = find_closest_region_coord(lat, lon)[0]
     if regions_dict is not None and reg in regions_dict:
         return regions_dict[reg]
     return reg

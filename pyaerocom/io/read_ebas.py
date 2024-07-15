@@ -16,10 +16,18 @@ from pyaerocom.aux_var_helpers import (
     compute_sc440dryaer,
     compute_sc550dryaer,
     compute_sc700dryaer,
+    compute_wetna_from_concprcpna,
+    compute_wetnh4_from_concprcpnh4,
+    compute_wetno3_from_concprcpno3,
     compute_wetoxn_from_concprcpoxn,
     compute_wetoxs_from_concprcpoxs,
+    compute_wetoxs_from_concprcpoxsc,
+    compute_wetoxs_from_concprcpoxst,
     compute_wetrdn_from_concprcprdn,
+    compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
+    make_proxy_drydep_from_O3,
+    make_proxy_wetdep_from_O3,
     vmrx_to_concx,
 )
 from pyaerocom.exceptions import (
@@ -127,7 +135,6 @@ class ReadEbasOptions(BrowseDict):
     _FILTER_IDS = ["prefer_statistics", "wavelength_tol_nm"]
 
     def __init__(self, **args):
-
         self.prefer_statistics = ["arithmetic mean", "median"]
         self.ignore_statistics = ["percentile:15.87", "percentile:84.13"]
 
@@ -145,7 +152,7 @@ class ReadEbasOptions(BrowseDict):
         self.convert_units = True
         self.try_convert_vmr_conc = True
 
-        self.ensure_correct_freq = True
+        self.ensure_correct_freq = False
         self.freq_from_start_stop_meas = True
         self.freq_min_cov = 0.0
 
@@ -180,7 +187,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.51_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.52_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -207,7 +214,7 @@ class ReadEbas(ReadUngriddedBase):
         "Vavihill": "Hallahus",
         "Virolahti II": "Virolahti III",
     }
-    #'Trollhaugen'    : 'Troll'}
+    # 'Trollhaugen'    : 'Troll'}
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {
         "1mn": "minutely",
@@ -230,9 +237,61 @@ class ReadEbas(ReadUngriddedBase):
         "ac550dryaer": ["ac550aer", "acrh"],
         "ang4470dryaer": ["sc440dryaer", "sc700dryaer"],
         "wetoxs": ["concprcpoxs", "pr"],
+        "wetoxsc": ["concprcpoxsc", "pr"],
+        "wetoxst": ["concprcpoxst", "pr"],
         "wetoxn": ["concprcpoxn", "pr"],
         "wetrdn": ["concprcprdn", "pr"],
+        "wetso4": ["concprcpso4", "pr"],
+        "wetna": ["concprcpna", "pr"],
+        "wetno3": ["concprcpno3", "pr"],
+        "wetnh4": ["concprcpnh4", "pr"],
         "vmro3max": ["vmro3"],
+        # proxy drydep
+        # Suphar based
+        "proxydryoxs": ["concprcpoxs", "pr"],
+        "proxydryss": ["concprcpna", "pr"],
+        "proxydryna": ["concprcpna", "pr"],
+        "proxydryso2": ["concprcpoxs", "pr"],
+        "proxydryso4": ["concprcpoxs", "pr"],
+        # Oxidized nitrogen based
+        "proxydryoxn": ["concprcpoxn", "pr"],
+        "proxydryno2": ["concprcpoxn", "pr"],
+        "proxydryno2no2": ["concprcpoxn", "pr"],
+        "proxydryhono": ["concprcpoxn", "pr"],
+        "proxydryn2o5": ["concprcpoxn", "pr"],
+        "proxydryhno3": ["concprcpoxn", "pr"],
+        "proxydryno3c": ["concprcpoxn", "pr"],
+        "proxydryno3f": ["concprcpoxn", "pr"],
+        # Reduced nitrogen based
+        "proxydryrdn": ["concprcprdn", "pr"],
+        "proxydrynh3": ["concprcprdn", "pr"],
+        "proxydrynh4": ["concprcprdn", "pr"],
+        # Other
+        "proxydryo3": ["vmro3"],
+        "proxydrypm10": ["concprcpoxs", "pr"],
+        "proxydrypm25": ["concprcpoxs", "pr"],
+        # proxy wetdep
+        # Suphar based
+        "proxywetoxs": ["concprcpoxs", "pr"],
+        "proxywetso2": ["concprcpoxs", "pr"],
+        "proxywetso4": ["concprcpoxs", "pr"],
+        # Oxidized nitrogen based
+        "proxywetoxn": ["concprcpoxn", "pr"],
+        "proxywetno2": ["concprcpoxn", "pr"],
+        "proxywetno2no2": ["concprcpoxn", "pr"],
+        "proxywethono": ["concprcpoxn", "pr"],
+        "proxywetn2o5": ["concprcpoxn", "pr"],
+        "proxywethno3": ["concprcpoxn", "pr"],
+        "proxywetno3c": ["concprcpoxn", "pr"],
+        "proxywetno3f": ["concprcpoxn", "pr"],
+        # Reduced nitrogen based
+        "proxywetrdn": ["concprcprdn", "pr"],
+        "proxywetnh3": ["concprcprdn", "pr"],
+        "proxywetnh4": ["concprcprdn", "pr"],
+        # Other
+        "proxyweto3": ["vmro3"],
+        "proxywetpm10": ["concprcpoxs", "pr"],
+        "proxywetpm25": ["concprcpoxs", "pr"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -250,9 +309,61 @@ class ReadEbas(ReadUngriddedBase):
         "ac550dryaer": compute_ac550dryaer,
         "ang4470dryaer": compute_ang4470dryaer_from_dry_scat,
         "wetoxs": compute_wetoxs_from_concprcpoxs,
+        "wetoxsc": compute_wetoxs_from_concprcpoxsc,
+        "wetoxst": compute_wetoxs_from_concprcpoxst,
         "wetoxn": compute_wetoxn_from_concprcpoxn,
         "wetrdn": compute_wetrdn_from_concprcprdn,
+        "wetnh4": compute_wetnh4_from_concprcpnh4,
+        "wetno3": compute_wetno3_from_concprcpno3,
+        "wetso4": compute_wetso4_from_concprcpso4,
+        "wetna": compute_wetna_from_concprcpna,
         "vmro3max": calc_vmro3max,
+        # proxy dry dep
+        # Suphar based
+        "proxydryoxs": compute_wetoxs_from_concprcpoxs,
+        "proxydryss": compute_wetna_from_concprcpna,
+        "proxydryna": compute_wetna_from_concprcpna,
+        "proxydryso2": compute_wetoxs_from_concprcpoxs,
+        "proxydryso4": compute_wetoxs_from_concprcpoxs,
+        # Oxidized nitrogen based
+        "proxydryoxn": compute_wetoxn_from_concprcpoxn,
+        "proxydryno2": compute_wetoxn_from_concprcpoxn,
+        "proxydryno2no2": compute_wetoxn_from_concprcpoxn,
+        "proxydryhono": compute_wetoxn_from_concprcpoxn,
+        "proxydryn2o5": compute_wetoxn_from_concprcpoxn,
+        "proxydryhno3": compute_wetoxn_from_concprcpoxn,
+        "proxydryno3c": compute_wetoxn_from_concprcpoxn,
+        "proxydryno3f": compute_wetoxn_from_concprcpoxn,
+        # Reduced nitrogen based
+        "proxydryrdn": compute_wetrdn_from_concprcprdn,
+        "proxydrynh3": compute_wetrdn_from_concprcprdn,
+        "proxydrynh4": compute_wetrdn_from_concprcprdn,
+        # Other
+        "proxydryo3": make_proxy_drydep_from_O3,
+        "proxydrypm10": compute_wetoxs_from_concprcpoxs,
+        "proxydrypm25": compute_wetoxs_from_concprcpoxs,
+        # proxy wet dep
+        # Suphar based
+        "proxywetoxs": compute_wetoxs_from_concprcpoxs,
+        "proxywetso2": compute_wetoxs_from_concprcpoxs,
+        "proxywetso4": compute_wetoxs_from_concprcpoxs,
+        # Oxidized nitrogen based
+        "proxywetoxn": compute_wetoxn_from_concprcpoxn,
+        "proxywetno2": compute_wetoxn_from_concprcpoxn,
+        "proxywetno2no2": compute_wetoxn_from_concprcpoxn,
+        "proxywethono": compute_wetoxn_from_concprcpoxn,
+        "proxywetn2o5": compute_wetoxn_from_concprcpoxn,
+        "proxywethno3": compute_wetoxn_from_concprcpoxn,
+        "proxywetno3c": compute_wetoxn_from_concprcpoxn,
+        "proxywetno3f": compute_wetoxn_from_concprcpoxn,
+        # Reduced nitrogen based
+        "proxywetrdn": compute_wetrdn_from_concprcprdn,
+        "proxywetnh3": compute_wetrdn_from_concprcprdn,
+        "proxywetnh4": compute_wetrdn_from_concprcprdn,
+        # Other
+        "proxyweto3": make_proxy_wetdep_from_O3,
+        "proxywetpm10": compute_wetoxs_from_concprcpoxs,
+        "proxywetpm25": compute_wetoxs_from_concprcpoxs,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid
@@ -287,7 +398,6 @@ class ReadEbas(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     def __init__(self, data_id=None, data_dir=None):
-
         super().__init__(data_id=data_id, data_dir=data_dir)
 
         self._opts = {"default": ReadEbasOptions()}
@@ -1423,7 +1533,6 @@ class ReadEbas(ReadUngriddedBase):
             )
 
     def _flag_incorrect_frequencies(self, filedata):
-
         # time diffs in units of s for each measurement
         dt = (filedata.stop_meas - filedata.start_meas).astype(float)
         # frequency in file (supposedly)
@@ -1444,9 +1553,9 @@ class ReadEbas(ReadUngriddedBase):
             opts = self.get_read_opts(var)
             if opts.freq_min_cov > frac_valid:
                 raise TemporalSamplingError(
-                    f"Only {frac_valid*100:.2f}% of measuerements are in "
+                    f"Only {frac_valid * 100:.2f}% of measuerements are in "
                     f"{tst} resolution. Minimum requirement for {var} is "
-                    f"{opts.freq_min_cov*100:.2f}%"
+                    f"{opts.freq_min_cov * 100:.2f}%"
                 )
             if not var in filedata.data_flagged:
                 filedata.data_flagged[var] = np.zeros(num).astype(bool)
@@ -1721,7 +1830,7 @@ class ReadEbas(ReadUngriddedBase):
         var_count_glob = -1
         logger.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
-        for i in tqdm(range(num_files)):
+        for i in tqdm(range(num_files), disable=None):
             _file = files[i]
             contains = files_contain[i]
             try:

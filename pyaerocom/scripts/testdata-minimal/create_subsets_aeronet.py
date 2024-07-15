@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Goal
 """
@@ -37,7 +36,6 @@ filters = [
 
 revision_files = {}
 if __name__ == "__main__":
-
     loaded = {}
     for name, varlist in NETWORKS.items():
         reader = pya.io.ReadUngridded()
@@ -48,12 +46,11 @@ if __name__ == "__main__":
 
     use_stats = []
 
-    for (attr, val, maxnum) in filters:
+    for attr, val, maxnum in filters:
         subsets = {}
         statnames = []
 
         for name, data in loaded.items():
-
             subset = data.apply_filters(**{attr: val})
 
             subsets[name] = subset
@@ -87,7 +84,7 @@ if __name__ == "__main__":
                 stats_ok.append(statname)
         if len(stats_ok) == 0:
             raise Exception
-        print("Found {} common sites for filter {}: {}".format(len(stats_ok), attr, val))
+        print(f"Found {len(stats_ok)} common sites for filter {attr}: {val}")
 
         use_stats.extend(stats_ok)
 
@@ -98,7 +95,7 @@ if __name__ == "__main__":
         outdir = OUTBASE.joinpath(data_id)
         # make sure to remove old data
         if outdir.exists():
-            print("REMOVING EXISTING DATA FOR {}".format(data_id))
+            print(f"REMOVING EXISTING DATA FOR {data_id}")
             shutil.rmtree(outdir)
         outdir.mkdir()
 

@@ -3,7 +3,8 @@ import abc
 from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.colocation_auto import Colocator
+from pyaerocom.colocation.colocation_setup import ColocationSetup
+from pyaerocom.colocation.colocator import Colocator
 
 
 class HasConfig:
@@ -113,16 +114,37 @@ class HasColocator(HasConfig):
         Colocator
 
         """
-        col = Colocator(**self.cfg.colocation_opts)
-        if obs_name:
-            obs_cfg = self.cfg.get_obs_entry(obs_name)
-            col.import_from(obs_cfg)
-            col.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
+        col_cfg = {**self.cfg.colocation_opts.model_dump()}
+        outdir = self.cfg.path_manager.get_coldata_dir()
+        col_cfg["basedir_coldata"] = outdir
+
+        if not model_name and not obs_name:
+            col_stp = ColocationSetup(**col_cfg)
+            return Colocator(col_stp)
+
         if model_name:
             mod_cfg = self.cfg.get_model_entry(model_name)
-            col.import_from(mod_cfg)
-        outdir = self.cfg.path_manager.get_coldata_dir()
-        col.basedir_coldata = outdir
+            col_cfg["model_cfg"] = mod_cfg
+
+            # LB: Hack and at what lowlevel_helpers's import_from was doing
+            for key, val in mod_cfg.items():
+                if key in ColocationSetup.model_fields:
+                    col_cfg[key] = val
+        if obs_name:
+            obs_cfg = self.cfg.get_obs_entry(obs_name)
+            pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
+            col_cfg["obs_config"] = pyaro_config
+
+            # LB: Hack and at what lowlevel_helpers's import_from was doing
+            for key, val in obs_cfg.items():
+                if key in ColocationSetup.model_fields:
+                    col_cfg[key] = val
+
+            col_cfg["add_meta"].update(diurnal_only=self._get_diurnal_only(obs_name))
+
+        col_stp = ColocationSetup(**col_cfg)
+        col = Colocator(col_stp)
+
         return col
 
 

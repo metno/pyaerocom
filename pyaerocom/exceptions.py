@@ -8,14 +8,6 @@ class AeronetReadError(IOError):
     pass
 
 
-class AeroValConfigError(ValueError):
-    pass
-
-
-class AeroValTrendsError(ValueError):
-    pass
-
-
 class CachingError(IOError):
     pass
 
@@ -121,6 +113,10 @@ class LongitudeConstraintError(ValueError):
 
 
 class MetaDataError(AttributeError):
+    pass
+
+
+class ModelVarNotAvailable(IOError):
     pass
 
 

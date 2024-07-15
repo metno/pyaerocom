@@ -2,32 +2,35 @@ import glob
 import logging
 import os
 import shutil
+from collections import namedtuple
+
+import aerovaldb
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (
-    DirLoc,
-    StrType,
-    TypeValidator,
-    check_make_json,
-    read_json,
-    sort_dict_by_name,
-    write_json,
-)
+from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
+from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
+    VariableInfo,
     extended_statistics,
     num_statistics,
     statistics_defaults,
     statistics_mean_trend,
     statistics_median_trend,
+    statistics_model_only,
+    statistics_obs_only,
     statistics_trend,
-    var_ranges_defaults,
-    var_web_info,
 )
+from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.mathutils import _init_stats_dummy
+from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
+from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
+
+MapInfo = namedtuple(
+    "MapInfo", ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"]
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +39,17 @@ class ProjectOutput:
     """JSON output for project"""
 
     proj_id = StrType()
+
     json_basedir = DirLoc(assert_exists=True)
 
     def __init__(self, proj_id: str, json_basedir: str):
         self.proj_id = proj_id
         self.json_basedir = json_basedir
 
+        self.avdb = aerovaldb.open(f"json_files:{json_basedir}")
+
     @property
-    def proj_dir(self):
+    def proj_dir(self) -> str:
         """Project directory"""
         fp = os.path.join(self.json_basedir, self.proj_id)
         if not os.path.exists(fp):
@@ -52,64 +58,17 @@ class ProjectOutput:
         return fp
 
     @property
-    def experiments_file(self):
+    def experiments_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.proj_dir, "experiments.json")
-        fp = check_make_json(fp)
         return fp
 
     @property
-    def available_experiments(self):
+    def available_experiments(self) -> list:
         """
         List of available experiments
         """
-        return list(read_json(self.experiments_file))
-
-    def _add_entry_experiments_json(self, exp_id, data):
-        fp = self.experiments_file
-        current = read_json(fp)
-        current[exp_id] = data
-        write_json(current, self.experiments_file, indent=4)
-
-    def _del_entry_experiments_json(self, exp_id):
-        """
-        Remove an entry from experiments.json
-
-        Parameters
-        ----------
-        exp_id : str
-            name of experiment
-
-        Returns
-        -------
-        None
-
-        """
-        current = read_json(self.experiments_file)
-        try:
-            del current[exp_id]
-        except KeyError:
-            logger.warning(f"no such experiment registered: {exp_id}")
-        write_json(current, self.experiments_file, indent=4)
-
-    def reorder_experiments(self, exp_order=None):
-        """Reorder experiment order in evaluation interface
-
-        Puts experiment list into order as specified by `exp_order`, all
-        remaining experiments are sorted alphabetically.
-
-        Parameters
-        ----------
-        exp_order : list, optional
-            desired experiment order, if None, then alphabetical order is used.
-        """
-        if exp_order is None:
-            exp_order = []
-        elif not isinstance(exp_order, list):
-            raise ValueError("need list as input")
-        current = read_json(self.experiments_file)
-        current = sort_dict_by_name(current, pref_list=exp_order)
-        write_json(current, self.experiments_file, indent=4)
+        return list(self.avdb.get_experiments(self.proj_id, default={}))
 
 
 class ExperimentOutput(ProjectOutput):
@@ -117,7 +76,7 @@ class ExperimentOutput(ProjectOutput):
 
     cfg = TypeValidator(EvalSetup)
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
         super().__init__(cfg.proj_id, cfg.path_manager.json_basedir)
 
@@ -126,12 +85,12 @@ class ExperimentOutput(ProjectOutput):
         self._invalid = dict(models=[], obs=[])
 
     @property
-    def exp_id(self):
+    def exp_id(self) -> str:
         """Experiment ID"""
         return self.cfg.exp_id
 
     @property
-    def exp_dir(self):
+    def exp_dir(self) -> str:
         """Experiment directory"""
         fp = os.path.join(self.proj_dir, self.exp_id)
         if not os.path.exists(fp):
@@ -140,35 +99,31 @@ class ExperimentOutput(ProjectOutput):
         return fp
 
     @property
-    def regions_file(self):
+    def regions_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "regions.json")
-        fp = check_make_json(fp)
         return fp
 
     @property
-    def statistics_file(self):
+    def statistics_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "statistics.json")
-        fp = check_make_json(fp)
         return fp
 
     @property
-    def var_ranges_file(self):
+    def var_ranges_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "ranges.json")
-        check_make_json(fp)
         return fp
 
     @property
-    def menu_file(self):
+    def menu_file(self) -> str:
         """json file containing region specifications"""
         fp = os.path.join(self.exp_dir, "menu.json")
-        check_make_json(fp)
         return fp
 
     @property
-    def results_available(self):
+    def results_available(self) -> bool:
         """
         bool: True if results are available for this experiment, else False
         """
@@ -185,7 +140,7 @@ class ExperimentOutput(ProjectOutput):
         """
         return self.cfg.path_manager.get_json_output_dirs()
 
-    def update_menu(self):
+    def update_menu(self) -> None:
         """Update menu
 
         The menu.json file is created based on the available json map files in the
@@ -202,7 +157,7 @@ class ExperimentOutput(ProjectOutput):
         """
         avail = self._create_menu_dict()
         avail = self._sort_menu_entries(avail)
-        write_json(avail, self.menu_file, indent=4)
+        self.avdb.put_menu(avail, self.proj_id, self.exp_id)
 
     def update_interface(self) -> None:
         """
@@ -236,16 +191,16 @@ class ExperimentOutput(ProjectOutput):
         # AeroVal frontend needs periods to be set in config json file...
         # make sure they are
         self.cfg._check_time_config()
-        self.cfg.to_json(self.exp_dir)
+        self.avdb.put_config(self.cfg.json_repr(), self.proj_id, self.exp_id)
 
-    def _sync_heatmaps_with_menu_and_regions(self):
+    def _sync_heatmaps_with_menu_and_regions(self) -> None:
         """
         Synchronise content of heatmap json files with content of menu.json
         """
-        menu = read_json(self.menu_file)
-        all_regions = read_json(self.regions_file)
-        for fp in self._get_json_output_files("hm"):
-            data = read_json(fp)
+        menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
+        all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
+        for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
+            data = self.avdb.get_by_uuid(fp)
             hm = {}
             for vardisp, info in menu.items():
                 obs_dict = info["obs"]
@@ -254,20 +209,20 @@ class ExperimentOutput(ProjectOutput):
                 for obs, vdict in obs_dict.items():
                     if not obs in hm[vardisp]:
                         hm[vardisp][obs] = {}
-                    for vc, mdict in vdict.items():
-                        if not vc in hm[vardisp][obs]:
-                            hm[vardisp][obs][vc] = {}
+                    for vert_code, mdict in vdict.items():
+                        if not vert_code in hm[vardisp][obs]:
+                            hm[vardisp][obs][vert_code] = {}
                         for mod, minfo in mdict.items():
-                            if not mod in hm[vardisp][obs][vc]:
-                                hm[vardisp][obs][vc][mod] = {}
+                            if not mod in hm[vardisp][obs][vert_code]:
+                                hm[vardisp][obs][vert_code][mod] = {}
                             modvar = minfo["model_var"]
-                            hm_data = data[vardisp][obs][vc][mod][modvar]
+                            hm_data = data[vardisp][obs][vert_code][mod][modvar]
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
-                            hm[vardisp][obs][vc][mod][modvar] = hm_data
+                            hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-            write_json(hm, fp, ignore_nan=True)
+            self.avdb.put_by_uuid(hm, fp)
 
-    def _check_hm_all_regions_avail(self, all_regions, hm_data):
+    def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
             return hm_data
         # some regions are not available in this subset
@@ -281,7 +236,7 @@ class ExperimentOutput(ProjectOutput):
         return hm_data
 
     @staticmethod
-    def _info_from_map_file(filename):
+    def _info_from_map_file(filename: str) -> MapInfo:
         """
         Separate map filename into meta info on obs and model content
 
@@ -308,44 +263,52 @@ class ExperimentOutput(ProjectOutput):
             name of model
         str
             name of model variable
+        str
+            Time period
         """
         spl = os.path.basename(filename).split(".json")[0].split("_")
-        if len(spl) != 3:
+        if len(spl) != 4:
             raise ValueError(
                 f"invalid map filename: {filename}. Must "
-                f"contain exactly 2 underscores _ to separate "
-                f"obsinfo, vertical and model info"
+                f"contain exactly 3 underscores _ to separate "
+                f"obsinfo, vertical, model info, and periods"
             )
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
+        time_period = spl[3]
 
         mspl = modinfo.split("-")
-        mvar = mspl[-1]
-        mname = "-".join(mspl[:-1])
+        mod_var = mspl[-1]
+        mod_id = "-".join(mspl[:-1])
 
         ospl = obsinfo.split("-")
-        ovar = ospl[-1]
-        oname = "-".join(ospl[:-1])
-        return (oname, ovar, vert_code, mname, mvar)
+        obs_var = ospl[-1]
+        obs_network = "-".join(ospl[:-1])
 
-    def _results_summary(self):
-        res = [[], [], [], [], []]
+        return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
+
+    def _results_summary(self) -> dict[str, list[str]]:
+        res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
         tab = []
         for file in files:
-            item = self._info_from_map_file(file)
-            for i, entry in enumerate(item):
+            map_info = self._info_from_map_file(file)
+            for i, entry in enumerate(map_info):
                 res[i].append(entry)
         output = {}
-        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar"]):
+        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar", "per"]):
             output[name] = list(set(res[i]))
         return output
 
-    def clean_json_files(self):
+    def clean_json_files(self) -> list[str]:
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
+
+        Returns:
+        list[str] :
+            The list of file paths that where modified / removed.
         """
         modified = []
         logger.info(
@@ -356,50 +319,57 @@ class ExperimentOutput(ProjectOutput):
         mapfiles = self._get_json_output_files("map")
         rmmap = []
         vert_codes = self.cfg.obs_cfg.all_vert_types
-        for file in mapfiles:
+        for file_path in mapfiles:
             try:
-                (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
+                (
+                    obs_network,
+                    obs_var,
+                    vert_code,
+                    mod_name,
+                    mod_var,
+                    time_period,
+                ) = self._info_from_map_file(file_path)
             except Exception as e:
                 logger.warning(
                     f"FATAL: invalid file convention for map json file:"
-                    f" {file}. This file will be deleted. Error message: "
+                    f" {file_path}. This file will be deleted. Error message: "
                     f"{repr(e)}"
                 )
-                rmmap.append(file)
+                rmmap.append(file_path)
                 continue
-            if not self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
-                rmmap.append(file)
+            if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
+                rmmap.append(file_path)
             elif not vert_code in vert_codes:
-                rmmap.append(file)
+                rmmap.append(file_path)
 
         scatfiles = os.listdir(outdirs["scat"])
-        for file in rmmap:  # delete map files
-            logger.info(f"Deleting outdated map json file: {file}.")
-            os.remove(file)
-            modified.append(file)
-            fname = os.path.basename(file)
+        for file_path in rmmap:  # delete map files
+            logger.info(f"Deleting outdated map json file: {file_path}.")
+            os.remove(file_path)
+            modified.append(file_path)
+            fname = os.path.basename(file_path)
             if fname in scatfiles:
                 scfp = os.path.join(outdirs["scat"], fname)
-                logger.info(f"Deleting outdated scatter json file: {file}.")
+                logger.info(f"Deleting outdated scatter json file: {scfp}.")
                 os.remove(scfp)
-                modified.append(file)
+                modified.append(file_path)
 
         tsfiles = self._get_json_output_files("ts")
 
-        for file in tsfiles:
-            if self._check_clean_ts_file(file):
-                modified.append(file)
+        for file_path in tsfiles:
+            if self._check_clean_ts_file(file_path):
+                modified.append(file_path)
         modified.extend(self._clean_modelmap_files())
         self.update_interface()  # will take care of heatmap data
         return modified
 
-    def _check_clean_ts_file(self, fp):
+    def _check_clean_ts_file(self, fp) -> bool:
         fname = os.path.basename(fp)
         spl = fname.split(".json")[0].split("_")
-        vc, obsinfo = spl[-1], spl[-2]
-        if not vc in self.cfg.obs_cfg.all_vert_types:
+        vert_code, obsinfo = spl[-1], spl[-2]
+        if not vert_code in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vc} in ts file {fp}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {fp}. File will be deleted."
             )
             os.remove(fp)
             return True
@@ -413,7 +383,7 @@ class ExperimentOutput(ProjectOutput):
             return True
 
         try:
-            data = read_json(fp)
+            data = self.avdb.get_by_uuid(fp)
         except Exception:
             logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
             os.remove(fp)
@@ -433,11 +403,10 @@ class ExperimentOutput(ProjectOutput):
                 modified = True
                 logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-        write_json(data_new, fp)
+        self.avdb.put_by_uuid(data_new, fp)
         return modified
 
-    def _clean_modelmap_files(self):
-
+    def _clean_modelmap_files(self) -> list[str]:
         # Note: to be called after cleanup of files in map subdir
         json_files = self._get_json_output_files("contour")
         rm = []
@@ -466,7 +435,7 @@ class ExperimentOutput(ProjectOutput):
                 removed.append(file)
         return removed
 
-    def delete_experiment_data(self, also_coldata=True):
+    def delete_experiment_data(self, also_coldata=True) -> None:
         """Delete all data associated with a certain experiment
 
         Note
@@ -477,20 +446,12 @@ class ExperimentOutput(ProjectOutput):
 
         Parameters
         ----------
-        base_dir : str, optional
-            basic output direcory (containing subdirs of all projects)
-        proj_name : str, optional
-            name of project, if None, then this project is used
-        exp_name : str, optional
-            name experiment, if None, then this project is used
         also_coldata : bool
             if True and if output directory for colocated data is default and
             specific for input experiment ID, then also all associated colocated
             NetCDF files are deleted. Defaults to True.
         """
-        if os.path.exists(self.exp_dir):
-            logger.info(f"Deleting everything under {self.exp_dir}")
-            shutil.rmtree(self.exp_dir)
+        self.avdb.rm_experiment_data(self.proj_id, self.exp_id)
 
         if also_coldata:
             coldir = self.cfg.path_manager.get_coldata_dir()
@@ -533,11 +494,12 @@ class ExperimentOutput(ProjectOutput):
             order.extend(self.cfg.obs_cfg.web_iface_names)
         return order
 
-    def _get_json_output_files(self, dirname):
+    def _get_json_output_files(self, dirname) -> list[str]:
         dirloc = self.out_dirs_json[dirname]
         return glob.glob(f"{dirloc}/*.json")
 
-    def _get_cmap_info(self, var):
+    def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
+        var_ranges_defaults = self.cfg.var_scale_colmap
         if var in var_ranges_defaults:
             return var_ranges_defaults[var]
         try:
@@ -553,22 +515,35 @@ class ExperimentOutput(ProjectOutput):
 
         return info
 
-    def _create_var_ranges_json(self):
-        try:
-            ranges = read_json(self.var_ranges_file)
-        except FileNotFoundError:
-            ranges = {}
+    def _create_var_ranges_json(self) -> None:
+        ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
+
         avail = self._results_summary()
         all_vars = list(set(avail["ovar"] + avail["mvar"]))
         for var in all_vars:
             if not var in ranges or ranges[var]["scale"] == []:
                 ranges[var] = self._get_cmap_info(var)
-        write_json(ranges, self.var_ranges_file, indent=4)
+        self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
-    def _create_statistics_json(self):
-        stats_info = statistics_defaults
-        stats_info.update(extended_statistics)
-        stats_info.update(num_statistics)
+    def _create_statistics_json(self) -> None:
+        if self.cfg.statistics_opts.obs_only_stats:
+            stats_info = statistics_obs_only
+        elif self.cfg.statistics_opts.model_only_stats:
+            stats_info = statistics_model_only
+        else:
+            stats_info = statistics_defaults
+            stats_info.update(extended_statistics)
+
+        # configurable statistics - drop any statistics provided in drop_stats
+        if self.cfg.statistics_opts.drop_stats:
+            for stat in self.cfg.statistics_opts.drop_stats:
+                stats_info.pop(stat, None)
+
+        # configure the number of decimals shown in statistics if provided
+        if self.cfg.statistics_opts.stats_decimals:
+            for stat in stats_info:
+                stats_info[stat].update(decimals=self.cfg.statistics_opts.stats_decimals)
+
         if self.cfg.statistics_opts.add_trends:
             if self.cfg.processing_opts.obs_only:
                 obs_statistics_trend = {
@@ -581,9 +556,10 @@ class ExperimentOutput(ProjectOutput):
                 if self.cfg.statistics_opts.avg_over_trends:
                     stats_info.update(statistics_mean_trend)
                     stats_info.update(statistics_median_trend)
-        write_json(stats_info, self.statistics_file, indent=4)
 
-    def _get_var_name_and_type(self, var_name):
+        self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
+
+    def _get_var_name_and_type(self, var_name: str) -> VariableInfo:
         """Get menu name and type of observation variable
 
         Parameters
@@ -593,33 +569,41 @@ class ExperimentOutput(ProjectOutput):
 
         Returns
         -------
-        str
-            menu name of this variable
-        str
-            vertical type of this variable (2D, 3D)
-        str
-            variable category
-
+        VariableInfo :
+            named tuple containing
+            - menu name of this variable.
+            - Vertical type of this variable (ie. 2D, 3D).
+            - Category of this variable.
         """
         if var_name in self.cfg.var_web_info:
-            name, tp, cat = self.cfg.var_mapping[var_name]
-        elif var_name in var_web_info:
-            name, tp, cat = var_web_info[var_name]
+            name, tp, cat = self.cfg.var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
             logger.warning(f"Missing menu name definition for var {var_name}.")
-        return (name, tp, cat)
+
+        return VariableInfo(name, tp, cat)
 
     def _init_menu_entry(self, var: str) -> dict:
         name, tp, cat = self._get_var_name_and_type(var)
+        out = {"type": tp, "cat": cat, "name": name, "obs": {}}
         try:
             lname = const.VARS[var].description
         except VariableDefinitionError:
             lname = "UNDEFINED"
-        return {"type": tp, "cat": cat, "name": name, "longname": lname, "obs": {}}
 
-    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
+        out["longname"] = lname
+        try:
+            # Comes in as a string. split() here breaks up based on space and returns either just the element in a list or the components of the string in a list
+            only_use_in = const.VARS[var].only_use_in.split(" ")
+            # only return only_use_in if key exists, otherwise do not
+            out["only_use_in"] = only_use_in
+        except AttributeError:
+            pass
+        return out
 
+    def _check_ovar_mvar_entry(
+        self, mcfg: ModelEntry, mod_var, ocfg: ObsCollection, obs_var
+    ) -> bool:
         muv = mcfg.model_use_vars
         mrv = mcfg.model_rename_vars
 
@@ -678,7 +662,7 @@ class ExperimentOutput(ProjectOutput):
                 return True
         return False
 
-    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
+    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var) -> bool:
         """
         Check if input combination of model and obs var is valid
 
@@ -709,6 +693,12 @@ class ExperimentOutput(ProjectOutput):
             True if this combination is valid, else False.
 
         """
+
+        # MDA8 is computed on-the-fly ONLY if a MDA8_INPUT_VAR at hourly freq is detected.
+        # Consequently, it is not specified in a config but should be included as part of the experiment.
+        if obs_var in MDA8_OUTPUT_VARS and mod_var in MDA8_OUTPUT_VARS:
+            return True
+
         # get model entry for model name
         try:
             mcfg = self.cfg.model_cfg.get_entry(mod_name)
@@ -735,14 +725,13 @@ class ExperimentOutput(ProjectOutput):
                 return True
         return False
 
-    def _create_menu_dict(self):
+    def _create_menu_dict(self) -> dict:
         new = {}
         files = self._get_json_output_files("map")
         for file in files:
-            (obs_name, obs_var, vert_code, mod_name, mod_var) = self._info_from_map_file(file)
+            (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(file)
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
-
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
                 var = mcfg.get_varname_web(mod_var, obs_var)
                 if not var in new:
@@ -768,7 +757,7 @@ class ExperimentOutput(ProjectOutput):
                 )
         return new
 
-    def _sort_menu_entries(self, avail):
+    def _sort_menu_entries(self, avail: dict) -> dict:
         """
         Used in method :func:`update_menu_evaluation_iface`
 
@@ -779,8 +768,6 @@ class ExperimentOutput(ProjectOutput):
         ----------
         avail : dict
             nested dictionary contining info about available results
-        config : AerocomEvaluation
-            Configuration class
 
         Returns
         -------
@@ -808,17 +795,52 @@ class ExperimentOutput(ProjectOutput):
                     new_sorted[var]["obs"][obs_name][vert_code] = models_sorted
         return new_sorted
 
-    def _get_valid_obs_vars(self, obs_name):
-        if obs_name in self._valid_obs_vars:
-            return self._valid_obs_vars[obs_name]
+    def _add_entry_experiments_json(self, exp_id: str, data) -> None:
+        current = self.avdb.get_experiments(self.proj_id, default={})
 
-        obs_vars = self.obs_config[obs_name]["obs_vars"]
-        add = []
-        for mname, mcfg in self.model_config.items():
-            if "model_add_vars" in mcfg:
-                for ovar, mvar in mcfg["model_add_vars"].items():
-                    if ovar in obs_vars and not mvar in add:
-                        add.append(mvar)
-        obs_vars.extend(add)
-        self._valid_obs_vars[obs_name] = obs_vars
-        return obs_vars
+        current[exp_id] = data
+
+        self.avdb.put_experiments(current, self.proj_id)
+
+    def _del_entry_experiments_json(self, exp_id) -> None:
+        """
+        Remove an entry from experiments.json
+
+        Parameters
+        ----------
+        exp_id : str
+            name of experiment
+
+        Returns
+        -------
+        None
+
+        """
+        current = self.avdb.get_experiments(self.proj_id, default={})
+
+        try:
+            del current[exp_id]
+        except KeyError:
+            logger.warning(f"no such experiment registered: {exp_id}")
+        self.avdb.put_experiments(current, self.proj_id)
+
+    def reorder_experiments(self, exp_order=None) -> None:
+        """Reorder experiment order in evaluation interface
+
+        Puts experiment list into order as specified by `exp_order`, all
+        remaining experiments are sorted alphabetically.
+
+        Parameters
+        ----------
+        exp_order : list, optional
+            desired experiment order, if None, then alphabetical order is used.
+        """
+        if exp_order is None:
+            exp_order = []
+        elif not isinstance(exp_order, list):
+            raise ValueError("need list as input")
+
+        current = self.avdb.get_experiments(self.proj_id, default={})
+
+        current = sort_dict_by_name(current, pref_list=exp_order)
+        self.avdb.put_experiments(current, self.proj_id)

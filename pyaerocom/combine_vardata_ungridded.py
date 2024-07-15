@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import invalid_input_err_str
-from pyaerocom.colocation import _colocate_site_data_helper
+from pyaerocom.colocation.colocation_utils import _colocate_site_data_helper
 from pyaerocom.geodesy import find_coord_indices_within_distance
 from pyaerocom.helpers import sort_ts_types
 from pyaerocom.obs_io import ObsVarCombi
@@ -23,7 +23,6 @@ def _check_input_data_ids_and_vars(data_ids_and_vars):
 
 
 def _map_same_stations(stats_short, stats_long, match_stats_how, match_stats_tol_km):
-
     long_coords = list(zip(stats_long["latitude"], stats_long["longitude"]))
 
     # index matches and corresponding station name matches
@@ -218,7 +217,6 @@ def _combine_2_sites(
         add_ts = df.mean(axis=1)
 
     elif merge_how == "eval":
-
         func = merge_eval_fun.replace(col_order[0], col_names[0])
         func = func.replace(col_order[1], col_names[1])
         if "=" in merge_eval_fun:
@@ -233,7 +231,6 @@ def _combine_2_sites(
             var_name_out = var_name_out.replace(f"{stat_other.data_id};", "")
 
     if add_ts is not None:
-
         var_info = {"ts_type": to_ts_type, "units": var_unit_out}
 
         var_info.update(merge_info_vars)
@@ -458,7 +455,6 @@ def combine_vardata_ungridded(
 
     var_short, var_long = short["var_name"], long["var_name"]
     for idx_short, idx_long in zip(_index_short, _index_long):
-
         stat_short = short["stats"][idx_short]
         stat_short.check_var_unit_aerocom(var_short)
         stat_long = long["stats"][idx_long]

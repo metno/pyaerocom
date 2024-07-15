@@ -3,6 +3,71 @@ Core API
 
 Documentation of the core API of pyaerocom.
 
+Logging
+-------
+
+``pyaerocom`` initializes logging automatically on import in the following way.
+
+1. ``info``-messages or worse are logged to ``logs/pyaerocom.log.$PID`` or
+   (dynamic feature) the file given in the environment variable ``PYAEROCOM_LOG_FILE``
+   - (dynamic feature) these log-files will be deleted after 7 days.
+2. ``warning``-messages or worse are also printed on stdout.
+   (dynamic feature) Output to stdout is disabled if the script is called non-interactive.
+
+Besides the default records as defined in https://docs.python.org/3/library/logging.html#logrecord-attributes
+pyaerocom also adds a special `mem_usage` keyword to be able to detect memory-leaks of the
+python process early.
+
+Putting a file with the name ``logging.ini`` in the scripts current working directory will use that
+configuration instead of above described default. An example ``logging.ini`` doing about the same as
+described above, except for the dynamic features, and enable ``debug`` logging on one package (``pyaerocom.io.ungridded``), is
+provided here:
+
+.. code-block:: ini
+
+   [loggers]
+   keys=root,pyaerocom-ungridded
+
+   [handlers]
+   keys=console,file
+
+   [formatters]
+   keys=plain,detailed
+
+   [formatter_plain]
+   format=%(message)s
+
+   [formatter_detailed]
+   format=%(asctime)s:%(name)s:%(mem_usage)s:%(levelname)s:%(message)s
+   datefmt=%F %T
+
+   [handler_console]
+   class=StreamHandler
+   formatter=plain
+   args=(sys.stdout,)
+   level=WARN
+
+   [handler_file]
+   class=FileHandler
+   formatter=detailed
+   level=DEBUG
+   file_name=logs/pyaerocom.log.%(pid)s
+   args=('%(file_name)s', "w")
+
+
+   [logger_root]
+   handlers=file,console
+   level=INFO
+
+   [logger_pyaerocom-ungridded]
+   handlers=file
+   qualname=pyaerocom.io.readungriddedbase
+   level=DEBUG
+   propagate=0
+
+
+
+
 Data classes
 ------------
 
@@ -23,7 +88,7 @@ Ungridded data
 Co-located data
 ^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.colocateddata
+.. automodule:: pyaerocom.colocation.colocated_data
    :members:
    :undoc-members:
 
@@ -47,13 +112,20 @@ Co-location routines
 High-level co-location engine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.colocation_auto
+.. automodule:: pyaerocom.colocation.colocator
+   :members:
+
+.. automodule:: pyaerocom.colocation.colocation_setup
    :members:
 
 Low-level co-location functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.colocation
+.. automodule:: pyaerocom.colocation.colocation_utils
+   :members:
+   :undoc-members:
+
+.. automodule:: pyaerocom.colocation.colocation_3d
    :members:
    :undoc-members:
 
@@ -184,7 +256,7 @@ EARLINET
 EBAS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_.
+`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_. Declaration of AEROCOM variables in EBAS and assocaited information such as acceptable minimum and maximum values occurs in ``pyaerocom/data/variables.ini`` .
 
 .. automodule:: pyaerocom.io.read_ebas
    :members:

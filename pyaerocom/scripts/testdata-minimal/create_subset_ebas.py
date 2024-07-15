@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """simple script to generate a small enough test data set for the EBAS obs network
 Works only if the user has access to the standard EBAS data path at Met Norway
@@ -73,9 +72,8 @@ def check_outdated(filedir):
     files_invalid = []
     files_valid = []
 
-    with open(JSON_FILE, "r") as f:
-
-        data = simplejson.load(f)
+    with open(JSON_FILE) as f:
+        data = simplejson.load(f, allow_nan=True)
 
     for var, stats in data.items():
         for stat, files in stats.items():
@@ -156,7 +154,6 @@ def get_files_var_statnum(data, var, statnum):
 
 
 def main():
-
     # reader = pya.io.ReadUngridded(NAME, data_dir=EBAS_BASE_DIR)
     reader = pya.io.ReadUngridded(
         NAME,
@@ -212,8 +209,8 @@ def main():
     else:
         infofile = JSON_FILE
         if os.path.exists(infofile):
-            with open(infofile, "r") as f:
-                current_files = simplejson.load(f)
+            with open(infofile) as f:
+                current_files = simplejson.load(f, allow_nan=True)
         else:
             current_files = {}
 
@@ -245,7 +242,6 @@ def main():
         if not UPDATE:
             print("NOTHING WILL BE COPIED TO TEST DATA")
         else:
-
             src = Path(EBAS_BASE_DIR).joinpath("data")
             print(f"updating test data @ {r_lowlev.DATASET_PATH}")
 
@@ -281,7 +277,7 @@ def main():
 
             print(f"re-writing {JSON_FILE}")
             with open(JSON_FILE, "w") as f:
-                simplejson.dump(all_files, f)
+                simplejson.dump(all_files, f, allow_nan=True)
 
 
 if __name__ == "__main__":

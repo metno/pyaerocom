@@ -135,7 +135,6 @@ class GriddedData:
     def __init__(
         self, input=None, var_name=None, check_unit=True, convert_unit_on_init=True, **meta
     ):
-
         if input is None:
             input = iris.cube.Cube([])
 
@@ -670,23 +669,26 @@ class GriddedData:
             minimum=vmin,
             maximum=vmax,
         )
+        var_existed = False
         if delete_existing:
             varcol = const.VARS
             if self.var_name in varcol:
                 varcol.delete_variable(self.var_name)
+                var_existed = True
         const.VARS.add_var(vardef)
-        logger.warning(
-            f"Adding variable {self.var_name} in pyaerocom.const.VARS. "
-            f"since such a  "
-            f"variable is not defined in pyaerocom. Minimum and maximum "
-            f"values are added automatically based on value range in "
-            f"associated GriddedData object to: minimum={vmin}, maximum="
-            f"{vmax}. Since this will add the variable only temporarily "
-            f"during this run, this might interrupt the processing "
-            f"workflow unexpectedly when rerunning parts of the code without "
-            f"explictly calling GriddedData.register_var_glob. It may be best "
-            f"to add this variable to pyaerocom/data/variables.ini."
-        )
+        if not var_existed:
+            logger.warning(
+                f"Adding variable {self.var_name} in pyaerocom.const.VARS. "
+                f"since such a  "
+                f"variable is not defined in pyaerocom. Minimum and maximum "
+                f"values are added automatically based on value range in "
+                f"associated GriddedData object to: minimum={vmin}, maximum="
+                f"{vmax}. Since this will add the variable only temporarily "
+                f"during this run, this might interrupt the processing "
+                f"workflow unexpectedly when rerunning parts of the code without "
+                f"explictly calling GriddedData.register_var_glob. It may be best "
+                f"to add this variable to pyaerocom/data/variables.ini."
+            )
         return vardef
 
     @ignore_warnings(UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
@@ -742,7 +744,6 @@ class GriddedData:
         """
         cube = self.grid
         if "invalid_units" in cube.attributes and cube.attributes["invalid_units"] in UALIASES:
-
             from_unit = cube.attributes["invalid_units"]
             to_unit = UALIASES[from_unit]
             logger.info(f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}")
@@ -825,7 +826,6 @@ class GriddedData:
         self._apply_unit_mulfac(new_unit, mulfac)
 
     def _apply_unit_mulfac(self, new_unit, mulfac):
-
         if mulfac != 1:
             new_cube = self._grid * mulfac
             new_cube.attributes.update(self._grid.attributes)
@@ -1042,7 +1042,6 @@ class GriddedData:
         return np.nanmean(mean)
 
     def _coords_to_iris_sample_points(self, **coords):
-
         sample_points = []
         num = None
         for cname, vals in coords.items():
@@ -1057,7 +1056,7 @@ class GriddedData:
 
     def _iris_sample_points_to_coords(self, sample_points):
         lats, lons = None, None
-        for (name, vals) in sample_points:
+        for name, vals in sample_points:
             if isnumeric(vals):
                 vals = [vals]
             if name in ("lat", "latitude"):
@@ -1082,7 +1081,6 @@ class GriddedData:
         use_iris=False,
         **coords,
     ):
-
         """Extract time-series for provided input coordinates (lon, lat)
 
         Extract time series for each lon / lat coordinate in this cube or at
@@ -1146,6 +1144,7 @@ class GriddedData:
                 f"Extracting timeseries data from large array (shape: {self.shape}). "
                 f"This may take a while..."
             )
+
         # if the method makes it to this point, it is 3 or 4 dimensional
         # and the first 3 dimensions are time, latitude, longitude.
         if self.ndim == 3:  # data does not contain vertical dimension
@@ -1167,6 +1166,7 @@ class GriddedData:
 
         if sample_points is None:
             sample_points = self._coords_to_iris_sample_points(**coords)
+
         return self._to_timeseries_3D(
             sample_points,
             scheme,
@@ -1176,7 +1176,6 @@ class GriddedData:
         )
 
     def _to_time_series_xarray(self, scheme="nearest", add_meta=None, ts_type=None, **coords):
-
         try:
             self.check_dimcoords_tseries()
         except DimensionOrderError:
@@ -1223,7 +1222,6 @@ class GriddedData:
         lats = subset[lat_id].data
         lons = subset[lon_id].data
         for sidx in range(subset.shape[-1]):
-
             data = StationData(
                 latitude=lats[sidx],
                 longitude=lons[sidx],
@@ -1320,12 +1318,16 @@ class GriddedData:
     def _to_timeseries_3D(
         self, sample_points, scheme, collapse_scalar, vert_scheme, add_meta=None
     ):
-
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
 
         # ToDo: check if _to_timeseries_2D can be called here
-        return data.to_time_series(sample_points, scheme, collapse_scalar, add_meta=add_meta)
+        return data.to_time_series(
+            sample_points=sample_points,
+            scheme=scheme,
+            collapse_scalar=collapse_scalar,
+            add_meta=add_meta,
+        )
 
     def _apply_vert_scheme(self, sample_points, vert_scheme):
         """Helper method that checks and infers vertical scheme for time
@@ -1347,17 +1349,11 @@ class GriddedData:
             vert_index = self._infer_index_surface_level()
             return self[:, :, :, vert_index]
         elif vert_scheme == "altitude":
-            if not "altitude" in [sp[0] for sp in sample_points]:
-                raise ValueError(
-                    "Require altitude specification in sample points for vert_scheme altitude"
-                )
-            if not self.check_altitude_access():
-                raise DataDimensionError("Cannot access altitude information")
             raise NotImplementedError(
                 "Cannot yet retrieve timeseries at altitude levels. Coming soon..."
             )
         elif vert_scheme == "profile":
-            raise NotImplementedError("Cannot yet retrieve profile timeseries")
+            return self
         else:
             try:
                 # check if vertical scheme can be converted into valid iris
@@ -1371,24 +1367,6 @@ class GriddedData:
         raise NotImplementedError(
             f"Cannot yet retrieve timeseries from 4D data for vert_scheme {vert_scheme}."
         )
-
-    def check_altitude_access(self):
-        """Checks if altitude levels can be accessed
-
-        Returns
-        -------
-        bool
-            True, if altitude access is provided, else False
-
-        """
-        return self.altitude_access.check_altitude_access()
-
-    def get_altitude(self, **coords):
-        """Extract (or try to compute) altitude values at input coordinates"""
-        if not isinstance(self._altitude_access, AltitudeAccess):
-            self.check_altitude_access()
-        self._altitude_access.get_altitude(**coords)
-        raise NotImplementedError("Coming soon...")
 
     def extract_surface_level(self):
         """Extract surface level from 4D field"""
@@ -1436,6 +1414,9 @@ class GriddedData:
                 f"assumed to be the surface. If mean values in both levels"
             )
             last_lev_idx = self.shape[-1] - 1
+            if last_lev_idx == 0:
+                return 0
+
             mean_first_idx = np.nanmean(self[0, :, :, 0].data)
             mean_last_idx = np.nanmean(self[0, :, :, last_lev_idx].data)
             if exponent(mean_first_idx) == exponent(mean_last_idx):
@@ -1446,44 +1427,6 @@ class GriddedData:
             elif mean_first_idx > mean_last_idx:
                 return 0
             return last_lev_idx
-
-    def to_time_series_single_coord(self, latitude, longitude):
-        """Make time series dictionary of single location using neirest coordinate
-
-        Todo
-        ----
-        Crop before extraction
-
-        Parameters
-        ----------
-        latitude : float
-            latitude of coordinate
-        longitude : float
-            longitude of coordinate
-
-        Returns
-        -------
-        dict
-            dictionary containing results
-        """
-        raise NameError(DeprecationWarning("This method is deprecated since version 0.8.0"))
-
-    # =============================================================================
-    #         self.check_dimcoords_tseries()
-    #         if not self.ndim == 3:
-    #             raise DataDimensionError('So far, timeseries can only be extracted '
-    #                                      'from 3 dimensional data...')
-    #         lons = self.longitude.points
-    #         lats = self.latitude.points
-    #         lon_idx = np.argmin(np.abs(lons - longitude))
-    #         lat_idx = np.argmin(np.abs(lats - latitude))
-    #         times = self.time_stamps()
-    #         data = self.grid.data[:, lat_idx, lon_idx]
-    #         return {'latitude'      : latitude,
-    #                 'longitude'     : longitude,
-    #                 'name'          : self.name,
-    #                 self.var_name   : pd.Series(data, times)}
-    # =============================================================================
 
     def _closest_time_idx(self, t):
         """Find closest index to input in time dimension"""
@@ -1684,7 +1627,6 @@ class GriddedData:
         return data
 
     def _resample_time_xarray(self, to_ts_type, how, min_num_obs):
-
         arr = xr.DataArray.from_iris(self.cube)
         from_ts_type = self.ts_type
         try:
@@ -1692,7 +1634,9 @@ class GriddedData:
             arr_out = rs.resample(
                 to_ts_type, from_ts_type=from_ts_type, how=how, min_num_obs=min_num_obs
             )
-        except ValueError:  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
+        except (
+            ValueError
+        ):  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr["time"] = self.time_stamps()
             rs = TimeResampler(arr)
             arr_out = rs.resample(
@@ -1998,7 +1942,7 @@ class GriddedData:
     # processing methods that exist in the Cube class and that work on the
     # Cube and return a Cube instance. These may be expanded (e.g. for
     # instance what they accept as input
-    def aerocom_filename(self, at_stations=False):
+    def aerocom_filename(self, at_stations=False):  # pragma: no cover
         """Filename of data following Aerocom 3 conventions
 
         Parameters
@@ -2125,7 +2069,6 @@ class GriddedData:
         self.cube.attributes = meta_out
 
     def _to_netcdf_aerocom(self, out_dir, **kwargs):
-
         years = self.years_avail()
         outpaths = []
         for subset in self.split_years(years):
@@ -2375,7 +2318,9 @@ class GriddedData:
 
         return GriddedData(data_crop, **self.metadata)
 
-    def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs):
+    def quickplot_map(
+        self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90), add_mean=True, **kwargs
+    ):  # pragma: no cover
         """Make a quick plot onto a map
 
         Parameters
@@ -2451,7 +2396,7 @@ class GriddedData:
                 from pyaerocom.mathutils import exponent
 
                 mean = data.mean()
-                vstr = f"{mean:.{abs(exponent(mean))+1}f}"
+                vstr = f"{mean:.{abs(exponent(mean)) + 1}f}"
                 mustr = f"Mean={vstr}"
                 u = str(self.units)
                 if not u == "1":
@@ -2569,10 +2514,18 @@ class GriddedData:
 
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
-        if self.longitude.bounds is None:
-            self.longitude.guess_bounds()
-        if self.latitude.bounds is None:
-            self.latitude.guess_bounds()
+        if not self.longitude.has_bounds():
+            # guess_bounds needs at least 2 values to work
+            try:
+                self.longitude.guess_bounds()
+            except ValueError:
+                pass
+        if not self.latitude.has_bounds():
+            # guess_bounds needs at least 2 values to work
+            try:
+                self.latitude.guess_bounds()
+            except ValueError:
+                pass
 
     def __getattr__(self, attr):
         return self[attr]
@@ -2598,7 +2551,6 @@ class GriddedData:
         """Delete auxiliary variables and iris AuxFactories"""
         c = self.cube
         for aux_fac in c.aux_factories:
-
             c.remove_aux_factory(aux_fac)
 
         for coord in c.coords():

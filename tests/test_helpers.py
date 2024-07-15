@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-from numpy.testing import assert_allclose
 
 from pyaerocom import StationData, helpers
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
@@ -18,7 +17,7 @@ def test_get_standarad_name():
 
 
 def test_get_standard_unit():
-    assert helpers.get_standard_unit("ec550aer") == "1/Mm"
+    assert helpers.get_standard_unit("ec550aer") == "1/km"
 
 
 def test_get_lowest_resolution():
@@ -73,7 +72,7 @@ def test_merge_station_data(
     vardata = stat[var_name]
     assert len(vardata) == num
     assert stat.get_var_ts_type(var_name) == tst
-    assert_allclose(np.mean(vardata), mean, rtol=1e-2)
+    assert np.mean(vardata) == pytest.approx(mean, rel=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -125,10 +124,9 @@ def fake_hourly_ts():
 )
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
-
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how, min_num_obs=min_num_obs)
     assert len(s1) == num
-    assert_allclose(np.nanmean(s1), avg, atol=1e-2)
+    assert np.nanmean(s1) == pytest.approx(avg, abs=1e-2, nan_ok=True)
 
 
 def test_same_meta_dict():
@@ -210,7 +208,8 @@ def test_extract_latlon_dataarray():
     lon = [1, 15, 18]
     subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert isinstance(subset, xr.DataArray)
-    assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) - 1
+    assert len(subset.lat) == len(lat) - 1
+    assert len(subset.lon) == len(lon) - 1
 
 
 def test_extract_latlon_dataarray_no_matches():
@@ -251,3 +250,16 @@ def test_extract_latlon_dataarray_no_matches_error(lat, lon):
 def test_seconds_in_periods(date, ts_type, days):
     seconds = timedelta(days=days) / timedelta(seconds=1)
     assert helpers.seconds_in_periods(np.datetime64(date), ts_type) == seconds
+
+
+def test_make_dummy_cube():
+    # make a dummy cube of an arbitrary variable name over one year
+    cube = helpers.make_dummy_cube("concpm10", start_yr=2020, stop_yr=2021)
+    data = xr.DataArray.from_iris(cube)
+    # First coordinate does not exist in the dataarray.
+    lat = [90, -67.5, 22.2]
+    lon = [180, -135.0, 45.0]
+    subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
+    assert isinstance(subset, xr.DataArray)
+    assert len(subset.lat) == len(lat) - 1
+    assert len(subset.lon) == len(lon) - 1

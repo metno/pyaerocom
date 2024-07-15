@@ -7,7 +7,7 @@ import numpy as np
 from pytest import mark, param
 
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_entry_json,
+    _add_heatmap_entry_json,
     _init_stats_dummy,
     _prepare_aerocom_regions_json,
     _prepare_country_regions,
@@ -29,7 +29,6 @@ from pyaerocom.region_defs import (
 
 
 def test__write_stationdata_json(tmp_path: Path):
-
     data = dict(station_name="stat1", obs_name="obs1", var_name_web="var1", vert_code="Column")
     path: Path = tmp_path / get_stationfile_name(**data)
     assert not path.exists()
@@ -49,7 +48,6 @@ def test__write_stationdata_json(tmp_path: Path):
 
 
 def test__write_site_data(tmp_path: Path):
-
     data = [
         dict(
             model_name=f"model{n}",
@@ -85,20 +83,20 @@ def test__write_diurnal_week_stationdata_json(tmp_path: Path):
     assert data["model1"] == data["model2"]
 
 
-def test__add_entry_json(tmp_path: Path):
+def test__add_heatmap_entry_json(tmp_path: Path):
     path = tmp_path / "add_entry.json"
     assert not path.exists()
 
     result = dict(value=None)
     obs, obs_var, vert, model, model_var = "obs", "obs_var", "Column", "model", "model_var"
-    _add_entry_json(path, result, obs, obs_var, vert, model, model_var)
+    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var)
     assert path.exists()
 
     data = json.loads(path.read_text())
     assert data[obs_var][obs][vert][model][model_var] == result
 
     result.update(value=42.0)
-    _add_entry_json(path, result, obs, obs_var, vert, model, model_var)
+    _add_heatmap_entry_json(path, result, obs, obs_var, vert, model, model_var)
 
     data = json.loads(path.read_text())
     assert data[obs_var][obs][vert][model][model_var] == result

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from itertools import chain
 from pathlib import Path
-from typing import Type
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -29,11 +28,8 @@ from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
-from ..conftest import EBAS_FILEDIR, EBAS_FILES, EBAS_ISSUE_FILES, data_unavail
-
 
 @pytest.fixture(scope="module")
-@data_unavail
 def reader() -> ReadEbas:
     return ReadEbas("EBASSubset")
 
@@ -159,7 +155,7 @@ def test_opts(reader: ReadEbas):
         keep_aux_vars=False,
         convert_units=True,
         try_convert_vmr_conc=True,
-        ensure_correct_freq=True,
+        ensure_correct_freq=False,
         freq_from_start_stop_meas=True,
         freq_min_cov=0.0,
     )
@@ -226,7 +222,7 @@ def test_NAN_VAL(reader: ReadEbas):
 
 
 def test_PROVIDES_VARIABLES(reader: ReadEbas):
-    PROVIDES_VARIABLES = [
+    PROVIDES_VARIABLES = {
         "DEFAULT",
         "concca",
         "concmg",
@@ -245,6 +241,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "bsc550dryaer",
         "scrh",
         "acrh",
+        "ts",
         "concso4",
         "SO4ugSm3",
         "concso4pm10",
@@ -303,9 +300,74 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "wetoxn",
         "pr",
         "prmm",
-    ]
+        "concnh4pm25",
+        "concCocpm10",
+        "concNno",
+        "concCecpm10",
+        "concno3pm10",
+        "concSso2",
+        "concso4pm25",
+        "concso4pm10",
+        "concnh4pm10",
+        "concno3pm25",
+        "vmrnh3",
+        "proxydryoxn",
+        "proxywetpm25",
+        "concss25",
+        "concprcpno3",
+        "concprcpso4",
+        "concCoc25",
+        "concom25",
+        "concprcpnh4",
+        "concsscoarse",
+        "proxydryhno3",
+        "proxydryhono",
+        "proxydryn2o5",
+        "proxydrynh3",
+        "proxydrynh4",
+        "proxydryno2",
+        "proxydryno2no2",
+        "proxydryno3c",
+        "proxydryno3f",
+        "proxydryo3",
+        "proxydryoxs",
+        "proxydryss",
+        "proxydryna",
+        "proxydrypm10",
+        "proxydrypm25",
+        "proxydryrdn",
+        "proxydryso2",
+        "proxydryso4",
+        "proxywethno3",
+        "proxywethono",
+        "proxywetn2o5",
+        "proxywetnh3",
+        "proxywetnh4",
+        "proxywetno2",
+        "proxywetno2no2",
+        "proxywetno3c",
+        "proxywetno3f",
+        "proxyweto3",
+        "proxywetoxn",
+        "proxywetoxs",
+        "proxywetpm10",
+        "proxywetrdn",
+        "proxywetso2",
+        "proxywetso4",
+        "vmrhno3",
+        "vmrtp",
+        "wetnh4",
+        "wetno3",
+        "wetso4",
+        "wetna",
+        "concprcpoxst",
+        "wetoxsc",
+        "concprcpoxsc",
+        "wetoxst",
+        "concprcpna",
+    }
 
-    assert sorted(reader.PROVIDES_VARIABLES) == sorted(PROVIDES_VARIABLES)
+    assert set(reader.PROVIDES_VARIABLES) == (PROVIDES_VARIABLES)
 
 
 def test_sqlite_database_file(reader: ReadEbas):
@@ -374,7 +436,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-    reader: ReadEbas, val, exception: Type[Exception], error: str
+    reader: ReadEbas, val: Literal["Bla", 42], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -421,7 +483,7 @@ def test_get_ebas_var(reader: ReadEbas):
     ],
 )
 def test_get_ebas_var_error(
-    reader: ReadEbas, var_name: str, exception: Type[Exception], error: str
+    reader: ReadEbas, var_name: str, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader.get_ebas_var(var_name)
@@ -451,10 +513,11 @@ def test__get_var_cols_error(
 
 
 def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile):
-    vars_to_read = ["sc550aer", "scrh"]
+    vars_to_read = ["sc550aer", "scrh", "ts"]
     columns = reader.find_var_cols(vars_to_read, loaded_nasa_ames_example)
     assert columns["sc550aer"] == 17
     assert columns["scrh"] == 3
+    assert columns["ts"] == 4
 
 
 @pytest.mark.parametrize(
@@ -466,14 +529,13 @@ def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesF
     ],
 )
 def test__flag_incorrect_frequencies(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     reader: ReadEbas,
     loaded_nasa_ames_example: EbasNasaAmesFile,
     ts_type: str,
     tol_percent: int,
     num_flagged: int,
 ):
-
     station = StationData()
     station.start_meas = loaded_nasa_ames_example.start_meas
     station.stop_meas = loaded_nasa_ames_example.stop_meas
@@ -499,7 +561,7 @@ conco3_tower_var_info = {
         "volume_std._temperature": "293.15 K",
         "volume_std._pressure": "1013.25 hPa",
         "detection_limit": "1.995 ug/m3",
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        "comment": "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K, 1013.25 hPa), conversion factor 1.99534. Variable metadata detection limit converted.",
         "matrix": "air",
         "statistics": "arithmetic mean",
         "ts_type": "hourly",
@@ -513,7 +575,7 @@ vmro3_tower_var_info = {
         "measurement_height": "50.0 m",
         "instrument_name": "uv_abs_kre_0050",
         "detection_limit": "1.0 nmol/mol",
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        "comment": "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K, 1013.25 hPa), conversion factor 1.99534. Variable metadata detection limit converted.",
         "matrix": "air",
         "statistics": "arithmetic mean",
         "ts_type": "hourly",
@@ -522,56 +584,48 @@ vmro3_tower_var_info = {
 
 
 @pytest.mark.parametrize(
-    "filename,vars_to_retrieve,check",
+    "issue_files,vars_to_retrieve,check",
     [
-        (
-            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_tower"],
-            "vmro3",
-            dict(var_info=vmro3_tower_var_info),
-        ),
-        (
-            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_tower"],
-            "conco3",
-            dict(var_info=conco3_tower_var_info),
-        ),
-        (
-            EBAS_FILEDIR / EBAS_ISSUE_FILES["pm10_tstype"],
-            "concpm10",
-            dict(ts_type="2daily"),
-        ),
-        (
-            EBAS_FILEDIR / EBAS_FILES["sc550dryaer"]["Jungfraujoch"][0],
-            ["sc550aer"],
-            dict(station_name="Jungfraujoch"),
-        ),
+        ("o3_tower", "vmro3", dict(var_info=vmro3_tower_var_info)),
+        ("o3_tower", "conco3", dict(var_info=conco3_tower_var_info)),
+        ("pm10_tstype", "concpm10", dict(ts_type="2daily")),
+        ("Jungfraujoch", ["sc550aer"], dict(station_name="Jungfraujoch")),
     ],
 )
-def test_read_file(reader: ReadEbas, filename: Path, vars_to_retrieve: str, check: dict):
-    data = reader.read_file(filename, vars_to_retrieve)
+def test_read_file(reader: ReadEbas, ebas_issue_files: Path, vars_to_retrieve: str, check: dict):
+    data = reader.read_file(ebas_issue_files, vars_to_retrieve)
     assert isinstance(data, StationData)
     for key, val in check.items():
-        assert data[key] == val
+        if isinstance(val, dict):
+            for subkey, subval in val.items():
+                for subsubkey, subsubval in subval.items():
+                    if subsubkey == "comment":
+                        assert data[key][subkey][subsubkey].startswith(subsubval)
+                    else:
+                        assert data[key][subkey][subsubkey] == subsubval
+        else:
+            assert data[key] == val
 
 
 @pytest.mark.parametrize(
-    "filename,vars_to_retrieve,exception,error",
+    "issue_files,vars_to_retrieve,exception,error",
     [
         pytest.param(
-            EBAS_FILEDIR / EBAS_ISSUE_FILES["pm10_colsel"],
+            "pm10_colsel",
             "concpm10",
             ValueError,
             "failed to identify unique data column",
             id="repeated column",
         ),
         pytest.param(
-            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_neg_dt"],
+            "o3_neg_dt",
             "conco3",
             TemporalResolutionError,
             "Nasa Ames file contains neg. meas periods...",
             id="negative period",
         ),
         pytest.param(
-            EBAS_FILEDIR / EBAS_ISSUE_FILES["o3_tstype"],
+            "o3_tstype",
             "conco3",
             TemporalResolutionError,
             "Failed to derive correct sampling frequency in LT0015R.",
@@ -580,10 +634,14 @@ def test_read_file(reader: ReadEbas, filename: Path, vars_to_retrieve: str, chec
     ],
 )
 def test_read_file_error(
-    reader: ReadEbas, filename: Path, vars_to_retrieve: str, exception: Type[Exception], error: str
+    reader: ReadEbas,
+    ebas_issue_files: Path,
+    vars_to_retrieve: str,
+    exception: type[Exception],
+    error: str,
 ):
     with pytest.raises(exception) as e:
-        reader.read_file(filename, vars_to_retrieve)
+        reader.read_file(ebas_issue_files, vars_to_retrieve)
     assert str(e.value).startswith(error)
 
 
@@ -601,25 +659,6 @@ def test__try_get_pt_conversion(reader: ReadEbas):
     p, T = reader._try_get_pt_conversion(data.var_defs[2])
     assert p == 65300  # Pa
     assert T == 265.15  # K
-
-
-def get_ebas_filelist(var_name: str) -> list[Path]:
-    paths: list[Path] = [
-        EBAS_FILEDIR / file for files in EBAS_FILES[var_name].values() for file in files
-    ]
-    assert all(path.exists() for path in paths)
-    return paths
-
-
-@pytest.fixture
-def ebas_files(file_vars: list[str] | str | None) -> list[Path] | None:
-    if file_vars is None:
-        return None
-    if isinstance(file_vars, str):
-        return get_ebas_filelist(file_vars)
-
-    paths = (get_ebas_filelist(var_name) for var_name in file_vars)
-    return list(chain.from_iterable(paths))
 
 
 @pytest.mark.parametrize(
@@ -655,8 +694,8 @@ def test_read(
             assert meta["var_info"][var]["units"] == const.VARS[var].units
 
 
-def test_read_error(reader: ReadEbas):
-    files = get_ebas_filelist("sc550dryaer")
+@pytest.mark.parametrize("file_vars", ["sc550dryaer"])
+def test_read_error(reader: ReadEbas, ebas_files: list[Path]):
     with pytest.raises(DataCoverageError) as e:
-        reader.read("ac550aer", files=files)
+        reader.read("ac550aer", files=ebas_files)
     assert str(e.value) == "UngriddedData object appears to be empty"

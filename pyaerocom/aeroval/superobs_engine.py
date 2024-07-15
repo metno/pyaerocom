@@ -4,9 +4,9 @@ from traceback import format_exc
 import numpy as np
 import xarray as xr
 
+from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
-from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import get_lowest_resolution
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,6 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
     """
 
     def run(self, model_name, obs_name, var_list, try_colocate_if_missing=True):
-
         self._process_entry(
             model_name=model_name,
             obs_name=obs_name,
@@ -27,7 +26,6 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         )
 
     def _process_entry(self, model_name, obs_name, var_list, try_colocate_if_missing):
-
         sobs_cfg = self.cfg.obs_cfg.get_entry(obs_name)
 
         if var_list is None:
@@ -106,13 +104,13 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
             darrs.append(self._get_dataarray(fp, to_freq, obs_name))
 
         merged = xr.concat(darrs, dim="station_name")
-        coldata = ColocatedData(merged)
+        coldata = ColocatedData(data=merged)
         engine = ColdataToJsonEngine(self.cfg)
         engine.process_coldata(coldata)
 
     def _get_dataarray(self, fp, to_freq, obs_name):
         """Get dataarray needed for combination to superobs"""
-        data = ColocatedData(fp)
+        data = ColocatedData(data=fp)
         if data.ts_type != to_freq:
             data.resample_time(to_ts_type=to_freq, settings_from_meta=True, inplace=True)
         arr = data.data

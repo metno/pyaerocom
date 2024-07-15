@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from configparser import ConfigParser
-from typing import Type
 
 import pytest
 
@@ -169,6 +168,16 @@ TESTDATA = [
     ("wetoxs", None, None, None, None, ["concprcpoxs"], 1),
     ("wetoxn", None, None, None, None, ["concprcpoxn"], 1),
     ("wetrdn", None, None, None, None, ["concprcprdn"], 1),
+    ("wetoxsc", None, None, None, None, ["concprcpoxsc"], 1),
+    ("wetoxst", None, None, None, None, ["concprcpoxst"], 1),
+    ("wetna", None, None, None, None, ["concprcpna"], 1),
+    ("proxydryoxs", None, None, None, None, ["concprcpoxs"], 1),
+    ("proxydryoxn", None, None, None, None, ["concprcpoxn"], 1),
+    ("proxydryrdn", None, None, None, None, ["concprcprdn"], 1),
+    ("proxydryo3", None, None, None, None, ["vmro3"], 1),
+    ("wetno3", None, None, None, None, ["concprcpno3"], 1),
+    ("wetnh4", None, None, None, None, ["concprcpnh4"], 1),
+    ("wetso4", None, None, None, None, ["concprcpso4"], 1),
     (
         "prmm",
         ["precipitation_amount_off", "precipitation_amount"],
@@ -261,7 +270,7 @@ def test_make_sql_request(info: EbasVarInfo, constraints: dict):
         ),
     ],
 )
-def test_make_sql_request_error(info: EbasVarInfo, exception: Type[Exception], error: str):
+def test_make_sql_request_error(info: EbasVarInfo, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
         info.make_sql_request()
     assert str(e.value).startswith(error)
