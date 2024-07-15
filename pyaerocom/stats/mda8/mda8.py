@@ -1,5 +1,4 @@
 import logging
-from datetime import timedelta
 
 import numpy as np
 import pandas as pd
@@ -86,7 +85,7 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     in the input dataarray to ensure that the ts does not expand.
     """
     mda8 = _daily_max(_rolling_average_8hr(data))
-    # mda8 = mda8[:, 1:, :]
+
     mda8.attrs["ts_type"] = "daily"
 
     # Ensure time dimension represents the midpoint of the interval.
