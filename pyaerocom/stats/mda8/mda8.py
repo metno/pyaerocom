@@ -79,6 +79,11 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     > ends i.e. the first calculation period for any one day will be the period from
     > 17:00 on the previous day to 01:00 on that day; the last calculation period for
     > any one day will be the period from 16:00 to 24:00 on that day.
+
+    Note:
+    -----
+    Calculated values will only be returned for days which have at least one datapoint
+    in the input dataarray to ensure that the ts does not expand.
     """
     mda8 = _daily_max(_rolling_average_8hr(data))
     # mda8 = mda8[:, 1:, :]
