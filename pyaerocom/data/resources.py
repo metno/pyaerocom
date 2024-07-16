@@ -15,6 +15,7 @@ else:
 def path(package: str, resource: str) -> ContextManager[Path]:
     """A context manager providing a file path object to the resource.
     If the resource does not already exist on its own on the file system,
+    e.g. it only exists in a zip-file, the resource will be extracted and
     a temporary file will be created. If the file was created, the file
     will be deleted upon exiting the context manager (no exception is
     raised if the file was deleted prior to the context manager

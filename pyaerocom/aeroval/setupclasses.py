@@ -8,6 +8,7 @@ from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
 
+from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
 from pyaerocom.tstype import TsType
 
 if sys.version_info >= (3, 11):
@@ -60,7 +61,7 @@ class OutputPaths(BaseModel):
     # Pydantic ConfigDict
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    JSON_SUBDIRS: list[str] = [
+    _JSON_SUBDIRS: list[str] = [
         "map",
         "ts",
         "ts/diurnal",
@@ -86,8 +87,6 @@ class OutputPaths(BaseModel):
             tmp.mkdir(parents=True, exist_ok=True)
         return v
 
-    ADD_GLOB: list[str] = ["coldata_basedir", "json_basedir"]
-
     proj_id: str
     exp_id: str
 
@@ -103,7 +102,7 @@ class OutputPaths(BaseModel):
     def get_json_output_dirs(self, assert_exists=True):
         out = {}
         base = os.path.join(self.json_basedir, self.proj_id, self.exp_id)
-        for subdir in self.JSON_SUBDIRS:
+        for subdir in self._JSON_SUBDIRS:
             loc = self._check_init_dir(os.path.join(base, subdir), assert_exists)
             out[subdir] = loc
         # for cams2_83 the extra 'forecast' folder will contain the median scores if computed
@@ -323,16 +322,17 @@ class EvalSetup(BaseModel):
     ## Regular & BaseModel-based Attributes
     ########################################
 
-    IGNORE_JSON: list[str] = ["_aux_funs"]
-    ADD_GLOB: list[str] = ["io_aux_file"]
-
     io_aux_file: Annotated[
         Path | str, ".py file containing additional read methods for modeldata"
     ] = ""
 
-    _aux_funs: dict = {}
+    var_web_info_file: Annotated[Path | str, "config file containing additional variables"] = ""
 
-    var_web_info: dict = {}
+    var_scale_colmap_file: Annotated[
+        Path | str, "config file containing scales/ranges for variables"
+    ] = ""
+
+    _aux_funs: dict = {}
 
     @computed_field
     @cached_property
@@ -365,6 +365,14 @@ class EvalSetup(BaseModel):
         if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
             self._import_aux_funs()
         return self._aux_funs
+
+    @cached_property
+    def var_web_info(self) -> VarWebInfo:
+        return VarWebInfo(config_file=self.var_web_info_file)
+
+    @cached_property
+    def var_scale_colmap(self) -> VarWebScaleAndColormap:
+        return VarWebScaleAndColormap(config_file=self.var_scale_colmap_file)
 
     @computed_field
     @cached_property

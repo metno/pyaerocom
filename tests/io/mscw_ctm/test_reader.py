@@ -116,12 +116,10 @@ VAR_MAP = {
     "concCocFine": "SURF_ugC_PM_OM25",
     "concecCoarse": "SURF_ug_ECCOARSE",
     "concecFine": "SURF_ug_ECFINE",
-    "concnh4coarse": "SURF_ug_NH4_F",
-    "concnh4fine": "SURF_ug_NH4_F",
+    "concnh4pm25": "SURF_ug_NH4_F",
     "concoxn": "SURF_ugN_OXN",
     "concso4c": "SURF_ug_SO4",
-    "concso4coarse": "SURF_ug_SO4",
-    "concso4fine": "SURF_ug_SO4",
+    "concso4pm25": "SURF_ug_SO4",
     "vmrno": "SURF_ppb_NO",
 }
 

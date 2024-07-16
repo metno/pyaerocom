@@ -89,11 +89,10 @@ def test_coldata_to_mda8(coldata):
     assert isinstance(mda8, ColocatedData)
     assert mda8.metadata["ts_type"] == "daily"
     assert mda8.metadata["var_name"] == ["vmro3mda8", "vmro3mda8"]
-    assert mda8.shape == (2, 9, 1)
+    assert mda8.shape == (2, 8, 1)
 
     assert mda8.data.values[0, :, 0] == pytest.approx(
         [
-            np.nan,
             np.nan,
             np.nan,
             1.18741556,
@@ -109,7 +108,6 @@ def test_coldata_to_mda8(coldata):
 
     assert mda8.data.values[1, :, 0] == pytest.approx(
         [
-            np.nan,
             1.57327333,
             1.28884431,
             1.28741556,

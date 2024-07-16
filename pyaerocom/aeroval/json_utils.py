@@ -89,34 +89,3 @@ def write_json(data_dict, file_path, **kwargs):
         data_dict = round_floats(in_data=data_dict)
     with open(file_path, "w") as f:
         simplejson.dump(data_dict, f, allow_nan=True, **kwargs)
-
-
-def check_make_json(fp, indent=4) -> str:
-    """
-    Make sure input json file exists
-
-    Parameters
-    ----------
-    fp : str
-        filepath to be checked (must end with .json)
-    indent : int
-        indentation of json file
-
-    Raises
-    ------
-    ValueError
-        if filepath does not exist.
-
-    Returns
-    -------
-    str
-        input filepath.
-
-    """
-    fp = str(fp)
-    if not fp.endswith(".json"):
-        raise ValueError("Input filepath must end with .json")
-    if not os.path.exists(fp):
-        logger.info(f"Creating empty json file: {fp}")
-        write_json({}, fp, indent=indent)
-    return fp
