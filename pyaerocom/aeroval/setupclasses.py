@@ -2,10 +2,13 @@ import logging
 import os
 import sys
 from datetime import timedelta
+from enum import Enum
 from functools import cached_property
 from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
+
+from pyaerocom.tstype import TsType
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -110,9 +113,29 @@ class OutputPaths(BaseModel):
         return out
 
 
+class MapFreqsChoices(Enum):
+    monthly = TsType("monthly")
+    yearly = TsType("yearly")
+
+
 class ModelMapsSetup(BaseModel):
-    maps_freq: Literal["monthly", "yearly"] = "monthly"
+    # Pydantic ConfigDict
+    model_config = ConfigDict(use_enum_values=True)
+
+    # Class attributes
+    maps_freq: Literal["monthly", "yearly"] | MapFreqsChoices = Field(
+        default=MapFreqsChoices.monthly, validate_default=True
+    )
     maps_res_deg: PositiveInt = 5
+
+    # TODO: Turn all ts_type attributes into TsType here instead of converting them later in the code
+    @field_validator("maps_freq", mode="before")
+    @classmethod
+    def transform(cls, freq: str | TsType) -> TsType:
+        if isinstance(freq, str):
+            return TsType(freq)
+        else:
+            return freq
 
 
 class CAMS2_83Setup(BaseModel):

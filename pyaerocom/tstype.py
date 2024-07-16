@@ -2,6 +2,7 @@
 General helper methods for the pyaerocom library.
 """
 
+import json
 import logging
 import re
 
@@ -415,3 +416,6 @@ class TsType:
 
     def __repr__(self):
         return self.val
+
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

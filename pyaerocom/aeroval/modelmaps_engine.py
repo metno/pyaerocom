@@ -164,8 +164,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
-        freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-        freq = min(freq, self.cfg.time_cfg.main_freq)
+        # freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+        # freq = min(freq, self.cfg.time_cfg.main_freq)
+        freq = self.cfg.modelmaps_opts.maps_freq
         tst = TsType(data.ts_type)
 
         if tst < freq:
