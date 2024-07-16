@@ -112,7 +112,7 @@ class OutputPaths(BaseModel):
         return out
 
 
-class MapFreqsChoices(Enum):
+class MapFreqChoices(Enum):
     monthly = TsType("monthly")
     yearly = TsType("yearly")
 
@@ -122,8 +122,8 @@ class ModelMapsSetup(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
     # Class attributes
-    maps_freq: Literal["monthly", "yearly"] | MapFreqsChoices = Field(
-        default=MapFreqsChoices.monthly, validate_default=True
+    maps_freq: Literal["monthly", "yearly"] | MapFreqChoices = Field(
+        default=MapFreqChoices.monthly, validate_default=True
     )
     maps_res_deg: PositiveInt = 5
 
