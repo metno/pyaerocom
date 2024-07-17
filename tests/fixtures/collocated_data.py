@@ -220,6 +220,7 @@ def _create_fake_coldata_3d_hourly():
 
     return cd
 
+
 def _create_fake_partial_trends_coldata_3d(colocate_time: bool = False):
     var = "concpm10"
     filter_name = "ALL-wMOUNTAINS"
@@ -262,8 +263,8 @@ def _create_fake_partial_trends_coldata_3d(colocate_time: bool = False):
         "stop_str": dtime_partial[-1].strftime("%Y%m%d"),
         "var_units": ["ug m-3", "ug m-3"],
         "vert_scheme": "surface",
-        #"data_level": 3,
-        #"revision_ref": "20210409",
+        # "data_level": 3,
+        # "revision_ref": "20210409",
         "from_files": [],
         "from_files_ref": None,
         "stations_ignored": None,
@@ -291,11 +292,14 @@ def _create_fake_partial_trends_coldata_3d(colocate_time: bool = False):
 
     return cd
 
+
 def _create_fake_partial_trends_coldata_3d_coltime():
     return _create_fake_partial_trends_coldata_3d(True)
 
+
 def _create_fake_partial_trends_coldata_3d_no_coltime():
     return _create_fake_partial_trends_coldata_3d()
+
 
 def _create_fake_timeseries_hourly():
     cd = _create_fake_coldata_3d_hourly()

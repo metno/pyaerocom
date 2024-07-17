@@ -326,11 +326,10 @@ def test__map_indices():
         (4, 2, False),
         (3, 3, True),
         (3, 3, False),
-        
     ],
 )
 def test__remove_less_covered(
-    #coldata: dict,
+    # coldata: dict,
     min_yrs: int,
     station_nb: int,
     colocate_time: bool,
@@ -352,9 +351,7 @@ def test__remove_less_covered(
     assert len(new_stations) == station_nb
 
 
-def test__remove_less_covered_error(
-    
-):
+def test__remove_less_covered_error():
     cd = COLDATA["fake_3d_partial_trends_coltime"]()
     with pytest.raises(TrendsError) as e:
         new_cd = _remove_less_covered(cd, 1000)
