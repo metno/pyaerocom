@@ -309,7 +309,6 @@ def test_StationData_merge_meta_same_station_error():
         )
 
 
-
 @pytest.mark.parametrize("stat", [stat1.copy(), stat2.copy()])
 @pytest.mark.parametrize("other", [stat1, stat2])
 def test_StationData_merge_varinfo(stat: StationData, other: StationData):
