@@ -1435,7 +1435,6 @@ def _process_heatmap_data(
                         stats = stats_dummy
                     else:
                         try:
-
                             subset = _select_period_season_coldata(coldata, per, season)
 
                             if add_trends and freq != "daily":
