@@ -771,7 +771,7 @@ def _make_regional_trends(
                 if None not in obs_trend.values() and None not in mod_trend.values():
                     station_mod_trends.append(mod_trend)
                     station_obs_trends.append(obs_trend)
-            except AeroValTrendsError as e:
+            except TrendsError as e:
                 msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                 logger.warning(msg)
 
@@ -962,7 +962,7 @@ def process_trends(
             )
 
             trends_successful = True
-        except AeroValTrendsError as e:
+        except TrendsError as e:
             msg = f"Failed to calculate trends, and will skip. This was due to {e}"
             logger.warning(msg)
 
@@ -1886,7 +1886,7 @@ def _remove_less_covered(
 
     print(f"Removed {len(stations)-len(new_stations)} stations")
     if len(new_stations) == 0:
-        raise AeroValTrendsError(
+        raise TrendsError(
             f"No stations left after removing stations with fewer than {min_yrs} years!"
         )
 

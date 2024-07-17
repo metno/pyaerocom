@@ -326,18 +326,19 @@ def test__map_indices():
         (4, 2, False),
         (3, 3, True),
         (3, 3, False),
+        
     ],
 )
 def test__remove_less_covered(
-    coldata: dict,
+    #coldata: dict,
     min_yrs: int,
     station_nb: int,
     colocate_time: bool,
 ):
     cd = (
-        coldata["fake_3d_partial_trends_coltime"]
+        COLDATA["fake_3d_partial_trends_coltime"]()
         if colocate_time
-        else coldata["fake_3d_partial_trends"]
+        else COLDATA["fake_3d_partial_trends"]()
     )
     old_stations = cd.data.station_name.data
 
@@ -352,9 +353,9 @@ def test__remove_less_covered(
 
 
 def test__remove_less_covered_error(
-    coldata: dict,
+    
 ):
-    cd = coldata["fake_3d_partial_trends_coltime"]
-    with pytest.raises(AeroValTrendsError) as e:
+    cd = COLDATA["fake_3d_partial_trends_coltime"]()
+    with pytest.raises(TrendsError) as e:
         new_cd = _remove_less_covered(cd, 1000)
     assert str(e.value) == "No stations left after removing stations with fewer than 1000 years!"

@@ -220,6 +220,82 @@ def _create_fake_coldata_3d_hourly():
 
     return cd
 
+def _create_fake_partial_trends_coldata_3d(colocate_time: bool = False):
+    var = "concpm10"
+    filter_name = "ALL-wMOUNTAINS"
+    regfilter = Filter(name=filter_name)
+
+    dtime1 = pd.date_range("2000", "2001", freq="D")
+    dtime2 = pd.date_range("2003", "2006", freq="D")
+    dtime3 = pd.date_range("2006", "2009", freq="D")
+    dtime4 = pd.date_range("2011", "2013", freq="D")
+    dtime_partial = dtime1.union(dtime2).union(dtime3).union(dtime4)
+
+    dtimes = [dtime1, dtime2, dtime_partial, dtime4, dtime_partial]
+
+    lats = [-80, 0, 70, 0.1, 0]
+    lons = [-150, 0, 100, 0.1, 3]
+    alts = [0, 100, 2000, 10, 0]
+
+    timenum = len(dtime_partial)
+    statnum = len(lats)
+
+    statnames = [f"FakeStation{c}" for c in range(statnum)]
+
+    data = np.ones((2, timenum, statnum))
+
+    for i in range(len(statnames)):
+        data[1, :, i] = 1
+        for j, d in enumerate(dtime_partial):
+            if d in dtimes[i]:
+                data[0, j, i] = 1
+            else:
+                data[0, j, i] = np.NaN
+
+    meta = {
+        "data_source": ["fakeobs", "fakemod"],
+        "var_name": [var, var],
+        "ts_type": "monthly",
+        "filter_name": filter_name,
+        "ts_type_src": ["monthly", "daily"],
+        "start_str": dtime_partial[0].strftime("%Y%m%d"),
+        "stop_str": dtime_partial[-1].strftime("%Y%m%d"),
+        "var_units": ["ug m-3", "ug m-3"],
+        "vert_scheme": "surface",
+        #"data_level": 3,
+        #"revision_ref": "20210409",
+        "from_files": [],
+        "from_files_ref": None,
+        "stations_ignored": None,
+        "colocate_time": colocate_time,
+        "obs_is_clim": False,
+        "pyaerocom": "0.21.0.dev0",
+        "min_num_obs": dict(monthly=dict(daily=15), daily=dict(hourly=12)),
+        "resample_how": dict(monthly=dict(daily="sum"), daily=dict(hourly="max")),
+    }
+
+    meta.update(regfilter.to_dict())
+
+    # create coordinates of DataArray
+    coords = {
+        "data_source": meta["data_source"],
+        "time": dtime_partial,
+        "station_name": statnames,
+        "latitude": ("station_name", lats),
+        "longitude": ("station_name", lons),
+        "altitude": ("station_name", alts),
+    }
+
+    dims = ["data_source", "time", "station_name"]
+    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var, attrs=meta)
+
+    return cd
+
+def _create_fake_partial_trends_coldata_3d_coltime():
+    return _create_fake_partial_trends_coldata_3d(True)
+
+def _create_fake_partial_trends_coldata_3d_no_coltime():
+    return _create_fake_partial_trends_coldata_3d()
 
 def _create_fake_timeseries_hourly():
     cd = _create_fake_coldata_3d_hourly()
@@ -255,6 +331,8 @@ COLDATA = dict(
     fake_4d=_create_fake_coldata_4d,
     fake_3d_hr=_create_fake_coldata_3d_hourly,
     fake_3d_trends=_create_fake_trends_coldata_3d,
+    fake_3d_partial_trends_coltime=_create_fake_partial_trends_coldata_3d_coltime,
+    fake_3d_partial_trends=_create_fake_partial_trends_coldata_3d_no_coltime,
 )
 
 
