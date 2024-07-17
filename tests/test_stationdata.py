@@ -303,11 +303,11 @@ def test_StationData_merge_meta_same_station(
 
 
 def test_StationData_merge_meta_same_station_error():
-    with pytest.raises(CoordinateError) as e:
+    with pytest.raises(CoordinateError, match="differ by more than 0.001 km.") as e:
         stat1.merge_meta_same_station(
             stat2, coord_tol_km=0.001, check_coords=True, inplace=False, raise_on_error=True
         )
-    assert str(e.value) == "Station coordinates differ by more than 0.001 km."
+
 
 
 @pytest.mark.parametrize("stat", [stat1.copy(), stat2.copy()])
