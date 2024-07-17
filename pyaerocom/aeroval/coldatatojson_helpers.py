@@ -750,7 +750,6 @@ def _make_regional_trends(
     nb_stations = len(data.data.data[0, 0, :])
 
     for i in range(nb_stations):
-        # print(f"Station {i+1}/{nb_stations}")
 
         if stop - start >= trends_min_yrs:
             try:
@@ -852,9 +851,6 @@ def _combine_regional_trends(
 
 def _combine_statistic(data: list, key: str, func: Callable) -> float:
     cleaned = np.array([i[key] for i in data])
-    # for i in data:
-    #     if i[key] is None:
-    #         print(i)
     return float(func(cleaned))
 
 
@@ -910,7 +906,6 @@ def process_trends(
     median_trends_successful = False
 
     if avg_over_trends:
-        # logger.info(f"Adding trend for {regname} in {season} {per}")
 
         (
             mean_obs_trend,
