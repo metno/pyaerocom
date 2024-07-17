@@ -438,7 +438,7 @@ class ReadMscwCtm(GriddedModelReader):
         return matches
 
     @property
-    def ts_type(self):
+    def _ts_type(self):
         """
         Frequency of time dimension of current data file
 
@@ -682,7 +682,7 @@ class ReadMscwCtm(GriddedModelReader):
             # that current file has different resolution
             self._filename = self._filename_from_ts_type(ts_type)
 
-        ts_type = self.ts_type
+        ts_type = self._ts_type
 
         arr = self._load_var(var_name_aerocom, ts_type)
         if arr.units in UALIASES:

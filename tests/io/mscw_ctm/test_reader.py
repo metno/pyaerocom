@@ -192,7 +192,7 @@ def test__ReadMscwCtm__check_files_in_data_dir_error():
 
 def test_ReadMscwCtm_ts_type():
     reader = ReadMscwCtm()
-    assert reader.ts_type == "daily"
+    assert reader._ts_type == "daily"
 
 
 def test_ReadMscwCtm_var_map():
@@ -211,7 +211,7 @@ def test_ReadMscwCtm_read_var(var_name: str, ts_type: str, data_dir: str):
     if ts_type is not None:
         assert data.ts_type == ts_type
     assert data.ts_type is not None
-    assert data.ts_type == reader.ts_type
+    assert data.ts_type == reader._ts_type
 
 
 @pytest.mark.parametrize(

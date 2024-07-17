@@ -1,4 +1,5 @@
 import abc
+from typing import Iterator
 
 from pyaerocom.griddeddata import GriddedData
 
@@ -16,27 +17,7 @@ class GriddedModelReader(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def ts_type(self):
-        """
-        Frequency of time dimension of current data file. Since a reader
-        might have multiple ts_types, this value is volatile.
-
-        Raises
-        ------
-        AttributeError
-            if :attr:`filename` is not set.
-
-        Returns
-        -------
-        str
-            current ts_type.
-
-        """
-        pass
-
-    @property
-    @abc.abstractmethod
-    def ts_types(self):
+    def ts_types(self) -> Iterator[str]:
         """
         List of available frequencies
 
@@ -55,7 +36,7 @@ class GriddedModelReader(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def years_avail(self) -> list:
+    def years_avail(self) -> Iterator[str]:
         """
         Years available in dataset
         """
@@ -63,12 +44,12 @@ class GriddedModelReader(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def vars_provided(self):
+    def vars_provided(self) -> Iterator[str]:
         """Variables provided by this dataset"""
         pass
 
     @abc.abstractmethod
-    def has_var(self, var_name):
+    def has_var(self, var_name) -> bool:
         """Check if variable is supported
 
         Parameters
