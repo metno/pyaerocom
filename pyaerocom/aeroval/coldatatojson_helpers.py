@@ -1866,11 +1866,9 @@ def _remove_less_covered(
     min_yrs: int,
     sequential_yrs: bool = False,
 ) -> ColocatedData:
-
     stations = data.data.station_name.data
     data = data.copy()
     for i, s in enumerate(stations):
-
         years = _get_yeares(data, s)
         if sequential_yrs:
             max_yrs = _find_longest_seq_yrs(years)
