@@ -3,14 +3,12 @@ import pytest
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
-from pyaerocom.colocation.colocation_3d import ColocatedDataLists
 from pyaerocom.stats.mda8.mda8 import (
     _calc_mda8,
     _daily_max,
     _rolling_average_8hr,
     mda8_colocated_data,
 )
-from tests.fixtures.collocated_data import coldata
 
 
 @pytest.fixture
