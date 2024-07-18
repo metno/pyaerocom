@@ -606,7 +606,7 @@ class StationData(StationMetaData):
             try:
                 if not self.same_coords(other, coord_tol_km):
                     raise CoordinateError(
-                        f"Station coordinates differ by more than {coord_tol_km} km."
+                        f"Station coordinates of {self.station_id} and {other.station_id} for species {self.vars_available} differ by more than {coord_tol_km} km."
                     )
             except MetaDataError:  #
                 pass
