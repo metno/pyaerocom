@@ -236,7 +236,7 @@ def test_EvalSetup_StatisticsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update
         )
     else:  # defaults
         assert "trends_min_yrs" not in cfg_exp1
-        assert statistics_opts.trends_min_yrs == 7
+        assert statistics_opts.trends_min_yrs == 0
         assert "use_diurnal" not in cfg_exp1
         assert statistics_opts.use_diurnal is False
         assert "use_fairmode" not in cfg_exp1
