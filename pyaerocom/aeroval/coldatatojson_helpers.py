@@ -750,7 +750,6 @@ def _make_regional_trends(
     nb_stations = len(data.data.data[0, 0, :])
 
     for i in range(nb_stations):
-
         if stop - start >= trends_min_yrs:
             try:
                 obs_vals = data.data.data[0, :, i]
@@ -906,7 +905,6 @@ def process_trends(
     median_trends_successful = False
 
     if avg_over_trends:
-
         (
             mean_obs_trend,
             mean_mod_trend,
