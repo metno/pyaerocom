@@ -207,9 +207,7 @@ def test_EvalSetup_StatisticsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update
     statistics_opts = eval_setup.statistics_opts
     if update:
         assert (
-            statistics_opts.stats_min_yrs
-            == cfg_exp1["stats_min_yrs"]
-            == update["stats_min_yrs"]
+            statistics_opts.stats_min_yrs == cfg_exp1["stats_min_yrs"] == update["stats_min_yrs"]
         )
         assert statistics_opts.use_diurnal == cfg_exp1["use_diurnal"] == update["use_diurnal"]
         assert statistics_opts.use_fairmode == cfg_exp1["use_fairmode"] == update["use_fairmode"]
