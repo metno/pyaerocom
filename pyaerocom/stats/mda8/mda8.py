@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
@@ -49,6 +50,7 @@ def mda8_colocated_data(coldat: ColocatedData, /, obs_var: str, mod_var: str) ->
     cd = ColocatedData(_calc_mda8(coldat.data))
     cd.data.attrs["var_name"] = [obs_var, mod_var]
     cd.metadata["var_name_input"] = [obs_var, mod_var]
+
     return cd
 
 
@@ -76,9 +78,24 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     > ends i.e. the first calculation period for any one day will be the period from
     > 17:00 on the previous day to 01:00 on that day; the last calculation period for
     > any one day will be the period from 16:00 to 24:00 on that day.
+
+    Note:
+    -----
+    Calculated values will only be returned for days which have at least one datapoint
+    in the input dataarray to ensure that the ts does not expand.
     """
     mda8 = _daily_max(_rolling_average_8hr(data))
+
     mda8.attrs["ts_type"] = "daily"
+
+    # Ensure time dimension represents the midpoint of the interval.
+    mda8.coords.update({"time": mda8.get_index("time") + pd.tseries.frequencies.to_offset("12h")})
+
+    # Keep only values for days that existed in the original time series.
+    mda8 = mda8.sel(
+        time=np.isin(mda8.coords["time.date"].values, np.unique(data.coords["time.date"].values))
+    )
+
     return mda8
 
 
