@@ -116,9 +116,9 @@ class ColdataToJsonEngine(ProcessingEngine):
         diurnal_only = coldata.get_meta_item("diurnal_only")
 
         add_trends = self.cfg.statistics_opts.add_trends
-        trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
+        trends_min_yrs = self.cfg.statistics_opts.stats_min_yrs
 
-        min_yrs = self.cfg.statistics_opts.min_yrs
+        min_yrs = self.cfg.statistics_opts.obs_min_yrs
         sequential_yrs = self.cfg.statistics_opts.sequential_yrs
         avg_over_trends = self.cfg.statistics_opts.avg_over_trends
         use_fairmode = self.cfg.statistics_opts.use_fairmode

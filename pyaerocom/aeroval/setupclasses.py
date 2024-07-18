@@ -186,18 +186,12 @@ class StatisticsSetup(BaseModel, extra="allow"):
     annual_stats_constrained: bool = False
 
     # Trends config
-    add_trends: bool = (
-        False  # Adding trend calculations, only trends over the average time series over stations in a region
-    )
+    add_trends: bool = False  # Adding trend calculations, only trends over the average time series over stations in a region
     avg_over_trends: bool = (
         False  # Adds calculation of avg over trends of time series of stations in region
     )
-    min_yrs: PositiveInt = (
-        0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as min_yrs
-    )
-    trends_min_yrs: PositiveInt = (
-        min_yrs  # Calculates trends if number of valid years are equal or more than this. Should in most cases be the same as min_yrs
-    )
+    obs_min_yrs: PositiveInt = 0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as min_yrs    
+    stats_min_yrs: PositiveInt = obs_min_yrs  # Calculates trends if number of valid years are equal or more than this. Should in most cases be the same as min_yrs
     sequential_yrs: bool = False  # Whether or not the min_yrs should be sequential
 
     stats_tseries_base_freq: str | None = None
