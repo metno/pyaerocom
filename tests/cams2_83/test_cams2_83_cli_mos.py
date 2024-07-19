@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from _warnings import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.scripts.cams2_83.cli_mos import app
 
 runner = CliRunner()
