@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from scipy.constants import Avogadro
 
+from _warnings import ignore_warnings
 from pyaerocom.io.helpers_units import (
     mass_to_nr_molecules,
     nr_molecules_to_mass,
@@ -52,23 +53,35 @@ def test_unitconv_sfc_conc(dummy_data):
     assert np.all(result == pytest.approx(1.99796663, 1e-4))
 
 
+@ignore_warnings(
+    FutureWarning,
+    "'M' is deprecated and will be removed in a future version, please use 'ME' instead.",
+)
 def test_unitconv_wet_depo_bck(dummy_data):
-    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="ME"))
+    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M"))
     result = unitconv_wet_depo_bck(dummy_data, time)
     assert len(result) == len(
         dummy_data
     )  # sufficent to check length b/c wet depo will change month-to-month
 
 
+@ignore_warnings(
+    FutureWarning,
+    "'M' is deprecated and will be removed in a future version, please use 'ME' instead.",
+)
 def test_unitconv_wet_depo_from_emep(dummy_data):
-    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="ME"))
+    time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M"))
     result = unitconv_wet_depo_from_emep(dummy_data, time)
     assert len(result) == len(
         dummy_data
     )  # sufficent to check length b/c wet depo will change month-to-month
 
 
+@ignore_warnings(
+    FutureWarning,
+    "'M' is deprecated and will be removed in a future version, please use 'ME' instead.",
+)
 def test_unitconv_wet_depo_from_emep_time_not_pandas_series(dummy_data):
-    time = pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="ME")
+    time = pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M")
     result = unitconv_wet_depo_from_emep(dummy_data, time)
     assert len(result) == len(dummy_data)

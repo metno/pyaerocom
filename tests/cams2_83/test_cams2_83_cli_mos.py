@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+from _warnings import ignore_warnings
 from pyaerocom.scripts.cams2_83.cli_mos import app
 
 runner = CliRunner()
@@ -71,6 +72,7 @@ def test_eval_mos_standard(tmp_path: Path, coldata_mos: Path, caplog):
     assert "Done Running Statistics (MOS)" in caplog.text
 
 
+@ignore_warnings(RuntimeWarning, "invalid value encountered in divide")
 @pytest.mark.usefixtures("fake_ExperimentProcessor", "reset_cachedir")
 def test_eval_mos_medianscores(tmp_path: Path, coldata_mos: Path, caplog):
     options = f"season 2024-03-01 2024-03-05 --data-path {tmp_path} --coldata-path {coldata_mos} --cache {tmp_path} --id mos-colocated-data --name 'Test'"

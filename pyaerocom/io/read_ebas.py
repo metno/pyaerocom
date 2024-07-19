@@ -1516,13 +1516,14 @@ class ReadEbas(ReadUngriddedBase):
         if TsType(freq_ebas).check_match_total_seconds(most_common_dt):
             return freq_ebas
 
-        logger.warning(
+        logger.info(
             f"Detected wrong frequency {freq_ebas}. Trying to infer the correct frequency..."
         )
         try:
             freq = TsType.from_total_seconds(most_common_dt)
             return str(freq)
         except TemporalResolutionError:
+            logger.warning("Unable to infer the correct frequency...")
             raise TemporalResolutionError(
                 f"Failed to derive correct sampling frequency in {file.file_name}. "
                 f"Most common meas period (stop_meas - start_meas) in file is "
