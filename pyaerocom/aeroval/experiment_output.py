@@ -157,7 +157,8 @@ class ExperimentOutput(ProjectOutput):
         """
         avail = self._create_menu_dict()
         avail = self._sort_menu_entries(avail)
-        self.avdb.put_menu(avail, self.proj_id, self.exp_id)
+        with self.avdb.lock():
+            self.avdb.put_menu(avail, self.proj_id, self.exp_id)
 
     def update_interface(self) -> None:
         """
@@ -191,7 +192,8 @@ class ExperimentOutput(ProjectOutput):
         # AeroVal frontend needs periods to be set in config json file...
         # make sure they are
         self.cfg._check_time_config()
-        self.avdb.put_config(self.cfg.json_repr(), self.proj_id, self.exp_id)
+        with self.avdb.lock():
+            self.avdb.put_config(self.cfg.json_repr(), self.proj_id, self.exp_id)
 
     def _sync_heatmaps_with_menu_and_regions(self) -> None:
         """
@@ -220,7 +222,8 @@ class ExperimentOutput(ProjectOutput):
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
                             hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-            self.avdb.put_by_uri(hm, fp)
+            with self.avdb.lock():
+                self.avdb.put_by_uri(hm, fp)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
@@ -403,7 +406,8 @@ class ExperimentOutput(ProjectOutput):
                 modified = True
                 logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-        self.avdb.put_by_uri(data_new, fp)
+        with self.avdb.lock():
+            self.avdb.put_by_uri(data_new, fp)
         return modified
 
     def _clean_modelmap_files(self) -> list[str]:
@@ -516,14 +520,15 @@ class ExperimentOutput(ProjectOutput):
         return info
 
     def _create_var_ranges_json(self) -> None:
-        ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
+        with self.avdb.lock():
+            ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
 
-        avail = self._results_summary()
-        all_vars = list(set(avail["ovar"] + avail["mvar"]))
-        for var in all_vars:
-            if not var in ranges or ranges[var]["scale"] == []:
-                ranges[var] = self._get_cmap_info(var)
-        self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
+            avail = self._results_summary()
+            all_vars = list(set(avail["ovar"] + avail["mvar"]))
+            for var in all_vars:
+                if not var in ranges or ranges[var]["scale"] == []:
+                    ranges[var] = self._get_cmap_info(var)
+            self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:
         if self.cfg.statistics_opts.obs_only_stats:
@@ -557,7 +562,8 @@ class ExperimentOutput(ProjectOutput):
                     stats_info.update(statistics_mean_trend)
                     stats_info.update(statistics_median_trend)
 
-        self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
+        with self.avdb.lock():
+            self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
 
     def _get_var_name_and_type(self, var_name: str) -> VariableInfo:
         """Get menu name and type of observation variable
@@ -796,11 +802,12 @@ class ExperimentOutput(ProjectOutput):
         return new_sorted
 
     def _add_entry_experiments_json(self, exp_id: str, data) -> None:
-        current = self.avdb.get_experiments(self.proj_id, default={})
+        with self.avdb.lock():
+            current = self.avdb.get_experiments(self.proj_id, default={})
 
-        current[exp_id] = data
+            current[exp_id] = data
 
-        self.avdb.put_experiments(current, self.proj_id)
+            self.avdb.put_experiments(current, self.proj_id)
 
     def _del_entry_experiments_json(self, exp_id) -> None:
         """
@@ -816,13 +823,14 @@ class ExperimentOutput(ProjectOutput):
         None
 
         """
-        current = self.avdb.get_experiments(self.proj_id, default={})
+        with self.avdb.lock():
+            current = self.avdb.get_experiments(self.proj_id, default={})
 
-        try:
-            del current[exp_id]
-        except KeyError:
-            logger.warning(f"no such experiment registered: {exp_id}")
-        self.avdb.put_experiments(current, self.proj_id)
+            try:
+                del current[exp_id]
+            except KeyError:
+                logger.warning(f"no such experiment registered: {exp_id}")
+            self.avdb.put_experiments(current, self.proj_id)
 
     def reorder_experiments(self, exp_order=None) -> None:
         """Reorder experiment order in evaluation interface
@@ -840,7 +848,8 @@ class ExperimentOutput(ProjectOutput):
         elif not isinstance(exp_order, list):
             raise ValueError("need list as input")
 
-        current = self.avdb.get_experiments(self.proj_id, default={})
+        with self.avdb.lock():
+            current = self.avdb.get_experiments(self.proj_id, default={})
 
-        current = sort_dict_by_name(current, pref_list=exp_order)
-        self.avdb.put_experiments(current, self.proj_id)
+            current = sort_dict_by_name(current, pref_list=exp_order)
+            self.avdb.put_experiments(current, self.proj_id)
