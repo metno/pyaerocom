@@ -11,6 +11,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.units_helpers import UALIASES
 
 from .additional_variables import (
@@ -599,19 +600,21 @@ class ReadMscwCtm:
 
         Returns
         -------
-        GriddedData
+        xarray.DataArray
             loaded data object
+
         """
 
         temp_arrs = []
         req = self.AUX_REQUIRES[var_name_aerocom]
         aux_func = self.AUX_FUNS[var_name_aerocom]
         logger.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
+        proj_info = None
         for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
-            arr = self._load_var(aux_var, ts_type)
+            arr, proj_info = self._load_var(aux_var, ts_type)
             temp_arrs.append(arr)
 
-        return aux_func(*temp_arrs)
+        return aux_func(*temp_arrs), proj_info
 
     def _load_var(self, var_name_aerocom, ts_type):
         """
@@ -636,6 +639,8 @@ class ReadMscwCtm:
         -------
         xarray.DataArray
             loaded data
+        ProjectionInformation
+            projection of variable
 
         """
         if var_name_aerocom in self.var_map:  # can be read
@@ -677,7 +682,7 @@ class ReadMscwCtm:
 
         ts_type = self.ts_type
 
-        arr = self._load_var(var_name_aerocom, ts_type)
+        arr, proj_info = self._load_var(var_name_aerocom, ts_type)
         if arr.units in UALIASES:
             arr.attrs["units"] = UALIASES[arr.units]
         try:
@@ -693,6 +698,7 @@ class ReadMscwCtm:
             ts_type=ts_type,
             check_unit=True,
             convert_unit_on_init=True,
+            proj_info=proj_info,
         )
 
         #!obsolete
@@ -732,6 +738,8 @@ class ReadMscwCtm:
         -------
         xarray.DataArray
             loaded data
+        ProjectionInformation
+            projection of variable
 
         """
         emep_var = self.var_map[var_name_aerocom]
@@ -739,7 +747,7 @@ class ReadMscwCtm:
         try:
             filedata = self.filedata
             data = filedata[emep_var]
-
+            proj_info = ProjectionInformation.from_xarray(filedata, emep_var)
         except KeyError:
             raise VarNotAvailableError(
                 f"{var_name_aerocom} ({emep_var}) not available in {self.filename}"
@@ -749,7 +757,7 @@ class ReadMscwCtm:
         data.time.attrs["standard_name"] = "time"
         prefix = emep_var.split("_")[0]
         data.attrs["units"] = self.preprocess_units(data.units, prefix)
-        return data
+        return data, proj_info
 
     @staticmethod
     def preprocess_units(units, prefix):
