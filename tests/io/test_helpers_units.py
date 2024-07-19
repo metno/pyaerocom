@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from scipy.constants import Avogadro
 
-from _warnings import ignore_warnings
+from pyaerocom._warnings import ignore_warnings
 from pyaerocom.io.helpers_units import (
     mass_to_nr_molecules,
     nr_molecules_to_mass,
