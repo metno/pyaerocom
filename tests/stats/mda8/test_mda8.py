@@ -25,7 +25,7 @@ def test_data(time, values) -> xr.DataArray:
     (
         pytest.param(
             xr.date_range(start="2024-01-01 01:00", periods=49, freq="1h"),
-            [0] * 49,
+            [0.0] * 49,
             [0, 0, np.nan],
             id="zeros",
         ),
@@ -125,7 +125,7 @@ def test_coldata_to_mda8(coldata):
     (
         (
             xr.date_range(start="2024-01-01 01:00", periods=48, freq="1h"),
-            [0, 1, 2, 3, 4, 5, 6, 7] * 6,
+            [0.0, 1, 2, 3, 4, 5, 6, 7] * 6,
             [np.nan] * 5 + [2.5, 3] + [3.5] * 41,
         ),
         (
