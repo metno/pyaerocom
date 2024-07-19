@@ -200,7 +200,7 @@ class ExperimentOutput(ProjectOutput):
         menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
         all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
         for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
-            data = self.avdb.get_by_uuid(fp)
+            data = self.avdb.get_by_uri(fp)
             hm = {}
             for vardisp, info in menu.items():
                 obs_dict = info["obs"]
@@ -220,7 +220,7 @@ class ExperimentOutput(ProjectOutput):
                             hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
                             hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-            self.avdb.put_by_uuid(hm, fp)
+            self.avdb.put_by_uri(hm, fp)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
@@ -383,7 +383,7 @@ class ExperimentOutput(ProjectOutput):
             return True
 
         try:
-            data = self.avdb.get_by_uuid(fp)
+            data = self.avdb.get_by_uri(fp)
         except Exception:
             logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
             os.remove(fp)
@@ -403,7 +403,7 @@ class ExperimentOutput(ProjectOutput):
                 modified = True
                 logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-        self.avdb.put_by_uuid(data_new, fp)
+        self.avdb.put_by_uri(data_new, fp)
         return modified
 
     def _clean_modelmap_files(self) -> list[str]:
