@@ -1222,8 +1222,8 @@ class GriddedData:
             x, y = self.proj_info.to_proj(lat, lon)
             subset = extract_latlon_dataarray(
                 arr,
-                x,
-                y,
+                lon=x,
+                lat=y,
                 lon_dimname=self.proj_info.x_axis,
                 lat_dimname=self.proj_info.y_axis,
                 method=scheme,

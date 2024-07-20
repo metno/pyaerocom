@@ -759,9 +759,17 @@ def colocate_gridded_ungridded(
     else:
         # gridded data with projection,
         # add x/y information to ungridded
-        xvals, yvals = data.proj_info.to_proj(latitude, longitude)
-        xrange = (np.min(xvals), np.max(xvals))
-        yrange = (np.min(yvals), np.max(yvals))
+        for coord in data.cube.dim_coords:
+            if coord.var_name == data.proj_info.x_axis:
+                vals = coord.points
+                xrange = (np.min(vals), np.max(vals))
+            if coord.var_name == data.proj_info.y_axis:
+                vals = coord.points
+                yrange = (np.min(vals), np.max(vals))
+        if xrange is None or yrange is None:
+            raise VariableDefinitionError(
+                f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+            )
         data_ref = data_ref.filter_by_projection(data.proj_info.to_proj, xrange, yrange)
 
     # get timeseries from all stations in provided time resolution
