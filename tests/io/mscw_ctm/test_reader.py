@@ -244,7 +244,7 @@ def test_ReadMscwCtm_read_var_error(
 )
 def test_ReadMscwCtm__compute_var(var_name, ts_type, data_dir: str):
     reader = ReadMscwCtm(data_dir=data_dir)
-    data = reader._compute_var(var_name, ts_type)
+    data, proj_info = reader._compute_var(var_name, ts_type)
     assert isinstance(data, xr.DataArray)
 
 

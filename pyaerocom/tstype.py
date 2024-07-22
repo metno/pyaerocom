@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class TsType:
     VALID = TS_TYPES
-    VALID_ITER = VALID[:-1]
+    VALID_ITER = VALID[:-2]
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY = TS_TYPE_TO_NUMPY_FREQ

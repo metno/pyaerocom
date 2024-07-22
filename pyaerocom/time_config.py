@@ -6,7 +6,7 @@ from datetime import datetime
 
 from iris import coord_categorisation
 
-TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native"]
+TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native", "coarsest"]
 
 # The following import was removed and the information about available unit
 # strings was copied from the netCDF4 module directly here

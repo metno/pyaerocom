@@ -113,8 +113,11 @@ class OutputPaths(BaseModel):
 
 
 class MapFreqChoices(Enum):
+    hourly = TsType("hourly")
+    daily = TsType("daily")
     monthly = TsType("monthly")
     yearly = TsType("yearly")
+    coarsest = "coarsest"  # special attention needed as not a valid ts_type on it's own
 
 
 class ModelMapsSetup(BaseModel):
@@ -122,9 +125,9 @@ class ModelMapsSetup(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
     # Class attributes
-    maps_freq: Literal["monthly", "yearly"] | MapFreqChoices = Field(
-        default=MapFreqChoices.monthly, validate_default=True
-    )
+    maps_freq: Literal[
+        "hourly", "daily", "monthly", "yearly", "coarsest"
+    ] | MapFreqChoices = Field(default=MapFreqChoices.coarsest, validate_default=True)
     maps_res_deg: PositiveInt = 5
 
     # TODO: Turn all ts_type attributes into TsType here instead of converting them later in the code
@@ -206,8 +209,16 @@ class StatisticsSetup(BaseModel, extra="allow"):
     MIN_NUM: PositiveInt = 1
     weighted_stats: bool = True
     annual_stats_constrained: bool = False
-    add_trends: bool = False
-    trends_min_yrs: PositiveInt = 7
+
+    # Trends config
+    add_trends: bool = False  # Adding trend calculations, only trends over the average time series over stations in a region
+    avg_over_trends: bool = (
+        False  # Adds calculation of avg over trends of time series of stations in region
+    )
+    obs_min_yrs: PositiveInt = 0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as stats_min_yrs
+    stats_min_yrs: PositiveInt = obs_min_yrs  # Calculates trends if number of valid years are equal or more than this. Should in most cases be the same as obs_min_yrs
+    sequential_yrs: bool = False  # Whether or not the min_yrs should be sequential
+
     stats_tseries_base_freq: str | None = None
     forecast_evaluation: bool = False
     forecast_days: PositiveInt = 4
@@ -407,6 +418,14 @@ class EvalSetup(BaseModel):
             key: val for key, val in self.model_extra.items() if key in ModelMapsSetup.model_fields
         }
         return ModelMapsSetup(**model_args)
+
+    @field_validator("modelmaps_opts", mode="after")
+    @classmethod
+    def validate_modelmaps_opts_coarsest(cls, modelmaps_opts: ModelMapsSetup):
+        if modelmaps_opts.maps_freq == MapFreqChoices.coarsest:
+            freq = min(TsType(fq) for fq in cls.time_cfg.freqs)
+            freq = min(freq, cls.time_cfg.main_freq)
+            modelmaps_opts.maps_freq = freq
 
     @computed_field
     @cached_property

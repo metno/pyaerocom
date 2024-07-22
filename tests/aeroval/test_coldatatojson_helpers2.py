@@ -15,6 +15,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _make_trends,
     _map_indices,
     _process_statistics_timeseries,
+    _remove_less_covered,
     get_heatmap_filename,
     get_json_mapname,
     get_profile_filename,
@@ -314,3 +315,44 @@ def test__map_indices():
     out = _map_indices(outer_idx, inner_idx)
     assert isinstance(out, np.ndarray)
     assert len(out) == len(outer_idx)
+
+
+@pytest.mark.parametrize(
+    "min_yrs, station_nb, colocate_time",
+    [
+        (0, 5, False),
+        (0, 5, True),
+        (4, 2, True),
+        (4, 2, False),
+        (3, 3, True),
+        (3, 3, False),
+    ],
+)
+def test__remove_less_covered(
+    # coldata: dict,
+    min_yrs: int,
+    station_nb: int,
+    colocate_time: bool,
+):
+    cd = (
+        COLDATA["fake_3d_partial_trends_coltime"]()
+        if colocate_time
+        else COLDATA["fake_3d_partial_trends"]()
+    )
+    old_stations = cd.data.station_name.data
+
+    new_cd = _remove_less_covered(cd, min_yrs)
+
+    new_stations = new_cd.data.station_name.data
+
+    if min_yrs == 0:
+        assert len(old_stations) == len(new_stations)
+
+    assert len(new_stations) == station_nb
+
+
+def test__remove_less_covered_error():
+    cd = COLDATA["fake_3d_partial_trends_coltime"]()
+    with pytest.raises(TrendsError) as e:
+        new_cd = _remove_less_covered(cd, 1000)
+    assert str(e.value) == "No stations left after removing stations with fewer than 1000 years!"

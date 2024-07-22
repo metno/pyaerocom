@@ -12,7 +12,10 @@ from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     VariableInfo,
     extended_statistics,
+    num_statistics,
     statistics_defaults,
+    statistics_mean_trend,
+    statistics_median_trend,
     statistics_model_only,
     statistics_obs_only,
     statistics_trend,
@@ -549,6 +552,10 @@ class ExperimentOutput(ProjectOutput):
                 stats_info.update(obs_statistics_trend)
             else:
                 stats_info.update(statistics_trend)
+
+                if self.cfg.statistics_opts.avg_over_trends:
+                    stats_info.update(statistics_mean_trend)
+                    stats_info.update(statistics_median_trend)
 
         self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
 

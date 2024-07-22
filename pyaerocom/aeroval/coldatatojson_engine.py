@@ -18,6 +18,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_sites,
     _process_sites_weekly_ts,
     _process_statistics_timeseries,
+    _remove_less_covered,
     _write_site_data,
     _write_stationdata_json,
     add_profile_entry_json,
@@ -115,8 +116,11 @@ class ColdataToJsonEngine(ProcessingEngine):
         diurnal_only = coldata.get_meta_item("diurnal_only")
 
         add_trends = self.cfg.statistics_opts.add_trends
-        trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
+        trends_min_yrs = self.cfg.statistics_opts.stats_min_yrs
 
+        min_yrs = self.cfg.statistics_opts.obs_min_yrs
+        sequential_yrs = self.cfg.statistics_opts.sequential_yrs
+        avg_over_trends = self.cfg.statistics_opts.avg_over_trends
         use_fairmode = self.cfg.statistics_opts.use_fairmode
         use_diurnal = self.cfg.statistics_opts.use_diurnal
 
@@ -168,6 +172,11 @@ class ColdataToJsonEngine(ProcessingEngine):
             model_name=model_name,
             var_name_web=var_name_web,
         )
+        if min_yrs > 0:
+            logger.info(
+                f"Removing stations with less than {min_yrs} years of continuous data, with sequential_yrs = {sequential_yrs}"
+            )
+            coldata = _remove_less_covered(coldata, min_yrs, sequential_yrs)
 
         # get region IDs
         (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
@@ -209,6 +218,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     regs=regs,
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
+                    avg_over_trends=avg_over_trends,
                 )
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
@@ -335,6 +345,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         regs: dict = None,
         stats_min_num: int = 1,
         use_fairmode: bool = False,
+        avg_over_trends: bool = False,
     ):
         input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
         for reg in regnames:
@@ -370,6 +381,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             seasons,
             add_trends,
             trends_min_yrs,
+            avg_over_trends,
         )
 
         for freq, hm_data in hm_all.items():
@@ -412,6 +424,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons,
                 add_trends,
                 trends_min_yrs,
+                avg_over_trends,
                 use_fairmode,
                 obs_var,
                 drop_stats,
