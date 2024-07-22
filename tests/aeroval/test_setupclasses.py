@@ -153,7 +153,7 @@ def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update:
         assert modelmaps_opts.maps_res_deg == cfg_exp1["maps_res_deg"] == update["maps_res_deg"]
     else:  # defaults
         assert "maps_freq" not in cfg_exp1
-        assert modelmaps_opts.maps_freq == "monthly"
+        assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
         assert modelmaps_opts.maps_res_deg == 5
 
