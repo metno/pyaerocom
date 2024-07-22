@@ -1,5 +1,3 @@
-import sys
-
 from pyaerocom.colocation.colocation_utils import colocate_gridded_ungridded
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
