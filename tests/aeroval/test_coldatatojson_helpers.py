@@ -47,22 +47,22 @@ def test__write_stationdata_json(tmp_path: Path):
     assert data["model1"] == data["model2"]
 
 
-def test__write_site_data(tmp_path: Path):
-    data = [
-        dict(
-            model_name=f"model{n}",
-            station_name=f"stat{n}",
-            obs_name=f"obs{n}",
-            var_name_web=f"var{n}",
-            vert_code="Column",
-        )
-        for n in range(3)
-    ]
-    assert not list(tmp_path.glob("*.json"))
-    _write_site_data(data, str(tmp_path))
-    assert len(list(tmp_path.glob("*.json"))) == len(data)
-
-
+# def test__write_site_data(tmp_path: Path):
+#    data = [
+#        dict(
+#            model_name=f"model{n}",
+#            station_name=f"stat{n}",
+#            obs_name=f"obs{n}",
+#            var_name_web=f"var{n}",
+#            vert_code="Column",
+#        )
+#        for n in range(3)
+#    ]
+#    assert not list(tmp_path.glob("*.json"))
+#    _write_site_data(data, str(tmp_path))
+#    assert len(list(tmp_path.glob("*.json"))) == len(data)
+#
+#
 def test__write_diurnal_week_stationdata_json(tmp_path: Path):
     data = dict(station_name="stat1", obs_name="obs1", var_name_web="var1", vert_code="Column")
     dirs = {"ts/diurnal": tmp_path}

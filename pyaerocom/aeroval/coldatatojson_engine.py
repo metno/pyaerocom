@@ -1,15 +1,13 @@
 import logging
 import os
 from time import time
-from typing import Mapping
 
 from cf_units import Unit
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_heatmap_entry_json,
+from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _write_stationdata_json,
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -20,13 +18,9 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_sites_weekly_ts,
     _process_statistics_timeseries,
     _remove_less_covered,
-    _write_site_data,
-    _write_stationdata_json,
     add_profile_entry_json,
-    get_heatmap_filename,
     get_json_mapname,
     get_profile_filename,
-    get_timeseries_file_name,
     init_regions_web,
     process_profile_data_for_regions,
     process_profile_data_for_stations,
@@ -369,11 +363,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             self._add_heatmap_timeseries_entry(
                 stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
             )
-            # fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
-            # ts_file = os.path.join(out_dirs["hm/ts"], fname)
-            # _add_heatmap_entry_json(
-            #    ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
-            # )
 
         logger.info("Processing heatmap data for all regions")
 
@@ -392,18 +381,15 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
 
         for freq, hm_data in hm_all.items():
-            fname = get_heatmap_filename(freq)
-
-            hm_file = os.path.join(out_dirs["hm"], fname)
-
-            _add_heatmap_entry_json(
-                hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
+            self._add_heatmap_entry(
+                hm_data, freq, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
         logger.info("Processing regional timeseries for all regions")
         ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
-        _write_site_data(ts_objs_regional, out_dirs["ts"])
+        # _write_site_data(ts_objs_regional, out_dirs["ts"])
+        self._write_timeseries(ts_objs_regional)
         if coldata.has_latlon_dims:
             for cd in data.values():
                 if cd is not None:
@@ -412,7 +398,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         logger.info("Processing individual site timeseries data")
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        _write_site_data(ts_objs, out_dirs["ts"])
+        # _write_site_data(ts_objs, out_dirs["ts"])
+        self._write_timeseries(ts_objs)
 
         scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
         scatter_freq = min(scatter_freq, main_freq)
@@ -461,11 +448,13 @@ class ColdataToJsonEngine(ProcessingEngine):
         outdir = os.path.join(out_dirs["ts/diurnal"])
         for ts_data_weekly in ts_objs_weekly:
             # writes json file
-            _write_stationdata_json(ts_data_weekly, outdir)
+            self._write_station_data(ts_data_weekly)
+            # _write_stationdata_json(ts_data_weekly, outdir)
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 # writes json file
-                _write_stationdata_json(ts_data_weekly_reg, outdir)
+                self._write_station_data(ts_data_weekly_reg)
+                # _write_stationdata_json(ts_data_weekly_reg, outdir)
 
     def _add_heatmap_timeseries_entry(
         self,
@@ -477,7 +466,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         modelname: str,
         modvar: str,
     ):
-        """Adds a heatmap entry to a glob_stats
+        """Adds a heatmap entry to hm/ts
 
         :param entry: The entry to be added.
         :param network: Observation network
@@ -504,3 +493,78 @@ class ColdataToJsonEngine(ProcessingEngine):
                 obsvar,
                 layer,
             )
+
+    def _add_heatmap_entry(
+        self,
+        entry,
+        frequency: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a heatmap entry to glob_stats
+
+        :param entry: The entry to be added.
+        :param region: The region (eg. ALL)
+        :param obsvar: Observation variable.
+        :param layer: Vertical Layer (eg. SURFACE)
+        :param modelname: Model name
+        :param modelvar: Model variable.
+        """
+        project = self.exp_output.proj_id
+        experiment = self.exp_output.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_glob_stats(project, experiment, frequency, default={})
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_glob_stats(
+                recursive_defaultdict_to_dict(glob_stats), project, experiment, frequency
+            )
+
+    def _write_station_data(self, data):
+        """Writes timeseries weekly.
+
+        :param data: Data to be written.
+        """
+        project = self.exp_output.proj_id
+        experiment = self.exp_output.exp_id
+
+        location = data["station_name"]
+        network = data["obs_name"]
+        obsvar = data["var_name_web"]
+        layer = data["vert_code"]
+        modelname = data["model_name"]
+        with self.avdb.lock():
+            station_data = self.avdb.get_timeseries_weekly(
+                project, experiment, location, network, obsvar, layer, default={}
+            )
+            station_data[modelname] = round_floats(data)
+            self.avdb.put_timeseries_weekly(
+                station_data, project, experiment, location, network, obsvar, layer
+            )
+
+    def _write_timeseries(self, data):
+        """Write timeseries"""
+        if not isinstance(data, list):
+            data = [data]
+
+        project = self.exp_output.proj_id
+        experiment = self.exp_output.exp_id
+        with self.avdb.lock():
+            for d in data:
+                location = d["station_name"]
+                network = d["obs_name"]
+                obsvar = d["var_name_web"]
+                layer = d["vert_code"]
+                modelname = d["model_name"]
+
+                timeseries = self.avdb.get_timeseries(
+                    project, experiment, location, network, obsvar, layer, default={}
+                )
+                timeseries[modelname] = round_floats(d)
+                self.avdb.put_timeseries(
+                    timeseries, project, experiment, location, network, obsvar, layer
+                )

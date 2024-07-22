@@ -38,17 +38,17 @@ from pyaerocom.tstype import TsType
 logger = logging.getLogger(__name__)
 
 
-def get_heatmap_filename(ts_type):
-    return f"glob_stats_{ts_type}.json"
+# def get_heatmap_filename(ts_type):
+#    return f"glob_stats_{ts_type}.json"
 
 
-def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
-    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
+# def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
+#    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
 
 
-def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
-    """Get name of station timeseries file"""
-    return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
+# def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
+#    """Get name of station timeseries file"""
+#    return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
 
 
 def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
@@ -58,40 +58,40 @@ def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, p
     return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
 
 
-def _write_stationdata_json(ts_data, out_dir):
-    """
-    This method writes time series data given in a dictionary to .json files
+# def _write_stationdata_json(ts_data, out_dir):
+#    """
+#    This method writes time series data given in a dictionary to .json files
+#
+#    Parameters
+#    ----------
+#    ts_data : dict
+#        A dictionary containing all processed time series data.
+#    out_dir : str or similar
+#        output directory
+#
+#    Returns
+#    -------
+#    None.
+#
+#    """
+#    filename = get_stationfile_name(
+#        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
+#    )
+#
+#    fp = os.path.join(out_dir, filename)
+#    if os.path.exists(fp):
+#        current = read_json(fp)
+#    else:
+#        current = {}
+#    current[ts_data["model_name"]] = round_floats(ts_data)
+#    write_json(current, fp, round_floats=False)
 
-    Parameters
-    ----------
-    ts_data : dict
-        A dictionary containing all processed time series data.
-    out_dir : str or similar
-        output directory
 
-    Returns
-    -------
-    None.
-
-    """
-    filename = get_stationfile_name(
-        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
-    )
-
-    fp = os.path.join(out_dir, filename)
-    if os.path.exists(fp):
-        current = read_json(fp)
-    else:
-        current = {}
-    current[ts_data["model_name"]] = round_floats(ts_data)
-    write_json(current, fp, round_floats=False)
-
-
-def _write_site_data(ts_objs, dirloc):
-    """Write list of station timeseries files to json"""
-    for ts_data in ts_objs:
-        # writes json file
-        _write_stationdata_json(ts_data, dirloc)
+# def _write_site_data(ts_objs, dirloc):
+#    """Write list of station timeseries files to json"""
+#    for ts_data in ts_objs:
+#        # writes json file
+#        _write_stationdata_json(ts_data, dirloc)
 
 
 def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
@@ -129,27 +129,27 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     write_json(current, fp, round_floats=False)
 
 
-def _add_heatmap_entry_json(
-    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
-):
-    if os.path.exists(heatmap_file):
-        current = read_json(heatmap_file)
-    else:
-        current = {}
-    if not var_name_web in current:
-        current[var_name_web] = {}
-    ov = current[var_name_web]
-    if not obs_name in ov:
-        ov[obs_name] = {}
-    on = ov[obs_name]
-    if not vert_code in on:
-        on[vert_code] = {}
-    ovc = on[vert_code]
-    if not model_name in ovc:
-        ovc[model_name] = {}
-    mn = ovc[model_name]
-    mn[model_var] = round_floats(result)
-    write_json(current, heatmap_file, round_floats=False)
+# def _add_heatmap_entry_json(
+#    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
+# ):
+#    if os.path.exists(heatmap_file):
+#        current = read_json(heatmap_file)
+#    else:
+#        current = {}
+#    if not var_name_web in current:
+#        current[var_name_web] = {}
+#    ov = current[var_name_web]
+#    if not obs_name in ov:
+#        ov[obs_name] = {}
+#    on = ov[obs_name]
+#    if not vert_code in on:
+#        on[vert_code] = {}
+#    ovc = on[vert_code]
+#    if not model_name in ovc:
+#        ovc[model_name] = {}
+#    mn = ovc[model_name]
+#    mn[model_var] = round_floats(result)
+#    write_json(current, heatmap_file, round_floats=False)
 
 
 def _prepare_regions_json_helper(region_ids):
