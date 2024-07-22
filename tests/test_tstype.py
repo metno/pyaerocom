@@ -6,7 +6,16 @@ from pyaerocom.tstype import TsType
 
 
 def test_TsType_VALID():
-    assert TsType.VALID == ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native"]
+    assert TsType.VALID == [
+        "minutely",
+        "hourly",
+        "daily",
+        "weekly",
+        "monthly",
+        "yearly",
+        "native",
+        "coarsest",
+    ]
 
 
 def test_TsType_VALID_ITER():
@@ -75,7 +84,7 @@ def test_TsType_val():
         (
             "blaa",
             "Invalid input for ts_type blaa. "
-            "Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native']",
+            "Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest']",
         ),
         (
             "5000daily",
