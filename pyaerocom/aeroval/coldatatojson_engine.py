@@ -1,6 +1,7 @@
 import logging
 import os
 from time import time
+from typing import Mapping
 
 from cf_units import Unit
 from numpy.typing import ArrayLike
@@ -32,8 +33,9 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     update_regions_json,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.json_utils import write_json
+from pyaerocom.aeroval.json_utils import round_floats, write_json
 from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.utils import recursive_defaultdict, recursive_defaultdict_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -362,11 +364,16 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             except TemporalResolutionError:
                 stats_ts = {}
-            fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
-            ts_file = os.path.join(out_dirs["hm/ts"], fname)
-            _add_heatmap_entry_json(
-                ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
+
+            region = regnames[reg]
+            self._add_heatmap_timeseries_entry(
+                stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
             )
+            # fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
+            # ts_file = os.path.join(out_dirs["hm/ts"], fname)
+            # _add_heatmap_entry_json(
+            #    ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
+            # )
 
         logger.info("Processing heatmap data for all regions")
 
@@ -459,3 +466,41 @@ class ColdataToJsonEngine(ProcessingEngine):
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 # writes json file
                 _write_stationdata_json(ts_data_weekly_reg, outdir)
+
+    def _add_heatmap_timeseries_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a heatmap entry to a glob_stats
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.exp_output.proj_id
+        experiment = self.exp_output.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_heatmap_timeseries(
+                project, experiment, region, network, obsvar, layer, default={}
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_heatmap_timeseries(
+                recursive_defaultdict_to_dict(glob_stats),
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+            )

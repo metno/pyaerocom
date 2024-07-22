@@ -26,6 +26,7 @@ class HasConfig:
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
         self.exp_output = ExperimentOutput(cfg)
+        self.avdb = self.exp_output.avdb
 
     @property
     def raise_exceptions(self):
