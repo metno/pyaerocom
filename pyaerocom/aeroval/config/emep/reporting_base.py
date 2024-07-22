@@ -13,11 +13,8 @@ from pyaerocom.data import resources
 
 logger = logging.getLogger(__name__)
 
-"""
-Constraints
-"""
 
-
+# Constraints
 DEFAULT_RESAMPLE_CONSTRAINTS = dict(
     yearly=dict(monthly=9),
     monthly=dict(
@@ -56,7 +53,7 @@ OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 
 @functools.cache
-def get_ignore_stations_from_file():
+def _get_ignore_stations_from_file():
     if os.path.exists("./omit_stations.yaml"):
         filename = os.path.abspath("./omit_stations.yaml")
         logger.info(f"reading omit_stations.yaml from {filename}")
@@ -80,7 +77,7 @@ def get_ignore_stations_from_file():
     return rows
 
 
-def get_ignore_stations(specy, year):
+def _get_ignore_stations(specy, year):
     """
     Read the ignore stations from either omit_stations.tsv in the local eller in the lib-folder
 
@@ -91,7 +88,7 @@ def get_ignore_stations(specy, year):
     """
     retvals = []
     year = int(year)
-    stations = get_ignore_stations_from_file()
+    stations = _get_ignore_stations_from_file()
     for yearstart, yearend, comp, station in stations:
         if comp == "ALL" or comp == specy:
             if yearstart <= year <= yearend:
@@ -334,7 +331,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         # run everything
         res = ana.run()
 
-    :return a model configuration
+    :returns: a dict of a model configuration usable for EvalSetup
     """
 
     CFG = dict(
@@ -769,7 +766,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     EBAS_FILTER = {
         key: dict(
             **EBAS_FILTER,
-            station_id=get_ignore_stations(key, year) + height_ignore_ebas,
+            station_id=_get_ignore_stations(key, year) + height_ignore_ebas,
             negate="station_id",
         )
         for key in ebas_species
