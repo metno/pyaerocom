@@ -103,10 +103,10 @@ High-level utility functions
 .. automodule:: pyaerocom.aeroval.utils
    :members:
 
-High-level emep reporting
-_________________________
+High-level functions for emep reporting
+---------------------------------------
 
-.. automodule:: pyaerocom.aeroval.config.emep
+.. automodule:: pyaerocom.aeroval.config.emep.reporting_base
    :members:
 
 Helper modules
