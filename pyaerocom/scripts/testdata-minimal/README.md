@@ -49,7 +49,7 @@ NEWTESTDATA=~/tmp/testdata-minimal.tar.gz.$(date +%Y%m%d)
 tar cvzf $NEWTESTDATA testdata-minimal
 md5sum $NEWTESTDATA
 ```
-Register the new filename and the md5sum in `pyaerocom/minimal_dataset.py`.
+Register the new filename and the md5sum in `pyaerocom/sample_data_access/minimal_dataset.py`.
 
 The resulting file `~/tmp/testdata-minimal.tar.gz.YYYYMMDD` then needs to be uploaded to https://pyaerocom.met.no/pyaerocom-suppl , e.g.
 
