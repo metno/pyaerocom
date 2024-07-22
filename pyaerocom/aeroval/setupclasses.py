@@ -111,7 +111,7 @@ class OutputPaths(BaseModel):
 
 
 class ModelMapsSetup(BaseModel):
-    maps_freq: Literal["monthly", "yearly"] = "monthly"
+    maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
 
 
