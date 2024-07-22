@@ -41,6 +41,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 from pyaerocom.mathutils import estimate_value_range, exponent
+from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
@@ -130,10 +131,17 @@ class GriddedData:
         concatenated=False,
         region=None,
         reader=None,
+        proj_info=None,
     )
 
     def __init__(
-        self, input=None, var_name=None, check_unit=True, convert_unit_on_init=True, **meta
+        self,
+        input=None,
+        var_name=None,
+        check_unit=True,
+        convert_unit_on_init=True,
+        proj_info: ProjectionInformation | None = None,
+        **meta,
     ):
         if input is None:
             input = iris.cube.Cube([])
@@ -152,6 +160,8 @@ class GriddedData:
         self._coord_var_names = None
         self._coord_standard_names = None
         self._coord_long_names = None
+        # projection information
+        meta.update({"proj_info": proj_info})
 
         if input:
             self.load_input(input, var_name)
@@ -194,6 +204,10 @@ class GriddedData:
             raise VariableDefinitionError(
                 f"No default access available for variable {self.var_name}"
             )
+
+    @property
+    def proj_info(self) -> ProjectionInformation:
+        return self.metadata["proj_info"]
 
     @property
     def ts_type(self):
@@ -1130,10 +1144,11 @@ class GriddedData:
             collapse_scalar = coords.pop("collapse_scalar")
         else:
             collapse_scalar = True
-        try:
-            self.check_dimcoords_tseries()
-        except DimensionOrderError:
-            self.reorder_dimensions_tseries()
+        if self.proj_info is None:
+            try:
+                self.check_dimcoords_tseries()
+            except DimensionOrderError:
+                self.reorder_dimensions_tseries()
         pinfo = False
         if np.prod(self.shape) > 5913000:  # (shape of 2x2 deg, daily data)
             pinfo = True
@@ -1176,10 +1191,11 @@ class GriddedData:
         )
 
     def _to_time_series_xarray(self, scheme="nearest", add_meta=None, ts_type=None, **coords):
-        try:
-            self.check_dimcoords_tseries()
-        except DimensionOrderError:
-            self.reorder_dimensions_tseries()
+        if self.proj_info is None:
+            try:
+                self.check_dimcoords_tseries()
+            except DimensionOrderError:
+                self.reorder_dimensions_tseries()
 
         arr = self.to_xarray()
 
@@ -1198,7 +1214,21 @@ class GriddedData:
                 lon = vals
         if lat is None or lon is None:
             raise ValueError("Please provide latitude and longitude coords")
-        subset = extract_latlon_dataarray(arr, lat, lon, method=scheme, new_index_name="latlon")
+        if self.proj_info is None:
+            subset = extract_latlon_dataarray(
+                arr, lat, lon, method=scheme, new_index_name="latlon"
+            )
+        else:
+            x, y = self.proj_info.to_proj(lat, lon)
+            subset = extract_latlon_dataarray(
+                arr,
+                lon=x,
+                lat=y,
+                lon_dimname=self.proj_info.x_axis,
+                lat_dimname=self.proj_info.y_axis,
+                method=scheme,
+                new_index_name="latlon",
+            )
 
         lat_id = subset.attrs["lat_dimname"]
         lon_id = subset.attrs["lon_dimname"]
@@ -1219,8 +1249,11 @@ class GriddedData:
         result = []
         subset = subset.compute()
         data_np = subset.data
-        lats = subset[lat_id].data
-        lons = subset[lon_id].data
+        if self.proj_info is None:
+            lats = subset[lat_id].data
+            lons = subset[lon_id].data
+        else:
+            lats, lons = self.proj_info.to_latlon(subset[lon_id].data, subset[lat_id].data)
         for sidx in range(subset.shape[-1]):
             data = StationData(
                 latitude=lats[sidx],
@@ -2603,8 +2636,8 @@ class GriddedData:
                     f"Skipping assignment of var_name from metadata in GriddedData, "
                     f"since attr. needs to be str and is {val}"
                 )
-                continue
-            self._grid.attributes[key] = val
+            else:
+                self._grid.attributes[key] = val
 
     def delete_all_coords(self, inplace=True):
         """Deletes all coordinates (dimension + auxiliary) in this object"""

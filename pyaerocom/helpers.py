@@ -119,6 +119,7 @@ def extract_latlon_dataarray(
     check_domain=True,
 ):
     """Extract individual lat / lon coordinates from `DataArray`
+    lon/lat can also be x/y coordinates if the `DataArray` has only projected axes.
 
     Parameters
     ----------

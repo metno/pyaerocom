@@ -681,10 +681,12 @@ def colocate_gridded_ungridded(
     """
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
-    try:
-        data.check_dimcoords_tseries()
-    except DimensionOrderError:
-        data.reorder_dimensions_tseries()
+    if data.proj_info is None:
+        # reordering only implemented if no projection
+        try:
+            data.check_dimcoords_tseries()
+        except DimensionOrderError:
+            data.reorder_dimensions_tseries()
 
     var, var_aerocom = resolve_var_name(data)
     if var_ref is None:
@@ -747,12 +749,28 @@ def colocate_gridded_ungridded(
 
     latitude = data.latitude.points
     longitude = data.longitude.points
-    lat_range = [np.min(latitude), np.max(latitude)]
-    lon_range = [np.min(longitude), np.max(longitude)]
-    # use only sites that are within model domain
+    if data.proj_info is None:
+        lat_range = [np.min(latitude), np.max(latitude)]
+        lon_range = [np.min(longitude), np.max(longitude)]
+        # use only sites that are within model domain
 
-    # filter_by_meta wipes is_vertical_profile
-    data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+        # filter_by_meta wipes is_vertical_profile
+        data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+    else:
+        # gridded data with projection,
+        # add x/y information to ungridded
+        for coord in data.cube.dim_coords:
+            if coord.var_name == data.proj_info.x_axis:
+                vals = coord.points
+                xrange = (np.min(vals), np.max(vals))
+            if coord.var_name == data.proj_info.y_axis:
+                vals = coord.points
+                yrange = (np.min(vals), np.max(vals))
+        if xrange is None or yrange is None:
+            raise VariableDefinitionError(
+                f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+            )
+        data_ref = data_ref.filter_by_projection(data.proj_info.to_proj, xrange, yrange)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
@@ -774,6 +792,7 @@ def colocate_gridded_ungridded(
             f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
 
+    # to read
     grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
 
     pd_freq = col_tst.to_pandas_freq()
