@@ -1942,10 +1942,10 @@ class UngriddedData:
             lat = meta["latitude"]
             x, y = projection(lat, lon)
 
-            matchX = in_range(x, xrange[0], xrange[1])
-            matchY = in_range(y, yrange[0], yrange[1])
+            match_x = in_range(x, xrange[0], xrange[1])
+            match_y = in_range(y, yrange[0], yrange[1])
 
-            if matchX and matchY:
+            if match_x and match_y:
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
                     if var in self.ALLOWED_VERT_COORD_TYPES:
