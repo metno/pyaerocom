@@ -26,6 +26,7 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
+from pydantic.functional_validators import AfterValidator
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
@@ -40,6 +41,11 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
+
+
+def convert_freq_str_to_tstype(freq: str):
+    if isinstance(freq, str):
+        return TsType(freq)
 
 
 class OutputPaths(BaseModel):
@@ -117,7 +123,7 @@ class MapFreqChoices(Enum):
     daily = TsType("daily")
     monthly = TsType("monthly")
     yearly = TsType("yearly")
-    coarsest = "coarsest"  # special attention needed as not a valid ts_type on it's own
+    coarsest = TsType("coarsest")  # special attention needed as not a valid ts_type on it's own
 
 
 class ModelMapsSetup(BaseModel):
