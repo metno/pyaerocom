@@ -4,6 +4,7 @@ from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.json_utils import round_floats
+from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.utils import recursive_defaultdict
@@ -220,6 +221,71 @@ class ProcessingEngine(HasConfig, abc.ABC):
                 self.avdb.put_timeseries(
                     timeseries, project, experiment, location, network, obsvar, layer
                 )
+
+    def _add_profile_entry(
+        self, data: ColocatedData, profile_viz: dict, periods: list[str], seasons: list[str]
+    ):
+        with self.avdb.lock():
+            current = self.avdb.get_profiles(
+                self.exp_output.proj_id, self.exp_output.exp_id, default={}
+            )
+            current = recursive_defaultdict(current)
+
+            for freq, coldata in data.items():
+                model_name = coldata.model_name
+                # if not model_name in current:
+                #    current[model_name] = {}
+
+                midpoint = (
+                    float(coldata.data.attrs["vertical_layer"]["end"])
+                    + float(coldata.data.attrs["vertical_layer"]["start"])
+                ) / 2
+                if not "z" in current[model_name]:
+                    current[model_name]["z"] = [midpoint]  # initalize with midpoint
+
+                if (
+                    midpoint > current[model_name]["z"][-1]
+                ):  # only store incremental increases in the layers
+                    current[model_name]["z"].append(midpoint)
+
+                # if not "obs" in current[model_name]:
+                #    current[model_name]["obs"] = {}
+
+                # if not freq in current[model_name]["obs"]:
+                #    current[model_name]["obs"][freq] = {}
+
+                # if not "mod" in current[model_name]:
+                #    current[model_name]["mod"] = {}
+
+                # if not freq in current[model_name]["mod"]:
+                #    current[model_name]["mod"][freq] = {}
+
+                for per in periods:
+                    for season in seasons:
+                        perstr = f"{per}-{season}"
+
+                        if not perstr in current[model_name]["obs"][freq]:
+                            current[model_name]["obs"][freq][perstr] = []
+                        if not perstr in current[model_name]["mod"][freq]:
+                            current[model_name]["mod"][freq][perstr] = []
+
+                        current[model_name]["obs"][freq][perstr].append(
+                            profile_viz["obs"][freq][perstr]
+                        )
+                        current[model_name]["mod"][freq][perstr].append(
+                            profile_viz["mod"][freq][perstr]
+                        )
+
+                if not "metadata" in current[model_name]:
+                    current[model_name]["metadata"] = {
+                        "z_unit": coldata.data.attrs["altitude_units"],
+                        "z_description": "Altitude ASL",
+                        "z_long_description": "Altitude Above Sea Level",
+                        "unit": coldata.unitstr,
+                    }
+                current[model_name] = round_floats(current[model_name])
+
+            self.avdb.put_profiles(current, self.exp_output.proj_id, self.exp_output.exp_id)
 
 
 class HasColocator(HasConfig):

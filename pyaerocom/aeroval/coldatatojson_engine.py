@@ -7,7 +7,7 @@ from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _write_stationdata_json,; get_json_mapname,
+from pyaerocom.aeroval.coldatatojson_helpers import (  # update_regions_json,
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -23,10 +23,9 @@ from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _wri
     init_regions_web,
     process_profile_data_for_regions,
     process_profile_data_for_stations,
-    update_regions_json,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.json_utils import round_floats, write_json
+from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.exceptions import TemporalResolutionError
 
 logger = logging.getLogger(__name__)
@@ -175,7 +174,14 @@ class ColdataToJsonEngine(ProcessingEngine):
         # get region IDs
         (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
 
-        update_regions_json(regborders, regions_json)
+        # Synchronise regions.json file
+        with self.avdb.lock():
+            regions = self.avdb.get_regions(
+                self.exp_output.proj_id, self.exp_output.exp_id, default={}
+            )
+            for region_name, region_info in regborders.items():
+                regions[region_name] = round_floats(region_info)
+            self.avdb.put_regions(regions, self.exp_output.proj_id, self.exp_output.exp_id)
 
         use_country = True if regions_how == "country" else False
 
@@ -309,10 +315,13 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            fname = get_profile_filename(station_name, obs_name, var_name_web)
+            self._add_profile_entry(data, profile_viz, periods, seasons)
+            # fname = get_profile_filename(station_name, obs_name, var_name_web)
 
-            outfile_profile = os.path.join(out_dirs["profiles"], fname)
-            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
+    #
+    # outfile_profile = os.path.join(out_dirs["profiles"], fname)
+    #
+    # add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
 
     def _process_stats_timeseries_for_all_regions(
         self,
