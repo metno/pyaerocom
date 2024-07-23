@@ -4,7 +4,7 @@ from typing import Iterator
 from pyaerocom.griddeddata import GriddedData
 
 
-class GriddedModelReader(abc.ABC):
+class GriddedReader(abc.ABC):
     """Abstract base class for griddel model reader used for collocation"""
 
     @property

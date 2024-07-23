@@ -12,7 +12,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io.gridded_reader import GriddedModelReader
+from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units_helpers import UALIASES
 
 from .additional_variables import (
@@ -47,7 +47,7 @@ from .model_variables import emep_variables
 logger = logging.getLogger(__name__)
 
 
-class ReadMscwCtm(GriddedModelReader):
+class ReadMscwCtm(GriddedReader):
     """
     Class for reading model output from the EMEP MSC-W chemical transport model.
 

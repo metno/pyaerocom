@@ -14,7 +14,7 @@ from tqdm import tqdm
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
-from pyaerocom.io.gridded_reader import GriddedModelReader
+from pyaerocom.io.gridded_reader import GriddedReader
 
 # from pyaerocom.units_helpers import UALIASES
 
@@ -221,7 +221,7 @@ def check_files(paths: list[Path]) -> list[Path]:
     return new_paths
 
 
-class ReadCAMS2_83(GriddedModelReader):
+class ReadCAMS2_83(GriddedReader):
     FREQ_CODES = dict(hour="hourly", day="daily", month="monthly", fullrun="yearly")
     REVERSE_FREQ_CODES = {val: key for key, val in FREQ_CODES.items()}
 
