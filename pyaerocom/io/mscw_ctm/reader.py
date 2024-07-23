@@ -12,7 +12,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io.readgriddedbase import GriddedModelReader
+from pyaerocom.io.gridded_reader import GriddedModelReader
 from pyaerocom.units_helpers import UALIASES
 
 from .additional_variables import (

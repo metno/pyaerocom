@@ -14,7 +14,7 @@ from tqdm import tqdm
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
-from pyaerocom.io.readgriddedbase import GriddedModelReader
+from pyaerocom.io.gridded_reader import GriddedModelReader
 
 # from pyaerocom.units_helpers import UALIASES
 
