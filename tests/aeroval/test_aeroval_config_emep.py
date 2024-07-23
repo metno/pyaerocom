@@ -12,7 +12,6 @@ def test_aeroval_config_emep():
 
     CFG.update(
         dict(
-            # proj_id="status-2024",
             exp_id="test-2021met_2022emis",
             exp_name="Test runs for 2024 EMEP reporting",
             exp_descr=(
@@ -21,12 +20,6 @@ def test_aeroval_config_emep():
             exp_pi="S. Tsyro, A. Nyiri, H. Klein",
         )
     )
-
-    # remove EEA
-    # for obs in list(CFG["obs_cfg"].keys()):
-    #     if obs.startswith("EEA"):
-    #         del CFG["obs_cfg"][obs]
-    #         print(f"removed {obs}")
 
     # remove "concCocpm10", not in model-output
     for obs in CFG["obs_cfg"]:
@@ -37,10 +30,6 @@ def test_aeroval_config_emep():
     CFG["obs_cfg"]["EBAS-h-diurnal"]["obs_vars"].remove("concNno")
     CFG["obs_cfg"]["EBAS-h-diurnal"]["obs_vars"].remove("concpm10")
     CFG["obs_cfg"]["EBAS-h-diurnal"]["obs_vars"].remove("concpm25")
-
-    # CFG["raise_exceptions"] = False
-    # CFG["add_model_maps"] = False
-    # CFG["only_model_maps"] = True
 
     stp = EvalSetup(**CFG)
 

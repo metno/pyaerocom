@@ -25,15 +25,6 @@ DEFAULT_RESAMPLE_CONSTRAINTS = dict(
 )
 
 DEFAULT_RESAMPLE_CONSTRAINTS_DAILY = dict(
-    # monthly=dict(
-    #     daily=21,
-    #     weekly=3,
-    # ),
-    # yearly=dict(monthly=1),
-    # monthly=dict(
-    #     daily=21,
-    #     weekly=3,
-    # ),
     daily=dict(hourly=18),
 )
 
@@ -336,7 +327,6 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
     CFG = dict(
         json_basedir=os.path.abspath("./data"),
-        # coldata_basedir = os.path.abspath('../../coldata'),
         coldata_basedir=os.path.abspath("./coldata"),
         # io_aux_file=os.path.abspath("./gridded_io_aux.py"), not needed for ReadMscwCtm
         var_scale_colmap_file=os.path.abspath("./user_var_scale_colmap.ini"),
@@ -366,7 +356,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         obs_remove_outliers=False,
         model_remove_outliers=False,
         harmonise_units=True,
-        regions_how="country",  #'default',#'country',
+        regions_how="country",
         annual_stats_constrained=True,
         proj_id=f"emep",
         exp_id=f"{reportyear}-reporting",
@@ -400,9 +390,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             "concpm25",
             "concno3pm10",
             "concno3pm25",
-            # "concnh4pm10",
             "concnh4pm25",
-            #            "concso4pm10",
             "concso4pm25",
             "concCecpm10",
             "concCecpm25",
@@ -1194,15 +1182,11 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             colocate_time=True,
             min_num_obs=dict(
                 yearly=dict(
-                    # monthly=9,
                     daily=90,
                 ),
                 monthly=dict(
                     weekly=1,
                 ),
-                # weekly=dict(
-                #     daily=3,
-                # ),
             ),
             obs_filters=AERONET_FILTER,
         ),
