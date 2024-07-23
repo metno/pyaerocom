@@ -6,7 +6,7 @@ from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
-from pyaerocom.utils import recursive_defaultdict, recursive_defaultdict_to_dict
+from pyaerocom.utils import recursive_defaultdict
 
 
 class HasConfig:
@@ -101,7 +101,7 @@ class ProcessingEngine(HasConfig, abc.ABC):
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
             self.avdb.put_heatmap_timeseries(
-                recursive_defaultdict_to_dict(glob_stats),
+                glob_stats,
                 project,
                 experiment,
                 region,
@@ -139,7 +139,7 @@ class ProcessingEngine(HasConfig, abc.ABC):
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
             self.avdb.put_forecast(
-                recursive_defaultdict_to_dict(glob_stats),
+                glob_stats,
                 project,
                 experiment,
                 region,
@@ -174,9 +174,7 @@ class ProcessingEngine(HasConfig, abc.ABC):
             glob_stats = self.avdb.get_glob_stats(project, experiment, frequency, default={})
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
-            self.avdb.put_glob_stats(
-                recursive_defaultdict_to_dict(glob_stats), project, experiment, frequency
-            )
+            self.avdb.put_glob_stats(glob_stats, project, experiment, frequency)
 
     def _write_station_data(self, data):
         """Writes timeseries weekly.

@@ -22,23 +22,6 @@ from pyaerocom.aeroval.exceptions import TrendsError
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
 
-# def test_get_heatmap_filename():
-#    assert get_heatmap_filename("daily") == "glob_stats_daily.json"
-#
-#
-# def test_get_timeseries_filename():
-#    assert get_timeseries_file_name("reg1", "obs1", "var1", "vert1") == "reg1-obs1-var1-vert1.json"
-#
-#
-# def test_get_stationfile_name():
-#    json = get_stationfile_name("stat1", "obs1", "var1", "Column")
-#    assert json == "stat1_obs1-var1_Column.json"
-#
-#
-# def test_get_json_mapname():
-#    json = get_json_mapname("obs1", "var1", "mod1", "var1", "Column", "period")
-#    assert json == "obs1-var1_Column_mod1-var1_period.json"
-
 
 def get_profile_filename():
     json = get_profile_filename("reg1", "obs1", "var1")

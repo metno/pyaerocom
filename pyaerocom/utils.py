@@ -175,12 +175,3 @@ def recursive_defaultdict(d: Mapping | None = None) -> defaultdict:
             d[k] = recursive_defaultdict(d[k])
 
     return d
-
-
-def recursive_defaultdict_to_dict(d: defaultdict) -> dict:
-    d = dict(d)
-    for k in d:
-        if isinstance(d[k], defaultdict):
-            d[k] = recursive_defaultdict_to_dict(d[k])
-
-    return d

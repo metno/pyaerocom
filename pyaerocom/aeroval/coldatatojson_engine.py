@@ -386,7 +386,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         logger.info("Processing regional timeseries for all regions")
         ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
-        # _write_site_data(ts_objs_regional, out_dirs["ts"])
         self._write_timeseries(ts_objs_regional)
         if coldata.has_latlon_dims:
             for cd in data.values():
@@ -396,7 +395,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         logger.info("Processing individual site timeseries data")
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        # _write_site_data(ts_objs, out_dirs["ts"])
         self._write_timeseries(ts_objs)
 
         scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
@@ -446,14 +444,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                     model_var,
                     period.replace("/", ""),  # Remove slashes in CAMS2_83 period.
                 )
-            # the files in /map and /scat will be split up according to their time period as well
-            # map_name = get_json_mapname(
-            #    obs_name, var_name_web, model_name, model_var, vert_code, period
-            # )
-            # outfile_map = os.path.join(out_dirs["map"], map_name)
-            # write_json(map_data, outfile_map, ignore_nan=True)
-            # outfile_scat = os.path.join(out_dirs["scat"], map_name)
-            # write_json(scat_data, outfile_scat, ignore_nan=True)
 
     def _process_diurnal_profiles(
         self,
@@ -468,11 +458,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
         outdir = os.path.join(out_dirs["ts/diurnal"])
         for ts_data_weekly in ts_objs_weekly:
-            # writes json file
             self._write_station_data(ts_data_weekly)
-            # _write_stationdata_json(ts_data_weekly, outdir)
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
-                # writes json file
                 self._write_station_data(ts_data_weekly_reg)
-                # _write_stationdata_json(ts_data_weekly_reg, outdir)
