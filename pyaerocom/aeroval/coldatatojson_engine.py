@@ -432,7 +432,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     vert_code,
                     model_name,
                     model_var,
-                    period,
+                    period.replace("/", ""),  # Remove slashes in CAMS2_83 period.
                 )
 
                 self.avdb.put_scatter(
@@ -444,7 +444,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     vert_code,
                     model_name,
                     model_var,
-                    period,
+                    period.replace("/", ""),  # Remove slashes in CAMS2_83 period.
                 )
             # the files in /map and /scat will be split up according to their time period as well
             # map_name = get_json_mapname(
