@@ -22,12 +22,14 @@ CHK_CFG1 = {
 CHK_CFG2 = {
     "map": [
         "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
+        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
     ],
     "contour": 0,
     "hm": ["glob_stats_monthly.json"],
     "hm/ts": 21,
     "scat": [
         "AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
+        "AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json",
     ],
     "ts": 40,
     "ts/diurnal": 0,  # number of .json files in subdir

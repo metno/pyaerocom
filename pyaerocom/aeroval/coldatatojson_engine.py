@@ -422,29 +422,30 @@ class ColdataToJsonEngine(ProcessingEngine):
                 drop_stats,
             )
 
-            self.avdb.put_map(
-                map_data,
-                self.exp_output.proj_id,
-                self.exp_output.exp_id,
-                obs_name,
-                var_name_web,
-                vert_code,
-                model_name,
-                model_var,
-                period,
-            )
+            with self.avdb.lock():
+                self.avdb.put_map(
+                    map_data,
+                    self.exp_output.proj_id,
+                    self.exp_output.exp_id,
+                    obs_name,
+                    var_name_web,
+                    vert_code,
+                    model_name,
+                    model_var,
+                    period,
+                )
 
-            self.avdb.put_scatter(
-                scat_data,
-                self.exp_output,
-                self.exp_output,
-                obs_name,
-                obs_var,
-                vert_code,
-                model_name,
-                model_var,
-                period,
-            )
+                self.avdb.put_scatter(
+                    scat_data,
+                    self.exp_output.proj_id,
+                    self.exp_output.exp_id,
+                    obs_name,
+                    var_name_web,
+                    vert_code,
+                    model_name,
+                    model_var,
+                    period,
+                )
             # the files in /map and /scat will be split up according to their time period as well
             # map_name = get_json_mapname(
             #    obs_name, var_name_web, model_name, model_var, vert_code, period
