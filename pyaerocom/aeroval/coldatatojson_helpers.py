@@ -51,12 +51,11 @@ logger = logging.getLogger(__name__)
 #    return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
 
 
-def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
-    """Get base name of json file"""
-    # for cams2_83 the periods contain slashes at this point
-    periodmod = period.replace("/", "")
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
-
+# def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
+#    """Get base name of json file"""
+#    # for cams2_83 the periods contain slashes at this point
+#    periodmod = period.replace("/", "")
+#    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
 
 # def _write_stationdata_json(ts_data, out_dir):
 #    """
@@ -94,39 +93,39 @@ def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, p
 #        _write_stationdata_json(ts_data, dirloc)
 
 
-def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
-    """
-    Minor modification of method _write_stationdata_json to allow a further
-    level of sub-directories
-
-    Parameters
-    ----------
-    ts_data : dict
-        A dictionary containing all processed time series data.
-    out_dirs : list
-        list of file paths for writing data to
-
-    Raises
-    ------
-    Exception
-        Raised if opening json file fails
-
-    Returns
-    -------
-    None.
-
-    """
-    filename = get_stationfile_name(
-        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
-    )
-
-    fp = os.path.join(out_dirs["ts/diurnal"], filename)
-    if os.path.exists(fp):
-        current = read_json(fp)
-    else:
-        current = {}
-    current[ts_data["model_name"]] = round_floats(ts_data)
-    write_json(current, fp, round_floats=False)
+# def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
+#    """
+#    Minor modification of method _write_stationdata_json to allow a further
+#    level of sub-directories
+#
+#    Parameters
+#    ----------
+#    ts_data : dict
+#        A dictionary containing all processed time series data.
+#    out_dirs : list
+#        list of file paths for writing data to
+#
+#    Raises
+#    ------
+#    Exception
+#        Raised if opening json file fails
+#
+#    Returns
+#    -------
+#    None.
+#
+#    """
+#    filename = get_stationfile_name(
+#        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
+#    )
+#
+#    fp = os.path.join(out_dirs["ts/diurnal"], filename)
+#    if os.path.exists(fp):
+#        current = read_json(fp)
+#    else:
+#        current = {}
+#    current[ts_data["model_name"]] = round_floats(ts_data)
+#    write_json(current, fp, round_floats=False)
 
 
 # def _add_heatmap_entry_json(

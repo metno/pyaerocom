@@ -7,7 +7,7 @@ from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _write_stationdata_json,
+from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _write_stationdata_json,; get_json_mapname,
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -19,7 +19,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _wri
     _process_statistics_timeseries,
     _remove_less_covered,
     add_profile_entry_json,
-    get_json_mapname,
     get_profile_filename,
     init_regions_web,
     process_profile_data_for_regions,
@@ -29,7 +28,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (  # _write_site_data,; _wri
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import round_floats, write_json
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.utils import recursive_defaultdict, recursive_defaultdict_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -424,15 +422,37 @@ class ColdataToJsonEngine(ProcessingEngine):
                 drop_stats,
             )
 
-            # the files in /map and /scat will be split up according to their time period as well
-            map_name = get_json_mapname(
-                obs_name, var_name_web, model_name, model_var, vert_code, period
+            self.avdb.put_map(
+                map_data,
+                self.exp_output.proj_id,
+                self.exp_output.exp_id,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                period,
             )
-            outfile_map = os.path.join(out_dirs["map"], map_name)
-            write_json(map_data, outfile_map, ignore_nan=True)
 
-            outfile_scat = os.path.join(out_dirs["scat"], map_name)
-            write_json(scat_data, outfile_scat, ignore_nan=True)
+            self.avdb.put_scatter(
+                scat_data,
+                self.exp_output,
+                self.exp_output,
+                obs_name,
+                obs_var,
+                vert_code,
+                model_name,
+                model_var,
+                period,
+            )
+            # the files in /map and /scat will be split up according to their time period as well
+            # map_name = get_json_mapname(
+            #    obs_name, var_name_web, model_name, model_var, vert_code, period
+            # )
+            # outfile_map = os.path.join(out_dirs["map"], map_name)
+            # write_json(map_data, outfile_map, ignore_nan=True)
+            # outfile_scat = os.path.join(out_dirs["scat"], map_name)
+            # write_json(scat_data, outfile_scat, ignore_nan=True)
 
     def _process_diurnal_profiles(
         self,
@@ -455,116 +475,3 @@ class ColdataToJsonEngine(ProcessingEngine):
                 # writes json file
                 self._write_station_data(ts_data_weekly_reg)
                 # _write_stationdata_json(ts_data_weekly_reg, outdir)
-
-    def _add_heatmap_timeseries_entry(
-        self,
-        entry: dict,
-        region: str,
-        network: str,
-        obsvar: str,
-        layer: str,
-        modelname: str,
-        modvar: str,
-    ):
-        """Adds a heatmap entry to hm/ts
-
-        :param entry: The entry to be added.
-        :param network: Observation network
-        :param obsvar: Observation variable
-        :param layer: Vertical layer
-        :param modelname: Model name
-        :param modvar: Model variable
-        """
-        project = self.exp_output.proj_id
-        experiment = self.exp_output.exp_id
-
-        with self.avdb.lock():
-            glob_stats = self.avdb.get_heatmap_timeseries(
-                project, experiment, region, network, obsvar, layer, default={}
-            )
-            glob_stats = recursive_defaultdict(glob_stats)
-            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
-            self.avdb.put_heatmap_timeseries(
-                recursive_defaultdict_to_dict(glob_stats),
-                project,
-                experiment,
-                region,
-                network,
-                obsvar,
-                layer,
-            )
-
-    def _add_heatmap_entry(
-        self,
-        entry,
-        frequency: str,
-        network: str,
-        obsvar: str,
-        layer: str,
-        modelname: str,
-        modvar: str,
-    ):
-        """Adds a heatmap entry to glob_stats
-
-        :param entry: The entry to be added.
-        :param region: The region (eg. ALL)
-        :param obsvar: Observation variable.
-        :param layer: Vertical Layer (eg. SURFACE)
-        :param modelname: Model name
-        :param modelvar: Model variable.
-        """
-        project = self.exp_output.proj_id
-        experiment = self.exp_output.exp_id
-
-        with self.avdb.lock():
-            glob_stats = self.avdb.get_glob_stats(project, experiment, frequency, default={})
-            glob_stats = recursive_defaultdict(glob_stats)
-            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
-            self.avdb.put_glob_stats(
-                recursive_defaultdict_to_dict(glob_stats), project, experiment, frequency
-            )
-
-    def _write_station_data(self, data):
-        """Writes timeseries weekly.
-
-        :param data: Data to be written.
-        """
-        project = self.exp_output.proj_id
-        experiment = self.exp_output.exp_id
-
-        location = data["station_name"]
-        network = data["obs_name"]
-        obsvar = data["var_name_web"]
-        layer = data["vert_code"]
-        modelname = data["model_name"]
-        with self.avdb.lock():
-            station_data = self.avdb.get_timeseries_weekly(
-                project, experiment, location, network, obsvar, layer, default={}
-            )
-            station_data[modelname] = round_floats(data)
-            self.avdb.put_timeseries_weekly(
-                station_data, project, experiment, location, network, obsvar, layer
-            )
-
-    def _write_timeseries(self, data):
-        """Write timeseries"""
-        if not isinstance(data, list):
-            data = [data]
-
-        project = self.exp_output.proj_id
-        experiment = self.exp_output.exp_id
-        with self.avdb.lock():
-            for d in data:
-                location = d["station_name"]
-                network = d["obs_name"]
-                obsvar = d["var_name_web"]
-                layer = d["vert_code"]
-                modelname = d["model_name"]
-
-                timeseries = self.avdb.get_timeseries(
-                    project, experiment, location, network, obsvar, layer, default={}
-                )
-                timeseries[modelname] = round_floats(d)
-                self.avdb.put_timeseries(
-                    timeseries, project, experiment, location, network, obsvar, layer
-                )

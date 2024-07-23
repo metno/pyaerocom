@@ -13,7 +13,8 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import _add_heatmap_entry_json as _add_entry_json
+
+# from pyaerocom.aeroval.coldatatojson_helpers import _add_heatmap_entry_json as _add_entry_json
 from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
@@ -121,12 +122,15 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
-            name = f"{regname}_{obs_name}-{var_name_web}_{vert_code}.json"
-            filename = Path(out_dirs["forecast"]) / name
+            # name = f"{regname}_{obs_name}-{var_name_web}_{vert_code}.json"
+            # filename = Path(out_dirs["forecast"]) / name
 
-            _add_entry_json(
-                filename,
+            # self._add_heatmap_timeseries_entry(
+            #    stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
+            # )
+            self._add_heatmap_timeseries_entry(
                 results[regname],
+                regname,
                 obs_name,
                 var_name_web,
                 vert_code,
@@ -135,6 +139,17 @@ class CAMS2_83_Engine(ProcessingEngine):
                 ),  # MOS/ENS evaluation special case
                 model_var,
             )
+            # _add_entry_json(
+            #    filename,
+            #    results[regname],
+            #    obs_name,
+            #    var_name_web,
+            #    vert_code,
+            #    (
+            #        modelname if (modelname == "ENS" or modelname == "MOS") else model.name
+            #    ),  # MOS/ENS evaluation special case
+            #    model_var,
+            # )
 
     def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
         stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
