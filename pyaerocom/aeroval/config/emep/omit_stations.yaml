@@ -1,0 +1,589 @@
+variables:
+  NO:
+    - concNno
+    - concno
+  NO2:
+    - concNno2
+    - concno2
+    - vmrno2
+  NO3:
+    - concno3pm10
+    - concno3pm25
+  tNO3:
+    - concNtno3
+  hNO3:
+    - concNhno3
+  SO2:
+    - concSso2
+  SO4:
+    - concso4
+    - concso4t
+    - concso4c
+    - concso4pm10
+    - concso4pm25
+  NH3:
+    - concNnh3
+  NHx:
+    - concNtnh
+  NH4:
+    - concnh4pm10
+    - concnh4pm25
+    - concnh4
+  O3max:
+    - vmro3max
+  O3mean:
+    - vmro3
+  NO3_PM25:
+    - concno3pm25
+  PM10:
+    - concpm10
+  so4wdep:
+    - wetso4
+  soxwdep:
+    - wetoxs
+  oxnwdep:
+    - wetoxn
+  no3wdep:
+    - wetno3
+  nhxwdep:
+    - wetrdn
+  precip:
+    - pr
+    - prmm
+  so4wconc:
+    - concprcpso4
+  no3wconc:
+    - concprcpno3
+  nhxwconc:
+    - concprcprdn
+  ALL:
+    - ALL
+
+
+2022:
+  ALL:
+    - NO0042R
+    - DK0010G
+    - AM0001*
+  NO2:
+    - ES0017*
+    - IT0019*
+    - MT0001*
+  SO2:
+    - DE0001*
+    - DE0003*
+    - ES0006*
+    - ES0007*
+    - ES0009*
+    - ES0010*
+    - ES0011*
+    - ES0012*
+    - SI0008*
+  NHx:
+    - ES0016*
+  SO4:
+    - RU0020*
+  NH4:
+    - RU0020*
+  NO3:
+    - RU0020*
+
+
+2021:
+  ALL:
+    - NO0042R
+    - DK0010G
+    - NO0057*
+  SO2:
+    - ES0013*
+    - ES0016*
+    - GR0001*
+    - DE0001*
+    - DE0003*
+    - EE0009*
+  NO2:
+    - GR0001*
+  PM10:
+    - DE0043*
+  SO4:
+    - EE0009*
+  NO3:
+    - EE0009*
+  soxwdep:
+    - CZ0005*
+    - AM0001*
+  oxnwdep:
+    - CZ0005*
+    - AM0001*
+  nhxwdep:
+    - CZ0005*
+    - AM0001*
+  precip:
+    - CZ0005*
+    - AM0001*
+
+2020:
+  ALL:
+    - NO0042R
+    - DK0010G
+  SO2:
+    - ES0012*
+    - ES0016*
+    - GE0001*
+    - GR0001*
+    - ME0008*
+    - NO0057*
+  NO2:
+    - MT0001*
+    - NO0057*
+  hNO3:
+    - NO0015*
+    - NO0057*
+  NHx:
+    - GE0001*
+    - NO0057*
+  NH3:
+    - GE0001*
+    - NO0057*
+  NO3:
+    - EE0009*
+    - GE0001*
+    - NO0057*
+  NH4:
+    - GE0001*
+    - NO0057*
+  soxwdep:
+    - ME0008*
+    - IS0091*
+    - NO0057*
+  oxnwdep:
+    - IS0091*
+    - NO0057*
+  nhxwdep:
+    - IS0091*
+    - NO0057*
+  precip:
+    - DK0012*
+    - NO0057*
+
+2019:
+  ALL:
+    - NO0042R
+    - DK0010G
+  SO2:
+    - GR0001*
+  O3max:
+    - RS0005*
+  O3mean:
+    - RS0005*
+  NH4:
+    - EE0009*
+  NO3:
+    - LV0010*
+  SO4:
+    - EE0009*
+
+2018:
+  ALL:
+    - NO0042R
+    - DK0010G
+  NO2:
+    - GR0001*
+    - RS0005*
+    - MD0013*
+  SO2:
+    - GR0001*
+    - RS0005*
+    - MD0013*
+  O3max:
+    - GR0001*
+  O3mean:
+    - GR0001*
+  SO4:
+    - EE0009*
+  NO3:
+    - EE0009*
+
+
+2017:
+  ALL:
+    - NO0042R
+    - DK0010G
+  NO2:
+    - MD0013*
+    - ME0008*
+    - RS0005*
+    - IT0019*
+    - GR0001*
+  SO2:
+    - DE0001*
+    - DE0009*
+    - GR0001*
+    - MD0013*
+    - ME0008*
+    - MK0007*
+  SO4:
+    - EE0009*
+  NH4:
+    - EE0009*
+  NO3:
+    - EE0009*
+  so4wdep:
+    - ME0008*
+  so4wconc:
+    - ME0008*
+
+
+2016:
+  ALL:
+    - NO0042R
+    - DK0010G
+  SO2:
+    - GB1055*
+    - RS0005*
+    - MK0007*
+  no3wdep:
+    - IE0002*
+  no3wconc:
+    - IE0002*
+
+
+2015:
+  ALL:
+    - NO0042R
+    - DK0010G
+  SO2:
+    - EE0011*
+    - ES0010*
+    - ES0011*
+    - ES0012*
+    - GR0001*
+    - GB0037*
+    - GB0045*
+    - IT0014*
+    - RS0005*
+    - ME0008*
+  SO4:
+    - EE0009*
+  NO2:
+    - GR0001*
+    - FI0022*
+    - GB0037*
+    - ME0008*
+    - RS0005*
+    - SK0002*
+  NO3:
+    - EE0009*
+  NH4:
+    - EE0009*
+
+
+2014:
+  ALL:
+    - NO0042R
+    - DK0010G
+    - ME0008*
+  tNO3:
+    - ES0012*
+    - LV0010*
+  NO3:
+    - LV0010*
+  hNO3:
+    - LV0010*
+  SO2:
+    - GR0001*
+    - MK0007*
+  NO2:
+    - GR0001*
+  NO:
+    - GR0001*
+  so4wdep:
+    - IE0006*
+  no3wdep:
+    - IE0006*
+  so4wconc:
+    - IE0006*
+  no3wconc:
+    - IE0006*
+  nhxwdep:
+    - IE0006*
+    - SI0008*
+  nhxwconc:
+    - IE0006*
+    - SI0008*
+  O3max:
+    - MK0007*
+    - GR0001*
+  O3mean:
+    - MK0007*
+    - GR0001*
+
+
+2013:
+  ALL:
+    - NO0042R
+    - DK0010G
+  SO2:
+    - RS0005*
+    - RO0008*
+  NO2:
+    - GR0001*
+  NO3:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  tNO3:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  NHx:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  NH3:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  NH4:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  so4wdep:
+    - ME0008*
+  so4wconc:
+    - ME0008*
+  no3wdep:
+    - ME0008*
+  no3wconc:
+    - ME0008*
+  nhxwdep:
+    - ME0008*
+    - SI0008*
+  precip:
+    - ME0008*
+    - SI0008*
+  nhxwconc:
+    - ME0008*
+    - SI0008*
+  O3max:
+    - MK0007*
+    - GR0001*
+  O3mean:
+    - MK0007*
+    - GR0001*
+
+
+2012:
+  ALL:
+    - NO0042R
+    - DK0010G
+  SO2:
+    - ME0008*
+    - RS0005*
+  NO2:
+    - MD0013*
+    - ME0008*
+  NO3:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  tNO3:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  NHx:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  NH3:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  NH4:
+    - NO0015*
+    - NO0039*
+    - MD0013*
+  O3max:
+    - MK0007*
+  NO3_PM25:
+    - ES*
+
+2011:
+  ALL:
+    - NO0042R
+    - DK0010G
+    - MD0013*
+  SO2:
+    - AM0001*
+    - RS0005*
+    - NO*
+  NO2:
+    - NO*
+  NO3:
+    - NO*
+  tNO3:
+    - NO*
+  NHx:
+    - NO*
+  NH3:
+    - NO*
+  NH4:
+    - NO*
+
+
+
+
+2010:
+  ALL:
+    - NO0042R
+    - DK0010G
+    - NO0001*
+  NO3:
+    - MD0013*
+  SO2:
+    - ME0008*
+    - RS0005*
+    - MD0013*
+  SO4:
+    - MD0013*
+  NH3:
+    - NO*
+  NHx:
+    - NO*
+  NH4:
+    - NO*
+  NO2:
+    - ME0008*
+
+
+
+2009:
+  ALL:
+    - NO0042R
+    - DK0010G
+  NO3:
+    - MD0013*
+    - LV*
+  SO2:
+    - ME0008*
+    - RS0005*
+    - MD0013*
+  SO4:
+    - MD0013*
+  NH3:
+    - NO*
+  NHx:
+    - NO*
+  NH4:
+    - NO*
+  NO2:
+    - ME0008*
+
+
+2008:
+  ALL:
+    - NO0042R
+    - DK0010G
+  NO3:
+    - LV0016*
+  SO2:
+    - RS0005*
+  NH3:
+    - NO0039*
+    - NO0055*
+  NHx:
+    - NO0039*
+    - NO0055*
+  NH4:
+    - NO0039*
+    - NO0055*
+
+2007:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2006:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2005:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2004:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2003:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2002:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2001:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+2000:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1999:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1998:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1997:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1996:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1995:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1994:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1993:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1992:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1991:
+  ALL:
+    - NO0042R
+    - DK0010G
+
+1990:
+  ALL:
+    - NO0042R
+    - DK0010G
