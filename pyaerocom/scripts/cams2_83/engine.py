@@ -128,7 +128,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             # self._add_heatmap_timeseries_entry(
             #    stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
             # )
-            self._add_heatmap_timeseries_entry(
+            self._add_forecast_entry(
                 results[regname],
                 regname,
                 obs_name,
