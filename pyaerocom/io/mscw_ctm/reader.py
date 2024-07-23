@@ -177,11 +177,11 @@ class ReadMscwCtm(GriddedReader):
     YEAR_PATTERN = r".*((?:19|20)\d\d).*"
 
     class _PrivateFields:
-        filename = None
-        filedata = None
-        filepaths = None
-        files = None
-        data_dir = None
+        filename: str | None = None
+        filedata: xr.Dataset | None = None
+        filepaths: list[str] | None = None
+        files: list[str] | None = None
+        data_dir: str | None = None
 
     def __init__(self, data_id=None, data_dir=None, **kwargs):
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -335,11 +335,11 @@ class ReadMscwCtm(GriddedReader):
         return [d for _, d in sorted(zip(found_yrs, clean_paths))]
 
     @property
-    def data_id(self):
+    def data_id(self) -> str | None:
         return self._data_id
 
     @property
-    def _data_dir(self):
+    def _data_dir(self) -> str | None:
         """
         Directory containing netcdf files
         """
@@ -348,7 +348,7 @@ class ReadMscwCtm(GriddedReader):
         return self._private.data_dir
 
     @_data_dir.setter
-    def _data_dir(self, val):
+    def _data_dir(self, val: str):
         if val is None:
             raise ValueError(f"Data dir {val} needs to be a dictionary or a file")
         if not os.path.isdir(val):
@@ -359,7 +359,7 @@ class ReadMscwCtm(GriddedReader):
         self._private.files = self._filepaths
 
     @property
-    def _filename(self):
+    def _filename(self) -> str | None:
         """
         Name of latest netcdf file read
         """
@@ -378,22 +378,22 @@ class ReadMscwCtm(GriddedReader):
         self._private.filedata = None
 
     @property
-    def _filepaths(self):
+    def _filepaths(self) -> list[str]:
         """
-        Path to data file
+        Paths to data file
         """
         if self._data_dir is None and self._filepaths is None:  # pragma: no cover
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         return self._private.filepaths
 
     @_filepaths.setter
-    def _filepaths(self, value):
+    def _filepaths(self, value: list[str]):
         if not isinstance(value, list):  # pragma: no cover
             raise ValueError("needs to be list of strings")
         self._private.filepaths = value
 
     @property
-    def _filedata(self):
+    def _filedata(self) -> xr.Dataset:
         """
         Loaded netcdf file (:class:`xarray.Dataset`)
         """
