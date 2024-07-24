@@ -16,7 +16,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (  # get_heatmap_filename,; 
     _map_indices,
     _process_statistics_timeseries,
     _remove_less_covered,
-    get_profile_filename,
 )
 from pyaerocom.aeroval.exceptions import TrendsError
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion

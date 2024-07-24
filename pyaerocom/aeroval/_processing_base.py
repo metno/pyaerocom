@@ -200,7 +200,15 @@ class ProcessingEngine(HasConfig, abc.ABC):
             )
 
     def _write_timeseries(self, data):
-        """Write timeseries"""
+        """Write timeseries
+
+        Args:
+            data: The timeseries object to be written.
+
+        Note:
+        -----
+        All necessary metadata will be read from the data object.
+        """
         if not isinstance(data, list):
             data = [data]
 
@@ -225,6 +233,14 @@ class ProcessingEngine(HasConfig, abc.ABC):
     def _add_profile_entry(
         self, data: ColocatedData, profile_viz: dict, periods: list[str], seasons: list[str]
     ):
+        """Adds an entry for the colocated data to profiles.json.
+
+        Args:
+            data (ColocatedData): For this vertical layer
+            profile_viz (dict): Output of process_profile_data()
+            periods (list[str]): periods to compute over (years)
+            seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
+        """
         with self.avdb.lock():
             current = self.avdb.get_profiles(
                 self.exp_output.proj_id, self.exp_output.exp_id, default={}

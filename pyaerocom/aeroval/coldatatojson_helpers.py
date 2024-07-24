@@ -1529,10 +1529,6 @@ def _init_data_default_frequencies(coldata, to_ts_types):
     return data_arrs
 
 
-def get_profile_filename(station_or_region_name, obs_name, var_name_web):
-    return f"{station_or_region_name}_{obs_name}_{var_name_web}.json"
-
-
 def process_profile_data_for_regions(
     data: ColocatedData,
     region_id: str,
@@ -1660,84 +1656,6 @@ def process_profile_data_for_stations(
                         output["mod"][freq][perstr] = np.nan
 
     return output
-
-
-def add_profile_entry_json(
-    profile_file: str,
-    data: ColocatedData,
-    profile_viz: dict,
-    periods: list[str],
-    seasons: list[str],
-):  # pragma: no cover
-    """
-    Analogous to _add_heatmap_entry_json for profile data.
-    Every time this function is called it checks to see if the profile_file exists.
-    If so, it reads it, if not it makes a new one.
-    This is because one can not add to json files and so everytime we want to add entries for profile layers
-    we must read in the old file, add the entries, and write a new file.
-
-    Args:
-        profile_file (str): Name of profile_file
-        data (ColocatedData): For this vertical layer
-        profile_viz (dict): Output of process_profile_data()
-        periods (list[str]): periods to compute over (years)
-        seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
-    """
-    if os.path.exists(profile_file):
-        current = read_json(profile_file)
-    else:
-        current = {}
-
-    for freq, coldata in data.items():
-        model_name = coldata.model_name
-        if not model_name in current:
-            current[model_name] = {}
-
-        midpoint = (
-            float(coldata.data.attrs["vertical_layer"]["end"])
-            + float(coldata.data.attrs["vertical_layer"]["start"])
-        ) / 2
-        if not "z" in current[model_name]:
-            current[model_name]["z"] = [midpoint]  # initalize with midpoint
-
-        if (
-            midpoint > current[model_name]["z"][-1]
-        ):  # only store incremental increases in the layers
-            current[model_name]["z"].append(midpoint)
-
-        if not "obs" in current[model_name]:
-            current[model_name]["obs"] = {}
-
-        if not freq in current[model_name]["obs"]:
-            current[model_name]["obs"][freq] = {}
-
-        if not "mod" in current[model_name]:
-            current[model_name]["mod"] = {}
-
-        if not freq in current[model_name]["mod"]:
-            current[model_name]["mod"][freq] = {}
-
-        for per in periods:
-            for season in seasons:
-                perstr = f"{per}-{season}"
-
-                if not perstr in current[model_name]["obs"][freq]:
-                    current[model_name]["obs"][freq][perstr] = []
-                if not perstr in current[model_name]["mod"][freq]:
-                    current[model_name]["mod"][freq][perstr] = []
-
-                current[model_name]["obs"][freq][perstr].append(profile_viz["obs"][freq][perstr])
-                current[model_name]["mod"][freq][perstr].append(profile_viz["mod"][freq][perstr])
-
-        if not "metadata" in current[model_name]:
-            current[model_name]["metadata"] = {
-                "z_unit": coldata.data.attrs["altitude_units"],
-                "z_description": "Altitude ASL",
-                "z_long_description": "Altitude Above Sea Level",
-                "unit": coldata.unitstr,
-            }
-        current[model_name] = round_floats(current[model_name])
-    write_json(current, profile_file, round_floats=False)
 
 
 def _remove_less_covered(

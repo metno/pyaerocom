@@ -7,7 +7,7 @@ from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (  # update_regions_json,
+from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -18,8 +18,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (  # update_regions_json,
     _process_sites_weekly_ts,
     _process_statistics_timeseries,
     _remove_less_covered,
-    add_profile_entry_json,
-    get_profile_filename,
     init_regions_web,
     process_profile_data_for_regions,
     process_profile_data_for_stations,
