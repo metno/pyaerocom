@@ -1,3 +1,4 @@
+from collections import defaultdict
 from pathlib import Path
 
 import pytest
@@ -80,3 +81,32 @@ def test_create_varinfo_table_error(kwargs, error):
     with pytest.raises(TypeError) as e:
         utils.create_varinfo_table(**kwargs)
     assert str(e.value).endswith(error)
+
+
+def test_recursive_default_dict_1():
+    d = utils.recursive_defaultdict()
+
+    d["A"]["B"]["C"]["D"]["E"] = "Hello world"
+
+    assert d["A"]["B"]["C"]["D"]["E"] == "Hello world"
+
+
+def test_recursive_default_dict_2():
+    input_dict = {
+        "A": {"AA": {"AAA": 5}, "AB": 4},
+        "B": {"BA": 1, "BB": {"BBA": 4, "BBB": 5}},
+    }
+
+    d = utils.recursive_defaultdict(input_dict)
+
+    def check_dict_keys_and_values(d1, d2):
+        if not isinstance(d1, dict | defaultdict):
+            assert d1 == d2
+            return
+
+        assert set(d1.keys()) == set(d2.keys())
+
+        for k in d1.keys():
+            check_dict_keys_and_values(d1[k], d2[k])
+
+    check_dict_keys_and_values(input_dict, d)
