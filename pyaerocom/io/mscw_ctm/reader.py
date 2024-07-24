@@ -12,8 +12,8 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.io.gridded_reader import GriddedReader
+from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.units_helpers import UALIASES
 
 from .additional_variables import (
@@ -763,7 +763,7 @@ class ReadMscwCtm(GriddedReader):
         data.time.attrs["long_name"] = "time"
         data.time.attrs["standard_name"] = "time"
         prefix = emep_var.split("_")[0]
-        data.attrs["units"] = self.preprocess_units(data.units, prefix)
+        data.attrs["units"] = self._preprocess_units(data.units, prefix)
         return data, proj_info
 
     @staticmethod
