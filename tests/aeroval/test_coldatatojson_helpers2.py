@@ -6,7 +6,7 @@ import pytest
 import xarray
 
 from pyaerocom import ColocatedData, TsType
-from pyaerocom.aeroval.coldatatojson_helpers import (  # get_heatmap_filename,; get_json_mapname,; get_stationfile_name,; get_timeseries_file_name,
+from pyaerocom.aeroval.coldatatojson_helpers import (
     _create_diurnal_weekly_data_object,
     _get_jsdate,
     _get_period_keys,
