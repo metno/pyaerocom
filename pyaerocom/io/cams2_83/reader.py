@@ -14,6 +14,7 @@ from tqdm import tqdm
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
+from pyaerocom.io.gridded_reader import GriddedReader
 
 # from pyaerocom.units_helpers import UALIASES
 
@@ -220,7 +221,7 @@ def check_files(paths: list[Path]) -> list[Path]:
     return new_paths
 
 
-class ReadCAMS2_83:
+class ReadCAMS2_83(GriddedReader):
     FREQ_CODES = dict(hour="hourly", day="daily", month="monthly", fullrun="yearly")
     REVERSE_FREQ_CODES = {val: key for key, val in FREQ_CODES.items()}
 
@@ -290,6 +291,20 @@ class ReadCAMS2_83:
         self.run_type = RunType[run_type]
         self.model = ModelName[model]
         self.forecast_day = int(day)
+
+    @property
+    def years_avail(self):
+        return np.unique(
+            reader.daterange.values.astype("datetime64[Y]").astype("int") + 1970
+        ).astype("str")
+
+    @property
+    def ts_types(self):
+        return self.REVERSE_FREQ_CODES.keys()
+
+    @property
+    def vars_provided(self):
+        return AEROCOM_NAMES.values()
 
     @property
     def run_type(self):
@@ -443,6 +458,11 @@ if __name__ == "__main__":
     data_id = "CAMS2-83.EMEP.day0.AN"
     reader = ReadCAMS2_83(data_dir=data_dir, data_id=data_id)
     reader.daterange = ("2021-12-01", "2021-12-04")
+    print(
+        np.unique(reader.daterange.values.astype("datetime64[Y]").astype("int") + 1970).astype(
+            "str"
+        )
+    )
     print(reader.filepaths)
     # dates = ("2021-12-01", "2021-12-04")
 
