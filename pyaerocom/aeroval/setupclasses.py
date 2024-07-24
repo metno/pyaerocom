@@ -542,11 +542,6 @@ class EvalSetup(BaseModel):
         with aerovaldb.open(f"json_files:{outdir}") as db:
             with db.lock():
                 db.put_config(self.json_repr(), self.proj_info.proj_id, self.exp_info.exp_id)
-        #
-        # filepath = os.path.join(outdir, self.json_filename)
-        # data = self.json_repr()
-        # write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
-        # return filepath
 
     @staticmethod
     def from_json(filepath: str) -> Self:

@@ -3,8 +3,6 @@ import os
 
 from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-
-# from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
@@ -198,6 +196,4 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 contourjson, self.exp_output.proj_id, self.exp_output.exp_id, var, model_name
             )
 
-        # write_json(datajson, fp_json, round_floats=False)
-        # write_json(contourjson, fp_geojson, round_floats=False)
         return [fp_json, fp_geojson]
