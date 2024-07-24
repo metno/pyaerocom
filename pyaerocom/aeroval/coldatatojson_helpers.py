@@ -108,33 +108,6 @@ def init_regions_web(coldata, regions_how):
     return (regborders, regs, regnames)
 
 
-# def update_regions_json(region_defs, regions_json):
-#    """Check current regions.json for experiment and update if needed
-#
-#    Parameters
-#    ----------
-#    region_defs : dict
-#        keys are names of region (not IDs!) values define rectangular borders
-#    regions_json : str
-#        regions.json file (if it does not exist it will be created).
-#
-#    Returns
-#    -------
-#    dict
-#        current content of updated regions.json
-#    """
-#    if os.path.exists(regions_json):
-#        current = read_json(regions_json)
-#    else:
-#        current = {}
-#
-#    for region_name, region_info in region_defs.items():
-#        if not region_name in current:
-#            current[region_name] = round_floats(region_info)
-#    write_json(current, regions_json, round_floats=False)
-#    return current
-
-
 def _init_meta_glob(coldata, **kwargs):
     meta = coldata.metadata
 
