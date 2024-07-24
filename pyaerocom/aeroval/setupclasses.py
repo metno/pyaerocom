@@ -111,7 +111,7 @@ class OutputPaths(BaseModel):
 
 
 class ModelMapsSetup(BaseModel):
-    maps_freq: Literal["monthly", "yearly"] = "monthly"
+    maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
 
 
@@ -184,8 +184,16 @@ class StatisticsSetup(BaseModel, extra="allow"):
     MIN_NUM: PositiveInt = 1
     weighted_stats: bool = True
     annual_stats_constrained: bool = False
-    add_trends: bool = False
-    trends_min_yrs: PositiveInt = 7
+
+    # Trends config
+    add_trends: bool = False  # Adding trend calculations, only trends over the average time series over stations in a region
+    avg_over_trends: bool = (
+        False  # Adds calculation of avg over trends of time series of stations in region
+    )
+    obs_min_yrs: PositiveInt = 0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as stats_min_yrs
+    stats_min_yrs: PositiveInt = obs_min_yrs  # Calculates trends if number of valid years are equal or more than this. Should in most cases be the same as obs_min_yrs
+    sequential_yrs: bool = False  # Whether or not the min_yrs should be sequential
+
     stats_tseries_base_freq: str | None = None
     forecast_evaluation: bool = False
     forecast_days: PositiveInt = 4

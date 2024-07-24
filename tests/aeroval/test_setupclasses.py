@@ -153,7 +153,7 @@ def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update:
         assert modelmaps_opts.maps_res_deg == cfg_exp1["maps_res_deg"] == update["maps_res_deg"]
     else:  # defaults
         assert "maps_freq" not in cfg_exp1
-        assert modelmaps_opts.maps_freq == "monthly"
+        assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
         assert modelmaps_opts.maps_res_deg == 5
 
@@ -190,7 +190,7 @@ def test_EvalSetup_EvalRunOptions(eval_setup: EvalSetup, cfg_exp1: dict, update:
         pytest.param(None, id="default"),
         pytest.param(
             dict(
-                trends_min_yrs=10,
+                stats_min_yrs=10,
                 use_diurnal=True,
                 use_fairmode=True,
                 weighted_stats=False,
@@ -207,9 +207,7 @@ def test_EvalSetup_StatisticsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update
     statistics_opts = eval_setup.statistics_opts
     if update:
         assert (
-            statistics_opts.trends_min_yrs
-            == cfg_exp1["trends_min_yrs"]
-            == update["trends_min_yrs"]
+            statistics_opts.stats_min_yrs == cfg_exp1["stats_min_yrs"] == update["stats_min_yrs"]
         )
         assert statistics_opts.use_diurnal == cfg_exp1["use_diurnal"] == update["use_diurnal"]
         assert statistics_opts.use_fairmode == cfg_exp1["use_fairmode"] == update["use_fairmode"]
@@ -235,8 +233,8 @@ def test_EvalSetup_StatisticsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update
             == update["annual_stats_constrained"]
         )
     else:  # defaults
-        assert "trends_min_yrs" not in cfg_exp1
-        assert statistics_opts.trends_min_yrs == 7
+        assert "stats_min_yrs" not in cfg_exp1
+        assert statistics_opts.stats_min_yrs == 0
         assert "use_diurnal" not in cfg_exp1
         assert statistics_opts.use_diurnal is False
         assert "use_fairmode" not in cfg_exp1

@@ -1926,6 +1926,44 @@ class UngriddedData:
             data = data.filter_region(region_id)
         return data
 
+    def filter_by_projection(
+        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
+    ):
+        """Filter the ungridded data to a horizontal bounding box given by a projection
+
+        :param projection: a function turning projection(lat, lon) -> (x, y)
+        :param xrange: x range (min/max included) in the projection plane
+        :param yrange: y range (min/max included) in the projection plane
+        """
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            lon = meta["longitude"]
+            lat = meta["latitude"]
+            x, y = projection(lat, lon)
+
+            match_x = in_range(x, xrange[0], xrange[1])
+            match_y = in_range(y, yrange[0], yrange[1])
+
+            if match_x and match_y:
+                meta_matches.append(meta_idx)
+                for var in meta["var_info"]:
+                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                        continue  # altitude is not actually a variable but is stored in var_info like one
+                    try:
+                        totnum += len(self.meta_idx[meta_idx][var])
+                    except KeyError:
+                        logger.debug(
+                            f"Ignoring variable {var} in meta block {meta_idx} "
+                            f"since no data could be found"
+                        )
+
+        if len(meta_matches) == len(self.metadata):
+            logger.info(f"filter_by_projection result in unchanged data object")
+            return self
+        new = self._new_from_meta_blocks(meta_matches, totnum)
+        return new
+
     def filter_by_meta(self, negate=None, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
 

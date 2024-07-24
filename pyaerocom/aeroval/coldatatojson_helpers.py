@@ -6,7 +6,7 @@ import logging
 import os
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Callable, Literal
 
 import numpy as np
 import pandas as pd
@@ -25,7 +25,14 @@ from pyaerocom.region import Region, find_closest_region_coord, get_all_default_
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
-from pyaerocom.trends_helpers import _get_season_from_months
+from pyaerocom.trends_helpers import (
+    _get_season,
+    _get_season_from_months,
+    _get_unique_seasons,
+    _get_yearly,
+    _init_trends_result_dict,
+)
+from pyaerocom.tstype import TsType
 
 logger = logging.getLogger(__name__)
 
@@ -702,6 +709,274 @@ def _get_statistics(obs_vals, mod_vals, min_num, drop_stats):
     return _prep_stats_json(stats)
 
 
+"""
+TODO: Make the regional trends by finding all the stations with the correct
+amount of data for a certain period and season -> Calculate trends for the average
+of those stations
+
+Almost the same as the _remove_less_covered function, but check for each season and period
+"""
+
+
+def _make_regional_trends(
+    data: ColocatedData,
+    trends_min_yrs: int,
+    per: str,
+    freq: str,
+    season: str,
+    regid: str,
+    use_country: bool = True,
+    median: bool = False,
+) -> tuple[dict, dict, bool]:
+    (start, stop) = _get_min_max_year_periods([per])
+    (start, stop) = (start.year, stop.year)
+    data = data.copy()
+
+    station_mod_trends = []
+    station_obs_trends = []
+
+    trends_successful = True
+
+    subset_time_series = data.get_regional_timeseries(
+        regid,
+        check_country_meta=use_country,
+    )
+
+    data = data.filter_region(
+        regid,
+        inplace=False,
+        check_country_meta=use_country,
+    )
+    nb_stations = len(data.data.data[0, 0, :])
+
+    for i in range(nb_stations):
+        if stop - start >= trends_min_yrs:
+            try:
+                obs_vals = data.data.data[0, :, i]
+                mod_vals = data.data.data[1, :, i]
+
+                time = data.data.time.values
+                (obs_trend, mod_trend) = _make_trends(
+                    obs_vals,
+                    mod_vals,
+                    time,
+                    freq,
+                    season,
+                    start,
+                    stop,
+                    trends_min_yrs,
+                )
+                if None not in obs_trend.values() and None not in mod_trend.values():
+                    station_mod_trends.append(mod_trend)
+                    station_obs_trends.append(obs_trend)
+            except TrendsError as e:
+                msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                logger.warning(msg)
+
+    if len(station_obs_trends) == 0 or len(station_mod_trends) == 0:
+        trends_successful = False
+        obs_trend = {}
+        mod_trend = {}
+    else:
+        obs_trend = _combine_regional_trends(
+            station_obs_trends,
+            start,
+            stop,
+            subset_time_series["obs"],
+            median=median,
+        )
+        mod_trend = _combine_regional_trends(
+            station_mod_trends,
+            start,
+            stop,
+            subset_time_series["mod"],
+            median=median,
+        )
+
+        obs_trend["data"] = obs_trend["data"].to_json()
+        mod_trend["data"] = mod_trend["data"].to_json()
+
+        obs_trend["map_var"] = f"slp_{start}"
+        mod_trend["map_var"] = f"slp_{start}"
+
+    return obs_trend, mod_trend, trends_successful
+
+
+def _combine_regional_trends(
+    trends: list[dict],
+    start_yr: int | float,
+    stop_yr: int | float,
+    time_series: pd.Series,
+    median: bool = False,
+) -> dict:
+    result = _init_trends_result_dict(start_yr)
+
+    if median:
+        avg_func = np.nanmedian
+    else:
+        avg_func = np.nanmean
+
+    default_trend = trends[0]
+
+    result["period"] = default_trend["period"]
+    result["season"] = default_trend["season"]
+
+    result["data"] = _get_yearly(time_series, default_trend["season"], start_yr).loc[
+        str(start_yr) : str(stop_yr)
+    ]
+
+    result["n"] = _combine_statistic(trends, "n", np.nanmax)
+    result["y_mean"] = _combine_statistic(trends, "y_mean", avg_func)
+    result["y_min"] = _combine_statistic(trends, "y_min", np.nanmin)
+    result["y_max"] = _combine_statistic(trends, "y_max", np.nanmax)
+
+    # result["pval"] = _fishers_pval(trends)
+    result["pval"] = _harmonic_mean_pval(trends)
+
+    result["m"] = _combine_statistic(trends, "m", avg_func)
+    result["m_err"] = _get_trend_error(trends, "m")
+    result["yoffs"] = _combine_statistic(trends, "yoffs", avg_func)
+
+    result["slp"] = _combine_statistic(trends, "slp", avg_func)
+    result["slp_err"] = _get_trend_error(trends, "slp")
+    result["reg0"] = _combine_statistic(trends, "reg0", avg_func)
+
+    result[f"slp_{start_yr}"] = _combine_statistic(trends, f"slp_{start_yr}", avg_func)
+    result[f"slp_{start_yr}_err"] = _get_trend_error(trends, f"slp_{start_yr}")
+    result[f"reg0_{start_yr}"] = _combine_statistic(trends, f"reg0_{start_yr}", avg_func)
+
+    return result
+
+
+def _combine_statistic(data: list, key: str, func: Callable) -> float:
+    cleaned = np.array([i[key] for i in data])
+    return float(func(cleaned))
+
+
+def _get_trend_error(trends: list, key: str) -> float:
+    cleaned = np.array([i[key] for i in trends])
+    return float(np.nanstd(cleaned))
+
+
+def _fishers_pval(trends: list) -> float:
+    """
+    Quick implementation of Fisher's method for combining p values
+    Is most probably wrong
+    """
+    pvals = np.array([i["pval"] for i in trends])
+    x = -2.0 * np.nansum(np.log(pvals))
+    return float(1 - x)
+
+
+def _harmonic_mean_pval(trends: list, weights: np.ndarray | None = None) -> float:
+    """
+    Alternative way of combining pvals
+    """
+    pvals = np.array([i["pval"] for i in trends])
+    L = len(pvals)
+    if weights is not None and len(weights) != L:
+        raise ValueError(
+            f"Weights must be the same length as the number of pvals: {len(weights)} != {L}"
+        )
+
+    if weights is None:
+        weights = np.array([1.0 / L for i in range(L)])
+
+    har_mean = np.sum(weights) / np.sum(weights / pvals)
+
+    return har_mean
+
+
+def process_trends(
+    subset: ColocatedData,
+    trends_min_yrs: int,
+    season: str,
+    per: str,
+    avg_over_trends: bool,
+    regid: str,
+    use_country: bool,
+    freq: str,
+    use_weights: bool,
+) -> dict:
+    # subset = _select_period_season_coldata(coldata, per, season)
+    stats = {}
+    trends_successful = False
+    mean_trends_successful = False
+    median_trends_successful = False
+
+    if avg_over_trends:
+        (
+            mean_obs_trend,
+            mean_mod_trend,
+            mean_trends_successful,
+        ) = _make_regional_trends(
+            subset,
+            trends_min_yrs,
+            per,
+            freq,
+            season,
+            regid,
+            use_country,
+        )
+
+        (
+            median_obs_trend,
+            median_mod_trend,
+            median_trends_successful,
+        ) = _make_regional_trends(
+            subset,
+            trends_min_yrs,
+            per,
+            freq,
+            season,
+            regid,
+            use_country,
+            median=True,
+        )
+
+    # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+    (start, stop) = _get_min_max_year_periods([per])
+    (start, stop) = (start.year, stop.year)
+
+    if stop - start >= trends_min_yrs:
+        try:
+            subset_time_series = subset.get_regional_timeseries(
+                regid, check_country_meta=use_country
+            )
+
+            (obs_trend, mod_trend) = _make_trends_from_timeseries(
+                subset_time_series["obs"],
+                subset_time_series["mod"],
+                freq,
+                season,
+                start,
+                stop,
+                trends_min_yrs,
+            )
+
+            trends_successful = True
+        except TrendsError as e:
+            msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+            logger.warning(msg)
+
+    if trends_successful:
+        # The whole trends dicts are placed in the stats dict
+        stats["obs_trend"] = obs_trend
+        stats["mod_trend"] = mod_trend
+
+    if mean_trends_successful and avg_over_trends:
+        # The whole trends dicts are placed in the stats dict
+        stats["obs_mean_trend"] = mean_obs_trend
+        stats["mod_mean_trend"] = mean_mod_trend
+
+    if median_trends_successful and avg_over_trends:
+        # The whole trends dicts are placed in the stats dict
+        stats["obs_median_trend"] = median_obs_trend
+        stats["mod_median_trend"] = median_mod_trend
+
+    return stats
+
+
 def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
     Function for generating trends from timeseries
@@ -829,6 +1104,7 @@ def _process_map_and_scat(
     seasons,
     add_trends,
     trends_min_yrs,
+    avg_over_trends,
     use_fairmode,
     obs_var,
     drop_stats,
@@ -886,6 +1162,13 @@ def _process_map_and_scat(
                                     # The whole trends dicts are placed in the stats dict
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
+
+                                    if avg_over_trends:
+                                        stats["obs_mean_trend"] = obs_trend
+                                        stats["mod_mean_trend"] = mod_trend
+
+                                        stats["obs_median_trend"] = obs_trend
+                                        stats["mod_median_trend"] = mod_trend
 
                                 except TrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
@@ -1129,6 +1412,7 @@ def _process_heatmap_data(
     seasons,
     add_trends,
     trends_min_yrs,
+    avg_over_trends,
 ):
     output = {}
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
@@ -1146,32 +1430,18 @@ def _process_heatmap_data(
                         try:
                             subset = _select_period_season_coldata(coldata, per, season)
 
-                            trends_successful = False
                             if add_trends and freq != "daily":
-                                # Calculates the start and stop years.
-                                (start, stop) = _get_min_max_year_periods([per])
-                                (start, stop) = (start.year, stop.year)
-
-                                if stop - start >= trends_min_yrs:
-                                    try:
-                                        subset_time_series = subset.get_regional_timeseries(
-                                            regid, check_country_meta=use_country
-                                        )
-
-                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(
-                                            subset_time_series["obs"],
-                                            subset_time_series["mod"],
-                                            freq,
-                                            season,
-                                            start,
-                                            stop,
-                                            trends_min_yrs,
-                                        )
-
-                                        trends_successful = True
-                                    except TrendsError as e:
-                                        msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                        logger.warning(msg)
+                                trend_stats = process_trends(
+                                    subset,
+                                    trends_min_yrs,
+                                    season,
+                                    per,
+                                    avg_over_trends,
+                                    regid,
+                                    use_country,
+                                    freq,
+                                    use_weights,
+                                )
 
                             subset = subset.filter_region(
                                 region_id=regid, check_country_meta=use_country
@@ -1179,10 +1449,8 @@ def _process_heatmap_data(
 
                             stats = _get_extended_stats(subset, use_weights, drop_stats)
 
-                            if add_trends and freq != "daily" and trends_successful:
-                                # The whole trends dicts are placed in the stats dict
-                                stats["obs_trend"] = obs_trend
-                                stats["mod_trend"] = mod_trend
+                            if add_trends and freq != "daily":
+                                stats.update(**trend_stats)
 
                         except (DataCoverageError, TemporalResolutionError) as e:
                             stats = stats_dummy
@@ -1583,3 +1851,88 @@ def add_profile_entry_json(
             }
         current[model_name] = round_floats(current[model_name])
     write_json(current, profile_file, round_floats=False)
+
+
+def _remove_less_covered(
+    data: ColocatedData,
+    min_yrs: int,
+    sequential_yrs: bool = False,
+) -> ColocatedData:
+    stations = data.data.station_name.data
+    data = data.copy()
+    for i, s in enumerate(stations):
+        years = _get_yeares(data, s)
+        if sequential_yrs:
+            max_yrs = _find_longest_seq_yrs(years)
+        else:
+            max_yrs = _find_n_yrs(years)
+
+        if min_yrs > max_yrs:
+            print(f"Dropping {s}; It has only {max_yrs}")
+            logging.info(f"Dropping {s}; It has only {max_yrs}")
+            data.data = data.data.drop_sel(station_name=s)
+
+    new_stations = data.data.station_name.data
+
+    print(f"Removed {len(stations)-len(new_stations)} stations")
+    if len(new_stations) == 0:
+        raise TrendsError(
+            f"No stations left after removing stations with fewer than {min_yrs} years!"
+        )
+
+    return data
+
+
+def _get_yeares(coldata: ColocatedData, site: str, start_yr: int = 2000) -> np.ndarray:
+    found_yrs = []
+    data = coldata.data.sel(station_name=site).isel(data_source=0).to_series()
+
+    yrs = np.unique(data.index.year)
+    for yr in yrs:
+        if yr < start_yr:  # winter
+            continue
+
+        subset = data.loc[str(yr)]
+
+        if len(subset) == 0:
+            continue
+        elif np.isnan(subset.values).all():
+            continue
+
+        d = subset.index
+        valid_mask = ~np.isnan(subset.values)
+        seasons = _get_unique_seasons(d[valid_mask])
+
+        if len(seasons) == 4:
+            found_yrs.append(yr)
+
+    return np.array(found_yrs)
+
+
+def _find_n_yrs(years: np.ndarray) -> int:
+    return len(years)
+
+
+def _find_longest_seq_yrs(years: np.ndarray) -> int:
+    years = np.sort(years)
+    max_yrs = 1
+    yrs = 1
+    for i in range(1, len(years)):
+        if years[i] == years[i - 1] + 1:
+            yrs += 1
+        else:
+            yrs = 1
+
+        max_yrs = max(yrs, max_yrs)
+
+    return max_yrs
+
+
+def _get_yrs_from_season_yrs(season_yrs: dict) -> np.ndarray:
+    yrs = []
+    for y in season_yrs.keys():
+        s = season_yrs[y]
+        if len(list(set(s))) == 4:
+            yrs.append(y)
+
+    return np.array(yrs)

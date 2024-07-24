@@ -8,7 +8,7 @@ from pyaerocom import const
 logger = logging.getLogger(__name__)
 
 #: tarfile to download
-TESTDATA_FILE = "testdata-minimal.tar.gz.20231116"
+TESTDATA_FILE = "testdata-minimal.tar.gz.20240722"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -21,6 +21,7 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20231017": "md5:705d91e01ca7647b4c93dfe67def661f",
         "testdata-minimal.tar.gz.20231019": "md5:f8912ee83d6749fb2a9b1eda1d664ca2",
         "testdata-minimal.tar.gz.20231116": "md5:5da747f6596817295ba7affe3402b722",
+        "testdata-minimal.tar.gz.20240722": "md5:7d933901c6d273d012f132c60df086cc",
     },
 )
 

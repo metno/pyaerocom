@@ -276,6 +276,7 @@ statistics_defaults = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "fge": {
         "name": "FGE",
@@ -293,6 +294,7 @@ statistics_defaults = {
         "colmap": "Reds",
         "unit": "%",
         "decimals": 1,
+        "time_series": True,
     },
     "rms": {
         "name": "RMSE",
@@ -310,6 +312,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "refdata_mean": {
         "name": "Mean-Obs",
@@ -318,6 +321,7 @@ statistics_defaults = {
         "colmap": "coolwarm",
         "unit": "1",
         "decimals": 2,
+        "time_series": True,
     },
     "num_valid": {
         "name": "Nb. Obs",
@@ -349,6 +353,7 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "category": "Regional Time Series",
         "time_series": False,
     },
     "R_temporal_median": {
@@ -359,7 +364,34 @@ extended_statistics = {
         "colmap": "RdYlGn",
         "unit": "1",
         "decimals": 2,
+        "category": "Regional Time Series",
         "time_series": False,
+    },
+}
+
+# For adding num statistics
+num_statistics = {
+    "num_valid": {
+        "name": "Nb. Obs",
+        "longname": "Number of Valid Observations",
+        "scale": None,
+        "colmap": None,
+        "unit": "1",
+        "decimals": 0,
+        "overall_only": True,
+        "category": "Regional Time Series",
+        "time_series": True,
+    },
+    "num_coords_with_data": {
+        "name": "Nb. Stations",
+        "longname": "Number of Stations with data",
+        "scale": None,
+        "colmap": None,
+        "unit": "1",
+        "decimals": 0,
+        "overall_only": True,
+        "category": "Regional Time Series",
+        "time_series": True,
     },
 }
 
@@ -368,26 +400,98 @@ statistics_trend = {
     "obs/mod_trend": {
         "name": "Obs/Mod-Trends",
         "longname": "Trends",
-        "scale": [-10.0, -7.5, -5.0, -2.5, 0, 2.5, 5.0, 7.5, 10.0],
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Regional Time Series",
+        "forecast": False,
     },
     "obs_trend": {
         "name": "Obs-Trends",
         "longname": "Observed Trends",
-        "scale": [-10.0, -7.5, -5.0, -2.5, 0, 2.5, 5.0, 7.5, 10.0],
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Regional Time Series",
+        "forecast": False,
     },
     "mod_trend": {
         "name": "Mod-Trends",
         "longname": "Modelled Trends",
-        "scale": [-10, -7.5, -5.0, -2.5, 0, 2.5, 5.0, 7.5, 10.0],
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
         "colmap": "bwr",
         "unit": "%/yr",
         "decimals": 1,
+        "category": "Regional Time Series",
+        "forecast": False,
+    },
+}
+
+statistics_mean_trend = {
+    "obs/mod_mean_trend": {
+        "name": "Mean Obs/Mod-Trends",
+        "longname": "Mean Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
+    },
+    "obs_mean_trend": {
+        "name": "Mean Obs-Trends",
+        "longname": "Observed Mean Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
+    },
+    "mod_mean_trend": {
+        "name": "Mean Mod-Trends",
+        "longname": "Modelled Mean Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
+    },
+}
+
+statistics_median_trend = {
+    "obs/mod_median_trend": {
+        "name": "Median Obs/Mod-Trends",
+        "longname": "Median Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
+    },
+    "obs_median_trend": {
+        "name": "Median Obs-Trends",
+        "longname": "Observed Median Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
+    },
+    "mod_median_trend": {
+        "name": "Median Mod-Trends",
+        "longname": "Modelled Median Trends",
+        "scale": [-5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1,
+        "category": "Individual Stations",
+        "time_series": False,
     },
 }
 # If doing an obs_only experiement, the only statistics which make sense relate just to the observations

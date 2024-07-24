@@ -109,7 +109,7 @@ def test_check_time_coord(cube: Cube):
             "blaa",
             2010,
             TemporalResolutionError,
-            "Invalid input for ts_type blaa. Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native']",
+            "Invalid input for ts_type blaa. Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest']",
             id="wrong ts_type",
         ),
         pytest.param(
