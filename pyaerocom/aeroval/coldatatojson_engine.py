@@ -301,10 +301,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            fname = get_profile_filename(region_names[regid], obs_name, var_name_web)
+            self._add_profile_entry(data, profile_viz, periods, seasons)
 
-            outfile_profile = os.path.join(out_dirs["profiles"], fname)
-            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
         # Loop through stations
         for station_name in station_names:
             profile_viz = process_profile_data_for_stations(
@@ -316,12 +314,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
 
             self._add_profile_entry(data, profile_viz, periods, seasons)
-            # fname = get_profile_filename(station_name, obs_name, var_name_web)
-
-    #
-    # outfile_profile = os.path.join(out_dirs["profiles"], fname)
-    #
-    # add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
 
     def _process_stats_timeseries_for_all_regions(
         self,

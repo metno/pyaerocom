@@ -233,8 +233,6 @@ class ProcessingEngine(HasConfig, abc.ABC):
 
             for freq, coldata in data.items():
                 model_name = coldata.model_name
-                # if not model_name in current:
-                #    current[model_name] = {}
 
                 midpoint = (
                     float(coldata.data.attrs["vertical_layer"]["end"])
@@ -247,18 +245,6 @@ class ProcessingEngine(HasConfig, abc.ABC):
                     midpoint > current[model_name]["z"][-1]
                 ):  # only store incremental increases in the layers
                     current[model_name]["z"].append(midpoint)
-
-                # if not "obs" in current[model_name]:
-                #    current[model_name]["obs"] = {}
-
-                # if not freq in current[model_name]["obs"]:
-                #    current[model_name]["obs"][freq] = {}
-
-                # if not "mod" in current[model_name]:
-                #    current[model_name]["mod"] = {}
-
-                # if not freq in current[model_name]["mod"]:
-                #    current[model_name]["mod"][freq] = {}
 
                 for per in periods:
                     for season in seasons:
