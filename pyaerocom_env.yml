@@ -32,7 +32,7 @@ dependencies:
     - geojsoncontour
     - geocoder_reverse_natural_earth >= 0.0.2
     - pyaro >= 0.0.10
-    - git+https://github.com/metno/aerovaldb.git@fixes
+    - git+https://github.com/metno/aerovaldb.git@v0.0.9
 ## testing
   - pytest >=7.4
   - pytest-dependency
