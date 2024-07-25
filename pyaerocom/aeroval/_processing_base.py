@@ -174,7 +174,7 @@ class ProcessingEngine(HasConfig, abc.ABC):
         with self.avdb.lock():
             glob_stats = self.avdb.get_glob_stats(project, experiment, frequency, default={})
             glob_stats = recursive_defaultdict(glob_stats)
-            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            glob_stats[obsvar][network][layer][modelname][modvar] = entry
             self.avdb.put_glob_stats(glob_stats, project, experiment, frequency)
 
     def _write_station_data(self, data):
