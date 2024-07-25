@@ -147,7 +147,7 @@ def _add_heatmap_entry_json(
     if not model_name in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
-    mn[model_var] = round_floats(result)
+    mn[model_var] = result
     write_json(current, heatmap_file, round_floats=False)
 
 

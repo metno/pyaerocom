@@ -80,7 +80,9 @@ def _prepare_statistics(
     result = dict()
     for name, stat in statistics.items():
         if len(data) >= min_numvalid:
-            result[name] = round(stat(data, ref_data, weights), 10)
+            # Rounding to ensure values aren't out of bounds due to floating point
+            # arithmetic and to reduce json file size.
+            result[name] = np.round(stat(data, ref_data, weights), decimals=6)
         else:
             result[name] = np.nan
 
