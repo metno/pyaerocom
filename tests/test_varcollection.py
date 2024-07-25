@@ -28,7 +28,10 @@ def test_invalid_entries(collection: VarCollection):
     [
         pytest.param(None, ValueError, "Invalid input for var_ini, need str", id="ValueError"),
         pytest.param(
-            "/bla/blub", FileNotFoundError, "File /bla/blub does not exist", id="FileNotFoundError"
+            "/bla/blub",
+            FileNotFoundError,
+            "File /bla/blub does not exist",
+            id="FileNotFoundError",
         ),
     ],
 )
@@ -83,7 +86,7 @@ def test_VarCollection_get_var_error(collection: VarCollection):
         ("*blaaaaaaa*", 0),
         ("dep*", 9),
         ("od*", 26),
-        ("conc*", 98),
+        ("conc*", 99),
     ],
 )
 def test_VarCollection_find(collection: VarCollection, search_pattern: str, num: int):
