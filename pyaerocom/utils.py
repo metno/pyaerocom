@@ -161,7 +161,7 @@ def recursive_defaultdict(d: Mapping | None = None):
 
     Optionally takes a parameter `d` (eg. dictionary) to initalize
     the defaultdict. Every existing subdictionary will recursively be
-    turned into a nested_default_dict.
+    turned into a recursive_defaultdict.
 
     See also: https://docs.python.org/3/library/collections.html#collections.defaultdict
     """
