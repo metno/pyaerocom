@@ -146,16 +146,16 @@ def print_file(path: Path | str):
             print(line)
 
 
-def recursive_defaultdict(d: Mapping | None = None) -> defaultdict:
+def recursive_defaultdict(d: Mapping | None = None):
     """
-    Creates a nested default dict which creates empty subdicts
+    Creates a recursive default dict which creates empty subdicts
     automatically on access. Useful to avoid lots of boiler plate
     code for creating empty subdicts.
 
     Example:
 
     ```
-    dd = nested_defaultdict()
+    dd = recursive_defaultdict()
     dd["A"]["B"]["C"]["D"]["E"] = "Hello world"
     ```
 
