@@ -111,6 +111,10 @@ class OutputPaths(BaseModel):
         return out
 
 
+class AerovaldbSetup(BaseModel):
+    resource: Literal["json_files"] = "json_files"
+
+
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
@@ -371,6 +375,15 @@ class EvalSetup(BaseModel):
         }
         return OutputPaths(**model_args)
 
+    @cached_property
+    def avdb_cfg(self) -> AerovaldbSetup:
+        if not hasattr(self, "model_extra") or self.model_extra is None:
+            return OutputPaths()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in AerovaldbSetup.model_fields
+        }
+        return AerovaldbSetup(**model_args)
+
     # Many computed_fields here have this hack to get keys from a general CFG into their appropriate respective classes
     # TODO: all these computed fields could be more easily defined if the config were
     # rigid enough to have them explicitly defined (e.g., in a TOML file), rather than dumping everything
@@ -539,7 +552,7 @@ class EvalSetup(BaseModel):
             json indentation
 
         """
-        with aerovaldb.open(f"json_files:{outdir}") as db:
+        with aerovaldb.open(f"{self.avdb_cfg.resource}:{outdir}") as db:
             with db.lock():
                 db.put_config(self.json_repr(), self.proj_info.proj_id, self.exp_info.exp_id)
 
