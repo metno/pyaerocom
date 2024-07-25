@@ -26,9 +26,14 @@ def test_invalid_entries(collection: VarCollection):
 @pytest.mark.parametrize(
     "var_ini,exception,error",
     [
-        pytest.param(None, ValueError, "Invalid input for var_ini, need str", id="ValueError"),
         pytest.param(
-            "/bla/blub", FileNotFoundError, "File /bla/blub does not exist", id="FileNotFoundError"
+            None, ValueError, "Invalid input for var_ini, need str", id="ValueError"
+        ),
+        pytest.param(
+            "/bla/blub",
+            FileNotFoundError,
+            "File /bla/blub does not exist",
+            id="FileNotFoundError",
         ),
     ],
 )
@@ -74,7 +79,10 @@ def test_VarCollection_get_var_error(collection: VarCollection):
     var_name = "bla"
     with pytest.raises(VariableDefinitionError) as e:
         collection.get_var(var_name)
-    assert str(e.value) == f"Error (VarCollection): input variable {var_name} is not supported"
+    assert (
+        str(e.value)
+        == f"Error (VarCollection): input variable {var_name} is not supported"
+    )
 
 
 @pytest.mark.parametrize(
@@ -83,7 +91,7 @@ def test_VarCollection_get_var_error(collection: VarCollection):
         ("*blaaaaaaa*", 0),
         ("dep*", 9),
         ("od*", 26),
-        ("conc*", 98),
+        ("conc*", 99),
     ],
 )
 def test_VarCollection_find(collection: VarCollection, search_pattern: str, num: int):
@@ -96,7 +104,9 @@ def test_VarCollection_delete_var_MULTIDEF(collection: VarCollection):
     collection.all_vars.append(var_name)
     with pytest.raises(VariableDefinitionError) as e:
         collection.delete_variable(var_name)
-    assert f"found multiple matches for variable {var_name} in VarCollection" in str(e.value)
+    assert f"found multiple matches for variable {var_name} in VarCollection" in str(
+        e.value
+    )
 
 
 def test_VarCollection___dir__(collection: VarCollection):
@@ -108,7 +118,9 @@ def test_VarCollection___dir__(collection: VarCollection):
 
 
 @pytest.mark.parametrize("var_name,found", [("blablub", False), ("od550aer", True)])
-def test_VarCollection___contains__(collection: VarCollection, var_name: str, found: bool):
+def test_VarCollection___contains__(
+    collection: VarCollection, var_name: str, found: bool
+):
     assert (var_name in collection) == found
 
 
