@@ -199,30 +199,30 @@ class ExperimentOutput(ProjectOutput):
         """
         Synchronise content of heatmap json files with content of menu.json
         """
-        menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
-        all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
-        for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
-            data = self.avdb.get_by_uri(fp)
-            hm = {}
-            for vardisp, info in menu.items():
-                obs_dict = info["obs"]
-                if not vardisp in hm:
-                    hm[vardisp] = {}
-                for obs, vdict in obs_dict.items():
-                    if not obs in hm[vardisp]:
-                        hm[vardisp][obs] = {}
-                    for vert_code, mdict in vdict.items():
-                        if not vert_code in hm[vardisp][obs]:
-                            hm[vardisp][obs][vert_code] = {}
-                        for mod, minfo in mdict.items():
-                            if not mod in hm[vardisp][obs][vert_code]:
-                                hm[vardisp][obs][vert_code][mod] = {}
-                            modvar = minfo["model_var"]
-                            hm_data = data[vardisp][obs][vert_code][mod][modvar]
-                            hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
-                            hm[vardisp][obs][vert_code][mod][modvar] = hm_data
+        with self.avdb.lock():
+            menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
+            all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
+            for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
+                data = self.avdb.get_by_uri(fp)
+                hm = {}
+                for vardisp, info in menu.items():
+                    obs_dict = info["obs"]
+                    if not vardisp in hm:
+                        hm[vardisp] = {}
+                    for obs, vdict in obs_dict.items():
+                        if not obs in hm[vardisp]:
+                            hm[vardisp][obs] = {}
+                        for vert_code, mdict in vdict.items():
+                            if not vert_code in hm[vardisp][obs]:
+                                hm[vardisp][obs][vert_code] = {}
+                            for mod, minfo in mdict.items():
+                                if not mod in hm[vardisp][obs][vert_code]:
+                                    hm[vardisp][obs][vert_code][mod] = {}
+                                modvar = minfo["model_var"]
+                                hm_data = data[vardisp][obs][vert_code][mod][modvar]
+                                hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
+                                hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-            with self.avdb.lock():
                 self.avdb.put_by_uri(hm, fp)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
@@ -385,28 +385,28 @@ class ExperimentOutput(ProjectOutput):
             os.remove(fp)
             return True
 
-        try:
-            data = self.avdb.get_by_uri(fp)
-        except Exception:
-            logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
-            os.remove(fp)
-            return True
-
-        models_avail = list(data)
-        models_in_exp = self.cfg.model_cfg.web_iface_names
-        if all([mod in models_in_exp for mod in models_avail]):
-            # nothing to clean up
-            return False
-        modified = False
-        data_new = {}
-        for mod_name in models_avail:
-            if mod_name in models_in_exp:
-                data_new[mod_name] = data[mod_name]
-            else:
-                modified = True
-                logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
-
         with self.avdb.lock():
+            try:
+                data = self.avdb.get_by_uri(fp)
+            except Exception:
+                logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
+                os.remove(fp)
+                return True
+
+            models_avail = list(data)
+            models_in_exp = self.cfg.model_cfg.web_iface_names
+            if all([mod in models_in_exp for mod in models_avail]):
+                # nothing to clean up
+                return False
+            modified = False
+            data_new = {}
+            for mod_name in models_avail:
+                if mod_name in models_in_exp:
+                    data_new[mod_name] = data[mod_name]
+                else:
+                    modified = True
+                    logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
+
             self.avdb.put_by_uri(data_new, fp)
         return modified
 
