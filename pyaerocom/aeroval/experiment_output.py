@@ -5,7 +5,6 @@ import shutil
 from collections import namedtuple
 
 import aerovaldb
-import aerovaldb.aerovaldb
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
@@ -21,12 +20,15 @@ from pyaerocom.aeroval.glob_defaults import (
     statistics_obs_only,
     statistics_trend,
 )
+from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
+from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
 
 MapInfo = namedtuple(
@@ -43,7 +45,7 @@ class ProjectOutput:
 
     json_basedir = DirLoc(assert_exists=True)
 
-    def __init__(self, proj_id: str, avdb: str | aerovaldb.aerovaldb.AerovalDB):
+    def __init__(self, proj_id: str, avdb: str | aerovaldb.AerovalDB):
         self.proj_id = proj_id
 
         if isinstance(avdb, str):
@@ -860,3 +862,217 @@ class ExperimentOutput(ProjectOutput):
 
             current = sort_dict_by_name(current, pref_list=exp_order)
             self.avdb.put_experiments(current, self.proj_id)
+
+    def add_heatmap_timeseries_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a heatmap entry to hm/ts
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_heatmap_timeseries(
+                project, experiment, region, network, obsvar, layer, default={}
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_heatmap_timeseries(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+            )
+
+    def add_forecast_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a forecast entry to forecast
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_forecast(
+                project, experiment, region, network, obsvar, layer, default={}
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_forecast(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+            )
+
+    def add_heatmap_entry(
+        self,
+        entry,
+        frequency: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a heatmap entry to glob_stats
+
+        :param entry: The entry to be added.
+        :param region: The region (eg. ALL)
+        :param obsvar: Observation variable.
+        :param layer: Vertical Layer (eg. SURFACE)
+        :param modelname: Model name
+        :param modelvar: Model variable.
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_glob_stats(project, experiment, frequency, default={})
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = entry
+            self.avdb.put_glob_stats(glob_stats, project, experiment, frequency)
+
+    def write_station_data(self, data):
+        """Writes timeseries weekly.
+
+        :param data: Data to be written.
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        location = data["station_name"]
+        network = data["obs_name"]
+        obsvar = data["var_name_web"]
+        layer = data["vert_code"]
+        modelname = data["model_name"]
+        with self.avdb.lock():
+            station_data = self.avdb.get_timeseries_weekly(
+                project, experiment, location, network, obsvar, layer, default={}
+            )
+            station_data[modelname] = round_floats(data)
+            self.avdb.put_timeseries_weekly(
+                station_data, project, experiment, location, network, obsvar, layer
+            )
+
+    def write_timeseries(self, data):
+        """Write timeseries
+
+        Args:
+            data: The timeseries object to be written.
+
+        Note:
+        -----
+        All necessary metadata will be read from the data object.
+        """
+        if not isinstance(data, list):
+            data = [data]
+
+        project = self.proj_id
+        experiment = self.exp_id
+        with self.avdb.lock():
+            for d in data:
+                location = d["station_name"]
+                network = d["obs_name"]
+                obsvar = d["var_name_web"]
+                layer = d["vert_code"]
+                modelname = d["model_name"]
+
+                timeseries = self.avdb.get_timeseries(
+                    project, experiment, location, network, obsvar, layer, default={}
+                )
+                timeseries[modelname] = round_floats(d)
+                self.avdb.put_timeseries(
+                    timeseries, project, experiment, location, network, obsvar, layer
+                )
+
+    def add_profile_entry(
+        self, data: ColocatedData, profile_viz: dict, periods: list[str], seasons: list[str]
+    ):
+        """Adds an entry for the colocated data to profiles.json.
+
+        Args:
+            data (ColocatedData): For this vertical layer
+            profile_viz (dict): Output of process_profile_data()
+            periods (list[str]): periods to compute over (years)
+            seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
+        """
+        with self.avdb.lock():
+            current = self.avdb.get_profiles(self.proj_id, self.exp_id, default={})
+            current = recursive_defaultdict(current)
+
+            for freq, coldata in data.items():
+                model_name = coldata.model_name
+
+                midpoint = (
+                    float(coldata.data.attrs["vertical_layer"]["end"])
+                    + float(coldata.data.attrs["vertical_layer"]["start"])
+                ) / 2
+                if not "z" in current[model_name]:
+                    current[model_name]["z"] = [midpoint]  # initalize with midpoint
+
+                if (
+                    midpoint > current[model_name]["z"][-1]
+                ):  # only store incremental increases in the layers
+                    current[model_name]["z"].append(midpoint)
+
+                for per in periods:
+                    for season in seasons:
+                        perstr = f"{per}-{season}"
+
+                        if not perstr in current[model_name]["obs"][freq]:
+                            current[model_name]["obs"][freq][perstr] = []
+                        if not perstr in current[model_name]["mod"][freq]:
+                            current[model_name]["mod"][freq][perstr] = []
+
+                        current[model_name]["obs"][freq][perstr].append(
+                            profile_viz["obs"][freq][perstr]
+                        )
+                        current[model_name]["mod"][freq][perstr].append(
+                            profile_viz["mod"][freq][perstr]
+                        )
+
+                if not "metadata" in current[model_name]:
+                    current[model_name]["metadata"] = {
+                        "z_unit": coldata.data.attrs["altitude_units"],
+                        "z_description": "Altitude ASL",
+                        "z_long_description": "Altitude Above Sea Level",
+                        "unit": coldata.unitstr,
+                    }
+                current[model_name] = round_floats(current[model_name])
+
+            self.avdb.put_profiles(current, self.proj_id, self.exp_id)

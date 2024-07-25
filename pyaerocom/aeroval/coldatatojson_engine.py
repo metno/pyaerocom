@@ -299,7 +299,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            self._add_profile_entry(data, profile_viz, periods, seasons)
+            self.exp_output.add_profile_entry(data, profile_viz, periods, seasons)
 
         # Loop through stations
         for station_name in station_names:
@@ -311,7 +311,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            self._add_profile_entry(data, profile_viz, periods, seasons)
+            self.exp_output.add_profile_entry(data, profile_viz, periods, seasons)
 
     def _process_stats_timeseries_for_all_regions(
         self,
@@ -357,7 +357,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 stats_ts = {}
 
             region = regnames[reg]
-            self._add_heatmap_timeseries_entry(
+            self.exp_output.add_heatmap_timeseries_entry(
                 stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
@@ -378,14 +378,14 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
 
         for freq, hm_data in hm_all.items():
-            self._add_heatmap_entry(
+            self.exp_output.add_heatmap_entry(
                 hm_data, freq, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
         logger.info("Processing regional timeseries for all regions")
         ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
-        self._write_timeseries(ts_objs_regional)
+        self.exp_output.write_timeseries(ts_objs_regional)
         if coldata.has_latlon_dims:
             for cd in data.values():
                 if cd is not None:
@@ -394,7 +394,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         logger.info("Processing individual site timeseries data")
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        self._write_timeseries(ts_objs)
+        self.exp_output.write_timeseries(ts_objs)
 
         scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
         scatter_freq = min(scatter_freq, main_freq)
@@ -457,7 +457,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
         outdir = os.path.join(out_dirs["ts/diurnal"])
         for ts_data_weekly in ts_objs_weekly:
-            self._write_station_data(ts_data_weekly)
+            self.exp_output.write_station_data(ts_data_weekly)
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
-                self._write_station_data(ts_data_weekly_reg)
+                self.exp_output.write_station_data(ts_data_weekly_reg)
