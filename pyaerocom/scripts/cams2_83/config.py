@@ -69,6 +69,7 @@ GLOBAL_CONFIG = dict(
         "vmro3max",
         "vmro3",
         "conco3",
+        "conco3mda8",
         "vmrox",
         "concso2",
         "vmrco",
