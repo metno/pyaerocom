@@ -8,7 +8,6 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Callable, Literal
 
-import aerovaldb
 import numpy as np
 import pandas as pd
 import xarray as xr
