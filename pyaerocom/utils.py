@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import fnmatch
+from collections import defaultdict
 from pathlib import Path
+from typing import Mapping
 
 import pandas as pd
 
@@ -142,3 +144,34 @@ def print_file(path: Path | str):
     for line in path.read_text().splitlines():
         if line.strip():
             print(line)
+
+
+def recursive_defaultdict(d: Mapping | None = None):
+    """
+    Creates a recursive default dict which creates empty subdicts
+    automatically on access. Useful to avoid lots of boiler plate
+    code for creating empty subdicts.
+
+    Example:
+
+    ```
+    dd = recursive_defaultdict()
+    dd["A"]["B"]["C"]["D"]["E"] = "Hello world"
+    ```
+
+    Optionally takes a parameter `d` (eg. dictionary) to initalize
+    the defaultdict. Every existing subdictionary will recursively be
+    turned into a recursive_defaultdict.
+
+    See also: https://docs.python.org/3/library/collections.html#collections.defaultdict
+    """
+    if d is None:
+        return defaultdict(recursive_defaultdict)
+
+    # Recursively turn every existing subdictionary into a nested dict.
+    d = defaultdict(recursive_defaultdict, d)
+    for k in d:
+        if isinstance(d[k], dict):
+            d[k] = recursive_defaultdict(d[k])
+
+    return d

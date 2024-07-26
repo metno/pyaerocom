@@ -17,7 +17,6 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
-from pyaerocom.aeroval.json_utils import read_json, round_floats, write_json
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.helpers import start_stop
@@ -35,120 +34,6 @@ from pyaerocom.trends_helpers import (
 from pyaerocom.tstype import TsType
 
 logger = logging.getLogger(__name__)
-
-
-def get_heatmap_filename(ts_type):
-    return f"glob_stats_{ts_type}.json"
-
-
-def get_timeseries_file_name(region, obs_name, var_name_web, vert_code):
-    return f"{region}-{obs_name}-{var_name_web}-{vert_code}.json"
-
-
-def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
-    """Get name of station timeseries file"""
-    return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
-
-
-def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code, period):
-    """Get base name of json file"""
-    # for cams2_83 the periods contain slashes at this point
-    periodmod = period.replace("/", "")
-    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}_{periodmod}.json"
-
-
-def _write_stationdata_json(ts_data, out_dir):
-    """
-    This method writes time series data given in a dictionary to .json files
-
-    Parameters
-    ----------
-    ts_data : dict
-        A dictionary containing all processed time series data.
-    out_dir : str or similar
-        output directory
-
-    Returns
-    -------
-    None.
-
-    """
-    filename = get_stationfile_name(
-        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
-    )
-
-    fp = os.path.join(out_dir, filename)
-    if os.path.exists(fp):
-        current = read_json(fp)
-    else:
-        current = {}
-    current[ts_data["model_name"]] = round_floats(ts_data)
-    write_json(current, fp, round_floats=False)
-
-
-def _write_site_data(ts_objs, dirloc):
-    """Write list of station timeseries files to json"""
-    for ts_data in ts_objs:
-        # writes json file
-        _write_stationdata_json(ts_data, dirloc)
-
-
-def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
-    """
-    Minor modification of method _write_stationdata_json to allow a further
-    level of sub-directories
-
-    Parameters
-    ----------
-    ts_data : dict
-        A dictionary containing all processed time series data.
-    out_dirs : list
-        list of file paths for writing data to
-
-    Raises
-    ------
-    Exception
-        Raised if opening json file fails
-
-    Returns
-    -------
-    None.
-
-    """
-    filename = get_stationfile_name(
-        ts_data["station_name"], ts_data["obs_name"], ts_data["var_name_web"], ts_data["vert_code"]
-    )
-
-    fp = os.path.join(out_dirs["ts/diurnal"], filename)
-    if os.path.exists(fp):
-        current = read_json(fp)
-    else:
-        current = {}
-    current[ts_data["model_name"]] = round_floats(ts_data)
-    write_json(current, fp, round_floats=False)
-
-
-def _add_heatmap_entry_json(
-    heatmap_file, result, obs_name, var_name_web, vert_code, model_name, model_var
-):
-    if os.path.exists(heatmap_file):
-        current = read_json(heatmap_file)
-    else:
-        current = {}
-    if not var_name_web in current:
-        current[var_name_web] = {}
-    ov = current[var_name_web]
-    if not obs_name in ov:
-        ov[obs_name] = {}
-    on = ov[obs_name]
-    if not vert_code in on:
-        on[vert_code] = {}
-    ovc = on[vert_code]
-    if not model_name in ovc:
-        ovc[model_name] = {}
-    mn = ovc[model_name]
-    mn[model_var] = result
-    write_json(current, heatmap_file, round_floats=False)
 
 
 def _prepare_regions_json_helper(region_ids):
@@ -219,33 +104,6 @@ def init_regions_web(coldata, regions_how):
     for regname, reg in regs.items():
         regnames[reg.region_id] = regname
     return (regborders, regs, regnames)
-
-
-def update_regions_json(region_defs, regions_json):
-    """Check current regions.json for experiment and update if needed
-
-    Parameters
-    ----------
-    region_defs : dict
-        keys are names of region (not IDs!) values define rectangular borders
-    regions_json : str
-        regions.json file (if it does not exist it will be created).
-
-    Returns
-    -------
-    dict
-        current content of updated regions.json
-    """
-    if os.path.exists(regions_json):
-        current = read_json(regions_json)
-    else:
-        current = {}
-
-    for region_name, region_info in region_defs.items():
-        if not region_name in current:
-            current[region_name] = round_floats(region_info)
-    write_json(current, regions_json, round_floats=False)
-    return current
 
 
 def _init_meta_glob(coldata, **kwargs):
@@ -1642,10 +1500,6 @@ def _init_data_default_frequencies(coldata, to_ts_types):
     return data_arrs
 
 
-def get_profile_filename(station_or_region_name, obs_name, var_name_web):
-    return f"{station_or_region_name}_{obs_name}_{var_name_web}.json"
-
-
 def process_profile_data_for_regions(
     data: ColocatedData,
     region_id: str,
@@ -1773,84 +1627,6 @@ def process_profile_data_for_stations(
                         output["mod"][freq][perstr] = np.nan
 
     return output
-
-
-def add_profile_entry_json(
-    profile_file: str,
-    data: ColocatedData,
-    profile_viz: dict,
-    periods: list[str],
-    seasons: list[str],
-):  # pragma: no cover
-    """
-    Analogous to _add_heatmap_entry_json for profile data.
-    Every time this function is called it checks to see if the profile_file exists.
-    If so, it reads it, if not it makes a new one.
-    This is because one can not add to json files and so everytime we want to add entries for profile layers
-    we must read in the old file, add the entries, and write a new file.
-
-    Args:
-        profile_file (str): Name of profile_file
-        data (ColocatedData): For this vertical layer
-        profile_viz (dict): Output of process_profile_data()
-        periods (list[str]): periods to compute over (years)
-        seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
-    """
-    if os.path.exists(profile_file):
-        current = read_json(profile_file)
-    else:
-        current = {}
-
-    for freq, coldata in data.items():
-        model_name = coldata.model_name
-        if not model_name in current:
-            current[model_name] = {}
-
-        midpoint = (
-            float(coldata.data.attrs["vertical_layer"]["end"])
-            + float(coldata.data.attrs["vertical_layer"]["start"])
-        ) / 2
-        if not "z" in current[model_name]:
-            current[model_name]["z"] = [midpoint]  # initalize with midpoint
-
-        if (
-            midpoint > current[model_name]["z"][-1]
-        ):  # only store incremental increases in the layers
-            current[model_name]["z"].append(midpoint)
-
-        if not "obs" in current[model_name]:
-            current[model_name]["obs"] = {}
-
-        if not freq in current[model_name]["obs"]:
-            current[model_name]["obs"][freq] = {}
-
-        if not "mod" in current[model_name]:
-            current[model_name]["mod"] = {}
-
-        if not freq in current[model_name]["mod"]:
-            current[model_name]["mod"][freq] = {}
-
-        for per in periods:
-            for season in seasons:
-                perstr = f"{per}-{season}"
-
-                if not perstr in current[model_name]["obs"][freq]:
-                    current[model_name]["obs"][freq][perstr] = []
-                if not perstr in current[model_name]["mod"][freq]:
-                    current[model_name]["mod"][freq][perstr] = []
-
-                current[model_name]["obs"][freq][perstr].append(profile_viz["obs"][freq][perstr])
-                current[model_name]["mod"][freq][perstr].append(profile_viz["mod"][freq][perstr])
-
-        if not "metadata" in current[model_name]:
-            current[model_name]["metadata"] = {
-                "z_unit": coldata.data.attrs["altitude_units"],
-                "z_description": "Altitude ASL",
-                "z_long_description": "Altitude Above Sea Level",
-                "unit": coldata.unitstr,
-            }
-        current[model_name] = round_floats(current[model_name])
-    write_json(current, profile_file, round_floats=False)
 
 
 def _remove_less_covered(

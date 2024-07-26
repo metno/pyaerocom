@@ -14,6 +14,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+import aerovaldb
 import pandas as pd
 from pydantic import (
     BaseModel,
@@ -53,7 +54,12 @@ class OutputPaths(BaseModel):
     exp_id : str
         experiment ID
     json_basedir : str, Path
+    avdb_resource : str, Path, None
+        An aerovaldb resource identifier as expected by aerovaldb.open()[1].
+        If not provided, pyaerocom will fall back to using json_basedir, for
+        backwards compatibility.
 
+        [1] https://aerovaldb.readthedocs.io/en/latest/api.html#aerovaldb.open
     """
 
     # Pydantic ConfigDict
@@ -69,6 +75,7 @@ class OutputPaths(BaseModel):
         "contour",
         "profiles",
     ]
+    avdb_resource: Path | str | None = None
 
     json_basedir: Path | str = Field(
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True
@@ -538,10 +545,13 @@ class EvalSetup(BaseModel):
             json indentation
 
         """
-        filepath = os.path.join(outdir, self.json_filename)
-        data = self.json_repr()
-        write_json(data, filepath, ignore_nan=ignore_nan, indent=indent)
-        return filepath
+        with aerovaldb.open(
+            self.path_manager.json_basedir
+            if self.path_manager.avdb_resource is None
+            else self.path_manager.json_basedir
+        ) as db:
+            with db.lock():
+                db.put_config(self.json_repr(), self.proj_info.proj_id, self.exp_info.exp_id)
 
     @staticmethod
     def from_json(filepath: str) -> Self:

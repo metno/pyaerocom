@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+import pathlib
 import shutil
 from collections import namedtuple
 
@@ -20,12 +21,15 @@ from pyaerocom.aeroval.glob_defaults import (
     statistics_obs_only,
     statistics_trend,
 )
+from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
+from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
 
 MapInfo = namedtuple(
@@ -42,11 +46,22 @@ class ProjectOutput:
 
     json_basedir = DirLoc(assert_exists=True)
 
-    def __init__(self, proj_id: str, json_basedir: str):
+    def __init__(self, proj_id: str, resource: str | pathlib.Path | aerovaldb.AerovalDB):
         self.proj_id = proj_id
-        self.json_basedir = json_basedir
 
-        self.avdb = aerovaldb.open(f"json_files:{json_basedir}")
+        if isinstance(resource, pathlib.Path):
+            resource = str(resource)
+
+        if isinstance(resource, str):
+            self.avdb = aerovaldb.open(resource)
+        elif isinstance(resource, aerovaldb.AerovalDB):
+            self.avdb = resource
+        else:
+            raise ValueError(f"Expected string or AerovalDB, got {type(resource)}.")
+
+        # TODO: Only works for json_files, check if this is needed, and remove / rewrite
+        # functionality that requires direct knowledge of _basedir.
+        self.json_basedir = self.avdb._basedir
 
     @property
     def proj_dir(self) -> str:
@@ -78,7 +93,12 @@ class ExperimentOutput(ProjectOutput):
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
-        super().__init__(cfg.proj_id, cfg.path_manager.json_basedir)
+        super().__init__(
+            cfg.proj_id,
+            cfg.path_manager.json_basedir
+            if cfg.path_manager.avdb_resource is None
+            else cfg.path_manager.json_basedir,
+        )
 
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories
@@ -157,7 +177,8 @@ class ExperimentOutput(ProjectOutput):
         """
         avail = self._create_menu_dict()
         avail = self._sort_menu_entries(avail)
-        self.avdb.put_menu(avail, self.proj_id, self.exp_id)
+        with self.avdb.lock():
+            self.avdb.put_menu(avail, self.proj_id, self.exp_id)
 
     def update_interface(self) -> None:
         """
@@ -191,36 +212,38 @@ class ExperimentOutput(ProjectOutput):
         # AeroVal frontend needs periods to be set in config json file...
         # make sure they are
         self.cfg._check_time_config()
-        self.avdb.put_config(self.cfg.json_repr(), self.proj_id, self.exp_id)
+        with self.avdb.lock():
+            self.avdb.put_config(self.cfg.json_repr(), self.proj_id, self.exp_id)
 
     def _sync_heatmaps_with_menu_and_regions(self) -> None:
         """
         Synchronise content of heatmap json files with content of menu.json
         """
-        menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
-        all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
-        for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
-            data = self.avdb.get_by_uuid(fp)
-            hm = {}
-            for vardisp, info in menu.items():
-                obs_dict = info["obs"]
-                if not vardisp in hm:
-                    hm[vardisp] = {}
-                for obs, vdict in obs_dict.items():
-                    if not obs in hm[vardisp]:
-                        hm[vardisp][obs] = {}
-                    for vert_code, mdict in vdict.items():
-                        if not vert_code in hm[vardisp][obs]:
-                            hm[vardisp][obs][vert_code] = {}
-                        for mod, minfo in mdict.items():
-                            if not mod in hm[vardisp][obs][vert_code]:
-                                hm[vardisp][obs][vert_code][mod] = {}
-                            modvar = minfo["model_var"]
-                            hm_data = data[vardisp][obs][vert_code][mod][modvar]
-                            hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
-                            hm[vardisp][obs][vert_code][mod][modvar] = hm_data
+        with self.avdb.lock():
+            menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
+            all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
+            for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
+                data = self.avdb.get_by_uri(fp)
+                hm = {}
+                for vardisp, info in menu.items():
+                    obs_dict = info["obs"]
+                    if not vardisp in hm:
+                        hm[vardisp] = {}
+                    for obs, vdict in obs_dict.items():
+                        if not obs in hm[vardisp]:
+                            hm[vardisp][obs] = {}
+                        for vert_code, mdict in vdict.items():
+                            if not vert_code in hm[vardisp][obs]:
+                                hm[vardisp][obs][vert_code] = {}
+                            for mod, minfo in mdict.items():
+                                if not mod in hm[vardisp][obs][vert_code]:
+                                    hm[vardisp][obs][vert_code][mod] = {}
+                                modvar = minfo["model_var"]
+                                hm_data = data[vardisp][obs][vert_code][mod][modvar]
+                                hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
+                                hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-            self.avdb.put_by_uuid(hm, fp)
+                self.avdb.put_by_uri(hm, fp)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
@@ -382,28 +405,29 @@ class ExperimentOutput(ProjectOutput):
             os.remove(fp)
             return True
 
-        try:
-            data = self.avdb.get_by_uuid(fp)
-        except Exception:
-            logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
-            os.remove(fp)
-            return True
+        with self.avdb.lock():
+            try:
+                data = self.avdb.get_by_uri(fp)
+            except Exception:
+                logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
+                os.remove(fp)
+                return True
 
-        models_avail = list(data)
-        models_in_exp = self.cfg.model_cfg.web_iface_names
-        if all([mod in models_in_exp for mod in models_avail]):
-            # nothing to clean up
-            return False
-        modified = False
-        data_new = {}
-        for mod_name in models_avail:
-            if mod_name in models_in_exp:
-                data_new[mod_name] = data[mod_name]
-            else:
-                modified = True
-                logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
+            models_avail = list(data)
+            models_in_exp = self.cfg.model_cfg.web_iface_names
+            if all([mod in models_in_exp for mod in models_avail]):
+                # nothing to clean up
+                return False
+            modified = False
+            data_new = {}
+            for mod_name in models_avail:
+                if mod_name in models_in_exp:
+                    data_new[mod_name] = data[mod_name]
+                else:
+                    modified = True
+                    logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-        self.avdb.put_by_uuid(data_new, fp)
+            self.avdb.put_by_uri(data_new, fp)
         return modified
 
     def _clean_modelmap_files(self) -> list[str]:
@@ -516,14 +540,15 @@ class ExperimentOutput(ProjectOutput):
         return info
 
     def _create_var_ranges_json(self) -> None:
-        ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
+        with self.avdb.lock():
+            ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
 
-        avail = self._results_summary()
-        all_vars = list(set(avail["ovar"] + avail["mvar"]))
-        for var in all_vars:
-            if not var in ranges or ranges[var]["scale"] == []:
-                ranges[var] = self._get_cmap_info(var)
-        self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
+            avail = self._results_summary()
+            all_vars = list(set(avail["ovar"] + avail["mvar"]))
+            for var in all_vars:
+                if not var in ranges or ranges[var]["scale"] == []:
+                    ranges[var] = self._get_cmap_info(var)
+            self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:
         if self.cfg.statistics_opts.obs_only_stats:
@@ -557,7 +582,8 @@ class ExperimentOutput(ProjectOutput):
                     stats_info.update(statistics_mean_trend)
                     stats_info.update(statistics_median_trend)
 
-        self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
+        with self.avdb.lock():
+            self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
 
     def _get_var_name_and_type(self, var_name: str) -> VariableInfo:
         """Get menu name and type of observation variable
@@ -796,11 +822,12 @@ class ExperimentOutput(ProjectOutput):
         return new_sorted
 
     def _add_entry_experiments_json(self, exp_id: str, data) -> None:
-        current = self.avdb.get_experiments(self.proj_id, default={})
+        with self.avdb.lock():
+            current = self.avdb.get_experiments(self.proj_id, default={})
 
-        current[exp_id] = data
+            current[exp_id] = data
 
-        self.avdb.put_experiments(current, self.proj_id)
+            self.avdb.put_experiments(current, self.proj_id)
 
     def _del_entry_experiments_json(self, exp_id) -> None:
         """
@@ -816,13 +843,14 @@ class ExperimentOutput(ProjectOutput):
         None
 
         """
-        current = self.avdb.get_experiments(self.proj_id, default={})
+        with self.avdb.lock():
+            current = self.avdb.get_experiments(self.proj_id, default={})
 
-        try:
-            del current[exp_id]
-        except KeyError:
-            logger.warning(f"no such experiment registered: {exp_id}")
-        self.avdb.put_experiments(current, self.proj_id)
+            try:
+                del current[exp_id]
+            except KeyError:
+                logger.warning(f"no such experiment registered: {exp_id}")
+            self.avdb.put_experiments(current, self.proj_id)
 
     def reorder_experiments(self, exp_order=None) -> None:
         """Reorder experiment order in evaluation interface
@@ -840,7 +868,222 @@ class ExperimentOutput(ProjectOutput):
         elif not isinstance(exp_order, list):
             raise ValueError("need list as input")
 
-        current = self.avdb.get_experiments(self.proj_id, default={})
+        with self.avdb.lock():
+            current = self.avdb.get_experiments(self.proj_id, default={})
 
-        current = sort_dict_by_name(current, pref_list=exp_order)
-        self.avdb.put_experiments(current, self.proj_id)
+            current = sort_dict_by_name(current, pref_list=exp_order)
+            self.avdb.put_experiments(current, self.proj_id)
+
+    def add_heatmap_timeseries_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a heatmap entry to hm/ts
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_heatmap_timeseries(
+                project, experiment, region, network, obsvar, layer, default={}
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_heatmap_timeseries(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+            )
+
+    def add_forecast_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a forecast entry to forecast
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_forecast(
+                project, experiment, region, network, obsvar, layer, default={}
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_forecast(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+            )
+
+    def add_heatmap_entry(
+        self,
+        entry,
+        frequency: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a heatmap entry to glob_stats
+
+        :param entry: The entry to be added.
+        :param region: The region (eg. ALL)
+        :param obsvar: Observation variable.
+        :param layer: Vertical Layer (eg. SURFACE)
+        :param modelname: Model name
+        :param modelvar: Model variable.
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_glob_stats(project, experiment, frequency, default={})
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = entry
+            self.avdb.put_glob_stats(glob_stats, project, experiment, frequency)
+
+    def write_station_data(self, data):
+        """Writes timeseries weekly.
+
+        :param data: Data to be written.
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        location = data["station_name"]
+        network = data["obs_name"]
+        obsvar = data["var_name_web"]
+        layer = data["vert_code"]
+        modelname = data["model_name"]
+        with self.avdb.lock():
+            station_data = self.avdb.get_timeseries_weekly(
+                project, experiment, location, network, obsvar, layer, default={}
+            )
+            station_data[modelname] = round_floats(data)
+            self.avdb.put_timeseries_weekly(
+                station_data, project, experiment, location, network, obsvar, layer
+            )
+
+    def write_timeseries(self, data):
+        """Write timeseries
+
+        Args:
+            data: The timeseries object to be written.
+
+        Note:
+        -----
+        All necessary metadata will be read from the data object.
+        """
+        if not isinstance(data, list):
+            data = [data]
+
+        project = self.proj_id
+        experiment = self.exp_id
+        with self.avdb.lock():
+            for d in data:
+                location = d["station_name"]
+                network = d["obs_name"]
+                obsvar = d["var_name_web"]
+                layer = d["vert_code"]
+                modelname = d["model_name"]
+
+                timeseries = self.avdb.get_timeseries(
+                    project, experiment, location, network, obsvar, layer, default={}
+                )
+                timeseries[modelname] = round_floats(d)
+                self.avdb.put_timeseries(
+                    timeseries, project, experiment, location, network, obsvar, layer
+                )
+
+    def add_profile_entry(
+        self, data: ColocatedData, profile_viz: dict, periods: list[str], seasons: list[str]
+    ):
+        """Adds an entry for the colocated data to profiles.json.
+
+        Args:
+            data (ColocatedData): For this vertical layer
+            profile_viz (dict): Output of process_profile_data()
+            periods (list[str]): periods to compute over (years)
+            seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
+        """
+        with self.avdb.lock():
+            current = self.avdb.get_profiles(self.proj_id, self.exp_id, default={})
+            current = recursive_defaultdict(current)
+
+            for freq, coldata in data.items():
+                model_name = coldata.model_name
+
+                midpoint = (
+                    float(coldata.data.attrs["vertical_layer"]["end"])
+                    + float(coldata.data.attrs["vertical_layer"]["start"])
+                ) / 2
+                if not "z" in current[model_name]:
+                    current[model_name]["z"] = [midpoint]  # initalize with midpoint
+
+                if (
+                    midpoint > current[model_name]["z"][-1]
+                ):  # only store incremental increases in the layers
+                    current[model_name]["z"].append(midpoint)
+
+                for per in periods:
+                    for season in seasons:
+                        perstr = f"{per}-{season}"
+
+                        if not perstr in current[model_name]["obs"][freq]:
+                            current[model_name]["obs"][freq][perstr] = []
+                        if not perstr in current[model_name]["mod"][freq]:
+                            current[model_name]["mod"][freq][perstr] = []
+
+                        current[model_name]["obs"][freq][perstr].append(
+                            profile_viz["obs"][freq][perstr]
+                        )
+                        current[model_name]["mod"][freq][perstr].append(
+                            profile_viz["mod"][freq][perstr]
+                        )
+
+                if not "metadata" in current[model_name]:
+                    current[model_name]["metadata"] = {
+                        "z_unit": coldata.data.attrs["altitude_units"],
+                        "z_description": "Altitude ASL",
+                        "z_long_description": "Altitude Above Sea Level",
+                        "unit": coldata.unitstr,
+                    }
+                current[model_name] = round_floats(current[model_name])
+
+            self.avdb.put_profiles(current, self.proj_id, self.exp_id)

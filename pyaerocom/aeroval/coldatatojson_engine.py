@@ -8,7 +8,6 @@ from numpy.typing import ArrayLike
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _add_heatmap_entry_json,
     _apply_annual_constraint,
     _init_data_default_frequencies,
     _init_meta_glob,
@@ -19,20 +18,12 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _process_sites_weekly_ts,
     _process_statistics_timeseries,
     _remove_less_covered,
-    _write_site_data,
-    _write_stationdata_json,
-    add_profile_entry_json,
-    get_heatmap_filename,
-    get_json_mapname,
-    get_profile_filename,
-    get_timeseries_file_name,
     init_regions_web,
     process_profile_data_for_regions,
     process_profile_data_for_stations,
-    update_regions_json,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.json_utils import write_json
+from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.exceptions import TemporalResolutionError
 
 logger = logging.getLogger(__name__)
@@ -181,7 +172,14 @@ class ColdataToJsonEngine(ProcessingEngine):
         # get region IDs
         (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
 
-        update_regions_json(regborders, regions_json)
+        # Synchronise regions.json file
+        with self.avdb.lock():
+            regions = self.avdb.get_regions(
+                self.exp_output.proj_id, self.exp_output.exp_id, default={}
+            )
+            for region_name, region_info in regborders.items():
+                regions[region_name] = round_floats(region_info)
+            self.avdb.put_regions(regions, self.exp_output.proj_id, self.exp_output.exp_id)
 
         use_country = True if regions_how == "country" else False
 
@@ -301,10 +299,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            fname = get_profile_filename(region_names[regid], obs_name, var_name_web)
+            self.exp_output.add_profile_entry(data, profile_viz, periods, seasons)
 
-            outfile_profile = os.path.join(out_dirs["profiles"], fname)
-            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
         # Loop through stations
         for station_name in station_names:
             profile_viz = process_profile_data_for_stations(
@@ -315,10 +311,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            fname = get_profile_filename(station_name, obs_name, var_name_web)
-
-            outfile_profile = os.path.join(out_dirs["profiles"], fname)
-            add_profile_entry_json(outfile_profile, data, profile_viz, periods, seasons)
+            self.exp_output.add_profile_entry(data, profile_viz, periods, seasons)
 
     def _process_stats_timeseries_for_all_regions(
         self,
@@ -362,10 +355,10 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             except TemporalResolutionError:
                 stats_ts = {}
-            fname = get_timeseries_file_name(regnames[reg], obs_name, var_name_web, vert_code)
-            ts_file = os.path.join(out_dirs["hm/ts"], fname)
-            _add_heatmap_entry_json(
-                ts_file, stats_ts, obs_name, var_name_web, vert_code, model_name, model_var
+
+            region = regnames[reg]
+            self.exp_output.add_heatmap_timeseries_entry(
+                stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
         logger.info("Processing heatmap data for all regions")
@@ -385,18 +378,14 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
 
         for freq, hm_data in hm_all.items():
-            fname = get_heatmap_filename(freq)
-
-            hm_file = os.path.join(out_dirs["hm"], fname)
-
-            _add_heatmap_entry_json(
-                hm_file, hm_data, obs_name, var_name_web, vert_code, model_name, model_var
+            self.exp_output.add_heatmap_entry(
+                hm_data, freq, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
         logger.info("Processing regional timeseries for all regions")
         ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
-        _write_site_data(ts_objs_regional, out_dirs["ts"])
+        self.exp_output.write_timeseries(ts_objs_regional)
         if coldata.has_latlon_dims:
             for cd in data.values():
                 if cd is not None:
@@ -405,7 +394,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         logger.info("Processing individual site timeseries data")
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        _write_site_data(ts_objs, out_dirs["ts"])
+        self.exp_output.write_timeseries(ts_objs)
 
         scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
         scatter_freq = min(scatter_freq, main_freq)
@@ -430,15 +419,30 @@ class ColdataToJsonEngine(ProcessingEngine):
                 drop_stats,
             )
 
-            # the files in /map and /scat will be split up according to their time period as well
-            map_name = get_json_mapname(
-                obs_name, var_name_web, model_name, model_var, vert_code, period
-            )
-            outfile_map = os.path.join(out_dirs["map"], map_name)
-            write_json(map_data, outfile_map, ignore_nan=True)
+            with self.avdb.lock():
+                self.avdb.put_map(
+                    map_data,
+                    self.exp_output.proj_id,
+                    self.exp_output.exp_id,
+                    obs_name,
+                    var_name_web,
+                    vert_code,
+                    model_name,
+                    model_var,
+                    period.replace("/", ""),  # Remove slashes in CAMS2_83 period.
+                )
 
-            outfile_scat = os.path.join(out_dirs["scat"], map_name)
-            write_json(scat_data, outfile_scat, ignore_nan=True)
+                self.avdb.put_scatter(
+                    scat_data,
+                    self.exp_output.proj_id,
+                    self.exp_output.exp_id,
+                    obs_name,
+                    var_name_web,
+                    vert_code,
+                    model_name,
+                    model_var,
+                    period.replace("/", ""),  # Remove slashes in CAMS2_83 period.
+                )
 
     def _process_diurnal_profiles(
         self,
@@ -453,9 +457,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
         outdir = os.path.join(out_dirs["ts/diurnal"])
         for ts_data_weekly in ts_objs_weekly:
-            # writes json file
-            _write_stationdata_json(ts_data_weekly, outdir)
+            self.exp_output.write_station_data(ts_data_weekly)
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
-                # writes json file
-                _write_stationdata_json(ts_data_weekly_reg, outdir)
+                self.exp_output.write_station_data(ts_data_weekly_reg)

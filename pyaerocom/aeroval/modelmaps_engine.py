@@ -3,7 +3,6 @@ import os
 
 from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.json_utils import write_json
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
@@ -152,7 +151,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         outdir = self.cfg.path_manager.get_json_output_dirs()["contour"]
         outname = f"{var}_{model_name}"
-
         fp_json = os.path.join(outdir, f"{outname}.json")
         fp_geojson = os.path.join(outdir, f"{outname}.geojson")
 
@@ -190,6 +188,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
 
-        write_json(datajson, fp_json, round_floats=False)
-        write_json(contourjson, fp_geojson, round_floats=False)
+        with self.avdb.lock():
+            self.avdb.put_gridded_map(
+                datajson, self.exp_output.proj_id, self.exp_output.exp_id, var, model_name
+            )
+            self.avdb.put_contour(
+                contourjson, self.exp_output.proj_id, self.exp_output.exp_id, var, model_name
+            )
+
         return [fp_json, fp_geojson]
