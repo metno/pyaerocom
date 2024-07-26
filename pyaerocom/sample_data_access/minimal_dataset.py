@@ -7,8 +7,10 @@ from pyaerocom import const
 
 logger = logging.getLogger(__name__)
 
+__all__ = ["download_minimal_dataset"]
+
 #: tarfile to download
-TESTDATA_FILE = "testdata-minimal.tar.gz.20240722"
+DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20240722"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -27,13 +29,17 @@ minimal_dataset = pooch.create(
 
 
 def download_minimal_dataset(
-    file_name: str = TESTDATA_FILE, /, extract_dir_override: str | None = None
+    file_name: str = DEFAULT_TESTDATA_FILE, /, extract_dir_override: str | None = None
 ):
     """Download test_data_file and extracts it.
 
-    :param file_name : The file name to be downloaded.
-    :param extract_dir : An optional folder override to where to extract the file. By
-    default files are extracted into ~/MyPyaerocom
+    Parameters
+    ----------
+    file_name :
+        The file name to be downloaded.
+    extract_dir :
+        An optional folder override to where to extract the file. By
+        default files are extracted into `~/MyPyaerocom`
     """
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
 
