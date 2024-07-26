@@ -54,7 +54,12 @@ class OutputPaths(BaseModel):
     exp_id : str
         experiment ID
     json_basedir : str, Path
+    avdb_resource : str, Path, None
+        An aerovaldb resource identifier as expected by aerovaldb.open()[1].
+        If not provided, pyaerocom will fall back to using json_basedir, for
+        backwards compatibility.
 
+        [1] https://aerovaldb.readthedocs.io/en/latest/api.html#aerovaldb.open
     """
 
     # Pydantic ConfigDict
@@ -77,6 +82,7 @@ class OutputPaths(BaseModel):
     coldata_basedir: Path | str = Field(
         default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True
     )
+    avdb_resource: Path | str | None = Field(default=None, validate_default=True)
 
     @field_validator("json_basedir", "coldata_basedir")
     @classmethod
@@ -109,10 +115,6 @@ class OutputPaths(BaseModel):
             loc = self._check_init_dir(os.path.join(base, "forecast"), assert_exists)
             out["forecast"] = loc
         return out
-
-
-class AerovaldbSetup(BaseModel):
-    resource: Literal["json_files"] = "json_files"
 
 
 class ModelMapsSetup(BaseModel):
@@ -375,15 +377,6 @@ class EvalSetup(BaseModel):
         }
         return OutputPaths(**model_args)
 
-    @cached_property
-    def avdb_cfg(self) -> AerovaldbSetup:
-        if not hasattr(self, "model_extra") or self.model_extra is None:
-            return OutputPaths()
-        model_args = {
-            key: val for key, val in self.model_extra.items() if key in AerovaldbSetup.model_fields
-        }
-        return AerovaldbSetup(**model_args)
-
     # Many computed_fields here have this hack to get keys from a general CFG into their appropriate respective classes
     # TODO: all these computed fields could be more easily defined if the config were
     # rigid enough to have them explicitly defined (e.g., in a TOML file), rather than dumping everything
@@ -552,7 +545,11 @@ class EvalSetup(BaseModel):
             json indentation
 
         """
-        with aerovaldb.open(f"{self.avdb_cfg.resource}:{outdir}") as db:
+        with aerovaldb.open(
+            self.path_manager.json_basedir
+            if self.path_manager.avdb_resource is None
+            else self.path_manager.json_basedir
+        ) as db:
             with db.lock():
                 db.put_config(self.json_repr(), self.proj_info.proj_id, self.exp_info.exp_id)
 

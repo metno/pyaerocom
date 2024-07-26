@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import aerovaldb
 import pytest
 
 from pyaerocom import const
@@ -21,15 +22,26 @@ def dummy_expout(tmp_path: Path) -> ExperimentOutput:
     return ExperimentOutput(setup)
 
 
+def test_invalid_resource_error():
+    with pytest.raises(ValueError):
+        ProjectOutput("test", None)
+
+
+def test_avdb_resource_init(tmp_path):
+    with aerovaldb.open(str(tmp_path)) as db:
+        val = ProjectOutput("test", db)
+
+        assert val.avdb is db
+
+
 @pytest.mark.parametrize(
     "proj_id,json_basedir",
     [
-        ("bla", None),
         ("bla", "/"),
     ],
 )
 def test_ProjectOutput(proj_id: str, json_basedir: str):
-    val = ProjectOutput(proj_id, f"json_files:{json_basedir}")
+    val = ProjectOutput(proj_id, json_basedir)
     assert val.proj_id == proj_id
     if json_basedir is not None:
         assert Path(val.json_basedir).exists()
@@ -39,14 +51,11 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
     "proj_id,json_basedir,exception,error",
     [
         pytest.param(42, None, ValueError, "need str, got 42", id="ValueError"),
-        # pytest.param(
-        #    "bla", "/blablub/blaaaa", FileNotFoundError, "/blablub/blaaaa", id="FileNotFoundError"
-        # ),
     ],
 )
 def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
-        ProjectOutput(proj_id, f"json_files:{json_basedir}")
+        ProjectOutput(proj_id, json_basedir)
     assert str(e.value) == error
 
 

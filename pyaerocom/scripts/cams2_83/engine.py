@@ -120,7 +120,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
-            self._add_forecast_entry(
+            self.exp_output.add_forecast_entry(
                 results[regname],
                 regname,
                 obs_name,

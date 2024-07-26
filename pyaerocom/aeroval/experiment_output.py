@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+import pathlib
 import shutil
 from collections import namedtuple
 
@@ -45,17 +46,22 @@ class ProjectOutput:
 
     json_basedir = DirLoc(assert_exists=True)
 
-    def __init__(self, proj_id: str, avdb: str | aerovaldb.AerovalDB):
+    def __init__(self, proj_id: str, resource: str | pathlib.Path | aerovaldb.AerovalDB):
         self.proj_id = proj_id
 
-        if isinstance(avdb, str):
-            avdb = aerovaldb.open(avdb)
+        if isinstance(resource, pathlib.Path):
+            resource = str(resource)
 
-        self.avdb = avdb
+        if isinstance(resource, str):
+            self.avdb = aerovaldb.open(resource)
+        elif isinstance(resource, aerovaldb.AerovalDB):
+            self.avdb = resource
+        else:
+            raise ValueError(f"Expected string or AerovalDB, got {type(resource)}.")
 
         # TODO: Only works for json_files, check if this is needed, and remove / rewrite
         # functionality that requires direct knowledge of _basedir.
-        self.json_basedir = avdb._basedir
+        self.json_basedir = self.avdb._basedir
 
     @property
     def proj_dir(self) -> str:
@@ -87,7 +93,12 @@ class ExperimentOutput(ProjectOutput):
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
-        super().__init__(cfg.proj_id, f"{cfg.avdb_cfg.resource}:{cfg.path_manager.json_basedir}")
+        super().__init__(
+            cfg.proj_id,
+            cfg.path_manager.json_basedir
+            if cfg.path_manager.avdb_resource is None
+            else cfg.path_manager.json_basedir,
+        )
 
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories
