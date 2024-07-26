@@ -75,6 +75,7 @@ class OutputPaths(BaseModel):
         "contour",
         "profiles",
     ]
+    avdb_resource: Path | str | None = None
 
     json_basedir: Path | str = Field(
         default=os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True
@@ -82,7 +83,6 @@ class OutputPaths(BaseModel):
     coldata_basedir: Path | str = Field(
         default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True
     )
-    avdb_resource: Path | str | None = Field(default=None, validate_default=True)
 
     @field_validator("json_basedir", "coldata_basedir")
     @classmethod
