@@ -33,8 +33,8 @@ def download_minimal_dataset(
 ):
     """Download test_data_file and extracts it.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     file_name :
         The file name to be downloaded.
     extract_dir :
