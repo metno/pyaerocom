@@ -57,6 +57,8 @@ def test_unitconv_sfc_conc(dummy_data):
     FutureWarning,
     "'M' is deprecated and will be removed in a future version, please use 'ME' instead.",
 )
+# TODO: The above warning is ignored because the old-dependency CI tests don't currently
+# support ME. Once we bump dependencies so we can change over, this should be removed.
 def test_unitconv_wet_depo_bck(dummy_data):
     time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M"))
     result = unitconv_wet_depo_bck(dummy_data, time)
@@ -69,6 +71,8 @@ def test_unitconv_wet_depo_bck(dummy_data):
     FutureWarning,
     "'M' is deprecated and will be removed in a future version, please use 'ME' instead.",
 )
+# TODO: The above warning is ignored because the old-dependency CI tests don't currently
+# support ME. Once we bump dependencies so we can change over, this should be removed.
 def test_unitconv_wet_depo_from_emep(dummy_data):
     time = pd.Series(pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M"))
     result = unitconv_wet_depo_from_emep(dummy_data, time)
@@ -81,6 +85,8 @@ def test_unitconv_wet_depo_from_emep(dummy_data):
     FutureWarning,
     "'M' is deprecated and will be removed in a future version, please use 'ME' instead.",
 )
+# TODO: The above warning is ignored because the old-dependency CI tests don't currently
+# support ME. Once we bump dependencies so we can change over, this should be removed.
 def test_unitconv_wet_depo_from_emep_time_not_pandas_series(dummy_data):
     time = pd.date_range(start="2000-01-01", periods=len(dummy_data), freq="M")
     result = unitconv_wet_depo_from_emep(dummy_data, time)
