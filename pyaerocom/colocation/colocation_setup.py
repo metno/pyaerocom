@@ -285,6 +285,14 @@ class ColocationSetup(BaseModel):
     add_meta : dict
         additional metadata that is supposed to be added to each output
         :class:`ColocatedData` object.
+    main_freq:
+        Main output frequency for AeroVal (some of the AeroVal processing
+        steps are only done for this resolution, since they would create too
+        much output otherwise, such as statistics timeseries or scatter plot in
+        "Overall Evaluation" tab on AeroVal).
+        Note that this frequency needs to be included in next setting "freqs".
+    freqs:
+        Frequencies for which statistical parameters are computed
     """
 
     ##########################
