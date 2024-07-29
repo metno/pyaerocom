@@ -48,7 +48,7 @@ class VarCollection:
     @var_ini.setter
     def var_ini(self, var_ini):
         if not isinstance(var_ini, str):
-            raise ValueError(f"Invalid input for var_ini, need str")
+            raise ValueError("Invalid input for var_ini, need str")
         elif not os.path.exists(var_ini):
             raise FileNotFoundError(f"File {var_ini} does not exist")
         self._var_ini = var_ini

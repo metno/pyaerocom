@@ -1959,7 +1959,7 @@ class UngriddedData:
                         )
 
         if len(meta_matches) == len(self.metadata):
-            logger.info(f"filter_by_projection result in unchanged data object")
+            logger.info("filter_by_projection result in unchanged data object")
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum)
         return new

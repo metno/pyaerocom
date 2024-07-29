@@ -1297,7 +1297,7 @@ class StationData(StationMetaData):
                     altitudes = slice(altitudes[0], altitudes[1])
                 result = data.sel(altitude=altitudes)
                 if len(result.altitude) == 0:
-                    raise ValueError(f"no data in specified altitude range")
+                    raise ValueError("no data in specified altitude range")
                 return result
 
             raise DataExtractionError("Cannot intepret input for altitude...")
@@ -1316,7 +1316,7 @@ class StationData(StationMetaData):
                 )
             mask = np.logical_and(alt >= altitudes[0], alt <= altitudes[1])
             if mask.sum() == 0:
-                raise ValueError(f"no data in specified altitude range")
+                raise ValueError("no data in specified altitude range")
             return data[mask]
 
         raise DataExtractionError(

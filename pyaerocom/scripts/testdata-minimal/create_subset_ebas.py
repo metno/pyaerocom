@@ -164,9 +164,9 @@ def main():
 
     # directory containing NASA Ames files
     FILEDIR_SRC = r_lowlev.file_dir
-    print(f"checking for invalid files in static file list...")
+    print("checking for invalid files in static file list...")
     CURRENT_OK, files_valid, files_invalid = check_outdated(FILEDIR_SRC)
-    print(f"done...")
+    print("done...")
 
     if not CURRENT_OK:
         print(f"outdated files: {files_invalid}")

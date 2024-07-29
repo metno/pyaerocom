@@ -212,7 +212,7 @@ class ReadUngridded:
         elif not isinstance(val, (tuple, list)):
             raise OSError("Invalid input for parameter data_ids")
         logger.warning(
-            f"You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
+            "You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
         )
         for config in val:
             self._init_pyaro_reader(config=config)
@@ -354,7 +354,7 @@ class ReadUngridded:
 
         """
         if not isinstance(config, PyaroConfig):
-            raise ValueError(f"Given config is not a PyaroConfig")
+            raise ValueError("Given config is not a PyaroConfig")
 
         self._init_pyaro_reader(config=config)
         self._configs.append(config)
@@ -418,7 +418,7 @@ class ReadUngridded:
         #     data_id = config.name
 
         if data_id is None:
-            raise ValueError(f"Data_id can not be none")
+            raise ValueError("Data_id can not be none")
 
         if data_id in self.config_map:
             return reader(config=self.config_map[data_id])

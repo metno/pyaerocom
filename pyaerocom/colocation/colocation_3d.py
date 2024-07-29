@@ -67,7 +67,7 @@ def _colocate_vertical_profile_gridded(
     var_ref_aerocom=None,
 ) -> list[ColocatedData]:
     if layer_limits is None:
-        raise Exception(f"layer limits must be provided")
+        raise Exception("layer limits must be provided")
 
     data_ref_unit = None
     ts_type_src_ref = None
