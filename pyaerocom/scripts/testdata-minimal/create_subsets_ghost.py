@@ -6,6 +6,7 @@ Created on Fri Feb 26 09:17:09 2021
 
 @author: jonasg
 """
+
 import os
 
 import matplotlib.pyplot as plt

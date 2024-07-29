@@ -145,68 +145,68 @@ class ReadL2Data(ReadL2DataBase):
 
         # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._TIME_NAME] = "PRODUCT/time"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._TIME_OFFSET_NAME
-        ] = "PRODUCT/delta_time"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._LATITUDENAME
-        ] = "PRODUCT/latitude"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._LONGITUDENAME
-        ] = "PRODUCT/longitude"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._SCANLINENAME
-        ] = "PRODUCT/scanline"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._GROUNDPIXELNAME
-        ] = "PRODUCT/ground_pixel"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._LONBOUNDSNAME
-        ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][
-            self._LATBOUNDSNAME
-        ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds"
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._TIME_OFFSET_NAME] = (
+            "PRODUCT/delta_time"
+        )
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._LATITUDENAME] = (
+            "PRODUCT/latitude"
+        )
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._LONGITUDENAME] = (
+            "PRODUCT/longitude"
+        )
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._SCANLINENAME] = (
+            "PRODUCT/scanline"
+        )
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._GROUNDPIXELNAME] = (
+            "PRODUCT/ground_pixel"
+        )
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._LONBOUNDSNAME] = (
+            "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds"
+        )
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._LATBOUNDSNAME] = (
+            "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds"
+        )
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._QANAME] = "PRODUCT/qa_value"
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
-            self._NO2NAME
-        ] = "PRODUCT/nitrogendioxide_tropospheric_column"
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._NO2NAME] = (
+            "PRODUCT/nitrogendioxide_tropospheric_column"
+        )
 
         self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._TIME_NAME] = "PRODUCT/time"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._TIME_OFFSET_NAME
-        ] = "PRODUCT/delta_time"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._LATITUDENAME
-        ] = "PRODUCT/latitude"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._LONGITUDENAME
-        ] = "PRODUCT/longitude"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._LONBOUNDSNAME
-        ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._LATBOUNDSNAME
-        ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._SCANLINENAME
-        ] = "PRODUCT/scanline"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][
-            self._GROUNDPIXELNAME
-        ] = "PRODUCT/ground_pixel"
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._TIME_OFFSET_NAME] = (
+            "PRODUCT/delta_time"
+        )
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._LATITUDENAME] = (
+            "PRODUCT/latitude"
+        )
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._LONGITUDENAME] = (
+            "PRODUCT/longitude"
+        )
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._LONBOUNDSNAME] = (
+            "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds"
+        )
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._LATBOUNDSNAME] = (
+            "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds"
+        )
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._SCANLINENAME] = (
+            "PRODUCT/scanline"
+        )
+        self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._GROUNDPIXELNAME] = (
+            "PRODUCT/ground_pixel"
+        )
         self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"][self._QANAME] = "PRODUCT/qa_value"
-        self.CODA_READ_PARAMETERS[self._O3NAME]["vars"][
-            self._O3NAME
-        ] = "PRODUCT/ozone_total_vertical_column"
+        self.CODA_READ_PARAMETERS[self._O3NAME]["vars"][self._O3NAME] = (
+            "PRODUCT/ozone_total_vertical_column"
+        )
 
         ####################################
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]["_FillValue"] = np.nan
-        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME][
-            "long_name"
-        ] = "Tropospheric vertical column of nitrogen dioxide"
-        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME][
-            "standard_name"
-        ] = "troposphere_mole_content_of_nitrogen_dioxide"
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]["long_name"] = (
+            "Tropospheric vertical column of nitrogen dioxide"
+        )
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]["standard_name"] = (
+            "troposphere_mole_content_of_nitrogen_dioxide"
+        )
         # self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = 'mol m-2'
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]["units"] = "1e15 molecules cm-2"
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]["coordinates"] = "longitude latitude"
@@ -217,9 +217,9 @@ class ReadL2Data(ReadL2DataBase):
 
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"]["_FillValue"] = np.nan
-        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"][
-            "long_name"
-        ] = "number of observations"
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"]["long_name"] = (
+            "number of observations"
+        )
         # self.NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs'][
         #     'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + "_numobs"]["units"] = "1"
@@ -227,12 +227,12 @@ class ReadL2Data(ReadL2DataBase):
 
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"]["_FillValue"] = np.nan
-        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"][
-            "long_name"
-        ] = "total vertical ozone column"
-        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"][
-            "standard_name"
-        ] = "atmosphere_mole_content_of_ozone"
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"]["long_name"] = (
+            "total vertical ozone column"
+        )
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"]["standard_name"] = (
+            "atmosphere_mole_content_of_ozone"
+        )
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"]["units"] = "mol m-2"
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_mean"]["coordinates"] = "longitude latitude"
 
@@ -243,9 +243,9 @@ class ReadL2Data(ReadL2DataBase):
 
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_numobs"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_numobs"]["_FillValue"] = np.nan
-        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_numobs"][
-            "long_name"
-        ] = "number of observations"
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_numobs"]["long_name"] = (
+            "number of observations"
+        )
         # self.NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs'][
         #     'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
         self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + "_numobs"]["units"] = "1"
@@ -254,9 +254,9 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["_FillValue"] = np.nan
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["long_name"] = "data quality value"
-        self.NETCDF_VAR_ATTRIBUTES[self._QANAME][
-            "comment"
-        ] = "A continuous quality descriptor, varying between 0(no data) and 1 (full quality data). Recommend to ignore data with qa_value < 0.5"
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["comment"] = (
+            "A continuous quality descriptor, varying between 0(no data) and 1 (full quality data). Recommend to ignore data with qa_value < 0.5"
+        )
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["units"] = "1"
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]["coordinates"] = "longitude latitude"
 
@@ -296,9 +296,9 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["time_offset"] = np.float_(
                 24.0 * 60.0 * 60.0
             )
-            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][
-                self._TIME_NAME
-            ] = "PRODUCT/time"
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][self._TIME_NAME] = (
+                "PRODUCT/time"
+            )
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][
                 self._TIME_OFFSET_NAME
             ] = "PRODUCT/delta_time"
@@ -320,9 +320,9 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][
                 self._LATBOUNDSNAME
             ] = "PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds"
-            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][
-                self._QANAME
-            ] = "PRODUCT/qa_value"
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][self._QANAME] = (
+                "PRODUCT/qa_value"
+            )
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["vars"][
                 self._AVERAGINGKERNELNAME
             ] = "PRODUCT/averaging_kernel"
@@ -348,9 +348,9 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME] = {}
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["vars"] = {}
-            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME][
-                "time_offset"
-            ] = np.float_(24.0 * 60.0 * 60.0)
+            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["time_offset"] = (
+                np.float_(24.0 * 60.0 * 60.0)
+            )
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["vars"][
                 self._TM5_TROPOPAUSE_LAYER_INDEX_NAME
             ] = "PRODUCT/tm5_tropopause_layer_index"
@@ -379,38 +379,38 @@ class ReadL2Data(ReadL2DataBase):
             self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]["long_name"] = "averaging kernel"
             # self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]['standard_name'] = 'averaging_kernel'
             self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]["units"] = "1"
-            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME][
-                "coordinates"
-            ] = f"longitude latitude {self._LEVELSNAME}"
+            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]["coordinates"] = (
+                f"longitude latitude {self._LEVELSNAME}"
+            )
 
-            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
-                self._LEVELSNAME
-            ] = self.CODA_READ_PARAMETERS[self._LEVELSNAME]["vars"][self._LEVELSNAME]
-            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
-                self._GROUNDPRESSURENAME
-            ] = self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["vars"][
-                self._GROUNDPRESSURENAME
-            ]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._LEVELSNAME] = (
+                self.CODA_READ_PARAMETERS[self._LEVELSNAME]["vars"][self._LEVELSNAME]
+            )
+            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._GROUNDPRESSURENAME] = (
+                self.CODA_READ_PARAMETERS[
+                    self._GROUNDPRESSURENAME
+                ]["vars"][self._GROUNDPRESSURENAME]
+            )
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
                 self._TM5_TROPOPAUSE_LAYER_INDEX_NAME
             ] = self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["vars"][
                 self._TM5_TROPOPAUSE_LAYER_INDEX_NAME
             ]
-            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
-                self._TM5_CONSTANT_A_NAME
-            ] = self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["vars"][
-                self._TM5_CONSTANT_A_NAME
-            ]
-            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
-                self._TM5_CONSTANT_B_NAME
-            ] = self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["vars"][
-                self._TM5_CONSTANT_B_NAME
-            ]
-            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
-                self._AVERAGINGKERNELNAME
-            ] = self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["vars"][
-                self._AVERAGINGKERNELNAME
-            ]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._TM5_CONSTANT_A_NAME] = (
+                self.CODA_READ_PARAMETERS[
+                    self._TM5_CONSTANT_A_NAME
+                ]["vars"][self._TM5_CONSTANT_A_NAME]
+            )
+            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._TM5_CONSTANT_B_NAME] = (
+                self.CODA_READ_PARAMETERS[
+                    self._TM5_CONSTANT_B_NAME
+                ]["vars"][self._TM5_CONSTANT_B_NAME]
+            )
+            self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._AVERAGINGKERNELNAME] = (
+                self.CODA_READ_PARAMETERS[
+                    self._AVERAGINGKERNELNAME
+                ]["vars"][self._AVERAGINGKERNELNAME]
+            )
 
         self.STATICFIELDNAMES = [
             self._GROUNDPIXELNAME,
@@ -802,9 +802,10 @@ class ReadL2Data(ReadL2DataBase):
                 elements_to_add = len(keep_indexes[0])
                 # dim_size_dict[elements_to_add] = point_dim_name
                 ds = xr.Dataset()
-                ds[self._TIME_NAME] = (point_dim_name), datetimedata.astype("datetime64[ms]")[
-                    keep_indexes
-                ]
+                ds[self._TIME_NAME] = (
+                    (point_dim_name),
+                    datetimedata.astype("datetime64[ms]")[keep_indexes],
+                )
                 ds[point_dim_name] = np.arange(elements_to_add)
                 # point_dim_size = elements_to_add
 
@@ -829,9 +830,10 @@ class ReadL2Data(ReadL2DataBase):
                         try:
                             ds[var] = (point_dim_name), _data[var][keep_indexes]
                         except ValueError:
-                            ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var][
-                                keep_indexes
-                            ]
+                            ds[var] = (
+                                (dim_size_dict[_data[var].shape[0]]),
+                                _data[var][keep_indexes],
+                            )
 
                 elif len(_data[var].shape) == 2:
                     # var with dimension time and swath (e.g. 3245, 450)
@@ -842,9 +844,10 @@ class ReadL2Data(ReadL2DataBase):
                             ds[var] = (dim_name_dict[var]), _data[var]
                     else:
                         try:
-                            ds[var] = (point_dim_name), (_data[var].reshape(point_dim_len))[
-                                keep_indexes
-                            ]
+                            ds[var] = (
+                                (point_dim_name),
+                                (_data[var].reshape(point_dim_len))[keep_indexes],
+                            )
                         except ValueError:
                             ds[var] = (dim_name_dict[var]), _data[var]
 
@@ -853,30 +856,38 @@ class ReadL2Data(ReadL2DataBase):
                     # store some vars depending on the points dimension as a 2d variable
                     if apply_quality_flag == 0.0:
                         if var == "avg_kernel":
-                            ds[var] = (point_dim_name, level_dim_name), _data[var].reshape(
-                                [point_dim_size, level_dim_size]
+                            ds[var] = (
+                                (point_dim_name, level_dim_name),
+                                _data[var].reshape([point_dim_size, level_dim_size]),
                             )
                         elif var == "lat_bnds" or var == "lon_bnds":
-                            ds[var] = (point_dim_name, bounds_dim_name), _data[var].reshape(
-                                [point_dim_size, bounds_dim_size]
+                            ds[var] = (
+                                (point_dim_name, bounds_dim_name),
+                                _data[var].reshape([point_dim_size, bounds_dim_size]),
                             )
                         else:
                             ds[var] = (dim_name_dict[var]), _data[var]
                     else:
                         if var == "avg_kernel":
                             # temp = np.squeeze((_data[var].reshape([point_dim_size, level_dim_size]))[keep_indexes,:])
-                            ds[var] = (point_dim_name, level_dim_name), np.squeeze(
-                                (_data[var].reshape([point_dim_size, level_dim_size]))[
-                                    keep_indexes, :
-                                ]
+                            ds[var] = (
+                                (point_dim_name, level_dim_name),
+                                np.squeeze(
+                                    (_data[var].reshape([point_dim_size, level_dim_size]))[
+                                        keep_indexes, :
+                                    ]
+                                ),
                             )
                             print(f"{var}")
 
                         elif var == "lat_bnds" or var == "lon_bnds":
-                            ds[var] = (point_dim_name, bounds_dim_name), np.squeeze(
-                                _data[var].reshape([point_dim_size, bounds_dim_size])[
-                                    keep_indexes, :
-                                ]
+                            ds[var] = (
+                                (point_dim_name, bounds_dim_name),
+                                np.squeeze(
+                                    _data[var].reshape([point_dim_size, bounds_dim_size])[
+                                        keep_indexes, :
+                                    ]
+                                ),
                             )
                         else:
                             ds[var] = (dim_name_dict[var]), _data[var]
@@ -922,11 +933,17 @@ class ReadL2Data(ReadL2DataBase):
                     continue
                 # 1D data
                 # 3D data
-                ds[var + "_mean"] = (lat_dim_name, lon_dim_name), np.reshape(
-                    _data[var]["mean"], (len(_data[lat_dim_name]), len(_data[lon_dim_name]))
+                ds[var + "_mean"] = (
+                    (lat_dim_name, lon_dim_name),
+                    np.reshape(
+                        _data[var]["mean"], (len(_data[lat_dim_name]), len(_data[lon_dim_name]))
+                    ),
                 )
-                ds[var + "_numobs"] = (lat_dim_name, lon_dim_name), np.reshape(
-                    _data[var]["numobs"], (len(_data[lat_dim_name]), len(_data[lon_dim_name]))
+                ds[var + "_numobs"] = (
+                    (lat_dim_name, lon_dim_name),
+                    np.reshape(
+                        _data[var]["numobs"], (len(_data[lat_dim_name]), len(_data[lon_dim_name]))
+                    ),
                 )
 
             # add attributes to variables

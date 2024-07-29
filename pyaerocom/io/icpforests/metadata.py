@@ -479,7 +479,7 @@ class Plots:
             minute = int(coord[-2:])
             coord = coord[:-2]
         else:
-            return sign * ((int(coord) / 60.0))
+            return sign * (int(coord) / 60.0)
 
         degree = int(coord)
 

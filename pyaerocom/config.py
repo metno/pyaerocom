@@ -145,8 +145,9 @@ class Config:
     CLIM_RESAMPLE_HOW = "mean"  # median, ...
     # as a function of climatological frequency
     CLIM_MIN_COUNT = dict(
-        daily=30, monthly=5  # at least 30 daily measurements in each month over whole period
-    )  # analogue to daily ...
+        daily=30,  # at least 30 daily measurements in each month over whole period
+        monthly=5,  # analogue to daily ...
+    )
 
     # names for the satellite data sets
     SENTINEL5P_NAME = "Sentinel5P"
