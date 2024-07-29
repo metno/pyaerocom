@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from pyaerocom.mathutils import estimate_value_range, exponent, is_strictly_monotonic, make_binlist

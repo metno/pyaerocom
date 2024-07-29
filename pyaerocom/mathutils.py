@@ -3,7 +3,7 @@ Mathematical low level utility methods of pyaerocom
 """
 
 import numpy as np
-from scipy.stats import kendalltau, pearsonr, spearmanr
+from scipy.stats import pearsonr
 
 from pyaerocom._warnings import ignore_warnings
 

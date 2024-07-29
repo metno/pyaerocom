@@ -8,7 +8,6 @@ from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
-from pyaerocom import const
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.mathutils import exponent

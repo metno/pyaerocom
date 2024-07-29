@@ -11,12 +11,9 @@ import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 
-from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
 from pyaerocom.io.gridded_reader import GriddedReader
-
-# from pyaerocom.units_helpers import UALIASES
 
 """
 TODO:

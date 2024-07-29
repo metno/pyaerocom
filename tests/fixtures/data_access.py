@@ -9,7 +9,6 @@ import logging
 from pathlib import Path
 from typing import NamedTuple
 
-import pooch
 
 from pyaerocom import const, io
 from pyaerocom.io.ghost.reader import ReadGhost

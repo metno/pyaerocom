@@ -290,7 +290,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         of the array)
 
     """
-    from pyaerocom import const
 
     if len(coord_vals) < 2:
         logger.warning(
@@ -1390,8 +1389,6 @@ def start_stop(start, stop=None, stop_sub_sec=True):
 
 
 def datetime2str(time, ts_type=None):
-    from pyaerocom import const
-
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)

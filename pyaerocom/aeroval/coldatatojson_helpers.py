@@ -3,7 +3,6 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 
 import logging
-import os
 from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Callable, Literal
@@ -19,13 +18,11 @@ from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from pyaerocom.helpers import start_stop
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import (
-    _get_season,
     _get_season_from_months,
     _get_unique_seasons,
     _get_yearly,

@@ -1,10 +1,8 @@
 import functools
-import glob
 import logging
 import os
 import re
 import warnings
-from collections import namedtuple
 
 import numpy as np
 import xarray as xr
@@ -27,17 +25,13 @@ from .additional_variables import (
     calc_concNno3pm25,
     calc_concno3pm10,
     calc_concno3pm25,
-    calc_concNtnh,
-    calc_concpolyol,
     calc_concso4t,
     calc_concSso2,
     calc_concsspm25,
     calc_conNtnh_emep,
-    calc_conNtno3,
     calc_conNtno3_emep,
     calc_vmrno2,
     calc_vmro3,
-    calc_vmrox,
     calc_vmrox_from_conc,
     identity,
     subtract_dataarrays,
