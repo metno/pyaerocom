@@ -36,3 +36,5 @@ d20d663e423b3e55a076a98ed136a4102e05a5df
 85a0b615888b9dca2b03498a4b5de0377e899bf5
 # 2024-07-29: format with ruff
 bf26bc28591df88bcfe738a4e9da935d37fc0b66
+# 2024-07-29:  Remove extraneous `f` prefix, F541
+edb47cfdecc9e0eafdc5d23de85efbdc7dfa38c4
