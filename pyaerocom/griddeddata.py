@@ -1667,9 +1667,7 @@ class GriddedData:
             arr_out = rs.resample(
                 to_ts_type, from_ts_type=from_ts_type, how=how, min_num_obs=min_num_obs
             )
-        except (
-            ValueError
-        ):  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
+        except ValueError:  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr["time"] = self.time_stamps()
             rs = TimeResampler(arr)
             arr_out = rs.resample(

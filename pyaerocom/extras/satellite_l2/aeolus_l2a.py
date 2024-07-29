@@ -167,98 +167,98 @@ class ReadL2Data(ReadL2DataBase):
         # test data to be read
         # self.CODA_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = \
         #     'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._RAYLEIGHALTITUDENAME
-        ] = "geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/altitude_of_height_bin"
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._RAYLEIGHLATNAME
-        ] = "geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/latitude_of_height_bin"
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._RAYLEIGHLONNAME
-        ] = "geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/longitude_of_height_bin"
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._RAYLEIGHALTITUDENAME] = (
+            "geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/altitude_of_height_bin"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._RAYLEIGHLATNAME] = (
+            "geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/latitude_of_height_bin"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._RAYLEIGHLONNAME] = (
+            "geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/longitude_of_height_bin"
+        )
 
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/longitude_of_height_bin
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/latitude_of_height_bin
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/altitude_of_height_bin
 
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/qc_flag'
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._QANAME
-        ] = "sca_pcd/profile_pcd_bins/processing_qc_flag"
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._LATITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/latitude"
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._LONGITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/longitude"
-        self.CODA_READ_PARAMETERS["sca"]["metadata"][
-            self._ALTITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/altitude"
-        self.CODA_READ_PARAMETERS["sca"]["vars"][
-            self._EC355NAME
-        ] = "sca_optical_properties/sca_optical_properties_mid_bins/extinction"
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._QANAME] = (
+            "sca_pcd/profile_pcd_bins/processing_qc_flag"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._LATITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/latitude"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._LONGITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/longitude"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["metadata"][self._ALTITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/altitude"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["vars"][self._EC355NAME] = (
+            "sca_optical_properties/sca_optical_properties_mid_bins/extinction"
+        )
         # self.CODA_READ_PARAMETERS['sca']['vars'][
         #     self._EC355NAME] = 'sca_optical_properties/sca_optical_properties/extinction'
-        self.CODA_READ_PARAMETERS["sca"]["vars"][
-            self._BS355NAME
-        ] = "sca_optical_properties/sca_optical_properties_mid_bins/backscatter"
+        self.CODA_READ_PARAMETERS["sca"]["vars"][self._BS355NAME] = (
+            "sca_optical_properties/sca_optical_properties_mid_bins/backscatter"
+        )
         # self.CODA_READ_PARAMETERS['sca']['vars'][
         #     self._BS355NAME] = 'sca_optical_properties/sca_optical_properties/backscatter'
-        self.CODA_READ_PARAMETERS["sca"]["vars"][
-            self._LODNAME
-        ] = "sca_optical_properties/sca_optical_properties/lod"
-        self.CODA_READ_PARAMETERS["sca"]["vars"][
-            self._SRNAME
-        ] = "sca_optical_properties/sca_optical_properties/sr"
+        self.CODA_READ_PARAMETERS["sca"]["vars"][self._LODNAME] = (
+            "sca_optical_properties/sca_optical_properties/lod"
+        )
+        self.CODA_READ_PARAMETERS["sca"]["vars"][self._SRNAME] = (
+            "sca_optical_properties/sca_optical_properties/sr"
+        )
 
         self.CODA_READ_PARAMETERS["ica"] = {}
         self.CODA_READ_PARAMETERS["ica"]["metadata"] = {}
         self.CODA_READ_PARAMETERS["ica"]["vars"] = {}
-        self.CODA_READ_PARAMETERS["ica"]["metadata"][
-            self._TIME_NAME
-        ] = "ica_optical_properties/starttime"
+        self.CODA_READ_PARAMETERS["ica"]["metadata"][self._TIME_NAME] = (
+            "ica_optical_properties/starttime"
+        )
 
-        self.CODA_READ_PARAMETERS["ica"]["metadata"][
-            self._LATITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/latitude"
-        self.CODA_READ_PARAMETERS["ica"]["metadata"][
-            self._LONGITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/longitude"
-        self.CODA_READ_PARAMETERS["ica"]["metadata"][
-            self._ALTITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/altitude"
-        self.CODA_READ_PARAMETERS["ica"]["vars"][
-            self._EC355NAME
-        ] = "ica_optical_properties/ica_optical_properties/extinction"
-        self.CODA_READ_PARAMETERS["ica"]["vars"][
-            self._BS355NAME
-        ] = "ica_optical_properties/ica_optical_properties/backscatter"
-        self.CODA_READ_PARAMETERS["ica"]["vars"][
-            self._LODNAME
-        ] = "ica_optical_properties/ica_optical_properties/lod"
+        self.CODA_READ_PARAMETERS["ica"]["metadata"][self._LATITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/latitude"
+        )
+        self.CODA_READ_PARAMETERS["ica"]["metadata"][self._LONGITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/longitude"
+        )
+        self.CODA_READ_PARAMETERS["ica"]["metadata"][self._ALTITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/altitude"
+        )
+        self.CODA_READ_PARAMETERS["ica"]["vars"][self._EC355NAME] = (
+            "ica_optical_properties/ica_optical_properties/extinction"
+        )
+        self.CODA_READ_PARAMETERS["ica"]["vars"][self._BS355NAME] = (
+            "ica_optical_properties/ica_optical_properties/backscatter"
+        )
+        self.CODA_READ_PARAMETERS["ica"]["vars"][self._LODNAME] = (
+            "ica_optical_properties/ica_optical_properties/lod"
+        )
         # self.RETRIEVAL_READ_PARAMETERS['ica']['vars'][_CASENAME] = 'ica_optical_properties/ica_optical_properties/case'
 
         self.CODA_READ_PARAMETERS["mca"] = {}
         self.CODA_READ_PARAMETERS["mca"]["metadata"] = {}
         self.CODA_READ_PARAMETERS["mca"]["vars"] = {}
-        self.CODA_READ_PARAMETERS["mca"]["metadata"][
-            self._TIME_NAME
-        ] = "mca_optical_properties/starttime"
-        self.CODA_READ_PARAMETERS["mca"]["metadata"][
-            self._LATITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/latitude"
-        self.CODA_READ_PARAMETERS["mca"]["metadata"][
-            self._LONGITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/longitude"
-        self.CODA_READ_PARAMETERS["mca"]["metadata"][
-            self._ALTITUDENAME
-        ] = "sca_optical_properties/geolocation_middle_bins/altitude"
-        self.CODA_READ_PARAMETERS["mca"]["vars"][
-            self._EC355NAME
-        ] = "mca_optical_properties/mca_optical_properties/extinction"
-        self.CODA_READ_PARAMETERS["mca"]["vars"][
-            self._LODNAME
-        ] = "mca_optical_properties/mca_optical_properties/lod"
+        self.CODA_READ_PARAMETERS["mca"]["metadata"][self._TIME_NAME] = (
+            "mca_optical_properties/starttime"
+        )
+        self.CODA_READ_PARAMETERS["mca"]["metadata"][self._LATITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/latitude"
+        )
+        self.CODA_READ_PARAMETERS["mca"]["metadata"][self._LONGITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/longitude"
+        )
+        self.CODA_READ_PARAMETERS["mca"]["metadata"][self._ALTITUDENAME] = (
+            "sca_optical_properties/geolocation_middle_bins/altitude"
+        )
+        self.CODA_READ_PARAMETERS["mca"]["vars"][self._EC355NAME] = (
+            "mca_optical_properties/mca_optical_properties/extinction"
+        )
+        self.CODA_READ_PARAMETERS["mca"]["vars"][self._LODNAME] = (
+            "mca_optical_properties/mca_optical_properties/lod"
+        )
         # DATA_COLNAMES[_MCA_CASENAME] = 'mca_optical_properties/mca_optical_properties/case'
 
         GROUP_DELIMITER = "/"
@@ -314,31 +314,31 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME]["_FillValue"] = np.nan
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME]["long_name"] = "extinction @ 355nm"
-        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME][
-            "standard_name"
-        ] = "volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles"
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME]["standard_name"] = (
+            "volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles"
+        )
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME]["units"] = "1/Mm"
 
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_mean"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_mean"]["_FillValue"] = np.nan
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_mean"]["long_name"] = "extinction @ 355nm"
-        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_mean"][
-            "standard_name"
-        ] = "volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles"
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_mean"]["standard_name"] = (
+            "volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles"
+        )
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_mean"]["units"] = "1/Mm"
 
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_numobs"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_numobs"]["_FillValue"] = np.nan
-        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_numobs"][
-            "long_name"
-        ] = "number of observations of extinction @ 355nm"
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_numobs"]["long_name"] = (
+            "number of observations of extinction @ 355nm"
+        )
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_numobs"]["units"] = "1"
 
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_stddev"] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_stddev"]["_FillValue"] = np.nan
-        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_stddev"][
-            "long_name"
-        ] = "standard deviation of extinction @ 355nm"
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_stddev"]["long_name"] = (
+            "standard deviation of extinction @ 355nm"
+        )
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME + "_stddev"]["units"] = "1/Mm"
 
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME] = {}
@@ -1174,9 +1174,9 @@ class ReadL2Data(ReadL2DataBase):
                             )
                             cut_flag = False
 
-                        ret_data[
-                            index_counter : index_counter + matching_length, :
-                        ] = ungridded_data_obj._data[matching_indexes, :]
+                        ret_data[index_counter : index_counter + matching_length, :] = (
+                            ungridded_data_obj._data[matching_indexes, :]
+                        )
                         index_counter += matching_length
 
             elif isinstance(location, tuple):
@@ -1457,11 +1457,14 @@ class ReadL2Data(ReadL2DataBase):
                 ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
                 ds[lev_dim_name] = (lev_dim_name), np.arange(_data[alt_dim_name].shape[1])
                 ds[alt_dim_name] = (
-                    time_dim_name,
-                    lev_dim_name,
-                    lat_dim_name,
-                    lon_dim_name,
-                ), _data[alt_dim_name]
+                    (
+                        time_dim_name,
+                        lev_dim_name,
+                        lat_dim_name,
+                        lon_dim_name,
+                    ),
+                    _data[alt_dim_name],
+                )
                 # ds[self._ALTBOUNDSNAME] = (alt_dim_name, altbnds_dim_name), _data[self._ALTBOUNDSNAME]
 
                 # for var in vars_to_write_out:
@@ -1472,23 +1475,32 @@ class ReadL2Data(ReadL2DataBase):
                         continue
                     # 3D data
                     ds[var + "_mean"] = (
-                        time_dim_name,
-                        lev_dim_name,
-                        lat_dim_name,
-                        lon_dim_name,
-                    ), _data[var]["mean"]
+                        (
+                            time_dim_name,
+                            lev_dim_name,
+                            lat_dim_name,
+                            lon_dim_name,
+                        ),
+                        _data[var]["mean"],
+                    )
                     ds[var + "_numobs"] = (
-                        time_dim_name,
-                        lev_dim_name,
-                        lat_dim_name,
-                        lon_dim_name,
-                    ), _data[var]["numobs"]
+                        (
+                            time_dim_name,
+                            lev_dim_name,
+                            lat_dim_name,
+                            lon_dim_name,
+                        ),
+                        _data[var]["numobs"],
+                    )
                     ds[var + "_stddev"] = (
-                        time_dim_name,
-                        lev_dim_name,
-                        lat_dim_name,
-                        lon_dim_name,
-                    ), _data[var]["stddev"]
+                        (
+                            time_dim_name,
+                            lev_dim_name,
+                            lat_dim_name,
+                            lon_dim_name,
+                        ),
+                        _data[var]["stddev"],
+                    )
 
             # add attributes to variables
             for var in ds.variables:
@@ -2959,12 +2971,12 @@ class ReadL2Data(ReadL2DataBase):
 
                             if less_than_zero_indexes.size == 1:
                                 try:
-                                    gridded_var_data[var]["mean"][
-                                        lat_idx, lon_idx, height_idx
-                                    ] = _data[
-                                        match_indexes[less_than_zero_indexes],
-                                        self.INDEX_DICT[var],
-                                    ]
+                                    gridded_var_data[var]["mean"][lat_idx, lon_idx, height_idx] = (
+                                        _data[
+                                            match_indexes[less_than_zero_indexes],
+                                            self.INDEX_DICT[var],
+                                        ]
+                                    )
                                     gridded_var_data[var]["stddev"][
                                         lat_idx, lon_idx, height_idx
                                     ] = 0.0
@@ -2976,13 +2988,13 @@ class ReadL2Data(ReadL2DataBase):
                                     pass
                             else:
                                 try:
-                                    gridded_var_data[var]["mean"][
-                                        lat_idx, lon_idx, height_idx
-                                    ] = np.nanmean(
-                                        _data[
-                                            match_indexes[less_than_zero_indexes],
-                                            self.INDEX_DICT[var],
-                                        ]
+                                    gridded_var_data[var]["mean"][lat_idx, lon_idx, height_idx] = (
+                                        np.nanmean(
+                                            _data[
+                                                match_indexes[less_than_zero_indexes],
+                                                self.INDEX_DICT[var],
+                                            ]
+                                        )
                                     )
                                     gridded_var_data[var]["stddev"][
                                         lat_idx, lon_idx, height_idx
