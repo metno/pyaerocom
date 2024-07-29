@@ -363,6 +363,8 @@ class Colocator:
             dictionaries comprising key / value pairs of obs variables and
             associated instances of :class:`ColocatedData`.
         """
+        # MDA8 is a daily value so it doesn't make sense to calculate it if
+        # no frequency is daily or coarser.
         calc_mda8 = False
         if self.colocation_setup.main_freq in ["daily", "monthly", "yearly"]:
             calc_mda8 = True
