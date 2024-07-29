@@ -3,8 +3,6 @@ import pytest
 
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.vert_coords import *
-from tests.conftest import lustre_unavail
-from tests.fixtures.tm5 import data_tm5
 
 
 @pytest.fixture

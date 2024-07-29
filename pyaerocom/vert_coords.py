@@ -13,13 +13,11 @@ UNDER DEVELOPMENT -> NOT READY YET
 import logging
 
 import numpy as np
-from geonum import atmosphere as atm
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
     VariableDefinitionError,
-    VariableNotFoundError,
 )
 
 logger = logging.getLogger(__name__)

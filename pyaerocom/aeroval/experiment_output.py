@@ -13,7 +13,6 @@ from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     VariableInfo,
     extended_statistics,
-    num_statistics,
     statistics_defaults,
     statistics_mean_trend,
     statistics_median_trend,

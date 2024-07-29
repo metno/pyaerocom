@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import warnings
 from ast import literal_eval
 from functools import cached_property
 from pathlib import Path

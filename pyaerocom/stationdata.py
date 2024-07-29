@@ -17,7 +17,6 @@ from pyaerocom.exceptions import (
     MetaDataError,
     StationCoordinateError,
     TemporalResolutionError,
-    UnitConversionError,
     VarNotAvailableError,
 )
 from pyaerocom.helpers import calc_climatology, isnumeric, isrange, to_datetime64
