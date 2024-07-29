@@ -1310,7 +1310,7 @@ def _process_heatmap_data(
                             if add_trends and freq != "daily":
                                 stats.update(**trend_stats)
 
-                        except (DataCoverageError, TemporalResolutionError) as e:
+                        except (DataCoverageError, TemporalResolutionError):
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats

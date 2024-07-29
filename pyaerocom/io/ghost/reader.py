@@ -287,7 +287,7 @@ class ReadGhost(ReadUngriddedBase):
     def _ts_type_from_data_dir(self):
         try:
             freq = str(TsType(os.path.basename(self.data_dir)))
-        except Exception as e:  # pragma: no cover
+        except Exception:  # pragma: no cover
             freq = "undefined"
         self.TS_TYPES[self.data_id] = freq
         return freq
