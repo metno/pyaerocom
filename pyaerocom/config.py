@@ -3,7 +3,6 @@ import logging
 import os
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 
@@ -318,7 +317,7 @@ class Config:
         raise FileNotFoundError("Could not establish access to any registered database")
 
     def register_custom_variables(
-        self, vars: Union[dict[str, Variable], dict[str, dict[str, str]]]
+        self, vars: dict[str, Variable] | dict[str, dict[str, str]]
     ) -> None:
         var_dict = {}
         for key, item in vars.items():

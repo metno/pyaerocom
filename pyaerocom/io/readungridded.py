@@ -3,7 +3,6 @@ import os
 import warnings
 from copy import deepcopy
 from pathlib import Path
-from typing import Optional, Union
 
 from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -80,7 +79,7 @@ class ReadUngridded:
         data_ids=None,
         ignore_cache=False,
         data_dirs=None,
-        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
+        configs: PyaroConfig | list[PyaroConfig] | None = None,
     ):
         # will be assigned in setter method of data_ids
         self._data_ids = []
@@ -206,7 +205,7 @@ class ReadUngridded:
         return self._configs
 
     @configs.setter
-    def configs(self, val: Union[PyaroConfig, list[PyaroConfig]]):
+    def configs(self, val: PyaroConfig | list[PyaroConfig]):
         if isinstance(val, PyaroConfig):
             val = [val]
         elif not isinstance(val, (tuple, list)):
@@ -730,7 +729,7 @@ class ReadUngridded:
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
-        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
+        configs: PyaroConfig | list[PyaroConfig] | None = None,
         **kwargs,
     ):
         """Read observations
