@@ -2,6 +2,7 @@
 """
 read binary ESA L2B files of the ADM Aeolus mission
 """
+
 import argparse
 import glob
 import logging
