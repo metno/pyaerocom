@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from importlib import resources
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 import yaml
 from pydantic import BaseModel, ConfigDict
@@ -30,7 +30,7 @@ class PyaroConfig(BaseModel):
     data_id: str
     filename_or_obj_or_url: str
     filters: dict[str, dict[str, list[str]]]
-    name_map: Optional[dict[str, str]] = None  # no Unit conversion option
+    name_map: dict[str, str] | None = None  # no Unit conversion option
 
     ##########################
     #   Save and load methods
@@ -39,7 +39,7 @@ class PyaroConfig(BaseModel):
     def json_repr(self):
         return self.model_dump()
 
-    def save(self, path: Optional[Path] = None) -> None:
+    def save(self, path: Path | None = None) -> None:
         name = self.name
 
         if not path.is_dir():
@@ -60,7 +60,7 @@ class PyaroConfig(BaseModel):
         return PyaroConfig.model_validate(data)
 
     @classmethod
-    def load(cls, name: str, filepath: Optional[Path] = None):
+    def load(cls, name: str, filepath: Path | None = None):
         if filepath is not None:
             if filepath.is_dir():
                 raise ValueError(f"Filepath {filepath} is a directory not a file")
@@ -75,7 +75,7 @@ class PyaroConfig(BaseModel):
             raise ValueError(f"Config {name} was not found in any catalogs")
 
     @classmethod
-    def list_configs(cls, filepath: Optional[Path] = None) -> list[str]:
+    def list_configs(cls, filepath: Path | None = None) -> list[str]:
         data = cls.load_catalog()
         if filepath is not None:
             logger.info(f"Updating with private catalog {filepath}")
@@ -84,7 +84,7 @@ class PyaroConfig(BaseModel):
         return list(data.keys())
 
     @classmethod
-    def load_catalog(cls, filepath: Optional[Path] = None) -> dict:
+    def load_catalog(cls, filepath: Path | None = None) -> dict:
         if filepath is None:
             filepath = cls._DEFAULT_CATALOG
 

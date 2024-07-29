@@ -1,5 +1,3 @@
-from typing import Optional
-
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
@@ -16,7 +14,7 @@ class VerticalProfile:
         altitude: npt.ArrayLike,
         dtime,
         var_name: str,
-        data_err: Optional[npt.ArrayLike],
+        data_err: npt.ArrayLike | None,
         var_unit: str,
         altitude_unit: str,
     ):
