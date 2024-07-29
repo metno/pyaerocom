@@ -358,7 +358,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         harmonise_units=True,
         regions_how="country",
         annual_stats_constrained=True,
-        proj_id=f"emep",
+        proj_id="emep",
         exp_id=f"{reportyear}-reporting",
         exp_name=f"Evaluation of EMEP runs for {reportyear} EMEP reporting",
         exp_descr=(

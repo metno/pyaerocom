@@ -100,7 +100,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
             files = files[:last_file]
 
         start = time.time()
-        logger.info(f"Start read obs")
+        logger.info("Start read obs")
         # lazy data_iterator returns immediately, unpacked in from_station_data
         data_iterator = self.__reader(vars_to_retrieve, files)
         ungriddeddata = UngriddedData.from_station_data(data_iterator)

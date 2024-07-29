@@ -571,7 +571,7 @@ def test_read_emep_LF_tst(tmp_path: Path):
     reader = ReadMscwCtm(data_dir=str(data_path))
     with pytest.raises(ValueError) as e:
         filepaths = reader._filepaths
-        wrong_path = Path(filepaths[0]).with_name(f"Base_LF_month.nc")
+        wrong_path = Path(filepaths[0]).with_name("Base_LF_month.nc")
         reader._get_tst_from_file(str(wrong_path))
 
     assert str(e.value) == f"The file {wrong_path} is not supported"
@@ -581,7 +581,7 @@ def test_read_emep_year_defined_twice(tmp_path: Path):
     data_path = emep_data_path(tmp_path, "day", vars_and_units={"prmm": "mm"})
     reader = ReadMscwCtm(data_dir=str(data_path))
     filepaths = reader._filepaths
-    wrong_path = Path(filepaths[0]).with_name(f"Base_day.nc")
+    wrong_path = Path(filepaths[0]).with_name("Base_day.nc")
     filepaths.append(str(wrong_path))
     new_yrs = reader._get_yrs_from_filepaths()
     with pytest.raises(ValueError) as e:

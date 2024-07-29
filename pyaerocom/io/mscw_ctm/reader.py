@@ -339,7 +339,7 @@ class ReadMscwCtm(GriddedReader):
         Directory containing netcdf files
         """
         if self._private.data_dir is None:
-            raise AttributeError(f"data_dir needs to be set before accessing")
+            raise AttributeError("data_dir needs to be set before accessing")
         return self._private.data_dir
 
     @_data_dir.setter

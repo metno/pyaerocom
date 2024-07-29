@@ -218,7 +218,7 @@ def test_StationData_get_station_coords(
         pytest.param(
             stat4,
             AttributeError,
-            f"Invalid value encountered for coord longitude, need float, int, list or ndarray, got <class 'str'>",
+            "Invalid value encountered for coord longitude, need float, int, list or ndarray, got <class 'str'>",
             id="wrong station latitude",
         ),
         pytest.param(

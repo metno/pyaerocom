@@ -208,7 +208,7 @@ class ReadICPForest(ReadUngriddedBase):
         stations: dict[str, dict[str, Station]] = {}
         if self.metadata is None:
             if self.data_dir is None:
-                raise ValueError(f"Data Dir is not read yet")
+                raise ValueError("Data Dir is not read yet")
 
             self.metadata = MetadataReader(self.data_dir)
 
@@ -383,7 +383,7 @@ class ReadICPForest(ReadUngriddedBase):
             return (stop - start).days, start, self._get_tstype(start, stop)
 
         if self.metadata is None:
-            raise ValueError(f"Metadata is not read yet")
+            raise ValueError("Metadata is not read yet")
 
         try:
             days = self.metadata.plots.get_days(year, country_code, plot_code, sampler_code)
