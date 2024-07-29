@@ -916,7 +916,7 @@ class Colocator:
         # 9999 denote climatological data)
         yrs_avail = self.model_reader.years_avail
         if self.colocation_setup.model_use_climatology:
-            if not 9999 in yrs_avail:
+            if 9999 not in yrs_avail:
                 raise DataCoverageError("No climatology files available")
             first, last = 9999, None
         else:

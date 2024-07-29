@@ -88,7 +88,7 @@ def _get_unique_seasons(idx):
     mons = idx.month
     for mon in mons:
         seas = _get_season(mon)
-        if not seas in seasons:
+        if seas not in seasons:
             seasons.append(seas)
     return seasons
 

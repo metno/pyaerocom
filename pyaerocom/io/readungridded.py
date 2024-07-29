@@ -250,7 +250,7 @@ class ReadUngridded:
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
-        if not data_id in self._readers:
+        if data_id not in self._readers:
             reader = self.get_lowlevel_reader(data_id)
         else:
             reader = self._readers[data_id]
@@ -521,7 +521,7 @@ class ReadUngridded:
                     )
 
         if not only_cached:
-            vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
+            vars_to_read = [v for v in vars_available if v not in cache.loaded_data]
         else:
             vars_to_read = []
 
@@ -588,7 +588,7 @@ class ReadUngridded:
             if key == "ignore_station_names":  # for backwards compatibility
                 if isinstance(val, (str, list)):
                     filters["station_name"] = val
-                    if not "negate" in filters:
+                    if "negate" not in filters:
                         filters["negate"] = []
                     filters["negate"].append("station_name")
 
@@ -606,7 +606,7 @@ class ReadUngridded:
                         var = vars_available[0]
                         try:
                             filters["station_name"] = val[var]
-                            if not "negate" in filters:
+                            if "negate" not in filters:
                                 filters["negate"] = []
                             filters["negate"].append("station_name")
                         except KeyError:
@@ -858,7 +858,7 @@ class ReadUngridded:
             postinfo = self.post_compute[obs_id]
             supported = postinfo["vars_supported"]
             for var in varlist_aerocom(vars_desired):
-                if not var in supported:
+                if var not in supported:
                     try:
                         var = self._check_var_alias(var, supported)
                     except ValueError:

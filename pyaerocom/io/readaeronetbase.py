@@ -217,7 +217,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         col_index = {}
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
-            if not val in mapping:
+            if val not in mapping:
                 val = self._check_alternative_colnames(val, mapping)
             col_index[key] = mapping[val]
         for var, colname in self.VAR_NAMES_FILE.items():
@@ -281,9 +281,9 @@ class ReadAeronetBase(ReadUngriddedBase):
                         diff = abs(wvl_col - wvl)
                         if diff < wvl_diff_min:
                             wvl_diff_min = diff
-                            if not var in self._alt_var_cols:
+                            if var not in self._alt_var_cols:
                                 self._alt_var_cols[var] = []
-                            if not col in self._alt_var_cols[var]:
+                            if col not in self._alt_var_cols[var]:
                                 self._alt_var_cols[var].append(col)
                             return i
         raise VariableNotFoundError(
@@ -461,7 +461,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 else:
                     u = self.DEFAULT_UNIT
                 meta["var_info"][var] = dict(units=u)
-                if not var in data_obj.var_idx:
+                if var not in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
             idx += totnum

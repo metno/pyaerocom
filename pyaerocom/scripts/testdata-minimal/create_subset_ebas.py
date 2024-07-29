@@ -78,7 +78,7 @@ def check_outdated(filedir):
     for var, stats in data.items():
         for stat, files in stats.items():
             for file in files:
-                if not file in all_files:
+                if file not in all_files:
                     print("OUTDATED", var, stat)
                     print(file)
                     files_invalid.append(file)
@@ -87,7 +87,7 @@ def check_outdated(filedir):
                     files_valid.append(file)
 
     for key, file in add_files.items():
-        if not file in all_files:
+        if file not in all_files:
             print("OUTDATED (add_files)", key)
             print(file)
             files_invalid.append(file)

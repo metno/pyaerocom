@@ -183,7 +183,7 @@ class VerticalCoordinate:
         -------
         True
         """
-        if not self.var_name in self._LEV_INCREASES_WITH_ALT:
+        if self.var_name not in self._LEV_INCREASES_WITH_ALT:
             if self.standard_name in self._LEV_INCREASES_WITH_ALT:
                 return self._LEV_INCREASES_WITH_ALT[self.standard_name]
             raise ValueError(
@@ -210,7 +210,7 @@ class VerticalCoordinate:
             pressure levels in Pa
         """
 
-        if not self.var_name in self.NAMES_SUPPORTED:
+        if self.var_name not in self.NAMES_SUPPORTED:
             raise CoordinateNameError(
                 f"Variable {self.var_name} cannot be converted to pressure levels. "
                 f"Conversion is only possible for supported variables:\n{self.vars_supported_str}"

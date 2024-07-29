@@ -981,7 +981,7 @@ def _process_map_and_scat(
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
                 for i, map_stat in zip(site_indices, map_data):
-                    if not freq in map_stat:
+                    if freq not in map_stat:
                         map_stat[freq] = {}
 
                     if use_dummy:
@@ -1038,7 +1038,7 @@ def _process_map_and_scat(
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
                         site = map_stat["station_name"]
-                        if not site in scat_data:
+                        if site not in scat_data:
                             scat_data[site] = {}
                             scat_data[site]["latitude"] = map_stat["latitude"]
                             scat_data[site]["longitude"] = map_stat["longitude"]
@@ -1135,7 +1135,7 @@ def _apply_annual_constraint(data):
 
     """
     output = {}
-    if not "yearly" in data or data["yearly"] is None:
+    if "yearly" not in data or data["yearly"] is None:
         raise ConfigError(
             "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
@@ -1247,7 +1247,7 @@ def _select_period_season_coldata(coldata, period, season):
     if len(arr.time) == 0:
         raise DataCoverageError(f"No data available in period {period}")
     if season != "all":
-        if not season in arr.season:
+        if season not in arr.season:
             raise DataCoverageError(f"No data available in {season} in period {period}")
         elif TsType(coldata.ts_type) < "monthly":
             raise TemporalResolutionError(
@@ -1414,7 +1414,7 @@ def _process_statistics_timeseries(
         )
 
     output = {}
-    if not data_freq in data or data[data_freq] is None:
+    if data_freq not in data or data[data_freq] is None:
         raise TemporalResolutionError(
             f"failed to compute statistics timeseries, no co-located data "
             f"available in specified base resolution {data_freq}"

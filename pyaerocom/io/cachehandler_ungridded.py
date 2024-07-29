@@ -151,7 +151,7 @@ class CacheHandlerUngridded:
             raise CacheReadError("Invalid cache file")
         pya_version = "pyaerocom_version"
         for k, v in head.items():
-            if not k in current:
+            if k not in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
             else:
                 if k == pya_version:
@@ -325,7 +325,7 @@ class CacheHandlerUngridded:
                     )
                 var_name = data.contains_vars[0]
 
-            elif not var_name in data.contains_vars:
+            elif var_name not in data.contains_vars:
                 raise CacheWriteError(
                     f"Cannot write cache file: variable {var_name} "
                     f"does not exist in input UngriddedData object"

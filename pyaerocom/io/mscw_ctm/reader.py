@@ -587,7 +587,7 @@ class ReadMscwCtm(GriddedReader):
             freq.
 
         """
-        if not ts_type in self.REVERSE_FREQ_CODES:
+        if ts_type not in self.REVERSE_FREQ_CODES:
             raise ValueError(f"unknown ts_type={ts_type}")
         freq = self.REVERSE_FREQ_CODES[ts_type]
         return self.FILE_FREQ_TEMPLATE.format(freq=freq)

@@ -611,7 +611,7 @@ class Config:
 
             reader = get_ungridded_reader(obs_id)
 
-        if not obs_id in reader.SUPPORTED_DATASETS:
+        if obs_id not in reader.SUPPORTED_DATASETS:
             reader.SUPPORTED_DATASETS.append(obs_id)
         self.OBSLOCS_UNGRIDDED[obs_id] = data_dir
         if check_read:
@@ -717,7 +717,7 @@ class Config:
         try:
             check.get_file_list()
         except DataSourceError:
-            if not "renamed" in os.listdir(data_dir):
+            if "renamed" not in os.listdir(data_dir):
                 raise
             logger.warning(
                 f"Failed to register {obs_id} at {data_dir} using ungridded "
@@ -843,7 +843,7 @@ class Config:
             _dir = mcfg["BASEDIR"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
-            if not _dir in chk_dirs and self._check_access(_dir):
+            if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
             return False
@@ -863,7 +863,7 @@ class Config:
                     continue
                 loc = loc.replace(repl_str, basedir)
 
-            if not loc in self._search_dirs:
+            if loc not in self._search_dirs:
                 self._search_dirs.append(loc)
         return True
 
@@ -879,7 +879,7 @@ class Config:
             _dir = cfg["BASEDIR"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
-            if not _dir in chk_dirs and self._check_access(_dir):
+            if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
             return False

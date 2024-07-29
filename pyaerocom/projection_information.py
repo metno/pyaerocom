@@ -48,7 +48,7 @@ class ProjectionInformation:
         returns None if no projection exists for the variable or ProjectionInformation
         """
         da = ds[var]
-        if not "grid_mapping" in da.attrs:
+        if "grid_mapping" not in da.attrs:
             return None
         pi = ProjectionInformation()
         pi._crs = CRS.from_cf(ds[da.grid_mapping].attrs)

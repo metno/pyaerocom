@@ -266,8 +266,8 @@ def _calc_od_helper(
         if neither ``od_ref`` nor ``od_ref_alt`` are available in data, or if
         ``use_angstrom_coeff`` is missing
     """
-    if not od_ref in data:
-        if od_ref_alt is None and not od_ref_alt in data:
+    if od_ref not in data:
+        if od_ref_alt is None and od_ref_alt not in data:
             raise AttributeError(f"No alternative OD found for computation of {var_name}")
         return compute_od_from_angstromexp(
             to_lambda=to_lambda,
@@ -275,7 +275,7 @@ def _calc_od_helper(
             lambda_ref=lambda_ref_alt,
             angstrom_coeff=data[use_angstrom_coeff],
         )
-    elif not use_angstrom_coeff in data:
+    elif use_angstrom_coeff not in data:
         raise AttributeError("Angstrom coefficient (440-870 nm) is not available in provided data")
     result = compute_od_from_angstromexp(
         to_lambda=to_lambda,
@@ -340,7 +340,7 @@ def compute_sc550dryaer(data):
     vals, rh_mean = _compute_dry_helper(
         data, data_colname="sc550aer", rh_colname="scrh", rh_max_percent=rh_max
     )
-    if not "sc550dryaer" in data.var_info:
+    if "sc550dryaer" not in data.var_info:
         data.var_info["sc550dryaer"] = {}
     data.var_info["sc550dryaer"]["rh_mean"] = rh_mean
 
@@ -527,7 +527,7 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
     # in units of ts_type, that is, e.g. kg m-2 d
     freq_str = f" {RATES_FREQ_DEFAULT}-1"
     wdep_units += freq_str
-    if not wdep_var in data.var_info:
+    if wdep_var not in data.var_info:
         data.var_info[wdep_var] = {}
     data.var_info[wdep_var]["units"] = wdep_units
 
@@ -777,7 +777,7 @@ def calc_vmro3max(data):
 
     units = data.var_info[var_name]["units"]
 
-    if not new_var_name in data.var_info:
+    if new_var_name not in data.var_info:
         data.var_info[new_var_name] = {}
 
     data.var_info[new_var_name] = data.var_info[var_name]
@@ -804,7 +804,7 @@ def make_proxy_drydep_from_O3(data):
     units = data.var_info[var_name]["units"]
     # data.var_info[new_var_name]["units"] = units
 
-    if not new_var_name in data.var_info:
+    if new_var_name not in data.var_info:
         data.var_info[new_var_name] = {}
     data.var_info[new_var_name] = data.var_info[var_name]
     data.var_info[new_var_name]["units"] = "mg m-2 d-1"
@@ -826,7 +826,7 @@ def make_proxy_wetdep_from_O3(data):
     units = data.var_info[var_name]["units"]
     # data.var_info[new_var_name]["units"] = units
 
-    if not new_var_name in data.var_info:
+    if new_var_name not in data.var_info:
         data.var_info[new_var_name] = {}
     data.var_info[new_var_name] = data.var_info[var_name]
     data.var_info[new_var_name]["units"] = "mg m-2 d-1"

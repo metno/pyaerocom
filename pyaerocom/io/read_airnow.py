@@ -422,7 +422,7 @@ class ReadAirNow(ReadUngriddedBase):
             else:
                 statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var, disable=None):
-                if not stat_id in stat_ids:
+                if stat_id not in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id
                 if statmask.sum() == 0:
