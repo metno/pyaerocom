@@ -142,7 +142,7 @@ class VarCollection:
         if var_name in self._vars_added:
             return self._vars_added[var_name]
         var = Variable(var_name, cfg=self._cfg_parser)
-        if not var.var_name_aerocom in self:
+        if var.var_name_aerocom not in self:
             raise VariableDefinitionError(
                 f"Error (VarCollection): input variable {var_name} is not supported"
             )

@@ -245,7 +245,7 @@ class ReadAasEtal(ReadUngriddedBase):
 
         for file in files:
             filename = os.path.basename(file)
-            if not filename in self.FILES_CONTAIN:
+            if filename not in self.FILES_CONTAIN:
                 raise OSError(f"Invalid file name {filename}, this should not happen.")
             var_matches = [var for var in vars_to_retrieve if var in self.FILES_CONTAIN[filename]]
             if len(var_matches) == 0:
@@ -289,7 +289,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     start = idx + var_count * num_times
                     stop = start + num_times
 
-                    if not var in data_obj.var_idx:
+                    if var not in data_obj.var_idx:
                         varindex += 1
                         data_obj.var_idx[var] = varindex
                         var_idx = varindex

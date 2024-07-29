@@ -126,9 +126,9 @@ class StationData(StationMetaData):
         bool
             True, if variable data is available, else False
         """
-        if not var_name in self:
+        if var_name not in self:
             return False
-        if not var_name in self.var_info:
+        if var_name not in self.var_info:
             logger.warning(
                 f"Variable {var_name} exists in data but has no "
                 f"metadata assigned in :attr:`var_info`"
@@ -153,7 +153,7 @@ class StationData(StationMetaData):
         MetaDataError
             if unit cannot be accessed for variable
         """
-        if not var_name in self.var_info:
+        if var_name not in self.var_info:
             raise MetaDataError(f"Could not access variable metadata dict for {var_name}.")
         try:
             return str(self.var_info[var_name]["units"])
@@ -423,7 +423,7 @@ class StationData(StationMetaData):
         keys = [k for k in self.STANDARD_META_KEYS]
         keys.extend(add_meta_keys)
         for key in keys:
-            if not key in self:
+            if key not in self:
                 logger.warning(f"No such key in StationData: {key}")
                 continue
             elif key in self.PROTECTED_KEYS:
@@ -493,7 +493,7 @@ class StationData(StationMetaData):
             elif isinstance(current_val, str):
                 if not same_type:
                     if isinstance(val, list):
-                        if not current_val in val:
+                        if current_val not in val:
                             newval = val.insert(0, current_val)
                         self[key] = newval
                     else:
@@ -504,7 +504,7 @@ class StationData(StationMetaData):
                     vals_in = [x.strip() for x in val.split(";")]
 
                     for item in vals_in:
-                        if not item in current_val:
+                        if item not in current_val:
                             current_val += f";{item}"
                     self[key] = current_val
 
@@ -512,7 +512,7 @@ class StationData(StationMetaData):
                 if not same_type:
                     val = [val]
                 for item in val:
-                    if not item in current_val:
+                    if item not in current_val:
                         current_val.append(item)
                 self[key] = current_val
 
@@ -523,7 +523,7 @@ class StationData(StationMetaData):
                     self[key] = [current_val, val]
 
             elif isinstance(val, list):
-                if not current_val in val:
+                if current_val not in val:
                     self[key] = val.insert(0, current_val)
 
             elif current_val != val:
@@ -541,7 +541,7 @@ class StationData(StationMetaData):
 
     def _append_meta_item(self, key, val):
         """Add a metadata item"""
-        if not key in self or self[key] is None:
+        if key not in self or self[key] is None:
             self[key] = val
         else:
             self._merge_meta_item(key, val)
@@ -646,13 +646,13 @@ class StationData(StationMetaData):
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
         """
-        if not var_name in self.var_info or not var_name in other.var_info:
+        if var_name not in self.var_info or var_name not in other.var_info:
             raise MetaDataError(f"No variable meta information available for {var_name}")
 
         info_this = self.var_info[var_name]
         info_other = other.var_info[var_name]
         for key, val in info_other.items():
-            if not key in info_this or info_this[key] == None:
+            if key not in info_this or info_this[key] == None:
                 info_this[key] = val
             else:
                 if isinstance(info_this[key], str):
@@ -662,7 +662,7 @@ class StationData(StationMetaData):
                     vals_in = [x.strip() for x in val.split(";")]
 
                     for _val in vals_in:
-                        if not _val in vals:
+                        if _val not in vals:
                             info_this[key] = info_this[key] + f";{_val}"
                 else:
                     if isinstance(val, (list, np.ndarray)):
@@ -678,7 +678,7 @@ class StationData(StationMetaData):
                             "potential ambiguities"
                         )
                     if isinstance(info_this[key], list):
-                        if not val in info_this[key]:
+                        if val not in info_this[key]:
                             info_this[key].append(val)
                     else:
                         if not info_this[key] == val:
@@ -725,8 +725,8 @@ class StationData(StationMetaData):
                     self[var] = pd.Series(data, self.dtime)
                 except Exception as e:
                     raise Exception(f"Unexpected error: {repr(e)}.\nPlease debug...")
-            if not "ts_type" in info or info["ts_type"] is None:
-                if not self.ts_type in const.GRID_IO.TS_TYPES:
+            if "ts_type" not in info or info["ts_type"] is None:
+                if self.ts_type not in const.GRID_IO.TS_TYPES:
                     raise ValueError(f"Cannot identify ts_type for var {var} in {self}")
                 info["ts_type"] = self.ts_type
         self.ts_type = None
@@ -812,20 +812,20 @@ class StationData(StationMetaData):
         StationData
             this object merged with other object
         """
-        if not var_name in self:
+        if var_name not in self:
             raise VarNotAvailableError(
                 f"StationData object does not contain data for variable {var_name}"
             )
-        elif not var_name in other:
+        elif var_name not in other:
             raise VarNotAvailableError(
                 "Input StationData object does not contain data for variable {var_name}"
             )
-        elif not var_name in self.var_info:
+        elif var_name not in self.var_info:
             raise MetaDataError(
                 f"For merging of {var_name} data, variable specific meta "
                 f"data needs to be available in var_info dict"
             )
-        elif not var_name in other.var_info:
+        elif var_name not in other.var_info:
             raise MetaDataError(
                 f"For merging of {var_name} data, variable specific meta "
                 f"data needs to be available in var_info dict"
@@ -908,7 +908,7 @@ class StationData(StationMetaData):
             cannot be found in :attr:`var_info`)
         """
         # make sure there exists a var_info dict for this variable
-        if not var_name in self.var_info:
+        if var_name not in self.var_info:
             self.var_info[var_name] = {}
 
         # use variable specific entry if available
@@ -1116,7 +1116,7 @@ class StationData(StationMetaData):
             outdata = self
         else:
             outdata = self.copy()
-        if not var_name in outdata:
+        if var_name not in outdata:
             raise KeyError(f"Variable {var_name} does not exist")
 
         to_ts_type = TsType(ts_type)  # make sure to use AeroCom ts_type
@@ -1304,7 +1304,7 @@ class StationData(StationMetaData):
             raise DataExtractionError("Cannot intepret input for altitude...")
 
         elif isinstance(data, pd.Series) or len(self.dtime) == len(data):
-            if not "altitude" in self:
+            if "altitude" not in self:
                 raise ValueError("Missing altitude information")
             if not isinstance(data, pd.Series):
                 data = pd.Series(data, self.dtime)
@@ -1344,7 +1344,7 @@ class StationData(StationMetaData):
         ValueError
             if length of data array does not equal the length of the time array
         """
-        if not var_name in self:
+        if var_name not in self:
             raise KeyError(f"Variable {var_name} does not exist")
 
         data = self[var_name]
@@ -1356,7 +1356,7 @@ class StationData(StationMetaData):
                     "contain 2 dimensions of time "
                     "and altitude"
                 )
-            if not "altitude" in kwargs:
+            if "altitude" not in kwargs:
                 raise ValueError(
                     "please specify altitude range via input "
                     "arg: altitude, e.g. altitude=(100,110)"
@@ -1417,7 +1417,7 @@ class StationData(StationMetaData):
                 lbl += f" ({ts_type})"
             except Exception:
                 pass
-        if not "ax" in kwargs:
+        if "ax" not in kwargs:
             if "figsize" in kwargs:
                 fs = kwargs.pop("figsize")
             else:
@@ -1445,7 +1445,7 @@ class StationData(StationMetaData):
         try:
             if "units" in self.var_info[var_name]:
                 u = self.var_info[var_name]["units"]
-                if u is not None and not u in [1, "1"]:
+                if u is not None and u not in [1, "1"]:
                     ylabel += f" [{u}]"
         except Exception:
             logger.warning(f"Failed to access unit information for variable {var_name}")

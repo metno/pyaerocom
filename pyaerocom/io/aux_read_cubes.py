@@ -25,7 +25,7 @@ CUBE_MATHS = {
 
 
 def _apply_operator_cubes(cube1, cube2, operator_name, allow_coord_merge=True):
-    if not operator_name in CUBE_MATHS:
+    if operator_name not in CUBE_MATHS:
         raise NotImplementedError(f"No such arithmetic cube operator implemented: {operator_name}")
     fun = CUBE_MATHS[operator_name]
     try:

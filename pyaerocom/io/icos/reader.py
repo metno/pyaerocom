@@ -194,7 +194,7 @@ class ReadICOS(ReadCNEMC):
         station["dtime"] = ds["time"].values
 
         for var in ds.data_vars:
-            if not var in cls.PROVIDES_VARIABLES:
+            if var not in cls.PROVIDES_VARIABLES:
                 continue
             station[var] = ds[var].to_series()
             station["var_info"][var] = {"units": ds[var].units}

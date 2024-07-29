@@ -245,7 +245,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             Dict-like object containing the results.
 
         """
-        if not var_name in self.PROVIDES_VARIABLES:
+        if var_name not in self.PROVIDES_VARIABLES:
             raise ValueError(f"Invalid input variable {var_name}")
 
         # there's only one variable in the file
@@ -730,7 +730,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
-                if not var in data_obj.var_idx:
+                if var not in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
             idx += num_times

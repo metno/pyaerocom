@@ -207,7 +207,7 @@ def plot_scatter_aerocom(
     _ndig = abs(exponent(statistics["refdata_mean"]) - 2)
     if unit is None:
         unit = "N/D"
-    if not str(unit) in ["1", "no_unit"]:
+    if str(unit) not in ["1", "no_unit"]:
         var_str += f" [{unit}]"
 
     if fontsize_annot is None:

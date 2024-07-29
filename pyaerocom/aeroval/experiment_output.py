@@ -147,7 +147,7 @@ class ExperimentOutput(ProjectOutput):
         """
         bool: True if results are available for this experiment, else False
         """
-        if not self.exp_id in os.listdir(self.proj_dir):
+        if self.exp_id not in os.listdir(self.proj_dir):
             return False
         elif not len(self._get_json_output_files("map")) > 0:
             return False
@@ -227,16 +227,16 @@ class ExperimentOutput(ProjectOutput):
                 hm = {}
                 for vardisp, info in menu.items():
                     obs_dict = info["obs"]
-                    if not vardisp in hm:
+                    if vardisp not in hm:
                         hm[vardisp] = {}
                     for obs, vdict in obs_dict.items():
-                        if not obs in hm[vardisp]:
+                        if obs not in hm[vardisp]:
                             hm[vardisp][obs] = {}
                         for vert_code, mdict in vdict.items():
-                            if not vert_code in hm[vardisp][obs]:
+                            if vert_code not in hm[vardisp][obs]:
                                 hm[vardisp][obs][vert_code] = {}
                             for mod, minfo in mdict.items():
-                                if not mod in hm[vardisp][obs][vert_code]:
+                                if mod not in hm[vardisp][obs][vert_code]:
                                     hm[vardisp][obs][vert_code][mod] = {}
                                 modvar = minfo["model_var"]
                                 hm_data = data[vardisp][obs][vert_code][mod][modvar]
@@ -252,7 +252,7 @@ class ExperimentOutput(ProjectOutput):
         periods = self.cfg.time_cfg._get_all_period_strings()
         dummy_stats = _init_stats_dummy()
         for region in all_regions:
-            if not region in hm_data:
+            if region not in hm_data:
                 hm_data[region] = {}
                 for per in periods:
                     hm_data[region][per] = dummy_stats
@@ -362,7 +362,7 @@ class ExperimentOutput(ProjectOutput):
                 continue
             if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
                 rmmap.append(file_path)
-            elif not vert_code in vert_codes:
+            elif vert_code not in vert_codes:
                 rmmap.append(file_path)
 
         scatfiles = os.listdir(outdirs["scat"])
@@ -390,7 +390,7 @@ class ExperimentOutput(ProjectOutput):
         fname = os.path.basename(fp)
         spl = fname.split(".json")[0].split("_")
         vert_code, obsinfo = spl[-1], spl[-2]
-        if not vert_code in self.cfg.obs_cfg.all_vert_types:
+        if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
                 f"Invalid or outdated vert code {vert_code} in ts file {fp}. File will be deleted."
             )
@@ -546,7 +546,7 @@ class ExperimentOutput(ProjectOutput):
             avail = self._results_summary()
             all_vars = list(set(avail["ovar"] + avail["mvar"]))
             for var in all_vars:
-                if not var in ranges or ranges[var]["scale"] == []:
+                if var not in ranges or ranges[var]["scale"] == []:
                     ranges[var] = self._get_cmap_info(var)
             self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
@@ -760,15 +760,15 @@ class ExperimentOutput(ProjectOutput):
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
                 var = mcfg.get_varname_web(mod_var, obs_var)
-                if not var in new:
+                if var not in new:
                     new[var] = self._init_menu_entry(var)
 
-                if not obs_name in new[var]["obs"]:
+                if obs_name not in new[var]["obs"]:
                     new[var]["obs"][obs_name] = {}
 
-                if not vert_code in new[var]["obs"][obs_name]:
+                if vert_code not in new[var]["obs"][obs_name]:
                     new[var]["obs"][obs_name][vert_code] = {}
-                if not mod_name in new[var]["obs"][obs_name][vert_code]:
+                if mod_name not in new[var]["obs"][obs_name][vert_code]:
                     new[var]["obs"][obs_name][vert_code][mod_name] = {}
 
                 model_id = mcfg["model_id"]
@@ -1053,7 +1053,7 @@ class ExperimentOutput(ProjectOutput):
                     float(coldata.data.attrs["vertical_layer"]["end"])
                     + float(coldata.data.attrs["vertical_layer"]["start"])
                 ) / 2
-                if not "z" in current[model_name]:
+                if "z" not in current[model_name]:
                     current[model_name]["z"] = [midpoint]  # initalize with midpoint
 
                 if (
@@ -1065,9 +1065,9 @@ class ExperimentOutput(ProjectOutput):
                     for season in seasons:
                         perstr = f"{per}-{season}"
 
-                        if not perstr in current[model_name]["obs"][freq]:
+                        if perstr not in current[model_name]["obs"][freq]:
                             current[model_name]["obs"][freq][perstr] = []
-                        if not perstr in current[model_name]["mod"][freq]:
+                        if perstr not in current[model_name]["mod"][freq]:
                             current[model_name]["mod"][freq][perstr] = []
 
                         current[model_name]["obs"][freq][perstr].append(
@@ -1077,7 +1077,7 @@ class ExperimentOutput(ProjectOutput):
                             profile_viz["mod"][freq][perstr]
                         )
 
-                if not "metadata" in current[model_name]:
+                if "metadata" not in current[model_name]:
                     current[model_name]["metadata"] = {
                         "z_unit": coldata.data.attrs["altitude_units"],
                         "z_description": "Altitude ASL",

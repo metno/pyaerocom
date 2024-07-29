@@ -376,8 +376,8 @@ def test_StationData_remove_variable():
     assert var in stat.var_info
 
     stat.remove_variable(var)
-    assert not var in stat
-    assert not var in stat.var_info
+    assert var not in stat
+    assert var not in stat.var_info
 
 
 def test_StationData_remove_variable_error():

@@ -404,18 +404,18 @@ class ReadGridded(GriddedReader):
         for aux_var in self.AUX_REQUIRES:
             if "*" in aux_var:
                 continue
-            if not aux_var in _vars and self.check_compute_var(aux_var):
+            if aux_var not in _vars and self.check_compute_var(aux_var):
                 _vars.append(aux_var)
         for aux_var in self._aux_requires:
             if "*" in aux_var:
                 continue
-            if not aux_var in _vars and self.check_compute_var(aux_var):
+            if aux_var not in _vars and self.check_compute_var(aux_var):
                 _vars.append(aux_var)
 
         # also add standard names of 3D variables if not already in list
         for var in self._vars_3d:
             var = var.lower().replace("3d", "")
-            if not var in _vars:
+            if var not in _vars:
                 _vars.append(var)
         return _vars
 
@@ -478,7 +478,7 @@ class ReadGridded(GriddedReader):
             if fnmatch.fnmatch(var_name, pattern):
                 vars_required = self.AUX_REQUIRES[pattern]
                 for addvar in vars_required:
-                    if not "*" in addvar:
+                    if "*" not in addvar:
                         vars_found.append(addvar)
                     else:
                         _addvar = var_name
@@ -537,7 +537,7 @@ class ReadGridded(GriddedReader):
         callable
             function that is used to compute input variable
         """
-        if not var_to_compute in self._aux_avail:
+        if var_to_compute not in self._aux_avail:
             if not self.check_compute_var(var_to_compute):
                 raise VarNotAvailableError(f"Variable {var_to_compute} cannot be computed")
         return self._aux_avail[var_to_compute]
@@ -1022,7 +1022,7 @@ class ReadGridded(GriddedReader):
         DataFrame
             dataframe containing filtered dataset
         """
-        if not var_name in self.file_info.var_name.values:
+        if var_name not in self.file_info.var_name.values:
             raise DataCoverageError(
                 f"Variable {var_name} is not available in dataset {self.data_id}"
             )
@@ -1136,7 +1136,7 @@ class ReadGridded(GriddedReader):
         for file in self.files:
             finfo = self.file_convention.get_info_from_file(file)
             var_name = finfo["var_name"]
-            if not var_name in result:
+            if var_name not in result:
                 result[var_name] = var_info = {}
                 for key in finfo:
                     if key != "var_name":
@@ -1146,7 +1146,7 @@ class ReadGridded(GriddedReader):
             for key, val in finfo.items():
                 if key == "var_name":
                     continue
-                if val is not None and not val in var_info[key]:
+                if val is not None and val not in var_info[key]:
                     var_info[key].append(val)
         # now check auxiliary variables
         for var_to_compute in self.AUX_REQUIRES:
@@ -1298,7 +1298,7 @@ class ReadGridded(GriddedReader):
                 flex_ts_type=flex_ts_type,
             )
         except DataCoverageError:
-            if not vert_which in self.VERT_ALT:
+            if vert_which not in self.VERT_ALT:
                 raise
             vert_which = self.VERT_ALT[vert_which]
 
@@ -1329,7 +1329,7 @@ class ReadGridded(GriddedReader):
 
         if var_name in self.AUX_ADD_ARGS:
             for key, val in self.AUX_ADD_ARGS[var_name].items():
-                if not key in aux_add_args:
+                if key not in aux_add_args:
                     aux_add_args[key] = val
 
         if len(aux_add_args) > 0:
@@ -1737,16 +1737,16 @@ class ReadGridded(GriddedReader):
         """
         if not isinstance(constraint, dict):
             raise ValueError("Read constraint needs to be dict")
-        elif not "operator" in constraint:
+        elif "operator" not in constraint:
             raise ValueError(
                 f"Constraint requires specification of operator. "
                 f"Valid operators: {self.CONSTRAINT_OPERATORS}"
             )
-        elif not constraint["operator"] in self.CONSTRAINT_OPERATORS:
+        elif constraint["operator"] not in self.CONSTRAINT_OPERATORS:
             raise ValueError(
                 f"Invalid constraint operator. Choose from: {self.CONSTRAINT_OPERATORS}"
             )
-        elif not "filter_val" in constraint:
+        elif "filter_val" not in constraint:
             raise ValueError("constraint needs specification of filter_val")
         elif not isnumeric(constraint["filter_val"]):
             raise ValueError("Need numerical filter value")
@@ -2230,7 +2230,7 @@ class ReadGridded(GriddedReader):
         ValueError
             if results for ``var_name`` are not available
         """
-        if not var_name in self.data:
+        if var_name not in self.data:
             return self.read_var(var_name)
         # return self.data[var_name]
 

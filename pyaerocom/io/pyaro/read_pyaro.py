@@ -79,7 +79,7 @@ class ReadPyaro(ReadUngriddedBase):
 
     def _check_id(self):
         avail_readers = list_timeseries_engines()
-        if not self.config.data_id in avail_readers:
+        if self.config.data_id not in avail_readers:
             logger.warning(
                 f"Could not find {self.config.data_id} in list of available Pyaro readers: {avail_readers}"
             )

@@ -275,7 +275,7 @@ def check_dim_coords_cube(cube):
 def _check_cube_unitless(cube):
     """Make sure unit in Cube is 1 if variable is dimensionless"""
     var = cube.var_name
-    if not var in const.VARS:
+    if var not in const.VARS:
         raise VariableDefinitionError(f"No such pyaerocom default variable: {cube.var_name}")
 
     unit = cf_units.Unit(cube.units)
@@ -387,7 +387,7 @@ def check_time_coord(cube, ts_type, year):
     """
     if isinstance(ts_type, str):
         ts_type = TsType(ts_type)
-    if not "time" in get_coord_names_cube(cube):
+    if "time" not in get_coord_names_cube(cube):
         raise AttributeError("Cube does not contain time dimension")
     tdim = cube.coord("time")
 
