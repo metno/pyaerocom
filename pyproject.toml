@@ -160,18 +160,6 @@ ignore = ["E402", "E501"]
 #"tests/io/test_ebas_nasa_ames.py" = ["F811", "F401"]
 #"tests/test_trends_engine.py" = ["F401"]
 
-[tool.black]
-target-version = ['py310']
-extend-exclude = "pyaerocom-tutorials"
-line-length = 99
-
-[tool.isort]
-py_version = "310"
-profile = "black"
-src_paths = ["pyaerocom", "tests"]
-extend_skip = ["pyaerocom-tutorials"]
-line_length = 99
-
 [tool.mypy]
 python_version = "3.10"
 warn_unused_configs = true
