@@ -363,6 +363,12 @@ class Colocator:
             dictionaries comprising key / value pairs of obs variables and
             associated instances of :class:`ColocatedData`.
         """
+        calc_mda8 = False
+        if self.colocation_setup.main_freq in ["daily", "monthly", "yearly"]:
+            calc_mda8 = True
+        if any(x in ["daily", "monthly", "yearly"] for x in self.colocation_setup.freqs):
+            calc_mda8 = True
+
         data_out = defaultdict(lambda: dict())
         # ToDo: see if the following could be solved via custom context manager
         try:
@@ -383,7 +389,7 @@ class Colocator:
                 )  # note this can be ColocatedData or ColocatedDataLists
                 data_out[mod_var][obs_var] = coldata
 
-                if obs_var in MDA8_INPUT_VARS:
+                if calc_mda8 and (obs_var in MDA8_INPUT_VARS):
                     try:
                         mda8 = mda8_colocated_data(
                             coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"

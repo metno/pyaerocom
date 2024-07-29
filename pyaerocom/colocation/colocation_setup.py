@@ -423,6 +423,9 @@ class ColocationSetup(BaseModel):
 
     model_kwargs: dict = {}
 
+    main_freq: str = "monthly"
+    freqs: list[str] = ["monthly", "yearly"]
+
     @field_validator("model_kwargs")
     @classmethod
     def validate_kwargs(cls, v):
