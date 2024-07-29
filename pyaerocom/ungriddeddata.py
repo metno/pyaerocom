@@ -1456,7 +1456,7 @@ class UngriddedData:
                         if not low < high:
                             raise ValueError("First entry needs to be smaller than 2nd")
                         range_f[key] = [low, high]
-                    except Exception as e:
+                    except Exception:
                         list_f[key] = val
                 else:
                     list_f[key] = val

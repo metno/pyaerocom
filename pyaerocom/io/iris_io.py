@@ -602,7 +602,7 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
 
     try:
         cubes_concat = iris.cube.CubeList.concatenate_cube(cubes, error_on_mismatch)
-    except Exception as e:
+    except Exception:
         if _check_correct_dtypes_timedim_cube_list(cubes):
             cubes_concat = iris.cube.CubeList.concatenate_cube(cubes, error_on_mismatch)
         else:

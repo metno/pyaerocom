@@ -260,7 +260,7 @@ class ReadICPForest(ReadUngriddedBase):
                     self.metadata.plots.plots[country_code][plot_code][sampler_code].survey_years[
                         year
                     ]
-                except KeyError as e:
+                except KeyError:
                     logger.warning(
                         f"Year {year} can't be found for {country_code=}, {plot_code=}, {sampler_code=}. Only years found are {self.metadata.plots.plots[country_code][plot_code][sampler_code].survey_years.keys()}"
                     )
