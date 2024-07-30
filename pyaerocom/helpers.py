@@ -945,7 +945,7 @@ def merge_station_data(
     return merged
 
 
-def _get_pandas_freq_and_offset(freq: str) -> tuple[str, pd.Timedelta]:
+def _get_pandas_freq_and_offset(freq: str) -> tuple[str, pd.Timedelta | None]:
     """Helper to convert resampling info"""
     if freq in TS_TYPE_TO_PANDAS_FREQ:
         freq = TS_TYPE_TO_PANDAS_FREQ[freq]
