@@ -23,7 +23,7 @@ requires-python = ">=3.10"
 dependencies = [
     "aerovaldb@git+https://github.com/metno/aerovaldb.git@v0.0.14",
     "scitools-iris>=3.8.1",
-    "xarray>=2022.10.0",
+    "xarray>=2022.12.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
@@ -230,7 +230,7 @@ deps =
     pydantic ==2.7.1; python_version < "3.11"
     pyaro == 0.0.10; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
-    xarray ==2022.10.0; python_version < "3.11"
+    xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
 
 [testenv:lint]

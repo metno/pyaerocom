@@ -986,7 +986,7 @@ def make_datetime_index(start, stop, freq):
     freq, offset = _get_pandas_freq_and_offset(freq)
     idx = pd.date_range(start=start, end=stop, freq=freq)
     if offset is not None:
-        idx = idx + pd.Timedelta(offset)
+        idx = idx + offset
     return idx
 
 
