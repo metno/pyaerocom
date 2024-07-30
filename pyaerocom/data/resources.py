@@ -3,8 +3,8 @@ Compatibility layer between importlib.resources for Python 3.11 and older versio
 """
 
 import sys
+from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import ContextManager
 
 if sys.version_info >= (3, 11):
     from importlib import resources
@@ -12,7 +12,7 @@ else:
     import importlib_resources as resources
 
 
-def path(package: str, resource: str) -> ContextManager[Path]:
+def path(package: str, resource: str) -> AbstractContextManager[Path]:
     """A context manager providing a file path object to the resource.
     If the resource does not already exist on its own on the file system,
     e.g. it only exists in a zip-file, the resource will be extracted and
