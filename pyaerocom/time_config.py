@@ -48,9 +48,6 @@ PANDAS_RESAMPLE_OFFSETS = {
     "h": pd.Timedelta(30, "m"),
 }
 
-
-# PANDAS_RESAMPLE_OFFSETS = {"YS": pd.Timestamp("181D"), "MS": pd.Timestamp("14D"), "D": pd.Timestamp("12h"), "h": pd.Timestamp("30min")}
-
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 
 # frequency strings
