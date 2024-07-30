@@ -197,7 +197,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, format, lint, docs, build
+envlist = py310, py311, py312, lint, type-check, docs, build
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -233,14 +233,14 @@ deps =
     xarray ==2022.10.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
 
-[testenv:format]
+[testenv:lint]
 skip_install = True
 commands =
     pre-commit run --all-files --show-diff-on-failure
 deps =
     pre-commit
 
-[testenv:lint]
+[testenv:type-check]
 ignore_outcome = True
 commands =
     mypy pyaerocom/
