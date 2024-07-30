@@ -9,12 +9,12 @@ from pyaerocom.stationdata import StationData
 
 
 def _check_input_data_ids_and_vars(data_ids_and_vars):
-    if not isinstance(data_ids_and_vars, (list, tuple)):
+    if not isinstance(data_ids_and_vars, list | tuple):
         raise ValueError("Input data_ids_and_vars must be tuple or list")
     elif len(data_ids_and_vars) != 2:
         raise NotImplementedError("Currently, only (and exactly) 2 datasets can be combined...")
     for item in data_ids_and_vars:
-        if not isinstance(item, (list, tuple)):
+        if not isinstance(item, list | tuple):
             raise ValueError("Each entry in data_ids_and_vars must be tuple or list")
         elif len(item) != 3:
             raise ValueError("Each entry in data_ids_and_vars needs to contain exactly 3 items.")

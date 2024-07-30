@@ -150,7 +150,7 @@ class ObsEntry(BrowseDict):
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
 
-        if not self.is_superobs and not isinstance(self.obs_id, (str, dict)):
+        if not self.is_superobs and not isinstance(self.obs_id, str | dict):
             raise ValueError(
                 f"Invalid value for obs_id: {self.obs_id}. Need str or dict "
                 f"or specification of ids and variables via obs_compute_post"

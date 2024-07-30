@@ -351,10 +351,10 @@ class StationData(StationMetaData):
                 output[key] = val
             else:
                 val = self[key]
-                if force_single_value and not isinstance(val, (float, np.floating)):
-                    if isinstance(val, (int, np.integer)):
+                if force_single_value and not isinstance(val, float | np.floating):
+                    if isinstance(val, int | np.integer):
                         val = np.float64(val)
-                    elif isinstance(val, (list, np.ndarray)):
+                    elif isinstance(val, list | np.ndarray):
                         # ToDo: consider tolerance to be specified in input
                         # args.
                         maxdiff = np.max(val) - np.min(val)
@@ -436,7 +436,7 @@ class StationData(StationMetaData):
                 continue
 
             val = self[key]
-            if force_single_value and isinstance(val, (list, tuple, np.ndarray)):
+            if force_single_value and isinstance(val, list | tuple | np.ndarray):
                 if quality_check and not all([x == val[0] for x in val]):
                     raise MetaDataError(f"Inconsistencies in meta parameter {key}")
                 val = val[0]
@@ -460,7 +460,7 @@ class StationData(StationMetaData):
                     f"Only 1d numpy arrays are supported..."
                 )
             self[key] = list(val)
-        elif not isinstance(val, (dict, list, str)) and not isnumeric(val):
+        elif not isinstance(val, dict | list | str) and not isnumeric(val):
             try:
                 self[key] = to_datetime64(val)
             except Exception:
@@ -1129,7 +1129,7 @@ class StationData(StationMetaData):
 
         data = outdata[var_name]
 
-        if not isinstance(data, (pd.Series, xr.DataArray)):
+        if not isinstance(data, pd.Series | xr.DataArray):
             data = outdata.to_timeseries(var_name)
         resampler = TimeResampler(data)
         new = resampler.resample(
@@ -1305,7 +1305,7 @@ class StationData(StationMetaData):
             if not isinstance(data, pd.Series):
                 data = pd.Series(data, self.dtime)
             alt = self.altitude
-            if not isinstance(alt, (list, np.ndarray)):
+            if not isinstance(alt, list | np.ndarray):
                 raise AttributeError("need 1D altitude array")
             elif not len(alt) == len(data):
                 raise DataDimensionError(
