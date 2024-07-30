@@ -32,7 +32,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             logger.info(f"Processing Component: {var}")
             self.process_coldata(coldata[var])
 
-        logger.info(f"Time for wierd plot: {time.time() - start} sec")
+        logger.info(f"Time for weird plot: {time.time() - start} sec")
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
@@ -115,7 +115,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         for key in stats_list:
                             stats_list[key].append(stats[key])
 
-                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 

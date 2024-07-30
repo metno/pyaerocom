@@ -233,8 +233,6 @@ class ReadICPForest(ReadUngriddedBase):
                 ):
                     continue
 
-                sampler_type = self.metadata.deposition_type[sampler_code]
-
                 period = int(words[6])
                 start = words[4]
                 stop = words[5]

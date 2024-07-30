@@ -22,12 +22,8 @@ def translate_rate_units_implicit(unit_implicit, ts_type):
 
     # check if unit is explicitly defined as implicit and if yes add frequency
     # string
-    found = False
-    for imp_unit in DEP_IMPLICIT_UNITS:
-        if unit == imp_unit:
-            unit = f"{imp_unit} {freq_si}-1"
-            found = True
-            break
+    if unit in DEP_IMPLICIT_UNITS:
+        unit = f"{unit} {freq_si}-1"
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
     # ug m-2 h-1 for hourly data).

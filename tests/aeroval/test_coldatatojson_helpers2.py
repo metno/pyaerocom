@@ -337,6 +337,5 @@ def test__remove_less_covered(
 
 def test__remove_less_covered_error():
     cd = COLDATA["fake_3d_partial_trends_coltime"]()
-    with pytest.raises(TrendsError) as e:
-        new_cd = _remove_less_covered(cd, 1000)
-    assert str(e.value) == "No stations left after removing stations with fewer than 1000 years!"
+    with pytest.raises(TrendsError, match="No stations left"):
+        _remove_less_covered(cd, 1000)
