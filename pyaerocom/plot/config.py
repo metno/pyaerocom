@@ -92,7 +92,9 @@ class ColorTheme:
         """
         if theme_name not in _COLOR_THEMES:
             raise ValueError(
-                "Default theme with name %s is not available. Choose from %s" % _COLOR_THEMES
+                "Default theme with name {} is not available. Choose from {}".format(
+                    *_COLOR_THEMES
+                )
             )
         self.from_dict(_COLOR_THEMES[theme_name])
 
@@ -140,5 +142,5 @@ COLOR_THEME = ColorTheme(DEFAULT_THEME)
 def get_color_theme(theme_name="dark"):
     # Settings for colormap (use perceptually uniform colormaps)
     if theme_name not in _COLOR_THEMES:
-        raise ValueError("Invalid input for theme_name, choose from %s" % _COLOR_THEMES)
+        raise ValueError(f"Invalid input for theme_name, choose from {_COLOR_THEMES}")
     return ColorTheme(theme_name)

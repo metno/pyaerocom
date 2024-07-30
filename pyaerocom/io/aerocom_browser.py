@@ -123,7 +123,7 @@ class AerocomBrowser(BrowseDict):
                                     return _dir
 
             else:
-                _msgs.append("directory %s does not exist\n" % search_dir)
+                _msgs.append(f"directory {search_dir} does not exist\n")
         for msg in _msgs:
             logger.info(msg)
 

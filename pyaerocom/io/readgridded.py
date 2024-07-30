@@ -1186,12 +1186,11 @@ class ReadGridded(GriddedReader):
         for k, v in kwargs.items():
             if k in self.__dict__:
                 self.logger.info(
-                    "Updating %s in ModelImportResult for model %s"
-                    "New value: %s" % (k, self.data_id, v)
+                    f"Updating {k} in ModelImportResult for model {self.data_id}. New value: {v}"
                 )
                 self.__dict__[k] = v
             else:
-                self.logger.info("Ignoring key %s in ModelImportResult.update()" % k)
+                self.logger.info(f"Ignoring key {k} in ModelImportResult.update()")
 
     def concatenate_cubes(self, cubes):
         """Concatenate list of cubes into one cube

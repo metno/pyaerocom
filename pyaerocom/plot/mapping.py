@@ -451,7 +451,7 @@ def plot_map_aerocom(data, region, **kwargs):
     if not isinstance(data, GriddedData):
         raise ValueError(
             "This plotting method needs an instance of pyaerocom "
-            "GriddedData on input, got: %s" % type(data)
+            f"GriddedData on input, got: {type(data)}"
         )
 
     if isinstance(region, str):
