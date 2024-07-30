@@ -358,9 +358,8 @@ def test_ReadMscwCtm_has_var(reader, var_name, value):
 
 
 def test_ReadMscwCtm_has_var_error(reader):
-    with pytest.raises(exc.VariableDefinitionError) as e:
+    with pytest.raises(exc.VariableDefinitionError, match="input variable blaa is not supported"):
         reader.has_var("blaa")
-    assert str(e.value) == "Error (VarCollection): input variable blaa is not supported"
 
 
 def test_ReadMscwCtm__str__():
@@ -372,7 +371,7 @@ def test_ReadMscwCtm__repr__():
 
 
 def test_ReadEMEP__init__():
-    with pytest.warns(DeprecationWarning) as e:
+    with pytest.warns(DeprecationWarning, match=f"use ReadMscwCtm instead"):
         assert isinstance(ReadEMEP(), ReadMscwCtm)
 
 

@@ -303,7 +303,7 @@ def test_StationData_merge_meta_same_station(
 
 
 def test_StationData_merge_meta_same_station_error():
-    with pytest.raises(CoordinateError, match="differ by more than 0.001 km.") as e:
+    with pytest.raises(CoordinateError, match="differ by more than 0.001 km."):
         stat1.merge_meta_same_station(
             stat2, coord_tol_km=0.001, check_coords=True, inplace=False, raise_on_error=True
         )

@@ -150,11 +150,7 @@ ignore = ["E402", "E501"]
 "__init__.py" = ["F401"]
 "cli.py" = ["UP007"]
 "cli_mos.py" = ["UP007"]
-"aeolus_l2a.py" = [
-    "F821", # https://docs.astral.sh/ruff/rules/undefined-name/
-    "F841", # https://docs.astral.sh/ruff/rules/unused-variable/
-]
-"sentinel5p.py" = [
+"*/extras/satellite_l2/*.py" = [
     "F821", # https://docs.astral.sh/ruff/rules/undefined-name/
     "F841", # https://docs.astral.sh/ruff/rules/unused-variable/
 ]

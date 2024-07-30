@@ -308,7 +308,7 @@ class AltitudeAccess:
             if coord in self:
                 continue
             try:
-                coord_info = const.COORDINFO[coord]
+                const.COORDINFO[coord]
             except VariableDefinitionError:
                 raise CoordinateNameError(f"Coordinate {coord} is not supported by pyaerocom.")
             # 1. check if coordinate is assigned in data object directly

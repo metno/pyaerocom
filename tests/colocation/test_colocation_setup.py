@@ -69,12 +69,8 @@ def test_ColocationSetup(stp: ColocationSetup, should_be: dict):
 
 
 def test_ColocationSetup_model_kwargs_validationerror() -> None:
-    stp_dict = default_setup
+    with pytest.raises(ValidationError, match="Input should be a valid dictionary"):
+        ColocationSetup(**default_setup, model_kwargs="not a dict")
 
-    with pytest.raises(ValidationError):
-        stp_dict["model_kwargs"] = "not a dict"
-        stp = ColocationSetup(**stp_dict)
-
-    with pytest.raises(ValidationError):
-        stp_dict["model_kwargs"] = {"emep_vars": {}, "ts_type": "daily"}
-        stp = ColocationSetup(**stp_dict)
+    with pytest.raises(ValidationError, match="Key ts_type not allowed in model_kwargs "):
+        ColocationSetup(**default_setup, model_kwargs={"emep_vars": {}, "ts_type": "daily"})

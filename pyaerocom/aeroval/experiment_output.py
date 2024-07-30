@@ -313,7 +313,6 @@ class ExperimentOutput(ProjectOutput):
     def _results_summary(self) -> dict[str, list[str]]:
         res = [[], [], [], [], [], []]
         files = self._get_json_output_files("map")
-        tab = []
         for file in files:
             map_info = self._info_from_map_file(file)
             for i, entry in enumerate(map_info):

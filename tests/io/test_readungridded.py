@@ -182,8 +182,7 @@ def test_config_name_already_exists(pyaro_testconfig):
     config.name = data_ids[0]
 
     with pytest.raises(NameError, match="cannot have the same name as an included dataset"):
-        reader = ReadUngridded(configs=pyaro_testconfig)
+        ReadUngridded(configs=pyaro_testconfig)
 
     with pytest.raises(NameError, match="cannot have the same name as an included dataset"):
-        reader = ReadUngridded(data_ids=data_ids)
-        data = reader.read(configs=config)
+        ReadUngridded(data_ids=data_ids).read(configs=config)
