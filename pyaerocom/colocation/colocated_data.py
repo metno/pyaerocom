@@ -151,7 +151,7 @@ class ColocatedData(BaseModel):
     def __init__(
         self, data: Path | str | xr.DataArray | np.ndarray | None = None, **kwargs
     ) -> None:
-        super(ColocatedData, self).__init__(data=data, **kwargs)
+        super().__init__(data=data, **kwargs)
 
     #################################
     ##        Attributes
