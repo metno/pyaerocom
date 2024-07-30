@@ -42,3 +42,5 @@ edb47cfdecc9e0eafdc5d23de85efbdc7dfa38c4
 93f2a57c2ec3d73eb895c4e4e63fa31c6aaee540
 # 2024-07-30: Convert to f-string
 9a80795c3ec6efad329bec01581f614104291f62
+# 2024-07-30: Replace with `is None`
+4562a88849833335ee158bf58433f93a05dbde98
