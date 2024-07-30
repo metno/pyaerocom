@@ -1,9 +1,10 @@
 import logging
 import os
 import sys
+from collections.abc import Callable
 from functools import cached_property
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 import pandas as pd
 from pydantic import (
