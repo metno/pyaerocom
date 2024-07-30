@@ -371,7 +371,7 @@ def test_ReadMscwCtm__repr__():
 
 
 def test_ReadEMEP__init__():
-    with pytest.warns(DeprecationWarning, match=f"use ReadMscwCtm instead"):
+    with pytest.warns(DeprecationWarning, match="use ReadMscwCtm instead"):
         assert isinstance(ReadEMEP(), ReadMscwCtm)
 
 
