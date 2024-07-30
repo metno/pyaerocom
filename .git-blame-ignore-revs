@@ -74,3 +74,5 @@ a82a63067a671931821c1c731277e1e7eb1bbc09
 e19876ff5653ceddcb047934989ad09ab7ecef30
 # 2024-07-30: Define functions instead of assign lambdas, E731
 nc5a8b4b2b709d9b7adae01e253f638d7d8852ee3
+# 2024-07-30: f-string without any placeholders, F541
+96fae16fbb35ad9f87d93cbe9aaccb3ef05180ec
