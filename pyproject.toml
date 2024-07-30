@@ -140,7 +140,7 @@ exclude_lines = [
 include = ["pyproject.toml", "pyaerocom/**/*.py", "tests/**/*.py"]
 target-version = "py310"
 line-length = 99
-extend-exclude = ["pyaerocom-tutorials"]
+extend-exclude = ["pyaerocom-tutorials", "scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I002", "UP"]
@@ -155,7 +155,6 @@ ignore = ["E402", "E501"]
     "F821", # https://docs.astral.sh/ruff/rules/undefined-name/
     "F841", # https://docs.astral.sh/ruff/rules/unused-variable/
 ]
-
 
 [tool.mypy]
 python_version = "3.10"
@@ -235,6 +234,7 @@ deps =
     pandas ==1.5.3; python_version < "3.11"
 
 [testenv:format]
+skip_install = True
 commands =
     pre-commit run --all-files --show-diff-on-failure
 deps =
@@ -243,12 +243,9 @@ deps =
 [testenv:lint]
 ignore_outcome = True
 commands =
-    ruff check --statistics
     mypy pyaerocom/
 extras =
     lint
-deps =
-    ruff
 
 [testenv:docs]
 commands =
