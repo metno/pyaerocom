@@ -203,15 +203,12 @@ skip_missing_interpreters = True
 isolated_build = True
 requires =
     setuptools >=40.6.0,<=60.9.3
-cython > 0.29.15
+    cython > 0.29.15
 
-"__init__.py" = ["F401"]
-"cli.py" = ["UP007"]
-"cli_mos.py" = ["UP007"]
 [testenv]
 commands_pre =
     python --version
-python -m pip freeze --all
+    python -m pip freeze --all
 commands =
     python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
@@ -220,22 +217,22 @@ setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 deps =
     scitools-iris ==3.8.1; python_version < "3.11"
-cartopy ==0.21.1; python_version < "3.11"
-matplotlib ==3.7.1; python_version < "3.11"
-scipy ==1.10.1; python_version < "3.11"
-numpy ==1.24.4; python_version < "3.11"
-seaborn ==0.12.2; python_version < "3.11"
-geonum ==1.5.0; python_version < "3.11"
-typer ==0.7.0; python_version < "3.11"
-tomli ==2.0.1; python_version < "3.11"
-importlib-resources ==5.10; python_version < "3.11"
-typing-extensions ==4.6.1; python_version < "3.11"
-cf-units ==3.1; python_version < "3.11"
-pydantic ==2.7.1; python_version < "3.11"
-pyaro == 0.0.10; python_version < "3.11"
-pooch ==1.7.0; python_version < "3.11"
-xarray ==2022.10.0; python_version < "3.11"
-pandas ==1.5.3; python_version < "3.11"
+    cartopy ==0.21.1; python_version < "3.11"
+    matplotlib ==3.7.1; python_version < "3.11"
+    scipy ==1.10.1; python_version < "3.11"
+    numpy ==1.24.4; python_version < "3.11"
+    seaborn ==0.12.2; python_version < "3.11"
+    geonum ==1.5.0; python_version < "3.11"
+    typer ==0.7.0; python_version < "3.11"
+    tomli ==2.0.1; python_version < "3.11"
+    importlib-resources ==5.10; python_version < "3.11"
+    typing-extensions ==4.6.1; python_version < "3.11"
+    cf-units ==3.1; python_version < "3.11"
+    pydantic ==2.7.1; python_version < "3.11"
+    pyaro == 0.0.10; python_version < "3.11"
+    pooch ==1.7.0; python_version < "3.11"
+    xarray ==2022.10.0; python_version < "3.11"
+    pandas ==1.5.3; python_version < "3.11"
 
 [testenv:format]
 commands =
@@ -247,7 +244,7 @@ deps =
 ignore_outcome = True
 commands =
     ruff check --statistics
-mypy pyaerocom/
+    mypy pyaerocom/
 extras =
     lint
 deps =
