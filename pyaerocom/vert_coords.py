@@ -275,8 +275,8 @@ class AltitudeAccess:
     @property
     def coord_list(self):
         """List of AeroCom coordinate names for altitude access"""
-        l = self.ADD_FILE_VARS + list(VerticalCoordinate.NAMES_SUPPORTED.values())
-        return list(dict.fromkeys(l))
+        name = self.ADD_FILE_VARS + list(VerticalCoordinate.NAMES_SUPPORTED.values())
+        return sorted(set(name))
 
     def search_aux_coords(self, coord_list) -> bool:
         """Search and assign coordinates provided by input list
