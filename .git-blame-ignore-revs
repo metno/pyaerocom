@@ -40,3 +40,5 @@ bf26bc28591df88bcfe738a4e9da935d37fc0b66
 edb47cfdecc9e0eafdc5d23de85efbdc7dfa38c4
 # 2024-07-29: Convert to `X | Y`, UP007
 93f2a57c2ec3d73eb895c4e4e63fa31c6aaee540
+# 2024-07-30: Convert to f-string
+9a80795c3ec6efad329bec01581f614104291f62
