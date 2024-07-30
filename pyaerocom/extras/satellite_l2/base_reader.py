@@ -170,7 +170,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         try:
             self.LOCAL_TMP_DIR = const.LOCAL_TMP_DIR
-        except:
+        except Exception:
             self.LOCAL_TMP_DIR = const.CACHEDIR
 
         # some gridding constants
@@ -653,7 +653,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         try:
             for name in global_attributes:
                 ds.attrs[name] = global_attributes[name]
-        except:
+        except Exception:
             pass
 
         ds.to_netcdf(netcdf_filename)

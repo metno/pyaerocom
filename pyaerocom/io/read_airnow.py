@@ -289,7 +289,7 @@ class ReadAirNow(ReadUngriddedBase):
                 on_bad_lines="skip",
                 dtype={2: str, 4: float, 7: float},
             )
-        except:
+        except Exception:
             encoding = self.get_file_encoding(file)
             df = pd.read_csv(
                 file,
@@ -485,7 +485,7 @@ class ReadAirNow(ReadUngriddedBase):
             encoding = "cp863"
             with open(filename, encoding=encoding) as infile:
                 linedata = infile.readlines()
-        except:
+        except Exception:
             logger.info(f"unforeseen encoding in file {filename}! Trying to determine encoding")
             try:
                 encoding = self.get_file_encoding(filename)

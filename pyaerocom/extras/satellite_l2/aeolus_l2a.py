@@ -1521,7 +1521,7 @@ class ReadL2Data(ReadL2DataBase):
         try:
             for name in global_attributes:
                 ds.attrs[name] = global_attributes[name]
-        except:
+        except Exception:
             pass
 
         # temp = 'writing file: {}'.format(netcdf_filename)
@@ -2456,7 +2456,7 @@ class ReadL2Data(ReadL2DataBase):
             fig.subplots_adjust(hspace=0.3)
             try:
                 axs = _axs.flatten()
-            except:
+            except Exception:
                 axs = [_axs]
 
             # levels = MaxNLocator(nbins=15).tick_values(np.nanmin(out_arr), np.nanmax(out_arr))
@@ -2741,7 +2741,7 @@ class ReadL2Data(ReadL2DataBase):
             fig.subplots_adjust(hspace=0.3)
             try:
                 axs = _axs.flatten()
-            except:
+            except Exception:
                 axs = [_axs]
 
             # levels = MaxNLocator(nbins=15).tick_values(np.nanmin(out_arr), np.nanmax(out_arr))
@@ -3071,7 +3071,7 @@ class ReadL2Data(ReadL2DataBase):
 
         try:
             timeno = len(times)
-        except:
+        except Exception:
             pass
 
         if levelno is None or levelno == 1 or levelno == 0:
@@ -3142,7 +3142,7 @@ class ReadL2Data(ReadL2DataBase):
                 gridded_var_data[self._ALTITUDENAME] = levels
             try:
                 gridded_var_data[self._TIME_NAME] = times
-            except:
+            except Exception:
                 gridded_var_data[self._TIME_NAME] = init_time
             for var in vars:
                 data_for_gridding[var] = grid_data_prot.copy()
@@ -3364,7 +3364,7 @@ class ReadL2Data(ReadL2DataBase):
                             # height_idx = index of satellite data
                             try:
                                 mean_idx[lowest_idx[0]].append(lon_match_indexes[match_idx])
-                            except:
+                            except Exception:
                                 mean_idx[lowest_idx[0]] = [lon_match_indexes[match_idx]]
 
                         # now apply the height index array to the variables and calculate the height means

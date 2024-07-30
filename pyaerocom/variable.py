@@ -531,7 +531,7 @@ class Variable:
         if key in self._TYPE_CONV:
             try:
                 val = self._TYPE_CONV[key](val)
-            except:
+            except Exception:
                 pass
         elif key == "units" and val == "None":
             val = "1"
