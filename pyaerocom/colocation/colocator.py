@@ -583,7 +583,7 @@ class Colocator:
 
     def _check_model_add_vars(self):
         for ovar, mvars in self.colocation_setup.model_add_vars.items():
-            if not isinstance(mvars, (list, tuple)):
+            if not isinstance(mvars, list | tuple):
                 raise ValueError("Values of model_add_vars need to be list or tuple")
             elif not all([isinstance(x, str) for x in mvars]):
                 raise ValueError("Values of model_add_vars need to be list of strings")

@@ -55,19 +55,19 @@ class TimeResampler:
 
     @input_data.setter
     def input_data(self, val):
-        if not isinstance(val, (pd.Series, xarr.DataArray)):
+        if not isinstance(val, pd.Series | xarr.DataArray):
             raise ValueError("Invalid input: need Series or DataArray")
         self._input_data = val
 
     @property
     def fun(self):
-        """Resamplig method (depends on input data type)"""
+        """Resampling method (depends on input data type)"""
         if isinstance(self.input_data, pd.Series):
             return resample_timeseries
         return resample_time_dataarray
 
     def _get_resample_how(self, fr, to, how):
-        if not isinstance(how, (str, dict)):
+        if not isinstance(how, str | dict):
             val = self.DEFAULT_HOW
         elif isinstance(how, dict):
             if to.val in how and fr.val in how[to.val]:

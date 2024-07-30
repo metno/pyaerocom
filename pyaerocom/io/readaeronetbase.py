@@ -381,7 +381,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 statmeta = station_data.get_meta()
             except StationCoordinateError as e:
                 stat = station_data.station_name
-                if isinstance(stat, (list, np.ndarray)):
+                if isinstance(stat, list | np.ndarray):
                     stat = stat[0]
                 logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1

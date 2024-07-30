@@ -379,7 +379,7 @@ class ReadCAMS2_83(GriddedReader):
 
     @daterange.setter
     def daterange(self, dates: pd.DatetimeIndex | list[datetime] | tuple[datetime]):
-        if not isinstance(dates, (pd.DatetimeIndex, list, tuple)):
+        if not isinstance(dates, pd.DatetimeIndex | list | tuple):
             raise TypeError(f"{dates} need to be a pandas DatetimeIndex or 2 datetimes")
 
         self._daterange = parse_daterange(dates)

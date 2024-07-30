@@ -738,7 +738,7 @@ def isrange(val):
     bool
         True, if input value corresponds to a range, else False.
     """
-    if isinstance(val, (list, np.ndarray, tuple)):
+    if isinstance(val, list | np.ndarray | tuple):
         if len(val) == 2:
             return True
         return False
@@ -1259,7 +1259,7 @@ def to_pandas_timestamp(value):
         value = str(value)
     if isinstance(value, pd.Timestamp):
         return value
-    elif isinstance(value, (str, np.datetime64, datetime, date)):
+    elif isinstance(value, str | np.datetime64 | datetime | date):
         return pd.Timestamp(value)
     else:
         try:

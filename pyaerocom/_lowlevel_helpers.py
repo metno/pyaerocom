@@ -378,7 +378,7 @@ class BrowseDict(MutableMapping):
         None
 
         """
-        if not isinstance(other, (dict, BrowseDict)):
+        if not isinstance(other, dict | BrowseDict):
             raise ValueError("need dict-like object")
         for key, val in other.items():
             if key in self:
@@ -462,7 +462,7 @@ class NestedContainer(BrowseDict):
         if key in self:
             objs.append(self)
         for k, v in self.items():
-            if isinstance(v, (dict, BrowseDict)) and key in v:
+            if isinstance(v, dict | BrowseDict) and key in v:
                 objs.append(v)
             if len(objs) > 1:
                 print(key, "is contained in multiple containers ", objs)
@@ -474,7 +474,7 @@ class NestedContainer(BrowseDict):
             keys.append(key)
             if isinstance(val, NestedContainer):
                 keys.extend(val.keys_unnested())
-            elif isinstance(val, (ConstrainedContainer, dict)):
+            elif isinstance(val, ConstrainedContainer | dict):
                 for subkey, subval in val.items():
                     keys.append(subkey)
         return keys
@@ -689,7 +689,7 @@ def dict_to_str(dictionary, indent=0, ignore_null=False):
     for key, val in dictionary.items():
         if ignore_null and val is None:
             continue
-        elif isinstance(val, (dict, BrowseDict)):
+        elif isinstance(val, dict | BrowseDict):
             val = dict_to_str(val, indent + 2)
         elif isinstance(val, list):
             val = list_to_shortstr(val, indent=indent)

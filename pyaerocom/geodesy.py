@@ -99,7 +99,7 @@ def get_country_info_coords(coords):
     """
     if isinstance(coords, np.ndarray):
         coords = list(coords)
-    if not isinstance(coords, (list, tuple)):
+    if not isinstance(coords, list | tuple):
         raise ValueError("Invalid input for coords, need list or tuple or array")
 
     geo = Geocoder_Reverse_NE()

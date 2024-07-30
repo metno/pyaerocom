@@ -36,14 +36,14 @@ def round_floats(in_data: float | dict | list | tuple) -> float | dict | list | 
 
     """
 
-    if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64)):
-        # np.float64, is an aliase for the Python float, but is mentioned here for completeness
+    if isinstance(in_data, float | np.float32 | np.float16 | np.float128 | np.float64):
+        # np.float64, is an alias for the Python float, but is mentioned here for completeness
         # note that round and np.round yield different results with the Python round being mathematically correct
         # details are here:
         # https://numpy.org/doc/stable/reference/generated/numpy.around.html#numpy.around
         # use numpy around for now
         return np.around(in_data, FLOAT_DECIMALS)
-    elif isinstance(in_data, (list, tuple)):
+    elif isinstance(in_data, list | tuple):
         return [round_floats(v) for v in in_data]
     elif isinstance(in_data, dict):
         return {k: round_floats(v) for k, v in in_data.items()}
