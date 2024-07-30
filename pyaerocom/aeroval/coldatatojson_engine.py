@@ -1,5 +1,4 @@
 import logging
-import os
 from time import time
 
 from cf_units import Unit
