@@ -130,7 +130,7 @@ def test_GriddedData_resample_time(data_tm5: GriddedData):
 def test_GriddedData_interpolate(data_tm5: GriddedData):
     data = data_tm5.interpolate(latitude=TESTLATS, longitude=TESTLONS)
 
-    assert type(data) == GriddedData
+    assert type(data) is GriddedData
     assert data.shape == (12, 2, 2)
 
     assert_allclose(data.mean(False), 0.13877, rtol=TEST_RTOL)
