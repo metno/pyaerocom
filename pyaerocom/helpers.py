@@ -1094,7 +1094,7 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         how = "mean"
     elif "percentile" in how:
         p = int(how.split("percentile")[0])
-        how = lambda x: np.nanpercentile(x, p)
+        how = lambda x: np.nanpercentile(x, p)  # noqa: E731
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
     resampler = ts.resample(freq)

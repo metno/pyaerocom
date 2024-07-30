@@ -2257,4 +2257,5 @@ class ReadGridded(GriddedReader):
         return self.data_id
 
 
-is_3d = lambda var_name: True if "3d" in var_name.lower() else False
+def is_3d(var_name: str) -> bool:
+    return "3d" in var_name.lower()

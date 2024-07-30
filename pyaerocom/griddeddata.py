@@ -887,9 +887,8 @@ class GriddedData:
         list
 
         """
-        toyear = lambda x: int(str(x.astype("datetime64[Y]")))
-
-        return [x for x in set(map(toyear, self.time_stamps()))]
+        to_year = lambda x: int(str(x.astype("datetime64[Y]")))  # noqa: E731
+        return sorted(set(to_year(date) for date in self.time_stamps()))
 
     def split_years(self, years=None):
         """

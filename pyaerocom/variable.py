@@ -24,6 +24,18 @@ from pyaerocom.varnameinfo import VarNameInfo
 logger = logging.getLogger(__name__)
 
 
+def literal_eval_list(val: str):
+    return list(literal_eval(val))
+
+
+def str2list(val: str) -> list[str]:
+    return [x.strip() for x in val.split(",")]
+
+
+def str2bool(val: str) -> bool:
+    return val.lower() in {"true", "1", "t", "yes"}
+
+
 class Variable:
     """Interface that specifies default settings for a variable
 
@@ -69,7 +81,8 @@ class Variable:
         lower limit of allowed value range
     upper_limit : float
         upper limit of allowed value range
-    obs_wavelength_tol_nm : float
+    obs_wavelength_tol_nm : float    literal_eval_list = lambda val: list(literal_eval(val))
+
         wavelength tolerance (+/-) for reading of obsdata. Default is 10, i.e.
         if this variable is defined at 550 nm and obsdata contains measured
         values of this quantity within interval of 540 - 560, then these data
@@ -101,10 +114,6 @@ class Variable:
     map_cbar_ticks : :obj:`list`, optional
         colorbar ticks
     """
-
-    literal_eval_list = lambda val: list(literal_eval(val))
-    str2list = lambda val: [x.strip() for x in val.split(",")]
-    str2bool = lambda val: val.lower() in ("true", "1", "t", "yes")
 
     _TYPE_CONV = {
         "wavelength_nm": float,
