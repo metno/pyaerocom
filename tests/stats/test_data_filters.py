@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pyaerocom.stats.data_filters import *
+from pyaerocom.stats.data_filters import FilterByLimit, FilterNaN
 
 
 @pytest.mark.parametrize(
