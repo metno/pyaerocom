@@ -396,7 +396,7 @@ class Plots:
     def read_file(self, altitudes: dict[str, int]) -> dict[int, dict[int, dict[int, Plot]]]:
         plots: dict[int, dict[int, dict[int, Plot]]] = {}
         print("Starting to read plot metadata")
-        with open(self.plot_file, "r") as f:
+        with open(self.plot_file) as f:
             f.readline()
             for line in f:
                 words = line.split(";")

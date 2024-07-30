@@ -91,7 +91,7 @@ class PyaroConfig(BaseModel):
         if not filepath.exists():
             return {}
 
-        with open(filepath, "r") as f:
+        with filepath.open() as f:
             data = yaml.safe_load(f)
 
         return data

@@ -214,7 +214,7 @@ class ReadICPForest(ReadUngriddedBase):
         if vars_to_retrieve is None:
             vars_to_retrieve = self.PROVIDES_VARIABLES
 
-        with open(filename, "r") as f:
+        with open(filename) as f:
             f.readline()
 
             for line_nr, line in tqdm(enumerate(f)):
