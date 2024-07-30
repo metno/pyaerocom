@@ -1,8 +1,14 @@
 import numpy as np
 import pytest
 
+from pyaerocom.exceptions import CoordinateNameError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.vert_coords import *
+from pyaerocom.vert_coords import (
+    AltitudeAccess,
+    VerticalCoordinate,
+    atmosphere_hybrid_sigma_pressure_coordinate_to_pressure,
+    atmosphere_sigma_coordinate_to_pressure,
+)
 
 
 @pytest.fixture
@@ -112,10 +118,9 @@ def test_VerticalCoordinate_calc_pressure_exceptions():
         vert.calc_pressure(np.ones(5))
 
 
-@pytest.mark.parametrize("name,exception", (("gph", ValueError),))
-def test_VerticalCoordinate_lev_increases_with_alt_exception(name: str, exception: Exception):
-    vert = VerticalCoordinate(name)
-    with pytest.raises(exception):
+def test_VerticalCoordinate_lev_increases_with_alt_exception():
+    vert = VerticalCoordinate("gph")
+    with pytest.raises(ValueError, match="Failed to access information"):
         vert.lev_increases_with_alt
 
 
@@ -141,13 +146,13 @@ def test_AltitudeAccess_exceptions():
 
 
 def test_AltitudeAccess_search_aux_coords(alt: AltitudeAccess):
-    with pytest.raises(CoordinateNameError):
-        alt.search_aux_coords(["gkjfdshglk"])
-
-
-def test_AltitudeAccess_search_aux_coords(alt: AltitudeAccess):
     assert alt.search_aux_coords(["lat"])
     assert alt.search_aux_coords("lon")
     assert not alt.search_aux_coords("z")
     assert alt.search_aux_coords(["lat", "lon", "time"])
     assert not alt.search_aux_coords(["lat", "lon", "time", "z"])
+
+
+def test_AltitudeAccess_search_aux_coords_exception(alt: AltitudeAccess):
+    with pytest.raises(CoordinateNameError, match=r"Coordinate .* is not supported"):
+        alt.search_aux_coords(["gkjfdshglk"])

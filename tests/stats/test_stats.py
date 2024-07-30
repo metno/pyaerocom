@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pyaerocom.stats.implementations import *
+from pyaerocom.stats.implementations import stat_mb, stat_R, stat_R_kendall
 from pyaerocom.stats.stats import calculate_statistics
 
 
