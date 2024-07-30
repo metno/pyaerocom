@@ -3027,13 +3027,7 @@ class UngriddedData:
             return StationData()
 
     def __repr__(self):
-        return "{} <networks: {}; vars: {}; instruments: {}; No. of metadata units: {}".format(
-            type(self).__name__,
-            self.contains_datasets,
-            self.contains_vars,
-            self.contains_instruments,
-            len(self.metadata),
-        )
+        return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}"
 
     def __getitem__(self, key):
         if isnumeric(key) or key in self.unique_station_names:
