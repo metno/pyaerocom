@@ -78,3 +78,5 @@ nc5a8b4b2b709d9b7adae01e253f638d7d8852ee3
 96fae16fbb35ad9f87d93cbe9aaccb3ef05180ec
 # 2024-07-30: Unnecessary `int`/`float` call, UP018
 c23eebb590baa98771a66b9be5147aa137829af1
+# 2024-07-30: Use `super()` instead of `super(__class__, self)`, UP008
+6c6af205832e38de344111861b3ae2b0651bd8a1
