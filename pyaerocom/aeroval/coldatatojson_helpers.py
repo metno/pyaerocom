@@ -3,9 +3,10 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 
 import logging
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Callable, Literal
+from typing import Literal
 
 import numpy as np
 import pandas as pd

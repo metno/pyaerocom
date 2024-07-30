@@ -8,8 +8,9 @@ import os
 import traceback
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 from cf_units import Unit
