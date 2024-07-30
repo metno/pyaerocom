@@ -651,7 +651,7 @@ class StationData(StationMetaData):
         info_this = self.var_info[var_name]
         info_other = other.var_info[var_name]
         for key, val in info_other.items():
-            if key not in info_this or info_this[key] == None:
+            if key not in info_this or info_this[key] is None:
                 info_this[key] = val
             else:
                 if isinstance(info_this[key], str):

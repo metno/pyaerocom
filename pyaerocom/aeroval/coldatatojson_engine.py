@@ -286,7 +286,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         var_name_web: str = None,
         out_dirs: dict = None,
     ):
-        if region_names == None and station_names == None:
+        if region_names is None and station_names is None:
             raise ValueError("Both region_id and station_name can not both be None")
 
         # Loop through regions
@@ -458,6 +458,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         outdir = os.path.join(out_dirs["ts/diurnal"])
         for ts_data_weekly in ts_objs_weekly:
             self.exp_output.write_station_data(ts_data_weekly)
-        if ts_objs_weekly_reg != None:
+        if ts_objs_weekly_reg is not None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 self.exp_output.write_station_data(ts_data_weekly_reg)
