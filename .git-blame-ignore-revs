@@ -76,3 +76,5 @@ e19876ff5653ceddcb047934989ad09ab7ecef30
 nc5a8b4b2b709d9b7adae01e253f638d7d8852ee3
 # 2024-07-30: f-string without any placeholders, F541
 96fae16fbb35ad9f87d93cbe9aaccb3ef05180ec
+# 2024-07-30: Unnecessary `int`/`float` call, UP018
+c23eebb590baa98771a66b9be5147aa137829af1
