@@ -448,7 +448,7 @@ class ConstrainedContainer(BrowseDict):
         val = self._check_valtype(key, val)
         current_tp = type(current)
 
-        if not current is None and not isinstance(val, current_tp):
+        if current is not None and not isinstance(val, current_tp):
             raise ValueError(
                 f"Invalid type {type(val)} for key: {key}. Need {current_tp} "
                 f"(Current value: {current})"
