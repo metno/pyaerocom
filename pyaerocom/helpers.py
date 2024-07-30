@@ -1233,8 +1233,8 @@ def str_to_iris(key, **kwargs):
     key = key.lower()
     if key not in STR_TO_IRIS:
         raise KeyError(
-            "No iris.analysis object available for key %s, please "
-            "choose from %s" % (key, STR_TO_IRIS.keys())
+            f"No iris.analysis object available for key {key}, please "
+            f"choose from {STR_TO_IRIS.keys()}"
         )
     val = STR_TO_IRIS[key]
     if callable(val):
