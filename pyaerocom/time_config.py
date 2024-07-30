@@ -4,6 +4,7 @@ Definitions and helpers related to time conversion
 
 from datetime import datetime
 
+import pandas as pd
 from iris import coord_categorisation
 
 TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native", "coarsest"]
@@ -40,8 +41,15 @@ TS_TYPE_TO_PANDAS_FREQ = {
     "season": "Q",
     "yearly": "YS",
 }
+PANDAS_RESAMPLE_OFFSETS = {
+    "YS": pd.Timedelta(181, "d"),
+    "MS": pd.Timedelta(14, "d"),
+    "D": pd.Timedelta(12, "h"),
+    "h": pd.Timedelta(30, "m"),
+}
 
-PANDAS_RESAMPLE_OFFSETS = {"YS": "181D", "MS": "14D", "D": "12h", "h": "30min"}
+
+# PANDAS_RESAMPLE_OFFSETS = {"YS": pd.Timestamp("181D"), "MS": pd.Timestamp("14D"), "D": pd.Timestamp("12h"), "h": pd.Timestamp("30min")}
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 

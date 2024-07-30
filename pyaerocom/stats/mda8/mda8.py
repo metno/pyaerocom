@@ -104,9 +104,6 @@ def _rolling_average_8hr(arr: xr.DataArray) -> xr.DataArray:
 
 
 def _daily_max(arr: xr.DataArray) -> xr.DataArray:
-    # TODO: Base is deprecated, and using offset="1h" is the proper way to do this.
-    # However this currently breaks the old-dependencies test in CI. Should be
-    # changed in the future.
-    return arr.resample(time="24H", base=1).reduce(
+    return arr.resample(time="24H", offset="1h").reduce(
         lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=18)
     )

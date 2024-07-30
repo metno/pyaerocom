@@ -90,9 +90,9 @@ def test_merge_station_data_error(statlist, use, exception, error):
     assert str(e.value).startswith(error)
 
 
-def test__get_pandas_freq_and_loffset():
-    val = helpers._get_pandas_freq_and_loffset("monthly")
-    assert val == ("MS", "14D")
+def test__get_pandas_freq_and_offset():
+    val = helpers._get_pandas_freq_and_offset("monthly")
+    assert val == ("MS", pd.Timedelta(14, "d"))
 
 
 @pytest.fixture(scope="module")
