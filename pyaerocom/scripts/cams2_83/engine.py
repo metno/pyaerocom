@@ -210,8 +210,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 var_list.append(obs_var)
 
         for var, cols in col_dict.items():
-            l = sorted(cols, key=lambda x: self._get_day(x.model_name))
-            col_dict[var] = l
+            col_dict[var] = sorted(cols, key=lambda x: self._get_day(x.model_name))
 
         return col_dict, set(var_list)
 
