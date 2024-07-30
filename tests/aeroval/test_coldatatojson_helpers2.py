@@ -94,15 +94,19 @@ def test__process_statistics_timeseries(
 
 
 @pytest.mark.parametrize(
-    "freq,region_ids,data_freq,nmb_avg,drop_stats",
+    "freq,region_ids,data_freq,drop_stats",
     [
-        ("yearly", {"EUROPE": "Europe"}, "monthly", 0.168, ("mb", "mab")),
-        ("yearly", {"EUROPE": "Europe"}, None, 0.122, ("nmb")),
+        ("yearly", {"EUROPE": "Europe"}, "monthly", ("mb", "mab")),
+        ("yearly", {"EUROPE": "Europe"}, None, ("nmb",)),
     ],
 )
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test__process_statistics_timeseries_drop_stats(
-    example_coldata, freq: str, region_ids: dict[str, str], data_freq: str, nmb_avg, drop_stats
+    example_coldata,
+    freq: str,
+    region_ids: dict[str, str],
+    data_freq: str,
+    drop_stats: tuple[str],
 ):
     result = _process_statistics_timeseries(
         data=example_coldata,
@@ -113,7 +117,7 @@ def test__process_statistics_timeseries_drop_stats(
         use_country=False,
         data_freq=data_freq,
     )
-    assert all([stat not in result for stat in drop_stats])
+    assert result.keys().isdisjoint(drop_stats)
 
 
 @pytest.mark.parametrize(
@@ -252,26 +256,29 @@ def test__init_meta_glob(coldata: ColocatedData):
     no_meta_coldata.data.attrs = {}
     res = _init_meta_glob(no_meta_coldata)
     res.pop("processed_utc")
-    assert np.all(value == "UNDEFINED" for value in res.values())
+    assert set(res.values()) == {"UNDEFINED"}
+
+
+@pytest.mark.parametrize("resolution", [("yearly")])
+@pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
+def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: str):
+    obj = _create_diurnal_weekly_data_object(coldata, resolution)
+    assert isinstance(obj, xarray.Dataset)
 
 
 @pytest.mark.parametrize(
-    "resolution",
+    "resolution,error_message",
     [
-        ("yearly"),
-        ("seasonal"),
-        ("cat"),
+        ("seasonal", "hour must not be empty"),
+        ("cat", "Invalid resolution"),
     ],
 )
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
-def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: str):
-    try:
-        obj = _create_diurnal_weekly_data_object(coldata, resolution)
-        assert isinstance(obj, xarray.Dataset)
-    except:
-        with pytest.raises(ValueError) as e:
-            _create_diurnal_weekly_data_object(coldata, resolution)
-        assert e.type is ValueError
+def test__create_diurnal_weekly_data_object__error(
+    coldata: ColocatedData, resolution: str, error_message: str
+):
+    with pytest.raises(ValueError, match=error_message):
+        _create_diurnal_weekly_data_object(coldata, resolution)
 
 
 @pytest.mark.parametrize(
