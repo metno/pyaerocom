@@ -80,3 +80,5 @@ nc5a8b4b2b709d9b7adae01e253f638d7d8852ee3
 c23eebb590baa98771a66b9be5147aa137829af1
 # 2024-07-30: Use `super()` instead of `super(__class__, self)`, UP008
 6c6af205832e38de344111861b3ae2b0651bd8a1
+# 2024-07-30: Test for object identity should be `is not`, E714
+5ffd364713f32b72758177cf9a0fdfe020d3dd1d
