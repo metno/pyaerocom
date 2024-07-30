@@ -151,6 +151,7 @@ ignore = ["E402", "E501"]
 "cli.py" = ["UP007"]
 "cli_mos.py" = ["UP007"]
 "*/extras/satellite_l2/*.py" = [
+    "F402", # https://docs.astral.sh/ruff/rules/import-shadowed-by-loop-var/
     "F821", # https://docs.astral.sh/ruff/rules/undefined-name/
     "F841", # https://docs.astral.sh/ruff/rules/unused-variable/
 ]

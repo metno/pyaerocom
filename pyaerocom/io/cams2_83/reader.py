@@ -85,7 +85,7 @@ def model_paths(
     root_path: Path | str = DATA_FOLDER_PATH,
     run: str | RunType = RunType.FC,
 ) -> Iterator[Path]:
-    for date in dates:
+    for date in dates:  # noqa: F402
         path = __model_path(model, date, run=run, root_path=root_path)
         if not path.is_file():
             logger.warning(f"Could not find {path.name}. Skipping {date}")

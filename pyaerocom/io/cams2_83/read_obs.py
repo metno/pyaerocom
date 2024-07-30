@@ -34,7 +34,7 @@ def obs_paths(
     root_path: Path | str = DATA_FOLDER_PATH,
     analysis: bool = False,
 ) -> Iterator[Path]:
-    for date in dates:
+    for date in dates:  # noqa: F402
         if isinstance(date, str):
             date = datetime.strptime(date, "%Y%m%d").date()
         if isinstance(date, datetime):
