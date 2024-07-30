@@ -531,11 +531,11 @@ def merge_dicts(dict1, dict2, discard_failing=True):
             try:
                 if this == val:
                     continue
-            except:
+            except Exception:
                 try:
                     if (this == val).all():
                         continue
-                except:
+                except Exception:
                     pass
 
             # both values are strings, merge with ';' delim

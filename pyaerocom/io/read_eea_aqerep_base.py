@@ -292,7 +292,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         except UnicodeDecodeError:
             with open(read_filename, encoding="UTF-16") as f:
                 lines = f.readlines()
-        except:
+        except Exception:
             if suffix == ".gz":
                 os.remove(f_out.name)
             raise EEAv2FileError(f"Found corrupt file {filename}. consider deleteing it")

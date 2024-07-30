@@ -906,7 +906,7 @@ class ColocatedData(BaseModel):
         nc = self.num_coords
         try:
             ncd = self.num_coords_with_data
-        except:
+        except Exception:
             ncd = np.nan
         if self.has_latlon_dims:
             dim = ("latitude", "longitude")

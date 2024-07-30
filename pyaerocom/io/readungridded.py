@@ -175,7 +175,7 @@ class ReadUngridded:
         try:
             if os.path.exists(os.path.join(const.cache_basedir, self.DONOTCACHE_NAME)):
                 return True
-        except:
+        except Exception:
             pass
         return False
 

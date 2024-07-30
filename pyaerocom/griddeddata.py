@@ -1694,7 +1694,7 @@ class GriddedData:
             )
         try:
             data.check_dimcoords_tseries()
-        except:
+        except Exception:
             data.reorder_dimensions_tseries()
         return data
 

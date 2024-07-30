@@ -98,7 +98,7 @@ def merge_meta_cubes(cube1, cube2):
         try:
             if cube1.attributes["ts_type"] == cube2.attributes["ts_type"]:
                 ts_type = cube1.attributes["ts_type"]
-        except:
+        except Exception:
             pass
 
         return {

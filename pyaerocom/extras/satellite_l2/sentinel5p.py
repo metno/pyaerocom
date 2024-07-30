@@ -611,7 +611,7 @@ class ReadL2Data(ReadL2DataBase):
                     # time can be a scalar...
                     try:
                         data[index_pointer, self._TIMEINDEX] = _time.astype(np.float_)
-                    except:
+                    except Exception:
                         data[index_pointer, self._TIMEINDEX] = _time[_index].astype(np.float_)
 
                     # loop over the variables
@@ -680,7 +680,7 @@ class ReadL2Data(ReadL2DataBase):
             try:
                 for name in global_attributes:
                     ds.attrs[name] = global_attributes[name]
-            except:
+            except Exception:
                 pass
 
             obj.logger.info(f"writing file {netcdf_filename}...")
@@ -715,13 +715,13 @@ class ReadL2Data(ReadL2DataBase):
                 # not all is a ndarray with a shape
                 try:
                     shape = data[var].shape
-                except:
+                except Exception:
                     continue
 
                 for _size in data[var].shape:
                     try:
                         ret_data[var].append(dim_dict[_size])
-                    except:
+                    except Exception:
                         pass
             return ret_data
         else:

@@ -735,7 +735,7 @@ class UngriddedData:
         for idx, meta in self.metadata.items():
             try:
                 lat, lon = meta["latitude"], meta["longitude"]
-            except:
+            except Exception:
                 logger.warning(f"Could not retrieve lat lon coord at meta index {idx}")
                 continue
             meta_idx.append(idx)
@@ -789,7 +789,7 @@ class UngriddedData:
         for idx, meta in self.metadata.items():
             try:
                 countries.append(meta["country"])
-            except:
+            except Exception:
                 logger.warning("No country information in meta block", idx)
         if len(countries) == 0:
             logger.warning(

@@ -187,7 +187,7 @@ class TsType:
             return tst
         try:
             maxmul = self.TS_MAX_VALS[tst.base]
-        except:
+        except Exception:
             maxmul = 10
         numsecs = self.num_secs
         for mulfac in range(1, maxmul + 1):
