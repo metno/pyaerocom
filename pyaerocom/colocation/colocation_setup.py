@@ -460,7 +460,7 @@ class ColocationSetup(BaseModel):
         save_coldata: bool = False,
         **kwargs,
     ) -> None:
-        super(ColocationSetup, self).__init__(
+        super().__init__(
             model_id=model_id,
             obs_config=obs_config,
             obs_id=obs_id,
