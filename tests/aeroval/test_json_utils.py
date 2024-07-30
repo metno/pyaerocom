@@ -51,10 +51,10 @@ def json_path(tmp_path: Path) -> Path:
 def test_round_floats(raw, precision: int, rounded):
     set_float_serialization_precision(precision)
     _rounded = round_floats(raw)
-    if type(raw) in (list, tuple):
-        assert type(_rounded) == list
-    if type(raw) == dict:
-        assert type(_rounded) == dict
+    if isinstance(raw, list | tuple):
+        assert type(_rounded) is list
+    if isinstance(raw, dict):
+        assert type(_rounded) is dict
     assert _rounded == rounded
 
 

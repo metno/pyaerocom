@@ -664,13 +664,10 @@ class StationData(StationMetaData):
                         if _val not in vals:
                             info_this[key] = info_this[key] + f";{_val}"
                 else:
-                    if isinstance(val, (list, np.ndarray)):
-                        if len(val) == 0:
+                    if isinstance(val, list | np.ndarray):
+                        if len(val) == 0 or info_this[key] == val:
                             continue
-                        elif type(info_this[key]) == type(val):
-                            if info_this[key] == val:
-                                continue
-                            info_this[key] = [info_this[key], val]
+
                         raise ValueError(
                             "Cannot append metadata value that is "
                             "already a list or numpy array due to "

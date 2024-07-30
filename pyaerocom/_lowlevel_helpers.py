@@ -293,7 +293,7 @@ class BrowseDict(MutableMapping):
         if bool(self.SETTER_CONVERT):
             for fromtp, totp in self.SETTER_CONVERT.items():
                 if isinstance(val, fromtp):
-                    if fromtp == dict:
+                    if fromtp is dict:
                         val = totp(**val)
                     else:
                         val = totp(val)
@@ -427,7 +427,7 @@ class ConstrainedContainer(BrowseDict):
 
     def _check_valtype(self, key, val):
         current_tp = type(self[key])
-        if type(val) != current_tp and isinstance(self[key], BrowseDict):
+        if type(val) is not current_tp and isinstance(self[key], BrowseDict):
             val = current_tp(**val)
         return val
 
@@ -559,7 +559,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
                     lst = val
                     check = this  # this is not list
                 for item in lst:
-                    if not type(item) == type(check):
+                    if type(item) is not type(check):
                         raise ValueError(
                             f"Cannot merge key {key} since items in {lst} "
                             f"are of different type, that does not match {check}"

@@ -50,7 +50,7 @@ def test_atmosphere_sigma_coordinate_to_pressure_exceptions():
 def test_atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop, expected):
     result = atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop)
 
-    assert type(result) == type(ptop)
+    assert type(result) is type(ptop)
     if isinstance(result, np.ndarray):
         assert len(result) == len(ptop)
 

@@ -313,7 +313,7 @@ class ReadCAMS2_83(GriddedReader):
     def run_type(self, val):
         if val is None:
             raise AttributeError("run_type cannot be set as None")
-        elif type(val) != RunType:
+        elif not isinstance(val, RunType):
             raise AttributeError(f"run_type cannot be set as {type(val)}, but must be a RunType")
 
         self._run_type = val
