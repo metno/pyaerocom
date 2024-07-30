@@ -126,12 +126,12 @@ class NasaAmesHeader:
     _HEAD_ROWS_MANDATORY = [0, 5, 8, 9, 10, 11]
 
     # conversion methods for first 13 header lines of
-    CONV_STR = lambda l: str(l.strip())
-    CONV_PI = lambda l: "; ".join([x.strip() for x in l.split(";")])
-    CONV_MULTIINT = lambda l: [int(x) for x in l.strip().split()]
-    CONV_MULTIFLOAT = lambda l: [float(x) for x in l.strip().split()]
-    CONV_INT = lambda l: int(l.strip())
-    CONV_FLOAT = lambda l: float(l.strip())
+    CONV_STR = lambda l: str(l.strip())  # noqa: E731,E741
+    CONV_PI = lambda l: "; ".join([x.strip() for x in l.split(";")])  # noqa: E731,E741
+    CONV_MULTIINT = lambda l: [int(x) for x in l.strip().split()]  # noqa: E731,E741
+    CONV_MULTIFLOAT = lambda l: [float(x) for x in l.strip().split()]  # noqa: E731,E741
+    CONV_INT = lambda l: int(l.strip())  # noqa: E731,E741
+    CONV_FLOAT = lambda l: float(l.strip())  # noqa: E731,E741
     _STARTDATE_FMT = "%Y%m%d%H%M%S"
 
     # the parameters that are always in the beginning of the file
