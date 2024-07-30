@@ -60,3 +60,9 @@ a82a63067a671931821c1c731277e1e7eb1bbc09
 8276fde021937a673141160d4c0bd38c710f2835
 # 2024-07-30: Unused variable, F841
 44878d9ab6b3fab3b536f46949c108a04b8adcb5
+# 2024-07-30: Import shadowed by loop variable, F402
+44bece181bed06997b5e3bf36cd1d2e355846220
+# 2024-07-30: Remove extraneous parentheses, UP034
+9942c924d890ff9f5e17d40d32d7a39ee923b89f
+# 2024-07-30: Import shadowed by loop variable, F402
+6fecbfdffc64c4a9722af64ff9636db1d1a586b5
