@@ -6,7 +6,6 @@ import time
 import warnings
 from pathlib import Path
 from reprlib import repr
-from typing import Tuple
 
 import numpy as np
 import xarray as xr
@@ -197,7 +196,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
-    ) -> Tuple[dict[str, list[ColocatedData]], set[str]]:
+    ) -> tuple[dict[str, list[ColocatedData]], set[str]]:
         col_dict = dict()
         var_list = []
 

@@ -4,7 +4,6 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Tuple
 
 import numpy as np
 from tqdm import tqdm
@@ -370,7 +369,7 @@ class ReadICPForest(ReadUngriddedBase):
         period: int,
         start: str | datetime,
         stop: str | datetime,
-    ) -> Tuple[float | None, datetime | None, str | None]:
+    ) -> tuple[float | None, datetime | None, str | None]:
         if start != "" and stop != "":
             if isinstance(start, str):
                 start = datetime.strptime(start, "%Y-%m-%d")

@@ -6,7 +6,6 @@ from datetime import date, timedelta
 from enum import Enum
 from pathlib import Path
 from pprint import pformat
-from typing import List
 
 from pyaerocom import const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
@@ -102,7 +101,7 @@ def clear_cache():
         path.unlink()
 
 
-def read_observations(specie: str, *, files: List, cache: str | Path | None) -> None:
+def read_observations(specie: str, *, files: list, cache: str | Path | None) -> None:
     logger.info(f"Running {specie}")
 
     if cache is not None:
