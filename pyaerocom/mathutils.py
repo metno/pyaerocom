@@ -7,15 +7,14 @@ from scipy.stats import pearsonr
 
 from pyaerocom._warnings import ignore_warnings
 
-### LAMBDA FUNCTIONS
-in_range = lambda x, low, high: low <= x <= high
 
-### OTHER FUNCTIONS
+def in_range(x, low, high) -> bool:
+    return low <= x <= high
 
 
 def is_strictly_monotonic(iter1d) -> bool:
     """
-    Check if 1D iterble is strictly monotonic
+    Check if 1D iterable is strictly monotonic
 
     Parameters
     ----------
@@ -30,11 +29,8 @@ def is_strictly_monotonic(iter1d) -> bool:
     return True if np.all(np.diff(iter1d) > 0) else False
 
 
-def make_binlist(vmin: float, vmax: float, num: int = None) -> list:
-    """"""
-    if num is None:
-        num = 8
-    return list(np.linspace(vmin, vmax, num + 1))
+def make_binlist(vmin: float, vmax: float, num: int = 8) -> list[float]:
+    return np.linspace(vmin, vmax, num + 1).tolist()
 
 
 def weighted_sum(data, weights):

@@ -343,7 +343,7 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     float
         horizontal distance between input coordinates in km
     """
-    hav = lambda d_theta: np.sin(d_theta / 2.0) ** 2
+    hav = lambda d_theta: np.sin(d_theta / 2.0) ** 2  # noqa: E731
 
     d_lon = np.radians(lon1 - lon0)
     d_lat = np.radians(lat1 - lat0)

@@ -98,7 +98,7 @@ class ReadAasEtal(ReadUngriddedBase):
         return self.PROVIDES_VARIABLES
 
     def _get_time_stamps(self, df):
-        tconv = lambda yr, m: np.datetime64(f"{yr:04d}-{m:02d}-{1:02d}", "s")
+        tconv = lambda yr, m: np.datetime64(f"{yr:04d}-{m:02d}-{1:02d}", "s")  # noqa: E731
         dates_alt = [tconv(yr, m) for yr, m in zip(df.year.values, df.month.values)]
         return np.asarray(dates_alt)
 
