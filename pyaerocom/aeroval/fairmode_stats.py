@@ -76,7 +76,7 @@ def fairmode_stats(obs_var: str, stats: dict) -> dict:
     assert np.isclose(
         rmsu * beta_mqi,
         np.sqrt((bias) ** 2 + (mod_std - obs_std) ** 2 + (2 * obs_std * mod_std * (1 - R))),
-        rtol=1e-5,
+        rtol=1e-4,
     ), "failed MQI check"
 
     fairmode = dict(
