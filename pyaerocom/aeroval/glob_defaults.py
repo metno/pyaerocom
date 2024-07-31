@@ -13,21 +13,22 @@ from pyaerocom.data import resources
 logger = logging.getLogger(__name__)
 
 
-# basemodel-implementation for verification
-class _ScaleAndColmap(NamedTuple):
-    scale: list[float]
+# # basemodel-implementation for verification
+# class _ScaleAndColmap(NamedTuple):
+#     scale: list[float]
+#     colmap: str
+
+
+# dict-implementation for json-serialization, namedtuple not stable with json/simplejson
+class ScaleAndColmap(BaseModel):
+    """simple dictionary container with only two keys, scale and colmap"""
+
+    scale: tuple[float, ...]
     colmap: str
 
 
 class _VarWebScaleAndColormap(BaseModel):
-    scale_colmaps: dict[str, _ScaleAndColmap]
-
-
-# dict-implementation for json-serialization, namedtuple not stable with json/simplejson
-class ScaleAndColmap(dict[str, str | list[float]]):
-    """simple dictionary container with only two keys, scale and colmap"""
-
-    pass
+    scale_colmaps: dict[str, ScaleAndColmap]
 
 
 class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
