@@ -103,6 +103,9 @@ class Config:
     #: ICOS name
     ICOS_NAME = "ICOS"
 
+    # TROPOMI access names
+    TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
+
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
