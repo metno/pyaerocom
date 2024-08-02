@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from enum import Enum
 from typing import NamedTuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from pyaerocom.data import resources
 
@@ -28,7 +28,31 @@ class ScaleAndColmap(BaseModel):
 
 
 class _VarWebScaleAndColormap(BaseModel):
+    ###########################
+    ##   Pydantic ConfigDict
+    ###########################
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow",
+        # protected_namespaces=(),
+        # validate_assignment=True,
+    )
+
     scale_colmaps: dict[str, ScaleAndColmap]
+
+    def __init__(self, config_file: str = "", **kwargs):
+        """This class contains scale and colmap informations and is implemented as dict to allow
+        json serialization. It reads it inital data from data/var_scale_colmap.ini.
+
+        :param config_file: filename to additional or updated information, defaults to None
+        """
+        super().__init__()
+        with resources.path("pyaerocom.aeroval.data", "var_scale_colmap.ini") as file:
+            self.update_from_ini(file)
+        if config_file != "":
+            logger.info(f"Reading additional web-scales from '{config_file}'")
+            self.update_from_ini(config_file)
+        self.update(**kwargs)
 
 
 class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
