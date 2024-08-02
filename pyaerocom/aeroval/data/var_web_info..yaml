@@ -1,0 +1,1265 @@
+---
+od550aer:
+  menu_name: "AOD"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550csaer:
+  menu_name: "AOD (clear sky)"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550lt1aer:
+  menu_name: "AODf"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550gt1aer:
+  menu_name: "AODc"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550dust:
+  menu_name: "AODdust"
+  vertical_type: "2D"
+  category: "Optical properties"
+abs550aer:
+  menu_name: "AAOD"
+  vertical_type: "2D"
+  category: "Optical properties"
+ssa670aer:
+  menu_name: "SSA"
+  vertical_type: "2D"
+  category: "Optical properties"
+ang4487aer:
+  menu_name: "AE"
+  vertical_type: "2D"
+  category: "Optical properties"
+angabs4487aer:
+  menu_name: "AAE"
+  vertical_type: "2D"
+  category: "Optical properties"
+ang4487csaer:
+  menu_name: "AE (clear sky)"
+  vertical_type: "2D"
+  category: "Optical properties"
+sc550dryaer:
+  menu_name: "Scat. coef. (dry)"
+  vertical_type: "3D"
+  category: "Optical properties"
+sc550aer:
+  menu_name: "Scat. coef."
+  vertical_type: "3D"
+  category: "Optical properties"
+ac550aer:
+  menu_name: "Abs. coef."
+  vertical_type: "3D"
+  category: "Optical properties"
+ac550dryaer:
+  menu_name: "Abs. coef. (dry)"
+  vertical_type: "3D"
+  category: "Optical properties"
+ec532aer:
+  menu_name: "Ext. coeff."
+  vertical_type: "3D"
+  category: "Optical properties"
+bsc532aer:
+  menu_name: "Backscat. coeff."
+  vertical_type: "3D"
+  category: "Optical properties"
+concso4pr:
+  menu_name: "SO4 (precip.)"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concbc:
+  menu_name: "BC"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concoa:
+  menu_name: "OA"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concss:
+  menu_name: "SS"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+conco3:
+  menu_name: "O3"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+conco3mda8:
+  menu_name: "O3 MDA8"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concno310:
+  menu_name: "NO3_PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concno325:
+  menu_name: "NO3_PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+proxyod550bc:
+  menu_name: "OD (Black Carbon)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550dust:
+  menu_name: "OD (Dust)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550oa:
+  menu_name: "OD (Organic Matter)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550so4:
+  menu_name: "OD (SO4)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550ss:
+  menu_name: "OD (Sea Salt)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550nh4:
+  menu_name: "OD (NH4)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550no3:
+  menu_name: "OD (NO3)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyzdust:
+  menu_name: "DLH"
+  vertical_type: "2D"
+  category: "Height"
+zdust:
+  menu_name: "DLH"
+  vertical_type: "2D"
+  category: "Height"
+proxyzaerosol:
+  menu_name: "ALH"
+  vertical_type: "2D"
+  category: "Height"
+zaerosol:
+  menu_name: "ALH"
+  vertical_type: "2D"
+  category: "Height"
+concNno:
+  menu_name: "NO"
+  vertical_type: "3D"
+  category: "Concentration"
+concno2:
+  menu_name: "NO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concNno2:
+  menu_name: "NO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+vmrno:
+  menu_name: "NO"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrno2:
+  menu_name: "NO2"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+concno3:
+  menu_name: "NO3"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+conctno3:
+  menu_name: "tNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+concNtno3:
+  menu_name: "tNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+conchno3:
+  menu_name: "HNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+concNhno3:
+  menu_name: "HNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+concnh3:
+  menu_name: "NH3"
+  vertical_type: "3D"
+  category: "Concentration"
+concNnh3:
+  menu_name: "NH3"
+  vertical_type: "3D"
+  category: "Concentration"
+conctnh:
+  menu_name: "tNH"
+  vertical_type: "3D"
+  category: "Concentration"
+concNtnh:
+  menu_name: "tNH"
+  vertical_type: "3D"
+  category: "Concentration"
+concnh4:
+  menu_name: "NH4"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concNnh4:
+  menu_name: "NH4"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concso2:
+  menu_name: "SO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concSso2:
+  menu_name: "SO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+vmrso2:
+  menu_name: "SO2"
+  vertical_type: "3D"
+  category: "Gas volume mixing ratio"
+concso4:
+  menu_name: "SO4"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+vmro3:
+  menu_name: "O3"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmro3mda8:
+  menu_name: "O3 MDA8"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmro3max:
+  menu_name: "O3Max"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrox:
+  menu_name: "OX"
+  vertical_type: "3D"
+  category: "Gas volume mixing ratio"
+concco:
+  menu_name: "CO"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+vmrco:
+  menu_name: "CO"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrco2:
+  menu_name: "CO2"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrc2h2:
+  menu_name: "Ethyne"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrc2h4:
+  menu_name: "Ethylene"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrc2h6:
+  menu_name: "Ethane"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrhcho:
+  menu_name: "Formaldehyde"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrisop:
+  menu_name: "Isoprene"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrch4:
+  menu_name: "CH4"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+concpm10:
+  menu_name: "PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concpm10pbap:
+  menu_name: "PM10 PBAP"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concpm25:
+  menu_name: "PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concNno3pm10:
+  menu_name: "NO3 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concNno3pm25:
+  menu_name: "NO3 PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concno3pm10:
+  menu_name: "NO3 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concno3pm25:
+  menu_name: "NO3 PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concnh4pm10:
+  menu_name: "NH4 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concnh4pm25:
+  menu_name: "NH4 PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4t:
+  menu_name: "SO4 total"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4c:
+  menu_name: "SO4 sea salt corrected"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4pm10:
+  menu_name: "SO4 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4pm25:
+  menu_name: "SO4 PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concss10:
+  menu_name: "SS PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concss25:
+  menu_name: "SS PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concec:
+  menu_name: "EC"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+conccoc:
+  menu_name: "OC"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concsspm10:
+  menu_name: "SS PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concsspm25:
+  menu_name: "SS PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCecpm25:
+  menu_name: "EC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCocpm25:
+  menu_name: "OC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCec25:
+  menu_name: "EC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCoc25:
+  menu_name: "OC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concom25:
+  menu_name: "OM PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCecpm10:
+  menu_name: "EC PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCocpm10:
+  menu_name: "OC PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concdust:
+  menu_name: "Dust concentration"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+depoxs:
+  menu_name: "TotDepOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+deprdn:
+  menu_name: "TotDepRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+depoxn:
+  menu_name: "TotDepOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+depoxsf:
+  menu_name: "TotDepOXSforr"
+  vertical_type: "3D"
+  category: "Deposition"
+deprdnf:
+  menu_name: "TotDepRDNforr"
+  vertical_type: "3D"
+  category: "Deposition"
+depoxnf:
+  menu_name: "TotDepOXNforr"
+  vertical_type: "3D"
+  category: "Deposition"
+depss:
+  menu_name: "TotDepSS"
+  vertical_type: "3D"
+  category: "Deposition"
+depssf:
+  menu_name: "TotDepSSforr"
+  vertical_type: "3D"
+  category: "Deposition"
+depna:
+  menu_name: "TotDepNa"
+  vertical_type: "3D"
+  category: "Deposition"
+depnaf:
+  menu_name: "TotDepNaforr"
+  vertical_type: "3D"
+  category: "Deposition"
+drysox:
+  menu_name: "DryOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+dryoxs:
+  menu_name: "DryOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+dryoxn:
+  menu_name: "DryOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+dryrdn:
+  menu_name: "DryRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+depdust:
+  menu_name: "TotDustDep"
+  vertical_type: "3D"
+  category: "Deposition"
+drydust:
+  menu_name: "DryDustDep"
+  vertical_type: "3D"
+  category: "Deposition"
+wetdust:
+  menu_name: "WetDustDep"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxs:
+  menu_name: "WetOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+wetna:
+  menu_name: "WetNa"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxsc:
+  menu_name: "WetOXScorr"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxst:
+  menu_name: "WetOXStot"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxn:
+  menu_name: "WetOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+wetrdn:
+  menu_name: "WetRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+prmm:
+  menu_name: "Precipitation"
+  vertical_type: "3D"
+  category: "Deposition"
+ts:
+  menu_name: "Surface Temperature"
+  vertical_type: "3D"
+  category: "Temperature"
+proxydryoxs:
+  menu_name: "proxyDryOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryss:
+  menu_name: "proxyDrySS"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryna:
+  menu_name: "proxyDryNa"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryso2:
+  menu_name: "proxyDrySO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryso4:
+  menu_name: "proxyDrySO4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryoxn:
+  menu_name: "proxyDryOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno2:
+  menu_name: "proxyDryNO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno2no2:
+  menu_name: "proxyDryNO2NO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryhono:
+  menu_name: "proxyDryHONO"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryn2o5:
+  menu_name: "proxyDryN2O5"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryhno3:
+  menu_name: "proxyDryHNO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno3c:
+  menu_name: "proxyDryNO3Coarse"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno3f:
+  menu_name: "proxyDryNO3Fine"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryrdn:
+  menu_name: "proxyDryRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrynh3:
+  menu_name: "proxyDryNH3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrynh4:
+  menu_name: "proxyDryNH4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryo3:
+  menu_name: "proxyDryO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrypm10:
+  menu_name: "proxyDryPM10"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrypm25:
+  menu_name: "proxyDryPM2.5"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetoxs:
+  menu_name: "proxyWetOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetso2:
+  menu_name: "proxyWetSO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetso4:
+  menu_name: "proxyWetSO4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetoxn:
+  menu_name: "proxyWetOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno2:
+  menu_name: "proxyWetNO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno2no2:
+  menu_name: "proxyWetNO2NO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywethono:
+  menu_name: "proxyWetHONO"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetn2o5:
+  menu_name: "proxyWetN2O5"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywethno3:
+  menu_name: "proxyWetHNO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno3c:
+  menu_name: "proxyWetNO3Coarse"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno3f:
+  menu_name: "proxyWetNO3Fine"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetrdn:
+  menu_name: "proxyWetRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetnh3:
+  menu_name: "proxyWetNH3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetnh4:
+  menu_name: "proxyWetNH4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxyweto3:
+  menu_name: "proxyWetO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetpm10:
+  menu_name: "proxyWetPM10"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetpm25:
+  menu_name: "proxyWetPM2.5"
+  vertical_type: "3D"
+  category: "Deposition"
+ratpm25pm10:
+  menu_name: "ratio PM2.5 PM10"
+  vertical_type: "3D"
+  category: "Particle ratio"
+ratpm10pm25:
+  menu_name: "ratio PM10 PM2.5"
+  vertical_type: "3D"
+  category: "Particle ratio"
+od550aer:
+  menu_name: "AOD"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550csaer:
+  menu_name: "AOD (clear sky)"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550lt1aer:
+  menu_name: "AODf"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550gt1aer:
+  menu_name: "AODc"
+  vertical_type: "2D"
+  category: "Optical properties"
+od550dust:
+  menu_name: "AODdust"
+  vertical_type: "2D"
+  category: "Optical properties"
+abs550aer:
+  menu_name: "AAOD"
+  vertical_type: "2D"
+  category: "Optical properties"
+ssa670aer:
+  menu_name: "SSA"
+  vertical_type: "2D"
+  category: "Optical properties"
+ang4487aer:
+  menu_name: "AE"
+  vertical_type: "2D"
+  category: "Optical properties"
+angabs4487aer:
+  menu_name: "AAE"
+  vertical_type: "2D"
+  category: "Optical properties"
+ang4487csaer:
+  menu_name: "AE (clear sky)"
+  vertical_type: "2D"
+  category: "Optical properties"
+sc550dryaer:
+  menu_name: "Scat. coef. (dry)"
+  vertical_type: "3D"
+  category: "Optical properties"
+sc550aer:
+  menu_name: "Scat. coef."
+  vertical_type: "3D"
+  category: "Optical properties"
+ac550aer:
+  menu_name: "Abs. coef."
+  vertical_type: "3D"
+  category: "Optical properties"
+ac550dryaer:
+  menu_name: "Abs. coef. (dry)"
+  vertical_type: "3D"
+  category: "Optical properties"
+ec532aer:
+  menu_name: "Ext. coeff."
+  vertical_type: "3D"
+  category: "Optical properties"
+bsc532aer:
+  menu_name: "Backscat. coeff."
+  vertical_type: "3D"
+  category: "Optical properties"
+concso4pr:
+  menu_name: "SO4 (precip.)"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concbc:
+  menu_name: "BC"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concoa:
+  menu_name: "OA"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concss:
+  menu_name: "SS"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+conco3:
+  menu_name: "O3"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+conco3mda8:
+  menu_name: "O3 MDA8"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concno310:
+  menu_name: "NO3_PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concno325:
+  menu_name: "NO3_PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+proxyod550bc:
+  menu_name: "OD (Black Carbon)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550dust:
+  menu_name: "OD (Dust)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550oa:
+  menu_name: "OD (Organic Matter)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550so4:
+  menu_name: "OD (SO4)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550ss:
+  menu_name: "OD (Sea Salt)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550nh4:
+  menu_name: "OD (NH4)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyod550no3:
+  menu_name: "OD (NO3)"
+  vertical_type: "2D"
+  category: "Optical properties"
+proxyzdust:
+  menu_name: "DLH"
+  vertical_type: "2D"
+  category: "Height"
+zdust:
+  menu_name: "DLH"
+  vertical_type: "2D"
+  category: "Height"
+proxyzaerosol:
+  menu_name: "ALH"
+  vertical_type: "2D"
+  category: "Height"
+zaerosol:
+  menu_name: "ALH"
+  vertical_type: "2D"
+  category: "Height"
+concNno:
+  menu_name: "NO"
+  vertical_type: "3D"
+  category: "Concentration"
+concno2:
+  menu_name: "NO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concNno2:
+  menu_name: "NO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+vmrno:
+  menu_name: "NO"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrno2:
+  menu_name: "NO2"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+concno3:
+  menu_name: "NO3"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+conctno3:
+  menu_name: "tNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+concNtno3:
+  menu_name: "tNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+conchno3:
+  menu_name: "HNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+concNhno3:
+  menu_name: "HNO3"
+  vertical_type: "3D"
+  category: "Concentration"
+concnh3:
+  menu_name: "NH3"
+  vertical_type: "3D"
+  category: "Concentration"
+concNnh3:
+  menu_name: "NH3"
+  vertical_type: "3D"
+  category: "Concentration"
+conctnh:
+  menu_name: "tNH"
+  vertical_type: "3D"
+  category: "Concentration"
+concNtnh:
+  menu_name: "tNH"
+  vertical_type: "3D"
+  category: "Concentration"
+concnh4:
+  menu_name: "NH4"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concNnh4:
+  menu_name: "NH4"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concso2:
+  menu_name: "SO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+concSso2:
+  menu_name: "SO2"
+  vertical_type: "3D"
+  category: "Gas concentrations"
+vmrso2:
+  menu_name: "SO2"
+  vertical_type: "3D"
+  category: "Gas volume mixing ratio"
+concso4:
+  menu_name: "SO4"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+vmro3:
+  menu_name: "O3"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmro3mda8:
+  menu_name: "O3 MDA8"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmro3max:
+  menu_name: "O3Max"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrox:
+  menu_name: "OX"
+  vertical_type: "3D"
+  category: "Gas volume mixing ratio"
+concco:
+  menu_name: "CO"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+vmrco:
+  menu_name: "CO"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrco2:
+  menu_name: "CO2"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrc2h2:
+  menu_name: "Ethyne"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrc2h4:
+  menu_name: "Ethylene"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrc2h6:
+  menu_name: "Ethane"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrhcho:
+  menu_name: "Formaldehyde"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrisop:
+  menu_name: "Isoprene"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+vmrch4:
+  menu_name: "CH4"
+  vertical_type: "3D"
+  category: "Volume mixing ratios"
+concpm10:
+  menu_name: "PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concpm10pbap:
+  menu_name: "PM10 PBAP"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concpm25:
+  menu_name: "PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concNno3pm10:
+  menu_name: "NO3 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concNno3pm25:
+  menu_name: "NO3 PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concno3pm10:
+  menu_name: "NO3 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concno3pm25:
+  menu_name: "NO3 PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concnh4pm10:
+  menu_name: "NH4 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concnh4pm25:
+  menu_name: "NH4 PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4t:
+  menu_name: "SO4 total"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4c:
+  menu_name: "SO4 sea salt corrected"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4pm10:
+  menu_name: "SO4 PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concso4pm25:
+  menu_name: "SO4 PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concss10:
+  menu_name: "SS PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concss25:
+  menu_name: "SS PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concec:
+  menu_name: "EC"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+conccoc:
+  menu_name: "OC"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concsspm10:
+  menu_name: "SS PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concsspm25:
+  menu_name: "SS PM25"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCecpm25:
+  menu_name: "EC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCocpm25:
+  menu_name: "OC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCec25:
+  menu_name: "EC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCoc25:
+  menu_name: "OC PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concom25:
+  menu_name: "OM PM2.5"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCecpm10:
+  menu_name: "EC PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concCocpm10:
+  menu_name: "OC PM10"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+concdust:
+  menu_name: "Dust concentration"
+  vertical_type: "3D"
+  category: "Particle concentrations"
+depoxs:
+  menu_name: "TotDepOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+deprdn:
+  menu_name: "TotDepRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+depoxn:
+  menu_name: "TotDepOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+depoxsf:
+  menu_name: "TotDepOXSforr"
+  vertical_type: "3D"
+  category: "Deposition"
+deprdnf:
+  menu_name: "TotDepRDNforr"
+  vertical_type: "3D"
+  category: "Deposition"
+depoxnf:
+  menu_name: "TotDepOXNforr"
+  vertical_type: "3D"
+  category: "Deposition"
+depss:
+  menu_name: "TotDepSS"
+  vertical_type: "3D"
+  category: "Deposition"
+depssf:
+  menu_name: "TotDepSSforr"
+  vertical_type: "3D"
+  category: "Deposition"
+depna:
+  menu_name: "TotDepNa"
+  vertical_type: "3D"
+  category: "Deposition"
+depnaf:
+  menu_name: "TotDepNaforr"
+  vertical_type: "3D"
+  category: "Deposition"
+drysox:
+  menu_name: "DryOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+dryoxs:
+  menu_name: "DryOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+dryoxn:
+  menu_name: "DryOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+dryrdn:
+  menu_name: "DryRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+depdust:
+  menu_name: "TotDustDep"
+  vertical_type: "3D"
+  category: "Deposition"
+drydust:
+  menu_name: "DryDustDep"
+  vertical_type: "3D"
+  category: "Deposition"
+wetdust:
+  menu_name: "WetDustDep"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxs:
+  menu_name: "WetOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+wetna:
+  menu_name: "WetNa"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxsc:
+  menu_name: "WetOXScorr"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxst:
+  menu_name: "WetOXStot"
+  vertical_type: "3D"
+  category: "Deposition"
+wetoxn:
+  menu_name: "WetOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+wetrdn:
+  menu_name: "WetRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+prmm:
+  menu_name: "Precipitation"
+  vertical_type: "3D"
+  category: "Deposition"
+ts:
+  menu_name: "Surface Temperature"
+  vertical_type: "3D"
+  category: "Temperature"
+proxydryoxs:
+  menu_name: "proxyDryOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryss:
+  menu_name: "proxyDrySS"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryna:
+  menu_name: "proxyDryNa"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryso2:
+  menu_name: "proxyDrySO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryso4:
+  menu_name: "proxyDrySO4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryoxn:
+  menu_name: "proxyDryOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno2:
+  menu_name: "proxyDryNO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno2no2:
+  menu_name: "proxyDryNO2NO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryhono:
+  menu_name: "proxyDryHONO"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryn2o5:
+  menu_name: "proxyDryN2O5"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryhno3:
+  menu_name: "proxyDryHNO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno3c:
+  menu_name: "proxyDryNO3Coarse"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryno3f:
+  menu_name: "proxyDryNO3Fine"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryrdn:
+  menu_name: "proxyDryRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrynh3:
+  menu_name: "proxyDryNH3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrynh4:
+  menu_name: "proxyDryNH4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydryo3:
+  menu_name: "proxyDryO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrypm10:
+  menu_name: "proxyDryPM10"
+  vertical_type: "3D"
+  category: "Deposition"
+proxydrypm25:
+  menu_name: "proxyDryPM2.5"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetoxs:
+  menu_name: "proxyWetOXS"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetso2:
+  menu_name: "proxyWetSO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetso4:
+  menu_name: "proxyWetSO4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetoxn:
+  menu_name: "proxyWetOXN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno2:
+  menu_name: "proxyWetNO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno2no2:
+  menu_name: "proxyWetNO2NO2"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywethono:
+  menu_name: "proxyWetHONO"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetn2o5:
+  menu_name: "proxyWetN2O5"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywethno3:
+  menu_name: "proxyWetHNO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno3c:
+  menu_name: "proxyWetNO3Coarse"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetno3f:
+  menu_name: "proxyWetNO3Fine"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetrdn:
+  menu_name: "proxyWetRDN"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetnh3:
+  menu_name: "proxyWetNH3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetnh4:
+  menu_name: "proxyWetNH4"
+  vertical_type: "3D"
+  category: "Deposition"
+proxyweto3:
+  menu_name: "proxyWetO3"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetpm10:
+  menu_name: "proxyWetPM10"
+  vertical_type: "3D"
+  category: "Deposition"
+proxywetpm25:
+  menu_name: "proxyWetPM2.5"
+  vertical_type: "3D"
+  category: "Deposition"
+ratpm25pm10:
+  menu_name: "ratio PM2.5 PM10"
+  vertical_type: "3D"
+  category: "Particle ratio"
+ratpm10pm25:
+  menu_name: "ratio PM10 PM2.5"
+  vertical_type: "3D"
+  category: "Particle ratio"
