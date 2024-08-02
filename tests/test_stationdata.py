@@ -218,7 +218,7 @@ def test_StationData_get_station_coords(
         pytest.param(
             stat4,
             AttributeError,
-            f"Invalid value encountered for coord longitude, need float, int, list or ndarray, got <class 'str'>",
+            "Invalid value encountered for coord longitude, need float, int, list or ndarray, got <class 'str'>",
             id="wrong station latitude",
         ),
         pytest.param(
@@ -303,7 +303,7 @@ def test_StationData_merge_meta_same_station(
 
 
 def test_StationData_merge_meta_same_station_error():
-    with pytest.raises(CoordinateError, match="differ by more than 0.001 km.") as e:
+    with pytest.raises(CoordinateError, match="differ by more than 0.001 km."):
         stat1.merge_meta_same_station(
             stat2, coord_tol_km=0.001, check_coords=True, inplace=False, raise_on_error=True
         )
@@ -376,8 +376,8 @@ def test_StationData_remove_variable():
     assert var in stat.var_info
 
     stat.remove_variable(var)
-    assert not var in stat
-    assert not var in stat.var_info
+    assert var not in stat
+    assert var not in stat.var_info
 
 
 def test_StationData_remove_variable_error():

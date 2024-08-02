@@ -49,7 +49,7 @@ dependencies = [
     "pyproj>=3.0.0",
     "pyaro>=0.0.10",
     "pooch>=1.7.0",
-    "psutil>=5.0.0"
+    "psutil>=5.0.0",
 ]
 
 [project.readme]
@@ -70,12 +70,7 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
 ]
-test = [
-    "pytest>=7.4",
-    "pytest-dependency",
-    "pytest-cov",
-    "packaging",
-]
+test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging"]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
@@ -141,17 +136,25 @@ exclude_lines = [
     'if __name__ == "__main__":',
 ]
 
-[tool.black]
-target-version = ['py310']
-extend-exclude = "pyaerocom-tutorials"
+[tool.ruff]
+include = ["pyproject.toml", "pyaerocom/**/*.py", "tests/**/*.py"]
+target-version = "py310"
 line-length = 99
+extend-exclude = ["pyaerocom-tutorials", "scripts"]
 
-[tool.isort]
-py_version = "310"
-profile = "black"
-src_paths = ["pyaerocom", "tests"]
-extend_skip = ["pyaerocom-tutorials"]
-line_length = 99
+[tool.ruff.lint]
+select = ["E", "F", "I002", "UP"]
+ignore = ["E402", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"cli.py" = ["UP007"]
+"cli_mos.py" = ["UP007"]
+"*/extras/satellite_l2/*.py" = [
+    "F402", # https://docs.astral.sh/ruff/rules/import-shadowed-by-loop-var/
+    "F821", # https://docs.astral.sh/ruff/rules/undefined-name/
+    "F841", # https://docs.astral.sh/ruff/rules/unused-variable/
+]
 
 [tool.mypy]
 python_version = "3.10"
@@ -194,7 +197,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, format, lint, docs, build
+envlist = py310, py311, py312, lint, type-check, docs, build
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -230,13 +233,14 @@ deps =
     xarray ==2022.10.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
 
-[testenv:format]
+[testenv:lint]
+skip_install = True
 commands =
     pre-commit run --all-files --show-diff-on-failure
 deps =
     pre-commit
 
-[testenv:lint]
+[testenv:type-check]
 ignore_outcome = True
 commands =
     mypy pyaerocom/

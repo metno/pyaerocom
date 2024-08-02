@@ -14,7 +14,7 @@ def get_level_value(logger: logging.Logger | None) -> int:
         if not logger.hasHandlers():
             return logger.getEffectiveLevel()
         for handler in logger.handlers:
-            if type(handler) == logging.StreamHandler:
+            if type(handler) is logging.StreamHandler:
                 return handler.level
         if not logger.propagate:
             return logging.NOTSET

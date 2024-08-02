@@ -8,8 +8,9 @@ import os
 import traceback
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 from cf_units import Unit
@@ -590,7 +591,7 @@ class Colocator:
 
     def _check_model_add_vars(self):
         for ovar, mvars in self.colocation_setup.model_add_vars.items():
-            if not isinstance(mvars, (list, tuple)):
+            if not isinstance(mvars, list | tuple):
                 raise ValueError("Values of model_add_vars need to be list or tuple")
             elif not all([isinstance(x, str) for x in mvars]):
                 raise ValueError("Values of model_add_vars need to be list of strings")
@@ -924,7 +925,7 @@ class Colocator:
         # 9999 denote climatological data)
         yrs_avail = self.model_reader.years_avail
         if self.colocation_setup.model_use_climatology:
-            if not 9999 in yrs_avail:
+            if 9999 not in yrs_avail:
                 raise DataCoverageError("No climatology files available")
             first, last = 9999, None
         else:

@@ -1,20 +1,16 @@
 import logging
 
 import cf_units
-import iris
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
 
-from pyaerocom._lowlevel_helpers import merge_dicts
-from pyaerocom.helpers import copy_coords_cube
 from pyaerocom.io.aux_read_cubes import (
     CUBE_MATHS,
     _check_input_iscube,
     _check_same_units,
     add_cubes,
 )
-from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.molmasses import get_molmass
 
 logger = logging.getLogger(__name__)
 

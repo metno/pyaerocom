@@ -13,13 +13,11 @@ UNDER DEVELOPMENT -> NOT READY YET
 import logging
 
 import numpy as np
-from geonum import atmosphere as atm
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
     VariableDefinitionError,
-    VariableNotFoundError,
 )
 
 logger = logging.getLogger(__name__)
@@ -183,7 +181,7 @@ class VerticalCoordinate:
         -------
         True
         """
-        if not self.var_name in self._LEV_INCREASES_WITH_ALT:
+        if self.var_name not in self._LEV_INCREASES_WITH_ALT:
             if self.standard_name in self._LEV_INCREASES_WITH_ALT:
                 return self._LEV_INCREASES_WITH_ALT[self.standard_name]
             raise ValueError(
@@ -210,7 +208,7 @@ class VerticalCoordinate:
             pressure levels in Pa
         """
 
-        if not self.var_name in self.NAMES_SUPPORTED:
+        if self.var_name not in self.NAMES_SUPPORTED:
             raise CoordinateNameError(
                 f"Variable {self.var_name} cannot be converted to pressure levels. "
                 f"Conversion is only possible for supported variables:\n{self.vars_supported_str}"
@@ -277,8 +275,8 @@ class AltitudeAccess:
     @property
     def coord_list(self):
         """List of AeroCom coordinate names for altitude access"""
-        l = self.ADD_FILE_VARS + list(VerticalCoordinate.NAMES_SUPPORTED.values())
-        return list(dict.fromkeys(l))
+        name = self.ADD_FILE_VARS + list(VerticalCoordinate.NAMES_SUPPORTED.values())
+        return sorted(set(name))
 
     def search_aux_coords(self, coord_list) -> bool:
         """Search and assign coordinates provided by input list
@@ -310,7 +308,7 @@ class AltitudeAccess:
             if coord in self:
                 continue
             try:
-                coord_info = const.COORDINFO[coord]
+                const.COORDINFO[coord]
             except VariableDefinitionError:
                 raise CoordinateNameError(f"Coordinate {coord} is not supported by pyaerocom.")
             # 1. check if coordinate is assigned in data object directly

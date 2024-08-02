@@ -88,7 +88,7 @@ class TsType:
             ivalstr = re.findall(r"\d+", val)[0]
             val = val.split(ivalstr)[-1]
             mulfac = int(ivalstr)
-        if not val in self.VALID:
+        if val not in self.VALID:
             try:
                 val = self._from_pandas(val)
             except TemporalResolutionError:
@@ -118,7 +118,7 @@ class TsType:
     @property
     def cf_base_unit(self):
         """Convert ts_type str to CF convention time unit"""
-        if not self.base in self.TSTR_TO_CF:
+        if self.base not in self.TSTR_TO_CF:
             raise NotImplementedError(f"Cannot convert {self.base} to CF str")
         return self.TSTR_TO_CF[self.base]
 
@@ -187,7 +187,7 @@ class TsType:
             return tst
         try:
             maxmul = self.TS_MAX_VALS[tst.base]
-        except:
+        except Exception:
             maxmul = 10
         numsecs = self.num_secs
         for mulfac in range(1, maxmul + 1):
@@ -205,14 +205,14 @@ class TsType:
             return False
 
     def to_numpy_freq(self):
-        if not self._val in self.TO_NUMPY:
+        if self._val not in self.TO_NUMPY:
             raise TemporalResolutionError(f"numpy frequency not available for {self._val}")
         freq = self.TO_NUMPY[self._val]
         return f"{self.mulfac}{freq}"
 
     def to_pandas_freq(self):
         """Convert ts_type to pandas frequency string"""
-        if not self._val in self.TO_PANDAS:
+        if self._val not in self.TO_PANDAS:
             raise TemporalResolutionError(f"pandas frequency not available for {self._val}")
         freq = self.TO_PANDAS[self._val]
         if self._mulfac == 1:
@@ -222,7 +222,7 @@ class TsType:
     def to_si(self):
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
-        if not base in self.TO_SI:
+        if base not in self.TO_SI:
             raise ValueError(f"Cannot convert ts_type={self} to SI unit string...")
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f"({self.mulfac}{si})"
@@ -381,7 +381,7 @@ class TsType:
         )
 
     def _from_pandas(self, val):
-        if not val in self.FROM_PANDAS:
+        if val not in self.FROM_PANDAS:
             raise TemporalResolutionError(f"Invalid input: {val}, need pandas frequency string")
         return self.FROM_PANDAS[val]
 

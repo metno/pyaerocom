@@ -5,7 +5,7 @@ import multiprocessing as mp
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import typer
 
@@ -138,7 +138,7 @@ def main(
         writable=True,
         help="where collocated data are stored",
     ),
-    model: List[ModelName] = typer.Option(
+    model: list[ModelName] = typer.Option(
         [],
         "--model",
         "-m",

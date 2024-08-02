@@ -464,7 +464,7 @@ class GriddedData:
             raise TypeError(f"Grid data format {type(value)} is not supported, need Cube")
 
         for key, val in self._META_ADD.items():
-            if not key in value.attributes:
+            if key not in value.attributes:
                 value.attributes[key] = val
         self._grid = value
 
@@ -524,7 +524,7 @@ class GriddedData:
 
     @property
     def lon_res(self):
-        if not "longitude" in self:
+        if "longitude" not in self:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.longitude.points)
         val = vals.mean()
@@ -534,7 +534,7 @@ class GriddedData:
 
     @property
     def lat_res(self):
-        if not "latitude" in self:
+        if "latitude" not in self:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.latitude.points)
         val = vals.mean()
@@ -661,7 +661,7 @@ class GriddedData:
         from pyaerocom.io.iris_io import load_cube_custom
 
         self.grid = load_cube_custom(input, var_name, perform_fmt_checks=perform_fmt_checks)
-        if not "from_files" in self.metadata:
+        if "from_files" not in self.metadata:
             self.metadata["from_files"] = []
         elif not isinstance(self.metadata["from_files"], list):
             self.metadata["from_files"] = [self.metadata["from_files"]]
@@ -887,9 +887,8 @@ class GriddedData:
         list
 
         """
-        toyear = lambda x: int(str(x.astype("datetime64[Y]")))
-
-        return [x for x in set(map(toyear, self.time_stamps()))]
+        to_year = lambda x: int(str(x.astype("datetime64[Y]")))  # noqa: E731
+        return sorted(set(to_year(date) for date in self.time_stamps()))
 
     def split_years(self, years=None):
         """
@@ -946,7 +945,7 @@ class GriddedData:
             :func:`reorder_dimensions_tseries` may be used to catch the
             Exception)
         """
-        if not self.ndim in (3, 4):
+        if self.ndim not in (3, 4):
             raise DataDimensionError("Time series extraction requires at least 3 dimensions")
         # list of coordinates needed for timeseries extraction.
         needed = self.COORDS_ORDER_TSERIES
@@ -997,7 +996,7 @@ class GriddedData:
 
         if not len(new_order) == self.ndim:
             for i in range(self.ndim):
-                if not i in new_order:
+                if i not in new_order:
                     new_order.append(i)
         self.transpose(new_order)
         self.check_dimcoords_tseries()
@@ -1373,7 +1372,7 @@ class GriddedData:
 
         cname = self.dimcoord_names[-1]
 
-        if not vert_scheme in self.SUPPORTED_VERT_SCHEMES:
+        if vert_scheme not in self.SUPPORTED_VERT_SCHEMES:
             raise ValueError(
                 f"Invalid input for vert_scheme: {vert_scheme}. Supported "
                 f"schemes are: {self.SUPPORTED_VERT_SCHEMES}"
@@ -1470,7 +1469,7 @@ class GriddedData:
         """Find the closest indices for dimension coordinate values"""
         idx = {}
         for dim, val in dimcoord_vals.items():
-            if not dim in self.coord_names:
+            if dim not in self.coord_names:
                 raise DataDimensionError(f"No such dimension {dim}")
             elif dim == "time":
                 idx[dim] = self._closest_time_idx(val)
@@ -1634,7 +1633,7 @@ class GriddedData:
         if current == to:
             logger.info(f"Data is already in {to_ts_type} resolution")
             return self
-        if not to_ts_type in IRIS_AGGREGATORS:
+        if to_ts_type not in IRIS_AGGREGATORS:
             raise TemporalResolutionError(f"Resolution {to_ts_type} cannot converted")
         elif current < to:  # current resolution is smaller than desired
             raise TemporalResolutionError(
@@ -1644,11 +1643,11 @@ class GriddedData:
 
         # Create aggregators
         aggrs = ["yearly"]
-        if not to_ts_type in aggrs:
+        if to_ts_type not in aggrs:
             aggrs.append(to_ts_type)
 
         for aggr in aggrs:
-            if not aggr in [c.name() for c in cube.aux_coords]:
+            if aggr not in [c.name() for c in cube.aux_coords]:
                 # this adds the corresponding aggregator to the cube
                 IRIS_AGGREGATORS[aggr](cube, "time", name=aggr)
             # IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
@@ -1667,9 +1666,7 @@ class GriddedData:
             arr_out = rs.resample(
                 to_ts_type, from_ts_type=from_ts_type, how=how, min_num_obs=min_num_obs
             )
-        except (
-            ValueError
-        ):  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
+        except ValueError:  # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr["time"] = self.time_stamps()
             rs = TimeResampler(arr)
             arr_out = rs.resample(
@@ -1696,7 +1693,7 @@ class GriddedData:
             )
         try:
             data.check_dimcoords_tseries()
-        except:
+        except Exception:
             data.reorder_dimensions_tseries()
         return data
 
@@ -1808,7 +1805,7 @@ class GriddedData:
     def apply_region_mask(self, region_id, thresh_coast=0.5, inplace=False):
         """Apply a masked region filter"""
 
-        if not region_id in const.HTAP_REGIONS:
+        if region_id not in const.HTAP_REGIONS:
             raise ValueError(
                 f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
             )
@@ -1918,7 +1915,7 @@ class GriddedData:
             return GriddedData(data, **suppl)
         else:
             assert len(time_range) == 2
-            if all(isinstance(x, (str, np.datetime64)) for x in time_range):
+            if all(isinstance(x, str | np.datetime64) for x in time_range):
                 time_range = (pd.Timestamp(time_range[0]), pd.Timestamp(time_range[1]))
             if all(isinstance(x, pd.Timestamp) for x in time_range):
                 logger.info("Cropping along time axis based on Timestamps")
@@ -2095,9 +2092,9 @@ class GriddedData:
         """Get rid of empty entries and convert bools to int in meta"""
         meta_out = {}
         for k, v in self.metadata.items():
-            if type(v) == bool:
+            if isinstance(v, bool):
                 meta_out[k] = int(v)
-            elif v != None:
+            elif v is not None:
                 meta_out[k] = v
         self.cube.attributes = meta_out
 
@@ -2375,9 +2372,9 @@ class GriddedData:
         fig
             matplotlib figure instance containing plot
         """
-        if not "latitude" in self.dimcoord_names:
+        if "latitude" not in self.dimcoord_names:
             raise DataDimensionError("Missing latitude dimension...")
-        elif not "longitude" in self.dimcoord_names:
+        elif "longitude" not in self.dimcoord_names:
             raise DataDimensionError("Missing longitude dimension...")
         tstr = ""
         if "time" in self.dimcoord_names:

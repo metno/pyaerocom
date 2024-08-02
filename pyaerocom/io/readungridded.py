@@ -3,7 +3,6 @@ import os
 import warnings
 from copy import deepcopy
 from pathlib import Path
-from typing import Optional, Union
 
 from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -80,7 +79,7 @@ class ReadUngridded:
         data_ids=None,
         ignore_cache=False,
         data_dirs=None,
-        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
+        configs: PyaroConfig | list[PyaroConfig] | None = None,
     ):
         # will be assigned in setter method of data_ids
         self._data_ids = []
@@ -176,7 +175,7 @@ class ReadUngridded:
         try:
             if os.path.exists(os.path.join(const.cache_basedir, self.DONOTCACHE_NAME)):
                 return True
-        except:
+        except Exception:
             pass
         return False
 
@@ -196,7 +195,7 @@ class ReadUngridded:
     def data_ids(self, val):
         if isinstance(val, str):
             val = [val]
-        elif not isinstance(val, (tuple, list)):
+        elif not isinstance(val, tuple | list):
             raise OSError("Invalid input for parameter data_ids")
         self._data_ids = val
 
@@ -206,13 +205,13 @@ class ReadUngridded:
         return self._configs
 
     @configs.setter
-    def configs(self, val: Union[PyaroConfig, list[PyaroConfig]]):
+    def configs(self, val: PyaroConfig | list[PyaroConfig]):
         if isinstance(val, PyaroConfig):
             val = [val]
-        elif not isinstance(val, (tuple, list)):
+        elif not isinstance(val, tuple | list):
             raise OSError("Invalid input for parameter data_ids")
         logger.warning(
-            f"You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
+            "You are now overwriting the list of configs. This will delete the previous configs, but will leave readeres associated with those configs intact. Use 'add_config' for safer usage!"
         )
         for config in val:
             self._init_pyaro_reader(config=config)
@@ -250,7 +249,7 @@ class ReadUngridded:
         """List of variables provided by a certain dataset"""
         if data_id is None:
             data_id = self.data_id
-        if not data_id in self._readers:
+        if data_id not in self._readers:
             reader = self.get_lowlevel_reader(data_id)
         else:
             reader = self._readers[data_id]
@@ -354,7 +353,7 @@ class ReadUngridded:
 
         """
         if not isinstance(config, PyaroConfig):
-            raise ValueError(f"Given config is not a PyaroConfig")
+            raise ValueError("Given config is not a PyaroConfig")
 
         self._init_pyaro_reader(config=config)
         self._configs.append(config)
@@ -418,7 +417,7 @@ class ReadUngridded:
         #     data_id = config.name
 
         if data_id is None:
-            raise ValueError(f"Data_id can not be none")
+            raise ValueError("Data_id can not be none")
 
         if data_id in self.config_map:
             return reader(config=self.config_map[data_id])
@@ -521,7 +520,7 @@ class ReadUngridded:
                     )
 
         if not only_cached:
-            vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
+            vars_to_read = [v for v in vars_available if v not in cache.loaded_data]
         else:
             vars_to_read = []
 
@@ -586,9 +585,9 @@ class ReadUngridded:
 
         for key, val in filter_post.items():
             if key == "ignore_station_names":  # for backwards compatibility
-                if isinstance(val, (str, list)):
+                if isinstance(val, str | list):
                     filters["station_name"] = val
-                    if not "negate" in filters:
+                    if "negate" not in filters:
                         filters["negate"] = []
                     filters["negate"].append("station_name")
 
@@ -606,7 +605,7 @@ class ReadUngridded:
                         var = vars_available[0]
                         try:
                             filters["station_name"] = val[var]
-                            if not "negate" in filters:
+                            if "negate" not in filters:
                                 filters["negate"] = []
                             filters["negate"].append("station_name")
                         except KeyError:
@@ -730,7 +729,7 @@ class ReadUngridded:
         vars_to_retrieve=None,
         only_cached=False,
         filter_post=None,
-        configs: Optional[Union[PyaroConfig, list[PyaroConfig]]] = None,
+        configs: PyaroConfig | list[PyaroConfig] | None = None,
         **kwargs,
     ):
         """Read observations
@@ -858,7 +857,7 @@ class ReadUngridded:
             postinfo = self.post_compute[obs_id]
             supported = postinfo["vars_supported"]
             for var in varlist_aerocom(vars_desired):
-                if not var in supported:
+                if var not in supported:
                     try:
                         var = self._check_var_alias(var, supported)
                     except ValueError:

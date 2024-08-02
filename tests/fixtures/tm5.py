@@ -36,9 +36,9 @@ def load_coldata_tm5_aeronet_from_scratch(path: Path) -> ColocatedData:
         info = {}
         for val in arr.attrs["_min_num_obs"].split(";")[:-1]:
             to, fr, num = val.split(",")
-            if not to in info:
+            if to not in info:
                 info[to] = {}
-            if not fr in info[to]:
+            if fr not in info[to]:
                 info[to][fr] = {}
             info[to][fr] = int(num)
         arr.attrs["min_num_obs"] = info

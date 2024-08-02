@@ -23,7 +23,7 @@ def version_callback(value: bool):
 
 @main.callback()
 def callback(
-    version: Optional[bool] = typer.Option(None, "--version", "-V", callback=version_callback)
+    version: Optional[bool] = typer.Option(None, "--version", "-V", callback=version_callback),
 ):
     """🦄 Pyaerocom Command Line Interface"""
 

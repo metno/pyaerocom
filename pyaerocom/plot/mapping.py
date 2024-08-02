@@ -8,7 +8,6 @@ from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
-from pyaerocom import const
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.mathutils import exponent
@@ -295,7 +294,7 @@ def plot_griddeddata_on_map(
     if not data.has_latlon_dims:
         raise DataDimensionError("Input data needs to have latitude and longitude dimension")
     if not data.ndim == 2:
-        if not data.ndim == 3 or not "time" in data.dimcoord_names:
+        if not data.ndim == 3 or "time" not in data.dimcoord_names:
             raise DataDimensionError(
                 "Input data needs to be 2 dimensional "
                 "or 3D with time being the 3rd "
@@ -402,7 +401,7 @@ def plot_griddeddata_on_map(
         if var_name is not None:
             var_str = var_name  # + VARS.unit_str
             if unit is not None:
-                if not str(unit) in ["1", "no_unit"]:
+                if str(unit) not in ["1", "no_unit"]:
                     var_str += f" [{unit}]"
 
             cbar.set_label(var_str)
@@ -452,7 +451,7 @@ def plot_map_aerocom(data, region, **kwargs):
     if not isinstance(data, GriddedData):
         raise ValueError(
             "This plotting method needs an instance of pyaerocom "
-            "GriddedData on input, got: %s" % type(data)
+            f"GriddedData on input, got: {type(data)}"
         )
 
     if isinstance(region, str):
@@ -589,7 +588,7 @@ def plot_nmb_map_colocateddata(
         mew = kwargs.pop("mew")
     except KeyError:
         mew = 1
-    if not coldata.ndim in (3, 4):
+    if coldata.ndim not in (3, 4):
         raise DataDimensionError("only 3D or 4D colocated data objects are supported")
     assert "time" in coldata.dims
 

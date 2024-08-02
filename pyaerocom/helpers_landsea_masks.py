@@ -73,7 +73,7 @@ def download_htap_masks(regions_to_download=None):
 
     paths = []
     for region in regions_to_download:
-        if not region in const.HTAP_REGIONS:
+        if region not in const.HTAP_REGIONS:
             raise ValueError(f"No such HTAP region {region}")
         elif region == "EAS":
             filename = f"{region}htap.nc"
@@ -118,7 +118,7 @@ def get_htap_mask_files(*region_ids):
         raise FileNotFoundError("HTAP mask directory does not exist")
     out = []
     for region in region_ids:
-        if not region in const.HTAP_REGIONS:
+        if region not in const.HTAP_REGIONS:
             raise ValueError(f"No such HTAP region {region}")
         files = glob.glob(os.path.join(mask_dir, f"{region}*.nc"))
         if len(files) != 1:

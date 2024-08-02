@@ -174,7 +174,7 @@ ALL_SITES = [
         ({"station_name": ["Tr*", "Mauna*"]}, ["Trelew", "Mauna_Loa"]),
         (
             {"station_name": ["Tr*", "Mauna*"], "negate": "station_name"},
-            [x for x in ALL_SITES if not x in ["Trelew", "Mauna_Loa"]],
+            [x for x in ALL_SITES if x not in ["Trelew", "Mauna_Loa"]],
         ),
         (
             {"altitude": [0, 1000], "negate": "altitude"},
@@ -241,15 +241,15 @@ def test_from_single_station_data():
 
 
 def test_last_meta_idx(aeronetsunv3lev2_subset: UngriddedData):
-    assert isinstance(aeronetsunv3lev2_subset.last_meta_idx, (np.ndarray, np.generic))
+    assert isinstance(aeronetsunv3lev2_subset.last_meta_idx, np.ndarray | np.generic)
 
 
 def test_has_flag_data(aeronetsunv3lev2_subset: UngriddedData):
-    assert isinstance(aeronetsunv3lev2_subset.has_flag_data, (np.bool_, bool))
+    assert isinstance(aeronetsunv3lev2_subset.has_flag_data, np.bool_ | bool)
 
 
 def test_is_filtered(aeronetsunv3lev2_subset: UngriddedData):
-    assert isinstance(aeronetsunv3lev2_subset.is_filtered, (np.bool_, bool))
+    assert isinstance(aeronetsunv3lev2_subset.is_filtered, np.bool_ | bool)
 
 
 def test_available_meta_keys(aeronetsunv3lev2_subset: UngriddedData):

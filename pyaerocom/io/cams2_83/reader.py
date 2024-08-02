@@ -2,21 +2,18 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterator
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 
-from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
 from pyaerocom.io.gridded_reader import GriddedReader
-
-# from pyaerocom.units_helpers import UALIASES
 
 """
 TODO:
@@ -88,7 +85,7 @@ def model_paths(
     root_path: Path | str = DATA_FOLDER_PATH,
     run: str | RunType = RunType.FC,
 ) -> Iterator[Path]:
-    for date in dates:
+    for date in dates:  # noqa: F402
         path = __model_path(model, date, run=run, root_path=root_path)
         if not path.is_file():
             logger.warning(f"Could not find {path.name}. Skipping {date}")
@@ -316,7 +313,7 @@ class ReadCAMS2_83(GriddedReader):
     def run_type(self, val):
         if val is None:
             raise AttributeError("run_type cannot be set as None")
-        elif type(val) != RunType:
+        elif not isinstance(val, RunType):
             raise AttributeError(f"run_type cannot be set as {type(val)}, but must be a RunType")
 
         self._run_type = val
@@ -382,7 +379,7 @@ class ReadCAMS2_83(GriddedReader):
 
     @daterange.setter
     def daterange(self, dates: pd.DatetimeIndex | list[datetime] | tuple[datetime]):
-        if not isinstance(dates, (pd.DatetimeIndex, list, tuple)):
+        if not isinstance(dates, pd.DatetimeIndex | list | tuple):
             raise TypeError(f"{dates} need to be a pandas DatetimeIndex or 2 datetimes")
 
         self._daterange = parse_daterange(dates)

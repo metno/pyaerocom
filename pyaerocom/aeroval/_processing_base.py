@@ -3,11 +3,8 @@ import abc
 from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.aeroval.json_utils import round_floats
-from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
-from pyaerocom.utils import recursive_defaultdict
 
 
 class HasConfig:

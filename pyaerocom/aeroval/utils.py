@@ -127,7 +127,7 @@ def compute_model_average_and_diversity(
     if len(ignore_models) > 0:
         models = []
         for model in model_names:
-            if not model in ignore_models:
+            if model not in ignore_models:
                 models.append(model)
     else:
         models = model_names

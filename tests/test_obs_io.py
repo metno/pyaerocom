@@ -35,7 +35,7 @@ def test_OBS_WAVELENGTH_TOL_NM():
 
 
 def test_OBS_ALLOW_ALT_WAVELENGTHS():
-    assert OBS_ALLOW_ALT_WAVELENGTHS == True
+    assert OBS_ALLOW_ALT_WAVELENGTHS is True
 
 
 def test_ObsVarCombi():

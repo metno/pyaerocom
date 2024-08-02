@@ -26,3 +26,59 @@ b33da064f6ca28072d93340f8a9fdbcf219bcbd9
 9b7b52365480f5e9205012a849708b7ce7e201a5
 # 2023-09-29: format with black
 81d3cc9262f1746f0480a49ca804c9a2b970c17a
+# 2024-07-29: format with ruff
+d20d663e423b3e55a076a98ed136a4102e05a5df
+# 2024-07-29: Test for membership should be `not in`, E713
+071aac32021c449986d362e409304efb694c0fcf
+# 2024-07-29: Remove assignment to unused variable, F841
+09ada16f33fd9e962008f441cbbbdb7153288e10
+# 2024-07-29: Remove unused import, F401
+85a0b615888b9dca2b03498a4b5de0377e899bf5
+# 2024-07-29: format with ruff
+bf26bc28591df88bcfe738a4e9da935d37fc0b66
+# 2024-07-29:  Remove extraneous `f` prefix, F541
+edb47cfdecc9e0eafdc5d23de85efbdc7dfa38c4
+# 2024-07-29: Convert to `X | Y`, UP007
+93f2a57c2ec3d73eb895c4e4e63fa31c6aaee540
+# 2024-07-30: Convert to f-string
+9a80795c3ec6efad329bec01581f614104291f62
+# 2024-07-30: Replace with `is None`
+4562a88849833335ee158bf58433f93a05dbde98
+# 2024-07-30: replace type comparison
+a82a63067a671931821c1c731277e1e7eb1bbc09
+# 2024-07-30: Do not use bare `except`, E722
+5e1b0580e5b70290c3a858d746a823134fc74e42
+# 2024-07-30: Import from `collections.abc`, UP035
+3f93772e79f12ceb5503f52959ba91b1f3cef2b4
+# 2024-07-30: Replace with `list`, `tuple`, ... UP006
+699b1276bfb2f489551c2745a4cbf0a925bd4fc5
+# 2024-07-30: Replace with str.format & f-string, UP031 & UP032
+20e647ca2764a02286e87cf0209cbd6171e58836
+# 2024-07-30: Redundant open parameters, UP015
+395605b4dbf452b3aae41cdfb6ee2076a82b4bac
+# 2024-07-30: Use `X | Y` in `isinstance` call, UP038
+8276fde021937a673141160d4c0bd38c710f2835
+# 2024-07-30: Unused variable, F841
+44878d9ab6b3fab3b536f46949c108a04b8adcb5
+# 2024-07-30: Import shadowed by loop variable, F402
+44bece181bed06997b5e3bf36cd1d2e355846220
+# 2024-07-30: Remove extraneous parentheses, UP034
+9942c924d890ff9f5e17d40d32d7a39ee923b89f
+# 2024-07-30: Import shadowed by loop variable, F402
+6fecbfdffc64c4a9722af64ff9636db1d1a586b5
+# 2024-07-30: Use is True/False, E712
+333c74fbf86638b543376b3d09179696ea29e8fa
+# 2024-07-30: redundant & unused imports, F811 & F401
+2d1338e64b6eee629419bfdf57ee16534922afbf
+# 2024-07-30: Ambiguous variable name, E741
+e19876ff5653ceddcb047934989ad09ab7ecef30
+# 2024-07-30: Define functions instead of assign lambdas, E731
+nc5a8b4b2b709d9b7adae01e253f638d7d8852ee3
+# 2024-07-30: f-string without any placeholders, F541
+96fae16fbb35ad9f87d93cbe9aaccb3ef05180ec
+# 2024-07-30: Unnecessary `int`/`float` call, UP018
+c23eebb590baa98771a66b9be5147aa137829af1
+# 2024-07-30: Use `super()` instead of `super(__class__, self)`, UP008
+6c6af205832e38de344111861b3ae2b0651bd8a1
+# 2024-07-30: Test for object identity should be `is not`, E714
+5ffd364713f32b72758177cf9a0fdfe020d3dd1d

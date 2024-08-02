@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import fnmatch
 from collections import defaultdict
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 import pandas as pd
 

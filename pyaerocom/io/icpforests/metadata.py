@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -396,8 +395,8 @@ class Plots:
 
     def read_file(self, altitudes: dict[str, int]) -> dict[int, dict[int, dict[int, Plot]]]:
         plots: dict[int, dict[int, dict[int, Plot]]] = {}
-        print(f"Starting to read plot metadata")
-        with open(self.plot_file, "r") as f:
+        print("Starting to read plot metadata")
+        with open(self.plot_file) as f:
             f.readline()
             for line in f:
                 words = line.split(";")
@@ -434,7 +433,7 @@ class Plots:
                 plots[country_code][plot_code][sampler_code].add_survey_year(
                     survey_year, start, stop, periods
                 )
-        print(f"Done read plot metadata")
+        print("Done read plot metadata")
         self.plots = plots
         return plots
 
@@ -458,7 +457,7 @@ class Plots:
 
     def get_position(
         self, year: int, country_code: int, plot_code: int, sampler_code: int
-    ) -> Tuple[float, float, int]:
+    ) -> tuple[float, float, int]:
         lat = self._coord_to_desimal(self.plots[country_code][plot_code][sampler_code].lat)
         lon = self._coord_to_desimal(self.plots[country_code][plot_code][sampler_code].lon)
         alt = self.plots[country_code][plot_code][sampler_code].alt
@@ -479,7 +478,7 @@ class Plots:
             minute = int(coord[-2:])
             coord = coord[:-2]
         else:
-            return sign * ((int(coord) / 60.0))
+            return sign * (int(coord) / 60.0)
 
         degree = int(coord)
 
