@@ -6,7 +6,8 @@ from configparser import ConfigParser
 from enum import Enum
 from typing import NamedTuple
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+import yaml
 
 from pyaerocom.data import resources
 
@@ -150,7 +151,38 @@ class _VarWebInfo(BaseModel):
     :param BaseModel: _description_
     """
 
-    var_web_info: dict[str, VariableInfo]
+    def __init__(self, config_file="", **kwargs):
+        pass
+
+    def load_default():
+        config_data: dict = {}
+        with resources.path("pyaerocom.aeroval.data", "var_web_info.yaml") as yaml_file:
+            config_data.update(yaml.safe_load(yaml_file))
+
+    var_web_info: dict[str, VariableInfo] = Field(default_factory=load_default)
+    config_file: str | None = None
+
+    @field_validator("var_web_info")
+    def update_var_web_info(self):
+        if self.config_file:
+            # var_web_info.update()
+            pass
+
+    def update_from_ini(self, filename):
+        cfg = ConfigParser()
+        cfg.read(filename)
+        # remove configparser default
+        cfg_dict = dict()
+        keys = ("menu_name", "vertical_type", "category")
+        for s in cfg.sections():
+            items = []
+            for k in keys:
+                if k in cfg[s]:
+                    items.append(cfg[s][k])
+                else:
+                    raise KeyError(f"missing '{k}' for var '{s}' in {filename}")
+            cfg_dict[s] = tuple(items)
+        self.update(**cfg_dict)
 
 
 class VarWebInfo:
@@ -228,7 +260,7 @@ class VarWebInfo:
         return self._var_web_info.var_web_info.__unicode__()
 
 
-#: Default information for statistical parameters
+#: Default information for statistics
 statistics_defaults = {
     "nmb": {
         "name": "NMB",
