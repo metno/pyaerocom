@@ -107,6 +107,7 @@ class CategoryType(str, Enum):
     deposition = "Deposition"
     temperature = "Temperature"
     particle_ratio = "Particle ratio"
+    vertical_column_density = "Vertical column density"
     UNDEFINED = "UNDEFINED"
 
     def __str__(self):
