@@ -1,5 +1,4 @@
 import logging
-import os
 from time import time
 
 from cf_units import Unit
@@ -90,7 +89,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         annual_stats_constrained = self.cfg.statistics_opts.annual_stats_constrained
 
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
-        regions_json = self.exp_output.regions_file
         regions_how = self.cfg.webdisp_opts.regions_how
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
@@ -131,10 +129,10 @@ class ColdataToJsonEngine(ProcessingEngine):
             raise NotImplementedError(
                 "Cannot yet apply country filtering for 4D colocated data instances"
             )
-        elif not main_freq in freqs:
+        elif main_freq not in freqs:
             raise ConfigError(f"main_freq {main_freq} is not in experiment frequencies: {freqs}")
         if self.cfg.statistics_opts.stats_tseries_base_freq is not None:
-            if not self.cfg.statistics_opts.stats_tseries_base_freq in freqs:
+            if self.cfg.statistics_opts.stats_tseries_base_freq not in freqs:
                 raise ConfigError(
                     f"Base frequency for statistics timeseries needs to be "
                     f"specified in experiment frequencies: {freqs}"
@@ -225,21 +223,17 @@ class ColdataToJsonEngine(ProcessingEngine):
                     regions_how=regions_how,
                     regnames=regnames,
                     meta_glob=meta_glob,
-                    out_dirs=out_dirs,
                 )
         else:
-            logger.info("Processing profile data for vizualization")
+            logger.info("Processing profile data for visualization")
 
-            self._process_profile_data_for_vizualization(
+            self._process_profile_data_for_visualization(
                 data=data,
                 use_country=use_country,
                 region_names=regnames,
                 station_names=coldata.data.station_name.values,
                 periods=periods,
                 seasons=seasons,
-                obs_name=obs_name,
-                var_name_web=var_name_web,
-                out_dirs=out_dirs,
             )
 
         logger.info(
@@ -274,7 +268,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             vert_code = coldata.get_meta_item("vert_code")
         return vert_code
 
-    def _process_profile_data_for_vizualization(
+    def _process_profile_data_for_visualization(
         self,
         data: dict[str, ColocatedData] = None,
         use_country: bool = False,
@@ -282,11 +276,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         station_names: ArrayLike = None,
         periods: tuple[str, ...] = None,
         seasons: tuple[str, ...] = None,
-        obs_name: str = None,
-        var_name_web: str = None,
-        out_dirs: dict = None,
     ):
-        if region_names == None and station_names == None:
+        if region_names is None and station_names is None:
             raise ValueError("Both region_id and station_name can not both be None")
 
         # Loop through regions
@@ -450,14 +441,13 @@ class ColdataToJsonEngine(ProcessingEngine):
         regions_how: str = "default",
         regnames=None,
         meta_glob: dict = None,
-        out_dirs: dict = None,
     ):
-        (ts_objs_weekly, ts_objs_weekly_reg) = _process_sites_weekly_ts(
+        ts_objs_weekly, ts_objs_weekly_reg = _process_sites_weekly_ts(
             coldata, regions_how, regnames, meta_glob
         )
-        outdir = os.path.join(out_dirs["ts/diurnal"])
+
         for ts_data_weekly in ts_objs_weekly:
             self.exp_output.write_station_data(ts_data_weekly)
-        if ts_objs_weekly_reg != None:
+        if ts_objs_weekly_reg is not None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 self.exp_output.write_station_data(ts_data_weekly_reg)

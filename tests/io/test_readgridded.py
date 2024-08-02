@@ -69,8 +69,8 @@ def test_read_var(reader_tm5: ReadGridded, input_args: dict, mean_val: float):
 
 def test_ReadGridded_class_empty():
     r = ReadGridded()
-    assert r.data_id == None
-    assert r.data_dir == None
+    assert r.data_id is None
+    assert r.data_dir is None
     from pyaerocom.io.aerocom_browser import AerocomBrowser
 
     assert isinstance(r.browser, AerocomBrowser)

@@ -24,6 +24,18 @@ from pyaerocom.varnameinfo import VarNameInfo
 logger = logging.getLogger(__name__)
 
 
+def literal_eval_list(val: str):
+    return list(literal_eval(val))
+
+
+def str2list(val: str) -> list[str]:
+    return [x.strip() for x in val.split(",")]
+
+
+def str2bool(val: str) -> bool:
+    return val.lower() in {"true", "1", "t", "yes"}
+
+
 class Variable:
     """Interface that specifies default settings for a variable
 
@@ -69,7 +81,8 @@ class Variable:
         lower limit of allowed value range
     upper_limit : float
         upper limit of allowed value range
-    obs_wavelength_tol_nm : float
+    obs_wavelength_tol_nm : float    literal_eval_list = lambda val: list(literal_eval(val))
+
         wavelength tolerance (+/-) for reading of obsdata. Default is 10, i.e.
         if this variable is defined at 550 nm and obsdata contains measured
         values of this quantity within interval of 540 - 560, then these data
@@ -101,10 +114,6 @@ class Variable:
     map_cbar_ticks : :obj:`list`, optional
         colorbar ticks
     """
-
-    literal_eval_list = lambda val: list(literal_eval(val))
-    str2list = lambda val: [x.strip() for x in val.split(",")]
-    str2bool = lambda val: val.lower() in ("true", "1", "t", "yes")
 
     _TYPE_CONV = {
         "wavelength_nm": float,
@@ -350,7 +359,7 @@ class Variable:
     @property
     def has_unit(self):
         """Boolean specifying whether variable has unit"""
-        return True if not self.units in (1, None) else False
+        return True if self.units not in (1, None) else False
 
     @property
     def lower_limit(self):
@@ -503,7 +512,7 @@ class Variable:
             cfg = self.read_config()
         elif not isinstance(cfg, ConfigParser):
             raise ValueError(f"invalid input for cfg, need config parser got {type(cfg)}")
-        if not var_name in cfg:
+        if var_name not in cfg:
             try:
                 var_name = self._check_aliases(var_name)
             except VariableDefinitionError:
@@ -515,7 +524,7 @@ class Variable:
         # this variable should import settings from another variable
         if "use" in var_info:
             use = var_info["use"]
-            if not use in cfg:
+            if use not in cfg:
                 raise VariableDefinitionError(
                     f"Input variable {var_name} depends on {use} "
                     f"which is not available in variables.ini."
@@ -531,7 +540,7 @@ class Variable:
         if key in self._TYPE_CONV:
             try:
                 val = self._TYPE_CONV[key](val)
-            except:
+            except Exception:
                 pass
         elif key == "units" and val == "None":
             val = "1"

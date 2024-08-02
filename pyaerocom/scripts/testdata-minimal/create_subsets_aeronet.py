@@ -117,8 +117,4 @@ if __name__ == "__main__":
         shutil.copy(revision_files[name], outdir.joinpath("Revision.txt"))
 
     for name, filelist in files.items():
-        print(
-            "Copied {} files for {} into {}".format(
-                len(filelist), name, os.path.dirname(filelist[0])
-            )
-        )
+        print(f"Copied {len(filelist)} files for {name} into {os.path.dirname(filelist[0])}")

@@ -2,6 +2,7 @@
 Interface for reading EEA AqERep files (formerly known as Airbase data).
 """
 
+import glob
 import gzip
 import logging
 import os
@@ -245,7 +246,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             Dict-like object containing the results.
 
         """
-        if not var_name in self.PROVIDES_VARIABLES:
+        if var_name not in self.PROVIDES_VARIABLES:
             raise ValueError(f"Invalid input variable {var_name}")
 
         # there's only one variable in the file
@@ -292,7 +293,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         except UnicodeDecodeError:
             with open(read_filename, encoding="UTF-16") as f:
                 lines = f.readlines()
-        except:
+        except Exception:
             if suffix == ".gz":
                 os.remove(f_out.name)
             raise EEAv2FileError(f"Found corrupt file {filename}. consider deleteing it")
@@ -550,26 +551,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         IOError
             if no files can be found
         """
-        import glob
-        import os
-
-        from pyaerocom._lowlevel_helpers import list_to_shortstr
 
         if pattern is None:
             logger.warning("using default pattern *.* for file search")
             pattern = "*.*"
+
         self.logger.info("Fetching data files. This might take a while...")
         fp = os.path.join(self.data_dir, pattern)
-        files = sorted(glob.glob(fp, recursive=True))
-        if not len(files) > 0:
-            all_str = list_to_shortstr(os.listdir(self.data_dir))
-            # raise DataSourceError('No files could be detected matching file '
-            #                       'mask {} in dataset {}, files in folder {}:\n'
-            #                       'Files in folder:{}'.format(pattern,
-            #                                                   self.data_id,
-            #                                                   self.data_dir,
-            #                                                   all_str))
-        return files
+        return sorted(glob.glob(fp, recursive=True))
 
     def get_station_coords(self, meta_key):
         """
@@ -730,7 +719,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
-                if not var in data_obj.var_idx:
+                if var not in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
             idx += num_times

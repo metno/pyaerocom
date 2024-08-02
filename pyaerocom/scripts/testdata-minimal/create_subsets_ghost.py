@@ -6,6 +6,7 @@ Created on Fri Feb 26 09:17:09 2021
 
 @author: jonasg
 """
+
 import os
 
 import matplotlib.pyplot as plt
@@ -29,7 +30,10 @@ freqs = ["hourly", "daily"]
 varis = ["pm10", "sconco3"]
 datesfiles = ["201810", "201911", "201912"]
 
-filename = lambda var, date: f"{var}_{date}.nc"
+
+def filename(var: str, date: str) -> str:
+    return f"{var}_{date}.nc"
+
 
 files_out = []
 for dsname in datasets:

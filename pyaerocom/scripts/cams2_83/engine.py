@@ -6,7 +6,6 @@ import time
 import warnings
 from pathlib import Path
 from reprlib import repr
-from typing import Tuple
 
 import numpy as np
 import xarray as xr
@@ -33,7 +32,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             logger.info(f"Processing Component: {var}")
             self.process_coldata(coldata[var])
 
-        logger.info(f"Time for wierd plot: {time.time() - start} sec")
+        logger.info(f"Time for weird plot: {time.time() - start} sec")
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
@@ -116,7 +115,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         for key in stats_list:
                             stats_list[key].append(stats[key])
 
-                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
@@ -197,7 +196,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
-    ) -> Tuple[dict[str, list[ColocatedData]], set[str]]:
+    ) -> tuple[dict[str, list[ColocatedData]], set[str]]:
         col_dict = dict()
         var_list = []
 
@@ -211,8 +210,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 var_list.append(obs_var)
 
         for var, cols in col_dict.items():
-            l = sorted(cols, key=lambda x: self._get_day(x.model_name))
-            col_dict[var] = l
+            col_dict[var] = sorted(cols, key=lambda x: self._get_day(x.model_name))
 
         return col_dict, set(var_list)
 

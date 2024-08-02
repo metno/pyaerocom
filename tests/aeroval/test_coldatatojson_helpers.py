@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 import numpy as np
 from pytest import mark, param
 
@@ -45,7 +42,7 @@ def test__prepare_regions_json_helper(region_ids: list[str]):
 
     for region_name, borders in helper[0].items():
         assert region_name in helper[1]
-        assert type(borders) == dict
+        assert type(borders) is dict
         assert "minLat" in borders and -90 <= borders["minLat"] <= 90
         assert "maxLat" in borders and -90 <= borders["maxLat"] <= 90
         assert "minLon" in borders and -180 <= borders["minLon"] <= 180

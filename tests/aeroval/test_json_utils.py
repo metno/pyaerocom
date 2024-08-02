@@ -23,7 +23,7 @@ def json_path(tmp_path: Path) -> Path:
     "raw,precision,rounded",
     [
         pytest.param(
-            float(1.12344567890),
+            1.12344567890,
             5,
             1.12345,
             id="single float",
@@ -41,7 +41,7 @@ def json_path(tmp_path: Path) -> Path:
             id="np.float tuple",
         ),
         pytest.param(
-            dict(bla=np.float128(0.1234455667), blubb=int(1), ha="test"),
+            dict(bla=np.float128(0.1234455667), blubb=1, ha="test"),
             5,
             dict(bla=pytest.approx(0.12345, 1e-5), blubb=1, ha="test"),
             id="mixed dict",
@@ -51,10 +51,10 @@ def json_path(tmp_path: Path) -> Path:
 def test_round_floats(raw, precision: int, rounded):
     set_float_serialization_precision(precision)
     _rounded = round_floats(raw)
-    if type(raw) in (list, tuple):
-        assert type(_rounded) == list
-    if type(raw) == dict:
-        assert type(_rounded) == dict
+    if isinstance(raw, list | tuple):
+        assert type(_rounded) is list
+    if isinstance(raw, dict):
+        assert type(_rounded) is dict
     assert _rounded == rounded
 
 

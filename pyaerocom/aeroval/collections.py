@@ -50,7 +50,7 @@ class BaseCollection(BrowseDict, abc.ABC):
 
         matches = []
         for key in self.keys():
-            if fnmatch(key, name_or_pattern) and not key in matches:
+            if fnmatch(key, name_or_pattern) and key not in matches:
                 matches.append(key)
         if len(matches) == 0:
             raise KeyError(f"No matches could be found that match input {name_or_pattern}")
@@ -149,7 +149,7 @@ class ObsCollection(BaseCollection):
 
         """
         entry = self[key]
-        if not "web_interface_name" in entry:
+        if "web_interface_name" not in entry:
             return key
         return entry["web_interface_name"]
 

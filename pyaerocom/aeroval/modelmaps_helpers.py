@@ -47,14 +47,14 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
 
     try:
         data.check_dimcoords_tseries()
-    except:
+    except Exception:
         data.reorder_dimensions_tseries()
 
     arr = data.to_xarray()
     latname, lonname = "lat", "lon"
     try:
         stacked = arr.stack(station_name=(latname, lonname))
-    except:
+    except Exception:
         latname, lonname = "latitude", "longitude"
         stacked = arr.stack(station_name=(latname, lonname))
 

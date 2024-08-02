@@ -213,8 +213,8 @@ class UngriddedData:
         vars_avail = self.var_idx
 
         for idx, meta in self.metadata.items():
-            if not "var_info" in meta:
-                if not "variables" in meta:
+            if "var_info" not in meta:
+                if "variables" not in meta:
                     raise AttributeError(
                         f"Need either variables (list) or var_info (dict) "
                         f"in meta block {idx}: {meta}"
@@ -307,7 +307,7 @@ class UngriddedData:
             append_vars = list(stat.var_info)
 
             for var in append_vars:
-                if not var in data_obj.var_idx:
+                if var not in data_obj.var_idx:
                     var_count_glob += 1
                     var_idx = var_count_glob
                     data_obj.var_idx[var] = var_idx
@@ -435,7 +435,7 @@ class UngriddedData:
 
         next_idx = max(idx.values()) + 1
         if add_cols is not None:
-            if not isinstance(add_cols, (list, tuple)):
+            if not isinstance(add_cols, list | tuple):
                 raise ValueError("Invalid input for add_cols. Need list or tuple")
             for name in add_cols:
                 if name in idx:
@@ -507,7 +507,7 @@ class UngriddedData:
         datasets = []
         for info in self.metadata.values():
             ds = info["data_id"]
-            if not ds in datasets:
+            if ds not in datasets:
                 datasets.append(ds)
         return datasets
 
@@ -518,7 +518,7 @@ class UngriddedData:
         for info in self.metadata.values():
             try:
                 instr = info["instrument_name"]
-                if instr is not None and not instr in instruments:
+                if instr is not None and instr not in instruments:
                     instruments.append(instr)
             except Exception:
                 pass
@@ -625,7 +625,7 @@ class UngriddedData:
         metakeys = []
         for meta in self.metadata.values():
             for key in meta:
-                if not key in metakeys:
+                if key not in metakeys:
                     metakeys.append(key)
         return metakeys
 
@@ -735,7 +735,7 @@ class UngriddedData:
         for idx, meta in self.metadata.items():
             try:
                 lat, lon = meta["latitude"], meta["longitude"]
-            except:
+            except Exception:
                 logger.warning(f"Could not retrieve lat lon coord at meta index {idx}")
                 continue
             meta_idx.append(idx)
@@ -771,7 +771,7 @@ class UngriddedData:
 
         for i, idx in enumerate(meta_idx):
             meta = self.metadata[idx]
-            if not "country" in meta or meta["country"] is None:
+            if "country" not in meta or meta["country"] is None:
                 country = info[i]["country"]
                 meta["country"] = country
                 meta["country_code"] = info[i]["country_code"]
@@ -789,7 +789,7 @@ class UngriddedData:
         for idx, meta in self.metadata.items():
             try:
                 countries.append(meta["country"])
-            except:
+            except Exception:
                 logger.warning("No country information in meta block", idx)
         if len(countries) == 0:
             logger.warning(
@@ -966,7 +966,7 @@ class UngriddedData:
         stats_ok = []
         for stat in stats:
             for var in vars_to_convert:
-                if not var in stat:
+                if var not in stat:
                     continue
                 if freq is not None:
                     stat.resample_time(
@@ -1005,7 +1005,7 @@ class UngriddedData:
         data_id = None
         pref_attr = None
         for stat in stats:
-            if not "data_id" in stat:
+            if "data_id" not in stat:
                 return None
             elif data_id is None:
                 data_id = stat["data_id"]
@@ -1054,7 +1054,7 @@ class UngriddedData:
         try:
             vars_avail = list(meta["var_info"])
         except KeyError:
-            if not "variables" in meta or meta["variables"] in (None, []):
+            if "variables" not in meta or meta["variables"] in (None, []):
                 raise VarNotAvailableError("Metablock does not contain variable information")
             vars_avail = meta["variables"]
 
@@ -1183,7 +1183,7 @@ class UngriddedData:
                 ignore_index = [ignore_index]
             if not isinstance(ignore_index, list):
                 raise ValueError("Invalid input for ignore_index, need number or list")
-            return [i for i in range(len(self.metadata)) if not i in ignore_index]
+            return [i for i in range(len(self.metadata)) if i not in ignore_index]
 
         # by station name and ignore certation stations
         _iter = []
@@ -1320,7 +1320,7 @@ class UngriddedData:
         # wildcard matching
         for metakey, filterval in str_f.items():
             # key does not exist in this specific meta_block
-            if not metakey in meta:
+            if metakey not in meta:
                 return False
             # check if this key is in negate list (then result will be True
             # for all that do not match the specified filter input value(s))
@@ -1359,7 +1359,7 @@ class UngriddedData:
             return False
 
         for metakey, filterval in list_f.items():
-            if not metakey in meta:
+            if metakey not in meta:
                 return False
             neg = metakey in negate
             metaval = meta[metakey]
@@ -1390,7 +1390,7 @@ class UngriddedData:
                             return False
         # range filter
         for metakey, filterval in range_f.items():
-            if not metakey in meta:
+            if metakey not in meta:
                 return False
             neg = metakey in negate
             match = in_range(meta[metakey], filterval[0], filterval[1])
@@ -1398,7 +1398,7 @@ class UngriddedData:
                 return False
 
         for metakey, filterval in val_f.items():
-            if not metakey in meta:
+            if metakey not in meta:
                 return False
             neg = metakey in negate
             match = meta[metakey] == filterval
@@ -1437,7 +1437,7 @@ class UngriddedData:
         range_f = {}
         val_f = {}
         for key, val in filter_attributes.items():
-            if not key in valid_keys:
+            if key not in valid_keys:
                 raise OSError(
                     f"Invalid input parameter for filtering: {key}. "
                     f"Please choose from {valid_keys}"
@@ -1447,7 +1447,7 @@ class UngriddedData:
                 str_f[key] = val
             elif isnumeric(val):
                 val_f[key] = val
-            elif isinstance(val, (list, np.ndarray, tuple)):
+            elif isinstance(val, list | np.ndarray | tuple):
                 if all([isinstance(x, str) for x in val]):
                     list_f[key] = val
                 elif len(val) == 2 and all([isnumeric(x) for x in val]):
@@ -1456,7 +1456,7 @@ class UngriddedData:
                         if not low < high:
                             raise ValueError("First entry needs to be smaller than 2nd")
                         range_f[key] = [low, high]
-                    except Exception as e:
+                    except Exception:
                         list_f[key] = val
                 else:
                     list_f[key] = val
@@ -1518,7 +1518,7 @@ class UngriddedData:
             if var_name in meta["var_info"]:
                 try:
                     u = meta["var_info"][var_name]["units"]
-                    if not u in units:
+                    if u not in units:
                         units.append(u)
                 except KeyError:
                     add_str = ""
@@ -1689,7 +1689,7 @@ class UngriddedData:
         d = {"station_name": [], "latitude": [], "longitude": [], "altitude": []}
 
         for i, meta in self.metadata.items():
-            if not "station_name" in meta:
+            if "station_name" not in meta:
                 logger.debug(f"Skipping meta-block {i}: station_name is not defined")
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
@@ -1812,7 +1812,7 @@ class UngriddedData:
         region_id : str or list (of strings)
             ID of region or IDs of multiple regions to be combined
         """
-        if not region_id in const.HTAP_REGIONS:
+        if region_id not in const.HTAP_REGIONS:
             raise ValueError(
                 f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
             )
@@ -1881,7 +1881,7 @@ class UngriddedData:
             if isinstance(extract_vars, str):
                 extract_vars = [extract_vars]
             for var in extract_vars:
-                if not var in data.contains_vars:
+                if var not in data.contains_vars:
                     raise VarNotAvailableError(
                         f"No such variable {var} in UngriddedData object. "
                         f"Available vars: {self.contains_vars}"
@@ -1959,7 +1959,7 @@ class UngriddedData:
                         )
 
         if len(meta_matches) == len(self.metadata):
-            logger.info(f"filter_by_projection result in unchanged data object")
+            logger.info("filter_by_projection result in unchanged data object")
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum)
         return new
@@ -2149,7 +2149,7 @@ class UngriddedData:
         UngriddedData
             new data object containing only input variable data
         """
-        if not var_name in self.contains_vars:
+        if var_name not in self.contains_vars:
             # try alias
             _var = const.VARS[var_name].var_name_aerocom
             if _var in self.contains_vars:
@@ -2355,7 +2355,7 @@ class UngriddedData:
                     stop = didx + num
                     new._data[didx:stop, :] = self._data[data_idx]
                     new._data[didx:stop, 0] = i
-                    if not var in _meta_idx_new:
+                    if var not in _meta_idx_new:
                         _meta_idx_new[var] = np.arange(didx, stop)
                     else:
                         _idx = np.append(_meta_idx_new[var], np.arange(didx, stop))
@@ -2559,7 +2559,7 @@ class UngriddedData:
         AttributeError
             if variable name is not available
         """
-        if not var_name in self.var_idx:
+        if var_name not in self.var_idx:
             raise AttributeError(f"Variable {var_name} not available in data")
         idx = self.var_idx[var_name]
         mask = np.where(self._data[:, self._VARINDEX] == idx)[0]
@@ -2643,7 +2643,7 @@ class UngriddedData:
             _check_vars = True
             if isinstance(check_vars_available, str):
                 check_vars_available = [check_vars_available]
-            elif isinstance(check_vars_available, (tuple, np.ndarray)):
+            elif isinstance(check_vars_available, tuple | np.ndarray):
                 check_vars_available = list(check_vars_available)
             if not isinstance(check_vars_available, list):
                 raise ValueError(
@@ -2660,7 +2660,7 @@ class UngriddedData:
             if _check_vars:
                 for var in check_vars_available:
                     try:
-                        if not var in meta["variables"]:
+                        if var not in meta["variables"]:
                             logger.debug(f"No {var} in data of station {name} ({meta['data_id']})")
                             ok = False
                     except Exception:  # attribute does not exist or is not iterable
@@ -2671,7 +2671,7 @@ class UngriddedData:
                         if _check_vars:
                             for var in check_vars_available:
                                 try:
-                                    if not var in meta_other["variables"]:
+                                    if var not in meta_other["variables"]:
                                         logger.debug(
                                             f"No {var} in data of station {name} ({meta_other['data_id']})"
                                         )
@@ -2878,7 +2878,7 @@ class UngriddedData:
         else:
             if not isinstance(var_name, str):
                 raise ValueError("Can only handle single variable (or all -> input var_name=None)")
-            elif not var_name in subset.contains_vars:
+            elif var_name not in subset.contains_vars:
                 raise ValueError(f"Input variable {var_name} is not available in dataset ")
             info_str = var_name
 
@@ -2902,7 +2902,7 @@ class UngriddedData:
                 )
             lons = stat_data["longitude"]
             lats = stat_data["latitude"]
-        if not "label" in kwargs:
+        if "label" not in kwargs:
             kwargs["label"] = info_str
 
         ax = plot_coordinates(
@@ -3027,13 +3027,7 @@ class UngriddedData:
             return StationData()
 
     def __repr__(self):
-        return "{} <networks: {}; vars: {}; instruments: {}; No. of metadata units: {}".format(
-            type(self).__name__,
-            self.contains_datasets,
-            self.contains_vars,
-            self.contains_instruments,
-            len(self.metadata),
-        )
+        return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}"
 
     def __getitem__(self, key):
         if isnumeric(key) or key in self.unique_station_names:

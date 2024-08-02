@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import NewType, Optional, Union
+from typing import NewType
 
 import numpy as np
 from pyaro import list_timeseries_engines, open_timeseries
@@ -17,7 +17,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 logger = logging.getLogger(__name__)
 
 
-MetadataEntry = NewType("MetadataEntry", dict[str, Union[str, list[str]]])
+MetadataEntry = NewType("MetadataEntry", dict[str, str | list[str]])
 Metadata = NewType("Metadata", dict[str, MetadataEntry])
 
 
@@ -79,7 +79,7 @@ class ReadPyaro(ReadUngriddedBase):
 
     def _check_id(self):
         avail_readers = list_timeseries_engines()
-        if not self.config.data_id in avail_readers:
+        if self.config.data_id not in avail_readers:
             logger.warning(
                 f"Could not find {self.config.data_id} in list of available Pyaro readers: {avail_readers}"
             )
@@ -147,7 +147,6 @@ class PyaroToUngriddedData:
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
         units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-        ts_types: dict[str, dict[str, Optional[TsType]]] = {}
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
@@ -236,7 +235,7 @@ class PyaroToUngriddedData:
         return station.metadata
 
     def _make_single_ungridded_metadata(
-        self, station: Station, name: str, ts_type: Optional[TsType], units: dict[str, str]
+        self, station: Station, name: str, ts_type: TsType | None, units: dict[str, str]
     ) -> MetadataEntry:
         entry = dict(
             data_id=self.config.name,
@@ -284,7 +283,7 @@ class PyaroToUngriddedData:
         return ts_type
 
     def _add_ts_type_to_metadata(
-        self, metadata: Metadata, ts_types: dict[str, Optional[TsType]]
+        self, metadata: Metadata, ts_types: dict[str, TsType | None]
     ) -> Metadata:
         new_metadata: Metadata = deepcopy(metadata)
         for idx in new_metadata:

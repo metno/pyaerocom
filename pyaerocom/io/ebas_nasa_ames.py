@@ -66,9 +66,9 @@ class EbasColDef(dict):
 
     def get_wavelength_nm(self):
         """Try to access wavelength information in nm (as float)"""
-        if not "wavelength" in self:
+        if "wavelength" not in self:
             raise KeyError(f"Column variable {self.name} does not contain wavelength information")
-        elif not "nm" in self.wavelength:
+        elif "nm" not in self.wavelength:
             raise NotImplementedError("Wavelength definition is not in nm")
         return float(self.wavelength.split("nm")[0].strip())
 
@@ -126,12 +126,12 @@ class NasaAmesHeader:
     _HEAD_ROWS_MANDATORY = [0, 5, 8, 9, 10, 11]
 
     # conversion methods for first 13 header lines of
-    CONV_STR = lambda l: str(l.strip())
-    CONV_PI = lambda l: "; ".join([x.strip() for x in l.split(";")])
-    CONV_MULTIINT = lambda l: [int(x) for x in l.strip().split()]
-    CONV_MULTIFLOAT = lambda l: [float(x) for x in l.strip().split()]
-    CONV_INT = lambda l: int(l.strip())
-    CONV_FLOAT = lambda l: float(l.strip())
+    CONV_STR = lambda l: str(l.strip())  # noqa: E731,E741
+    CONV_PI = lambda l: "; ".join([x.strip() for x in l.split(";")])  # noqa: E731,E741
+    CONV_MULTIINT = lambda l: [int(x) for x in l.strip().split()]  # noqa: E731,E741
+    CONV_MULTIFLOAT = lambda l: [float(x) for x in l.strip().split()]  # noqa: E731,E741
+    CONV_INT = lambda l: int(l.strip())  # noqa: E731,E741
+    CONV_FLOAT = lambda l: float(l.strip())  # noqa: E731,E741
     _STARTDATE_FMT = "%Y%m%d%H%M%S"
 
     # the parameters that are always in the beginning of the file
@@ -432,7 +432,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
     @property
     def base_date(self):
         """Base date of data as numpy.datetime64[s]"""
-        if not "timezone" in self.meta:
+        if "timezone" not in self.meta:
             raise AttributeError(
                 "Fatal: could not infer base date. Timezone is not available in file header"
             )
@@ -513,7 +513,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             )
         offs = self.base_date
         unit = self.time_unit
-        if not unit in self.TIMEUNIT2SECFAC:
+        if unit not in self.TIMEUNIT2SECFAC:
             raise ValueError(f"Invalid unit for temporal resolution: {unit}")
         mulfac = self.TIMEUNIT2SECFAC[unit]
 
@@ -581,7 +581,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                 "Mismatch between variable definitions in header and "
                 "number of data columns in table\n"
             )
-        if not "timezone" in self.meta:
+        if "timezone" not in self.meta:
             msgs += "Timezone not defined in metadata"
         if msgs:
             raise AttributeError(f"Quality check failed. Messages: {msgs}")
@@ -735,7 +735,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             unit = spl[1]
         data = EbasColDef(name=name, is_flag=True, is_var=False, unit=unit)
 
-        if not "numflag" in name:
+        if "numflag" not in name:
             data.is_var = True
             data.is_flag = False
             for item in spl[2:]:

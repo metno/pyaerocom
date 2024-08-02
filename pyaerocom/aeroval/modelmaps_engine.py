@@ -31,7 +31,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             model_list = self.cfg.model_cfg.keylist()
         try:
             var_list = kwargs["var_list"]
-        except:
+        except Exception:
             var_list = None
         return model_list, var_list
 

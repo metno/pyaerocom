@@ -211,7 +211,7 @@ class ReadEarlinet(ReadUngriddedBase):
         # create empty arrays for all variables that are supposed to be read
         # from file
         for var in vars_to_read:
-            if not var in self._var_info:
+            if var not in self._var_info:
                 self._var_info[var] = Variable(var)
         var_info = self._var_info
 
@@ -532,7 +532,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 # Is floating point single value
                 time = stat.dtime[0]
                 for var in stat.vars_available:
-                    if not var in data_obj.var_idx:
+                    if var not in data_obj.var_idx:
                         VAR_IDX += 1
                         data_obj.var_idx[var] = VAR_IDX
 
@@ -586,11 +586,11 @@ class ReadEarlinet(ReadUngriddedBase):
                     if read_err:
                         data_obj._data[idx:stop, col_idx["dataerr"]] = err
 
-                    if not var in meta_idx[meta_key]:
+                    if var not in meta_idx[meta_key]:
                         meta_idx[meta_key][var] = []
                     meta_idx[meta_key][var].extend(list(range(idx, stop)))
 
-                    if not var in metadata[meta_key]["variables"]:
+                    if var not in metadata[meta_key]["variables"]:
                         metadata[meta_key]["variables"].append(var)
 
                     idx += add
@@ -613,7 +613,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         files = glob.glob(f"{self.data_dir}/EXCLUDE/*.txt")
         for i, file in enumerate(files):
-            if not os.path.basename(file) in self.EXCLUDE_CASES:
+            if os.path.basename(file) not in self.EXCLUDE_CASES:
                 continue
             count = 0
             num = None
@@ -661,7 +661,7 @@ class ReadEarlinet(ReadUngriddedBase):
         logger.info("Fetching EARLINET data files. This might take a while...")
         patterns = []
         for var in vars_to_retrieve:
-            if not var in self.VAR_PATTERNS_FILE:
+            if var not in self.VAR_PATTERNS_FILE:
                 from pyaerocom.exceptions import VarNotAvailableError
 
                 raise VarNotAvailableError(f"Input variable {var} is not supported")
@@ -671,7 +671,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 if "." in pattern:
                     raise NotImplementedError("filetype delimiter . not supported")
                 spl = _pattern.split(".")
-                if not "*" in spl[0]:
+                if "*" not in spl[0]:
                     raise AttributeError(f"Invalid file pattern: {_pattern}")
                 spl[0] = spl[0].replace("*", pattern)
                 _pattern = ".".join(spl)
@@ -684,7 +684,7 @@ class ReadEarlinet(ReadUngriddedBase):
             for _pattern in patterns:
                 for path in paths:
                     file = os.path.basename(path)
-                    if not _pattern in file:
+                    if _pattern not in file:
                         continue
                     elif file in exclude:
                         self.excluded_files.append(path)

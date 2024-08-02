@@ -170,7 +170,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         try:
             self.LOCAL_TMP_DIR = const.LOCAL_TMP_DIR
-        except:
+        except Exception:
             self.LOCAL_TMP_DIR = const.CACHEDIR
 
         # some gridding constants
@@ -399,9 +399,9 @@ class ReadL2DataBase(ReadUngriddedBase):
                                 _key
                             ]
                         elif len(input_shape) == 4:
-                            data_obj._data[_key][
-                                0 : file_data[_key].shape[0], :, :, :
-                            ] = file_data[_key]
+                            data_obj._data[_key][0 : file_data[_key].shape[0], :, :, :] = (
+                                file_data[_key]
+                            )
                         else:
                             pass
 
@@ -435,9 +435,9 @@ class ReadL2DataBase(ReadUngriddedBase):
                                     _key
                                 ]
                             elif len(current_shape) == 4:
-                                tmp_data[
-                                    0 : data_obj._data[_key].shape[0], :, :, :
-                                ] = data_obj._data[_key]
+                                tmp_data[0 : data_obj._data[_key].shape[0], :, :, :] = (
+                                    data_obj._data[_key]
+                                )
                             else:
                                 pass
 
@@ -601,13 +601,27 @@ class ReadL2DataBase(ReadUngriddedBase):
                     continue
                 # 1D data
                 # 3D data
-                ds[var + "_mean"] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(
-                    _data[var]["mean"],
-                    (len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])),
+                ds[var + "_mean"] = (
+                    (time_dim_name, lat_dim_name, lon_dim_name),
+                    np.reshape(
+                        _data[var]["mean"],
+                        (
+                            len(ds[time_dim_name]),
+                            len(_data[lat_dim_name]),
+                            len(_data[lon_dim_name]),
+                        ),
+                    ),
                 )
-                ds[var + "_numobs"] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(
-                    _data[var]["numobs"],
-                    (len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])),
+                ds[var + "_numobs"] = (
+                    (time_dim_name, lat_dim_name, lon_dim_name),
+                    np.reshape(
+                        _data[var]["numobs"],
+                        (
+                            len(ds[time_dim_name]),
+                            len(_data[lat_dim_name]),
+                            len(_data[lon_dim_name]),
+                        ),
+                    ),
                 )
 
                 # remove _FillVar attribute for coordinate variables as CF requires it
@@ -639,7 +653,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         try:
             for name in global_attributes:
                 ds.attrs[name] = global_attributes[name]
-        except:
+        except Exception:
             pass
 
         ds.to_netcdf(netcdf_filename)

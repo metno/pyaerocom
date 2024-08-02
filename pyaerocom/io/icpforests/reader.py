@@ -4,7 +4,6 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Tuple
 
 import numpy as np
 from tqdm import tqdm
@@ -208,14 +207,14 @@ class ReadICPForest(ReadUngriddedBase):
         stations: dict[str, dict[str, Station]] = {}
         if self.metadata is None:
             if self.data_dir is None:
-                raise ValueError(f"Data Dir is not read yet")
+                raise ValueError("Data Dir is not read yet")
 
             self.metadata = MetadataReader(self.data_dir)
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.PROVIDES_VARIABLES
 
-        with open(filename, "r") as f:
+        with open(filename) as f:
             f.readline()
 
             for line_nr, line in tqdm(enumerate(f)):
@@ -233,8 +232,6 @@ class ReadICPForest(ReadUngriddedBase):
                     or sampler_code == 8
                 ):
                     continue
-
-                sampler_type = self.metadata.deposition_type[sampler_code]
 
                 period = int(words[6])
                 start = words[4]
@@ -260,7 +257,7 @@ class ReadICPForest(ReadUngriddedBase):
                     self.metadata.plots.plots[country_code][plot_code][sampler_code].survey_years[
                         year
                     ]
-                except KeyError as e:
+                except KeyError:
                     logger.warning(
                         f"Year {year} can't be found for {country_code=}, {plot_code=}, {sampler_code=}. Only years found are {self.metadata.plots.plots[country_code][plot_code][sampler_code].survey_years.keys()}"
                     )
@@ -370,7 +367,7 @@ class ReadICPForest(ReadUngriddedBase):
         period: int,
         start: str | datetime,
         stop: str | datetime,
-    ) -> Tuple[float | None, datetime | None, str | None]:
+    ) -> tuple[float | None, datetime | None, str | None]:
         if start != "" and stop != "":
             if isinstance(start, str):
                 start = datetime.strptime(start, "%Y-%m-%d")
@@ -383,7 +380,7 @@ class ReadICPForest(ReadUngriddedBase):
             return (stop - start).days, start, self._get_tstype(start, stop)
 
         if self.metadata is None:
-            raise ValueError(f"Metadata is not read yet")
+            raise ValueError("Metadata is not read yet")
 
         try:
             days = self.metadata.plots.get_days(year, country_code, plot_code, sampler_code)

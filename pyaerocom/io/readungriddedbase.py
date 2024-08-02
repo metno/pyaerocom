@@ -227,7 +227,7 @@ class ReadUngriddedBase(abc.ABC):
         self._add_aux_variables()
 
         if data_id is not None:
-            if not data_id in self.SUPPORTED_DATASETS:
+            if data_id not in self.SUPPORTED_DATASETS:
                 raise AttributeError(f"Dataset {data_id} not supported by this interface")
             self._data_id = data_id
 
@@ -312,12 +312,12 @@ class ReadUngriddedBase(abc.ABC):
     def _add_aux_variables(self):
         """Helper that makes sure all auxiliary variables can be computed"""
         for var in self.AUX_REQUIRES:
-            if not var in self.AUX_FUNS:
+            if var not in self.AUX_FUNS:
                 raise AttributeError(
                     f"Fatal: no computation method defined for auxiliary variable {var}. "
                     f"Please specify method in class header dictionary AUX_FUNS"
                 )
-            if not var in self.PROVIDES_VARIABLES:
+            if var not in self.PROVIDES_VARIABLES:
                 self.PROVIDES_VARIABLES.append(var)
 
     def _add_additional_vars(self, vars_to_retrieve):
@@ -455,7 +455,7 @@ class ReadUngriddedBase(abc.ABC):
         vars_to_compute = []
 
         for var in vars_to_retrieve:
-            if not var in self.PROVIDES_VARIABLES:
+            if var not in self.PROVIDES_VARIABLES:
                 raise ValueError(f"Invalid variable {var}")
             elif var in self.AUX_REQUIRES:
                 vars_to_compute.append(var)
@@ -486,13 +486,13 @@ class ReadUngriddedBase(abc.ABC):
         dict
             updated data object now containing also computed variables
         """
-        if not "var_info" in data:
+        if "var_info" not in data:
             data["var_info"] = {}
         for var in vars_to_compute:
             required = self.AUX_REQUIRES[var]
             missing = []
             for req in required:
-                if not req in data:
+                if req not in data:
                     missing.append(req)
 
             if len(missing) == 0:

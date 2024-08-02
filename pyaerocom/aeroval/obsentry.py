@@ -99,7 +99,7 @@ class ObsEntry(BrowseDict):
                     f"Cannot initialise auxiliary setup for {self.obs_id}. "
                     f"Aux obs reading is so far only possible for ungridded observations."
                 )
-            if not self.obs_id in const.OBS_IDS_UNGRIDDED:
+            if self.obs_id not in const.OBS_IDS_UNGRIDDED:
                 try:
                     const.add_ungridded_post_dataset(**self)
                 except Exception:
@@ -140,7 +140,7 @@ class ObsEntry(BrowseDict):
             val = vc[var]
         else:
             raise ValueError(f"invalid value for obs_vert_type: {vc}")
-        if not val in self.SUPPORTED_VERT_CODES:
+        if val not in self.SUPPORTED_VERT_CODES:
             raise ValueError(
                 f"invalid value for obs_vert_type: {val}. Choose from "
                 f"{self.SUPPORTED_VERT_CODES}."
@@ -150,7 +150,7 @@ class ObsEntry(BrowseDict):
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
 
-        if not self.is_superobs and not isinstance(self.obs_id, (str, dict)):
+        if not self.is_superobs and not isinstance(self.obs_id, str | dict):
             raise ValueError(
                 f"Invalid value for obs_id: {self.obs_id}. Need str or dict "
                 f"or specification of ids and variables via obs_compute_post"
@@ -167,17 +167,17 @@ class ObsEntry(BrowseDict):
                 f"It may be specified for all variables (as string) "
                 f"or per variable using a dict"
             )
-        elif isinstance(ovt, str) and not ovt in self.SUPPORTED_VERT_CODES:
+        elif isinstance(ovt, str) and ovt not in self.SUPPORTED_VERT_CODES:
             self.obs_vert_type = self._check_ovt(ovt)
         elif isinstance(self.obs_vert_type, dict):
             for var_name, val in self.obs_vert_type.items():
-                if not val in self.SUPPORTED_VERT_CODES:
+                if val not in self.SUPPORTED_VERT_CODES:
                     raise ValueError(
                         f"Invalid value for obs_vert_type: {self.obs_vert_type} "
                         f"(variable {var_name}). Supported codes are {self.SUPPORTED_VERT_CODES}."
                     )
         ovl = self.instr_vert_loc
-        if isinstance(ovl, str) and not ovl in self.SUPPORTED_VERT_LOCS:
+        if isinstance(ovl, str) and ovl not in self.SUPPORTED_VERT_LOCS:
             raise AttributeError(
                 f"Invalid value for instr_vert_loc: {ovl} for {self.obs_id}. "
                 f"Please choose from: {self.SUPPORTED_VERT_LOCS}"

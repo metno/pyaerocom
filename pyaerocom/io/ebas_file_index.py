@@ -161,14 +161,14 @@ class EbasSQLRequest(BrowseDict):
             req += f"station_altitude>{low} and station_altitude<{high}"
             add_cond += 1
         if self.lon_range is not None:
-            l, r = self.lon_range
+            west, east = self.lon_range
             req += " and " if add_cond else " where "
-            req += f"station_longitude>{l} and station_longitude<{r}"
+            req += f"station_longitude>{west} and station_longitude<{east}"
             add_cond += 1
         if self.lat_range is not None:
-            s, n = self.lat_range
+            south, north = self.lat_range
             req += " and " if add_cond else " where "
-            req += f"station_latitude>{s} and station_latitude<{n}"
+            req += f"station_latitude>{south} and station_latitude<{north}"
             add_cond += 1
         if self.instrument_types is not None:
             req += " and " if add_cond else " where "

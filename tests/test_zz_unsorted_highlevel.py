@@ -38,7 +38,7 @@ def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
     mean_vals = []
     std_vals = []
     for stat in aeronetsunv3lev2_subset.to_station_data_all()["stats"]:
-        if not "od550aer" in stat:
+        if "od550aer" not in stat:
             no_odcount += 1
             continue
         td = stat.od550aer[:100]
@@ -58,7 +58,7 @@ def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
     mean_vals = []
     std_vals = []
     for stat in aeronetsunv3lev2_subset.to_station_data_all()["stats"]:
-        if not "ang4487aer" in stat:
+        if "ang4487aer" not in stat:
             no_odcount += 1
             continue
         td = stat.ang4487aer[:100]

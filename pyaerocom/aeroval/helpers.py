@@ -4,7 +4,6 @@ from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
-from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import (
     get_highest_resolution,

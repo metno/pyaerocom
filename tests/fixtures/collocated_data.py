@@ -113,11 +113,6 @@ def _create_fake_trends_coldata_3d():
     statnames = [f"FakeStation{c}" for c in range(statnum)]
 
     data = np.ones((2, timenum, statnum))
-    xrange_modulation = np.linspace(0, np.pi * 40, timenum)
-    # data[1] += 0.1 #+10% model bias
-
-    # Sets seed to always get same trends
-    # np.random.seed(13)
 
     trend_slops = [1, 2, 50, -3]
 

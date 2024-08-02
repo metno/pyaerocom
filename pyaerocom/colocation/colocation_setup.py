@@ -1,9 +1,10 @@
 import logging
 import os
 import sys
+from collections.abc import Callable
 from functools import cached_property
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 import pandas as pd
 from pydantic import (
@@ -459,7 +460,7 @@ class ColocationSetup(BaseModel):
         save_coldata: bool = False,
         **kwargs,
     ) -> None:
-        super(ColocationSetup, self).__init__(
+        super().__init__(
             model_id=model_id,
             obs_config=obs_config,
             obs_id=obs_id,

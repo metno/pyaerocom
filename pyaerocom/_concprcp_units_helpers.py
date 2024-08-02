@@ -22,12 +22,8 @@ def translate_rate_units_implicit(unit_implicit, ts_type):
 
     # check if unit is explicitly defined as implicit and if yes add frequency
     # string
-    found = False
-    for imp_unit in DEP_IMPLICIT_UNITS:
-        if unit == imp_unit:
-            unit = f"{imp_unit} {freq_si}-1"
-            found = True
-            break
+    if unit in DEP_IMPLICIT_UNITS:
+        unit = f"{unit} {freq_si}-1"
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
     # ug m-2 h-1 for hourly data).
@@ -40,7 +36,7 @@ def translate_rate_units_implicit(unit_implicit, ts_type):
 
     # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
     # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
-    if not freq_si_str in str(unit):
+    if freq_si_str not in str(unit):
         raise NotImplementedError(
             f"Cannot yet handle wdep in {unit} but {freq} sampling frequency"
         )
@@ -87,7 +83,7 @@ def check_pr_units(gridded):  # pragma: no cover
 
     # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
     # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
-    if not freq_si_str in str(unit):
+    if freq_si_str not in str(unit):
         raise NotImplementedError(
             f"Cannot yet handle wdep in {unit} but {freq} sampling frequency"
         )
@@ -113,7 +109,7 @@ def _check_prlim_units(prlim, prlim_units):  # pragma: no cover
     prlim_units = f"m {spl[1]}"
     prlim_freq = spl[1][:-2]  # it endswith -1
     # convert the freque
-    if not prlim_freq in SI_TO_TS_TYPE:
+    if prlim_freq not in SI_TO_TS_TYPE:
         raise ValueError(
             f"frequency in prlim_units must be either of the "
             f"following values: {list(SI_TO_TS_TYPE)}."

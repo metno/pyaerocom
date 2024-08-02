@@ -56,11 +56,6 @@ class _VarWebScaleAndColormap(BaseModel):
 
 
 class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
-    def __init__(self, *args, **kwargs):
-        # run arguments through pydantic
-        wvsc = _VarWebScaleAndColormap(scale_colmaps=kwargs)
-        super().__init__(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
-
     def __init__(self, config_file="", **kwargs):
         """This class contains scale and colmap informations and is implemented as dict to allow
         json serialization. It reads it inital data from data/var_scale_colmap.ini.

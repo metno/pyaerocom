@@ -97,7 +97,7 @@ class ReadGAW(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
 
         for var in vars_to_retrieve:
-            if not var in self.PROVIDES_VARIABLES:
+            if var not in self.PROVIDES_VARIABLES:
                 raise ValueError(f"Invalid input variable {var}")
 
         # Iterate over the lines of the file
@@ -360,7 +360,7 @@ class ReadGAW(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
-                if not var in data_obj.var_idx:
+                if var not in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
             idx += totnum

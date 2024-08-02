@@ -78,7 +78,7 @@ def check_outdated(filedir):
     for var, stats in data.items():
         for stat, files in stats.items():
             for file in files:
-                if not file in all_files:
+                if file not in all_files:
                     print("OUTDATED", var, stat)
                     print(file)
                     files_invalid.append(file)
@@ -87,7 +87,7 @@ def check_outdated(filedir):
                     files_valid.append(file)
 
     for key, file in add_files.items():
-        if not file in all_files:
+        if file not in all_files:
             print("OUTDATED (add_files)", key)
             print(file)
             files_invalid.append(file)
@@ -164,9 +164,9 @@ def main():
 
     # directory containing NASA Ames files
     FILEDIR_SRC = r_lowlev.file_dir
-    print(f"checking for invalid files in static file list...")
+    print("checking for invalid files in static file list...")
     CURRENT_OK, files_valid, files_invalid = check_outdated(FILEDIR_SRC)
-    print(f"done...")
+    print("done...")
 
     if not CURRENT_OK:
         print(f"outdated files: {files_invalid}")

@@ -124,7 +124,7 @@ class ReadAuxHandler:
 
         """
         moddir, fname = os.path.split(self.aux_file)
-        if not moddir in sys.path:
+        if moddir not in sys.path:
             sys.path.append(moddir)
         modname = fname.split(".")[0]
         return importlib.import_module(modname)

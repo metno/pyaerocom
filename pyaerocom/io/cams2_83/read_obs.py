@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Iterator
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -34,7 +34,7 @@ def obs_paths(
     root_path: Path | str = DATA_FOLDER_PATH,
     analysis: bool = False,
 ) -> Iterator[Path]:
-    for date in dates:
+    for date in dates:  # noqa: F402
         if isinstance(date, str):
             date = datetime.strptime(date, "%Y%m%d").date()
         if isinstance(date, datetime):
@@ -100,7 +100,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
             files = files[:last_file]
 
         start = time.time()
-        logger.info(f"Start read obs")
+        logger.info("Start read obs")
         # lazy data_iterator returns immediately, unpacked in from_station_data
         data_iterator = self.__reader(vars_to_retrieve, files)
         ungriddeddata = UngriddedData.from_station_data(data_iterator)

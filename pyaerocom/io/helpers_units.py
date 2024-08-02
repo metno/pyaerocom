@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from scipy.constants import Avogadro
 
@@ -128,7 +127,6 @@ def unitconv_wet_depo_bck(data, time, ts_type="monthly"):
     # kg SO4 m-2 s-1 to kg S/ha
     mm_so4 = 0.001 * 32.065 + 0.001 * 15.999 * 4  # kg/mol
     mm_s = 32.065 * 0.001  # kg/mol
-    mm_o = 0.001 * 15.999 * 4  # kg/mol
 
     days_in_month = time.dt.daysinmonth
     monthly_to_sec = days_in_month * 24 * 60 * 60  # Seconds in each

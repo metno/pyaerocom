@@ -3,29 +3,27 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 
 import logging
-import os
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Callable, Literal
+from typing import Literal
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import ColocatedData, TsType
+from pyaerocom import ColocatedData
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from pyaerocom.helpers import start_stop
 from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import (
-    _get_season,
     _get_season_from_months,
     _get_unique_seasons,
     _get_yearly,
@@ -981,7 +979,7 @@ def _process_map_and_scat(
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
                 for i, map_stat in zip(site_indices, map_data):
-                    if not freq in map_stat:
+                    if freq not in map_stat:
                         map_stat[freq] = {}
 
                     if use_dummy:
@@ -1038,7 +1036,7 @@ def _process_map_and_scat(
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
                         site = map_stat["station_name"]
-                        if not site in scat_data:
+                        if site not in scat_data:
                             scat_data[site] = {}
                             scat_data[site]["latitude"] = map_stat["latitude"]
                             scat_data[site]["longitude"] = map_stat["longitude"]
@@ -1135,7 +1133,7 @@ def _apply_annual_constraint(data):
 
     """
     output = {}
-    if not "yearly" in data or data["yearly"] is None:
+    if "yearly" not in data or data["yearly"] is None:
         raise ConfigError(
             "Cannot apply annual_stats_constrained option. "
             'Please add "yearly" in your setup (see attribute '
@@ -1247,7 +1245,7 @@ def _select_period_season_coldata(coldata, period, season):
     if len(arr.time) == 0:
         raise DataCoverageError(f"No data available in period {period}")
     if season != "all":
-        if not season in arr.season:
+        if season not in arr.season:
             raise DataCoverageError(f"No data available in {season} in period {period}")
         elif TsType(coldata.ts_type) < "monthly":
             raise TemporalResolutionError(
@@ -1310,7 +1308,7 @@ def _process_heatmap_data(
                             if add_trends and freq != "daily":
                                 stats.update(**trend_stats)
 
-                        except (DataCoverageError, TemporalResolutionError) as e:
+                        except (DataCoverageError, TemporalResolutionError):
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats
@@ -1414,7 +1412,7 @@ def _process_statistics_timeseries(
         )
 
     output = {}
-    if not data_freq in data or data[data_freq] is None:
+    if data_freq not in data or data[data_freq] is None:
         raise TemporalResolutionError(
             f"failed to compute statistics timeseries, no co-located data "
             f"available in specified base resolution {data_freq}"

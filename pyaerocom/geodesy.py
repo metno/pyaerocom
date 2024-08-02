@@ -99,7 +99,7 @@ def get_country_info_coords(coords):
     """
     if isinstance(coords, np.ndarray):
         coords = list(coords)
-    if not isinstance(coords, (list, tuple)):
+    if not isinstance(coords, list | tuple):
         raise ValueError("Invalid input for coords, need list or tuple or array")
 
     geo = Geocoder_Reverse_NE()
@@ -343,7 +343,7 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     float
         horizontal distance between input coordinates in km
     """
-    hav = lambda d_theta: np.sin(d_theta / 2.0) ** 2
+    hav = lambda d_theta: np.sin(d_theta / 2.0) ** 2  # noqa: E731
 
     d_lon = np.radians(lon1 - lon0)
     d_lat = np.radians(lat1 - lat0)

@@ -123,10 +123,10 @@ class EbasVarInfo(BrowseDict):
         if conf_reader is None:
             conf_reader = self.open_config()
 
-        if not var_name in conf_reader:
+        if var_name not in conf_reader:
             # this will raise Variable
             var_name = const.VARS[var_name].var_name_aerocom
-            if not var_name in conf_reader:
+            if var_name not in conf_reader:
                 raise VarNotAvailableError(
                     f"Variable {var_name} is not available in EBAS interface"
                 )

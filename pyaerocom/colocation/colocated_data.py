@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import warnings
 from ast import literal_eval
 from functools import cached_property
 from pathlib import Path
@@ -152,7 +151,7 @@ class ColocatedData(BaseModel):
     def __init__(
         self, data: Path | str | xr.DataArray | np.ndarray | None = None, **kwargs
     ) -> None:
-        super(ColocatedData, self).__init__(data=data, **kwargs)
+        super().__init__(data=data, **kwargs)
 
     #################################
     ##        Attributes
@@ -907,7 +906,7 @@ class ColocatedData(BaseModel):
         nc = self.num_coords
         try:
             ncd = self.num_coords_with_data
-        except:
+        except Exception:
             ncd = np.nan
         if self.has_latlon_dims:
             dim = ("latitude", "longitude")

@@ -289,7 +289,7 @@ class ReadAirNow(ReadUngriddedBase):
                 on_bad_lines="skip",
                 dtype={2: str, 4: float, 7: float},
             )
-        except:
+        except Exception:
             encoding = self.get_file_encoding(file)
             df = pd.read_csv(
                 file,
@@ -331,8 +331,7 @@ class ReadAirNow(ReadUngriddedBase):
         """
         logger.info("Read AirNow data file(s)")
         file_vars_to_retrieve = [self.VAR_MAP[x] for x in vars_to_retrieve]
-        # initialize empty dataframe
-        varcol = self.FILE_COL_NAMES.index("variable")
+
         arrs = []
         unique_stat_ids = None
         for i in tqdm(range(len(files)), disable=None):
@@ -342,13 +341,13 @@ class ReadAirNow(ReadUngriddedBase):
                 arrs.append(filedata[filedata["variable"] == filevar].values)
                 if unique_stat_ids is None:
                     unique_stat_ids = np.unique(
-                        (arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
+                        arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]
                     )
                 else:
                     try:
                         unique_stat_ids = np.union1d(
                             unique_stat_ids,
-                            np.unique((arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])),
+                            np.unique(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")]),
                         )
                     except (ValueError, TypeError):
                         print(arrs[-1][:, self.FILE_COL_NAMES.index("station_id")])
@@ -418,11 +417,11 @@ class ReadAirNow(ReadUngriddedBase):
             # there are stations with a all numeric station ID, but type hints in pd.read_csv made sure
             # they are read as str...
             if unique_stat_ids is None:
-                statlist = np.unique((subset[:, statcol]))
+                statlist = np.unique(subset[:, statcol])
             else:
                 statlist = unique_stat_ids
             for stat_id in tqdm(statlist, desc=var, disable=None):
-                if not stat_id in stat_ids:
+                if stat_id not in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id
                 if statmask.sum() == 0:
@@ -485,7 +484,7 @@ class ReadAirNow(ReadUngriddedBase):
             encoding = "cp863"
             with open(filename, encoding=encoding) as infile:
                 linedata = infile.readlines()
-        except:
+        except Exception:
             logger.info(f"unforeseen encoding in file {filename}! Trying to determine encoding")
             try:
                 encoding = self.get_file_encoding(filename)
@@ -493,9 +492,9 @@ class ReadAirNow(ReadUngriddedBase):
                 with open(filename, encoding=encoding) as infile:
                     linedata = infile.readlines()
             except MemoryError:
-                logger.info(f"could not determine encoding due to MemoryError: Skipping file...")
+                logger.info("could not determine encoding due to MemoryError: Skipping file...")
                 raise DataRetrievalError(
-                    f"could not determine encoding due to MemoryError: Skipping file..."
+                    "could not determine encoding due to MemoryError: Skipping file..."
                 )
                 return ret_data
 

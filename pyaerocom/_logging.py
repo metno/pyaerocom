@@ -72,7 +72,7 @@ def change_verbosity(level: str | int) -> None:
     logger = logging.getLogger("")
     assert logger.handlers, f"{logger.name} logger has not been configured correctly"
     for handler in logger.handlers:
-        if type(handler) == logging.StreamHandler:
+        if type(handler) is logging.StreamHandler:
             handler.setLevel(level)
 
 
