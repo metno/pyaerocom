@@ -173,10 +173,9 @@ class _VarWebInfo(BaseModel):
         cfg.read(filename)
         # remove configparser default
         cfg_dict = dict()
-        keys = ("menu_name", "vertical_type", "category")
         for s in cfg.sections():
             items = []
-            for k in keys:
+            for k in VariableInfo._fields:
                 if k in cfg[s]:
                     items.append(cfg[s][k])
                 else:
