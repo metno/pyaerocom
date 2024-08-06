@@ -945,14 +945,14 @@ def merge_station_data(
     return merged
 
 
-def _get_pandas_freq_and_loffset(freq):
+def _get_pandas_freq_and_offset(freq: str) -> tuple[str, pd.Timedelta | None]:
     """Helper to convert resampling info"""
     if freq in TS_TYPE_TO_PANDAS_FREQ:
         freq = TS_TYPE_TO_PANDAS_FREQ[freq]
-    loffset = None
+    offset = None
     if freq in PANDAS_RESAMPLE_OFFSETS:
-        loffset = PANDAS_RESAMPLE_OFFSETS[freq]
-    return (freq, loffset)
+        offset = PANDAS_RESAMPLE_OFFSETS[freq]
+    return (freq, offset)
 
 
 def make_datetime_index(start, stop, freq):
@@ -983,10 +983,10 @@ def make_datetime_index(start, stop, freq):
     if not isinstance(stop, pd.Timestamp):
         stop = to_pandas_timestamp(stop)
 
-    freq, loffset = _get_pandas_freq_and_loffset(freq)
+    freq, offset = _get_pandas_freq_and_offset(freq)
     idx = pd.date_range(start=start, end=stop, freq=freq)
-    if loffset is not None:
-        idx = idx + pd.Timedelta(loffset)
+    if offset is not None:
+        idx = idx + offset
     return idx
 
 
@@ -1096,7 +1096,7 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         p = int(how.split("percentile")[0])
         how = lambda x: np.nanpercentile(x, p)  # noqa: E731
 
-    freq, loffset = _get_pandas_freq_and_loffset(freq)
+    freq, offset = _get_pandas_freq_and_offset(freq)
     resampler = ts.resample(freq)
 
     data = resampler.agg(how)
@@ -1106,8 +1106,8 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         invalid = numobs < min_num_obs
         if np.any(invalid):
             data.values[invalid] = np.nan
-    if loffset is not None:
-        data.index = data.index + pd.Timedelta(loffset)
+    if offset is not None:
+        data.index = data.index + offset
     return data
 
 
@@ -1165,8 +1165,8 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     if min_num_obs is not None:
         invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
 
-    freq, loffset = _get_pandas_freq_and_loffset(freq)
-    resampler = arr.resample(time=pd_freq, loffset=loffset)
+    freq, offset = _get_pandas_freq_and_offset(freq)
+    resampler = arr.resample(time=pd_freq, offset=offset)
     try:
         aggfun = getattr(resampler, how)
     except AttributeError:
