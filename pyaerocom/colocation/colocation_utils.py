@@ -617,7 +617,7 @@ def colocate_gridded_ungridded(
     """Colocate gridded with ungridded data (low level method)
 
     For high-level colocation see :class:`pyaerocom.colocation.Colocator`
-    and :class:`pyaerocom.colocation.ColocationSetup`
+    and :class:`pyaerocom.ColocationSetup`
 
     Note
     ----

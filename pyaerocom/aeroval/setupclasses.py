@@ -138,14 +138,14 @@ class StatisticsSetup(BaseModel, extra="allow"):
     annual_stats_constrained : bool
         if True, then only sites are considered that satisfy a potentially
         specified annual resampling constraint (see
-        :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs`). E.g.
+        :attr:`pyaerocom.colocation.ColocationSetup.min_num_obs`). E.g.
 
         lets say you want to calculate statistics (bias,
         correlation, etc.) for monthly model / obs data for a given site and
         year. Lets further say, that there are only 8 valid months of data, and
         4 months are missing, so statistics will be calculated for that year
         based on 8 vs. 8 values. Now if
-        :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs` is
+        :attr:`pyaerocom.colocation.ColocationSetup.min_num_obs` is
         specified in way that requires e.g. at least 9 valid months to
         represent the whole year, then this station will not be considered in
         case `annual_stats_constrained` is True, else it will. Defaults to
@@ -457,7 +457,11 @@ class EvalSetup(BaseModel):
             if key in ColocationSetup.model_fields
         }
         # need to pass some default values to the ColocationSetup if not provided in config
-        default_dict = {"save_coldata": True, "keep_data": False, "resample_how": "mean"}
+        default_dict = {
+            "save_coldata": True,
+            "keep_data": False,
+            "resample_how": "mean",
+        }
         for key in default_dict:
             if key not in model_args:
                 model_args[key] = default_dict[key]
