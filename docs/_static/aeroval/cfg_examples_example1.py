@@ -179,7 +179,7 @@ The following specifies some settings to be used for co-location. Note
 that this does note cover all possible settings, but only the ones that
 deviate from the default co-location settings.
 For all co-location options (and their defaults), see here:
-https://pyaerocom.readthedocs.io/en/latest/api.html?highlight=ColocationSetup#pyaerocom.colocation_auto.ColocationSetup
+https://pyaerocom.readthedocs.io/en/latest/api.html#pyaerocom.colocation.colocation_setup.ColocationSetup
 
 Note that all of the available co-location settings can also be specified
 for model and obs entries individually below.

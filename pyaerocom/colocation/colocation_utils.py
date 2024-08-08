@@ -394,7 +394,14 @@ def check_ts_type(data, ts_type):
 
 
 def _colocate_site_data_helper(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+    stat_data,
+    stat_data_ref,
+    var,
+    var_ref,
+    ts_type,
+    resample_how,
+    min_num_obs,
+    use_climatology_ref,
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -445,7 +452,11 @@ def _colocate_site_data_helper(
         obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[var_ref]
     else:
         obs_ts = stat_data_ref.resample_time(
-            var_ref, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
+            var_ref,
+            ts_type=ts_type,
+            how=resample_how,
+            min_num_obs=min_num_obs,
+            inplace=True,
         )[var_ref]
 
     # fill up missing time stamps
@@ -453,7 +464,14 @@ def _colocate_site_data_helper(
 
 
 def _colocate_site_data_helper_timecol(
-    stat_data, stat_data_ref, var, var_ref, ts_type, resample_how, min_num_obs, use_climatology_ref
+    stat_data,
+    stat_data_ref,
+    var,
+    var_ref,
+    ts_type,
+    resample_how,
+    min_num_obs,
+    use_climatology_ref,
 ):
     """
     Helper method that colocates two timeseries from 2 StationData objects
@@ -514,7 +532,11 @@ def _colocate_site_data_helper_timecol(
     # =============================================================================
 
     stat_data.resample_time(
-        var_name=var, ts_type=str(coltst), how=resample_how, min_num_obs=min_num_obs, inplace=True
+        var_name=var,
+        ts_type=str(coltst),
+        how=resample_how,
+        min_num_obs=min_num_obs,
+        inplace=True,
     )
 
     stat_data_ref.resample_time(
@@ -594,8 +616,8 @@ def colocate_gridded_ungridded(
 ):
     """Colocate gridded with ungridded data (low level method)
 
-    For high-level colocation see :class:`pyaerocom.colocation_auto.Colocator`
-    and :class:`pyaerocom.colocation_auto.ColocationSetup`
+    For high-level colocation see :class:`pyaerocom.colocation.Colocator`
+    and :class:`pyaerocom.colocation.ColocationSetup`
 
     Note
     ----
@@ -996,7 +1018,10 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     arr = coldata.data
 
     coords = zip(
-        arr.latitude.values, arr.longitude.values, arr.altitude.values, arr.station_name.values
+        arr.latitude.values,
+        arr.longitude.values,
+        arr.altitude.values,
+        arr.station_name.values,
     )
     if p0 is None:
         p0 = pressure()  # STD conditions sea level
