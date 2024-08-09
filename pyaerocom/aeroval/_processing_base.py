@@ -158,7 +158,7 @@ class DataImporter(HasColocator):
     are / can be specified flexibly for each model and obs entry in an
     analysis setup (:class:`EvalSetup`). Proper handling of these reading
     constraints and data import settings are handled in the
-    :class:`pyaerocom.colocation_auto.Colocator` engine, therefore the reading
+    :class:`pyaerocom.colocation.Colocator` engine, therefore the reading
     in this class is done via the :class:`Colocator` engine.
 
 

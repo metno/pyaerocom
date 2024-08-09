@@ -24,7 +24,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
     processing engine will perform spatial and temporal co-location and will
     store on co-located NetCDF file (e.g. if there are 2 models, 2 observation
     networks and 2 variables there will be 4 co-located NetCDF files).
-    The co-location is done using :class:`pyaerocom.colocation_auto.Colocator`.
+    The co-location is done using :class:`pyaerocom.Colocator`.
 
     """
 
@@ -73,7 +73,9 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 var_list = list(set(obs_vars) & set(var_list))
                 if not var_list:
                     logger.warning(
-                        "var_list %s and obs_vars %s mismatch.", var_list_asked, obs_vars
+                        "var_list %s and obs_vars %s mismatch.",
+                        var_list_asked,
+                        obs_vars,
                     )
                     return
 

@@ -102,6 +102,9 @@ class Config:
     #: ICOS name
     ICOS_NAME = "ICOS"
 
+    # TROPOMI access names
+    TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
+
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
@@ -185,7 +188,11 @@ class Config:
 
     # this dictionary links environment ID's with corresponding subdirectory
     # names that are required to exist in order to load this environment
-    _check_subdirs_cfg = {"metno": "aerocom", "users-db": "AMAP", "local-db": "modeldata"}
+    _check_subdirs_cfg = {
+        "metno": "aerocom",
+        "users-db": "AMAP",
+        "local-db": "modeldata",
+    }
 
     with resources.path("pyaerocom.data", "variables.ini") as path:
         _var_info_file = str(path)
@@ -751,7 +758,11 @@ class Config:
         self.read_config(self.last_config_file, keep_basedirs)
 
     def read_config(
-        self, config_file, basedir=None, init_obslocs_ungridded=False, init_data_search_dirs=False
+        self,
+        config_file,
+        basedir=None,
+        init_obslocs_ungridded=False,
+        init_data_search_dirs=False,
     ):
         """
         Import paths from one of the config ini files
