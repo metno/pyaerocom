@@ -2,12 +2,14 @@ import logging
 import os
 import sys
 from datetime import timedelta
+from enum import Enum
 from functools import cached_property
 from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
+from pyaerocom.tstype import TsType
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -25,6 +27,7 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
+from pydantic.functional_validators import AfterValidator
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
@@ -39,6 +42,11 @@ from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_prec
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
+
+
+def convert_freq_str_to_tstype(freq: str):
+    if isinstance(freq, str):
+        return TsType(freq)
 
 
 class OutputPaths(BaseModel):
@@ -117,9 +125,32 @@ class OutputPaths(BaseModel):
         return out
 
 
+class MapFreqChoices(Enum):
+    hourly = TsType("hourly")
+    daily = TsType("daily")
+    monthly = TsType("monthly")
+    yearly = TsType("yearly")
+    coarsest = TsType("coarsest")  # special attention needed as not a valid ts_type on it's own
+
+
 class ModelMapsSetup(BaseModel):
-    maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
+    # Pydantic ConfigDict
+    model_config = ConfigDict(use_enum_values=True)
+
+    # Class attributes
+    maps_freq: Literal[
+        "hourly", "daily", "monthly", "yearly", "coarsest"
+    ] | MapFreqChoices = Field(default=MapFreqChoices.coarsest, validate_default=True)
     maps_res_deg: PositiveInt = 5
+
+    # TODO: Turn all ts_type attributes into TsType here instead of converting them later in the code
+    @field_validator("maps_freq", mode="before")
+    @classmethod
+    def transform(cls, freq: str | TsType) -> TsType:
+        if isinstance(freq, str):
+            return TsType(freq)
+        else:
+            return freq
 
 
 class CAMS2_83Setup(BaseModel):
@@ -400,6 +431,14 @@ class EvalSetup(BaseModel):
             key: val for key, val in self.model_extra.items() if key in ModelMapsSetup.model_fields
         }
         return ModelMapsSetup(**model_args)
+
+    @field_validator("modelmaps_opts", mode="after")
+    @classmethod
+    def validate_modelmaps_opts_coarsest(cls, modelmaps_opts: ModelMapsSetup):
+        if modelmaps_opts.maps_freq == MapFreqChoices.coarsest:
+            freq = min(TsType(fq) for fq in cls.time_cfg.freqs)
+            freq = min(freq, cls.time_cfg.main_freq)
+            modelmaps_opts.maps_freq = freq
 
     @computed_field
     @cached_property
