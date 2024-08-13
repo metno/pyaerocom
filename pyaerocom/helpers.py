@@ -1166,13 +1166,16 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
         invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
 
     freq, offset = _get_pandas_freq_and_offset(freq)
-    resampler = arr.resample(time=pd_freq, offset=offset)
+    resampler = arr.resample(time=pd_freq)
+
     try:
         aggfun = getattr(resampler, how)
     except AttributeError:
         raise ResamplingError(f"Invalid aggregator {how} for temporal resampling of DataArray...")
     arr = aggfun(dim="time")
 
+    if offset is not None:
+        arr["time"] = arr.get_index("time") + offset
     if invalid is not None:
         arr.data[invalid.data] = np.nan
     return arr
