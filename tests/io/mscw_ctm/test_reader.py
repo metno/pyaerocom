@@ -15,6 +15,7 @@ from pyaerocom.io.mscw_ctm.reader import ReadEMEP, ReadMscwCtm
 from tests.conftest import TEST_RTOL
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
+
 @pytest.fixture()
 def reader() -> ReadMscwCtm:
     """empty EMEP MSCW-CTM reader"""
