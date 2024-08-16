@@ -1,10 +1,14 @@
 import abc
+import logging
 
 from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
+from pyaerocom import TsType
+
+logger = logging.getLogger(__name__)
 
 
 class HasConfig:
@@ -99,7 +103,9 @@ class HasColocator(HasConfig):
             diurnal_only = False
         return diurnal_only
 
-    def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
+    def get_colocator(
+        self, model_name: str = None, obs_name: str = None, is_map: bool = False
+    ) -> Colocator:
         """
         Instantiate colocation engine
 
@@ -118,6 +124,23 @@ class HasColocator(HasConfig):
         col_cfg = {**self.cfg.colocation_opts.model_dump()}
         outdir = self.cfg.path_manager.get_coldata_dir()
         col_cfg["basedir_coldata"] = outdir
+
+        if is_map:
+            maps_freq = self.cfg.modelmaps_opts.maps_freq
+            if maps_freq == "coarsest":
+                freqs = col_cfg["freqs"]
+                coarsest = TsType(freqs[0])
+                for freq in freqs:
+                    if TsType(freq) < coarsest:
+                        coarsest = TsType(freq)
+
+                col_cfg["main_freq"] = str(coarsest)
+                logger.info(
+                    f"Processing maps with coarsest freq, which is {col_cfg['main_freq']}"
+                )
+            else:
+                col_cfg["main_freq"] = maps_freq
+                logger.info(f"Processing maps with maps_freq {col_cfg['main_freq']}")
 
         if not model_name and not obs_name:
             col_stp = ColocationSetup(**col_cfg)
@@ -164,7 +187,7 @@ class DataImporter(HasColocator):
 
     """
 
-    def read_model_data(self, model_name, var_name):
+    def read_model_data(self, model_name, var_name, is_map=False):
         """
         Import model data
 
@@ -181,7 +204,7 @@ class DataImporter(HasColocator):
             loaded model data.
 
         """
-        col = self.get_colocator(model_name=model_name)
+        col = self.get_colocator(model_name=model_name, is_map=is_map)
         data = col.get_model_data(var_name)
 
         return data

@@ -3,7 +3,10 @@ import os
 
 from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
+from pyaerocom.aeroval.modelmaps_helpers import (
+    calc_contour_json,
+    griddeddata_to_jsondict,
+)
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -96,14 +99,20 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             ) as e:
                 if self.raise_exceptions:
                     raise
-                logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")
+                logger.warning(
+                    f"Failed to process maps for {model_name} {var} data. Reason: {e}."
+                )
         return files
 
     def _check_dimensions(self, data: GriddedData) -> "GriddedData":
         if not data.has_latlon_dims:
-            raise DataDimensionError("data needs to have latitude an longitude dimension")
+            raise DataDimensionError(
+                "data needs to have latitude an longitude dimension"
+            )
         elif not data.has_time_dim:
-            raise DataDimensionError("data needs to have latitude an longitude dimension")
+            raise DataDimensionError(
+                "data needs to have latitude an longitude dimension"
+            )
         if data.ndim == 4:
             data = data.extract_surface_level()
         return data
@@ -133,7 +142,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         """
 
         try:
-            data = self.read_model_data(model_name, var)
+            data = self.read_model_data(model_name, var, is_map=True)
         except Exception as e:
             raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
@@ -142,10 +151,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_ranges_defaults = self.cfg.var_scale_colmap
         if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
-            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+            varinfo = VarinfoWeb(
+                var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"]
+            )
         else:
             cmapinfo = var_ranges_defaults["default"]
-            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+            varinfo = VarinfoWeb(
+                var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"]
+            )
 
         data = self._check_dimensions(data)
 
@@ -160,7 +173,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 return []
 
         maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
-        if maps_freq == "coarsest":  # TODO: Implement this in terms of a TsType object. #1267
+        if (
+            maps_freq == "coarsest"
+        ):  # TODO: Implement this in terms of a TsType object. #1267
             freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
             freq = min(freq, self.cfg.time_cfg.main_freq)
         else:
@@ -174,7 +189,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         data.check_unit()
         # first calcualate and save geojson with contour levels
-        contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
+        contourjson = calc_contour_json(
+            data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins
+        )
 
         # now calculate pixel data json file (basically a json file
         # containing monthly mean timeseries at each grid point at
@@ -186,14 +203,24 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             lat_res = self.cfg.modelmaps_opts.maps_res_deg["lat_res_deg"]
             lon_res = self.cfg.modelmaps_opts.maps_res_deg["lon_res_deg"]
 
-        datajson = griddeddata_to_jsondict(data, lat_res_deg=lat_res, lon_res_deg=lon_res)
+        datajson = griddeddata_to_jsondict(
+            data, lat_res_deg=lat_res, lon_res_deg=lon_res
+        )
 
         with self.avdb.lock():
             self.avdb.put_gridded_map(
-                datajson, self.exp_output.proj_id, self.exp_output.exp_id, var, model_name
+                datajson,
+                self.exp_output.proj_id,
+                self.exp_output.exp_id,
+                var,
+                model_name,
             )
             self.avdb.put_contour(
-                contourjson, self.exp_output.proj_id, self.exp_output.exp_id, var, model_name
+                contourjson,
+                self.exp_output.proj_id,
+                self.exp_output.exp_id,
+                var,
+                model_name,
             )
 
         return [fp_json, fp_geojson]
