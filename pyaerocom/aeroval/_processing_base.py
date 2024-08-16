@@ -128,13 +128,10 @@ class HasColocator(HasConfig):
         if is_map:
             maps_freq = self.cfg.modelmaps_opts.maps_freq
             if maps_freq == "coarsest":
-                freqs = col_cfg["freqs"]
-                coarsest = TsType(freqs[0])
-                for freq in freqs:
-                    if TsType(freq) < coarsest:
-                        coarsest = TsType(freq)
 
-                col_cfg["main_freq"] = str(coarsest)
+                freq = min(TsType(fq) for fq in col_cfg["freqs"])
+                freq = min(freq, col_cfg["main_freq"])
+                col_cfg["main_freq"] = freq
                 logger.info(
                     f"Processing maps with coarsest freq, which is {col_cfg['main_freq']}"
                 )
