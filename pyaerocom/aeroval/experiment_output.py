@@ -1030,7 +1030,14 @@ class ExperimentOutput(ProjectOutput):
                 )
 
     def add_profile_entry(
-        self, data: ColocatedData, profile_viz: dict, periods: list[str], seasons: list[str]
+        self,
+        data: ColocatedData,
+        profile_viz: dict,
+        periods: list[str],
+        seasons: list[str],
+        location,
+        network,
+        obsvar,
     ):
         """Adds an entry for the colocated data to profiles.json.
 
@@ -1041,7 +1048,9 @@ class ExperimentOutput(ProjectOutput):
             seasons (list[str]): seasons to compute over (e.g., All, DJF, etc.)
         """
         with self.avdb.lock():
-            current = self.avdb.get_profiles(self.proj_id, self.exp_id, default={})
+            current = self.avdb.get_profiles(
+                self.proj_id, self.exp_id, location, network, obsvar, default={}
+            )
             current = recursive_defaultdict(current)
 
             for freq, coldata in data.items():
@@ -1084,4 +1093,4 @@ class ExperimentOutput(ProjectOutput):
                     }
                 current[model_name] = round_floats(current[model_name])
 
-            self.avdb.put_profiles(current, self.proj_id, self.exp_id)
+            self.avdb.put_profiles(current, self.proj_id, self.exp_id, location, network, obsvar)
