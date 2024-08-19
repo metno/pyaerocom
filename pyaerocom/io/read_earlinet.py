@@ -35,6 +35,12 @@ class ReadEarlinet(ReadUngriddedBase):
     #: default variables for read method
     DEFAULT_VARS = ["bsc532aer", "ec532aer"]
 
+    # https://github.com/metno/pyaerocom/issues/1310
+    CLOUD_FILTERS = {
+        "cloud_mask_type": 0,  # "no_cloudmask_available manual_cloudmask automatic_cloudmask"
+        "cirrus_contamination": 2,  # "not_available no_cirrus cirrus_detected"
+    }
+
     #: all data values that exceed this number will be set to NaN on read. This
     #: is because iris, xarray, etc. assign a FILL VALUE of the order of e36
     #: to missing data in the netcdf files
@@ -219,6 +225,12 @@ class ReadEarlinet(ReadUngriddedBase):
         self.logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4") as data_in:
+            for filter in self.CLOUD_FILTERS:
+                if filter in data_in.variables:
+                    if data_in.variables[filter].item() == self.CLOUD_FILTERS[filter]:
+                        self.logger.debug(f"Skipping {filename} due to cloud filtering")
+                        continue
+
             # getting the coords since no longer in metadata
             # Put also just in the attributes. not sure why appears twice
             data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
