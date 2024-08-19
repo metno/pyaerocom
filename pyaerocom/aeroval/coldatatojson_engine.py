@@ -234,6 +234,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                 station_names=coldata.data.station_name.values,
                 periods=periods,
                 seasons=seasons,
+                obs_name=obs_name,
+                var_name_web=var_name_web,
             )
 
         logger.info(
@@ -276,6 +278,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         station_names: ArrayLike = None,
         periods: tuple[str, ...] = None,
         seasons: tuple[str, ...] = None,
+        obs_name: str = None,
+        var_name_web: str = None,
     ):
         if region_names is None and station_names is None:
             raise ValueError("Both region_id and station_name can not both be None")
@@ -289,8 +293,16 @@ class ColdataToJsonEngine(ProcessingEngine):
                 periods=periods,
                 seasons=seasons,
             )
-
-            self.exp_output.add_profile_entry(data, profile_viz, periods, seasons)
+            location = region_names[regid]
+            self.exp_output.add_profile_entry(
+                data,
+                profile_viz,
+                periods,
+                seasons,
+                location=location,
+                network=obs_name,
+                obsvar=var_name_web,
+            )
 
         # Loop through stations
         for station_name in station_names:
@@ -302,7 +314,15 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
             )
 
-            self.exp_output.add_profile_entry(data, profile_viz, periods, seasons)
+            self.exp_output.add_profile_entry(
+                data,
+                profile_viz,
+                periods,
+                seasons,
+                location=station_name,
+                network=obs_name,
+                obsvar=var_name_web,
+            )
 
     def _process_stats_timeseries_for_all_regions(
         self,
