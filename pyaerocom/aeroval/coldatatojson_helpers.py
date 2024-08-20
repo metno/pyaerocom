@@ -16,10 +16,17 @@ from pyaerocom import ColocatedData
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
-from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
+from pyaerocom.aeroval.helpers import (
+    _get_min_max_year_periods,
+    _period_str_to_timeslice,
+)
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
+from pyaerocom.region import (
+    Region,
+    find_closest_region_coord,
+    get_all_default_region_ids,
+)
 from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
@@ -627,7 +634,7 @@ def _make_regional_trends(
                     station_obs_trends.append(obs_trend)
             except TrendsError as e:
                 msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                logger.warning(msg)
+                logger.info(msg)
 
     if len(station_obs_trends) == 0 or len(station_mod_trends) == 0:
         trends_successful = False
@@ -813,7 +820,7 @@ def process_trends(
             trends_successful = True
         except TrendsError as e:
             msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-            logger.warning(msg)
+            logger.info(msg)
 
     if trends_successful:
         # The whole trends dicts are placed in the stats dict
@@ -1028,7 +1035,7 @@ def _process_map_and_scat(
 
                                 except TrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
-                                    logger.warning(msg)
+                                    logger.info(msg)
 
                     perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
@@ -1046,7 +1053,11 @@ def _process_map_and_scat(
                             obs = mod = jsdate = scat_dummy
                         else:
                             obs, mod = obs_vals.tolist(), mod_vals.tolist()
-                        scat_data[site][perstr] = {"obs": obs, "mod": mod, "date": jsdate}
+                        scat_data[site][perstr] = {
+                            "obs": obs,
+                            "mod": mod,
+                            "date": jsdate,
+                        }
 
     return (map_data, scat_data)
 
@@ -1547,13 +1558,17 @@ def process_profile_data_for_regions(
                         subset = per_season_subset.filter_region(
                             region_id=region_id, check_country_meta=use_country
                         )
-
-                        output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
-                        output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+                        with ignore_warnings(
+                            RuntimeWarning,
+                            "Mean of empty slice",
+                            "All-NaN slice encountered",
+                        ):
+                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
 
                     except (DataCoverageError, TemporalResolutionError) as e:
                         msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
-                        logger.warning(msg)
+                        logger.info(msg)
 
                         output["obs"][freq][perstr] = np.nan
                         output["mod"][freq][perstr] = np.nan
@@ -1614,12 +1629,17 @@ def process_profile_data_for_stations(
                             == station_name,  # in this case a station
                         ]  # Assumes ordering of station name matches
 
-                        output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
-                        output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+                        with ignore_warnings(
+                            RuntimeWarning,
+                            "Mean of empty slice",
+                            "All-NaN slice encountered",
+                        ):
+                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
 
                     except (DataCoverageError, TemporalResolutionError) as e:
                         msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
-                        logger.warning(msg)
+                        logger.info(msg)
 
                         output["obs"][freq][perstr] = np.nan
                         output["mod"][freq][perstr] = np.nan
