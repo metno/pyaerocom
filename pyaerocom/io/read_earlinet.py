@@ -24,7 +24,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = "*.*"
 
     #: version log of this class (for caching)
-    __version__ = "0.17_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.18_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -35,6 +35,8 @@ class ReadEarlinet(ReadUngriddedBase):
     #: default variables for read method
     DEFAULT_VARS = ["bsc532aer", "ec532aer"]
 
+    # These are applied to all files. If new cloud filter names are discovered they should be added here.
+    # As of 20.08.24, however, there are still files with less reliable data which get through the filters.
     # https://github.com/metno/pyaerocom/issues/1310
     CLOUD_FILTERS = {
         "cloud_mask_type": 0,  # "no_cloudmask_available manual_cloudmask automatic_cloudmask"
