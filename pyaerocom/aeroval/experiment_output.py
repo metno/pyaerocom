@@ -8,7 +8,12 @@ from collections import namedtuple
 import aerovaldb
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import DirLoc, StrType, TypeValidator, sort_dict_by_name
+from pyaerocom._lowlevel_helpers import (
+    DirLoc,
+    StrType,
+    TypeValidator,
+    sort_dict_by_name,
+)
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     VariableInfo,
@@ -32,7 +37,8 @@ from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
 
 MapInfo = namedtuple(
-    "MapInfo", ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"]
+    "MapInfo",
+    ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"],
 )
 
 logger = logging.getLogger(__name__)
@@ -94,9 +100,11 @@ class ExperimentOutput(ProjectOutput):
         self.cfg = cfg
         super().__init__(
             cfg.proj_id,
-            cfg.path_manager.json_basedir
-            if cfg.path_manager.avdb_resource is None
-            else cfg.path_manager.json_basedir,
+            (
+                cfg.path_manager.json_basedir
+                if cfg.path_manager.avdb_resource is None
+                else cfg.path_manager.json_basedir
+            ),
         )
 
         # dictionary that will be filled by json cleanup methods to check for
@@ -1067,6 +1075,19 @@ class ExperimentOutput(ProjectOutput):
                     midpoint > current[model_name]["z"][-1]
                 ):  # only store incremental increases in the layers
                     current[model_name]["z"].append(midpoint)
+
+                # old boilerplate to get around recursive_default_dict issues
+                if "obs" not in current[model_name]:
+                    current[model_name]["obs"] = {}
+
+                if freq not in current[model_name]["obs"]:
+                    current[model_name]["obs"][freq] = {}
+
+                if "mod" not in current[model_name]:
+                    current[model_name]["mod"] = {}
+
+                if freq not in current[model_name]["mod"]:
+                    current[model_name]["mod"][freq] = {}
 
                 for per in periods:
                     for season in seasons:
