@@ -108,7 +108,9 @@ def get_country_info_coords(coords):
     # (more a list of this)
     ret_proto = {"city": "", "country_code": "", "code": ""}
 
-    if isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
+    if len(coords) == 0:  # no coordinates
+        pass
+    elif isnumeric(coords[0]) and len(coords) == 2:  # only one coordinate
         lat, lon = coords
         try:
             dummy = geo.lookup(lat, lon)

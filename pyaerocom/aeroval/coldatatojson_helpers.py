@@ -1662,15 +1662,14 @@ def _remove_less_covered(
             max_yrs = _find_n_yrs(years)
 
         if min_yrs > max_yrs:
-            print(f"Dropping {s}; It has only {max_yrs}")
-            logging.info(f"Dropping {s}; It has only {max_yrs}")
+            logger.info(f"Dropping {s}; It has only {max_yrs}")
             data.data = data.data.drop_sel(station_name=s)
 
     new_stations = data.data.station_name.data
 
-    print(f"Removed {len(stations)-len(new_stations)} stations")
+    logger.info(f"Removed {len(stations)-len(new_stations)} stations")
     if len(new_stations) == 0:
-        raise TrendsError(
+        logger.warning(
             f"No stations left after removing stations with fewer than {min_yrs} years!"
         )
 

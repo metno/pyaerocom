@@ -163,7 +163,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         )
         if min_yrs > 0:
             logger.info(
-                f"Removing stations with less than {min_yrs} years of continuous data, with sequential_yrs = {sequential_yrs}"
+                f"Removing stations with less than {min_yrs} years of data, with sequential_yrs = {sequential_yrs}"
             )
             coldata = _remove_less_covered(coldata, min_yrs, sequential_yrs)
 
