@@ -154,6 +154,26 @@ def test_rollingaverage(test_data, exp_ravg):
     assert all(ravg[0, :, 0] == pytest.approx(exp_ravg, abs=0, nan_ok=True))
 
 
+def test_rollingaverage_label():
+    """
+    Checks that the labels of rolling average is correct (we want it to be labeled based
+    on the "left-most" interval, ie. earliest measurement). This seems to be the
+    current behaviour of xarray (but not well documented) and this test should
+    detect if this behaviour changes in xarray in the future.
+    """
+    data = xr.DataArray(
+        [[[x] for x in range(24)]],
+        dims=["data_source", "time", "station_name"],
+        coords={"time": xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h")},
+    )
+
+    ravg = _rolling_average_8hr(data)
+
+    assert np.all(
+        ravg.get_index("time") == xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h")
+    )
+
+
 @pytest.mark.parametrize(
     "time,values,exp_daily_max",
     (
