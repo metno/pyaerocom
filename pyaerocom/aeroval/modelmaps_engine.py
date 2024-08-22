@@ -7,6 +7,8 @@ from pyaerocom.aeroval.modelmaps_helpers import (
     calc_contour_json,
     griddeddata_to_jsondict,
 )
+from pyaerocom.colocation.colocation_setup import ColocationSetup
+from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -142,7 +144,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         """
 
         try:
-            data = self.read_model_data(model_name, var, is_map=True)
+            data = self.read_model_data(model_name, var)
         except Exception as e:
             raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
@@ -224,3 +226,51 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             )
 
         return [fp_json, fp_geojson]
+
+    def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
+        """
+        Instantiate colocation engine
+
+        Parameters
+        ----------
+        model_name : str, optional
+            name of model. The default is None.
+        obs_name : str, optional
+            name of obs. The default is None.
+
+        Returns
+        -------
+        Colocator
+
+        """
+        col_cfg = {**self.cfg.colocation_opts.model_dump()}
+        outdir = self.cfg.path_manager.get_coldata_dir()
+        col_cfg["basedir_coldata"] = outdir
+
+        mod_cfg = self.cfg.get_model_entry(model_name)
+        col_cfg["model_cfg"] = mod_cfg
+
+        # LB: Hack and at what lowlevel_helpers's import_from was doing
+        for key, val in mod_cfg.items():
+            if key in ColocationSetup.model_fields:
+                col_cfg[key] = val
+        maps_freq = self.cfg.modelmaps_opts.maps_freq
+        if maps_freq == "coarsest":
+
+            freq = min(TsType(fq) for fq in col_cfg["freqs"])
+            freq = min(freq, col_cfg["main_freq"])
+            logger.info(
+                f"Processing maps with coarsest freq, which is {col_cfg['main_freq']}"
+            )
+        else:
+            freq = maps_freq
+            logger.info(f"Processing maps with maps_freq {col_cfg['main_freq']}")
+
+        if "model_kwargs" in col_cfg:
+            col_cfg["model_kwargs"]["use_coarsest"] = freq
+        else:
+            col_cfg["model_kwargs"] = {"use_coarsest": freq}
+        col_stp = ColocationSetup(**col_cfg)
+        col = Colocator(col_stp)
+
+        return col
