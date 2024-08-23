@@ -156,9 +156,9 @@ def test_rollingaverage(test_data, exp_ravg):
 def test_rollingaverage_label():
     """
     Checks that the labels of rolling average is correct (we want it to be labeled based
-    on the "left-most" interval, ie. earliest measurement). This seems to be the
-    current behaviour of xarray (but not well documented) and this test should
-    detect if this behaviour changes in xarray in the future.
+    on the "right-most" interval, ie. latest measurement in the interval).
+
+    https://github.com/metno/pyaerocom/issues/1323
     """
     data = xr.DataArray(
         [[[x] for x in range(24)]],
