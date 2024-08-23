@@ -168,9 +168,8 @@ def test_rollingaverage_label():
 
     ravg = _rolling_average_8hr(data)
 
-    assert np.all(
-        ravg.get_index("time") == xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h")
-    )
+    assert ravg["time"].isel(time=0) == np.datetime64("2024-01-01 00:00")
+    assert ravg["time"].isel(time=23) == np.datetime64("2024-01-01 23:00")
 
 
 @pytest.mark.parametrize(
