@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import xarray as xr
+import pandas as pd
 
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.stats.mda8.mda8 import (
@@ -32,7 +33,7 @@ def test_data(time, values) -> xr.DataArray:
         pytest.param(
             xr.date_range(start="2024-01-01 01:00", periods=49, freq="1h"),
             np.linspace(start=1, stop=49, num=49),
-            [20.5, 44.5, np.nan],
+            [np.nan, 36.5, np.nan],
             id="incrementing-by-1",
         ),
         pytest.param(
@@ -48,6 +49,13 @@ def test_data(time, values) -> xr.DataArray:
             ),
             [np.nan] * 3,
             id="with-nans",
+        ),
+        # https://github.com/metno/pyaerocom/issues/1323
+        pytest.param(
+            xr.date_range(start="2024-01-01 06:00:00", periods=30, freq="1h"),
+            np.arange(30),
+            [np.nan, 25.5],
+            id="#1323",
         ),
     ),
 )
@@ -90,26 +98,17 @@ def test_coldata_to_mda8(coldata):
     assert mda8.shape == (2, 8, 1)
 
     assert mda8.data.values[0, :, 0] == pytest.approx(
-        [
-            np.nan,
-            np.nan,
-            1.18741556,
-            1.18777241,
-            1.18869106,
-            1.18879322,
-            1.18807846,
-            1.18700801,
-        ],
+        [np.nan, np.nan, 1.18853785, 1.18604125, 1.18869106, 1.18879322, 1.18807846, 1.18700801],
         abs=10**-5,
         nan_ok=True,
     )
 
     assert mda8.data.values[1, :, 0] == pytest.approx(
         [
-            1.57327333,
+            np.nan,
             1.28884431,
-            1.28741556,
-            1.28777241,
+            1.28853785,
+            1.28604125,
             1.28869106,
             1.28879322,
             1.28807846,
@@ -170,7 +169,8 @@ def test_rollingaverage_label():
     ravg = _rolling_average_8hr(data)
 
     assert np.all(
-        ravg.get_index("time") == xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h")
+        ravg.get_index("time")
+        == xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h") + pd.Timedelta("8h")
     )
 
 

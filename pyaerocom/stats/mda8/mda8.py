@@ -100,8 +100,13 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
 
 
 def _rolling_average_8hr(arr: xr.DataArray) -> xr.DataArray:
-    # Labeling should be right which probably is the default in xarray.
-    return arr.rolling(time=8, min_periods=6).mean()
+    # Xarray labels the data left, while we want it to be labeled right, so we add 8h to
+    # the time index.
+    new_arr = arr.rolling(time=8, min_periods=6).mean()
+    # Xarray labels the data left, while we want it to be labeled right, so we add 8h to
+    # the time index.
+    new_arr["time"] = new_arr.get_index("time") + pd.Timedelta("8h")
+    return new_arr
 
 
 def _daily_max(arr: xr.DataArray) -> xr.DataArray:
