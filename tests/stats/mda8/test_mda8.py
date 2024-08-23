@@ -27,7 +27,7 @@ def test_data(time, values) -> xr.DataArray:
         pytest.param(
             xr.date_range(start="2024-01-01 01:00", periods=49, freq="1h"),
             [0.0] * 49,
-            [0, 0, np.nan],
+            [np.nan, 0, np.nan],
             id="zeros",
         ),
         pytest.param(
