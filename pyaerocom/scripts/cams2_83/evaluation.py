@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class EvalType(str, Enum):
     LONG = "long"
+    LONG2 = "long2"
     SEASON = "season"
     WEEK = "week"
     DAY = "day"
@@ -37,6 +38,14 @@ class EvalType(str, Enum):
 
     def freqs_config(self) -> dict:
         if self == "long":
+            return dict(
+                freqs=["daily", "monthly"],
+                ts_type="hourly",
+                main_freq="daily",
+                forecast_evaluation=True,
+            )
+        
+        if self == "long2": # this is to have the same frequencies than 'long' but avoid L81
             return dict(
                 freqs=["daily", "monthly"],
                 ts_type="hourly",
