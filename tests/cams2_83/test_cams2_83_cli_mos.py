@@ -29,6 +29,16 @@ def test_eval_mos_dummy(
     assert "no output available" in caplog.text
 
 
+def test_eval_mos_dummy_2(
+    tmp_path: Path,
+    caplog,
+):
+    options = f"long2 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
+    result = runner.invoke(app, options.split())
+    assert result.exit_code == 0
+    assert "no output available" in caplog.text
+
+
 @pytest.mark.usefixtures("fake_CAMS2_83_Processer", "reset_cachedir")
 def test_eval_mos_standard(tmp_path: Path, coldata_mos: Path, caplog):
     options = f"day 2024-03-01 2024-03-01 --data-path {tmp_path} --coldata-path {coldata_mos} --cache {tmp_path} --id mos-colocated-data --name 'Test'"
