@@ -69,8 +69,8 @@ GLOBAL_CONFIG = dict(
         "concno2",        
         "conco3",
         "conco3mda8",
-        "concpm25",
         "concpm10",
+        "concpm25",
         "concso2",
     ],
     min_num_obs=dict(
