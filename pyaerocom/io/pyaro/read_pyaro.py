@@ -4,6 +4,8 @@ import logging
 from copy import deepcopy
 from typing import NewType
 
+from tqdm import tqdm
+
 import numpy as np
 from pyaro import list_timeseries_engines, open_timeseries
 from pyaro.timeseries import Data, Reader, Station
@@ -161,9 +163,7 @@ class PyaroToUngriddedData:
         metadata_idx = 0
         for var, var_data in pyaro_data.items():
             size = var_size[var]
-            for i in range(
-                0, size
-            ):  # The 1 start is a temp fix for the empty first row of the current Data implementation from pyaro
+            for i in tqdm(range(size), disable=None):
                 data_line = var_data[i]
                 current_station = data_line["stations"]
 
