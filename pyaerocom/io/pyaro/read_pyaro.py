@@ -99,9 +99,7 @@ class PyaroToUngriddedData:
     _DATAERRINDEX = 8  # col where errors can be stored
     _DATAFLAGINDEX = 9  # can be used to store flags
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
-    _TRASHINDEX = (
-        11  # index where invalid data can be moved to (e.g. when outliers are removed)
-    )
+    _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
     # List of keys needed by every station from Pyaro. Used to find extra metadata
     STATION_KEYS = (
@@ -192,9 +190,7 @@ class PyaroToUngriddedData:
 
                 #  Fills meta_idx
                 if station_idx[current_station][ts_type] not in meta_idx:
-                    meta_idx[station_idx[current_station][ts_type]] = {
-                        v: [] for v in vars
-                    }
+                    meta_idx[station_idx[current_station][ts_type]] = {v: [] for v in vars}
 
                 meta_idx[station_idx[current_station][ts_type]][var].append(idx)
 
@@ -204,9 +200,7 @@ class PyaroToUngriddedData:
         for station_id in meta_idx:
             new_meta_idx[station_id] = {}
             for var_id in meta_idx[station_id]:
-                new_meta_idx[station_id][var_id] = np.array(
-                    meta_idx[station_id][var_id]
-                )
+                new_meta_idx[station_id][var_id] = np.array(meta_idx[station_id][var_id])
 
         self.data._data = data_array
         self.data.meta_idx = new_meta_idx
@@ -295,9 +289,7 @@ class PyaroToUngriddedData:
         for idx in new_metadata:
             station_name = new_metadata[idx]["station_name"]
             ts_type = str(ts_types[station_name])
-            new_metadata[idx]["ts_type"] = (
-                ts_type if ts_type is not None else "undefined"
-            )
+            new_metadata[idx]["ts_type"] = ts_type if ts_type is not None else "undefined"
         return new_metadata
 
     def get_variables(self) -> list[str]:
