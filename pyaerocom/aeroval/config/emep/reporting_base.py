@@ -399,7 +399,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             "concCecpm25",
             "concCocpm10",  # SURF_ugC_PM_OMCOARSE missing in model-output
             "concCocpm25",
-            "concCocpm1",
+            "concom1",
             "concsspm10",
             "concsspm25",
             # Depositions
@@ -492,7 +492,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "concNno",
         "concCecpm25",
         "concCocpm25",
-        "concCocpm1",
+        "concom1",
         "concCecpm10",
         "concCocpm10",
         #        "concnh4pm10", # no output in the model
@@ -848,7 +848,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_vars=[
                 "concCecpm25",
                 "concCocpm25",
-                "concCocpm1",
+                "concom1",
                 "concCecpm10",
                 "concCocpm10",
                 #                "concnh4pm10",
@@ -875,7 +875,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_vars=[
                 "concCecpm25",
                 "concCocpm25",
-                "concCocpm1",
+                "concom1",
                 "concCecpm10",
                 "concCocpm10",
                 # "concnh4pm10",
