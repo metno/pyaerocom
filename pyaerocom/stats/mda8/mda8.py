@@ -83,6 +83,10 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
     -----
     Calculated values will only be returned for days which have at least one datapoint
     in the input dataarray to ensure that the ts does not expand.
+
+    See also:
+    ---------
+    https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32008L0050#ntc3-L_2008152EN.01003001-E0003 (Annex XI)
     """
     mda8 = _daily_max(_rolling_average_8hr(data))
 
