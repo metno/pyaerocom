@@ -37,7 +37,11 @@ def reader_tm5():
             dict(
                 var_name="od550aer",
                 ts_type="monthly",
-                constraints={"var_name": "od550aer", "operator": "<", "filter_val": 0.1},
+                constraints={
+                    "var_name": "od550aer",
+                    "operator": "<",
+                    "filter_val": 0.1,
+                },
             ),
             0.2054,
         ),
@@ -45,7 +49,11 @@ def reader_tm5():
             dict(
                 var_name="od550aer",
                 ts_type="monthly",
-                constraints={"var_name": "od550aer", "operator": ">", "filter_val": 1000},
+                constraints={
+                    "var_name": "od550aer",
+                    "operator": ">",
+                    "filter_val": 1000,
+                },
             ),
             0.0983,
         ),
@@ -202,9 +210,9 @@ def test_file_info(reader_reanalysis: ReadGridded):
 
 @lustre_unavail
 def test_years_available(reader_reanalysis: ReadGridded):
-    # go up to 2023 because 2022 is now available. Will likely need to be updated in the future
-    years = list(range(2003, 2025))
-    assert reader_reanalysis.years_avail == years
+    # reanalysis years in database will increase every year, only checking for some years in tests
+    years = set(range(2003, 2024))
+    assert set(reader_reanalysis.years_avail) >= years
 
 
 @lustre_unavail
