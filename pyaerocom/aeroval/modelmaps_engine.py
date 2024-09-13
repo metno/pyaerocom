@@ -1,7 +1,7 @@
 import logging
 import os
 
-from pyaerocom import GriddedData, TsType
+from pyaerocom import GriddedData, TsType, const
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.modelmaps_helpers import (
     calc_contour_json,
@@ -142,9 +142,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         ModelVarNotAvailable
             If model/var data cannot be read
         """
-
         try:
-            data = self.read_model_data(model_name, var)
+            # data = self.read_model_data(model_name, var)
+            data = self._read_modeldata(model_name, var)
         except Exception as e:
             raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
@@ -174,14 +174,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 logger.info(f"Skipping processing of {outname}: data already exists.")
                 return []
 
-        maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
-        if (
-            maps_freq == "coarsest"
-        ):  # TODO: Implement this in terms of a TsType object. #1267
-            freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
-            freq = min(freq, self.cfg.time_cfg.main_freq)
-        else:
-            freq = maps_freq
+        freq = self._get_maps_freq()
         tst = TsType(data.ts_type)
 
         if tst < freq:
@@ -227,50 +220,92 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         return [fp_json, fp_geojson]
 
-    def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
+    def _get_maps_freq(self) -> TsType:
         """
-        Instantiate colocation engine
-
-        Parameters
-        ----------
-        model_name : str, optional
-            name of model. The default is None.
-        obs_name : str, optional
-            name of obs. The default is None.
+        Gets the maps reading frequency. If maps_freq in cfg is coarsest, it takes the coarsest
+        of the given frequencies. Else it just returns the maps_freq
 
         Returns
         -------
-        Colocator
-
+        TSType
         """
-        col_cfg = {**self.cfg.colocation_opts.model_dump()}
-        outdir = self.cfg.path_manager.get_coldata_dir()
-        col_cfg["basedir_coldata"] = outdir
-
-        mod_cfg = self.cfg.get_model_entry(model_name)
-        col_cfg["model_cfg"] = mod_cfg
-
-        # LB: Hack and at what lowlevel_helpers's import_from was doing
-        for key, val in mod_cfg.items():
-            if key in ColocationSetup.model_fields:
-                col_cfg[key] = val
-        maps_freq = self.cfg.modelmaps_opts.maps_freq
-        if maps_freq == "coarsest":
-
-            freq = min(TsType(fq) for fq in col_cfg["freqs"])
-            freq = min(freq, col_cfg["main_freq"])
-            logger.info(
-                f"Processing maps with coarsest freq, which is {col_cfg['main_freq']}"
-            )
+        maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
+        if (
+            maps_freq == "coarsest"
+        ):  # TODO: Implement this in terms of a TsType object. #1267
+            freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+            freq = min(freq, self.cfg.time_cfg.main_freq)
         else:
             freq = maps_freq
-            logger.info(f"Processing maps with maps_freq {col_cfg['main_freq']}")
 
-        if "model_kwargs" in col_cfg:
-            col_cfg["model_kwargs"]["use_coarsest"] = freq
-        else:
-            col_cfg["model_kwargs"] = {"use_coarsest": freq}
-        col_stp = ColocationSetup(**col_cfg)
-        col = Colocator(col_stp)
+        return freq
 
-        return col
+    def _read_modeldata(self, model_name: str, var: str) -> GriddedData:
+        """
+        Function for reading the modeldata without going through the colocation object.
+        This means that none of the checks normally done in the colocation class are run.
+
+        Parameters
+        ----------
+        model_name : str
+            name of model
+        var : str
+            name of variable
+
+        Returns
+        -----------
+        Griddeddata
+            the read data
+        """
+        start, stop = self.cfg.colocation_opts.start, self.cfg.colocation_opts.stop
+        if self.cfg.colocation_opts.model_use_climatology:
+            # overwrite start and stop to read climatology file for model
+            start, stop = 9999, None
+
+        data_id = self.cfg.model_cfg[model_name].model_id
+        data_dir = self.cfg.model_cfg[model_name].model_data_dir
+
+        reader_class = Colocator.SUPPORTED_GRIDDED_READERS[
+            self.cfg.model_cfg[model_name].gridded_reader_id["model"]
+        ]
+
+        reader = reader_class(
+            data_id=data_id,
+            data_dir=data_dir,
+            **self.cfg.colocation_opts.model_kwargs,
+        )
+
+        if var in self.cfg.model_cfg[model_name].model_read_aux:
+            aux_instructions = self.cfg.model_cfg[model_name].model_read_aux[var]
+            reader.add_aux_compute(var_name=var, **aux_instructions)
+
+        kwargs = {}
+        kwargs.update(**self.cfg.colocation_opts.model_kwargs)
+        if var in self.cfg.colocation_opts.model_read_opts:
+            kwargs.update(self.cfg.colocation_opts.model_read_opts[var])
+
+        ts_type_read = str(self._get_maps_freq())
+
+        data = reader.read_var(
+            var,
+            start=start,
+            stop=stop,
+            ts_type=ts_type_read,
+            vert_which=self.cfg.colocation_opts.obs_vert_type,
+            flex_ts_type=self.cfg.colocation_opts.flex_ts_type,
+            **kwargs,
+        )
+
+        rm_outliers = self.cfg.colocation_opts.model_remove_outliers
+        outlier_ranges = self.cfg.colocation_opts.model_outlier_ranges
+
+        if rm_outliers:
+            if var in outlier_ranges:
+                low, high = outlier_ranges[var]
+            else:
+                var_info = const.VARS[var]
+                low, high = var_info.minimum, var_info.maximum
+            data.check_unit()
+            data.remove_outliers(low, high, inplace=True)
+
+        return data
