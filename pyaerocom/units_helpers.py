@@ -244,9 +244,7 @@ def _unit_conversion_fac_si(from_unit, to_unit):
     try:
         return from_unit.convert(1, to_unit)
     except ValueError:
-        raise UnitConversionError(
-            f"Failed to convert unit from {from_unit} to {to_unit}"
-        )
+        raise UnitConversionError(f"Failed to convert unit from {from_unit} to {to_unit}")
 
 
 def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):

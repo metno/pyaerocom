@@ -18,7 +18,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "concso4", "od550aer"]
+    variables = ["NOx", "concso4", "od550aer", "SO2"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
@@ -43,7 +43,12 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
     # Tests the found stations
     all_stations = data.to_station_data_all("concso4", ts_type_preferred="daily")
 
-    assert all_stations["stats"][0]["ts_type"] in ["hourly", "3daily", "2hourly", "2daily"]
+    assert all_stations["stats"][0]["ts_type"] in [
+        "hourly",
+        "3daily",
+        "2hourly",
+        "2daily",
+    ]
     assert all_stations["stats"][0]["country"] == "NO"
 
     # Tests the dates
@@ -87,3 +92,26 @@ def test_pyarotoungriddeddata_variables(pyaro_testdata):
     obj = pyaro_testdata.converter
 
     assert obj.get_variables() == pyaro_testdata.PROVIDES_VARIABLES
+
+
+def test_pyaro_unit_change(pyaro_testdata_units):
+    # Atoms
+    M_O = 15.999  # u
+    M_S = 32.065  # u
+    # Molecules
+    M_SO2 = M_S + 2 * M_O
+    conversion_factor = 1e-6 * M_SO2 / M_S
+
+    obj = pyaro_testdata_units.converter
+    data = obj.read()
+
+    all_stations_so4 = data.to_station_data_all("concso4")
+    all_stations_so2 = data.to_station_data_all("concso2")
+
+    assert (
+        abs(
+            all_stations_so4["stats"][0]["concso4"].mean() * conversion_factor
+            - all_stations_so2["stats"][0]["concso2"].mean()
+        )
+        < 1e-5
+    )

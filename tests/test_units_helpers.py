@@ -61,9 +61,7 @@ def test__unit_conversion_fac_si(from_unit: str, to_unit: str, result: float):
         ("concso4pr", "mg S/L", "g m-3", 2.995821),
     ],
 )
-def test__unit_conversion_fac_custom(
-    var_name: str, from_unit: str, to_unit: str, result: float
-):
+def test__unit_conversion_fac_custom(var_name: str, from_unit: str, to_unit: str, result: float):
     converted_unit, conversion_fac = _unit_conversion_fac_custom(var_name, from_unit)
     assert converted_unit == to_unit
     assert conversion_fac == pytest.approx(result, rel=1e-2)
@@ -72,9 +70,7 @@ def test__unit_conversion_fac_custom(
 def test__unit_conversion_fac_custom_error():
     with pytest.raises(UnitConversionError) as e:
         _unit_conversion_fac_custom("concNno3", "ug N m-3")
-    assert str(e.value).startswith(
-        "Failed to convert unit ug N/m3 (variable concNno3)."
-    )
+    assert str(e.value).startswith("Failed to convert unit ug N/m3 (variable concNno3).")
 
 
 def test__unit_conversion_fac_custom_FAIL(monkeypatch):
@@ -140,9 +136,7 @@ def test_get_unit_conversion_fac(
         ("1", "ug", None),
     ],
 )
-def test_get_unit_conversion_fac_error(
-    from_unit: str, to_unit: str, var_name: str | None
-):
+def test_get_unit_conversion_fac_error(from_unit: str, to_unit: str, var_name: str | None):
     with pytest.raises(UnitConversionError) as e:
         get_unit_conversion_fac(from_unit, to_unit, var_name)
     assert str(e.value) == f"failed to convert unit from {from_unit} to {to_unit}"

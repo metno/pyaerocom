@@ -24,18 +24,20 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     stations = ["NO0002", "GB0881"]
     countries = ["NO", "GB"]
     coords = [(58, 8), (60, -1)]
-    species = ["NOx", "SOx", "AOD"]
+    species = ["NOx", "SOx", "AOD", "SO2"]
+    units = ["Gg", "Gg", "Gg", "mg S/l"]
     area_type = ["Rural", "Urban"]
 
     with open(file, "w") as f:
-        for s in species:
+        for k, s in enumerate(species):
             for i, station in enumerate(stations):
                 for j, date in enumerate(dates):
                     delta_t = ["1h", "3D", "2D", "2h"][
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
                     f.write(
-                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
+                        # f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
+                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {1},{units[k]}, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
                     )
 
     return file
@@ -60,6 +62,20 @@ def testconfig(tmp_path: Path) -> PyaroConfig:
         name_map={"SOx": "concso4", "AOD": "od550aer"},
     )
     return [config1, config2]
+
+
+def testconfig_units(tmp_path: Path) -> PyaroConfig:
+    data_id = "csv_timeseries"
+
+    config = PyaroConfig(
+        name="test",
+        data_id=data_id,
+        filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
+        filters={},
+        name_map={"SOx": "concso4", "SO2": "concso2"},
+    )
+
+    return config
 
 
 def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
@@ -122,6 +138,11 @@ def pyaro_testconfig(tmp_path) -> PyaroConfig:
     return testconfig(tmp_path=tmp_path)
 
 
+# @pytest.fixture
+# def pyaro_testconfig_units(tmp_path) -> PyaroConfig:
+#     return testconfig_units(tmp_path=tmp_path)
+
+
 @pytest.fixture
 def pyaro_testconfig_kwargs(tmp_path) -> PyaroConfig:
     return testconfig_kwargs(tmp_path=tmp_path)
@@ -138,6 +159,14 @@ def pyaro_testdata(tmp_path) -> ReadPyaro:
 @pytest.fixture
 def pyaro_testdata_kwargs(tmp_path) -> ReadPyaro:
     config = testconfig_kwargs(tmp_path=tmp_path)
+    rp = ReadPyaro(config=config)
+
+    return rp
+
+
+@pytest.fixture
+def pyaro_testdata_units(tmp_path) -> ReadPyaro:
+    config = testconfig_units(tmp_path=tmp_path)
     rp = ReadPyaro(config=config)
 
     return rp

@@ -100,9 +100,7 @@ class PyaroToUngriddedData:
     _DATAERRINDEX = 8  # col where errors can be stored
     _DATAFLAGINDEX = 9  # can be used to store flags
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
-    _TRASHINDEX = (
-        11  # index where invalid data can be moved to (e.g. when outliers are removed)
-    )
+    _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
 
     # List of keys needed by every station from Pyaro. Used to find extra metadata
     STATION_KEYS = (
@@ -144,26 +142,6 @@ class PyaroToUngriddedData:
                 ),
                 self.config.name_map,
             )
-
-    def _get_units_and_factors(self, pyaro_data: dict[str, Data]) -> tuple[dict, dict]:
-        units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
-
-        conversion_factors = {}
-
-        for var in units:
-            can_be, to_unit = can_be_converted(
-                var_name=var, from_unit=units[var]["units"]
-            )
-            if can_be:
-                conversion_factors[var] = get_unit_conversion_fac(
-                    units[var]["units"], to_unit, var_name=var
-                )
-                units[var]["units"] = to_unit
-
-            else:
-                conversion_factors[var] = 1.0
-
-        return units, conversion_factors
 
     def _convert_to_ungriddeddata(self, pyaro_data: dict[str, Data]) -> UngriddedData:
         stations = self.get_stations()
@@ -215,9 +193,7 @@ class PyaroToUngriddedData:
 
                 #  Fills meta_idx
                 if station_idx[current_station][ts_type] not in meta_idx:
-                    meta_idx[station_idx[current_station][ts_type]] = {
-                        v: [] for v in vars
-                    }
+                    meta_idx[station_idx[current_station][ts_type]] = {v: [] for v in vars}
 
                 meta_idx[station_idx[current_station][ts_type]][var].append(idx)
 
@@ -227,9 +203,7 @@ class PyaroToUngriddedData:
         for station_id in meta_idx:
             new_meta_idx[station_id] = {}
             for var_id in meta_idx[station_id]:
-                new_meta_idx[station_id][var_id] = np.array(
-                    meta_idx[station_id][var_id]
-                )
+                new_meta_idx[station_id][var_id] = np.array(meta_idx[station_id][var_id])
 
         self.data._data = data_array
         self.data.meta_idx = new_meta_idx
@@ -306,6 +280,25 @@ class PyaroToUngriddedData:
 
         return new_data
 
+    def _get_units_and_factors(self, pyaro_data: dict[str, Data]) -> tuple[dict, dict]:
+        units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
+
+        conversion_factors = {}
+
+        for var in units:
+            from_units = units[var]["units"].strip()
+            can_be, to_unit = can_be_converted(var_name=var, from_unit=from_units)
+            if can_be:
+                conversion_factors[var] = get_unit_conversion_fac(
+                    from_units, to_unit, var_name=var
+                )
+                units[var]["units"] = to_unit
+
+            else:
+                conversion_factors[var] = 1.0
+
+        return units, conversion_factors
+
     def _calculate_ts_type(self, start: np.datetime64, stop: np.datetime64) -> TsType:
         seconds = (stop - start).astype("timedelta64[s]").astype(np.int32)
         if seconds == 0:
@@ -322,9 +315,7 @@ class PyaroToUngriddedData:
         for idx in new_metadata:
             station_name = new_metadata[idx]["station_name"]
             ts_type = str(ts_types[station_name])
-            new_metadata[idx]["ts_type"] = (
-                ts_type if ts_type is not None else "undefined"
-            )
+            new_metadata[idx]["ts_type"] = ts_type if ts_type is not None else "undefined"
         return new_metadata
 
     def get_variables(self) -> list[str]:
