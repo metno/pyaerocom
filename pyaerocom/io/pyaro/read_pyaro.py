@@ -15,6 +15,7 @@ from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units_helpers import get_unit_conversion_fac, can_be_converted
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,9 @@ class PyaroToUngriddedData:
     _DATAERRINDEX = 8  # col where errors can be stored
     _DATAFLAGINDEX = 9  # can be used to store flags
     _STOPTIMEINDEX = 10  # can be used to store stop time of acq.
-    _TRASHINDEX = 11  # index where invalid data can be moved to (e.g. when outliers are removed)
+    _TRASHINDEX = (
+        11  # index where invalid data can be moved to (e.g. when outliers are removed)
+    )
 
     # List of keys needed by every station from Pyaro. Used to find extra metadata
     STATION_KEYS = (
@@ -142,13 +145,35 @@ class PyaroToUngriddedData:
                 self.config.name_map,
             )
 
+    def _get_units_and_factors(self, pyaro_data: dict[str, Data]) -> tuple[dict, dict]:
+        units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
+
+        conversion_factors = {}
+
+        for var in units:
+            can_be, to_unit = can_be_converted(
+                var_name=var, from_unit=units[var]["units"]
+            )
+            if can_be:
+                conversion_factors[var] = get_unit_conversion_fac(
+                    units[var]["units"], to_unit, var_name=var
+                )
+                units[var]["units"] = to_unit
+
+            else:
+                conversion_factors[var] = 1.0
+
+        return units, conversion_factors
+
     def _convert_to_ungriddeddata(self, pyaro_data: dict[str, Data]) -> UngriddedData:
         stations = self.get_stations()
 
         var_size = {var: len(pyaro_data[var]) for var in pyaro_data}
         vars = list(pyaro_data.keys())
         total_size = sum(list(var_size.values()))
-        units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
+        # units = {var: {"units": pyaro_data[var]._units} for var in pyaro_data}
+
+        units, conversion_factors = self._get_units_and_factors(pyaro_data)
 
         # Object necessary for ungriddeddata
         var_idx = {var: i for i, var in enumerate(vars)}
@@ -169,7 +194,7 @@ class PyaroToUngriddedData:
 
                 # Fills data array
                 ungriddeddata_line = self._pyaro_dataline_to_ungriddeddata_dataline(
-                    data_line, idx, var_idx[var]
+                    data_line, idx, var_idx[var], conversion_factors[var]
                 )
 
                 # Finds the ts_type of the stations. Raises error of same station has different types
@@ -190,7 +215,9 @@ class PyaroToUngriddedData:
 
                 #  Fills meta_idx
                 if station_idx[current_station][ts_type] not in meta_idx:
-                    meta_idx[station_idx[current_station][ts_type]] = {v: [] for v in vars}
+                    meta_idx[station_idx[current_station][ts_type]] = {
+                        v: [] for v in vars
+                    }
 
                 meta_idx[station_idx[current_station][ts_type]][var].append(idx)
 
@@ -200,7 +227,9 @@ class PyaroToUngriddedData:
         for station_id in meta_idx:
             new_meta_idx[station_id] = {}
             for var_id in meta_idx[station_id]:
-                new_meta_idx[station_id][var_id] = np.array(meta_idx[station_id][var_id])
+                new_meta_idx[station_id][var_id] = np.array(
+                    meta_idx[station_id][var_id]
+                )
 
         self.data._data = data_array
         self.data.meta_idx = new_meta_idx
@@ -255,7 +284,11 @@ class PyaroToUngriddedData:
         return MetadataEntry(entry)
 
     def _pyaro_dataline_to_ungriddeddata_dataline(
-        self, data: np.void, idx: int, var_idx: int
+        self,
+        data: np.void,
+        idx: int,
+        var_idx: int,
+        conversion_factor: float,
     ) -> np.ndarray:
         new_data = np.zeros(12)
         new_data[self._METADATAKEYINDEX] = idx
@@ -264,7 +297,7 @@ class PyaroToUngriddedData:
         new_data[self._LONINDEX] = data["longitudes"]
         new_data[self._ALTITUDEINDEX] = data["altitudes"]
         new_data[self._VARINDEX] = var_idx
-        new_data[self._DATAINDEX] = data["values"]
+        new_data[self._DATAINDEX] = data["values"] * conversion_factor
         new_data[self._DATAHEIGHTINDEX] = np.nan
         new_data[self._DATAERRINDEX] = data["standard_deviations"]
         new_data[self._DATAFLAGINDEX] = data["flags"]
@@ -289,7 +322,9 @@ class PyaroToUngriddedData:
         for idx in new_metadata:
             station_name = new_metadata[idx]["station_name"]
             ts_type = str(ts_types[station_name])
-            new_metadata[idx]["ts_type"] = ts_type if ts_type is not None else "undefined"
+            new_metadata[idx]["ts_type"] = (
+                ts_type if ts_type is not None else "undefined"
+            )
         return new_metadata
 
     def get_variables(self) -> list[str]:

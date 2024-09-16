@@ -46,6 +46,9 @@ UCONV_MUL_FACS = pd.DataFrame(
         # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
         # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
         ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
+        ["concso2", "mg S/l", "ug m-3", 1e-6 * M_SO2 / M_S],
+        ["concso4t", "mg S/l", "ug m-3", 1e-6 * M_SO4 / M_S],
+        ["concso4", "mg S/l", "ug m-3", 1e-6 * M_SO4 / M_S],
         ["concbc", "ug C/m3", "ug m-3", 1.0],
         ["concoa", "ug C/m3", "ug m-3", 1.0],
         ["concoc", "ug C/m3", "ug m-3", 1.0],
@@ -241,7 +244,9 @@ def _unit_conversion_fac_si(from_unit, to_unit):
     try:
         return from_unit.convert(1, to_unit)
     except ValueError:
-        raise UnitConversionError(f"Failed to convert unit from {from_unit} to {to_unit}")
+        raise UnitConversionError(
+            f"Failed to convert unit from {from_unit} to {to_unit}"
+        )
 
 
 def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
@@ -324,3 +329,26 @@ def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):
     if conv_fac != 1:
         data *= conv_fac
     return data
+
+
+def can_be_converted(var_name: str, from_unit: str | Unit) -> tuple[bool, str | None]:
+    """
+    Check whether or not var_name and unit is in the list of possible conversions (UCONV_MUL_FACS)
+
+    Parameters
+    ---------
+    var_name : str
+        name of variable.
+    from_unit : cf_units.Unit or str
+        current unit of input data
+
+    Returns
+    -------
+    bool, str | None
+
+    """
+
+    if (var_name, from_unit) in UCONV_MUL_FACS.index:
+        return True, UCONV_MUL_FACS.loc[var_name, from_unit]["to"]
+    else:
+        return False, None

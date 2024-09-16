@@ -10,6 +10,7 @@ from pyaerocom.units_helpers import (
     _unit_conversion_fac_si,
     convert_unit,
     get_unit_conversion_fac,
+    can_be_converted,
 )
 
 
@@ -60,7 +61,9 @@ def test__unit_conversion_fac_si(from_unit: str, to_unit: str, result: float):
         ("concso4pr", "mg S/L", "g m-3", 2.995821),
     ],
 )
-def test__unit_conversion_fac_custom(var_name: str, from_unit: str, to_unit: str, result: float):
+def test__unit_conversion_fac_custom(
+    var_name: str, from_unit: str, to_unit: str, result: float
+):
     converted_unit, conversion_fac = _unit_conversion_fac_custom(var_name, from_unit)
     assert converted_unit == to_unit
     assert conversion_fac == pytest.approx(result, rel=1e-2)
@@ -69,7 +72,9 @@ def test__unit_conversion_fac_custom(var_name: str, from_unit: str, to_unit: str
 def test__unit_conversion_fac_custom_error():
     with pytest.raises(UnitConversionError) as e:
         _unit_conversion_fac_custom("concNno3", "ug N m-3")
-    assert str(e.value).startswith("Failed to convert unit ug N/m3 (variable concNno3).")
+    assert str(e.value).startswith(
+        "Failed to convert unit ug N/m3 (variable concNno3)."
+    )
 
 
 def test__unit_conversion_fac_custom_FAIL(monkeypatch):
@@ -117,7 +122,11 @@ def test_convert_unit(from_unit: str, to_unit: str, var_name: str, result: float
     ],
 )
 def test_get_unit_conversion_fac(
-    from_unit: str, to_unit: str, var_name: str | None, ts_type: str | None, result: float
+    from_unit: str,
+    to_unit: str,
+    var_name: str | None,
+    ts_type: str | None,
+    result: float,
 ):
     conversion_fac = get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type)
     assert conversion_fac == pytest.approx(result, rel=1e-3)
@@ -131,7 +140,35 @@ def test_get_unit_conversion_fac(
         ("1", "ug", None),
     ],
 )
-def test_get_unit_conversion_fac_error(from_unit: str, to_unit: str, var_name: str | None):
+def test_get_unit_conversion_fac_error(
+    from_unit: str, to_unit: str, var_name: str | None
+):
     with pytest.raises(UnitConversionError) as e:
         get_unit_conversion_fac(from_unit, to_unit, var_name)
     assert str(e.value) == f"failed to convert unit from {from_unit} to {to_unit}"
+
+
+@pytest.mark.parametrize(
+    "var_name,from_unit,to_unit,can_be,result_unit",
+    [
+        ("concso2", "ug S/m3", "ug m-3", True, "ug m-3"),
+        ("concso2", "ug S/l", "ug m-3", False, None),
+        ("concso2", "mg S/l", "ug m-3", True, "ug m-3"),
+        ("concso5", "mg S/l", "ug m-3", False, None),
+    ],
+)
+def test_can_be_converted(
+    var_name: str | None,
+    from_unit: str,
+    to_unit: str,
+    can_be: bool,
+    result_unit: str | None,
+):
+    can_be_converted_bool, resulting_unit = can_be_converted(var_name, from_unit)
+    print(can_be_converted_bool, can_be)
+    print(resulting_unit, result_unit)
+    assert can_be_converted_bool == can_be
+    if result_unit is None:
+        assert resulting_unit is result_unit
+    else:
+        assert resulting_unit == result_unit
