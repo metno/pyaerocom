@@ -9,7 +9,7 @@ from pyaerocom import const
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.json_utils import read_json, write_json
-from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval.setup_classes import EvalSetup
 from tests.conftest import geojson_unavail
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
@@ -171,7 +171,14 @@ def test_ExperimentOutput__info_from_map_file():
         "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer_2010.json"
     )
 
-    assert output == ("EBAS-2010", "ac550aer", "Surface", "ECHAM-HAM", "ac550dryaer", "2010")
+    assert output == (
+        "EBAS-2010",
+        "ac550aer",
+        "Surface",
+        "ECHAM-HAM",
+        "ac550dryaer",
+        "2010",
+    )
 
 
 @pytest.mark.parametrize(
@@ -243,7 +250,10 @@ def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: b
         ),
         (
             "concprcpso4",
-            {"colmap": "coolwarm", "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10]},
+            {
+                "colmap": "coolwarm",
+                "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+            },
         ),
     ],
 )
@@ -339,7 +349,10 @@ def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutp
 def test_Experiment_Output_drop_stats_and_decimals(
     eval_config: dict, drop_stats, stats_decimals: int
 ):
-    eval_config["drop_stats"], eval_config["stats_decimals"] = drop_stats, stats_decimals
+    eval_config["drop_stats"], eval_config["stats_decimals"] = (
+        drop_stats,
+        stats_decimals,
+    )
     cfg = EvalSetup(**eval_config)
     cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
     proc = ExperimentProcessor(cfg)

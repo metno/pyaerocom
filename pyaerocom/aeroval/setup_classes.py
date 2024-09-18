@@ -6,6 +6,7 @@ from functools import cached_property
 from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
+from datetime import datetime
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
 
@@ -297,6 +298,7 @@ class ExperimentInfo(BaseModel):
     public: bool = False
     exp_pi: str = getuser()
     pyaerocom_version: str = __version__
+    creation_date: str = datetime.today().strftime("%Y-%m-%d")
 
 
 class EvalSetup(BaseModel):

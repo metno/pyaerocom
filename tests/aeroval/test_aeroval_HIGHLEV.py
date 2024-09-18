@@ -6,13 +6,17 @@ import pytest
 
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval.setup_classes import EvalSetup
 from tests.conftest import geojson_unavail
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
     "contour": 1,
-    "hm": ["glob_stats_daily.json", "glob_stats_monthly.json", "glob_stats_yearly.json"],
+    "hm": [
+        "glob_stats_daily.json",
+        "glob_stats_monthly.json",
+        "glob_stats_yearly.json",
+    ],
     "hm/ts": 10,  # number of .json files in sub dir
     "scat": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
     "ts": 11,  # number of .json files in subdir

@@ -4,7 +4,7 @@ import pytest
 
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.experiment_processor import ExperimentProcessor
-from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval.setup_classes import EvalSetup
 from tests.conftest import geojson_unavail
 
 
@@ -35,8 +35,16 @@ def test_ExperimentProcessor_run(processor: ExperimentProcessor):
 @pytest.mark.parametrize(
     "cfg,kwargs,error",
     [
-        ("cfgexp2", dict(model_name="BLA"), "'No matches could be found that match input BLA'"),
-        ("cfgexp2", dict(obs_name="BLUB"), "'No matches could be found that match input BLUB'"),
+        (
+            "cfgexp2",
+            dict(model_name="BLA"),
+            "'No matches could be found that match input BLA'",
+        ),
+        (
+            "cfgexp2",
+            dict(obs_name="BLUB"),
+            "'No matches could be found that match input BLUB'",
+        ),
     ],
 )
 def test_ExperimentProcessor_run_error(processor: ExperimentProcessor, kwargs: dict, error: str):
