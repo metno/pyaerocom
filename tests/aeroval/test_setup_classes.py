@@ -4,7 +4,7 @@ from typing import Literal
 
 import pytest
 
-from pyaerocom.aeroval.setup_classes import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG, MODELS, OBS_GROUNDBASED
 
