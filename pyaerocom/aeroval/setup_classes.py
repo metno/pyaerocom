@@ -298,7 +298,7 @@ class ExperimentInfo(BaseModel):
     public: bool = False
     exp_pi: str = getuser()
     pyaerocom_version: str = __version__
-    creation_date: str = datetime.today().strftime("%Y-%m-%d")
+    creation_date: str = str(datetime.now())
 
 
 class EvalSetup(BaseModel):
