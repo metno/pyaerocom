@@ -1,7 +1,7 @@
 import pytest
 
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
-from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.exceptions import ModelVarNotAvailable
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG
 

@@ -159,3 +159,6 @@ sorted_out
 
 
 pytest.ini
+
+# can store scripts etc. locally for testing and dev purposes
+playground/
