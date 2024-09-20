@@ -35,6 +35,7 @@ from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
+    BoundingBox,
 )
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
 from pyaerocom.colocation.colocation_setup import ColocationSetup
@@ -121,6 +122,10 @@ class OutputPaths(BaseModel):
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
+    type: Literal["overlay"] = "overlay"
+    boundaries: BoundingBox | None = None
+    right_menu: tuple[str, ...] | None = None
+    save_format: Literal["webp", "png"] = "webp"
 
 
 class CAMS2_83Setup(BaseModel):

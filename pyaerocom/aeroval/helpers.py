@@ -13,6 +13,7 @@ from pyaerocom.helpers import (
     to_pandas_timestamp,
 )
 from pyaerocom.variable import Variable
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -202,3 +203,10 @@ def delete_dummy_model(model_id: str) -> None:
     for path in renamed.glob("*.nc"):
         print(f"Deleting dummy model {path}")
         path.unlink()
+
+
+class BoundingBox(BaseModel):
+    west: float
+    east: float
+    south: float
+    north: float
