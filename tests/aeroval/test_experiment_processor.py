@@ -4,7 +4,7 @@ import pytest
 
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.experiment_processor import ExperimentProcessor
-from pyaerocom.aeroval.setup_classes import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from tests.conftest import geojson_unavail
 
 

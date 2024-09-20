@@ -6,7 +6,7 @@ import pytest
 
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.aeroval.setup_classes import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from tests.conftest import geojson_unavail
 
 CHK_CFG1 = {

@@ -27,7 +27,7 @@ from pyaerocom.aeroval.glob_defaults import (
 )
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
-from pyaerocom.aeroval.setup_classes import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError

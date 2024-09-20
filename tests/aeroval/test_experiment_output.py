@@ -9,7 +9,7 @@ from pyaerocom import const
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.json_utils import read_json, write_json
-from pyaerocom.aeroval.setup_classes import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from tests.conftest import geojson_unavail
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"

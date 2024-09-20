@@ -10,7 +10,7 @@ from pyaerocom.aeroval.helpers import (
     check_if_year,
     make_dummy_model,
 )
-from pyaerocom.aeroval.setup_classes import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 
 
 @pytest.mark.parametrize(
