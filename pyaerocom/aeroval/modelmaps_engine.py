@@ -7,6 +7,7 @@ from pyaerocom.aeroval.modelmaps_helpers import (
     calc_contour_json,
     griddeddata_to_jsondict,
 )
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -22,6 +23,8 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import isnumeric
 
 logger = logging.getLogger(__name__)
+
+MODELREADERS_USE_MAP_FREQ = [ReadMscwCtm]
 
 
 class ModelMapsEngine(ProcessingEngine, DataImporter):
@@ -224,6 +227,44 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         return freq
 
+    def _get_read_model_freq(self, model_ts_types: list) -> TsType:
+        """
+        Tries to find the best TS type to read. Checks for available ts types with the following priority
+
+        1. If the freq from _get_maps_freq is available
+        2. If maps_freq is explicitly given, and is available
+        3. Iterates through the freqs given in the config, and find the coarsest available ts type
+
+        Raises
+        -------
+
+        ValueError
+            If no ts types are possible to read
+
+        Returns
+        -------
+        TSType
+        """
+        wanted_freq = self._get_maps_freq()
+        if wanted_freq in model_ts_types:
+            return wanted_freq
+
+        maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
+
+        if maps_freq != "coarsest":
+            if maps_freq not in model_ts_types:
+                raise ValueError(
+                    f"Could find any model data for given maps_freq. {maps_freq} is not in {model_ts_types}"
+                )
+            return maps_freq
+
+        for freq in sorted(TsType(fq) for fq in self.cfg.time_cfg.freqs):
+            if freq in model_ts_types:
+                logger.info(f"Found coarsest maps_freq that is available as model data: {freq}")
+                return freq
+
+        raise ValueError(f"Could not find any TS type to read maps")
+
     def _read_modeldata(self, model_name: str, var: str) -> GriddedData:
         """
         Function for reading the modeldata without going through the colocation object.
@@ -268,7 +309,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if var in self.cfg.colocation_opts.model_read_opts:
             kwargs.update(self.cfg.colocation_opts.model_read_opts[var])
 
-        ts_type_read = str(self._get_maps_freq())
+        model_reader = self.cfg.model_cfg[model_name].gridded_reader_id["model"]
+        if model_reader in MODELREADERS_USE_MAP_FREQ:
+            ts_types = reader.ts_types
+            ts_type_read = str(self._get_read_model_freq(ts_types))
+        else:
+            ts_type_read = self.cfg.time_cfg.main_freq
 
         data = reader.read_var(
             var,
