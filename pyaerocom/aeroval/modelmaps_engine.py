@@ -24,7 +24,7 @@ from pyaerocom.helpers import isnumeric
 
 logger = logging.getLogger(__name__)
 
-MODELREADERS_USE_MAP_FREQ = [ReadMscwCtm]
+MODELREADERS_USE_MAP_FREQ = ["ReadMscwCtm"]
 
 
 class ModelMapsEngine(ProcessingEngine, DataImporter):
@@ -254,7 +254,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if maps_freq != "coarsest":
             if maps_freq not in model_ts_types:
                 raise ValueError(
-                    f"Could find any model data for given maps_freq. {maps_freq} is not in {model_ts_types}"
+                    f"Could not find any model data for given maps_freq. {maps_freq} is not in {model_ts_types}"
                 )
             return maps_freq
 
@@ -288,11 +288,21 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             start, stop = 9999, None
 
         data_id = self.cfg.model_cfg[model_name].model_id
-        data_dir = self.cfg.model_cfg[model_name].model_data_dir
 
-        reader_class = Colocator.SUPPORTED_GRIDDED_READERS[
-            self.cfg.model_cfg[model_name].gridded_reader_id["model"]
-        ]
+        try:
+            data_dir = self.cfg.model_cfg[model_name].model_data_dir
+        except:
+            data_dir = None
+
+        try:
+            model_reader = self.cfg.model_cfg[model_name].gridded_reader_id["model"]
+        except:
+            model_reader = None
+
+        if model_reader is not None:
+            reader_class = Colocator.SUPPORTED_GRIDDED_READERS[model_reader]
+        else:
+            reader_class = Colocator.SUPPORTED_GRIDDED_READERS["ReadGridded"]
 
         reader = reader_class(
             data_id=data_id,
@@ -309,8 +319,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if var in self.cfg.colocation_opts.model_read_opts:
             kwargs.update(self.cfg.colocation_opts.model_read_opts[var])
 
-        model_reader = self.cfg.model_cfg[model_name].gridded_reader_id["model"]
-        if model_reader in MODELREADERS_USE_MAP_FREQ:
+        if model_reader is not None and model_reader in MODELREADERS_USE_MAP_FREQ:
             ts_types = reader.ts_types
             ts_type_read = str(self._get_read_model_freq(ts_types))
         else:
