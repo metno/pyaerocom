@@ -96,3 +96,10 @@ def calc_contour_json(data, cmap, cmap_bins):
 
     plt.close("all")
     return geojson
+
+
+def plot_pixel_maps(
+    data,
+    cmap,
+):
+    pass
