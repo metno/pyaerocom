@@ -122,10 +122,12 @@ class OutputPaths(BaseModel):
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
-    plot_types: dict[str, Literal["overlay", "contour"]] | str = "contour"
+    # LB: need to think about the tuple case...
+    plot_types: dict[str, Literal["overlay", "contour"] | tuple[str, ...]] | str = "contour"
+    overlay_maps: tuple[str, ...] | None = None
     boundaries: BoundingBox | None = None
     right_menu: tuple[str, ...] | None = None
-    save_format: Literal["webp", "png"] = "webp"
+    overlay_save_format: Literal["webp", "png"] = "webp"
 
 
 class CAMS2_83Setup(BaseModel):

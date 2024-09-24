@@ -41,14 +41,18 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         all_files = []
         for model in model_list:
-            try:
-                files = self._run_model(model, var_list)
-            except VarNotAvailableError:
-                files = []
-            if not files:
-                logger.warning(f"no data for model {model}, skipping")
-                continue
-            all_files.extend(files)
+            if (
+                self.self.cfg.modelmaps_opts.plot_types == "contour"
+                or "contour" in self.self.cfg.modelmaps_opts.plot_types.get(model, False)
+            ):
+                try:
+                    files = self._run_model(model, var_list)
+                except VarNotAvailableError:
+                    files = []
+                if not files:
+                    logger.warning(f"no data for model {model}, skipping")
+                    continue
+                all_files.extend(files)
         return files
 
     def _get_vars_to_process(self, model_name, var_list):
@@ -86,6 +90,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             try:
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
                 files.extend(_files)
+                if (
+                    not isinstance(self.cfg.modelmaps_opts.plot_types, str)
+                    and self.cfg.modelmaps_opts.plot_types.get(model_name, False) == "overlay"
+                ):
+                    # create pixel plots
+                    breakpoint()
 
             except ModelVarNotAvailable as ex:
                 logger.warning(f"{ex}")

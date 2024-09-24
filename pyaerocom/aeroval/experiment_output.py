@@ -547,7 +547,6 @@ class ExperimentOutput(ProjectOutput):
         return info
 
     def _create_var_ranges_json(self) -> None:
-        # TODO: add units
         with self.avdb.lock():
             ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
 
