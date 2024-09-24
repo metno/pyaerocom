@@ -173,7 +173,6 @@ class Config:
     #: accessed
     SERVER_CHECK_TIMEOUT = 1  # s
 
-
     def __init__(self, config_file=None, try_infer_environment=True):
         # Directories
         self._outputdir = None
@@ -236,7 +235,7 @@ class Config:
             self._coords_info_file = str(path)
 
         self._user = getpass.getuser()
-        self._my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}",self._outhomename)
+        self._my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}", self._outhomename)
 
         # these are searched in preferred order both in root and home
         self._DB_SEARCH_SUBDIRS = {}
@@ -248,7 +247,8 @@ class Config:
 
         self.ERA5_SURFTEMP_FILENAME = "era5.msl.t2m.201001-201012.nc"
 
-        self._LUSTRE_CHECK_PATH = "/aerocom/aerocom1/"
+        # self._LUSTRE_CHECK_PATH = "/aerocom/aerocom1/"
+        self._LUSTRE_CHECK_PATH = "/"
 
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
@@ -268,7 +268,9 @@ class Config:
 
         if config_file is not None:
             try:
-                self.read_config(config_file, basedir=basedir)
+                self.read_config(
+                    config_file,
+                )
             except Exception as e:
                 logger.warning(f"Failed to read config. Error: {repr(e)}")
         # create MyPyaerocom directory
@@ -321,23 +323,24 @@ class Config:
         check if ~/MyPyaerocom/paths.ini exists.
         if not, use the default paths.ini
         """
-        self._paths_ini = os.path.exists(os.path.join(self._my_pyaerocom_dir, self.PATHS_INI_NAME))
-        if self._paths_ini:
+
+        self._paths_ini = os.path.join(self._my_pyaerocom_dir, self.PATHS_INI_NAME)
+        if os.path.exists(self._paths_ini):
             logger.info(f"using user specific config file: {self._paths_ini}")
         else:
             with resources.path("pyaerocom.data", self.PATHS_INI_NAME) as path:
                 self._paths_ini = str(path)
 
-        # return (self._paths_ini, self._paths_ini)
+        return (self._paths_ini, self._paths_ini)
 
-        for sub_envdir, cfg_id in self._DB_SEARCH_SUBDIRS.items():
-            for sdir in self._basedirs_search_db():
-                basedir = os.path.join(sdir, sub_envdir)
-                if self._check_access(basedir):
-                    _chk_dir = os.path.join(basedir, self._check_subdirs_cfg[cfg_id])
-                    if self._check_access(_chk_dir):
-                        return (basedir, self._config_files[cfg_id])
-        raise FileNotFoundError("Could not establish access to any registered database")
+        # for sub_envdir, cfg_id in self._DB_SEARCH_SUBDIRS.items():
+        #     for sdir in self._basedirs_search_db():
+        #         basedir = os.path.join(sdir, sub_envdir)
+        #         if self._check_access(basedir):
+        #             _chk_dir = os.path.join(basedir, self._check_subdirs_cfg[cfg_id])
+        #             if self._check_access(_chk_dir):
+        #                 return (basedir, self._config_files[cfg_id])
+        # raise FileNotFoundError("Could not establish access to any registered database")
 
     def register_custom_variables(
         self, vars: dict[str, Variable] | dict[str, dict[str, str]]
@@ -872,6 +875,8 @@ class Config:
             _dir = mcfg["BASEDIR"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
+            elif "${USER}" in _dir:
+                _dir = _dir.replace("${USER}", self._user)
             if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
