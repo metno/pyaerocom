@@ -122,7 +122,7 @@ class OutputPaths(BaseModel):
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
-    type: Literal["overlay"] = "overlay"
+    plot_types: dict[str, Literal["overlay", "contour"]] | str = "contour"
     boundaries: BoundingBox | None = None
     right_menu: tuple[str, ...] | None = None
     save_format: Literal["webp", "png"] = "webp"
