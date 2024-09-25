@@ -125,7 +125,7 @@ class OutputPaths(BaseModel):
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
-    # LB: need to think about the tuple case...
+    # plot_types sho
     plot_types: dict | set[str] = {"contour"}
     overlay_maps: tuple[str, ...] | None = None
     boundaries: BoundingBox | None = None
@@ -142,6 +142,7 @@ class ModelMapsSetup(BaseModel):
                 assert v[m] in PLOT_TYPE_OPTIONS
         if isinstance(v, str):
             v = set([v])
+            assert v in PLOT_TYPE_OPTIONS
         return v
 
 

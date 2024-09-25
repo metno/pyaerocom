@@ -13,6 +13,7 @@ from pyaerocom.exceptions import (
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
+    EntryNotAvailable,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,17 +40,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         all_files = []
         for model in model_list:
-            if self.cfg.modelmaps_opts.plot_types == set(
-                CONTOUR
-            ) or CONTOUR in self.cfg.modelmaps_opts.plot_types.get(model, False):
-                try:
-                    files = self._run_model(model, var_list)
-                except VarNotAvailableError:
-                    files = []
-                if not files:
-                    logger.warning(f"no data for model {model}, skipping")
-                    continue
-                all_files.extend(files)
+            try:
+                files = self._run_model(model, var_list)
+            except VarNotAvailableError:
+                files = []
+            if not files:
+                logger.warning(f"no data for model {model}, skipping")
+                continue
+            all_files.extend(files)
         return files
 
     def _get_vars_to_process(self, model_name, var_list):
@@ -57,6 +55,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             self.cfg.obs_cfg.get_all_vars()
         )[1]
         all_vars = sorted(list(set(mvars)))
+        if var_list is not None:
+            all_vars = [var for var in var_list if var in all_vars]
+        return all_vars
+
+    def _get_obs_vars_to_process(self, obs_name, var_list):
+        ovars = self.cfg.obs_cfg.get(obs_name).get_all_vars()
+        all_vars = sorted(list(set(ovars)))
         if var_list is not None:
             all_vars = [var for var in var_list if var in all_vars]
         return all_vars
@@ -79,20 +84,30 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         """
 
-        var_list = self._get_vars_to_process(model_name, var_list)
+        try:
+            var_list = self._get_vars_to_process(model_name, var_list)
+        except EntryNotAvailable:
+            var_list = self._get_obs_vars_to_process(model_name, var_list)
+
         files = []
         for var in var_list:
             logger.info(f"Processing model maps for {model_name} ({var})")
 
             try:
-                _files = self._process_map_var(model_name, var, self.reanalyse_existing)
-                files.extend(_files)
                 if (
-                    not isinstance(self.cfg.modelmaps_opts.plot_types, str)
-                    and self.cfg.modelmaps_opts.plot_types.get(model_name, False) == OVERLAY
+                    self.cfg.modelmaps_opts.plot_types is CONTOUR
+                    or CONTOUR in self.cfg.modelmaps_opts.plot_types.get(model_name, False)
                 ):
-                    # create pixel plots
-                    breakpoint()
+                    _files = self._process_contour_map_var(
+                        model_name, var, self.reanalyse_existing
+                    )
+                    files.extend(_files)
+                if (
+                    self.cfg.modelmaps_opts.plot_types is OVERLAY
+                    or OVERLAY in self.cfg.modelmaps_opts.plot_types.get(model_name, False)
+                ):
+                    # create overlay (pixel) plots
+                    _files = self._process_overlay_map_var(model_name, var)
 
             except ModelVarNotAvailable as ex:
                 logger.warning(f"{ex}")
@@ -116,7 +131,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.extract_surface_level()
         return data
 
-    def _process_map_var(self, model_name, var, reanalyse_existing):
+    def _process_contour_map_var(self, model_name, var, reanalyse_existing):
         """
         Process model data to create map geojson files
 
@@ -193,3 +208,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             )
 
         return fp_geojson
+
+    def _process_overlay_map_var(self, model_name, var):
+        """Process overlay map (pixels) for either model or obserations
+        argument model_name is a misnomer because this can also be applied to observation networks
+
+        Args:
+            model_name (str): name of model or obs to make overlay pixel maps of
+            var (str): variable name
+        """
+        raise NotImplementedError
