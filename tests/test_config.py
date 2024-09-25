@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import getpass
+import os.path
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,9 @@ from pyaerocom.variable import Variable
 from tests.conftest import lustre_avail
 
 USER = getpass.getuser()
+
+with resources.path("pyaerocom.data", "paths.ini") as path:
+    DEFAULT_PATHS_INI = str(path)
 
 
 @pytest.fixture()
@@ -95,6 +99,30 @@ def test_Config___init___error(config_file: str, exception: type[Exception], err
 def test_Config_has_access_lustre():
     cfg = testmod.Config(try_infer_environment=False)
     assert not cfg.has_access_lustre
+
+
+def test_user_specific_paths_ini():
+    # test if user specific paths.ini file is read
+    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME)
+    # only create user_file if it doesn't exist
+    del_flag = False
+    if not os.path.exists(user_file):
+        with open(DEFAULT_PATHS_INI) as infile, open(user_file, "w") as outfile:
+            for line in infile:
+                line = line.replace("/lustre/storeB/project", "~")
+                outfile.write(line)
+        del_flag = True
+
+    # read default paths.ini
+    # compare
+    assert os.path.exists(user_file)
+
+    if del_flag:
+        os.remove(user_file)
+
+    # create user specific paths.ini if not present
+    # fill it with a changed path
+    # delete it again
 
 
 # # def test_Config_has_access_users_database():
