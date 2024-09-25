@@ -208,3 +208,15 @@ class DataImporter(HasColocator):
 
         data = col._read_ungridded(var_name)
         return data
+
+    def read_gridded_obsdata(self, obs_name, var_name):
+        """
+        Import gridded observation data, usually satellite data
+
+        Args:
+            obs_name (str): Name of observation network in :attr:`cfg`
+            var_name (str): Name of variable to be read.
+        """
+        col = self.get_colocator(obs_name=obs_name)
+        data = col._read_gridded(var_name)
+        return data

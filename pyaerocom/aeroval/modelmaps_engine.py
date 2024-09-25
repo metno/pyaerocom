@@ -3,7 +3,12 @@ import os
 
 from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, CONTOUR, OVERLAY
+from pyaerocom.aeroval.modelmaps_helpers import (
+    calc_contour_json,
+    plot_overlay_pixel_maps,
+    CONTOUR,
+    OVERLAY,
+)
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -107,7 +112,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     or OVERLAY in self.cfg.modelmaps_opts.plot_types.get(model_name, False)
                 ):
                     # create overlay (pixel) plots
-                    _files = self._process_overlay_map_var(model_name, var)
+                    _files = self._process_overlay_map_var(
+                        model_name, var, self.reanalyse_existing
+                    )
 
             except ModelVarNotAvailable as ex:
                 logger.warning(f"{ex}")
@@ -178,7 +185,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         if not reanalyse_existing:
             if os.path.exists(fp_geojson):
-                logger.info(f"Skipping processing of {outname}: data already exists.")
+                logger.info(f"Skipping contour processing of {outname}: data already exists.")
                 return []
 
         maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
@@ -209,7 +216,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         return fp_geojson
 
-    def _process_overlay_map_var(self, model_name, var):
+    def _process_overlay_map_var(self, model_name, var, reanalyse_existing):
         """Process overlay map (pixels) for either model or obserations
         argument model_name is a misnomer because this can also be applied to observation networks
 
@@ -217,4 +224,72 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             model_name (str): name of model or obs to make overlay pixel maps of
             var (str): variable name
         """
+        breakpoint()
+
+        try:
+            data = self.read_gridded_obsdata(model_name, var)
+        except EntryNotAvailable:
+            try:
+                data = self.read_model_data(model_name, var)
+            except Exception as e:
+                raise ModelVarNotAvailable(
+                    f"Cannot read data for model {model_name} (variable {var}): {e}"
+                )
+
+        var_ranges_defaults = self.cfg.var_scale_colmap
+
+        if var in var_ranges_defaults.keys():
+            cmapinfo = var_ranges_defaults[var]
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+        else:
+            cmapinfo = var_ranges_defaults["default"]
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+
+        data = self._check_dimensions(data)
+
+        outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
+        outname = f"{var}_{model_name}"
+
+        fp_overlay = os.path.join(
+            outdir, f"{outname}.{self.cfg.modelmaps_opts.overlay_save_format}"
+        )
+
+        if not reanalyse_existing:
+            if os.path.exists(fp_overlay):
+                logger.info(f"Skipping overlay processing of {outname}: data already exists.")
+                return []
+
+        maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
+
+        if maps_freq == "coarsest":  # TODO: Implement this in terms of a TsType object. #1267
+            freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
+            freq = min(freq, self.cfg.time_cfg.main_freq)
+        else:
+            freq = maps_freq
+        tst = TsType(data.ts_type)
+
+        if tst < freq:
+            raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
+        elif tst > freq:
+            data = data.resample_time(str(freq))
+
+        data.check_unit()
+
+        # https://github.com/matplotlib/matplotlib/issues/23319
+        overlay_plot = plot_overlay_pixel_maps(
+            data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins, outpath=fp_overlay
+        )
+
         raise NotImplementedError
+
+        # LB: Below will require some coordination with Thorbjørn
+        with self.avdb.lock():
+            self.avdb.put_map_overlay(
+                overlay_plot,
+                self.exp_output.proj_id,
+                self.exp_output.exp_id,
+                var,
+                model_name,
+            )
+
+        return fp_overlay

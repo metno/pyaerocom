@@ -5,6 +5,7 @@ from cartopy.mpl.geoaxes import GeoAxes
 from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
+import io
 
 try:
     from geojsoncontour import contourf_to_geojson
@@ -103,8 +104,33 @@ def calc_contour_json(data, cmap, cmap_bins):
     return geojson
 
 
-def plot_pixel_maps(
-    data,
-    cmap,
-):
-    pass
+def plot_overlay_pixel_maps(data, cmap, cmap_bins, outpath):
+    fig, axis = plt.subplots(
+        1,
+        1,
+        subplot_kw=dict(projection=ccrs.Mercator()),
+        figsize=(8, 8),
+    )
+    # LB: see if we can use xarray plotting or need to modify somewhow
+    data.plot(
+        ax=axis,
+        transform=ccrs.PlateCarree(),
+        add_colorbar=False,
+        add_labels=False,
+        vmin=0,
+        vmax=120,
+        cmap=cmap,
+    )
+
+    with io.BytesIO() as buffer:  # use buffer memory
+        plt.savefig(
+            outpath,
+            bbox_inches="tight",
+            transparent=True,
+        )
+        buffer.seek(0)
+        image = buffer.getvalue()
+
+    plt.close()
+
+    return image
