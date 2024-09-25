@@ -16,6 +16,11 @@ from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
 
 
+# names of modelmaps type options
+CONTOUR = "contour"
+OVERLAY = "overlay"
+
+
 def _jsdate_list(data):
     tst = TsType(data.ts_type)
     idx = make_datetime_index(data.start, data.stop, tst.to_pandas_freq())

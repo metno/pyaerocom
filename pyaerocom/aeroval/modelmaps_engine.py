@@ -3,9 +3,7 @@ import os
 
 from pyaerocom import GriddedData, TsType
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.modelmaps_helpers import (
-    calc_contour_json,
-)
+from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, CONTOUR, OVERLAY
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -41,10 +39,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         all_files = []
         for model in model_list:
-            if (
-                self.self.cfg.modelmaps_opts.plot_types == "contour"
-                or "contour" in self.self.cfg.modelmaps_opts.plot_types.get(model, False)
-            ):
+            if self.cfg.modelmaps_opts.plot_types == set(
+                CONTOUR
+            ) or CONTOUR in self.cfg.modelmaps_opts.plot_types.get(model, False):
                 try:
                     files = self._run_model(model, var_list)
                 except VarNotAvailableError:
@@ -92,7 +89,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 files.extend(_files)
                 if (
                     not isinstance(self.cfg.modelmaps_opts.plot_types, str)
-                    and self.cfg.modelmaps_opts.plot_types.get(model_name, False) == "overlay"
+                    and self.cfg.modelmaps_opts.plot_types.get(model_name, False) == OVERLAY
                 ):
                     # create pixel plots
                     breakpoint()

@@ -2,6 +2,8 @@ import logging
 import os
 from pathlib import Path
 
+from pydantic import BaseModel
+
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.griddeddata import GriddedData
@@ -13,7 +15,6 @@ from pyaerocom.helpers import (
     to_pandas_timestamp,
 )
 from pyaerocom.variable import Variable
-from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 

@@ -37,10 +37,13 @@ from pyaerocom.aeroval.helpers import (
     check_if_year,
     BoundingBox,
 )
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
+
+PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})
 
 
 class OutputPaths(BaseModel):
@@ -123,11 +126,23 @@ class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
     # LB: need to think about the tuple case...
-    plot_types: dict[str, Literal["overlay", "contour"] | tuple[str, ...]] | str = "contour"
+    plot_types: dict | set[str] = {"contour"}
     overlay_maps: tuple[str, ...] | None = None
     boundaries: BoundingBox | None = None
-    right_menu: tuple[str, ...] | None = None
+    # right_menu: tuple[str, ...] | None = None
+    map_observations_only_in_right_menu: bool = False
     overlay_save_format: Literal["webp", "png"] = "webp"
+
+    @field_validator("plot_types")
+    def validate_plot_types(cls, v):
+        if isinstance(v, dict):
+            for m in v:
+                if not isinstance(v[m], set):
+                    v[m] = set([v[m]])
+                assert v[m] in PLOT_TYPE_OPTIONS
+        if isinstance(v, str):
+            v = set([v])
+        return v
 
 
 class CAMS2_83Setup(BaseModel):
