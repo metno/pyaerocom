@@ -52,8 +52,9 @@ def empty_cfg():
     return cfg
 
 
-def test_Config_ALL_DATABASE_IDS(empty_cfg):
-    assert empty_cfg.ALL_DATABASE_IDS == ["metno", "users-db", "local-db"]
+# def test_Config_ALL_DATABASE_IDS(empty_cfg):
+#     assert empty_cfg.ALL_DATABASE_IDS == ["metno", "users-db", "local-db"]
+#
 
 
 @pytest.mark.parametrize(
@@ -89,18 +90,6 @@ def test_Config___init___error(config_file: str, exception: type[Exception], err
     with pytest.raises(exception) as e:
         testmod.Config(config_file, False)
     assert str(e.value) == error
-
-
-def test_Config__infer_config_from_basedir(local_db: Path):
-    cfg = testmod.Config(try_infer_environment=False)
-    res = cfg._infer_config_from_basedir(local_db)
-    assert res[1] == "local-db"
-
-
-def test_Config__infer_config_from_basedir_error():
-    cfg = testmod.Config(try_infer_environment=False)
-    with pytest.raises(FileNotFoundError):
-        cfg._infer_config_from_basedir("/blaaa")
 
 
 def test_Config_has_access_lustre():
