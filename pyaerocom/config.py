@@ -209,26 +209,6 @@ class Config:
 
         with resources.path("pyaerocom.data", "paths.ini") as path:
             self._config_ini_lustre = str(path)
-        # with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
-        #     _config_ini_user_server = str(path)
-        # with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
-        #     _config_ini_localdb = str(path)
-
-        # this dictionary links environment ID's with corresponding ini files
-        self._config_files = {
-            "metno": self._config_ini_lustre,
-            # "users-db": _config_ini_user_server,
-            # "local-db": _config_ini_localdb,
-        }
-
-        # this dictionary links environment ID's with corresponding subdirectory
-        # names that are required to exist in order to load this environment
-        self._check_subdirs_cfg = {
-            "metno": "aerocom",
-            "users-db": "AMAP",
-            "local-db": "modeldata",
-        }
-
         with resources.path("pyaerocom.data", "variables.ini") as path:
             self._var_info_file = str(path)
         with resources.path("pyaerocom.data", "coords.ini") as path:
@@ -237,17 +217,10 @@ class Config:
         self._user = getpass.getuser()
         self._my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}", self._outhomename)
 
-        # these are searched in preferred order both in root and home
-        self._DB_SEARCH_SUBDIRS = {}
-        self._DB_SEARCH_SUBDIRS[f"/nird/home/{self._user}/data"] = "metno"
-        # _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
-        # _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
-
         self.DONOTCACHEFILE = None
 
         self.ERA5_SURFTEMP_FILENAME = "era5.msl.t2m.201001-201012.nc"
 
-        # self._LUSTRE_CHECK_PATH = "/aerocom/aerocom1/"
         self._LUSTRE_CHECK_PATH = "/"
 
         #: Settings for reading and writing of gridded data
@@ -332,15 +305,6 @@ class Config:
                 self._paths_ini = str(path)
 
         return (self._paths_ini, self._paths_ini)
-
-        # for sub_envdir, cfg_id in self._DB_SEARCH_SUBDIRS.items():
-        #     for sdir in self._basedirs_search_db():
-        #         basedir = os.path.join(sdir, sub_envdir)
-        #         if self._check_access(basedir):
-        #             _chk_dir = os.path.join(basedir, self._check_subdirs_cfg[cfg_id])
-        #             if self._check_access(_chk_dir):
-        #                 return (basedir, self._config_files[cfg_id])
-        # raise FileNotFoundError("Could not establish access to any registered database")
 
     def register_custom_variables(
         self, vars: dict[str, Variable] | dict[str, dict[str, str]]
