@@ -215,7 +215,7 @@ class Config:
             self._coords_info_file = str(path)
 
         self._user = getpass.getuser()
-        self._my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}", self._outhomename)
+        self.my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}", self._outhomename)
 
         self.DONOTCACHEFILE = None
 
@@ -297,7 +297,7 @@ class Config:
         if not, use the default paths.ini
         """
 
-        self._paths_ini = os.path.join(self._my_pyaerocom_dir, self.PATHS_INI_NAME)
+        self._paths_ini = os.path.join(self.my_pyaerocom_dir, self.PATHS_INI_NAME)
         if os.path.exists(self._paths_ini):
             logger.info(f"using user specific config file: {self._paths_ini}")
         else:
