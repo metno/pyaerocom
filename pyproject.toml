@@ -21,7 +21,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "aerovaldb>=0.1.0",
+    "aerovaldb==0.1.0rc2",
     "scitools-iris>=3.8.1",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
