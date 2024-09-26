@@ -144,6 +144,9 @@ class ModelMapsSetup(BaseModel):
         if isinstance(v, str):
             v = set([v])
             assert v in PLOT_TYPE_OPTIONS
+        if isinstance(v, list):  # can occur when reading a serialized config
+            v = set(v)
+            assert v in PLOT_TYPE_OPTIONS
         return v
 
 

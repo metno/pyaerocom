@@ -147,8 +147,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         logger.info("Start processing")
 
-        # compute model maps (completely independent of obs-eval
-        # processing below)
+        # compute model maps (completely independent of obs-eval processing below)
         if self.cfg.webdisp_opts.add_model_maps:
             engine = ModelMapsEngine(self.cfg)
 

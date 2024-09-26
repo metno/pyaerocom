@@ -279,7 +279,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     logger.info(f"Skipping overlay processing of {outname}: data already exists.")
                     continue
 
-            # https://github.com/matplotlib/matplotlib/issues/23319
             overlay_plot = plot_overlay_pixel_maps(
                 data[i],
                 cmap=varinfo.cmap,
@@ -287,7 +286,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 outpath=fp_overlay,
             )
 
-            # LB: Below will require some coordination with Thorbjørn
             with self.avdb.lock():
                 self.avdb.put_map_overlay(
                     overlay_plot,
@@ -297,5 +295,3 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     var,
                     date,
                 )
-
-        # return fp_overlay

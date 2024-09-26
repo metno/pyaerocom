@@ -115,7 +115,6 @@ def plot_overlay_pixel_maps(data, cmap, cmap_bins, outpath):
         figsize=(8, 8),
     )
 
-    # LB: see if we can use xarray plotting or need to modify somewhow
     data.plot(
         ax=axis,
         transform=ccrs.PlateCarree(),
