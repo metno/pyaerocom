@@ -6,6 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
 import io
+import xarray
 
 try:
     from geojsoncontour import contourf_to_geojson
@@ -104,7 +105,9 @@ def calc_contour_json(data, cmap, cmap_bins):
     return geojson
 
 
-def plot_overlay_pixel_maps(data, cmap, cmap_bins, outpath):
+def plot_overlay_pixel_maps(
+    data: xarray.DataArray, cmap: str, cmap_bins: list[float], outpath: str, format: str
+):
     plt.close("all")
     matplotlib.use("Agg")
 
@@ -130,6 +133,7 @@ def plot_overlay_pixel_maps(data, cmap, cmap_bins, outpath):
             outpath,
             bbox_inches="tight",
             transparent=True,
+            format=format,
         )
         buffer.seek(0)
         image = buffer.getvalue()
