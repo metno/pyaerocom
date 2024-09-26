@@ -271,9 +271,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             outname = f"{model_name}_{var}_{date}"
 
             # Lb: Check if still needed
-            fp_overlay = os.path.join(
-                outdir, f"{outname}.{self.cfg.modelmaps_opts.overlay_save_format}"
-            )
+            fp_overlay = os.path.join(outdir, outname)
 
             if not reanalyse_existing:
                 if os.path.exists(fp_overlay):
@@ -284,7 +282,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 data[i],
                 cmap=varinfo.cmap,
                 cmap_bins=varinfo.cmap_bins,
-                outpath=fp_overlay,
+                format=self.cfg.modelmaps_opts.overlay_save_format,
             )
 
             with self.avdb.lock():
