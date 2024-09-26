@@ -6,6 +6,7 @@ from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.modelmaps_helpers import (
     calc_contour_json,
     plot_overlay_pixel_maps,
+    _jsdate_list,
     CONTOUR,
     OVERLAY,
 )
@@ -224,7 +225,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             model_name (str): name of model or obs to make overlay pixel maps of
             var (str): variable name
         """
-        breakpoint()
 
         try:
             data = self.read_gridded_obsdata(model_name, var)
@@ -248,16 +248,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         data = self._check_dimensions(data)
 
         outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
-        outname = f"{var}_{model_name}"
-
-        fp_overlay = os.path.join(
-            outdir, f"{outname}.{self.cfg.modelmaps_opts.overlay_save_format}"
-        )
-
-        if not reanalyse_existing:
-            if os.path.exists(fp_overlay):
-                logger.info(f"Skipping overlay processing of {outname}: data already exists.")
-                return []
 
         maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
 
@@ -275,21 +265,37 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         data.check_unit()
 
-        # https://github.com/matplotlib/matplotlib/issues/23319
-        overlay_plot = plot_overlay_pixel_maps(
-            data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins, outpath=fp_overlay
-        )
+        tst = _jsdate_list(data)
+        data = data.to_xarray()
+        for i, date in enumerate(tst):
+            outname = f"{model_name}_{var}_{date}"
 
-        raise NotImplementedError
-
-        # LB: Below will require some coordination with Thorbjørn
-        with self.avdb.lock():
-            self.avdb.put_map_overlay(
-                overlay_plot,
-                self.exp_output.proj_id,
-                self.exp_output.exp_id,
-                var,
-                model_name,
+            fp_overlay = os.path.join(
+                outdir, f"{outname}.{self.cfg.modelmaps_opts.overlay_save_format}"
             )
 
-        return fp_overlay
+            if not reanalyse_existing:
+                if os.path.exists(fp_overlay):
+                    logger.info(f"Skipping overlay processing of {outname}: data already exists.")
+                    continue
+
+            # https://github.com/matplotlib/matplotlib/issues/23319
+            overlay_plot = plot_overlay_pixel_maps(
+                data[i],
+                cmap=varinfo.cmap,
+                cmap_bins=varinfo.cmap_bins,
+                outpath=fp_overlay,
+            )
+
+            # LB: Below will require some coordination with Thorbjørn
+            with self.avdb.lock():
+                self.avdb.put_map_overlay(
+                    overlay_plot,
+                    self.exp_output.proj_id,
+                    self.exp_output.exp_id,
+                    model_name,
+                    var,
+                    date,
+                )
+
+        # return fp_overlay

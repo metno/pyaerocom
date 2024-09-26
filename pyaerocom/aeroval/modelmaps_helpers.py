@@ -105,20 +105,24 @@ def calc_contour_json(data, cmap, cmap_bins):
 
 
 def plot_overlay_pixel_maps(data, cmap, cmap_bins, outpath):
+    plt.close("all")
+    matplotlib.use("Agg")
+
     fig, axis = plt.subplots(
         1,
         1,
         subplot_kw=dict(projection=ccrs.Mercator()),
         figsize=(8, 8),
     )
+
     # LB: see if we can use xarray plotting or need to modify somewhow
     data.plot(
         ax=axis,
         transform=ccrs.PlateCarree(),
         add_colorbar=False,
         add_labels=False,
-        vmin=0,
-        vmax=120,
+        vmin=cmap_bins[0],
+        vmax=cmap_bins[-1],
         cmap=cmap,
     )
 
@@ -131,6 +135,6 @@ def plot_overlay_pixel_maps(data, cmap, cmap_bins, outpath):
         buffer.seek(0)
         image = buffer.getvalue()
 
-    plt.close()
+    plt.close("all")
 
     return image

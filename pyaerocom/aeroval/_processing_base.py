@@ -218,5 +218,5 @@ class DataImporter(HasColocator):
             var_name (str): Name of variable to be read.
         """
         col = self.get_colocator(obs_name=obs_name)
-        data = col._read_gridded(var_name)
+        data = col._read_gridded(var_name, is_model=False)
         return data
