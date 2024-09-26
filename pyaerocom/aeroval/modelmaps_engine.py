@@ -270,7 +270,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         for i, date in enumerate(tst):
             outname = f"{model_name}_{var}_{date}"
 
-            # Lb: Check if still needed
+            # Note should matche the output location defined in aerovaldb
             fp_overlay = os.path.join(outdir, outname)
 
             if not reanalyse_existing:

@@ -79,7 +79,6 @@ class OutputPaths(BaseModel):
         "hm/ts",
         "contour",
         "profiles",
-        "contour/overlay",
     ]
     avdb_resource: Path | str | None = None
 
