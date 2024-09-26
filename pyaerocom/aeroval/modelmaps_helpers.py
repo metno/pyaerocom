@@ -106,7 +106,7 @@ def calc_contour_json(data, cmap, cmap_bins):
 
 
 def plot_overlay_pixel_maps(
-    data: xarray.DataArray, cmap: str, cmap_bins: list[float], outpath: str, format: str
+    data: xarray.DataArray, cmap: str, cmap_bins: list[float], format: str
 ):
     plt.close("all")
     matplotlib.use("Agg")
@@ -130,7 +130,7 @@ def plot_overlay_pixel_maps(
 
     with io.BytesIO() as buffer:  # use buffer memory
         plt.savefig(
-            outpath,
+            buffer,
             bbox_inches="tight",
             transparent=True,
             format=format,

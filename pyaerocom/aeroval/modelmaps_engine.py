@@ -270,6 +270,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         for i, date in enumerate(tst):
             outname = f"{model_name}_{var}_{date}"
 
+            # Lb: Check if still needed
             fp_overlay = os.path.join(
                 outdir, f"{outname}.{self.cfg.modelmaps_opts.overlay_save_format}"
             )
