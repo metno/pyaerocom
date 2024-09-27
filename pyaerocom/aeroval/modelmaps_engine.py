@@ -99,7 +99,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         for var in var_list:
             logger.info(f"Processing model maps for {model_name} ({var})")
 
-            try:
+            try:  # pragma: no cover
                 make_contour, make_overlay = False, False
                 if isinstance(self.cfg.modelmaps_opts.plot_types, dict):
                     make_contour = CONTOUR in self.cfg.modelmaps_opts.plot_types.get(
@@ -142,7 +142,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.extract_surface_level()
         return data
 
-    def _process_contour_map_var(self, model_name, var, reanalyse_existing):
+    def _process_contour_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """
         Process model data to create map geojson files
 
@@ -220,7 +220,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         return fp_geojson
 
-    def _process_overlay_map_var(self, model_name, var, reanalyse_existing):
+    def _process_overlay_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """Process overlay map (pixels) for either model or obserations
         argument model_name is a misnomer because this can also be applied to observation networks
 

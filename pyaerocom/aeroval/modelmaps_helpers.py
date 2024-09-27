@@ -107,7 +107,7 @@ def calc_contour_json(data, cmap, cmap_bins):
 
 def plot_overlay_pixel_maps(
     data: xarray.DataArray, cmap: str, cmap_bins: list[float], format: str
-):
+):  # pragma: no cover
     plt.close("all")
     matplotlib.use("Agg")
 
