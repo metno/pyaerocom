@@ -169,6 +169,7 @@ def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update:
         assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
         assert modelmaps_opts.maps_res_deg == 5
+        assert modelmaps_opts.plot_types == {"contour"}
 
 
 @pytest.mark.parametrize(
