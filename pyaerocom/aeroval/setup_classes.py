@@ -126,7 +126,6 @@ class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
     plot_types: dict | set[str] = {CONTOUR}
-    overlay_maps: tuple[str, ...] | None = None
     boundaries: BoundingBox | None = None
     map_observations_only_in_right_menu: bool = False
     overlay_save_format: Literal["webp", "png"] = "webp"
