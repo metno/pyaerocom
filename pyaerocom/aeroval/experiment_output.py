@@ -560,7 +560,7 @@ class ExperimentOutput(ProjectOutput):
             for var in all_vars:
                 if var not in ranges or ranges[var]["scale"] == []:
                     ranges[var] = self._get_cmap_info(var)
-                ranges[var]["unit"] = get_variable(var).unit
+                ranges[var]["unit"] = get_variable(var).units
             self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:

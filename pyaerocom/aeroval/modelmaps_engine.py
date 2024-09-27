@@ -100,18 +100,21 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             logger.info(f"Processing model maps for {model_name} ({var})")
 
             try:
-                if (
-                    self.cfg.modelmaps_opts.plot_types is CONTOUR
-                    or CONTOUR in self.cfg.modelmaps_opts.plot_types.get(model_name, False)
-                ):
+                make_contour, make_overlay = False, False
+                if isinstance(self.cfg.modelmaps_opts.plot_types, dict):
+                    make_contour = CONTOUR in self.cfg.modelmaps_opts.plot_types.get(
+                        model_name, False
+                    )
+                    make_overlay = OVERLAY in self.cfg.modelmaps_opts.plot_types.get(
+                        model_name, False
+                    )
+
+                if self.cfg.modelmaps_opts.plot_types is CONTOUR or make_contour:
                     _files = self._process_contour_map_var(
                         model_name, var, self.reanalyse_existing
                     )
                     files.extend(_files)
-                if (
-                    self.cfg.modelmaps_opts.plot_types is OVERLAY
-                    or OVERLAY in self.cfg.modelmaps_opts.plot_types.get(model_name, False)
-                ):
+                if self.cfg.modelmaps_opts.plot_types is OVERLAY or make_overlay:
                     # create overlay (pixel) plots
                     _files = self._process_overlay_map_var(
                         model_name, var, self.reanalyse_existing
