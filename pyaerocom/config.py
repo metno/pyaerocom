@@ -877,6 +877,8 @@ class Config:
             _dir = cfg["BASEDIR"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
+            if "${USER}" in _dir:
+                _dir = _dir.replace("${USER}", self._user)
             if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
