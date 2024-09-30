@@ -11,7 +11,7 @@ from tests.conftest import geojson_unavail
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
-    "contour": 1,
+    "contour": 0,
     "hm": [
         "glob_stats_daily.json",
         "glob_stats_monthly.json",
