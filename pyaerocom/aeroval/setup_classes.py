@@ -35,11 +35,15 @@ from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
+    BoundingBox,
 )
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
+
+PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})
 
 
 class OutputPaths(BaseModel):
@@ -121,6 +125,26 @@ class OutputPaths(BaseModel):
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
+    plot_types: dict | set[str] = {CONTOUR}
+    boundaries: BoundingBox | None = None
+    map_observations_only_in_right_menu: bool = False
+    overlay_save_format: Literal["webp", "png"] = "webp"
+
+    @field_validator("plot_types")
+    def validate_plot_types(cls, v):
+        if isinstance(v, dict):
+            for m in v:
+                if not isinstance(v[m], set):
+                    v[m] = set([v[m]])
+                if v[m] not in PLOT_TYPE_OPTIONS:
+                    raise ConfigError("Model maps set up given a non-valid plot type.")
+        if isinstance(v, str):
+            v = set([v])
+        if isinstance(v, list):  # can occur when reading a serialized config
+            v = set(v)
+        if v not in PLOT_TYPE_OPTIONS:
+            raise ConfigError("Model maps set up given a non-valid plot type.")
+        return v
 
 
 class CAMS2_83Setup(BaseModel):
