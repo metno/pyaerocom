@@ -1,12 +1,12 @@
 import cartopy.crs as ccrs
-import dask
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
+import io
+import xarray
 
 try:
     from geojsoncontour import contourf_to_geojson
@@ -18,64 +18,15 @@ from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
 
 
+# names of modelmaps type options
+CONTOUR = "contour"
+OVERLAY = "overlay"
+
+
 def _jsdate_list(data):
     tst = TsType(data.ts_type)
     idx = make_datetime_index(data.start, data.stop, tst.to_pandas_freq())
     return _get_jsdate(idx.values).tolist()
-
-
-def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
-    """
-    Convert gridded data to json dictionary
-
-    Parameters
-    ----------
-    data : GriddedData
-        input data to be converted
-    lat_res_deg : int
-        output latitude resolution in decimal degrees
-    lon_res_deg : int
-        output longitude resolution in decimal degrees
-
-    Returns
-    -------
-    dict
-        data dictionary for json output (keys are metadata and data).
-
-    """
-    data = data.regrid(lat_res_deg=lat_res_deg, lon_res_deg=lon_res_deg)
-
-    try:
-        data.check_dimcoords_tseries()
-    except Exception:
-        data.reorder_dimensions_tseries()
-
-    arr = data.to_xarray()
-    latname, lonname = "lat", "lon"
-    try:
-        stacked = arr.stack(station_name=(latname, lonname))
-    except Exception:
-        latname, lonname = "latitude", "longitude"
-        stacked = arr.stack(station_name=(latname, lonname))
-
-    output = {"data": {}, "metadata": {}}
-    dd = output["data"]
-    dd["time"] = _jsdate_list(data)
-    output["metadata"]["var_name"] = data.var_name
-    output["metadata"]["units"] = str(data.units)
-
-    nparr = stacked.data.astype(float)
-    if isinstance(nparr, dask.array.core.Array):
-        nparr = nparr.compute()
-    for i, (lat, lon) in enumerate(stacked.station_name.values):
-        coord = lat, lon
-        vals = nparr[:, i]
-        vals = np.round(vals, 5)
-        dd[str(coord)] = sd = {}
-        sd["lat"] = lat
-        sd["lon"] = lon
-        sd["data"] = vals.tolist()
-    return output
 
 
 def calc_contour_json(data, cmap, cmap_bins):
@@ -127,7 +78,13 @@ def calc_contour_json(data, cmap, cmap_bins):
     for i, date in enumerate(tst):
         datamon = nparr[i]
         contour = ax.contourf(
-            lons, lats, datamon, transform=proj, colors=cm.colors, levels=cmap_bins, extend="max"
+            lons,
+            lats,
+            datamon,
+            transform=proj,
+            colors=cm.colors,
+            levels=cmap_bins,
+            extend="max",
         )
 
         result = contourf_to_geojson(contourf=contour)
@@ -146,3 +103,41 @@ def calc_contour_json(data, cmap, cmap_bins):
 
     plt.close("all")
     return geojson
+
+
+def plot_overlay_pixel_maps(
+    data: xarray.DataArray, cmap: str, cmap_bins: list[float], format: str
+):  # pragma: no cover
+    plt.close("all")
+    matplotlib.use("Agg")
+
+    fig, axis = plt.subplots(
+        1,
+        1,
+        subplot_kw=dict(projection=ccrs.Mercator()),
+        figsize=(8, 8),
+    )
+
+    data.plot(
+        ax=axis,
+        transform=ccrs.PlateCarree(),
+        add_colorbar=False,
+        add_labels=False,
+        vmin=cmap_bins[0],
+        vmax=cmap_bins[-1],
+        cmap=cmap,
+    )
+
+    with io.BytesIO() as buffer:  # use buffer memory
+        plt.savefig(
+            buffer,
+            bbox_inches="tight",
+            transparent=True,
+            format=format,
+        )
+        buffer.seek(0)
+        image = buffer.getvalue()
+
+    plt.close("all")
+
+    return image

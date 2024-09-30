@@ -34,7 +34,7 @@ from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.utils import recursive_defaultdict
-from pyaerocom.variable_helpers import get_aliases
+from pyaerocom.variable_helpers import get_aliases, get_variable
 
 MapInfo = namedtuple(
     "MapInfo",
@@ -539,7 +539,8 @@ class ExperimentOutput(ProjectOutput):
             return var_ranges_defaults[var]
         try:
             varinfo = VarinfoWeb(var)
-            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap)
+            # TODO: get unit from pyaerocom/data/variables.ini
+            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.warning(
@@ -559,6 +560,7 @@ class ExperimentOutput(ProjectOutput):
             for var in all_vars:
                 if var not in ranges or ranges[var]["scale"] == []:
                     ranges[var] = self._get_cmap_info(var)
+                ranges[var]["unit"] = get_variable(var).units
             self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:

@@ -7,6 +7,7 @@ import pytest
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG, MODELS, OBS_GROUNDBASED
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR
 
 
 @pytest.fixture
@@ -169,6 +170,8 @@ def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update:
         assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
         assert modelmaps_opts.maps_res_deg == 5
+        assert modelmaps_opts.plot_types == {CONTOUR}
+        assert modelmaps_opts.overlay_save_format == "webp"
 
 
 @pytest.mark.parametrize(
