@@ -136,13 +136,14 @@ class ModelMapsSetup(BaseModel):
             for m in v:
                 if not isinstance(v[m], set):
                     v[m] = set([v[m]])
-                assert v[m] in PLOT_TYPE_OPTIONS
+                if v[m] not in PLOT_TYPE_OPTIONS:
+                    raise ConfigError("Model maps set up given a non-valid plot type.")
         if isinstance(v, str):
             v = set([v])
-            assert v in PLOT_TYPE_OPTIONS
         if isinstance(v, list):  # can occur when reading a serialized config
             v = set(v)
-            assert v in PLOT_TYPE_OPTIONS
+        if v not in PLOT_TYPE_OPTIONS:
+            raise ConfigError("Model maps set up given a non-valid plot type.")
         return v
 
 
