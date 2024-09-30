@@ -8,6 +8,7 @@ from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
@@ -227,7 +228,10 @@ def test_Colocator_run_gridded_gridded(setup):
             0.002,
         ),
         (
-            dict(model_use_vars={"od550aer": "abs550aer"}, obs_use_climatology=True),
+            dict(
+                model_use_vars={"od550aer": "abs550aer"},
+                obs_use_climatology=ClimatologyConfig(start=0, stop=9999),
+            ),
             "abs550aer",
             "od550aer",
             (2, 12, 16),

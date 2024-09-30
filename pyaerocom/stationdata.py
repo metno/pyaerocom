@@ -8,7 +8,12 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, dict_to_str, list_to_shortstr, merge_dicts
+from pyaerocom._lowlevel_helpers import (
+    BrowseDict,
+    dict_to_str,
+    list_to_shortstr,
+    merge_dicts,
+)
 from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
@@ -379,7 +384,11 @@ class StationData(StationMetaData):
         return output
 
     def get_meta(
-        self, force_single_value=True, quality_check=True, add_none_vals=False, add_meta_keys=None
+        self,
+        force_single_value=True,
+        quality_check=True,
+        add_none_vals=False,
+        add_meta_keys=None,
     ):
         """Return meta-data as dictionary
 
@@ -732,10 +741,18 @@ class StationData(StationMetaData):
         ts_type = self._check_ts_types_for_merge(other, var_name)
 
         s0 = self.resample_time(
-            var_name, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
+            var_name,
+            ts_type=ts_type,
+            how=resample_how,
+            min_num_obs=min_num_obs,
+            inplace=True,
         )[var_name].dropna()
         s1 = other.resample_time(
-            var_name, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
+            var_name,
+            ts_type=ts_type,
+            how=resample_how,
+            min_num_obs=min_num_obs,
+            inplace=True,
         )[var_name].dropna()
 
         info = other.var_info[var_name]
@@ -1038,7 +1055,11 @@ class StationData(StationMetaData):
                 clim_freq = "monthly"
 
         data = self.resample_time(
-            var_name, ts_type=clim_freq, how=resample_how, min_num_obs=min_num_obs, inplace=False
+            var_name,
+            ts_type=clim_freq,
+            how=resample_how,
+            min_num_obs=min_num_obs,
+            inplace=False,
         )
         ts = data.to_timeseries(var_name)
 
@@ -1049,9 +1070,16 @@ class StationData(StationMetaData):
 
         if clim_mincount is None:
             clim_mincount = const.CLIM_MIN_COUNT[clim_freq]
+        if isinstance(clim_mincount, dict):
+            clim_mincount = clim_mincount[clim_freq]
 
         clim = calc_climatology(
-            ts, start, stop, min_count=clim_mincount, set_year=set_year, resample_how=resample_how
+            ts,
+            start,
+            stop,
+            min_count=clim_mincount,
+            set_year=set_year,
+            resample_how=resample_how,
         )
 
         new = StationData()

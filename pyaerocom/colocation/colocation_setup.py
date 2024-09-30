@@ -17,6 +17,7 @@ from pydantic import (
 )
 
 from pyaerocom import const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
@@ -109,9 +110,9 @@ class ColocationSetup(BaseModel):
     obs_data_dir : str, optional
         location of obs data. If None, attempt to infer obs location based on
         obs ID.
-    obs_use_climatology : bool
-        BETA if True, pyaerocom default climatology is computed from observation
-        stations (so far only possible for unrgidded / gridded colocation).
+    obs_use_climatology : ClimatologyConfig | bool, optional
+        Configuration for climatology. If True is given, a default configuration is made.
+        With False, climatology is turned off
     obs_vert_type : str
         AeroCom vertical code encoded in the model filenames (only AeroCom 3
         and later). Specifies which model file should be read in case there are
@@ -379,7 +380,18 @@ class ColocationSetup(BaseModel):
     obs_name: str | None = None
     obs_data_dir: Path | str | None = None
 
-    obs_use_climatology: bool = False
+    obs_use_climatology: ClimatologyConfig | bool = False
+
+    @field_validator("obs_use_climatology")
+    @classmethod
+    def validate_obs_use_climatology(cls, v):
+        if isinstance(v, ClimatologyConfig):
+            return v
+
+        if v == True:
+            return ClimatologyConfig()
+
+        return v
 
     obs_cache_only: bool = False  # only relevant if obs is ungridded
     obs_vert_type: str | None = None

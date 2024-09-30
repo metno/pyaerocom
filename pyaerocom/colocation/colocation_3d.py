@@ -14,6 +14,7 @@ from cf_units import Unit
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -311,7 +312,7 @@ def colocate_vertical_profile_gridded(
     update_baseyear_gridded: int = None,
     min_num_obs: int | dict | None = None,
     colocate_time: bool = False,
-    use_climatology_ref: bool = False,
+    use_climatology_ref: dict = False,
     resample_how: str | dict = None,
     colocation_layer_limits: tuple[LayerLimits, ...] | None = None,
     profile_layer_limits: tuple[LayerLimits, ...] | None = None,
@@ -412,10 +413,10 @@ def colocate_vertical_profile_gridded(
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
 
-    if use_climatology_ref:  # pragma: no cover
-        col_freq = "monthly"
-        obs_start = const.CLIM_START
-        obs_stop = const.CLIM_STOP
+    if isinstance(use_climatology_ref, ClimatologyConfig):  # pragma: no cover
+        col_freq = use_climatology_ref.freq
+        obs_start = use_climatology_ref.start
+        obs_stop = use_climatology_ref.stop
     else:
         col_freq = str(ts_type)
         obs_start = start
