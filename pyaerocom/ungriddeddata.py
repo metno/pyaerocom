@@ -2048,6 +2048,7 @@ class UngriddedData:
                 stop = data_idx_new + totnum
 
                 new._data[data_idx_new:stop, :] = self._data[indices, :]
+                new._data[data_idx_new:stop, new._METADATAKEYINDEX] = meta_idx_new
                 new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new, stop)
                 new.var_idx[var] = self.var_idx[var]
                 data_idx_new += totnum
