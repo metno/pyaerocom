@@ -388,10 +388,13 @@ class ColocationSetup(BaseModel):
         if isinstance(v, ClimatologyConfig):
             return v
 
-        if v == True:
-            return ClimatologyConfig()
+        if isinstance(v, bool):
+            if v:
+                return ClimatologyConfig()
+            else:
+                return v
 
-        return v
+        raise ValidationError
 
     obs_cache_only: bool = False  # only relevant if obs is ungridded
     obs_vert_type: str | None = None
