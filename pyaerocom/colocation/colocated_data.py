@@ -129,12 +129,12 @@ class ColocatedData(BaseModel):
             self.data = str(self.data)
         if isinstance(self.data, str):
             if not self.data.endswith("nc"):
-                raise ValueError("Invalid data filepath str, must point to a .nc file")
+                raise ValueError(
+                    f"Invalid data filepath str, must point to a .nc file. Got {self.data}"
+                )
             self.open(self.data)
-        elif isinstance(self.data, xr.DataArray):
-            ensure_correct_dimensions(self.data)
-        elif isinstance(self.data, np.ndarray):
-            ensure_correct_dimensions(self.data)
+            return self
+        if isinstance(self.data, np.ndarray):
             if hasattr(self, "model_extra"):
                 da_keys = dir(xr.DataArray)
                 extra_args_from_class_initialization = {
@@ -144,6 +144,8 @@ class ColocatedData(BaseModel):
                 extra_args_from_class_initialization = {}
             data = xr.DataArray(self.data, **extra_args_from_class_initialization)
             self.data = data
+        # self.data should be xr.DataArray at this stage
+        ensure_correct_dimensions(self.data)
         return self
 
     # Override __init__ to allow for positional arguments

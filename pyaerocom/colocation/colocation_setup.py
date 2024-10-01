@@ -501,7 +501,7 @@ class ColocationSetup(BaseModel):
             if isinstance(self.obs_config, dict):
                 logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
                 self.obs_config = PyaroConfig(**self.obs_config)
-            if self.obs_id.name != self.obs_id:
+            if self.obs_config.name != self.obs_id:
                 logger.info(
                     f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
                 )
