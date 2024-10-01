@@ -124,6 +124,8 @@ class ColocatedData(BaseModel):
 
     @model_validator(mode="after")
     def validate_data(self):
+        if self.data is None:
+            return self
         if isinstance(self.data, Path):
             # make sure path is str instance
             self.data = str(self.data)
