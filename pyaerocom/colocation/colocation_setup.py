@@ -488,9 +488,7 @@ class ColocationSetup(BaseModel):
             p.mkdir(parents=True, exist_ok=True)
         return str(p)
 
-    @model_validator(
-        mode="after"
-    )  # needs to be amodel validator becasue a classmethod can not look at the particular instance
+    @model_validator(mode="after")
     def validate_obs_config(self):
         if self.obs_config is None:
             return self
