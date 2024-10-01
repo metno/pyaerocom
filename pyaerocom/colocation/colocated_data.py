@@ -21,6 +21,7 @@ from pyaerocom.exceptions import (
     NetcdfError,
     UnknownRegion,
     VarNotAvailableError,
+    # EvalEntryNameError,
 )
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
@@ -32,6 +33,8 @@ from pyaerocom.stats.stats import calculate_statistics
 from pyaerocom.time_resampler import TimeResampler
 
 logger = logging.getLogger(__name__)
+
+# FORBIDDEN_CHARS_KEYS = ["_"]
 
 
 def ensure_correct_dimensions(data: xr.DataArray):
@@ -50,6 +53,14 @@ def ensure_correct_dimensions(data: xr.DataArray):
         raise DataDimensionError("invalid input, need 2D, 3D or 4D numpy array")
     elif not shape == 2:
         raise DataDimensionError("first dimension (data_source) must be of length 2(obs, model)")
+
+
+# # TODO: Implement that BaseCollection class to allow for _ in model names
+# def check_entry_name(key):
+#     if any([x in key for x in FORBIDDEN_CHARS_KEYS]):
+#         raise EvalEntryNameError(
+#             f"Invalid name: {key}. Must not contain any of the following characters: {FORBIDDEN_CHARS_KEYS}. Note that if instantialing this ColocatedData instance outside of normal pyaerocom processing that hyphens ('-') in the model of obs name used in actual xarray.DataArray must be switched to underscores ('_') in the aerocom3 formatted file name and vice-versa."
+#         )
 
 
 class ColocatedData(BaseModel):
@@ -195,6 +206,11 @@ class ColocatedData(BaseModel):
         if "obs_name" in self.metadata:
             return self.metadata["obs_name"]
         return self.data_source[0]
+
+    # @model_validator(mode="after")
+    # def validate_model_obs_name(self):
+    #     check_entry_name(self.model_name)
+    #     check_entry_name(self.obs_name)
 
     @property
     def var_name(self):

@@ -24,6 +24,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.exceptions import TemporalResolutionError
+import xarray as xr
 
 logger = logging.getLogger(__name__)
 
@@ -144,8 +145,14 @@ class ColdataToJsonEngine(ProcessingEngine):
         else:
             obs_var = model_var = "UNDEFINED"
 
-        model_name = coldata.model_name
-        obs_name = coldata.obs_name
+        if isinstance(coldata.model_name, xr.DataArray):
+            model_name = str(coldata.model_name.values)
+        else:
+            model_name = coldata.model_name
+        if isinstance(coldata.obs_name, xr.DataArray):
+            obs_name = str(coldata.obs_name.values)
+        else:
+            obs_name = coldata.obs_name
 
         mcfg = self.cfg.model_cfg.get_entry(model_name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
@@ -369,7 +376,13 @@ class ColdataToJsonEngine(ProcessingEngine):
 
             region = regnames[reg]
             self.exp_output.add_heatmap_timeseries_entry(
-                stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var
+                stats_ts,
+                region,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
             )
 
         logger.info("Processing heatmap data for all regions")
