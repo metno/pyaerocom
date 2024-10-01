@@ -40,10 +40,10 @@ def ensure_correct_dimensions(data: xr.DataArray):
     If a ColocatedData object is created outside of pyaerocom, this checking is needed.
     This function is used as part of the model validator.
     """
-    shape = data.shape[0]
-
     if not isinstance(data, xr.DataArray):
         raise ValueError("Could not interpret data")
+
+    shape = data.shape[0]
     num_dims = len(data.dims)
 
     if num_dims not in (2, 3, 4):
