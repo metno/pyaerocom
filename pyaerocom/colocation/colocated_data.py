@@ -34,19 +34,18 @@ from pyaerocom.time_resampler import TimeResampler
 logger = logging.getLogger(__name__)
 
 
-def ensure_correct_dimensions(data: np.ndarray | xr.DataArray):
+def ensure_correct_dimensions(data: xr.DataArray):
     """
-    Ensure the dimensions on either a numpy aray or xarray passed to ColocatedData.
+    Ensure the dimensions on an xarray.DataArray passed to ColocatedData.
     If a ColocatedData object is created outside of pyaerocom, this checking is needed.
     This function is used as part of the model validator.
     """
     shape = data.shape[0]
-    if isinstance(data, np.ndarray):
-        num_dims = data.ndim
-    elif isinstance(data, xr.DataArray):
-        num_dims = len(data.dims)
-    else:
+
+    if not isinstance(data, xr.DataArray):
         raise ValueError("Could not interpret data")
+    num_dims = len(data.dims)
+
     if num_dims not in (2, 3, 4):
         raise DataDimensionError("invalid input, need 2D, 3D or 4D numpy array")
     elif not shape == 2:
