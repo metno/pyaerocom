@@ -58,9 +58,17 @@ def test_ReadUngridded___init__(data_ids, ignore_cache):
         (dict(station_name="La_Paz"), 1, 1),
         (dict(station_name=["La_Paz", "AAO*"]), 2, 2),
         (dict(altitude=[1000, 10000]), 3, 3),
-        (dict(altitude=[1000, 10000], ignore_station_names=dict(od550aer="La_Paz")), 2, 2),
+        (
+            dict(altitude=[1000, 10000], ignore_station_names=dict(od550aer="La_Paz")),
+            2,
+            2,
+        ),
         (dict(altitude=[1000, 10000], ignore_station_names="La_*"), 2, 2),
-        (dict(altitude=[1000, 10000], ignore_station_names=["La_*", "Mauna_Loa"]), 1, 1),
+        (
+            dict(altitude=[1000, 10000], ignore_station_names=["La_*", "Mauna_Loa"]),
+            1,
+            1,
+        ),
     ],
 )
 @pytest.mark.parametrize(
