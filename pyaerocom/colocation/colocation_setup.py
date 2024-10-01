@@ -479,6 +479,7 @@ class ColocationSetup(BaseModel):
         for key in self.FORBIDDEN_KEYS:
             if key in self.model_fields:
                 raise ValidationError
+        return self
 
     @cached_property
     def basedir_logfiles(self):
@@ -487,26 +488,29 @@ class ColocationSetup(BaseModel):
             p.mkdir(parents=True, exist_ok=True)
         return str(p)
 
-    @model_validator(mode="after")
-    @classmethod
-    def validate_obs_config(cls, v: PyaroConfig):
-        if v is not None and cls.obs.config.name != cls.obs_id:
+    @model_validator(
+        mode="after"
+    )  # needs to be amodel validator becasue a classmethod can not look at the particular instance
+    def validate_obs_config(self):
+        if self.obs_config is None:
+            return self
+        if self.obs_config.name != self.obs_id:
             logger.info(
-                f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
+                f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {self.obs_id}. Setting Pyaro config to None!"
             )
-            v = None
-        if v is not None:
-            if isinstance(v, dict):
+            self.obs_config = None
+        if self.obs_config is not None:
+            if isinstance(self.obs_config, dict):
                 logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
-                v = PyaroConfig(**v)
-            if v.name != cls.obs_id:
+                self.obs_config = PyaroConfig(**self.obs_config)
+            if self.obs_id.name != self.obs_id:
                 logger.info(
-                    f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Obs ID to match Pyaro Config!"
+                    f"Data ID in Pyaro config {self.obs_config.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
                 )
-                cls.obs_id = v.name
-            if cls.obs_id is None:
-                cls.obs_id = v.name
-        return v
+                self.obs_id = self.obs_config.name
+            if self.obs_id is None:
+                self.obs_id = self.obs_config.name
+        return self
 
     def add_glob_meta(self, **kwargs):
         """
