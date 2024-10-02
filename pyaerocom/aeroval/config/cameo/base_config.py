@@ -327,9 +327,9 @@ def get_CFG(
         json_basedir=os.path.abspath("/home/jang/data/aeroval-local-web/data"),
         coldata_basedir=os.path.abspath("/home/jang/data/aeroval-local-web/coldata"),
         # io_aux_file=os.path.abspath("./gridded_io_aux.py"), not needed for ReadMscwCtm
-        var_scale_colmap_file=os.path.abspath(
-            "/home/jang/data/aeroval-local-web/user_var_scale_colmap.ini"
-        ),
+        # var_scale_colmap_file=os.path.abspath(
+        #     "/home/jang/data/aeroval-local-web/user_var_scale_colmap.ini"
+        # ),
         # if True, existing colocated data files will be deleted and contours will be overwritten
         reanalyse_existing=True,
         only_json=False,
@@ -359,99 +359,60 @@ def get_CFG(
         regions_how="country",
         annual_stats_constrained=True,
         proj_id="CAMEO",
-        exp_id=f"CAMEO-{anayear}-reporting",
+        exp_id=f"CAMEO {anayear}-reporting",
         exp_name=f"Evaluation of EMEP runs for {anayear} for the CAMEO project",
         exp_descr=(
-            f"Evaluation of EMEP runs for {anayear} CAMEO. The EMEP model, is compared against observations from EBAS."
+            f"Evaluation of EMEP runs for {anayear} for CAMEO. The EMEP model, is compared against observations from EEA and EBAS."
         ),
-        exp_pi="jan.griesfeller@met.no",
+        exp_pi="hildef@met.no",
         public=True,
         # directory where colocated data files are supposed to be stored
         weighted_stats=True,
         var_order_menu=[
-            "concno2",
-            "vmro3max",
-            "vmro3",
-            "conco3",
-            "vmrox",
-            "concso2",
-            "vmrco",
-            "vmrno",
-            "vmrno2",
-            "vmrso2",
-            "concCoc25",
-            "concom25",
-            "concpm25",
-            "concpm10",
-            "concso4",
+            # Gases
+            "concNno",
+            "concNno2",
             "concNtno3",
+            "concNhno3",
             "concNtnh",
             "concNnh3",
-            "concNnh4",
-            "concNhno3",
-            "concNno3pm25",
-            "concNno3pm10",
-            "concsspm25",
-            "concsspm10",
+            "concnh4",
+            "concSso2",
+            "concso4t",
+            "concso4c",
+            "vmro3",
+            "vmro3max",
+            "vmro3mda8",
+            "vmrox",
+            "vmrco",
+            # PMs
+            "concpm10",
+            "concpm25",
+            "concno3pm10",
+            "concno3pm25",
+            "concno3pm1",
+            "concnh4pm25",
+            "concnh4pm1",
+            "concso4pm25",
+            "concso4pm1",
+            "concCecpm10",
             "concCecpm25",
+            "concCocpm10",  # SURF_ugC_PM_OMCOARSE missing in model-output
             "concCocpm25",
-            "wetoxs",
+            "concom1",
+            "concsspm10",
+            "concsspm25",
+            # Depositions
             "wetrdn",
+            "wetoxs",
             "wetoxn",
-            "pr",
-            "drysox",
-            "dryrdn",
-            "dryoxn",
-            "dryo3",
-            "dryvelo3",
-            "proxydryoxs",
-            "proxydryoxn",
-            "proxydryrdn",
-            "proxydryo3",
-            "proxydrypm10",
-            "proxydrypm25",
-            "proxydryno2",
-            "proxydryno2no2",
-            "proxydryhono",
-            "proxydryn2o5",
-            "proxydryhno3",
-            "proxydryno3c",
-            "proxydryno3f",
-            "proxydrynh3",
-            "proxydrynh4",
-            "proxydryso2",
-            "proxydryso4",
-            "proxywetoxs",
-            "proxywetoxn",
-            "proxywetrdn",
-            "proxyweto3",
-            "proxywetpm10",
-            "proxywetpm25",
-            "proxywethno3",
-            "proxywethono",
-            "proxywetn2o5",
-            "proxywetno2no2",
-            "proxywetnh3",
-            "proxywetnh4",
-            "proxywetno2",
-            "proxywetso2",
-            "proxywetso4",
-            "proxywetno3c",
-            "proxywetno3f",
-            "depoxs",
-            "deprdn",
-            "depoxn",
-            "depoxsf",
-            "depoxnf",
-            "deprdnf",
+            "prmm",
         ],
     )
 
     CFG["model_cfg"] = {
         "EMEP": dict(
             model_id="EMEP.cameo",
-            # model_data_dir=model_dir,
-            # gridded_reader_id={"model": "ReadMscwCtm"},
             model_read_aux={},
             # model_ts_type_read="daily",
         ),
@@ -492,24 +453,10 @@ def get_CFG(
         **BASE_FILTER,
     }
 
-    # AERONET_FILTER = {
-    #     **BASE_FILTER,  # Forandring fra Daniel
-    #     "altitude": [-20, 1000],
-    # }
-
-    OC_EC_RESAMPLE_CONSTRAINTS = dict(
-        yearly=dict(monthly=4),
-        monthly=dict(daily=4, weekly=1),
-        daily=dict(hourly=18),
-        hourly=dict(minutely=45),
-    )
-
-    RESAMPLE_CONSTRAINTS_LESS_STRICT = dict(
-        yearly=dict(monthly=9),
-        monthly=dict(daily=4, weekly=1),
-        daily=dict(hourly=18),
-        hourly=dict(minutely=45),
-    )
+    AERONET_FILTER = {
+        **BASE_FILTER,  # Forandring fra Daniel
+        "altitude": [-20, 1000],
+    }
 
     # Station filters
 
@@ -543,14 +490,18 @@ def get_CFG(
         "concNno",
         "concCecpm25",
         "concCocpm25",
+        "concom1",
         "concCecpm10",
         "concCocpm10",
         #        "concnh4pm10", # no output in the model
         "concnh4pm25",
+        "concnh4pm1",
         #        "concso4pm10", # no output in the model
         "concso4pm25",
+        "concso4pm1",
         "concno3pm10",
         "concno3pm25",
+        "concno3pm1",
         "concsspm10",
         "concsspm25",
         "concso4t",
@@ -837,253 +788,424 @@ def get_CFG(
         ##################
         #    EBAS
         ##################
-        ### HOURLY
-        "EBAS-gases-h": dict(
+        "EBAS-m-tc": dict(
+            obs_id="EBASMC",
+            web_interface_name="EBAS-m",
+            obs_vars=[
+                "concNhno3",
+                "concNtno3",
+                "concNtnh",
+                "concNnh3",
+                "concnh4",
+                # "prmm",
+                "concpm10",
+                "concpm25",
+                "concSso2",
+                "concNno2",
+                "vmrco",
+                "vmro3max",
+                "vmro3",
+                "concNno",
+                "concso4t",
+                "concso4c",
+            ],
+            obs_vert_type="Surface",
+            colocate_time=True,
+            ts_type="monthly",
+            obs_filters=EBAS_FILTER,
+        ),
+        "EBAS-d-tc": dict(
+            obs_id="EBASMC",
+            web_interface_name="EBAS-d",
+            obs_vars=[
+                "concNhno3",
+                "concNtno3",
+                "concNtnh",
+                "concNnh3",
+                "concnh4",
+                "concpm10",
+                "concpm25",
+                "concSso2",
+                "concNno2",
+                "vmrco",
+                "vmro3max",
+                "vmro3",
+                "concNno",
+                "concso4t",
+                "concso4c",
+            ],
+            obs_vert_type="Surface",
+            colocate_time=True,
+            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
+            ts_type="daily",
+            obs_filters=EBAS_FILTER,
+        ),
+        "EBAS-m-tc-ecoc": dict(
+            obs_id="EBASMC",
+            web_interface_name="EBAS-m",
+            obs_vars=[
+                "concCecpm25",
+                "concCocpm25",
+                "concom1",
+                "concCecpm10",
+                "concCocpm10",
+                #                "concnh4pm10",
+                "concnh4pm25",
+                "concnh4pm1",
+                #                "concso4pm10",
+                "concso4pm25",
+                "concso4pm1",
+                "concno3pm10",
+                "concno3pm25",
+                "concno3pm1",
+                "concsspm10",
+                "concsspm25",
+            ],
+            obs_vert_type="Surface",
+            colocate_time=True,
+            ts_type="monthly",
+            min_num_obs=OC_EC_RESAMPLE_CONSTRAINTS,
+            obs_filters=EBAS_FILTER,
+        ),
+        "EBAS-d-tc-ecoc": dict(
+            obs_id="EBASMC",
+            web_interface_name="EBAS-d",
+            obs_vars=[
+                "concCecpm25",
+                "concCocpm25",
+                "concom1",
+                "concCecpm10",
+                "concCocpm10",
+                # "concnh4pm10",
+                "concnh4pm25",
+                "concnh4pm1",
+                #                "concso4pm10",
+                "concso4pm25",
+                "concso4pm1",
+                "concno3pm10",
+                "concno3pm25",
+                "concno3pm1",
+                "concsspm10",
+                "concsspm25",
+            ],
+            obs_vert_type="Surface",
+            colocate_time=True,
+            ts_type="daily",
+            min_num_obs=OC_EC_RESAMPLE_CONSTRAINTS,
+            obs_filters=EBAS_FILTER,
+        ),
+        # Diurnal
+        "EBAS-h-diurnal": dict(
             obs_id="EBASMC",
             web_interface_name="EBAS-h",
+            obs_vars=[
+                "concNno2",
+                "concNno",
+                "vmro3",
+                "concpm10",
+                "concpm25",
+            ],
+            obs_vert_type="Surface",
             ts_type="hourly",
-            obs_vars=[
-                "vmro3",
-                "vmrno2",
-                "vmrno",
-                "vmrso2",
-            ],
+            # diurnal_only=True,
+            resample_how="mean",
+            obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
+        ),
+        # OX
+        "EBAS-d-ox": dict(
+            obs_id="EBAS-ox",
+            obs_vars=["vmrox"],
+            obs_type="ungridded",
             obs_vert_type="Surface",
-            colocate_time=True,
+            web_interface_name="EBAS",
+            ts_type="daily",
+            obs_merge_how={
+                "vmrox": "eval",
+            },
+            obs_aux_requires={
+                "vmrox": {
+                    "EBASMC": [
+                        "vmro3",
+                        "vmrno2",
+                    ],
+                }
+            },
+            obs_aux_funs={
+                "vmrox":
+                # variables used in computation method need to be based on AeroCom
+                # units, since the colocated StationData objects (from which the
+                # new UngriddedData is computed, will perform AeroCom unit check
+                # and conversion)
+                "(EBASMC;vmro3+EBASMC;vmrno2)"
+            },
+            obs_aux_units={"vmrox": "nmol mol-1"},
+            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
             obs_filters=EBAS_FILTER,
         ),
-        ### DAILY
-        # Gases
-        "EBAS-gases-d": dict(
+        "EBAS-h-ox-diurnal": dict(
+            obs_id="EBAS-ox-diurnal",
+            obs_vars=["vmrox"],
+            obs_type="ungridded",
+            obs_vert_type="Surface",
+            web_interface_name="EBAS-h",
+            ts_type="hourly",
+            # diurnal_only=True,
+            obs_merge_how={
+                "vmrox": "eval",
+            },
+            obs_aux_requires={
+                "vmrox": {
+                    "EBASMC": ["vmro3", "vmrno2"],
+                }
+            },
+            obs_aux_funs={
+                "vmrox":
+                # variables used in computation method need to be based on AeroCom
+                # units, since the colocated StationData objects (from which the
+                # new UngriddedData is computed, will perform AeroCom unit check
+                # and conversion)
+                "(EBASMC;vmro3+EBASMC;vmrno2)"
+            },
+            obs_aux_units={"vmrox": "nmol mol-1"},
+            obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
+        ),
+        # Wet Dep
+        "EBAS-d-wet": dict(
             obs_id="EBASMC",
             web_interface_name="EBAS-d",
             ts_type="daily",
+            obs_remove_outliers=True,
             obs_vars=[
-                # "vmrhno3",
-                # "vmrhcho",
-                "vmro3max",
-                # "vmrc2h6",
-                # "vmrc2h4",
-                # "vmrisop",
-                # "vmrtp",
-                # "concno3",
-                "concNhno3",
-                "concNnh3",
-                "vmro3",
-                "vmrno2",
-                "vmrno",
-                "vmrso2",
+                "wetoxs",
+                "wetoxn",
+                "wetrdn",
+                "prmm",
             ],
             obs_vert_type="Surface",
+            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
             colocate_time=True,
             obs_filters=EBAS_FILTER,
         ),
-        # PM
-        "EBAS-pm-d": dict(
+        "EBAS-m-wet": dict(
             obs_id="EBASMC",
-            web_interface_name="EBAS-d",
-            ts_type="daily",
+            web_interface_name="EBAS-m",
+            ts_type="monthly",
+            obs_remove_outliers=True,
+            colocate_time=True,
             obs_vars=[
-                "concpm25",
+                "wetoxs",
+                "wetoxn",
+                "wetrdn",
+                "prmm",
+            ],
+            obs_vert_type="Surface",
+            obs_filters=EBAS_FILTER,
+        ),
+        ################
+        #    EEA-rural
+        ################
+        "EEA-d-rural": dict(
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
                 "concpm10",
-                "concso4",
-                # "vmrc2h4",
-                "concsspm25",
-                "concsspm10",
-                "concNno3pm10",
-                "concNno3pm25",
-                "concNtno3",
-                "concNnh4",
-                "concNtnh",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-        ),
-        # OC
-        "EBAS-oc-d": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-d",
-            ts_type="daily",
-            obs_vars=[
-                "concCoc25",
-                "concom25",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=OC_EC_RESAMPLE_CONSTRAINTS,
-        ),
-        ### MONTHLY
-        # Gases
-        "EBAS-gases-m": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-m",
-            ts_type="monthly",
-            obs_vars=[
-                # "vmrhcho",
-                "vmro3max",
-                # "vmrc2h6",
-                # "vmrc2h4",
-                # "vmrisop",
-                # "vmrtp",
-                "concNhno3",
-                "concNnh3",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-        ),
-        # PM
-        "EBAS-pm-m": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-m",
-            ts_type="monthly",
-            obs_vars=[
                 "concpm25",
-                "concpm10",
-                "concso4",
-                # "vmrc2h4",
-                "concsspm25",
-                "concsspm10",
-                "concNno3pm10",
-                "concNno3pm25",
-                "concNtno3",
-                "concNnh4",
-                "concNtnh",
+                "concSso2",
+                "concNno2",
+                "vmro3max",
+                # "concno2",
             ],
+            web_interface_name="EEA-rural",
             obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
+            obs_filters=EEA_FILTER,
         ),
-        # OC
-        "EBAS-oc-m": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-m",
-            ts_type="monthly",
+        "EEA-d-rural-no": dict(
+            obs_id="EEAAQeRep.v2",
             obs_vars=[
-                "concCoc25",
-                "concom25",
+                "concNno",
             ],
+            web_interface_name="EEA-rural",
             obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=OC_EC_RESAMPLE_CONSTRAINTS,
+            obs_filters=EEA_FILTER,
+        ),
+        "EEA-h-diurnal-rural": dict(
+            obs_id="EEAAQeRep.v2",
+            obs_vars=["vmro3", "concNno2"],
+            obs_vert_type="Surface",
+            web_interface_name="EEA-h-rural",
+            ts_type="hourly",
+            # diurnal_only=True,
+            harmonise_units=False,
+            resample_how="mean",
+            obs_filters={**EEA_FILTER, "ts_type": "hourly"},
+        ),
+        "EEA-d-ox-rural": dict(
+            obs_id="EEA-ox-rural",
+            obs_vars=["vmrox"],
+            obs_type="ungridded",
+            obs_vert_type="Surface",
+            web_interface_name="EEA-rural",
+            ts_type="daily",
+            # min_num_obs=None,
+            obs_merge_how={
+                "vmrox": "eval",
+            },
+            obs_aux_requires={
+                "vmrox": {
+                    "EEAAQeRep.v2": ["vmro3", "vmrno2"],
+                }
+            },
+            obs_aux_funs={
+                "vmrox":
+                # variables used in computation method need to be based on AeroCom
+                # units, since the colocated StationData objects (from which the
+                # new UngriddedData is computed, will perform AeroCom unit check
+                # and conversion)
+                "(EEAAQeRep.v2;vmro3+EEAAQeRep.v2;vmrno2)"
+            },
+            obs_aux_units={"vmrox": "nmol mol-1"},
+            obs_filters={**EEA_FILTER},
+        ),
+        "EEA-h-ox-rural-diu": dict(
+            obs_id="EEA-ox-rural-diu",
+            obs_vars=["vmrox"],
+            obs_type="ungridded",
+            obs_vert_type="Surface",
+            web_interface_name="EEA-h-rural",
+            ts_type="hourly",
+            # diurnal_only=True,
+            obs_merge_how={
+                "vmrox": "eval",
+            },
+            obs_aux_requires={
+                "vmrox": {
+                    "EEAAQeRep.v2": ["vmro3", "vmrno2"],
+                }
+            },
+            obs_aux_funs={
+                "vmrox":
+                # variables used in computation method need to be based on AeroCom
+                # units, since the colocated StationData objects (from which the
+                # new UngriddedData is computed, will perform AeroCom unit check
+                # and conversion)
+                "(EEAAQeRep.v2;vmro3+EEAAQeRep.v2;vmrno2)"
+            },
+            obs_aux_units={"vmrox": "nmol mol-1"},
+            obs_filters={**EEA_FILTER, "ts_type": "hourly"},
+        ),
+        ################
+        #    EEA-all
+        ################
+        "EEA-d-all": dict(
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
+                "concpm10",
+                "concpm25",
+                "concSso2",
+                "concNno2",
+                "vmro3max",
+                # "concno2",
+            ],
+            web_interface_name="EEA-all",
+            obs_vert_type="Surface",
+            obs_filters=EEA_FILTER_ALL,
+        ),
+        "EEA-d-all-no": dict(
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
+                "concNno",
+            ],
+            web_interface_name="EEA-all",
+            obs_vert_type="Surface",
+            obs_filters=EEA_FILTER_ALL,
+        ),
+        "EEA-h-diurnal-all": dict(
+            obs_id="EEAAQeRep.v2",
+            obs_vars=["vmro3", "concNno2"],
+            obs_vert_type="Surface",
+            web_interface_name="EEA-h-all",
+            ts_type="hourly",
+            # diurnal_only=True,
+            harmonise_units=False,
+            resample_how="mean",
+            obs_filters={**EEA_FILTER_ALL, "ts_type": "hourly"},
+        ),
+        "EEA-d-ox-all": dict(
+            obs_id="EEA-ox-all",
+            obs_vars=["vmrox"],
+            obs_type="ungridded",
+            obs_vert_type="Surface",
+            web_interface_name="EEA-all",
+            ts_type="daily",
+            # min_num_obs=None,
+            obs_merge_how={
+                "vmrox": "eval",
+            },
+            obs_aux_requires={
+                "vmrox": {
+                    "EEAAQeRep.v2": ["vmro3", "vmrno2"],
+                }
+            },
+            obs_aux_funs={
+                "vmrox":
+                # variables used in computation method need to be based on AeroCom
+                # units, since the colocated StationData objects (from which the
+                # new UngriddedData is computed, will perform AeroCom unit check
+                # and conversion)
+                "(EEAAQeRep.v2;vmro3+EEAAQeRep.v2;vmrno2)"
+            },
+            obs_aux_units={"vmrox": "nmol mol-1"},
+            obs_filters={**EEA_FILTER_ALL},
+        ),
+        "EEA-h-ox-all-diu": dict(
+            obs_id="EEA-ox-all-diu",
+            obs_vars=["vmrox"],
+            obs_type="ungridded",
+            obs_vert_type="Surface",
+            web_interface_name="EEA-h-all",
+            ts_type="hourly",
+            # diurnal_only=True,
+            obs_merge_how={
+                "vmrox": "eval",
+            },
+            obs_aux_requires={
+                "vmrox": {
+                    "EEAAQeRep.v2": ["vmro3", "vmrno2"],
+                }
+            },
+            obs_aux_funs={
+                "vmrox":
+                # variables used in computation method need to be based on AeroCom
+                # units, since the colocated StationData objects (from which the
+                # new UngriddedData is computed, will perform AeroCom unit check
+                # and conversion)
+                "(EEAAQeRep.v2;vmro3+EEAAQeRep.v2;vmrno2)"
+            },
+            obs_aux_units={"vmrox": "nmol mol-1"},
+            obs_filters={**EEA_FILTER_ALL, "ts_type": "hourly"},
         ),
         ##################
-        #    EBAS Less Strict
+        #    AERONET
         ##################
-        ### HOURLY
-        "EBAS-gases-LS-h": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-Less-Strict-h",
-            ts_type="hourly",
-            obs_vars=[
-                "vmro3",
-                "vmrno2",
-                "vmrno",
-                "vmrso2",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=RESAMPLE_CONSTRAINTS_LESS_STRICT,
-        ),
-        ### DAILY
-        # Gases
-        "EBAS-gases-LS-d": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-Less-Strict-d",
+        "AERONET": dict(
+            obs_id="AeronetSunV3Lev1.5.daily",
+            obs_vars=["od550aer"],
+            web_interface_name="AERONET",
+            obs_vert_type="Column",
+            ignore_station_names="DRAGON*",
             ts_type="daily",
-            obs_vars=[
-                # "vmrhno3",
-                "vmro3max",
-                # "vmrhcho",
-                # "vmrc2h6",
-                # "vmrc2h4",
-                # "vmrisop",
-                # "vmrtp",
-                # "concno3",
-                "concNhno3",
-                "concNnh3",
-                "vmro3",
-                "vmrno2",
-                "vmrno",
-                "vmrso2",
-            ],
-            obs_vert_type="Surface",
             colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=RESAMPLE_CONSTRAINTS_LESS_STRICT,
-        ),
-        # PM
-        "EBAS-pm-LS-d": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-Less-Strict-d",
-            ts_type="daily",
-            obs_vars=[
-                "concpm25",
-                "concpm10",
-                "concso4",
-                # "vmrc2h4",
-                "concsspm25",
-                "concsspm10",
-                "concNno3pm10",
-                "concNno3pm25",
-                "concNtno3",
-                "concNnh4",
-                "concNtnh",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=RESAMPLE_CONSTRAINTS_LESS_STRICT,
-        ),
-        ### MONTHLY
-        # Gases
-        "EBAS-gases-LS-m": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-Less-Strict-m",
-            ts_type="monthly",
-            obs_vars=[
-                "vmro3max",
-                # "vmrhcho",
-                # "vmrc2h6",
-                # "vmrc2h4",
-                # "vmrisop",
-                # "vmrtp",
-                "concNhno3",
-                "concNnh3",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=RESAMPLE_CONSTRAINTS_LESS_STRICT,
-        ),
-        # PM
-        "EBAS-pm-LS-m": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-Less-Strict-m",
-            ts_type="monthly",
-            obs_vars=[
-                "concpm25",
-                "concpm10",
-                "concso4",
-                # "vmrc2h4",
-                "concsspm25",
-                "concsspm10",
-                "concNno3pm10",
-                "concNno3pm25",
-                "concNtno3",
-                "concNnh4",
-                "concNtnh",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            obs_filters=EBAS_FILTER,
-            min_num_obs=RESAMPLE_CONSTRAINTS_LESS_STRICT,
+            min_num_obs=dict(
+                yearly=dict(
+                    daily=90,
+                ),
+                monthly=dict(
+                    weekly=1,
+                ),
+            ),
+            obs_filters=AERONET_FILTER,
         ),
     }
+
     # Setup for supported satellite evaluations
     OBS_SAT = {}
 
