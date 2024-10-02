@@ -11,7 +11,7 @@ class BaseCollection(BrowseDict, abc.ABC):
     #: maximum length of entry names
     MAXLEN_KEYS = 25
     #: Invalid chars in entry names
-    FORBIDDEN_CHARS_KEYS = ["_"]
+    FORBIDDEN_CHARS_KEYS = []  # "_"
 
     def _check_entry_name(self, key):
         if any([x in key for x in self.FORBIDDEN_CHARS_KEYS]):
@@ -22,8 +22,8 @@ class BaseCollection(BrowseDict, abc.ABC):
 
     def __setitem__(self, key, value):
         self._check_entry_name(key)
-        if "web_interface_name" in value:
-            self._check_entry_name(value["web_interface_name"])
+        # if "web_interface_name" in value:
+        #     self._check_entry_name(value["web_interface_name"])
         super().__setitem__(key, value)
 
     def keylist(self, name_or_pattern: str = None) -> list:
