@@ -4,9 +4,10 @@ from typing import Literal
 
 import pytest
 
-from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.exceptions import EvalEntryNameError
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG, MODELS, OBS_GROUNDBASED
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR
 
 
 @pytest.fixture
@@ -62,7 +63,11 @@ def test_EvalSetup_INVALID_ENTRY_NAMES(cfg_exp1: dict, error: str):
 
 
 @pytest.mark.parametrize(
-    "update", (pytest.param(None, id="defaults"), pytest.param(dict(proj_id="blah"), id="custom"))
+    "update",
+    (
+        pytest.param(None, id="defaults"),
+        pytest.param(dict(proj_id="blah"), id="custom"),
+    ),
 )
 def test_EvalSetup_ProjectInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     assert eval_setup.proj_info.proj_id == cfg_exp1["proj_id"]
@@ -73,12 +78,20 @@ def test_EvalSetup_ProjectInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     (
         pytest.param(None, id="defaults"),
         pytest.param(
-            dict(exp_id="exp42", exp_descr="Hello world!", exp_name="Lorem Ipsum...", public=True),
+            dict(
+                exp_id="exp42",
+                exp_descr="Hello world!",
+                exp_name="Lorem Ipsum...",
+                public=True,
+            ),
             id="custom1",
         ),
         pytest.param(
             dict(
-                exp_id="exp54", exp_descr="Hello world!", exp_name="Lorem Ipsum...", public=False
+                exp_id="exp54",
+                exp_descr="Hello world!",
+                exp_name="Lorem Ipsum...",
+                public=False,
             ),
             id="custom2",
         ),
@@ -97,7 +110,8 @@ def test_EvalSetup_ExperimentInfo(eval_setup: EvalSetup, cfg_exp1: dict):
     (
         pytest.param(None, id="defaults"),
         pytest.param(
-            dict(freqs=["yearly", "monthly"], main_freq="yearly", periods=[]), id="custom1"
+            dict(freqs=["yearly", "monthly"], main_freq="yearly", periods=[]),
+            id="custom1",
         ),
         pytest.param(
             dict(freqs=["monthly"], main_freq="monthly", periods=["2010", "2011", "2016"]),
@@ -156,6 +170,8 @@ def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update:
         assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
         assert modelmaps_opts.maps_res_deg == 5
+        assert modelmaps_opts.plot_types == {CONTOUR}
+        assert modelmaps_opts.overlay_save_format == "webp"
 
 
 @pytest.mark.parametrize(

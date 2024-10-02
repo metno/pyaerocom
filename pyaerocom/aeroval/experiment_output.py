@@ -27,14 +27,14 @@ from pyaerocom.aeroval.glob_defaults import (
 )
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
-from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.utils import recursive_defaultdict
-from pyaerocom.variable_helpers import get_aliases
+from pyaerocom.variable_helpers import get_aliases, get_variable
 
 MapInfo = namedtuple(
     "MapInfo",
@@ -229,8 +229,10 @@ class ExperimentOutput(ProjectOutput):
         with self.avdb.lock():
             menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
             all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
-            for fp in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
-                data = self.avdb.get_by_uri(fp)
+            for uri in self.avdb.list_glob_stats(
+                self.proj_id, self.exp_id, access_type=aerovaldb.AccessType.URI
+            ):
+                data = self.avdb.get_by_uri(uri)
                 hm = {}
                 for vardisp, info in menu.items():
                     obs_dict = info["obs"]
@@ -250,7 +252,7 @@ class ExperimentOutput(ProjectOutput):
                                 hm_data = self._check_hm_all_regions_avail(all_regions, hm_data)
                                 hm[vardisp][obs][vert_code][mod][modvar] = hm_data
 
-                self.avdb.put_by_uri(hm, fp)
+                self.avdb.put_by_uri(hm, uri)
 
     def _check_hm_all_regions_avail(self, all_regions, hm_data) -> dict:
         if all([x in hm_data for x in all_regions]):
@@ -413,7 +415,10 @@ class ExperimentOutput(ProjectOutput):
 
         with self.avdb.lock():
             try:
-                data = self.avdb.get_by_uri(fp)
+                # TODO: Hack to get uri. Ideally this should be rewritten to use URIs directly further
+                # up.
+                uri = self.avdb._get_uri_for_file(fp)
+                data = self.avdb.get_by_uri(uri)
             except Exception:
                 logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
                 os.remove(fp)
@@ -433,7 +438,7 @@ class ExperimentOutput(ProjectOutput):
                     modified = True
                     logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
 
-            self.avdb.put_by_uri(data_new, fp)
+            self.avdb.put_by_uri(data_new, uri)
         return modified
 
     def _clean_modelmap_files(self) -> list[str]:
@@ -534,7 +539,8 @@ class ExperimentOutput(ProjectOutput):
             return var_ranges_defaults[var]
         try:
             varinfo = VarinfoWeb(var)
-            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap)
+            # TODO: get unit from pyaerocom/data/variables.ini
+            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.warning(
@@ -554,6 +560,7 @@ class ExperimentOutput(ProjectOutput):
             for var in all_vars:
                 if var not in ranges or ranges[var]["scale"] == []:
                     ranges[var] = self._get_cmap_info(var)
+                ranges[var]["unit"] = get_variable(var).units
             self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:
