@@ -296,7 +296,7 @@ class ObsEntry(BaseModel):
     ######################
     ## Optional attributes
     ######################
-    obs_id: tuple[str, ...] | str = ""
+    obs_id: str | dict = ""  # dict in case of super obs??
     obs_ts_type_read: str | dict | None = None
     obs_vert_type: Literal["Column", "Profile", "Surface"] = "Surface"
     obs_aux_requires: dict = {}
