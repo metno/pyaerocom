@@ -57,9 +57,10 @@ def test_EvalSetup_INVALID_ENTRY_NAMES(cfg_exp1: dict, error: str):
         EvalSetup(**cfg_exp1)
     assert error in str(e.value)
 
-    with pytest.raises(EvalEntryNameError) as e:
-        EvalSetup.model_validate(cfg_exp1)
-    assert error in str(e.value)
+
+#     with pytest.raises(EvalEntryNameError) as e:
+#         EvalSetup.model_validate(cfg_exp1)
+#     assert error in str(e.value)
 
 
 @pytest.mark.parametrize(

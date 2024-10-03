@@ -107,7 +107,7 @@ class ObsCollection(BaseCollection):
         """
         try:
             entry = self[key]
-            entry["obs_name"] = self.get_web_iface_name(key)
+            entry.obs_name = self.get_web_iface_name(key)
             return entry
         except (KeyError, AttributeError):
             raise EntryNotAvailable(f"no such entry {key}")
@@ -167,7 +167,7 @@ class ObsCollection(BaseCollection):
     @property
     def all_vert_types(self):
         """List of unique vertical types specified in this collection"""
-        return list({x["obs_vert_type"] for x in self.values()})
+        return list({x.obs_vert_type for x in self.values()})
 
 
 class ModelCollection(BaseCollection):

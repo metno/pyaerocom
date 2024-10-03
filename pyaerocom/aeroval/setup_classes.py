@@ -529,7 +529,7 @@ class EvalSetup(BaseModel):
     ###########################
 
     def get_obs_entry(self, obs_name) -> dict:
-        return self.obs_cfg.get_entry(obs_name).to_dict()
+        return self.obs_cfg.get_entry(obs_name).model_dump()
 
     def get_model_entry(self, model_name) -> dict:
         """Get model entry configuration

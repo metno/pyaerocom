@@ -13,7 +13,7 @@ from pyaerocom.metastandards import DataSource
 logger = logging.getLogger(__name__)
 
 
-class ObsEntry(BrowseDict):
+class ObsEntry_old(BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -216,7 +216,7 @@ class ObsEntry(BrowseDict):
         )
 
 
-class ObsEntry_new(BaseModel):
+class ObsEntry(BaseModel):
     """Observation configuration for evaluation (BaseMode)
 
     Note
@@ -270,18 +270,23 @@ class ObsEntry_new(BaseModel):
     ##   Pydantic ConfigDict
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
 
-    SUPPORTED_VERT_CODES = (
+    SUPPORTED_VERT_CODES: tuple[
+        str,
+        str,
+        str,
+    ] = (
         "Column",
         "Profile",
         "Surface",
     )  # Lb: may be redundant with obs_vert_type below
-    ALT_NAMES_VERT_CODES = dict(ModelLevel="Profile")
+    ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
 
-    SUPPORTED_VERT_LOCS = [
+    SUPPORTED_VERT_LOCS: tuple[str, str, str] = (
         "ground",
         "space",
         "airborne",
-    ]  # LB: Originally DataSource.SUPPORTED_VERT_LOCS, but that is achild class of BrowseDict so hardcode here for now
+    )
+    # LB: Originally DataSource.SUPPORTED_VERT_LOCS, but that is achild class of BrowseDict so hardcode here for now
 
     ######################
     ## Required attributes
@@ -291,7 +296,7 @@ class ObsEntry_new(BaseModel):
     ######################
     ## Optional attributes
     ######################
-    obs_id: str = ""
+    obs_id: tuple[str, ...] | str = ""
     obs_ts_type_read: str | dict | None = None
     obs_vert_type: Literal["Column", "Profile", "Surface"] = "Surface"
     obs_aux_requires: dict = {}
@@ -304,7 +309,9 @@ class ObsEntry_new(BaseModel):
     read_opts_ungridded: dict = {}
     # attributes for reading colocated data files made outside of pyaerocom
     only_json: bool = False
-    coldata_dir: str | Path | None = None
+    coldata_dir: str | Path | None = (
+        None  # Lb: Would like this to be a Path but need to see if it will cause issues down the line
+    )
 
     #############
     ## Validators
