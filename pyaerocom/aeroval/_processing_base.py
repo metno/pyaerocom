@@ -6,7 +6,6 @@ from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
-from pyaerocom import TsType
 
 logger = logging.getLogger(__name__)
 
@@ -211,4 +210,16 @@ class DataImporter(HasColocator):
         col = self.get_colocator(obs_name=obs_name)
 
         data = col._read_ungridded(var_name)
+        return data
+
+    def read_gridded_obsdata(self, obs_name, var_name):
+        """
+        Import gridded observation data, usually satellite data
+
+        Args:
+            obs_name (str): Name of observation network in :attr:`cfg`
+            var_name (str): Name of variable to be read.
+        """
+        col = self.get_colocator(obs_name=obs_name)
+        data = col._read_gridded(var_name, is_model=False)
         return data

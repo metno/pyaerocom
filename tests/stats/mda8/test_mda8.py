@@ -49,6 +49,13 @@ def test_data(time, values) -> xr.DataArray:
             [np.nan] * 3,
             id="with-nans",
         ),
+        # https://github.com/metno/pyaerocom/issues/1323
+        pytest.param(
+            xr.date_range(start="2024-01-01 06:00:00", periods=30, freq="1h"),
+            np.arange(30),
+            [np.nan, np.nan],
+            id="#1323",
+        ),
     ),
 )
 def test_calc_mda8(test_data, exp_mda8):
@@ -90,16 +97,7 @@ def test_coldata_to_mda8(coldata):
     assert mda8.shape == (2, 8, 1)
 
     assert mda8.data.values[0, :, 0] == pytest.approx(
-        [
-            np.nan,
-            np.nan,
-            1.18741556,
-            1.18777241,
-            1.18869106,
-            1.18879322,
-            1.18807846,
-            1.18700801,
-        ],
+        [np.nan, np.nan, 1.18741556, 1.18777241, 1.18869106, 1.18879322, 1.18807846, 1.18700801],
         abs=10**-5,
         nan_ok=True,
     )
@@ -152,6 +150,26 @@ def test_rollingaverage(test_data, exp_ravg):
     ravg = _rolling_average_8hr(test_data)
 
     assert all(ravg[0, :, 0] == pytest.approx(exp_ravg, abs=0, nan_ok=True))
+
+
+def test_rollingaverage_label():
+    """
+    Checks that the labels of rolling average is correct (we want it to be labeled based
+    on the "right-most" interval, ie. latest measurement in the interval). This is currently
+    the case in xarray but not greatly documented, so this test checks for that.
+
+    https://github.com/metno/pyaerocom/issues/1323
+    """
+    data = xr.DataArray(
+        [[[x] for x in range(24)]],
+        dims=["data_source", "time", "station_name"],
+        coords={"time": xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h")},
+    )
+
+    ravg = _rolling_average_8hr(data)
+
+    assert ravg["time"].isel(time=0) == np.datetime64("2024-01-01 00:00")
+    assert ravg["time"].isel(time=23) == np.datetime64("2024-01-01 23:00")
 
 
 @pytest.mark.parametrize(

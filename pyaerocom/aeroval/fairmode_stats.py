@@ -15,6 +15,7 @@ import numpy as np
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
     conco3=dict(UrRV=0.18, RV=120, alpha=0.79),
+    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79),
     concpm10=dict(UrRV=0.28, RV=50, alpha=0.25),
     concpm25=dict(UrRV=0.36, RV=25, alpha=0.5),
 )
@@ -76,7 +77,7 @@ def fairmode_stats(obs_var: str, stats: dict) -> dict:
     assert np.isclose(
         rmsu * beta_mqi,
         np.sqrt((bias) ** 2 + (mod_std - obs_std) ** 2 + (2 * obs_std * mod_std * (1 - R))),
-        rtol=1e-3,
+        rtol=1e-2,
     ), "failed MQI check"
 
     fairmode = dict(

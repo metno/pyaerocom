@@ -18,6 +18,13 @@ from pyaerocom.scripts.cams2_83.evaluation import EvalType
             id="long",
         ),
         pytest.param(
+            "long",
+            datetime(2024, 3, 1),
+            datetime(2024, 8, 31),
+            ["20240301-20240831"],
+            id="long",
+        ),
+        pytest.param(
             "week",
             datetime(2023, 12, 28),
             datetime(2024, 1, 12),

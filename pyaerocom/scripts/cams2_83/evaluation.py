@@ -43,7 +43,7 @@ class EvalType(str, Enum):
                 main_freq="daily",
                 forecast_evaluation=True,
             )
-
+        
         if self == "season":
             return dict(
                 freqs=["hourly", "daily"],
@@ -71,7 +71,8 @@ class EvalType(str, Enum):
 
     def periods(self, start_date: date, end_date: date) -> list[str]:
         if self == "long":
-            return make_period_ys(start_date, end_date)
+            if (start_date.year != end_date.year):
+                return make_period_ys(start_date, end_date)
         return make_period(start_date, end_date)
 
 
