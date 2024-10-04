@@ -140,8 +140,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             If model/var data cannot be read
         """
         try:
-            # data = self.read_model_data(model_name, var)
-            data = self._read_modeldata(model_name, var)
+            data = self._read_model_data(model_name, var)
         except Exception as e:
             raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
@@ -265,9 +264,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         raise ValueError(f"Could not find any TS type to read maps")
 
-    def _read_modeldata(self, model_name: str, var: str) -> GriddedData:
+    def _read_model_data(self, model_name: str, var: str) -> GriddedData:
         """
-        Function for reading the modeldata without going through the colocation object.
+        Function for reading the model data without going through the colocation object.
         This means that none of the checks normally done in the colocation class are run.
 
         Parameters

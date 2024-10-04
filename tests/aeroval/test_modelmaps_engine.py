@@ -77,4 +77,4 @@ def test__get_read_model_freq_error(maps_freq, ts_types, errormsg):
     engine = ModelMapsEngine(stp)
 
     with pytest.raises(ValueError, match=errormsg):
-        freq = engine._get_read_model_freq(ts_types)
+        engine._get_read_model_freq(ts_types)
