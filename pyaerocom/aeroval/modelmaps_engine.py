@@ -134,27 +134,19 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             ) as e:
                 if self.raise_exceptions:
                     raise
-                logger.warning(
-                    f"Failed to process maps for {model_name} {var} data. Reason: {e}."
-                )
+                logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")
         return files
 
     def _check_dimensions(self, data: GriddedData) -> "GriddedData":
         if not data.has_latlon_dims:
-            raise DataDimensionError(
-                "data needs to have latitude an longitude dimension"
-            )
+            raise DataDimensionError("data needs to have latitude an longitude dimension")
         elif not data.has_time_dim:
-            raise DataDimensionError(
-                "data needs to have latitude an longitude dimension"
-            )
+            raise DataDimensionError("data needs to have latitude an longitude dimension")
         if data.ndim == 4:
             data = data.extract_surface_level()
         return data
 
-    def _process_contour_map_var(
-        self, model_name, var, reanalyse_existing
-    ):  # pragma: no cover
+    def _process_contour_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """
         Process model data to create map geojson files
 
@@ -187,14 +179,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_ranges_defaults = self.cfg.var_scale_colmap
         if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
-            varinfo = VarinfoWeb(
-                var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"]
-            )
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:
             cmapinfo = var_ranges_defaults["default"]
-            varinfo = VarinfoWeb(
-                var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"]
-            )
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
         data = self._check_dimensions(data)
 
@@ -204,9 +192,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         if not reanalyse_existing:
             if os.path.exists(fp_geojson):
-                logger.info(
-                    f"Skipping contour processing of {outname}: data already exists."
-                )
+                logger.info(f"Skipping contour processing of {outname}: data already exists.")
                 return []
 
         freq = self._get_maps_freq()
@@ -219,9 +205,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         data.check_unit()
         # first calcualate and save geojson with contour levels
-        contourjson = calc_contour_json(
-            data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins
-        )
+        contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
 
         with self.avdb.lock():
             self.avdb.put_contour(
@@ -234,9 +218,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         return fp_geojson
 
-    def _process_overlay_map_var(
-        self, model_name, var, reanalyse_existing
-    ):  # pragma: no cover
+    def _process_overlay_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """Process overlay map (pixels) for either model or obserations
         argument model_name is a misnomer because this can also be applied to observation networks
 
@@ -259,14 +241,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         if var in var_ranges_defaults.keys():
             cmapinfo = var_ranges_defaults[var]
-            varinfo = VarinfoWeb(
-                var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"]
-            )
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
         else:
             cmapinfo = var_ranges_defaults["default"]
-            varinfo = VarinfoWeb(
-                var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"]
-            )
+            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
         data = self._check_dimensions(data)
 
@@ -274,9 +252,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
 
-        if (
-            maps_freq == "coarsest"
-        ):  # TODO: Implement this in terms of a TsType object. #1267
+        if maps_freq == "coarsest":  # TODO: Implement this in terms of a TsType object. #1267
             freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
             freq = min(freq, self.cfg.time_cfg.main_freq)
         else:
@@ -301,9 +277,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
             if not reanalyse_existing:
                 if os.path.exists(fp_overlay):
-                    logger.info(
-                        f"Skipping overlay processing of {outname}: data already exists."
-                    )
+                    logger.info(f"Skipping overlay processing of {outname}: data already exists.")
                     continue
 
             overlay_plot = plot_overlay_pixel_maps(
@@ -333,9 +307,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         TSType
         """
         maps_freq = TsType(self.cfg.modelmaps_opts.maps_freq)
-        if (
-            maps_freq == "coarsest"
-        ):  # TODO: Implement this in terms of a TsType object. #1267
+        if maps_freq == "coarsest":  # TODO: Implement this in terms of a TsType object. #1267
             freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
             freq = min(freq, self.cfg.time_cfg.main_freq)
         else:
@@ -375,9 +347,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         for freq in sorted(TsType(fq) for fq in self.cfg.time_cfg.freqs):
             if freq in model_ts_types:
-                logger.info(
-                    f"Found coarsest maps_freq that is available as model data: {freq}"
-                )
+                logger.info(f"Found coarsest maps_freq that is available as model data: {freq}")
                 return freq
 
         raise ValueError("Could not find any TS type to read maps")
