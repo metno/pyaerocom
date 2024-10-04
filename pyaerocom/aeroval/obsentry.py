@@ -3,7 +3,12 @@ from pathlib import Path
 from traceback import format_exc
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    field_validator,
+    model_validator,
+)
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, LayerLimits, ListOfStrings, StrType
@@ -228,6 +233,7 @@ class ObsEntry(BaseModel):
     obs_id : str
         ID of observation network in AeroCom database
         (e.g. 'AeronetSunV3Lev2.daily')
+        Note that this can also be a custom supplied obs_id if and only if bs_aux_requires is provided
     obs_vars : tuple[str, ...]
         tuple of pyaerocom variable names that are supposed to be analysed
         (e.g. ('od550aer', 'ang4487aer'))
@@ -296,10 +302,10 @@ class ObsEntry(BaseModel):
     ######################
     ## Optional attributes
     ######################
-    obs_id: str | tuple[str, ...] = ""  # dict in case of super obs??
+    obs_id: str | tuple[str, ...] = ""
     obs_ts_type_read: str | dict | None = None
     obs_vert_type: Literal["Column", "Profile", "Surface"] = "Surface"
-    obs_aux_requires: dict = {}
+    obs_aux_requires: dict[str, dict] = {}
     instr_vert_loc: str | None = None
     is_superobs: bool = False
     only_superobs: bool = False
@@ -332,6 +338,13 @@ class ObsEntry(BaseModel):
                 f"Please choose from: {cls.SUPPORTED_VERT_LOCS}"
             )
 
+    @field_validator("obs_aux_requires")
+    @classmethod
+    def validate_obs_aux_requires(cls, v):
+        if len(cls.obs_aux_requires) > 0:
+            if "obs_type" not in cls.model_fields:
+                raise ValueError("obs_type is required if obs_aux_requires is given")
+
     @model_validator(mode="after")
     def check_cfg(self):
         if not self.is_superobs and not isinstance(self.obs_id, str | tuple | dict):
@@ -339,6 +352,7 @@ class ObsEntry(BaseModel):
                 f"Invalid value for obs_id: {self.obs_id}. Need str, tuple, or dict "
                 f"or specification of ids and variables via obs_compute_post"
             )
+        self.check_add_obs()
         return self
 
     ##########
