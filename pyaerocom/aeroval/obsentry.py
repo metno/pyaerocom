@@ -334,9 +334,9 @@ class ObsEntry(BaseModel):
 
     @model_validator(mode="after")
     def check_cfg(self):
-        if not self.is_superobs and not isinstance(self.obs_id, str | dict):
+        if not self.is_superobs and not isinstance(self.obs_id, str | tuple | dict):
             raise ValueError(
-                f"Invalid value for obs_id: {self.obs_id}. Need str or dict "
+                f"Invalid value for obs_id: {self.obs_id}. Need str, tuple, or dict "
                 f"or specification of ids and variables via obs_compute_post"
             )
         return self
