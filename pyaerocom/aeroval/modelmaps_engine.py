@@ -231,7 +231,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = self.read_gridded_obsdata(model_name, var)
         except EntryNotAvailable:
             try:
-                data = self.read_model_data(model_name, var)
+                data = self._read_model_data(model_name, var)
             except Exception as e:
                 raise ModelVarNotAvailable(
                     f"Cannot read data for model {model_name} (variable {var}): {e}"
