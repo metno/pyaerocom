@@ -22,8 +22,6 @@ class BaseCollection(BrowseDict, abc.ABC):
 
     def __setitem__(self, key, value):
         self._check_entry_name(key)
-        # if "web_interface_name" in value:
-        #     self._check_entry_name(value["web_interface_name"])
         super().__setitem__(key, value)
 
     def keylist(self, name_or_pattern: str = None) -> list:
