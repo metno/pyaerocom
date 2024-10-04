@@ -107,7 +107,7 @@ class ObsCollection(BaseCollection):
         """
         try:
             entry = self[key]
-            entry.obs_name = self.get_web_iface_name(key)
+            entry.obs_name = self.get_web_interface_name(key)
             return entry
         except (KeyError, AttributeError):
             raise EntryNotAvailable(f"no such entry {key}")
@@ -127,7 +127,7 @@ class ObsCollection(BaseCollection):
             vars.extend(ocfg.get_all_vars())
         return sorted(list(set(vars)))
 
-    def get_web_iface_name(self, key):
+    def get_web_interface_name(self, key):
         """
         Get webinterface name for entry
 
@@ -148,10 +148,7 @@ class ObsCollection(BaseCollection):
             corresponding name
 
         """
-        entry = self[key]
-        if "web_interface_name" not in entry:
-            return key
-        return entry["web_interface_name"]
+        return self[key].web_interface_name if self[key].web_interface_name is not None else key
 
     @property
     def web_iface_names(self) -> list:
@@ -162,7 +159,7 @@ class ObsCollection(BaseCollection):
         -------
         list
         """
-        return [self.get_web_iface_name(key) for key in self.keylist()]
+        return [self.get_web_interface_name(key) for key in self.keylist()]
 
     @property
     def all_vert_types(self):

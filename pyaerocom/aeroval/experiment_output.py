@@ -752,7 +752,7 @@ class ExperimentOutput(ProjectOutput):
         allobs = self.cfg.obs_cfg
         obs_matches = []
         for key, ocfg in allobs.items():
-            if obs_name == allobs.get_web_iface_name(key):
+            if obs_name == allobs.get_web_interface_name(key):
                 obs_matches.append(ocfg)
         if len(obs_matches) == 0:
             self._invalid["obs"].append(obs_name)

@@ -311,6 +311,7 @@ class ObsEntry(BaseModel):
     only_superobs: bool = False
     colocation_layer_limts: tuple[LayerLimits, ...] | None = None
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
+    web_interface_name: str | None = None
 
     read_opts_ungridded: dict = {}
     # attributes for reading colocated data files made outside of pyaerocom
