@@ -92,12 +92,7 @@ class HasColocator(HasConfig):
         -------
         diurnal_only : bool
         """
-        entry = self.cfg.get_obs_entry(obs_name)
-        try:
-            diurnal_only = entry["diurnal_only"]
-        except KeyError:
-            diurnal_only = False
-        return diurnal_only
+        return self.cfg.get_obs_entry(obs_name).get("diurnal_only", False)
 
     def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
         """
