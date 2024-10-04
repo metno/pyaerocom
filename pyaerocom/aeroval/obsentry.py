@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ObsEntry(BaseModel):
-    """Observation configuration for evaluation (BaseMode)
+    """Observation configuration for evaluation (BaseModel)
 
     Note
     ----
@@ -70,7 +70,12 @@ class ObsEntry(BaseModel):
     """
 
     ##   Pydantic ConfigDict
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", protected_namespaces=())
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow",
+        protected_namespaces=(),
+        validate_assignment=True,
+    )
 
     SUPPORTED_VERT_CODES: tuple[
         str,
@@ -80,7 +85,7 @@ class ObsEntry(BaseModel):
         "Column",
         "Profile",
         "Surface",
-    )  # Lb: may be redundant with obs_vert_type below
+    )
     ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
 
     SUPPORTED_VERT_LOCS: tuple[str, str, str] = (
@@ -88,7 +93,7 @@ class ObsEntry(BaseModel):
         "space",
         "airborne",
     )
-    # LB: Originally DataSource.SUPPORTED_VERT_LOCS, but that is achild class of BrowseDict so hardcode here for now
+    # Originally DataSource.SUPPORTED_VERT_LOCS, but that is achild class of BrowseDict so hardcode here for now
 
     ######################
     ## Required attributes
@@ -113,7 +118,7 @@ class ObsEntry(BaseModel):
     # attributes for reading colocated data files made outside of pyaerocom
     only_json: bool = False
     coldata_dir: str | Path | None = (
-        None  # Lb: Would like this to be a Path but need to see if it will cause issues down the line
+        None  # Would like this to be a Path but need to see if it will cause issues down the line
     )
 
     #############
@@ -152,9 +157,7 @@ class ObsEntry(BaseModel):
     def check_add_obs(self):
         """Check if this dataset is an auxiliary post dataset"""
         if len(self.obs_aux_requires) > 0:
-            if (
-                not self.obs_type == "ungridded"
-            ):  # LB: Not sure where self.obs_type is coming from. May need to think about this
+            if not self.obs_type == "ungridded":
                 raise NotImplementedError(
                     f"Cannot initialise auxiliary setup for {self.obs_id}. "
                     f"Aux obs reading is so far only possible for ungridded observations."
