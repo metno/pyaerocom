@@ -17,6 +17,26 @@ from pyaerocom.exceptions import InitialisationError
 logger = logging.getLogger(__name__)
 
 
+SUPPORTED_VERT_CODES: tuple[
+    str,
+    str,
+    str,
+] = (
+    "Column",
+    "Profile",
+    "Surface",
+)
+
+ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
+
+
+SUPPORTED_VERT_LOCS: tuple[str, str, str] = (
+    "ground",
+    "space",
+    "airborne",
+)
+
+
 class ObsEntry(BaseModel):
     """Observation configuration for evaluation (BaseModel)
 
@@ -77,24 +97,6 @@ class ObsEntry(BaseModel):
         validate_assignment=True,
     )
 
-    SUPPORTED_VERT_CODES: tuple[
-        str,
-        str,
-        str,
-    ] = (
-        "Column",
-        "Profile",
-        "Surface",
-    )
-    ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
-
-    SUPPORTED_VERT_LOCS: tuple[str, str, str] = (
-        "ground",
-        "space",
-        "airborne",
-    )
-    # Originally DataSource.SUPPORTED_VERT_LOCS, but that is achild class of BrowseDict so hardcode here for now
-
     ######################
     ## Required attributes
     ######################
@@ -134,11 +136,41 @@ class ObsEntry(BaseModel):
     @field_validator("instr_vert_loc")
     @classmethod
     def validate_instr_vert_loc(cls, v):
-        if isinstance(v, str) and v not in cls.SUPPORTED_VERT_LOCS:
+        if isinstance(v, str) and v not in SUPPORTED_VERT_LOCS:
             raise AttributeError(
                 f"Invalid value for instr_vert_loc: {v} for {cls.obs_id}. "
-                f"Please choose from: {cls.SUPPORTED_VERT_LOCS}"
+                f"Please choose from: {SUPPORTED_VERT_LOCS}"
             )
+
+    @field_validator("obs_vert_type")
+    @classmethod
+    def check_obs_vert_type(cls, ovt):
+        """Check if obs_vert_type string is valid alias
+        Parameters
+        ----------
+        ovt : str
+            obs_vert_type string
+        Returns
+        -------
+        str
+            valid obs_vert_type
+        Raises
+        ------
+        ValueError
+            if `ovt` is invalid
+        """
+        if ovt in SUPPORTED_VERT_CODES:
+            return ovt
+        if ovt in ALT_NAMES_VERT_CODES:
+            logger.warning(
+                f"Please use {ALT_NAMES_VERT_CODES[ovt]} for obs_vert_code and not {ovt}"
+            )
+            ovt = ALT_NAMES_VERT_CODES[ovt]
+            return ovt
+        valid = SUPPORTED_VERT_CODES + list(ALT_NAMES_VERT_CODES)
+        raise ValueError(
+            f"Invalid value for obs_vert_type: {ovt}. " f"Supported codes are {valid}."
+        )
 
     @model_validator(mode="after")
     def check_cfg(self):
@@ -148,6 +180,7 @@ class ObsEntry(BaseModel):
                 f"or specification of ids and variables via obs_compute_post"
             )
         self.check_add_obs()
+        # self._check_ovt(self.obs_vert_type)
         return self
 
     ##########
@@ -201,9 +234,8 @@ class ObsEntry(BaseModel):
             val = vc[var]
         else:
             raise ValueError(f"invalid value for obs_vert_type: {vc}")
-        if val not in self.SUPPORTED_VERT_CODES:
+        if val not in SUPPORTED_VERT_CODES:
             raise ValueError(
-                f"invalid value for obs_vert_type: {val}. Choose from "
-                f"{self.SUPPORTED_VERT_CODES}."
+                f"invalid value for obs_vert_type: {val}. Choose from " f"{SUPPORTED_VERT_CODES}."
             )
         return val
