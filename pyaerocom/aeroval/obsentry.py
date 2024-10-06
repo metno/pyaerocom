@@ -98,12 +98,12 @@ class ObsEntry(BaseModel):
     ######################
     ## Required attributes
     ######################
-    obs_vars: tuple[str, ...] | str
-    obs_vert_type: str
+    obs_vars: str | tuple[str, ...]
+    obs_id: str | tuple[str, ...]
     ######################
     ## Optional attributes
     ######################
-    obs_id: str | tuple[str, ...] = ""
+    # obs_id: str | tuple[str, ...] = ""
     obs_ts_type_read: str | dict | None = None
     obs_vert_type: Literal["Column", "Profile", "Surface"] = "Surface"
     obs_aux_requires: dict[str, dict] = {}
