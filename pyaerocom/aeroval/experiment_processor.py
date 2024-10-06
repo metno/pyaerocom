@@ -34,7 +34,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             logger.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
-        if ocfg["is_superobs"]:
+        if ocfg.is_superobs:
             try:
                 engine = SuperObsEngine(self.cfg)
                 engine.run(
@@ -47,19 +47,19 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 if self.raise_exceptions:
                     raise
                 logger.warning("failed to process superobs...")
-        elif ocfg["only_superobs"]:
+        elif ocfg.only_superobs:
             logger.info(
                 f"Skipping json processing of {obs_name}, as this is "
                 f"marked to be used only as part of a superobs "
                 f"network"
             )
-        elif ocfg["only_json"]:
-            if not ocfg["coldata_dir"]:
+        elif ocfg.only_json:
+            if not ocfg.coldata_dir:
                 raise Exception(
                     "No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
                 )
             else:
-                preprocessed_coldata_dir = ocfg["coldata_dir"]
+                preprocessed_coldata_dir = ocfg.coldata_dir
                 mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
                 files_to_convert = glob.glob(mask)
                 engine = ColdataToJsonEngine(self.cfg)
@@ -69,7 +69,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             # If a var_list is given, only run on the obs networks which contain that variable
             if var_list:
                 var_list_asked = var_list
-                obs_vars = ocfg["obs_vars"]
+                obs_vars = ocfg.obs_vars
                 var_list = list(set(obs_vars) & set(var_list))
                 if not var_list:
                     logger.warning(

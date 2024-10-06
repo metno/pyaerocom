@@ -105,7 +105,6 @@ class ObsEntry(BaseModel):
     ######################
     ## Optional attributes
     ######################
-    # obs_id: str | tuple[str, ...] = ""
     obs_ts_type_read: str | dict | None = None
     obs_vert_type: Literal["Column", "Profile", "Surface"] = "Surface"
     obs_aux_requires: dict[str, dict] = {}
@@ -115,6 +114,7 @@ class ObsEntry(BaseModel):
     colocation_layer_limts: tuple[LayerLimits, ...] | None = None
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
     web_interface_name: str | None = None
+    diurnal_only: bool = False
 
     read_opts_ungridded: dict = {}
     # attributes for reading colocated data files made outside of pyaerocom

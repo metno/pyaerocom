@@ -92,7 +92,7 @@ class HasColocator(HasConfig):
         -------
         diurnal_only : bool
         """
-        return self.cfg.get_obs_entry(obs_name).get("diurnal_only", False)
+        return self.cfg.get_obs_entry(obs_name).diurnal_only
 
     def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
         """
@@ -132,7 +132,7 @@ class HasColocator(HasConfig):
             col_cfg["obs_config"] = pyaro_config
 
             # Hack and at what lowlevel_helpers's import_from was doing
-            for key, val in obs_cfg.items():
+            for key, val in obs_cfg.model_dump().items():
                 if key in ColocationSetup.model_fields:
                     col_cfg[key] = val
 
