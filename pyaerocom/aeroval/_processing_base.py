@@ -76,24 +76,6 @@ class HasColocator(HasConfig):
     Config class that also has the ability to co-locate
     """
 
-    def _get_diurnal_only(self, obs_name):
-        """
-        Check if colocated data is flagged for only diurnal processing
-
-        Parameters
-        ----------
-        obs_name : string
-            Name of observational subset
-        colocated_data : ColocatedData
-            A ColocatedData object that will be checked for suitability of
-            diurnal processing.
-
-        Returns
-        -------
-        diurnal_only : bool
-        """
-        return self.cfg.get_obs_entry(obs_name).diurnal_only
-
     def get_colocator(self, model_name: str = None, obs_name: str = None) -> Colocator:
         """
         Instantiate colocation engine
@@ -136,7 +118,7 @@ class HasColocator(HasConfig):
                 if key in ColocationSetup.model_fields:
                     col_cfg[key] = val
 
-            col_cfg["add_meta"].update(diurnal_only=self._get_diurnal_only(obs_name))
+            col_cfg["add_meta"].update(diurnal_only=self.cfg.get_obs_entry(obs_name).diurnal_only)
 
         col_stp = ColocationSetup(**col_cfg)
         col = Colocator(col_stp)
