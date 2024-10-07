@@ -1,10 +1,13 @@
 import abc
+import logging
 
 from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
+
+logger = logging.getLogger(__name__)
 
 
 class HasConfig:
