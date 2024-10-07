@@ -9,6 +9,7 @@ from typing import Annotated, Literal
 import datetime
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
+from pyaerocom.aeroval.obsentry import ObsEntry
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -528,7 +529,7 @@ class EvalSetup(BaseModel):
     ##       Methods
     ###########################
 
-    def get_obs_entry(self, obs_name):
+    def get_obs_entry(self, obs_name) -> ObsEntry:
         """Returns ObsEntry instance for network obs_name"""
         return self.obs_cfg.get_entry(obs_name)
 

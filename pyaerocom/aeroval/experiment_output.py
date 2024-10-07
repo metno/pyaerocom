@@ -425,7 +425,7 @@ class ExperimentOutput(ProjectOutput):
                 return True
 
             models_avail = list(data)
-            models_in_exp = self.cfg.model_cfg.web_interfaceface_names
+            models_in_exp = self.cfg.model_cfg.web_interface_names
             if all([mod in models_in_exp for mod in models_avail]):
                 # nothing to clean up
                 return False

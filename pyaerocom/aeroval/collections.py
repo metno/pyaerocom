@@ -11,8 +11,9 @@ class BaseCollection(BrowseDict, abc.ABC):
     #: maximum length of entry names
     MAXLEN_KEYS = 25
     #: Invalid chars in entry names
-    FORBIDDEN_CHARS_KEYS = []  # "_"
+    FORBIDDEN_CHARS_KEYS = []
 
+    # TODO: Wait a few release cycles after v0.23.0 and see if this can be removed
     def _check_entry_name(self, key):
         if any([x in key for x in self.FORBIDDEN_CHARS_KEYS]):
             raise EvalEntryNameError(
