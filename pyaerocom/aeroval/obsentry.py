@@ -121,7 +121,7 @@ class ObsEntry(BaseModel):
     # attributes for reading colocated data files made outside of pyaerocom
     only_json: bool = False
     coldata_dir: str | Path | None = (
-        None  # Would like this to be a Path but need to see if it will cause issues down the line
+        None  # TODO: Would like this to be a Path but need to see if it will cause issues down the line
     )
 
     #############
@@ -181,7 +181,6 @@ class ObsEntry(BaseModel):
                 f"or specification of ids and variables via obs_compute_post"
             )
         self.check_add_obs()
-        # self._check_ovt(self.obs_vert_type)
         return self
 
     ##########
@@ -207,7 +206,7 @@ class ObsEntry(BaseModel):
 
     def get_all_vars(self) -> tuple[str, ...]:
         """
-        Get list of all variables associated with this entry
+        Get a tuple of all variables associated with this entry
 
         Returns
         -------
