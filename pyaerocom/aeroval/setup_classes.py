@@ -528,7 +528,8 @@ class EvalSetup(BaseModel):
     ##       Methods
     ###########################
 
-    def get_obs_entry(self, obs_name) -> dict:
+    def get_obs_entry(self, obs_name):
+        """Returns ObsEntry instance for network obs_name"""
         return self.obs_cfg.get_entry(obs_name)
 
     def get_model_entry(self, model_name) -> dict:

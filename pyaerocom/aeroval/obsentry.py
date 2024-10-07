@@ -42,7 +42,7 @@ class ObsEntry(BaseModel):
 
     Note
     ----
-    Only :attr:`obs_id` and `obs_vars` are mandatory, the rest is optional.
+    Only :attr:`obs_id` and `obs_vars` are mandatory, the rest are optional.
 
     Attributes
     ----------
