@@ -425,7 +425,7 @@ class ExperimentOutput(ProjectOutput):
                 return True
 
             models_avail = list(data)
-            models_in_exp = self.cfg.model_cfg.web_iface_names
+            models_in_exp = self.cfg.model_cfg.web_interfaceface_names
             if all([mod in models_in_exp for mod in models_avail]):
                 # nothing to clean up
                 return False
@@ -512,7 +512,7 @@ class ExperimentOutput(ProjectOutput):
                 )
             order.extend(self.cfg.webdisp_opts.model_order_menu)
         elif self.cfg.webdisp_opts.obsorder_from_config:
-            order.extend(self.cfg.model_cfg.web_iface_names)
+            order.extend(self.cfg.model_cfg.web_interface_names)
         return order
 
     def get_obs_order_menu(self) -> list:
@@ -526,7 +526,7 @@ class ExperimentOutput(ProjectOutput):
                 )
             order.extend(self.cfg.webdisp_opts.obs_order_menu)
         elif self.cfg.webdisp_opts.obsorder_from_config:
-            order.extend(self.cfg.obs_cfg.web_iface_names)
+            order.extend(self.cfg.obs_cfg.web_interface_names)
         return order
 
     def _get_json_output_files(self, dirname) -> list[str]:

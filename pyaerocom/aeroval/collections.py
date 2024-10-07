@@ -68,7 +68,7 @@ class BaseCollection(BrowseDict, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def web_iface_names(self) -> list:
+    def web_interface_names(self) -> list:
         """
         List of webinterface names for
         """
@@ -149,7 +149,7 @@ class ObsCollection(BaseCollection):
         return self[key].web_interface_name if self[key].web_interface_name is not None else key
 
     @property
-    def web_iface_names(self) -> list:
+    def web_interface_names(self) -> list:
         """
         List of web interface names for each obs entry
 
@@ -219,7 +219,7 @@ class ModelCollection(BaseCollection):
             raise EntryNotAvailable(f"no such entry {key}")
 
     @property
-    def web_iface_names(self) -> list:
+    def web_interface_names(self) -> list:
         """
         List of web interface names for each obs entry
 
