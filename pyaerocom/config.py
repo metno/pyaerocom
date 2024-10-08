@@ -37,7 +37,7 @@ class Config:
     # might get overwritten from paths.ini see func read_config
 
     #: ICP Forests
-    # ICPFORESTS_NAME = "ICPFORESTS"
+    ICPFORESTS_NAME = ""
     #
     # #: Aeronet Sun V3 access names
     AERONET_SUN_V3L15_AOD_DAILY_NAME = ""
