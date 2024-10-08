@@ -230,46 +230,17 @@ def test_empty_class_header(empty_cfg):
     #: Name of the file containing the revision string of an obs data network
     assert cfg.REVISION_FILE == "Revision.txt"
 
-    #: timeout to check if one of the supported server locations can be
-    #: accessed
-    # assert cfg.SERVER_CHECK_TIMEOUT == 1  # s
-
     assert cfg._outhomename == "MyPyaerocom"
-
-    # with resources.path("pyaerocom.data", "paths.ini") as path:
-    #     assert cfg._config_files["metno"] == cfg._config_ini_lustre == str(path)
-
-    # with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
-    #     assert cfg._config_files["users-db"] == cfg._config_ini_user_server == str(path)
-    #
-    # with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
-    #     assert cfg._config_files["local-db"] == cfg._config_ini_localdb == str(path)
-    #
-    # assert cfg._check_subdirs_cfg == {
-    #     "metno": "aerocom",
-    #     "users-db": "AMAP",
-    #     "local-db": "modeldata",
-    # }
 
     with resources.path("pyaerocom.data", "variables.ini") as path:
         assert cfg._var_info_file == str(path)
     with resources.path("pyaerocom.data", "coords.ini") as path:
         assert cfg._coords_info_file == str(path)
 
-    # dbdirs = {
-    #     "lustre/storeB/project": "metno",
-    #     "metno/aerocom_users_database": "users-db",
-    #     "MyPyaerocom/data": "local-db",
-    # }
-    # for sd, name in dbdirs.items():
-    #     assert sd in cfg._DB_SEARCH_SUBDIRS
-    #     assert cfg._DB_SEARCH_SUBDIRS[sd] == name
-
     assert cfg.DONOTCACHEFILE is None
 
     assert cfg.ERA5_SURFTEMP_FILENAME == "era5.msl.t2m.201001-201012.nc"
 
-    # assert cfg._LUSTRE_CHECK_PATH == "/project/aerocom/aerocom1/"
     assert cfg._LUSTRE_CHECK_PATH == "/"
 
 
