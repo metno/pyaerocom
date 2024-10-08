@@ -1299,15 +1299,27 @@ class ColocatedData(BaseModel):
     def to_dataframe(self):
         """Convert this object into pandas.DataFrame
 
-        Note
-        ----
-        This does not include meta information
+        The resulting DataFrame will have the following columns:
+        station: The name of the station for a given value.
+        
+        The following columns will be available in the resulting dataframe:
+        - time: Time.
+        - station_name: Station name.
+        - data_source_obs: Data source obs (eg. EBASMC).
+        - data_source_mod: Data source model (eg. EMEP).
+        - latitude.
+        - longitude.
+        - altitude.
+        - {var_name}_obs: Variable value of observation.
+        - {var_name}_mod: Variable value of model.
         """
-        logger.warning("This method is currently not completely finished")
-        model_vals = self.data.values[1].flatten()
-        obs_vals = self.data.values[0].flatten()
-        mask = ~np.isnan(obs_vals)
-        return pd.DataFrame({"ref": obs_vals[mask], "data": model_vals[mask]})
+        #logger.warning("This method is currently not completely finished")
+        obs_df = self.data[0, :, :].to_dataframe()
+        mod_df = self.data[1, :, :].to_dataframe()
+
+        df = pd.merge(obs_df, mod_df, how="outer", on = ("time", "station_name", "latitude", "longitude", "altitude"),suffixes=("_obs", "_mod") )
+        
+        return df
 
     def from_dataframe(self, df):
         """Create colocated Data object from dataframe
