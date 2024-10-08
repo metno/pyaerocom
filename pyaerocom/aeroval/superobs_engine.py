@@ -29,7 +29,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         sobs_cfg = self.cfg.obs_cfg.get_entry(obs_name)
 
         if var_list is None:
-            var_list = sobs_cfg["obs_vars"]
+            var_list = sobs_cfg.obs_vars
         elif isinstance(var_list, str):
             var_list = [var_list]
         elif not isinstance(var_list, list):
@@ -75,8 +75,8 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
-        obs_needed = self.cfg.obs_cfg[obs_name]["obs_id"]
-        vert_code = self.cfg.obs_cfg.get_entry(obs_name)["obs_vert_type"]
+        obs_needed = self.cfg.obs_cfg[obs_name].obs_id
+        vert_code = self.cfg.obs_cfg.get_entry(obs_name).obs_vert_type
         for oname in obs_needed:
             fp, ts_type, vert_code = self._get_coldata_fileinfo(
                 model_name, oname, var_name, try_colocate_if_missing
@@ -141,5 +141,5 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         fp = cdf[0]
         meta = ColocatedData.get_meta_from_filename(fp)
         ts_type = meta["ts_type"]
-        vert_code = self.cfg.obs_cfg.get_entry(obs_name)["obs_vert_type"]
+        vert_code = self.cfg.obs_cfg.get_entry(obs_name).obs_vert_type
         return (fp, ts_type, vert_code)
