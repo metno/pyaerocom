@@ -93,7 +93,6 @@ class ObsEntry(BaseModel):
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         extra="allow",
-        allow_mutation=False,
         validate_assignment=True,
     )
 
