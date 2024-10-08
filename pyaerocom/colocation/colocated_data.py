@@ -1301,7 +1301,7 @@ class ColocatedData(BaseModel):
 
         The resulting DataFrame will have the following columns:
         station: The name of the station for a given value.
-        
+
         The following columns will be available in the resulting dataframe:
         - time: Time.
         - station_name: Station name.
@@ -1312,13 +1312,21 @@ class ColocatedData(BaseModel):
         - altitude.
         - {var_name}_obs: Variable value of observation.
         - {var_name}_mod: Variable value of model.
+
+        {var_name} is the aerocom variable name of the variable name.
         """
-        #logger.warning("This method is currently not completely finished")
+        # logger.warning("This method is currently not completely finished")
         obs_df = self.data[0, :, :].to_dataframe()
         mod_df = self.data[1, :, :].to_dataframe()
 
-        df = pd.merge(obs_df, mod_df, how="outer", on = ("time", "station_name", "latitude", "longitude", "altitude"),suffixes=("_obs", "_mod") )
-        
+        df = pd.merge(
+            obs_df,
+            mod_df,
+            how="outer",
+            on=("time", "station_name", "latitude", "longitude", "altitude"),
+            suffixes=("_obs", "_mod"),
+        )
+
         return df
 
     def from_dataframe(self, df):
