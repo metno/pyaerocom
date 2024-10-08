@@ -18,6 +18,7 @@ jobs:
         python-version: ${{ env.PYTHON }}
     - name: Python info
       run: |
+        chmod 777 /home/runner
         which python
         python --version
     - name: Install system packages
