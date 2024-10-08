@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import getpass
+import logging
 import os.path
 from pathlib import Path
 
@@ -19,6 +20,8 @@ USER = getpass.getuser()
 
 with resources.path("pyaerocom.data", "paths.ini") as path:
     DEFAULT_PATHS_INI = str(path)
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture()
@@ -54,11 +57,6 @@ def local_db(tmp_path: Path) -> Path:
 def empty_cfg():
     cfg = testmod.Config(try_infer_environment=False)
     return cfg
-
-
-# def test_Config_ALL_DATABASE_IDS(empty_cfg):
-#     assert empty_cfg.ALL_DATABASE_IDS == ["metno", "users-db", "local-db"]
-#
 
 
 @pytest.mark.parametrize(
@@ -103,69 +101,48 @@ def test_Config_has_access_lustre():
 
 def test_user_specific_paths_ini():
     # test if user specific paths.ini file is read
+    CHANGE_NAME = "NAME_CHANGED_FOR_TESTING"
+    CHECK_NAME = "GAWTADSUBSETAASETAL"
     user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME)
     # only create user_file if it doesn't exist
     del_flag = False
     if not os.path.exists(user_file):
         with open(DEFAULT_PATHS_INI) as infile, open(user_file, "w") as outfile:
             for line in infile:
-                line = line.replace("/lustre/storeB/project", "~")
+                if CHECK_NAME in line:
+                    line = f"{CHECK_NAME} = {CHANGE_NAME}\n"
+                else:
+                    line = line.replace("/lustre/storeB/project", "${HOME}")
                 outfile.write(line)
         del_flag = True
 
     # read default paths.ini
     # compare
     assert os.path.exists(user_file)
+    # no real test here for now since we would need to get rif of the already loaded const module
+    # and recreate that
+    # cfg = testmod.Config(try_infer_environment=False)
+    # assert cfg.GAWTADSUBSETAASETAL == CHANGE_NAME
 
     if del_flag:
         os.remove(user_file)
 
-    # create user specific paths.ini if not present
-    # fill it with a changed path
-    # delete it again
 
-
-# # def test_Config_has_access_users_database():
-# #     cfg = testmod.Config(try_infer_environment=False)
-# #     assert not cfg.has_access_users_database
-# #
-# #
-# # @pytest.mark.parametrize(
-# #     "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
-# #     [
-# #         ("metno", None, False, False),
-# #         ("metno", None, True, False),
-# #         ("metno", None, True, True),
-# #         ("metno", f"/home/{USER}", True, True),
-# #         ("users-db", None, False, False),
-# #     ],
-# # )
-# def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs):
-#     cfg = testmod.Config(try_infer_environment=False)
-#     cfg_file = cfg._config_files[cfg_id]
-#     assert Path(cfg_file).exists()
-#     cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
-#     if not cfg.has_access_lustre:
-#         pytest.skip(f"Skipping since {cfg._LUSTRE_CHECK_PATH} directory not accessible")
-#     assert all([Path(idir).exists() for idir in cfg.DATA_SEARCH_DIRS])
-#     assert cfg.OBSLOCS_UNGRIDDED
-#     assert Path(cfg.OUTPUTDIR).exists()
-#     assert Path(cfg.COLOCATEDDATADIR).exists()
-#     assert Path(cfg.CACHEDIR).exists()
+def test_Config_read_config():
+    cfg = testmod.Config(try_infer_environment=False)
+    cfg_file = DEFAULT_PATHS_INI
+    assert Path(cfg_file).exists()
+    cfg.read_config(cfg_file)
+    # not all paths from the default paths.ini are present on CI
+    # Just test a few of them
+    assert cfg.OBSLOCS_UNGRIDDED
+    assert Path(cfg.OUTPUTDIR).exists()
+    assert Path(cfg.COLOCATEDDATADIR).exists()
+    assert Path(cfg.CACHEDIR).exists()
 
 
 def test_empty_class_header(empty_cfg):
     cfg = empty_cfg
-    assert cfg.AERONET_SUN_V2L15_AOD_DAILY_NAME == "AeronetSunV2Lev1.5.daily"
-    assert cfg.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME == "AeronetSun_2.0_NRT"
-    assert cfg.AERONET_SUN_V2L2_AOD_DAILY_NAME == "AeronetSunV2Lev2.daily"
-    assert cfg.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME == "AeronetSunV2Lev2.AP"
-    assert cfg.AERONET_SUN_V2L2_SDA_DAILY_NAME == "AeronetSDAV2Lev2.daily"
-    assert cfg.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME == "AeronetSDAV2Lev2.AP"
-    assert cfg.AERONET_INV_V2L15_DAILY_NAME == "AeronetInvV2Lev1.5.daily"
-    assert cfg.AERONET_INV_V2L15_ALL_POINTS_NAME == "AeronetInvV2Lev1.5.AP"
-    assert cfg.AERONET_INV_V2L2_DAILY_NAME == "AeronetInvV2Lev2.daily"
-    assert cfg.AERONET_INV_V2L2_ALL_POINTS_NAME == "AeronetInvV2Lev2.AP"
     assert cfg.AERONET_SUN_V3L15_AOD_DAILY_NAME == "AeronetSunV3Lev1.5.daily"
     assert cfg.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME == "AeronetSunV3Lev1.5.AP"
     assert cfg.AERONET_SUN_V3L2_AOD_DAILY_NAME == "AeronetSunV3Lev2.daily"
