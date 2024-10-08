@@ -31,7 +31,7 @@ dependencies:
   - pip:
     - geojsoncontour
     - geocoder_reverse_natural_earth >= 0.0.2
-    - pyaro >= 0.0.10
+    - pyaro >= 0.0.12
     - aerovaldb >= 0.1.1
 ## testing
   - pytest >=7.4
