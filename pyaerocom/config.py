@@ -39,6 +39,58 @@ class Config:
     #: ICP Forests
     # ICPFORESTS_NAME = "ICPFORESTS"
     #
+    # #: Aeronet Sun V3 access names
+    AERONET_SUN_V3L15_AOD_DAILY_NAME = ""
+    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = ""
+    AERONET_SUN_V3L2_AOD_DAILY_NAME = ""
+    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = ""
+    #
+    # #: Aeronet SDA V3 access names
+    AERONET_SUN_V3L15_SDA_DAILY_NAME = ""
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME = ""
+    AERONET_SUN_V3L2_SDA_DAILY_NAME = ""
+    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = ""
+    #
+    # #: Aeronet V3 inversions
+    AERONET_INV_V3L15_DAILY_NAME = ""
+    AERONET_INV_V3L2_DAILY_NAME = ""
+    #
+    #: CAMS2_83 name
+    CAMS2_83_NRT_NAME = ""
+    #
+    # #: EBAS name
+    EBAS_MULTICOLUMN_NAME = ""
+    #
+    # #: EEA nmea
+    EEA_NAME = ""
+    #
+    # #: EEA.NRT name
+    EEA_NRT_NAME = ""
+    #
+    # #: EEAV2 name
+    EEA_V2_NAME = ""
+    #
+    # #: Earlinet access name;
+    EARLINET_NAME = ""
+    #
+    # #: GAW TAD subset aas et al paper
+    GAWTADSUBSETAASETAL_NAME = ""
+    #
+    # #: DMS
+    DMS_AMS_CVO_NAME = ""
+    #
+    # #: CNEMC name (formally MEP)
+    CNEMC_NAME = ""
+    #
+    # #: ICOS name
+    ICOS_NAME = ""
+    #
+    # # TROPOMI access names
+    TROPOMI_XEMEP_R01x01_NAME = ""
+
+    #: ICP Forests
+    # ICPFORESTS_NAME = "ICPFORESTS"
+    #
     # #: Aeronet Sun V2 access names
     # AERONET_SUN_V2L15_AOD_DAILY_NAME = "AeronetSunV2Lev1.5.daily"
     # AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = "AeronetSun_2.0_NRT"
@@ -72,7 +124,7 @@ class Config:
     # AERONET_INV_V3L2_DAILY_NAME = "AeronetInvV3Lev2.daily"
     #
     #: CAMS2_83 name
-    CAMS2_83_NRT_NAME = "CAMS2_83.NRT"
+    # CAMS2_83_NRT_NAME = "CAMS2_83.NRT"
     #
     # #: EBAS name
     # EBAS_MULTICOLUMN_NAME = "EBASMC"
@@ -96,7 +148,7 @@ class Config:
     # DMS_AMS_CVO_NAME = "DMS_AMS_CVO"
     #
     # #: CNEMC name (formally MEP)
-    CNEMC_NAME = "CNEMC"
+    # CNEMC_NAME = "CNEMC"
     #
     # #: ICOS name
     # ICOS_NAME = "ICOS"
