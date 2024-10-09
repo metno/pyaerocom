@@ -549,3 +549,23 @@ def test_ColocatedData_to_dataframe(coldata: ColocatedData):
 def test_ColocatedData_to_dataframe_exception(coldata: ColocatedData):
     with pytest.raises(NotImplementedError):
         coldata.to_dataframe()
+
+
+@pytest.mark.parametrize(
+    "coldataset",
+    (
+        pytest.param(
+            "tm5_aeronet",
+        ),
+        pytest.param(
+            "fake_3d_hr",
+        ),
+        pytest.param(
+            "fake_3d",
+        ),
+    ),
+)
+def test_ColocatedData_from_dataframe(coldata: ColocatedData):
+    df = coldata.to_dataframe()
+
+    ColocatedData.from_dataframe(df)

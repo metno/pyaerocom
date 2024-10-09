@@ -1330,7 +1330,33 @@ class ColocatedData(BaseModel):
 
         return df
 
-    def from_dataframe(self, df):
+    @staticmethod
+    def _validate_dataframe_for_import(df: pd.DataFrame):
+        """Validates a pandas dataframe and checks that it will likely
+        work with ColocatedData.from_dataframe()
+
+        :param df: The pandas dataframe to be validated.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"Expected pandas DataFrame, got {type(df)}")
+
+        if (tmp := df.shape[1]) != 9:
+            raise ValueError(f"Expected DataFrame with 9 columns, got {tmp}")
+
+        if (tmp := len(df["data_source_obs"].unique())) != 1:
+            raise ValueError(f"Expected dataframe with 1 unique data_source_obs, got {tmp}.")
+
+        if (tmp := len(df["data_source_mod"].unique())) != 1:
+            raise ValueError(f"Expected dataframe with 1 unique data_source_mod, got {tmp}.")
+
+        # TODO: Check that required columns exist.
+        if "time" not in set(df.columns):
+            raise ValueError("Missing column '{time}'")
+
+        # ...
+
+    @staticmethod
+    def from_dataframe(df: pd.DataFrame) -> ColocatedData:
         """Create colocated Data object from dataframe
 
         Note
@@ -1338,9 +1364,7 @@ class ColocatedData(BaseModel):
         This is intended to be used as back-conversion from :func:`to_dataframe`
         and methods that use the latter (e.g. :func:`to_csv`).
         """
-        raise NotImplementedError("Coming soon...")
-        data = df.to_xarray()
-        self.data = data
+        ColocatedData._validate_dataframe_for_import(df)
 
     def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file
