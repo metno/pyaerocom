@@ -11,8 +11,9 @@ class BaseCollection(BrowseDict, abc.ABC):
     #: maximum length of entry names
     MAXLEN_KEYS = 25
     #: Invalid chars in entry names
-    FORBIDDEN_CHARS_KEYS = ["_"]
+    FORBIDDEN_CHARS_KEYS = []
 
+    # TODO: Wait a few release cycles after v0.23.0 and see if this can be removed
     def _check_entry_name(self, key):
         if any([x in key for x in self.FORBIDDEN_CHARS_KEYS]):
             raise EvalEntryNameError(
@@ -22,8 +23,6 @@ class BaseCollection(BrowseDict, abc.ABC):
 
     def __setitem__(self, key, value):
         self._check_entry_name(key)
-        if "web_interface_name" in value:
-            self._check_entry_name(value["web_interface_name"])
         super().__setitem__(key, value)
 
     def keylist(self, name_or_pattern: str = None) -> list:
@@ -70,7 +69,7 @@ class BaseCollection(BrowseDict, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def web_iface_names(self) -> list:
+    def web_interface_names(self) -> list:
         """
         List of webinterface names for
         """
@@ -107,7 +106,7 @@ class ObsCollection(BaseCollection):
         """
         try:
             entry = self[key]
-            entry["obs_name"] = self.get_web_iface_name(key)
+            entry.obs_name = self.get_web_interface_name(key)
             return entry
         except (KeyError, AttributeError):
             raise EntryNotAvailable(f"no such entry {key}")
@@ -127,7 +126,7 @@ class ObsCollection(BaseCollection):
             vars.extend(ocfg.get_all_vars())
         return sorted(list(set(vars)))
 
-    def get_web_iface_name(self, key):
+    def get_web_interface_name(self, key):
         """
         Get webinterface name for entry
 
@@ -148,13 +147,10 @@ class ObsCollection(BaseCollection):
             corresponding name
 
         """
-        entry = self[key]
-        if "web_interface_name" not in entry:
-            return key
-        return entry["web_interface_name"]
+        return self[key].web_interface_name if self[key].web_interface_name is not None else key
 
     @property
-    def web_iface_names(self) -> list:
+    def web_interface_names(self) -> list:
         """
         List of web interface names for each obs entry
 
@@ -162,12 +158,12 @@ class ObsCollection(BaseCollection):
         -------
         list
         """
-        return [self.get_web_iface_name(key) for key in self.keylist()]
+        return [self.get_web_interface_name(key) for key in self.keylist()]
 
     @property
     def all_vert_types(self):
         """List of unique vertical types specified in this collection"""
-        return list({x["obs_vert_type"] for x in self.values()})
+        return list({x.obs_vert_type for x in self.values()})
 
 
 class ModelCollection(BaseCollection):
@@ -224,7 +220,7 @@ class ModelCollection(BaseCollection):
             raise EntryNotAvailable(f"no such entry {key}")
 
     @property
-    def web_iface_names(self) -> list:
+    def web_interface_names(self) -> list:
         """
         List of web interface names for each obs entry
 

@@ -296,7 +296,7 @@ class PyaroToUngriddedData:
         return self.reader.variables()
 
     def get_stations(self) -> dict[str, Station]:
-        return self.reader.stations()()
+        return self.reader.stations()
 
     def read(self, vars_to_retrieve=None) -> UngriddedData:
         allowed_vars = self.get_variables()

@@ -320,7 +320,7 @@ class ColocationSetup(BaseModel):
     @classmethod
     def validate_obs_vars(cls, v):
         if isinstance(v, str):
-            return [v]
+            return (v,)
         return v
 
     ts_type: str

@@ -94,7 +94,7 @@ def _print_read_info(i, mod, tot_num, last_t, name, logger):  # pragma: no cover
 
 def get_metadata_from_filename(filename):
     """Try access metadata information from filename"""
-    from pyaerocom.io.fileconventions import FileConventionRead
+    from pyaerocom.io.file_conventions import FileConventionRead
 
     fc = FileConventionRead().from_file(filename)
     return fc.get_info_from_file(filename)

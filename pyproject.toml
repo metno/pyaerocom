@@ -47,7 +47,7 @@ dependencies = [
     'cf-units>=3.1',
     "pydantic>=2.7.1",
     "pyproj>=3.0.0",
-    "pyaro>=0.0.10",
+    "pyaro>=0.0.12",
     "pooch>=1.7.0",
     "psutil>=5.0.0",
 ]
