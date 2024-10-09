@@ -116,11 +116,9 @@ def test_user_specific_paths_ini():
                 outfile.write(line)
         del_flag = True
 
-    # read default paths.ini
-    # compare
     assert os.path.exists(user_file)
-    # no real test here for now since we would need to get rif of the already loaded const module
-    # and recreate that
+    # no real test here for now since we would need to get rid of the already loaded const module
+    # and recreate that The following does not work due to caching
     # cfg = testmod.Config(try_infer_environment=False)
     # assert cfg.GAWTADSUBSETAASETAL == CHANGE_NAME
 
@@ -135,7 +133,6 @@ def test_Config_read_config():
     cfg.read_config(cfg_file)
     # not all paths from the default paths.ini are present on CI
     # Just test a few of them
-    # assert cfg.OBSLOCS_UNGRIDDED
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()
@@ -237,7 +234,7 @@ def test_empty_class_header(empty_cfg):
     with resources.path("pyaerocom.data", "coords.ini") as path:
         assert cfg._coords_info_file == str(path)
 
-    assert cfg.DONOTCACHEFILE is None
+    assert cfg.DO_NOT_CACHE_FILE is None
 
     assert cfg.ERA5_SURFTEMP_FILENAME == "era5.msl.t2m.201001-201012.nc"
 

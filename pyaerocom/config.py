@@ -216,7 +216,7 @@ class Config:
         self._user = getpass.getuser()
         self.my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}", self._outhomename)
 
-        self.DONOTCACHEFILE = None
+        self.DO_NOT_CACHE_FILE = None
 
         self.ERA5_SURFTEMP_FILENAME = "era5.msl.t2m.201001-201012.nc"
 
@@ -234,7 +234,7 @@ class Config:
             basedir, config_file = os.path.split(config_file)
         elif try_infer_environment:
             try:
-                config_file = self.infer_basedir_and_config()
+                config_file = self.infer_config()
             except FileNotFoundError:
                 pass
 
@@ -290,7 +290,7 @@ class Config:
             f"Could not infer environment configuration for input directory: {basedir}"
         )
 
-    def infer_basedir_and_config(self):
+    def infer_config(self):
         """
         check if ~/MyPyaerocom/paths.ini exists.
         if not, use the default paths.ini
@@ -302,6 +302,7 @@ class Config:
         else:
             with resources.path("pyaerocom.data", self.PATHS_INI_NAME) as path:
                 self._paths_ini = str(path)
+                logger.info(f"using default config file: {self._paths_ini}")
 
         return self._paths_ini
 
