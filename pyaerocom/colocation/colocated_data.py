@@ -1315,9 +1315,10 @@ class ColocatedData(BaseModel):
 
         {var_name} is the aerocom variable name of the variable name.
         """
-        # logger.warning("This method is currently not completely finished")
-        obs_df = self.data[0, :, :].to_dataframe()
-        mod_df = self.data[1, :, :].to_dataframe()
+        if self.data.ndim == 4:
+            raise NotImplementedError
+        obs_df = self.data[0, :, :].to_dataframe(name=self.var_name[0]).reset_index()
+        mod_df = self.data[1, :, :].to_dataframe(name=self.var_name[0]).reset_index()
 
         df = pd.merge(
             obs_df,

@@ -498,3 +498,54 @@ def test_ColocatedData_resample_time(coldata: ColocatedData, args: dict, mean):
 
     resampled_mean = resampled.data.mean().data
     assert resampled_mean == pytest.approx(mean, abs=1e-3, nan_ok=True)
+
+
+@pytest.mark.parametrize(
+    "coldataset",
+    (
+        pytest.param(
+            "tm5_aeronet",
+        ),
+        pytest.param(
+            "fake_3d_hr",
+        ),
+        pytest.param(
+            "fake_3d",
+        ),
+    ),
+)
+def test_ColocatedData_to_dataframe(coldata: ColocatedData):
+    df = coldata.to_dataframe()
+
+    exp_columns = set(
+        [
+            "time",
+            "station_name",
+            "data_source_obs",
+            "latitude",
+            "longitude",
+            "altitude",
+            f"{coldata.var_name[0]}_obs",
+            "data_source_mod",
+            f"{coldata.var_name[1]}_mod",
+        ]
+    )
+
+    assert df.shape[1] == 9
+    assert set(df.columns) == exp_columns
+    assert not df["time"].isnull().values.any()
+    assert not df["data_source_obs"].isnull().values.any()
+    assert not df["data_source_mod"].isnull().values.any()
+
+
+@pytest.mark.parametrize(
+    "coldataset",
+    (
+        pytest.param(
+            "fake_4d",
+        ),
+    ),
+)
+def test_ColocatedData_to_dataframe_exception(coldata: ColocatedData):
+    with pytest.raises(NotImplementedError):
+        coldata.to_dataframe()
