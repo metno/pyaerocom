@@ -64,3 +64,12 @@ If you want PyAerocom in your default installation of python, then you install t
 
 This type of installation is no longer allowed on newer OS-installations, i.e. Ubuntu 24.04. Use the
 installation into a new virtual environment instead.
+
+Change the default paths
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+pyaerocom searches in ``~/MyPyaerocom`` for a file named ``paths.ini`` and uses that instead of the default
+one in ``data/`` in the pyaerocom installation directory (or at
+<https://github.com/metno/pyaerocom/blob/main-dev/pyaerocom/data/paths.ini>).
+
+To change paths, just copy the default file to ``~/MyPyaerocom`` and change paths to your needs.

@@ -71,8 +71,7 @@ class Config:
     AERONET_INV_V3L15_DAILY_NAME = "AeronetInvV3Lev1.5.daily"
     AERONET_INV_V3L2_DAILY_NAME = "AeronetInvV3Lev2.daily"
 
-    #: CAMS2_83 name
-
+    # : CAMS2_83 name
     CAMS2_83_NRT_NAME = "CAMS2_83.NRT"
 
     #: EBAS name
@@ -104,6 +103,9 @@ class Config:
 
     # TROPOMI access names
     TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
+
+    # basename of paths.ini
+    PATHS_INI_NAME = "paths.ini"
 
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
@@ -170,47 +172,6 @@ class Config:
     #: accessed
     SERVER_CHECK_TIMEOUT = 1  # s
 
-    _outhomename = "MyPyaerocom"
-
-    with resources.path("pyaerocom.data", "paths.ini") as path:
-        _config_ini_lustre = str(path)
-    with resources.path("pyaerocom.data", "paths_user_server.ini") as path:
-        _config_ini_user_server = str(path)
-    with resources.path("pyaerocom.data", "paths_local_database.ini") as path:
-        _config_ini_localdb = str(path)
-
-    # this dictionary links environment ID's with corresponding ini files
-    _config_files = {
-        "metno": _config_ini_lustre,
-        "users-db": _config_ini_user_server,
-        "local-db": _config_ini_localdb,
-    }
-
-    # this dictionary links environment ID's with corresponding subdirectory
-    # names that are required to exist in order to load this environment
-    _check_subdirs_cfg = {
-        "metno": "aerocom",
-        "users-db": "AMAP",
-        "local-db": "modeldata",
-    }
-
-    with resources.path("pyaerocom.data", "variables.ini") as path:
-        _var_info_file = str(path)
-    with resources.path("pyaerocom.data", "coords.ini") as path:
-        _coords_info_file = str(path)
-
-    # these are searched in preferred order both in root and home
-    _DB_SEARCH_SUBDIRS = {}
-    _DB_SEARCH_SUBDIRS["lustre/storeB/project"] = "metno"
-    _DB_SEARCH_SUBDIRS["metno/aerocom_users_database"] = "users-db"
-    _DB_SEARCH_SUBDIRS["MyPyaerocom/data"] = "local-db"
-
-    DONOTCACHEFILE = None
-
-    ERA5_SURFTEMP_FILENAME = "era5.msl.t2m.201001-201012.nc"
-
-    _LUSTRE_CHECK_PATH = "/project/aerocom/aerocom1/"
-
     def __init__(self, config_file=None, try_infer_environment=True):
         # Directories
         self._outputdir = None
@@ -243,6 +204,24 @@ class Config:
         self.last_config_file = None
         self._ebas_flag_info = None
 
+        self._outhomename = "MyPyaerocom"
+
+        with resources.path("pyaerocom.data", "paths.ini") as path:
+            self._config_ini_lustre = str(path)
+        with resources.path("pyaerocom.data", "variables.ini") as path:
+            self._var_info_file = str(path)
+        with resources.path("pyaerocom.data", "coords.ini") as path:
+            self._coords_info_file = str(path)
+
+        self._user = getpass.getuser()
+        self.my_pyaerocom_dir = os.path.join(f"{os.path.expanduser('~')}", self._outhomename)
+
+        self.DO_NOT_CACHE_FILE = None
+
+        self.ERA5_SURFTEMP_FILENAME = "era5.msl.t2m.201001-201012.nc"
+
+        self._LUSTRE_CHECK_PATH = "/"
+
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
 
@@ -255,13 +234,15 @@ class Config:
             basedir, config_file = os.path.split(config_file)
         elif try_infer_environment:
             try:
-                basedir, config_file = self.infer_basedir_and_config()
+                config_file = self.infer_config()
             except FileNotFoundError:
                 pass
 
         if config_file is not None:
             try:
-                self.read_config(config_file, basedir=basedir)
+                self.read_config(
+                    config_file,
+                )
             except Exception as e:
                 logger.warning(f"Failed to read config. Error: {repr(e)}")
         # create MyPyaerocom directory
@@ -309,16 +290,21 @@ class Config:
             f"Could not infer environment configuration for input directory: {basedir}"
         )
 
-    def infer_basedir_and_config(self):
-        """Boolean specifying whether the lustre database can be accessed"""
-        for sub_envdir, cfg_id in self._DB_SEARCH_SUBDIRS.items():
-            for sdir in self._basedirs_search_db():
-                basedir = os.path.join(sdir, sub_envdir)
-                if self._check_access(basedir):
-                    _chk_dir = os.path.join(basedir, self._check_subdirs_cfg[cfg_id])
-                    if self._check_access(_chk_dir):
-                        return (basedir, self._config_files[cfg_id])
-        raise FileNotFoundError("Could not establish access to any registered database")
+    def infer_config(self):
+        """
+        check if ~/MyPyaerocom/paths.ini exists.
+        if not, use the default paths.ini
+        """
+
+        self._paths_ini = os.path.join(self.my_pyaerocom_dir, self.PATHS_INI_NAME)
+        if os.path.exists(self._paths_ini):
+            logger.info(f"using user specific config file: {self._paths_ini}")
+        else:
+            with resources.path("pyaerocom.data", self.PATHS_INI_NAME) as path:
+                self._paths_ini = str(path)
+                logger.info(f"using default config file: {self._paths_ini}")
+
+        return self._paths_ini
 
     def register_custom_variables(
         self, vars: dict[str, Variable] | dict[str, dict[str, str]]
@@ -807,6 +793,7 @@ class Config:
             self._search_dirs = []
 
         cr = ConfigParser()
+        cr.optionxform = str
         cr.read(config_file)
         # init base directories for Model data
         if cr.has_section("modelfolders"):
@@ -853,6 +840,8 @@ class Config:
             _dir = mcfg["BASEDIR"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
+            elif "${USER}" in _dir:
+                _dir = _dir.replace("${USER}", self._user)
             if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
@@ -889,6 +878,8 @@ class Config:
             _dir = cfg["BASEDIR"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
+            if "${USER}" in _dir:
+                _dir = _dir.replace("${USER}", self._user)
             if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
