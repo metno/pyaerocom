@@ -1299,17 +1299,64 @@ class ColocatedData(BaseModel):
     def to_dataframe(self):
         """Convert this object into pandas.DataFrame
 
-        Note
-        ----
-        This does not include meta information
-        """
-        logger.warning("This method is currently not completely finished")
-        model_vals = self.data.values[1].flatten()
-        obs_vals = self.data.values[0].flatten()
-        mask = ~np.isnan(obs_vals)
-        return pd.DataFrame({"ref": obs_vals[mask], "data": model_vals[mask]})
+        The resulting DataFrame will have the following columns:
+        station: The name of the station for a given value.
 
-    def from_dataframe(self, df):
+        The following columns will be available in the resulting dataframe:
+        - time: Time.
+        - station_name: Station name.
+        - data_source_obs: Data source obs (eg. EBASMC).
+        - data_source_mod: Data source model (eg. EMEP).
+        - latitude.
+        - longitude.
+        - altitude.
+        - {var_name}_obs: Variable value of observation.
+        - {var_name}_mod: Variable value of model.
+
+        {var_name} is the aerocom variable name of the variable name.
+        """
+        if self.data.ndim == 4:
+            raise NotImplementedError
+        obs_df = self.data[0, :, :].to_dataframe(name=self.var_name[0]).reset_index()
+        mod_df = self.data[1, :, :].to_dataframe(name=self.var_name[0]).reset_index()
+
+        df = pd.merge(
+            obs_df,
+            mod_df,
+            how="outer",
+            on=("time", "station_name", "latitude", "longitude", "altitude"),
+            suffixes=("_obs", "_mod"),
+        )
+
+        return df
+
+    @staticmethod
+    def _validate_dataframe_for_import(df: pd.DataFrame):
+        """Validates a pandas dataframe and checks that it will likely
+        work with ColocatedData.from_dataframe()
+
+        :param df: The pandas dataframe to be validated.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"Expected pandas DataFrame, got {type(df)}")
+
+        if (tmp := df.shape[1]) != 9:
+            raise ValueError(f"Expected DataFrame with 9 columns, got {tmp}")
+
+        if (tmp := len(df["data_source_obs"].unique())) != 1:
+            raise ValueError(f"Expected dataframe with 1 unique data_source_obs, got {tmp}.")
+
+        if (tmp := len(df["data_source_mod"].unique())) != 1:
+            raise ValueError(f"Expected dataframe with 1 unique data_source_mod, got {tmp}.")
+
+        # TODO: Check that required columns exist.
+        if "time" not in set(df.columns):
+            raise ValueError("Missing column '{time}'")
+
+        # ...
+
+    @staticmethod
+    def from_dataframe(df: pd.DataFrame) -> ColocatedData:
         """Create colocated Data object from dataframe
 
         Note
@@ -1317,9 +1364,7 @@ class ColocatedData(BaseModel):
         This is intended to be used as back-conversion from :func:`to_dataframe`
         and methods that use the latter (e.g. :func:`to_csv`).
         """
-        raise NotImplementedError("Coming soon...")
-        data = df.to_xarray()
-        self.data = data
+        ColocatedData._validate_dataframe_for_import(df)
 
     def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file
