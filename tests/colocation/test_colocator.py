@@ -211,7 +211,7 @@ def test_Colocator_run_gridded_gridded(setup):
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
                 model_use_climatology=True,
-                obs_use_climatology=True,  # ClimatologyConfig(start=0, stop=9999),
+                obs_use_climatology=True,
             ),
             "abs550aer",
             "od550aer",
@@ -230,7 +230,7 @@ def test_Colocator_run_gridded_gridded(setup):
         (
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
-                obs_use_climatology=ClimatologyConfig(start=0, stop=9999),
+                obs_use_climatology=True,
             ),
             "abs550aer",
             "od550aer",

@@ -1048,7 +1048,10 @@ class StationData(StationMetaData):
         if ts_type < TsType(
             clim_freq
         ):  # current resolution is lower than input climatological freq
-            supported = list(const.CLIM_MIN_COUNT)
+            if clim_mincount is None:
+                supported = list(const.CLIM_MIN_COUNT)
+            else:
+                supported = list(clim_mincount)
             if str(ts_type) in supported:
                 clim_freq = str(ts_type)
             else:  # use monthly

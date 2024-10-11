@@ -451,13 +451,11 @@ def _colocate_site_data_helper(
     )[var]
 
     if isinstance(use_climatology_ref, ClimatologyConfig):
-        # clim_min_obs = use_climatology_ref.get("min_num_obs", None)
-        # if clim_min_obs is None:
-        #     use_climatology_ref["min_num_obs"] = min_num_obs
         obs_ts = stat_data_ref.calc_climatology(
             var_ref,
             start=use_climatology_ref.start,
             stop=use_climatology_ref.stop,
+            min_num_obs=min_num_obs,
             clim_mincount=use_climatology_ref.mincount,
             resample_how=use_climatology_ref.resample_how,
             clim_freq=use_climatology_ref.freq,
