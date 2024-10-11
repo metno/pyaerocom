@@ -1,8 +1,6 @@
-from pydantic import (
-    BaseModel,
-    ValidationError,
-    field_validator,
-)
+from pydantic import BaseModel, ValidationError, field_validator
+
+from typing import Literal
 
 from pyaerocom import const
 
@@ -30,14 +28,19 @@ class ClimatologyConfig(BaseModel):
     start: int = const.CLIM_START
     stop: int = const.CLIM_STOP
 
-    resample_how: str = const.CLIM_RESAMPLE_HOW
+    set_year: int | None = None
+
+    @field_validator("set_year")
+    @classmethod
+    def validate_set_year(cls, v):
+        if v is None:
+            return int((cls.stop - cls.start) // 2 + cls.start) + 1
+
+        if v > cls.stop or v < cls.start:
+            raise ValidationError
+
+        return v
+
+    resample_how: Literal["mean", "median"] = const.CLIM_RESAMPLE_HOW
     freq: str = const.CLIM_FREQ
     mincount: dict = const.CLIM_MIN_COUNT
-
-    @field_validator("resample_how")
-    @classmethod
-    def validate_resample_how(cls, v):
-        if v in ["mean", "median"]:
-            return v
-
-        raise ValidationError

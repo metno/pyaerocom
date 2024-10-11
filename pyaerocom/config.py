@@ -143,7 +143,7 @@ class Config:
 
     CLIM_START = 2005
     CLIM_STOP = 2015
-    CLIM_FREQ = "monthly"
+    CLIM_FREQ = "daily"
     CLIM_RESAMPLE_HOW = "mean"  # median, ...
     # as a function of climatological frequency
     CLIM_MIN_COUNT = dict(

@@ -461,6 +461,7 @@ def _colocate_site_data_helper(
             clim_mincount=use_climatology_ref.mincount,
             resample_how=use_climatology_ref.resample_how,
             clim_freq=use_climatology_ref.freq,
+            set_year=use_climatology_ref.set_year,
         )[var_ref]
     else:
         obs_ts = stat_data_ref.resample_time(
