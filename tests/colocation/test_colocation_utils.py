@@ -184,7 +184,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         (
             dict(
                 filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
-                use_climatology_ref=ClimatologyConfig(freq="monthly"),
+                use_climatology_ref=ClimatologyConfig(),
                 min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
             "monthly",

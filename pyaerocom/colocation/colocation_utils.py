@@ -769,7 +769,7 @@ def colocate_gridded_ungridded(
         ts_type_data = ts_type
 
     if isinstance(use_climatology_ref, ClimatologyConfig):  # pragma: no cover
-        col_freq = use_climatology_ref.freq
+        col_freq = "monthly"  # use_climatology_ref.freq
         obs_start = use_climatology_ref.start
         obs_stop = use_climatology_ref.stop
     else:
