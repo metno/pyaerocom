@@ -13,7 +13,6 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.units_helpers import UALIASES
-
 from .additional_variables import (
     add_dataarrays,
     calc_concNhno3,
@@ -36,6 +35,7 @@ from .additional_variables import (
     identity,
     subtract_dataarrays,
     update_EC_units,
+    calc_ratpm10pm25,
 )
 from .model_variables import emep_variables
 
@@ -101,6 +101,7 @@ class ReadMscwCtm(GriddedReader):
         "concNno2": ["concno2"],
         "concSso2": ["concso2"],
         "vmro3": ["conco3"],
+        "ratpm10pm25": ["concpm10", "concpm25"],
         # For Pollen
         # "concpolyol": ["concspores"],
     }
@@ -145,6 +146,7 @@ class ReadMscwCtm(GriddedReader):
         "concNno2": calc_concNno2,
         "concSso2": calc_concSso2,
         "vmro3": calc_vmro3,
+        "ratpm10pm25": calc_ratpm10pm25,
         # "concpolyol": calc_concpolyol,
     }
 
@@ -702,7 +704,7 @@ class ReadMscwCtm(GriddedReader):
             proj_info=proj_info,
         )
 
-        #!obsolete
+        # !obsolete
         # if var.is_deposition:
         #    implicit_to_explicit_rates(gridded, ts_type)
 
