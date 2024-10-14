@@ -382,3 +382,25 @@ def calc_concpolyol(concspores):
     concpolyol = concspores.copy(deep=True) * factor
     concpolyol.attrs["units"] = "ug m-3"
     return concpolyol
+
+
+def calc_ratpm10pm25(concpm10: xr.DataArray, concpm25: xr.DataArray) -> xr.DataArray:
+    """
+    Calculate ratio of pm10 and pm25
+
+        Parameters
+    ----------
+    concpm10 : xr.DataArray
+        mass concentration pm10
+    concpm25 : xr.DataArray
+        mass concentration of pm25
+
+    Returns
+    -------
+    xr.DataArray
+        ratio of concpm10 / concpm25 in units of 1
+
+    """
+    ratpm10pm25 = concpm10 / concpm25
+    ratpm10pm25.attrs["units"] = "1"
+    return ratpm10pm25
