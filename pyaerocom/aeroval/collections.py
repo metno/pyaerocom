@@ -214,7 +214,7 @@ class ModelCollection(BaseCollection):
         """
         try:
             entry = self[key]
-            entry["model_name"] = key
+            entry.model_name = key
             return entry
         except (KeyError, AttributeError):
             raise EntryNotAvailable(f"no such entry {key}")

@@ -784,9 +784,8 @@ class ExperimentOutput(ProjectOutput):
                 if mod_name not in new[var]["obs"][obs_name][vert_code]:
                     new[var]["obs"][obs_name][vert_code][mod_name] = {}
 
-                model_id = mcfg["model_id"]
                 new[var]["obs"][obs_name][vert_code][mod_name] = {
-                    "model_id": model_id,
+                    "model_id": mcfg.model_id,
                     "model_var": mod_var,
                     "obs_var": obs_var,
                 }
