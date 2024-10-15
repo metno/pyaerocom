@@ -22,7 +22,11 @@ from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
+from pyaerocom.exceptions import (
+    ColocationError,
+    ColocationSetupError,
+    DataCoverageError,
+)
 from pyaerocom.helpers import (
     get_lowest_resolution,
     start_stop,
@@ -373,7 +377,7 @@ class Colocator:
             calc_mda8 = True
 
         data_out = defaultdict(lambda: dict())
-        # ToDo: see if the following could be solved via custom context manager
+        # TODO: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_list)
         except Exception as ex:
@@ -401,7 +405,11 @@ class Colocator:
                         logger.debug(e)
                     else:
                         self._save_coldata(mda8)
-                        logger.info("Successfully calculated mda8 for [%s, %s].", obs_var, mod_var)
+                        logger.info(
+                            "Successfully calculated mda8 for [%s, %s].",
+                            obs_var,
+                            mod_var,
+                        )
                         data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
                 self._processing_status.append([mod_var, obs_var, 1])

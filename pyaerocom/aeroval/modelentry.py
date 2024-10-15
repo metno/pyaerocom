@@ -1,7 +1,7 @@
 import inspect
 from copy import deepcopy
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from pyaerocom._lowlevel_helpers import (
     BrowseDict,
@@ -184,19 +184,22 @@ class ModelEntry(BaseModel):
         and returns var)
     """
 
-    # ##   Pydantic ConfigDict
-    # model_config = ConfigDict(
-    #     arbitrary_types_allowed=True,
-    #     extra="allow",
-    #     validate_assignment=True,
-    # )
+    ##   Pydantic ConfigDict
+    model_config = ConfigDict(
+        # arbitrary_types_allowed=True,
+        # extra="allow",
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
     model_id: str
+    model_ts_type_read: str | dict = ""  # TODO: see if can make None
     model_name: str | None = None
-    model_use_vars: dict | None = None
-    model_add_vars: dict[str, tuple[str, ...]] | None = None
-    model_read_aux: dict | None = None
-    model_rename_vars: dict | None = None
+    model_use_vars: dict = {}
+    model_add_vars: dict[str, tuple[str, ...]] = {}
+    model_read_aux: dict = {}
+    model_rename_vars: dict = {}
+    flex_ts_type: bool = False
 
     @property
     def aux_funs_required(self):
@@ -206,8 +209,7 @@ class ModelEntry(BaseModel):
         return True if bool(self.model_read_aux) else False
 
     def json_repr(self) -> dict:
-        raise NotImplementedError
-        # return self.model_dump()
+        return self.model_dump()
 
     def get_vars_to_process(self, obs_vars: tuple) -> tuple:
         """
