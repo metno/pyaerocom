@@ -2,8 +2,6 @@ import logging
 import os
 from pathlib import Path
 
-from pydantic import BaseModel
-
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.griddeddata import GriddedData
@@ -204,10 +202,3 @@ def delete_dummy_model(model_id: str) -> None:
     for path in renamed.glob("*.nc"):
         print(f"Deleting dummy model {path}")
         path.unlink()
-
-
-class BoundingBox(BaseModel):
-    west: float
-    east: float
-    south: float
-    north: float

@@ -4,6 +4,8 @@ import fnmatch
 from collections import defaultdict
 from collections.abc import Mapping
 from pathlib import Path
+from pydantic import BaseModel
+
 
 import pandas as pd
 
@@ -175,3 +177,10 @@ def recursive_defaultdict(d: Mapping | None = None):
             d[k] = recursive_defaultdict(d[k])
 
     return d
+
+
+class BoundingBox(BaseModel):
+    west: float
+    east: float
+    south: float
+    north: float

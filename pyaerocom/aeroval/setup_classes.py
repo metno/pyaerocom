@@ -36,8 +36,8 @@ from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
-    BoundingBox,
 )
+from pyaerocom.utils import BoundingBox
 from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
 from pyaerocom.colocation.colocation_setup import ColocationSetup

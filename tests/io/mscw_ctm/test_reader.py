@@ -165,6 +165,21 @@ def test_ReadMscwCtm_data(data_dir: str):
     assert data.ts_type == "daily"
 
 
+def test_readMscwCtm_data_bounding_box(data_dir: str):
+    reader = ReadMscwCtm(data_dir=data_dir)
+
+    n = 35.2
+    s = 35.1
+    w = -28.9
+    e = -28.8
+    data = reader.read_var("vmro3", ts_type="daily", west=w, east=e, north=n, south=s)
+
+    assert data.latitude._values.max() <= n
+    assert data.latitude._values.min() >= s
+    assert data.longitude._values.max() <= e
+    assert data.longitude._values.min() >= w
+
+
 def test_ReadMscwCtm_directory(data_dir: str):
     reader = ReadMscwCtm(data_dir=data_dir)
     assert reader._data_dir == data_dir
@@ -186,12 +201,12 @@ def test_ReadMscwCtm_directory(data_dir: str):
     ],
 )
 def test_ReadMscwCtm_ts_type_from_filename(reader, filename, ts_type):
-    assert reader._ts_type_from_filename(filename) == ts_type
+    assert reader._timeseries_type_from_filename(filename) == ts_type
 
 
 def test_ReadMscwCtm_ts_type_from_filename_error(reader):
     with pytest.raises(ValueError) as e:
-        reader._ts_type_from_filename("blaaa")
+        reader._timeseries_type_from_filename("blaaa")
     assert str(e.value) == "Failed to retrieve ts_type from filename blaaa"
 
 
@@ -205,12 +220,12 @@ def test_ReadMscwCtm_ts_type_from_filename_error(reader):
     ],
 )
 def test_ReadMscwCtm_filename_from_ts_type(reader, filename, ts_type):
-    assert reader._filename_from_ts_type(ts_type) == filename
+    assert reader._filename_from_timeseries_type(ts_type) == filename
 
 
 def test_ReadMscwCtm_filename_from_ts_type_error(reader):
     with pytest.raises(ValueError) as e:
-        reader._filename_from_ts_type("blaaa")
+        reader._filename_from_timeseries_type("blaaa")
     assert str(e.value) == "unknown ts_type=blaaa"
 
 
@@ -426,12 +441,12 @@ def test_read_emep_wrong_filenames(data_path: Path, freq: str, wrong_name: str):
     reader = ReadMscwCtm(data_dir=str(data_path))
     tst = reader.FREQ_CODES[freq]
     filepaths = reader._filepaths
-    years = reader._get_yrs_from_filepaths()
+    years = reader._get_years_from_filepaths()
     cleaned_paths = reader._clean_filepaths(filepaths, years, tst)
 
     wrong_path = Path(filepaths[0]).with_name(wrong_name)
     filepaths[0] = str(wrong_path)
-    new_years = reader._get_yrs_from_filepaths()
+    new_years = reader._get_years_from_filepaths()
     new_cleaned_paths = reader._clean_filepaths(filepaths, new_years, tst)
 
     assert len(years) == len(new_years)
@@ -451,7 +466,7 @@ def test_read_emep_wrong_tst(data_path: Path, wrong_tst: str):
     with pytest.raises(ValueError) as e:
         filepaths = reader._filepaths
         wrong_path = Path(filepaths[0]).with_name(f"Base_{wrong_tst}.nc")
-        reader._get_tst_from_file(str(wrong_path))
+        reader._get_timeseries_type_from_file(str(wrong_path))
 
     assert str(e.value) == f"The file {wrong_path} is not supported"
 
@@ -462,7 +477,7 @@ def test_read_emep_LF_tst(tmp_path: Path):
     with pytest.raises(ValueError) as e:
         filepaths = reader._filepaths
         wrong_path = Path(filepaths[0]).with_name("Base_LF_month.nc")
-        reader._get_tst_from_file(str(wrong_path))
+        reader._get_timeseries_type_from_file(str(wrong_path))
 
     assert str(e.value) == f"The file {wrong_path} is not supported"
 
@@ -473,7 +488,7 @@ def test_read_emep_year_defined_twice(tmp_path: Path):
     filepaths = reader._filepaths
     wrong_path = Path(filepaths[0]).with_name("Base_day.nc")
     filepaths.append(str(wrong_path))
-    new_yrs = reader._get_yrs_from_filepaths()
+    new_yrs = reader._get_years_from_filepaths()
     with pytest.raises(ValueError) as e:
         reader._clean_filepaths(filepaths, new_yrs, "daily")
     assert "is already found:" in str(e.value)

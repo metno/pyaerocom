@@ -8,6 +8,7 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
 from pyaerocom.variable_helpers import get_variable
 
+
 logger = logging.getLogger(__name__)
 
 

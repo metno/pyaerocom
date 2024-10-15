@@ -9,6 +9,7 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom import const
+from pyaerocom.utils import BoundingBox
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
@@ -272,7 +273,7 @@ class ReadMscwCtm(GriddedReader):
         with xr.open_dataset(filename) as nc:
             return np.mean(nc["time"][:]).data.astype("datetime64[Y]").astype(int) + 1970  # type: ignore
 
-    def _get_yrs_from_filepaths(self) -> list[str]:
+    def _get_years_from_filepaths(self) -> list[str]:
         """Get available years of data from the filepaths. The year of the first
         Base_*.nc dataset in the filepath is read from the time-variable of the nc-file.
 
@@ -289,7 +290,7 @@ class ReadMscwCtm(GriddedReader):
 
         return sorted(list(set(yrs)))
 
-    def _get_tst_from_file(self, file: str):
+    def _get_timeseries_type_from_file(self, file: str):
         _, fname = os.path.split(file)
 
         for freq, tst in self.FREQ_CODES.items():
@@ -306,7 +307,7 @@ class ReadMscwCtm(GriddedReader):
         for path in filepaths:
             file = os.path.split(path)[1]
 
-            if self._get_tst_from_file(file) != ts_type:
+            if self._get_timeseries_type_from_file(file) != ts_type:
                 logger.debug(f"ignoring file {path}: not of type {ts_type}")
                 continue
 
@@ -452,7 +453,7 @@ class ReadMscwCtm(GriddedReader):
             current ts_type.
 
         """
-        return self._ts_type_from_filename(self._filename)
+        return self._timeseries_type_from_filename(self._filename)
 
     @property
     def ts_types(self):
@@ -474,7 +475,7 @@ class ReadMscwCtm(GriddedReader):
             raise AttributeError("please set data_dir first")
         tsts = []
         for file in self._private.files:
-            tsts.append(self._ts_type_from_filename(file))
+            tsts.append(self._timeseries_type_from_filename(file))
         return list(set(tsts))
 
     @property
@@ -482,7 +483,7 @@ class ReadMscwCtm(GriddedReader):
         """
         Years available in loaded dataset
         """
-        years = self._get_yrs_from_filepaths()
+        years = self._get_years_from_filepaths()
 
         years = list(np.unique(years))
         return sorted(years)
@@ -505,9 +506,9 @@ class ReadMscwCtm(GriddedReader):
         fps = self._filepaths
         ds = {}
 
-        yrs = self._get_yrs_from_filepaths()
+        yrs = self._get_years_from_filepaths()
 
-        ts_type = self._ts_type_from_filename(self._filename)
+        ts_type = self._timeseries_type_from_filename(self._filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
         if len(fps) > 1 and ts_type == "hourly":
             raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
@@ -539,7 +540,7 @@ class ReadMscwCtm(GriddedReader):
         avail = self.vars_provided
         return var_name in avail or const.VARS[var_name].var_name_aerocom in avail
 
-    def _ts_type_from_filename(self, filename: str) -> str:
+    def _timeseries_type_from_filename(self, filename: str) -> str:
         """
         Get ts_type from filename
 
@@ -562,7 +563,7 @@ class ReadMscwCtm(GriddedReader):
                 return tstype
         raise ValueError(f"Failed to retrieve ts_type from filename {filename}")
 
-    def _filename_from_ts_type(self, ts_type: str) -> str:
+    def _filename_from_timeseries_type(self, ts_type: str) -> str:
         """
         Infer file name of data based on input ts_type
 
@@ -588,7 +589,9 @@ class ReadMscwCtm(GriddedReader):
         freq = self.REVERSE_FREQ_CODES[ts_type]
         return self.FILE_FREQ_TEMPLATE.format(freq=freq)
 
-    def _compute_var(self, var_name_aerocom: str, ts_type: str):
+    def _compute_var(
+        self, var_name_aerocom: str, ts_type: str, bounding_box: BoundingBox | None = None
+    ) -> tuple[xr.DataArray, ProjectionInformation | None]:
         """Compute auxiliary variable
 
         Like :func:`read_var` but for auxiliary variables
@@ -619,7 +622,9 @@ class ReadMscwCtm(GriddedReader):
 
         return aux_func(*temp_arrs), proj_info
 
-    def _load_var(self, var_name_aerocom: str, ts_type: str):
+    def _load_var(
+        self, var_name_aerocom: str, ts_type: str, bounding_box: BoundingBox | None = None
+    ):
         """
         Load variable data as :class:`xarray.DataArray`.
 
@@ -647,9 +652,9 @@ class ReadMscwCtm(GriddedReader):
 
         """
         if var_name_aerocom in self.var_map:  # can be read
-            return self._read_var_from_file(var_name_aerocom, ts_type)
+            return self._read_var_from_file(var_name_aerocom, ts_type, bounding_box)
         elif var_name_aerocom in self.AUX_REQUIRES:
-            return self._compute_var(var_name_aerocom, ts_type)
+            return self._compute_var(var_name_aerocom, ts_type, bounding_box)
         raise VarNotAvailableError(
             f"Variable {var_name_aerocom} is not supported"
         )  # pragma: no cover
@@ -674,6 +679,14 @@ class ReadMscwCtm(GriddedReader):
         var = const.VARS[var_name]
         var_name_aerocom = var.var_name_aerocom
 
+        if (bounding_box := kwargs.pop("bounding_box", None)) is None:
+            west = kwargs.pop("west", None)
+            east = kwargs.pop("east", None)
+            south = kwargs.pop("south", None)
+            north = kwargs.pop("north", None)
+            if all([x is not None for x in [west, east, south, north]]):
+                bounding_box = BoundingBox(west=west, east=east, north=north, south=south)
+
         if self._data_dir is None:  # pragma: no cover
             raise ValueError("data_dir must be set before reading.")
         elif self._filename is None and ts_type is None:  # pragma: no cover
@@ -681,9 +694,9 @@ class ReadMscwCtm(GriddedReader):
         elif ts_type is not None:
             # filename and ts_type are set. update filename if ts_type suggests
             # that current file has different resolution
-            self._filename = self._filename_from_ts_type(ts_type)
+            self._filename = self._filename_from_timeseries_type(ts_type)
 
-        arr, proj_info = self._load_var(var_name_aerocom, self._ts_type)
+        arr, proj_info = self._load_var(var_name_aerocom, self._ts_type, bounding_box=bounding_box)
         if arr.units in UALIASES:
             arr.attrs["units"] = UALIASES[arr.units]
         try:
@@ -717,7 +730,9 @@ class ReadMscwCtm(GriddedReader):
                 del gridded.metadata[metadata]
         return gridded
 
-    def _read_var_from_file(self, var_name_aerocom: str, ts_type: str):
+    def _read_var_from_file(
+        self, var_name_aerocom: str, ts_type: str, bounding_box: BoundingBox | None = None
+    ):
         """
         Read variable data from file as :class:`xarray.DataArray`.
 
@@ -748,6 +763,11 @@ class ReadMscwCtm(GriddedReader):
         try:
             filedata = self._filedata
             data = filedata[emep_var]
+            if bounding_box is not None:
+                data = data.sel(
+                    lat=slice(bounding_box.south, bounding_box.north),
+                    lon=slice(bounding_box.west, bounding_box.east),
+                )
             proj_info = ProjectionInformation.from_xarray(filedata, emep_var)
         except KeyError:
             raise VarNotAvailableError(
