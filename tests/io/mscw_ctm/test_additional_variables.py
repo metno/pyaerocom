@@ -6,6 +6,8 @@ from pyaerocom.io.mscw_ctm.additional_variables import (
     calc_concNno3pm25,
     calc_concNtnh,
     calc_conNtno3,
+    calc_ratpm10pm25,
+    calc_ratpm25pm10,
     update_EC_units,
 )
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
@@ -78,6 +80,22 @@ def test_calc_concNtnh():
     concNtnh = concNnh3 + concNnh4
     concNtnh.attrs["units"] = "ug N m-3"
     assert (concNtnh == concNtnh_from_func).all()
+
+
+def test_calc_concpm10pm25():
+    concpm10 = create_fake_MSCWCtm_data()
+    concpm25 = create_fake_MSCWCtm_data()
+
+    ratpm10pm25_from_func = calc_ratpm10pm25(concpm10, concpm25)
+    assert ratpm10pm25_from_func.attrs["units"] == "1"
+
+
+def test_calc_concpm25pm10():
+    concpm10 = create_fake_MSCWCtm_data()
+    concpm25 = create_fake_MSCWCtm_data()
+
+    ratpm10pm25_from_func = calc_ratpm25pm10(concpm25, concpm10)
+    assert ratpm10pm25_from_func.attrs["units"] == "1"
 
 
 def test_calc_concNnh3():
