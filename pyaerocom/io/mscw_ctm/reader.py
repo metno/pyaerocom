@@ -6,13 +6,13 @@ import warnings
 
 import numpy as np
 import xarray as xr
-
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.units_helpers import UALIASES
+
 from .additional_variables import (
     add_dataarrays,
     calc_concNhno3,
@@ -36,6 +36,7 @@ from .additional_variables import (
     subtract_dataarrays,
     update_EC_units,
     calc_ratpm10pm25,
+    calc_ratpm25pm10,
 )
 from .model_variables import emep_variables
 
@@ -102,6 +103,7 @@ class ReadMscwCtm(GriddedReader):
         "concSso2": ["concso2"],
         "vmro3": ["conco3"],
         "ratpm10pm25": ["concpm10", "concpm25"],
+        "ratpm25pm10": ["concpm25", "concpm10"],
         # For Pollen
         # "concpolyol": ["concspores"],
     }
@@ -147,6 +149,7 @@ class ReadMscwCtm(GriddedReader):
         "concSso2": calc_concSso2,
         "vmro3": calc_vmro3,
         "ratpm10pm25": calc_ratpm10pm25,
+        "ratpm25pm10": calc_ratpm25pm10,
         # "concpolyol": calc_concpolyol,
     }
 

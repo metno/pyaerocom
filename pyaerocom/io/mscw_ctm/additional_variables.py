@@ -404,3 +404,25 @@ def calc_ratpm10pm25(concpm10: xr.DataArray, concpm25: xr.DataArray) -> xr.DataA
     ratpm10pm25 = concpm10 / concpm25
     ratpm10pm25.attrs["units"] = "1"
     return ratpm10pm25
+
+
+def calc_ratpm25pm10(concpm25: xr.DataArray, concpm10: xr.DataArray) -> xr.DataArray:
+    """
+    Calculate ratio of pm10 and pm25
+
+        Parameters
+    ----------
+    concpm10 : xr.DataArray
+        mass concentration pm10
+    concpm25 : xr.DataArray
+        mass concentration of pm25
+
+    Returns
+    -------
+    xr.DataArray
+        ratio of concpm25 / concpm10 in units of 1
+
+    """
+    ratpm25pm10 = concpm25 / concpm10
+    ratpm25pm10.attrs["units"] = "1"
+    return ratpm25pm10
