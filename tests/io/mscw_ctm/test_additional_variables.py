@@ -94,8 +94,8 @@ def test_calc_concpm25pm10():
     concpm10 = create_fake_MSCWCtm_data()
     concpm25 = create_fake_MSCWCtm_data()
 
-    ratpm10pm25_from_func = calc_ratpm25pm10(concpm25, concpm10)
-    assert ratpm10pm25_from_func.attrs["units"] == "1"
+    ratpm25pm10_from_func = calc_ratpm25pm10(concpm25, concpm10)
+    assert ratpm25pm10_from_func.attrs["units"] == "1"
 
 
 def test_calc_concNnh3():
