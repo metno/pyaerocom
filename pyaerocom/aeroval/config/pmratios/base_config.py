@@ -34,7 +34,6 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     :returns: a dict of a model configuration usable for EvalSetup
     """
     # get current path for reference to local gridded_io_aux.py
-    base_conf_path = os.path.dirname(__file__)
 
     CFG = dict(
         json_basedir=os.path.abspath("/home/jang/data/aeroval-local-web/data"),
@@ -133,15 +132,6 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             # model_read_aux={},
             model_ts_type_read="daily",
         ),
-        # "EMEP": dict(
-        #     model_id="EMEP.ratpm25pm10.testing",
-        #     # model_read_aux={
-        #
-        #     #     "ratpm10pm25": dict(
-        #     #         vars_required=["sconcpm10", "sconcpm25"], fun="calc_ratpm10pm25"
-        #     #     )
-        #     # },
-        # ),
     }
 
     """
@@ -158,96 +148,6 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "data_level": [None, 2],
         "set_flags_nan": True,
     }
-
-    AERONET_FILTER = {
-        **BASE_FILTER,  # Forandring fra Daniel
-        "altitude": [-20, 1000],
-    }
-
-    # Station filters
-
-    ebas_species = [
-        "concpm10",
-        "concpm25",
-        "ratpm10pm25",
-        "ratpm25pm10",
-    ]
-
-    # no new sites with 2021 observations (comment Svetlana T.)
-    height_ignore_ebas = [
-        "AT0034G",
-        "AT0038R",
-        "AT0049R",
-        "BG0001R",
-        "CH0001G",
-        "CH0018R",
-        "CH0024R",
-        "CH0031R",
-        "CH0033R",
-        "DE0054R",
-        "DE0057G",
-        "DE0075R",
-        "ES0005R",
-        "ES0022R",
-        "FR0019R",
-        "FR0030R",
-        "FR0031R",
-        "FR0038U",
-        "FR0039U",
-        "FR0100G",
-        "GR0003R",
-        "GR0101R",
-        "HR0002R",
-        "HR0004R",
-        "IT0002R",
-        "IT0009R",
-        "IT0019R",
-        "IT0020U",
-        "IT0021U",
-        "IT0024R",
-        "KG0001R",
-        "KG0002U",
-        "NO0036R",
-        "NO0039R",
-        "NO0211R",
-        "NO0214R",
-        "NO0225R",
-        "NO0226R",
-        "NO0227R",
-        "NO0229R",
-        "NO0796R",
-        "NO0802R",
-        "NO0907R",
-        "NO2073R",
-        "NO2079R",
-        "NO2085R",
-        "NO2096R",
-        "NO2156R",
-        "NO2210R",
-        "NO2216R",
-        "NO2219R",
-        "NO2233R",
-        "NO2239R",
-        "NO2257R",
-        "NO2263R",
-        "NO2274R",
-        "NO2280R",
-        "NO2288R",
-        "NO2362R",
-        "NO2380R",
-        "NO2397R",
-        "NO2411R",
-        "PL0003R",
-        "PT0005R",
-        "PT0007R",
-        "PT0012R",
-        "RO0002R",
-        "RO0003R",
-        "SE0093R",
-        "SE0094R",
-        "SI0032R",
-        "SK0002R",
-    ]
 
     OBS_GROUNDBASED = {
         ##################
@@ -280,7 +180,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # units, since the colocated StationData objects (from which the
                 # new UngriddedData is computed, will perform AeroCom unit check
                 # and conversion)
-                "(EBASMC;concpm10/EBASMC;concpm25)"
+                    "(EBASMC;concpm10/EBASMC;concpm25)"
             },
             obs_aux_units={"ratpm10pm25": "1"},
         ),
@@ -311,7 +211,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # units, since the colocated StationData objects (from which the
                 # new UngriddedData is computed, will perform AeroCom unit check
                 # and conversion)
-                "(EBASMC;concpm25/EBASMC;concpm10)"
+                    "(EBASMC;concpm25/EBASMC;concpm10)"
             },
             obs_aux_units={"ratpm25pm10": "1"},
         ),
