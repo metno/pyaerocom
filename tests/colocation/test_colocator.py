@@ -69,6 +69,7 @@ def setup():
         obs_id="AeronetSunV3L2Subset.daily",
         obs_vars="od550aer",
         start=2010,
+        stop=2011,
         raise_exceptions=True,
         reanalyse_existing=True,
     )
@@ -180,6 +181,7 @@ def test_Colocator__coldata_savename(setup):
     setup["model_name"] = "model"
     setup["filter_name"] = ALL_REGION_NAME
     setup["start"] = 2015
+    setup["stop"] = 2016
     col_stp = ColocationSetup(**setup)
     col = Colocator(col_stp)
     col._check_set_start_stop()

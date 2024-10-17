@@ -481,12 +481,16 @@ class ColocationSetup(BaseModel):
                 raise ValidationError
         return self
 
-    @cached_property
-    def basedir_logfiles(self):
-        p = Path(self.basedir_coldata) / "logfiles"
-        if not p.exists():
-            p.mkdir(parents=True, exist_ok=True)
-        return str(p)
+        return self
+
+    @model_validator(mode="after")
+    # @classmethod
+    def validate_start_stop_xand(self):
+        if not (self.start and self.stop):
+            if self.start or self.stop:
+                raise ValueError("Both start and stop need to be provided or both not provided.")
+
+    #     return self
 
     @model_validator(mode="after")
     def validate_obs_config(self):
@@ -509,6 +513,13 @@ class ColocationSetup(BaseModel):
             if self.obs_id is None:
                 self.obs_id = self.obs_config.name
         return self
+
+    @cached_property
+    def basedir_logfiles(self):
+        p = Path(self.basedir_coldata) / "logfiles"
+        if not p.exists():
+            p.mkdir(parents=True, exist_ok=True)
+        return str(p)
 
     def add_glob_meta(self, **kwargs):
         """
