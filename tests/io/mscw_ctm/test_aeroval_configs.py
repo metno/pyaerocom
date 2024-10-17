@@ -10,4 +10,4 @@ def test_ratpmconfig():
         year=year,
         model_dir="/lustre/storeB/project/fou/kl/CAMEO/u8_cams0201/",
     )
-    assert CFG["raise_exceptions"] == False
+    assert not CFG["raise_exceptions"]
