@@ -7,6 +7,7 @@ from pyaerocom.molmasses import get_molmass
 
 logger = logging.getLogger(__name__)
 
+
 def add_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
     """
     Add a bunch of :class:`xarray.DataArray` instances
@@ -406,7 +407,8 @@ def calc_ratpm10pm25(concpm10: xr.DataArray, concpm25: xr.DataArray) -> xr.DataA
     try:
         if concpm10.attrs["units"] != concpm25.attrs["units"]:
             logger.warning(
-                f"concpm10 unit {concpm10.attrs['units']} not equal to concpm25 unit {concpm25.attrs['units']}!")
+                f"concpm10 unit {concpm10.attrs['units']} not equal to concpm25 unit {concpm25.attrs['units']}!"
+            )
     except KeyError:
         pass
     ratpm10pm25 = concpm10 / concpm25
@@ -434,7 +436,8 @@ def calc_ratpm25pm10(concpm25: xr.DataArray, concpm10: xr.DataArray) -> xr.DataA
     try:
         if concpm10.attrs["units"] != concpm25.attrs["units"]:
             logger.warning(
-                f"concpm10 unit {concpm10.attrs['units']} not equal to concpm25 unit {concpm25.attrs['units']}!")
+                f"concpm10 unit {concpm10.attrs['units']} not equal to concpm25 unit {concpm25.attrs['units']}!"
+            )
     except KeyError:
         pass
     ratpm25pm10 = concpm25 / concpm10
