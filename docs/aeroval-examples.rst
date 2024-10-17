@@ -21,7 +21,7 @@ Example IO aux file for model reading
 .. literalinclude:: _static/aeroval/sample_gridded_io_aux.py
 
 
-Example for pm ratios compared to EMEP mode data
+Example for pm ratios compared to EMEP model data
 ---------------------
 
 .. literalinclude:: _static/aeroval/sample_pm_ratios.py
