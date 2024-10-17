@@ -707,10 +707,6 @@ class ReadMscwCtm(GriddedReader):
             proj_info=proj_info,
         )
 
-        # !obsolete
-        # if var.is_deposition:
-        #    implicit_to_explicit_rates(gridded, ts_type)
-
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata["data_id"] = self._data_id

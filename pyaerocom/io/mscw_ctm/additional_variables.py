@@ -1,9 +1,11 @@
+import logging
+
 import xarray as xr
 from geonum.atmosphere import T0_STD, p0
-
 from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 
+logger = logging.getLogger(__name__)
 
 def add_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
     """
@@ -401,6 +403,12 @@ def calc_ratpm10pm25(concpm10: xr.DataArray, concpm25: xr.DataArray) -> xr.DataA
         ratio of concpm10 / concpm25 in units of 1
 
     """
+    try:
+        if concpm10.attrs["units"] != concpm25.attrs["units"]:
+            logger.warning(
+                f"concpm10 unit {concpm10.attrs['units']} not equal to concpm25 unit {concpm25.attrs['units']}!")
+    except KeyError:
+        pass
     ratpm10pm25 = concpm10 / concpm25
     ratpm10pm25.attrs["units"] = "1"
     return ratpm10pm25
@@ -423,6 +431,12 @@ def calc_ratpm25pm10(concpm25: xr.DataArray, concpm10: xr.DataArray) -> xr.DataA
         ratio of concpm25 / concpm10 in units of 1
 
     """
+    try:
+        if concpm10.attrs["units"] != concpm25.attrs["units"]:
+            logger.warning(
+                f"concpm10 unit {concpm10.attrs['units']} not equal to concpm25 unit {concpm25.attrs['units']}!")
+    except KeyError:
+        pass
     ratpm25pm10 = concpm25 / concpm10
     ratpm25pm10.attrs["units"] = "1"
     return ratpm25pm10
