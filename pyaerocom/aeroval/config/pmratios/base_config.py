@@ -180,7 +180,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # units, since the colocated StationData objects (from which the
                 # new UngriddedData is computed, will perform AeroCom unit check
                 # and conversion)
-                    "(EBASMC;concpm10/EBASMC;concpm25)"
+                "(EBASMC;concpm10/EBASMC;concpm25)"
             },
             obs_aux_units={"ratpm10pm25": "1"},
         ),
@@ -211,7 +211,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # units, since the colocated StationData objects (from which the
                 # new UngriddedData is computed, will perform AeroCom unit check
                 # and conversion)
-                    "(EBASMC;concpm25/EBASMC;concpm10)"
+                "(EBASMC;concpm25/EBASMC;concpm10)"
             },
             obs_aux_units={"ratpm25pm10": "1"},
         ),

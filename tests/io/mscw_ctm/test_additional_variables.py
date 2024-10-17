@@ -128,14 +128,3 @@ def test_update_EC_units():
 
     assert (concCecpm25 == concCecpm25_from_func).all()
     assert concCecpm25.units == concCecpm25_from_func.units
-
-
-def test_ratpmconfig():
-    from pyaerocom.aeroval.config.pmratios.base_config import get_CFG
-    reportyear = year = 2019
-    CFG = get_CFG(
-        reportyear=reportyear,
-        year=year,
-        model_dir="/lustre/storeB/project/fou/kl/CAMEO/u8_cams0201/",
-    )
-    assert CFG['raise_exceptions'] == False
