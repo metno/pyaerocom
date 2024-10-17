@@ -227,7 +227,10 @@ def test_Colocator_run_gridded_gridded(setup):
             0.002,
         ),
         (
-            dict(model_use_vars={"od550aer": "abs550aer"}, obs_use_climatology=True),
+            dict(
+                model_use_vars={"od550aer": "abs550aer"},
+                obs_use_climatology=True,
+            ),
             "abs550aer",
             "od550aer",
             (2, 12, 16),

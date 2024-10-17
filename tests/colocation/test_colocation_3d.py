@@ -23,13 +23,22 @@ TEST_FILE: list[str] = [
 @pytest.fixture
 def fake_model_data_with_altitude():
     longitude = iris.coords.DimCoord(
-        np.linspace(-15, 25, 20), var_name="lon", standard_name="longitude", units="degrees"
+        np.linspace(-15, 25, 20),
+        var_name="lon",
+        standard_name="longitude",
+        units="degrees",
     )
     latitude = iris.coords.DimCoord(
-        np.linspace(50, 55, 10), var_name="lat", standard_name="latitude", units="degrees"
+        np.linspace(50, 55, 10),
+        var_name="lat",
+        standard_name="latitude",
+        units="degrees",
     )
     altitude = iris.coords.DimCoord(
-        np.linspace(0, 60000, 10000), var_name="alt", standard_name="altitude", units="meters"
+        np.linspace(0, 60000, 10000),
+        var_name="alt",
+        standard_name="altitude",
+        units="meters",
     )
     time = iris.coords.DimCoord(
         np.arange(18892, 18892 + 7, 1),
