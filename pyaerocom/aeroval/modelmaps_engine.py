@@ -400,7 +400,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         kwargs.update(**self.cfg.colocation_opts.model_kwargs)
         if var in self.cfg.colocation_opts.model_read_opts:
             kwargs.update(self.cfg.colocation_opts.model_read_opts[var])
-        kwargs.update(self.cfg.get_model_entry(model_name)["model_kwargs"])
+        kwargs.update(self.cfg.get_model_entry(model_name).get("model_kwargs", {}))
 
         if model_reader is not None and model_reader in MODELREADERS_USE_MAP_FREQ:
             ts_types = reader.ts_types
