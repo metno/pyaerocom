@@ -15,6 +15,7 @@ from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 from pyaerocom.scripts.cams2_83.config import CFG
+from pyaerocom.scripts.cams2_83.config import species_list
 from pyaerocom.scripts.cams2_83.evaluation import (
     EvalType,
     date_range,
@@ -156,7 +157,7 @@ def main(
         help="Which model to use. All is used if none is given",
     ),
     species_list: list = typer.Option(
-        CFG["species_list"], help="list of species to use"
+        species_list, help="list of species to use"
     ),
     id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
