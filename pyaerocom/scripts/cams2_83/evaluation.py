@@ -11,7 +11,6 @@ from pyaerocom import const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
-from pyaerocom.scripts.cams2_83.config import species_list
 from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
 
 logger = logging.getLogger(__name__)
@@ -32,7 +31,10 @@ class EvalType(str, Enum):
                 f"Evaluation type 'day' should have the same {start_date=} and {end_date=}"
             )
 
-        if self == "week" and (days := (end_date - start_date) // timedelta(days=1)) < 7:
+        if (
+            self == "week"
+            and (days := (end_date - start_date) // timedelta(days=1)) < 7
+        ):
             raise ValueError(f"Evaluation type 'week' should have {days=} >= 7")
 
     def freqs_config(self) -> dict:
@@ -43,7 +45,7 @@ class EvalType(str, Enum):
                 main_freq="daily",
                 forecast_evaluation=True,
             )
-        
+
         if self == "season":
             return dict(
                 freqs=["hourly", "daily"],
@@ -71,7 +73,7 @@ class EvalType(str, Enum):
 
     def periods(self, start_date: date, end_date: date) -> list[str]:
         if self == "long":
-            if (start_date.year != end_date.year):
+            if start_date.year != end_date.year:
                 return make_period_ys(start_date, end_date)
         return make_period(start_date, end_date)
 
@@ -128,6 +130,7 @@ def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
 def runner(
     cfg: dict,
     cache: str | Path | None,
+    species_list: list,
     dry_run: bool = False,
     pool: int = 1,
 ):
@@ -155,7 +158,7 @@ def runner(
             future.result()
 
     logger.info("Running Statistics")
-    ExperimentProcessor(stp).run()
+    ExperimentProcessor(stp).run(var_list=species_list)
     logger.info("Done Running Statistics")
 
 
@@ -184,6 +187,7 @@ def runnermos(
 def runnermedianscores(
     cfg: dict,
     cache: str | Path | None,
+    species_list: list,
     *,
     analysis: bool = False,
     dry_run: bool = False,
@@ -201,7 +205,9 @@ def runnermedianscores(
         "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
     if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
                 executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
@@ -210,7 +216,9 @@ def runnermedianscores(
         for future in as_completed(futures):
             future.result()
     else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        CAMS2_83_Processer(stp).run(analysis=analysis)
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
+        CAMS2_83_Processer(stp).run(analysis=analysis, var_list=species_list)
 
     logger.info("Median scores run finished")
