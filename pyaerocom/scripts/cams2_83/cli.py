@@ -156,7 +156,7 @@ def main(
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
-    species_list: list = typer.Option(
+    species_list: list[str] = typer.Option(
         species_list, help="list of species to use"
     ),
     id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
@@ -197,6 +197,8 @@ def main(
         logger.warning(
             f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}."
         )
+
+    print(species_list)
 
     cfg = make_config(
         start_date,
