@@ -14,8 +14,7 @@ from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
-from pyaerocom.scripts.cams2_83.config import CFG
-from pyaerocom.scripts.cams2_83.config import species_list
+from pyaerocom.scripts.cams2_83.config import CFG, species_list
 from pyaerocom.scripts.cams2_83.evaluation import (
     EvalType,
     date_range,
@@ -156,9 +155,7 @@ def main(
         case_sensitive=False,
         help="Which model to use. All is used if none is given",
     ),
-    species_list: list[str] = typer.Option(
-        species_list, help="list of species to use"
-    ),
+    species: list[str] = typer.Option(species_list, help="list of species to use"),
     id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
@@ -198,7 +195,7 @@ def main(
             f"The given pool {pool} is larger than the maximum CPU count {mp.cpu_count()}."
         )
 
-    print(species_list)
+    logger.info(f"using species {species}")
 
     cfg = make_config(
         start_date,
@@ -237,11 +234,11 @@ def main(
         else:
             logger.info("Special run for median scores only")
             runnermedianscores(
-                cfg, cache, species_list, analysis=analysis, dry_run=dry_run, pool=pool
+                cfg, cache, species, analysis=analysis, dry_run=dry_run, pool=pool
             )
     else:
         logger.info("Standard run")
-        runner(cfg, cache, species_list, dry_run=dry_run, pool=pool)
+        runner(cfg, cache, species, dry_run=dry_run, pool=pool)
 
 
 if __name__ == "__main__":
