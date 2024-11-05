@@ -40,7 +40,7 @@ class EvalType(str, Enum):
     def freqs_config(self) -> dict:
         if self == "long":
             return dict(
-                freqs=["hourly", "daily", "monthly"],
+                freqs=["daily", "monthly"],
                 ts_type="hourly",
                 main_freq="daily",
                 forecast_evaluation=True,
