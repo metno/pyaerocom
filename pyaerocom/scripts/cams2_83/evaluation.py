@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class EvalType(str, Enum):
     LONG = "long"
+    LONGHOURLY = "longhourly"
     SEASON = "season"
     WEEK = "week"
     DAY = "day"
