@@ -66,9 +66,10 @@ class _AuxReadSpec(BaseModel):
     @model_validator(mode="after")
     def validate_fun(self) -> None:
         if callable(self.fun):
-            return
+            return self
         elif isinstance(self.fun, str):
             self.fun = self.funcs[self.fun]
+            return self
         else:
             raise ValueError("failed to retrieve aux func")
 
