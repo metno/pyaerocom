@@ -1,6 +1,7 @@
 from pathlib import Path
 from textwrap import dedent
 
+from pydantic import ValidationError
 from pytest import mark, param, raises
 
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler, check_aux_info
@@ -52,20 +53,26 @@ def test_check_aux_info(fun, vars_required: list[str], funcs: dict):
 
 
 @mark.parametrize(
-    "fun,vars_required,funcs,error",
+    "fun,vars_required,funcs,error,",
     [
-        param(None, [], {}, "failed to retrieve aux func", id="no func"),
+        param(
+            None,
+            [],
+            {},
+            "2 validation errors for _AuxReadSpec",
+            id="no func",
+        ),
         param(
             None,
             [42],
             {},
-            "not all items are str type in input list [42]",
+            "3 validation errors for _AuxReadSpec",
             id="bad type vars_required",
         ),
     ],
 )
 def test_check_aux_info_error(fun, vars_required: list[str], funcs: dict, error: str):
-    with raises(ValueError) as e:
+    with raises(ValidationError) as e:
         check_aux_info(fun, vars_required, funcs)
 
-    assert str(e.value) == error
+    assert error in str(e.value)
