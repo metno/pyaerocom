@@ -77,7 +77,7 @@ def _class_name(obj):
     return type(obj).__name__
 
 
-# TODO: CHeck to see if instances of these classes can instead use pydantic
+# TODO: Check to see if instances of these classes can instead use pydantic
 class Validator(abc.ABC):
     def __set_name__(self, owner, name):
         self._name = name
