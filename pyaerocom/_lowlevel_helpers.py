@@ -77,6 +77,7 @@ def _class_name(obj):
     return type(obj).__name__
 
 
+# TODO: CHeck to see if instances of these classes can instead use pydantic
 class Validator(abc.ABC):
     def __set_name__(self, owner, name):
         self._name = name
@@ -110,56 +111,6 @@ class StrType(Validator):
     def validate(self, val):
         if not isinstance(val, str):
             raise ValueError(f"need str, got {val}")
-        return val
-
-
-class StrWithDefault(Validator):
-    def __init__(self, default: str):
-        self.default = default
-
-    def validate(self, val):
-        if not isinstance(val, str):
-            if val is None:
-                val = self.default
-            else:
-                raise ValueError(f"need str or None, got {val}")
-        return val
-
-
-class FlexList(Validator):
-    """list that can be instantated via input str, tuple or list or None"""
-
-    def validate(self, val):
-        if isinstance(val, str):
-            val = [val]
-        elif isinstance(val, tuple):
-            val = list(val)
-        elif val is None:
-            val = []
-        elif not isinstance(val, list):
-            raise ValueError(f"failed to convert {val} to list")
-        return val
-
-
-class EitherOf(Validator):
-    _allowed = FlexList()
-
-    def __init__(self, allowed: list):
-        self._allowed = allowed
-
-    def validate(self, val):
-        if not any([x == val for x in self._allowed]):
-            raise ValueError(f"invalid value {val}, needs to be either of {self._allowed}.")
-        return val
-
-
-class ListOfStrings(FlexList):
-    def validate(self, val):
-        # make sure to have a list
-        val = super().validate(val)
-        # make sure all entries are strings
-        if not all([isinstance(x, str) for x in val]):
-            raise ValueError(f"not all items are str type in input list {val}")
         return val
 
 
