@@ -2,6 +2,7 @@ import importlib
 import os
 import sys
 from collections.abc import Callable
+from typing import Self
 
 from pydantic import (
     BaseModel,
@@ -64,7 +65,7 @@ class _AuxReadSpec(BaseModel):
     funcs: dict[str, Callable]
 
     @model_validator(mode="after")
-    def validate_fun(self) -> None:
+    def validate_fun(self) -> Self:
         if callable(self.fun):
             return self
         elif isinstance(self.fun, str):
