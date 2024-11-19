@@ -8,6 +8,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+from typing import TYPE_CHECKING
+
 from pydantic import (
     BaseModel,
     model_validator,
@@ -64,7 +66,10 @@ class _AuxReadSpec(BaseModel):
 
     """
 
-    fun: str | Callable
+    if TYPE_CHECKING:
+        fun: Callable
+    else:
+        fun: str | Callable
     vars_required: list[str]
     funcs: dict[str, Callable]
 
