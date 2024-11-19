@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import functools
 import logging
 import os
@@ -183,7 +184,7 @@ class ReadMscwCtm(GriddedReader):
         files: list[str] | None = None
         data_dir: str | None = None
 
-    def __init__(self, data_id=None, data_dir=None, **kwargs):
+    def __init__(self, data_id: str | None = None, data_dir: str | None = None, **kwargs):
         # opened dataset (for performance boost), will be reset if data_dir is
         # changed
         self._private = self._PrivateFields()
@@ -194,7 +195,7 @@ class ReadMscwCtm(GriddedReader):
             if isinstance(new_map, dict):
                 self.var_map.update(new_map)
             else:
-                logger.warn(f"New map {new_map} is not a dict. Skipping")
+                logger.warning(f"New map {new_map} is not a dict. Skipping")
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -209,8 +210,8 @@ class ReadMscwCtm(GriddedReader):
         folders = self._get_trend_folders_from_folder()
         self._filepaths = self._get_files_from_folders(folders)
 
-    def _get_files_from_folders(self, folders):
-        files = []
+    def _get_files_from_folders(self, folders: list[str]):
+        files: list[str] = []
         for d in folders:
             files += self._check_files_in_data_dir(d)
         return files
@@ -244,8 +245,8 @@ class ReadMscwCtm(GriddedReader):
         for freq in self.FREQ_CODES.keys():
             mscwfiles.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
 
-        folders = []
-        yrs = []
+        folders: list[str] = []
+        yrs: list[int] = []
         for d in os.listdir(dd):
             if not os.path.isdir(os.path.join(dd, d)):
                 continue
@@ -292,7 +293,7 @@ class ReadMscwCtm(GriddedReader):
 
         return sorted(list(set(yrs)))
 
-    def _get_tst_from_file(self, file):
+    def _get_tst_from_file(self, file: str):
         _, fname = os.path.split(file)
 
         for freq, tst in self.FREQ_CODES.items():
@@ -301,9 +302,9 @@ class ReadMscwCtm(GriddedReader):
                 return tst
         raise ValueError(f"The file {file} is not supported")
 
-    def _clean_filepaths(self, filepaths, yrs, ts_type):
-        clean_paths = []
-        found_yrs = []
+    def _clean_filepaths(self, filepaths: list[str], yrs: list[str], ts_type: str):
+        clean_paths: list[str] = []
+        found_yrs: list[str] = []
 
         yrs = [int(yr) for yr in yrs]
         for path in filepaths:
@@ -339,7 +340,7 @@ class ReadMscwCtm(GriddedReader):
         return self._data_id
 
     @property
-    def _data_dir(self) -> str | None:
+    def _data_dir(self) -> str:
         """
         Directory containing netcdf files
         """
@@ -366,7 +367,7 @@ class ReadMscwCtm(GriddedReader):
         return self._private.filename
 
     @_filename.setter
-    def _filename(self, val):
+    def _filename(self, val: str):
         """
         Name of netcdf file
         """
@@ -401,7 +402,7 @@ class ReadMscwCtm(GriddedReader):
             self._open_file()
         return self._private.filedata
 
-    def _check_files_in_data_dir(self, data_dir):
+    def _check_files_in_data_dir(self, data_dir: str):
         """
         Check for data files in input data directory
 
@@ -425,7 +426,7 @@ class ReadMscwCtm(GriddedReader):
         for freq in self.FREQ_CODES.keys():
             files.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
 
-        matches = []
+        matches: list[str] = []
         for f in files:
             fpath = os.path.join(data_dir, f)
             if os.path.exists(fpath):
@@ -438,7 +439,7 @@ class ReadMscwCtm(GriddedReader):
         return matches
 
     @property
-    def _ts_type(self):
+    def _ts_type(self) -> str:
         """
         Frequency of time dimension of current data file
 
@@ -456,7 +457,7 @@ class ReadMscwCtm(GriddedReader):
         return self._ts_type_from_filename(self._filename)
 
     @property
-    def ts_types(self):
+    def ts_types(self) -> list[str]:
         """
         List of available frequencies
 
@@ -479,7 +480,7 @@ class ReadMscwCtm(GriddedReader):
         return list(set(tsts))
 
     @property
-    def years_avail(self):
+    def years_avail(self) -> list[str]:
         """
         Years available in loaded dataset
         """
@@ -489,7 +490,7 @@ class ReadMscwCtm(GriddedReader):
         return sorted(years)
 
     @property
-    def vars_provided(self):
+    def vars_provided(self) -> list[str]:
         """Variables provided by this dataset"""
         return list(self.var_map) + list(self.AUX_REQUIRES)
 
@@ -525,7 +526,7 @@ class ReadMscwCtm(GriddedReader):
     def __str__(self):
         return "ReadMscwCtm"
 
-    def has_var(self, var_name):
+    def has_var(self, var_name: str) -> bool:
         """Check if variable is supported
 
         Parameters
@@ -542,7 +543,7 @@ class ReadMscwCtm(GriddedReader):
             return True
         return False
 
-    def _ts_type_from_filename(self, filename):
+    def _ts_type_from_filename(self, filename: str) -> str:
         """
         Get ts_type from filename
 
@@ -565,7 +566,7 @@ class ReadMscwCtm(GriddedReader):
                 return tstype
         raise ValueError(f"Failed to retrieve ts_type from filename {filename}")
 
-    def _filename_from_ts_type(self, ts_type):
+    def _filename_from_ts_type(self, ts_type: str):
         """
         Infer file name of data based on input ts_type
 
@@ -591,7 +592,7 @@ class ReadMscwCtm(GriddedReader):
         freq = self.REVERSE_FREQ_CODES[ts_type]
         return self.FILE_FREQ_TEMPLATE.format(freq=freq)
 
-    def _compute_var(self, var_name_aerocom, ts_type):
+    def _compute_var(self, var_name_aerocom: str, ts_type: str):
         """Compute auxiliary variable
 
         Like :func:`read_var` but for auxiliary variables
@@ -622,7 +623,7 @@ class ReadMscwCtm(GriddedReader):
 
         return aux_func(*temp_arrs), proj_info
 
-    def _load_var(self, var_name_aerocom, ts_type):
+    def _load_var(self, var_name_aerocom: str, ts_type: str):
         """
         Load variable data as :class:`xarray.DataArray`.
 
@@ -657,7 +658,7 @@ class ReadMscwCtm(GriddedReader):
             f"Variable {var_name_aerocom} is not supported"
         )  # pragma: no cover
 
-    def read_var(self, var_name, ts_type=None, **kwargs):
+    def read_var(self, var_name: str, ts_type: str | None = None, **kwargs):
         """Load data for given variable.
 
         Parameters
@@ -718,7 +719,7 @@ class ReadMscwCtm(GriddedReader):
                 del gridded.metadata[metadata]
         return gridded
 
-    def _read_var_from_file(self, var_name_aerocom, ts_type):
+    def _read_var_from_file(self, var_name_aerocom: str, ts_type: str):
         """
         Read variable data from file as :class:`xarray.DataArray`.
 
@@ -762,7 +763,7 @@ class ReadMscwCtm(GriddedReader):
         return data, proj_info
 
     @staticmethod
-    def _preprocess_units(units, prefix):
+    def _preprocess_units(units: str, prefix: str | None = None):
         """
         Update units for certain variables
 
@@ -785,7 +786,7 @@ class ReadMscwCtm(GriddedReader):
             return "m-1"
         return units
 
-    def add_aux_compute(self, var_name, vars_required, fun):
+    def add_aux_compute(self, var_name: str, vars_required: list[str], fun: Callable):
         """Register new variable to be computed
 
         Parameters
