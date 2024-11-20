@@ -233,8 +233,7 @@ class ReadGAW(ReadUngriddedBase):
         if any("99:99" in s for s in data[:, 1]):
             datestring = data[:, 0]
         else:
-            datestring = np.core.defchararray.add(data[:, 0], "T")
-            datestring = np.core.defchararray.add(datestring, data[:, 1])
+            datestring = data[:, 0] + "T" + data[:, 1]
         data_out["dtime"] = datestring.astype("datetime64[s]")
 
         # Replace invalid measurements with nan values
