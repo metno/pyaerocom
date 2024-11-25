@@ -183,7 +183,7 @@ class ReadMscwCtm(GriddedReader):
         filepaths: list[str] | None = None
         files: list[str] | None = None
         data_dir: str | None = None
-        file_pattern: str | re.Pattern = None
+        file_pattern: re.Pattern
 
     def __init__(self, data_id: str | None = None, data_dir: str | None = None, **kwargs):
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -199,7 +199,8 @@ class ReadMscwCtm(GriddedReader):
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
 
         if (pattern := kwargs.get("file_pattern", None)) is None:
-            pattern = rf"Base_({'|'.join(self.FREQ_CODES.keys())}).nc"
+            # Pattern for the 'Base_{freq}.nc' default strategy.
+            pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
 
         if not isinstance(pattern, str | re.Pattern):
             raise TypeError(
@@ -209,11 +210,6 @@ class ReadMscwCtm(GriddedReader):
             pattern = re.compile(pattern)
 
         self._private.file_pattern = pattern
-
-        logger.info(
-            "Since file_pattern was provided, normal 'Base_{freq}.nc' pattern matching will not be used."
-        )
-
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
                 raise FileNotFoundError(f"{data_dir}")
@@ -806,7 +802,7 @@ class ReadMscwCtm(GriddedReader):
             return "m-1"
         return units
 
-    def add_aux_compute(self, var_name: str, vars_required: list[str], fun: Callable):
+    def add_aux_compute(self, var_name: str, vars_required: list[str] | str, fun: Callable):
         """Register new variable to be computed
 
         Parameters

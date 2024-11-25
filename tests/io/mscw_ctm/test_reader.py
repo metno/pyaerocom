@@ -586,9 +586,13 @@ def test_emep_vars():
 def test_reader_regexp(tmp_path: Path):
     path = tmp_path / "2022"
     path.mkdir()
-    # Create files
+    # Create files that should be matched by regexp.
     for i in range(10):
         (path / f"file_{i}.nc").touch()
+
+    # Create files that should NOT be matched by regexp.
+    for i in range(10):
+        (path / f"blah_{i}.nc").touch()
 
     reader = ReadMscwCtm("test", data_dir=str(path), file_pattern=re.compile(r"^file_\d\.nc$"))
 
