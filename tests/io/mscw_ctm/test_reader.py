@@ -581,3 +581,17 @@ def test_emep_vars():
 
     assert new_var_name in reader.var_map
     assert reader.var_map[new_var_name] == new_mapping
+
+
+def test_reader_regexp(tmp_path: Path):
+    path = tmp_path / "2022"
+    path.mkdir()
+    # Create files
+    for i in range(10):
+        (path / f"file_{i}.nc").touch()
+
+    reader = ReadMscwCtm("test", data_dir=str(path), file_pattern=re.compile(r"^file_\d\.nc$"))
+
+    reader._search_all_files()
+
+    assert len(reader._private.filepaths) == 10

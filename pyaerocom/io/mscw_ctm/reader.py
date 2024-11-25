@@ -268,17 +268,20 @@ class ReadMscwCtm(GriddedReader):
                 continue
             m = re.match(self.YEAR_PATTERN, d)
             if m is not None:
-                has_mscwfiles = False
-                for f in mscwfiles:
-                    if os.path.exists(os.path.join(dd, d, f)):
-                        has_mscwfiles = True
+                if self._private.file_pattern is not None:
+                    has_mscwfiles = False
+                    for f in mscwfiles:
+                        if os.path.exists(os.path.join(dd, d, f)):
+                            has_mscwfiles = True
+                else:
+                    has_mscwfiles = True
                 if has_mscwfiles:
                     yrs.append(int(m.group(1)))
                     folders.append(os.path.join(dd, d))
 
         if len(folders) == 0:  # no trends, use folder
             for f in mscwfiles:
-                if os.path.exists(os.path.join(dd, f)):
+                if os.path.exists(os.path.join(dd, f)) or self._private.file_pattern is not None:
                     folders = [dd]
             if len(folders) == 0:
                 raise FileNotFoundError(f"no files like {mscwfiles} found in {dd}")
@@ -455,9 +458,13 @@ class ReadMscwCtm(GriddedReader):
                 )
             return matches
 
-        files: list[str] = [x for x in os.listdir() if os.path.isfile(x)]
+        files: list[str] = [
+            x for x in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, x))
+        ]
 
-        matches = [x for x in files if self._private.file_pattern.match(x) is not None]
+        matches = [
+            x for x in files if self._private.file_pattern.match(os.path.basename(x)) is not None
+        ]
 
         return matches
 
