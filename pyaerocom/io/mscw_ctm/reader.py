@@ -183,6 +183,7 @@ class ReadMscwCtm(GriddedReader):
         filepaths: list[str] | None = None
         files: list[str] | None = None
         data_dir: str | None = None
+        file_pattern: str | re.Pattern = None
 
     def __init__(self, data_id: str | None = None, data_dir: str | None = None, **kwargs):
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -196,6 +197,21 @@ class ReadMscwCtm(GriddedReader):
                 self.var_map.update(new_map)
             else:
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
+
+        if "file_pattern" in kwargs:
+            pattern = kwargs["file_pattern"]
+            if not isinstance(pattern, str | re.Pattern):
+                raise TypeError(
+                    f"Provided pattern '{pattern}' of type {type(pattern)} can't be compiled to re.Pattern. Please provide str or re.Pattern."
+                )
+
+            if isinstance(pattern, str):
+                pattern = re.compile(pattern)
+
+            self._private.file_pattern = pattern
+            logger.info(
+                "Since file_pattern was provided, normal 'Base_{freq}.nc' pattern matching will not be used."
+            )
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -422,20 +438,27 @@ class ReadMscwCtm(GriddedReader):
             list of file matches
 
         """
-        files = []
-        for freq in self.FREQ_CODES.keys():
-            files.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
+        if self._private.file_pattern is None:
+            files = []
+            for freq in self.FREQ_CODES.keys():
+                files.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
 
-        matches: list[str] = []
-        for f in files:
-            fpath = os.path.join(data_dir, f)
-            if os.path.exists(fpath):
-                matches.append(fpath)
-        if len(matches) == 0:
-            raise FileNotFoundError(
-                f"No valid model files could be found in {data_dir} for any of the "
-                f"supported files: {files}"
-            )
+            matches: list[str] = []
+            for f in files:
+                fpath = os.path.join(data_dir, f)
+                if os.path.exists(fpath):
+                    matches.append(fpath)
+            if len(matches) == 0:
+                raise FileNotFoundError(
+                    f"No valid model files could be found in {data_dir} for any of the "
+                    f"supported files: {files}"
+                )
+            return matches
+
+        files: list[str] = [x for x in os.listdir() if os.path.isfile(x)]
+
+        matches = [x for x in files if self._private.file_pattern.match(x) is not None]
+
         return matches
 
     @property
