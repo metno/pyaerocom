@@ -198,20 +198,21 @@ class ReadMscwCtm(GriddedReader):
             else:
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
 
-        if "file_pattern" in kwargs:
-            pattern = kwargs["file_pattern"]
-            if not isinstance(pattern, str | re.Pattern):
-                raise TypeError(
-                    f"Provided pattern '{pattern}' of type {type(pattern)} can't be compiled to re.Pattern. Please provide str or re.Pattern."
-                )
+        if (pattern := kwargs.get("file_pattern", None)) is None:
+            pattern = rf"Base_({'|'.join(self.FREQ_CODES.keys())}).nc"
 
-            if isinstance(pattern, str):
-                pattern = re.compile(pattern)
-
-            self._private.file_pattern = pattern
-            logger.info(
-                "Since file_pattern was provided, normal 'Base_{freq}.nc' pattern matching will not be used."
+        if not isinstance(pattern, str | re.Pattern):
+            raise TypeError(
+                f"Provided pattern '{pattern}' of type {type(pattern)} can't be compiled to re.Pattern. Please provide str or re.Pattern."
             )
+        if isinstance(pattern, str):
+            pattern = re.compile(pattern)
+
+        self._private.file_pattern = pattern
+
+        logger.info(
+            "Since file_pattern was provided, normal 'Base_{freq}.nc' pattern matching will not be used."
+        )
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -441,31 +442,20 @@ class ReadMscwCtm(GriddedReader):
             list of file matches
 
         """
-        if self._private.file_pattern is None:
-            files = []
-            for freq in self.FREQ_CODES.keys():
-                files.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
-
-            matches: list[str] = []
-            for f in files:
-                fpath = os.path.join(data_dir, f)
-                if os.path.exists(fpath):
-                    matches.append(fpath)
-            if len(matches) == 0:
-                raise FileNotFoundError(
-                    f"No valid model files could be found in {data_dir} for any of the "
-                    f"supported files: {files}"
-                )
-            return matches
-
         files: list[str] = [
             x for x in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, x))
         ]
 
         matches = [
-            x for x in files if self._private.file_pattern.match(os.path.basename(x)) is not None
+            os.path.join(data_dir, x)
+            for x in files
+            if self._private.file_pattern.match(os.path.basename(x)) is not None
         ]
-
+        if len(matches) == 0:
+            raise FileNotFoundError(
+                f"No valid model files could be found in {data_dir} for any of the "
+                f"supported files: {files}"
+            )
         return matches
 
     @property
