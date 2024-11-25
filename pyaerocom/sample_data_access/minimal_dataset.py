@@ -24,12 +24,13 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20231019": "md5:f8912ee83d6749fb2a9b1eda1d664ca2",
         "testdata-minimal.tar.gz.20231116": "md5:5da747f6596817295ba7affe3402b722",
         "testdata-minimal.tar.gz.20240722": "md5:7d933901c6d273d012f132c60df086cc",
+        "testdata-minimal.tar.gz.20241125": "md5:4f906f704c0e63647a7640349501721e",
     },
 )
 
 
 def download_minimal_dataset(
-    file_name: str = DEFAULT_TESTDATA_FILE, /, extract_dir_override: str | None = None
+        file_name: str = DEFAULT_TESTDATA_FILE, /, extract_dir_override: str | None = None
 ):
     """Download test_data_file and extracts it.
 
