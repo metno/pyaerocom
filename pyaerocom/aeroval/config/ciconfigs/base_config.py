@@ -7,7 +7,6 @@ import logging
 
 from pathlib import Path
 
-
 logger = logging.getLogger(__name__)
 
 # Constraints
@@ -38,6 +37,8 @@ JSON_DIR.mkdir(exist_ok=True)
 COLDATA_DIR = Path.home() / "tmp" / "coldata"
 COLDATA_DIR.mkdir(exist_ok=True)
 
+# data directory for test data
+TEST_DATA_DIR = MYPEYAEROCOM_DIR / "tmp" / "test_data"
 
 
 def get_CFG(reportyear, year, model_dir) -> dict:
@@ -138,12 +139,9 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     )
 
     CFG["model_cfg"] = {
-        "EMEPcameo": dict(
+        "EMEP_CI": dict(
             model_id="EMEP,",
-            model_data_dir=model_dir,
-            gridded_reader_id={"model": "ReadMscwCtm"},
-            # model_read_aux={},
-            model_ts_type_read="daily",
+            model_ts_type_read="hourly",
         ),
     }
 
@@ -193,7 +191,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # units, since the colocated StationData objects (from which the
                 # new UngriddedData is computed, will perform AeroCom unit check
                 # and conversion)
-                "(EBASMC;concpm10/EBASMC;concpm25)"
+                    "(EBASMC;concpm10/EBASMC;concpm25)"
             },
             obs_aux_units={"ratpm10pm25": "1"},
         ),
@@ -224,7 +222,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # units, since the colocated StationData objects (from which the
                 # new UngriddedData is computed, will perform AeroCom unit check
                 # and conversion)
-                "(EBASMC;concpm25/EBASMC;concpm10)"
+                    "(EBASMC;concpm25/EBASMC;concpm10)"
             },
             obs_aux_units={"ratpm25pm10": "1"},
         ),
