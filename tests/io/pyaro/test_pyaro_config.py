@@ -10,7 +10,7 @@ from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 def get_test_config() -> PyaroConfig:
     config = PyaroConfig(
         name="test",
-        data_id="test",
+        reader_id="test",
         filename_or_obj_or_url="test",
         filters={},
         name_map={},
@@ -21,7 +21,7 @@ def get_test_config() -> PyaroConfig:
 def get_existing_config() -> PyaroConfig:
     config = PyaroConfig(
         name="aeronetsun_test",
-        data_id="test",
+        reader_id="test",
         filename_or_obj_or_url="test",
         filters={},
         name_map={},

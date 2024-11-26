@@ -30,7 +30,7 @@ class PyaroConfig(BaseModel):
     ##########################
 
     name: str
-    data_id: str
+    reader_id: str
     filename_or_obj_or_url: str | list[str] | Path | list[Path]
     filters: dict[str, FilterArgs]
     name_map: dict[str, str] | None = None  # no Unit conversion option

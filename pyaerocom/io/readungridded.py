@@ -334,7 +334,7 @@ class ReadUngridded:
             reader = ReadPyaro(config=config)
             self._readers[name] = reader
             self._data_ids.append(name)
-            self.config_ids[name] = config.data_id
+            self.config_ids[name] = config.reader_id
             self.config_map[name] = config
             return reader
 
