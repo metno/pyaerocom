@@ -198,18 +198,20 @@ class ReadMscwCtm(GriddedReader):
             else:
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
 
-        if (pattern := kwargs.get("file_pattern", None)) is None:
+        pattern = kwargs.get("file_pattern", None)
+        if pattern is None:
             # Pattern for the 'Base_{freq}.nc' default strategy.
             pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
 
-        if not isinstance(pattern, str | re.Pattern):
-            raise TypeError(
-                f"Provided pattern '{pattern}' of type {type(pattern)} can't be compiled to re.Pattern. Please provide str or re.Pattern."
-            )
-        if isinstance(pattern, str):
-            pattern = re.compile(pattern)
-
+        if not isinstance(pattern, re.Pattern):
+            try:
+                pattern = re.compile(pattern)
+            except re.error as e:
+                raise TypeError(
+                    f"Provided file_pattern '{pattern}' of type {type(pattern)} can't be compiled to re.Pattern. Please provide str or re.Pattern."
+                ) from e
         self._private.file_pattern = pattern
+
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
                 raise FileNotFoundError(f"{data_dir}")
