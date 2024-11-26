@@ -715,7 +715,7 @@ class ReadL2Data(ReadL2DataBase):
         seconds_to_add = np.datetime64("2000-01-01T00:00:00") - np.datetime64(
             "1970-01-01T00:00:00"
         )
-        seconds_to_add = seconds_to_add.astype(np.float_)
+        seconds_to_add = seconds_to_add.astype(np.float64)
 
         # the same can be achieved using pandas, but we stick to numpy here
         # base_time = pd.DatetimeIndex(['2000-01-01'])
@@ -832,9 +832,9 @@ class ReadL2Data(ReadL2DataBase):
                 # return as one multidimensional numpy array that can be put into self.data directly
                 # (column wise because the column numbers do not match)
                 index_pointer = 0
-                data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
+                data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
 
-                for idx, _time in enumerate(file_data["time"].astype(np.float_)):
+                for idx, _time in enumerate(file_data["time"].astype(np.float64)):
                     # skip times of profiles without a single valid extinction
                     # the following is deprecated in current nympy
                     # if _time in times_to_skip:
@@ -912,7 +912,7 @@ class ReadL2Data(ReadL2DataBase):
 
                         if index_pointer >= self._ROWNO:
                             # add another array chunk to self.data
-                            chunk = np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float_)
+                            chunk = np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float64)
                             data = np.append(data, chunk, axis=0)
 
                 # return only the needed elements...
@@ -1137,7 +1137,7 @@ class ReadL2Data(ReadL2DataBase):
         start = time.perf_counter()
 
         data = ungridded_data_obj._data
-        ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
+        ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
         index_counter = 0
         cut_flag = True
         matching_indexes = []
@@ -1164,7 +1164,7 @@ class ReadL2Data(ReadL2DataBase):
                                 ret_data,
                                 np.zeros(
                                     [end_index - len(ret_data), self._COLNO],
-                                    dtype=np.float_,
+                                    dtype=np.float64,
                                     axis=0,
                                 ),
                             )
@@ -1874,7 +1874,7 @@ class ReadL2Data(ReadL2DataBase):
         seconds_to_add = np.datetime64("2000-01-01T00:00:00") - np.datetime64(
             "1970-01-01T00:00:00"
         )
-        seconds_to_add = seconds_to_add.astype(np.float_)
+        seconds_to_add = seconds_to_add.astype(np.float64)
 
         # the same can be achieved using pandas, but we stick to numpy here
         # base_time = pd.DatetimeIndex(['2000-01-01'])
@@ -1952,7 +1952,7 @@ class ReadL2Data(ReadL2DataBase):
                         out_struct[codaRec._registeredFields[idx]] = {}
                         for str_name in dummy:
                             out_struct[codaRec._registeredFields[idx]][str_name] = np.empty(
-                                rec_length, dtype=np.float_
+                                rec_length, dtype=np.float64
                             )
 
                     for str_name in dummy:

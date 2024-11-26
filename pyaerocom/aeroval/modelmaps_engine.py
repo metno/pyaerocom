@@ -367,16 +367,16 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             # overwrite start and stop to read climatology file for model
             start, stop = 9999, None
 
-        data_id = self.cfg.model_cfg[model_name].model_id
+        data_id = self.cfg.model_cfg.get_entry(model_name).model_id
 
         try:
-            data_dir = self.cfg.model_cfg[model_name].model_data_dir
+            data_dir = self.cfg.model_cfg.get_entry(model_name).model_data_dir
         except Exception as e:
             logger.info(f"Could not find model dir. Setting to None. Error {str(e)}")
             data_dir = None
 
         try:
-            model_reader = self.cfg.model_cfg[model_name].gridded_reader_id["model"]
+            model_reader = self.cfg.model_cfg.get_entry(model_name).gridded_reader_id["model"]
         except Exception as e:
             logger.info(f"Could not find model reader. Setting to None. Error {str(e)}")
             model_reader = None
@@ -392,8 +392,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             **self.cfg.colocation_opts.model_kwargs,
         )
 
-        if var in self.cfg.model_cfg[model_name].model_read_aux:
-            aux_instructions = self.cfg.model_cfg[model_name].model_read_aux[var]
+        if var in self.cfg.model_cfg.get_entry(model_name).model_read_aux:
+            aux_instructions = self.cfg.model_cfg.get_entry(model_name).model_read_aux[var]
             reader.add_aux_compute(var_name=var, **aux_instructions)
 
         kwargs = {}

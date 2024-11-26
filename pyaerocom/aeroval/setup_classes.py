@@ -501,29 +501,29 @@ class EvalSetup(BaseModel):
 
     # These attributes require special attention b/c they're not based on Pydantic's BaseModel class.
 
-    obs_cfg: ObsCollection | dict = ObsCollection()
-
-    @field_validator("obs_cfg")
-    def validate_obs_cfg(cls, v):
-        if isinstance(v, ObsCollection):
-            return v
-        return ObsCollection(v)
+    @computed_field
+    @cached_property
+    def obs_cfg(self) -> ObsCollection:
+        oc = ObsCollection()
+        for k, v in self.model_extra.get("obs_cfg", {}).items():
+            oc.add_entry(k, v)
+        return oc
 
     @field_serializer("obs_cfg")
     def serialize_obs_cfg(self, obs_cfg: ObsCollection):
-        return obs_cfg.json_repr()
+        return obs_cfg.as_dict()
 
-    model_cfg: ModelCollection | dict = ModelCollection()
-
-    @field_validator("model_cfg")
-    def validate_model_cfg(cls, v):
-        if isinstance(v, ModelCollection):
-            return v
-        return ModelCollection(v)
+    @computed_field
+    @cached_property
+    def model_cfg(self) -> ModelCollection:
+        mc = ModelCollection()
+        for k, v in self.model_extra.get("model_cfg", {}).items():
+            mc.add_entry(k, v)
+        return mc
 
     @field_serializer("model_cfg")
     def serialize_model_cfg(self, model_cfg: ModelCollection):
-        return model_cfg.json_repr()
+        return model_cfg.as_dict()
 
     ###########################
     ##       Methods

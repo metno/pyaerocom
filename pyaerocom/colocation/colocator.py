@@ -830,7 +830,9 @@ class Colocator:
     def _try_get_vert_which_alt(self, is_model, var_name):
         if is_model:
             if self.colocation_setup.obs_vert_type in self.colocation_setup.OBS_VERT_TYPES_ALT:
-                return self.OBS_VERT_TYPES_ALT[self.colocation_setup.obs_vert_type]
+                return self.colocation_setup.OBS_VERT_TYPES_ALT[
+                    self.colocation_setup.obs_vert_type
+                ]
         raise DataCoverageError(f"No alternative vert type found for {var_name}")
 
     def _check_remove_outliers_gridded(self, data, var_name, is_model):

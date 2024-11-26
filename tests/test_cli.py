@@ -68,6 +68,11 @@ def test_ppiaccess():
     assert result.exit_code == 0
 
 
+def test_init():
+    result = runner.invoke(main, ["init"])
+    assert result.exit_code == 0
+
+
 @pytest.fixture()
 def config_json(monkeypatch, tmp_path: Path, eval_config: dict) -> Path:
     def do_not_run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):

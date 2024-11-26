@@ -389,7 +389,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                         index_store[_key] = file_data[_key].shape[0]
                         input_shape = list(file_data[_key].shape)
                         input_shape[0] = self._ROWNO
-                        data_obj._data[_key] = np.empty(input_shape, dtype=np.float_)
+                        data_obj._data[_key] = np.empty(input_shape, dtype=np.float64)
                         if len(input_shape) == 1:
                             data_obj._data[_key][0 : file_data[_key].shape[0]] = file_data[_key]
                         elif len(input_shape) == 2:
@@ -423,7 +423,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                         if index_store[_key] + elements_to_add > data_obj._data[_key].shape[0]:
                             current_shape = list(data_obj._data[_key].shape)
                             current_shape[0] = current_shape[0] + self._CHUNKSIZE
-                            tmp_data = np.empty(current_shape, dtype=np.float_)
+                            tmp_data = np.empty(current_shape, dtype=np.float64)
                             if len(current_shape) == 1:
                                 tmp_data[0 : data_obj._data[_key].shape[0]] = data_obj._data[_key]
                             elif len(current_shape) == 2:

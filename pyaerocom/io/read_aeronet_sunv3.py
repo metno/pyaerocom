@@ -266,7 +266,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out["dtime"].append(np.datetime64(datestring))
 
             for var, idx in vars_available.items():
-                val = np.float_(dummy_arr[idx])
+                val = np.float64(dummy_arr[idx])
                 if val == self.NAN_VAL:
                     val = np.nan
                 data_out[var].append(val)

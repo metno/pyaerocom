@@ -29,13 +29,13 @@ def json_path(tmp_path: Path) -> Path:
             id="single float",
         ),
         pytest.param(
-            [np.float_(2.3456789), np.float32(3.456789012)],
+            [np.float64(2.3456789), np.float32(3.456789012)],
             3,
             [2.346, pytest.approx(3.457, 1e-3)],
             id="np.float list",
         ),
         pytest.param(
-            (np.float128(4.567890123), np.float_(5.6789012345)),
+            (np.float128(4.567890123), np.float64(5.6789012345)),
             5,
             [pytest.approx(4.56789, 1e-5), 5.67890],
             id="np.float tuple",

@@ -137,6 +137,6 @@ def test__get_min_max_year_periods_error():
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_make_dummy_model(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    assert cfg.obs_cfg["AERONET-Sun"]
+    assert cfg.obs_cfg.get_entry("AERONET-Sun")
     model_id = make_dummy_model(["AERONET-Sun"], cfg)
     assert model_id == "dummy_model"

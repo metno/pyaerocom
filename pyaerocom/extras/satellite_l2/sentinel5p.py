@@ -124,7 +124,7 @@ class ReadL2Data(ReadL2DataBase):
         self.NAN_DICT.update({self._ALTITUDENAME: -1.0})
 
         # scaling factors e.g. for unit conversion
-        self.SCALING_FACTORS[self._NO2NAME] = np.float_(6.022140857e19 / 1.0e15)
+        self.SCALING_FACTORS[self._NO2NAME] = np.float64(6.022140857e19 / 1.0e15)
 
         # the following defines necessary quality flags for a value to make it into the used data set
         # the flag needs to have a HIGHER or EQUAL value than the one listed here
@@ -137,11 +137,11 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._NO2NAME] = {}
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"] = {}
         self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"] = {}
-        self.CODA_READ_PARAMETERS[self._NO2NAME]["time_offset"] = np.float_(24.0 * 60.0 * 60.0)
+        self.CODA_READ_PARAMETERS[self._NO2NAME]["time_offset"] = np.float64(24.0 * 60.0 * 60.0)
         self.CODA_READ_PARAMETERS[self._O3NAME] = {}
         self.CODA_READ_PARAMETERS[self._O3NAME]["metadata"] = {}
         self.CODA_READ_PARAMETERS[self._O3NAME]["vars"] = {}
-        self.CODA_READ_PARAMETERS[self._O3NAME]["time_offset"] = np.float_(24.0 * 60.0 * 60.0)
+        self.CODA_READ_PARAMETERS[self._O3NAME]["time_offset"] = np.float64(24.0 * 60.0 * 60.0)
 
         # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
         self.CODA_READ_PARAMETERS[self._NO2NAME]["metadata"][self._TIME_NAME] = "PRODUCT/time"
@@ -293,7 +293,7 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME] = {}
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["vars"] = {}
-            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["time_offset"] = np.float_(
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["time_offset"] = np.float64(
                 24.0 * 60.0 * 60.0
             )
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["metadata"][self._TIME_NAME] = (
@@ -330,7 +330,7 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._LEVELSNAME] = {}
             self.CODA_READ_PARAMETERS[self._LEVELSNAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._LEVELSNAME]["vars"] = {}
-            self.CODA_READ_PARAMETERS[self._LEVELSNAME]["time_offset"] = np.float_(
+            self.CODA_READ_PARAMETERS[self._LEVELSNAME]["time_offset"] = np.float64(
                 24.0 * 60.0 * 60.0
             )
             self.CODA_READ_PARAMETERS[self._LEVELSNAME]["vars"][self._LEVELSNAME] = "PRODUCT/layer"
@@ -338,7 +338,7 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME] = {}
             self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["vars"] = {}
-            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["time_offset"] = np.float_(
+            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["time_offset"] = np.float64(
                 24.0 * 60.0 * 60.0
             )
             self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["vars"][
@@ -349,7 +349,7 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["vars"] = {}
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["time_offset"] = (
-                np.float_(24.0 * 60.0 * 60.0)
+                np.float64(24.0 * 60.0 * 60.0)
             )
             self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]["vars"][
                 self._TM5_TROPOPAUSE_LAYER_INDEX_NAME
@@ -358,7 +358,7 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME] = {}
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["vars"] = {}
-            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["time_offset"] = np.float_(
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["time_offset"] = np.float64(
                 24.0 * 60.0 * 60.0
             )
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["vars"][
@@ -367,7 +367,7 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME] = {}
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["metadata"] = {}
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["vars"] = {}
-            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["time_offset"] = np.float_(
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["time_offset"] = np.float64(
                 24.0 * 60.0 * 60.0
             )
             self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["vars"][
@@ -514,7 +514,7 @@ class ReadL2Data(ReadL2DataBase):
         seconds_to_add = np.datetime64("2010-01-01T00:00:00") - np.datetime64(
             "1970-01-01T00:00:00"
         )
-        seconds_to_add = seconds_to_add.astype(np.float_)
+        seconds_to_add = seconds_to_add.astype(np.float64)
 
         # the same can be achieved using pandas, but we stick to numpy here
         # base_time = pd.DatetimeIndex(['2000-01-01'])
@@ -591,7 +591,7 @@ class ReadL2Data(ReadL2DataBase):
             # return as one multidimensional numpy array that can be put into self.data directly
             # (column wise because the column numbers do not match)
             index_pointer = 0
-            data = np.empty([self._ROWNO, colno], dtype=np.float_)
+            data = np.empty([self._ROWNO, colno], dtype=np.float64)
             # loop over the times
             for idx, _time in enumerate(file_data[self._TIME_OFFSET_NAME]):
                 # loop over the number of ground pixels
@@ -610,9 +610,9 @@ class ReadL2Data(ReadL2DataBase):
 
                     # time can be a scalar...
                     try:
-                        data[index_pointer, self._TIMEINDEX] = _time.astype(np.float_)
+                        data[index_pointer, self._TIMEINDEX] = _time.astype(np.float64)
                     except Exception:
-                        data[index_pointer, self._TIMEINDEX] = _time[_index].astype(np.float_)
+                        data[index_pointer, self._TIMEINDEX] = _time[_index].astype(np.float64)
 
                     # loop over the variables
                     for var in vars_to_read_in:
@@ -633,7 +633,9 @@ class ReadL2Data(ReadL2DataBase):
                     if index_pointer >= self._ROWNO:
                         # add another array chunk to self.data
                         data = np.append(
-                            data, np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float_), axis=0
+                            data,
+                            np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float64),
+                            axis=0,
                         )
                         # unneeded after update (_ROWNO is now dynamic and returns shape index 0 of numpy array)
                         # self._ROWNO += self._CHUNKSIZE

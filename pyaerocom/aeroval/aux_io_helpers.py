@@ -1,8 +1,21 @@
 import importlib
 import os
 import sys
+from collections.abc import Callable
 
-from pyaerocom._lowlevel_helpers import AsciiFileLoc, ListOfStrings
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
+from typing import TYPE_CHECKING
+
+from pydantic import (
+    BaseModel,
+    model_validator,
+)
+
+from pyaerocom._lowlevel_helpers import AsciiFileLoc
 
 
 def check_aux_info(fun, vars_required, funcs):
@@ -26,11 +39,11 @@ def check_aux_info(fun, vars_required, funcs):
         required.
 
     """
-    spec = _AuxReadSpec(fun, vars_required, funcs)
+    spec = _AuxReadSpec(fun=fun, vars_required=vars_required, funcs=funcs)
     return dict(fun=spec.fun, vars_required=spec.vars_required)
 
 
-class _AuxReadSpec:
+class _AuxReadSpec(BaseModel):
     """
     Class that specifies requirements for computation of additional variables
 
@@ -53,39 +66,22 @@ class _AuxReadSpec:
 
     """
 
-    vars_required = ListOfStrings()
+    if TYPE_CHECKING:
+        fun: Callable
+    else:
+        fun: str | Callable
+    vars_required: list[str]
+    funcs: dict[str, Callable]
 
-    def __init__(self, fun, vars_required: list, funcs: dict):
-        self.vars_required = vars_required
-        self.fun = self.get_func(fun, funcs)
-
-    def get_func(self, fun, funcs):
-        """
-        Get callable function for computation of variable
-
-        Parameters
-        ----------
-        fun : str or callable
-            Name of function or function.
-        funcs : dict
-            Dictionary with possible functions (values) and names (keys)
-
-        Raises
-        ------
-        ValueError
-            If function could not be retrieved.
-
-        Returns
-        -------
-        callable
-            callable function object.
-
-        """
-        if callable(fun):
-            return fun
-        elif isinstance(fun, str):
-            return funcs[fun]
-        raise ValueError("failed to retrieve aux func")
+    @model_validator(mode="after")
+    def validate_fun(self) -> Self:
+        if callable(self.fun):
+            return self
+        elif isinstance(self.fun, str):
+            self.fun = self.funcs[self.fun]
+            return self
+        else:
+            raise ValueError("failed to retrieve aux func")
 
 
 class ReadAuxHandler:

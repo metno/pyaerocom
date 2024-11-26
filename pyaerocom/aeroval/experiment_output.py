@@ -751,8 +751,8 @@ class ExperimentOutput(ProjectOutput):
         # occurence of web_interface_name).
         allobs = self.cfg.obs_cfg
         obs_matches = []
-        for key, ocfg in allobs.items():
-            if obs_name == allobs.get_web_interface_name(key):
+        for ocfg in allobs:
+            if obs_name == allobs.get_web_interface_name(ocfg.obs_name):
                 obs_matches.append(ocfg)
         if len(obs_matches) == 0:
             self._invalid["obs"].append(obs_name)

@@ -75,8 +75,9 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
-        obs_needed = self.cfg.obs_cfg[obs_name].obs_id
-        vert_code = self.cfg.obs_cfg.get_entry(obs_name).obs_vert_type
+        obs_entry = self.cfg.obs_cfg.get_entry(obs_name)
+        obs_needed = obs_entry.obs_id
+        vert_code = obs_entry.obs_vert_type
         for oname in obs_needed:
             fp, ts_type, vert_code = self._get_coldata_fileinfo(
                 model_name, oname, var_name, try_colocate_if_missing

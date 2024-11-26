@@ -72,4 +72,4 @@ pyaerocom searches in ``~/MyPyaerocom`` for a file named ``paths.ini`` and uses 
 one in ``data/`` in the pyaerocom installation directory (or at
 <https://github.com/metno/pyaerocom/blob/main-dev/pyaerocom/data/paths.ini>).
 
-To change paths, just copy the default file to ``~/MyPyaerocom`` and change paths to your needs.
+To change paths, just run the command ``pya init`` and  change paths to your needs with your favorite editor.

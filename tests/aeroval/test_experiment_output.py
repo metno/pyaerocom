@@ -293,10 +293,10 @@ def test_Experiment_Output_clean_json_files_CFG1(eval_config: dict):
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
+    cfg.model_cfg.add_entry("mod1", cfg.model_cfg.get_entry("TM5-AP3-CTRL"))
     proc = ExperimentProcessor(cfg)
     proc.run()
-    del cfg.model_cfg["mod1"]
+    cfg.model_cfg.remove_entry("mod1")
     modified = proc.exp_output.clean_json_files()
     assert len(modified) == 13
 
@@ -305,10 +305,9 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    cfg.obs_cfg["obs1"] = cfg.obs_cfg["AERONET-Sun"]
+    cfg.obs_cfg.add_entry("obs1", cfg.obs_cfg.get_entry("AERONET-Sun"))
     proc = ExperimentProcessor(cfg)
     proc.run()
-    del cfg.obs_cfg["obs1"]
     modified = proc.exp_output.clean_json_files()
     assert len(modified) == 13
 
@@ -354,7 +353,7 @@ def test_Experiment_Output_drop_stats_and_decimals(
         stats_decimals,
     )
     cfg = EvalSetup(**eval_config)
-    cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
+    cfg.model_cfg.add_entry("mod1", cfg.model_cfg.get_entry("TM5-AP3-CTRL"))
     proc = ExperimentProcessor(cfg)
     proc.run()
     path = Path(proc.exp_output.exp_dir)

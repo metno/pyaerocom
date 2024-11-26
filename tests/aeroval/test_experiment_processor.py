@@ -31,6 +31,7 @@ def test_ExperimentProcessor_run(processor: ExperimentProcessor):
     processor.run()
 
 
+# Temporary until ObsCollection implemented simiarly then can run same test
 @geojson_unavail
 @pytest.mark.parametrize(
     "cfg,kwargs,error",
@@ -47,7 +48,9 @@ def test_ExperimentProcessor_run(processor: ExperimentProcessor):
         ),
     ],
 )
-def test_ExperimentProcessor_run_error(processor: ExperimentProcessor, kwargs: dict, error: str):
+def test_ExperimentProcessor_run_error_obs_name(
+    processor: ExperimentProcessor, kwargs: dict, error: str
+):
     with pytest.raises(KeyError) as e:
         processor.run(**kwargs)
     assert str(e.value) == error

@@ -19,6 +19,7 @@ class ModelName(str, Enum):
     MOCAGE = "mocage"
     MONARCH = "monarch"
     SILAM = "silam"
+    IFS = "ifs"
 
     def __str__(self) -> str:
         return self.value
