@@ -4,8 +4,9 @@ this module contains basic aeroval configurations for running on CI
 
 import copy
 import logging
-
 from pathlib import Path
+
+from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,10 @@ COLDATA_DIR = Path.home() / "tmp" / "coldata"
 COLDATA_DIR.mkdir(exist_ok=True)
 
 # data directory for test data
-TEST_DATA_DIR = MYPEYAEROCOM_DIR / "tmp" / "test_data"
+TEST_DATA_DIR = MYPEYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "diurnal_test_data"
 
 
-def get_CFG(reportyear, year, model_dir) -> dict:
+def get_CFG(reportyear, year) -> dict:
     """create aeroval configuration dict to run the variable
     ratpm10pm25 (ratio pm10 vspm25)
 
@@ -70,25 +71,25 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         # Regional filter for analysis
         filter_name="ALL-wMOUNTAINS",
         # colocation frequency (no statistics in higher resolution can be computed)
-        ts_type="daily",
+        ts_type="hourly",
         map_zoom="Europe",
         freqs=[
-            "yearly",
             "monthly",
             "daily",
+            "hourly",
         ],
         periods=[f"{year}"],
-        main_freq="monthly",
+        main_freq="daily",
         zeros_to_nan=False,
         use_diurnal=True,
         min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
-        colocate_time=True,
+        colocate_time=False,
         obs_remove_outliers=False,
         model_remove_outliers=False,
         harmonise_units=True,
         regions_how="country",
         annual_stats_constrained=True,
-        proj_id="emep",
+        proj_id="emepCI",
         exp_id=f"{reportyear}-reporting",
         exp_name=f"Evaluation of EMEP runs for {reportyear} EMEP reporting",
         exp_descr=(
@@ -139,8 +140,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     )
 
     CFG["model_cfg"] = {
-        "EMEP_CI": dict(
-            model_id="EMEP,",
+        "EMEPCI": dict(
+            model_id="EMEP.CI,",
             model_ts_type_read="hourly",
         ),
     }
@@ -154,6 +155,17 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "longitude": [-30, 90],
     }
 
+    data_name = "CITestData"
+    data_id = "harp"
+
+    config = PyaroConfig(
+        name=data_name,
+        data_id=data_id,
+        filename_or_obj_or_url=TEST_DATA_DIR,
+        filters={"variables": {"include": ["O3_density"]}},
+        name_map={"O3_density": "vmro3"},
+    )
+
     EBAS_FILTER = {
         **BASE_FILTER,
         "data_level": [None, 2],
@@ -161,83 +173,25 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     }
 
     OBS_GROUNDBASED = {
-        ##################
-        #    EBAS
-        ##################
-        "EBAS-d-10": dict(
-            obs_id="EBASratd10",
-            web_interface_name="EBAS-d",
-            obs_vars=["ratpm10pm25"],
+        ################
+        #    Pyaro
+        ################
+        "Pyaro-h": dict(
+            obs_id=config.name,
+            obs_config=config,
+            web_interface_name=data_name,
+            obs_vars=["vmro3"],
+            # obs_vert_type="Column",
             obs_vert_type="Surface",
-            colocate_time=True,
-            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
-            ts_type="daily",
-            obs_filters=EBAS_FILTER,
-            obs_type="ungridded",
-            obs_merge_how={
-                "ratpm10pm25": "eval",
-            },
-            obs_aux_requires={
-                "ratpm10pm25": {
-                    "EBASMC": [
-                        "concpm10",
-                        "concpm25",
-                    ],
-                }
-            },
-            obs_aux_funs={
-                "ratpm10pm25":
-                # variables used in computation method need to be based on AeroCom
-                # units, since the colocated StationData objects (from which the
-                # new UngriddedData is computed, will perform AeroCom unit check
-                # and conversion)
-                "(EBASMC;concpm10/EBASMC;concpm25)"
-            },
-            obs_aux_units={"ratpm10pm25": "1"},
-        ),
-        "EBAS-d-25": dict(
-            obs_id="EBASratd25",
-            web_interface_name="EBAS-d",
-            obs_vars=["ratpm25pm10"],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
-            ts_type="daily",
-            obs_filters=EBAS_FILTER,
-            obs_type="ungridded",
-            obs_merge_how={
-                "ratpm25pm10": "eval",
-            },
-            obs_aux_requires={
-                "ratpm25pm10": {
-                    "EBASMC": [
-                        "concpm10",
-                        "concpm25",
-                    ],
-                }
-            },
-            obs_aux_funs={
-                "ratpm25pm10":
-                # variables used in computation method need to be based on AeroCom
-                # units, since the colocated StationData objects (from which the
-                # new UngriddedData is computed, will perform AeroCom unit check
-                # and conversion)
-                "(EBASMC;concpm25/EBASMC;concpm10)"
-            },
-            obs_aux_units={"ratpm25pm10": "1"},
-        ),
-        "EBAS-d-tc": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-d",
-            obs_vars=[
-                "concpm10",
-                "concpm25",
-            ],
-            obs_vert_type="Surface",
-            colocate_time=True,
-            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
-            ts_type="daily",
-            obs_filters=EBAS_FILTER,
+            # colocate_time=True,
+            # min_num_obs={
+            #     "yearly": {"monthly": 9},
+            #     "monthly": {"daily": 4, "weekly": 1},
+            #     "daily": {"hourly": 18},
+            #     # "hourly": {"minutely": 45},
+            # },
+            ts_type="hourly",
+            # obs_filters=Pyaro_FILTER,
         ),
     }
 
