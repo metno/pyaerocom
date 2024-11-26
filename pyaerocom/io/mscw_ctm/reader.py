@@ -58,7 +58,7 @@ class ReadMscwCtm(GriddedReader):
         For multi-year analysis/trends, datadir may contain subdirectories named by trend-year,
         e.g. 2010 or trend2010.
     file_pattern : str | re.Pattern, optional
-        Optional filepattern against which the base name of files will be matched.
+        Optional regular expression against which the base name of files will be matched.
         This can be used to override the default `Base_{freq}.nc` file matching.
 
     Attributes
