@@ -1,0 +1,19 @@
+#! /bin/bash
+#$ -N UEMEP_TEST
+#$ -S /bin/bash
+# 30G without EEA, 70G when initializing EEA, 50G with cached EEA
+#$ -l h_rss=80G,mem_free=80G,h_data=80G
+#$ -pe shmem-1 1
+#$ -cwd
+#$ -o ./logs/
+#$ -e ./logs/
+
+source /lustre/storeB/users/thlun8736/python/pyaerocom/venv/bin/activate
+
+set -e
+
+mkdir -p ./data
+mkdir -p ./coldata
+
+export PYAEROCOM_LOG_FILE=logs/evaluation-$(date +%Y%m%dT%H%MZ).log
+/usr/bin/time -v python /lustre/storeB/users/thlun8736/python/pyaerocom/scripts/uemep_evaluation.py
