@@ -216,7 +216,7 @@ class ReadMscwCtm(GriddedReader):
             try:
                 file_pattern = re.compile(file_pattern)
             except re.error as e:
-                raise TypeError(
+                raise ValueError(
                     f"Provided file_pattern '{file_pattern}' of type {type(file_pattern)} can't be compiled to re.Pattern."
                 ) from e
         self._private.file_pattern = file_pattern
