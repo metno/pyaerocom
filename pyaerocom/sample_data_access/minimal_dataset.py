@@ -25,7 +25,7 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20231116": "md5:5da747f6596817295ba7affe3402b722",
         "testdata-minimal.tar.gz.20240722": "md5:7d933901c6d273d012f132c60df086cc",
         "testdata-minimal.tar.gz.20241120": "md5:4d2bc1782b1f468321817139d327e014",
-        "testdata-minimal.tar.gz.20241126": "md5:71993be9980f945305d820ceafef0037",
+        "testdata-minimal.tar.gz.20241126": "md5:0f402171285c0e1bec1abc610d049fba",
     },
 )
 
