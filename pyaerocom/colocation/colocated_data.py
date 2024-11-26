@@ -1659,7 +1659,7 @@ class ColocatedData(BaseModel):
         if not isinstance(lon_range, slice):
             lon_range = slice(lon_range[0], lon_range[1])
 
-        buffer = 1e-5  # didn't work
+        buffer = 0  # 1e-5  # didn't work
         lat_range = slice(
             max((arr.latitude.min(), lat_range.start)) - buffer,
             min((arr.latitude.max(), lat_range.stop)) + buffer,
