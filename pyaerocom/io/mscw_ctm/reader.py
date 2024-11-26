@@ -57,6 +57,9 @@ class ReadMscwCtm(GriddedReader):
         data_dir must contain at least one of Base_(hour|day|month|fullrun).nc
         For multi-year analysis/trends, datadir may contain subdirectories named by trend-year,
         e.g. 2010 or trend2010.
+    file_pattern : str | re.Pattern, optional
+        Optional filepattern against which the base name of files will be matched.
+        This can be used to override the default `Base_{freq}.nc` file matching.
 
     Attributes
     ----------
@@ -185,7 +188,14 @@ class ReadMscwCtm(GriddedReader):
         data_dir: str | None = None
         file_pattern: re.Pattern
 
-    def __init__(self, data_id: str | None = None, data_dir: str | None = None, **kwargs):
+    def __init__(
+        self,
+        data_id: str | None = None,
+        data_dir: str | None = None,
+        *,
+        file_pattern: str | re.Pattern | None = None,
+        **kwargs,
+    ):
         # opened dataset (for performance boost), will be reset if data_dir is
         # changed
         self._private = self._PrivateFields()
@@ -198,19 +208,18 @@ class ReadMscwCtm(GriddedReader):
             else:
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
 
-        pattern = kwargs.get("file_pattern", None)
-        if pattern is None:
+        if file_pattern is None:
             # Pattern for the 'Base_{freq}.nc' default strategy.
-            pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
+            file_pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
 
-        if not isinstance(pattern, re.Pattern):
+        if not isinstance(file_pattern, re.Pattern):
             try:
-                pattern = re.compile(pattern)
+                file_pattern = re.compile(file_pattern)
             except re.error as e:
                 raise TypeError(
-                    f"Provided file_pattern '{pattern}' of type {type(pattern)} can't be compiled to re.Pattern. Please provide str or re.Pattern."
+                    f"Provided file_pattern '{file_pattern}' of type {type(file_pattern)} can't be compiled to re.Pattern."
                 ) from e
-        self._private.file_pattern = pattern
+        self._private.file_pattern = file_pattern
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
