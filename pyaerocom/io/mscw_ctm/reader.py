@@ -276,13 +276,11 @@ class ReadMscwCtm(GriddedReader):
                 continue
             m = re.match(self.YEAR_PATTERN, d)
             if m is not None:
-                if self._private.file_pattern is not None:
-                    has_mscwfiles = False
-                    for f in mscwfiles:
-                        if os.path.exists(os.path.join(dd, d, f)):
-                            has_mscwfiles = True
-                else:
-                    has_mscwfiles = True
+                has_mscwfiles = False
+                for f in mscwfiles:
+                    if os.path.exists(os.path.join(dd, d, f)):
+                        has_mscwfiles = True
+
                 if has_mscwfiles:
                     yrs.append(int(m.group(1)))
                     folders.append(os.path.join(dd, d))
