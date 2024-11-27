@@ -18,17 +18,18 @@ if __name__ == "__main__":
             "exp_pi": "thlun8736@met.no",
             "json_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/data",
             "coldata_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/coldata",
+            "raise_exceptions": False
         }
     )
     # O3 info is only in monthly / daily while all other variables are only
     # in hourly. The following seems to make it run, but there may be a better way.
     # ¯\_(ツ)_/¯
-    cfg["model_cfg"]["EMEP"]["model_ts_type_read"] = {
-        "vmro3max": "daily",
-        "concpm10": "hourly",
-        "concpm25": "hourly",
-        "prmm": "hourly"
-    }
+    #cfg["model_cfg"]["EMEP"]["model_ts_type_read"] = {
+    #    "vmro3max": "daily",
+    #    "concpm10": "hourly",
+    #    "concpm25": "hourly",
+    #    "prmm": "hourly"
+    #}
     stp = EvalSetup(**cfg)
 
     ana = ExperimentProcessor(stp)
