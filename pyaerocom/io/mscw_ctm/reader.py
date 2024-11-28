@@ -61,6 +61,9 @@ class ReadMscwCtm(GriddedReader):
         Optional regular expression against which the base name of files will be matched.
         This can be used to override the default `Base_{freq}.nc` file matching.
 
+        Note {freq} can be included as part of the pattern and will be expanded to
+        (hour|day|month|fullrun).
+
     Attributes
     ----------
     data_id : str
@@ -211,6 +214,8 @@ class ReadMscwCtm(GriddedReader):
         if file_pattern is None:
             # Pattern for the 'Base_{freq}.nc' default strategy.
             file_pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
+        else:
+            file_pattern = file_pattern.format(freq=f"({'|'.join(self.FREQ_CODES.keys())})")
 
         if not isinstance(file_pattern, re.Pattern):
             try:
@@ -219,7 +224,11 @@ class ReadMscwCtm(GriddedReader):
                 raise ValueError(
                     f"Provided file_pattern '{file_pattern}' of type {type(file_pattern)} can't be compiled to re.Pattern."
                 ) from e
+
         self._private.file_pattern = file_pattern
+        logger.info(
+            f"Matching valid EMEP files based on the following regular expression: '{file_pattern}'"
+        )
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -265,9 +274,9 @@ class ReadMscwCtm(GriddedReader):
         """
         dd = self._data_dir
 
-        mscwfiles = []
-        for freq in self.FREQ_CODES.keys():
-            mscwfiles.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
+        # mscwfiles = []
+        # for freq in self.FREQ_CODES.keys():
+        #    mscwfiles.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
 
         folders: list[str] = []
         yrs: list[int] = []
@@ -277,20 +286,32 @@ class ReadMscwCtm(GriddedReader):
             m = re.match(self.YEAR_PATTERN, d)
             if m is not None:
                 has_mscwfiles = False
-                for f in mscwfiles:
-                    if os.path.exists(os.path.join(dd, d, f)):
+                for f in os.listdir(os.path.join(dd, d)):
+                    if (
+                        os.path.isfile(os.path.join(dd, d, f))
+                        and self._private.file_pattern.match(f) is not None
+                    ):
                         has_mscwfiles = True
+                # for f in mscwfiles:
+                #    if os.path.exists(os.path.join(dd, d, f)):
+                #        has_mscwfiles = True
 
                 if has_mscwfiles:
                     yrs.append(int(m.group(1)))
                     folders.append(os.path.join(dd, d))
 
         if len(folders) == 0:  # no trends, use folder
-            for f in mscwfiles:
-                if os.path.exists(os.path.join(dd, f)) or self._private.file_pattern is not None:
+            for f in os.listdir(dd):
+                if os.path.isfile(os.path.join(dd, f)) and self._private.file_pattern.match(f):
                     folders = [dd]
+                    break
+            # for f in mscwfiles:
+            #    if os.path.exists(os.path.join(dd, f)):
+            #        folders = [dd]
             if len(folders) == 0:
-                raise FileNotFoundError(f"no files like {mscwfiles} found in {dd}")
+                raise FileNotFoundError(
+                    f"no files matching {self._private.file_pattern} found in {dd}"
+                )
         else:
             folders = [d for _, d in sorted(zip(yrs, folders))]
         return list(set(folders))
@@ -321,13 +342,20 @@ class ReadMscwCtm(GriddedReader):
     def _get_tst_from_file(self, file: str):
         _, fname = os.path.split(file)
 
+        # Note: This is to maintain previous functionality which would raise error if file did not match
+        # Base_{freq} template. I am not sure if this should be the responsibility of this function, and
+        # alternatively this can be removed (including the test).
+        if self._private.file_pattern.match(file) is None:
+            raise ValueError(
+                f"The file '{file}' does not match file_pattern '{self._private.file_pattern}'"
+            )
+
         for freq, tst in self.FREQ_CODES.items():
             if freq in file:
                 return tst
             # freq_name = self.FILE_FREQ_TEMPLATE.format(freq=freq)
             # if freq_name == fname:
             #    return tst
-        raise ValueError(f"The file {file} is not supported")
 
     def _clean_filepaths(self, filepaths: list[str], yrs: list[str], ts_type: str):
         clean_paths: set[str] = set()

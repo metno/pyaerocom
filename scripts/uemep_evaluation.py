@@ -14,7 +14,7 @@ if __name__ == "__main__":
         {
             "add_model_maps": False,
             "proj_id": "uemep_test",
-            "exp_id": "20241127",
+            "exp_id": "20241128",
             "exp_pi": "thlun8736@met.no",
             "json_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/data",
             "coldata_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/coldata",
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     #    "prmm": "hourly"
     #}
     cfg["model_cfg"]["EMEP"]["model_kwargs"] = {
-        "file_pattern": "^RERUN2022_(day|hour|month|fullrun)_.+\.nc$"
+        "file_pattern": "^RERUN2022_{freq}_.+\.nc$"
     }
     stp = EvalSetup(**cfg)
 
