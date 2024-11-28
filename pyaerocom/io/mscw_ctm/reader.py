@@ -322,14 +322,16 @@ class ReadMscwCtm(GriddedReader):
         _, fname = os.path.split(file)
 
         for freq, tst in self.FREQ_CODES.items():
-            freq_name = self.FILE_FREQ_TEMPLATE.format(freq=freq)
-            if freq_name == fname:
+            if freq in file:
                 return tst
+            # freq_name = self.FILE_FREQ_TEMPLATE.format(freq=freq)
+            # if freq_name == fname:
+            #    return tst
         raise ValueError(f"The file {file} is not supported")
 
     def _clean_filepaths(self, filepaths: list[str], yrs: list[str], ts_type: str):
-        clean_paths: list[str] = []
-        found_yrs: list[str] = []
+        clean_paths: set[str] = set()
+        found_yrs: set[str] = set()
 
         yrs = [int(yr) for yr in yrs]
         for path in filepaths:
@@ -344,21 +346,23 @@ class ReadMscwCtm(GriddedReader):
             except Exception as ex:
                 raise ValueError(f"Could not find any year in {path}: {ex}")
 
+            clean_paths.add(path)
             if yr not in yrs:
                 raise ValueError(f"The year {yr} of {path} is not in {yrs}")
 
             if yr in found_yrs:
-                raise ValueError(f"The year {yr} of {path} is already found: {found_yrs}")
+                continue
+                # raise ValueError(f"The year {yr} of {path} is already found: {found_yrs}")
 
-            found_yrs.append(yr)
-            clean_paths.append(path)
+            found_yrs.add(yr)
+            # clean_paths.append(path)
 
         if len(found_yrs) != len(yrs):
             raise ValueError(
                 f"A different amount of years {found_yrs} were found compared to {yrs} in {filepaths}"
             )
 
-        return [d for _, d in sorted(zip(found_yrs, clean_paths))]
+        return list(clean_paths)
 
     @property
     def data_id(self) -> str | None:
