@@ -136,7 +136,7 @@ class ModelMapsSetup(BaseModel):
         if isinstance(v, dict):
             for m in v:
                 if not isinstance(v[m], set):
-                    v[m] = set([v[m]])
+                    v[m] = set([*v[m]])
                 if v[m] not in PLOT_TYPE_OPTIONS:
                     raise ConfigError("Model maps set up given a non-valid plot type.")
         if isinstance(v, str):
