@@ -126,7 +126,7 @@ class OutputPaths(BaseModel):
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
     maps_res_deg: PositiveInt = 5
-    plot_types: dict | set[str] = {CONTOUR}
+    plot_types: dict[str, str | tuple[str, str]] | set[str] = {CONTOUR}
     boundaries: BoundingBox | None = None
     map_observations_only_in_right_menu: bool = False
     overlay_save_format: Literal["webp", "png"] = "webp"
@@ -136,7 +136,10 @@ class ModelMapsSetup(BaseModel):
         if isinstance(v, dict):
             for m in v:
                 if not isinstance(v[m], set):
-                    v[m] = set([*v[m]])
+                    if isinstance(v[m], str):
+                        v[m] = set([v[m]])
+                    else:
+                        v[m] = set([*v[m]])
                 if v[m] not in PLOT_TYPE_OPTIONS:
                     raise ConfigError("Model maps set up given a non-valid plot type.")
         if isinstance(v, str):
