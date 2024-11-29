@@ -305,9 +305,10 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    cfg.obs_cfg.add_entry("obs1", cfg.obs_cfg.get_entry("AERONET-Sun"))
+    cfg.obs_cfg.add_entry("obs1", eval_config["obs_cfg"]["AERONET-Sun"])
     proc = ExperimentProcessor(cfg)
     proc.run()
+    cfg.obs_cfg.remove_entry("obs1")
     modified = proc.exp_output.clean_json_files()
     assert len(modified) == 13
 

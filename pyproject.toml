@@ -28,7 +28,7 @@ dependencies = [
     "matplotlib>=3.7.1",
     "scipy>=1.10.1",
     "pandas>=1.5.3",
-    "numpy>=1.24.4",
+    "numpy>=1.25.0",
     "seaborn>=0.12.2",
     "dask",
     "geonum==1.5.0",
@@ -219,7 +219,7 @@ deps =
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"
     scipy ==1.10.1; python_version < "3.11"
-    numpy ==1.24.4; python_version < "3.11"
+    numpy ==1.25.0; python_version < "3.11"
     seaborn ==0.12.2; python_version < "3.11"
     geonum ==1.5.0; python_version < "3.11"
     typer ==0.7.0; python_version < "3.11"

@@ -148,6 +148,7 @@ class ObsCollection(BaseCollection):
         if isinstance(entry, dict):
             entry = ObsEntry(**entry)
         self._entries[key] = entry
+        self._entries[key].obs_name = self.get_web_interface_name(key)
 
     def remove_entry(self, key: str):
         if key in self._entries:
@@ -164,7 +165,6 @@ class ObsCollection(BaseCollection):
         """
         try:
             entry = self._entries[key]
-            entry.obs_name = self.get_web_interface_name(key)
             return entry
         except (KeyError, AttributeError):
             raise EntryNotAvailable(f"no such entry {key}")

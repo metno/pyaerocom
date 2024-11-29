@@ -88,7 +88,7 @@ def _calculate_ts_type(
 ) -> npt.NDArray[TsType]:
     seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
 
-    @np.vectorize
+    @np.vectorize(otypes=[TsType])
     @functools.lru_cache(maxsize=128)
     def memoized_ts_type(x: np.int32) -> TsType:
         if x == 0:

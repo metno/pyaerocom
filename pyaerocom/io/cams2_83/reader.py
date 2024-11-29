@@ -32,7 +32,7 @@ AEROCOM_NAMES = dict(
 )
 
 FULL_NAMES = dict(
-    co_conc="mass_concentration_of_carbon_monoxide_in_air",
+    co_conc="Carbon Monoxide",
     no2_conc="Nitrogen Dioxide",
     o3_conc="Ozone",
     pm10_conc="PM10 Aerosol",
@@ -41,7 +41,7 @@ FULL_NAMES = dict(
 )
 
 STANDARD_NAMES = dict(
-    co_conc="Carbon Monoxide",
+    co_conc="mass_concentration_of_carbon_monoxide_in_air",
     no2_conc="mass_concentration_of_nitrogen_dioxide_in_air",
     o3_conc="mass_concentration_of_ozone_in_air",
     pm10_conc="mass_concentration_of_pm10_ambient_aerosol_in_air",
