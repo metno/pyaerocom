@@ -232,6 +232,7 @@ deps =
     pooch ==1.7.0; python_version < "3.11"
     xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
+    pyaro-readers @ git+https://github.com/metno/pyaro-readers.git
 
 [testenv:lint]
 skip_install = True
