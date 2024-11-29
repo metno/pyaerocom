@@ -32,7 +32,7 @@ minimal_dataset = pooch.create(
 
 
 def download_minimal_dataset(
-        file_name: str = DEFAULT_TESTDATA_FILE, /, extract_dir_override: str | None = None
+    file_name: str = DEFAULT_TESTDATA_FILE, /, extract_dir_override: str | None = None
 ):
     """Download test_data_file and extracts it.
 
