@@ -88,7 +88,7 @@ def get_CFG(reportyear, year) -> dict:
         model_remove_outliers=False,
         harmonise_units=True,
         regions_how="country",
-        annual_stats_constrained=True,
+        # annual_stats_constrained=True,
         proj_id="emepCI",
         exp_id=f"{reportyear}-reporting",
         exp_name=f"Evaluation of EMEP runs for {reportyear} EMEP reporting",
@@ -141,7 +141,7 @@ def get_CFG(reportyear, year) -> dict:
 
     CFG["model_cfg"] = {
         "EMEPCI": dict(
-            model_id="EMEP.CI,",
+            model_id="EMEP.CI",
             model_ts_type_read="hourly",
         ),
     }
@@ -180,6 +180,7 @@ def get_CFG(reportyear, year) -> dict:
             obs_id=config.name,
             obs_config=config,
             web_interface_name=data_name,
+            obs_name=data_name,
             obs_vars=["vmro3"],
             # obs_vert_type="Column",
             obs_vert_type="Surface",
