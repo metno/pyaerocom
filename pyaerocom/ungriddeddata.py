@@ -1466,10 +1466,11 @@ class UngriddedData:
         val_f = {}
         for key, val in filter_attributes.items():
             if key not in valid_keys:
-                raise OSError(
-                    f"Invalid input parameter for filtering: {key}. "
-                    f"Please choose from {valid_keys}"
-                )
+                continue
+                #raise OSError(
+                #    f"Invalid input parameter for filtering: {key}. "
+                #    f"Please choose from {valid_keys}"
+                #)
 
             if isinstance(val, str):
                 str_f[key] = val

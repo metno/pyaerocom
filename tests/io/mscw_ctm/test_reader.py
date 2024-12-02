@@ -453,7 +453,7 @@ def test_read_emep_wrong_tst(data_path: Path, wrong_tst: str):
         wrong_path = Path(filepaths[0]).with_name(f"Base_{wrong_tst}.nc")
         reader._get_tst_from_file(str(wrong_path))
 
-    assert str(e.value) == f"The file {wrong_path} is not supported"
+    assert " does not match file_pattern " in str(e.value)
 
 
 def test_read_emep_LF_tst(tmp_path: Path):

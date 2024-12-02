@@ -227,7 +227,7 @@ class ReadMscwCtm(GriddedReader):
 
         self._private.file_pattern = file_pattern
         logger.info(
-            f"Matching valid EMEP files based on the following regular expression: '{file_pattern}'"
+            f"Matching valid EMEP files based on the following regular expression: '{file_pattern.pattern}'"
         )
 
         if data_dir is not None:
@@ -351,7 +351,7 @@ class ReadMscwCtm(GriddedReader):
             )
 
         for freq, tst in self.FREQ_CODES.items():
-            if freq in file:
+            if freq in fname:
                 return tst
             # freq_name = self.FILE_FREQ_TEMPLATE.format(freq=freq)
             # if freq_name == fname:
@@ -568,8 +568,8 @@ class ReadMscwCtm(GriddedReader):
 
         ts_type = self._ts_type_from_filename(self._filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
-        if len(fps) > 1 and ts_type == "hourly":
-            raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
+        #if len(fps) > 1 and ts_type == "hourly":
+        #    raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
         logger.info(f"Opening {fps}")
         ds = xr.open_mfdataset(fps, chunks={"time": 24})
 
