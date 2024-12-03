@@ -212,7 +212,7 @@ commands_pre =
     python --version
     python -m pip freeze --all
 commands =
-    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest -ra -q {posargs:--cov --no-cov-on-fail} --doctest-modules
 extras =
     test
 setenv =
