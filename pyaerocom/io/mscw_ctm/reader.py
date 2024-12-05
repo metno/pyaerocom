@@ -61,8 +61,10 @@ class ReadMscwCtm(GriddedReader):
         Optional regular expression against which the base name of files will be matched.
         This can be used to override the default `Base_{freq}.nc` file matching.
 
-        Note {freq} can be included as part of the pattern and will be expanded to
-        (hour|day|month|fullrun).
+        Note that for convenience the string literal '{freq}' can be included as part of the
+        pattern and will be expanded to (hour|day|month|fullrun). This is recommended, as
+        the presence of these strings are used to derive ts_type, which is currently necessary
+        for reading.
 
     Attributes
     ----------
@@ -274,10 +276,6 @@ class ReadMscwCtm(GriddedReader):
         """
         dd = self._data_dir
 
-        # mscwfiles = []
-        # for freq in self.FREQ_CODES.keys():
-        #    mscwfiles.append(self.FILE_FREQ_TEMPLATE.format(freq=freq))
-
         folders: list[str] = []
         yrs: list[int] = []
         for d in os.listdir(dd):
@@ -292,9 +290,6 @@ class ReadMscwCtm(GriddedReader):
                         and self._private.file_pattern.match(f) is not None
                     ):
                         has_mscwfiles = True
-                # for f in mscwfiles:
-                #    if os.path.exists(os.path.join(dd, d, f)):
-                #        has_mscwfiles = True
 
                 if has_mscwfiles:
                     yrs.append(int(m.group(1)))
@@ -305,9 +300,7 @@ class ReadMscwCtm(GriddedReader):
                 if os.path.isfile(os.path.join(dd, f)) and self._private.file_pattern.match(f):
                     folders = [dd]
                     break
-            # for f in mscwfiles:
-            #    if os.path.exists(os.path.join(dd, f)):
-            #        folders = [dd]
+
             if len(folders) == 0:
                 raise FileNotFoundError(
                     f"no files matching {self._private.file_pattern} found in {dd}"
@@ -353,9 +346,6 @@ class ReadMscwCtm(GriddedReader):
         for freq, tst in self.FREQ_CODES.items():
             if freq in fname:
                 return tst
-            # freq_name = self.FILE_FREQ_TEMPLATE.format(freq=freq)
-            # if freq_name == fname:
-            #    return tst
 
     def _clean_filepaths(self, filepaths: list[str], yrs: list[str], ts_type: str):
         clean_paths: set[str] = set()
@@ -380,10 +370,8 @@ class ReadMscwCtm(GriddedReader):
 
             if yr in found_yrs:
                 continue
-                # raise ValueError(f"The year {yr} of {path} is already found: {found_yrs}")
 
             found_yrs.add(yr)
-            # clean_paths.append(path)
 
         if len(found_yrs) != len(yrs):
             raise ValueError(
@@ -568,8 +556,23 @@ class ReadMscwCtm(GriddedReader):
 
         ts_type = self._ts_type_from_filename(self._filename)
         fps = self._clean_filepaths(fps, yrs, ts_type)
-        #if len(fps) > 1 and ts_type == "hourly":
-        #    raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
+
+        if ts_type == "hourly":
+            years = set()
+            for fp in self._private.files:
+                with xr.open_dataset(fp) as nc:
+                    start_year = (
+                        nc["time"][:].data.min().astype("datetime64[Y]").astype(int) + 1970
+                    )
+                    end_year = nc["time"][:].data.max().astype("datetime64[Y]").astype(int) + 1970
+                for y in range(start_year, end_year + 1):
+                    years.add(y)
+
+            if len(years) > 1:
+                raise ValueError(
+                    f"ts_type {ts_type} can not be hourly when using multiple years ({sorted(list(years))})"
+                )
+
         logger.info(f"Opening {fps}")
         ds = xr.open_mfdataset(fps, chunks={"time": 24})
 
