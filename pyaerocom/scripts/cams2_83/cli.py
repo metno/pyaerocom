@@ -78,6 +78,8 @@ def make_config(
         periods=eval_type.periods(start_date, end_date),
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
+        plot_types = { f"{model.name}" : ["overlay" if model.name != "IFS" else "contour"] for model in models},
+        boundaries = {"west": -25.0, "east": 45.0, "south": 30.0, "north": 72.0},
     )
 
     if eval_type is not None:
