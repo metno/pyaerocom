@@ -209,7 +209,7 @@ def test_ExperimentOutput__info_from_contour_dir_file_error():
     file = pathlib.PosixPath("path/to/obs_vertical_model_period.txt")
     with pytest.raises(ValueError) as e:
         ExperimentOutput._info_from_contour_dir_file(file)
-    assert "" in str(e.value)
+    assert "invalid contour filename" in str(e.value)
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
