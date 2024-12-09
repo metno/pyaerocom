@@ -371,8 +371,8 @@ class ExperimentOutput(ProjectOutput):
             per = spl[2]
             return (name, var_name, per)
         elif len(spl) == 2:  # geojson
-            name = spl[0]
-            var_name = spl[1]
+            name = spl[1]
+            var_name = spl[0]
             per = None
             return (name, var_name, per)
         else:
