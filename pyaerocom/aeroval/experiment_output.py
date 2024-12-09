@@ -376,7 +376,7 @@ class ExperimentOutput(ProjectOutput):
             per = None
             return (name, var_name, per)
         else:
-            raise ValueError("Could not infer information from contour dir file")
+            raise ValueError(f"invalid contour filename: {file}")
 
     def _results_summary(self) -> dict[str, list[str]]:
         if self.cfg.processing_opts.only_model_maps:
