@@ -365,16 +365,18 @@ class ExperimentOutput(ProjectOutput):
         """
         spl = os.path.basename(file.name).split(file.suffix)[0].split("_")
 
-        if len(spl) != 3:
-            raise ValueError(
-                f"invalid contour filename: {file}. Must "
-                f"contain exactly 2 underscores _ to separate "
-                f"name, vertical, and periods"
-            )
-        name = spl[0]
-        var_name = spl[1]
-        per = spl[2]
-        return (name, var_name, per)
+        if len(spl) == 3:  # png, webp
+            name = spl[0]
+            var_name = spl[1]
+            per = spl[2]
+            return (name, var_name, per)
+        elif len(spl) == 2:  # geojson
+            name = spl[0]
+            var_name = spl[1]
+            per = None
+            return (name, var_name, per)
+        else:
+            raise ValueError("Could not infer information from contour dir file")
 
     def _results_summary(self) -> dict[str, list[str]]:
         if self.cfg.processing_opts.only_model_maps:
