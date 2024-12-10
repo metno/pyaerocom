@@ -72,6 +72,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
             self.cfg.obs_cfg.get_all_vars()
         )[1]
+        if not mvars:
+            mvars = self.cfg.webdisp_opts.var_order_menu
+            logger.warning(
+                "ModelMapsEngine:    Did not find any observation variables. Getting variables instead from the var_order_menu. This can be dangerous so please make sure all variables definied here exist by the specified models."
+            )
+
         all_vars = sorted(list(set(mvars)))
         if var_list is not None:
             all_vars = [var for var in var_list if var in all_vars]
