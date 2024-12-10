@@ -192,6 +192,7 @@ class ReadMscwCtm(GriddedReader):
         files: list[str] | None = None
         data_dir: str | None = None
         file_pattern: re.Pattern
+        ts_type: str | None = None
 
     def __init__(
         self,
@@ -499,7 +500,9 @@ class ReadMscwCtm(GriddedReader):
             current ts_type.
 
         """
-        return self._ts_type_from_filename(self._filename)
+        if self._private.ts_type is None:
+            return self._ts_type_from_filename(self._filename)
+        return self._private.ts_type
 
     @property
     def ts_types(self) -> list[str]:
@@ -551,10 +554,9 @@ class ReadMscwCtm(GriddedReader):
         """
         fps = self._filepaths
         ds = {}
-
         yrs = self._get_yrs_from_filepaths()
 
-        ts_type = self._ts_type_from_filename(self._filename)
+        ts_type = self._ts_type
         fps = self._clean_filepaths(fps, yrs, ts_type)
 
         if ts_type == "hourly":
@@ -746,6 +748,7 @@ class ReadMscwCtm(GriddedReader):
             # filename and ts_type are set. update filename if ts_type suggests
             # that current file has different resolution
             self._filename = self._filename_from_ts_type(ts_type)
+        self._private.ts_type = ts_type
 
         ts_type = self._ts_type
 
