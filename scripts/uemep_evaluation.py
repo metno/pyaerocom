@@ -14,7 +14,7 @@ if __name__ == "__main__":
         {
             "add_model_maps": False,
             "proj_id": "uemep_test",
-            "exp_id": "20241231",
+            "exp_id": "20241211",
             "exp_pi": "thlun8736@met.no",
             "json_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/data",
             "coldata_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/coldata",
