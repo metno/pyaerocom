@@ -372,15 +372,13 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             # Gases
             "conco3",
             "concno2",
-            #"concno",
-
+            # "concno",
             #
             "concso4",
             "concno3c",
             "concno3f",
             # "concnh4pm25"
             # "concssc"
-
             # PMs
             "concpm10",
             "concpm25",
@@ -731,7 +729,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             colocate_time=True,
@@ -750,7 +748,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             colocate_time=True,
@@ -770,7 +768,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             colocate_time=True,
@@ -790,7 +788,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             colocate_time=True,
@@ -810,7 +808,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             ts_type="hourly",
@@ -891,7 +889,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
@@ -913,7 +911,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             obs_vert_type="Surface",
             obs_filters=EBAS_FILTER,
@@ -932,15 +930,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             web_interface_name="EEA-rural",
             obs_vert_type="Surface",
             obs_filters=EEA_FILTER,
         ),
         "EEA-d-rural-no": dict(
-           obs_id="EEAAQeRep.v2",
-           obs_vars=[
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
                 "conco3",
                 "concno2",
                 "concso4",
@@ -949,15 +947,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
-           web_interface_name="EEA-rural",
-           obs_vert_type="Surface",
-           obs_filters=EEA_FILTER,
+            web_interface_name="EEA-rural",
+            obs_vert_type="Surface",
+            obs_filters=EEA_FILTER,
         ),
         "EEA-h-diurnal-rural": dict(
-           obs_id="EEAAQeRep.v2",
-           obs_vars=[
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
                 "conco3",
                 "concno2",
                 "concso4",
@@ -966,15 +964,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
-           obs_vert_type="Surface",
-           web_interface_name="EEA-h-rural",
-           ts_type="hourly",
-           # diurnal_only=True,
-           harmonise_units=False,
-           resample_how="mean",
-           obs_filters={**EEA_FILTER, "ts_type": "hourly"},
+            obs_vert_type="Surface",
+            web_interface_name="EEA-h-rural",
+            ts_type="hourly",
+            # diurnal_only=True,
+            harmonise_units=False,
+            resample_how="mean",
+            obs_filters={**EEA_FILTER, "ts_type": "hourly"},
         ),
         # "EEA-d-ox-rural": dict(
         #    obs_id="EEA-ox-rural",
@@ -1044,15 +1042,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
             web_interface_name="EEA-all",
             obs_vert_type="Surface",
             obs_filters=EEA_FILTER_ALL,
         ),
         "EEA-d-all-no": dict(
-           obs_id="EEAAQeRep.v2",
-           obs_vars=[
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
                 "conco3",
                 "concno2",
                 "concso4",
@@ -1061,15 +1059,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
-           web_interface_name="EEA-all",
-           obs_vert_type="Surface",
-           obs_filters=EEA_FILTER_ALL,
+            web_interface_name="EEA-all",
+            obs_vert_type="Surface",
+            obs_filters=EEA_FILTER_ALL,
         ),
         "EEA-h-diurnal-all": dict(
-           obs_id="EEAAQeRep.v2",
-           obs_vars=[
+            obs_id="EEAAQeRep.v2",
+            obs_vars=[
                 "conco3",
                 "concno2",
                 "concso4",
@@ -1078,15 +1076,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 # "concnh4pm25"
                 # "concssc"
                 "concpm10",
-                "concpm25"
+                "concpm25",
             ],
-           obs_vert_type="Surface",
-           web_interface_name="EEA-h-all",
-           ts_type="hourly",
-           # diurnal_only=True,
-           harmonise_units=False,
-           resample_how="mean",
-           obs_filters={**EEA_FILTER_ALL, "ts_type": "hourly"},
+            obs_vert_type="Surface",
+            web_interface_name="EEA-h-all",
+            ts_type="hourly",
+            # diurnal_only=True,
+            harmonise_units=False,
+            resample_how="mean",
+            obs_filters={**EEA_FILTER_ALL, "ts_type": "hourly"},
         ),
         # "EEA-d-ox-all": dict(
         #    obs_id="EEA-ox-all",
