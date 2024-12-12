@@ -40,6 +40,8 @@ from .additional_variables import (
     calc_ratpm25pm10,
 )
 from .model_variables import emep_variables
+import pathlib
+
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,7 @@ class ReadMscwCtm(GriddedReader):
         data_dir must contain at least one of Base_(hour|day|month|fullrun).nc
         For multi-year analysis/trends, datadir may contain subdirectories named by trend-year,
         e.g. 2010 or trend2010.
-    file_pattern : str | re.Pattern, optional
+    file_pattern : str, optional
         Optional regular expression against which the base name of files will be matched.
         This can be used to override the default `Base_{freq}.nc` file matching.
 
@@ -199,7 +201,7 @@ class ReadMscwCtm(GriddedReader):
         data_id: str | None = None,
         data_dir: str | None = None,
         *,
-        file_pattern: str | re.Pattern | None = None,
+        file_pattern: str | None = None,
         **kwargs,
     ):
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -217,16 +219,19 @@ class ReadMscwCtm(GriddedReader):
         if file_pattern is None:
             # Pattern for the 'Base_{freq}.nc' default strategy.
             file_pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
-        else:
+        elif isinstance(file_pattern, str):
             file_pattern = file_pattern.format(freq=f"({'|'.join(self.FREQ_CODES.keys())})")
+        else:
+            raise TypeError(
+                f"file_pattern should be of type str or None. Got {type(file_pattern)}"
+            )
 
-        if not isinstance(file_pattern, re.Pattern):
-            try:
-                file_pattern = re.compile(file_pattern)
-            except re.error as e:
-                raise ValueError(
-                    f"Provided file_pattern '{file_pattern}' of type {type(file_pattern)} can't be compiled to re.Pattern."
-                ) from e
+        try:
+            file_pattern = re.compile(file_pattern)
+        except re.error as e:
+            raise ValueError(
+                f"Provided file_pattern '{file_pattern}' can't be compiled to re.Pattern."
+            ) from e
 
         self._private.file_pattern = file_pattern
         logger.info(
@@ -468,14 +473,12 @@ class ReadMscwCtm(GriddedReader):
             list of file matches
 
         """
-        files: list[str] = [
-            x for x in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, x))
-        ]
+        files: list[str] = [str(p) for p in pathlib.Path(data_dir).iterdir() if p.is_file()]
 
         matches = [
-            os.path.join(data_dir, x)
-            for x in files
-            if self._private.file_pattern.match(os.path.basename(x)) is not None
+            str(p)
+            for p in pathlib.Path(data_dir).iterdir()
+            if self._private.file_pattern.match(p.name) is not None
         ]
         if len(matches) == 0:
             raise FileNotFoundError(
@@ -559,20 +562,20 @@ class ReadMscwCtm(GriddedReader):
         ts_type = self._ts_type
         fps = self._clean_filepaths(fps, yrs, ts_type)
 
-        if ts_type == "hourly":
-            years = set()
-            for fp in self._private.files:
+        if ts_type == "hourly" and len(fps) > 1:
+            start_date = None
+            end_date = None
+            for fp in fps:
                 with xr.open_dataset(fp) as nc:
-                    start_year = (
-                        nc["time"][:].data.min().astype("datetime64[Y]").astype(int) + 1970
-                    )
-                    end_year = nc["time"][:].data.max().astype("datetime64[Y]").astype(int) + 1970
-                for y in range(start_year, end_year + 1):
-                    years.add(y)
+                    file_start_date = nc["time"][:].data.min()
+                    file_end_date = nc["time"][:].data.max()
 
-            if len(years) > 1:
+                start_date = min([x for x in [start_date, file_start_date] if x is not None])
+                end_date = max([x for x in [file_end_date, file_end_date] if x is not None])
+
+            if (end_date - start_date) / np.timedelta64(1, "h") > (366 * 24):
                 raise ValueError(
-                    f"ts_type {ts_type} can not be hourly when using multiple years ({sorted(list(years))})"
+                    f"ts_type {ts_type} can not be hourly when using multiple years ({start_date} - {end_date})"
                 )
 
         logger.info(f"Opening {fps}")
