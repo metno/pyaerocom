@@ -453,6 +453,7 @@ class ReadMscwCtm(GriddedReader):
             self._open_file()
         return self._private.filedata
 
+    @functools.cache
     def _check_files_in_data_dir(self, data_dir: str):
         """
         Check for data files in input data directory
