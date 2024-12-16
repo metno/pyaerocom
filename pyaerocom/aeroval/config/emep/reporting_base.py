@@ -515,6 +515,12 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     ]
 
     # no new sites with 2021 observations (comment Svetlana T.)
+    # This list of stations was generated using a modified version of the script
+    # found here (https://github.com/thorbjoernl/aerotools-scripts/blob/main/ralt_filter.py).
+    # It excludes stations with a relative altitude (Elevation difference to the lowest
+    # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
+    # an altitude in the ebas file index.
+    # Last updated: ~2024-12-13
     height_ignore_ebas = [
         "AM0001R",
         "AR0004R",
