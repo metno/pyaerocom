@@ -1,9 +1,10 @@
+import glob
 import logging
 import os
 import xarray as xr
 
 
-from pyaerocom import GriddedData, TsType, const, __version__
+from pyaerocom import GriddedData, TsType, const, __version__, ColocatedData
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.modelmaps_helpers import (
     calc_contour_json,
@@ -236,15 +237,35 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             var (str): variable name
         """
 
-        try:
-            data = self.read_gridded_obsdata(model_name, var)
-        except EntryNotAvailable:
+        if self.cfg.processing_opts.only_json:  # we have colocated data
             try:
-                data = self._read_model_data(model_name, var)
-            except Exception as e:
-                raise ModelVarNotAvailable(
-                    f"Cannot read data for model {model_name} (variable {var}): {e}"
+                preprocessed_coldata_dir = self.cfg.model_cfg.get_entry(model_name).model_data_dir
+                mask = f"{preprocessed_coldata_dir}/*.nc"
+            except KeyError:
+                preprocessed_coldata_dir = self.cfg.obs_cfg.get_entry(model_name).coldata_dir
+                mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
+            file_to_convert = glob.glob(mask)
+            if len(file_to_convert) != 1:
+                raise ValueError(
+                    "Can only handle one colocated data object for plotting for a given (model, obs, var). "
+                    "Note that when providing a colocated data object, it must be provided via the model_data_dir arugment in a ModelEntry instance. "
+                    "It must also be provided via the coldata_dir argument in the ObsEntry instance. "
+                    "Additionally, note that the coldatadir does not contain the model_name at the end of the directory, "
+                    "whereas the coldata_dir does not."
                 )
+            coldata = ColocatedData(data=file_to_convert[0])
+            data = coldata.data.sel(data_source=model_name)
+            # data = GriddedData(data.to_iris())
+        else:
+            try:
+                data = self.read_gridded_obsdata(model_name, var)
+            except EntryNotAvailable:
+                try:
+                    data = self._read_model_data(model_name, var)
+                except Exception as e:
+                    raise ModelVarNotAvailable(
+                        f"Cannot read data for model {model_name} (variable {var}): {e}"
+                    )
 
         var_ranges_defaults = self.cfg.var_scale_colmap
 
@@ -255,7 +276,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             cmapinfo = var_ranges_defaults["default"]
             varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
-        data = self._check_dimensions(data)
+        if not self.cfg.processing_opts.only_json:
+            data = self._check_dimensions(data)
 
         outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
 
@@ -266,7 +288,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            data = data.resample_time(str(freq))
+            if isinstance(data, GriddedData):
+                data = data.resample_time(str(freq))
+            elif isinstance(data, xr.DataArray):
+                data = data.resample(time=str(freq)[0].capitalize()).mean()
 
         data.check_unit()
 
