@@ -514,7 +514,6 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "vmrox",
     ]
 
-    # no new sites with 2021 observations (comment Svetlana T.)
     # This list of stations was generated using a modified version of the script
     # found here (https://github.com/thorbjoernl/aerotools-scripts/blob/main/ralt_filter.py).
     # It excludes stations with a relative altitude (Elevation difference to the lowest
