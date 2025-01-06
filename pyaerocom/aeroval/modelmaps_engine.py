@@ -255,6 +255,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 )
             coldata = ColocatedData(data=file_to_convert[0])
             data = coldata.data.sel(data_source=model_name)
+            data = data.drop_vars("data_source")
+            data = data.transpose("time", "latitude", "longitude")
+            data = data.sortby(["latitude", "longitude"])
             # data = GriddedData(data.to_iris())
         else:
             try:
@@ -293,10 +296,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             elif isinstance(data, xr.DataArray):
                 data = data.resample(time=str(freq)[0].capitalize()).mean()
 
-        data.check_unit()
-
         tst = _jsdate_list(data)
-        data = data.to_xarray().load()
+        if isinstance(data, GriddedData):
+            data.check_unit()
+            data = data.to_xarray().load()
         files = []
 
         if self.cfg.processing_opts.only_model_maps:
@@ -505,7 +508,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     )
 
                     timeseries[model_name].setdefault("obs_var", var)
-                    timeseries[model_name].setdefault("obs_unit", data.units)
+                    if isinstance(data, GriddedData):
+                        timeseries[model_name].setdefault("obs_unit", data.units)
+                    elif isinstance(data, xr.DataArray):
+                        timeseries[name].setdefault("obs_unit", data.var_units[1])
+                    else:
+                        raise ValueError("Can not determine obs units")
                     timeseries[model_name].setdefault("obs_name", name)
                     timeseries[model_name].setdefault(
                         "var_name_web", self.cfg.obs_cfg.get_web_interface_name(name)
@@ -553,7 +561,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     timeseries[name].setdefault("station_name", "ALL")
                     timeseries[name].setdefault("pyaerocom_version", __version__)
                     timeseries[name].setdefault("mod_var", var)
-                    timeseries[name].setdefault("mod_unit", data.units)
+                    if isinstance(data, GriddedData):
+                        timeseries[name].setdefault("mod_unit", data.units)
+                    elif isinstance(data, xr.DataArray):
+                        timeseries[name].setdefault("mod_unit", data.var_units[0])
+                    else:
+                        raise ValueError("Can not determine model units")
                     timeseries[name].setdefault("model_name", name)
                     timeseries[name].setdefault("mod_freq_src", maps_freq)
 

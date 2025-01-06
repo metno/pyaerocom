@@ -7,12 +7,14 @@ from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
 import io
 import xarray
+import pandas as pd
 
 try:
     from geojsoncontour import contourf_to_geojson
 except ModuleNotFoundError:
     contourf_to_geojson = None
 
+from pyaerocom import GriddedData
 from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
@@ -25,7 +27,15 @@ OVERLAY = "overlay"
 
 def _jsdate_list(data):
     tst = TsType(data.ts_type)
-    idx = make_datetime_index(data.start, data.stop, tst.to_pandas_freq())
+    if isinstance(data, GriddedData):
+        start_yr = data.start
+        stop_yr = data.stop
+    elif isinstance(data, xarray.DataArray):
+        start_yr = pd.Timestamp(data.time.min().values).year
+        stop_yr = pd.Timestamp(data.time.max().values).year
+    else:
+        raise ValueError("data not correct type")
+    idx = make_datetime_index(start_yr, stop_yr, tst.to_pandas_freq())
     return _get_jsdate(idx.values).tolist()
 
 
