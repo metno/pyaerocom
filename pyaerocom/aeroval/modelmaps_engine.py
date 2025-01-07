@@ -240,11 +240,15 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         if self.cfg.processing_opts.only_json:  # we have colocated data
             try:
-                preprocessed_coldata_dir = self.cfg.model_cfg.get_entry(model_name).model_data_dir
+                preprocessed_coldata_dir = glob.escape(
+                    self.cfg.model_cfg.get_entry(model_name).model_data_dir
+                )
                 mask = f"{preprocessed_coldata_dir}/*.nc"
                 file_to_convert = glob.glob(mask)
             except KeyError:
-                preprocessed_coldata_dir = self.cfg.obs_cfg.get_entry(model_name).coldata_dir
+                preprocessed_coldata_dir = glob.escape(
+                    self.cfg.obs_cfg.get_entry(model_name).coldata_dir
+                )
                 mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
                 matching_files = (
                     search_directory_recursively_for_netcdf_filenames_containing_strings(
