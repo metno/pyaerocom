@@ -12,6 +12,7 @@ from pyaerocom.aeroval.modelmaps_helpers import (
     _jsdate_list,
     CONTOUR,
     OVERLAY,
+    search_directory_recursively_for_netcdf_filenames_containing_strings,
 )
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.colocation.colocator import Colocator
@@ -241,10 +242,21 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             try:
                 preprocessed_coldata_dir = self.cfg.model_cfg.get_entry(model_name).model_data_dir
                 mask = f"{preprocessed_coldata_dir}/*.nc"
+                file_to_convert = glob.glob(mask)
             except KeyError:
                 preprocessed_coldata_dir = self.cfg.obs_cfg.get_entry(model_name).coldata_dir
                 mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
-            file_to_convert = glob.glob(mask)
+                matching_files = (
+                    search_directory_recursively_for_netcdf_filenames_containing_strings(
+                        directory=preprocessed_coldata_dir, strings=[model_name, var]
+                    )
+                )
+
+                if len(matching_files) > 1:
+                    logger.info(
+                        f"Found more than one colocated data file for {model_name=} {var=}. Using the first one found - this theoretically should be consistent across files."
+                    )
+                file_to_convert = matching_files[:1]
             if len(file_to_convert) != 1:
                 raise ValueError(
                     "Can only handle one colocated data object for plotting for a given (model, obs, var). "
@@ -511,7 +523,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     if isinstance(data, GriddedData):
                         timeseries[model_name].setdefault("obs_unit", data.units)
                     elif isinstance(data, xr.DataArray):
-                        timeseries[name].setdefault("obs_unit", data.var_units[1])
+                        timeseries[model_name].setdefault("obs_unit", data.var_units[1])
                     else:
                         raise ValueError("Can not determine obs units")
                     timeseries[model_name].setdefault("obs_name", name)
