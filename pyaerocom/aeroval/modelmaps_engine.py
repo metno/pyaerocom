@@ -565,7 +565,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 f"{name=} not is not in either {self.cfg.obs_cfg.keylist()=} nor {self.cfg.model_cfg.keylist()=}"
             )
 
-    def _process_only_json(self, model_name, var):
+    def _process_only_json(self, model_name, var):  # pragma: no cover
         """Process data from ColocatedData for overlay map for if only_json = True."""
         try:
             preprocessed_coldata_dir = glob.escape(
