@@ -12,7 +12,7 @@ from pyaerocom.aeroval.modelmaps_helpers import (
     _jsdate_list,
     CONTOUR,
     OVERLAY,
-    search_directory_recursively_for_netcdf_filenames_containing_strings,
+    find_netcdf_files,
 )
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.colocation.colocator import Colocator
@@ -239,41 +239,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         """
 
         if self.cfg.processing_opts.only_json:  # we have colocated data
-            try:
-                preprocessed_coldata_dir = glob.escape(
-                    self.cfg.model_cfg.get_entry(model_name).model_data_dir
-                )
-                mask = f"{preprocessed_coldata_dir}/*.nc"
-                file_to_convert = glob.glob(mask)
-            except KeyError:
-                preprocessed_coldata_dir = glob.escape(
-                    self.cfg.obs_cfg.get_entry(model_name).coldata_dir
-                )
-                mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
-                matching_files = (
-                    search_directory_recursively_for_netcdf_filenames_containing_strings(
-                        directory=preprocessed_coldata_dir, strings=[model_name, var]
-                    )
-                )
-
-                if len(matching_files) > 1:
-                    logger.info(
-                        f"Found more than one colocated data file for {model_name=} {var=}. Using the first one found - this theoretically should be consistent across files."
-                    )
-                file_to_convert = matching_files[:1]
-            if len(file_to_convert) != 1:
-                raise ValueError(
-                    "Can only handle one colocated data object for plotting for a given (model, obs, var). "
-                    "Note that when providing a colocated data object, it must be provided via the model_data_dir arugment in a ModelEntry instance. "
-                    "It must also be provided via the coldata_dir argument in the ObsEntry instance. "
-                    "Additionally, note that the coldatadir does not contain the model_name at the end of the directory, "
-                    "whereas the coldata_dir does not."
-                )
-            coldata = ColocatedData(data=file_to_convert[0])
-            data = coldata.data.sel(data_source=model_name)
-            data = data.drop_vars("data_source")
-            data = data.transpose("time", "latitude", "longitude")
-            data = data.sortby(["latitude", "longitude"])
+            data = self._process_only_json(model_name, var)
         else:
             try:
                 data = self.read_gridded_obsdata(model_name, var)
@@ -598,3 +564,42 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             raise ValueError(
                 f"{name=} not is not in either {self.cfg.obs_cfg.keylist()=} nor {self.cfg.model_cfg.keylist()=}"
             )
+
+    def _process_only_json(self, model_name, var):
+        """Process data from ColocatedData for overlay map for if only_json = True."""
+        try:
+            preprocessed_coldata_dir = glob.escape(
+                self.cfg.model_cfg.get_entry(model_name).model_data_dir
+            )
+            mask = f"{preprocessed_coldata_dir}/*.nc"
+            file_to_convert = glob.glob(mask)
+        except KeyError:
+            preprocessed_coldata_dir = glob.escape(
+                self.cfg.obs_cfg.get_entry(model_name).coldata_dir
+            )
+            mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
+            matching_files = find_netcdf_files(
+                directory=preprocessed_coldata_dir, strings=[model_name, var]
+            )
+
+            if len(matching_files) > 1:
+                logger.info(
+                    f"Found more than one colocated data file for {model_name=} {var=}. Using the first one found - this theoretically should be consistent across files."
+                )
+            file_to_convert = matching_files[:1]
+
+        if len(file_to_convert) != 1:
+            raise ValueError(
+                "Can only handle one colocated data object for plotting for a given (model, obs, var). "
+                "Note that when providing a colocated data object, it must be provided via the model_data_dir argument in a ModelEntry instance. "
+                "It must also be provided via the coldata_dir argument in the ObsEntry instance. "
+                "Additionally, note that the coldatadir does not contain the model_name at the end of the directory, "
+                "whereas the coldata_dir does not."
+            )
+
+        coldata = ColocatedData(data=file_to_convert[0])
+        data = coldata.data.sel(data_source=model_name)
+        data = data.drop_vars("data_source")
+        data = data.transpose("time", "latitude", "longitude")
+        data = data.sortby(["latitude", "longitude"])
+        return data

@@ -157,10 +157,10 @@ def plot_overlay_pixel_maps(
     return image
 
 
-def search_directory_recursively_for_netcdf_filenames_containing_strings(directory, strings):
+def find_netcdf_files(directory, strings):
     matching_files = []
     # Use glob to find all NetCDF files recursively
-    for nc_file in glob.iglob(os.path.join(directory, "**", "*.nc"), recursive=True):
+    for nc_file in glob.escape(glob.iglob(os.path.join(directory, "**", "*.nc"), recursive=True)):
         # Check if all specified strings are in the filename
         if all(s in os.path.basename(nc_file) for s in strings):
             matching_files.append(nc_file)
