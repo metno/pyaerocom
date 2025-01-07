@@ -230,7 +230,7 @@ deps =
     typing-extensions ==4.6.1; python_version < "3.11"
     cf-units ==3.3.0; python_version < "3.11"
     pydantic ==2.7.1; python_version < "3.11"
-    pyaro == 0.0.14; python_version < "3.11"
+    pyaro == 0.1.1; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
     xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
