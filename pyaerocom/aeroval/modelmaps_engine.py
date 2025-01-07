@@ -270,7 +270,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.drop_vars("data_source")
             data = data.transpose("time", "latitude", "longitude")
             data = data.sortby(["latitude", "longitude"])
-            # data = GriddedData(data.to_iris())
         else:
             try:
                 data = self.read_gridded_obsdata(model_name, var)
@@ -559,8 +558,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
                     if (
                         name in timeseries
-                        and timeseries[name].get(maps_freq + "_mod", False) is not None
-                        and timeseries[name].get(maps_freq + "_obs", False) is not None
+                        and timeseries[name].get(maps_freq + "_mod", False)
+                        and timeseries[name].get(maps_freq + "_obs", False)
                     ):
                         continue
 
