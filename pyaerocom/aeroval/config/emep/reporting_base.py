@@ -859,9 +859,9 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                             (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
                         ],
                     },
-                    "relaltitude": {
-                        "topo_file": "/lustre/storeB/project/fou/kl/emep/Auxiliary/topography.nc",
-                        "rdiff": 500,
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "lower": 500,
                     },
                 },
                 "post_processing": [
@@ -910,9 +910,9 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                             (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
                         ],
                     },
-                    "relaltitude": {
-                        "topo_file": "/lustre/storeB/project/fou/kl/emep/Auxiliary/topography.nc",
-                        "rdiff": 500,
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "lower": 500,
                     },
                 },
                 "post_processing": [
@@ -967,9 +967,9 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                             (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
                         ],
                     },
-                    "relaltitude": {
-                        "topo_file": "/lustre/storeB/project/fou/kl/emep/Auxiliary/topography.nc",
-                        "rdiff": 500,
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "lower": 500,
                     },
                 },
                 "post_processing": [
@@ -1009,9 +1009,9 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                             (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
                         ],
                     },
-                    "relaltitude": {
-                        "topo_file": "/lustre/storeB/project/fou/kl/emep/Auxiliary/topography.nc",
-                        "rdiff": 500,
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "lower": 500,
                     },
                 },
                 "post_processing": [
