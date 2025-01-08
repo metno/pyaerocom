@@ -863,8 +863,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
                         "topovar": "Band1",
-                        "lower": 500,
-                        "upper": None,
+                        "lower": None,
+                        "upper": 500,
                     },
                 },
                 "post_processing": [
@@ -917,8 +917,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
                         "topovar": "Band1",
-                        "lower": 500,
-                        "upper": None,
+                        "lower": None,
+                        "upper": 500,
                     },
                 },
                 "post_processing": [
@@ -977,8 +977,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
                         "topovar": "Band1",
-                        "lower": 500,
-                        "upper": None,
+                        "lower": None,
+                        "upper": 500,
                     },
                 },
                 "post_processing": [
@@ -1022,8 +1022,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
                         "topovar": "Band1",
-                        "lower": 500,
-                        "upper": None,
+                        "lower": None,
+                        "upper": 500,
                     },
                 },
                 "post_processing": [
