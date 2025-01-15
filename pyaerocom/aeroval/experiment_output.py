@@ -127,30 +127,6 @@ class ExperimentOutput(ProjectOutput):
         return fp
 
     @property
-    def regions_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "regions.json")
-        return fp
-
-    @property
-    def statistics_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "statistics.json")
-        return fp
-
-    @property
-    def var_ranges_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "ranges.json")
-        return fp
-
-    @property
-    def menu_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "menu.json")
-        return fp
-
-    @property
     def results_available(self) -> bool:
         """
         bool: True if results are available for this experiment, else False

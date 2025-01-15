@@ -124,38 +124,15 @@ def test_ExperimentOutput_exp_dir(dummy_expout: ExperimentOutput, tmp_path: Path
     assert Path(dummy_expout.exp_dir) == tmp_path / "proj" / "exp"
 
 
-def test_ExperimentOutput_regions_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.regions_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "regions.json"
-
-
-def test_ExperimentOutput_statistics_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.statistics_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "statistics.json"
-
-
-def test_ExperimentOutput_var_ranges_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.var_ranges_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "ranges.json"
-
-
-def test_ExperimentOutput_menu_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.menu_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "menu.json"
-
-
 def test_ExperimentOutput_results_available_False(dummy_expout: ExperimentOutput):
     assert not dummy_expout.results_available
 
 
 def test_ExperimentOutput_update_menu_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout.update_menu()
-    assert Path(dummy_expout.menu_file).exists()
-    assert read_json(dummy_expout.menu_file) == {}
+
+    data = dummy_expout.avdb.get_menu(dummy_expout.proj_id, dummy_expout.exp_id)
+    assert data == {}
 
 
 def test_ExperimentOutput_update_interface_EMPTY(dummy_expout: ExperimentOutput):
