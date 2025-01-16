@@ -222,6 +222,7 @@ deps =
     # Will only run on lowest supported Python version CI test 
     # (currently 3.10).
     # Should be incremented when changing dependencies above.  
+    aerovaldb ==0.2.0; python_version < "3.11"
     scitools-iris ==3.11.0; python_version < "3.11"
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"
