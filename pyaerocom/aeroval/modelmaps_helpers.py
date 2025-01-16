@@ -25,7 +25,7 @@ CONTOUR = "contour"
 OVERLAY = "overlay"
 
 
-def _jsdate_list(data):
+def _jsdate_list(data: GriddedData | xarray.DataArray):
     tst = TsType(data.ts_type)
     if isinstance(data, GriddedData):
         start_yr = data.start
@@ -34,7 +34,7 @@ def _jsdate_list(data):
         start_yr = pd.Timestamp(data.time.min().values).year
         stop_yr = pd.Timestamp(data.time.max().values).year
     else:
-        raise ValueError("data not correct type")
+        raise ValueError(f"data is of type {type(data)}, expected GriddedData or DataArray.")
     idx = make_datetime_index(start_yr, stop_yr, tst.to_pandas_freq())
     return _get_jsdate(idx.values).tolist()
 
@@ -103,6 +103,7 @@ def calc_contour_json(data: GriddedData, cmap: str, cmap_bins: list[float]):
         dictionary containing contour data
 
     """
+    assert isinstance(data, GriddedData)
     cm = ListedColormap(color_palette(cmap, len(cmap_bins) - 1))
 
     try:

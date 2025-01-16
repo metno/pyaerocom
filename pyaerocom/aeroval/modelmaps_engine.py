@@ -224,13 +224,15 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
 
         with self.avdb.lock():
-            self.avdb.put_contour(
-                contourjson,
-                self.exp_output.proj_id,
-                self.exp_output.exp_id,
-                var,
-                model_name,
-            )
+            for time, contour in contourjson.items():
+                self.avdb.put_contour(
+                    contour,
+                    self.exp_output.proj_id,
+                    self.exp_output.exp_id,
+                    var,
+                    model_name,
+                    timestep=time,
+                )
 
         return fp_geojson
 
