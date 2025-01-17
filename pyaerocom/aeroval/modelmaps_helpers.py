@@ -103,7 +103,6 @@ def calc_contour_json(data: GriddedData, cmap: str, cmap_bins: list[float]):
         dictionary containing contour data
 
     """
-    assert isinstance(data, GriddedData)
     cm = ListedColormap(color_palette(cmap, len(cmap_bins) - 1))
 
     try:
@@ -140,13 +139,6 @@ def calc_contour_json(data: GriddedData, cmap: str, cmap_bins: list[float]):
             ],
         )
         geojsons[str(date)] = geojson
-
-    geojsons["legend"] = {
-        "colors": colors_hex,
-        "levels": list(cmap_bins),
-        "var_name": data.var_name,
-        "units": str(data.units),
-    }
 
     return geojsons
 
