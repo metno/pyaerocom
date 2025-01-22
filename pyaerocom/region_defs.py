@@ -96,6 +96,19 @@ _HTAP_DEFS = {
         "lat_range": [-4.149999999999155, 32.65000000000104],
         "lon_range": [-118.35000000000352, -51.65000000000643],
     },
+    "NOR": {
+        "lat_range": [54.149999999999155, 71.65000000000104],
+        "lon_range": [0.35000000000352, 31.65000000000643],
+    },
+    "NATL": {
+        "lat_range": [34.95000000000085, 65.15000000000104],
+        "lon_range": [-60.35000000000352, 10.65000000000643],
+    },
+    "ARC": {
+        "lat_range": [65.149999999999155, 75.65000000000104],
+        "lon_range": [-23.35000000000352, 20.65000000000643],
+    },
+
 }
 
 
@@ -118,6 +131,7 @@ REGION_DEFS = {**_AEROCOM_DEFS, **_HTAP_DEFS, **_OTHER_REG_DEFS}
 _HTAP_NAMES = {
     "NAM": "N America",
     "EUR": "Europe",
+    "NOR": "Nordic",
     "EEUROPE": "E Europe",
     "RBU": "Rus,Bel,Ukr",
     "MDE": "Middle East",
@@ -130,6 +144,8 @@ _HTAP_NAMES = {
     "SAM": "S America",
     "PAN": "Pacific,Aust,NZ",
     "OCN": "Oceans",
+    "NATL": "N.Atl. ocean",
+    "ARC": "Arctic waters",
 }
 
 
