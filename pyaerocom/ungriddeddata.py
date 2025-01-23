@@ -259,7 +259,9 @@ class UngriddedData:
                 )
 
     @staticmethod
-    def from_station_data(stats, add_meta_keys=None):
+    def from_station_data(
+        stats: StationData, add_meta_keys: list[str] | None = None
+    ) -> UngriddedData:
         """
         Create UngriddedData from input station data object(s)
 
