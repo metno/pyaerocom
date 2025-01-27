@@ -22,7 +22,7 @@ dependencies:
   - pyproj >= 3.0.0
   - pooch >=1.7.0
   - psutil >= 5.0.0
-  - contourpy
+  - contourpy >= 1.3.0
   - geojson
 ## python < 3.11
   - tomli >=2.0.1

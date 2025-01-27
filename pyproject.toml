@@ -52,7 +52,7 @@ dependencies = [
     "pyaro>=0.1.1",
     "pooch>=1.7.0",
     "psutil>=5.0.0",
-    "contourpy",
+    "contourpy>=1.3.0",
     "geojson",
 ]
 
@@ -240,6 +240,7 @@ deps =
     pooch ==1.7.0; python_version < "3.11"
     xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
+    contourpy ==1.3.0; python_version < "3.11"
 
 [testenv:lint]
 skip_install = True
