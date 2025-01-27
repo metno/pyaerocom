@@ -2052,7 +2052,7 @@ class GriddedData:
         """
         from pyaerocom.io.helpers import aerocom_savename
 
-        if vert_code is None and self.metadata["vert_code"] is not None:
+        if vert_code is None and self.metadata.get("vert_code", None) is not None:
             vert_code = self.metadata["vert_code"]
 
         if vert_code in (None, ""):
