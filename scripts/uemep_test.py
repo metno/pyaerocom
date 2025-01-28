@@ -17,27 +17,31 @@ var_lookup = {v: k for k, v in emep_var_map.items()}
 
 reader = pya.io.readungridded.ReadUngridded("EBASMC")
 
-with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
+with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4") as dt:
     gridded_data: dict[str, pya.griddeddata.GriddedData] = {}
-    for x in dt.keys():
+    for var in dt.keys():
         try:
-            aerocomvar = var_lookup[x]
+            aerocomvar = var_lookup[var]
         except KeyError:
-            print(f"Unable to translate '{x}' to aerocom name.")
+            print(f"Unable to translate '{var}' to aerocom name.")
             continue
         
-        data = dt[x].expand_dims("data_source").transpose("data_source", "time", "station_id")
-        data = pya.griddeddata.GriddedData(TEST_FILE_PATH, var_name=x)
+        data = dt[var].expand_dims("data_source").transpose("data_source", "time", "station_id")
+        
+        # TODO: Check if data can be read once, and filtered instead.
+        obsdata = reader.read(vars_to_retrieve=aerocomvar)        
 
-        with tempfile.TemporaryDirectory() as dir:
-            dir = pathlib.Path(dir)
-            print(dir)
-            # data_id=None, var_name=None, vert_code=None, year=None, ts_type=None
-            data.to_netcdf(dir, var_name = x, vert_code = "Surface", year=2023, ts_type="hourly")
-            
-            uemepdata = pya.GriddedData(list(dir.glob("*"))[0], var_name=x)
+        for station in data.station_name:
+            station_name = str(station.values.astype(str))
+            print(station_name)
+            try:
+                obsdata_station = obsdata.filter_by_meta(ts_type="hourly", station_id=station_name)
+            except pya.exceptions.DataExtractionError:
+                print("Empty filtered object")
+                continue
 
-            print("Test")
+            print(obsdata_station)
+    
         
         #data[aerocomvar] = dt[x].expand_dims("data_source").transpose("data_source", "time", "station_id")
         #data[aerocomvar].name = aerocomvar
