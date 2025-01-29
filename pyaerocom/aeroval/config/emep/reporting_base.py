@@ -335,8 +335,16 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         only_json=False,
         add_model_maps=True,
         only_model_maps=False,
+        boundaries={
+            "west": -30,  # ???
+            "east": 90,  # ???
+            "north": 80,  # ???
+            "south": 30,  # ???
+        },
+        maps_freq="yearly",
         plot_types={"EMEP": ["contour", "overlay"]},
         modelmaps_opts=dict(maps_freq="yearly", maps_res_deg=5),
+        right_menu=("EMEP",),  # ???
         clear_existing_json=False,
         # if True, the analysis will stop whenever an error occurs (else, errors that
         # occurred will be written into the logfiles)
