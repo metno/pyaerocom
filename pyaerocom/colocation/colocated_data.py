@@ -188,7 +188,7 @@ class ColocatedData(BaseModel):
     def model_name(self):
         if "model_name" in self.metadata:
             return self.metadata["model_name"]
-        return self.data_source[1]
+        return str(self.data_source[1].values)
 
     @property
     def obs_name(self):
