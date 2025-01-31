@@ -479,7 +479,7 @@ def test_ColocatedData_to_netcdf(coldata: ColocatedData, tmp_path: Path, filenam
 def test_ColocatedData_read_netcdf(coldata: ColocatedData, tmp_path: Path):
     file = coldata.to_netcdf(tmp_path)
     assert Path(file).exists()
-    cd = ColocatedData().read_netcdf(file)
+    cd = ColocatedData(file)
     assert isinstance(cd, ColocatedData)
 
 
