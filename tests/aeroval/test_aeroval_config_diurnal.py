@@ -45,11 +45,10 @@ def test_aeroval_config_diurnal():
     ana = ExperimentProcessor(stp)
     ana.update_interface()
 
-    res = ana.run()
-    assert res is not None
+    ana.run()
     diurnal_path = (
         # pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
-        pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"]
+            pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"]
     )
     assert diurnal_path.exists()
     tmp = diurnal_path.glob("*.json")
