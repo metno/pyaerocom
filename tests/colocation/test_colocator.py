@@ -452,7 +452,7 @@ def test_colocator_with_obs_data_dir_gridded(setup):
 
 def test_colocation_pyaro(pyaro_testconfig, fake_aod_MSCWCtm_data_monthly_2010, setup) -> None:
     config = pyaro_testconfig[0]
-    setup["obs_config"] = config
+    setup["pyaro_config"] = config
     setup["model_id"] = "EMEP"
     setup["gridded_reader_id"] = {"model": "ReadMscwCtm"}
     setup["model_data_dir"] = fake_aod_MSCWCtm_data_monthly_2010

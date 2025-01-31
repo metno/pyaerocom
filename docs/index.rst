@@ -10,7 +10,7 @@ pyaerocom
 
 Official website of pyaerocom, a Python package for climate and air quality model evaluation. 
 
-.. figure:: aerotools_workflow_202407.png
+.. figure:: aerotools_workflow_202501.png
 
    MET Norway's AeroTools workflow
 

@@ -369,7 +369,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     wvlg = var_info[var].wavelength_nm
                     wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
 
-                    if not wvlg == float(data_in[wvlg_str]):
+                    assert data_in[wvlg_str].shape == (1,)
+                    if not wvlg == float(data_in[wvlg_str][0]):
                         self.logger.info("No wavelength match")
                         continue
 

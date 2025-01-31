@@ -135,7 +135,7 @@ class Colocator:
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
-        if self.colocation_setup.obs_config is not None:
+        if self.colocation_setup.pyaro_config is not None:
             return True
 
         return True if self.colocation_setup.obs_id in get_all_supported_ids_ungridded() else False
@@ -196,7 +196,7 @@ class Colocator:
                     data_ids=[self.colocation_setup.obs_id],
                     data_dirs=self.colocation_setup.obs_data_dir,
                     configs=[
-                        self.colocation_setup.obs_config,
+                        self.colocation_setup.pyaro_config,
                     ],
                 )
             else:

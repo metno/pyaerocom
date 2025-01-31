@@ -7,6 +7,7 @@ import logging
 import os
 from collections.abc import MutableMapping
 from pathlib import Path
+from typing import TypeVar
 
 import numpy as np
 from typing_extensions import TypedDict
@@ -568,7 +569,10 @@ def list_to_shortstr(lst, indent=0):
     return s
 
 
-def sort_dict_by_name(d, pref_list: list = None) -> dict:
+T = TypeVar("T")
+
+
+def sort_dict_by_name(d: dict[str, T], pref_list: list[str] | None = None) -> dict[str, T]:
     """Sort entries of input dictionary by their names and return ordered
 
     Parameters

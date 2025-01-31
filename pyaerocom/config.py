@@ -615,7 +615,7 @@ class Config:
         obs_vars,
         obs_aux_requires,
         obs_merge_how,
-        obs_aux_funs=None,
+        obs_aux_funs: dict[str, str] | None = None,
         obs_aux_units=None,
         **kwargs,
     ):
@@ -645,15 +645,14 @@ class Config:
             combine). For valid input args see
             :mod:`pyaerocom.combine_vardata_ungridded`. If value is string,
             then the same method is used for all variables.
-        obs_aux_funs : dict, optional
+        obs_aux_funs : dict[str, str], optional
             dictionary specifying computation methods for auxiliary variables
             that are supposed to be retrieved via `obs_merge_how='eval'`.
             Keys are variable names, values are respective computation methods
-            (which need to be strings as they will be evaluated via
-             :func:`pandas.DataFrame.eval` in
-             :mod:`pyaerocom.combine_vardata_ungridded`). This input is
-            optional, but mandatory if any of the `obs_vars` is
-            supposed to be retrieved via `merge_how='eval'`.
+            passed to :mod:`pyaerocom.combine_vardata_ungridded`.
+            The function only supports addition/multiplication/.. on two variables.
+            This input is optional, but mandatory if any of the `obs_vars`
+            is supposed to be retrieved via `merge_how='eval'`.
         obs_aux_units : dict, optional
             output units of auxiliary variables (only needed for varibales
             that are derived via `merge_how='eval'`)

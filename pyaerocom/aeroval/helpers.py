@@ -191,7 +191,7 @@ def make_dummy_model(obs_list: list, cfg) -> str:
                 dummy_grid_yr.to_netcdf(outdir, savename=save_name)
 
     # Add dummy model to cfg
-    cfg.model_cfg.add_entry("dummy", ModelEntry(model_id="dummy_model"))
+    cfg.model_cfg.add_entry("dummy", ModelEntry(model_id="dummy_model", model_data_dir=outdir))
 
     return model_id
 

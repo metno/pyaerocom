@@ -1,4 +1,5 @@
 import glob
+import itertools
 import logging
 import os
 import pathlib
@@ -126,37 +127,20 @@ class ExperimentOutput(ProjectOutput):
         return fp
 
     @property
-    def regions_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "regions.json")
-        return fp
-
-    @property
-    def statistics_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "statistics.json")
-        return fp
-
-    @property
-    def var_ranges_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "ranges.json")
-        return fp
-
-    @property
-    def menu_file(self) -> str:
-        """json file containing region specifications"""
-        fp = os.path.join(self.exp_dir, "menu.json")
-        return fp
-
-    @property
     def results_available(self) -> bool:
         """
         bool: True if results are available for this experiment, else False
         """
         if self.exp_id not in os.listdir(self.proj_dir):
             return False
-        elif not len(self._get_json_output_files("map")) > 0:
+        elif self.cfg.processing_opts.only_model_maps and not self._has_files(
+            self.out_dirs_json["contour"]
+        ):
+            return False
+        elif (
+            not len(self._get_json_output_files("map")) > 0
+            and not self.cfg.processing_opts.only_model_maps
+        ):
             return False
         return True
 
@@ -229,6 +213,16 @@ class ExperimentOutput(ProjectOutput):
         with self.avdb.lock():
             menu = self.avdb.get_menu(self.proj_id, self.exp_id, default={})
             all_regions = self.avdb.get_regions(self.proj_id, self.exp_id, default={})
+            if not all_regions and self.cfg.processing_opts.only_model_maps:
+                all_regions = {
+                    "ALL": {
+                        "minLat": self.cfg.modelmaps_opts.boundaries.south,
+                        "maxLat": self.cfg.modelmaps_opts.boundaries.north,
+                        "minLon": self.cfg.modelmaps_opts.boundaries.west,
+                        "maxLon": self.cfg.modelmaps_opts.boundaries.east,
+                    }
+                }
+                self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
             for uri in self.avdb.list_glob_stats(
                 self.proj_id, self.exp_id, access_type=aerovaldb.AccessType.URI
             ):
@@ -320,15 +314,65 @@ class ExperimentOutput(ProjectOutput):
 
         return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
 
+    @staticmethod
+    def _info_from_contour_dir_file(file: pathlib.PosixPath):
+        """
+        Separate map filename into meta info on obs and model content
+
+        Parameters
+        ----------
+        filename : str
+            name of file in "contour" subdirectory of json output directory for
+            this experiment
+
+        Raises
+        ------
+        ValueError
+            if input filename is invalid
+
+        Returns
+        -------
+        str
+            name of model
+        str
+            name of variable
+        str
+            Time period
+        """
+        spl = os.path.basename(file.name).split(file.suffix)[0].split("_")
+
+        if len(spl) == 3:  # png, webp
+            name = spl[0]
+            var_name = spl[1]
+            per = spl[2]
+            return (name, var_name, per)
+        elif len(spl) == 2:  # geojson
+            name = spl[1]
+            var_name = spl[0]
+            per = None
+            return (name, var_name, per)
+        else:
+            raise ValueError(f"invalid contour filename: {file}")
+
     def _results_summary(self) -> dict[str, list[str]]:
-        res = [[], [], [], [], [], []]
-        files = self._get_json_output_files("map")
-        for file in files:
-            map_info = self._info_from_map_file(file)
-            for i, entry in enumerate(map_info):
-                res[i].append(entry)
+        if self.cfg.processing_opts.only_model_maps:
+            infos = ["name", "ovar", "per"]
+            res = [[], [], []]
+            files = self._get_output_files(self.out_dirs_json["contour"])
+            for file in files:
+                file_info = self._info_from_contour_dir_file(file)
+                for i, entry in enumerate(file_info):
+                    res[i].append(entry)
+        else:
+            infos = ["obs", "ovar", "vc", "mod", "mvar", "per"]
+            res = [[], [], [], [], [], []]
+            files = self._get_json_output_files("map")
+            for file in files:
+                map_info = self._info_from_map_file(file)
+                for i, entry in enumerate(map_info):
+                    res[i].append(entry)
         output = {}
-        for i, name in enumerate(["obs", "ovar", "vc", "mod", "mvar", "per"]):
+        for i, name in enumerate(infos):
             output[name] = list(set(res[i]))
         return output
 
@@ -533,6 +577,16 @@ class ExperimentOutput(ProjectOutput):
         dirloc = self.out_dirs_json[dirname]
         return glob.glob(f"{dirloc}/*.json")
 
+    def _has_files(self, directory: str):
+        """
+        Checks if a directory contains any files.
+        The contour directory may contains files, but these are not json files (geojson, webp, png)
+        """
+        return len(self._get_output_files(directory)) > 0
+
+    def _get_output_files(self, directory):
+        return [p for p in pathlib.Path(directory).rglob("*") if p.is_file()]
+
     def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
         var_ranges_defaults = self.cfg.var_scale_colmap
         if var in var_ranges_defaults:
@@ -556,7 +610,7 @@ class ExperimentOutput(ProjectOutput):
             ranges = self.avdb.get_ranges(self.proj_id, self.exp_id, default={})
 
             avail = self._results_summary()
-            all_vars = list(set(avail["ovar"] + avail["mvar"]))
+            all_vars = list(set(avail.get("ovar", []) + avail.get("mvar", [])))
             for var in all_vars:
                 if var not in ranges or ranges[var]["scale"] == []:
                     ranges[var] = self._get_cmap_info(var)
@@ -595,6 +649,10 @@ class ExperimentOutput(ProjectOutput):
                     stats_info.update(statistics_mean_trend)
                     stats_info.update(statistics_median_trend)
 
+        if self.cfg.webdisp_opts.stats_order_menu:
+            stats_info = sort_dict_by_name(
+                stats_info, pref_list=self.cfg.webdisp_opts.stats_order_menu
+            )
         with self.avdb.lock():
             self.avdb.put_statistics(stats_info, self.proj_id, self.exp_id)
 
@@ -766,9 +824,75 @@ class ExperimentOutput(ProjectOutput):
 
     def _create_menu_dict(self) -> dict:
         new = {}
-        files = self._get_json_output_files("map")
+        if self.cfg.processing_opts.only_model_maps:
+            files = self._get_output_files(self.out_dirs_json["contour"])
+            all_combinations = list(
+                itertools.product(
+                    self.cfg.obs_cfg.keylist(),
+                    self.cfg.model_cfg.keylist(),
+                    self.cfg.obs_cfg.get_all_vars(),
+                )
+            )
+        else:
+            files = self._get_json_output_files("map")
         for file in files:
-            (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(file)
+            if self.cfg.processing_opts.only_model_maps:
+                # Hack to build menu.json
+                # The key issue we need to get around is that the ExperimentOutput class
+                # expects that at this point of the processing, all information it needs
+                # to describe an experiment has been written to disc, traditionally in the map directory.
+                # If only_model_maps = True, then we do not do colocation, and so the map dir is empty,
+                # however menu.json is still needed.
+                if not all_combinations:
+                    break
+
+                (mod_name, var_name, per) = self._info_from_contour_dir_file(file)
+
+                obs_var, mod_var = var_name, var_name
+
+                if mod_name in self.cfg.obs_cfg.keylist():
+                    obs_name = mod_name
+                    vert_code = self.cfg.obs_cfg.get_entry(obs_name).obs_vert_type
+                    first_with_obs_name = next(
+                        (
+                            item
+                            for item in all_combinations
+                            if item[0] == obs_name and item[-1] == var_name
+                        ),
+                        None,
+                    )
+                    if not first_with_obs_name:  # should already be taken care of in new
+                        continue
+                    mod_name = first_with_obs_name[1]
+                    all_combinations.remove(first_with_obs_name)
+                elif mod_name in self.cfg.model_cfg.keylist():
+                    vert_code = None
+                    for o in self.cfg.obs_cfg.keylist():
+                        if var_name in self.cfg.obs_cfg.get_entry(o).obs_vars:
+                            vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
+                    if not vert_code:
+                        raise ValueError(
+                            "Failed to infer vert_code in an only_model_maps experiment"
+                        )
+                    first_with_mod_name = next(
+                        (
+                            item
+                            for item in all_combinations
+                            if item[1] == mod_name and item[-1] == var_name
+                        ),
+                        None,
+                    )
+                    if not first_with_mod_name:  # should already be taken care of in new
+                        continue
+                    obs_name = first_with_mod_name[0]
+                    all_combinations.remove(first_with_mod_name)
+                else:
+                    raise ValueError("Failed to infer vert_code in an only_model_maps experiment")
+
+            else:
+                (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(
+                    file
+                )
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)

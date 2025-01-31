@@ -23,9 +23,11 @@ from pydantic import (
     ConfigDict,
     Field,
     PositiveInt,
+    NonNegativeInt,
     computed_field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 
 from pyaerocom import __version__, const
@@ -80,6 +82,7 @@ class OutputPaths(BaseModel):
         "hm/ts",
         "contour",
         "profiles",
+        "contour/overlay",
     ]
     avdb_resource: Path | str | None = None
 
@@ -125,10 +128,9 @@ class OutputPaths(BaseModel):
 
 class ModelMapsSetup(BaseModel):
     maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
-    maps_res_deg: PositiveInt = 5
-    plot_types: dict[str, str | tuple[str, str]] | set[str] = {CONTOUR}
-    boundaries: BoundingBox | None = None
-    map_observations_only_in_right_menu: bool = False
+    plot_types: dict[str, str | set[str]] | set[str] = {CONTOUR}
+    boundaries: BoundingBox = BoundingBox(west=-180, east=180, north=90, south=-90)
+    right_menu: tuple[str, ...] | None = None
     overlay_save_format: Literal["webp", "png"] = "webp"
 
     @field_validator("plot_types")
@@ -136,12 +138,10 @@ class ModelMapsSetup(BaseModel):
         if isinstance(v, dict):
             for m in v:
                 if not isinstance(v[m], set):
-                    if isinstance(v[m], str):
-                        v[m] = set([v[m]])
-                    else:
-                        v[m] = set([*v[m]])
+                    v[m] = set([v[m]])  # v[m] must be a string
                 if v[m] not in PLOT_TYPE_OPTIONS:
                     raise ConfigError("Model maps set up given a non-valid plot type.")
+            return v
         if isinstance(v, str):
             v = set([v])
         if isinstance(v, list):  # can occur when reading a serialized config
@@ -226,7 +226,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
     avg_over_trends: bool = (
         False  # Adds calculation of avg over trends of time series of stations in region
     )
-    obs_min_yrs: PositiveInt = 0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as stats_min_yrs
+    obs_min_yrs: NonNegativeInt = 0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as stats_min_yrs
     stats_min_yrs: PositiveInt = obs_min_yrs  # Calculates trends if number of valid years are equal or more than this. Should in most cases be the same as obs_min_yrs
     sequential_yrs: bool = False  # Whether or not the min_yrs should be sequential
 
@@ -299,6 +299,7 @@ class WebDisplaySetup(BaseModel):
     obsorder_from_config: bool = True
     var_order_menu: tuple[str, ...] = ()
     obs_order_menu: tuple[str, ...] = ()
+    stats_order_menu: tuple[str, ...] = ()
     model_order_menu: tuple[str, ...] = ()
     hide_charts: tuple[str, ...] = ()
     hide_pages: tuple[str, ...] = ()
@@ -356,6 +357,24 @@ class EvalSetup(BaseModel):
     ] = ""
 
     _aux_funs: dict = {}
+
+    @model_validator(mode="after")
+    def model_validator(self) -> Self:
+        # Warn user if var_order_menu does not match used variables.
+        var_order_menu = set(self.webdisp_opts.var_order_menu)
+        obs_cfg = self.obs_cfg
+
+        variables = set()
+        for entry in obs_cfg:
+            for var in entry.obs_vars:
+                variables.add(var)
+
+        if not var_order_menu.issuperset(variables):
+            logger.warning(
+                f"Some variables are configured as obsvars but not included in var_order_menu. They may not show up on aerovalweb. Missing variables: {list(variables - var_order_menu)}"
+            )
+
+        return self
 
     @computed_field
     @cached_property

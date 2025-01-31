@@ -44,12 +44,6 @@ def __package_installed(name: str) -> bool:
     return True
 
 
-geojson_unavail = pytest.mark.xfail(
-    not __package_installed("geojsoncontour"),
-    reason="geojsoncontour might not be avaiable on a conda environment",
-    raises=ModuleNotFoundError,
-)
-
 # iris >= 3.2 corrected an error in iris.cube.Cube.intersection
 # see https://github.com/metno/pyaerocom/issues/588
 iris_version = metadata.version("scitools-iris")

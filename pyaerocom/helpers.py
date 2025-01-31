@@ -35,6 +35,8 @@ from pyaerocom.time_config import (
     TS_TYPE_DATETIME_CONV,
     TS_TYPE_SECS,
     TS_TYPE_TO_PANDAS_FREQ,
+    TS_TYPE_TO_FREQ_NAME,
+    TS_TYPE_TO_NUMPY_FREQ,
     day_units,
     hr_units,
     microsec_units,
@@ -247,11 +249,19 @@ def make_dummy_cube_latlon(
 
     lon_circ = check_coord_circular(lons, modulus=360)
     latdim = iris.coords.DimCoord(
-        lats, var_name="lat", standard_name="latitude", circular=False, units=Unit("degrees")
+        lats,
+        var_name="lat",
+        standard_name="latitude",
+        circular=False,
+        units=Unit("degrees"),
     )
 
     londim = iris.coords.DimCoord(
-        lons, var_name="lon", standard_name="longitude", circular=lon_circ, units=Unit("degrees")
+        lons,
+        var_name="lon",
+        standard_name="longitude",
+        circular=lon_circ,
+        units=Unit("degrees"),
     )
 
     latdim.guess_bounds()
@@ -787,7 +797,13 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
 
 
 def _merge_stats_2d(
-    stats, var_name, sort_by_largest, pref_attr, add_meta_keys, resample_how, min_num_obs
+    stats,
+    var_name,
+    sort_by_largest,
+    pref_attr,
+    add_meta_keys,
+    resample_how,
+    min_num_obs,
 ):
     if pref_attr is not None:
         stats.sort(key=lambda s: s[pref_attr])
@@ -929,7 +945,13 @@ def merge_station_data(
         merged = _merge_stats_3d(stats, var_name, add_meta_keys, has_errs)
     else:
         merged = _merge_stats_2d(
-            stats, var_name, sort_by_largest, pref_attr, add_meta_keys, resample_how, min_num_obs
+            stats,
+            var_name,
+            sort_by_largest,
+            pref_attr,
+            add_meta_keys,
+            resample_how,
+            min_num_obs,
         )
 
     if fill_missing_nan:
@@ -1704,18 +1726,22 @@ def get_max_period_range(periods):
 
 
 def make_dummy_cube(
-    var_name: str, start_yr: int = 2000, stop_yr: int = 2020, freq: str = "daily", dtype=float
+    var_name: str,
+    start_yr: int = 2000,
+    stop_yr: int = 2020,
+    freq: str = "daily",
+    dtype=float,
 ) -> iris.cube.Cube:
-    startstr = f"days since {start_yr}-01-01 00:00"
+    startstr = f"{TS_TYPE_TO_FREQ_NAME[freq]} since {start_yr}-01-01 00:00"
 
     if freq not in TS_TYPE_TO_PANDAS_FREQ.keys():
         raise ValueError(f"{freq} not a recognized frequency")
 
     start_str = f"{start_yr}-01-01 00:00"
-    stop_str = f"{stop_yr}-12-31 00:00"
+    stop_str = f"{int(stop_yr)}-12-31 23:00"
     times = pd.date_range(start_str, stop_str, freq=TS_TYPE_TO_PANDAS_FREQ[freq])
 
-    days_since_start = (times - times[0]).days
+    time_since_start = (times - times[0]) / np.timedelta64(1, TS_TYPE_TO_NUMPY_FREQ[freq])
     unit = get_variable(var_name).units
 
     lat_range = (-90, 90)
@@ -1750,7 +1776,11 @@ def make_dummy_cube(
     )
 
     timedim = iris.coords.DimCoord(
-        days_since_start, var_name="time", standard_name="time", long_name="Time", units=time_unit
+        time_since_start,
+        var_name="time",
+        standard_name="time",
+        long_name="Time",
+        units=time_unit,
     )
 
     latdim.guess_bounds()

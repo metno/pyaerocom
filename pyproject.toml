@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.25.0.dev0"
+version = "0.27.0.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -21,7 +21,9 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "aerovaldb>=0.1.1",
+    # NOTE: Please also update dependency versions in pyaerocom_env.yml,
+    # and minimum versions in the tox config at the bottom of this file!
+    "aerovaldb>=0.2.3",
     "scitools-iris>=3.11.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
@@ -37,7 +39,6 @@ dependencies = [
     "geocoder_reverse_natural_earth",
     "tqdm",
     "openpyxl",
-    "geojsoncontour",
     "typer>=0.7.0",
     # python < 3.11
     'tomli>=2.0.1; python_version < "3.11"',
@@ -47,9 +48,11 @@ dependencies = [
     'cf-units>=3.3.0',
     "pydantic>=2.7.1",
     "pyproj>=3.0.0",
-    "pyaro>=0.0.14",
+    "pyaro>=0.1.1",
     "pooch>=1.7.0",
     "psutil>=5.0.0",
+    "contourpy>=1.3.0",
+    "geojson",
 ]
 
 [project.readme]
@@ -111,7 +114,7 @@ filterwarnings = [
     # Ignore self-deprecation warnings related to plotting
     'ignore:matplotlib based plotting is no longer directly supported. This (function|class) may be removed in future versions\.:DeprecationWarning:(pyaerocom|tests):',
     # and not on this list
-    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:",  # Issue #1394
+    "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
 ]
 
 [tool.coverage.run]
@@ -178,7 +181,6 @@ module = [
     "scipy.*",
     "mpl_toolkits.*",
     "cf_units",
-    "geojsoncontour",
     "pandas",
     "dask",
     "seaborn",
@@ -197,7 +199,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310, py311, py312, lint, type-check, docs, build
+envlist = py310, py311, py312, py313, lint, type-check, docs, build
 skip_missing_interpreters = True
 isolated_build = True
 requires =
@@ -215,6 +217,11 @@ extras =
 setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 deps =
+    # This pins key dependencies to the minimal supported version.
+    # Will only run on lowest supported Python version CI test
+    # (currently 3.10).
+    # Should be incremented when changing dependencies above.
+    aerovaldb ==0.2.1; python_version < "3.11"
     scitools-iris ==3.11.0; python_version < "3.11"
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"
@@ -228,9 +235,11 @@ deps =
     typing-extensions ==4.6.1; python_version < "3.11"
     cf-units ==3.3.0; python_version < "3.11"
     pydantic ==2.7.1; python_version < "3.11"
+    pyaro == 0.1.1; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
     xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
+    contourpy ==1.3.0; python_version < "3.11"
     pyaro-readers @ git+https://github.com/metno/pyaro-readers.git
     pyaro == 0.0.14; python_version < "3.11"
 

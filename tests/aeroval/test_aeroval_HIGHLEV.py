@@ -7,7 +7,6 @@ import pytest
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval import EvalSetup
-from tests.conftest import geojson_unavail
 
 CHK_CFG1 = {
     "map": ["AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer_2010.json"],
@@ -50,7 +49,6 @@ CHK_CFG4 = {
 }
 
 
-@geojson_unavail
 @pytest.mark.parametrize(
     "cfg,chk_files",
     [
@@ -68,12 +66,12 @@ def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
     output: ExperimentOutput = proc.exp_output
     assert Path(output.exp_dir).is_dir()
     assert Path(output.experiments_file).exists()
-    assert Path(output.var_ranges_file).exists()
-    assert Path(output.statistics_file).exists()
-    assert Path(output.menu_file).exists()
 
-    json_path = Path(output.exp_dir) / f"cfg_{cfg.proj_id}_{cfg.exp_id}.json"
-    assert json_path.exists()
+    output.avdb.get_statistics(output.proj_id, output.exp_id)
+    output.avdb.get_menu(output.proj_id, output.exp_id)
+    output.avdb.get_ranges(output.proj_id, output.exp_id)
+
+    output.avdb.get_config(output.proj_id, output.exp_id)
 
     for key, path in cfg.path_manager.get_json_output_dirs().items():
         path = Path(path)

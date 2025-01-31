@@ -139,7 +139,7 @@ def test_supported_pyaro(pyaro_testconfig):
     reader = ReadUngridded(configs=pyaro_testconfig)
 
     assert ReadPyaro in reader.SUPPORTED_READERS
-    assert pyaro_testconfig[0].data_id in reader.supported_datasets
+    assert pyaro_testconfig[0].reader_id in reader.supported_datasets
 
 
 def test_read_pyaro_and_other(pyaro_testconfig):

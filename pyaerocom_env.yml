@@ -22,6 +22,8 @@ dependencies:
   - pyproj >= 3.0.0
   - pooch >=1.7.0
   - psutil >= 5.0.0
+  - contourpy >= 1.3.0
+  - geojson
 ## python < 3.11
   - tomli >=2.0.1
   - importlib-resources >=5.10
@@ -29,10 +31,9 @@ dependencies:
 ## from pip
   - pip
   - pip:
-    - geojsoncontour
     - geocoder_reverse_natural_earth >= 0.0.2
-    - pyaro >= 0.0.14
-    - aerovaldb >= 0.1.1
+    - pyaro >= 0.1.1
+    - aerovaldb >= 0.2.1
 ## testing
   - pytest >=7.4
   - pytest-dependency

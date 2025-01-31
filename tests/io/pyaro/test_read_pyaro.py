@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import pandas as pd
+import numpy as np
 
 from pyaerocom import UngriddedData
-from pyaerocom.io import ReadPyaro
+from pyaerocom.io import ReadPyaro, PyaroConfig
 
 
 def test_testfile(pyaro_test_data_file):
@@ -18,7 +19,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "concso4", "od550aer"]
+    variables = ["NOx", "concso4", "od550aer", "NO"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
@@ -87,3 +88,29 @@ def test_pyarotoungriddeddata_variables(pyaro_testdata):
     obj = pyaro_testdata.converter
 
     assert obj.get_variables() == pyaro_testdata.PROVIDES_VARIABLES
+
+
+def test_postprocessing(pyaro_test_data_file):
+    config = PyaroConfig(
+        reader_id="csv_timeseries",
+        filename_or_obj_or_url=str(pyaro_test_data_file),
+        name="test",
+        name_map={
+            "NO": "concno",
+        },
+        post_processing=[
+            "concNno_from_concno",
+        ],
+        filters=dict(),
+    )
+    reader = ReadPyaro(config)
+    assert set(reader.PROVIDES_VARIABLES).issuperset(["concno", "concNno"])
+    data = reader.read(["concno", "concNno"])
+
+    concno = data.all_datapoints_var("concno")
+    concNno = data.all_datapoints_var("concNno")
+
+    # Proportion of N in NO, ng -> ug conversion
+    conversion_factor = 14.006 / (14.006 + 15.999) * 1e-3
+
+    assert np.allclose(concno * conversion_factor, concNno)

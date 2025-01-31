@@ -126,19 +126,17 @@ def test_EvalSetup__check_time_config(
     "update",
     (
         pytest.param(None, id="defaults"),
-        pytest.param(dict(maps_freq="yearly", maps_res_deg=10), id="custom"),
+        pytest.param(dict(maps_freq="yearly"), id="custom"),
     ),
 )
 def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update: dict):
     modelmaps_opts = eval_setup.modelmaps_opts
     if update:
         assert modelmaps_opts.maps_freq == cfg_exp1["maps_freq"] == update["maps_freq"]
-        assert modelmaps_opts.maps_res_deg == cfg_exp1["maps_res_deg"] == update["maps_res_deg"]
     else:  # defaults
         assert "maps_freq" not in cfg_exp1
         assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
-        assert modelmaps_opts.maps_res_deg == 5
         assert modelmaps_opts.plot_types == {CONTOUR}
         assert modelmaps_opts.overlay_save_format == "webp"
 

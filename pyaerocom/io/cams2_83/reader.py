@@ -219,7 +219,7 @@ def check_files(paths: list[Path]) -> list[Path]:
 
 
 class ReadCAMS2_83(GriddedReader):
-    FREQ_CODES = dict(hour="hourly", day="daily", month="monthly", fullrun="yearly")
+    FREQ_CODES = dict(hour="hourly")
     REVERSE_FREQ_CODES = {val: key for key, val in FREQ_CODES.items()}
 
     def __init__(

@@ -109,6 +109,9 @@ High-level functions for emep reporting
 .. automodule:: pyaerocom.aeroval.config.emep.reporting_base
    :members:
 
+.. automodule:: pyaerocom.aeroval.config.emep.emep4no_base_config
+   :members:
+
 Helper modules
 --------------
 

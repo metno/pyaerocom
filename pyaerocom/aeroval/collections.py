@@ -87,6 +87,10 @@ class BaseCollection(abc.ABC):
         KeyError
             if no matches can be found
         """
+        # Special case where the model cfg is empty, used for obs-only
+        if self._entries.keys() == []:
+            return []
+
         if name_or_pattern is None:
             name_or_pattern = "*"
 
@@ -94,6 +98,7 @@ class BaseCollection(abc.ABC):
         for key in self._entries.keys():
             if fnmatch(key, name_or_pattern) and key not in matches:
                 matches.append(key)
+
         if len(matches) == 0:
             raise KeyError(f"No matches could be found that match input {name_or_pattern}")
         return matches
@@ -272,3 +277,29 @@ class ModelCollection(BaseCollection):
             return self._entries[key]
         else:
             raise EntryNotAvailable(f"no such entry {key}")
+
+    def keylist(self, name_or_pattern: str = None) -> list[str]:
+        """Find model / obs names that match input search pattern(s)
+
+        Parameters
+        ----------
+        name_or_pattern : str, optional
+            Name or pattern specifying search string.
+
+        Returns
+        -------
+        list
+            list of keys in collection that match input requirements. If
+            `name_or_pattern` is None, all keys will be returned.
+
+        Raises
+        ------
+        KeyError
+            if no matches can be found
+        """
+        # Special case where the model cfg is empty, used for obs-only
+        if list(self._entries.keys()) == []:
+            return []
+
+        else:
+            return super().keylist(name_or_pattern)

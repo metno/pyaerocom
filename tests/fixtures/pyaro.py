@@ -24,7 +24,7 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     stations = ["NO0002", "GB0881"]
     countries = ["NO", "GB"]
     coords = [(58, 8), (60, -1)]
-    species = ["NOx", "SOx", "AOD"]
+    species = ["NOx", "SOx", "AOD", "NO"]
     area_type = ["Rural", "Urban"]
 
     with open(file, "w") as f:
@@ -34,19 +34,20 @@ def make_csv_test_file(tmp_path: Path) -> Path:
                     delta_t = ["1h", "3D", "2D", "2h"][
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
+                    unit = "Gg" if s != "NO" else "ng m-3"
                     f.write(
-                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, Gg, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
+                        f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, {unit}, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
                     )
 
     return file
 
 
-def testconfig(tmp_path: Path) -> PyaroConfig:
-    data_id = "csv_timeseries"
+def testconfig(tmp_path: Path) -> tuple[PyaroConfig, PyaroConfig]:
+    reader_id = "csv_timeseries"
 
     config1 = PyaroConfig(
         name="test",
-        data_id=data_id,
+        reader_id=reader_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
         name_map={"SOx": "concso4", "AOD": "od550aer"},
@@ -54,7 +55,7 @@ def testconfig(tmp_path: Path) -> PyaroConfig:
 
     config2 = PyaroConfig(
         name="test2",
-        data_id=data_id,
+        reader_id=reader_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
         name_map={"SOx": "concso4", "AOD": "od550aer"},
@@ -63,7 +64,7 @@ def testconfig(tmp_path: Path) -> PyaroConfig:
 
 
 def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
-    data_id = "csv_timeseries"
+    reader_id = "csv_timeseries"
     columns = {
         "variable": 0,
         "station": 1,
@@ -82,7 +83,7 @@ def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
 
     config = PyaroConfig(
         name="test",
-        data_id=data_id,
+        reader_id=reader_id,
         filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
         filters={},
         name_map={"SOx": "concso4"},

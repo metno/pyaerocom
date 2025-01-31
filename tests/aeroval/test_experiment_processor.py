@@ -5,7 +5,6 @@ import pytest
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.experiment_processor import ExperimentProcessor
 from pyaerocom.aeroval import EvalSetup
-from tests.conftest import geojson_unavail
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
@@ -25,14 +24,12 @@ def processor(eval_config: dict) -> ExperimentProcessor:
     return proc
 
 
-@geojson_unavail
 @pytest.mark.parametrize("cfg", ["cfgexp1", "cfgexp2", "cfgexp3", "cfgexp4", "cfgexp5"])
 def test_ExperimentProcessor_run(processor: ExperimentProcessor):
     processor.run()
 
 
 # Temporary until ObsCollection implemented simiarly then can run same test
-@geojson_unavail
 @pytest.mark.parametrize(
     "cfg,kwargs,error",
     [
@@ -56,7 +53,6 @@ def test_ExperimentProcessor_run_error_obs_name(
     assert str(e.value) == error
 
 
-@geojson_unavail
 @pytest.mark.parametrize(
     "cfg,kwargs,error",
     [

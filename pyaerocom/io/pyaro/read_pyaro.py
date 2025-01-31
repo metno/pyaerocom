@@ -12,6 +12,7 @@ from pyaro.timeseries import Data, Reader, Station
 from pyaro.timeseries.Wrappers import VariableNameChangingReader
 
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
+from pyaerocom.io.pyaro.postprocess import PostProcessingReader
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
@@ -77,9 +78,9 @@ class ReadPyaro(ReadUngriddedBase):
 
     def _check_id(self):
         avail_readers = list_timeseries_engines()
-        if self.config.data_id not in avail_readers:
+        if self.config.reader_id not in avail_readers:
             logger.warning(
-                f"Could not find {self.config.data_id} in list of available Pyaro readers: {avail_readers}"
+                f"Could not find {self.config.reader_id} in list of available Pyaro readers: {avail_readers}"
             )
 
 
@@ -105,29 +106,29 @@ class PyaroToUngriddedData:
         self.reader: Reader = self._open_reader()
 
     def _open_reader(self) -> Reader:
-        data_id = self.config.data_id
+        reader_id = self.config.reader_id
         if self.config.model_extra is not None:
             kwargs = self.config.model_extra
         else:
             kwargs = {}
 
-        if self.config.name_map is None:
-            return open_timeseries(
-                data_id,
-                self.config.filename_or_obj_or_url,
-                filters=self.config.filters,
-                **kwargs,
-            )
-        else:
-            return VariableNameChangingReader(
-                open_timeseries(
-                    data_id,
-                    self.config.filename_or_obj_or_url,
-                    filters=self.config.filters,
-                    **kwargs,
-                ),
+        reader = open_timeseries(
+            reader_id,
+            self.config.filename_or_obj_or_url,
+            filters=self.config.filters,
+            **kwargs,
+        )
+        if self.config.name_map is not None:
+            reader = VariableNameChangingReader(
+                reader,
                 self.config.name_map,
             )
+        if self.config.post_processing is not None:
+            reader = PostProcessingReader(
+                reader,
+                self.config.post_processing,
+            )
+        return reader
 
     def _convert_to_ungriddeddata(self, pyaro_data: dict[str, Data]) -> UngriddedData:
         total_size = sum(len(var) for var in pyaro_data.values())
@@ -244,7 +245,7 @@ class PyaroToUngriddedData:
         for var in vars_to_retrieve:
             if var not in allowed_vars:
                 logger.warning(
-                    f"Variable {var} not in list over allowed variabes for {self.config.data_id}: {allowed_vars}"
+                    f"Variable {var} not in list over allowed variabes for {self.config.reader_id}: {allowed_vars}"
                 )
                 continue
 

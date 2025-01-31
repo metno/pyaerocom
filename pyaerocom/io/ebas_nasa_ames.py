@@ -631,70 +631,79 @@ class EbasNasaAmesFile(NasaAmesHeader):
         IN_DATA = False
         data = []
         self.file = nasa_ames_file
-        for line in open(nasa_ames_file):
-            if IN_DATA:  # in data block (end of file)
-                try:
-                    data.append(tuple(float(x.strip()) for x in line.strip().split()))
-                    # data.append([float(x.strip()) for x in line.strip().split()])
-                except Exception as e:
-                    logger.warning(f"EbasNasaAmesFile: Failed to read data row {dc}. Reason: {e}")
-                dc += 1
-            elif lc < self._NUM_FIXLINES:  # in header section (before column definitions)
-                try:
-                    val = self._H_FIXLINES_CONV[lc](line)
-                    attr = self._H_FIXLINES_YIELD[lc]
-                    if isinstance(attr, list):
-                        for i, attr_id in enumerate(attr):
-                            self[attr_id] = val[i]
-                    else:
-                        self[attr] = val
-                except Exception as e:
-                    msg = f"Failed to read header row {lc}.\n{line}\nError msg: {repr(e)}"
-                    if lc in self._HEAD_ROWS_MANDATORY:
-                        raise NasaAmesReadError(f"Fatal: {msg}")
-                    else:
-                        logger.warning(msg)
-            else:  # behind header section and before data definition (contains column defs and meta info)
-                if mc == 0:  # still in column definition
-                    END_VAR_DEF = self._NUM_FIXLINES + self.num_cols_dependent - 1
-                    NUM_HEAD_LINES = self.num_head_lines
+        with open(nasa_ames_file) as f:
+            for line in f:
+                if IN_DATA:  # in data block (end of file)
                     try:
-                        self.var_defs.append(self._read_vardef_line(line))
-                    except Exception as e:
-                        logger.warning(repr(e))
-
-                elif lc < END_VAR_DEF:
-                    self.var_defs.append(self._read_vardef_line(line))
-
-                elif lc == NUM_HEAD_LINES - 1:
-                    IN_DATA = True
-                    self._data_header = h = [x.strip() for x in line.split()]
-                    # append information of first two columns to variable
-                    # definition array.
-                    self._var_defs.insert(
-                        0, EbasColDef(name=h[0], is_flag=False, is_var=False, unit=self.time_unit)
-                    )
-                    self._var_defs.insert(
-                        1, EbasColDef(name=h[1], is_flag=False, is_var=False, unit=self.time_unit)
-                    )
-                    if only_head:
-                        return
-                    logger.debug("REACHED DATA BLOCK")
-                elif lc >= END_VAR_DEF + 2:
-                    try:
-                        name, val = line.split(
-                            ":", 1
-                        )  # Adding maxpslit=1 incase colon appears in url
-                        key = name.strip().lower().replace(" ", "_")
-                        self.meta[key] = val.strip()
+                        data.append(tuple(float(x.strip()) for x in line.strip().split()))
+                        # data.append([float(x.strip()) for x in line.strip().split()])
                     except Exception as e:
                         logger.warning(
-                            f"Failed to read line no. {lc}.\n{line}\nError msg: {repr(e)}\n"
+                            f"EbasNasaAmesFile: Failed to read data row {dc}. Reason: {e}"
                         )
-                else:
-                    logger.debug(f"Ignoring line no. {lc}: {line}")
-                mc += 1
-            lc += 1
+                    dc += 1
+                elif lc < self._NUM_FIXLINES:  # in header section (before column definitions)
+                    try:
+                        val = self._H_FIXLINES_CONV[lc](line)
+                        attr = self._H_FIXLINES_YIELD[lc]
+                        if isinstance(attr, list):
+                            for i, attr_id in enumerate(attr):
+                                self[attr_id] = val[i]
+                        else:
+                            self[attr] = val
+                    except Exception as e:
+                        msg = f"Failed to read header row {lc}.\n{line}\nError msg: {repr(e)}"
+                        if lc in self._HEAD_ROWS_MANDATORY:
+                            raise NasaAmesReadError(f"Fatal: {msg}")
+                        else:
+                            logger.warning(msg)
+                else:  # behind header section and before data definition (contains column defs and meta info)
+                    if mc == 0:  # still in column definition
+                        END_VAR_DEF = self._NUM_FIXLINES + self.num_cols_dependent - 1
+                        NUM_HEAD_LINES = self.num_head_lines
+                        try:
+                            self.var_defs.append(self._read_vardef_line(line))
+                        except Exception as e:
+                            logger.warning(repr(e))
+
+                    elif lc < END_VAR_DEF:
+                        self.var_defs.append(self._read_vardef_line(line))
+
+                    elif lc == NUM_HEAD_LINES - 1:
+                        IN_DATA = True
+                        self._data_header = h = [x.strip() for x in line.split()]
+                        # append information of first two columns to variable
+                        # definition array.
+                        self._var_defs.insert(
+                            0,
+                            EbasColDef(
+                                name=h[0], is_flag=False, is_var=False, unit=self.time_unit
+                            ),
+                        )
+                        self._var_defs.insert(
+                            1,
+                            EbasColDef(
+                                name=h[1], is_flag=False, is_var=False, unit=self.time_unit
+                            ),
+                        )
+                        if only_head:
+                            return
+                        logger.debug("REACHED DATA BLOCK")
+                    elif lc >= END_VAR_DEF + 2:
+                        try:
+                            name, val = line.split(
+                                ":", 1
+                            )  # Adding maxpslit=1 incase colon appears in url
+                            key = name.strip().lower().replace(" ", "_")
+                            self.meta[key] = val.strip()
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to read line no. {lc}.\n{line}\nError msg: {repr(e)}\n"
+                            )
+                    else:
+                        logger.debug(f"Ignoring line no. {lc}: {line}")
+                    mc += 1
+                lc += 1
 
         data = np.asarray(data)
 

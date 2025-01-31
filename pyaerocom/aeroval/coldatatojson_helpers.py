@@ -1457,7 +1457,7 @@ def _process_statistics_timeseries(
     return output
 
 
-def _get_jsdate(nparr):
+def _get_jsdate(nparr: np.ndarray):
     dt = nparr.astype("datetime64[s]")
     offs = np.datetime64("1970", "s")
     return (dt - offs).astype(int) * 1000
