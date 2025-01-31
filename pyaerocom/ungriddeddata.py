@@ -213,20 +213,20 @@ class UngriddedData:
         """Checks if all indices are assigned correctly"""
         assert len(self.meta_idx) == len(self.metadata), "Mismatch len(meta_idx) and len(metadata)"
 
-        assert sum(self.meta_idx) == sum(self.metadata), (
-            "Mismatch between keys of metadata dict and meta_idx dict"
-        )
+        assert sum(self.meta_idx) == sum(
+            self.metadata
+        ), "Mismatch between keys of metadata dict and meta_idx dict"
 
         _varnums = self._data[:, self._VARINDEX]
         var_indices = np.unique(_varnums[~np.isnan(_varnums)])
 
-        assert len(var_indices) == len(self.var_idx), (
-            "Mismatch between number of variables in data array and var_idx attr."
-        )
+        assert len(var_indices) == len(
+            self.var_idx
+        ), "Mismatch between number of variables in data array and var_idx attr."
 
-        assert sum(var_indices) == sum(self.var_idx.values()), (
-            "Mismatch between variable indices in data array and var_idx attr."
-        )
+        assert sum(var_indices) == sum(
+            self.var_idx.values()
+        ), "Mismatch between variable indices in data array and var_idx attr."
 
         vars_avail = self.var_idx
 
@@ -246,13 +246,13 @@ class UngriddedData:
                 if len(indices) == 0:
                     continue  # no data assigned for this metadata index
 
-                assert var in meta["var_info"], (
-                    f"Var {var} is indexed in meta_idx[{idx}] but not in metadata[{idx}]"
-                )
+                assert (
+                    var in meta["var_info"]
+                ), f"Var {var} is indexed in meta_idx[{idx}] but not in metadata[{idx}]"
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
-                assert len(var_idx_data) == 1, (
-                    f"Found multiple variable indices for var {var}: {var_idx_data}"
-                )
+                assert (
+                    len(var_idx_data) == 1
+                ), f"Found multiple variable indices for var {var}: {var_idx_data}"
                 assert var_idx_data[0] == vars_avail[var], (
                     f"Mismatch between {var} index assigned in data and "
                     f"var_idx for {idx} in meta-block"

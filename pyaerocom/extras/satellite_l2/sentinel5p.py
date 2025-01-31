@@ -387,9 +387,9 @@ class ReadL2Data(ReadL2DataBase):
                 self.CODA_READ_PARAMETERS[self._LEVELSNAME]["vars"][self._LEVELSNAME]
             )
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._GROUNDPRESSURENAME] = (
-                self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]["vars"][
+                self.CODA_READ_PARAMETERS[
                     self._GROUNDPRESSURENAME
-                ]
+                ]["vars"][self._GROUNDPRESSURENAME]
             )
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
                 self._TM5_TROPOPAUSE_LAYER_INDEX_NAME
@@ -397,19 +397,19 @@ class ReadL2Data(ReadL2DataBase):
                 self._TM5_TROPOPAUSE_LAYER_INDEX_NAME
             ]
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._TM5_CONSTANT_A_NAME] = (
-                self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]["vars"][
+                self.CODA_READ_PARAMETERS[
                     self._TM5_CONSTANT_A_NAME
-                ]
+                ]["vars"][self._TM5_CONSTANT_A_NAME]
             )
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._TM5_CONSTANT_B_NAME] = (
-                self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]["vars"][
+                self.CODA_READ_PARAMETERS[
                     self._TM5_CONSTANT_B_NAME
-                ]
+                ]["vars"][self._TM5_CONSTANT_B_NAME]
             )
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][self._AVERAGINGKERNELNAME] = (
-                self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]["vars"][
+                self.CODA_READ_PARAMETERS[
                     self._AVERAGINGKERNELNAME
-                ]
+                ]["vars"][self._AVERAGINGKERNELNAME]
             )
 
         self.STATICFIELDNAMES = [

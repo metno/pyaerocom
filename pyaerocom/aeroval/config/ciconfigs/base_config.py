@@ -150,10 +150,10 @@ def get_CFG(reportyear, year) -> dict:
     Filters
     """
 
-    BASE_FILTER = {
-        "latitude": [30, 82],
-        "longitude": [-30, 90],
-    }
+    # BASE_FILTER = {
+    #     "latitude": [30, 82],
+    #     "longitude": [-30, 90],
+    # }
 
     data_name = "CITestData"
     data_id = "harp"
@@ -166,11 +166,11 @@ def get_CFG(reportyear, year) -> dict:
         name_map={"O3_density": "vmro3"},
     )
 
-    EBAS_FILTER = {
-        **BASE_FILTER,
-        "data_level": [None, 2],
-        "set_flags_nan": True,
-    }
+    # EBAS_FILTER = {
+    #     **BASE_FILTER,
+    #     "data_level": [None, 2],
+    #     "set_flags_nan": True,
+    # }
 
     OBS_GROUNDBASED = {
         ################
