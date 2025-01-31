@@ -1980,7 +1980,7 @@ class ReadGridded(GriddedReader):
         """
         if vars_to_retrieve is None and "var_names" in kwargs:
             warnings.warn(
-                "Input arg var_names is deprecated. " "Please use vars_to_retrieve instead",
+                "Input arg var_names is deprecated. Please use vars_to_retrieve instead",
                 DeprecationWarning,
                 stacklevel=2,
             )

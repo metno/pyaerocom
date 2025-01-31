@@ -315,9 +315,7 @@ def plot_griddeddata_on_map(
     if not data.ndim == 2:
         if not data.ndim == 3 or "time" not in data.dimcoord_names:
             raise DataDimensionError(
-                "Input data needs to be 2 dimensional "
-                "or 3D with time being the 3rd "
-                "dimension"
+                "Input data needs to be 2 dimensional or 3D with time being the 3rd dimension"
             )
         data.reorder_dimensions_tseries()
         data = data[0]

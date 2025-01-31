@@ -250,7 +250,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        f"NMB: {statistics['nmb']*100:.1f}%",
+        f"NMB: {statistics['nmb'] * 100:.1f}%",
         xy=xypos["nmb"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -258,7 +258,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        f"MNMB: {statistics['mnmb']*100:.1f}%",
+        f"MNMB: {statistics['mnmb'] * 100:.1f}%",
         xy=xypos["mnmb"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,

@@ -368,8 +368,7 @@ class GriddedData:
         freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
         if not int(dt.astype(f"timedelta64[{freq}]")) == 1:
             raise AttributeError(
-                "Mismatch between sampling freq and "
-                "actual frequency of values in time dimension "
+                "Mismatch between sampling freq and actual frequency of values in time dimension "
             )
 
     @property
@@ -2725,10 +2724,7 @@ class GriddedData:
 
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return (
-            f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n"
-            f"{self._grid.__repr__()}"
-        )
+        return f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n{self._grid.__repr__()}"
 
     def __add__(self, other):
         raise NotImplementedError("Coming soon")

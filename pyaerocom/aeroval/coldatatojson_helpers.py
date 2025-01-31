@@ -1418,8 +1418,7 @@ def _process_statistics_timeseries(
     # input frequency is lower resolution than output frequency
     if TsType(data_freq) < TsType(freq):
         raise TemporalResolutionError(
-            f"Desired input frequency {data_freq} is lower than desired "
-            f"output frequency {freq}"
+            f"Desired input frequency {data_freq} is lower than desired output frequency {freq}"
         )
 
     output = {}
@@ -1667,7 +1666,7 @@ def _remove_less_covered(
 
     new_stations = data.data.station_name.data
 
-    logger.info(f"Removed {len(stations)-len(new_stations)} stations")
+    logger.info(f"Removed {len(stations) - len(new_stations)} stations")
     if len(new_stations) == 0:
         logger.warning(
             f"No stations left after removing stations with fewer than {min_yrs} years!"

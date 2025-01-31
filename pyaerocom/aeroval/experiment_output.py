@@ -451,8 +451,7 @@ class ExperimentOutput(ProjectOutput):
         obs_name = str.join("-", obsinfo.split("-")[:-1])
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {fp}. "
-                f"File will be deleted."
+                f"Invalid or outdated obs name {obs_name} in ts file {fp}. File will be deleted."
             )
             os.remove(fp)
             return True

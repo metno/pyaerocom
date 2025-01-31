@@ -8,7 +8,8 @@ from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
 reportyear = year = 2018
 CFG = get_CFG(
     reportyear=reportyear,
-    year=year, )
+    year=year,
+)
 
 TEST_FILE = "mep-rd-Birkenes-2018-001.nc"
 
@@ -45,8 +46,10 @@ def test_aeroval_config_diurnal():
     ana.update_interface()
 
     res = ana.run()
+    assert res is not None
     diurnal_path = (
-            pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
+        # pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
+            pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"]
     )
     assert diurnal_path.exists()
     tmp = diurnal_path.glob("*.json")

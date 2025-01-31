@@ -782,8 +782,7 @@ class Config:
 
         if not os.path.isfile(config_file):
             raise FileNotFoundError(
-                f"Configuration file paths.ini at {config_file} does not exist "
-                f"or is not a file"
+                f"Configuration file paths.ini at {config_file} does not exist or is not a file"
             )
 
         if init_obslocs_ungridded:
