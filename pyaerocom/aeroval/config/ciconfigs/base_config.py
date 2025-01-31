@@ -160,7 +160,7 @@ def get_CFG(reportyear, year) -> dict:
 
     config = PyaroConfig(
         name=data_name,
-        data_id=data_id,
+        reader_id=data_id,
         filename_or_obj_or_url=TEST_DATA_DIR,
         filters={"variables": {"include": ["O3_density"]}},
         name_map={"O3_density": "vmro3"},
