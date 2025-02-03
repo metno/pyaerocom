@@ -30,6 +30,45 @@ def test_harp_test_data_available():
     assert TEST_FILE in data_files
 
 
+def test_obs_data_readable():
+    """test reading obs data using pyaerocom"""
+    pass
+    from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
+    from pyaerocom.io import ReadUngridded
+
+    reportyear = year = 2018
+    CFG = get_CFG(
+        reportyear=reportyear,
+        year=year,
+    )
+    assert CFG
+    config = CFG["obs_cfg"]["Pyaro-h"]["obs_config"]
+    #
+    reader = ReadUngridded(configs=config)
+    data = reader.read()
+    print(data)
+    assert data
+
+
+def test_model_data_readable():
+    """test reading model data using pyaerocom"""
+    pass
+    from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
+
+    reportyear = year = 2018
+    CFG = get_CFG(
+        reportyear=reportyear,
+        year=year,
+    )
+    assert CFG
+    config = CFG["model_cfg"]
+    #
+    reader = ReadUngridded(configs=config)
+    data = reader.read()
+    print(data)
+    assert data
+
+
 def test_aeroval_config_diurnal():
     """test to make sure diurnal cycle analysis works
     The data used is entirely fake
@@ -50,7 +89,12 @@ def test_aeroval_config_diurnal():
         # pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
             pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"]
     )
+    print(diurnal_path)
     assert diurnal_path.exists()
     tmp = diurnal_path.glob("*.json")
     diurnal_files = [x for x in tmp if x.is_file()]
     assert len(diurnal_files) > 1
+
+
+if __name__ == "__main__":
+    test_aeroval_config_diurnal()

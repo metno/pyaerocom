@@ -25,12 +25,12 @@ DEFAULT_RESAMPLE_CONSTRAINTS_DAILY = dict(
 )
 
 # ODCSFUN_EEANRT = "EEAAQeRep.NRT;concpm10/EEAAQeRep.NRT;concpm25"
-ODCSFUN_EEAV2 = "EEAAQeRep.v2;concpm10/EEAAQeRep.v2;concpm25"
-ODCSFUN_EBAS = "EBASMC;concpm10/EBASMC;concpm25"
+# ODCSFUN_EEAV2 = "EEAAQeRep.v2;concpm10/EEAAQeRep.v2;concpm25"
+# ODCSFUN_EBAS = "EBASMC;concpm10/EBASMC;concpm25"
 
 HOMEDIR = Path.home()
-MYPEYAEROCOM_DIR = Path.home() / "MyPyaerocom"
-MYPEYAEROCOM_DIR.mkdir(exist_ok=True)
+MYPYAEROCOM_DIR = Path.home() / "MyPyaerocom"
+MYPYAEROCOM_DIR.mkdir(exist_ok=True)
 TMP_DIR = Path.home() / "tmp"
 TMP_DIR.mkdir(exist_ok=True)
 JSON_DIR = Path.home() / "tmp" / "data"
@@ -39,7 +39,7 @@ COLDATA_DIR = Path.home() / "tmp" / "coldata"
 COLDATA_DIR.mkdir(exist_ok=True)
 
 # data directory for test data
-TEST_DATA_DIR = MYPEYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "diurnal_test_data"
+TEST_DATA_DIR = MYPYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "diurnal_test_data"
 
 
 def get_CFG(reportyear, year) -> dict:
