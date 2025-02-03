@@ -19,7 +19,7 @@ var_lookup = {v: k for k, v in emep_var_map.items()}
 
 reader = pya.io.readungridded.ReadUngridded("EBASMC")
 
-with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
+with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4") as dt:
     gridded_data: dict[str, pya.griddeddata.GriddedData] = {}
     for var in dt.keys():
         try:
@@ -48,17 +48,23 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
 
         darrays = [
             xr.DataArray(
-                (tmp := station.to_timeseries(aerocomvar).loc[start_date:end_date]), dims=['time'], coords={'time': tmp.index}, name=station_name
-            ) for station_name, station in sdata.items()
+                (tmp := station.to_timeseries(aerocomvar).loc[start_date:end_date]), dims=['time'], coords={'time': tmp.index}, name=aerocomvar
+            ) for _, station in sdata.items()
         ]
 
-        combined = xr.concat(darrays, dim=pd.Index([x.encode('utf-8') for x in sdata.keys()], name="station_name"))
+        combined = xr.concat(darrays, dim=pd.Index([x.encode() for x in sdata.keys()], name="station_name"))
         
-        coldataarray = xr.concat([combined, data], dim=pd.Index(["obs", "uemep"], name="data_source"))
-        coldataarray = coldataarray.transpose("data_source", "time", "station_name")
+        coldataarray = xr.concat([combined, data], dim=pd.Index([x.encode() for x in ["EBASMC", "uemep"]], name="data_source"))
+        coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
+            {
+                "lat": "latitude",
+                "lon": "longitude"
+            }
+        )
+
         coldat = pya.colocation.colocated_data.ColocatedData(coldataarray)
         coldat.data.attrs = {
-            "obsvar": aerocomvar,
+            "obs_vars": aerocomvar,
             "ts_type": "hourly",
             "filter_name": "ALL-wMOUNTAINS",
             "ts_type_src": ["hourly", "hourly"],
@@ -76,7 +82,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
             "vert_code": "Surface",
             "diurnal_only": 0,
             "zeros_to_nan": 0,
-            "data_source": ["uemep", "observations"],
+            "data_source": ["obs", "uemep"],
             "var_name": [aerocomvar, aerocomvar]
         }
         coldat.to_netcdf(".")
