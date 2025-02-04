@@ -19,7 +19,7 @@ var_lookup = {v: k for k, v in emep_var_map.items()}
 
 reader = pya.io.readungridded.ReadUngridded("EBASMC")
 
-with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4") as dt:
+with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
     gridded_data: dict[str, pya.griddeddata.GriddedData] = {}
     for var in dt.keys():
         try:
@@ -29,6 +29,8 @@ with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4") as dt:
             continue
         
         data = dt[var].swap_dims({"station_id": "station_name"})
+
+        station_ids = data["station_name"].values.astype(str)
 
         # TODO: Filterpost?
         obsdata = reader.read(vars_to_retrieve=[aerocomvar])
@@ -44,7 +46,15 @@ with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4") as dt:
         sdata: dict[str, pya.stationdata.StationData] = {}
         stations = fobsdata.to_station_data_all()
         for station_name, station in zip(stations["station_name"], stations["stats"]):
-            sdata[station_name] = station
+            station: pya.stationdata.StationData
+            if station.station_id not in station_ids:
+                print(f"No matching station_id for {station.station_id}. Skipping...")
+                continue
+            sdata[station.station_id] = station
+
+        if len(sdata.keys()) == 0:
+            print(f"No valid station data found for period.")
+            continue
 
         darrays = [
             xr.DataArray(
@@ -52,9 +62,9 @@ with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4") as dt:
             ) for _, station in sdata.items()
         ]
 
-        combined = xr.concat(darrays, dim=pd.Index([x.encode() for x in sdata.keys()], name="station_name"))
+        combined = xr.concat(darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name"))
         
-        coldataarray = xr.concat([combined, data], dim=pd.Index([x.encode() for x in ["EBASMC", "uemep"]], name="data_source"))
+        coldataarray = xr.concat([combined, data], dim=pd.Index([x for x in ["EBASMC", "uemep"]], name="data_source"))
         coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
             {
                 "lat": "latitude",
