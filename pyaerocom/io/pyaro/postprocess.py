@@ -223,20 +223,6 @@ class PostProcessingReader(Reader):
                 new_altitudes = []
                 new_values = []
 
-                def left_and_right_matches(left, right):
-                    indexes = [0, 0]
-                    while (indexes[0] < len(left)) and (indexes[1] < len(right)):
-                        le = left[indexes[0]]
-                        ri = right[indexes[1]]
-                        if le == ri:
-                            yield indexes
-                            indexes[0] += 1
-                            indexes[1] += 1
-                        elif le < ri:
-                            indexes[0] += 1
-                        else:
-                            indexes[1] += 1
-
                 for lat, lon in shared:  # Per station
                     masks = [(d.latitudes == lat) & (d.longitudes == lon) for d in data]
                     data_subset = [d[mask] for d, mask in zip(data, masks)]
@@ -249,39 +235,39 @@ class PostProcessingReader(Reader):
                     stations = data_subset[0].stations[indexings[0]]
                     altitudes = data_subset[0].altitudes[indexings[0]]
 
-                    for lindex, rindex in left_and_right_matches(
-                        *[d.start_times for d in data_subset]
-                    ):
-                        if data_subset[0].end_times[lindex] != data_subset[1].end_times[rindex]:
-                            continue
-                        new_latitudes.append(lat)
-                        new_longitudes.append(lon)
-                        new_starttimes.append(start_times[0][lindex])
-                        new_endtimes.append(end_times[0][lindex])
-                        new_stations.append(stations[lindex])
-                        new_altitudes.append(altitudes[lindex])
+                    lindex, rindex = matching_indices(start_times[0], start_times[1])
 
-                        if transform.OP == "ADD":
-                            value = (
-                                data_subset[0].values[lindex] * scalings[0]
-                                + data_subset[1].values[rindex]
-                            )
-                        else:
-                            raise Exception(f"Transform mode {transform.OP} is not supported")
-                        new_values.append(value)
+                    if not np.all(end_times[0][lindex] == end_times[1][rindex]):
+                        raise Exception("Different durations encountered")
 
-                n = len(new_latitudes)
+                    new_latitudes.append(lat*np.ones(len(lindex)))
+                    new_longitudes.append(lon*np.ones(len(lindex)))
+                    new_starttimes.append(start_times[0][lindex])
+                    new_endtimes.append(start_times[0][lindex])
+                    new_stations.append(stations[lindex])
+                    new_altitudes.append(altitudes[lindex])
+
+                    if transform.OP == "ADD":
+                        values = data_subset[0].values[lindex] * scalings[0] + data_subset[1].values[rindex] * scalings[1]
+                    else:
+                        raise Exception(f"Transform mode {transform.OP} is not supported")
+                    new_values.append(values)
+
                 newdata = {
-                    "latitudes": np.array(new_latitudes),
-                    "longitudes": np.array(new_longitudes),
-                    "start_times": np.array(new_starttimes),
-                    "end_times": np.array(new_endtimes),
-                    "stations": np.array(new_stations),
-                    "altitudes": np.array(new_altitudes),
-                    "values": np.array(new_values),
+                    "latitudes": np.concatenate(new_latitudes),
+                    "longitudes": np.concatenate(new_longitudes),
+                    "start_times": np.concatenate(new_starttimes),
+                    "end_times": np.concatenate(new_endtimes),
+                    "stations": np.concatenate(new_stations),
+                    "altitudes": np.concatenate(new_altitudes),
+                    "values": np.concatenate(new_values),
+                }
+                
+                n = len(newdata["latitudes"])
+                newdata.update({
                     "standard_deviations": np.nan * np.zeros(n),
                     "flags": np.ones(n),
-                }
+                })
 
                 return DictlikeData(
                     newdata, variable=transform.out_varname(), units=transform.OUT_UNIT
@@ -302,6 +288,29 @@ class PostProcessingReader(Reader):
 
     def close(self) -> None:
         self.reader.close()
+
+
+def matching_indices(x, y):
+    """Returns indices of x and y such that x[xind] == y[yind]
+    x and y must be monotonically increasing
+    """
+    x_indices, y_indices = list(), list()
+    # for (x, y) in left_and_right_matches(x, y):
+    ix, iy = 0, 0
+    while (ix < len(x)) and (iy < len(y)):
+        le = x[ix]
+        ri = y[iy]
+        if le == ri:
+            x_indices.append(ix)
+            y_indices.append(iy)
+            ix += 1
+            iy += 1
+        elif le < ri:
+            ix += 1
+        else:
+            iy += 1
+
+    return x_indices, y_indices
 
 
 class DictlikeData(Data):
