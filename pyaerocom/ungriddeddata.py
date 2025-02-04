@@ -2034,10 +2034,9 @@ class UngriddedData:
         Example
         -------
         >>> import pyaerocom as pya
-        >>> r = pya.io.ReadUngridded(['AeronetSunV2Lev2.daily',
-                                      'AeronetSunV3Lev2.daily'], 'od550aer')
+        >>> r = pya.io.ReadUngridded(['AeronetSunV3Lev2.daily'], 'od550aer')
         >>> data = r.read()
-        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV2Lev2.daily',
+        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV3Lev2.daily',
         ...                                     longitude=[-30, 30],
         ...                                     latitude=[20, 70],
         ...                                     altitude=[0, 1000])
@@ -3083,8 +3082,8 @@ class UngriddedData:
 
         Example
         -------
-        >>> from pyaerocom.io import ReadAeronetSdaV2
-        >>> read = ReadAeronetSdaV2()
+        >>> from pyaerocom.io import ReadAeronetSdaV3
+        >>> read = ReadAeronetSdaV3()
 
         >>> d0 = read.read(last_file=10)
         >>> d1 = read.read(first_file=10, last_file=20)
@@ -3092,7 +3091,7 @@ class UngriddedData:
         >>> merged = d0 & d1
 
         >>> print(d0.shape, d1.shape, merged.shape)
-        (7326, 11) (9894, 11) (17220, 11)
+        (9868, 12) (12336, 12) (22204, 12)
         """
         return self.merge(other, new_obj=True)
 

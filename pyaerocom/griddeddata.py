@@ -2171,17 +2171,6 @@ class GriddedData:
         -------
         GriddedData
             new data object containing interpolated data
-
-        Examples
-        --------
-
-            >>> from pyaerocom import GriddedData
-            >>> data = GriddedData()
-            >>> data._init_testdata_default()
-            >>> itp = data.interpolate([("longitude", (10)),
-            ...                         ("latitude" , (35))])
-            >>> print(itp.shape)
-            (365, 1, 1)
         """
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)

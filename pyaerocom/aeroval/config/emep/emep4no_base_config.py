@@ -29,32 +29,32 @@ def get_CFG(year: int, model_dir: str, *, file_pattern: str = r"^RERUN2022_{freq
     >>> import pathlib
     >>>
     >>> if __name__ == "__main__":
-    >>>     import matplotlib.pyplot as plt
-    >>>     import pyaerocom as pya
-    >>>     from pyaerocom import const
-    >>>     from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-    >>>
-    >>>     # Customize cache dir to avoid disk quota issues.
-    >>>     # cdir = pathlib.Path("./cache")
-    >>>     # cdir.mkdir(exist_ok=True)
-    >>>     # const.CACHEDIR = str(cdir)
-    >>>
-    >>>     cfg = get_CFG(2022, "/lustre/storeB/project/fou/kl/emep/ModelRuns/EMEP4NO/EMEP4NO_rerun_2022/")
-    >>>
-    >>>     # Change any experiment details.
-    >>>     cfg.update(
-    >>>         {
-    >>>             #"proj_id": "<project name>",
-    >>>             #"exp_id": "<experiment name>",
-    >>>             #"json_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/data",
-    >>>             #"coldata_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/coldata",
-    >>>         }
-    >>>     )
-    >>>
-    >>>     # Run the experiment.
-    >>>     stp = EvalSetup(**cfg)
-    >>>     ana = ExperimentProcessor(stp)
-    >>>     res = ana.run()
+    ...     import matplotlib.pyplot as plt
+    ...     import pyaerocom as pya
+    ...     from pyaerocom import const
+    ...     from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+    ...
+    ...     # Customize cache dir to avoid disk quota issues.
+    ...     # cdir = pathlib.Path("./cache")
+    ...     # cdir.mkdir(exist_ok=True)
+    ...     # const.CACHEDIR = str(cdir)
+    ...
+    ...     cfg = get_CFG(2022, "/lustre/storeB/project/fou/kl/emep/ModelRuns/EMEP4NO/EMEP4NO_rerun_2022/")
+    ...
+    ...     # Change any experiment details.
+    ...     cfg.update(
+    ...         {
+    ...             #"proj_id": "<project name>",
+    ...             #"exp_id": "<experiment name>",
+    ...             #"json_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/data",
+    ...             #"coldata_basedir": "/lustre/storeB/users/thlun8736/python/aeroval/coldata",
+    ...         }
+    ...     )
+    ...
+    ...     # Run the experiment.
+    ...     stp = EvalSetup(**cfg)
+    ...     ana = ExperimentProcessor(stp)
+    ...     res = ana.run()
     """
     cfg = get_EMEP_CFG(None, year, model_dir)
 

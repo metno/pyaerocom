@@ -114,20 +114,13 @@ def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     Example
     -------
     >>> vmin, vmax = 0.02, 0.75
-    >>> vals = calc_pseudolog_cmaplevels(vmin, vmax, num_per_mag=10, add_zero=True)
+    >>> vals = calc_pseudolog_cmaplevels(vmin, vmax, add_zero=True)
     >>> for val in vals: print("%.4f" %val)
     0.0000
-    0.0100
-    0.0126
-    0.0158
     0.0200
-    0.0251
-    0.0316
-    0.0398
-    0.0501
-    0.0631
-    0.0794
-    0.1000
+    ...
+    0.7000
+    0.7500
 
     """
     warnings.warn(
