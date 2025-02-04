@@ -846,7 +846,7 @@ class Config:
             return False
 
         # get all locations defined in config file as list
-        locs = mcfg["dir"].replace("\n", "").split(",")
+        locs = mcfg["dir"].replace("\n", "").replace("${HOME}", os.path.expanduser("~")).split(",")
 
         # find first location that contains BASEDIR to determine
         try:
