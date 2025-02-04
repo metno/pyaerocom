@@ -8,6 +8,7 @@ from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.helpers import delete_dummy_model, make_dummy_model
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
+from pyaerocom.aeroval.bulkfraction_engine import BulkFractionEngine
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,10 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 files_to_convert = glob.glob(mask)
                 engine = ColdataToJsonEngine(self.cfg)
                 engine.run(files_to_convert)
+
+        elif ocfg.is_bulk:
+            engine = BulkFractionEngine(self.cfg)
+            engine.run(var_list, model_name, obs_name)
 
         else:
             # If a var_list is given, only run on the obs networks which contain that variable

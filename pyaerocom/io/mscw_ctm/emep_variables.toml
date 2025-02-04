@@ -113,3 +113,27 @@ concoxn = "SURF_ugN_OXN"
 vmrno = "SURF_ppb_NO"
 vmrno2 = "SURF_ppb_NO2"
 concspores = "SURF_ug_FUNGAL_SPORES"
+
+# Test
+pmfraction = "SURF_ug_PM10_rh50"
+wetrdnpr = "WDEP_PREC"
+
+# Variables for EC
+concecFineResNew = "SURF_ug_EC_F_RES_NEW"
+concecFineResAge = "SURF_ug_EC_F_RES_AGE"
+concecFineNonResNew = "SURF_ug_EC_F_NONRES_NEW"
+concecFineNonResAge = "SURF_ug_EC_F_NONRES_AGE"
+concecCoarseRes = "SURF_ug_EC_C_RES"
+concecCoarseNonRes = "SURF_ug_EC_C_NONRES"
+
+# Variables for EC from emission
+concecFineEM = "SURF_ug_EMECFINE"
+concecCoarseEM = "SURF_ug_EMECCOARSE"
+
+concecFineResNewEM = "SURF_ug_EMEC_F_RES_NEW"
+concecFineResAgeEM = "SURF_ug_EMEC_F_RES_AGE"
+concecFineNonResNewEM = "SURF_ug_EMEC_F_NONRES_NEW"
+concecFineNonResAgeEM = "SURF_ug_EMEC_F_NONRES_AGE"
+concecCoarseResEM = "SURF_ug_EMEC_C_RES"
+concecCoarseNonResEM = "SURF_ug_EMEC_C_NONRES"
+

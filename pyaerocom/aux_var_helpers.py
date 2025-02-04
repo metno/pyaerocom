@@ -294,7 +294,10 @@ def _calc_od_helper(
             ods_alt = data[od_ref_alt][mask]
             ang = data[use_angstrom_coeff][mask]
             replace = compute_od_from_angstromexp(
-                to_lambda=to_lambda, od_ref=ods_alt, lambda_ref=lambda_ref_alt, angstrom_coeff=ang
+                to_lambda=to_lambda,
+                od_ref=ods_alt,
+                lambda_ref=lambda_ref_alt,
+                angstrom_coeff=ang,
             )
             result[mask] = replace
     if treshold_angstrom:
@@ -540,6 +543,53 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
     return wdep
 
 
+def _compute_wdeppr_from_concprcp_helper(data, wdep_pr_var):
+    pr_var = "pr"
+    vars_needed = [pr_var]
+
+    if not all(x in data.data_flagged for x in vars_needed):
+        raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
+    from pyaerocom import TsType
+    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
+
+    tst = TsType(data.get_var_ts_type(pr_var))
+
+    ival = tst.to_si()
+
+    pr_unit = data.get_unit(pr_var)
+    if not pr_unit == "m":
+        data.convert_unit(pr_var, "m")
+    pr_unit = data.get_unit(pr_var)
+    pr_data = data[pr_var]
+    pr_flags = data.data_flagged[pr_var]
+    # check where precip data is zero (it did not rain!) and for each of
+    # these timestamps, set concprcp to 0 (it should be 0 if there is no
+    # rain...) and set flags in concprcp to False (these data are to be used
+    # later)
+    pr_zero = pr_data == 0
+    if pr_zero.sum() > 0:
+        pr_flags[pr_zero] = False
+    wdep_pr = pr_data
+
+    if not ival == RATES_FREQ_DEFAULT:
+        fac = get_unit_conversion_fac(ival, RATES_FREQ_DEFAULT)
+        wdep_pr /= fac
+    # in units of ts_type, that is, e.g. kg m-2 d
+    freq_str = f" {RATES_FREQ_DEFAULT}-1"
+    pr_unit += freq_str
+
+    if wdep_pr_var not in data.var_info:
+        data.var_info[wdep_pr_var] = {}
+    data.var_info[wdep_pr_var]["units"] = pr_unit
+
+    # set flags for wetso4
+    wdep_flags = np.zeros(len(wdep_pr)).astype(bool)
+    wdep_flags[pr_flags] = True
+    data.data_flagged[wdep_pr_var] = wdep_flags
+
+    return wdep_pr
+
+
 def compute_wetoxs_from_concprcpoxs(data):
     """Compute wdep from conc in precip and precip data
 
@@ -561,6 +611,10 @@ def compute_wetoxs_from_concprcpoxs(data):
 
     """
     return _compute_wdep_from_concprcp_helper(data, "wetoxs", "concprcpoxs", "pr")
+
+
+def compute_wetoxspr_from_concprcpoxs(data):
+    return _compute_wdeppr_from_concprcp_helper(data, "wetoxspr")
 
 
 def compute_wetoxs_from_concprcpoxst(data):
@@ -655,6 +709,10 @@ def compute_wetrdn_from_concprcprdn(data):
     return _compute_wdep_from_concprcp_helper(data, "wetrdn", "concprcprdn", "pr")
 
 
+def compute_wetrdnpr_from_concprcprdn(data):
+    return _compute_wdeppr_from_concprcp_helper(data, "wetrdnpr")
+
+
 def compute_wetnh4_from_concprcpnh4(data):
     return _compute_wdep_from_concprcp_helper(data, "wetnh4", "concprcpnh4", "pr")
 
@@ -669,6 +727,10 @@ def compute_wetso4_from_concprcpso4(data):
 
 def compute_wetna_from_concprcpna(data):
     return _compute_wdep_from_concprcp_helper(data, "wetna", "concprcpna", "pr")
+
+
+def compute_wetso4pr_from_concprcpso4(data):
+    return _compute_wdeppr_from_concprcp_helper(data, "wetso4pr")
 
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, to_unit=None):

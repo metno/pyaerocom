@@ -37,6 +37,22 @@ SUPPORTED_VERT_LOCS: tuple[str, str, str] = (
 )
 
 
+class BulkOptions(BaseModel):
+    #: Vars to be used to calculate fraction or product
+    vars: tuple[str, str]
+    #: Whether or not the bulk variable exist as a model var. If not, it will be calculated same way as obs vars
+    model_exists: bool
+    #: Is the result a product or fraction
+    mode: Literal["product", "fraction"]
+    #: Unit of result
+    units: str
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
+
+
 class ObsEntry(BaseModel):
     """Observation configuration for evaluation (BaseModel)
 
@@ -75,6 +91,9 @@ class ObsEntry(BaseModel):
     only_superobs : bool
         this indicates whether this configuration is only to be used as part
         of a superobs network, and not individually.
+    is_bulkfraction: bool
+        If true numerator and denominator are colocated separately, before the fraction is calculated.
+        For this to work, the numerator and denominator need to be given in bulk_options
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
@@ -96,6 +115,8 @@ class ObsEntry(BaseModel):
         validate_assignment=True,
     )
 
+    ## Pydantic structs
+
     ######################
     ## Required attributes
     ######################
@@ -111,6 +132,8 @@ class ObsEntry(BaseModel):
     instr_vert_loc: str | None = None
     is_superobs: bool = False
     only_superobs: bool = False
+    is_bulk: bool = False
+    bulk_options: dict[str, BulkOptions] = {}
     colocation_layer_limts: tuple[LayerLimits, ...] | None = None
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
     web_interface_name: str | None = None
@@ -178,6 +201,16 @@ class ObsEntry(BaseModel):
                 f"Invalid value for obs_id: {self.obs_id}. Need str, tuple, or dict "
                 f"or specification of ids and variables via obs_compute_post"
             )
+        if self.is_bulk:
+            for var in self.obs_vars:
+                if var not in self.bulk_options:
+                    raise KeyError(f"Could not find bulk vars entry for {var}")
+
+                elif len(self.bulk_options[var].vars) != 2:
+                    raise ValueError(
+                        f"(Only) 2 entries must be present for bulk vars to calculate fraction for {var}"
+                    )
+
         self.check_add_obs()
         return self
 

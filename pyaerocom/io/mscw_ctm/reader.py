@@ -117,6 +117,17 @@ class ReadMscwCtm(GriddedReader):
         "ratpm25pm10": ["concpm25", "concpm10"],
         # For Pollen
         # "concpolyol": ["concspores"],
+        # For EC
+        "concecFineRes": ["concecFineResNew", "concecFineResAge"],
+        "concecFineNonRes": ["concecFineNonResNew", "concecFineNonResAge"],
+        "concecTotalRes": ["concecFineRes", "concecCoarseRes"],
+        "concecTotalNonRes": ["concecFineNonRes", "concecCoarseNonRes"],
+        "concebc": ["concecFine", "concecCoarse"],
+        # For EC from emission
+        "concecTotalResEM": ["concecFineResNewEM", "concecFineResAgeEM"],
+        "concecTotalNonResEM": ["concecFineNonResNewEM", "concecFineNonResAgeEM"],
+        "concebcem": ["concecFineEM", "concecCoarseEM"],
+        "concCecpm25EM": ["concecFineEM"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -162,6 +173,17 @@ class ReadMscwCtm(GriddedReader):
         "ratpm10pm25": calc_ratpm10pm25,
         "ratpm25pm10": calc_ratpm25pm10,
         # "concpolyol": calc_concpolyol,
+        # For EC
+        "concecFineRes": add_dataarrays,
+        "concecFineNonRes": add_dataarrays,
+        "concecTotalRes": add_dataarrays,
+        "concecTotalNonRes": add_dataarrays,
+        "concebc": add_dataarrays,
+        # For EC from emission
+        "concecTotalResEM": add_dataarrays,
+        "concecTotalNonResEM": add_dataarrays,
+        "concebcem": add_dataarrays,
+        "concCecpm25EM": update_EC_units,
     }
 
     #: supported filename template, freq-placeholder is for frequencies

@@ -950,6 +950,9 @@ class Colocator:
     def _check_set_start_stop(self):
         if self.colocation_setup.start is None:
             self._infer_start_stop_yr_from_model_reader()
+            start, stop = self.start, self.stop
+        else:
+            start, stop = self.colocation_setup.start, self.colocation_setup.stop
         if self.colocation_setup.model_use_climatology:
             if self.colocation_setup.stop is not None or not isinstance(
                 self.colocation_setup.start, int
@@ -959,7 +962,7 @@ class Colocator:
                     'climatology fields, please specify "start" as integer '
                     'denoting the year, and set "stop"=None'
                 )
-        self.start, self.stop = start_stop(self.colocation_setup.start, self.colocation_setup.stop)
+        self.start, self.stop = start_stop(start, stop)
 
     def _coldata_savename(self, obs_var, mod_var, ts_type, **kwargs):
         """Get filename of colocated data file for saving"""
