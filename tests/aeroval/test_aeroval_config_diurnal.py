@@ -4,6 +4,8 @@ import pyaro
 
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
+from pyaerocom.io import ReadUngridded
+from pyaerocom.io import ReadGridded
 
 reportyear = year = 2018
 CFG = get_CFG(
@@ -32,9 +34,7 @@ def test_harp_test_data_available():
 
 def test_obs_data_readable():
     """test reading obs data using pyaerocom"""
-    pass
     from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
-    from pyaerocom.io import ReadUngridded
 
     reportyear = year = 2018
     CFG = get_CFG(
@@ -42,17 +42,15 @@ def test_obs_data_readable():
         year=year,
     )
     assert CFG
-    config = CFG["obs_cfg"]["Pyaro-h"]["obs_config"]
-    #
-    reader = ReadUngridded(configs=config)
-    data = reader.read()
-    print(data)
-    assert data
+    for aeroval_obs_name in CFG["obs_cfg"]:
+        config = CFG["obs_cfg"][aeroval_obs_name]["obs_config"]
+        reader = ReadUngridded(configs=config)
+        data = reader.read()
+        assert data
 
 
 def test_model_data_readable():
     """test reading model data using pyaerocom"""
-    pass
     from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
 
     reportyear = year = 2018
@@ -62,11 +60,10 @@ def test_model_data_readable():
     )
     assert CFG
     config = CFG["model_cfg"]
+    for aeroval_model_name in CFG["model_cfg"]:
     #
-    reader = ReadUngridded(configs=config)
-    data = reader.read()
-    print(data)
-    assert data
+        data = ReadGridded(data_id=CFG["model_cfg"][aeroval_model_name]["model_id"])
+        assert data
 
 
 def test_aeroval_config_diurnal():
