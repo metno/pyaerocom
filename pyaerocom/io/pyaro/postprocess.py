@@ -25,6 +25,7 @@ class VariableScaling:
     def out_varname(self) -> str:
         return self.OUT_VARNAME
 
+
 @dataclasses.dataclass
 class VariableCombiner:
     REQ_VARS: tuple[str, str]
@@ -38,6 +39,7 @@ class VariableCombiner:
 
     def out_varname(self) -> str:
         return self.OUT_VARNAME
+
 
 M_N = 14.006
 M_O = 15.999
@@ -95,7 +97,7 @@ TRANSFORMATIONS = {
         OUT_UNIT="nmol mol-1",
         OUT_VARNAME="vmrox",
         OP="ADD",
-    )
+    ),
 }
 
 
@@ -200,46 +202,90 @@ class PostProcessingReader(Reader):
                 )
             if isinstance(transform, VariableCombiner):
                 data = [self.data(var) for var in transform.REQ_VARS]
-                scalings = [get_unit_conversion_fac(from_unit=d.units, to_unit=out_unit) for d, out_unit in zip(data, transform.IN_UNITS)]
+                scalings = [
+                    get_unit_conversion_fac(from_unit=d.units, to_unit=out_unit)
+                    for d, out_unit in zip(data, transform.IN_UNITS)
+                ]
 
                 # Find unique shared data based on lat/lon and times
-                groupbys = [
-                    np.array((d.latitudes, d.longitudes, d.start_times.astype(int), d.end_times.astype(int))).transpose()
-                    for d in data
-                ]
+                groupbys = [np.array((d.latitudes, d.longitudes)) for d in data]
                 uniqs = [
-                    set(map(tuple, np.unique(group, axis=0).tolist()))
+                    set(map(tuple, np.unique(group, axis=1).transpose().tolist()))
                     for group in groupbys
                 ]
                 shared = np.array(list(set.intersection(*uniqs)))
 
-                n = shared.shape[0]
+                new_latitudes = []
+                new_longitudes = []
+                new_starttimes = []
+                new_endtimes = []
+                new_stations = []
+                new_altitudes = []
+                new_values = []
+
+                def left_and_right_matches(left, right):
+                    indexes = [0, 0]
+                    while (indexes[0] < len(left)) and (indexes[1] < len(right)):
+                        le = left[indexes[0]]
+                        ri = right[indexes[1]]
+                        if le == ri:
+                            yield indexes
+                            indexes[0] += 1
+                            indexes[1] += 1
+                        elif le < ri:
+                            indexes[0] += 1
+                        else:
+                            indexes[1] += 1
+
+                for lat, lon in shared:  # Per station
+                    masks = [(d.latitudes == lat) & (d.longitudes == lon) for d in data]
+                    data_subset = [d[mask] for d, mask in zip(data, masks)]
+
+                    start_times = [d.start_times for d in data_subset]
+                    indexings = [np.argsort(s) for s in start_times]
+
+                    start_times = [s[i] for s, i in zip(start_times, indexings)]
+                    end_times = [d.end_times[i] for d, i in zip(data_subset, indexings)]
+                    stations = data_subset[0].stations[indexings[0]]
+                    altitudes = data_subset[0].altitudes[indexings[0]]
+
+                    for lindex, rindex in left_and_right_matches(
+                        *[d.start_times for d in data_subset]
+                    ):
+                        if data_subset[0].end_times[lindex] != data_subset[1].end_times[rindex]:
+                            continue
+                        new_latitudes.append(lat)
+                        new_longitudes.append(lon)
+                        new_starttimes.append(start_times[0][lindex])
+                        new_endtimes.append(end_times[0][lindex])
+                        new_stations.append(stations[lindex])
+                        new_altitudes.append(altitudes[lindex])
+
+                        if transform.OP == "ADD":
+                            value = (
+                                data_subset[0].values[lindex] * scalings[0]
+                                + data_subset[1].values[rindex]
+                            )
+                        else:
+                            raise Exception(f"Transform mode {transform.OP} is not supported")
+                        new_values.append(value)
+
+                n = len(new_latitudes)
                 newdata = {
-                    "latitudes": shared[:, 0],
-                    "longitudes": shared[:, 1],
-                    "start_times": shared[:, 2].astype("datetime64[ns]"),
-                    "end_times": shared[:, 3].astype("datetime64[ns]"),
-                    "stations": ["" for _ in range(n)],
-                    "altitudes": np.nan * np.zeros(n),
-                    "values": np.nan * np.zeros(n),
+                    "latitudes": np.array(new_latitudes),
+                    "longitudes": np.array(new_longitudes),
+                    "start_times": np.array(new_starttimes),
+                    "end_times": np.array(new_endtimes),
+                    "stations": np.array(new_stations),
+                    "altitudes": np.array(new_altitudes),
+                    "values": np.array(new_values),
                     "standard_deviations": np.nan * np.zeros(n),
                     "flags": np.ones(n),
                 }
 
-                altitudes = data[0].altitudes
-                stations = data[0].stations
-                values0 = data[0].values
-                values1 = data[1].values
-
-                for i, val in enumerate(shared):
-                    ind0 = np.nonzero(np.all(groupbys[0] == val, axis=1))[0][0]
-                    ind1 = np.nonzero(np.all(groupbys[1] == val, axis=1))[0][0]
-
-                    newdata["stations"][i] = str(stations[ind0])
-                    newdata["altitudes"][i] = altitudes[ind0]
-                    newdata["values"][i] = scalings[0] * values0[ind0] + scalings[1] * values1[ind1]
-                    
-                return DictlikeData(newdata, variable=transform.out_varname(), units=transform.OUT_UNIT)
+                return DictlikeData(
+                    newdata, variable=transform.out_varname(), units=transform.OUT_UNIT
+                )
             else:
                 raise Exception(
                     f"Unknown transform {transform} encountered for variable {varname}"
@@ -257,7 +303,7 @@ class PostProcessingReader(Reader):
     def close(self) -> None:
         self.reader.close()
 
-        
+
 class DictlikeData(Data):
     def __init__(self, data, variable: str, units: str):
         self._variable = variable
