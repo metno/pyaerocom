@@ -238,17 +238,20 @@ class PostProcessingReader(Reader):
                     lindex, rindex = matching_indices(start_times[0], start_times[1])
 
                     if not np.all(end_times[0][lindex] == end_times[1][rindex]):
-                        raise Exception("Different durations encountered")
+                        continue  # Different durations encountered, skip this station
 
-                    new_latitudes.append(lat*np.ones(len(lindex)))
-                    new_longitudes.append(lon*np.ones(len(lindex)))
+                    new_latitudes.append(lat * np.ones(len(lindex)))
+                    new_longitudes.append(lon * np.ones(len(lindex)))
                     new_starttimes.append(start_times[0][lindex])
                     new_endtimes.append(start_times[0][lindex])
                     new_stations.append(stations[lindex])
                     new_altitudes.append(altitudes[lindex])
 
                     if transform.OP == "ADD":
-                        values = data_subset[0].values[lindex] * scalings[0] + data_subset[1].values[rindex] * scalings[1]
+                        values = (
+                            data_subset[0].values[lindex] * scalings[0]
+                            + data_subset[1].values[rindex] * scalings[1]
+                        )
                     else:
                         raise Exception(f"Transform mode {transform.OP} is not supported")
                     new_values.append(values)
@@ -262,12 +265,14 @@ class PostProcessingReader(Reader):
                     "altitudes": np.concatenate(new_altitudes),
                     "values": np.concatenate(new_values),
                 }
-                
+
                 n = len(newdata["latitudes"])
-                newdata.update({
-                    "standard_deviations": np.nan * np.zeros(n),
-                    "flags": np.ones(n),
-                })
+                newdata.update(
+                    {
+                        "standard_deviations": np.nan * np.zeros(n),
+                        "flags": np.ones(n),
+                    }
+                )
 
                 return DictlikeData(
                     newdata, variable=transform.out_varname(), units=transform.OUT_UNIT
