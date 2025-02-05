@@ -87,7 +87,7 @@ TRANSFORMATIONS = {
         REQ_VAR="concno2",
         IN_UNIT="ug m-3",
         OUT_UNIT="ppb",
-        SCALING_FACTOR=0.5011,  # 20C and 1013 hPa TODO: CHECK THIS
+        SCALING_FACTOR=0.5229,  # 20C and 1013 hPa
         OUT_VARNAME="vmrno2",
         NOTE="The vmrno2_from_conco3 transform is only valid at T=20C, p=1013hPa",
     ),
