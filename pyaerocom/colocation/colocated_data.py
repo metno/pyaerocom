@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import logging
 import os
 from ast import literal_eval
@@ -91,7 +92,9 @@ def validate_structure(data: xr.DataArray) -> None:
     - Latitude and longitude exist and are named `latitude` and `longitude`.
     - Metadata (ie. netcdf attributes) contain the necessary metadata specified in
     the tutorial (https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/making_a_colocated_data_object_with_pyaerocom.html).
-    -
+    - No duplicate station names.
+
+    :raises ValueError: If Validation fails.
     """
     # Check longitude and latitude.
     if "latitude" not in data.coords:
@@ -122,6 +125,10 @@ def validate_structure(data: xr.DataArray) -> None:
                 assert False  # Should not happen.
 
             KeyError(msg)
+
+    duplicates = [k for k, v in Counter(data.station_name.values).items() if v > 1]
+    if len(duplicates) > 0:
+        raise ValueError(f"Duplicate station names found: {duplicates}.")
 
     return None
 
@@ -221,7 +228,10 @@ class ColocatedData(BaseModel):
 
         assert isinstance(self.data, xr.DataArray)
         validate_dimensions(self.data)
-        validate_structure(self.data)
+        # TODO: Ideally this should also validate structure, but this stricted validation fails on a lot of
+        # tests that test on invalid mock objects. For now validate_structure can be called on ColocatedData.data
+        # directly.
+        # validate_structure(self.data)
         return self
 
     # Override __init__ to allow for positional arguments

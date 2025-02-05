@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom.io.uemep import uemep_variables
+from pyaerocom.colocation.colocated_data import validate_structure
+
 
 UEMEP_PATH = pathlib.Path(
     "/lustre/storeB/project/fou/kl/emep/ModelRuns/uEMEP/uEMEP_norway/rerun/2023/stations"
@@ -71,7 +73,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
                 "lon": "longitude"
             }
         )
-
+        validate_structure(coldataarray)
         coldat = pya.colocation.colocated_data.ColocatedData(coldataarray)
         coldat.data.attrs = {
             "obs_vars": aerocomvar,
