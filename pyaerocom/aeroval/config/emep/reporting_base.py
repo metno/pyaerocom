@@ -901,6 +901,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_vars=[
                 "concNno2",
                 "vmro3",
+                "vmrox",
             ],
             pyaro_config={
                 "name": "EEA-h-diurnal-rural",
@@ -931,6 +932,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "post_processing": [
                     "concNno2_from_concno2",
                     "vmro3_from_conco3",
+                    "vmrno2_from_concno2",
+                    "vmrox_from_vmrno2_vmro3",
                 ],
                 "dataset": "verified",
                 "station_area": [
@@ -1006,6 +1009,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_vars=[
                 "concNno2",
                 "vmro3",
+                "vmrox",
             ],
             pyaro_config={
                 "name": "EEA-h-diurnal-all",
@@ -1036,6 +1040,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "post_processing": [
                     "concNno2_from_concno2",
                     "vmro3_from_conco3",
+                    "vmrno2_from_concno2",
+                    "vmrox_from_vmrno2_vmro3",
                 ],
                 "dataset": "verified",
             },
