@@ -1,3 +1,4 @@
+from copy import deepcopy
 import pytest
 import numpy as np
 from pathlib import Path
@@ -12,15 +13,23 @@ from tests.fixtures.aeroval import cfg_test_bulk
 
 
 @pytest.fixture
-def bulkengine_instance() -> BulkFractionEngine:
-    cfg = EvalSetup(**cfg_test_bulk.CFG)
-    bfe = BulkFractionEngine(cfg)
+def cfg(tmpdir) -> dict:
+    cfg = deepcopy(cfg_test_bulk.CFG)
+    cfg["json_basedir"] = f"{tmpdir}/data"
+    cfg["coldata_basedir"] = f"{tmpdir}/coldata"
+    return cfg
+
+
+@pytest.fixture
+def bulkengine_instance(cfg: dict) -> BulkFractionEngine:
+    setup = deepcopy(EvalSetup(**cfg))
+    bfe = BulkFractionEngine(setup)
     return bfe
 
 
-def test___init__():
-    cfg = EvalSetup(**cfg_test_bulk.CFG)
-    bfe = BulkFractionEngine(cfg)
+def test___init__(cfg: dict):
+    setup = EvalSetup(**cfg)
+    bfe = BulkFractionEngine(setup)
     assert isinstance(bfe, ProcessingEngine)
     assert isinstance(bfe, HasColocator)
 
@@ -204,10 +213,10 @@ def test_run(bulkengine_instance: BulkFractionEngine):
     assert Path(output.exp_dir).is_dir()
 
 
-def test_run_cfg():
+def test_run_cfg(cfg: dict):
     model_name = "TM5-AP3-CTRL"
-    cfg = EvalSetup(**cfg_test_bulk.CFG)
-    proc = ExperimentProcessor(cfg)
+    setup = EvalSetup(**cfg)
+    proc = ExperimentProcessor(setup)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run(obs_name="AERONET-Sun", model_name="TM5-AP3-CTRL")
 
