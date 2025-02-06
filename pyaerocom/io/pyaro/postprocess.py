@@ -1,6 +1,7 @@
 import dataclasses
 
 import numpy as np
+import numpy.typing as npt
 
 from pyaro.timeseries import (
     Reader,
@@ -274,7 +275,7 @@ class PostProcessingReader(Reader):
                     }
                 )
 
-                return DictlikeData(
+                return DictBackedData(
                     newdata, variable=transform.out_varname(), units=transform.OUT_UNIT
                 )
             else:
@@ -295,12 +296,11 @@ class PostProcessingReader(Reader):
         self.reader.close()
 
 
-def matching_indices(x, y):
+def matching_indices(x, y) -> tuple[npt.NDArray[int], npt.NDArray[int]]:
     """Returns indices of x and y such that x[xind] == y[yind]
     x and y must be monotonically increasing
     """
     x_indices, y_indices = list(), list()
-    # for (x, y) in left_and_right_matches(x, y):
     ix, iy = 0, 0
     while (ix < len(x)) and (iy < len(y)):
         le = x[ix]
@@ -318,7 +318,7 @@ def matching_indices(x, y):
     return x_indices, y_indices
 
 
-class DictlikeData(Data):
+class DictBackedData(Data):
     def __init__(self, data, variable: str, units: str):
         self._variable = variable
         self._units = units
@@ -328,7 +328,7 @@ class DictlikeData(Data):
         return {}.keys()
 
     def slice(self, index):
-        return DictlikeData(
+        return DictBackedData(
             data=self._data()[index],
             variable=self._variable,
             units=self._units,

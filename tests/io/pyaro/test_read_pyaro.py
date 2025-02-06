@@ -5,6 +5,10 @@ import numpy as np
 
 from pyaerocom import UngriddedData
 from pyaerocom.io import ReadPyaro, PyaroConfig
+from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
+from pyaerocom.io.pyaro.postprocess import matching_indices
+
+from tests.conftest import lustre_unavail
 
 
 def test_testfile(pyaro_test_data_file):
@@ -114,3 +118,41 @@ def test_postprocessing(pyaro_test_data_file):
     conversion_factor = 14.006 / (14.006 + 15.999) * 1e-3
 
     assert np.allclose(concno * conversion_factor, concNno)
+
+
+def test_matching_indices():
+    x = [0, 1, 2, 3, 4]
+    y = [1, 1.5, 2, 2.1, 4, 5]
+
+    xind, yind = matching_indices(x, y)
+
+    assert np.all(xind == [1, 2, 4])
+    assert np.all(yind == [0, 2, 4])
+
+
+@lustre_unavail
+def test_vmrox():
+    config = PyaroConfig.from_dict(
+        {
+            "name": "whatever",
+            "reader_id": "eeareader",
+            "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+            "filters": {
+                "countries": {"include": ["NO"]},
+            },
+            "name_map": {
+                "O3": "conco3",
+                "NO2": "concno2",
+            },
+            "post_processing": [
+                "vmro3_from_conco3",
+                "vmrno2_from_concno2",
+                "vmrox_from_vmrno2_vmro3",
+            ],
+            "dataset": "unverified",
+        }
+    )
+    reader = PyaroToUngriddedData(config)
+    data = reader.read(vars_to_retrieve=["vmrox"])
+
+    _ = data.to_station_data_all()
