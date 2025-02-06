@@ -602,7 +602,7 @@ class ReadMscwCtm(GriddedReader):
                 )
 
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps, chunks={"time": 24})
+        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
 
         self._private.filedata = ds
 
