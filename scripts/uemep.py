@@ -65,9 +65,9 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
         ]
 
         combined = xr.concat(darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name"))
-        
         data = data.expand_dims(data_source=["EBASMC"])
         combined = combined.expand_dims(data_source=["uemep"])
+        combined = combined.assign_coords({"station_name": [x.encode() for x in combined.station_name.values]})
         
         coldataarray = xr.concat([combined, data], dim="data_source")
         #coldataarray = xr.concat([combined, data], dim=pd.Index([x for x in ["EBASMC", "uemep"]], name="data_source"))
