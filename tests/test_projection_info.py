@@ -8,7 +8,9 @@ ROOT = TEST_DATA["MODELS"].path
 
 
 def test_projection_information():
-    with xarray.open_dataset(str(ROOT / "emep4no20240630" / "Base_hour.nc")) as ds:
+    with xarray.open_dataset(
+        str(ROOT / "emep4no20240630" / "Base_hour.nc"), decode_timedelta=True
+    ) as ds:
         pi = ProjectionInformation.from_xarray(ds, "SURF_ug_PM10_rh50")
         assert pi is not None
         assert pi.x_axis == "i"

@@ -403,7 +403,7 @@ def main():
 
         # read topography since that needs to be added to the ground following height of the model
         obj.logger.info("reading topography file {}".format(options["topofile"]))
-        topo_data = xr.open_dataset(options["topofile"])
+        topo_data = xr.open_dataset(options["topofile"], decode_timedelta=True)
 
         # truncate Aeolus times to hour
 
@@ -431,7 +431,7 @@ def main():
             if file_name != last_netcdf_file:
                 obj.logger.info(f"reading and co-locating on model file {file_name}")
                 last_netcdf_file = file_name
-                nc_data = xr.open_dataset(file_name)
+                nc_data = xr.open_dataset(file_name, decode_timedelta=True)
                 nc_times = nc_data.time.data.astype("datetime64[h]")
                 nc_latitudes = nc_data["lat"].data
                 nc_longitudes = nc_data["lon"].data

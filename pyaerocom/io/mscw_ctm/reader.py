@@ -340,7 +340,7 @@ class ReadMscwCtm(GriddedReader):
     @staticmethod
     @functools.cache
     def _get_year_from_nc(filename: str) -> int:
-        with xr.open_dataset(filename) as nc:
+        with xr.open_dataset(filename, decode_timedelta=True) as nc:
             return np.mean(nc["time"][:]).data.astype("datetime64[Y]").astype(int) + 1970
 
     def _get_yrs_from_filepaths(self) -> list[str]:
@@ -589,7 +589,7 @@ class ReadMscwCtm(GriddedReader):
             start_date = None
             end_date = None
             for fp in fps:
-                with xr.open_dataset(fp) as nc:
+                with xr.open_dataset(fp, decode_timedelta=True) as nc:
                     file_start_date = nc["time"][:].data.min()
                     file_end_date = nc["time"][:].data.max()
 
