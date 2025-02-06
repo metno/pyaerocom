@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 import numpy as np
+import pytest
 
 from pyaerocom import UngriddedData
 from pyaerocom.io import ReadPyaro, PyaroConfig
@@ -128,6 +129,12 @@ def test_matching_indices():
 
     assert np.all(xind == [1, 2, 4])
     assert np.all(yind == [0, 2, 4])
+
+    with pytest.raises(ValueError) as e:
+        x = [6, 0, 1, 2, 3, 4]
+        y = [1, 1.5, 2, 2.1, 4, 5]
+        matching_indices(x, y)
+    assert str(e.value) == "x is not monotonically increasing"
 
 
 @lustre_unavail
