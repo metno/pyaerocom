@@ -338,7 +338,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         boundaries={
             "west": -30,
             "east": 90,
-            "north": 80,
+            "north": 82,
             "south": 30,
         },
         maps_freq="yearly",
