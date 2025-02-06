@@ -237,7 +237,10 @@ class PostProcessingReader(Reader):
                 stations = data_subset[0].stations[indexings[0]]
                 altitudes = data_subset[0].altitudes[indexings[0]]
 
-                lindex, rindex = matching_indices(start_times[0], start_times[1])
+                try:
+                    lindex, rindex = matching_indices(start_times[0], start_times[1])
+                except ValueError:
+                    continue
 
                 if not np.all(end_times[0][lindex] == end_times[1][rindex]):
                     continue  # Different durations encountered, skip this station
@@ -303,6 +306,13 @@ def matching_indices(x, y) -> tuple[npt.NDArray[int], npt.NDArray[int]]:
     """Returns indices of x and y such that x[xind] == y[yind]
     x and y must be monotonically increasing
     """
+    dx = np.diff(x)
+    # Use numpy.zeros to get a zero of the same dtype
+    if not np.all(dx > np.zeros(1, dtype=dx.dtype)):
+        raise ValueError("x is not monotonically increasing")
+    dy = np.diff(y)
+    if not np.all(dy > np.zeros(1, dtype=dy.dtype)):
+        raise ValueError("y is not monotonically increasing")
     x_indices, y_indices = list(), list()
     ix, iy = 0, 0
     while (ix < len(x)) and (iy < len(y)):
