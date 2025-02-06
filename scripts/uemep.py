@@ -66,7 +66,11 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
 
         combined = xr.concat(darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name"))
         
-        coldataarray = xr.concat([combined, data], dim=pd.Index([x for x in ["EBASMC", "uemep"]], name="data_source"))
+        data = data.expand_dims(data_source=["EBASMC"])
+        combined = combined.expand_dims(data_source=["uemep"])
+        
+        coldataarray = xr.concat([combined, data], dim="data_source")
+        #coldataarray = xr.concat([combined, data], dim=pd.Index([x for x in ["EBASMC", "uemep"]], name="data_source"))
         coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
             {
                 "lat": "latitude",
@@ -74,6 +78,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
             }
         )
         validate_structure(coldataarray)
+        
         coldat = pya.colocation.colocated_data.ColocatedData(coldataarray)
         coldat.data.attrs = {
             "obs_vars": aerocomvar,
