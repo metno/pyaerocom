@@ -115,7 +115,7 @@ def test_postprocessing(pyaro_test_data_file):
     concNno = data.all_datapoints_var("concNno")
 
     # Proportion of N in NO, ng -> ug conversion
-    conversion_factor = 14.006 / (14.006 + 15.999) * 1e-3
+    conversion_factor = 14.0067 / (14.0067 + 15.999) * 1e-3
 
     assert np.allclose(concno * conversion_factor, concNno)
 
@@ -155,4 +155,8 @@ def test_vmrox():
     reader = PyaroToUngriddedData(config)
     data = reader.read(vars_to_retrieve=["vmrox"])
 
-    _ = data.to_station_data_all()
+    alldata = data.to_station_data_all()
+    stats = alldata["stats"]
+    assert len(stats) >= 4
+    first = stats[0]
+    assert first["units"] == {"vmrox": "nmol mol-1"}
