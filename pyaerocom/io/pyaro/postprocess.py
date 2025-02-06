@@ -8,7 +8,7 @@ from pyaro.timeseries import (
     Data,
 )
 
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units_helpers import get_unit_conversion_fac, M_N, M_O, M_S
 
 
 @dataclasses.dataclass
@@ -41,10 +41,6 @@ class VariableCombiner:
     def out_varname(self) -> str:
         return self.OUT_VARNAME
 
-
-M_N = 14.006
-M_O = 15.999
-M_S = 32.065
 
 TRANSFORMATIONS = {
     "concNno_from_concno": VariableScaling(
@@ -163,6 +159,10 @@ class PostProcessingReaderData(Data):
         return self.data.standard_deviations
 
 
+class PostProcessingReaderException(Exception):
+    pass
+
+
 class PostProcessingReader(Reader):
     def __init__(
         self,
@@ -177,11 +177,13 @@ class PostProcessingReader(Reader):
             for compute_var in compute_vars:
                 transform = TRANSFORMATIONS.get(compute_var)
                 if transform is None:
-                    raise Exception(f"Unknown transformation ({compute_var}) encountered")
+                    raise PostProcessingReaderException(
+                        f"Unknown transformation ({compute_var}) encountered"
+                    )
                 required_input = transform.required_input_variables()
                 missing = set(required_input) - set(known_variables)
                 if len(missing) > 0:
-                    raise Exception(
+                    raise PostProcessingReaderException(
                         f"The transformation {compute_var} requires variables which are not present, missing {missing}"
                     )
                 known_variables.append(transform.out_varname())
@@ -241,8 +243,8 @@ class PostProcessingReader(Reader):
                     if not np.all(end_times[0][lindex] == end_times[1][rindex]):
                         continue  # Different durations encountered, skip this station
 
-                    new_latitudes.append(lat * np.ones(len(lindex)))
-                    new_longitudes.append(lon * np.ones(len(lindex)))
+                    new_latitudes.append(np.full(len(lindex), fill_value=lat))
+                    new_longitudes.append(np.full(len(lindex), fill_value=lon))
                     new_starttimes.append(start_times[0][lindex])
                     new_endtimes.append(start_times[0][lindex])
                     new_stations.append(stations[lindex])
@@ -254,7 +256,9 @@ class PostProcessingReader(Reader):
                             + data_subset[1].values[rindex] * scalings[1]
                         )
                     else:
-                        raise Exception(f"Transform mode {transform.OP} is not supported")
+                        raise PostProcessingReaderException(
+                            f"Transform mode {transform.OP} is not supported"
+                        )
                     new_values.append(values)
 
                 newdata = {
@@ -270,7 +274,7 @@ class PostProcessingReader(Reader):
                 n = len(newdata["latitudes"])
                 newdata.update(
                     {
-                        "standard_deviations": np.nan * np.zeros(n),
+                        "standard_deviations": np.full(n, fill_value=np.nan),
                         "flags": np.ones(n),
                     }
                 )
@@ -279,7 +283,7 @@ class PostProcessingReader(Reader):
                     newdata, variable=transform.out_varname(), units=transform.OUT_UNIT
                 )
             else:
-                raise Exception(
+                raise PostProcessingReaderException(
                     f"Unknown transform {transform} encountered for variable {varname}"
                 )
 
