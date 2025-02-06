@@ -200,7 +200,7 @@ def check_files(paths: list[Path]) -> list[Path]:
 
     for p in tqdm(paths, disable=None):
         try:
-            with xr.open_dataset(p) as ds:
+            with xr.open_dataset(p, decode_timedelta=True) as ds:
                 if len(ds.time.data) < 2:
                     logger.warning(f"To few timestamps in {p}. Skipping file")
                     continue

@@ -339,7 +339,7 @@ class ReadGhost(ReadUngriddedBase):
         if var_to_write is None:
             var_to_write = self.var_names_data_inv[var_to_read]
 
-        with xr.open_dataset(filename) as ds:
+        with xr.open_dataset(filename, decode_timedelta=True) as ds:
             if not {"station", "time"}.issubset(ds.dims):  # pragma: no cover
                 raise AttributeError("Missing dimensions")
             if "station_name" not in ds:  # pragma: no cover
