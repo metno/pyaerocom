@@ -66,7 +66,7 @@ for dsname in datasets:
                 print(file_out)
                 assert os.path.exists(file_in)
 
-                with xr.open_dataset(file_in) as ds:
+                with xr.open_dataset(file_in, decode_timedelta=True) as ds:
                     subset = ds.isel(station=slice(0, numst))
                     if numts is not None:
                         subset = subset.isel(time=slice(0, numts))

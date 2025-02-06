@@ -1031,7 +1031,7 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     mintemps = []
     maxtemps = []
     ps = []
-    with xr.open_dataset(const.ERA5_SURFTEMP_FILE)["t2m"] as temp:
+    with xr.open_dataset(const.ERA5_SURFTEMP_FILE, decode_timedelta=True)["t2m"] as temp:
         for i, (lat, lon, alt, name) in enumerate(coords):
             logger.info(name, ", Lat", lat, ", Lon", lon)
             p = pressure(alt)

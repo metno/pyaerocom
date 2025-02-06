@@ -171,6 +171,7 @@ class ReadICOS(ReadCNEMC):
             combine="nested",
             parallel=True,
             decode_cf=True,
+            decode_timedelta=True,
         )
 
     @classmethod
