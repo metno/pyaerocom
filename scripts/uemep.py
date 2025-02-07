@@ -32,6 +32,9 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_t
         
         data = dt[var].swap_dims({"station_id": "station_name"})
 
+        # Pyaerocom uses the mid-time for its values, while model data is start time, so need
+        # to shift.
+        data = data.assign_coords(time = data.time + pd.Timedelta(minutes=30))
         station_ids = data["station_name"].values.astype(str)
 
         # TODO: Filterpost?
@@ -60,7 +63,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_t
 
         darrays = [
             xr.DataArray(
-                (tmp := station.to_timeseries(aerocomvar).loc[start_date:end_date]), dims=['time'], coords={'time': tmp.index}, name=aerocomvar
+                (ts := station.to_timeseries(aerocomvar).loc[start_date:end_date]), dims=['time'], coords={'time': ts.index}, name=aerocomvar
             ) for _, station in sdata.items()
         ]
 
