@@ -21,7 +21,7 @@ var_lookup = {v: k for k, v in emep_var_map.items()}
 
 reader = pya.io.readungridded.ReadUngridded("EBASMC")
 
-with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
+with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_timedelta=True) as dt:
     gridded_data: dict[str, pya.griddeddata.GriddedData] = {}
     for var in dt.keys():
         try:
@@ -65,8 +65,8 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
         ]
 
         combined = xr.concat(darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name"))
-        data = data.expand_dims(data_source=["EBASMC"])
-        combined = combined.expand_dims(data_source=["uemep"])
+        data = data.expand_dims(data_source=["uemep"])
+        combined = combined.expand_dims(data_source=["EBASMC"])
         combined = combined.assign_coords({"station_name": [x.encode() for x in combined.station_name.values]})
         
         coldataarray = xr.concat([combined, data], dim="data_source")
@@ -99,7 +99,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4") as dt:
             "vert_code": "Surface",
             "diurnal_only": 0,
             "zeros_to_nan": 0,
-            "data_source": ["obs", "uemep"],
+            "data_source": ["EBASMC", "uemep"],
             "var_name": [aerocomvar, aerocomvar]
         }
         coldat.to_netcdf(".")
