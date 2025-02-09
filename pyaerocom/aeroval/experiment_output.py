@@ -351,7 +351,7 @@ class ExperimentOutput(ProjectOutput):
             elif suffix == ".geojson":
                 name = spl[1]
                 var_name = spl[0]
-                per = None
+                per = spl[2]
                 return (name, var_name, per)
             else:
                 raise NotImplementedError(f"{suffix} file format not supported")
