@@ -173,10 +173,16 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
     )
 
 
-def test_ExperimentOutput__info_from_contour_dir_file():
+def test_ExperimentOutput__info_from_contour_dir_file_webp():
     file = pathlib.PosixPath("path/to/name_vertical_period.webp")
     output = ExperimentOutput._info_from_contour_dir_file(file)
     assert output == ("name", "vertical", "period")
+
+
+def test_ExperimentOutput__info_from_contour_dir_file_geojson():
+    file = pathlib.PosixPath("path/to/var_model_period.geojson")
+    output = ExperimentOutput._info_from_contour_dir_file(file)
+    assert output == ("model", "var", "period")
 
 
 def test_ExperimentOutput__info_from_contour_dir_file_error():
