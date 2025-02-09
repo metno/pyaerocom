@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+import pathlib
 from pathlib import Path
 
 import aerovaldb
 import pytest
 
 from pyaerocom import const
-from pyaerocom.aeroval import ExperimentProcessor
+from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.json_utils import read_json, write_json
-from pyaerocom.aeroval import EvalSetup
-import pathlib
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
 
@@ -175,17 +174,23 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
 
 
 def test_ExperimentOutput__info_from_contour_dir_file():
-    file = pathlib.PosixPath("path/to/name_vertical_period.txt")
+    file = pathlib.PosixPath("path/to/name_vertical_period.webp")
     output = ExperimentOutput._info_from_contour_dir_file(file)
-
     assert output == ("name", "vertical", "period")
 
 
 def test_ExperimentOutput__info_from_contour_dir_file_error():
-    file = pathlib.PosixPath("path/to/obs_vertical_model_period.txt")
+    file = pathlib.PosixPath("path/to/obs_vertical_model_period.geojson")
     with pytest.raises(ValueError) as e:
         ExperimentOutput._info_from_contour_dir_file(file)
     assert "invalid contour filename" in str(e.value)
+
+
+def test_ExperimentOutput__info_from_contour_dir_file_error_extension():
+    file = pathlib.PosixPath("path/to/name_vertical_period.txt")
+    with pytest.raises(NotImplementedError) as e:
+        ExperimentOutput._info_from_contour_dir_file(file)
+    assert ".txt file format not supported" in str(e.value)
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
