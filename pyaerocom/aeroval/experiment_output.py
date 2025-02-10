@@ -343,12 +343,7 @@ class ExperimentOutput(ProjectOutput):
         spl = os.path.basename(file.name).split(suffix)[0].split("_")
 
         if len(spl) == 3:
-            if suffix == ".png" or suffix == ".webp":
-                name = spl[0]
-                var_name = spl[1]
-                per = spl[2]
-                return (name, var_name, per)
-            elif suffix == ".geojson":
+            if suffix == ".png" or suffix == ".webp" or suffix == ".geojson":
                 name = spl[1]
                 var_name = spl[0]
                 per = spl[2]
