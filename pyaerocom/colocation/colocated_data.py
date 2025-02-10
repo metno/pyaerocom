@@ -32,6 +32,7 @@ from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.stats.stats import calculate_statistics
 from pyaerocom.time_resampler import TimeResampler
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -83,9 +84,12 @@ REQUIRED_METADATA_KEYS = (
 
 
 def validate_structure(data: xr.DataArray) -> None:
-    """Validates the structure of the colocated dataarray. While passing this
-    check does not guarantee a correct colocated data object it should give
-    increased confidence.
+    """This check is supposed to be applied to a ColocatedData's .data property
+    as an additional check for validity. It is not currently part of the pydantic
+    validation.
+
+    While passing this check does not guarantee a correct colocated data object
+    it should give increased confidence.
 
     Things to check (Not all implemented currently):
     - Object contains exactly one variable name recognized by pyaerocom.
@@ -94,8 +98,17 @@ def validate_structure(data: xr.DataArray) -> None:
     the tutorial (https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/making_a_colocated_data_object_with_pyaerocom.html).
     - No duplicate station names.
 
-    :raises ValueError: If Validation fails.
+    :raises ValueError or KeyError: If Validation fails.
     """
+    if not isinstance(data, xr.DataArray):
+        raise TypeError(f"Expected xr.DataArray. Got {type(data)}.")
+
+    # Check variables.
+    if data.name not in const.VARS.all_vars:
+        raise ValueError(
+            f"Unexpeted variable name, '{data.name}. Must be variable name defined in variables.ini'"
+        )
+
     # Check longitude and latitude.
     if "latitude" not in data.coords:
         raise ValueError("ColocatedData object is missing latitude coord.")
@@ -124,7 +137,7 @@ def validate_structure(data: xr.DataArray) -> None:
             else:
                 assert False  # Should not happen.
 
-            KeyError(msg)
+            AttributeError(msg)
 
     duplicates = [k for k, v in Counter(data.station_name.values).items() if v > 1]
     if len(duplicates) > 0:

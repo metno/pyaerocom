@@ -21,6 +21,7 @@ var_lookup = {v: k for k, v in emep_var_map.items()}
 
 reader = pya.io.readungridded.ReadUngridded("EBASMC")
 
+#with xr.open_dataset(TEST_FILE_PATH, engine="netcdf4", decode_timedelta=True) as dt:
 with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_timedelta=True) as dt:
     gridded_data: dict[str, pya.griddeddata.GriddedData] = {}
     for var in dt.keys():
@@ -32,6 +33,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_t
         
         data = dt[var].swap_dims({"station_id": "station_name"})
 
+        data = data.assign_coords({"station_name": data.station_name.astype(str)})
         # Pyaerocom uses the mid-time for its values, while model data is start time, so need
         # to shift.
         data = data.assign_coords(time = data.time + pd.Timedelta(minutes=30))
@@ -70,7 +72,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_t
         combined = xr.concat(darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name"))
         data = data.expand_dims(data_source=["uemep"])
         combined = combined.expand_dims(data_source=["EBASMC"])
-        combined = combined.assign_coords({"station_name": [x.encode() for x in combined.station_name.values]})
+        combined = combined.assign_coords({"station_name": [x for x in combined.station_name.values]})
         
         coldataarray = xr.concat([combined, data], dim="data_source")
         #coldataarray = xr.concat([combined, data], dim=pd.Index([x for x in ["EBASMC", "uemep"]], name="data_source"))
@@ -80,7 +82,6 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_t
                 "lon": "longitude"
             }
         )
-        validate_structure(coldataarray)
         
         coldat = pya.colocation.colocated_data.ColocatedData(coldataarray)
         coldat.data.attrs = {
@@ -105,6 +106,7 @@ with xr.open_mfdataset(list(UEMEP_PATH.glob("*.nc")), engine="netcdf4", decode_t
             "data_source": ["EBASMC", "uemep"],
             "var_name": [aerocomvar, aerocomvar]
         }
+        validate_structure(coldat.data)
         coldat.to_netcdf(".")
 
 print("Test")
