@@ -128,6 +128,7 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalNonResEM": ["concecFineNonResNewEM", "concecFineNonResAgeEM"],
         "concebcem": ["concecFineEM", "concecCoarseEM"],
         "concCecpm25EM": ["concecFineEM"],
+        "concCecpm10EM": ["concecFineEM"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -184,6 +185,7 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalNonResEM": add_dataarrays,
         "concebcem": add_dataarrays,
         "concCecpm25EM": update_EC_units,
+        "concCecpm10EM": update_EC_units,
     }
 
     #: supported filename template, freq-placeholder is for frequencies
