@@ -47,7 +47,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
@@ -1822,7 +1822,7 @@ class ReadEbas(ReadUngriddedBase):
         :func:`read` and serves the purpose of parallel loading of data
         """
         self.files_failed = []
-        data_obj = UngriddedData(num_points=1000000)
+        data_obj = UngriddedDataMeta(num_points=1000000)
 
         # Add reading options to filter "history of UngriddedDataObject"
         filters = self.readopts_default.filter_dict

@@ -13,7 +13,7 @@ from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io.icpforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +277,14 @@ class ReadICPForest(ReadUngriddedBase):
                         year, country_code, plot_code, sampler_code
                     )
                     stations[station_name][ts_type] = Station(
-                        country_code, plot_code, sampler_code, lat, lon, alt, partner_code, ts_type
+                        country_code,
+                        plot_code,
+                        sampler_code,
+                        lat,
+                        lon,
+                        alt,
+                        partner_code,
+                        ts_type,
                     )
 
                 for species in vars_to_retrieve:
@@ -349,7 +356,7 @@ class ReadICPForest(ReadUngriddedBase):
                 station_data.data_id = self.data_id
 
                 station_datas.append(station_data)
-        return UngriddedData.from_station_data(station_datas, add_meta_keys="sampler_type")
+        return UngriddedDataMeta.from_station_data(station_datas, add_meta_keys="sampler_type")
 
     def _get_species_conc(self, conc_str: str, species: str) -> float:
         conc = float(conc_str) if conc_str != "" else np.nan

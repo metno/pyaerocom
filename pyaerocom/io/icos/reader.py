@@ -10,7 +10,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.io.cnemc.reader import ReadCNEMC
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ class ReadICOS(ReadCNEMC):
 
     def read_file(
         self, filename: str | Path, vars_to_retrieve: Iterable[str] | None = None
-    ) -> UngriddedData:
+    ) -> UngriddedDataMeta:
         """Reads data for a single year for one component"""
         if not isinstance(filename, Path):
             filename = Path(filename)
@@ -97,7 +97,7 @@ class ReadICOS(ReadCNEMC):
         files: Iterable[str | Path] | None = None,
         first_file: int | None = None,
         last_file: int | None = None,
-    ) -> UngriddedData:
+    ) -> UngriddedDataMeta:
         if var_to_retrieve is None:
             var_to_retrieve = self.DEFAULT_VARS[0]
 
@@ -140,7 +140,7 @@ class ReadICOS(ReadCNEMC):
                 )
                 ds.set_coords(("latitude", "longitude", "altitude"))
                 stations.append(self.to_stationdata(ds, station_name))
-            return UngriddedData.from_station_data(stations)
+            return UngriddedDataMeta.from_station_data(stations)
         else:
             stations: list[StationData] = []
             this_var_files = sorted(
@@ -162,7 +162,7 @@ class ReadICOS(ReadCNEMC):
                 ds.set_coords(("latitude", "longitude", "altitude"))
                 stations.append(self.to_stationdata(ds, station_name))
 
-            return UngriddedData.from_station_data(stations)
+            return UngriddedDataMeta.from_station_data(stations)
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
         return xr.open_mfdataset(

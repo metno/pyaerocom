@@ -15,7 +15,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 from tests.conftest import TEST_RTOL
 from tests.fixtures.stations import FAKE_STATION_DATA
 
@@ -305,7 +305,11 @@ def test_StationData_merge_meta_same_station(
 def test_StationData_merge_meta_same_station_error():
     with pytest.raises(CoordinateError, match="differ by more than 0.001 km."):
         stat1.merge_meta_same_station(
-            stat2, coord_tol_km=0.001, check_coords=True, inplace=False, raise_on_error=True
+            stat2,
+            coord_tol_km=0.001,
+            check_coords=True,
+            inplace=False,
+            raise_on_error=True,
         )
 
 
@@ -359,7 +363,7 @@ def test_StationData_remove_outliers(
     assert avg == pytest.approx(mean, rel=TEST_RTOL, nan_ok=True)
 
 
-def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
+def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedDataMeta):
     site = aeronetsunv3lev2_subset.to_station_data(6, vars_to_convert="od550aer")
     clim = site.calc_climatology("od550aer")
     assert clim is not site
@@ -411,7 +415,10 @@ def test_StationData_select_altitude_Series():
     ],
 )
 def test_StationData_select_altitude_Series_error(
-    stat: StationData, altitudes: tuple[int, int], exception: type[Exception], error: str
+    stat: StationData,
+    altitudes: tuple[int, int],
+    exception: type[Exception],
+    error: str,
 ):
     with pytest.raises(exception) as e:
         stat.select_altitude("od550aer", altitudes)

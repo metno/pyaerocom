@@ -4,14 +4,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyaerocom import UngriddedData, ungriddeddata_meta
+from pyaerocom import UngriddedDataMeta, ungriddeddata_meta
 from pyaerocom.exceptions import DataCoverageError, VariableDefinitionError
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
 @pytest.fixture(scope="module")
 def ungridded_empty():
-    return UngriddedData()
+    return UngriddedDataMeta()
 
 
 def test_init_shape(ungridded_empty):
@@ -19,7 +19,7 @@ def test_init_shape(ungridded_empty):
 
 
 def test_init_add_cols():
-    d1 = UngriddedData(num_points=2, add_cols=["bla", "blub"])
+    d1 = UngriddedDataMeta(num_points=2, add_cols=["bla", "blub"])
     assert d1.shape == (2, 14)
 
 
@@ -29,7 +29,7 @@ def test_add_chunk(ungridded_empty):
 
 
 def test_coordinate_access():
-    d = UngriddedData()
+    d = UngriddedDataMeta()
 
     stat_names = list(string.ascii_lowercase)
     lons = np.arange(len(stat_names))
@@ -195,12 +195,12 @@ def test_filter_by_meta(aeronetsunv3lev2_subset, args, sitenames):
     assert sorted(sitenames) == stats
 
 
-def test_cache_reload(aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path):
+def test_cache_reload(aeronetsunv3lev2_subset: UngriddedDataMeta, tmp_path: Path):
     path = tmp_path / "ungridded_aeronet_subset.pkl"
     file = aeronetsunv3lev2_subset.save_as(file_name=path.name, save_dir=path.parent)
     assert Path(file) == path
     assert path.exists()
-    data = UngriddedData.from_cache(data_dir=path.parent, file_name=path.name)
+    data = UngriddedDataMeta.from_cache(data_dir=path.parent, file_name=path.name)
     assert data.shape == aeronetsunv3lev2_subset.shape
 
 
@@ -234,47 +234,47 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
 
 def test_from_single_station_data():
     stat = FAKE_STATION_DATA["station_data1"]
-    d = ungriddeddata_meta.UngriddedData.from_station_data(stat)
+    d = ungriddeddata_meta.UngriddedDataMeta.from_station_data(stat)
     data0 = stat.ec550aer
     data1 = d.all_datapoints_var("ec550aer")
     assert data0 == pytest.approx(data1, abs=1e-20)
 
 
-def test_last_meta_idx(aeronetsunv3lev2_subset: UngriddedData):
+def test_last_meta_idx(aeronetsunv3lev2_subset: UngriddedDataMeta):
     assert isinstance(aeronetsunv3lev2_subset.last_meta_idx, np.ndarray | np.generic)
 
 
-def test_has_flag_data(aeronetsunv3lev2_subset: UngriddedData):
+def test_has_flag_data(aeronetsunv3lev2_subset: UngriddedDataMeta):
     assert isinstance(aeronetsunv3lev2_subset.has_flag_data, np.bool_ | bool)
 
 
-def test_is_filtered(aeronetsunv3lev2_subset: UngriddedData):
+def test_is_filtered(aeronetsunv3lev2_subset: UngriddedDataMeta):
     assert isinstance(aeronetsunv3lev2_subset.is_filtered, np.bool_ | bool)
 
 
-def test_available_meta_keys(aeronetsunv3lev2_subset: UngriddedData):
+def test_available_meta_keys(aeronetsunv3lev2_subset: UngriddedDataMeta):
     assert isinstance(aeronetsunv3lev2_subset.available_meta_keys, list)
     assert all(isinstance(key, str) for key in aeronetsunv3lev2_subset.available_meta_keys)
 
 
-def test_nonunique_station_names(aeronetsunv3lev2_subset: UngriddedData):
+def test_nonunique_station_names(aeronetsunv3lev2_subset: UngriddedDataMeta):
     assert isinstance(aeronetsunv3lev2_subset.nonunique_station_names, list)
 
 
-def test_set_flags_nan_error(aeronetsunv3lev2_subset: UngriddedData):
+def test_set_flags_nan_error(aeronetsunv3lev2_subset: UngriddedDataMeta):
     data = aeronetsunv3lev2_subset.copy()
     with pytest.raises(AttributeError):
         data = data.data.set_flags_nan(inplace=True)
 
 
-def test_remove_outliers(aeronetsunv3lev2_subset: UngriddedData):
+def test_remove_outliers(aeronetsunv3lev2_subset: UngriddedDataMeta):
     data = aeronetsunv3lev2_subset.copy()
     assert not data.filter_hist
     new = data.remove_outliers(var_name="od550aer", low=0, high=0)
     assert new.filter_hist
 
 
-def test_extract_var(aeronetsunv3lev2_subset: UngriddedData):
+def test_extract_var(aeronetsunv3lev2_subset: UngriddedDataMeta):
     data = aeronetsunv3lev2_subset.copy()
     od = data.extract_var("od550aer")
     assert not data.is_filtered
@@ -282,13 +282,13 @@ def test_extract_var(aeronetsunv3lev2_subset: UngriddedData):
     assert od.shape[0] < data.shape[0]
 
 
-def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedData):
+def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedDataMeta):
     data = aeronetsunv3lev2_subset.copy()
     with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
 
 
-def test_find_common_stations(aeronetsunv3lev2_subset: UngriddedData):
+def test_find_common_stations(aeronetsunv3lev2_subset: UngriddedDataMeta):
     data1 = aeronetsunv3lev2_subset.copy()
     data2 = aeronetsunv3lev2_subset.copy()
     station_map = data1.find_common_stations(other=data2)

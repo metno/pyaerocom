@@ -13,7 +13,7 @@ from numpy.testing import assert_almost_equal
 from pyaerocom import const
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.io.read_aasetal import ReadAasEtal
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 from pyaerocom.units_helpers import convert_unit
 from tests.conftest import lustre_unavail
 
@@ -63,13 +63,19 @@ def test_reader(data_path: Path):
     reader = ReadAasEtal(DATA_ID)
     assert reader.data_id == DATA_ID
     assert reader.data_dir == str(data_path)
-    assert reader.PROVIDES_VARIABLES == ["concso2", "concso4", "pr", "wetso4", "concso4pr"]
+    assert reader.PROVIDES_VARIABLES == [
+        "concso2",
+        "concso4",
+        "pr",
+        "wetso4",
+        "concso4pr",
+    ]
     filenames = [Path(file).name for file in reader.get_file_list()]
     assert filenames == FILENAMES
 
 
 @pytest.fixture(scope="session")
-def aasetal_data() -> UngriddedData:
+def aasetal_data() -> UngriddedDataMeta:
     """read expensive dataset"""
     reader = ReadAasEtal()
     return reader.read()
@@ -77,7 +83,7 @@ def aasetal_data() -> UngriddedData:
 
 @lustre_unavail
 @pytest.mark.xfail(raises=UnitConversionError)
-def test_aasetal_data(aasetal_data: UngriddedData):
+def test_aasetal_data(aasetal_data: UngriddedDataMeta):
     data = aasetal_data
     assert len(data.station_name) == 890
     assert len(data.unique_station_names) == 667
@@ -107,7 +113,7 @@ def test_aasetal_data(aasetal_data: UngriddedData):
 
 @lustre_unavail
 @pytest.mark.xfail(raises=UnitConversionError)
-def test_aasetal_data_correct_units(aasetal_data: UngriddedData):
+def test_aasetal_data_correct_units(aasetal_data: UngriddedDataMeta):
     tested = []
     stats = []
     for meta_key, meta in aasetal_data.metadata.items():
@@ -143,7 +149,12 @@ testdata = [
 @pytest.mark.parametrize("filenum,station_name,colname,var_name", testdata)
 @pytest.mark.xfail(raises=UnitConversionError)
 def test_reading_routines(
-    aasetal_data: UngriddedData, data_paths: list[Path], filenum, station_name, colname, var_name
+    aasetal_data: UngriddedDataMeta,
+    data_paths: list[Path],
+    filenum,
+    station_name,
+    colname,
+    var_name,
 ):
     UNITCONVERSION = ReadAasEtal().UNITCONVERSION
 

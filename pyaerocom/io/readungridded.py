@@ -6,7 +6,11 @@ from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
-from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
+from pyaerocom.exceptions import (
+    DataRetrievalError,
+    NetworkNotImplemented,
+    NetworkNotSupported,
+)
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
@@ -27,7 +31,7 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 from pyaerocom.variable import get_aliases
 
 logger = logging.getLogger(__name__)
@@ -547,7 +551,7 @@ class ReadUngridded:
         if len(vars_to_read) == len(vars_available):
             data_out = data_read
         else:
-            data_out = UngriddedData()
+            data_out = UngriddedDataMeta()
             for var in vars_available:
                 if var in cache.loaded_data:
                     data_out.append(cache.loaded_data[var])
@@ -715,7 +719,7 @@ class ReadUngridded:
                 var_unit_out=var_unit_out,
                 data_id_out=aux_info["data_id"],
             )
-            loaded.append(UngriddedData.from_station_data(merged_stats))
+            loaded.append(UngriddedDataMeta.from_station_data(merged_stats))
         first = loaded[0]
         if len(loaded) == 1:
             return first
@@ -796,7 +800,7 @@ class ReadUngridded:
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
-        data = UngriddedData()
+        data = UngriddedDataMeta()
         for ds in data_ids:
             if ds in self.post_compute:
                 data.append(

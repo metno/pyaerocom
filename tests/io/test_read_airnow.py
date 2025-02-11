@@ -9,7 +9,7 @@ import pytest
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 
 @pytest.fixture(scope="module")
@@ -375,12 +375,15 @@ def test__read_files_single_var_error(reader: ReadAirNow):
     ],
 )
 def test_read(
-    reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
+    reader: ReadAirNow,
+    vars_to_retrieve: str | list[str],
+    num_meta_blocks: int,
+    num_stats: int,
 ):
     data = reader.read(vars_to_retrieve)
     if isinstance(vars_to_retrieve, str):
         vars_to_retrieve = [vars_to_retrieve]
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataMeta)
     assert len(data.metadata) == num_meta_blocks
     assert len(data.unique_station_names) == num_stats
     assert sorted(data.contains_vars) == sorted(vars_to_retrieve)

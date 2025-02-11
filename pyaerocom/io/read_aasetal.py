@@ -8,7 +8,7 @@ import pandas as pd
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 from pyaerocom.units_helpers import convert_unit
 
 logger = logging.getLogger(__name__)
@@ -170,7 +170,10 @@ class ReadAasEtal(ReadUngriddedBase):
                         from_unit, to_unit = self.UNITCONVERSION[var]
                         values = pd.to_numeric(station_group[key], errors="coerce").values
                         stat[var] = convert_unit(
-                            data=values, from_unit=from_unit, to_unit=to_unit, var_name=var
+                            data=values,
+                            from_unit=from_unit,
+                            to_unit=to_unit,
+                            var_name=var,
                         )
 
                         if var == "wetso4":
@@ -233,7 +236,7 @@ class ReadAasEtal(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-        data_obj = UngriddedData()
+        data_obj = UngriddedDataMeta()
 
         meta_key = 0.0
         idx = 0
@@ -346,5 +349,7 @@ class ReadSulphurAasEtAl(ReadAasEtal):
     def __init__(self, *args, **kwargs):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
         warnings.warn(
-            "You are using an old name for class ReadAasEtal", DeprecationWarning, stacklevel=2
+            "You are using an old name for class ReadAasEtal",
+            DeprecationWarning,
+            stacklevel=2,
         )

@@ -9,7 +9,7 @@ from pyaerocom import const
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
@@ -490,7 +490,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         self.read_failed = []
 
-        data_obj = UngriddedData()
+        data_obj = UngriddedDataMeta()
         data_obj.is_vertical_profile = True
         col_idx = data_obj.index
         meta_key = -1.0

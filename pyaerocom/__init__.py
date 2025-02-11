@@ -57,7 +57,7 @@ from .region import Region
 from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
-from .ungriddeddata_meta import UngriddedData
+from .ungriddeddata_meta import UngriddedDataMeta
 from .colocation.colocated_data import ColocatedData
 from .colocation.colocator import Colocator
 from .colocation.colocation_setup import ColocationSetup

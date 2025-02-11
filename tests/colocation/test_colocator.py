@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
+from pyaerocom import ColocatedData, GriddedData, UngriddedDataMeta, const
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.config import ALL_REGION_NAME
@@ -298,7 +298,7 @@ def test_colocator_read_ungridded(setup):
     col = Colocator(col_stp)
 
     data = col._read_ungridded(obs_var)
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataMeta)
     assert len(data.metadata) == 1
 
     col.obs_vars = ["invalid"]

@@ -12,7 +12,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 from .aux_vars import vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
 
@@ -139,7 +139,7 @@ class ReadCNEMC(ReadUngriddedBase):
 
     def read_file(
         self, filename: str | Path, vars_to_retrieve: Iterable[str] | None = None
-    ) -> UngriddedData:
+    ) -> UngriddedDataMeta:
         """Reads data for a single year for one component"""
         if not isinstance(filename, Path):
             filename = Path(filename)
@@ -154,7 +154,7 @@ class ReadCNEMC(ReadUngriddedBase):
         first_file: int | None = None,
         last_file: int | None = None,
         metadatafile=None,
-    ) -> UngriddedData:
+    ) -> UngriddedDataMeta:
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
 
@@ -177,7 +177,7 @@ class ReadCNEMC(ReadUngriddedBase):
             ds = self._read_dataset(paths)[vars_to_retrieve]
             stations.append(self.to_stationdata(ds, station_name))
 
-        return UngriddedData.from_station_data(stations)
+        return UngriddedDataMeta.from_station_data(stations)
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
         ds = xr.open_mfdataset(

@@ -26,7 +26,7 @@ from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 
 @pytest.fixture(scope="module")
@@ -690,7 +690,7 @@ def test_read(
     num_stats: int,
 ):
     data = reader.read(vars_to_retrieve, files=ebas_files)
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataMeta)
     assert len(data.metadata) == num_meta
     assert len(data.unique_station_names) == num_stats
 

@@ -10,7 +10,7 @@ from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH, ReadCAMS2_83
 from pyaerocom.io.cams2_83.read_obs import obs_paths as find_obs_paths
 from pyaerocom.io.readungridded import ReadUngridded
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 TEST_DATE = datetime(2021, 12, 1)
 TEST_DATES = [TEST_DATE + timedelta(days=d) for d in range(3)]
@@ -38,4 +38,4 @@ def test_init():
 @pytest.mark.parametrize("dates", [TEST_DATES])
 def test_read_ungridded(obs_paths: list[Path]):
     data = ReadUngridded().read(const.CAMS2_83_NRT_NAME, "concco", files=obs_paths)
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataMeta)

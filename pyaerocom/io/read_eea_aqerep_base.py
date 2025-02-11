@@ -19,7 +19,7 @@ from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
 
 logger = logging.getLogger(__name__)
 
@@ -576,7 +576,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         return ret_data
 
     def read(
-        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
+        self,
+        vars_to_retrieve=None,
+        files=None,
+        first_file=None,
+        last_file=None,
+        metadatafile=None,
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
@@ -627,7 +632,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         files = files[first_file:last_file]
 
-        data_obj = UngriddedData()
+        data_obj = UngriddedDataMeta()
         meta_key = 0.0
         idx = 0
 
