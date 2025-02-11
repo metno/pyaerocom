@@ -19,7 +19,7 @@ class ClimatologyConfig(BaseModel):
         How to resample the climatology. Must be mean or median.
     freq : str, optional
         Which frequency the climatology should have
-    mincount : dict, optional
+    min_count : dict, optional
         Number of values should be present for the data to be used in the climatology.
         Dict where freqs are the keys and the count is the values
 
@@ -43,4 +43,4 @@ class ClimatologyConfig(BaseModel):
 
     resample_how: Literal["mean", "median"] = const.CLIM_RESAMPLE_HOW
     freq: str = const.CLIM_FREQ
-    mincount: dict = const.CLIM_MIN_COUNT
+    min_count: dict = const.CLIM_MIN_COUNT

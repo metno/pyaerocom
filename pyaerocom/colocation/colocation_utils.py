@@ -456,7 +456,7 @@ def _colocate_site_data_helper(
             start=use_climatology_ref.start,
             stop=use_climatology_ref.stop,
             min_num_obs=min_num_obs,
-            clim_mincount=use_climatology_ref.mincount,
+            clim_mincount=use_climatology_ref.min_count,
             resample_how=use_climatology_ref.resample_how,
             clim_freq=use_climatology_ref.freq,
             set_year=use_climatology_ref.set_year,
@@ -769,7 +769,7 @@ def colocate_gridded_ungridded(
         ts_type_data = ts_type
 
     if isinstance(use_climatology_ref, ClimatologyConfig):  # pragma: no cover
-        col_freq = "monthly"  # use_climatology_ref.freq
+        col_freq = use_climatology_ref.freq
         obs_start = use_climatology_ref.start
         obs_stop = use_climatology_ref.stop
     else:
