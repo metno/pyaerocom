@@ -1,10 +1,10 @@
 import json
 from enum import Enum
 from pathlib import Path
+from shutil import copy2
 from typing import Optional
 
 import typer
-
 from pyaerocom import __package__, __version__, change_verbosity, const, download_minimal_dataset
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
@@ -104,6 +104,29 @@ def getsampledata(
 ):
     """Downloads a minimal sample dataset."""
     download_minimal_dataset(extract_dir_override=extract_dir)
+
+
+@main.command()
+def init():
+    """init ~/MyPyaerocom directory and copy the default paths.ini there"""
+
+    mypyaerocom = Path.home() / "MyPyaerocom"
+    mypyaerocom.mkdir(exist_ok=True)
+
+    # copy default paths.ini if it doesn't exit
+    ini_in_path = Path(__file__).parents[1].joinpath("data/paths.ini")
+    ini_out_path = mypyaerocom / "paths.ini"
+    if not ini_in_path.exists():
+        print(f"Error: {ini_in_path} does not exist. Something is wrong with your pyaerocom installation!")
+    if ini_out_path.exists():
+        print(f"Error: {ini_out_path} already exists. Please delete it by hand if you really want to overwrite that with the default from pyaerocom.")
+    else:
+        try:
+            copy2(ini_in_path, mypyaerocom)
+            print(f"{ini_out_path} successfully created")
+        except Exception as e:
+            print(f"Error: file {ini_out_path} could not created. The error message was "
+                  f"{e}.")
 
 
 if __name__ == "__main__":

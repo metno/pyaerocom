@@ -7,7 +7,16 @@ from datetime import datetime
 import pandas as pd
 from iris import coord_categorisation
 
-TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native", "coarsest"]
+TS_TYPES = [
+    "minutely",
+    "hourly",
+    "daily",
+    "weekly",
+    "monthly",
+    "yearly",
+    "native",
+    "coarsest",
+]
 
 # The following import was removed and the information about available unit
 # strings was copied from the netCDF4 module directly here
@@ -46,6 +55,16 @@ PANDAS_RESAMPLE_OFFSETS = {
     "MS": pd.Timedelta(14, "d"),
     "D": pd.Timedelta(12, "h"),
     "h": pd.Timedelta(30, "m"),
+}
+
+TS_TYPE_TO_FREQ_NAME = {
+    "minutely": "minutes",
+    "hourly": "hours",
+    "daily": "days",
+    "weekly": "weeks",
+    "monthly": "months",  # Month start !
+    "season": "seasons",
+    "yearly": "years",
 }
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}

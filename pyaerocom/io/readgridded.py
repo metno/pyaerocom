@@ -44,7 +44,7 @@ from pyaerocom.io.aux_read_cubes import (
     multiply_cubes,
     subtract_cubes,
 )
-from pyaerocom.io.fileconventions import FileConventionRead
+from pyaerocom.io.file_conventions import FileConventionRead
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom

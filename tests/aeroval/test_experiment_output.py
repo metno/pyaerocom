@@ -10,7 +10,7 @@ from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.json_utils import read_json, write_json
 from pyaerocom.aeroval import EvalSetup
-from tests.conftest import geojson_unavail
+import pathlib
 
 BASEDIR_DEFAULT = Path(const.OUTPUTDIR) / "aeroval" / "data"
 
@@ -124,38 +124,15 @@ def test_ExperimentOutput_exp_dir(dummy_expout: ExperimentOutput, tmp_path: Path
     assert Path(dummy_expout.exp_dir) == tmp_path / "proj" / "exp"
 
 
-def test_ExperimentOutput_regions_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.regions_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "regions.json"
-
-
-def test_ExperimentOutput_statistics_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.statistics_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "statistics.json"
-
-
-def test_ExperimentOutput_var_ranges_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.var_ranges_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "ranges.json"
-
-
-def test_ExperimentOutput_menu_file(dummy_expout: ExperimentOutput):
-    path = Path(dummy_expout.menu_file)
-    assert str(path.parent) == dummy_expout.exp_dir
-    assert path.name == "menu.json"
-
-
 def test_ExperimentOutput_results_available_False(dummy_expout: ExperimentOutput):
     assert not dummy_expout.results_available
 
 
 def test_ExperimentOutput_update_menu_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout.update_menu()
-    assert Path(dummy_expout.menu_file).exists()
-    assert read_json(dummy_expout.menu_file) == {}
+
+    data = dummy_expout.avdb.get_menu(dummy_expout.proj_id, dummy_expout.exp_id)
+    assert data == {}
 
 
 def test_ExperimentOutput_update_interface_EMPTY(dummy_expout: ExperimentOutput):
@@ -195,6 +172,20 @@ def test_ExperimentOutput__info_from_map_file_error(filename: str):
         f"invalid map filename: {filename}. "
         "Must contain exactly 3 underscores _ to separate obsinfo, vertical, model info, and periods"
     )
+
+
+def test_ExperimentOutput__info_from_contour_dir_file():
+    file = pathlib.PosixPath("path/to/name_vertical_period.txt")
+    output = ExperimentOutput._info_from_contour_dir_file(file)
+
+    assert output == ("name", "vertical", "period")
+
+
+def test_ExperimentOutput__info_from_contour_dir_file_error():
+    file = pathlib.PosixPath("path/to/obs_vertical_model_period.txt")
+    with pytest.raises(ValueError) as e:
+        ExperimentOutput._info_from_contour_dir_file(file)
+    assert "invalid contour filename" in str(e.value)
 
 
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
@@ -279,7 +270,6 @@ def test_ExperimentOutput_delete_experiment_data_CFG1(eval_config: dict):
     assert not path.exists()
 
 
-@geojson_unavail
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_Experiment_Output_clean_json_files_CFG1(eval_config: dict):
     cfg = EvalSetup(**eval_config)
@@ -289,26 +279,24 @@ def test_Experiment_Output_clean_json_files_CFG1(eval_config: dict):
     assert len(modified) == 0
 
 
-@geojson_unavail
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
+    cfg.model_cfg.add_entry("mod1", cfg.model_cfg.get_entry("TM5-AP3-CTRL"))
     proc = ExperimentProcessor(cfg)
     proc.run()
-    del cfg.model_cfg["mod1"]
+    cfg.model_cfg.remove_entry("mod1")
     modified = proc.exp_output.clean_json_files()
-    assert len(modified) == 15
+    assert len(modified) == 13
 
 
-@geojson_unavail
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS(eval_config: dict):
     cfg = EvalSetup(**eval_config)
-    cfg.obs_cfg["obs1"] = cfg.obs_cfg["AERONET-Sun"]
+    cfg.obs_cfg.add_entry("obs1", eval_config["obs_cfg"]["AERONET-Sun"])
     proc = ExperimentProcessor(cfg)
     proc.run()
-    del cfg.obs_cfg["obs1"]
+    cfg.obs_cfg.remove_entry("obs1")
     modified = proc.exp_output.clean_json_files()
     assert len(modified) == 13
 
@@ -344,7 +332,6 @@ def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutp
     assert str(e.value) == "need list as input"
 
 
-@geojson_unavail
 @pytest.mark.parametrize("cfg,drop_stats,stats_decimals", [("cfgexp1", ("mab", "R_spearman"), 2)])
 def test_Experiment_Output_drop_stats_and_decimals(
     eval_config: dict, drop_stats, stats_decimals: int
@@ -354,7 +341,7 @@ def test_Experiment_Output_drop_stats_and_decimals(
         stats_decimals,
     )
     cfg = EvalSetup(**eval_config)
-    cfg.model_cfg["mod1"] = cfg.model_cfg["TM5-AP3-CTRL"]
+    cfg.model_cfg.add_entry("mod1", cfg.model_cfg.get_entry("TM5-AP3-CTRL"))
     proc = ExperimentProcessor(cfg)
     proc.run()
     path = Path(proc.exp_output.exp_dir)
@@ -363,3 +350,18 @@ def test_Experiment_Output_drop_stats_and_decimals(
     statistics_json = read_json(path / "statistics.json")
     assert all([stat not in statistics_json for stat in drop_stats])
     assert all([statistics_json[stat]["decimals"] == stats_decimals for stat in statistics_json])
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_Experiment_Output_stats_reorder(eval_config: dict):
+    cfg = EvalSetup(**eval_config)
+    requested_keys = ("fge", "R_spatial_mean", "mnmb", "nmb")
+    cfg.webdisp_opts.stats_order_menu = requested_keys
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    path = Path(proc.exp_output.exp_dir)
+    statistics_json = read_json(path / "statistics.json")
+
+    retrieved_keys = list(statistics_json.keys())
+
+    assert tuple(retrieved_keys[:4]) == requested_keys

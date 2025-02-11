@@ -224,6 +224,7 @@ def test_NAN_VAL(reader: ReadEbas):
 def test_PROVIDES_VARIABLES(reader: ReadEbas):
     PROVIDES_VARIABLES = {
         "DEFAULT",
+        "concebc",
         "concca",
         "concmg",
         "conck",
@@ -368,6 +369,9 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "concprcpoxsc",
         "wetoxst",
         "concprcpna",
+        "wetso4pr",
+        "wetrdnpr",
+        "wetoxspr",
     }
 
     assert set(reader.PROVIDES_VARIABLES) == (PROVIDES_VARIABLES)

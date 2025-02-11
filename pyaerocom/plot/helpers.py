@@ -1,3 +1,4 @@
+import warnings
 import cartopy.crs as ccrs
 import numpy as np
 
@@ -6,6 +7,11 @@ from pyaerocom.mathutils import exponent
 
 def projection_from_str(projection_str="PlateCarree"):
     """Return instance of cartopy projection class based on string ID"""
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     try:
         return ccrs.__dict__[projection_str]()
     except KeyError:
@@ -14,6 +20,11 @@ def projection_from_str(projection_str="PlateCarree"):
 
 def custom_mpl(mpl_rcparams=None, default_large=True, **kwargs):
     """Custom matplotlib settings"""
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     if mpl_rcparams is None:
         from matplotlib import rcParams as mpl_rcparams
     small = 10
@@ -71,6 +82,11 @@ def calc_figsize(lon_range, lat_range, figh=8):
     tuple
         2-element tuple containing figure width and height
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     wfac = (lon_range[1] - lon_range[0]) / (lat_range[1] - lat_range[0])
     figw = int(wfac * figh)
 
@@ -114,6 +130,10 @@ def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     0.1000
 
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
 
     if vmin < 0:
         vmin = 0

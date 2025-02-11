@@ -162,3 +162,7 @@ pytest.ini
 
 # can store scripts etc. locally for testing and dev purposes
 playground/
+
+PATH_TO_AEROVAL_OUT/
+coldata/
+data/

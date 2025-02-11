@@ -58,9 +58,17 @@ def test_ReadUngridded___init__(data_ids, ignore_cache):
         (dict(station_name="La_Paz"), 1, 1),
         (dict(station_name=["La_Paz", "AAO*"]), 2, 2),
         (dict(altitude=[1000, 10000]), 3, 3),
-        (dict(altitude=[1000, 10000], ignore_station_names=dict(od550aer="La_Paz")), 2, 2),
+        (
+            dict(altitude=[1000, 10000], ignore_station_names=dict(od550aer="La_Paz")),
+            2,
+            2,
+        ),
         (dict(altitude=[1000, 10000], ignore_station_names="La_*"), 2, 2),
-        (dict(altitude=[1000, 10000], ignore_station_names=["La_*", "Mauna_Loa"]), 1, 1),
+        (
+            dict(altitude=[1000, 10000], ignore_station_names=["La_*", "Mauna_Loa"]),
+            1,
+            1,
+        ),
     ],
 )
 @pytest.mark.parametrize(
@@ -131,7 +139,7 @@ def test_supported_pyaro(pyaro_testconfig):
     reader = ReadUngridded(configs=pyaro_testconfig)
 
     assert ReadPyaro in reader.SUPPORTED_READERS
-    assert pyaro_testconfig[0].data_id in reader.supported_datasets
+    assert pyaro_testconfig[0].reader_id in reader.supported_datasets
 
 
 def test_read_pyaro_and_other(pyaro_testconfig):

@@ -246,7 +246,7 @@ def _create_fake_partial_trends_coldata_3d(colocate_time: bool = False):
             if d in dtimes[i]:
                 data[0, j, i] = 1
             else:
-                data[0, j, i] = np.NaN
+                data[0, j, i] = np.nan
 
     meta = {
         "data_source": ["fakeobs", "fakemod"],

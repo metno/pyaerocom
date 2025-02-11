@@ -64,14 +64,14 @@ GLOBAL_CONFIG = dict(
     drop_stats=("mb", "mab"),
     # This is just the order at which the different species will be shown in the web interface
     # Species that are not evaluated can still be in this list. The web interface will not show them if they are not evaluated
-    var_order_menu=[
-        "concco",
-        "concno2",        
+    var_order_menu=[        
         "conco3",
         "conco3mda8",
+        "concno2",
         "concpm10",
         "concpm25",
         "concso2",
+        "concco",
     ],
     min_num_obs=dict(
         # yearly=dict(monthly=9),

@@ -52,7 +52,7 @@ def test_data(time, values) -> xr.DataArray:
         # https://github.com/metno/pyaerocom/issues/1323
         pytest.param(
             xr.date_range(start="2024-01-01 06:00:00", periods=30, freq="1h"),
-            np.arange(30),
+            np.arange(30, dtype=float),
             [np.nan, np.nan],
             id="#1323",
         ),
@@ -161,7 +161,7 @@ def test_rollingaverage_label():
     https://github.com/metno/pyaerocom/issues/1323
     """
     data = xr.DataArray(
-        [[[x] for x in range(24)]],
+        [[[float(x)] for x in range(24)]],
         dims=["data_source", "time", "station_name"],
         coords={"time": xr.date_range(start="2024-01-01 00:00", periods=24, freq="1h")},
     )

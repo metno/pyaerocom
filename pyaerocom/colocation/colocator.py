@@ -22,7 +22,11 @@ from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
+from pyaerocom.exceptions import (
+    ColocationError,
+    ColocationSetupError,
+    DataCoverageError,
+)
 from pyaerocom.helpers import (
     get_lowest_resolution,
     start_stop,
@@ -131,7 +135,7 @@ class Colocator:
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
-        if self.colocation_setup.obs_config is not None:
+        if self.colocation_setup.pyaro_config is not None:
             return True
 
         return True if self.colocation_setup.obs_id in get_all_supported_ids_ungridded() else False
@@ -192,7 +196,7 @@ class Colocator:
                     data_ids=[self.colocation_setup.obs_id],
                     data_dirs=self.colocation_setup.obs_data_dir,
                     configs=[
-                        self.colocation_setup.obs_config,
+                        self.colocation_setup.pyaro_config,
                     ],
                 )
             else:
@@ -373,7 +377,7 @@ class Colocator:
             calc_mda8 = True
 
         data_out = defaultdict(lambda: dict())
-        # ToDo: see if the following could be solved via custom context manager
+        # TODO: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_list)
         except Exception as ex:
@@ -401,7 +405,11 @@ class Colocator:
                         logger.debug(e)
                     else:
                         self._save_coldata(mda8)
-                        logger.info("Successfully calculated mda8 for [%s, %s].", obs_var, mod_var)
+                        logger.info(
+                            "Successfully calculated mda8 for [%s, %s].",
+                            obs_var,
+                            mod_var,
+                        )
                         data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
                 self._processing_status.append([mod_var, obs_var, 1])
@@ -822,7 +830,9 @@ class Colocator:
     def _try_get_vert_which_alt(self, is_model, var_name):
         if is_model:
             if self.colocation_setup.obs_vert_type in self.colocation_setup.OBS_VERT_TYPES_ALT:
-                return self.OBS_VERT_TYPES_ALT[self.colocation_setup.obs_vert_type]
+                return self.colocation_setup.OBS_VERT_TYPES_ALT[
+                    self.colocation_setup.obs_vert_type
+                ]
         raise DataCoverageError(f"No alternative vert type found for {var_name}")
 
     def _check_remove_outliers_gridded(self, data, var_name, is_model):
@@ -940,6 +950,9 @@ class Colocator:
     def _check_set_start_stop(self):
         if self.colocation_setup.start is None:
             self._infer_start_stop_yr_from_model_reader()
+            start, stop = self.start, self.stop
+        else:
+            start, stop = self.colocation_setup.start, self.colocation_setup.stop
         if self.colocation_setup.model_use_climatology:
             if self.colocation_setup.stop is not None or not isinstance(
                 self.colocation_setup.start, int
@@ -949,7 +962,7 @@ class Colocator:
                     'climatology fields, please specify "start" as integer '
                     'denoting the year, and set "stop"=None'
                 )
-        self.start, self.stop = start_stop(self.colocation_setup.start, self.colocation_setup.stop)
+        self.start, self.stop = start_stop(start, stop)
 
     def _coldata_savename(self, obs_var, mod_var, ts_type, **kwargs):
         """Get filename of colocated data file for saving"""

@@ -73,6 +73,8 @@ def test_eval_mos_standard(tmp_path: Path, coldata_mos: Path, caplog):
 
 
 @ignore_warnings(RuntimeWarning, "invalid value encountered in divide")
+@ignore_warnings(RuntimeWarning, "Mean of empty slice")
+@ignore_warnings(RuntimeWarning, "All-NaN slice encountered")
 @pytest.mark.usefixtures("fake_ExperimentProcessor", "reset_cachedir")
 def test_eval_mos_medianscores(tmp_path: Path, coldata_mos: Path, caplog):
     options = f"season 2024-03-01 2024-03-05 --data-path {tmp_path} --coldata-path {coldata_mos} --cache {tmp_path} --id mos-colocated-data --name 'Test'"

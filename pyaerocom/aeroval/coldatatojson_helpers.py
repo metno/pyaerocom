@@ -1457,7 +1457,7 @@ def _process_statistics_timeseries(
     return output
 
 
-def _get_jsdate(nparr):
+def _get_jsdate(nparr: np.ndarray):
     dt = nparr.astype("datetime64[s]")
     offs = np.datetime64("1970", "s")
     return (dt - offs).astype(int) * 1000
@@ -1729,3 +1729,35 @@ def _get_yrs_from_season_yrs(season_yrs: dict) -> np.ndarray:
             yrs.append(y)
 
     return np.array(yrs)
+
+
+def _process_statistics_timeseries_single_region(
+    reg: str,
+    regnames: dict,
+    data: dict[str, ColocatedData],
+    main_freq: str,
+    use_weights: bool,
+    drop_stats: tuple,
+    use_country: bool,
+    input_freq: str,
+    obs_name: str,
+    var_name_web: str,
+    vert_code: str,
+    model_name: str,
+    model_var: str,
+):
+    try:
+        stats_ts = _process_statistics_timeseries(
+            data=data,
+            freq=main_freq,
+            region_ids={reg: regnames[reg]},
+            use_weights=use_weights,
+            drop_stats=drop_stats,
+            use_country=use_country,
+            data_freq=input_freq,
+        )
+    except TemporalResolutionError:
+        stats_ts = {}
+
+    region = regnames[reg]
+    return (stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var)

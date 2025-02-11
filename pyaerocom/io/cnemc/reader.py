@@ -181,7 +181,12 @@ class ReadCNEMC(ReadUngriddedBase):
 
     def _read_dataset(self, paths: list[Path]) -> xr.Dataset:
         ds = xr.open_mfdataset(
-            sorted(paths), concat_dim="time", combine="nested", parallel=True, decode_cf=True
+            sorted(paths),
+            concat_dim="time",
+            combine="nested",
+            parallel=True,
+            decode_cf=True,
+            decode_timedelta=True,
         )
         ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
         ds = ds.assign(

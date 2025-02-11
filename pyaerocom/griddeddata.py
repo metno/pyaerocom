@@ -2153,7 +2153,8 @@ class GriddedData:
         Parameters
         ----------
         sample_points : list
-            sequence of coordinate pairs over which to interpolate
+            sequence of coordinate pairs over which to interpolate. Sample
+            coords should be sorted in ascending order without duplicates.
         scheme : str or iris interpolator object
             interpolation scheme, pyaerocom default is nearest. If input is
             string, it is converted into the corresponding iris Interpolator

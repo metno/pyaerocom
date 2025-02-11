@@ -4,6 +4,7 @@ import json
 import logging
 from configparser import ConfigParser
 from enum import Enum
+import os
 from typing import NamedTuple
 
 from pydantic import BaseModel
@@ -31,9 +32,9 @@ class ScaleAndColmap(dict[str, str | list[float]]):
 
 
 class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
-    def __init__(self, config_file="", **kwargs):
+    def __init__(self, config_file: str = "", **kwargs):
         """This class contains scale and colmap informations and is implemented as dict to allow
-        json serialization. It reads it inital data from data/var_scale_colmap.ini.
+        json serialization. It reads it inital data from data/var_scale_colmap.ini. kwargs will be send to update.
 
         :param config_file: filename to additional or updated information, defaults to None
         """
@@ -42,15 +43,26 @@ class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
             self.update_from_ini(file)
         if config_file != "":
             logger.info(f"Reading additional web-scales from '{config_file}'")
+            if not os.path.exists(config_file):
+                raise FileNotFoundError(
+                    f"VarWebScaleAndColormap initialized with config_file: '{config_file}' which does not exist"
+                )
             self.update_from_ini(config_file)
         self.update(**kwargs)
 
     def update(self, **kwargs):
+        """update/add scale and colormaps by kwargs, e.g.
+        update(concso2={"scale"=[0.2,1], "colormap"="bluewhite"})
+        """
         wvsc = _VarWebScaleAndColormap(scale_colmaps=kwargs)
         super().update(**{x: y._asdict() for x, y in wvsc.scale_colmaps.items()})
 
     def update_from_ini(self, filename):
         cfg = ConfigParser()
+        if not os.path.exists(filename):
+            raise FileNotFoundError(
+                f"VarWebScaleAndColormap update_from_ini('{filename}') which does not exist"
+            )
         cfg.read(filename)
         # remove configparser default
         cfg_dict = dict()
@@ -108,6 +120,8 @@ class CategoryType(str, Enum):
     temperature = "Temperature"
     particle_ratio = "Particle ratio"
     vertical_column_density = "Vertical column density"
+    surface_emission = "Surface emission"
+    column_burden = "Column burden"
     UNDEFINED = "UNDEFINED"
 
     def __str__(self):

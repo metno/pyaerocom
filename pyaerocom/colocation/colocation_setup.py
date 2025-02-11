@@ -70,7 +70,7 @@ class ColocationSetup(BaseModel):
     model_id : str
         ID of model to be used.
 
-    obs_config: PyaroConfig
+    pyaro_config: PyaroConfig
         In the case Pyaro is used, a config must be provided. In that case obs_id(see below)
         is ignored and only the config is used.
     obs_id : str
@@ -321,7 +321,7 @@ class ColocationSetup(BaseModel):
     @classmethod
     def validate_obs_vars(cls, v):
         if isinstance(v, str):
-            return [v]
+            return (v,)
         return v
 
     ts_type: str
@@ -336,7 +336,7 @@ class ColocationSetup(BaseModel):
         if isinstance(v, str):
             return pd.Timestamp(v)
 
-    obs_config: PyaroConfig | None = None
+    pyaro_config: PyaroConfig | None = None
 
     ###############################
     # Attributes with defaults
@@ -465,7 +465,7 @@ class ColocationSetup(BaseModel):
     def __init__(
         self,
         model_id: str | None = None,
-        obs_config: PyaroConfig | None = None,
+        pyaro_config: PyaroConfig | None = None,
         obs_id: str | None = None,
         obs_vars: tuple[str, ...] | None = (),
         ts_type: str = "monthly",
@@ -477,7 +477,7 @@ class ColocationSetup(BaseModel):
     ) -> None:
         super().__init__(
             model_id=model_id,
-            obs_config=obs_config,
+            pyaro_config=pyaro_config,
             obs_id=obs_id,
             obs_vars=obs_vars,
             ts_type=ts_type,
@@ -494,6 +494,7 @@ class ColocationSetup(BaseModel):
         for key in self.FORBIDDEN_KEYS:
             if key in self.model_fields:
                 raise ValidationError
+        return self
 
     @cached_property
     def basedir_logfiles(self):
@@ -503,25 +504,26 @@ class ColocationSetup(BaseModel):
         return str(p)
 
     @model_validator(mode="after")
-    @classmethod
-    def validate_obs_config(cls, v: PyaroConfig):
-        if v is not None and cls.obs.config.name != cls.obs_id:
+    def validate_pyaro_config(self):
+        if self.pyaro_config is None:
+            return self
+        if self.pyaro_config.name != self.obs_id:
             logger.info(
-                f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Pyaro config to None!"
+                f"Data ID in Pyaro config {self.pyaro_config.name} does not match obs_id {self.obs_id}. Setting Pyaro config to None!"
             )
-            v = None
-        if v is not None:
-            if isinstance(v, dict):
-                logger.info("Obs config was given as dict. Will try to convert to PyaroConfig")
-                v = PyaroConfig(**v)
-            if v.name != cls.obs_id:
+            self.pyaro_config = None
+        if self.pyaro_config is not None:
+            if isinstance(self.pyaro_config, dict):
+                logger.info("pyaro config was given as dict. Will try to convert to PyaroConfig")
+                self.pyaro_config = PyaroConfig(**self.pyaro_config)
+            if self.pyaro_config.name != self.obs_id:
                 logger.info(
-                    f"Data ID in Pyaro config {v.name} does not match obs_id {cls.obs_id}. Setting Obs ID to match Pyaro Config!"
+                    f"Data ID in Pyaro config {self.pyaro_config.name} does not match obs_id {self.obs_id}. Setting Obs ID to match Pyaro Config!"
                 )
-                cls.obs_id = v.name
-            if cls.obs_id is None:
-                cls.obs_id = v.name
-        return v
+                self.obs_id = self.pyaro_config.name
+            if self.obs_id is None:
+                self.obs_id = self.pyaro_config.name
+        return self
 
     def add_glob_meta(self, **kwargs):
         """

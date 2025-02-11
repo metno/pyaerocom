@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import pandas as pd
+import numpy as np
+import pytest
 
 from pyaerocom import UngriddedData
-from pyaerocom.io import ReadPyaro
+from pyaerocom.io import ReadPyaro, PyaroConfig
+from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
+from pyaerocom.io.pyaro.postprocess import matching_indices
+
+from tests.conftest import lustre_unavail
 
 
 def test_testfile(pyaro_test_data_file):
@@ -18,7 +24,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "concso4", "od550aer"]
+    variables = ["NOx", "concso4", "od550aer", "NO"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
@@ -87,3 +93,77 @@ def test_pyarotoungriddeddata_variables(pyaro_testdata):
     obj = pyaro_testdata.converter
 
     assert obj.get_variables() == pyaro_testdata.PROVIDES_VARIABLES
+
+
+def test_postprocessing(pyaro_test_data_file):
+    config = PyaroConfig(
+        reader_id="csv_timeseries",
+        filename_or_obj_or_url=str(pyaro_test_data_file),
+        name="test",
+        name_map={
+            "NO": "concno",
+        },
+        post_processing=[
+            "concNno_from_concno",
+        ],
+        filters=dict(),
+    )
+    reader = ReadPyaro(config)
+    assert set(reader.PROVIDES_VARIABLES).issuperset(["concno", "concNno"])
+    data = reader.read(["concno", "concNno"])
+
+    concno = data.all_datapoints_var("concno")
+    concNno = data.all_datapoints_var("concNno")
+
+    # Proportion of N in NO, ng -> ug conversion
+    conversion_factor = 14.0067 / (14.0067 + 15.999) * 1e-3
+
+    assert np.allclose(concno * conversion_factor, concNno)
+
+
+def test_matching_indices():
+    x = [0, 1, 2, 3, 4]
+    y = [1, 1.5, 2, 2.1, 4, 5]
+
+    xind, yind = matching_indices(x, y)
+
+    assert np.all(xind == [1, 2, 4])
+    assert np.all(yind == [0, 2, 4])
+
+    with pytest.raises(ValueError) as e:
+        x = [6, 0, 1, 2, 3, 4]
+        y = [1, 1.5, 2, 2.1, 4, 5]
+        matching_indices(x, y)
+    assert str(e.value) == "x is not monotonically increasing"
+
+
+@lustre_unavail
+def test_vmrox():
+    config = PyaroConfig.from_dict(
+        {
+            "name": "whatever",
+            "reader_id": "eeareader",
+            "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+            "filters": {
+                "countries": {"include": ["NO"]},
+            },
+            "name_map": {
+                "O3": "conco3",
+                "NO2": "concno2",
+            },
+            "post_processing": [
+                "vmro3_from_conco3",
+                "vmrno2_from_concno2",
+                "vmrox_from_vmrno2_vmro3",
+            ],
+            "dataset": "unverified",
+        }
+    )
+    reader = PyaroToUngriddedData(config)
+    data = reader.read(vars_to_retrieve=["vmrox"])
+
+    alldata = data.to_station_data_all()
+    stats = alldata["stats"]
+    assert len(stats) >= 4
+    first = stats[0]
+    assert first["units"] == {"vmrox": "nmol mol-1"}

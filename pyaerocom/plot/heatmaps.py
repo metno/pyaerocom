@@ -4,6 +4,7 @@ from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap
 
 from pyaerocom.mathutils import exponent
+import warnings
 
 
 def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
@@ -233,6 +234,11 @@ def df_to_heatmap(
         annotation information for rows
 
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     if cmap is None:
         cmap = "bwr"
     if cbar_label is None:

@@ -145,10 +145,11 @@ def compute_model_average_and_diversity(
 
     unit_out = get_variable(var_name).units
 
-    for mname in models:
+    for m in models:
+        mname = m.model_name
         logger.info(f"Adding {mname} ({var_name})")
 
-        mid = cfg.cfg.model_cfg.get_entry(mname)["model_id"]
+        mid = cfg.cfg.model_cfg.get_entry(mname).model_id
         if mid == data_id or mname == data_id:
             continue
 

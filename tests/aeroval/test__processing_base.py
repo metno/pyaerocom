@@ -14,7 +14,12 @@ def setup() -> EvalSetup:
     """EvalSetup instance"""
     obs_cfg = dict(
         obs1=dict(obs_id="obs1", obs_vars=["od550aer"], obs_vert_type="Column"),
-        obs2=dict(obs_id="obs2", obs_vars=["od550aer"], obs_vert_type="Column", diurnal_only=True),
+        obs2=dict(
+            obs_id="obs2",
+            obs_vars=["od550aer"],
+            obs_vert_type="Column",
+            diurnal_only=True,
+        ),
     )
     return EvalSetup(proj_id="bla", exp_id="blub", obs_cfg=obs_cfg)
 
@@ -42,11 +47,6 @@ def test_HasConfig_reanalyse_existing(config: HasConfig):
 def collocator(setup: EvalSetup) -> HasColocator:
     """HasColocator instance"""
     return HasColocator(setup)
-
-
-def test_HasColocator_get_diurnal_only(collocator: HasColocator):
-    assert not collocator._get_diurnal_only("obs1")
-    assert collocator._get_diurnal_only("obs2")
 
 
 @pytest.mark.parametrize("obs_name", [None, "obs1", "obs2"])

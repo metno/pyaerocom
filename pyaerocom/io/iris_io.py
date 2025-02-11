@@ -35,7 +35,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
 )
 from pyaerocom.helpers import cftime_to_datetime64, make_datetimeindex_from_year
-from pyaerocom.io.fileconventions import FileConventionRead
+from pyaerocom.io.file_conventions import FileConventionRead
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.tstype import TsType
 
@@ -218,7 +218,9 @@ def check_dim_coord_names_cube(cube):
     from pyaerocom import const
 
     coords = dict(
-        lon=const.COORDINFO["lon"], lat=const.COORDINFO["lat"], time=const.COORDINFO["time"]
+        lon=const.COORDINFO["lon"],
+        lat=const.COORDINFO["lat"],
+        time=const.COORDINFO["time"],
     )
 
     for coord in cube.dim_coords:

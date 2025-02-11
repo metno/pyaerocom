@@ -34,19 +34,18 @@ from pyaerocom.time_resampler import TimeResampler
 logger = logging.getLogger(__name__)
 
 
-def ensure_correct_dimensions(data: np.ndarray | xr.DataArray):
+def ensure_correct_dimensions(data: xr.DataArray):
     """
-    Ensure the dimensions on either a numpy aray or xarray passed to ColocatedData.
+    Ensure the dimensions on an xarray.DataArray passed to ColocatedData.
     If a ColocatedData object is created outside of pyaerocom, this checking is needed.
     This function is used as part of the model validator.
     """
-    shape = data.shape[0]
-    if isinstance(data, np.ndarray):
-        num_dims = data.ndim
-    elif isinstance(data, xr.DataArray):
-        num_dims = len(data.dims)
-    else:
+    if not isinstance(data, xr.DataArray):
         raise ValueError("Could not interpret data")
+
+    shape = data.shape[0]
+    num_dims = len(data.dims)
+
     if num_dims not in (2, 3, 4):
         raise DataDimensionError("invalid input, need 2D, 3D or 4D numpy array")
     elif not shape == 2:
@@ -124,19 +123,19 @@ class ColocatedData(BaseModel):
 
     @model_validator(mode="after")
     def validate_data(self):
+        if self.data is None:
+            return self
         if isinstance(self.data, Path):
             # make sure path is str instance
             self.data = str(self.data)
         if isinstance(self.data, str):
-            assert self.data.endswith("nc"), ValueError(
-                "Invalid data filepath str, must point to a .nc file"
-            )
+            if not self.data.endswith("nc"):
+                raise ValueError(
+                    f"Invalid data filepath str, must point to a .nc file. Got {self.data}"
+                )
             self.open(self.data)
-        elif isinstance(self.data, xr.DataArray):
-            ensure_correct_dimensions(self.data)
-            return self.data
-        elif isinstance(self.data, np.ndarray):
-            ensure_correct_dimensions(self.data)
+            return self
+        if isinstance(self.data, np.ndarray):
             if hasattr(self, "model_extra"):
                 da_keys = dir(xr.DataArray)
                 extra_args_from_class_initialization = {
@@ -146,6 +145,9 @@ class ColocatedData(BaseModel):
                 extra_args_from_class_initialization = {}
             data = xr.DataArray(self.data, **extra_args_from_class_initialization)
             self.data = data
+        # self.data should be xr.DataArray at this stage
+        ensure_correct_dimensions(self.data)
+        return self
 
     # Override __init__ to allow for positional arguments
     def __init__(
@@ -1297,17 +1299,64 @@ class ColocatedData(BaseModel):
     def to_dataframe(self):
         """Convert this object into pandas.DataFrame
 
-        Note
-        ----
-        This does not include meta information
-        """
-        logger.warning("This method is currently not completely finished")
-        model_vals = self.data.values[1].flatten()
-        obs_vals = self.data.values[0].flatten()
-        mask = ~np.isnan(obs_vals)
-        return pd.DataFrame({"ref": obs_vals[mask], "data": model_vals[mask]})
+        The resulting DataFrame will have the following columns:
+        station: The name of the station for a given value.
 
-    def from_dataframe(self, df):
+        The following columns will be available in the resulting dataframe:
+        - time: Time.
+        - station_name: Station name.
+        - data_source_obs: Data source obs (eg. EBASMC).
+        - data_source_mod: Data source model (eg. EMEP).
+        - latitude.
+        - longitude.
+        - altitude.
+        - {var_name}_obs: Variable value of observation.
+        - {var_name}_mod: Variable value of model.
+
+        {var_name} is the aerocom variable name of the variable name.
+        """
+        if self.data.ndim == 4:
+            raise NotImplementedError
+        obs_df = self.data[0, :, :].to_dataframe(name=self.var_name[0]).reset_index()
+        mod_df = self.data[1, :, :].to_dataframe(name=self.var_name[0]).reset_index()
+
+        df = pd.merge(
+            obs_df,
+            mod_df,
+            how="outer",
+            on=("time", "station_name", "latitude", "longitude", "altitude"),
+            suffixes=("_obs", "_mod"),
+        )
+
+        return df
+
+    @staticmethod
+    def _validate_dataframe_for_import(df: pd.DataFrame):
+        """Validates a pandas dataframe and checks that it will likely
+        work with ColocatedData.from_dataframe()
+
+        :param df: The pandas dataframe to be validated.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"Expected pandas DataFrame, got {type(df)}")
+
+        if (tmp := df.shape[1]) != 9:
+            raise ValueError(f"Expected DataFrame with 9 columns, got {tmp}")
+
+        if (tmp := len(df["data_source_obs"].unique())) != 1:
+            raise ValueError(f"Expected dataframe with 1 unique data_source_obs, got {tmp}.")
+
+        if (tmp := len(df["data_source_mod"].unique())) != 1:
+            raise ValueError(f"Expected dataframe with 1 unique data_source_mod, got {tmp}.")
+
+        # TODO: Check that required columns exist.
+        if "time" not in set(df.columns):
+            raise ValueError("Missing column '{time}'")
+
+        # ...
+
+    @staticmethod
+    def from_dataframe(df: pd.DataFrame) -> ColocatedData:
         """Create colocated Data object from dataframe
 
         Note
@@ -1315,9 +1364,7 @@ class ColocatedData(BaseModel):
         This is intended to be used as back-conversion from :func:`to_dataframe`
         and methods that use the latter (e.g. :func:`to_csv`).
         """
-        raise NotImplementedError("Coming soon...")
-        data = df.to_xarray()
-        self.data = data
+        ColocatedData._validate_dataframe_for_import(df)
 
     def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file

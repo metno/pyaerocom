@@ -226,7 +226,7 @@ class ReadEarlinet(ReadUngriddedBase):
         # Iterate over the lines of the file
         self.logger.debug(f"Reading file {filename}")
 
-        with xarray.open_dataset(filename, engine="netcdf4") as data_in:
+        with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
             for filter in self.CLOUD_FILTERS:
                 if filter in data_in.variables:
                     if data_in.variables[filter].item() == self.CLOUD_FILTERS[filter]:
@@ -369,7 +369,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     wvlg = var_info[var].wavelength_nm
                     wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
 
-                    if not wvlg == float(data_in[wvlg_str]):
+                    assert data_in[wvlg_str].shape == (1,)
+                    if not wvlg == float(data_in[wvlg_str][0]):
                         self.logger.info("No wavelength match")
                         continue
 

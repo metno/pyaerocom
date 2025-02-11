@@ -2,6 +2,7 @@
 This module contains scatter plot routines for Aerocom data.
 """
 
+import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -18,6 +19,11 @@ def plot_scatter(x_vals, y_vals, **kwargs):
     Currently a wrapper for high-level method plot_scatter_aerocom (same module,
     see there for details)
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     return plot_scatter_aerocom(x_vals, y_vals, **kwargs)
 
 
@@ -104,6 +110,11 @@ def plot_scatter_aerocom(
     matplotlib.axes.Axes
         plot axes
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     if marker is None:
         marker = "+"
     if color is None:

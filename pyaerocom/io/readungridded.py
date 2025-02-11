@@ -334,7 +334,7 @@ class ReadUngridded:
             reader = ReadPyaro(config=config)
             self._readers[name] = reader
             self._data_ids.append(name)
-            self.config_ids[name] = config.data_id
+            self.config_ids[name] = config.reader_id
             self.config_map[name] = config
             return reader
 
@@ -832,7 +832,7 @@ class ReadUngridded:
                 return svar
         raise ValueError()
 
-    def get_vars_supported(self, obs_id, vars_desired):  # , config: Optional[PyaroConfig] = None):
+    def get_vars_supported(self, obs_id: str, vars_desired: list[str]):
         """
         Filter input list of variables by supported ones for a certain data ID
 

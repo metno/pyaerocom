@@ -4,9 +4,11 @@ import fnmatch
 import logging
 import os
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from pyaerocom import const
@@ -74,11 +76,11 @@ class UngriddedData:
 
     Attributes
     ----------
-    metadata : dict
+    metadata : dict[float, dict[str, Any]]
         dictionary containing meta information about the data. Keys are
         floating point numbers corresponding to each station, values are
         corresponding dictionaries containing station information.
-    meta_idx : dict
+    meta_idx : dict[float, dict[str, list[int]]]
         dictionary containing index mapping for each station and variable. Keys
         correspond to metadata key (float -> station, see :attr:`metadata`) and
         values are dictionaries containing keys specifying variable name and
@@ -87,7 +89,7 @@ class UngriddedData:
         information is redunant and is there to accelarate station data
         extraction since the data index matches for a given metadata block
         do not need to be searched in the underlying numpy array.
-    var_idx : dict
+    var_idx : dict[str, float]
         mapping of variable name (keys, e.g. od550aer) to numerical variable
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
@@ -158,6 +160,22 @@ class UngriddedData:
 
         self.filter_hist = {}
         self._is_vertical_profile = False
+
+    @staticmethod
+    def _from_raw_parts(
+        data: npt.NDTArray[float],
+        metadata: dict[float, dict[str, Any]],
+        meta_idx: dict[float, dict[str, list[int]]],
+        var_idx: dict[str, float],
+    ) -> UngriddedData:
+        data_obj = UngriddedData()
+
+        data_obj._data = data
+        data_obj.meta_idx = meta_idx
+        data_obj.metadata = metadata
+        data_obj.var_idx = var_idx
+
+        return data_obj
 
     def _get_data_revision_helper(self, data_id):
         """
@@ -970,7 +988,11 @@ class UngriddedData:
                     continue
                 if freq is not None:
                     stat.resample_time(
-                        var, freq, how=resample_how, min_num_obs=min_num_obs, inplace=True
+                        var,
+                        freq,
+                        how=resample_how,
+                        min_num_obs=min_num_obs,
+                        inplace=True,
                     )
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
@@ -1249,7 +1271,13 @@ class UngriddedData:
                 - longitude: list of longitude coordinates
 
         """
-        out_data = {"stats": [], "station_name": [], "latitude": [], "failed": [], "longitude": []}
+        out_data = {
+            "stats": [],
+            "station_name": [],
+            "latitude": [],
+            "failed": [],
+            "longitude": [],
+        }
 
         _iter = self._generate_station_index(by_station_name, ignore_index)
         for idx in _iter:
@@ -1575,7 +1603,13 @@ class UngriddedData:
 
     # TODO: check, confirm and remove Beta version note in docstring
     def remove_outliers(
-        self, var_name, inplace=False, low=None, high=None, unit_ref=None, move_to_trash=True
+        self,
+        var_name,
+        inplace=False,
+        low=None,
+        high=None,
+        unit_ref=None,
+        move_to_trash=True,
     ):
         """Method that can be used to remove outliers from data
 
@@ -1900,7 +1934,10 @@ class UngriddedData:
                 var_outlier_ranges = {}
 
             for var in data.contains_vars:
-                lower, upper = None, None  # uses pyaerocom default specified in variables.ini
+                lower, upper = (
+                    None,
+                    None,
+                )  # uses pyaerocom default specified in variables.ini
                 if var in var_outlier_ranges:
                     lower, upper = var_outlier_ranges[var]
                 data = data.remove_outliers(
@@ -2048,6 +2085,7 @@ class UngriddedData:
                 stop = data_idx_new + totnum
 
                 new._data[data_idx_new:stop, :] = self._data[indices, :]
+                new._data[data_idx_new:stop, new._METADATAKEYINDEX] = meta_idx_new
                 new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new, stop)
                 new.var_idx[var] = self.var_idx[var]
                 data_idx_new += totnum
@@ -2906,7 +2944,13 @@ class UngriddedData:
             kwargs["label"] = info_str
 
         ax = plot_coordinates(
-            lons, lats, color=color, marker=marker, markersize=markersize, legend=legend, **kwargs
+            lons,
+            lats,
+            color=color,
+            marker=marker,
+            markersize=markersize,
+            legend=legend,
+            **kwargs,
         )
 
         if "title" in kwargs:

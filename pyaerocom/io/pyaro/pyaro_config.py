@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from importlib import resources
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, Any
 
 import yaml
 from pydantic import BaseModel, ConfigDict
@@ -12,7 +12,10 @@ import pyaerocom as pya
 
 logger = logging.getLogger(__name__)
 
+
 # TODO Check a validator if extra/kwarg is serializable. Either in json_repr or as a @field_validator on extra
+
+FilterArgs = dict[str, Any]
 
 
 class PyaroConfig(BaseModel):
@@ -27,10 +30,11 @@ class PyaroConfig(BaseModel):
     ##########################
 
     name: str
-    data_id: str
-    filename_or_obj_or_url: str
-    filters: dict[str, dict[str, list[str]] | dict[str, list[tuple]]]
+    reader_id: str
+    filename_or_obj_or_url: str | list[str] | Path | list[Path]
+    filters: dict[str, FilterArgs]
     name_map: dict[str, str] | None = None  # no Unit conversion option
+    post_processing: list[str] | None = None  # List of variables to add through post-processing
 
     ##########################
     #   Save and load methods

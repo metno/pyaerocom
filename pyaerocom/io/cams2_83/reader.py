@@ -32,7 +32,7 @@ AEROCOM_NAMES = dict(
 )
 
 FULL_NAMES = dict(
-    co_conc="mass_concentration_of_carbon_monoxide_in_air",
+    co_conc="Carbon Monoxide",
     no2_conc="Nitrogen Dioxide",
     o3_conc="Ozone",
     pm10_conc="PM10 Aerosol",
@@ -41,7 +41,7 @@ FULL_NAMES = dict(
 )
 
 STANDARD_NAMES = dict(
-    co_conc="Carbon Monoxide",
+    co_conc="mass_concentration_of_carbon_monoxide_in_air",
     no2_conc="mass_concentration_of_nitrogen_dioxide_in_air",
     o3_conc="mass_concentration_of_ozone_in_air",
     pm10_conc="mass_concentration_of_pm10_ambient_aerosol_in_air",
@@ -200,7 +200,7 @@ def check_files(paths: list[Path]) -> list[Path]:
 
     for p in tqdm(paths, disable=None):
         try:
-            with xr.open_dataset(p) as ds:
+            with xr.open_dataset(p, decode_timedelta=True) as ds:
                 if len(ds.time.data) < 2:
                     logger.warning(f"To few timestamps in {p}. Skipping file")
                     continue
@@ -219,7 +219,7 @@ def check_files(paths: list[Path]) -> list[Path]:
 
 
 class ReadCAMS2_83(GriddedReader):
-    FREQ_CODES = dict(hour="hourly", day="daily", month="monthly", fullrun="yearly")
+    FREQ_CODES = dict(hour="hourly")
     REVERSE_FREQ_CODES = {val: key for key, val in FREQ_CODES.items()}
 
     def __init__(

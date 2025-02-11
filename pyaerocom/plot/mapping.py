@@ -1,3 +1,4 @@
+import warnings
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +21,9 @@ from pyaerocom.plot.helpers import (
 )
 from pyaerocom.region import Region
 
-MPL_PARAMS = custom_mpl()
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning, module="pyaerocom")
+    MPL_PARAMS = custom_mpl()
 
 
 def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
@@ -41,6 +44,11 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     -------
     colormap
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     if color_theme is None:
         color_theme = COLOR_THEME
     if vmin is not None and vmax is not None and vmin < 0 and vmax > 0:
@@ -68,6 +76,10 @@ def set_map_ticks(ax, xticks=None, yticks=None):
     cartopy.GeoAxes
         modified axes instance
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
     lonleft, lonright = ax.get_xlim()
     digits = 2 - exponent(lonleft)
     digits = 0 if digits < 0 else digits
@@ -154,7 +166,10 @@ def init_map(
     ax : cartopy.mpl.geoaxes.GeoAxes
         axes instance
     """
-
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
     if projection is None:
         projection = ccrs.PlateCarree()
     elif isinstance(projection, str):
@@ -276,6 +291,10 @@ def plot_griddeddata_on_map(
         ``fig.axes[0]`` to access the map axes instance (e.g. to modify the
         title or lon / lat range, etc.)
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
     if color_theme is None:
         color_theme = COLOR_THEME
     if add_cbar:
@@ -446,6 +465,10 @@ def plot_map_aerocom(data, region, **kwargs):
         valid region ID or region
 
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
     from pyaerocom import GriddedData
 
     if not isinstance(data, GriddedData):
@@ -568,6 +591,10 @@ def plot_nmb_map_colocateddata(
     -------
     GeoAxes
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
     if cbar_extend is None:
         cbar_extend = "both"
     if cbar_orientation is None:

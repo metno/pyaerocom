@@ -8,6 +8,7 @@ from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.helpers import delete_dummy_model, make_dummy_model
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
+from pyaerocom.aeroval.bulkfraction_engine import BulkFractionEngine
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             logger.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
-        if ocfg["is_superobs"]:
+        if ocfg.is_superobs:
             try:
                 engine = SuperObsEngine(self.cfg)
                 engine.run(
@@ -47,29 +48,33 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                 if self.raise_exceptions:
                     raise
                 logger.warning("failed to process superobs...")
-        elif ocfg["only_superobs"]:
+        elif ocfg.only_superobs:
             logger.info(
                 f"Skipping json processing of {obs_name}, as this is "
                 f"marked to be used only as part of a superobs "
                 f"network"
             )
-        elif ocfg["only_json"]:
-            if not ocfg["coldata_dir"]:
+        elif ocfg.only_json:
+            if not ocfg.coldata_dir:
                 raise Exception(
                     "No coldata_dir provided for an obs network for which only_json=True. The assumption of setting only_json=True is that colocated files already exist, and so a directory for these files must be provided."
                 )
             else:
-                preprocessed_coldata_dir = ocfg["coldata_dir"]
+                preprocessed_coldata_dir = ocfg.coldata_dir
                 mask = f"{preprocessed_coldata_dir}/{model_name}/*.nc"
                 files_to_convert = glob.glob(mask)
                 engine = ColdataToJsonEngine(self.cfg)
                 engine.run(files_to_convert)
 
+        elif ocfg.is_bulk:
+            engine = BulkFractionEngine(self.cfg)
+            engine.run(var_list, model_name, obs_name)
+
         else:
             # If a var_list is given, only run on the obs networks which contain that variable
             if var_list:
                 var_list_asked = var_list
-                obs_vars = ocfg["obs_vars"]
+                obs_vars = ocfg.obs_vars
                 var_list = list(set(obs_vars) & set(var_list))
                 if not var_list:
                     logger.warning(
@@ -132,25 +137,30 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         self.cfg._check_time_config()
 
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
-        if not self.cfg.model_cfg:
+        model_list = self.cfg.model_cfg.keylist(model_name)
+        if not model_list:
             logger.info("No model found, will make dummy model data")
-            self.cfg.webdisp_opts.hide_charts = ["scatterplot"]
-            self.cfg.webdisp_opts.pages = ["evaluation", "infos"]
+            self.cfg.webdisp_opts.hide_charts = ("scatterplot",)
+            self.cfg.webdisp_opts.pages = ("evaluation", "infos")
             model_id = make_dummy_model(obs_list, self.cfg)
+            model_list.append("dummy")  # Adds the dummy model to model list after adding it to cfg
             self.cfg.processing_opts.obs_only = True
             use_dummy_model = True
         else:
             model_id = None
             use_dummy_model = False
 
-        model_list = self.cfg.model_cfg.keylist(model_name)
-
         logger.info("Start processing")
 
-        # compute model maps (completely independent of obs-eval
-        # processing below)
+        # compute model maps (completely independent of obs-eval processing below)
         if self.cfg.webdisp_opts.add_model_maps:
             engine = ModelMapsEngine(self.cfg)
+
+            if isinstance(
+                self.cfg.modelmaps_opts.plot_types, dict
+            ):  # There may be additional obs networks to compute "model" maps for
+                model_list = list(set(model_list) and set(self.cfg.modelmaps_opts.plot_types))
+
             engine.run(model_list=model_list, var_list=var_list)
 
         if not self.cfg.processing_opts.only_model_maps:

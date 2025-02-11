@@ -52,10 +52,10 @@ def main():
     )
     # parser.add_argument("--codadef", help="set path of CODA_DEFINITION env variable",
     #                     default='/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/')
-    parser.add_argument("--latmin", help="min latitude to return", default=np.float_(30.0))
-    parser.add_argument("--latmax", help="max latitude to return", default=np.float_(76.0))
-    parser.add_argument("--lonmin", help="min longitude to return", default=np.float_(-30.0))
-    parser.add_argument("--lonmax", help="max longitude to return", default=np.float_(45.0))
+    parser.add_argument("--latmin", help="min latitude to return", default=np.float64(30.0))
+    parser.add_argument("--latmax", help="max latitude to return", default=np.float64(76.0))
+    parser.add_argument("--lonmin", help="min longitude to return", default=np.float64(-30.0))
+    parser.add_argument("--lonmax", help="max longitude to return", default=np.float64(45.0))
     parser.add_argument(
         "--dir",
         help="work on all files below this directory",
@@ -152,16 +152,16 @@ def main():
         options["tempdir"] = args.tempdir
 
     if args.latmin:
-        options["latmin"] = np.float_(args.latmin)
+        options["latmin"] = np.float64(args.latmin)
 
     if args.latmax:
-        options["latmax"] = np.float_(args.latmax)
+        options["latmax"] = np.float64(args.latmax)
 
     if args.lonmin:
-        options["lonmin"] = np.float_(args.lonmin)
+        options["lonmin"] = np.float64(args.lonmin)
 
     if args.lonmax:
-        options["lonmax"] = np.float_(args.lonmax)
+        options["lonmax"] = np.float64(args.lonmax)
 
     if args.emep:
         options["emepflag"] = args.emep

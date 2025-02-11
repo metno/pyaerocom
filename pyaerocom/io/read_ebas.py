@@ -25,6 +25,7 @@ from pyaerocom.aux_var_helpers import (
     compute_wetoxs_from_concprcpoxst,
     compute_wetrdn_from_concprcprdn,
     compute_wetso4_from_concprcpso4,
+    compute_wetrdnpr_from_concprcprdn,
     concx_to_vmrx,
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
@@ -292,6 +293,8 @@ class ReadEbas(ReadUngriddedBase):
         "proxyweto3": ["vmro3"],
         "proxywetpm10": ["concprcpoxs", "pr"],
         "proxywetpm25": ["concprcpoxs", "pr"],
+        # Testing
+        "wetrdnpr": ["pr"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -364,6 +367,8 @@ class ReadEbas(ReadUngriddedBase):
         "proxyweto3": make_proxy_wetdep_from_O3,
         "proxywetpm10": compute_wetoxs_from_concprcpoxs,
         "proxywetpm25": compute_wetoxs_from_concprcpoxs,
+        # Testing
+        "wetrdnpr": compute_wetrdnpr_from_concprcprdn,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid
@@ -1741,7 +1746,12 @@ class ReadEbas(ReadUngriddedBase):
         return vars_to_retrieve + add
 
     def read(
-        self, vars_to_retrieve=None, first_file=None, last_file=None, files=None, **constraints
+        self,
+        vars_to_retrieve=None,
+        first_file=None,
+        last_file=None,
+        files=None,
+        **constraints,
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 

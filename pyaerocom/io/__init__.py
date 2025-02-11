@@ -11,7 +11,7 @@ from .ebas_file_index import EbasFileIndex, EbasSQLRequest
 
 # low level EBAS I/O routines
 from .ebas_nasa_ames import EbasNasaAmesFile
-from .fileconventions import FileConventionRead
+from .file_conventions import FileConventionRead
 from .read_aasetal import ReadAasEtal
 
 # read base classes

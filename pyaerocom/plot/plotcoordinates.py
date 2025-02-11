@@ -1,3 +1,4 @@
+import warnings
 import cartopy
 
 from pyaerocom.plot.mapping import init_map
@@ -46,6 +47,11 @@ def plot_coordinates(
     GeoAxes
 
     """
+    warnings.warn(
+        "matplotlib based plotting is no longer directly supported. This function may be removed in future versions.",
+        DeprecationWarning,
+    )
+
     if xlim is None:
         xlim = (-180, 180)
     if ylim is None:

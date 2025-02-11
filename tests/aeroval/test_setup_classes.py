@@ -5,8 +5,8 @@ from typing import Literal
 import pytest
 
 from pyaerocom.aeroval import EvalSetup
-from pyaerocom.exceptions import EvalEntryNameError
-from tests.fixtures.aeroval.cfg_test_exp1 import CFG, MODELS, OBS_GROUNDBASED
+from tests.fixtures.aeroval.cfg_test_exp1 import CFG
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR
 
 
 @pytest.fixture
@@ -29,36 +29,6 @@ default_config = pytest.mark.parametrize("update", (pytest.param(None, id="defau
 @default_config
 def test_EvalSetup(cfg_exp1: dict):
     assert EvalSetup(**cfg_exp1) == EvalSetup.model_validate(cfg_exp1)
-
-
-@pytest.mark.parametrize(
-    "update,error",
-    [
-        pytest.param(
-            dict(model_cfg=dict(WRONG_MODEL=MODELS["TM5-AP3-CTRL"])),
-            "Invalid name: WRONG_MODEL",
-            id="model_cfg",
-        ),
-        pytest.param(
-            dict(obs_cfg=dict(WRONG_OBS=OBS_GROUNDBASED["AERONET-Sun"])),
-            "Invalid name: WRONG_OBS",
-            id="obs_cfg",
-        ),
-        pytest.param(
-            dict(obs_cfg=dict(OBS=dict(web_interface_name="WRONG_OBS"))),
-            "Invalid name: WRONG_OBS",
-            id="web_interface_name",
-        ),
-    ],
-)
-def test_EvalSetup_INVALID_ENTRY_NAMES(cfg_exp1: dict, error: str):
-    with pytest.raises(EvalEntryNameError) as e:
-        EvalSetup(**cfg_exp1)
-    assert error in str(e.value)
-
-    with pytest.raises(EvalEntryNameError) as e:
-        EvalSetup.model_validate(cfg_exp1)
-    assert error in str(e.value)
 
 
 @pytest.mark.parametrize(
@@ -156,19 +126,19 @@ def test_EvalSetup__check_time_config(
     "update",
     (
         pytest.param(None, id="defaults"),
-        pytest.param(dict(maps_freq="yearly", maps_res_deg=10), id="custom"),
+        pytest.param(dict(maps_freq="yearly"), id="custom"),
     ),
 )
 def test_EvalSetup_ModelMapsSetup(eval_setup: EvalSetup, cfg_exp1: dict, update: dict):
     modelmaps_opts = eval_setup.modelmaps_opts
     if update:
         assert modelmaps_opts.maps_freq == cfg_exp1["maps_freq"] == update["maps_freq"]
-        assert modelmaps_opts.maps_res_deg == cfg_exp1["maps_res_deg"] == update["maps_res_deg"]
     else:  # defaults
         assert "maps_freq" not in cfg_exp1
         assert modelmaps_opts.maps_freq == "coarsest"
         assert "maps_res_deg" not in cfg_exp1
-        assert modelmaps_opts.maps_res_deg == 5
+        assert modelmaps_opts.plot_types == {CONTOUR}
+        assert modelmaps_opts.overlay_save_format == "webp"
 
 
 @pytest.mark.parametrize(

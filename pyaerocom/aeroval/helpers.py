@@ -2,6 +2,8 @@ import logging
 import os
 from pathlib import Path
 
+from pydantic import BaseModel
+
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.griddeddata import GriddedData
@@ -160,7 +162,7 @@ def make_dummy_model(obs_list: list, cfg) -> str:
     tmp_var_obj = Variable()
     # Loops over variables in obs
     for obs in obs_list:
-        for var in cfg.obs_cfg[obs]["obs_vars"]:
+        for var in cfg.obs_cfg.get_entry(obs).obs_vars:
             # Create dummy cube
 
             dummy_cube = make_dummy_cube(var, start_yr=start, stop_yr=stop, freq=freq)
@@ -183,13 +185,13 @@ def make_dummy_model(obs_list: list, cfg) -> str:
             for dummy_grid_yr in yr_gen:
                 # Add to netcdf
                 yr = dummy_grid_yr.years_avail()[0]
-                vert_code = cfg.obs_cfg[obs]["obs_vert_type"]
+                vert_code = cfg.obs_cfg.get_entry(obs).obs_vert_type
 
                 save_name = dummy_grid_yr.aerocom_savename(model_id, var, vert_code, yr, freq)
                 dummy_grid_yr.to_netcdf(outdir, savename=save_name)
 
     # Add dummy model to cfg
-    cfg.model_cfg["dummy"] = ModelEntry(model_id="dummy_model")
+    cfg.model_cfg.add_entry("dummy", ModelEntry(model_id="dummy_model", model_data_dir=outdir))
 
     return model_id
 
@@ -202,3 +204,10 @@ def delete_dummy_model(model_id: str) -> None:
     for path in renamed.glob("*.nc"):
         print(f"Deleting dummy model {path}")
         path.unlink()
+
+
+class BoundingBox(BaseModel):
+    west: float
+    east: float
+    south: float
+    north: float

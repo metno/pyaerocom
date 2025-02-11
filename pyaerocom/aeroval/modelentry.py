@@ -1,12 +1,12 @@
-import inspect
+# import inspect
 from copy import deepcopy
 
-from pyaerocom._lowlevel_helpers import BrowseDict, DictStrKeysListVals, DictType, StrType
+from pydantic import BaseModel, ConfigDict
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
 
 
-class ModelEntry(BrowseDict):
-    """Modeln configuration for evaluation (dictionary)
+class ModelEntry(BaseModel):
+    """Model configuration for evaluation (BaseModel)
 
     Note
     ----model_read_aux
@@ -42,23 +42,24 @@ class ModelEntry(BrowseDict):
         and returns var)
     """
 
-    model_id = StrType()
-    model_use_vars = DictType()
-    model_add_vars = DictStrKeysListVals()
-    model_read_aux = DictType()
-    model_rename_vars = DictType()
+    ##   Pydantic ConfigDict
+    model_config = ConfigDict(
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
-    def __init__(self, model_id, **kwargs):
-        self.model_id = model_id
-        self.model_ts_type_read = ""
-        self.model_use_vars = {}
-        self.model_add_vars = {}
-        self.model_rename_vars = {}
-        self.model_read_aux = {}
-
-        self.kwargs = kwargs
-
-        self.update(**kwargs)
+    model_id: str
+    model_ts_type_read: str | dict | None = ""  # TODO: see if can make None
+    model_name: str | None = None
+    model_use_vars: dict = {}
+    model_add_vars: dict[str, tuple[str, ...]] = {}
+    model_read_aux: dict = {}
+    model_rename_vars: dict = {}
+    flex_ts_type: bool = True
+    model_data_dir: str | None = None
+    # attributes previously given as kwargs used in CAMS2_83
+    gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
+    model_kwargs: dict = {}
 
     @property
     def aux_funs_required(self):
@@ -68,27 +69,16 @@ class ModelEntry(BrowseDict):
         return True if bool(self.model_read_aux) else False
 
     def json_repr(self) -> dict:
-        sup_rep = super().json_repr()
+        return self.model_dump()
 
-        # a little hacky, but makes the cams2-82 configs work
-        try:
-            for key in sup_rep["model_read_aux"]:
-                sup_rep["model_read_aux"][key]["fun"] = inspect.getsource(
-                    deepcopy(sup_rep["model_read_aux"][key]["fun"])
-                )
-        except TypeError:
-            pass
-
-        return sup_rep
-
-    def get_vars_to_process(self, obs_vars: list) -> tuple:
+    def get_vars_to_process(self, obs_vars: tuple) -> tuple:
         """
         Get lists of obs / mod variables to be processed
 
         Parameters
         ----------
-        obs_vars : list
-            list of observation variables
+        obs_vars : tuple
+            tuple of observation variables
 
         Returns
         -------
@@ -109,12 +99,6 @@ class ModelEntry(BrowseDict):
                 modout.append(obsvar)
 
         for ovar, mvars in self.model_add_vars.items():
-            if not isinstance(mvars, list):
-                raise AttributeError(
-                    f"values of model_add_vars need to be lists, even if "
-                    f"only single variables are to be added: "
-                    f"{self.model_add_vars}"
-                )
             for mvar in mvars:
                 obsout.append(ovar)
                 modout.append(mvar)
@@ -134,7 +118,7 @@ class ModelEntry(BrowseDict):
     def prep_dict_analysis(self, funs=None) -> dict:
         if funs is None:
             funs = {}
-        output = deepcopy(self.to_dict())
+        output = deepcopy(self.model_dump())
         if self.aux_funs_required:
             output["model_read_aux"].update(self._get_aux_funcs_setup(funs))
         return output

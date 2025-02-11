@@ -112,16 +112,16 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
 
-    CONV_FACTOR["concSso2"] = np.float_(0.50052292274792)
-    CONV_FACTOR["concNno2"] = np.float_(0.3044517868011477)
-    CONV_FACTOR["concNno"] = np.float_(0.466788868521913)
-    CONV_FACTOR["vmro3"] = np.float_(
+    CONV_FACTOR["concSso2"] = np.float64(0.50052292274792)
+    CONV_FACTOR["concNno2"] = np.float64(0.3044517868011477)
+    CONV_FACTOR["concNno"] = np.float64(0.466788868521913)
+    CONV_FACTOR["vmro3"] = np.float64(
         0.493
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
-    CONV_FACTOR["vmro3max"] = np.float_(
+    CONV_FACTOR["vmro3max"] = np.float64(
         0.493
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
-    CONV_FACTOR["vmrno2"] = np.float_(
+    CONV_FACTOR["vmrno2"] = np.float64(
         0.514
     )  # retrieved using STD atmosphere from geonum and pya.mathutils.concx_to_vmrx
 
@@ -315,7 +315,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             if idx in time_indexes:
                 data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ, dtype="datetime64[s]")
             else:
-                data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ, dtype=np.float_)
+                data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ, dtype=np.float64)
 
         # read the data...
         # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
@@ -353,7 +353,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     # data is not a time
                     # sometimes there's no value in the file. Set that to nan
                     try:
-                        data_dict[header[idx]][lineidx] = np.float_(rows[idx])
+                        data_dict[header[idx]][lineidx] = np.float64(rows[idx])
                     except (ValueError, IndexError):
                         data_dict[header[idx]][lineidx] = np.nan
 

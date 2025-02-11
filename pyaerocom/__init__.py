@@ -6,6 +6,18 @@ from ._warnings import ignore_basemap_warning, ignore_earth_radius_warning
 
 __version__ = metadata.version(__package__)
 
+import iris
+
+# Enable new iris functionality to suppress deprecation warning.
+# https://scitools-iris.readthedocs.io/en/latest/generated/api/iris.html#iris.FUTURE
+iris.FUTURE.save_split_attrs = True
+
+try:
+    iris.FUTURE.date_microseconds = True
+except AttributeError:
+    # Old iris version that doesn't support this override. Use old behaviour.
+    pass
+
 from .config import Config
 
 # Instantiate default configuration
