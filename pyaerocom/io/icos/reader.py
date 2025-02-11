@@ -10,7 +10,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.io.cnemc.reader import ReadCNEMC
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 logger = logging.getLogger(__name__)
 

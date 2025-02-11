@@ -19,7 +19,7 @@ from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 logger = logging.getLogger(__name__)
 

@@ -14,7 +14,7 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.time_config import TS_TYPES
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 logger = logging.getLogger(__name__)
 

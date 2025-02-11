@@ -15,7 +15,7 @@ from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.postprocess import PostProcessingReader
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 logger = logging.getLogger(__name__)
 

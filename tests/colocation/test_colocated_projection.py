@@ -3,7 +3,7 @@ from pytest import approx
 from pyaerocom.colocation.colocation_utils import colocate_gridded_ungridded
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 from tests.fixtures.data_access import TEST_DATA
 from tests.fixtures.stations import create_fake_station_data
 

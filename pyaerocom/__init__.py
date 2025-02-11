@@ -42,7 +42,7 @@ from . import region
 # from . import vert_coords
 from . import stationdata
 from . import griddeddata
-from . import ungriddeddata
+from . import ungriddeddata_meta
 from . import colocation
 from . import var_groups
 from . import combine_vardata_ungridded
@@ -57,7 +57,7 @@ from .region import Region
 from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
-from .ungriddeddata import UngriddedData
+from .ungriddeddata_meta import UngriddedData
 from .colocation.colocated_data import ColocatedData
 from .colocation.colocator import Colocator
 from .colocation.colocation_setup import ColocationSetup

@@ -1,7 +1,7 @@
 import pytest
 
 from pyaerocom.io import ReadAeronetSdaV3, ReadAeronetSunV3
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 
 @pytest.fixture(scope="session")

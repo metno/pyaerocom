@@ -15,7 +15,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 from tests.conftest import TEST_RTOL
 from tests.fixtures.stations import FAKE_STATION_DATA
 

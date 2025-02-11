@@ -8,7 +8,7 @@ import pandas as pd
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 
 class ReadGAW(ReadUngriddedBase):

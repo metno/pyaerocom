@@ -13,7 +13,7 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 from .additional_variables import vmr_to_ghost_stations
 from .meta_keys import ghost_meta_keys

@@ -13,7 +13,7 @@ from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io.icpforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 
 logger = logging.getLogger(__name__)
 

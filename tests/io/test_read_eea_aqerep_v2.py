@@ -2,7 +2,7 @@ import pytest
 
 from pyaerocom.io import ReadEEAAQEREP_V2
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_meta import UngriddedData
 from tests.conftest import TEST_RTOL, lustre_avail
 
 # Subset data id used for testing.
