@@ -1,11 +1,13 @@
-from copy import deepcopy
+import os
 import pathlib
+from copy import deepcopy
+
 import pytest
 
-from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
-from pyaerocom.aeroval import EvalSetup
-from pyaerocom.exceptions import ModelVarNotAvailable
 from pyaerocom import GriddedData
+from pyaerocom.aeroval import EvalSetup
+from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
+from pyaerocom.exceptions import ModelVarNotAvailable
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG
 
 
@@ -34,11 +36,13 @@ def test__run(caplog, cfg: dict):
     assert "no data for model TM5-AP3-CTRL, skipping" in caplog.text
 
 
-def test__run_working(caplog, cfg: dict):
+def test__run_working(cfg: dict):
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
-    files = engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
-    assert any([f.endswith("data/test/exp1/contour/od550aer_TM5-AP3-CTRL.geojson") for f in files])
+    engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
+    assert os.path.exists(
+        f"{stp.path_manager.get_json_output_dirs()["contour"]}/od550aer_TM5-AP3-CTRL/"
+    )
 
 
 @pytest.mark.parametrize(
@@ -100,4 +104,6 @@ def test__read_model_data(cfg: dict):
 
     data = engine._read_model_data(model_name, var_name)
 
+    assert isinstance(data, GriddedData)
+    assert isinstance(data, GriddedData)
     assert isinstance(data, GriddedData)
