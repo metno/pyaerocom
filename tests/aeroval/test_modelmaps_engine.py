@@ -105,5 +105,3 @@ def test__read_model_data(cfg: dict):
     data = engine._read_model_data(model_name, var_name)
 
     assert isinstance(data, GriddedData)
-    assert isinstance(data, GriddedData)
-    assert isinstance(data, GriddedData)
