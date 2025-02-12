@@ -175,7 +175,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         try:
             data = self._read_model_data(model_name, var)
         except Exception as e:
-            raise VarNotAvailableError(
+            raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
             )
 
