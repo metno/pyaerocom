@@ -40,9 +40,8 @@ def test__run_working(cfg: dict):
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
     engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
-    assert os.path.exists(
-        f"{stp.path_manager.get_json_output_dirs()["contour"]}/od550aer_TM5-AP3-CTRL/"
-    )
+    outdirbase = stp.path_manager.get_json_output_dirs()["contour"]
+    assert os.path.exists(f"{outdirbase}/od550aer_TM5-AP3-CTRL/")
 
 
 @pytest.mark.parametrize(
