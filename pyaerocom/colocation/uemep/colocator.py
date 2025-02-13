@@ -8,6 +8,10 @@ from pyaerocom.io.readungridded import ReadUngridded
 import pyaerocom
 import time
 import pandas as pd
+import cf_units
+
+from pyaerocom.units_helpers import get_unit_conversion_fac
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +27,9 @@ class UEMEPColocator:
 
     def __init__(
         self,
-        uemep_station_data: os.PathLike,
+        uemep_station_data: os.PathLike | str,
         *,
-        obs: dict[str, str],
+        obs: dict[str, str] | list[str],
         var_names: list[str] | None = None,
         out_dir: os.PathLike | None = None,
     ):
@@ -34,6 +38,8 @@ class UEMEPColocator:
         :param var_names: List of aerocom variable names to colocate.
         :param obs: Either list of obs_ids passed to ReadUngridded, or dict with mapping
         of identifier to obs_id passed to ReadUngridded.
+        :param out_dir: Path to output directory where colocated data objects will be stored.
+        Defaults to '.'.
         """
         uemep_station_data = pathlib.Path(uemep_station_data)
 
@@ -94,6 +100,7 @@ class UEMEPColocator:
         logger.info("Using uemep variable '%s' for aerocom variable '%s'", uemep_name, var)
 
         uemep_data = self.uemep_station_data[uemep_name].swap_dims({"station_id": "station_name"})
+        model_unit = cf_units.Unit(uemep_data.attrs["units"])
         uemep_data = uemep_data.assign_coords(
             {"station_name": uemep_data.station_name.astype(str)}
         ).assign_coords({"time": uemep_data.time + pd.Timedelta(minutes=30)})
@@ -126,18 +133,25 @@ class UEMEPColocator:
                 )
                 continue
 
-            for s in station_ids:
+            for s in station_ids:  # Remove timeseries for stations not present in model data.
                 if s not in sdata.keys():
                     uemep_data = uemep_data.drop(s, dim="station_name")
-            darrays = [
-                xr.DataArray(
-                    (ts := station.to_timeseries(var).loc[start_date:end_date]),
-                    dims=["time"],
-                    coords={"time": ts.index},
-                    name=var,
+
+            darrays = []
+            for station in sdata.values():
+                ts = station.to_timeseries(var).loc[start_date:end_date]
+                unit = cf_units.Unit(station.var_info[var]["units"])
+
+                conversion_factor = get_unit_conversion_fac(unit, model_unit)
+                if conversion_factor != 1:
+                    logger.info(
+                        f"Transforming timeseries from '{unit}' to '{model_unit}' using conversion factor {float(conversion_factor):.2}."
+                    )
+                    ts *= conversion_factor
+
+                darrays.append(
+                    xr.DataArray(ts, dims=["time"], coords={"time": ts.index}, name=var)
                 )
-                for _, station in sdata.items()
-            ]
 
             combined = xr.concat(
                 darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name")
@@ -162,7 +176,7 @@ class UEMEPColocator:
                 "var_units": [
                     uemep_data.attrs["units"],
                     uemep_data.attrs["units"],
-                ],  # TODO: BREAKS not same unit...
+                ],
                 "data_level": 3,  # ?
                 "revision_ref": "20250128",  # ?
                 "from_files": [],  # ?
@@ -190,3 +204,15 @@ class UEMEPColocator:
             self._run_single_variable(var)
 
         logger.info("Finished.")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
+    colocator = UEMEPColocator(
+        uemep_station_data=pathlib.Path(
+            "/lustre/storeB/project/fou/kl/emep/ModelRuns/uEMEP/uEMEP_norway/rerun/2023/stations"
+        ),
+        obs=["EBASMC"],
+        var_names=["conco3"],
+    )
+    colocator.run()

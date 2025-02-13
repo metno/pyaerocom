@@ -137,7 +137,7 @@ def validate_structure(data: xr.DataArray) -> None:
             else:
                 assert False  # Should not happen.
 
-            AttributeError(msg)
+            raise AttributeError(msg)
 
     duplicates = [k for k, v in Counter(data.station_name.values).items() if v > 1]
     if len(duplicates) > 0:
