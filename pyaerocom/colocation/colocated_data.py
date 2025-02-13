@@ -131,9 +131,9 @@ def validate_structure(data: xr.DataArray) -> None:
 
         if not any([k in data.attrs for k in key]):
             if len(key) == 1:
-                msg = "Colocated data is missing key '{key}' required in metadata."
+                msg = f"Colocated data is missing key '{key}' required in metadata."
             elif len(key) > 1:
-                msg = "Colocated data is missing one of the following keys: '{key}'. Please any one of them and try again."
+                msg = f"Colocated data is missing one of the following keys: '{key}'. Please any one of them and try again."
             else:
                 assert False  # Should not happen.
 
