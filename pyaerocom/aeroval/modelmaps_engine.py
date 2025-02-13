@@ -63,8 +63,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             self._get_maps_freq()
         )  # if needed, reassign "coarsest" to actual coarsest frequency
 
-        return
-
     def _get_vars_to_process(self, model_name, var_list):
         mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
             self.cfg.obs_cfg.get_all_vars()
