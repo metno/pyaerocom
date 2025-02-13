@@ -36,6 +36,32 @@ def test__run(caplog, cfg: dict):
     assert "no data for model TM5-AP3-CTRL, skipping" in caplog.text
 
 
+def test__run_reanalysefalse(tmp_path, caplog, cfg: dict):
+    cfg["reanalyse_existing"] = False
+    cfg["ts_type"] = "daily"
+    cfg["periods"] = ["20100615"]
+    cfg["main_freq"] = "daily"
+
+    # create expected geojson output file (empty, reanalyse_existing does not check for content, only existence)
+    json_basedir = tmp_path / "data"
+    output_file = (
+        json_basedir
+        / "test/exp1/contour/od550aer_TM5-AP3-CTRL/od550aer_TM5-AP3-CTRL_1277942400000.geojson"
+    )
+    output_file.mkdir(parents=True)
+    output_file.touch()
+    cfg["json_basedir"] = json_basedir
+
+    stp = EvalSetup(**cfg)
+    # breakpoint()
+    engine = ModelMapsEngine(stp)
+    engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
+    assert (
+        f"Skipping contour processing of od550aer_TM5-AP3-CTRL: data already exists ['{output_file}']"
+        in caplog.text
+    )
+
+
 def test__run_working(cfg: dict):
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
