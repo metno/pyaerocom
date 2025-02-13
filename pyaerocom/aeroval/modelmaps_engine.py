@@ -53,12 +53,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         model_list, var_list = self._get_run_kwargs(**kwargs)
 
         for model in model_list:
-            success = True
             try:
                 self._run_model(model, var_list)
             except VarNotAvailableError:
-                success = False
-            if not success:
                 logger.warning(f"no data for model {model}, skipping")
                 continue
 
@@ -227,7 +224,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     model_name,
                     timestep=time,
                 )
-        return
 
     def _process_overlay_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """Process overlay map (pixels) for either model or obserations
@@ -315,7 +311,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     write_var_name,
                     date,
                 )
-        return
 
     def _get_maps_freq(self) -> TsType:
         """

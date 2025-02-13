@@ -2,6 +2,7 @@ import os
 import pathlib
 from copy import deepcopy
 
+import aerovaldb
 import pytest
 
 from pyaerocom import GriddedData
@@ -45,23 +46,18 @@ def test__run_reanalysefalse(tmp_path, caplog, cfg: dict):
     cfg["periods"] = ["20100615"]
     cfg["main_freq"] = "daily"
 
+    json_basedir = tmp_path / "data"
+    cfg["json_basedir"] = json_basedir
     # create expected geojson output file (empty file is ok:
     # in the case reanalyse_existing=False content is not checked, only existence)
-    json_basedir = tmp_path / "data"
-    output_file = (
-        json_basedir
-        / "test/exp1/contour/od550aer_TM5-AP3-CTRL/od550aer_TM5-AP3-CTRL_1277942400000.geojson"
-    )
-    output_file.mkdir(parents=True)
-    output_file.touch()
-    cfg["json_basedir"] = json_basedir
+    with aerovaldb.open(f"json_files:{json_basedir}") as db:
+        db.put_contour("", "test", "exp1", "od550aer", "TM5-AP3-CTRL", timestep="1277942400000")
 
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
     engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
     assert (
-        f"Skipping contour processing of od550aer_TM5-AP3-CTRL: data already exists ['{output_file}']"
-        in caplog.text
+        "Skipping contour processing of od550aer_TM5-AP3-CTRL: data already exists" in caplog.text
     )
 
 
