@@ -37,12 +37,16 @@ def test__run(caplog, cfg: dict):
 
 
 def test__run_reanalysefalse(tmp_path, caplog, cfg: dict):
+    """Test the case reanalyse_existing=False for plot type contour"""
+
     cfg["reanalyse_existing"] = False
+    # modify the config so to have just one output map geojson file, for simplicity
     cfg["ts_type"] = "daily"
     cfg["periods"] = ["20100615"]
     cfg["main_freq"] = "daily"
 
-    # create expected geojson output file (empty, reanalyse_existing does not check for content, only existence)
+    # create expected geojson output file (empty file is ok:
+    # in the case reanalyse_existing=False content is not checked, only existence)
     json_basedir = tmp_path / "data"
     output_file = (
         json_basedir
@@ -53,7 +57,6 @@ def test__run_reanalysefalse(tmp_path, caplog, cfg: dict):
     cfg["json_basedir"] = json_basedir
 
     stp = EvalSetup(**cfg)
-    # breakpoint()
     engine = ModelMapsEngine(stp)
     engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
     assert (
