@@ -123,6 +123,9 @@ class HasColocator(HasConfig):
 
             col_cfg["add_meta"].update(diurnal_only=self.cfg.get_obs_entry(obs_name).diurnal_only)
 
+        if col_cfg["model_use_climatology"]:
+            col_cfg["stop"] = None
+            
         col_stp = ColocationSetup(**col_cfg)
         col = Colocator(col_stp)
 

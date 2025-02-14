@@ -210,22 +210,22 @@ def test_Colocator_run_gridded_gridded(setup):
         (
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
-                model_use_climatology=False,
+                model_use_climatology=True,
                 obs_use_climatology=ClimatologyConfig(set_year=2010),
             ),
             "abs550aer",
             "od550aer",
-            (2, 12, 16),
-            0.262,#0.135,#0.123,
-            0.0135,#0.002,
+            (2, 12, 1),
+            0.135,#0.123,
+            0.002,
         ),
         (
-            dict(model_use_vars={"od550aer": "abs550aer"}, model_use_climatology=False),
+            dict(model_use_vars={"od550aer": "abs550aer"}, model_use_climatology=True),
             "abs550aer",
             "od550aer",
-            (2, 12, 11),
-            0.271,#0.159,
-            0.015,#0.002,
+            (2, 12, 1),
+            0.159,
+            0.002,
         ),
         (
             dict(
