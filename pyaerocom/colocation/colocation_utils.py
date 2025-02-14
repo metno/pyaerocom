@@ -530,8 +530,8 @@ def _colocate_site_data_helper_timecol(
     """
     if isinstance(use_climatology_ref, ClimatologyConfig):
         raise NotImplementedError(
-            "Using observation climatology in colocation with option "
-            "use_climatology_ref is not available yet ..."
+            "Using observation climatology in colocation with option colocate_time is not available yet"
+            
         )
 
     grid_tst = stat_data.get_var_ts_type(var)
@@ -971,7 +971,7 @@ def colocate_gridded_ungridded(
         "from_files": files,
         "from_files_ref": None,
         "colocate_time": colocate_time,
-        "obs_is_clim": use_climatology_ref,
+        "obs_is_clim": True if isinstance(use_climatology_ref, ClimatologyConfig) else False,
         "pyaerocom": pya_ver,
         "min_num_obs": min_num_obs,
         "resample_how": resample_how,

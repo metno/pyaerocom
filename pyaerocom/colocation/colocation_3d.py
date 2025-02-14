@@ -262,7 +262,7 @@ def _colocate_vertical_profile_gridded(
             "from_files": files,
             "from_files_ref": None,
             "colocate_time": colocate_time,
-            "obs_is_clim": use_climatology_ref,
+            "obs_is_clim": True if isinstance(use_climatology_ref, ClimatologyConfig) else False,
             "pyaerocom": pya_ver,
             "min_num_obs": min_num_obs,
             "resample_how": resample_how,
