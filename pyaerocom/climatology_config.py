@@ -1,6 +1,6 @@
-from pydantic import BaseModel, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ValidationError, model_validator
 
-from typing import Literal, Self
+from typing import Literal
 
 from pyaerocom import const
 
@@ -38,7 +38,7 @@ class ClimatologyConfig(BaseModel):
 
 
     @model_validator(mode='after')
-    def validate_set_year(self) -> Self:
+    def validate_set_year(self):
         if self.set_year is None:
             self.set_year = int((self.stop - self.start) // 2 + self.start) + 1
 

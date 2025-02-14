@@ -215,7 +215,7 @@ def test_Colocator_run_gridded_gridded(setup):
             "abs550aer",
             "od550aer",
             (2, 12, 1),
-            0.135#0.123,
+            0.135,#0.123,
             0.002,
         ),
         (
