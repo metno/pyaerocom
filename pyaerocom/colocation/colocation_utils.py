@@ -531,7 +531,6 @@ def _colocate_site_data_helper_timecol(
     if isinstance(use_climatology_ref, ClimatologyConfig):
         raise NotImplementedError(
             "Using observation climatology in colocation with option colocate_time is not available yet"
-            
         )
 
     grid_tst = stat_data.get_var_ts_type(var)

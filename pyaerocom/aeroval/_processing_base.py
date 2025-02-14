@@ -125,7 +125,7 @@ class HasColocator(HasConfig):
 
         if col_cfg["model_use_climatology"]:
             col_cfg["stop"] = None
-            
+
         col_stp = ColocationSetup(**col_cfg)
         col = Colocator(col_stp)
 
