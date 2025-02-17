@@ -9,6 +9,8 @@ import pyaerocom
 import time
 import pandas as pd
 import cf_units
+import datetime
+
 
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
@@ -27,8 +29,8 @@ class UEMEPColocator:
     resampling occurs.
     - Only works for EBAS data currently.
 
-    :param uemep_station_data : Path to folder containing uemep_station_data. Data must be
-    readable using xarray's open_mfdataset().
+    :param uemep_station_data : Path to folder containing uemep_station_data, or list of files. Files
+    must be readable using xarray's open_mfdataset().
     :param obs : dict or list with observations to be colocated against. If list, must be
     data_ids understood by ReadUngridded. If dict, must be a mapping from identifier to data_id
     understood by ReadUngridded. The identifier can be chosen freely and is only used for metadata
@@ -45,10 +47,10 @@ class UEMEPColocator:
 
     def __init__(
         self,
-        uemep_station_data: os.PathLike | str,
+        uemep_station_data: os.PathLike | str | list[os.PathLike | str],
         *,
         obs: dict[str, str] | list[str],
-        var_names: list[str] | None = None,
+        var_names: str | list[str] | None = None,
         out_dir: os.PathLike | None = None,
     ):
         """
@@ -59,10 +61,16 @@ class UEMEPColocator:
         :param out_dir: Path to output directory where colocated data objects will be stored.
         Defaults to '.'.
         """
-        uemep_station_data = pathlib.Path(uemep_station_data)
+        if isinstance(var_names, str):
+            var_names = [var_names]
 
-        logger.info("Looking for station data in '%s'.", uemep_station_data)
-        self._file_path = uemep_station_data
+        if not isinstance(uemep_station_data, list):
+            logger.info("Looking for station data in '%s'.", uemep_station_data)
+            self._file_path = list(pathlib.Path(uemep_station_data).glob("*.nc"))
+        else:
+            logger.info("Using the following files as station data: '%s'", uemep_station_data)
+            self._file_path = [pathlib.Path(p) for p in uemep_station_data]
+
         self._uemep_station_data = None
 
         if var_names is None:
@@ -100,9 +108,7 @@ class UEMEPColocator:
     def _load_station_data(self) -> None:
         logger.info("Reading uEMEP station data. This may take a while.")
         start_time = time.perf_counter()
-        with xr.open_mfdataset(
-            self._file_path.glob("*.nc"), engine="netcdf4", decode_timedelta=True
-        ) as dt:
+        with xr.open_mfdataset(self._file_path, engine="netcdf4", decode_timedelta=True) as dt:
             self._uemep_station_data = dt
         logger.info(f"Finished reading data in {time.perf_counter()-start_time:.3f} seconds.")
 
@@ -205,8 +211,8 @@ class UEMEPColocator:
                     uemep_data.attrs["units"],
                 ],
                 "data_level": 3,  # ?
-                "revision_ref": "20250128",  # ?
-                "from_files": [],  # ?
+                "revision_ref": datetime.datetime.strftime(datetime.date.today(), "%Y%m%d"),
+                "from_files": [str(p) for p in self._file_path],
                 "from_files_ref": [],
                 "colocate_time": 0,  # ?
                 "obs_is_clim": 0,
