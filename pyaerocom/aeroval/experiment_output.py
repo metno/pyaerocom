@@ -223,9 +223,7 @@ class ExperimentOutput(ProjectOutput):
                     }
                 }
                 self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
-            for uri in self.avdb.list_glob_stats(
-                self.proj_id, self.exp_id, access_type=aerovaldb.AccessType.URI
-            ):
+            for uri in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
                 data = self.avdb.get_by_uri(uri)
                 hm = {}
                 for vardisp, info in menu.items():
@@ -460,7 +458,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 # TODO: Hack to get uri. Ideally this should be rewritten to use URIs directly further
                 # up.
-                uri = self.avdb._get_uri_for_file(fp)
+                uri = self.avdb._get_query_entry_for_file(fp).uri
                 data = self.avdb.get_by_uri(uri)
             except Exception:
                 logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
