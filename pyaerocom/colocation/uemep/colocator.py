@@ -20,6 +20,24 @@ class UEMEPColocator:
     """
     Helper class for colcating uEMEP station data with observation
     data.
+
+    Limitations:
+
+    - Only colocates hourly model data with hourly obs data. No temporal
+    resampling occurs.
+    - Only works for EBAS data currently.
+
+    :param uemep_station_data : Path to folder containing uemep_station_data. Data must be
+    readable using xarray's open_mfdataset().
+    :param obs : dict or list with observations to be colocated against. If list, must be
+    data_ids understood by ReadUngridded. If dict, must be a mapping from identifier to data_id
+    understood by ReadUngridded. The identifier can be chosen freely and is only used for metadata
+    (which is shown on Aeroval).
+    :var_names : A list of variables. If not provided, all variables defined in uemep_variables.toml
+    will be tried.
+    :out_dir : Directory where colocated data objects will be written. Note that output will be one
+    file per variable/observation combination. Variables will be stored as files following aerocom
+    convention.
     """
 
     # Maps an aerocom variable name to it's equivalent uemep variable name.
@@ -121,7 +139,8 @@ class UEMEPColocator:
             sdata: dict[str, pyaerocom.stationdata.StationData] = {}
             stations = fobsdata.to_station_data_all()
             for _, station in zip(stations["station_name"], stations["stats"]):
-                if station.station_id not in station_ids:
+                ids = station.station_id.split(";")
+                if not any([id in station_ids for id in ids]):
                     logger.info("Station '%s' not found in uemep data. Skipping.")
                     continue
 
@@ -137,9 +156,14 @@ class UEMEPColocator:
                 if s not in sdata.keys():
                     uemep_data = uemep_data.drop(s, dim="station_name")
 
-            darrays = []
-            for station in sdata.values():
+            darrays: list[xr.DataArray] = []
+            sids = []
+            for sid, station in sdata.items():
                 ts = station.to_timeseries(var).loc[start_date:end_date]
+                if len(ts) == 0:
+                    logger.warning("Length of timeseries for '%s' is 0.", station.station_id)
+                    continue
+
                 unit = cf_units.Unit(station.var_info[var]["units"])
 
                 conversion_factor = get_unit_conversion_fac(unit, model_unit)
@@ -152,10 +176,13 @@ class UEMEPColocator:
                 darrays.append(
                     xr.DataArray(ts, dims=["time"], coords={"time": ts.index}, name=var)
                 )
+                sids.append(sid)
 
-            combined = xr.concat(
-                darrays, dim=pd.Index([x for x in sdata.keys()], name="station_name")
-            )
+            if len(darrays) == 0:
+                logger.error("No stations with data for the given time range.")
+                return
+
+            combined = xr.concat(darrays, dim=pd.Index(sids, name="station_name"))
             uemep_data = uemep_data.expand_dims(data_source=["uemep"])
             combined = combined.expand_dims(data_source=[obs_id])
             combined = combined.assign_coords(

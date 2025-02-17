@@ -5,7 +5,7 @@ import logging
 
 logging.basicConfig(
     level=logging.DEBUG, 
-    handlers=[logging.StreamHandler()],
+    handlers=[logging.StreamHandler(), logging.FileHandler("log.log")],
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
