@@ -1,4 +1,3 @@
-from pyaerocom.colocation.uemep import UEMEPColocator
 from ...conftest import lustre_unavail
 
 
