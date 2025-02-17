@@ -1,32 +1,31 @@
 import glob
 import logging
 import os
+
 import xarray as xr
 
-
-from pyaerocom import GriddedData, TsType, const, __version__, ColocatedData
+from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
+from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelmaps_helpers import (
-    calc_contour_json,
-    plot_overlay_pixel_maps,
-    _jsdate_list,
     CONTOUR,
     OVERLAY,
+    _jsdate_list,
+    calc_contour_json,
     find_netcdf_files,
+    plot_overlay_pixel_maps,
 )
-from pyaerocom.aeroval.json_utils import round_floats
-from pyaerocom.colocation.colocator import Colocator
-
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataDimensionError,
     DataQueryError,
+    EntryNotAvailable,
     ModelVarNotAvailable,
     TemporalResolutionError,
     VariableDefinitionError,
     VarNotAvailableError,
-    EntryNotAvailable,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,22 +52,16 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
     def run(self, **kwargs):
         model_list, var_list = self._get_run_kwargs(**kwargs)
 
-        all_files = []
         for model in model_list:
             try:
-                files = self._run_model(model, var_list)
+                self._run_model(model, var_list)
             except VarNotAvailableError:
-                files = []
-            if not files:
                 logger.warning(f"no data for model {model}, skipping")
                 continue
-            all_files.extend(files)
 
         self.cfg.modelmaps_opts.maps_freq = (
             self._get_maps_freq()
         )  # if needed, reassign "coarsest" to actual coarsest frequency
-
-        return files
 
     def _get_vars_to_process(self, model_name, var_list):
         mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
@@ -108,8 +101,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             var_list = self._get_vars_to_process(model_name, var_list)
         except EntryNotAvailable:
             var_list = self._get_obs_vars_to_process(model_name, var_list)
-
-        files = []
+        if not var_list:
+            raise VarNotAvailableError("List of variables is empty.")
         for var in var_list:
             logger.info(f"Processing model maps for {model_name} ({var})")
 
@@ -123,21 +116,11 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                         model_name, False
                     )
                 if self.cfg.modelmaps_opts.plot_types == {CONTOUR} or make_contour:
-                    _files = self._process_contour_map_var(
-                        model_name, var, self.reanalyse_existing
-                    )
+                    self._process_contour_map_var(model_name, var, self.reanalyse_existing)
 
-                    if isinstance(_files, str):
-                        _files = [_files]
-                    files.extend(_files)
                 if self.cfg.modelmaps_opts.plot_types == {OVERLAY} or make_overlay:
                     # create overlay (pixel) plots
-                    _files = self._process_overlay_map_var(
-                        model_name, var, self.reanalyse_existing
-                    )
-                    if isinstance(_files, str):
-                        _files = [_files]
-                    files.extend(_files)
+                    self._process_overlay_map_var(model_name, var, self.reanalyse_existing)
 
             except ModelVarNotAvailable as ex:
                 logger.warning(f"{ex}")
@@ -150,8 +133,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 if self.raise_exceptions:
                     raise
                 logger.warning(f"Failed to process maps for {model_name} {var} data. Reason: {e}.")
-
-        return files
+        return
 
     def _check_dimensions(self, data: GriddedData) -> "GriddedData":
         if not data.has_latlon_dims:
@@ -202,15 +184,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         data = self._check_dimensions(data)
 
-        outdir = self.cfg.path_manager.get_json_output_dirs()["contour"]
-        outname = f"{var}_{model_name}"
-        fp_geojson = os.path.join(outdir, f"{outname}.geojson")
-
-        if not reanalyse_existing:
-            if os.path.exists(fp_geojson):
-                logger.info(f"Skipping contour processing of {outname}: data already exists.")
-                return []
-
         freq = self._get_maps_freq()
         tst = TsType(data.ts_type)
 
@@ -220,6 +193,22 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.resample_time(str(freq))
 
         data.check_unit()
+
+        if not reanalyse_existing:
+            # check if all files have already been produced
+            # if even just one is missing, all is gonna be recomputed
+            ts = _jsdate_list(data)
+            fps_geojson = []
+            outdir = self.cfg.path_manager.get_json_output_dirs()["contour"]
+            for i, date in enumerate(ts):
+                outname = f"{var}_{model_name}/{var}_{model_name}_{date}"
+                fps_geojson.append(os.path.join(outdir, f"{outname}.geojson"))
+            if all(os.path.exists(fp) for fp in fps_geojson):
+                logger.info(
+                    f"Skipping contour processing of {var}_{model_name}: data already exists {fps_geojson}."
+                )
+                return
+
         # first calcualate and save geojson with contour levels
         contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
 
@@ -233,8 +222,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     model_name,
                     timestep=time,
                 )
-
-        return fp_geojson
 
     def _process_overlay_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """Process overlay map (pixels) for either model or obserations
@@ -270,8 +257,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if not self.cfg.processing_opts.only_json:
             data = self._check_dimensions(data)
 
-        outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
-
         freq = self._get_maps_freq()
 
         tst = TsType(data.ts_type)
@@ -284,21 +269,23 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             elif isinstance(data, xr.DataArray):
                 data = data.resample(time=str(freq)[0].capitalize()).mean()
 
-        tst = _jsdate_list(data)
+        ts = _jsdate_list(data)
         if isinstance(data, GriddedData):
             data.check_unit()
             data = data.to_xarray().load()
-        files = []
 
         if self.cfg.processing_opts.only_model_maps:
-            self._check_ts_for_only_model_maps(model_name, var, tst, data)
-        for i, date in enumerate(tst):
+            self._check_ts_for_only_model_maps(model_name, var, ts, data)
+
+        outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
+
+        for i, date in enumerate(ts):
             write_var_name = self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(
                 var, var
             )
-            outname = f"{model_name}_{write_var_name}_{date}"
 
-            # Note should matche the output location defined in aerovaldb
+            # Note this should match the output location defined in aerovaldb
+            outname = f"{write_var_name}_{model_name}_{date}.{self.cfg.modelmaps_opts.overlay_save_format}"
             fp_overlay = os.path.join(outdir, outname)
 
             if not reanalyse_existing:
@@ -322,8 +309,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     write_var_name,
                     date,
                 )
-            files.append(fp_overlay + "." + self.cfg.modelmaps_opts.overlay_save_format)
-        return files
 
     def _get_maps_freq(self) -> TsType:
         """
