@@ -43,7 +43,13 @@ def test_fairmode_stats(obs_var: str, stats: dict, freq: str):
             "concno2",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
             "daily",
-            id="wrong frequency",
+            id="wrong frequency no2",
+        ),
+        pytest.param(
+            "concpm10",
+            dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
+            "hourly",
+            id="wrong frequency pm10",
         ),
         pytest.param(
             "concpm10",
