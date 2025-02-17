@@ -9,67 +9,87 @@ FAIRMODE_KEYS = {"RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "
 
 
 @pytest.mark.parametrize(
-    "obs_var,stats",
+    "obs_var,stats,freq",
     [
         pytest.param(
             "concno2",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
-            id="dummy vars",
-        )
+            "hourly",
+            id="dummy_no2",
+        ),
+        pytest.param(
+            "conco3mda8",
+            dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
+            "daily",
+            id="dummy_o3mda8",
+        ),
     ],
 )
-def test_fairmode_stats(obs_var: str, stats: dict):
-    fairmode = fairmode_stats(obs_var, stats)
+def test_fairmode_stats(obs_var: str, stats: dict, freq: str):
+    fairmode = fairmode_stats(obs_var, stats, freq)
     assert set(fairmode) == FAIRMODE_KEYS
 
 
 @pytest.mark.parametrize(
-    "obs_var,stats",
+    "obs_var,stats,freq",
     [
         pytest.param(
-            "not_a_species",
+            "conco3",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
-            id="unknown obs variable",
+            "daily",
+            id="not a valid species",
         ),
         pytest.param(
-            "vmro3",
+            "concno2",
+            dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
+            "daily",
+            id="wrong frequency",
+        ),
+        pytest.param(
+            "concpm10",
             dict(refdata_mean=np.nan, refdata_std=1, data_std=1, R=1, mb=0, rms=0),
+            "daily",
             id="NaN mean",
         ),
         pytest.param(
-            "conco3",
+            "concpm10",
             dict(refdata_mean=0, refdata_std=np.nan, data_std=1, R=1, mb=0, rms=0),
+            "daily",
             id="NaN obs_std",
         ),
         pytest.param(
-            "conco3",
+            "concpm10",
             dict(refdata_mean=0, refdata_std=1, data_std=np.nan, R=1, mb=0, rms=0),
+            "daily",
             id="NaN mod_std",
         ),
         pytest.param(
-            "conco3",
+            "concpm10",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=np.nan, mb=0, rms=0),
+            "daily",
             id="NaN R",
         ),
         pytest.param(
-            "conco3",
+            "concpm10",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=np.nan, rms=0),
+            "daily",
             id="NaN bias",
         ),
         pytest.param(
-            "vmro3",
+            "concpm10",
             dict(refdata_mean=0, refdata_std=1, data_std=1, R=1, mb=1, rms=np.nan),
+            "daily",
             id="NaN rms",
         ),
     ],
 )
-def test_empty_stats(obs_var: str, stats: dict):
-    fairmode = fairmode_stats(obs_var, stats)
+def test_empty_stats(obs_var: str, stats: dict, freq: str):
+    fairmode = fairmode_stats(obs_var, stats, freq)
     assert not fairmode
 
 
 @pytest.mark.parametrize(
-    "obs_var,stats,error",
+    "obs_var,stats,freq,error",
     [
         pytest.param(
             "concpm10",
@@ -81,6 +101,7 @@ def test_empty_stats(obs_var: str, stats: dict):
                 "mb": 1,
                 "rms": 1,
             },
+            "daily",
             "negative obs_std=-1",
             id="obs_std",
         ),
@@ -94,6 +115,7 @@ def test_empty_stats(obs_var: str, stats: dict):
                 "mb": 1,
                 "rms": 1,
             },
+            "daily",
             "negative mod_std=-1",
             id="mod_std",
         ),
@@ -107,12 +129,13 @@ def test_empty_stats(obs_var: str, stats: dict):
                 "mb": 1,
                 "rms": 1,
             },
+            "daily",
             "out of range R=10",
             id="R",
         ),
     ],
 )
-def test_fairmode_error(obs_var: str, stats: dict, error: str):
+def test_fairmode_error(obs_var: str, stats: dict, freq: str, error: str):
     with pytest.raises(AssertionError) as e:
-        fairmode_stats(obs_var, stats)
+        fairmode_stats(obs_var, stats, freq)
     assert str(e.value) == error
