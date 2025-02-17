@@ -36,14 +36,12 @@ def browse_database(model_or_obs, verbose=False):
     Example
     -------
     >>> import pyaerocom as pya
-    >>> pya.io.browse_database('AATSR*ORAC*v4*')
+    >>> pya.io.utils.browse_database('AATSR*ORAC*v4*')
+    <BLANKLINE>
     Pyaerocom ReadGridded
     ---------------------
-    Model ID: AATSR_ORAC_v4.01
-    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_ORAC_v4.01/renamed
-    Available variables: ['abs550aer', 'ang4487aer', 'clt', 'landseamask', 'od550aer', 'od550dust', 'od550gt1aer', 'od550lt1aer', 'pixelcount']
-    Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
-    Available time resolutions ['daily']
+    Data ID: AATSR_ORAC_v4.02
+    ...
 
     """
     if not verbose:

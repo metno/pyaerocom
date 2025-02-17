@@ -65,12 +65,14 @@ def create_varinfo_table(
 
     Example
     -------
-    >>> from pyaerocom import create_varinfo_table
+    >>> from pyaerocom import create_varinfo_table # doctest: +ELLIPSIS
     >>> models = ['INCA-BCext_CTRL2016-PD',
-                  'GEOS5-freegcm_CTRL2016-PD']
+    ...           'GEOS5-freegcm_CTRL2016-PD']
     >>> vars = ['ang4487aer', 'od550aer', 'ec*']
-    >>> df = create_varinfo_table(models, vars)
-    >>> print(df)
+    >>> create_varinfo_table(models, vars)
+    At model: INCA-BCext_CTRL2016-PD (0 of 2)
+    At model: GEOS5-freegcm_CTRL2016-PD (1 of 2)
+    ...
     """
     if isinstance(model_ids, str):
         model_ids = [model_ids]
