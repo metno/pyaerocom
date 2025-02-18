@@ -889,3 +889,22 @@ def make_proxy_wetdep_from_O3(data):
 
     data.data_flagged[new_var_name] = flags
     return new_var_data
+
+
+def compute_concebcderived_from_ac880aer(data):
+    """Compute angstrom exponent between 440 and 700 nm
+
+    Parameters
+    ----------
+    StationData or dict
+        data containing absorbtion coeff at 880 nm
+        (i.e. key ac880aer)
+
+    Returns
+    -------
+    StationData or dict
+        extended data object containing dervied eBC
+    """
+
+    MAC = 10.0
+    return data["ac880aer"] / float(MAC)

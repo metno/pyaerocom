@@ -30,6 +30,7 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
+    compute_concebcderived_from_ac880aer,
 )
 from pyaerocom.exceptions import (
     EbasFileError,
@@ -295,6 +296,8 @@ class ReadEbas(ReadUngriddedBase):
         "proxywetpm25": ["concprcpoxs", "pr"],
         # Testing
         "wetrdnpr": ["pr"],
+        # eBC
+        "concebcderived": ["ac880aer"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -369,6 +372,8 @@ class ReadEbas(ReadUngriddedBase):
         "proxywetpm25": compute_wetoxs_from_concprcpoxs,
         # Testing
         "wetrdnpr": compute_wetrdnpr_from_concprcprdn,
+        # eBC
+        "concebcderived": compute_concebcderived_from_ac880aer,
     }
 
     #: Custom reading options for individual variables. Keys need to be valid
