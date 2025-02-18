@@ -72,3 +72,14 @@ def read_csv(
         logger.warning("found negative obs")
         df = df[df.conc > 0]
     return df["station lat lon alt time poll conc".split()]
+
+
+def read_metadata(path: str | Path) -> pd.DataFrame:
+    df = pd.read_csv(
+        path,
+        sep=",",
+        header=0,
+        names="station station_type".split(),
+        usecols=[0, 2],
+    )
+    return df
