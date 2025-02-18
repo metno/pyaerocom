@@ -155,7 +155,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
 
         else:
-            obs_var = model_var = "UNDEFINED"
+            raise ValueError("Unable to determine obs_var/model_var")
 
         model_name = coldata.model_name
         obs_name = coldata.obs_name
