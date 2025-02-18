@@ -1001,7 +1001,7 @@ def _process_map_and_scat(
                         if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
                             stats["mb"] = np.nanmean(mod_vals - obs_vals)
 
-                            stats["fairmode"] = fairmode_stats(obs_var, stats)
+                            stats["fairmode"] = fairmode_stats(obs_var, stats, freq)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
