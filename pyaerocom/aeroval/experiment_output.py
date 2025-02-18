@@ -355,19 +355,25 @@ class ExperimentOutput(ProjectOutput):
         if self.cfg.processing_opts.only_model_maps:
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
-            files = self._get_output_files(self.out_dirs_json["contour"])
-            for file in files:
-                file_info = self._info_from_contour_dir_file(file)
-                for i, entry in enumerate(file_info):
-                    res[i].append(entry)
+
+            for uri in (result := self.avdb.query(aerovaldb.AssetType.CONTOUR_TIMESPLIT)):
+                _, args = result.get_details(uri)
+                for i, key in enumerate(["model", "obsvar", "timestep"]):
+                    res[i].append(args[key])
+
         else:
             infos = ["obs", "ovar", "vc", "mod", "mvar", "per"]
             res = [[], [], [], [], [], []]
-            files = self._get_json_output_files("map")
-            for file in files:
-                map_info = self._info_from_map_file(file)
-                for i, entry in enumerate(map_info):
-                    res[i].append(entry)
+            # files = self._get_json_output_files("map")
+            for uri in (result := self.avdb.query(aerovaldb.AssetType.MAP)):
+                _, args = result.get_details(uri)
+                for i, key in enumerate(["network", "obsvar", "layer", "model", "modvar", "time"]):
+                    res[i].append(args[key])
+
+            # for file in files:
+            #    map_info = self._info_from_map_file(file)
+            #    for i, entry in enumerate(map_info):
+            #        res[i].append(entry)
         output = {}
         for i, name in enumerate(infos):
             output[name] = list(set(res[i]))
