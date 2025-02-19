@@ -126,6 +126,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
             output = dict(
                 station_id=station,
                 station_name=station,
+                station_type=df["station_type"].iloc[0],
                 latitude=df["lat"].iloc[0],
                 longitude=df["lon"].iloc[0],
                 altitude=df["alt"].iloc[0],

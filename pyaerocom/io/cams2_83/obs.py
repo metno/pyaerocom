@@ -18,6 +18,8 @@ CAMS2_50_DOMAIN = SimpleNamespace(
     lon=(-25, 45),  # °E
 )
 
+DEFAULT_METADATA_NAME = "mf_stations_list_classification_2025.csv"
+
 
 class Domain(Protocol):
     """domain for static type checking"""
@@ -71,7 +73,9 @@ def read_csv(
     if (df.conc <= 0).any():
         logger.warning("found negative obs")
         df = df[df.conc > 0]
-    return df["station lat lon alt time poll conc".split()]
+    df_metadata = read_metadata(Path(path).parent.parent / DEFAULT_METADATA_NAME)
+    df = df.merge(df_metadata, on="station", how="left")
+    return df["station lat lon alt time poll conc station_type".split()]
 
 
 def read_metadata(path: str | Path) -> pd.DataFrame:
