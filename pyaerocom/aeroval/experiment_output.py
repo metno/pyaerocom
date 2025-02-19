@@ -133,8 +133,9 @@ class ExperimentOutput(ProjectOutput):
         """
         if self.exp_id not in os.listdir(self.proj_dir):
             return False
-        elif self.cfg.processing_opts.only_model_maps and not self._has_files(
-            self.out_dirs_json["contour"]
+        elif self.cfg.processing_opts.only_model_maps and not (
+            self._has_files(self.out_dirs_json["contour"])
+            or self._has_files(self.out_dirs_json["overlay"])
         ):
             return False
         elif (
@@ -357,7 +358,9 @@ class ExperimentOutput(ProjectOutput):
         if self.cfg.processing_opts.only_model_maps:
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
-            files = self._get_output_files(self.out_dirs_json["contour"])
+            files = self._get_output_files(self.out_dirs_json["contour"]) + self._get_output_files(
+                self.out_dirs_json["overlay"]
+            )
             for file in files:
                 file_info = self._info_from_contour_dir_file(file)
                 for i, entry in enumerate(file_info):
@@ -824,7 +827,9 @@ class ExperimentOutput(ProjectOutput):
     def _create_menu_dict(self) -> dict:
         new = {}
         if self.cfg.processing_opts.only_model_maps:
-            files = self._get_output_files(self.out_dirs_json["contour"])
+            files = self._get_output_files(self.out_dirs_json["contour"]) + self._get_output_files(
+                self.out_dirs_json["overlay"]
+            )
             all_combinations = list(
                 itertools.product(
                     self.cfg.obs_cfg.keylist(),
