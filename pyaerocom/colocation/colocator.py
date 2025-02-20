@@ -39,6 +39,7 @@ from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
+from pyaerocom.ungriddeddata import UngriddedData
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -1039,8 +1040,9 @@ class Colocator:
         )
         # check if the station_type key has been passed to the ungridded data object
         # (not all readers may do that, currently only the CAMS2_83 reader does)
-        if all("station_type" in dict.keys() for dict in obs_data.metadata.values()):
-            args.update(add_meta_keys=["station_type"])
+        if isinstance(obs_data, UngriddedData):
+            if all("station_type" in dict.keys() for dict in obs_data.metadata.values()):
+                args.update(add_meta_keys=["station_type"])
 
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
