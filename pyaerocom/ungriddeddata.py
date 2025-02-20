@@ -1300,7 +1300,10 @@ class UngriddedData:
                 out_data["latitude"].append(data["latitude"])
                 out_data["longitude"].append(data["longitude"])
                 out_data["station_name"].append(data["station_name"])
-                out_data["station_type"].append(data["station_type"])
+                if hasattr(data, "station_type"):
+                    out_data["station_type"].append(data["station_type"])
+                else:
+                    logger.info("No station_type found in StationData, statio_type will be blank")
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
