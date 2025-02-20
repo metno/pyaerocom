@@ -851,7 +851,9 @@ def colocate_gridded_ungridded(
         lats[i] = obs_stat.latitude
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
-        station_types[i] = obs_stat.station_type
+        station_types[i] = None
+        if hasattr(obs_stat, "station_type"):
+            station_types[i] = obs_stat.station_type
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
