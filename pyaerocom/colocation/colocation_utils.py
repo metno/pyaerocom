@@ -835,6 +835,7 @@ def colocate_gridded_ungridded(
     lats = [np.nan] * stat_num
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
+    station_types = [""] * stat_num
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -850,6 +851,7 @@ def colocate_gridded_ungridded(
         lats[i] = obs_stat.latitude
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
+        station_types[i] = obs_stat.station_type
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
@@ -977,6 +979,7 @@ def colocate_gridded_ungridded(
         "data_source": meta["data_source"],
         "time": time_idx,
         "station_name": station_names,
+        "station_type": ("station_name", station_types),
         "latitude": ("station_name", lats),
         "longitude": ("station_name", lons),
         "altitude": ("station_name", alts),

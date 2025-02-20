@@ -553,7 +553,6 @@ class ReadUngridded:
                     data_out.append(cache.loaded_data[var])
             if data_read is not None:
                 data_out.append(data_read)
-
         # close the cache-object, keeps otherwise data-references
         cache = None
 

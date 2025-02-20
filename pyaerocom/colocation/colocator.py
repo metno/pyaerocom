@@ -1035,7 +1035,13 @@ class Colocator:
             min_num_obs=self.colocation_setup.min_num_obs,
             colocate_time=self.colocation_setup.colocate_time,
             resample_how=rshow,
+            add_meta_keys=[],
         )
+        # check if the station_type key has been passed to the ungridded data object
+        # (not all readers may do that, currently only the CAMS2_83 reader does)
+        if all("station_type" in dict.keys() for dict in obs_data.metadata.values()):
+            args.update(add_meta_keys=["station_type"])
+
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
