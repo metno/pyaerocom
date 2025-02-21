@@ -76,26 +76,27 @@ def read_csv(
         df = df[df.conc > 0]
     metadata_file_path = Path(path).parent.parent / DEFAULT_METADATA_NAME
     if metadata_file_path.is_file():
-        try:
-            df_metadata = read_metadata(metadata_file_path)
-            if not df_metadata.empty:
-                df = df.merge(df_metadata, on="station", how="left")
-                return df["station lat lon alt time poll conc station_type".split()]
-            else:
-                logger.warning(f"Empty metadata from {metadata_file_path}")
-        except ParserError as e:
-            logger.warning(f"Invalid metadata file {metadata_file_path}, {e}")
+        df_metadata = read_metadata(metadata_file_path)
+        if not df_metadata.empty:
+            df = df.merge(df_metadata, on="station", how="left")
+            return df["station lat lon alt time poll conc station_type".split()]
+        else:
+            logger.warning(f"Empty metadata from {metadata_file_path}")
     else:
         logger.warning(f"Metadata file {metadata_file_path} does not exist")
     return df["station lat lon alt time poll conc".split()]
 
 
 def read_metadata(path: str | Path) -> pd.DataFrame:
-    df = pd.read_csv(
-        path,
-        sep=",",
-        header=0,
-        names="station station_type".split(),
-        usecols=[0, 2],
-    )
+    df = pd.DataFrame()
+    try:
+        df = pd.read_csv(
+            path,
+            sep=",",
+            header=0,
+            names="station station_type".split(),
+            usecols=[0, 2],
+        )
+    except ParserError as e:
+        logger.warning(f"Invalid metadata file {path}, {e}")
     return df
