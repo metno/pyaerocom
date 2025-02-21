@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from typing import Protocol
 
 import pandas as pd
+from pandas.errors import ParserError
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ def read_csv(
         names="station lat lon alt poll Y M D H _ conc".split(),
         usecols=lambda x: x != "_",
     )
+    print(df.head())
     df = df.pipe(add_time).pipe(conc_units).pipe(poll_names)
     if polls is not None:
         df = df[df.poll.isin(polls)]
@@ -73,9 +75,21 @@ def read_csv(
     if (df.conc <= 0).any():
         logger.warning("found negative obs")
         df = df[df.conc > 0]
-    df_metadata = read_metadata(Path(path).parent.parent / DEFAULT_METADATA_NAME)
-    df = df.merge(df_metadata, on="station", how="left")
-    return df["station lat lon alt time poll conc station_type".split()]
+    metadata_file_path = Path(path).parent.parent / DEFAULT_METADATA_NAME
+    print(metadata_file_path)
+    if metadata_file_path.is_file():
+        try:
+            df_metadata = read_metadata(metadata_file_path)
+            if not df_metadata.empty:
+                df = df.merge(df_metadata, on="station", how="left")
+                return df["station lat lon alt time poll conc station_type".split()]
+            else:
+                logger.warning(f"Empty metadata from {metadata_file_path}")
+        except ParserError as e:
+            logger.warning(f"Invalid metadata file {metadata_file_path}, {e}")
+    else:
+        logger.warning(f"Metadata file {metadata_file_path} does not exist")
+    return df["station lat lon alt time poll conc".split()]
 
 
 def read_metadata(path: str | Path) -> pd.DataFrame:
