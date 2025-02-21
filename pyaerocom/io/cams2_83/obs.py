@@ -65,7 +65,6 @@ def read_csv(
         names="station lat lon alt poll Y M D H _ conc".split(),
         usecols=lambda x: x != "_",
     )
-    print(df.head())
     df = df.pipe(add_time).pipe(conc_units).pipe(poll_names)
     if polls is not None:
         df = df[df.poll.isin(polls)]
@@ -76,7 +75,6 @@ def read_csv(
         logger.warning("found negative obs")
         df = df[df.conc > 0]
     metadata_file_path = Path(path).parent.parent / DEFAULT_METADATA_NAME
-    print(metadata_file_path)
     if metadata_file_path.is_file():
         try:
             df_metadata = read_metadata(metadata_file_path)
