@@ -1303,7 +1303,7 @@ class UngriddedData:
                 if hasattr(data, "station_type"):
                     out_data["station_type"].append(data["station_type"])
                 else:
-                    logger.info("No station_type found in StationData, statio_type will be blank")
+                    logger.info("No station_type found in StationData, station_type will be blank")
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable

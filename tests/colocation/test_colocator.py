@@ -153,6 +153,7 @@ def test_Colocator_model_add_vars(setup):
     assert isinstance(data, dict)
     assert model_var in data
     coldata = data[model_var][obs_var]
+    assert "station_type" in coldata.coords
     assert coldata.var_name == ["od550aer", "abs550aer"]
 
 
@@ -246,6 +247,7 @@ def test_Colocator_run_gridded_ungridded(
     assert isinstance(result, dict)
 
     coldata = result[chk_mvar][chk_ovar]
+    assert "station_type" in coldata.coords
     assert coldata.shape == sh
 
     mod_clim_used = any("9999" in x for x in coldata.metadata["from_files"])
