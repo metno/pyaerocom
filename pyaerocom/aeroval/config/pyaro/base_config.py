@@ -430,30 +430,30 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
                 },
             },
         ),
-        "ACTRIS-EBAS-h-diurnal": dict(
-            obs_id="ACTRIS-EBAS-h-diurnal",
-            web_interface_name="ACTRIS-EBAS-h",
-            obs_vars=ebas_test_vars_diurnal,
-            obs_vert_type="Surface",
-            ts_type="hourly",
-            # diurnal_only=True,
-            resample_how="mean",
-            # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
-            pyaro_config={
-                "name": "ACTRIS-EBAS-h-diurnal",
-                "reader_id": "actrisebas",
-                "filename_or_obj_or_url": "",
-                "filters": {
-                    "time_bounds": {
-                        "startend_include": [
-                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
-                        ],
-                    },
-                    "variables": {"include": ebas_test_vars_diurnal},
-                },
-            },
-
-        ),
+        # "ACTRIS-EBAS-h-diurnal": dict(
+        #     obs_id="ACTRIS-EBAS-h-diurnal",
+        #     web_interface_name="ACTRIS-EBAS-h",
+        #     obs_vars=ebas_test_vars_diurnal,
+        #     obs_vert_type="Surface",
+        #     ts_type="hourly",
+        #     # diurnal_only=True,
+        #     resample_how="mean",
+        #     # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
+        #     pyaro_config={
+        #         "name": "ACTRIS-EBAS-h-diurnal",
+        #         "reader_id": "actrisebas",
+        #         "filename_or_obj_or_url": "",
+        #         "filters": {
+        #             "time_bounds": {
+        #                 "startend_include": [
+        #                     (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+        #                 ],
+        #             },
+        #             "variables": {"include": ebas_test_vars_diurnal},
+        #         },
+        #     },
+        #
+        # ),
 
         ##################
         #    EBAS
@@ -494,102 +494,16 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
             ts_type="daily",
             # obs_filters=EBAS_FILTER,
         ),
-        # "EBAS-m-tc-ecoc": dict(
+        # # Diurnal
+        # "EBAS-h-diurnal": dict(
         #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-m",
-        #     obs_vars=[
-        #         "concCecpm25",
-        #         "concCocpm25",
-        #         "concom1",
-        #         "concCecpm10",
-        #         "concCocpm10",
-        #         #                "concnh4pm10",
-        #         "concnh4pm25",
-        #         "concnh4pm1",
-        #         #                "concso4pm10",
-        #         "concso4pm25",
-        #         "concso4pm1",
-        #         "concno3pm10",
-        #         "concno3pm25",
-        #         "concno3pm1",
-        #         "concsspm10",
-        #         "concsspm25",
-        #     ],
+        #     web_interface_name="EBAS-h",
+        #     obs_vars=ebas_test_vars_diurnal,
         #     obs_vert_type="Surface",
-        #     colocate_time=True,
-        #     ts_type="monthly",
-        #     min_num_obs=OC_EC_RESAMPLE_CONSTRAINTS,
-        #     obs_filters=EBAS_FILTER,
-        # ),
-        # "EBAS-d-tc-ecoc": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-d",
-        #     obs_vars=[
-        #         "concCecpm25",
-        #         "concCocpm25",
-        #         "concom1",
-        #         "concCecpm10",
-        #         "concCocpm10",
-        #         # "concnh4pm10",
-        #         "concnh4pm25",
-        #         "concnh4pm1",
-        #         #                "concso4pm10",
-        #         "concso4pm25",
-        #         "concso4pm1",
-        #         "concno3pm10",
-        #         "concno3pm25",
-        #         "concno3pm1",
-        #         "concsspm10",
-        #         "concsspm25",
-        #     ],
-        #     obs_vert_type="Surface",
-        #     colocate_time=True,
-        #     ts_type="daily",
-        #     min_num_obs=OC_EC_RESAMPLE_CONSTRAINTS,
-        #     obs_filters=EBAS_FILTER,
-        # ),
-        # Diurnal
-        "EBAS-h-diurnal": dict(
-            obs_id="EBASMC",
-            web_interface_name="EBAS-h",
-            obs_vars=ebas_test_vars_diurnal,
-            obs_vert_type="Surface",
-            ts_type="hourly",
-            # diurnal_only=True,
-            resample_how="mean",
-            # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
-        ),
-        # Wet Dep
-        # "EBAS-d-wet": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-d",
-        #     ts_type="daily",
-        #     obs_remove_outliers=True,
-        #     obs_vars=[
-        #         "wetoxs",
-        #         "wetoxn",
-        #         "wetrdn",
-        #         "prmm",
-        #     ],
-        #     obs_vert_type="Surface",
-        #     min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
-        #     colocate_time=True,
-        #     obs_filters=EBAS_FILTER,
-        # ),
-        # "EBAS-m-wet": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-m",
-        #     ts_type="monthly",
-        #     obs_remove_outliers=True,
-        #     colocate_time=True,
-        #     obs_vars=[
-        #         "wetoxs",
-        #         "wetoxn",
-        #         "wetrdn",
-        #         "prmm",
-        #     ],
-        #     obs_vert_type="Surface",
-        #     obs_filters=EBAS_FILTER,
+        #     ts_type="hourly",
+        #     # diurnal_only=True,
+        #     resample_how="mean",
+        #     # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
         # ),
     }
 

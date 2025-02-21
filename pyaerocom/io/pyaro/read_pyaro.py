@@ -199,26 +199,32 @@ class PyaroToUngriddedData:
             # outarray[idx, UngriddedData._TRASHINDEX]  # No need to set, only non-NaN values are considered trash
 
         metadata = dict()
+        # breakpoint()
         for (station_name, var, units, tstype), station_key in station_mapper.inner.items():
-            extra_metadata = stations_with_metadata[station_name].metadata
-            d = {
-                "data_id": self.config.name,
-                "station_name": station_name,
-                "var_info": {
-                    var: {"units": units},
-                },
-                **stations_with_metadata[station_name],
-                **extra_metadata,
-            }
-            if "ts_type" not in d:
-                d["ts_type"] = tstype
-            metadata[station_key] = d
+            try:
+                extra_metadata = stations_with_metadata[station_name].metadata
+                d = {
+                    "data_id": self.config.name,
+                    "station_name": station_name,
+                    "var_info": {
+                        var: {"units": units},
+                    },
+                    **stations_with_metadata[station_name],
+                    **extra_metadata,
+                }
+                if "ts_type" not in d:
+                    d["ts_type"] = tstype
+                metadata[station_key] = d
+                # breakpoint()
+            except KeyError:
+
+                logger.error(f"Station {station_name} has no extra metadata")
 
         meta_idx = defaultdict(dict)
         for (_station_name, var, _units, tstype), station_key in station_mapper.inner.items():
             var_key = var_mapper[var]
             mask = (outarray[:, UngriddedData._METADATAKEYINDEX] == station_key) & (
-                outarray[:, UngriddedData._VARINDEX] == var_key
+                    outarray[:, UngriddedData._VARINDEX] == var_key
             )
             indices = np.flatnonzero(mask)
             meta_idx[station_key][var] = indices

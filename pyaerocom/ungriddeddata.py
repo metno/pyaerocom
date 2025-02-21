@@ -2447,6 +2447,9 @@ class UngriddedData:
             # obj.unit = other.unit
             obj.data_revision = other.data_revision
             obj.meta_idx = other.meta_idx
+            # potentially temporary fix for pyaro actrisebas reader
+            if len(other.meta_idx) != len(other.metadata):
+                obj.meta_idx = {key:other.meta_idx[key] for key in other.metadata.keys()}
             obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
