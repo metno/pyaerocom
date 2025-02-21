@@ -76,8 +76,9 @@ def test_obs_invalid_metadata_file(tmp_path, caplog):
     """)
     tmp_metadata_file = tmp_path / DEFAULT_METADATA_NAME
     tmp_metadata_file.write_text("""
-                                 something not parsable, as expected
-                                 bla,bla
+                                 something not parsable as expected
+                                 bla;bla;bla
+                                 bla;bla;bla
                                  """)
     df = read_csv(tmp_file, polls=["O3"])
     assert df.columns.values.tolist() == [
