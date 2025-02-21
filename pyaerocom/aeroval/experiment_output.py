@@ -259,97 +259,97 @@ class ExperimentOutput(ProjectOutput):
                     hm_data[region][per] = dummy_stats
         return hm_data
 
-    @staticmethod
-    def _info_from_map_file(filename: str) -> MapInfo:
-        """
-        Separate map filename into meta info on obs and model content
+    # @staticmethod
+    # def _info_from_map_file(filename: str) -> MapInfo:
+    #     """
+    #     Separate map filename into meta info on obs and model content
 
-        Parameters
-        ----------
-        filename : str
-            name of file in "map" subdirectory of json output directory for
-            this experiment
+    #     Parameters
+    #     ----------
+    #     filename : str
+    #         name of file in "map" subdirectory of json output directory for
+    #         this experiment
 
-        Raises
-        ------
-        ValueError
-            if input filename is invalid
+    #     Raises
+    #     ------
+    #     ValueError
+    #         if input filename is invalid
 
-        Returns
-        -------
-        str
-            name of observation network
-        str
-            name of observation variable
-        str
-            name of vertical code (e.g. Surface)
-        str
-            name of model
-        str
-            name of model variable
-        str
-            Time period
-        """
-        spl = os.path.basename(filename).split(".json")[0].split("_")
-        if len(spl) != 4:
-            raise ValueError(
-                f"invalid map filename: {filename}. Must "
-                f"contain exactly 3 underscores _ to separate "
-                f"obsinfo, vertical, model info, and periods"
-            )
-        obsinfo = spl[0]
-        vert_code = spl[1]
-        modinfo = spl[2]
-        time_period = spl[3]
+    #     Returns
+    #     -------
+    #     str
+    #         name of observation network
+    #     str
+    #         name of observation variable
+    #     str
+    #         name of vertical code (e.g. Surface)
+    #     str
+    #         name of model
+    #     str
+    #         name of model variable
+    #     str
+    #         Time period
+    #     """
+    #     spl = os.path.basename(filename).split(".json")[0].split("_")
+    #     if len(spl) != 4:
+    #         raise ValueError(
+    #             f"invalid map filename: {filename}. Must "
+    #             f"contain exactly 3 underscores _ to separate "
+    #             f"obsinfo, vertical, model info, and periods"
+    #         )
+    #     obsinfo = spl[0]
+    #     vert_code = spl[1]
+    #     modinfo = spl[2]
+    #     time_period = spl[3]
 
-        mspl = modinfo.split("-")
-        mod_var = mspl[-1]
-        mod_id = "-".join(mspl[:-1])
+    #     mspl = modinfo.split("-")
+    #     mod_var = mspl[-1]
+    #     mod_id = "-".join(mspl[:-1])
 
-        ospl = obsinfo.split("-")
-        obs_var = ospl[-1]
-        obs_network = "-".join(ospl[:-1])
+    #     ospl = obsinfo.split("-")
+    #     obs_var = ospl[-1]
+    #     obs_network = "-".join(ospl[:-1])
 
-        return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
+    #     return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
 
-    @staticmethod
-    def _info_from_contour_dir_file(file: pathlib.PosixPath):
-        """
-        Separate map filename into meta info on obs and model content
+    # @staticmethod
+    # def _info_from_contour_dir_file(file: pathlib.PosixPath):
+    #     """
+    #     Separate map filename into meta info on obs and model content
 
-        Parameters
-        ----------
-        filename : str
-            name of file in "contour" subdirectory of json output directory for
-            this experiment
+    #     Parameters
+    #     ----------
+    #     filename : str
+    #         name of file in "contour" subdirectory of json output directory for
+    #         this experiment
 
-        Raises
-        ------
-        ValueError
-            if input filename is invalid
+    #     Raises
+    #     ------
+    #     ValueError
+    #         if input filename is invalid
 
-        Returns
-        -------
-        str
-            name of model
-        str
-            name of variable
-        str
-            Time period
-        """
-        suffix = file.suffix
-        spl = os.path.basename(file.name).split(suffix)[0].split("_")
+    #     Returns
+    #     -------
+    #     str
+    #         name of model
+    #     str
+    #         name of variable
+    #     str
+    #         Time period
+    #     """
+    #     suffix = file.suffix
+    #     spl = os.path.basename(file.name).split(suffix)[0].split("_")
 
-        if len(spl) == 3:
-            if suffix == ".png" or suffix == ".webp" or suffix == ".geojson":
-                name = spl[1]
-                var_name = spl[0]
-                per = spl[2]
-                return (name, var_name, per)
-            else:
-                raise NotImplementedError(f"{suffix} file format not supported")
-        else:
-            raise ValueError(f"invalid contour filename: {file}")
+    #     if len(spl) == 3:
+    #         if suffix == ".png" or suffix == ".webp" or suffix == ".geojson":
+    #             name = spl[1]
+    #             var_name = spl[0]
+    #             per = spl[2]
+    #             return (name, var_name, per)
+    #         else:
+    #             raise NotImplementedError(f"{suffix} file format not supported")
+    #     else:
+    #         raise ValueError(f"invalid contour filename: {file}")
 
     def _results_summary(self) -> dict[str, list[str]]:
         if self.cfg.processing_opts.only_model_maps:
@@ -364,16 +364,12 @@ class ExperimentOutput(ProjectOutput):
         else:
             infos = ["obs", "ovar", "vc", "mod", "mvar", "per"]
             res = [[], [], [], [], [], []]
-            # files = self._get_json_output_files("map")
-            for uri in (result := self.avdb.query(aerovaldb.AssetType.MAP)):
-                _, args = result.get_details(uri)
+            for uri in self.avdb.query(
+                aerovaldb.AssetType.MAP, project=self.proj_id, experiment=self.exp_id
+            ):
                 for i, key in enumerate(["network", "obsvar", "layer", "model", "modvar", "time"]):
-                    res[i].append(args[key])
+                    res[i].append(uri.meta[key])
 
-            # for file in files:
-            #    map_info = self._info_from_map_file(file)
-            #    for i, entry in enumerate(map_info):
-            #        res[i].append(entry)
         output = {}
         for i, name in enumerate(infos):
             output[name] = list(set(res[i]))
@@ -762,7 +758,9 @@ class ExperimentOutput(ProjectOutput):
                 return True
         return False
 
-    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var) -> bool:
+    def _is_part_of_experiment(
+        self, obs_name: str, obs_var: str, mod_name: str, mod_var: str
+    ) -> bool:
         """
         Check if input combination of model and obs var is valid
 
@@ -828,7 +826,10 @@ class ExperimentOutput(ProjectOutput):
     def _create_menu_dict(self) -> dict:
         new = {}
         if self.cfg.processing_opts.only_model_maps:
-            files = self._get_output_files(self.out_dirs_json["contour"])
+            uris = self.avdb.query(
+                aerovaldb.AssetType.CONTOUR_TIMESPLIT, project=self.proj_id, experiment=self.exp_id
+            )
+            # self._get_output_files(self.out_dirs_json["contour"])
             all_combinations = list(
                 itertools.product(
                     self.cfg.obs_cfg.keylist(),
@@ -837,8 +838,12 @@ class ExperimentOutput(ProjectOutput):
                 )
             )
         else:
-            files = self._get_json_output_files("map")
-        for file in files:
+            uris = self.avdb.query(
+                aerovaldb.AssetType.MAP, project=self.proj_id, experiment=self.exp_id
+            )
+            # files = self._get_json_output_files("map")
+
+        for uri in uris:
             if self.cfg.processing_opts.only_model_maps:
                 # Hack to build menu.json
                 # The key issue we need to get around is that the ExperimentOutput class
@@ -849,9 +854,9 @@ class ExperimentOutput(ProjectOutput):
                 if not all_combinations:
                     break
 
-                (mod_name, var_name, per) = self._info_from_contour_dir_file(file)
-
-                obs_var, mod_var = var_name, var_name
+                mod_name = uri.meta["model"]
+                var_name = uri.meta["obsvar"]
+                mod_var = uri.meta["modvar"]
 
                 if mod_name in self.cfg.obs_cfg.keylist():
                     obs_name = mod_name
@@ -893,9 +898,15 @@ class ExperimentOutput(ProjectOutput):
                     raise ValueError("Failed to infer vert_code in an only_model_maps experiment")
 
             else:
-                (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(
-                    file
-                )
+                obs_name = uri.meta["network"]
+                obs_var = uri.meta["obsvar"]
+                vert_code = uri.meta["layer"]
+                mod_name = uri.meta["model"]
+                mod_var = uri.meta["modvar"]
+
+                # (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(
+                #    file
+                # )
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)

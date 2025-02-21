@@ -225,7 +225,7 @@ def test_run_cfg(cfg: dict):
 
     assert Path(output.experiments_file).exists()
 
-    ts_path = Path(output.exp_dir) / "ts/ALL_AERONET-Sun-fraction_Column.json"
+    ts_path = Path(output.exp_dir) / "ts/ALL_AERONET-Sun_fraction_Column.json"
     with open(ts_path) as f:
         data = json.load(f)
         m_data = data[model_name]["monthly_mod"]
