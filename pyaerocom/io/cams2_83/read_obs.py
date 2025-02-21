@@ -85,7 +85,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         if not isinstance(vars_to_retrieve, list):
             raise TypeError(
-                f"Unsupoerted type {type(vars_to_retrieve)}, "
+                f"Unsupported type {type(vars_to_retrieve)}, "
                 "vars_to_retrieve supported types are: str | list[str] | None"
             )
         assert all(

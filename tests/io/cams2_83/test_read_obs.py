@@ -44,11 +44,13 @@ def test_read_ungridded(obs_paths: list[Path]):
 
 def test_obs_no_metadata_file(tmp_path, caplog):
     tmp_file = tmp_path / "obs.csv"
-    tmp_file.write_text("""
+    tmp_file.write_text(
+        """
             STATION;LAT;LON;ALT(m);PARAMETER;YEAR;MONTH;DAY;HOUR;AVERAGING_PERIOD(h);CONCENTRATION(kg/m3)
             AT0ENK1;48.392; 13.671;0525;o3;2025;02;12;01;1; 4.27600e-08
             AT0ILL1;47.770; 16.766;0117;o3;2025;02;12;01;1; 6.56700e-08
-    """)
+    """
+    )
     df = read_csv(tmp_file, polls=["O3"])
     assert (
         f"Metadata file {tmp_file.parent.parent / DEFAULT_METADATA_NAME} does not exist"
@@ -69,17 +71,21 @@ def test_obs_invalid_metadata_file(tmp_path, caplog):
     tmp_dir = tmp_path / "tmp_d1"
     tmp_dir.mkdir(parents=True)
     tmp_file = tmp_dir / "obs.csv"
-    tmp_file.write_text("""
+    tmp_file.write_text(
+        """
             STATION;LAT;LON;ALT(m);PARAMETER;YEAR;MONTH;DAY;HOUR;AVERAGING_PERIOD(h);CONCENTRATION(kg/m3)
             AT0ENK1;48.392; 13.671;0525;o3;2025;02;12;01;1; 4.27600e-08
             AT0ILL1;47.770; 16.766;0117;o3;2025;02;12;01;1; 6.56700e-08
-    """)
+    """
+    )
     tmp_metadata_file = tmp_path / DEFAULT_METADATA_NAME
-    tmp_metadata_file.write_text("""
+    tmp_metadata_file.write_text(
+        """
                                  something not parsable as expected
                                  bla;bla;bla
                                  bla;bla;bla
-                                 """)
+                                 """
+    )
     df = read_csv(tmp_file, polls=["O3"])
     assert df.columns.values.tolist() == [
         "station",
@@ -97,11 +103,13 @@ def test_obs_empty_metadata_file(tmp_path, caplog):
     tmp_dir = tmp_path / "tmp_d1"
     tmp_dir.mkdir(parents=True)
     tmp_file = tmp_dir / "obs.csv"
-    tmp_file.write_text("""
+    tmp_file.write_text(
+        """
             STATION;LAT;LON;ALT(m);PARAMETER;YEAR;MONTH;DAY;HOUR;AVERAGING_PERIOD(h);CONCENTRATION(kg/m3)
             AT0ENK1;48.392; 13.671;0525;o3;2025;02;12;01;1; 4.27600e-08
             AT0ILL1;47.770; 16.766;0117;o3;2025;02;12;01;1; 6.56700e-08
-    """)
+    """
+    )
     tmp_metadata_file = tmp_path / DEFAULT_METADATA_NAME
     tmp_metadata_file.write_text("")
     df = read_csv(tmp_file, polls=["O3"])
@@ -117,21 +125,25 @@ def test_obs_empty_metadata_file(tmp_path, caplog):
     assert f"Empty metadata from {tmp_metadata_file}" in caplog.text
 
 
-def test_obs_ok_metadata_file(tmp_path, caplog):
+def test_obs_ok_metadata_file(tmp_path):
     tmp_dir = tmp_path / "tmp_d1"
     tmp_dir.mkdir(parents=True)
     tmp_file = tmp_dir / "obs.csv"
-    tmp_file.write_text("""
+    tmp_file.write_text(
+        """
             STATION;LAT;LON;ALT(m);PARAMETER;YEAR;MONTH;DAY;HOUR;AVERAGING_PERIOD(h);CONCENTRATION(kg/m3)
             AT0ENK1;48.392; 13.671;0525;o3;2025;02;12;01;1; 4.27600e-08
             AT0ILL1;47.770; 16.766;0117;o3;2025;02;12;01;1; 6.56700e-08
-    """)
+    """
+    )
     tmp_metadata_file = tmp_path / DEFAULT_METADATA_NAME
-    tmp_metadata_file.write_text("""
+    tmp_metadata_file.write_text(
+        """
                                  something, something, something
                                  bla, bla, bla
                                  bla, bla, bla
-                                 """)
+                                 """
+    )
     df = read_csv(tmp_file, polls=["O3"])
     assert df.columns.values.tolist() == [
         "station",
@@ -143,3 +155,29 @@ def test_obs_ok_metadata_file(tmp_path, caplog):
         "conc",
         "station_type",
     ]
+
+
+def test_obs_read_to_ungridded(tmp_path, caplog):
+    tmp_dir = tmp_path / "tmp_d1"
+    tmp_dir.mkdir(parents=True)
+    tmp_file = tmp_dir / "obs.csv"
+    tmp_file.write_text(
+        """
+            STATION;LAT;LON;ALT(m);PARAMETER;YEAR;MONTH;DAY;HOUR;AVERAGING_PERIOD(h);CONCENTRATION(kg/m3)
+            AT0ENK1;48.392; 13.671;0525;o3;2025;02;12;01;1; 4.27600e-08
+            AT0ILL1;47.770; 16.766;0117;o3;2025;02;12;01;1; 6.56700e-08
+    """
+    )
+    tmp_metadata_file = tmp_path / DEFAULT_METADATA_NAME
+    tmp_metadata_file.write_text(
+        """
+                                 something, something, something
+                                 AT0ENK1, bla, rur
+                                 AT0ENK1, bla, sub
+                                 """
+    )
+    reader = ReadCAMS2_83()
+    data = reader.read(vars_to_retrieve=["conco3"], files=[tmp_file])
+    assert isinstance(data, UngriddedData)
+    assert "Time needed to convert obs to ungridded" in caplog.text
+    assert all("station_type" in dict.keys() for dict in data.metadata.values())
