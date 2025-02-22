@@ -4,6 +4,7 @@ Methods and / or classes to perform colocation
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -32,8 +33,6 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyaerocom.ungriddeddata import UngriddedData
@@ -843,7 +842,6 @@ def colocate_gridded_ungridded(
         data_unit = str(data.units)
     else:
         data_unit = None
-
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below

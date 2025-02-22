@@ -77,8 +77,28 @@ S4["concpm10"][0:5] = range(5)
 @pytest.mark.parametrize(
     "stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref,num_valid",
     [
-        (S4, S3, "concpm10", "concpm10", "monthly", "mean", {"monthly": {"daily": 25}}, False, 10),
-        (S3, S4, "concpm10", "concpm10", "monthly", "mean", {"monthly": {"daily": 25}}, False, 24),
+        (
+            S4,
+            S3,
+            "concpm10",
+            "concpm10",
+            "monthly",
+            "mean",
+            {"monthly": {"daily": 25}},
+            False,
+            10,
+        ),
+        (
+            S3,
+            S4,
+            "concpm10",
+            "concpm10",
+            "monthly",
+            "mean",
+            {"monthly": {"daily": 25}},
+            False,
+            24,
+        ),
         (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, False, 12),
         (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, False, 11),
     ],
@@ -152,7 +172,8 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
         ),
         (
             dict(
-                filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS", min_num_obs=const.OBS_MIN_NUM_RESAMPLE
+                filter_name=f"{ALL_REGION_NAME}-wMOUNTAINS",
+                min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
             ),
             "monthly",
             (2, 12, 11),
@@ -205,6 +226,16 @@ def test_colocate_gridded_ungridded(
     assert np.nanmean(coldata.data.data[1]) == pytest.approx(modmean, rel=TEST_RTOL)
 
 
+def test_colocate_gridded_ungridded_wstationtype(data_tm5, aeronetsunv3lev2_subset):
+    fake_type = ["faketype"] * len(aeronetsunv3lev2_subset.station_name)
+    for i, n in enumerate(fake_type):
+        aeronetsunv3lev2_subset.metadata[i].update({"station_type": n})
+    coldata = colocate_gridded_ungridded(
+        data_tm5, aeronetsunv3lev2_subset, add_meta_keys=["station_type"]
+    )
+    assert all(typ == "faketype" for typ in coldata.coords["station_type"].values.tolist())
+
+
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     times = [1, 2]
     time_unit = Unit("days since 2010-1-1 0:0:0")
@@ -213,7 +244,10 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     for time in times:
         time_coord = iris.coords.DimCoord(time, units=time_unit, standard_name="time")
         cube = helpers.make_dummy_cube_latlon(
-            lat_res_deg=1, lon_res_deg=1, lat_range=[30.05, 81.95], lon_range=[-29.5, 89.95]
+            lat_res_deg=1,
+            lon_res_deg=1,
+            lat_range=[30.05, 81.95],
+            lon_range=[-29.5, 89.95],
         )
         cube.add_aux_coord(time_coord)
         cubes.append(cube)
