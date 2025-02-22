@@ -1,3 +1,4 @@
+import string
 from pathlib import Path
 
 import numpy as np
@@ -255,6 +256,39 @@ def test_Colocator_run_gridded_ungridded(
 
     assert np.nanmean(coldata.data[0].values) == pytest.approx(mean_obs, abs=0.01)
     assert np.nanmean(coldata.data[1].values) == pytest.approx(mean_mod, abs=0.01)
+
+
+def test_Colocator_prepare_colocation_args(monkeypatch):
+    def dummy_mdata(*args):
+        d = GriddedData()
+        d.ts_type = "hourly"
+        return d
+
+    def dummy_odata(*args):
+        d = UngriddedData()
+        d.ts_type = "hourly"
+        fake_data = list(string.ascii_lowercase)
+        for i, n in enumerate(fake_data):
+            d.metadata[i] = dict(
+                data_id="testcase",
+                station_name=n,
+                station_type=n,
+            )
+        assert d.station_name == fake_data
+        assert all("station_type" in dict.keys() for dict in d.metadata.values())
+        return d
+
+    with monkeypatch.context() as mp:
+        mp.setattr("pyaerocom.colocation.colocator.Colocator.get_model_data", dummy_mdata)
+        mp.setattr("pyaerocom.colocation.colocator.Colocator.get_obs_data", dummy_odata)
+
+        col_stp = ColocationSetup(**default_setup)
+        colocator = Colocator(col_stp)
+        colocator.start = 2015
+        colocator.stop = None
+        # with pytest.raises(DataDimensionError) as e:
+        args = colocator._prepare_colocation_args("abs550aer", "od550aer")
+        assert args["add_meta_keys"] == ["station_type"]
 
 
 @pytest.mark.parametrize(
