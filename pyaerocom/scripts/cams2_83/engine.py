@@ -6,15 +6,17 @@ import time
 import warnings
 from pathlib import Path
 from reprlib import repr
+from tqdm import tqdm
 
 import numpy as np
 import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web
+from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web, _process_sites, _init_meta_glob, _init_site_coord_arrays
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.aeroval.fairmode_stats import SPECIES
 
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
@@ -24,15 +26,108 @@ class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
         coldata = [ColocatedData(data=file) for file in files]
-        coldata, found_vars = self._sort_coldata(coldata)
+        coldata, persistent_cols, found_vars = self._sort_coldata(coldata)
         start = time.time()
         if var_list is None:
             var_list = list(found_vars)
         for var in var_list:
             logger.info(f"Processing Component: {var}")
-            self.process_coldata(coldata[var])
+            #self.process_coldata(coldata[var])
+
+            self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
 
         logger.info(f"Time for weird plot: {time.time() - start} sec")
+    def make_forecast_target_plots(self, coldata: list[ColocatedData], persistent_coldata: list[ColocatedData], var_name: str) -> None:
+
+        use_weights = self.cfg.statistics_opts.weighted_stats
+        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+        forecast_days = self.cfg.statistics_opts.forecast_days
+        periods = self.cfg.time_cfg.periods
+
+        persistent_coldata = persistent_coldata[0]
+
+        if "var_name_input" in coldata[0].metadata:
+            obs_var = coldata[0].metadata["var_name_input"][0]
+            model_var = coldata[0].metadata["var_name_input"][1]
+        else:
+            obs_var = model_var = "UNDEFINED"
+
+        # for the MOS/ENS evaluation experiment the models are just strings
+        # we do not want them added to the ModelName class
+        # so we need a bunch of ugly special cases here
+        modelname = coldata[0].model_name.split("-")[2]
+        if modelname == "ENS" or modelname == "MOS":
+            model = modelname
+        else:
+            model = ModelName[modelname]
+        vert_code = coldata[0].get_meta_item("vert_code")
+        obs_name = coldata[0].obs_name
+        if modelname == "ENS" or modelname == "MOS":  # MOS/ENS evaluation special case
+            mcfg = self.cfg.model_cfg.get_entry(modelname)
+        else:
+            mcfg = self.cfg.model_cfg.get_entry(model.name)
+        var_name_web = mcfg.get_varname_web(model_var, obs_var)
+        seasons = self.cfg.time_cfg.get_seasons()
+
+        regions_how = "country"
+        use_country = True
+        for i in range(forecast_days):
+            coldata[i].data["season"] = coldata[i].data.time.dt.season
+            (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
+
+        persistent_coldata.data["season"] = persistent_coldata.data.time.dt.season
+        (regborders, regs, regnames) = init_regions_web(persistent_coldata, regions_how)
+        results = {}
+        results_mqi = {}
+
+        for regid, regname in regnames.items():
+            results[regname] = {}
+            logger.info(f"Creating subset for {regname}")
+            try:
+                subset_region = [
+                    col.filter_region(regid, check_country_meta=use_country) for col in coldata
+                ]
+
+                persistent_subset_region = persistent_coldata.filter_region(regid, check_country_meta=use_country)
+            except (DataCoverageError, UnknownRegion) as e:
+                logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
+                continue
+            for per in periods:
+                for season in seasons:
+                    perstr = f"{per}-{season}"
+
+                    stats_list: dict[str, list[float]] = dict(
+                        rms=[], R=[], nmb=[], mnmb=[], fge=[]
+                    )
+                    logger.info(f"Making subset for {regid}, {per} and {season}")
+                    if season not in coldata[0].data["season"].data and season != "all":
+                        logger.info(
+                            f"Season {season} is not available for {per} and will be skipped"
+                        )
+                        continue
+
+                    try:
+                        subset = [
+                            _select_period_season_coldata(col, per, season)
+                            for col in subset_region
+                        ]
+                        #persistent_subset = _select_period_season_coldata(persistent_subset_region, per, season)
+                    except (DataCoverageError, UnknownRegion) as e:
+                        logger.info(f"Skipping forecast target plot due to error {str(e)}")
+                        continue
+
+                    results[f"{regname}"][f"{perstr}"] = {}
+                    breakpoint()
+                    for day in range(forecast_days):
+                        ds = subset[day]
+                        ds_p = persistent_subset_region
+                        #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
+                        mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name)
+
+                        results[f"{regname}"][f"{perstr}"][day] = mqi_results
+                    breakpoint()
+                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
+
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
@@ -193,26 +288,116 @@ class CAMS2_83_Engine(ProcessingEngine):
         )
 
         return r
+    
+    def _calc_forecast_target_MQI(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str) -> dict[str, float]:
+        
+        stations = persistent_coldata.data.station_name.values
+
+        time = coldata.time.values
+        wanted_time = time - np.timedelta64(24,"h")
+        p_time = persistent_coldata.time.values
+
+        mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
+
+        results = {}
+
+        for i in tqdm(range(len(stations))):
+            assert str(persistent_coldata.data.station_name[i].values) == str(coldata.data.station_name[i].values)
+
+            obs_vals = coldata.data.data[0, :, i]
+            mod_vals = coldata.data.data[1, :, i]
+
+            len_data = len(obs_vals)
+
+            p_mod_vals = persistent_coldata.data.data[0,mask,i]
+
+            factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
+            uncertainty_p_obs = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*p_mod_vals**2 + factor)
+
+            p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
+
+            rmse_m = np.nanmean((mod_vals-obs_vals)**2)
+            rmse_p = np.nanmean((p_diff_vals)**2) 
+
+            mqi = rmse_m/rmse_p
+
+            results[stations[i]] = mqi
+
+        breakpoint()
+        return results
+
+    def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str) -> dict[str, float]:
+        
+        stations = persistent_coldata.data.station_name.values
+
+        time = coldata.time.values
+        wanted_time = time - np.timedelta64(24,"h")
+        p_time = persistent_coldata.time.values
+
+        mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
+
+        results = {}
+
+        station_masks =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
+        assert np.all(persistent_coldata.data.station_name.values[station_masks[1]] == coldata.data.station_name.values[station_masks[2]])
+
+        obs_vals = coldata.data.data[0, :, station_masks[2]]
+        mod_vals = coldata.data.data[1, :, station_masks[2]]
+
+        len_data = len(obs_vals)
+
+        p_mod_vals = persistent_coldata.data.data[0,:, station_masks[1]][:,mask]
+
+        assert np.all(p_mod_vals.shape == obs_vals.shape)
+
+        factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
+        uncertainty_p_obs = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*p_mod_vals**2 + factor)
+
+        p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
+
+        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1)
+        rmse_p = np.nanmean((p_diff_vals)**2, axis=1) 
+
+        mqi = rmse_m/rmse_p
+
+        results = {station_masks[0][i]: mqi[i] for i in range(len(mqi))}
+
+        breakpoint()
+        return results
+
+
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
-    ) -> tuple[dict[str, list[ColocatedData]], set[str]]:
+    ) -> tuple[dict[str, list[ColocatedData]], dict[str, list[ColocatedData]], set[str]]:
         col_dict = dict()
+        persistent_dict = dict()
+
+        persistent_var_list = []
         var_list = []
+
 
         for col in coldata:
             obs_var = col.metadata["var_name_input"][0]
 
-            if obs_var in col_dict:
-                col_dict[obs_var].append(col)
+            if "persistent" in col.model_name:
+                if obs_var in persistent_dict:
+                    persistent_dict[obs_var].append(col)
+                else:
+                    persistent_dict[obs_var] = [col]
+                    persistent_var_list.append(obs_var)
             else:
-                col_dict[obs_var] = [col]
-                var_list.append(obs_var)
+                if obs_var in col_dict:
+                    col_dict[obs_var].append(col)
+                else:
+                    col_dict[obs_var] = [col]
+                    var_list.append(obs_var)
 
+        assert set(sorted(var_list)) == set(sorted(persistent_var_list))
         for var, cols in col_dict.items():
             col_dict[var] = sorted(cols, key=lambda x: self._get_day(x.model_name))
 
-        return col_dict, set(var_list)
+        return col_dict, persistent_dict, set(var_list)
 
     def _get_day(self, model_name: str) -> int:
         return int(re.search(".*day([0-3]).*", model_name).group(1))

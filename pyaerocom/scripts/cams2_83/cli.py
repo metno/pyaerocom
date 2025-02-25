@@ -85,7 +85,10 @@ def make_config(
         cfg.update(eval_type.freqs_config())
 
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
-    obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
+    if run_type != RunType.AN:
+        obs_dates = date_range(start_date - timedelta(days=1), end_date + timedelta(days=extra_obs_days))
+    else:
+        obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
         str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
     ]
