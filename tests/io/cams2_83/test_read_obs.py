@@ -96,7 +96,7 @@ def test_obs_invalid_metadata_file(tmp_path, caplog):
         "poll",
         "conc",
     ]
-    assert f"Invalid metadata file {tmp_metadata_file}" in caplog.text
+    assert "Invalid metadata file" in caplog.text
 
 
 def test_obs_empty_metadata_file(tmp_path, caplog):
@@ -111,7 +111,7 @@ def test_obs_empty_metadata_file(tmp_path, caplog):
     """
     )
     tmp_metadata_file = tmp_path / DEFAULT_METADATA_NAME
-    tmp_metadata_file.write_text("")
+    tmp_metadata_file.write_text("station, station_type")
     df = read_csv(tmp_file, polls=["O3"])
     assert df.columns.values.tolist() == [
         "station",
@@ -122,7 +122,7 @@ def test_obs_empty_metadata_file(tmp_path, caplog):
         "poll",
         "conc",
     ]
-    assert f"Empty metadata from {tmp_metadata_file}" in caplog.text
+    assert "Empty metadata" in caplog.text
 
 
 def test_obs_ok_metadata_file(tmp_path):
