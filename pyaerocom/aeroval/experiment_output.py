@@ -389,9 +389,6 @@ class ExperimentOutput(ProjectOutput):
             "Running clean_json_files: Checking json output directories for "
             "outdated or invalid data and cleaning up."
         )
-        # outdirs = self.out_dirs_json
-        # mapfiles = self._get_json_output_files("map")
-        # rmmap = []
         vert_codes = self.cfg.obs_cfg.all_vert_types
         for uri in self.avdb.query(
             [aerovaldb.AssetType.MAP, aerovaldb.AssetType.SCATTER],
@@ -407,28 +404,9 @@ class ExperimentOutput(ProjectOutput):
             if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
                 self.avdb.rm_by_uri(uri)
                 modified.append(uri)
-                # rmmap.append(uri)
             elif vert_code not in vert_codes:
                 self.avdb.rm_by_uri(uri)
                 modified.append(uri)
-                # rmmap.append(uri)
-
-        # for uri in self.avdb.query(aerovaldb.AssetType.SCATTER, project=self.proj_id, experiment=self.exp_id):
-        #    pass
-
-        # scatfiles = os.listdir(outdirs["scat"])
-        # for file_path in rmmap:  # delete map files
-        #    logger.info(f"Deleting outdated map json file: {file_path}.")
-        #    os.remove(file_path)
-        #    modified.append(file_path)
-        #    fname = os.path.basename(file_path)
-        #    if fname in scatfiles:
-        #        scfp = os.path.join(outdirs["scat"], fname)
-        #        logger.info(f"Deleting outdated scatter json file: {scfp}.")
-        #        os.remove(scfp)
-        #        modified.append(file_path)
-
-        # tsfiles = self._get_json_output_files("ts")
 
         for uri in self.avdb.query(
             aerovaldb.AssetType.TIMESERIES, project=self.proj_id, experiment=self.exp_id
@@ -436,36 +414,25 @@ class ExperimentOutput(ProjectOutput):
             if self._check_clean_ts_uri(uri):
                 modified.append(uri)
 
-        # for file_path in tsfiles:
-        #    if self._check_clean_ts_uri(file_path):
-        #        modified.append(file_path)
-        # modified.extend(self._clean_modelmap_files())
         self.update_interface()  # will take care of heatmap data
         return modified
 
     def _check_clean_ts_uri(self, uri) -> bool:
-        # fname = os.path.basename(fp)
-        # spl = fname.split(".json")[0].split("_")
-
         vert_code = uri.meta["layer"]
         obs_name = uri.meta["network"]
 
-        # vert_code, obsinfo = spl[-1], spl[-2]
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
                 f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted."
             )
             self.avdb.rm_by_uri(uri)
-            # os.remove(fp)
             return True
-        # obs_name = str.join("-", obsinfo.split("-")[:-1])
         if obs_name in self._invalid["obs"]:
             logger.info(
                 f"Invalid or outdated obs name {obs_name} in ts file {uri}. "
                 f"File will be deleted."
             )
             self.avdb.rm_by_uri(uri)
-            # os.remove(fp)
             return True
 
         with self.avdb.lock():

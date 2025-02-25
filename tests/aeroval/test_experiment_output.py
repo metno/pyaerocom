@@ -141,63 +141,6 @@ def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout: ExperimentOutp
     dummy_expout._sync_heatmaps_with_menu_and_regions()
 
 
-# def test_ExperimentOutput__info_from_map_file():
-#    output = ExperimentOutput._info_from_map_file(
-#        "EBAS-2010-ac550aer_Surface_ECHAM-HAM-ac550dryaer_2010.json"
-#    )
-#
-#    assert output == (
-#        "EBAS-2010",
-#        "ac550aer",
-#        "Surface",
-#        "ECHAM-HAM",
-#        "ac550dryaer",
-#        "2010",
-#    )
-#
-
-# @pytest.mark.parametrize(
-#    "filename",
-#    [
-#        "blaaaa",
-#        "EBAS-2010-ac550aer_Surface_ECHAM-HAM_ac550dryaer_2010.json",  # has four underscores
-#    ],
-# )
-# def test_ExperimentOutput__info_from_map_file_error(filename: str):
-#    with pytest.raises(ValueError) as e:
-#        ExperimentOutput._info_from_map_file(filename)
-#    assert str(e.value) == (
-#        f"invalid map filename: {filename}. "
-#        "Must contain exactly 3 underscores _ to separate obsinfo, vertical, model info, and periods"
-#    )
-
-
-# def test_ExperimentOutput__info_from_contour_dir_file_webp():
-#    file = pathlib.PosixPath("path/to/var_name_period.webp")
-#    output = ExperimentOutput._info_from_contour_dir_file(file)
-#    assert output == ("name", "var", "period")
-
-
-# def test_ExperimentOutput__info_from_contour_dir_file_geojson():
-#    file = pathlib.PosixPath("path/to/var_model_period.geojson")
-#    output = ExperimentOutput._info_from_contour_dir_file(file)
-#    assert output == ("model", "var", "period")
-
-
-# def test_ExperimentOutput__info_from_contour_dir_file_error():
-#    file = pathlib.PosixPath("path/to/obs_vertical_model_period.geojson")
-#    with pytest.raises(ValueError) as e:
-#        ExperimentOutput._info_from_contour_dir_file(file)
-#    assert "invalid contour filename" in str(e.value)
-
-
-# def test_ExperimentOutput__info_from_contour_dir_file_error_extension():
-#    file = pathlib.PosixPath("path/to/name_vertical_period.txt")
-#    with pytest.raises(NotImplementedError) as e:
-#        ExperimentOutput._info_from_contour_dir_file(file)
-#    assert ".txt file format not supported" in str(e.value)
-
-
 def test_ExperimentOutput__results_summary_EMPTY(dummy_expout: ExperimentOutput):
     assert dummy_expout._results_summary() == dict(obs=[], ovar=[], vc=[], mod=[], mvar=[], per=[])
 
