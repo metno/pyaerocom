@@ -448,7 +448,7 @@ class ExperimentOutput(ProjectOutput):
         # spl = fname.split(".json")[0].split("_")
 
         vert_code = uri.meta["layer"]
-        obs_name = uri.meta["obsvar"]
+        obs_name = uri.meta["network"]
 
         # vert_code, obsinfo = spl[-1], spl[-2]
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
