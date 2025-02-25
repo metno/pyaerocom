@@ -490,7 +490,7 @@ def _init_site_coord_arrays(data):
             if "station_type" in cd.data.coords:
                 sites_types = cd.data.station_type.values
             else:
-                sites_types = [None] * len(sites)
+                sites_types = [""] * len(sites)
             lats = cd.data.latitude.values.astype(np.float64)
             lons = cd.data.longitude.values.astype(np.float64)
             if "altitude" in cd.data.coords:
