@@ -99,8 +99,8 @@ S4["concpm10"][0:5] = range(5)
             False,
             24,
         ),
-        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, False, 12),
-        (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, False, 11),
+        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 12),
+        (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
     ],
 )
 def test__colocate_site_data_helper_timecol(
@@ -179,17 +179,6 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
             (2, 12, 11),
             0.269707,
             0.243861,
-        ),
-        (
-            dict(
-                filter_name=f"{ALL_REGION_NAME}-noMOUNTAINS",
-                use_climatology_ref=True,
-                min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
-            ),
-            "monthly",
-            (2, 12, 13),
-            0.302636,
-            0.234147,
         ),
         pytest.param(
             dict(

@@ -11,6 +11,7 @@ from pydantic import (
 )
 
 from pyaerocom import const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits
 from pyaerocom.exceptions import InitialisationError
 
@@ -106,6 +107,10 @@ class ObsEntry(BaseModel):
         preprocessed outside of pyaerocom. This is the directory in which the
         colocated data files are located.
 
+    obs_use_climatology : ClimatologyConfig | bool, optional
+        Configuration for climatology. If True is given, a default configuration is made.
+        With False, climatology is turned off
+
     """
 
     ##   Pydantic ConfigDict
@@ -146,6 +151,8 @@ class ObsEntry(BaseModel):
     coldata_dir: str | Path | None = (
         None  # TODO: Would like this to be a Path but need to see if it will cause issues down the line
     )
+
+    obs_use_climatology: ClimatologyConfig | bool = False
 
     #############
     ## Validators
