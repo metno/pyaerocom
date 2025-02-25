@@ -13,8 +13,8 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import RegridResDeg
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -859,9 +859,7 @@ def colocate_gridded_ungridded(
         lats[i] = obs_stat.latitude
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
-        station_types[i] = None
-        if hasattr(obs_stat, "station_type"):
-            station_types[i] = obs_stat.station_type
+        station_types[i] = getattr(obs_stat, "station_type", "")
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
@@ -978,7 +976,7 @@ def colocate_gridded_ungridded(
         "from_files": files,
         "from_files_ref": None,
         "colocate_time": colocate_time,
-        "obs_is_clim": True if isinstance(use_climatology_ref, ClimatologyConfig) else False,
+        "obs_is_clim": (True if isinstance(use_climatology_ref, ClimatologyConfig) else False),
         "pyaerocom": pya_ver,
         "min_num_obs": min_num_obs,
         "resample_how": resample_how,

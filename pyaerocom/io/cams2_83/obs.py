@@ -74,21 +74,25 @@ def read_csv(
     if (df.conc <= 0).any():
         logger.warning("found negative obs")
         df = df[df.conc > 0]
+
+    df = df["station lat lon alt time poll conc".split()]
+
     metadata_file_path = Path(path).parent.parent / DEFAULT_METADATA_NAME
-    if metadata_file_path.is_file():
-        try:
-            df_metadata = read_metadata(metadata_file_path)
-        except ParserError as e:
-            logger.warning(f"Invalid metadata file {path}, {e}")
-            df_metadata = pd.DataFrame()
-        if not df_metadata.empty:
-            df = df.merge(df_metadata, on="station", how="left")
-            return df["station lat lon alt time poll conc station_type".split()]
-        else:
-            logger.warning("Empty metadata")
-    else:
+    if not metadata_file_path.is_file():
         logger.warning(f"Metadata file {metadata_file_path} does not exist")
-    return df["station lat lon alt time poll conc".split()]
+        return df
+
+    try:
+        df_metadata = read_metadata(metadata_file_path)
+    except ParserError as e:
+        logger.warning(f"Invalid metadata file {path}, {e}")
+        return df
+
+    if df_metadata.empty:
+        logger.warning("Empty metadata")
+        return df
+
+    return df.merge(df_metadata, on="station", how="left")
 
 
 def read_metadata(path: str | Path) -> pd.DataFrame:
