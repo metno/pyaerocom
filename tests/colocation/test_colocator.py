@@ -12,6 +12,7 @@ from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.fixtures.data_access import TEST_DATA
+from pyaerocom.climatology_config import ClimatologyConfig
 
 COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 
@@ -210,12 +211,12 @@ def test_Colocator_run_gridded_gridded(setup):
             dict(
                 model_use_vars={"od550aer": "abs550aer"},
                 model_use_climatology=True,
-                obs_use_climatology=True,
+                obs_use_climatology=ClimatologyConfig(set_year=2010),
             ),
             "abs550aer",
             "od550aer",
             (2, 12, 1),
-            0.123,
+            0.135,  # 0.123,
             0.002,
         ),
         (
@@ -227,7 +228,10 @@ def test_Colocator_run_gridded_gridded(setup):
             0.002,
         ),
         (
-            dict(model_use_vars={"od550aer": "abs550aer"}, obs_use_climatology=True),
+            dict(
+                model_use_vars={"od550aer": "abs550aer"},
+                obs_use_climatology=ClimatologyConfig(set_year=2010),
+            ),
             "abs550aer",
             "od550aer",
             (2, 12, 16),

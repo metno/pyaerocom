@@ -12,6 +12,7 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -433,8 +434,9 @@ def _colocate_site_data_helper(
         to aggregate from hourly to daily, rather than the mean.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
-    use_climatology_ref : bool
-        if True, climatological timeseries are used from observations
+    use_climatology_ref : ClimateConfig | bool, optional
+        If provided, the climatology will be calculated from the config
+
 
     Raises
     ------
@@ -454,8 +456,17 @@ def _colocate_site_data_helper(
         var, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
     )[var]
 
-    if use_climatology_ref:
-        obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[var_ref]
+    if isinstance(use_climatology_ref, ClimatologyConfig):
+        obs_ts = stat_data_ref.calc_climatology(
+            var_ref,
+            start=use_climatology_ref.start,
+            stop=use_climatology_ref.stop,
+            min_num_obs=min_num_obs,
+            clim_mincount=use_climatology_ref.min_count,
+            resample_how=use_climatology_ref.resample_how,
+            clim_freq=use_climatology_ref.freq,
+            set_year=use_climatology_ref.set_year,
+        )[var_ref]
     else:
         obs_ts = stat_data_ref.resample_time(
             var_ref,
@@ -507,15 +518,15 @@ def _colocate_site_data_helper_timecol(
         to aggregate from hourly to daily, rather than the mean.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
-    use_climatology_ref : bool
-        if True, NotImplementedError is raised
+    use_climatology_ref: ClimateConfig | bool
+        if provided, NotImplementedError is raised
 
     Raises
     ------
     TemporalResolutionError
         if model or obs sampling frequency is lower than desired output frequency
     NotImplementedError
-        if input arg `use_climatology_ref` is True.
+        if input arg `use_climatology_ref` is provided.
 
     Returns
     -------
@@ -523,10 +534,9 @@ def _colocate_site_data_helper_timecol(
         dataframe containing the colocated input data (column names are
         data and ref)
     """
-    if use_climatology_ref:
+    if isinstance(use_climatology_ref, ClimatologyConfig):
         raise NotImplementedError(
-            "Using observation climatology in colocation with option "
-            "colocate_time=True is not available yet ..."
+            "Using observation climatology in colocation with option colocate_time is not available yet"
         )
 
     grid_tst = stat_data.get_var_ts_type(var)
@@ -678,8 +688,8 @@ def colocate_gridded_ungridded(
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time
         *before* resampling to lower resolution.
-    use_climatology_ref : bool
-        if True, climatological timeseries are used from observations
+    use_climatology_ref : ClimateConfig | bool, optional.
+        Configuration for calculating the climatology. If set to a bool, this will not be done
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -763,10 +773,10 @@ def colocate_gridded_ungridded(
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
 
-    if use_climatology_ref:
-        col_freq = "monthly"
-        obs_start = const.CLIM_START
-        obs_stop = const.CLIM_STOP
+    if isinstance(use_climatology_ref, ClimatologyConfig):  # pragma: no cover
+        col_freq = use_climatology_ref.freq
+        obs_start = use_climatology_ref.start
+        obs_stop = use_climatology_ref.stop
     else:
         col_freq = str(ts_type)
         obs_start = start
@@ -966,7 +976,7 @@ def colocate_gridded_ungridded(
         "from_files": files,
         "from_files_ref": None,
         "colocate_time": colocate_time,
-        "obs_is_clim": use_climatology_ref,
+        "obs_is_clim": True if isinstance(use_climatology_ref, ClimatologyConfig) else False,
         "pyaerocom": pya_ver,
         "min_num_obs": min_num_obs,
         "resample_how": resample_how,
