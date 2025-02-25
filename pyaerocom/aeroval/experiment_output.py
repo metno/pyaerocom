@@ -389,82 +389,91 @@ class ExperimentOutput(ProjectOutput):
             "Running clean_json_files: Checking json output directories for "
             "outdated or invalid data and cleaning up."
         )
-        outdirs = self.out_dirs_json
-        mapfiles = self._get_json_output_files("map")
-        rmmap = []
+        # outdirs = self.out_dirs_json
+        # mapfiles = self._get_json_output_files("map")
+        # rmmap = []
         vert_codes = self.cfg.obs_cfg.all_vert_types
-        for file_path in mapfiles:
-            try:
-                (
-                    obs_network,
-                    obs_var,
-                    vert_code,
-                    mod_name,
-                    mod_var,
-                    time_period,
-                ) = self._info_from_map_file(file_path)
-            except Exception as e:
-                logger.warning(
-                    f"FATAL: invalid file convention for map json file:"
-                    f" {file_path}. This file will be deleted. Error message: "
-                    f"{repr(e)}"
-                )
-                rmmap.append(file_path)
-                continue
+        for uri in self.avdb.query(
+            [aerovaldb.AssetType.MAP, aerovaldb.AssetType.SCATTER],
+            project=self.proj_id,
+            experiment=self.exp_id,
+        ):
+            obs_network = uri.meta["network"]
+            obs_var = uri.meta["obsvar"]
+            vert_code = uri.meta["layer"]
+            mod_name = uri.meta["model"]
+            mod_var = uri.meta["modvar"]
+
             if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
-                rmmap.append(file_path)
+                self.avdb.rm_by_uri(uri)
+                modified.append(uri)
+                # rmmap.append(uri)
             elif vert_code not in vert_codes:
-                rmmap.append(file_path)
+                self.avdb.rm_by_uri(uri)
+                modified.append(uri)
+                # rmmap.append(uri)
 
-        scatfiles = os.listdir(outdirs["scat"])
-        for file_path in rmmap:  # delete map files
-            logger.info(f"Deleting outdated map json file: {file_path}.")
-            os.remove(file_path)
-            modified.append(file_path)
-            fname = os.path.basename(file_path)
-            if fname in scatfiles:
-                scfp = os.path.join(outdirs["scat"], fname)
-                logger.info(f"Deleting outdated scatter json file: {scfp}.")
-                os.remove(scfp)
-                modified.append(file_path)
+        # for uri in self.avdb.query(aerovaldb.AssetType.SCATTER, project=self.proj_id, experiment=self.exp_id):
+        #    pass
 
-        tsfiles = self._get_json_output_files("ts")
+        # scatfiles = os.listdir(outdirs["scat"])
+        # for file_path in rmmap:  # delete map files
+        #    logger.info(f"Deleting outdated map json file: {file_path}.")
+        #    os.remove(file_path)
+        #    modified.append(file_path)
+        #    fname = os.path.basename(file_path)
+        #    if fname in scatfiles:
+        #        scfp = os.path.join(outdirs["scat"], fname)
+        #        logger.info(f"Deleting outdated scatter json file: {scfp}.")
+        #        os.remove(scfp)
+        #        modified.append(file_path)
 
-        for file_path in tsfiles:
-            if self._check_clean_ts_file(file_path):
-                modified.append(file_path)
-        modified.extend(self._clean_modelmap_files())
+        # tsfiles = self._get_json_output_files("ts")
+
+        for uri in self.avdb.query(
+            aerovaldb.AssetType.TIMESERIES, project=self.proj_id, experiment=self.exp_id
+        ):
+            if self._check_clean_ts_uri(uri):
+                modified.append(uri)
+
+        # for file_path in tsfiles:
+        #    if self._check_clean_ts_uri(file_path):
+        #        modified.append(file_path)
+        # modified.extend(self._clean_modelmap_files())
         self.update_interface()  # will take care of heatmap data
         return modified
 
-    def _check_clean_ts_file(self, fp) -> bool:
-        fname = os.path.basename(fp)
-        spl = fname.split(".json")[0].split("_")
-        vert_code, obsinfo = spl[-1], spl[-2]
+    def _check_clean_ts_uri(self, uri) -> bool:
+        # fname = os.path.basename(fp)
+        # spl = fname.split(".json")[0].split("_")
+
+        vert_code = uri.meta["layer"]
+        obs_name = uri.meta["obsvar"]
+
+        # vert_code, obsinfo = spl[-1], spl[-2]
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vert_code} in ts file {fp}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted."
             )
-            os.remove(fp)
+            self.avdb.rm_by_uri(uri)
+            # os.remove(fp)
             return True
-        obs_name = str.join("-", obsinfo.split("-")[:-1])
+        # obs_name = str.join("-", obsinfo.split("-")[:-1])
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {fp}. "
+                f"Invalid or outdated obs name {obs_name} in ts file {uri}. "
                 f"File will be deleted."
             )
-            os.remove(fp)
+            self.avdb.rm_by_uri(uri)
+            # os.remove(fp)
             return True
 
         with self.avdb.lock():
             try:
-                # TODO: Hack to get uri. Ideally this should be rewritten to use URIs directly further
-                # up.
-                uri = self.avdb._get_query_entry_for_file(fp).uri
                 data = self.avdb.get_by_uri(uri)
             except Exception:
-                logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
-                os.remove(fp)
+                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file...")
+                self.avdb.rm_by_uri(uri)
                 return True
 
             models_avail = list(data)
@@ -479,9 +488,10 @@ class ExperimentOutput(ProjectOutput):
                     data_new[mod_name] = data[mod_name]
                 else:
                     modified = True
-                    logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
+                    logger.info(f"Removing data for model {mod_name} from ts file: {uri}")
 
             self.avdb.put_by_uri(data_new, uri)
+
         return modified
 
     def _clean_modelmap_files(self) -> list[str]:
