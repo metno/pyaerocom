@@ -14,7 +14,6 @@ import numpy as np
 
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
-    conco3=dict(UrRV=0.18, RV=120, alpha=0.79),
     conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79),
     concpm10=dict(UrRV=0.28, RV=50, alpha=0.25),
     concpm25=dict(UrRV=0.36, RV=25, alpha=0.5),
@@ -53,9 +52,17 @@ def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
     return rms / (rmsu * beta)
 
 
-def fairmode_stats(obs_var: str, stats: dict) -> dict:
+def fairmode_stats(obs_var: str, stats: dict, freq: str) -> dict:
     if obs_var not in SPECIES or np.isnan(list(stats.values())).any():
         return {}
+
+    # compute only what it makes sense to compute
+    if obs_var == "concno2":
+        if freq != "hourly":
+            return {}
+    else:
+        if freq != "daily":
+            return {}
 
     mean = stats["refdata_mean"]
     obs_std = stats["refdata_std"]

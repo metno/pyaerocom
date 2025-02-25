@@ -185,11 +185,14 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
         # Comparison of several models
         MODEL = CFG["model_cfg"]["EMEP"]
+        PLTTYPES = CFG["plot_types"]["EMEP"]
         for mid, fpath in dir_versions.items():
             CFG["model_cfg"][mid] = MODEL.copy()
+            CFG["plot_types"][mid] = PLTTYPES.copy()
             CFG["model_cfg"][mid]["model_data_dir"] = fpath
             CFG["model_cfg"][mid]["model_id"] = mid
         del CFG["model_cfg"]["EMEP"]
+        del CFG["plot_types"]["EMEP"]
 
         # change some config settings, usually not needed
         CFG.update(

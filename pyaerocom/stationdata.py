@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 import warnings
 from copy import deepcopy
@@ -88,7 +89,7 @@ class StationData(StationMetaData):
     def __init__(self, **meta_info):
         self.dtime = []
 
-        self.var_info = BrowseDict()
+        self.var_info: BrowseDict[xr.DataArray, pd.Series] = BrowseDict()
 
         self.station_coords = dict.fromkeys(self.STANDARD_COORD_KEYS)
 
@@ -117,7 +118,7 @@ class StationData(StationMetaData):
         """Number of variables available in this data object"""
         return list(self.var_info)
 
-    def has_var(self, var_name):
+    def has_var(self, var_name: str) -> bool:
         """Checks if input variable is available in data object
 
         Parameters
@@ -139,7 +140,7 @@ class StationData(StationMetaData):
             )
         return True
 
-    def get_unit(self, var_name):
+    def get_unit(self, var_name: str) -> str:
         """Get unit of variable data
 
         Parameters
@@ -174,14 +175,14 @@ class StationData(StationMetaData):
             )
 
     @property
-    def units(self):
+    def units(self) -> dict[str, str]:
         """Dictionary containing units of all variables in this object"""
         ud = {}
         for var in self.var_info:
             ud[var] = self.get_unit(var)
         return ud
 
-    def check_var_unit_aerocom(self, var_name):
+    def check_var_unit_aerocom(self, var_name: str):
         """Check if unit of input variable is AeroCom default, if not, convert
 
         Parameters
@@ -206,7 +207,7 @@ class StationData(StationMetaData):
         except Exception:
             self.convert_unit(var_name, to_unit)
 
-    def check_unit(self, var_name, unit=None):
+    def check_unit(self, var_name: str, unit: str | None = None):
         """Check if variable unit corresponds to a certain unit
 
         Parameters
@@ -233,7 +234,7 @@ class StationData(StationMetaData):
         if not get_unit_conversion_fac(u, unit, var_name) == 1:
             raise DataUnitError(f"Invalid unit {u} (expected {unit})")
 
-    def convert_unit(self, var_name, to_unit):
+    def convert_unit(self, var_name: str, to_unit: str):
         """Try to convert unit of data
 
         Requires that unit of input variable is available in :attr:`var_info`
@@ -268,7 +269,7 @@ class StationData(StationMetaData):
             f"from {unit} to {to_unit}"
         )
 
-    def dist_other(self, other):
+    def dist_other(self, other: StationData) -> float:
         """Distance to other station in km
 
         Parameters
@@ -295,7 +296,7 @@ class StationData(StationMetaData):
             cother["altitude"],
         )
 
-    def same_coords(self, other, tol_km=None):
+    def same_coords(self, other: StationData, tol_km: float | None = None) -> bool:
         """Compare station coordinates of other station with this station
 
         Parameters
@@ -315,7 +316,7 @@ class StationData(StationMetaData):
             tol_km = self._COORD_MAX_VAR
         return True if self.dist_other(other) < tol_km else False
 
-    def get_station_coords(self, force_single_value=True):
+    def get_station_coords(self, force_single_value: bool = True) -> dict[str, float]:
         """Return coordinates as dictionary
 
         This method uses the standard coordinate names defined in
@@ -385,10 +386,10 @@ class StationData(StationMetaData):
 
     def get_meta(
         self,
-        force_single_value=True,
-        quality_check=True,
-        add_none_vals=False,
-        add_meta_keys=None,
+        force_single_value: bool = True,
+        quality_check: bool = True,
+        add_none_vals: bool = False,
+        add_meta_keys: str | list[str] | None = None,
     ):
         """Return meta-data as dictionary
 
@@ -556,13 +557,13 @@ class StationData(StationMetaData):
 
     def merge_meta_same_station(
         self,
-        other,
-        coord_tol_km=None,
-        check_coords=True,
-        inplace=True,
-        add_meta_keys=None,
-        raise_on_error=False,
-    ):
+        other: StationData,
+        coord_tol_km: float | None = None,
+        check_coords: bool = True,
+        inplace: bool = True,
+        add_meta_keys: str | list[str] | None = None,
+        raise_on_error: bool = False,
+    ) -> StationData:
         """Merge meta information from other object
 
         Note
@@ -643,7 +644,7 @@ class StationData(StationMetaData):
 
         return obj
 
-    def merge_varinfo(self, other, var_name):
+    def merge_varinfo(self, other: StationData, var_name: str) -> StationData:
         """Merge variable specific meta information from other object
 
         Parameters
@@ -690,7 +691,7 @@ class StationData(StationMetaData):
                             info_this[key] = [info_this[key], val]
         return self
 
-    def check_if_3d(self, var_name):
+    def check_if_3d(self, var_name: str) -> bool:
         """Checks if altitude data is available in this object"""
         if "altitude" in self:
             val = self["altitude"]
@@ -707,7 +708,7 @@ class StationData(StationMetaData):
             return True
         return False
 
-    def _check_ts_types_for_merge(self, other, var_name):
+    def _check_ts_types_for_merge(self, other: StationData, var_name: str):
         ts_type = self.get_var_ts_type(var_name)
         ts_type1 = other.get_var_ts_type(var_name)
         if ts_type != ts_type1:
@@ -736,7 +737,13 @@ class StationData(StationMetaData):
                 info["ts_type"] = self.ts_type
         self.ts_type = None
 
-    def _merge_vardata_2d(self, other, var_name, resample_how=None, min_num_obs=None):
+    def _merge_vardata_2d(
+        self,
+        other: StationData,
+        var_name: str,
+        resample_how: str | None = None,
+        min_num_obs: dict | int | None = None,
+    ):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         ts_type = self._check_ts_types_for_merge(other, var_name)
 
@@ -795,7 +802,7 @@ class StationData(StationMetaData):
 
         return self
 
-    def merge_vardata(self, other, var_name, **kwargs):
+    def merge_vardata(self, other: StationData, var_name: str, **kwargs):
         """Merge variable data from other object into this object
 
         Note
@@ -854,7 +861,13 @@ class StationData(StationMetaData):
         else:
             return self._merge_vardata_2d(other, var_name, **kwargs)
 
-    def merge_other(self, other, var_name, add_meta_keys=None, **kwargs):
+    def merge_other(
+        self,
+        other: StationData,
+        var_name: str,
+        add_meta_keys: str | list[str] | None = None,
+        **kwargs,
+    ) -> StationData:
         """Merge other station data object
 
         Todo
@@ -894,7 +907,7 @@ class StationData(StationMetaData):
         elif not len(self.dtime) > 0:
             raise AttributeError("No timestamps available")
 
-    def get_var_ts_type(self, var_name, try_infer=True):
+    def get_var_ts_type(self, var_name: str, try_infer: bool = True):
         """Get ts_type for a certain variable
 
         Note
@@ -949,7 +962,13 @@ class StationData(StationMetaData):
                 pass  # Raise standard error
         raise MetaDataError(f"Could not access ts_type for {var_name}")
 
-    def remove_outliers(self, var_name, low=None, high=None, check_unit=True):
+    def remove_outliers(
+        self,
+        var_name: str,
+        low: float | None = None,
+        high: float | None = None,
+        check_unit: bool = True,
+    ):
         """Remove outliers from one of the variable timeseries
 
         Parameters
@@ -990,7 +1009,7 @@ class StationData(StationMetaData):
 
     def calc_climatology(
         self,
-        var_name,
+        var_name: str,
         start=None,
         stop=None,
         min_num_obs=None,
@@ -998,7 +1017,7 @@ class StationData(StationMetaData):
         clim_freq=None,
         set_year=None,
         resample_how=None,
-    ):
+    ) -> StationData:
         """Calculate climatological timeseries for input variable
 
 
@@ -1110,7 +1129,7 @@ class StationData(StationMetaData):
         return new
 
     def resample_time(
-        self, var_name, ts_type, how=None, min_num_obs=None, inplace=False, **kwargs
+        self, var_name: str, ts_type: str, how=None, min_num_obs=None, inplace=False, **kwargs
     ):
         """Resample one of the time-series in this object
 
@@ -1188,7 +1207,7 @@ class StationData(StationMetaData):
 
         return outdata
 
-    def resample_timeseries(self, var_name, **kwargs):
+    def resample_timeseries(self, var_name: str, **kwargs):
         """Wrapper for :func:`resample_time` (for backwards compatibility)
 
         Note
@@ -1204,7 +1223,7 @@ class StationData(StationMetaData):
         )
         return self.resample_time(var_name, **kwargs)[var_name]
 
-    def remove_variable(self, var_name):
+    def remove_variable(self, var_name: str):
         """Remove variable data
 
         Parameters
@@ -1229,7 +1248,7 @@ class StationData(StationMetaData):
             self.var_info.pop(var_name)
         return self
 
-    def insert_nans_timeseries(self, var_name):
+    def insert_nans_timeseries(self, var_name: str) -> StationData:
         """Fill up missing values with NaNs in an existing time series
 
         Note
@@ -1242,9 +1261,6 @@ class StationData(StationMetaData):
         ---------
         var_name : str
             variable name
-        inplace : bool
-            if True, the actual data in this object will be overwritten with
-            the new data that contains NaNs
 
         Returns
         -------
@@ -1258,7 +1274,7 @@ class StationData(StationMetaData):
 
         return self
 
-    def _to_ts_helper(self, var_name):
+    def _to_ts_helper(self, var_name: str) -> pd.Series:
         """Convert data internally to pandas.Series if it is not stored as such
 
         Parameters
@@ -1289,7 +1305,7 @@ class StationData(StationMetaData):
         self[var_name] = s = pd.Series(data, index=self.dtime)
         return s
 
-    def select_altitude(self, var_name, altitudes):
+    def select_altitude(self, var_name: str, altitudes: list) -> pd.Series | xr.DataArray:
         """Extract variable data within certain altitude range
 
         Note
@@ -1351,7 +1367,7 @@ class StationData(StationMetaData):
             f"Cannot extract altitudes: type of {var_name} ({type(data)}) is not supported"
         )
 
-    def to_timeseries(self, var_name, **kwargs):
+    def to_timeseries(self, var_name: str, **kwargs) -> pd.Series:
         """Get pandas.Series object for one of the data columns
 
         Parameters
@@ -1398,7 +1414,14 @@ class StationData(StationMetaData):
 
         return data
 
-    def plot_timeseries(self, var_name, add_overlaps=False, legend=True, tit=None, **kwargs):
+    def plot_timeseries(
+        self,
+        var_name: str,
+        add_overlaps: bool = False,
+        legend: bool = True,
+        tit: str | None = None,
+        **kwargs,
+    ):
         """
         Plot timeseries for variable
 
@@ -1482,7 +1505,7 @@ class StationData(StationMetaData):
             ax.legend()
         return ax
 
-    def copy(self):
+    def copy(self) -> StationData:
         new = StationData()
         for key, val in self.items():
             cpv = deepcopy(val)
@@ -1490,7 +1513,7 @@ class StationData(StationMetaData):
 
         return new
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation"""
         head = f"Pyaerocom {type(self).__name__}"
         s = f"\n{head}\n{len(head) * '-'}"

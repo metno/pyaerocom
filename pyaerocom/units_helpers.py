@@ -244,7 +244,7 @@ def _unit_conversion_fac_si(from_unit, to_unit):
         raise UnitConversionError(f"Failed to convert unit from {from_unit} to {to_unit}")
 
 
-def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
+def _get_unit_conversion_fac_helper(from_unit: str, to_unit: str, var_name: str | None = None):
     """
     Helper for unit conversion
 
@@ -279,7 +279,7 @@ def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
     return _unit_conversion_fac_si(from_unit, to_unit) * pre_conv_fac
 
 
-def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
+def get_unit_conversion_fac(from_unit: str, to_unit: str, var_name=None, ts_type=None):
     try:
         return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:

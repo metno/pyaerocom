@@ -24,6 +24,7 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.filter import Filter
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import (
     get_lowest_resolution,
     isnumeric,
@@ -33,12 +34,17 @@ from pyaerocom.helpers import (
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyaerocom.ungriddeddata import UngriddedData
+
 from .colocated_data import ColocatedData
 
 logger = logging.getLogger(__name__)
 
 
-def resolve_var_name(data):
+def resolve_var_name(data: GriddedData) -> tuple[str, str]:
     """
     Check variable name of `GriddedData` against AeroCom default
 
@@ -607,8 +613,8 @@ def _colocate_site_data_helper_timecol(
 
 
 def colocate_gridded_ungridded(
-    data,
-    data_ref,
+    data: GriddedData,
+    data_ref: "UngriddedData",
     ts_type=None,
     start=None,
     stop=None,

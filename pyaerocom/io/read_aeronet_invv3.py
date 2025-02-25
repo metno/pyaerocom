@@ -105,7 +105,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
         Example
         -------
         >>> import pyaerocom.io as pio
-        >>> obj = pio.read_aeronet_invv2.ReadAeronetInvV2()
+        >>> obj = pio.read_aeronet_invv3.ReadAeronetInvV3()
         >>> files = obj.get_file_list()
         >>> filedata = obj.read_file(files[0])
         """

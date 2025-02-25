@@ -188,7 +188,7 @@ def numbers_in_str(input_string):
     Example
     -------
     >>> numbers_in_str('Bla42Blub100')
-    [42, 100]
+    ['42', '100']
     """
     numbers = []
     IN_NUM = False
@@ -227,7 +227,7 @@ def exponent(num):
     -------
     >>> from pyaerocom.mathutils import exponent
     >>> exponent(2340)
-    3
+    np.int64(3)
     """
     return np.floor(np.log10(abs(np.asarray(num)))).astype(int)
 
@@ -251,11 +251,11 @@ def range_magnitude(low, high):
     -------
 
     >>> range_magnitude(0.1, 100)
-    3
+    np.int64(3)
     >>> range_magnitude(100, 0.1)
-    -3
+    np.int64(-3)
     >>> range_magnitude(1e-3, 1e6)
-    9
+    np.int64(9)
 
     """
     return exponent(high) - exponent(low)

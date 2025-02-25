@@ -15,6 +15,7 @@ from pyaerocom._lowlevel_helpers import (
     TypeValidator,
     sort_dict_by_name,
 )
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     VariableInfo,
@@ -28,7 +29,6 @@ from pyaerocom.aeroval.glob_defaults import (
 )
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
-from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
@@ -339,18 +339,17 @@ class ExperimentOutput(ProjectOutput):
         str
             Time period
         """
-        spl = os.path.basename(file.name).split(file.suffix)[0].split("_")
+        suffix = file.suffix
+        spl = os.path.basename(file.name).split(suffix)[0].split("_")
 
-        if len(spl) == 3:  # png, webp
-            name = spl[0]
-            var_name = spl[1]
-            per = spl[2]
-            return (name, var_name, per)
-        elif len(spl) == 2:  # geojson
-            name = spl[1]
-            var_name = spl[0]
-            per = None
-            return (name, var_name, per)
+        if len(spl) == 3:
+            if suffix == ".png" or suffix == ".webp" or suffix == ".geojson":
+                name = spl[1]
+                var_name = spl[0]
+                per = spl[2]
+                return (name, var_name, per)
+            else:
+                raise NotImplementedError(f"{suffix} file format not supported")
         else:
             raise ValueError(f"invalid contour filename: {file}")
 

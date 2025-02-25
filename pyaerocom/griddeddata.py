@@ -2052,7 +2052,7 @@ class GriddedData:
         """
         from pyaerocom.io.helpers import aerocom_savename
 
-        if vert_code is None and self.metadata["vert_code"] is not None:
+        if vert_code is None and self.metadata.get("vert_code", None) is not None:
             vert_code = self.metadata["vert_code"]
 
         if vert_code in (None, ""):
@@ -2171,17 +2171,6 @@ class GriddedData:
         -------
         GriddedData
             new data object containing interpolated data
-
-        Examples
-        --------
-
-            >>> from pyaerocom import GriddedData
-            >>> data = GriddedData()
-            >>> data._init_testdata_default()
-            >>> itp = data.interpolate([("longitude", (10)),
-            ...                         ("latitude" , (35))])
-            >>> print(itp.shape)
-            (365, 1, 1)
         """
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
