@@ -6,6 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 from pyaerocom.config import ALL_REGION_NAME
@@ -13,7 +14,6 @@ from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.fixtures.data_access import TEST_DATA
-from pyaerocom.climatology_config import ClimatologyConfig
 
 COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 
@@ -292,6 +292,46 @@ def test_Colocator_prepare_colocation_args(monkeypatch):
         # with pytest.raises(DataDimensionError) as e:
         args = colocator._prepare_colocation_args("abs550aer", "od550aer")
         assert args["add_meta_keys"] == ["station_type"]
+
+
+def test_Colocator_prepare_colocation_args_malformed_metadata(monkeypatch):
+    def dummy_mdata(*args):
+        d = GriddedData()
+        d.ts_type = "hourly"
+        return d
+
+    def dummy_odata(*args):
+        d = UngriddedData()
+        d.ts_type = "hourly"
+        fake_data = list(string.ascii_lowercase)
+        # add station_type only to some
+        for i, n in enumerate(fake_data):
+            if i > len(fake_data) / 2:
+                d.metadata[i] = dict(
+                    data_id="testcase",
+                    station_name=n,
+                    station_type=n,
+                )
+            else:
+                d.metadata[i] = dict(
+                    data_id="testcase",
+                    station_name=n,
+                )
+
+        assert not all("station_type" in dict.keys() for dict in d.metadata.values())
+        return d
+
+    with monkeypatch.context() as mp:
+        mp.setattr("pyaerocom.colocation.colocator.Colocator.get_model_data", dummy_mdata)
+        mp.setattr("pyaerocom.colocation.colocator.Colocator.get_obs_data", dummy_odata)
+
+        col_stp = ColocationSetup(**default_setup)
+        colocator = Colocator(col_stp)
+        colocator.start = 2015
+        colocator.stop = None
+        with pytest.raises(ValueError) as e:
+            colocator._prepare_colocation_args("abs550aer", "od550aer")
+        assert "some stations have `station_type` metadata while others do not" == e.value.args[0]
 
 
 @pytest.mark.parametrize(
