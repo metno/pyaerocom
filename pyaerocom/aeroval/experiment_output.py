@@ -131,18 +131,33 @@ class ExperimentOutput(ProjectOutput):
         """
         bool: True if results are available for this experiment, else False
         """
-        if self.exp_id not in os.listdir(self.proj_dir):
-            return False
-        elif self.cfg.processing_opts.only_model_maps and not (
-            self._has_files(self.out_dirs_json["contour"])
-            or self._has_files(self.out_dirs_json["overlay"])
+        if self.cfg.processing_opts.only_model_maps and not (
+            len(
+                self.avdb.query(
+                    [aerovaldb.AssetType.CONTOUR, aerovaldb.AssetType.CONTOUR_TIMESPLIT],
+                    project=self.proj_id,
+                    experiment=self.exp_id,
+                )
+            )
+            == 0
+            or len(
+                self.avdb.query(
+                    [aerovaldb.AssetType.MAP_OVERLAY], project=self.proj_id, experiment=self.exp_id
+                )
+            )
+            == 0
         ):
             return False
-        elif (
-            not len(self._get_json_output_files("map")) > 0
-            and not self.cfg.processing_opts.only_model_maps
-        ):
-            return False
+        elif not self.cfg.processing_opts.only_model_maps:
+            if (
+                len(
+                    self.avdb.query(
+                        aerovaldb.AssetType.MAP, project=self.proj_id, experiment=self.exp_id
+                    )
+                )
+                == 0
+            ):
+                return False
         return True
 
     @property

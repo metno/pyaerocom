@@ -2,7 +2,6 @@ from copy import deepcopy
 import pytest
 import numpy as np
 from pathlib import Path
-import json
 
 from pyaerocom.aeroval.bulkfraction_engine import BulkFractionEngine
 from pyaerocom.aeroval import ExperimentProcessor
@@ -223,13 +222,11 @@ def test_run_cfg(cfg: dict):
     output: ExperimentOutput = proc.exp_output
     assert Path(output.exp_dir).is_dir()
 
-    assert Path(output.experiments_file).exists()
-
-    ts_path = Path(output.exp_dir) / "ts/ALL_AERONET-Sun_fraction_Column.json"
-    with open(ts_path) as f:
-        data = json.load(f)
-        m_data = data[model_name]["monthly_mod"]
-        o_data = data[model_name]["monthly_obs"]
-
-        assert pytest.approx(np.nanmean(m_data), rel=1e-5) == 1.0
-        assert pytest.approx(np.nanmean(o_data), rel=1e-5) == 1.0
+    output.avdb.get_experiments(output.proj_id)
+    data = output.avdb.get_timeseries(
+        output.proj_id, output.exp_id, "ALL", "AERONET-Sun", "fraction", "Column"
+    )
+    m_data = data[model_name]["monthly_mod"]
+    o_data = data[model_name]["monthly_obs"]
+    assert pytest.approx(np.nanmean(m_data), rel=1e-5) == 1.0
+    assert pytest.approx(np.nanmean(o_data), rel=1e-5) == 1.0
