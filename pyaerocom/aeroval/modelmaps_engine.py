@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 
+import aerovaldb
 import xarray as xr
 
 from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
@@ -27,6 +28,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -198,14 +200,17 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             # check if all files have already been produced
             # if even just one is missing, all is gonna be recomputed
             ts = _jsdate_list(data)
-            fps_geojson = []
-            outdir = self.cfg.path_manager.get_json_output_dirs()["contour"]
-            for i, date in enumerate(ts):
-                outname = f"{var}_{model_name}/{var}_{model_name}_{date}"
-                fps_geojson.append(os.path.join(outdir, f"{outname}.geojson"))
-            if all(os.path.exists(fp) for fp in fps_geojson):
+
+            uris_contour = self.avdb.query(
+                aerovaldb.AssetType.CONTOUR_TIMESPLIT,
+                project=self.exp_output.proj_id,
+                experiment=self.exp_output.exp_id,
+            )
+            all_times = [int(uri.meta["timestep"]) for uri in uris_contour]
+
+            if all([date in all_times for date in ts]):
                 logger.info(
-                    f"Skipping contour processing of {var}_{model_name}: data already exists {fps_geojson}."
+                    f"Skipping contour processing of {var}_{model_name}: data already exists {uris_contour}."
                 )
                 return
 
