@@ -279,6 +279,7 @@ def test_Colocator_prepare_colocation_args(monkeypatch):
             )
         assert d.station_name == fake_data
         assert all("station_type" in dict.keys() for dict in d.metadata.values())
+        assert len(set(["station_type" in dict.keys() for dict in d.metadata.values()])) == 1
         return d
 
     with monkeypatch.context() as mp:
@@ -319,6 +320,7 @@ def test_Colocator_prepare_colocation_args_malformed_metadata(monkeypatch):
                 )
 
         assert not all("station_type" in dict.keys() for dict in d.metadata.values())
+        assert len(set(["station_type" in dict.keys() for dict in d.metadata.values()])) == 2
         return d
 
     with monkeypatch.context() as mp:
