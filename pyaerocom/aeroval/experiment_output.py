@@ -369,35 +369,6 @@ class ExperimentOutput(ProjectOutput):
 
         return modified
 
-    def _clean_modelmap_files(self) -> list[str]:
-        # Note: to be called after cleanup of files in map subdir
-        json_files = self._get_json_output_files("contour")
-        rm = []
-        for file in json_files:
-            if not self.cfg.webdisp_opts.add_model_maps:
-                rm.append(file)
-            else:
-                fname = os.path.basename(file)
-                spl = fname.split(".")[0].split("_")
-                if not len(spl) == 2:
-                    msg = f"FATAL: invalid file convention for map json file: {file}."
-                    if len(spl) > 2:
-                        msg += "Likely due to underscore being present in model or variable name."
-                    rm.append(file)
-                    logger.warning(msg)
-                elif spl[-1] in self._invalid["models"]:
-                    rm.append(file)
-
-        removed = []
-        for file in rm:
-            os.remove(file)
-            removed.append(file)
-            file1 = file.replace(".json", ".geojson")
-            if os.path.exists(file1):
-                os.remove(file1)
-                removed.append(file)
-        return removed
-
     def delete_experiment_data(self, also_coldata=True) -> None:
         """Delete all data associated with a certain experiment
 

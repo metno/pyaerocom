@@ -150,11 +150,6 @@ def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout: ExperimentOutput)
     assert len(modified) == 0
 
 
-@pytest.mark.skip(reason="needs revision")
-def test_ExperimentOutput__clean_modelmap_files(dummy_expout: ExperimentOutput):
-    dummy_expout._clean_modelmap_files()
-
-
 @pytest.mark.parametrize("also_coldata", [True, False])
 def test_ExperimentOutput_delete_experiment_data(tmp_path: Path, also_coldata: bool):
     json_path = tmp_path / "json"
