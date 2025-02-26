@@ -282,16 +282,20 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if self.cfg.processing_opts.only_model_maps:
             self._check_ts_for_only_model_maps(model_name, var, ts, data)
 
-        outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
+        outdir = self.cfg.path_manager.get_json_output_dirs()["overlay"]
 
         for i, date in enumerate(ts):
-            write_var_name = self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(
-                var, var
-            )
+            try:
+                write_var_name = self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(
+                    var, var
+                )
+            except EntryNotAvailable:
+                write_var_name = var
 
+            model_overlay_dir_name = write_var_name + "_" + model_name
             # Note this should match the output location defined in aerovaldb
             outname = f"{write_var_name}_{model_name}_{date}.{self.cfg.modelmaps_opts.overlay_save_format}"
-            fp_overlay = os.path.join(outdir, outname)
+            fp_overlay = os.path.join(outdir, model_overlay_dir_name, outname)
 
             if not reanalyse_existing:
                 if os.path.exists(fp_overlay):

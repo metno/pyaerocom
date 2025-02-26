@@ -133,8 +133,9 @@ class ExperimentOutput(ProjectOutput):
         """
         if self.exp_id not in os.listdir(self.proj_dir):
             return False
-        elif self.cfg.processing_opts.only_model_maps and not self._has_files(
-            self.out_dirs_json["contour"]
+        elif self.cfg.processing_opts.only_model_maps and not (
+            self._has_files(self.out_dirs_json["contour"])
+            or self._has_files(self.out_dirs_json["overlay"])
         ):
             return False
         elif (
@@ -685,7 +686,6 @@ class ExperimentOutput(ProjectOutput):
             uris = self.avdb.query(
                 aerovaldb.AssetType.CONTOUR_TIMESPLIT, project=self.proj_id, experiment=self.exp_id
             )
-            # self._get_output_files(self.out_dirs_json["contour"])
             all_combinations = list(
                 itertools.product(
                     self.cfg.obs_cfg.keylist(),
