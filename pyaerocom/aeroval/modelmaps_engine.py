@@ -1,6 +1,5 @@
 import glob
 import logging
-import os
 
 import aerovaldb
 import xarray as xr
@@ -282,8 +281,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if self.cfg.processing_opts.only_model_maps:
             self._check_ts_for_only_model_maps(model_name, var, ts, data)
 
-        outdir = self.cfg.path_manager.get_json_output_dirs()["overlay"]
-
         for i, date in enumerate(ts):
             try:
                 write_var_name = self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(
@@ -292,14 +289,23 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             except EntryNotAvailable:
                 write_var_name = var
 
-            model_overlay_dir_name = write_var_name + "_" + model_name
             # Note this should match the output location defined in aerovaldb
-            outname = f"{write_var_name}_{model_name}_{date}.{self.cfg.modelmaps_opts.overlay_save_format}"
-            fp_overlay = os.path.join(outdir, model_overlay_dir_name, outname)
+            overlay_uris = self.avdb.query(
+                aerovaldb.AssetType.MAP_OVERLAY,
+                project=self.exp_output.proj_id,
+                experiment=self.exp_output.exp_id,
+            )
 
             if not reanalyse_existing:
-                if os.path.exists(fp_overlay):
-                    logger.info(f"Skipping overlay processing of {outname}: data already exists.")
+                if any(
+                    uri.meta["variable"] == write_var_name
+                    and uri.meta["source"] == model_name
+                    and uri.meta["date"] == date
+                    for uri in overlay_uris
+                ):
+                    logger.info(
+                        f"Skipping overlay processing for model={model_name}, var={write_var_name}, date={date}: data already exists."
+                    )
                     continue
 
             overlay_plot = plot_overlay_pixel_maps(

@@ -89,7 +89,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         main_freq = self.cfg.time_cfg.main_freq
         annual_stats_constrained = self.cfg.statistics_opts.annual_stats_constrained
 
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         regions_how = self.cfg.webdisp_opts.regions_how
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
@@ -214,7 +213,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                     obs_name=obs_name,
                     obs_var=obs_var,
                     var_name_web=var_name_web,
-                    out_dirs=out_dirs,
                     vert_code=vert_code,
                     model_name=model_name,
                     model_var=model_var,
@@ -349,7 +347,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         obs_name: str | None = None,
         obs_var: str = None,
         var_name_web: str | None = None,
-        out_dirs: dict | None = None,
         vert_code: str | None = None,
         model_name: str | None = None,
         model_var: str | None = None,

@@ -1,4 +1,3 @@
-import glob
 import itertools
 import logging
 import os
@@ -142,7 +141,7 @@ class ExperimentOutput(ProjectOutput):
             == 0
             or len(
                 self.avdb.query(
-                    [aerovaldb.AssetType.MAP_OVERLAY], project=self.proj_id, experiment=self.exp_id
+                    aerovaldb.AssetType.MAP_OVERLAY, project=self.proj_id, experiment=self.exp_id
                 )
             )
             == 0
@@ -159,13 +158,6 @@ class ExperimentOutput(ProjectOutput):
             ):
                 return False
         return True
-
-    @property
-    def out_dirs_json(self) -> dict:
-        """
-        json output directories (`dict`)
-        """
-        return self.cfg.path_manager.get_json_output_dirs()
 
     def update_menu(self) -> None:
         """Update menu
@@ -443,10 +435,6 @@ class ExperimentOutput(ProjectOutput):
         elif self.cfg.webdisp_opts.obsorder_from_config:
             order.extend(self.cfg.obs_cfg.web_interface_names)
         return order
-
-    def _get_json_output_files(self, dirname) -> list[str]:
-        dirloc = self.out_dirs_json[dirname]
-        return glob.glob(f"{dirloc}/*.json")
 
     def _has_files(self, directory: str):
         """
