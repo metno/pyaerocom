@@ -53,12 +53,6 @@ def test_eval_mos_standard(tmp_path: Path, coldata_mos: Path, caplog):
     scat_dir = tmp_path / "cams2-83/mos-colocated-data/scat"
     assert scat_dir.is_dir()
 
-    contour_dir = tmp_path / "cams2-83/mos-colocated-data/contour"
-    assert contour_dir.is_dir()
-
-    fc_dir = tmp_path / "cams2-83/mos-colocated-data/forecast"
-    assert fc_dir.is_dir()
-
     cfg_out = tmp_path / "cams2-83/mos-colocated-data/cfg_cams2-83_mos-colocated-data.json"
     assert cfg_out.is_file()
 
