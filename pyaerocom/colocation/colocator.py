@@ -1041,12 +1041,12 @@ class Colocator:
         # check if the station_type key has been passed to the ungridded data object
         # (not all readers may do that, currently only the CAMS2_83 reader does)
         if isinstance(obs_data, UngriddedData):
-            are_there_station_types = len(
-                set(["station_type" in dict.keys() for dict in obs_data.metadata.values()])
+            are_there_station_types = set(
+                ["station_type" in dict.keys() for dict in obs_data.metadata.values()]
             )
-            if are_there_station_types == 1:  # all true, all have station_type
+            if are_there_station_types == {True}:  # all true, all have station_type
                 args.update(add_meta_keys=["station_type"])
-            elif are_there_station_types == 2:
+            elif len(are_there_station_types) == 2:
                 raise ValueError("some stations have `station_type` metadata while others do not")
 
         if self.obs_is_ungridded:
