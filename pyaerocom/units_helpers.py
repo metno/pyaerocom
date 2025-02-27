@@ -101,6 +101,7 @@ UALIASES = {
     "MM/H": "mm h-1",
     # others
     "/m": "m-1",
+    "ug/m3": "ug m-3",
 }
 
 
