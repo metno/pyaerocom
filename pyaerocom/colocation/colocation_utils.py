@@ -4,6 +4,7 @@ Methods and / or classes to perform colocation
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -12,8 +13,8 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import RegridResDeg
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -33,8 +34,6 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyaerocom.ungriddeddata import UngriddedData
@@ -845,6 +844,7 @@ def colocate_gridded_ungridded(
     lats = [np.nan] * stat_num
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
+    station_types = [""] * stat_num
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -852,7 +852,6 @@ def colocate_gridded_ungridded(
         data_unit = str(data.units)
     else:
         data_unit = None
-
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
@@ -860,6 +859,7 @@ def colocate_gridded_ungridded(
         lats[i] = obs_stat.latitude
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
+        station_types[i] = getattr(obs_stat, "station_type", "")
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
@@ -976,7 +976,7 @@ def colocate_gridded_ungridded(
         "from_files": files,
         "from_files_ref": None,
         "colocate_time": colocate_time,
-        "obs_is_clim": True if isinstance(use_climatology_ref, ClimatologyConfig) else False,
+        "obs_is_clim": (True if isinstance(use_climatology_ref, ClimatologyConfig) else False),
         "pyaerocom": pya_ver,
         "min_num_obs": min_num_obs,
         "resample_how": resample_how,
@@ -987,6 +987,7 @@ def colocate_gridded_ungridded(
         "data_source": meta["data_source"],
         "time": time_idx,
         "station_name": station_names,
+        "station_type": ("station_name", station_types),
         "latitude": ("station_name", lats),
         "longitude": ("station_name", lons),
         "altitude": ("station_name", alts),

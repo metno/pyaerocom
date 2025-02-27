@@ -215,6 +215,16 @@ def test_colocate_gridded_ungridded(
     assert np.nanmean(coldata.data.data[1]) == pytest.approx(modmean, rel=TEST_RTOL)
 
 
+def test_colocate_gridded_ungridded_wstationtype(data_tm5, aeronetsunv3lev2_subset):
+    fake_type = ["faketype"] * len(aeronetsunv3lev2_subset.station_name)
+    for i, n in enumerate(fake_type):
+        aeronetsunv3lev2_subset.metadata[i].update({"station_type": n})
+    coldata = colocate_gridded_ungridded(
+        data_tm5, aeronetsunv3lev2_subset, add_meta_keys=["station_type"]
+    )
+    assert all(typ == "faketype" for typ in coldata.coords["station_type"].values.tolist())
+
+
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     times = [1, 2]
     time_unit = Unit("days since 2010-1-1 0:0:0")

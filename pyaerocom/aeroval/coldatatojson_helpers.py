@@ -487,6 +487,10 @@ def _init_site_coord_arrays(data):
             continue
         elif not found:
             sites = cd.data.station_name.values
+            if "station_type" in cd.data.coords:
+                sites_types = cd.data.station_type.values
+            else:
+                sites_types = [""] * len(sites)
             lats = cd.data.latitude.values.astype(np.float64)
             lons = cd.data.longitude.values.astype(np.float64)
             if "altitude" in cd.data.coords:
@@ -502,7 +506,7 @@ def _init_site_coord_arrays(data):
         else:
             assert all(cd.data.station_name.values == sites)
         jsdates[freq] = cd.data.jsdate.values.tolist()
-    return (sites, lats, lons, alts, countries, jsdates)
+    return (sites, sites_types, lats, lons, alts, countries, jsdates)
 
 
 def _get_stat_regions(lats, lons, regions, **kwargs):
@@ -516,7 +520,7 @@ def _get_stat_regions(lats, lons, regions, **kwargs):
 
 def _process_sites(data, regions, regions_how, meta_glob):
     freqs = list(data)
-    (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
+    (sites, site_types, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == "country":
         regs = countries
     elif regions_how == "htap":
@@ -532,6 +536,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
         # init empty timeseries data object
         site_meta = {
             "station_name": str(site),
+            "station_type": site_types[i],
             "latitude": lats[i],
             "longitude": lons[i],
             "altitude": alts[i],
