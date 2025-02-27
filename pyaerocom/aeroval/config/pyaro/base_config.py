@@ -100,9 +100,9 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
     """
 
     ebas_test_vars = [
-        "concso4t",
+        # "concso4t",
         "concso4c",
-        "vmro3",
+        # "vmro3",
         # "",
         # "",
     ]
