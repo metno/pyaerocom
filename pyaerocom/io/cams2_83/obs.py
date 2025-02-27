@@ -100,6 +100,7 @@ def read_metadata(path: str | Path) -> pd.DataFrame:
         path,
         sep=",",
         header=0,
+        skipinitialspace=True,
         names="station station_type".split(),
         usecols=[0, 2],
     )
