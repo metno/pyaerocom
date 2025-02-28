@@ -13,11 +13,11 @@ This module contains methods to compute the relevant FAIRMODE statistics.
 import numpy as np
 
 SPECIES = dict(
-    concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
-    conco3=dict(UrRV=0.18, RV=120, alpha=0.79),
-    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79),
-    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25),
-    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5),
+    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq="hourly"),
+    conco3=dict(UrRV=0.18, RV=120, alpha=0.79, freq="daily"),
+    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq="daily"),
+    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq="daily"),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq="daily"),
 )
 
 

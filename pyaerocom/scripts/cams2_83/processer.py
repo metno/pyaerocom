@@ -58,7 +58,6 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
 
                 col.run(var_list)
 
-                breakpoint()
 
 
             files_to_convert = col.files_written

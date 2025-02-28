@@ -56,6 +56,7 @@ def make_config(
     only_map: bool,
     add_map: bool,
     fairmode: bool,
+    medianscores: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -85,7 +86,7 @@ def make_config(
         cfg.update(eval_type.freqs_config())
 
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
-    if run_type != RunType.AN:
+    if run_type != RunType.AN and medianscores:
         obs_dates = date_range(start_date - timedelta(days=1), end_date + timedelta(days=extra_obs_days))
     else:
         obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
@@ -204,6 +205,7 @@ def main(
         only_map,
         add_map,
         fairmode,
+        medianscores
     )
 
     # we do not want the cache produced in previous runs to be silently cleared

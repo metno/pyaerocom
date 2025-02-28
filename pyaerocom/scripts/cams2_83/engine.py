@@ -32,9 +32,9 @@ class CAMS2_83_Engine(ProcessingEngine):
             var_list = list(found_vars)
         for var in var_list:
             logger.info(f"Processing Component: {var}")
-            #self.process_coldata(coldata[var])
+            self.process_coldata(coldata[var], persistent_cols[var], var)
 
-            self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
+            # self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
 
         logger.info(f"Time for weird plot: {time.time() - start} sec")
     def make_forecast_target_plots(self, coldata: list[ColocatedData], persistent_coldata: list[ColocatedData], var_name: str) -> None:
@@ -123,17 +123,26 @@ class CAMS2_83_Engine(ProcessingEngine):
                         ds_p = persistent_subset_region
                         #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
                         mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name)
-
+                    
                         results[f"{regname}"][f"{perstr}"][day] = mqi_results
                     breakpoint()
                     out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
 
-    def process_coldata(self, coldata: list[ColocatedData]) -> None:
+    def process_coldata(self, coldata: list[ColocatedData],  persistent_coldata: list[ColocatedData], var_name: str) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
+
+        calc_forecast_target = False
+
+        if len(persistent_coldata) > 0 and var_name in SPECIES:
+            persistent_coldata = persistent_coldata[0]
+            calc_forecast_target = True
+
+            if SPECIES[var_name]["freq"] != "hourly":
+                persistent_coldata = persistent_coldata.resample_time(SPECIES[var_name]["freq"])
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -164,6 +173,10 @@ class CAMS2_83_Engine(ProcessingEngine):
             coldata[i].data["season"] = coldata[i].data.time.dt.season
             (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
 
+        if calc_forecast_target:
+            persistent_coldata.data["season"] = persistent_coldata.data.time.dt.season
+            (regborders, regs, regnames) = init_regions_web(persistent_coldata, regions_how)
+            results_mqi = {}
         results = {}
 
         for regid, regname in regnames.items():
@@ -173,6 +186,9 @@ class CAMS2_83_Engine(ProcessingEngine):
                 subset_region = [
                     col.filter_region(regid, check_country_meta=use_country) for col in coldata
                 ]
+                if calc_forecast_target:
+                    persistent_subset_region = persistent_coldata.filter_region(regid, check_country_meta=use_country)
+                    results_mqi[regname] = {}
             except (DataCoverageError, UnknownRegion) as e:
                 logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
                 continue
@@ -199,16 +215,26 @@ class CAMS2_83_Engine(ProcessingEngine):
                         logger.info(f"Skipping forecast plot due to error {str(e)}")
                         continue
 
-                    for forecast_hour in range(24 * forecast_days):
-                        logger.debug(f"Calculating statistics for hour {forecast_hour}")
-                        leap, hour = divmod(forecast_hour, 24)
-                        ds = subset[leap]
-                        ds = ds.data.sel(time=(ds.time.dt.hour == hour))
-                        start = time.time()
-                        stats = self._get_median_stats_point_vec(ds, use_weights)
-                        logger.debug(time.time() - start)
-                        for key in stats_list:
-                            stats_list[key].append(stats[key])
+                    # for forecast_hour in range(24 * forecast_days):
+                    #     logger.debug(f"Calculating statistics for hour {forecast_hour}")
+                    #     leap, hour = divmod(forecast_hour, 24)
+                    #     ds = subset[leap]
+                    #     ds = ds.data.sel(time=(ds.time.dt.hour == hour))
+                    #     start = time.time()
+                    #     stats = self._get_median_stats_point_vec(ds, use_weights)
+                    #     logger.debug(time.time() - start)
+                    #     for key in stats_list:
+                    #         stats_list[key].append(stats[key])
+
+                    if calc_forecast_target:
+                        results_mqi[f"{regname}"][f"{perstr}"] = {}
+                        for day in range(forecast_days):
+                            ds = subset[day]
+                            ds_p = persistent_subset_region
+                            #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
+                            mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name, day)
+                        
+                            results_mqi[f"{regname}"][f"{perstr}"][day] = mqi_results
 
                     out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
@@ -326,30 +352,39 @@ class CAMS2_83_Engine(ProcessingEngine):
         breakpoint()
         return results
 
-    def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str) -> dict[str, float]:
+    def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str, forecast_day: int) -> dict[str, float]:
         
-        stations = persistent_coldata.data.station_name.values
-
-        time = coldata.time.values
-        wanted_time = time - np.timedelta64(24,"h")
-        p_time = persistent_coldata.time.values
-
-        mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
-
         results = {}
 
-        station_masks =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
-        assert np.all(persistent_coldata.data.station_name.values[station_masks[1]] == coldata.data.station_name.values[station_masks[2]])
+        breakpoint()
+        # Resampling of time for all other variables than NO2
+        if SPECIES[var_name]["freq"] != "hourly":
+            coldata = coldata.resample_time(SPECIES[var_name]["freq"])
 
-        obs_vals = coldata.data.data[0, :, station_masks[2]]
-        mod_vals = coldata.data.data[1, :, station_masks[2]]
+        # Creation of mask of shared stations between normal data and peristent data
+        #stations = persistent_coldata.data.station_name.values
+        station_mask =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
+        assert np.all(persistent_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
+        
+        
+        # Creation of mask of shared timestamps between normal data and peristent data
+        time = coldata.time.values
+        wanted_time = time - np.timedelta64(24*(forecast_day+1),"h") 
+        p_time = persistent_coldata.time.values
 
-        len_data = len(obs_vals)
+        time_mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
 
-        p_mod_vals = persistent_coldata.data.data[0,:, station_masks[1]][:,mask]
+        
+
+        # Fetching of masked data
+        obs_vals = coldata.data.data[0, :, station_mask[2]]
+        mod_vals = coldata.data.data[1, :, station_mask[2]]
+
+        p_mod_vals = persistent_coldata.data.data[0,:, station_mask[1]][:,time_mask] # Persitent model
 
         assert np.all(p_mod_vals.shape == obs_vals.shape)
-
+        
+        # Calculation of MQI
         factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
         uncertainty_p_obs = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*p_mod_vals**2 + factor)
 
@@ -360,7 +395,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         mqi = rmse_m/rmse_p
 
-        results = {station_masks[0][i]: mqi[i] for i in range(len(mqi))}
+        results = {station_mask[0][i]: mqi[i] for i in range(len(mqi))}
 
         breakpoint()
         return results
