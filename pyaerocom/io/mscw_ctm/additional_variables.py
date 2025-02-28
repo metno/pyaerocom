@@ -443,3 +443,32 @@ def calc_ratpm25pm10(concpm25: xr.DataArray, concpm10: xr.DataArray) -> xr.DataA
     ratpm25pm10 = concpm25 / concpm10
     ratpm25pm10.attrs["units"] = "1"
     return ratpm25pm10
+
+
+def calc_ebcfraction(concebcsource: xr.DataArray, concebc: xr.DataArray) -> xr.DataArray:
+    """
+    Calculate ratio of a source of eBC to the total eBC
+
+        Parameters
+    ----------
+    concebcsource : xr.DataArray
+        mass concentration eBC of source
+    concebc : xr.DataArray
+        mass concentration of eBC
+
+    Returns
+    -------
+    xr.DataArray
+        ratio of concebcsource / concebc in units of 1
+
+    """
+    try:
+        if concebcsource.attrs["units"] != concebc.attrs["units"]:
+            logger.warning(
+                f"concpm10 unit {concebcsource.attrs['units']} not equal to concpm25 unit {concebc.attrs['units']}!"
+            )
+    except KeyError:
+        pass
+    fraction = concebcsource / concebc
+    fraction.attrs["units"] = "1"
+    return fraction

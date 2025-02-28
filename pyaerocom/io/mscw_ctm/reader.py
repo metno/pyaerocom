@@ -38,6 +38,7 @@ from .additional_variables import (
     update_EC_units,
     calc_ratpm10pm25,
     calc_ratpm25pm10,
+    calc_ebcfraction
 )
 from .model_variables import emep_variables
 import pathlib
@@ -123,10 +124,14 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalRes": ["concecFineRes", "concecCoarseRes"],
         "concecTotalNonRes": ["concecFineNonRes", "concecCoarseNonRes"],
         "concebc": ["concecFine", "concecCoarse"],
+        "fractioneBCRes": ["concecTotalRes", "concebc"],
+        "fractioneBCNonRes": ["concecTotalNonRes", "concebc"],
         # For EC from emission
         "concecTotalResEM": ["concecFineResNewEM", "concecFineResAgeEM"],
         "concecTotalNonResEM": ["concecFineNonResNewEM", "concecFineNonResAgeEM"],
         "concebcem": ["concecFineEM", "concecCoarseEM"],
+        "fractioneBCResEM": ["concecTotalResEM", "concebcem"],
+        "fractioneBCNonResEM": ["concecTotalNonResEM", "concebcem"],
         "concCecpm25EM": ["concecFineEM"],
         "concCecpm10EM": ["concecFineEM"],
     }
@@ -180,10 +185,14 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalRes": add_dataarrays,
         "concecTotalNonRes": add_dataarrays,
         "concebc": add_dataarrays,
+        "fractioneBCRes": calc_ebcfraction,
+        "fractioneBCNonRes": calc_ebcfraction,
         # For EC from emission
         "concecTotalResEM": add_dataarrays,
         "concecTotalNonResEM": add_dataarrays,
         "concebcem": add_dataarrays,
+        "fractioneBCResEM": calc_ebcfraction,
+        "fractioneBCNonResEM": calc_ebcfraction,
         "concCecpm25EM": update_EC_units,
         "concCecpm10EM": update_EC_units,
     }
