@@ -69,7 +69,7 @@ def test_config_options(
     tmp_path: Path,
     caplog,
 ):
-    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --cache {tmp_path} --id test_config --fairmode --addmap --addseasons"
+    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --id test_config --fairmode --addmap --addseasons"
     runner.invoke(app, options.split())
     print(caplog.text)
     assert "'add_model_maps': True," in caplog.text
