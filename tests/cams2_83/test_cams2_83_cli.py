@@ -10,21 +10,6 @@ from pyaerocom.scripts.cams2_83.cli import app
 runner = CliRunner()
 
 
-def test_config_options(
-    fake_cache_path: Path,
-    tmp_path: Path,
-    caplog,
-):
-    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --cache {fake_cache_path} --id test_config --fairmode --addmap --addseasons"
-    runner.invoke(app, options.split())
-    print(caplog.text)
-    assert "'add_model_maps': True," in caplog.text
-    assert "'add_seasons': True," in caplog.text
-    assert "'exp_id': 'test_config'," in caplog.text
-    assert "'use_fairmode': True," in caplog.text
-    assert "'periods': ['20240316-20240323']," in caplog.text
-
-
 @pytest.mark.usefixtures("fake_ExperimentProcessor", "reset_cachedir")
 def test_clearcache(
     monkeypatch,
@@ -78,3 +63,17 @@ def test_eval_medianscores_dummy(
     assert result.exit_code == 0
     assert "Running CAMS2_83 Specific Statistics, cache is not cleared" in caplog.text
     assert "Failed to read model variable" in caplog.text
+
+
+def test_config_options(
+    tmp_path: Path,
+    caplog,
+):
+    options = f"forecast week 2024-03-16 2024-03-23 --model-path {tmp_path} --obs-path {tmp_path} --data-path {tmp_path} --coldata-path {tmp_path} --cache {tmp_path} --id test_config --fairmode --addmap --addseasons"
+    runner.invoke(app, options.split())
+    print(caplog.text)
+    assert "'add_model_maps': True," in caplog.text
+    assert "'add_seasons': True," in caplog.text
+    assert "'exp_id': 'test_config'," in caplog.text
+    assert "'use_fairmode': True," in caplog.text
+    assert "'periods': ['20240316-20240323']," in caplog.text
