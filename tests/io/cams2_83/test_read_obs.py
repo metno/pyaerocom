@@ -122,5 +122,4 @@ def test_obs_read_to_ungridded(
     assert isinstance(data, UngriddedData)
     assert "Time needed to convert obs to ungridded" in caplog.text
     assert all("station_type" in dict for dict in data.metadata.values())
-    print(data.metadata)
     assert {dict["station_type"] for dict in data.metadata.values()} == {"rur", "sub"}
