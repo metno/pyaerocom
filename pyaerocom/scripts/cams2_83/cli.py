@@ -208,7 +208,7 @@ def main(
         add_seasons,
         fairmode,
     )
-
+    
     # we do not want the cache produced in previous runs to be silently cleared
     const.RM_CACHE_OUTDATED = False
 
