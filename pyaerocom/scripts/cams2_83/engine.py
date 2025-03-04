@@ -142,10 +142,10 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     if use_fairmode:
                         
+                        fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
-                            fairmode_subset = subset[0].resample_time(SPECIES[var_name]["freq"])
+                            fairmode_subset = fairmode_subset.resample_time(SPECIES[var_name]["freq"])
                         else:
-                            fairmode_subset = subset[0]
 
                         results_fairmode = fairmode_engine.fairmode_statistics(fairmode_subset, var_name)
 
