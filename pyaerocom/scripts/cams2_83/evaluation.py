@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from enum import Enum
 from pathlib import Path
 from pprint import pformat
+from typing import Literal
 
 from pyaerocom import const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
@@ -32,7 +33,10 @@ class EvalType(str, Enum):
                 f"Evaluation type 'day' should have the same {start_date=} and {end_date=}"
             )
 
-        if self == "week" and (days := (end_date - start_date) // timedelta(days=1)) < 7:
+        if (
+            self == "week"
+            and (days := (end_date - start_date) // timedelta(days=1)) < 7
+        ):
             raise ValueError(f"Evaluation type 'week' should have {days=} >= 7")
 
     def freqs_config(self) -> dict:
@@ -43,7 +47,7 @@ class EvalType(str, Enum):
                 main_freq="daily",
                 forecast_evaluation=True,
             )
-        
+
         if self == "season":
             return dict(
                 freqs=["hourly", "daily"],
@@ -71,8 +75,7 @@ class EvalType(str, Enum):
 
     def periods(self, start_date: date, end_date: date) -> list[str]:
         if self == "long":
-            if (start_date.year != end_date.year):
-                return make_period_ys(start_date, end_date)
+            return make_period_seasons(start_date, end_date)
         return make_period(start_date, end_date)
 
 
@@ -82,17 +85,43 @@ def date_range(start_date: date, end_date: date) -> tuple[date, ...]:
     return tuple(start_date + timedelta(days=day) for day in range(days + 1))
 
 
+def season(date: date) -> Literal["DJF", "MAM", "JJA", "SON"]:
+    return ("DJF", "MAM", "JJA", "SON")[date.month % 12 // 3]
+
+
+def make_period_seasons(start_date: date, end_date: date) -> list[str]:
+
+    dates = date_range(start_date, end_date)
+    periods = []
+    prev_date = start_period = dates[0]
+    prev_season = season(prev_date)
+
+    for current_date in dates[1:]:
+        if season(current_date) == prev_season:
+            prev_date = current_date
+        else:
+            periods.append(f"{start_period:%Y%m%d}-{prev_date:%Y%m%d}")
+            prev_date = current_date
+            prev_season = season(current_date)
+            start_period = current_date
+
+    else:
+        if start_period == dates[-1]:
+            periods.append(f"{start_period:%Y%m%d}")
+        else:
+            periods.append(f"{start_period:%Y%m%d}-{dates[-1]:%Y%m%d}")
+            if start_period != dates[0]:
+                # whole range is also a period
+                periods.append(f"{dates[0]:%Y%m%d}-{dates[-1]:%Y%m%d}")
+
+    return periods
+
+
 def make_period(start_date: date, end_date: date) -> list[str]:
     if start_date == end_date:
         return [f"{start_date:%Y%m%d}"]
     periods = [f"{start_date:%Y%m%d}-{end_date:%Y%m%d}"]
 
-    return periods
-
-
-def make_period_ys(start_date: date, end_date: date) -> list[str]:
-    periods = [f"{start_date.year}-{end_date.year}"]
-    periods.extend(str(yr) for yr in range(start_date.year, end_date.year + 1))
     return periods
 
 
@@ -201,7 +230,9 @@ def runnermedianscores(
         "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
     )
     if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
                 executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
@@ -210,7 +241,9 @@ def runnermedianscores(
         for future in as_completed(futures):
             future.result()
     else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
+        logger.info(
+            f"Making median scores plot with pool {pool} and analysis {analysis}"
+        )
         CAMS2_83_Processer(stp).run(analysis=analysis)
 
     logger.info("Median scores run finished")
