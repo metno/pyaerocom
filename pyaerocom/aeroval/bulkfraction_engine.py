@@ -149,6 +149,12 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
         if model_use_vars != {}:
             num_name, denum_name = model_use_vars[num_name], model_use_vars[denum_name]
 
+        # if model_use_vars != {}:
+        #     if num_name in model_use_vars:
+        #         num_name = model_use_vars[num_name]
+        #     if denum_name in model_use_vars:
+        #         denum_name = model_use_vars[denum_name]
+
         return num_name, denum_name
 
     def get_colocators(
