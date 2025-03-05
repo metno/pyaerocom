@@ -251,6 +251,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
                 obs_name=obs_name,
                 var_name_web=var_name_web,
+                use_meteorological_seasons=use_meteorological_seasons,
             )
 
         logger.info(
@@ -295,6 +296,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         seasons: tuple[str, ...] = None,
         obs_name: str = None,
         var_name_web: str = None,
+        use_meteorological_seasons: bool = False,
     ):
         if region_names is None and station_names is None:
             raise ValueError("Both region_id and station_name can not both be None")
@@ -307,6 +309,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 use_country=use_country,
                 periods=periods,
                 seasons=seasons,
+                use_meteorological_seasons=use_meteorological_seasons,
             )
             location = region_names[regid]
             self.exp_output.add_profile_entry(
@@ -327,6 +330,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 use_country=use_country,
                 periods=periods,
                 seasons=seasons,
+                use_meteorological_seasons=use_meteorological_seasons,
             )
 
             self.exp_output.add_profile_entry(
