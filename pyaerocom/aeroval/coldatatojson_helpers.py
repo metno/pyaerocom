@@ -990,7 +990,6 @@ def _process_map_and_scat(
                         subset = _select_period_season_coldata(
                             cd, per, season, use_meteorological_seasons
                         )
-                        breakpoint()
                         jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
