@@ -766,7 +766,7 @@ def process_trends(
     freq: str,
     use_weights: bool,
 ) -> dict:
-    # subset = _select_period_season_coldata(coldata, per, season)
+    # subset = _select_period_season_coldata(coldata, per, season, use_meteorological_seasons)
     stats = {}
     trends_successful = False
     mean_trends_successful = False
@@ -990,6 +990,7 @@ def _process_map_and_scat(
                         subset = _select_period_season_coldata(
                             cd, per, season, use_meteorological_seasons
                         )
+                        breakpoint()
                         jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
@@ -1294,6 +1295,7 @@ def _process_heatmap_data(
     add_trends,
     trends_min_yrs,
     avg_over_trends,
+    use_meteorological_seasons,
 ):
     output = {}
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
@@ -1309,7 +1311,9 @@ def _process_heatmap_data(
                         stats = stats_dummy
                     else:
                         try:
-                            subset = _select_period_season_coldata(coldata, per, season)
+                            subset = _select_period_season_coldata(
+                                coldata, per, season, use_meteorological_seasons
+                            )
 
                             if add_trends and freq != "daily":
                                 trend_stats = process_trends(
@@ -1528,6 +1532,7 @@ def process_profile_data_for_regions(
     use_country: bool,
     periods: list[str],
     seasons: list[str],
+    use_meteorological_seasons: bool,
 ) -> dict:  # pragma: no cover
     """
     This method populates the json files in data/profiles which are use for visualization.
@@ -1566,7 +1571,9 @@ def process_profile_data_for_regions(
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
-                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+                        per_season_subset = _select_period_season_coldata(
+                            coldata, per, season, use_meteorological_seasons
+                        )
 
                         subset = per_season_subset.filter_region(
                             region_id=region_id, check_country_meta=use_country
@@ -1595,6 +1602,7 @@ def process_profile_data_for_stations(
     use_country: bool,
     periods: list[str],
     seasons: list[str],
+    use_meteorological_seasons: bool,
 ) -> dict:  # pragma: no cover
     """
     This method populates the json files in data/profiles which are use for visualization.
@@ -1633,7 +1641,9 @@ def process_profile_data_for_stations(
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
-                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+                        per_season_subset = _select_period_season_coldata(
+                            coldata, per, season, use_meteorological_seasons
+                        )
 
                         subset = per_season_subset.data[
                             :,

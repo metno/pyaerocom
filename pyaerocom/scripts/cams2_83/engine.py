@@ -97,7 +97,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     try:
                         subset = [
-                            _select_period_season_coldata(col, per, season)
+                            _select_period_season_coldata(col, per, season, use_meteorological_seasons)
                             for col in subset_region
                         ]
                     except (DataCoverageError, UnknownRegion) as e:
