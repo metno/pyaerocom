@@ -39,6 +39,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
+        use_meteorological_seasons = self.cfg.time_cfg.use_meteorological_seasons
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
