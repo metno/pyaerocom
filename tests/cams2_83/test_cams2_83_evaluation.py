@@ -15,6 +15,7 @@ from pyaerocom.scripts.cams2_83.evaluation import EvalType
             datetime(2021, 12, 1),
             datetime(2024, 5, 31),
             [
+                "20211201-20240531",
                 "20211201-20220228",
                 "20220301-20220531",
                 "20220601-20220831",
@@ -25,7 +26,6 @@ from pyaerocom.scripts.cams2_83.evaluation import EvalType
                 "20230901-20231130",
                 "20231201-20240229",
                 "20240301-20240531",
-                "20211201-20240531",
             ],
             id="long",
         ),
@@ -35,6 +35,13 @@ from pyaerocom.scripts.cams2_83.evaluation import EvalType
             datetime(2024, 8, 15),
             ["20240601-20240815"],
             id="long2",
+        ),
+        pytest.param(
+            "long",
+            datetime(2024, 6, 1),
+            datetime(2024, 6, 1),
+            ["20240601"],
+            id="long3",
         ),
         pytest.param(
             "week",

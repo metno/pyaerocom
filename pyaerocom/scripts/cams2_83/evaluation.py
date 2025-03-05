@@ -32,12 +32,12 @@ class EvalType(str, Enum):
             raise ValueError(
                 f"Evaluation type 'day' should have the same {start_date=} and {end_date=}"
             )
-
         if (
             self == "week"
             and (days := (end_date - start_date) // timedelta(days=1)) < 7
         ):
             raise ValueError(f"Evaluation type 'week' should have {days=} >= 7")
+        
 
     def freqs_config(self) -> dict:
         if self == "long":
@@ -90,9 +90,10 @@ def season(date: date) -> Literal["DJF", "MAM", "JJA", "SON"]:
 
 
 def make_period_seasons(start_date: date, end_date: date) -> list[str]:
-
+    if start_date == end_date:
+        return [f"{start_date:%Y%m%d}"]
     dates = date_range(start_date, end_date)
-    periods = []
+    periods = [f"{start_date:%Y%m%d}-{end_date:%Y%m%d}"] #whole range is the first period
     prev_date = start_period = dates[0]
     prev_season = season(prev_date)
 
@@ -106,13 +107,8 @@ def make_period_seasons(start_date: date, end_date: date) -> list[str]:
             start_period = current_date
 
     else:
-        if start_period == dates[-1]:
-            periods.append(f"{start_period:%Y%m%d}")
-        else:
+        if start_period != dates[0]: # there is more than 1 season
             periods.append(f"{start_period:%Y%m%d}-{dates[-1]:%Y%m%d}")
-            if start_period != dates[0]:
-                # whole range is also a period
-                periods.append(f"{dates[0]:%Y%m%d}-{dates[-1]:%Y%m%d}")
 
     return periods
 
