@@ -464,6 +464,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 use_fairmode,
                 obs_var,
                 drop_stats,
+                use_meteorological_seasons,
             )
 
             with self.avdb.lock():
