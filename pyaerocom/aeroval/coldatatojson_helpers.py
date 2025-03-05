@@ -976,6 +976,7 @@ def _process_map_and_scat(
     use_fairmode,
     obs_var,
     drop_stats,
+    use_meteorological_seasons,
 ):
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
@@ -986,7 +987,9 @@ def _process_map_and_scat(
                 use_dummy = cd is None
                 if not use_dummy:
                     try:
-                        subset = _select_period_season_coldata(cd, per, season)
+                        subset = _select_period_season_coldata(
+                            cd, per, season, use_meteorological_seasons
+                        )
                         jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
@@ -1253,8 +1256,14 @@ def _calc_temporal_corr(coldata):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 
-def _select_period_season_coldata(coldata, period, season):
+def _select_period_season_coldata(coldata, period, season, use_meteorological_seasons):
     tslice = _period_str_to_timeslice(period)
+    if use_meteorological_seasons:
+        if len(period) == 4:  # relevant only for single years
+            # for period = '2022' tslice needs to be slice('2021-12','2022-11')
+            yeardt = datetime.strptime(period, "%Y")
+            tslice = slice(f"{yeardt.year - 1}-12", f"{yeardt.year}-11")
+            logger.info(f"Using meteorological year slicing for {period}: {tslice}")
     # expensive, try use solution with numpy indexing directly...
     # also, keep an eye on: https://github.com/pydata/xarray/issues/2799
     arr = coldata.data.sel(time=tslice)
@@ -1423,8 +1432,7 @@ def _process_statistics_timeseries(
     # input frequency is lower resolution than output frequency
     if TsType(data_freq) < TsType(freq):
         raise TemporalResolutionError(
-            f"Desired input frequency {data_freq} is lower than desired "
-            f"output frequency {freq}"
+            f"Desired input frequency {data_freq} is lower than desired output frequency {freq}"
         )
 
     output = {}
@@ -1672,7 +1680,7 @@ def _remove_less_covered(
 
     new_stations = data.data.station_name.data
 
-    logger.info(f"Removed {len(stations)-len(new_stations)} stations")
+    logger.info(f"Removed {len(stations) - len(new_stations)} stations")
     if len(new_stations) == 0:
         logger.warning(
             f"No stations left after removing stations with fewer than {min_yrs} years!"

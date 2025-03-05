@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import sys
@@ -6,7 +7,6 @@ from functools import cached_property
 from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
-import datetime
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
 from pyaerocom.aeroval.obsentry import ObsEntry
@@ -22,8 +22,8 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    PositiveInt,
     NonNegativeInt,
+    PositiveInt,
     computed_field,
     field_serializer,
     field_validator,
@@ -35,13 +35,13 @@ from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.helpers import (
+    BoundingBox,
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
-    BoundingBox,
 )
-from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
@@ -252,6 +252,7 @@ class TimeSetup(BaseModel):
     freqs: list[str] = ["monthly", "yearly"]
     periods: list[str] = Field(default_factory=list)
     add_seasons: bool = True
+    use_meteorological_seasons: bool = False
 
     def get_seasons(self):
         """
