@@ -86,6 +86,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         freqs = self.cfg.time_cfg.freqs
         periods = self.cfg.time_cfg.periods
         seasons = self.cfg.time_cfg.get_seasons()
+        use_meteorological_seasons = self.cfg.time_cfg.use_meteorological_seasons
         main_freq = self.cfg.time_cfg.main_freq
         annual_stats_constrained = self.cfg.statistics_opts.annual_stats_constrained
 
@@ -228,6 +229,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
                     avg_over_trends=avg_over_trends,
+                    use_meteorological_seasons=use_meteorological_seasons,
                 )
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
@@ -363,6 +365,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         stats_min_num: int = 1,
         use_fairmode: bool = False,
         avg_over_trends: bool = False,
+        use_meteorological_seasons: bool = False,
     ):
         input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
 
@@ -414,6 +417,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             add_trends,
             trends_min_yrs,
             avg_over_trends,
+            use_meteorological_seasons,
         )
 
         for freq, hm_data in hm_all.items():
