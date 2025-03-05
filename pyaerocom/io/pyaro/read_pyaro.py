@@ -221,7 +221,15 @@ class PyaroToUngriddedData:
                 logger.error(f"Station {station_name} has no extra metadata")
 
         meta_idx = defaultdict(dict)
+        # this assumes that all stations in stations_with_metadata provide actual data
+        # this is not the case for at least ACTRIS-EBAS since there might be pyaro filters
+        # that remove all data from a station
+        unique_station_names = np.unique(var_data.stations)
         for (_station_name, var, _units, tstype), station_key in station_mapper.inner.items():
+            if _station_name not in unique_station_names:
+                logger.info(f"Station {_station_name} not in pyaro data")
+                continue
+
             var_key = var_mapper[var]
             mask = (outarray[:, UngriddedData._METADATAKEYINDEX] == station_key) & (
                     outarray[:, UngriddedData._VARINDEX] == var_key
