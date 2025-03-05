@@ -1263,7 +1263,7 @@ def _select_period_season_coldata(coldata, period, season, use_meteorological_se
             # for period = '2022' tslice needs to be slice('2021-12','2022-11')
             yeardt = datetime.strptime(period, "%Y")
             tslice = slice(f"{yeardt.year - 1}-12", f"{yeardt.year}-11")
-            logger.info(f"Using meteorological year slicing for {period}: {tslice}")
+            logger.debug(f"Using meteorological year slicing for {period}: {tslice}")
     # expensive, try use solution with numpy indexing directly...
     # also, keep an eye on: https://github.com/pydata/xarray/issues/2799
     arr = coldata.data.sel(time=tslice)
