@@ -133,7 +133,7 @@ class ExperimentOutput(ProjectOutput):
         if self.cfg.processing_opts.only_model_maps and not (
             len(
                 self.avdb.query(
-                    [aerovaldb.AssetType.CONTOUR, aerovaldb.AssetType.CONTOUR_TIMESPLIT],
+                    [aerovaldb.routes.Route.CONTOUR, aerovaldb.routes.Route.CONTOUR_TIMESPLIT],
                     project=self.proj_id,
                     experiment=self.exp_id,
                 )
@@ -141,7 +141,9 @@ class ExperimentOutput(ProjectOutput):
             == 0
             or len(
                 self.avdb.query(
-                    aerovaldb.AssetType.MAP_OVERLAY, project=self.proj_id, experiment=self.exp_id
+                    aerovaldb.routes.Route.MAP_OVERLAY,
+                    project=self.proj_id,
+                    experiment=self.exp_id,
                 )
             )
             == 0
@@ -151,7 +153,7 @@ class ExperimentOutput(ProjectOutput):
             if (
                 len(
                     self.avdb.query(
-                        aerovaldb.AssetType.MAP, project=self.proj_id, experiment=self.exp_id
+                        aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
                     )
                 )
                 == 0
@@ -272,7 +274,7 @@ class ExperimentOutput(ProjectOutput):
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
 
-            for uri in (result := self.avdb.query(aerovaldb.AssetType.CONTOUR_TIMESPLIT)):
+            for uri in (result := self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT)):
                 _, args = result.get_details(uri)
                 for i, key in enumerate(["model", "obsvar", "timestep"]):
                     res[i].append(args[key])
@@ -281,7 +283,7 @@ class ExperimentOutput(ProjectOutput):
             infos = ["obs", "ovar", "vc", "mod", "mvar", "per"]
             res = [[], [], [], [], [], []]
             for uri in self.avdb.query(
-                aerovaldb.AssetType.MAP, project=self.proj_id, experiment=self.exp_id
+                aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
             ):
                 for i, key in enumerate(["network", "obsvar", "layer", "model", "modvar", "time"]):
                     res[i].append(uri.meta[key])
@@ -307,7 +309,7 @@ class ExperimentOutput(ProjectOutput):
         )
         vert_codes = self.cfg.obs_cfg.all_vert_types
         for uri in self.avdb.query(
-            [aerovaldb.AssetType.MAP, aerovaldb.AssetType.SCATTER],
+            [aerovaldb.routes.Route.MAP, aerovaldb.routes.Route.SCATTER],
             project=self.proj_id,
             experiment=self.exp_id,
         ):
@@ -325,7 +327,7 @@ class ExperimentOutput(ProjectOutput):
                 modified.append(uri)
 
         for uri in self.avdb.query(
-            aerovaldb.AssetType.TIMESERIES, project=self.proj_id, experiment=self.exp_id
+            aerovaldb.routes.Route.TIMESERIES, project=self.proj_id, experiment=self.exp_id
         ):
             if self._check_clean_ts_uri(uri):
                 modified.append(uri)
@@ -687,7 +689,9 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         if self.cfg.processing_opts.only_model_maps:
             uris = self.avdb.query(
-                aerovaldb.AssetType.CONTOUR_TIMESPLIT, project=self.proj_id, experiment=self.exp_id
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                project=self.proj_id,
+                experiment=self.exp_id,
             )
             all_combinations = list(
                 itertools.product(
@@ -698,7 +702,7 @@ class ExperimentOutput(ProjectOutput):
             )
         else:
             uris = self.avdb.query(
-                aerovaldb.AssetType.MAP, project=self.proj_id, experiment=self.exp_id
+                aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
             )
             # files = self._get_json_output_files("map")
 

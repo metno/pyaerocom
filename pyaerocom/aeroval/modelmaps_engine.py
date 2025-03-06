@@ -201,7 +201,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             ts = _jsdate_list(data)
 
             uris_contour = self.avdb.query(
-                aerovaldb.AssetType.CONTOUR_TIMESPLIT,
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
                 project=self.exp_output.proj_id,
                 experiment=self.exp_output.exp_id,
             )
@@ -291,7 +291,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
             # Note this should match the output location defined in aerovaldb
             overlay_uris = self.avdb.query(
-                aerovaldb.AssetType.MAP_OVERLAY,
+                aerovaldb.routes.Route.MAP_OVERLAY,
                 project=self.exp_output.proj_id,
                 experiment=self.exp_output.exp_id,
             )
