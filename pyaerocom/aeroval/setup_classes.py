@@ -246,6 +246,24 @@ class StatisticsSetup(BaseModel, extra="allow"):
 
 
 class TimeSetup(BaseModel):
+    """
+    Time setup options
+
+    Attributes
+    ----------
+    add_seasons : bool, default True
+        if True, seasons will be ['all', 'DJF', 'MAM', 'JJA', 'SON'], if False, just ['all'].
+    use_meteorological_seasons : bool, default False
+        if True, then statistics are based on the meteorological definition of seasons. This is relevant
+        for periods that are a single year. So if :attr:`add_seasons` is True, for a given year ['DJF'] will
+        refer to data from Dec of the previous year (if available) and Jan/Feb of the same year, while if
+        :attr:`use_meteorological_seasons` is False, it will be based on data from Jan/Feb and December
+        of the same year. Similarly, and weather or not :attr:`add_seasons` is True,
+        if :attr:`use_meteorological_seasons` is True, ['all'] (whole year) will refer to data from Dec of
+        the previous year to Nov of the same year, while if False, it will refer to data from Jan to Dec
+        of the same year.
+    """
+
     DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
     SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
     main_freq: str = "monthly"
