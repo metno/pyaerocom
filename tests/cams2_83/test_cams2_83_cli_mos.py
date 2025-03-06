@@ -23,9 +23,10 @@ def test_eval_mos_dummy(
     tmp_path: Path,
     caplog,
 ):
-    options = f"season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test'"
+    options = f"season 2024-03-01 2024-05-12 --data-path {tmp_path} --coldata-path {tmp_path} --name 'Test' --addseasons"
     result = runner.invoke(app, options.split())
     assert result.exit_code == 0
+    assert "'add_seasons': True," in caplog.text
     assert "no output available" in caplog.text
 
 
