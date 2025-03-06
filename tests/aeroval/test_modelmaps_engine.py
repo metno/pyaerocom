@@ -1,11 +1,14 @@
-from copy import deepcopy
+import os
 import pathlib
+from copy import deepcopy
+
+import aerovaldb
 import pytest
 
-from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
-from pyaerocom.aeroval import EvalSetup
-from pyaerocom.exceptions import ModelVarNotAvailable
 from pyaerocom import GriddedData
+from pyaerocom.aeroval import EvalSetup
+from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
+from pyaerocom.exceptions import ModelVarNotAvailable
 from tests.fixtures.aeroval.cfg_test_exp1 import CFG
 
 
@@ -34,11 +37,36 @@ def test__run(caplog, cfg: dict):
     assert "no data for model TM5-AP3-CTRL, skipping" in caplog.text
 
 
-def test__run_working(caplog, cfg: dict):
+def test__run_reanalysefalse(tmp_path, caplog, cfg: dict):
+    """Test the case reanalyse_existing=False for plot type contour"""
+
+    cfg["reanalyse_existing"] = False
+    # modify the config so to have just one output map geojson file, for simplicity
+    cfg["ts_type"] = "daily"
+    cfg["periods"] = ["20100615"]
+    cfg["main_freq"] = "daily"
+
+    json_basedir = tmp_path / "data"
+    cfg["json_basedir"] = json_basedir
+    # create expected geojson output file (empty file is ok:
+    # in the case reanalyse_existing=False content is not checked, only existence)
+    with aerovaldb.open(f"json_files:{json_basedir}") as db:
+        db.put_contour("", "test", "exp1", "od550aer", "TM5-AP3-CTRL", timestep="1277942400000")
+
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
-    files = engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
-    assert any([f.endswith("data/test/exp1/contour/od550aer_TM5-AP3-CTRL.geojson") for f in files])
+    engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
+    assert (
+        "Skipping contour processing of od550aer_TM5-AP3-CTRL: data already exists" in caplog.text
+    )
+
+
+def test__run_working(cfg: dict):
+    stp = EvalSetup(**cfg)
+    engine = ModelMapsEngine(stp)
+    engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
+    outdirbase = stp.path_manager.get_json_output_dirs()["contour"]
+    assert os.path.exists(f"{outdirbase}/od550aer_TM5-AP3-CTRL/")
 
 
 @pytest.mark.parametrize(

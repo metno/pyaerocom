@@ -337,7 +337,7 @@ class ConstrainedContainer(BrowseDict):
 
     This class enables to create dict-like objects that have a fixed set of
     keys and value types (once assigned). Optional values may be instantiated
-    as None, in which case the first time instantiation definecs its type.
+    as None, in which case the first time instantiation defines its type.
 
     Note
     ----
@@ -346,12 +346,11 @@ class ConstrainedContainer(BrowseDict):
 
     Example
     -------
-    class MyContainer(ConstrainedContainer):
-        def __init__(self):
-            self.val1 = 1
-            self.val2 = 2
-            self.option = None
-
+    >>> class MyContainer(ConstrainedContainer):
+    ...    def __init__(self):
+    ...        self.val1 = 1
+    ...        self.val2 = 2
+    ...        self.option = None
     >>> mc = MyContainer()
     >>> mc['option'] = 42
     """

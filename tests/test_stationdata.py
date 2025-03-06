@@ -365,7 +365,7 @@ def test_StationData_remove_outliers(
 
 def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedDataMeta):
     site = aeronetsunv3lev2_subset.to_station_data(6, vars_to_convert="od550aer")
-    clim = site.calc_climatology("od550aer")
+    clim = site.calc_climatology("od550aer", clim_freq="daily")
     assert clim is not site
     assert isinstance(clim, StationData)
     mean = np.nanmean(clim.od550aer)  # type:ignore[attr-defined]

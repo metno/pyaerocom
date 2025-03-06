@@ -259,7 +259,9 @@ class UngriddedDataMeta:
                 )
 
     @staticmethod
-    def from_station_data(stats, add_meta_keys=None) -> UngriddedDataMeta:
+    def from_station_data(
+        stats: StationData, add_meta_keys: list[str] | None = None
+    ) -> UngriddedDataMeta:
         """
         Create UngriddedData from input station data object(s)
 
@@ -1263,10 +1265,11 @@ class UngriddedDataMeta:
         Returns
         -------
         dict
-            4-element dictionary containing following key / value pairs:
+            5-element dictionary containing following key / value pairs:
 
                 - stats: list of :class:`StationData` objects
                 - station_name: list of corresponding station names
+                - station_type: list of corresponding station types, might be empty
                 - latitude: list of latitude coordinates
                 - longitude: list of longitude coordinates
 
@@ -1274,6 +1277,7 @@ class UngriddedDataMeta:
         out_data = {
             "stats": [],
             "station_name": [],
+            "station_type": [],
             "latitude": [],
             "failed": [],
             "longitude": [],
@@ -1293,10 +1297,15 @@ class UngriddedDataMeta:
                     ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
-
                 out_data["latitude"].append(data["latitude"])
                 out_data["longitude"].append(data["longitude"])
                 out_data["station_name"].append(data["station_name"])
+                if hasattr(data, "station_type"):
+                    out_data["station_type"].append(data["station_type"])
+                else:
+                    logger.debug(
+                        "No station_type found in StationData, station_type will be blank"
+                    )
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
@@ -2034,10 +2043,9 @@ class UngriddedDataMeta:
         Example
         -------
         >>> import pyaerocom as pya
-        >>> r = pya.io.ReadUngridded(['AeronetSunV2Lev2.daily',
-                                      'AeronetSunV3Lev2.daily'], 'od550aer')
+        >>> r = pya.io.ReadUngridded(['AeronetSunV3Lev2.daily'], 'od550aer')
         >>> data = r.read()
-        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV2Lev2.daily',
+        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV3Lev2.daily',
         ...                                     longitude=[-30, 30],
         ...                                     latitude=[20, 70],
         ...                                     altitude=[0, 1000])
@@ -3083,8 +3091,8 @@ class UngriddedDataMeta:
 
         Example
         -------
-        >>> from pyaerocom.io import ReadAeronetSdaV2
-        >>> read = ReadAeronetSdaV2()
+        >>> from pyaerocom.io import ReadAeronetSdaV3
+        >>> read = ReadAeronetSdaV3()
 
         >>> d0 = read.read(last_file=10)
         >>> d1 = read.read(first_file=10, last_file=20)
@@ -3092,7 +3100,7 @@ class UngriddedDataMeta:
         >>> merged = d0 & d1
 
         >>> print(d0.shape, d1.shape, merged.shape)
-        (7326, 11) (9894, 11) (17220, 11)
+        (9868, 12) (12336, 12) (22204, 12)
         """
         return self.merge(other, new_obj=True)
 

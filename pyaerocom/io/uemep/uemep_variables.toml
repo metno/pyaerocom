@@ -1,0 +1,7 @@
+[uemep_variables]
+concno2 = "no2_concentration"
+conco3 = "o3_concentration"
+concpm25 = "pm25_concentration"
+concpm10 = "pm10_concentration"
+prmm = "precipitation"
+

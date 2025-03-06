@@ -64,7 +64,10 @@ class ColorTheme:
     pyaerocom ColorTheme
     name : dark
     cmap_map : viridis
+    cmap_map_div : PuOr_r
+    cmap_map_div_shifted : True
     color_coastline : #e6e6e6
+    color_map_text : r
     """
 
     def __init__(

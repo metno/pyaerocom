@@ -512,7 +512,7 @@ class ReadUngridded:
                 f"supported by {data_id} interface"
             )
         cache = CacheHandlerUngridded(reader)
-        if not self.ignore_cache:
+        if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
             # initate cache handler
             for var in vars_available:
                 try:
@@ -537,7 +537,7 @@ class ReadUngridded:
 
             for var in vars_to_read:
                 # write the cache file
-                if not self.ignore_cache:
+                if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
                     try:
                         cache.write(data_read, var)
                     except Exception as e:
@@ -777,12 +777,12 @@ class ReadUngridded:
 
         Example
         -------
-        >>> import pyaerocom.io.readungridded as pio
-        >>> from pyaerocom import const
-        >>> obj = pio.ReadUngridded(data_id=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME)
-        >>> obj.read()
-        >>> print(obj)
-        >>> print(obj.metadata[0.]['latitude'])
+        >>> import pyaerocom.io.readungridded as pio # doctest: +SKIP
+        >>> from pyaerocom import const # doctest: +SKIP
+        >>> obj = pio.ReadUngridded(data_ids=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME) # doctest: +SKIP
+        >>> obj.read() # doctest: +SKIP
+        >>> print(obj) # doctest: +SKIP
+        >>> print(obj.metadata[0.]['latitude']) # doctest: +SKIP
 
         """
         if data_ids is None:

@@ -85,7 +85,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         if not isinstance(vars_to_retrieve, list):
             raise TypeError(
-                f"Unsupoerted type {type(vars_to_retrieve)}, "
+                f"Unsupported type {type(vars_to_retrieve)}, "
                 "vars_to_retrieve supported types are: str | list[str] | None"
             )
         assert all(
@@ -103,7 +103,9 @@ class ReadCAMS2_83(ReadUngriddedBase):
         logger.info("Start read obs")
         # lazy data_iterator returns immediately, unpacked in from_station_data
         data_iterator = self.__reader(vars_to_retrieve, files)
-        ungriddeddata = UngriddedDataMeta.from_station_data(data_iterator)
+        ungriddeddata = UngriddedDataMeta.from_station_data(
+            data_iterator, add_meta_keys=["station_type"]
+        )
         logger.info(f"Time needed to convert obs to ungridded: {time.time() - start}s")
         return ungriddeddata
 
@@ -126,6 +128,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
             output = dict(
                 station_id=station,
                 station_name=station,
+                station_type=df["station_type"].iloc[0],
                 latitude=df["lat"].iloc[0],
                 longitude=df["lon"].iloc[0],
                 altitude=df["alt"].iloc[0],
