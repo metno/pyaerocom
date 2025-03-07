@@ -614,7 +614,7 @@ class UngriddedData(UngriddedDataContainer):
 
     @property
     def station_name(self):
-        """Latitudes of data"""
+        """Station-names of stations"""
         vals = []
         for v in self.metadata.values():
             try:
