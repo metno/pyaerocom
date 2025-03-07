@@ -13,7 +13,7 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 from .additional_variables import vmr_to_ghost_stations
 from .meta_keys import ghost_meta_keys
@@ -521,7 +521,7 @@ class ReadGhost(ReadUngriddedBase):
 
         files = files[first_file:last_file]
 
-        data_obj = UngriddedDataMeta(num_points=1000000)
+        data_obj = UngriddedData(num_points=1000000)
 
         meta_key = -1.0
         idx = 0

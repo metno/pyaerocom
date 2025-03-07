@@ -9,7 +9,7 @@ import pytest
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 
 @pytest.fixture(scope="module")
@@ -383,7 +383,7 @@ def test_read(
     data = reader.read(vars_to_retrieve)
     if isinstance(vars_to_retrieve, str):
         vars_to_retrieve = [vars_to_retrieve]
-    assert isinstance(data, UngriddedDataMeta)
+    assert isinstance(data, UngriddedData)
     assert len(data.metadata) == num_meta_blocks
     assert len(data.unique_station_names) == num_stats
     assert sorted(data.contains_vars) == sorted(vars_to_retrieve)

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pyaerocom import UngriddedDataMeta
+from pyaerocom import UngriddedData
 from pyaerocom.io import ReadAeronetSunV3
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from tests.conftest import lustre_avail
@@ -23,7 +23,7 @@ def test_cache_dir(cache_handler: CacheHandlerUngridded):
 
 def test_reload_custom(
     cache_handler: CacheHandlerUngridded,
-    aeronetsunv3lev2_subset: UngriddedDataMeta,
+    aeronetsunv3lev2_subset: UngriddedData,
     tmp_path: Path,
 ):
     path = tmp_path / "test_manual_caching.pkl"
@@ -36,7 +36,7 @@ def test_reload_custom(
 @pytest.mark.dependency
 def test_reload(
     cache_handler: CacheHandlerUngridded,
-    aeronetsunv3lev2_subset: UngriddedDataMeta,
+    aeronetsunv3lev2_subset: UngriddedData,
     aeronet_sun_subset_reader: ReadAeronetSunV3,
 ):
     cache_handler.reader = aeronet_sun_subset_reader
@@ -48,5 +48,5 @@ def test_reload(
     assert "od550aer" in cache_handler.loaded_data
 
     reloaded = cache_handler.loaded_data["od550aer"]
-    assert isinstance(reloaded, UngriddedDataMeta)
+    assert isinstance(reloaded, UngriddedData)
     assert reloaded.shape == subset.shape

@@ -5,7 +5,7 @@ import pytest
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 from tests.conftest import lustre_unavail
 
 
@@ -45,7 +45,7 @@ def test_read(reader):
         files=files,
         vars_to_retrieve=["od550aer", "ang4487aer", "proxyod550oa", "proxyzdust"],
     )
-    assert isinstance(data, UngriddedDataMeta)
+    assert isinstance(data, UngriddedData)
     assert data.unique_station_names == ["Agoufou", "Alta_Floresta"]
     assert data.contains_vars == [
         "od550aer",

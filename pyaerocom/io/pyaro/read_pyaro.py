@@ -15,7 +15,7 @@ from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.postprocess import PostProcessingReader
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ def _calculate_ts_type(
 
 class PyaroToUngriddedData:
     def __init__(self, config: PyaroConfig) -> None:
-        self.data: UngriddedDataMeta = UngriddedDataMeta()
+        self.data: UngriddedData = UngriddedData()
         self.config = config
         self.reader: Reader = self._open_reader()
 
@@ -130,7 +130,7 @@ class PyaroToUngriddedData:
             )
         return reader
 
-    def _convert_to_ungriddeddata(self, pyaro_data: dict[str, Data]) -> UngriddedDataMeta:
+    def _convert_to_ungriddeddata(self, pyaro_data: dict[str, Data]) -> UngriddedData:
         total_size = sum(len(var) for var in pyaro_data.values())
 
         COLNO = 12
@@ -183,22 +183,18 @@ class PyaroToUngriddedData:
                 for (s, t) in zip(stations, tstype)
             ]
 
-            outarray[idx, UngriddedDataMeta._METADATAKEYINDEX] = station_key
+            outarray[idx, UngriddedData._METADATAKEYINDEX] = station_key
             # midtime = var_data.start_times + (var_data.end_times - var_data.start_times)/2
             # outarray[idx, UngriddedData._TIMEINDEX] = midtime.astype("datetime64[s]")
-            outarray[idx, UngriddedDataMeta._TIMEINDEX] = var_data.start_times.astype(
-                "datetime64[s]"
-            )
-            outarray[idx, UngriddedDataMeta._LATINDEX] = var_data.latitudes
-            outarray[idx, UngriddedDataMeta._LONINDEX] = var_data.longitudes
-            outarray[idx, UngriddedDataMeta._ALTITUDEINDEX] = var_data.altitudes
-            outarray[idx, UngriddedDataMeta._VARINDEX] = var_key
-            outarray[idx, UngriddedDataMeta._DATAINDEX] = var_data.values
+            outarray[idx, UngriddedData._TIMEINDEX] = var_data.start_times.astype("datetime64[s]")
+            outarray[idx, UngriddedData._LATINDEX] = var_data.latitudes
+            outarray[idx, UngriddedData._LONINDEX] = var_data.longitudes
+            outarray[idx, UngriddedData._ALTITUDEINDEX] = var_data.altitudes
+            outarray[idx, UngriddedData._VARINDEX] = var_key
+            outarray[idx, UngriddedData._DATAINDEX] = var_data.values
             # outarray[idx, UngriddedData._DATAHEIGHTINDEX] = ?? Unused ??
-            outarray[idx, UngriddedDataMeta._DATAERRINDEX] = var_data.standard_deviations
-            outarray[idx, UngriddedDataMeta._DATAFLAGINDEX] = (
-                var_data.flags
-            )  # Only counts if non-NaN?
+            outarray[idx, UngriddedData._DATAERRINDEX] = var_data.standard_deviations
+            outarray[idx, UngriddedData._DATAFLAGINDEX] = var_data.flags  # Only counts if non-NaN?
             # outarray[idx, UngriddedData._STOPTIMEINDEX] = var_data.end_times # Seems unused?
             # outarray[idx, UngriddedData._TRASHINDEX]  # No need to set, only non-NaN values are considered trash
 
@@ -231,15 +227,15 @@ class PyaroToUngriddedData:
             tstype,
         ), station_key in station_mapper.inner.items():
             var_key = var_mapper[var]
-            mask = (outarray[:, UngriddedDataMeta._METADATAKEYINDEX] == station_key) & (
-                outarray[:, UngriddedDataMeta._VARINDEX] == var_key
+            mask = (outarray[:, UngriddedData._METADATAKEYINDEX] == station_key) & (
+                outarray[:, UngriddedData._VARINDEX] == var_key
             )
             indices = np.flatnonzero(mask)
             meta_idx[station_key][var] = indices
 
         var_idx = var_mapper.inner
 
-        return UngriddedDataMeta._from_raw_parts(outarray, metadata, meta_idx, var_idx)
+        return UngriddedData._from_raw_parts(outarray, metadata, meta_idx, var_idx)
 
     def get_variables(self) -> list[str]:
         return self.reader.variables()
@@ -247,7 +243,7 @@ class PyaroToUngriddedData:
     def get_stations(self) -> dict[str, Station]:
         return self.reader.stations()
 
-    def read(self, vars_to_retrieve=None) -> UngriddedDataMeta:
+    def read(self, vars_to_retrieve=None) -> UngriddedData:
         allowed_vars = self.get_variables()
         if vars_to_retrieve is None:
             vars_to_retrieve = allowed_vars

@@ -14,7 +14,7 @@ from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.time_config import TS_TYPES
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
@@ -356,7 +356,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         self.read_failed = []
 
-        data_obj = UngriddedDataMeta()
+        data_obj = UngriddedData()
         meta_key = 0.0
         idx = 0
 

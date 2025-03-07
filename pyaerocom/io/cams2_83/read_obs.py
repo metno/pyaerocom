@@ -11,7 +11,7 @@ import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 from .obs import read_csv
 
@@ -67,7 +67,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
         files: list[str | Path] | None = None,
         first_file: int | None = None,
         last_file: int | None = None,
-    ) -> UngriddedDataMeta:
+    ) -> UngriddedData:
         """Read observations as ungridded
 
         :param vars_to_retrieve: pyaerocom-variables to read, defaults to None
@@ -103,7 +103,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
         logger.info("Start read obs")
         # lazy data_iterator returns immediately, unpacked in from_station_data
         data_iterator = self.__reader(vars_to_retrieve, files)
-        ungriddeddata = UngriddedDataMeta.from_station_data(
+        ungriddeddata = UngriddedData.from_station_data(
             data_iterator, add_meta_keys=["station_type"]
         )
         logger.info(f"Time needed to convert obs to ungridded: {time.time() - start}s")

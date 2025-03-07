@@ -8,7 +8,7 @@ import pandas as pd
 from pyaerocom.helpers import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units_helpers import convert_unit
 
 logger = logging.getLogger(__name__)
@@ -236,7 +236,7 @@ class ReadAasEtal(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-        data_obj = UngriddedDataMeta()
+        data_obj = UngriddedData()
 
         meta_key = 0.0
         idx = 0

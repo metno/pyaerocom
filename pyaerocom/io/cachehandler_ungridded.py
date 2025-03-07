@@ -11,7 +11,7 @@ from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class CacheHandlerUngridded:
         current["newest_file_date_in_read_dir"] = newest_date
         current["data_revision"] = rev
         current["reader_version"] = reader_ver
-        current["ungridded_data_version"] = UngriddedDataMeta.__version__
+        current["ungridded_data_version"] = UngriddedData.__version__
         current["cacher_version"] = self.__version__
         return current
 
@@ -273,7 +273,7 @@ class CacheHandlerUngridded:
                 os.remove(fp)
             return False
 
-        if not isinstance(data, UngriddedDataMeta):
+        if not isinstance(data, UngriddedData):
             raise TypeError(
                 f"Unexpected data type stored in cache file, need instance of UngriddedData, "
                 f"got {type(data)}"
@@ -306,7 +306,7 @@ class CacheHandlerUngridded:
         """
         meta = self.cache_meta_info()
 
-        if not isinstance(data, UngriddedDataMeta):
+        if not isinstance(data, UngriddedData):
             raise TypeError(f"Invalid input, need instance of UngriddedData, got {type(data)}")
 
         if not var_or_file_name.endswith(".pkl"):

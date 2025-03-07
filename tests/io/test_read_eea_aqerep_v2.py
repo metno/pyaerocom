@@ -2,7 +2,7 @@ import pytest
 
 from pyaerocom.io import ReadEEAAQEREP_V2
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 from tests.conftest import TEST_RTOL, lustre_avail
 
 # Subset data id used for testing.
@@ -50,7 +50,7 @@ def test_read(reader):
     for var_name in var_names_to_test:
         data = None
         data = reader.read(vars_to_retrieve=[var_name])
-        assert isinstance(data, UngriddedDataMeta)
+        assert isinstance(data, UngriddedData)
 
         for stat_idx, statid in enumerate(station_id[var_name]):
             stat_data = data[statid]

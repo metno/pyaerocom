@@ -10,7 +10,7 @@ from tqdm import tqdm
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
 
@@ -560,7 +560,7 @@ class ReadAirNow(ReadUngriddedBase):
 
         stats = self._read_files(files, vars_to_retrieve)
 
-        data = UngriddedDataMeta.from_station_data(
+        data = UngriddedData.from_station_data(
             stats,
             add_meta_keys=["timezone", "area_classification", "station_classification"],
         )

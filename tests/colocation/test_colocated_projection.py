@@ -3,7 +3,7 @@ from pytest import approx
 from pyaerocom.colocation.colocation_utils import colocate_gridded_ungridded
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 from tests.fixtures.data_access import TEST_DATA
 from tests.fixtures.stations import create_fake_station_data
 
@@ -39,7 +39,7 @@ def test_read_emep_colocate_projection():
     S2.longitude = 10.5
     S2.latitude = 60.5
     S2.station_name = "S2"
-    ug = UngriddedDataMeta.from_station_data([S1, S2])
+    ug = UngriddedData.from_station_data([S1, S2])
     cd = colocate_gridded_ungridded(data_emep, ug)
     assert cd.data.dims == ("data_source", "time", "station_name")
     assert cd.data[0, 0, 0] == 1

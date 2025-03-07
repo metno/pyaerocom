@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedDataMeta, const
+from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
@@ -268,7 +268,7 @@ def test_Colocator_prepare_colocation_args(monkeypatch):
         return d
 
     def dummy_odata(*args):
-        d = UngriddedDataMeta()
+        d = UngriddedData()
         d.ts_type = "hourly"
         fake_data = list(string.ascii_lowercase)
         for i, n in enumerate(fake_data):
@@ -301,7 +301,7 @@ def test_Colocator_prepare_colocation_args_malformed_metadata(monkeypatch):
         return d
 
     def dummy_odata(*args):
-        d = UngriddedDataMeta()
+        d = UngriddedData()
         d.ts_type = "hourly"
         fake_data = list(string.ascii_lowercase)
         # add station_type only to some
@@ -377,7 +377,7 @@ def test_colocator_read_ungridded(setup):
     col = Colocator(col_stp)
 
     data = col._read_ungridded(obs_var)
-    assert isinstance(data, UngriddedDataMeta)
+    assert isinstance(data, UngriddedData)
     assert len(data.metadata) == 1
 
     col.obs_vars = ["invalid"]

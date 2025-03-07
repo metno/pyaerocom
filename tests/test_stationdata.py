@@ -15,7 +15,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedData
 from tests.conftest import TEST_RTOL
 from tests.fixtures.stations import FAKE_STATION_DATA
 
@@ -363,7 +363,7 @@ def test_StationData_remove_outliers(
     assert avg == pytest.approx(mean, rel=TEST_RTOL, nan_ok=True)
 
 
-def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedDataMeta):
+def test_StationData_calc_climatology(aeronetsunv3lev2_subset: UngriddedData):
     site = aeronetsunv3lev2_subset.to_station_data(6, vars_to_convert="od550aer")
     clim = site.calc_climatology("od550aer", clim_freq="daily")
     assert clim is not site

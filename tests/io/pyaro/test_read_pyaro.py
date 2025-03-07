@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import pytest
 
-from pyaerocom import UngriddedDataMeta
+from pyaerocom import UngriddedData
 from pyaerocom.io import ReadPyaro, PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
 from pyaerocom.io.pyaro.postprocess import matching_indices
@@ -40,7 +40,7 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
 
     obj = pyaro_testdata.converter
     data = obj.read()
-    assert isinstance(data, UngriddedDataMeta)
+    assert isinstance(data, UngriddedData)
 
     # Checks is data is empty
     assert not data.is_empty
@@ -67,7 +67,7 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
 def test_pyarotoungriddeddata_reading_kwargs(pyaro_testdata_kwargs):
     obj = pyaro_testdata_kwargs.converter
     data = obj.read()
-    assert isinstance(data, UngriddedDataMeta)
+    assert isinstance(data, UngriddedData)
 
     # Checks if stations have correct countries
     all_stations = data.to_station_data_all("concso4")
@@ -79,7 +79,7 @@ def test_pyarotoungriddeddata_reading_kwargs(pyaro_testdata_kwargs):
 def test_pyarotoungriddeddata_reading_extra_metadata(pyaro_testdata_kwargs):
     obj = pyaro_testdata_kwargs.converter
     data = obj.read()
-    assert isinstance(data, UngriddedDataMeta)
+    assert isinstance(data, UngriddedData)
 
     # Checks if stations have correct countries
     all_stations = data.to_station_data_all("concso4", add_meta_keys=["area_classification"])

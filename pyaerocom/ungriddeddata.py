@@ -36,7 +36,7 @@ from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungridded_data import UngriddedData
+from pyaerocom.ungridded_data import UngriddedDataContainer
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 from .tstype import TsType
@@ -44,7 +44,7 @@ from .tstype import TsType
 logger = logging.getLogger(__name__)
 
 
-class UngriddedDataMeta(UngriddedData):
+class UngriddedData(UngriddedDataContainer):
     """Class representing point-cloud data (ungridded)
 
     The data is organised in a 2-dimensional numpy array where the first index
@@ -168,8 +168,8 @@ class UngriddedDataMeta(UngriddedData):
         metadata: dict[float, dict[str, Any]],
         meta_idx: dict[float, dict[str, list[int]]],
         var_idx: dict[str, float],
-    ) -> UngriddedDataMeta:
-        data_obj = UngriddedDataMeta()
+    ) -> UngriddedData:
+        data_obj = UngriddedData()
 
         data_obj._data = data
         data_obj.meta_idx = meta_idx
@@ -262,7 +262,7 @@ class UngriddedDataMeta(UngriddedData):
     @staticmethod
     def from_station_data(
         stats: StationData, add_meta_keys: list[str] | None = None
-    ) -> UngriddedDataMeta:
+    ) -> UngriddedData:
         """
         Create UngriddedData from input station data object(s)
 
@@ -295,7 +295,7 @@ class UngriddedDataMeta(UngriddedData):
             raise ValueError(f"Invalid input for add_meta_keys {add_meta_keys}... need list")
         if isinstance(stats, StationData):
             stats = [stats]
-        data_obj = UngriddedDataMeta()
+        data_obj = UngriddedData()
 
         meta_key = 0.0
         idx = 0
@@ -508,7 +508,7 @@ class UngriddedDataMeta(UngriddedData):
         """
         from copy import deepcopy
 
-        new = UngriddedDataMeta()
+        new = UngriddedData()
         new._data = np.copy(self._data)
         new.metadata = deepcopy(self.metadata)
         new.data_revision = self.data_revision
@@ -2074,7 +2074,7 @@ class UngriddedDataMeta(UngriddedData):
     def _new_from_meta_blocks(self, meta_indices, totnum_new):
         # make a new empty object with the right size (totnum_new)
 
-        new = UngriddedDataMeta(num_points=totnum_new)
+        new = UngriddedData(num_points=totnum_new)
 
         meta_idx_new = 0.0
         data_idx_new = 0
@@ -2219,7 +2219,7 @@ class UngriddedDataMeta(UngriddedData):
                 "additional columns other than default columns"
             )
 
-        subset = UngriddedDataMeta(totnum)
+        subset = UngriddedData(totnum)
 
         subset.var_idx[var_name] = 0
         subset._index = self.index
@@ -2288,7 +2288,7 @@ class UngriddedDataMeta(UngriddedData):
         """
         if isinstance(var_names, str):
             return self.extract_var(var_names)
-        data = UngriddedDataMeta()
+        data = UngriddedData()
 
         for var in var_names:
             data.append(self.extract_var(var, check_index=False))
@@ -2382,7 +2382,7 @@ class UngriddedDataMeta(UngriddedData):
             ignore_keys = []
         sh = self.shape
         lst_meta_idx = self._find_common_meta(ignore_keys)
-        new = UngriddedDataMeta(num_points=self.shape[0])
+        new = UngriddedData(num_points=self.shape[0])
         didx = 0
         for i, idx_lst in enumerate(lst_meta_idx):
             _meta_check = {}
@@ -2442,7 +2442,7 @@ class UngriddedDataMeta(UngriddedData):
         ValueError
             if input object is not an instance of :class:`UngriddedData`
         """
-        if not isinstance(other, UngriddedDataMeta):
+        if not isinstance(other, UngriddedData):
             raise ValueError(f"Invalid input, need instance of UngriddedData, got: {type(other)}")
         if new_obj:
             obj = self.copy()
@@ -2521,7 +2521,7 @@ class UngriddedDataMeta(UngriddedData):
         input_data = [(self, data_id1, var1), (other, data_id2, var2)]
         statlist = combine_vardata_ungridded(input_data, **kwargs)
 
-        new = UngriddedDataMeta.from_station_data(statlist)
+        new = UngriddedData.from_station_data(statlist)
         return new
 
     def change_var_idx(self, var_name, new_idx):
@@ -2629,7 +2629,7 @@ class UngriddedDataMeta(UngriddedData):
 
     def find_common_stations(
         self,
-        other: UngriddedDataMeta,
+        other: UngriddedData,
         check_vars_available=None,
         check_coordinates: bool = True,
         max_diff_coords_km: float = 0.1,
@@ -2752,7 +2752,7 @@ class UngriddedDataMeta(UngriddedData):
     def find_common_data_points(self, other, var_name, sampling_freq="daily"):
         if not sampling_freq == "daily":
             raise NotImplementedError("Currently only works with daily data")
-        if not isinstance(other, UngriddedDataMeta):
+        if not isinstance(other, UngriddedData):
             raise NotImplementedError(
                 "So far, common data points can only be "
                 "retrieved between two instances of "

@@ -1,7 +1,7 @@
 import abc
 
 
-class UngriddedData(abc.ABC):
+class UngriddedDataContainer(abc.ABC):
     """Base-class representing ungridded data like stations data, satellite data sondes"""
 
     @abc.abstractmethod
