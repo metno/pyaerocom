@@ -12,7 +12,7 @@ from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH, ReadCAMS2_83
 from pyaerocom.io.cams2_83.read_obs import obs_paths as find_obs_paths
 from pyaerocom.io.readungridded import ReadUngridded
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 
 TEST_DATE = datetime(2021, 12, 1)
 TEST_DATES = [TEST_DATE + timedelta(days=d) for d in range(3)]

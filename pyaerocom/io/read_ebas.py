@@ -47,7 +47,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)

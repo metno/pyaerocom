@@ -5,7 +5,7 @@ import pytest
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 from tests.conftest import lustre_unavail
 
 

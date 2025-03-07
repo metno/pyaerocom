@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyaerocom import UngriddedDataMeta, ungriddeddata_meta
+from pyaerocom import UngriddedDataMeta, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError, VariableDefinitionError
 from tests.fixtures.stations import FAKE_STATION_DATA
 
@@ -234,7 +234,7 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
 
 def test_from_single_station_data():
     stat = FAKE_STATION_DATA["station_data1"]
-    d = ungriddeddata_meta.UngriddedDataMeta.from_station_data(stat)
+    d = ungriddeddata.UngriddedDataMeta.from_station_data(stat)
     data0 = stat.ec550aer
     data1 = d.all_datapoints_var("ec550aer")
     assert data0 == pytest.approx(data1, abs=1e-20)

@@ -9,7 +9,7 @@ import pytest
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 
 
 @pytest.fixture(scope="module")

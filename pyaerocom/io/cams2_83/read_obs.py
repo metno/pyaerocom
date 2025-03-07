@@ -11,7 +11,7 @@ import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 
 from .obs import read_csv
 

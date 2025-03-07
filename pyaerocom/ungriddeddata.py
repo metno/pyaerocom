@@ -36,6 +36,7 @@ from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungridded_data import UngriddedData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 from .tstype import TsType
@@ -43,7 +44,7 @@ from .tstype import TsType
 logger = logging.getLogger(__name__)
 
 
-class UngriddedDataMeta:
+class UngriddedDataMeta(UngriddedData):
     """Class representing point-cloud data (ungridded)
 
     The data is organised in a 2-dimensional numpy array where the first index

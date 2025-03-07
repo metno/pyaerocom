@@ -10,7 +10,7 @@ from tqdm import tqdm
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 
 logger = logging.getLogger(__name__)
 

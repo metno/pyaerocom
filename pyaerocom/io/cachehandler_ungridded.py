@@ -11,7 +11,7 @@ from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 
 logger = logging.getLogger(__name__)
 

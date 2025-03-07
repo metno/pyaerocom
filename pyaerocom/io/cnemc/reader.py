@@ -12,7 +12,7 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata_meta import UngriddedDataMeta
+from pyaerocom.ungriddeddata import UngriddedDataMeta
 
 from .aux_vars import vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
 
