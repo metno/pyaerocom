@@ -4,20 +4,20 @@ import abc
 class UngriddedDataContainer(abc.ABC):
     """Base-class representing ungridded data like stations data, satellite data sondes"""
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def has_flag_data(self):
         """Boolean specifying whether this object contains flag data"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def is_vertical_profile(self):
         """Boolean specifying whether is vertical profile"""
         pass
 
-    @abc.abstractmethod
     @is_vertical_profile.setter
+    @abc.abstractmethod
     def is_vertical_profile(self, value):
         """
         Boolean specifying whether is vertical profile.
@@ -27,32 +27,32 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def contains_vars(self) -> list[str]:
         """List of all variables in this dataset"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def contains_datasets(self) -> list[str]:
         """List of all datasets in this object"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def contains_instruments(self) -> list[str]:
         """List of all instruments in this object"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def is_empty(self) -> bool:
         """Boolean specifying whether this object contains data or not"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def is_filtered(self):
         """Boolean specifying whether this data object has been filtered
 
@@ -62,32 +62,32 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def longitude(self) -> list[float]:
         """Longitudes of datapoints"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def latitude(self) -> list[float]:
         """Latitudes of stations"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def altitude(self) -> list[float]:
         """Altitudes of stations"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def station_name(self) -> list[str]:
         """station-name of data"""
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def time(self):
         """Time dimension of data"""
         pass
@@ -117,8 +117,8 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def countries_available(self):
         """
         Alphabetically sorted list of country names available
@@ -357,8 +357,8 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def station_coordinates(self):
         """dictionary with station coordinates
 
