@@ -1,4 +1,15 @@
 import abc
+import fnmatch
+import logging
+
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    StationCoordinateError,
+    TimeMatchError,
+    VarNotAvailableError,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class UngriddedDataContainer(abc.ABC):
@@ -11,10 +22,9 @@ class UngriddedDataContainer(abc.ABC):
         pass
 
     @property
-    @abc.abstractmethod
     def is_vertical_profile(self):
         """Boolean specifying whether is vertical profile"""
-        pass
+        return self._is_vertical_profile
 
     @is_vertical_profile.setter
     @abc.abstractmethod
@@ -53,17 +63,6 @@ class UngriddedDataContainer(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def is_filtered(self):
-        """Boolean specifying whether this data object has been filtered
-
-        Note
-        ----
-        Details about applied filtering can be found in :attr:`filter_hist`
-        """
-        pass
-
-    @property
-    @abc.abstractmethod
     def longitude(self) -> list[float]:
         """Longitudes of datapoints"""
         pass
@@ -88,32 +87,32 @@ class UngriddedDataContainer(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def time(self):
-        """Time dimension of data"""
+    def unique_station_names(self) -> list[str]:
+        """List of unique and sorted station names"""
         pass
 
+    @property
     @abc.abstractmethod
-    def check_set_country(self):
-        """CHecks all metadata entries for availability of country information
-
-        Metadata blocks that are missing country entry will be updated based
-        on country inferred from corresponding lat / lon coordinate. Uses
-        :func:`pyaerocom.geodesy.get_country_info_coords` (library
-        reverse-geocode) to retrieve countries. This may be errouneous
-        close to country borders as it uses eucledian distance based on a list
-        of known locations.
+    def available_meta_keys(self):
+        """List of all available metadata keys
 
         Note
         ----
-        Metadata blocks that do not contain latitude and longitude entries are
-        skipped.
+        This is a list of all metadata keys that exist in this dataset, but
+        it does not mean that all of the keys are registered in all metadata
+        blocks, especially if the data is merged from different sources with
+        different metadata availability
+        """
+        pass
 
-        Returns
-        -------
-        list
-            metadata entries where country was added
-        list
-            corresponding countries that were inferred from lat / lon
+    @property
+    @abc.abstractmethod
+    def is_filtered(self):
+        """Boolean specifying whether this data object has been filtered
+
+        Note
+        ----
+        Details about applied filtering can be found in :attr:`filter_hist`
         """
         pass
 
@@ -124,6 +123,33 @@ class UngriddedDataContainer(abc.ABC):
         Alphabetically sorted list of country names available
         """
         pass
+
+    @property
+    @abc.abstractmethod
+    def find_station_meta_indices(self, station_name_or_pattern, allow_wildcards=True):
+        """Find indices of all metadata blocks matching input station name
+
+        You may also use wildcard pattern as input (e.g. *Potenza*)
+
+        Parameters
+        ----------
+        station_pattern : str
+            station name or wildcard pattern
+        allow_wildcards : bool
+            if True, input station_pattern will be used as wildcard pattern and
+            all matches are returned.
+
+        Returns
+        -------
+        list
+           list containing all metadata indices that match the input station
+           name or pattern
+
+        Raises
+        ------
+        StationNotFoundError
+            if no such station exists in this data object
+        """
 
     @abc.abstractmethod
     def to_station_data(
@@ -201,7 +227,38 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
+    def _generate_station_index(self, by_station_name=True, ignore_index=None):
+        """Generates index to loop over station names or metadata block indices.
+        Needs to be implemented for :func:`to_station_data_all` to work"""
+        if ignore_index is None:
+            if by_station_name:
+                return self.unique_station_names  # all station names
+            return list(range(len(self.metadata)))  # all meta indices
+
+        if not by_station_name:
+            from pyaerocom.helpers import isnumeric
+
+            if isnumeric(ignore_index):
+                ignore_index = [ignore_index]
+            if not isinstance(ignore_index, list):
+                raise ValueError("Invalid input for ignore_index, need number or list")
+            return [i for i in range(len(self.metadata)) if i not in ignore_index]
+
+        # by station name and ignore certation stations
+        _iter = []
+        if isinstance(ignore_index, str):
+            ignore_index = [ignore_index]
+        if not isinstance(ignore_index, list):
+            raise ValueError("Invalid input for ignore_index, need str or list")
+        for stat_name in self.unique_station_names:
+            ok = True
+            for name_or_pattern in ignore_index:
+                if fnmatch.fnmatch(stat_name, name_or_pattern):
+                    ok = False
+            if ok:
+                _iter.append(stat_name)
+        return _iter
+
     def to_station_data_all(
         self,
         vars_to_convert=None,
@@ -216,7 +273,7 @@ class UngriddedDataContainer(abc.ABC):
         """Convert all data to :class:`StationData` objects
 
         Creates one instance of :class:`StationData` for each metadata block in
-        this object.
+        this object by looping over :func:`to_station_data`.
 
         Parameters
         ----------
@@ -243,28 +300,60 @@ class UngriddedDataContainer(abc.ABC):
         Returns
         -------
         dict
-            4-element dictionary containing following key / value pairs:
+            5-element dictionary containing following key / value pairs:
 
                 - stats: list of :class:`StationData` objects
                 - station_name: list of corresponding station names
+                - station_type: list of corresponding station types, might be empty
                 - latitude: list of latitude coordinates
                 - longitude: list of longitude coordinates
 
         """
-        pass
+        out_data = {
+            "stats": [],
+            "station_name": [],
+            "station_type": [],
+            "latitude": [],
+            "failed": [],
+            "longitude": [],
+        }
 
-    @abc.abstractmethod
-    def get_variable_data(
-        self, variables, start=None, stop=None, ts_type=None, **kwargs
-    ):  # pragma: no cover
-        """Extract all data points of a certain variable
+        _iter = self._generate_station_index(by_station_name, ignore_index)
+        for idx in _iter:
+            try:
+                data = self.to_station_data(
+                    idx,
+                    vars_to_convert,
+                    start,
+                    stop,
+                    freq,
+                    merge_if_multi=True,
+                    allow_wildcards_station_name=False,
+                    ts_type_preferred=ts_type_preferred,
+                    **kwargs,
+                )
+                out_data["latitude"].append(data["latitude"])
+                out_data["longitude"].append(data["longitude"])
+                out_data["station_name"].append(data["station_name"])
+                if hasattr(data, "station_type"):
+                    out_data["station_type"].append(data["station_type"])
+                else:
+                    logger.debug(
+                        "No station_type found in StationData, station_type will be blank"
+                    )
+                out_data["stats"].append(data)
 
-        Parameters
-        ----------
-        vars_to_extract : :obj:`str` or :obj:`list`
-            all variables that are supposed to be accessed
-        """
-        pass
+            # catch the exceptions that are acceptable
+            except (
+                VarNotAvailableError,
+                TimeMatchError,
+                DataCoverageError,
+                NotImplementedError,
+                StationCoordinateError,
+            ) as e:
+                logger.debug(f"Failed to convert to StationData Error: {repr(e)}")
+                out_data["failed"].append([idx, repr(e)])
+        return out_data
 
     @abc.abstractmethod
     def check_unit(self, var_name, unit=None):
