@@ -766,7 +766,7 @@ def process_trends(
     freq: str,
     use_weights: bool,
 ) -> dict:
-    # subset = _select_period_season_coldata(coldata, per, season)
+    # subset = _select_period_season_coldata(coldata, per, season, use_meteorological_seasons)
     stats = {}
     trends_successful = False
     mean_trends_successful = False
@@ -976,6 +976,7 @@ def _process_map_and_scat(
     use_fairmode,
     obs_var,
     drop_stats,
+    use_meteorological_seasons,
 ):
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
@@ -986,7 +987,9 @@ def _process_map_and_scat(
                 use_dummy = cd is None
                 if not use_dummy:
                     try:
-                        subset = _select_period_season_coldata(cd, per, season)
+                        subset = _select_period_season_coldata(
+                            cd, per, season, use_meteorological_seasons
+                        )
                         jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
@@ -1253,8 +1256,14 @@ def _calc_temporal_corr(coldata):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 
-def _select_period_season_coldata(coldata, period, season):
+def _select_period_season_coldata(coldata, period, season, use_meteorological_seasons):
     tslice = _period_str_to_timeslice(period)
+    if use_meteorological_seasons and len(period) == 4:
+        # relevant only for single years
+        # for period = '2022' tslice needs to be slice('2021-12','2022-11')
+        yeardt = datetime.strptime(period, "%Y")
+        tslice = slice(f"{yeardt.year - 1}-12", f"{yeardt.year}-11")
+        logger.debug(f"Using meteorological year slicing for {period}: {tslice}")
     # expensive, try use solution with numpy indexing directly...
     # also, keep an eye on: https://github.com/pydata/xarray/issues/2799
     arr = coldata.data.sel(time=tslice)
@@ -1285,6 +1294,7 @@ def _process_heatmap_data(
     add_trends,
     trends_min_yrs,
     avg_over_trends,
+    use_meteorological_seasons,
 ):
     output = {}
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
@@ -1300,7 +1310,9 @@ def _process_heatmap_data(
                         stats = stats_dummy
                     else:
                         try:
-                            subset = _select_period_season_coldata(coldata, per, season)
+                            subset = _select_period_season_coldata(
+                                coldata, per, season, use_meteorological_seasons
+                            )
 
                             if add_trends and freq != "daily":
                                 trend_stats = process_trends(
@@ -1423,8 +1435,7 @@ def _process_statistics_timeseries(
     # input frequency is lower resolution than output frequency
     if TsType(data_freq) < TsType(freq):
         raise TemporalResolutionError(
-            f"Desired input frequency {data_freq} is lower than desired "
-            f"output frequency {freq}"
+            f"Desired input frequency {data_freq} is lower than desired output frequency {freq}"
         )
 
     output = {}
@@ -1520,6 +1531,7 @@ def process_profile_data_for_regions(
     use_country: bool,
     periods: list[str],
     seasons: list[str],
+    use_meteorological_seasons: bool,
 ) -> dict:  # pragma: no cover
     """
     This method populates the json files in data/profiles which are use for visualization.
@@ -1558,7 +1570,9 @@ def process_profile_data_for_regions(
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
-                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+                        per_season_subset = _select_period_season_coldata(
+                            coldata, per, season, use_meteorological_seasons
+                        )
 
                         subset = per_season_subset.filter_region(
                             region_id=region_id, check_country_meta=use_country
@@ -1587,6 +1601,7 @@ def process_profile_data_for_stations(
     use_country: bool,
     periods: list[str],
     seasons: list[str],
+    use_meteorological_seasons: bool,
 ) -> dict:  # pragma: no cover
     """
     This method populates the json files in data/profiles which are use for visualization.
@@ -1625,7 +1640,9 @@ def process_profile_data_for_stations(
                     output["mod"][freq][perstr] = np.nan
                 else:
                     try:
-                        per_season_subset = _select_period_season_coldata(coldata, per, season)
+                        per_season_subset = _select_period_season_coldata(
+                            coldata, per, season, use_meteorological_seasons
+                        )
 
                         subset = per_season_subset.data[
                             :,
@@ -1672,7 +1689,7 @@ def _remove_less_covered(
 
     new_stations = data.data.station_name.data
 
-    logger.info(f"Removed {len(stations)-len(new_stations)} stations")
+    logger.info(f"Removed {len(stations) - len(new_stations)} stations")
     if len(new_stations) == 0:
         logger.warning(
             f"No stations left after removing stations with fewer than {min_yrs} years!"
