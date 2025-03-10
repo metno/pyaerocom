@@ -29,7 +29,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def reader() -> ReadEbas:
     return ReadEbas("EBASSubset")
 
