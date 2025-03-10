@@ -202,6 +202,7 @@ class UEMEPColocator:
             coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
                 {"lat": "latitude", "lon": "longitude"}
             )
+            coldataarray.data = coldataarray.drop_vars("station_id")
             coldat = pyaerocom.colocation.colocated_data.ColocatedData(coldataarray)
             coldat.data.attrs = {
                 "obs_vars": var,
