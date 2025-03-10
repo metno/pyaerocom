@@ -26,6 +26,7 @@ def make_config_mos(
     id: str,
     name: str,
     description: str,
+    add_seasons: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -56,6 +57,9 @@ def make_config_mos(
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
     cfg.update(use_fairmode=True)
+
+    if add_seasons:
+        cfg.update(add_seasons=True)
 
     return cfg
 
@@ -90,6 +94,7 @@ def main(
     id: str = typer.Option(CFG["exp_id"], help="experiment ID"),
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
+    add_seasons: bool = typer.Option(False, "--addseasons", help="set add_seasons"),
     pool: int = typer.Option(
         1,
         "--pool",
@@ -113,6 +118,7 @@ def main(
         id,
         name,
         description,
+        add_seasons,
     )
 
     # we do not want the cache produced in previous runs to be silently cleared
