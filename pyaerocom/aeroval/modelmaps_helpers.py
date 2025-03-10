@@ -150,6 +150,9 @@ def plot_overlay_pixel_maps(
     matplotlib.use("Agg")
     proj = ccrs.epsg(3857)
 
+    if data.longitude.max().item() == 180:  # projection conversion fails for data on line 180
+        data[:, -1] = np.nan
+
     fig, axis = plt.subplots(
         1,
         1,
@@ -159,7 +162,7 @@ def plot_overlay_pixel_maps(
 
     data.plot(
         ax=axis,
-        transform=ccrs.PlateCarree(),
+        # transform=ccrs.PlateCarree(),
         add_colorbar=False,
         add_labels=False,
         vmin=cmap_bins[0],

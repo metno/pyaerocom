@@ -607,6 +607,4 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         coldata = ColocatedData(data=file_to_convert[0])
         data = coldata.data.sel(data_source=model_name)
         data = data.drop_vars("data_source")
-        data = data.transpose("time", "latitude", "longitude")
-        data = data.sortby(["latitude", "longitude"])
         return data
