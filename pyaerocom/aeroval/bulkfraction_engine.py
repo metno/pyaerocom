@@ -79,7 +79,7 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
         num_col = cols[0][num_name].run(num_name)
         denum_col = cols[1][denum_name].run(denum_name)
 
-        model_num_name, model_denum_name = self._get_model_var_names(
+        model_num_name, model_denum_name, model_var_name = self._get_model_var_names(
             var_name, bulk_vars, model_exists, model_entry
         )
 
@@ -87,6 +87,7 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
             num_col[model_num_name][num_name],
             denum_col[model_denum_name][denum_name],
             var_name,
+            model_var_name,
             obs_entry,
         )
 
@@ -97,7 +98,7 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
             savename=cd._aerocom_savename(
                 var_name,
                 obs_name,
-                var_name,
+                model_var_name,
                 model_name,
                 num_colocator.get_start_str(),
                 num_colocator.get_stop_str(),
@@ -113,6 +114,7 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
         num_coldata: ColocatedData,
         denum_coldata: ColocatedData,
         var_name: str,
+        model_var_name: str,
         obs_entry: ObsEntry,
     ) -> ColocatedData:
         mode = obs_entry.bulk_options[var_name].mode
@@ -131,11 +133,12 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
             new_data[1] = num_coldata.data[1].where(new_data[1])
 
         cd = ColocatedData(new_data)
-
+        
         cd.data.attrs = num_coldata.data.attrs
-        cd.data.attrs["var_name"] = [var_name, var_name]
+        cd.data.attrs["var_name"] = [var_name, model_var_name]
         cd.data.attrs["var_units"] = [units, units]
-        cd.metadata["var_name_input"] = [var_name, var_name]
+        cd.metadata["var_name_input"] = [var_name, model_var_name]
+        
         return cd
 
     def _get_model_var_names(
@@ -145,17 +148,25 @@ class BulkFractionEngine(ProcessingEngine, HasColocator):
         if model_exists:
             num_name, denum_name = var_name, var_name
 
+
+        model_var_name = var_name
         model_use_vars = model_entry.model_use_vars
+
+        
         if model_use_vars != {}:
             num_name, denum_name = model_use_vars[num_name], model_use_vars[denum_name]
+            if var_name in model_use_vars:
+                model_var_name = model_use_vars[model_var_name]
 
+        
+        
         # if model_use_vars != {}:
         #     if num_name in model_use_vars:
         #         num_name = model_use_vars[num_name]
         #     if denum_name in model_use_vars:
         #         denum_name = model_use_vars[denum_name]
 
-        return num_name, denum_name
+        return num_name, denum_name, model_var_name
 
     def get_colocators(
         self,
