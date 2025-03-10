@@ -147,7 +147,9 @@ class UEMEPColocator:
             for _, station in zip(stations["station_name"], stations["stats"]):
                 ids = station.station_id.split(";")
                 if not any([id in station_ids for id in ids]):
-                    logger.info("Station '%s' not found in uemep data. Skipping.")
+                    logger.info(
+                        "Station '%s' not found in uemep data. Skipping.", station.station_id
+                    )
                     continue
 
                 sdata[station.station_id] = station
