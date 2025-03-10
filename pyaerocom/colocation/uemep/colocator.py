@@ -213,7 +213,7 @@ class UEMEPColocator:
                     uemep_data.attrs["units"],
                     uemep_data.attrs["units"],
                 ],
-                "data_level": 3,  # ?
+                "data_level": 2,
                 "revision_ref": datetime.datetime.strftime(datetime.date.today(), "%Y%m%d"),
                 "from_files": [str(p) for p in self._file_path],
                 "from_files_ref": [],
