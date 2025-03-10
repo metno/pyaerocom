@@ -9,7 +9,7 @@ from pyaerocom.io import ReadPyaro, PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
 from pyaerocom.io.pyaro.postprocess import matching_indices
 
-from tests.conftest import lustre_unavail
+from tests.conftest import lustre_unavail, __package_installed
 
 
 def test_testfile(pyaro_test_data_file):
@@ -138,6 +138,10 @@ def test_matching_indices():
 
 
 @lustre_unavail
+@pytest.mark.skipif(
+    not __package_installed("pyaro_readers"),
+    reason="reader_id=eeareder requires pyaro-readers to be installed",
+)
 def test_vmrox():
     config = PyaroConfig.from_dict(
         {
