@@ -38,6 +38,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         use_weights = self.cfg.statistics_opts.weighted_stats
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
+        use_meteorological_seasons = self.cfg.time_cfg.use_meteorological_seasons
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -96,7 +97,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     try:
                         subset = [
-                            _select_period_season_coldata(col, per, season)
+                            _select_period_season_coldata(col, per, season, use_meteorological_seasons)
                             for col in subset_region
                         ]
                     except (DataCoverageError, UnknownRegion) as e:

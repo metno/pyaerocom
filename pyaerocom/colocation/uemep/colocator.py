@@ -147,14 +147,19 @@ class UEMEPColocator:
             for _, station in zip(stations["station_name"], stations["stats"]):
                 ids = station.station_id.split(";")
                 if not any([id in station_ids for id in ids]):
-                    logger.info("Station '%s' not found in uemep data. Skipping.")
+                    logger.info(
+                        "Station '%s' not found in uemep data. Skipping.",
+                        station.station_id,
+                    )
                     continue
 
                 sdata[station.station_id] = station
 
             if len(sdata.keys()) == 0:
                 logger.error(
-                    "No matching stations found in '%s'. Aborting colocation of '%s'.", obs_id, var
+                    "No matching stations found in '%s'. Aborting colocation of '%s'.",
+                    obs_id,
+                    var,
                 )
                 continue
 
@@ -200,6 +205,7 @@ class UEMEPColocator:
             coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
                 {"lat": "latitude", "lon": "longitude"}
             )
+            coldataarray = coldataarray.drop_vars("station_id")
             coldat = pyaerocom.colocation.colocated_data.ColocatedData(coldataarray)
             coldat.data.attrs = {
                 "obs_vars": var,
@@ -210,7 +216,7 @@ class UEMEPColocator:
                     uemep_data.attrs["units"],
                     uemep_data.attrs["units"],
                 ],
-                "data_level": 3,  # ?
+                "data_level": 2,
                 "revision_ref": datetime.datetime.strftime(datetime.date.today(), "%Y%m%d"),
                 "from_files": [str(p) for p in self._file_path],
                 "from_files_ref": [],

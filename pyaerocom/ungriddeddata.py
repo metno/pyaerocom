@@ -1265,10 +1265,11 @@ class UngriddedData:
         Returns
         -------
         dict
-            4-element dictionary containing following key / value pairs:
+            5-element dictionary containing following key / value pairs:
 
                 - stats: list of :class:`StationData` objects
                 - station_name: list of corresponding station names
+                - station_type: list of corresponding station types, might be empty
                 - latitude: list of latitude coordinates
                 - longitude: list of longitude coordinates
 
@@ -1276,6 +1277,7 @@ class UngriddedData:
         out_data = {
             "stats": [],
             "station_name": [],
+            "station_type": [],
             "latitude": [],
             "failed": [],
             "longitude": [],
@@ -1295,10 +1297,15 @@ class UngriddedData:
                     ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
-
                 out_data["latitude"].append(data["latitude"])
                 out_data["longitude"].append(data["longitude"])
                 out_data["station_name"].append(data["station_name"])
+                if hasattr(data, "station_type"):
+                    out_data["station_type"].append(data["station_type"])
+                else:
+                    logger.debug(
+                        "No station_type found in StationData, station_type will be blank"
+                    )
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
