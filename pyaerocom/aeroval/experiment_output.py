@@ -438,15 +438,15 @@ class ExperimentOutput(ProjectOutput):
             order.extend(self.cfg.obs_cfg.web_interface_names)
         return order
 
-    def _has_files(self, directory: str):
-        """
-        Checks if a directory contains any files.
-        The contour directory may contains files, but these are not json files (geojson, webp, png)
-        """
-        return len(self._get_output_files(directory)) > 0
-
-    def _get_output_files(self, directory):
-        return [p for p in pathlib.Path(directory).rglob("*") if p.is_file()]
+    # def _has_files(self, directory: str):
+    #    """
+    #    Checks if a directory contains any files.
+    #    The contour directory may contains files, but these are not json files (geojson, webp, png)
+    #    """
+    #    return len(self._get_output_files(directory)) > 0
+    #
+    # def _get_output_files(self, directory):
+    #    return [p for p in pathlib.Path(directory).rglob("*") if p.is_file()]
 
     def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
         var_ranges_defaults = self.cfg.var_scale_colmap
