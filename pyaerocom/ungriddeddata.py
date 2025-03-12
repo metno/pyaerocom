@@ -36,7 +36,7 @@ from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungridded_data import UngriddedDataContainer
+from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 from .tstype import TsType
@@ -44,7 +44,7 @@ from .tstype import TsType
 logger = logging.getLogger(__name__)
 
 
-class UngriddedData(UngriddedDataContainer):
+class UngriddedData(UngriddedDataMetadata):
     """Class representing point-cloud data (ungridded)
 
     The data is organised in a 2-dimensional numpy array where the first index
@@ -142,6 +142,7 @@ class UngriddedData(UngriddedDataContainer):
         return self._data.shape[0]
 
     def __init__(self, num_points=None, add_cols=None):
+        super().__init__()  # initialize metadata
         if num_points is None:
             num_points = self._CHUNKSIZE
 
@@ -150,17 +151,8 @@ class UngriddedData(UngriddedDataContainer):
 
         # keep private, this is not supposed to be used by the user
         self._data = np.full([num_points, self._COLNO], np.nan)
-
-        self.metadata = {}
-        # single value data revision is deprecated
-        self.data_revision = {}
         self.meta_idx = {}
-        self.var_idx = {}
-
         self._idx = -1
-
-        self.filter_hist = {}
-        self._is_vertical_profile = False
 
     @staticmethod
     def _from_raw_parts(
@@ -177,38 +169,6 @@ class UngriddedData(UngriddedDataContainer):
         data_obj.var_idx = var_idx
 
         return data_obj
-
-    def _get_data_revision_helper(self, data_id):
-        """
-        Helper method to get last data revision
-
-        Parameters
-        ----------
-        data_id : str
-            ID of dataset for which revision is to be retrieved
-
-        Raises
-        ------
-        MetaDataError
-            If multiple revisions are found for this dataset.
-
-        Returns
-        -------
-        latest revision (None if no revision is available).
-
-        """
-        rev = None
-        for meta in self.metadata.values():
-            if meta["data_id"] == data_id:
-                if rev is None:
-                    rev = meta["data_revision"]
-                elif not meta["data_revision"] == rev:
-                    raise MetaDataError(f"Found different data revisions for dataset {data_id}")
-        if data_id in self.data_revision:
-            if not rev == self.data_revision[data_id]:
-                raise MetaDataError(f"Found different data revisions for dataset {data_id}")
-        self.data_revision[data_id] = rev
-        return rev
 
     def _check_index(self):
         """Checks if all indices are assigned correctly"""
@@ -422,20 +382,8 @@ class UngriddedData(UngriddedDataContainer):
             raise ValueError(f"Cannot add data at data index {data_idx}, index already exists")
 
     @property
-    def last_meta_idx(self):
-        """
-        Index of last metadata block
-        """
-        return np.max(list(self.meta_idx))
-
-    @property
     def index(self):
         return self._index
-
-    @property
-    def first_meta_idx(self):
-        # First available metadata index
-        return list(self.metadata)[0]
 
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
@@ -477,21 +425,6 @@ class UngriddedData(UngriddedDataContainer):
         """Boolean specifying whether this object contains flag data"""
         return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
 
-    @property
-    def is_vertical_profile(self):
-        """Boolean specifying whether is vertical profile"""
-        return self._is_vertical_profile
-
-    @is_vertical_profile.setter
-    def is_vertical_profile(self, value):
-        """
-        Boolean specifying whether is vertical profile.
-        Note must be set in ReadUngridded based on the reader
-        because the instance of class used during reading is
-        not the same as the instance used later in the workflow
-        """
-        self._is_vertical_profile = value
-
     def copy(self):
         """Make a copy of this object
 
@@ -509,172 +442,15 @@ class UngriddedData(UngriddedDataContainer):
         from copy import deepcopy
 
         new = UngriddedData()
+        self._copy_metadata_to(new)
         new._data = np.copy(self._data)
-        new.metadata = deepcopy(self.metadata)
-        new.data_revision = self.data_revision
         new.meta_idx = deepcopy(self.meta_idx)
-        new.var_idx = deepcopy(self.var_idx)
-        new.filter_hist = deepcopy(self.filter_hist)
         return new
-
-    @property
-    def contains_vars(self) -> list[str]:
-        """List of all variables in this dataset"""
-        return list(self.var_idx)
-
-    @property
-    def contains_datasets(self):
-        """List of all datasets in this object"""
-        datasets = []
-        for info in self.metadata.values():
-            ds = info["data_id"]
-            if ds not in datasets:
-                datasets.append(ds)
-        return datasets
-
-    @property
-    def contains_instruments(self):
-        """List of all instruments in this object"""
-        instruments = []
-        for info in self.metadata.values():
-            try:
-                instr = info["instrument_name"]
-                if instr is not None and instr not in instruments:
-                    instruments.append(instr)
-            except Exception:
-                pass
-        return instruments
 
     @property
     def shape(self):
         """Shape of data array"""
         return self._data.shape
-
-    @property
-    def is_empty(self):
-        """Boolean specifying whether this object contains data or not"""
-        return True if len(self.metadata) == 0 else False
-
-    @property
-    def is_filtered(self):
-        """Boolean specifying whether this data object has been filtered
-
-        Note
-        ----
-        Details about applied filtering can be found in :attr:`filter_hist`
-        """
-        if len(self.filter_hist) > 0:
-            return True
-        return False
-
-    @property
-    def longitude(self):
-        """Longitudes of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["longitude"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @longitude.setter
-    def longitude(self, value):
-        raise AttributeError("Station longitudes cannot be changed")
-
-    @property
-    def latitude(self):
-        """Latitudes of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["latitude"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @latitude.setter
-    def latitude(self, value):
-        raise AttributeError("Station latitudes cannot be changed")
-
-    @property
-    def altitude(self):
-        """Altitudes of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["altitude"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @altitude.setter
-    def altitude(self, value):
-        raise AttributeError("Station altitudes cannot be changed")
-
-    @property
-    def station_name(self):
-        """Station-names of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["station_name"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @station_name.setter
-    def station_name(self, value):
-        raise AttributeError("Station names cannot be changed")
-
-    @property
-    def unique_station_names(self):
-        """List of unique station names"""
-        return sorted(list(dict.fromkeys(self.station_name)))
-
-    @property
-    def available_meta_keys(self):
-        """List of all available metadata keys
-
-        Note
-        ----
-        This is a list of all metadata keys that exist in this dataset, but
-        it does not mean that all of the keys are registered in all metadata
-        blocks, especially if the data is merged from different sources with
-        different metadata availability
-        """
-        metakeys = []
-        for meta in self.metadata.values():
-            for key in meta:
-                if key not in metakeys:
-                    metakeys.append(key)
-        return metakeys
-
-    @property
-    def nonunique_station_names(self):
-        """List of station names that occur more than once in metadata"""
-        import collections
-
-        lst = self.station_name
-        return [item for item, count in collections.Counter(lst).items() if count > 1]
-
-    @property
-    def time(self):
-        """Time dimension of data"""
-        raise NotImplementedError
-
-    @time.setter
-    def time(self, value):
-        raise AttributeError("Time array cannot be changed")
-
-    def last_filter_applied(self):
-        """Returns the last filter that was applied to this dataset
-
-        To see all filters, check out :attr:`filter_hist`
-        """
-        if not self.is_filtered:
-            raise AttributeError("No filters were applied so far")
-        return self.filter_hist[max(self.filter_hist)]
 
     def add_chunk(self, size=None):
         """Extend the size of the data array

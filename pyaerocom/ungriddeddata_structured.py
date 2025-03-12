@@ -1,22 +1,26 @@
+import datetime
 import fnmatch
 import logging
 import sys
-from typing import Any
-
-import pandas as pd
 
 import numpy as np
+import pandas as pd
 
+from pyaerocom import const
 from pyaerocom.exceptions import (
     DataCoverageError,
+    DataExtractionError,
+    MetaDataError,
     StationNotFoundError,
     VarNotAvailableError,
 )
 from pyaerocom.helpers import merge_station_data, start_stop
+from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
-from pyaerocom.ungridded_data import UngriddedDataContainer
+from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
+from pyaerocom.units_helpers import get_unit_conversion_fac
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -26,7 +30,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class UngriddedDataStructured(UngriddedDataContainer):
+class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
     __version__ = "0.01"
@@ -59,14 +63,41 @@ class UngriddedDataStructured(UngriddedDataContainer):
 
         # station metadata dict[int, dict[str, Any]] with first int being the meta_id
         self.metadata = {}
-        # station-name - meta-id translation
-        self.meta_id = {}
         # var-name -> var-id translation
         self.var_id = {}
         # filters applied
         self.filter_hist = {}
 
-        self._is_vertiacl_profile = False
+        self._is_vertical_profile = False
+
+    @override
+    def _new_from_meta_blocks(self, meta_ids: list, total: int = 1000000):
+        # check for new variables of the stations
+        new_var_id = {}
+        new_metadata = {}
+        for meta_id in meta_ids:
+            meta = self.metadata[meta_id]
+            new_metadata[meta_id] = meta
+            for var in meta["var_info"]:
+                if var in self.ALLOWED_VERT_COORD_TYPES:
+                    continue
+                new_var_id[var] = self.var_id[var]
+
+        midx = np.isin(self._data["meta_id"], meta_ids)
+        # data with the selected stations
+        nd = self._data[midx]
+        size = len(nd)
+        if size == 0:
+            raise DataExtractionError("Filtering results in empty data object")
+
+        new = self(size)
+        new._data = nd
+        new.metadata = new_metadata
+        new.var_id = new_var_id
+        new.filter_hist = self.filter_hist
+        new._is_vertical_profile = self._is_vertical_profile
+
+        return new
 
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
@@ -78,92 +109,20 @@ class UngriddedDataStructured(UngriddedDataContainer):
     @property
     @override
     def has_flag_data(self):
-        return (self._data["flag"] == -32767).any()
+        return (self._data["flag"] == self._nan_types["flag"]).any()
 
-    @property
     @override
-    def is_vertical_profile(self):
-        return self._is_vertiacl_profile
+    def set_flags_nan(self, inplace=False):
+        if not self.has_flag_data:
+            raise AttributeError("Ungridded data object does not contain flagged data points")
+        if inplace:
+            obj = self
+        else:
+            obj = self.copy()
 
-    @is_vertical_profile.setter
-    @override
-    def is_vertical_profile(self, value):
-        self._is_vertiacl_profile = value
-
-    @property
-    @override
-    def contains_vars(self) -> list[str]:
-        return list(self.var_id)
-
-    def _list_from_metadata(self, metafield, undef=None, unique=False) -> list[Any]:
-        """retrieve a station-metadata field as list
-
-        :param metafield: one of the metadata-fields like "longitude" or "instrument"
-        :param undef: default value if undefined
-        :param unique: remove None and duplicate, defaults to False
-        :return: list of the metadata-fields values
-        """
-        ret_vals = []
-        for info in self.metadata.values():
-            try:
-                val = info[metafield]
-                if unique and val is not None and val not in ret_vals:
-                    ret_vals.append(val)
-            except KeyError:
-                if not unique:
-                    ret_vals.append(undef)
-        return ret_vals
-
-    @property
-    @override
-    def contains_datasets(self) -> list[str]:
-        return self._list_from_metadata("data_id")
-
-    @property
-    @override
-    def contains_instruments(self):
-        return self._list_from_metadata("instrument_name", unique=True)
-
-    @property
-    @override
-    def is_empty(self):
-        """Boolean specifying whether this object contains data or not"""
-        return True if len(self.metadata) == 0 else False
-
-    @property
-    @override
-    def longitude(self):
-        return self._list_from_metadata("longitude", undef=np.nan)
-
-    @property
-    @override
-    def latitude(self):
-        return self._list_from_metadata("latitude", undef=np.nan)
-
-    @property
-    @override
-    def altitude(self):
-        return self._list_from_metadata("altitude", undef=np.nan)
-
-    @property
-    @override
-    def station_name(self):
-        return self._list_from_metadata("station_name", undef=np.nan)
-
-    @property
-    @override
-    def unique_station_name(self):
-        return sorted(self._list_from_metadata("station_name", unique=True))
-
-    @property
-    @override
-    def available_meta_keys(self):
-        metakeys = []
-        for meta in self.metadata.values():
-            for key in meta:
-                if key not in metakeys:
-                    metakeys.append(key)
-        return metakeys
+        obj._data["flag"] = self._nan_types["flag"]
+        obj._add_to_filter_history("set_flags_nan")
+        return obj
 
     @property
     @override
@@ -205,6 +164,39 @@ class UngriddedDataStructured(UngriddedDataContainer):
                 f"No station available in UngriddedData that matches name {station_name_or_pattern}"
             )
         return idx
+
+    @override
+    def check_unit(self, var_name, unit=None):
+        if unit is None:
+            unit = const.VARS[var_name]["units"]
+
+        units = []
+        for i, meta in self.metadata.items():
+            if var_name in meta["var_info"]:
+                try:
+                    u = meta["var_info"][var_name]["units"]
+                    if u not in units:
+                        units.append(u)
+                except KeyError:
+                    add_str = ""
+                    if "unit" in meta["var_info"][var_name]:
+                        add_str = (
+                            "Corresponding var_info dict contains "
+                            'attr. "unit", which is deprecated, please '
+                            "check corresponding reading routine. "
+                        )
+                    raise MetaDataError(
+                        f"Failed to access unit information for variable {var_name} "
+                        f"in metadata block {i}. {add_str}"
+                    )
+        if len(units) == 0 and str(unit) != "1":
+            raise MetaDataError(
+                f"Failed to access unit information for variable {var_name}. "
+                f"Expected unit {unit}"
+            )
+        for u in units:
+            if not get_unit_conversion_fac(u, unit, var_name) == 1:
+                raise MetaDataError(f"Invalid unit {u} detected (expected {unit})")
 
     def to_station_data(
         self,
@@ -464,9 +456,149 @@ class UngriddedDataStructured(UngriddedDataContainer):
             )
         return sd
 
+    @override
+    def _generate_station_index(self, by_station_name=True, ignore_index=None):
+        """Generates index to loop over station names or metadata block indices.
+        Needs to be implemented for :func:`to_station_data_all` to work"""
+        if ignore_index is None:
+            if by_station_name:
+                return self.unique_station_names  # all station names
+            return list(range(len(self.metadata)))  # all meta indices
+
+        if not by_station_name:
+            from pyaerocom.helpers import isnumeric
+
+            if isnumeric(ignore_index):
+                ignore_index = [ignore_index]
+            if not isinstance(ignore_index, list):
+                raise ValueError("Invalid input for ignore_index, need number or list")
+            return [i for i in range(len(self.metadata)) if i not in ignore_index]
+
+        # by station name and ignore certation stations
+        _iter = []
+        if isinstance(ignore_index, str):
+            ignore_index = [ignore_index]
+        if not isinstance(ignore_index, list):
+            raise ValueError("Invalid input for ignore_index, need str or list")
+        for stat_name in self.unique_station_names:
+            ok = True
+            for name_or_pattern in ignore_index:
+                if fnmatch.fnmatch(stat_name, name_or_pattern):
+                    ok = False
+            if ok:
+                _iter.append(stat_name)
+        return _iter
+
+    @override
+    def remove_outliers(
+        self,
+        var_name,
+        inplace=False,
+        low=None,
+        high=None,
+        unit_ref=None,
+        move_to_trash=True,
+    ):
+        """see super.remove_outliers move_to_trash is ignored for now"""
+        if inplace:
+            new = self
+        else:
+            new = self.copy()
+
+        new.check_convert_var_units(var_name, to_unit=unit_ref)
+
+        if low is None:
+            low = const.VARS[var_name].minimum
+            logger.info(f"Setting {var_name} outlier lower lim: {low:.2f}")
+        if high is None:
+            high = const.VARS[var_name].maximum
+            logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
+        var_idx = new.var_id[var_name]
+        var_mask = new._data["var_id"] == var_idx
+
+        all_data = new._data["data"]
+        invalid_mask = np.logical_or(all_data < low, all_data > high)
+
+        mask = invalid_mask * var_mask
+        invalid_vals = new._data["data"][mask]
+        new._data["data"][mask] = np.nan
+
+        if move_to_trash:
+            logger.warning("trash not implemented")
+
+        new._add_to_filter_history(
+            f"Removed {len(invalid_vals)} outliers from {var_name} data "
+            f"(range: {low}-{high}, in trash: {move_to_trash})"
+        )
+        return new
+
     @property
     @override
     def is_filtered(self):
         if len(self.filter_hist) > 0:
             return True
         return False
+
+    def _add_to_filter_history(self, info):
+        """Add info to :attr:`filter_hist`
+
+        Key is current system time string
+
+        Parameter
+        ---------
+        info
+            information to be appended to filter history
+        """
+        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
+        self.filter_hist[int(time_str)] = info
+
+    @override
+    def filter_by_meta(self, negate=None, **filter_attributes):
+        if "variables" in filter_attributes:
+            raise NotImplementedError("Cannot yet filter by variables")
+
+        # separate filters by strin, list, etc.
+        filters = self._init_meta_filters(**filter_attributes)
+
+        # find all metadata blocks that match the filters
+        meta_matches, totnum_new = self._find_meta_matches(
+            negate,
+            *filters,
+        )
+        if len(meta_matches) == len(self.metadata):
+            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
+            return self
+        new = self._new_from_meta_blocks(meta_matches, totnum_new)
+        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
+        new.filter_hist[int(time_str)] = filter_attributes
+        return new
+
+    @override
+    def apply_region_mask(self, region_id=None):
+        if region_id not in const.HTAP_REGIONS:
+            raise ValueError(
+                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
+            )
+
+        # 1. find matches -> list of meta indices that are in region
+        # 2. Get total number of datapoints -> defines shape of output UngriddedData
+        # 3. Create
+
+        mask = load_region_mask_xr(region_id)
+
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            lon, lat = meta["longitude"], meta["latitude"]
+
+            mask_val = get_mask_value(lat, lon, mask)
+            if mask_val >= 1:  # coordinate is in mask
+                meta_matches.append(meta_idx)
+                for var in meta["var_info"]:
+                    totnum += len(self.meta_idx[meta_idx][var])
+
+        new = self._new_from_meta_blocks(meta_matches, totnum)
+        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
+        new.filter_hist[int(time_str)] = f"Applied mask {region_id}"
+        # new._check_index()
+        return new

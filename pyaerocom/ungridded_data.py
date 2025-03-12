@@ -1,13 +1,17 @@
 import abc
-import fnmatch
 import logging
 
+from pyaerocom import const
 from pyaerocom.exceptions import (
     DataCoverageError,
     StationCoordinateError,
     TimeMatchError,
     VarNotAvailableError,
 )
+from pyaerocom.helpers import isnumeric
+from pyaerocom.mathutils import in_range
+from pyaerocom.region import Region
+from pyaerocom.stationdata import StationData
 
 logger = logging.getLogger(__name__)
 
@@ -227,37 +231,11 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def _generate_station_index(self, by_station_name=True, ignore_index=None):
         """Generates index to loop over station names or metadata block indices.
         Needs to be implemented for :func:`to_station_data_all` to work"""
-        if ignore_index is None:
-            if by_station_name:
-                return self.unique_station_names  # all station names
-            return list(range(len(self.metadata)))  # all meta indices
-
-        if not by_station_name:
-            from pyaerocom.helpers import isnumeric
-
-            if isnumeric(ignore_index):
-                ignore_index = [ignore_index]
-            if not isinstance(ignore_index, list):
-                raise ValueError("Invalid input for ignore_index, need number or list")
-            return [i for i in range(len(self.metadata)) if i not in ignore_index]
-
-        # by station name and ignore certation stations
-        _iter = []
-        if isinstance(ignore_index, str):
-            ignore_index = [ignore_index]
-        if not isinstance(ignore_index, list):
-            raise ValueError("Invalid input for ignore_index, need str or list")
-        for stat_name in self.unique_station_names:
-            ok = True
-            for name_or_pattern in ignore_index:
-                if fnmatch.fnmatch(stat_name, name_or_pattern):
-                    ok = False
-            if ok:
-                _iter.append(stat_name)
-        return _iter
+        pass
 
     def to_station_data_all(
         self,
@@ -460,7 +438,6 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     def filter_altitude(self, alt_range):
         """Filter altitude range
 
@@ -474,9 +451,8 @@ class UngriddedDataContainer(abc.ABC):
         UngriddedData
             filtered data object
         """
-        pass
+        return self.filter_by_meta(altitude=alt_range)
 
-    @abc.abstractmethod
     def filter_region(self, region_id, check_mask=True, check_country_meta=False, **kwargs):
         """Filter object by a certain region
 
@@ -503,7 +479,15 @@ class UngriddedDataContainer(abc.ABC):
             filtered data object (containing only stations that fall into
             input region)
         """
-        pass
+        if check_country_meta:
+            if region_id in self.countries_available:
+                return self.filter_by_meta(country=region_id)
+
+        if region_id in const.HTAP_REGIONS and check_mask:
+            return self.apply_region_mask(region_id)
+
+        region = Region(region_id)
+        return self.filter_by_meta(longitude=region.lon_range, latitude=region.lat_range)
 
     @abc.abstractmethod
     def apply_region_mask(self, region_id=None):
@@ -517,7 +501,87 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
+    def filter_by_projection(
+        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
+    ):
+        """Filter the ungridded data to a horizontal bounding box given by a projection
+
+        :param projection: a function turning projection(lat, lon) -> (x, y)
+        :param xrange: x range (min/max included) in the projection plane
+        :param yrange: y range (min/max included) in the projection plane
+        """
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            lon = meta["longitude"]
+            lat = meta["latitude"]
+            x, y = projection(lat, lon)
+
+            match_x = in_range(x, xrange[0], xrange[1])
+            match_y = in_range(y, yrange[0], yrange[1])
+
+            if match_x and match_y:
+                meta_matches.append(meta_idx)
+                for var in meta["var_info"]:
+                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                        continue  # altitude is not actually a variable but is stored in var_info like one
+                    try:
+                        totnum += len(self.meta_idx[meta_idx][var])
+                    except KeyError:
+                        logger.debug(
+                            f"Ignoring variable {var} in meta block {meta_idx} "
+                            f"since no data could be found"
+                        )
+
+        if len(meta_matches) == len(self.metadata):
+            logger.info("filter_by_projection result in unchanged data object")
+            return self
+        new = self._new_from_meta_blocks(meta_matches, totnum)
+        return new
+
     @abc.abstractmethod
+    def filter_by_meta(self, negate=None, **filter_attributes):
+        """Flexible method to filter these data based on input meta specs
+
+        Parameters
+        ----------
+        negate : list or str, optional
+            specified meta key(s) provided via `filter_attributes` that are
+            supposed to be treated as 'not valid'. E.g. if
+            `station_name="bad_site"` is input in `filter_attributes` and if
+            `station_name` is listed in `negate`, then all metadata blocks
+            containing "bad_site" as station_name will be excluded in output
+            data object.
+        **filter_attributes
+            valid meta keywords that are supposed to be filtered and the
+            corresponding filter values (or value ranges)
+            Only valid meta keywords are considered (e.g. data_id,
+            longitude, latitude, altitude, ts_type)
+
+        Returns
+        -------
+        UngriddedData
+            filtered ungridded data object
+
+        Raises
+        ------
+        NotImplementedError
+            if attempt variables are supposed to be filtered (not yet possible)
+        IOError
+            if any of the input keys are not valid meta key
+
+        Example
+        -------
+        >>> import pyaerocom as pya
+        >>> r = pya.io.ReadUngridded(['AeronetSunV3Lev2.daily'], 'od550aer')
+        >>> data = r.read()
+        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV3Lev2.daily',
+        ...                                     longitude=[-30, 30],
+        ...                                     latitude=[20, 70],
+        ...                                     altitude=[0, 1000])
+        """
+        pass
+
     def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
         """Extended filtering method
 
@@ -541,21 +605,71 @@ class UngriddedDataContainer(abc.ABC):
 
         Returns
         -------
-        UngriddedData
+        UngriddedDataContainer
             filtered data object
         """
-        pass
+        data = self
 
-    def filter_by_projection(
-        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
-    ):
-        """Filter the ungridded data to a horizontal bounding box given by a projection
+        remove_outliers = False
+        set_flags_nan = False
+        extract_vars = None
+        region_id = None
+        if "remove_outliers" in filter_attributes:
+            remove_outliers = filter_attributes.pop("remove_outliers")
+        if "set_flags_nan" in filter_attributes:
+            set_flags_nan = filter_attributes.pop("set_flags_nan")
+        if "var_name" in filter_attributes:
+            extract_vars = filter_attributes.pop("var_name")
+            if isinstance(extract_vars, str):
+                extract_vars = [extract_vars]
+            for var in extract_vars:
+                if var not in data.contains_vars:
+                    raise VarNotAvailableError(
+                        f"No such variable {var} in UngriddedData object. "
+                        f"Available vars: {self.contains_vars}"
+                    )
+        if "region_id" in filter_attributes:
+            region_id = filter_attributes.pop("region_id")
 
-        :param projection: a function turning projection(lat, lon) -> (x, y)
-        :param xrange: x range (min/max included) in the projection plane
-        :param yrange: y range (min/max included) in the projection plane
-        """
-        pass
+        if len(filter_attributes) > 0:
+            data = data.filter_by_meta(**filter_attributes)
+
+        if extract_vars is not None:
+            data = data.extract_vars(extract_vars)
+
+        if remove_outliers:
+            if var_outlier_ranges is None:
+                var_outlier_ranges = {}
+
+            for var in data.contains_vars:
+                lower, upper = (
+                    None,
+                    None,
+                )  # uses pyaerocom default specified in variables.ini
+                if var in var_outlier_ranges:
+                    lower, upper = var_outlier_ranges[var]
+                data = data.remove_outliers(
+                    var, inplace=True, low=lower, high=upper, move_to_trash=False
+                )
+        if set_flags_nan:
+            if not data.has_flag_data:
+                # jgriesfeller 20230210
+                # not sure if raising this exception is the right thing to do
+                # the fake variables (vars computed from other variables) might not have
+                # and do not need flags (because that has been done during the read of the
+                # variable they are computed from)
+                # disabling and logging it for now
+                # raise MetaDataError(
+                logger.info(
+                    'Cannot apply filter "set_flags_nan" to '
+                    "UngriddedData object, since it does not "
+                    "contain flag information"
+                )
+            else:
+                data = data.set_flags_nan(inplace=True)
+        if region_id:
+            data = data.filter_region(region_id)
+        return data
 
     @abc.abstractmethod
     def extract_dataset(self, data_id):
@@ -625,3 +739,132 @@ class UngriddedDataContainer(abc.ABC):
     @abc.abstractmethod
     def copy(self):
         pass
+
+    @abc.abstractmethod
+    def _new_from_meta_blocks(self, meta_ids: list, total: int = 1000000):
+        """Create a duplicate of this UngriddedDataContainer containing
+        only the meta_ids. This method is needed in meta/station filtering.
+
+        :param meta_ids: list of station ids to select
+        :param total: guessed number of points, to initialize the new container
+        :return: UngriddedDataContainer
+        :raises: DataExtractionError if new object empty
+        """
+        pass
+
+    @abc.abstractmethod
+    def merge(self, other, new_obj=True):
+        """Merge another data object with this one
+
+        Parameters
+        -----------
+        other : UngriddedDataContainer
+            other data object
+        new_obj : bool
+            if True, this object remains unchanged and the merged data objects
+            are returned in a new instance of :class:`UngriddedDataContainer`. If False,
+            then this object is modified
+
+        Returns
+        -------
+        UngriddedDataContainer
+            merged data object
+
+        Raises
+        -------
+        ValueError
+            if input object is not an instance of :class:`UngriddedDataContainer`
+        """
+        pass
+
+    def __contains__(self, key):
+        """Check if input key (str) is valid dataset, variable, instrument or
+        station name
+
+        Parameters
+        ----------
+        key : str
+            search key
+
+        Returns
+        -------
+        bool
+            True, if key can be found, False if not
+        """
+
+        if not isinstance(key, str):
+            raise ValueError("Need string (e.g. variable name, station name, instrument name")
+        if key in self.contains_datasets:
+            return True
+        elif key in self.contains_vars:
+            return True
+        elif key in self.station_name:
+            return True
+        elif key in self.contains_instruments:
+            return True
+        return False
+
+    def __iter__(self):
+        return self
+
+    #: ToDo revise cases of DataCoverageError
+    def __next__(self):
+        self._idx += 1
+        if self._idx == len(self.metadata):
+            self._idx = -1
+            raise StopIteration
+        try:
+            return self[self._idx]
+        except DataCoverageError:
+            logger.debug(
+                f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
+            )
+            return StationData()
+
+    def __repr__(self):
+        return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}"
+
+    def __getitem__(self, key):
+        if isnumeric(key) or key in self.unique_station_names:
+            return self.to_station_data(key, insert_nans=True)
+        raise KeyError("Invalid input key, need metadata index or station name ")
+
+    def __and__(self, other):
+        """Merge this object with another using the logical ``and`` operator
+
+        Example
+        -------
+        >>> from pyaerocom.io import ReadAeronetSdaV3
+        >>> read = ReadAeronetSdaV3()
+
+        >>> d0 = read.read(last_file=10)
+        >>> d1 = read.read(first_file=10, last_file=20)
+
+        >>> merged = d0 & d1
+
+        >>> print(d0.shape, d1.shape, merged.shape)
+        (9868, 12) (12336, 12) (22204, 12)
+        """
+        return self.merge(other, new_obj=True)
+
+    def __str__(self):
+        head = f"Pyaerocom {type(self).__name__}"
+        s = (
+            f"\n{head}\n{len(head) * '-'}"
+            f"\nContains networks: {self.contains_datasets}"
+            f"\nContains variables: {self.contains_vars}"
+            f"\nContains instruments: {self.contains_instruments}"
+            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
+        )
+        if self.is_filtered:
+            s += "\nFilters that were applied:"
+            for tstamp, f in self.filter_hist.items():
+                if f:
+                    s += f"\n Filter time log: {tstamp}"
+                    if isinstance(f, dict):
+                        for key, val in f.items():
+                            s += f"\n\t{key}: {val}"
+                    else:
+                        s += f"\n\t{f}"
+
+        return s
