@@ -159,6 +159,9 @@ class ColdataToJsonEngine(ProcessingEngine):
             raise ValueError("Unable to determine obs_var/model_var")
 
         model_name = coldata.model_name
+        if isinstance(model_name, ArrayLike):
+            model_name = model_name[0]
+
         obs_name = coldata.obs_name
 
         mcfg = self.cfg.model_cfg.get_entry(model_name)
@@ -396,7 +399,15 @@ class ColdataToJsonEngine(ProcessingEngine):
         with multiprocessing.Pool(processes=int(num_workers)) as pool:
             results = pool.starmap(_process_statistics_timeseries_single_region, args)
 
-        for stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var in results:
+        for (
+            stats_ts,
+            region,
+            obs_name,
+            var_name_web,
+            vert_code,
+            model_name,
+            model_var,
+        ) in results:
             self.exp_output.add_heatmap_timeseries_entry(
                 stats_ts,
                 region,
