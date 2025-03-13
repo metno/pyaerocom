@@ -29,6 +29,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+import subprocess
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
@@ -565,6 +566,14 @@ class EvalSetup(BaseModel):
     @field_serializer("model_cfg")
     def serialize_model_cfg(self, model_cfg: ModelCollection):
         return model_cfg.as_dict()
+
+    @computed_field
+    @cached_property
+    def pip_freeze(self) -> list[str]:
+        reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        splt = [x for x in reqs.decode().split("\n") if x != ""]
+
+        return sorted(splt)
 
     ###########################
     ##       Methods
