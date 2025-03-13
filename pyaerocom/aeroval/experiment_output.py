@@ -228,7 +228,10 @@ class ExperimentOutput(ProjectOutput):
                     }
                 }
                 self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
-            for uri in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
+            # for uri in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
+            for uri in self.avdb.query(
+                aerovaldb.routes.Route.HEATMAP, project=self.proj_id, experiment=self.exp_id
+            ):
                 data = self.avdb.get_by_uri(uri)
                 hm = {}
                 for vardisp, info in menu.items():
