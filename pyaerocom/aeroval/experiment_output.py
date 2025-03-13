@@ -3,7 +3,6 @@ import logging
 import os
 import pathlib
 import shutil
-from collections import namedtuple
 
 import aerovaldb
 
@@ -36,10 +35,6 @@ from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases, get_variable
 
-MapInfo = namedtuple(
-    "MapInfo",
-    ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"],
-)
 
 logger = logging.getLogger(__name__)
 
@@ -437,16 +432,6 @@ class ExperimentOutput(ProjectOutput):
         elif self.cfg.webdisp_opts.obsorder_from_config:
             order.extend(self.cfg.obs_cfg.web_interface_names)
         return order
-
-    # def _has_files(self, directory: str):
-    #    """
-    #    Checks if a directory contains any files.
-    #    The contour directory may contains files, but these are not json files (geojson, webp, png)
-    #    """
-    #    return len(self._get_output_files(directory)) > 0
-    #
-    # def _get_output_files(self, directory):
-    #    return [p for p in pathlib.Path(directory).rglob("*") if p.is_file()]
 
     def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
         var_ranges_defaults = self.cfg.var_scale_colmap
