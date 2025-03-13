@@ -11,7 +11,6 @@ from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
     MetaDataError,
-    StationNotFoundError,
     VarNotAvailableError,
 )
 from pyaerocom.helpers import merge_station_data, start_stop
@@ -123,80 +122,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         obj._data["flag"] = self._nan_types["flag"]
         obj._add_to_filter_history("set_flags_nan")
         return obj
-
-    @property
-    @override
-    def countries_available(self):
-        countries = []
-        for idx, meta in self.metadata.items():
-            try:
-                countries.append(meta["country"])
-            except KeyError:
-                logger.warning("No country information in meta block", idx)
-        if len(countries) == 0:
-            logger.warning(
-                "None of the metadata blocks contains "
-                "country information. You may want to "
-                "run class method check_set_country first "
-                "to automatically assign countries."
-            )
-        return sorted(set(countries))
-
-    @property
-    @override
-    def find_station_meta_indices(self, station_name_or_pattern, allow_wildcards=True):
-        if not allow_wildcards:
-
-            def compare(x, y):
-                return fnmatch.fnmatch(x, y)
-
-        else:
-
-            def compare(x, y):
-                return x == y
-
-        idx = []
-        for i, meta in self.metadata.items():
-            if compare(meta["station_name"], station_name_or_pattern):
-                idx.append(i)
-        if len(idx) == 0:
-            raise StationNotFoundError(
-                f"No station available in UngriddedData that matches name {station_name_or_pattern}"
-            )
-        return idx
-
-    @override
-    def check_unit(self, var_name, unit=None):
-        if unit is None:
-            unit = const.VARS[var_name]["units"]
-
-        units = []
-        for i, meta in self.metadata.items():
-            if var_name in meta["var_info"]:
-                try:
-                    u = meta["var_info"][var_name]["units"]
-                    if u not in units:
-                        units.append(u)
-                except KeyError:
-                    add_str = ""
-                    if "unit" in meta["var_info"][var_name]:
-                        add_str = (
-                            "Corresponding var_info dict contains "
-                            'attr. "unit", which is deprecated, please '
-                            "check corresponding reading routine. "
-                        )
-                    raise MetaDataError(
-                        f"Failed to access unit information for variable {var_name} "
-                        f"in metadata block {i}. {add_str}"
-                    )
-        if len(units) == 0 and str(unit) != "1":
-            raise MetaDataError(
-                f"Failed to access unit information for variable {var_name}. "
-                f"Expected unit {unit}"
-            )
-        for u in units:
-            if not get_unit_conversion_fac(u, unit, var_name) == 1:
-                raise MetaDataError(f"Invalid unit {u} detected (expected {unit})")
 
     def to_station_data(
         self,
@@ -488,6 +413,39 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             if ok:
                 _iter.append(stat_name)
         return _iter
+
+    def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
+        obj = self if inplace else self.copy()
+
+        # get the unit
+        if to_unit is None:
+            to_unit = const.VARS[var_name]["units"]
+
+        for i, meta in obj.metadata.items():
+            if var_name in meta["var_info"]:
+                try:
+                    unit = meta["var_info"][var_name]["units"]
+                except KeyError:
+                    add_str = ""
+                    if "unit" in meta["var_info"][var_name]:
+                        add_str = (
+                            "Corresponding var_info dict contains "
+                            'attr. "unit", which is deprecated, please '
+                            "check corresponding reading routine. "
+                        )
+                    raise MetaDataError(
+                        f"Failed to access unit information for variable {var_name} "
+                        f"in metadata block {i}. {add_str}"
+                    )
+                fac = get_unit_conversion_fac(unit, to_unit, var_name)
+                if fac != 1:
+                    meta_idx = obj.meta_idx[i][var_name]
+                    current = obj._data[meta_idx, obj._DATAINDEX]
+                    new = current * fac
+                    obj._data[meta_idx, obj._DATAINDEX] = new
+                    obj.metadata[i]["var_info"][var_name]["units"] = to_unit
+
+        return obj
 
     @override
     def remove_outliers(

@@ -6,7 +6,6 @@ import os
 from datetime import datetime
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -19,7 +18,6 @@ from pyaerocom.exceptions import (
     DataExtractionError,
     MetaDataError,
     StationCoordinateError,
-    StationNotFoundError,
     TimeMatchError,
     VarNotAvailableError,
 )
@@ -29,12 +27,9 @@ from pyaerocom.helpers import (
     merge_station_data,
     same_meta_dict,
     start_stop,
-    start_stop_str,
 )
-from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
-from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units_helpers import get_unit_conversion_fac
@@ -468,64 +463,6 @@ class UngriddedData(UngriddedDataMetadata):
         self._data = np.append(self._data, chunk, axis=0)
         logger.info(f"adding chunk, new array size ({self._data.shape})")
 
-    def _find_station_indices_wildcards(self, station_str):
-        """Find indices of all metadata blocks matching input station name
-
-        Parameters
-        ----------
-        station_str : str
-            station name or wildcard pattern
-
-        Returns
-        -------
-        list
-           list containing all metadata indices that match the input station
-           name or pattern
-
-        Raises
-        ------
-        StationNotFoundError
-            if no such station exists in this data object
-        """
-        idx = []
-        for i, meta in self.metadata.items():
-            if fnmatch.fnmatch(meta["station_name"], station_str):
-                idx.append(i)
-        if len(idx) == 0:
-            raise StationNotFoundError(
-                f"No station available in UngriddedData that matches pattern {station_str}"
-            )
-        return idx
-
-    def _find_station_indices(self, station_str):
-        """Find indices of all metadata blocks matching input station name
-
-        Parameters
-        ----------
-        station_str : str
-            station name
-
-        Returns
-        -------
-        list
-           list containing all metadata indices that match the input station
-           name or pattern
-
-        Raises
-        ------
-        StationNotFoundError
-            if no such station exists in this data object
-        """
-        idx = []
-        for i, meta in self.metadata.items():
-            if meta["station_name"] == station_str:
-                idx.append(i)
-        if len(idx) == 0:
-            raise StationNotFoundError(
-                f"No station available in UngriddedData that matches name {station_str}"
-            )
-        return idx
-
     def _get_stat_coords(self):
         meta_idx = []
         coords = []
@@ -541,6 +478,8 @@ class UngriddedData(UngriddedDataMetadata):
 
     def check_set_country(self):
         """CHecks all metadata entries for availability of country information
+
+        Deprecated - no longer used?
 
         Metadata blocks that are missing country entry will be updated based
         on country inferred from corresponding lat / lon coordinate. Uses
@@ -561,6 +500,7 @@ class UngriddedData(UngriddedDataMetadata):
         list
             corresponding countries that were inferred from lat / lon
         """
+        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
         meta_idx, coords = self._get_stat_coords()
         info = get_country_info_coords(coords)
         meta_idx_updated = []
@@ -575,55 +515,6 @@ class UngriddedData(UngriddedDataMetadata):
                 meta_idx_updated.append(idx)
                 countries.append(country)
         return (meta_idx_updated, countries)
-
-    @property
-    def countries_available(self):
-        """
-        Alphabetically sorted list of country names available
-        """
-        # self.check_set_country()
-        countries = []
-        for idx, meta in self.metadata.items():
-            try:
-                countries.append(meta["country"])
-            except Exception:
-                logger.warning("No country information in meta block", idx)
-        if len(countries) == 0:
-            logger.warning(
-                "None of the metadata blocks contains "
-                "country information. You may want to "
-                "run class method check_set_country first "
-                "to automatically assign countries."
-            )
-        return sorted(dict.fromkeys(countries))
-
-    def find_station_meta_indices(self, station_name_or_pattern, allow_wildcards=True):
-        """Find indices of all metadata blocks matching input station name
-
-        You may also use wildcard pattern as input (e.g. *Potenza*)
-
-        Parameters
-        ----------
-        station_pattern : str
-            station name or wildcard pattern
-        allow_wildcards : bool
-            if True, input station_pattern will be used as wildcard pattern and
-            all matches are returned.
-
-        Returns
-        -------
-        list
-           list containing all metadata indices that match the input station
-           name or pattern
-
-        Raises
-        ------
-        StationNotFoundError
-            if no such station exists in this data object
-        """
-        if not allow_wildcards:
-            return self._find_station_indices(station_name_or_pattern)
-        return self._find_station_indices_wildcards(station_name_or_pattern)
 
     # TODO: see docstring
     def to_station_data(
@@ -789,40 +680,6 @@ class UngriddedData(UngriddedDataMetadata):
             # return StationData object and not list
             return stats_ok[0]
         return stats_ok
-
-    def _try_infer_stat_merge_pref_attr(self, stats):
-        """Checks if a preferred attribute for handling of overlaps can be inferred
-
-        Parameters
-        ----------
-        stats : list
-            list of :class:`StationData` objects
-
-        Returns
-        -------
-        str
-            preferred merge attribute parameter, if applicable, else None
-        """
-        data_id = None
-        pref_attr = None
-        for stat in stats:
-            if "data_id" not in stat:
-                return None
-            elif data_id is None:
-                data_id = stat["data_id"]
-                from pyaerocom.metastandards import DataSource
-
-                s = DataSource(
-                    data_id=data_id
-                )  # reads default data source info that may contain preferred meta attribute
-                pref_attr = s.stat_merge_pref_attr
-                if pref_attr is None:
-                    return None
-            elif (
-                not stat["data_id"] == data_id
-            ):  # station data objects contain different data sources
-                return None
-        return pref_attr
 
     ### TODO: check if both `variables` and `var_info` attrs are required in
     ### metdatda blocks
@@ -1104,11 +961,15 @@ class UngriddedData(UngriddedDataMetadata):
     ):  # pragma: no cover
         """Extract all data points of a certain variable
 
+        Deprecated: no usage found
+
         Parameters
         ----------
         vars_to_extract : :obj:`str` or :obj:`list`
             all variables that are supposed to be accessed
         """
+        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
+
         if isinstance(variables, str):
             variables = [variables]
         all_stations = self.to_station_data_all(variables, start, stop, freq=ts_type, **kwargs)
@@ -1220,62 +1081,6 @@ class UngriddedData(UngriddedDataMetadata):
                 return False
         return True
 
-    def _init_meta_filters(self, **filter_attributes):
-        """Init filter dictionary for :func:`apply_filter_meta`
-
-        Parameters
-        ----------
-        **filter_attributes
-            valid meta keywords that are supposed to be filtered and the
-            corresponding filter values (or value ranges)
-            Only valid meta keywords are considered (e.g. data_id,
-            longitude, latitude, altitude, ts_type)
-
-        Returns
-        -------
-        tuple
-            3-element tuple containing
-
-            - dict: string match filters for metakeys \
-              (e.g. dict['data_id'] = 'AeronetSunV2Lev2.daily')
-            - dict: in-list match filters for metakeys \
-              (e.g. dict['station_name'] = ['stat1', 'stat2', 'stat3'])
-            - dict: in-range dictionary for metakeys \
-              (e.g. dict['longitude'] = [-30, 30])
-
-        """
-        # initiate filters that are checked
-        valid_keys = list(self.metadata[self.first_meta_idx])
-        str_f = {}
-        list_f = {}
-        range_f = {}
-        val_f = {}
-        for key, val in filter_attributes.items():
-            if key not in valid_keys:
-                raise OSError(
-                    f"Invalid input parameter for filtering: {key}. "
-                    f"Please choose from {valid_keys}"
-                )
-
-            if isinstance(val, str):
-                str_f[key] = val
-            elif isnumeric(val):
-                val_f[key] = val
-            elif isinstance(val, list | np.ndarray | tuple):
-                if all([isinstance(x, str) for x in val]):
-                    list_f[key] = val
-                elif len(val) == 2 and all([isnumeric(x) for x in val]):
-                    try:
-                        low, high = float(val[0]), float(val[1])
-                        if not low < high:
-                            raise ValueError("First entry needs to be smaller than 2nd")
-                        range_f[key] = [low, high]
-                    except Exception:
-                        list_f[key] = val
-                else:
-                    list_f[key] = val
-        return (str_f, list_f, range_f, val_f)
-
     def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
         obj = self if inplace else self.copy()
 
@@ -1308,52 +1113,6 @@ class UngriddedData(UngriddedDataMetadata):
                     obj.metadata[i]["var_info"][var_name]["units"] = to_unit
 
         return obj
-
-    def check_unit(self, var_name, unit=None):
-        """Check if variable unit corresponds to AeroCom unit
-
-        Parameters
-        ----------
-        var_name : str
-            variable name for which unit is to be checked
-        unit : :obj:`str`, optional
-            unit to be checked, if None, AeroCom default unit is used
-
-        Raises
-        ------
-        MetaDataError
-            if unit information is not accessible for input variable name
-        """
-        if unit is None:
-            unit = const.VARS[var_name]["units"]
-
-        units = []
-        for i, meta in self.metadata.items():
-            if var_name in meta["var_info"]:
-                try:
-                    u = meta["var_info"][var_name]["units"]
-                    if u not in units:
-                        units.append(u)
-                except KeyError:
-                    add_str = ""
-                    if "unit" in meta["var_info"][var_name]:
-                        add_str = (
-                            "Corresponding var_info dict contains "
-                            'attr. "unit", which is deprecated, please '
-                            "check corresponding reading routine. "
-                        )
-                    raise MetaDataError(
-                        f"Failed to access unit information for variable {var_name} "
-                        f"in metadata block {i}. {add_str}"
-                    )
-        if len(units) == 0 and str(unit) != "1":
-            raise MetaDataError(
-                f"Failed to access unit information for variable {var_name}. "
-                f"Expected unit {unit}"
-            )
-        for u in units:
-            if not get_unit_conversion_fac(u, unit, var_name) == 1:
-                raise MetaDataError(f"Invalid unit {u} detected (expected {unit})")
 
     def set_flags_nan(self, inplace=False):
         """Set all flagged datapoints to NaN
@@ -1478,374 +1237,9 @@ class UngriddedData(UngriddedDataMetadata):
         )
         return new
 
-    def _add_to_filter_history(self, info):
-        """Add info to :attr:`filter_hist`
-
-        Key is current system time string
-
-        Parameter
-        ---------
-        info
-            information to be appended to filter history
-        """
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.filter_hist[int(time_str)] = info
-
     def empty_trash(self):
         """Set all values in trash column to NaN"""
         self._data[:, self._TRASHINDEX] = np.nan
-
-    @property
-    def station_coordinates(self):
-        """dictionary with station coordinates
-
-        Returns
-        -------
-        dict
-            dictionary containing station coordinates (latitude, longitude,
-            altitude -> values) for all stations (keys) where these parameters
-            are accessible.
-        """
-        d = {"station_name": [], "latitude": [], "longitude": [], "altitude": []}
-
-        for i, meta in self.metadata.items():
-            if "station_name" not in meta:
-                logger.debug(f"Skipping meta-block {i}: station_name is not defined")
-                continue
-            elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
-                logger.debug(
-                    f"Skipping meta-block {i} (station {meta['station_name']}): "
-                    f"one or more of the coordinates is not defined"
-                )
-                continue
-
-            stat = meta["station_name"]
-
-            if stat in d["station_name"]:
-                continue
-            d["station_name"].append(stat)
-            for k in const.STANDARD_COORD_NAMES:
-                d[k].append(meta[k])
-        return d
-
-    def _find_meta_matches(self, negate=None, *filters):
-        """Find meta matches for input attributes
-
-        Parameters
-        ----------
-        negate : list or str, optional
-            specified meta key(s) provided in `*filters` that are
-            supposed to be treated as 'not valid'. E.g. if
-            `station_name="bad_site"` is input in `filter_attributes` and if
-            `station_name` is listed in `negate`, then all metadata blocks
-            containing "bad_site" as station_name will be excluded in output
-            data object.
-        *filters
-            list of filters to be applied
-
-        Returns
-        -------
-        tuple
-            list of metadata indices that match input filter
-        """
-        if negate is None:
-            negate = []
-        elif isinstance(negate, str):
-            negate = [negate]
-        elif not isinstance(negate, list):
-            raise ValueError(f"Invalid input for negate {negate}, need list or str or None")
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            if self._check_filter_match(meta, negate, *filters):
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
-                        continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += len(self.meta_idx[meta_idx][var])
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
-        return (meta_matches, totnum)
-
-    def filter_altitude(self, alt_range):
-        """Filter altitude range
-
-        Parameters
-        ----------
-        alt_range : list or tuple
-            2-element list specifying altitude range to be filtered in m
-
-        Returns
-        -------
-        UngriddedData
-            filtered data object
-        """
-        return self.filter_by_meta(altitude=alt_range)
-
-    def filter_region(self, region_id, check_mask=True, check_country_meta=False, **kwargs):
-        """Filter object by a certain region
-
-        Parameters
-        ----------
-        region_id : str
-            name of region (must be valid AeroCom region name or HTAP region)
-        check_mask : bool
-            if True and region_id a valid name for a binary mask, then the
-            filtering is done based on that binary mask.
-        check_country_meta : bool
-            if True, then the input region_id is first checked against
-            available country names in metadata. If that fails, it is assumed
-            that this regions is either a valid name for registered rectangular
-            regions or for available binary masks.
-        **kwargs
-            currently not used in method (makes usage in higher level classes
-            such as :class:`Filter` easier as other data objects have the
-            same method with possibly other input possibilities)
-
-        Returns
-        -------
-        UngriddedData
-            filtered data object (containing only stations that fall into
-            input region)
-        """
-        if check_country_meta:
-            if region_id in self.countries_available:
-                return self.filter_by_meta(country=region_id)
-
-        if region_id in const.HTAP_REGIONS and check_mask:
-            return self.apply_region_mask(region_id)
-
-        region = Region(region_id)
-        return self.filter_by_meta(longitude=region.lon_range, latitude=region.lat_range)
-
-    def apply_region_mask(self, region_id=None):
-        """
-        TODO : Write documentations
-
-        Parameters
-        ----------
-        region_id : str or list (of strings)
-            ID of region or IDs of multiple regions to be combined
-        """
-        if region_id not in const.HTAP_REGIONS:
-            raise ValueError(
-                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
-            )
-
-        # 1. find matches -> list of meta indices that are in region
-        # 2. Get total number of datapoints -> defines shape of output UngriddedData
-        # 3. Create
-
-        mask = load_region_mask_xr(region_id)
-
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            lon, lat = meta["longitude"], meta["latitude"]
-
-            mask_val = get_mask_value(lat, lon, mask)
-            if mask_val >= 1:  # coordinate is in mask
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    totnum += len(self.meta_idx[meta_idx][var])
-
-        new = self._new_from_meta_blocks(meta_matches, totnum)
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = f"Applied mask {region_id}"
-        new._check_index()
-        return new
-
-    def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
-        """Extended filtering method
-
-        Combines :func:`filter_by_meta` and adds option to also remove outliers
-        (keyword `remove_outliers`), set flagged data points to NaN (keyword
-        `set_flags_nan`) and to extract individual variables (keyword
-        `var_name`).
-
-        Parameters
-        ----------
-        var_outlier_ranges : dict, optional
-            dictionary specifying custom outlier ranges for individual
-            variables.
-        **filter_attributes : dict
-            filters that are supposed to be applied to the data.
-            To remove outliers, use keyword `remove_outliers`, to set flagged
-            values to NaN, use keyword `set_flags_nan`, to extract single or
-            multiple variables, use keyword `var_name`. Further filter keys
-            are assumed to be metadata specific and are passed to
-            :func:`filter_by_meta`.
-
-        Returns
-        -------
-        UngriddedData
-            filtered data object
-        """
-        data = self
-
-        remove_outliers = False
-        set_flags_nan = False
-        extract_vars = None
-        region_id = None
-        if "remove_outliers" in filter_attributes:
-            remove_outliers = filter_attributes.pop("remove_outliers")
-        if "set_flags_nan" in filter_attributes:
-            set_flags_nan = filter_attributes.pop("set_flags_nan")
-        if "var_name" in filter_attributes:
-            extract_vars = filter_attributes.pop("var_name")
-            if isinstance(extract_vars, str):
-                extract_vars = [extract_vars]
-            for var in extract_vars:
-                if var not in data.contains_vars:
-                    raise VarNotAvailableError(
-                        f"No such variable {var} in UngriddedData object. "
-                        f"Available vars: {self.contains_vars}"
-                    )
-        if "region_id" in filter_attributes:
-            region_id = filter_attributes.pop("region_id")
-
-        if len(filter_attributes) > 0:
-            data = data.filter_by_meta(**filter_attributes)
-
-        if extract_vars is not None:
-            data = data.extract_vars(extract_vars)
-
-        if remove_outliers:
-            if var_outlier_ranges is None:
-                var_outlier_ranges = {}
-
-            for var in data.contains_vars:
-                lower, upper = (
-                    None,
-                    None,
-                )  # uses pyaerocom default specified in variables.ini
-                if var in var_outlier_ranges:
-                    lower, upper = var_outlier_ranges[var]
-                data = data.remove_outliers(
-                    var, inplace=True, low=lower, high=upper, move_to_trash=False
-                )
-        if set_flags_nan:
-            if not data.has_flag_data:
-                # jgriesfeller 20230210
-                # not sure if raising this exception is the right thing to do
-                # the fake variables (vars computed from other variables) might not have
-                # and do not need flags (because that has been done during the read of the
-                # variable they are computed from)
-                # disabling and logging it for now
-                # raise MetaDataError(
-                logger.info(
-                    'Cannot apply filter "set_flags_nan" to '
-                    "UngriddedData object, since it does not "
-                    "contain flag information"
-                )
-            else:
-                data = data.set_flags_nan(inplace=True)
-        if region_id:
-            data = data.filter_region(region_id)
-        return data
-
-    def filter_by_projection(
-        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
-    ):
-        """Filter the ungridded data to a horizontal bounding box given by a projection
-
-        :param projection: a function turning projection(lat, lon) -> (x, y)
-        :param xrange: x range (min/max included) in the projection plane
-        :param yrange: y range (min/max included) in the projection plane
-        """
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            lon = meta["longitude"]
-            lat = meta["latitude"]
-            x, y = projection(lat, lon)
-
-            match_x = in_range(x, xrange[0], xrange[1])
-            match_y = in_range(y, yrange[0], yrange[1])
-
-            if match_x and match_y:
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
-                        continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += len(self.meta_idx[meta_idx][var])
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
-        if len(meta_matches) == len(self.metadata):
-            logger.info("filter_by_projection result in unchanged data object")
-            return self
-        new = self._new_from_meta_blocks(meta_matches, totnum)
-        return new
-
-    def filter_by_meta(self, negate=None, **filter_attributes):
-        """Flexible method to filter these data based on input meta specs
-
-        Parameters
-        ----------
-        negate : list or str, optional
-            specified meta key(s) provided via `filter_attributes` that are
-            supposed to be treated as 'not valid'. E.g. if
-            `station_name="bad_site"` is input in `filter_attributes` and if
-            `station_name` is listed in `negate`, then all metadata blocks
-            containing "bad_site" as station_name will be excluded in output
-            data object.
-        **filter_attributes
-            valid meta keywords that are supposed to be filtered and the
-            corresponding filter values (or value ranges)
-            Only valid meta keywords are considered (e.g. data_id,
-            longitude, latitude, altitude, ts_type)
-
-        Returns
-        -------
-        UngriddedData
-            filtered ungridded data object
-
-        Raises
-        ------
-        NotImplementedError
-            if attempt variables are supposed to be filtered (not yet possible)
-        IOError
-            if any of the input keys are not valid meta key
-
-        Example
-        -------
-        >>> import pyaerocom as pya
-        >>> r = pya.io.ReadUngridded(['AeronetSunV3Lev2.daily'], 'od550aer')
-        >>> data = r.read()
-        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV3Lev2.daily',
-        ...                                     longitude=[-30, 30],
-        ...                                     latitude=[20, 70],
-        ...                                     altitude=[0, 1000])
-        """
-
-        if "variables" in filter_attributes:
-            raise NotImplementedError("Cannot yet filter by variables")
-
-        # separate filters by strin, list, etc.
-        filters = self._init_meta_filters(**filter_attributes)
-
-        # find all metadata blocks that match the filters
-        meta_matches, totnum_new = self._find_meta_matches(
-            negate,
-            *filters,
-        )
-        if len(meta_matches) == len(self.metadata):
-            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
-            return self
-        new = self._new_from_meta_blocks(meta_matches, totnum_new)
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = filter_attributes
-        return new
 
     def _new_from_meta_blocks(self, meta_indices, totnum_new):
         # make a new empty object with the right size (totnum_new)
@@ -2075,6 +1469,7 @@ class UngriddedData(UngriddedDataMetadata):
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
         determine single locations"""
+        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
 
         # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
         self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
@@ -2084,6 +1479,7 @@ class UngriddedData(UngriddedDataMetadata):
 
     def decode_lat_lon_from_float(self):
         """method to decode lat and lon from a single number calculated by code_lat_lon_in_float"""
+        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
 
         lons = (
             np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
@@ -2388,21 +1784,6 @@ class UngriddedData(UngriddedDataMetadata):
         mask = np.where(self._data[:, self._VARINDEX] == idx)[0]
         return self._data[mask, self._DATAINDEX]
 
-    def num_obs_var_valid(self, var_name):
-        """Number of valid observations of variable in this dataset
-
-        Parameters
-        ----------
-        var_name : str
-            name of variable
-
-        Returns
-        -------
-        int
-            number of valid observations (all values that are not NaN)
-        """
-        raise NotImplementedError("Coming soon")
-
     def find_common_stations(
         self,
         other: UngriddedData,
@@ -2411,6 +1792,8 @@ class UngriddedData(UngriddedDataMetadata):
         max_diff_coords_km: float = 0.1,
     ) -> dict:
         """Search common stations between two UngriddedData objects
+
+        Deprecated, HK 2025-03-13
 
         This method loops over all stations that are stored within this
         object (using :attr:`metadata`) and checks if the corresponding
@@ -2443,6 +1826,8 @@ class UngriddedData(UngriddedDataMetadata):
             station in the other object
 
         """
+        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
+
         if len(self.contains_datasets) > 1:
             raise NotImplementedError(
                 "This data object contains data from "
@@ -2526,6 +1911,7 @@ class UngriddedData(UngriddedDataMetadata):
     # TODO: brute force at the moment, we need to rethink and define how to
     # work with time intervals and perform temporal merging.
     def find_common_data_points(self, other, var_name, sampling_freq="daily"):
+        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
         if not sampling_freq == "daily":
             raise NotImplementedError("Currently only works with daily data")
         if not isinstance(other, UngriddedData):
@@ -2568,183 +1954,6 @@ class UngriddedData(UngriddedDataMetadata):
                     data_other_match.append(data_other[matches[0]])
 
         return (dates, data_this_match, data_other_match)
-
-    def _meta_to_lists(self):
-        meta = {k: [] for k in self.metadata[self.first_meta_idx]}
-        for meta_item in self.metadata.values():
-            for k, v in meta.items():
-                v.append(meta_item[k])
-        return meta
-
-    def plot_station_timeseries(
-        self,
-        station_name,
-        var_name,
-        start=None,
-        stop=None,
-        ts_type=None,
-        insert_nans=True,
-        ax=None,
-        **kwargs,
-    ):  # pragma: no cover
-        """Plot time series of station and variable
-
-        Parameters
-        ----------
-        station_name : :obj:`str` or :obj:`int`
-            station name or index of station in metadata dict
-        var_name : str
-            name of variable to be retrieved
-        start
-            start time (optional)
-        stop
-            stop time (optional). If start time is provided and stop time not,
-            then only the corresponding year inferred from start time will be
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution
-
-        **kwargs
-            Addifional keyword args passed to method :func:`pandas.Series.plot`
-
-        Returns
-        -------
-        axes
-            matplotlib axes instance
-
-        """
-        if ax is None:
-            from pyaerocom.plot.config import FIGSIZE_DEFAULT
-
-            fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
-
-        stat = self.to_station_data(
-            station_name,
-            var_name,
-            start,
-            stop,
-            freq=ts_type,
-            merge_if_multi=True,
-            insert_nans=insert_nans,
-        )
-        ax = stat.plot_timeseries(var_name, ax=ax, **kwargs)
-        return ax
-
-    def plot_station_coordinates(
-        self,
-        var_name=None,
-        start=None,
-        stop=None,
-        ts_type=None,
-        color="r",
-        marker="o",
-        markersize=8,
-        fontsize_base=10,
-        legend=True,
-        add_title=True,
-        **kwargs,
-    ):  # pragma: no cover
-        """Plot station coordinates on a map
-
-        All input parameters are optional and may be used to add constraints
-        related to which stations are plotted. Default is all stations of all
-        times.
-
-        Parameters
-        ----------
-
-        var_name : :obj:`str`, optional
-            name of variable to be retrieved
-        start
-            start time (optional)
-        stop
-            stop time (optional). If start time is provided and stop time not,
-            then only the corresponding year inferred from start time will be
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution
-        color : str
-            color of stations on map
-        marker : str
-            marker type of stations
-        markersize : int
-            size of station markers
-        fontsize_base : int
-            basic fontsize
-        legend : bool
-            if True, legend is added
-        add_title : bool
-            if True, title will be added
-        **kwargs
-            Addifional keyword args passed to
-            :func:`pyaerocom.plot.plot_coordinates`
-
-        Returns
-        -------
-        axes
-            matplotlib axes instance
-
-        """
-        from pyaerocom.plot.plotcoordinates import plot_coordinates
-
-        if len(self.contains_datasets) > 1:
-            logger.warning(
-                "UngriddedData object contains more than one "
-                "dataset ({}). Station coordinates will not be "
-                "distinguishable. You may want to apply a filter "
-                "first and plot them separately"
-            )
-
-        subset = self
-        if var_name is None:
-            info_str = "AllVars"
-        else:
-            if not isinstance(var_name, str):
-                raise ValueError("Can only handle single variable (or all -> input var_name=None)")
-            elif var_name not in subset.contains_vars:
-                raise ValueError(f"Input variable {var_name} is not available in dataset ")
-            info_str = var_name
-
-        try:
-            info_str += f"_{start_stop_str(start, stop, ts_type)}"
-        except Exception:
-            info_str += "_AllTimes"
-        if ts_type is not None:
-            info_str += f"_{ts_type}"
-
-        if all([x is None for x in (var_name, start, stop)]):  # use all stations
-            all_meta = subset._meta_to_lists()
-            lons, lats = all_meta["longitude"], all_meta["latitude"]
-
-        else:
-            stat_data = subset.to_station_data_all(var_name, start, stop, ts_type)
-
-            if len(stat_data["stats"]) == 0:
-                raise DataCoverageError(
-                    "No stations could be found for input specs (var, start, stop, freq)"
-                )
-            lons = stat_data["longitude"]
-            lats = stat_data["latitude"]
-        if "label" not in kwargs:
-            kwargs["label"] = info_str
-
-        ax = plot_coordinates(
-            lons,
-            lats,
-            color=color,
-            marker=marker,
-            markersize=markersize,
-            legend=legend,
-            **kwargs,
-        )
-
-        if "title" in kwargs:
-            title = kwargs["title"]
-        else:
-            title = info_str
-        if add_title:
-            ax.set_title(title, fontsize=fontsize_base + 4)
-        return ax
 
     def save_as(self, file_name, save_dir):
         """
@@ -2905,6 +2114,8 @@ class UngriddedData(UngriddedDataMetadata):
 
 
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):
+    logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
+
     test = sorted(arr_to_be_reduced)
     closest_idx = []
     for num in sorted(arr_nominal):

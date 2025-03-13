@@ -9,7 +9,6 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.helpers import isnumeric
-from pyaerocom.mathutils import in_range
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 
@@ -18,6 +17,27 @@ logger = logging.getLogger(__name__)
 
 class UngriddedDataContainer(abc.ABC):
     """Base-class representing ungridded data like stations data, satellite data sondes"""
+
+    @abc.abstractmethod
+    def _get_data_revision_helper(self, data_id):
+        """
+        Helper method to get last data revision
+
+        Parameters
+        ----------
+        data_id : str
+            ID of dataset for which revision is to be retrieved
+
+        Raises
+        ------
+        MetaDataError
+            If multiple revisions are found for this dataset.
+
+        Returns
+        -------
+        latest revision (None if no revision is available).
+
+        """
 
     @property
     @abc.abstractmethod
@@ -374,6 +394,16 @@ class UngriddedDataContainer(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
+        """convert all data of a variable to the new units
+
+        :param var_name: variable to change
+        :param to_unit: new units, defaults to None
+        :param inplace: inplace or copy, defaults to True
+        """
+        pass
+
+    @abc.abstractmethod
     def remove_outliers(
         self,
         var_name,
@@ -510,34 +540,7 @@ class UngriddedDataContainer(abc.ABC):
         :param xrange: x range (min/max included) in the projection plane
         :param yrange: y range (min/max included) in the projection plane
         """
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            lon = meta["longitude"]
-            lat = meta["latitude"]
-            x, y = projection(lat, lon)
-
-            match_x = in_range(x, xrange[0], xrange[1])
-            match_y = in_range(y, yrange[0], yrange[1])
-
-            if match_x and match_y:
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
-                        continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += len(self.meta_idx[meta_idx][var])
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
-        if len(meta_matches) == len(self.metadata):
-            logger.info("filter_by_projection result in unchanged data object")
-            return self
-        new = self._new_from_meta_blocks(meta_matches, totnum)
-        return new
+        pass
 
     @abc.abstractmethod
     def filter_by_meta(self, negate=None, **filter_attributes):
@@ -735,6 +738,60 @@ class UngriddedDataContainer(abc.ABC):
         pass
 
     # def filter_by_meta -- unsure if need to implement?
+    @abc.abstractmethod
+    def save_as(self, file_name, save_dir):
+        """
+        Save this object to disk
+
+        Note
+        ----
+        So far, only storage as pickled object via
+        `CacheHandlerUngridded` is supported, so input file_name must end
+        with .pkl
+
+        Parameters
+        ----------
+        file_name : str
+            name of output file
+        save_dir : str
+            name of output directory
+
+        Returns
+        -------
+        str
+            file path
+
+        """
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def from_cache(data_dir, file_name):
+        """
+        Load pickled instance of `UngriddedData`
+
+        Parameters
+        ----------
+        data_dir : str
+            directory where pickled object is stored
+        file_name : str
+            file name of pickled object (needs to end with pkl)
+
+        Raises
+        ------
+        ValueError
+            if loading failed
+
+        Returns
+        -------
+        UngriddedData
+            loaded UngriddedData object. If this method is called from an
+            instance of `UngriddedData`, this instance remains unchanged.
+            You may merge the returned reloaded instance using
+            :func:`merge`.
+
+        """
+        pass
 
     @abc.abstractmethod
     def copy(self):
@@ -868,3 +925,38 @@ class UngriddedDataContainer(abc.ABC):
                         s += f"\n\t{f}"
 
         return s
+
+    @staticmethod
+    def _try_infer_stat_merge_pref_attr(stats):
+        """Checks if a preferred attribute for handling of overlaps can be inferred
+
+        Parameters
+        ----------
+        stats : list
+            list of :class:`StationData` objects
+
+        Returns
+        -------
+        str
+            preferred merge attribute parameter, if applicable, else None
+        """
+        data_id = None
+        pref_attr = None
+        for stat in stats:
+            if "data_id" not in stat:
+                return None
+            elif data_id is None:
+                data_id = stat["data_id"]
+                from pyaerocom.metastandards import DataSource
+
+                s = DataSource(
+                    data_id=data_id
+                )  # reads default data source info that may contain preferred meta attribute
+                pref_attr = s.stat_merge_pref_attr
+                if pref_attr is None:
+                    return None
+            elif (
+                not stat["data_id"] == data_id
+            ):  # station data objects contain different data sources
+                return None
+        return pref_attr
