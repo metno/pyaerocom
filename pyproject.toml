@@ -24,7 +24,7 @@ requires-python = ">=3.10"
 dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
     # and minimum versions in the tox config at the bottom of this file!\
-    "aerovaldb>=0.4.0",
+    "aerovaldb~=0.4.0",
     "scitools-iris>=3.11.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
