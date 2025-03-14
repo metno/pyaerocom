@@ -248,6 +248,13 @@ class StatisticsSetup(BaseModel, extra="allow"):
 class TimeSetup(BaseModel):
     DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
     SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
+    """
+    Main output frequency for AeroVal (some of the AeroVal processing
+    steps are only done for this resolution, since they would create too
+    much output otherwise, such as statistics timeseries or scatter plot in
+    "Overall Evaluation" tab on AeroVal).
+    Note that this frequency needs to be included in previous setting "freqs".
+    """
     main_freq: str = "monthly"
     freqs: list[str] = ["monthly", "yearly"]
     periods: list[str] = Field(default_factory=list)
