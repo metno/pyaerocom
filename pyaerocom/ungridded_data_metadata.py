@@ -667,6 +667,26 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                 v.append(meta_item[k])
         return meta
 
+    @override
+    def extract_dataset(self, data_id):
+        """Extract single dataset into new instance of :class:`UngriddedData`
+
+        Calls :func:`filter_by_meta`.
+
+        Parameters
+        -----------
+        data_id : str
+            ID of dataset
+
+        Returns
+        -------
+        UngriddedData
+            new instance of ungridded data containing only data from specified
+            input network
+        """
+        logger.info(f"Extracting dataset {data_id} from data object")
+        return self.filter_by_meta(data_id=data_id)
+
     def plot_station_timeseries(
         self,
         station_name,

@@ -57,12 +57,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
     def __init__(self, num_points: int = 100000):
+        super().__init__()  # initialize metadata
         self._data = self._create_data_chunk(num_points)
 
-        # station metadata dict[int, dict[str, Any]] with first int being the meta_id
-        self.metadata = {}
-        # var-name -> var-id translation
-        self.var_id = {}
         # filters applied
         self.filter_hist = {}
 
@@ -71,7 +68,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     @override
     def _new_from_meta_blocks(self, meta_ids: list, total: int = 1000000):
         # check for new variables of the stations
-        new_var_id = {}
+        new_var_idx = {}
         new_metadata = {}
         for meta_id in meta_ids:
             meta = self.metadata[meta_id]
@@ -79,7 +76,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             for var in meta["var_info"]:
                 if var in self.ALLOWED_VERT_COORD_TYPES:
                     continue
-                new_var_id[var] = self.var_id[var]
+                new_var_idx[var] = self.var_idx[var]
 
         midx = np.isin(self._data["meta_id"], meta_ids)
         # data with the selected stations
@@ -91,7 +88,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         new = self(size)
         new._data = nd
         new.metadata = new_metadata
-        new.var_id = new_var_id
+        new.var_idx = new_var_idx
         new.filter_hist = self.filter_hist
         new._is_vertical_profile = self._is_vertical_profile
 
@@ -100,7 +97,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
         data = np.empty(size, dtype=self._dtype)
-        for k, v in self._nan_types.values:
+        for k, v in self._nan_types.items():
             data[k] = v
         return data
 
@@ -511,7 +508,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     var_names_unaliased.append(_var)
                 else:
                     raise VarNotAvailableError(f"No such variable {var_name} in data")
-        var_ids = [self.var_id[x] for x in var_names_unaliased]
+        var_ids = [self.var_idx[x] for x in var_names_unaliased]
         idx = np.isin(self._data["var_id"], var_ids)
         new = self.__class___()
         new._data = np.copy(self._data[idx])

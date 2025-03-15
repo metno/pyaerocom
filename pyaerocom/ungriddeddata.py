@@ -1331,25 +1331,6 @@ class UngriddedData(UngriddedDataMetadata):
         obj._check_index()
         return obj
 
-    def extract_dataset(self, data_id):
-        """Extract single dataset into new instance of :class:`UngriddedData`
-
-        Calls :func:`filter_by_meta`.
-
-        Parameters
-        -----------
-        data_id : str
-            ID of dataset
-
-        Returns
-        -------
-        UngriddedData
-            new instance of ungridded data containing only data from specified
-            input network
-        """
-        logger.info(f"Extracting dataset {data_id} from data object")
-        return self.filter_by_meta(data_id=data_id)
-
     def extract_var(self, var_name, check_index=True):
         """Split this object into single-var UngriddedData objects
 
@@ -1994,6 +1975,9 @@ class UngriddedData(UngriddedDataMetadata):
         if ch.check_and_load(file_name, cache_dir=data_dir):
             return ch.loaded_data[file_name]
         raise ValueError("Failed to load UngriddedData object")
+
+    def __iter__(self):
+        return self
 
     #: ToDo revise cases of DataCoverageError
     def __next__(self):

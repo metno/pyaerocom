@@ -918,13 +918,6 @@ class UngriddedDataContainer(abc.ABC):
             return True
         return False
 
-    def __iter__(self):
-        return self
-
-    @abc.abstractmethod
-    def __next__(self):
-        pass
-
     def __repr__(self):
         return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}>"
 
