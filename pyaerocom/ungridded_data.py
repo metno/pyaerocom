@@ -10,7 +10,6 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.helpers import isnumeric
 from pyaerocom.region import Region
-from pyaerocom.stationdata import StationData
 
 logger = logging.getLogger(__name__)
 
@@ -709,6 +708,26 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
+    def all_datapoints_var(self, var_name):
+        """Get array of all data values of input variable
+
+        Parameters
+        ----------
+        var_name : str
+            variable name
+
+        Returns
+        -------
+        ndarray
+            1-d numpy array containing all values of this variable
+
+        Raises
+        ------
+        AttributeError
+            if variable name is not available
+        """
+        pass
+
     @abc.abstractmethod
     def extract_vars(self, var_names, check_index=True):
         """Extract multiple variables from dataset
@@ -795,6 +814,19 @@ class UngriddedDataContainer(abc.ABC):
 
     @abc.abstractmethod
     def copy(self):
+        """Make a copy/clone of this object
+
+        Returns
+        -------
+        UngriddedDataContainer
+            clone of this object
+
+        Raises
+        ------
+        MemoryError
+            if copy is too big to fit into memory together with existing
+            instance
+        """
         pass
 
     @abc.abstractmethod
@@ -834,6 +866,31 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
+    def append(self, other):
+        """Append other instance of :class:`UngriddedDataContainer` to this object
+
+        Note
+        ----
+        Calls :func:`merge(other, new_obj=False)`
+
+        Parameters
+        -----------
+        other : UngriddedData
+            other data object
+
+        Returns
+        -------
+        UngriddedData
+            merged data object
+
+        Raises
+        -------
+        ValueError
+            if input object is not an instance of :class:`UngriddedData`
+
+        """
+        return self.merge(other, new_obj=False)
+
     def __contains__(self, key):
         """Check if input key (str) is valid dataset, variable, instrument or
         station name
@@ -864,22 +921,12 @@ class UngriddedDataContainer(abc.ABC):
     def __iter__(self):
         return self
 
-    #: ToDo revise cases of DataCoverageError
+    @abc.abstractmethod
     def __next__(self):
-        self._idx += 1
-        if self._idx == len(self.metadata):
-            self._idx = -1
-            raise StopIteration
-        try:
-            return self[self._idx]
-        except DataCoverageError:
-            logger.debug(
-                f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
-            )
-            return StationData()
+        pass
 
     def __repr__(self):
-        return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}"
+        return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}>"
 
     def __getitem__(self, key):
         if isnumeric(key) or key in self.unique_station_names:
@@ -903,28 +950,6 @@ class UngriddedDataContainer(abc.ABC):
         (9868, 12) (12336, 12) (22204, 12)
         """
         return self.merge(other, new_obj=True)
-
-    def __str__(self):
-        head = f"Pyaerocom {type(self).__name__}"
-        s = (
-            f"\n{head}\n{len(head) * '-'}"
-            f"\nContains networks: {self.contains_datasets}"
-            f"\nContains variables: {self.contains_vars}"
-            f"\nContains instruments: {self.contains_instruments}"
-            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
-        )
-        if self.is_filtered:
-            s += "\nFilters that were applied:"
-            for tstamp, f in self.filter_hist.items():
-                if f:
-                    s += f"\n Filter time log: {tstamp}"
-                    if isinstance(f, dict):
-                        for key, val in f.items():
-                            s += f"\n\t{key}: {val}"
-                    else:
-                        s += f"\n\t{f}"
-
-        return s
 
     @staticmethod
     def _try_infer_stat_merge_pref_attr(stats):

@@ -706,6 +706,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         """
         if ax is None:
             import matplotlib.pyplot as plt
+
             from pyaerocom.plot.config import FIGSIZE_DEFAULT
 
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
@@ -837,3 +838,25 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         if add_title:
             ax.set_title(title, fontsize=fontsize_base + 4)
         return ax
+
+    def __str__(self):
+        head = f"Pyaerocom {type(self).__name__}"
+        s = (
+            f"\n{head}\n{len(head) * '-'}"
+            f"\nContains networks: {self.contains_datasets}"
+            f"\nContains variables: {self.contains_vars}"
+            f"\nContains instruments: {self.contains_instruments}"
+            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
+        )
+        if self.is_filtered:
+            s += "\nFilters that were applied:"
+            for tstamp, f in self.filter_hist.items():
+                if f:
+                    s += f"\n Filter time log: {tstamp}"
+                    if isinstance(f, dict):
+                        for key, val in f.items():
+                            s += f"\n\t{key}: {val}"
+                    else:
+                        s += f"\n\t{f}"
+
+        return s

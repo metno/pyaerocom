@@ -23,7 +23,6 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import (
-    isnumeric,
     merge_station_data,
     same_meta_dict,
     start_stop,
@@ -1645,14 +1644,14 @@ class UngriddedData(UngriddedDataMetadata):
             for var, idx in other.var_idx.items():
                 if var in obj.var_idx:  # variable already exists in this object
                     if not idx == obj.var_idx[var]:
-                        other.change_var_idx(var, obj.var_idx[var])
+                        other._change_var_idx(var, obj.var_idx[var])
                 else:  # variable does not yet exist
                     idx_exists = [v for v in obj.var_idx.values()]
                     if idx in idx_exists:
                         # variable index is already assigned to another
                         # variable and needs to be changed
                         new_idx = max(idx_exists) + 1
-                        other.change_var_idx(var, new_idx)
+                        other._change_var_idx(var, new_idx)
                         obj.var_idx[var] = new_idx
                     else:
                         obj.var_idx[var] = idx
@@ -1665,6 +1664,7 @@ class UngriddedData(UngriddedDataMetadata):
     def colocate_vardata(
         self, var1, data_id1=None, var2=None, data_id2=None, other=None, **kwargs
     ):
+        # UNTESTED UNDOCUMENTED METHOD, HK 2025-03-15
         if other is None:
             other = self
         if var2 is None:
@@ -1696,7 +1696,7 @@ class UngriddedData(UngriddedDataMetadata):
         new = UngriddedData.from_station_data(statlist)
         return new
 
-    def change_var_idx(self, var_name, new_idx):
+    def _change_var_idx(self, var_name, new_idx):
         """Change index that is assigned to variable
 
         Each variable in this object has assigned a unique index that is
@@ -1734,31 +1734,6 @@ class UngriddedData(UngriddedDataMetadata):
         self.var_idx[var_name] = new_idx
         var_indices = np.where(self._data[:, self._VARINDEX] == cidx)
         self._data[var_indices, self._VARINDEX] = new_idx
-
-    def append(self, other):
-        """Append other instance of :class:`UngriddedData` to this object
-
-        Note
-        ----
-        Calls :func:`merge(other, new_obj=False)`
-
-        Parameters
-        -----------
-        other : UngriddedData
-            other data object
-
-        Returns
-        -------
-        UngriddedData
-            merged data object
-
-        Raises
-        -------
-        ValueError
-            if input object is not an instance of :class:`UngriddedData`
-
-        """
-        return self.merge(other, new_obj=False)
 
     def all_datapoints_var(self, var_name):
         """Get array of all data values of input variable
@@ -2020,36 +1995,6 @@ class UngriddedData(UngriddedDataMetadata):
             return ch.loaded_data[file_name]
         raise ValueError("Failed to load UngriddedData object")
 
-    def __contains__(self, key):
-        """Check if input key (str) is valid dataset, variable, instrument or
-        station name
-
-        Parameters
-        ----------
-        key : str
-            search key
-
-        Returns
-        -------
-        bool
-            True, if key can be found, False if not
-        """
-
-        if not isinstance(key, str):
-            raise ValueError("Need string (e.g. variable name, station name, instrument name")
-        if key in self.contains_datasets:
-            return True
-        elif key in self.contains_vars:
-            return True
-        elif key in self.station_name:
-            return True
-        elif key in self.contains_instruments:
-            return True
-        return False
-
-    def __iter__(self):
-        return self
-
     #: ToDo revise cases of DataCoverageError
     def __next__(self):
         self._idx += 1
@@ -2066,51 +2011,6 @@ class UngriddedData(UngriddedDataMetadata):
 
     def __repr__(self):
         return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}"
-
-    def __getitem__(self, key):
-        if isnumeric(key) or key in self.unique_station_names:
-            return self.to_station_data(key, insert_nans=True)
-        raise KeyError("Invalid input key, need metadata index or station name ")
-
-    def __and__(self, other):
-        """Merge this object with another using the logical ``and`` operator
-
-        Example
-        -------
-        >>> from pyaerocom.io import ReadAeronetSdaV3
-        >>> read = ReadAeronetSdaV3()
-
-        >>> d0 = read.read(last_file=10)
-        >>> d1 = read.read(first_file=10, last_file=20)
-
-        >>> merged = d0 & d1
-
-        >>> print(d0.shape, d1.shape, merged.shape)
-        (9868, 12) (12336, 12) (22204, 12)
-        """
-        return self.merge(other, new_obj=True)
-
-    def __str__(self):
-        head = f"Pyaerocom {type(self).__name__}"
-        s = (
-            f"\n{head}\n{len(head) * '-'}"
-            f"\nContains networks: {self.contains_datasets}"
-            f"\nContains variables: {self.contains_vars}"
-            f"\nContains instruments: {self.contains_instruments}"
-            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
-        )
-        if self.is_filtered:
-            s += "\nFilters that were applied:"
-            for tstamp, f in self.filter_hist.items():
-                if f:
-                    s += f"\n Filter time log: {tstamp}"
-                    if isinstance(f, dict):
-                        for key, val in f.items():
-                            s += f"\n\t{key}: {val}"
-                    else:
-                        s += f"\n\t{f}"
-
-        return s
 
 
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):

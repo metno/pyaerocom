@@ -1,7 +1,7 @@
-import datetime
 import fnmatch
 import logging
 import sys
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -14,7 +14,6 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.helpers import merge_station_data, start_stop
-from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
@@ -104,6 +103,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         for k, v in self._nan_types.values:
             data[k] = v
         return data
+
+    @override
+    def copy(self):
+        new = self.__class__()
+        self._copy_metadata_to(new)
+        new._data = np.copy(self._data)
+        return new
+
+    @override
+    def merge(self, other, new_obj=True):
+        raise RuntimeError("Not implemented yet")
 
     @property
     @override
@@ -490,73 +500,47 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         )
         return new
 
-    @property
     @override
-    def is_filtered(self):
-        if len(self.filter_hist) > 0:
-            return True
-        return False
-
-    def _add_to_filter_history(self, info):
-        """Add info to :attr:`filter_hist`
-
-        Key is current system time string
-
-        Parameter
-        ---------
-        info
-            information to be appended to filter history
-        """
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.filter_hist[int(time_str)] = info
-
-    @override
-    def filter_by_meta(self, negate=None, **filter_attributes):
-        if "variables" in filter_attributes:
-            raise NotImplementedError("Cannot yet filter by variables")
-
-        # separate filters by strin, list, etc.
-        filters = self._init_meta_filters(**filter_attributes)
-
-        # find all metadata blocks that match the filters
-        meta_matches, totnum_new = self._find_meta_matches(
-            negate,
-            *filters,
-        )
-        if len(meta_matches) == len(self.metadata):
-            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
-            return self
-        new = self._new_from_meta_blocks(meta_matches, totnum_new)
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = filter_attributes
+    def extract_vars(self, var_names, check_index=True):
+        var_names_unaliased = []
+        for var_name in var_names:
+            if var_name not in self.contains_vars:
+                # try alias
+                _var = const.VARS[var_name].var_name_aerocom
+                if _var in self.contains_vars:
+                    var_names_unaliased.append(_var)
+                else:
+                    raise VarNotAvailableError(f"No such variable {var_name} in data")
+        var_ids = [self.var_id[x] for x in var_names_unaliased]
+        idx = np.isin(self._data["var_id"], var_ids)
+        new = self.__class___()
+        new._data = np.copy(self._data[idx])
+        # fix the metadata
+        self._copy_metadata_to(new)
+        for i, var in enumerate(var_names):
+            new.var_id[var] = var_ids[i]
+        new.metadata = {}
+        for meta_id, meta in self.metadata.items():
+            common_vars = [var for var in var_names if var in meta["var_info"]]
+            if len(common_vars):
+                new.metadata[meta_id] = deepcopy(meta)
+                new.metadata[meta_id]["var_info"] = common_vars
+        # check_index not needed by this implementation
         return new
 
     @override
-    def apply_region_mask(self, region_id=None):
-        if region_id not in const.HTAP_REGIONS:
-            raise ValueError(
-                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
-            )
+    def extract_var(self, var_name, check_index=True):
+        return self.extract_vars([var_name], check_index)
 
-        # 1. find matches -> list of meta indices that are in region
-        # 2. Get total number of datapoints -> defines shape of output UngriddedData
-        # 3. Create
+    @override
+    def all_datapoints_var(self, var_name):
+        return self.extract_var(var_name)._data["data"]
 
-        mask = load_region_mask_xr(region_id)
+    @override
+    def save_as(self, file_name, save_dir):
+        raise RuntimeError("Not implemented yet")
 
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            lon, lat = meta["longitude"], meta["latitude"]
-
-            mask_val = get_mask_value(lat, lon, mask)
-            if mask_val >= 1:  # coordinate is in mask
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    totnum += len(self.meta_idx[meta_idx][var])
-
-        new = self._new_from_meta_blocks(meta_matches, totnum)
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = f"Applied mask {region_id}"
-        # new._check_index()
-        return new
+    @staticmethod
+    @override
+    def from_cache(data_dir, file_name):
+        raise RuntimeError("Not implemented yet")
