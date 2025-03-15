@@ -12,7 +12,7 @@ from pyaerocom.exceptions import DataCoverageError, MetaDataError, StationNotFou
 from pyaerocom.helpers import isnumeric, start_stop_str
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import in_range
-from pyaerocom.ungridded_data import UngriddedDataContainer
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
