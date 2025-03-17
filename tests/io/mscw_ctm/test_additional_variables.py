@@ -12,7 +12,7 @@ from pyaerocom.io.mscw_ctm.additional_variables import (
 )
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
 
-M_N, M_O, M_H = 14.006, 15.999, 1.007
+M_N, M_O, M_H = 14.0067, 15.9994, 1.0079
 
 
 def test_calc_concNhno3():
