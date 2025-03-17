@@ -706,7 +706,7 @@ class ExperimentOutput(ProjectOutput):
 
                 mod_name = uri.meta["model"]
                 var_name = uri.meta["obsvar"]
-                mod_var = uri.meta["modvar"]
+                mod_var = uri.meta["obsvar"]
 
                 if mod_name in self.cfg.obs_cfg.keylist():
                     obs_name = mod_name
