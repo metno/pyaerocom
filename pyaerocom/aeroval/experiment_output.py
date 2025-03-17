@@ -705,7 +705,7 @@ class ExperimentOutput(ProjectOutput):
                     break
 
                 mod_name = uri.meta["model"]
-                var_name = uri.meta["obsvar"]
+                obs_var = uri.meta["obsvar"]
                 mod_var = uri.meta["obsvar"]
 
                 if mod_name in self.cfg.obs_cfg.keylist():
@@ -715,7 +715,7 @@ class ExperimentOutput(ProjectOutput):
                         (
                             item
                             for item in all_combinations
-                            if item[0] == obs_name and item[-1] == var_name
+                            if item[0] == obs_name and item[-1] == obs_var
                         ),
                         None,
                     )
@@ -726,7 +726,7 @@ class ExperimentOutput(ProjectOutput):
                 elif mod_name in self.cfg.model_cfg.keylist():
                     vert_code = None
                     for o in self.cfg.obs_cfg.keylist():
-                        if var_name in self.cfg.obs_cfg.get_entry(o).obs_vars:
+                        if obs_var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
                         raise ValueError(
@@ -736,7 +736,7 @@ class ExperimentOutput(ProjectOutput):
                         (
                             item
                             for item in all_combinations
-                            if item[1] == mod_name and item[-1] == var_name
+                            if item[1] == mod_name and item[-1] == obs_var
                         ),
                         None,
                     )
