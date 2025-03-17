@@ -272,10 +272,9 @@ class ExperimentOutput(ProjectOutput):
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
 
-            for uri in (result := self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT)):
-                _, args = result.get_details(uri)
+            for uri in self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT):
                 for i, key in enumerate(["model", "obsvar", "timestep"]):
-                    res[i].append(args[key])
+                    res[i].append(uri.meta[key])
 
         else:
             infos = ["obs", "ovar", "vc", "mod", "mvar", "per"]
