@@ -110,26 +110,31 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
-            # self.exp_output.add_forecast_entry(
-            #     results[regname],
-            #     regname,
-            #     obs_name,
-            #     var_name_web,
-            #     vert_code,
-            #     modelname 
-            #     model_var,
-            # )
+            self.save_fairmode_stats(results, obs_name, var_name_web, vert_code, modelname, model_var,)
 
-    
+    def save_fairmode_stats(self, fairmode_stats: dict, obs_name: str, var_name_web: str, vert_code: str, modelname: str, model_var:str):
+        for regname in fairmode_stats:
+            self.exp_output.add_fairmode_entry(
+                    fairmode_stats[regname],
+                    regname,
+                    obs_name,
+                    var_name_web,
+                    vert_code,
+                    modelname,
+                    model_var,
+                )
+
     def fairmode_statistics(self, coldata: ColocatedData, var_name: str):
-        breakpoint()
         return self._get_stats(coldata.data, var_name, False)
 
 
     def _get_stats(
         self, data: xr.DataArray, var_name: str, use_weights: bool
-    ) -> dict[str, float]:
+    ) -> dict[str, dict[str,float]]:
         
+ 
+        stations = data.station_name.values
+
         obsvals = data.data[0]
         modvals = data.data[1]
 
@@ -137,37 +142,47 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         #modmean = np.nanmean(modvals, axis=0)  
         obsstd = np.nanstd(obsvals, axis=0)
         modstd = np.nanstd(modvals, axis=0)
-        breakpoint()
+  
         diff = modvals - obsvals
         diffsquare = diff**2
         
         rms = np.sqrt(np.nanmean(diffsquare, axis=0))
         bias = np.nanmean(diff, axis=0)
-        breakpoint()
+
         R = FairmodeEngine.pearson_R(obsvals, modvals)
         rmsu = self._RMSU(obsmean, obsstd, var_name)
         sign = self._fairmode_sign(modstd, obsstd, R)
         crms = self._crms(modstd, obsstd, R)
         mqi = self._mqi(rms, rmsu, beta=1)
-        breakpoint()
+        mb = self._mb(bias, rmsu, beta=1)
+        
         # assert np.some(np.isclose(
         #     rmsu * mqi,
         #     np.sqrt((bias) ** 2 + (modstd - obsstd) ** 2 + (2 * obsstd * modstd * (1 - R))),
         #     rtol=1e-2,
         # )), "failed MQI check"
-        breakpoint()
 
-
-        stats_list: dict[str, float] = dict(
-            RMSU=rmsu,
-            sign=sign,
-            crms=crms,
-            bias=bias,
-            rms=rms,
-            beta_mqi=mqi,
+        assert len(rmsu) == len(stations)
+        assert len(sign) == len(stations)
+        assert len(crms) == len(stations)
+        assert len(bias) == len(stations)
+        assert len(rms) == len(stations)
+        assert len(mqi) == len(stations)
+        assert len(mb) == len(stations)
+ 
+        stats_list: dict[str, dict[str,float]] = {stations[i]:
+             dict(
+            RMSU=rmsu[i],
+            sign=sign[i],
+            crms=crms[i],
+            bias=bias[i],
+            rms=rms[i],
+            beta_mqi=mqi[i],
+            bias_mb=mb[i],
             **SPECIES[var_name],
-        )
+        ) for i in range(len(stations))}
 
+    
         return stats_list
 
     @staticmethod
@@ -220,6 +235,10 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
     def _mqi(self, rms: float, rmsu: float, *, beta: float) -> float:
         """Model Quality Indicator (MQI). Pass beta=1 for `beta MQI`"""
         return rms / (rmsu * beta)
+    
+    def _mb(self, bias: float, rmsu: float, *, beta: float) -> float:
+        """Model Bias(MB). Pass beta=1 for `beta MB`"""
+        return bias / (rmsu * beta)
     
 
 

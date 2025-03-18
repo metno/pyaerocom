@@ -1085,6 +1085,44 @@ class ExperimentOutput(ProjectOutput):
                 layer,
             )
 
+    def add_fairmode_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+    ):
+        """Adds a fairmode entry to fairmode
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_fairmode(
+                project, experiment, region, network, obsvar, layer, default={}
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_fairmode(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+            )
+
     def add_heatmap_entry(
         self,
         entry,

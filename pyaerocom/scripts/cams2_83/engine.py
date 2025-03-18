@@ -49,9 +49,11 @@ class CAMS2_83_Engine(ProcessingEngine):
         use_fairmode = self.cfg.statistics_opts.use_fairmode
         calc_forecast_target = False
 
-        fairmode_engine = FairmodeEngine(self.cfg)
+        if use_fairmode:
+            fairmode_engine = FairmodeEngine(self.cfg)
 
-        if len(persistent_coldata) > 0 and var_name in SPECIES:
+
+        if use_fairmode and len(persistent_coldata) > 0 and var_name in SPECIES:
             persistent_coldata = persistent_coldata[0]
             calc_forecast_target = True
 
@@ -90,11 +92,13 @@ class CAMS2_83_Engine(ProcessingEngine):
         if calc_forecast_target:
             persistent_coldata.data["season"] = persistent_coldata.data.time.dt.season
             (regborders, regs, regnames) = init_regions_web(persistent_coldata, regions_how)
-            results_mqi = {}
+            # results_mqi = {}
         results = {}
+        results_fairmode = {}
 
         for regid, regname in regnames.items():
             results[regname] = {}
+            results_fairmode[regname] = {}
             logger.info(f"Creating subset for {regname}")
             try:
                 subset_region = [
@@ -102,7 +106,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 ]
                 if calc_forecast_target:
                     persistent_subset_region = persistent_coldata.filter_region(regid, check_country_meta=use_country)
-                    results_mqi[regname] = {}
+                    # results_mqi[regname] = {}
             except (DataCoverageError, UnknownRegion) as e:
                 logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
                 continue
@@ -129,36 +133,49 @@ class CAMS2_83_Engine(ProcessingEngine):
                         logger.info(f"Skipping forecast plot due to error {str(e)}")
                         continue
 
-                    # for forecast_hour in range(24 * forecast_days):
-                    #     logger.debug(f"Calculating statistics for hour {forecast_hour}")
-                    #     leap, hour = divmod(forecast_hour, 24)
-                    #     ds = subset[leap]
-                    #     ds = ds.data.sel(time=(ds.time.dt.hour == hour))
-                    #     start = time.time()
-                    #     stats = self._get_median_stats_point_vec(ds, use_weights)
-                    #     logger.debug(time.time() - start)
-                    #     for key in stats_list:
-                    #         stats_list[key].append(stats[key])
+                    for forecast_hour in range(24 * forecast_days):
+                        logger.debug(f"Calculating statistics for hour {forecast_hour}")
+                        leap, hour = divmod(forecast_hour, 24)
+                        ds = subset[leap]
+                        ds = ds.data.sel(time=(ds.time.dt.hour == hour))
+                        start = time.time()
+                        stats = self._get_median_stats_point_vec(ds, use_weights)
+                        logger.debug(time.time() - start)
+                        for key in stats_list:
+                            stats_list[key].append(stats[key])
 
                     if use_fairmode:
+                        
                         
                         fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
                             fairmode_subset = fairmode_subset.resample_time(SPECIES[var_name]["freq"])
-                        else:
-
-                        results_fairmode = fairmode_engine.fairmode_statistics(fairmode_subset, var_name)
-
-                    if calc_forecast_target:
-                        results_mqi[f"{regname}"][f"{perstr}"] = {}
-                        for day in range(forecast_days):
-                            ds = subset[day]
-                            ds_p = persistent_subset_region
-                            #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
-                            mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name, day)
                         
-                            results_mqi[f"{regname}"][f"{perstr}"][day] = mqi_results
+                        results_fairmode[f"{regname}"][f"{perstr}"] = fairmode_engine.fairmode_statistics(fairmode_subset, var_name)
 
+                        if calc_forecast_target:
+                            # results_mqi[f"{regname}"][f"{perstr}"] = {}
+                            results_mqi = []
+                            for day in range(forecast_days):
+                                ds = subset[day]
+                                ds_p = persistent_subset_region
+                                
+                                #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
+                                mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name, day)
+                                
+                                results_mqi.append(mqi_results)
+                                
+                                # results_mqi[f"{regname}"][f"{perstr}"][day] = mqi_results
+                            
+                            for station in results_fairmode[f"{regname}"][f"{perstr}"]:
+                                results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"] = [] 
+                                results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mqi"] = []
+                                for day in range(forecast_days):
+                                    mqi_p = results_mqi[day][station] if station in results_mqi[day] else [np.nan, np.nan]
+                                    results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"].append(mqi_p[0])
+                                    results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mqi"].append(mqi_p[1])
+
+                           
                     out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
@@ -174,6 +191,17 @@ class CAMS2_83_Engine(ProcessingEngine):
                 ),  # MOS/ENS evaluation special case
                 model_var,
             )
+        fairmode_engine.save_fairmode_stats(
+            results_fairmode,
+            obs_name,
+            var_name_web,
+            vert_code,
+            (
+                modelname if (modelname == "ENS" or modelname == "MOS") else model.name
+            ),  # MOS/ENS evaluation special case
+            model_var,
+        )
+                                            
 
     def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
         stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
@@ -269,18 +297,20 @@ class CAMS2_83_Engine(ProcessingEngine):
             rmse_m = np.nanmean((mod_vals-obs_vals)**2)
             rmse_p = np.nanmean((p_diff_vals)**2) 
 
+            bias_m = np.nanmean((mod_vals-obs_vals))
+
+            mb = bias_m/rmse_p
             mqi = rmse_m/rmse_p
 
-            results[stations[i]] = mqi
+            results[stations[i]] = [mb, mqi]
 
-        breakpoint()
         return results
 
     def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str, forecast_day: int) -> dict[str, float]:
         
         results = {}
 
-        breakpoint()
+        
         # Resampling of time for all other variables than NO2
         if SPECIES[var_name]["freq"] != "hourly":
             coldata = coldata.resample_time(SPECIES[var_name]["freq"])
@@ -321,9 +351,8 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         mb_p = np.nanmean((mod_vals-obs_vals), axis=1)/rmse_p
 
-        results = {station_mask[0][i]: [mb_p[i],mqi[i]] for i in range(len(mqi))}
+        results = {str(station_mask[0][i]): [mb_p[i],mqi[i]] for i in range(len(mqi))}
 
-        breakpoint()
         return results
 
 
