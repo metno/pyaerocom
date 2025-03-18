@@ -30,11 +30,15 @@ class DynamicRecArray:
 
         :param rec: a numpy array of the same datatype
         """
-        if self.length == self.capacity:
+        newlength = self.length + len(rec)
+        resize = False
+        while self.capacity <= newlength:
             self.capacity += 10 + (self.capacity >> 3)  # 20 + 1.125*self.capacity
+            resize = True
+        if resize:
             self._data = np.resize(self._data, self.capacity)
-        self._data[self.length] = rec
-        self.length += 1
+        self._data[self.length : newlength] = rec
+        self.length = newlength
 
     def append_array(self, **kwargs):
         for key in self.keys():

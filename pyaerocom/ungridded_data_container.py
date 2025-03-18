@@ -1,5 +1,6 @@
 import abc
 import logging
+from collections.abc import Iterator
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -10,12 +11,45 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.helpers import isnumeric
 from pyaerocom.region import Region
+from pyaerocom.stationdata import StationData
 
 logger = logging.getLogger(__name__)
 
 
 class UngriddedDataContainer(abc.ABC):
     """Base-class representing ungridded data like stations data, satellite data sondes"""
+
+    @staticmethod
+    @abc.abstractmethod
+    def from_station_data(
+        stats: StationData | Iterator[StationData],
+        add_meta_keys: list[str] | None = None,
+    ):
+        """
+        Create UngriddedDataContainer from input station data object(s)
+
+        Parameters
+        ----------
+        stats : iterator or StationData
+            input data object(s)
+        add_meta_keys : list, optional
+            list of metadata keys that are supposed to be imported from the
+            input `StationData` objects, in addition to the default metadata
+            retrieved via :func:`StationData.get_meta`.
+
+        Raises
+        ------
+        ValueError
+            if any of the input data objects is not an instance of
+            :class:`StationData`.
+
+        Returns
+        -------
+        UngriddedDataContainer
+            ungridded data object created from input station data objects
+
+        """
+        pass
 
     @abc.abstractmethod
     def _get_data_revision_helper(self, data_id):
@@ -37,6 +71,7 @@ class UngriddedDataContainer(abc.ABC):
         latest revision (None if no revision is available).
 
         """
+        pass
 
     @property
     @abc.abstractmethod

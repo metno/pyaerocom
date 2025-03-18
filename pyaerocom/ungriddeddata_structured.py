@@ -1,12 +1,14 @@
 import fnmatch
 import logging
 import sys
+from collections.abc import Iterator
 from copy import deepcopy
 
 import numpy as np
 import pandas as pd
 
 from pyaerocom import const
+from pyaerocom.dynamic_rec_array import DynamicRecArray
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
@@ -40,7 +42,10 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         ("end_time", "datetime64[s]"),
         ("data", "f"),  # data-value
         ("stdev", "f"),  # data-error
-        ("height", "i2"),  # altitude of measurement (might be different from station)
+        (
+            "dataaltitude",
+            "i2",
+        ),  # altitude of measurement (might be different from station)
         ("flag", "i2"),
     ]
     _nan_types = {
@@ -50,7 +55,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         "end_time": np.datetime64("NaT"),
         "data": np.nan,
         "stdev": np.nan,
-        "height": -32767,
+        "dataaltitude": -32767,
         "flag": -32767,
     }
 
@@ -78,15 +83,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     continue
                 new_var_idx[var] = self.var_idx[var]
 
-        midx = np.isin(self._rec.data["meta_id"], meta_ids)
+        midx = np.isin(self._data.data["meta_id"], meta_ids)
         # data with the selected stations
-        nd = self._rec.data[midx]
+        nd = self._data.data[midx]
         size = len(nd)
         if size == 0:
             raise DataExtractionError("Filtering results in empty data object")
 
-        new = self(size)
-        new._rec.data = nd
+        new = self.__class__(size)
+        new._data.data = nd
         new.metadata = new_metadata
         new.var_idx = new_var_idx
         new.filter_hist = self.filter_hist
@@ -96,16 +101,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
-        data = np.empty(size, dtype=self._dtype)
+        data = DynamicRecArray(capacity=size, dtype=self._dtype)
         for k, v in self._nan_types.items():
-            data[k] = v
+            data._data[k] = v
         return data
 
     @override
     def copy(self):
         new = self.__class__()
         self._copy_metadata_to(new)
-        new._rec.data = np.copy(self._rec.data)
+        new._data = deepcopy(self._data)
         return new
 
     @override
@@ -115,7 +120,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     @property
     @override
     def has_flag_data(self):
-        return (self._rec.data["flag"] == self._nan_types["flag"]).any()
+        return (self._data.data["flag"] == self._nan_types["flag"]).any()
 
     @override
     def set_flags_nan(self, inplace=False):
@@ -126,7 +131,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         else:
             obj = self.copy()
 
-        obj._rec.data["flag"] = self._nan_types["flag"]
+        obj._data.data["flag"] = self._nan_types["flag"]
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
@@ -309,12 +314,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         FOUND_ONE = False
         for var in vars_avail:
             # get indices of this station and variable
-            var_idx = np.isin(self._rec.data["meta_id"], meta_idx) & np.isin(
-                self._rec.data["var_id"], var
+            var_idx = np.isin(self._data.data["meta_id"], meta_idx) & np.isin(
+                self._data.data["var_id"], var
             )
 
             # get subset
-            subset = self._rec.data[var_idx]
+            subset = self._data.data[var_idx]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -351,7 +356,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             flagged = subset["flag"].astype("f4")
             flagged[flag_mask] = np.nan
             alt_mask = subset["flag"] == self._nan_types["flag"]
-            altitude = subset["height"].astype("f4")
+            altitude = subset["dataaltitude"].astype("f4")
             altitude[alt_mask] = np.nan
 
             data = pd.Series(vals, dtime)
@@ -430,7 +435,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         if to_unit is None:
             to_unit = const.VARS[var_name]["units"]
 
-        for i, meta in obj.metadata.items():
+        for meta_idx, meta in obj.metadata.items():
             if var_name in meta["var_info"]:
                 try:
                     unit = meta["var_info"][var_name]["units"]
@@ -444,15 +449,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         )
                     raise MetaDataError(
                         f"Failed to access unit information for variable {var_name} "
-                        f"in metadata block {i}. {add_str}"
+                        f"in metadata block {meta_idx}. {add_str}"
                     )
                 fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
-                    meta_idx = obj.meta_idx[i][var_name]
-                    current = obj._rec.data[meta_idx, obj._DATAINDEX]
-                    new = current * fac
-                    obj._rec.data[meta_idx, obj._DATAINDEX] = new
-                    obj.metadata[i]["var_info"][var_name]["units"] = to_unit
+                    idx = (obj._data.data["meta_id"] == meta_idx) & (
+                        obj._data.data["var_id"] == self.var_idx[var_name]
+                    )
+                    obj._data.data[idx]["data"] *= fac
+                meta["var_info"][var_name]["units"] = to_unit
 
         return obj
 
@@ -481,14 +486,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             high = const.VARS[var_name].maximum
             logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
         var_idx = new.var_id[var_name]
-        var_mask = new._rec.data["var_id"] == var_idx
+        var_mask = new._data.data["var_id"] == var_idx
 
-        all_data = new._rec.data["data"]
+        all_data = new._data.data["data"]
         invalid_mask = np.logical_or(all_data < low, all_data > high)
 
         mask = invalid_mask * var_mask
-        invalid_vals = new._rec.data["data"][mask]
-        new._rec.data["data"][mask] = np.nan
+        invalid_vals = new._data.data["data"][mask]
+        new._data.data["data"][mask] = np.nan
 
         if move_to_trash:
             logger.warning("trash not implemented")
@@ -511,9 +516,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 else:
                     raise VarNotAvailableError(f"No such variable {var_name} in data")
         var_ids = [self.var_idx[x] for x in var_names_unaliased]
-        idx = np.isin(self._rec.data["var_id"], var_ids)
+        idx = np.isin(self._data.data["var_id"], var_ids)
         new = self.__class___()
-        new._rec.data = np.copy(self._rec.data[idx])
+        new._data.data = deepcopy(self._data.data[idx])
         # fix the metadata
         self._copy_metadata_to(new)
         for i, var in enumerate(var_names):
@@ -533,7 +538,102 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @override
     def all_datapoints_var(self, var_name):
-        return self.extract_var(var_name)._rec.data["data"]
+        return self.extract_var(var_name)._data.data["data"]
+
+    @staticmethod
+    @override
+    def from_station_data(
+        stats: StationData | Iterator[StationData],
+        add_meta_keys: list[str] = [],
+    ):
+        if isinstance(stats, StationData):
+            stats = [stats]
+        data = UngriddedDataStructured()
+        for meta_idx, station_data in enumerate(stats):
+            # each file is a metadata-set of its own
+            data.metadata[meta_idx] = {}
+            data.metadata[meta_idx].update(station_data.get_meta(add_none_vals=True))
+            for key in add_meta_keys:
+                if key in station_data:
+                    data.metadata[meta_idx][key] = station_data[key]
+            contains_vars = list(station_data.var_info)
+            data.metadata[meta_idx]["variables"] = contains_vars
+
+            for var in contains_vars:
+                values = station_data[var]
+                if var not in data.var_idx:
+                    data.var_idx[var] = len(data.var_idx)
+                var_idx = data.var_idx[var]
+                data.metadata[meta_idx]["var_info"] = {}
+                data.metadata[meta_idx]["var_info"][var] = {}
+                data.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
+                for x in ("longitude", "latitude", "altitude"):
+                    if x not in data.metadata[meta_idx]["var_info"][var]:
+                        data.metadata[meta_idx]["var_info"][var][x] = station_data[x]
+
+                uds = UngriddedDataStructured(num_points=len(values))
+                v_data = uds._data._data  # access to raw numpy-array
+                v_data["meta_id"][:] = meta_idx
+                v_data["data"] = values
+                v_data["var_id"][:] = var_idx
+                v_data["start_time"] = station_data["dtime"]
+                # v_data["end_time"] not used
+                # v_data["dataaltitude"] not used
+                if var in station_data.data_err:
+                    v_data["stdev"] = station_data.data_err[var]
+                if var in station_data.data_flagged:
+                    flags = station_data.data_flagged[var]
+                    nans = ~np.isfinite(flags)
+                    v_data["flag"][:] = flags
+                    v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
+                data._data.append(v_data)
+        return data
+
+    def clear_meta_no_data(self, inplace=True):
+        """Remove all metadata blocks that do not have data associated with it
+
+        Parameters
+        ----------
+        inplace : bool
+            if True, the changes are applied to this instance directly, else
+            to a copy
+
+        Returns
+        -------
+        UngriddedData
+            cleaned up data object
+
+        Raises
+        ------
+        DataCoverageError
+            if filtering results in empty data object
+        """
+        if inplace:
+            obj = self
+        else:
+            obj = self.copy()
+
+        meta_no_data = []
+        distinct_metas = np.unique(obj._data.data["meta_id"])
+        for meta_idx, meta in obj.metadata.items():
+            if not np.any(distinct_metas == meta_idx):
+                # sanity check
+                if bool(meta["var_info"]):
+                    raise AttributeError(
+                        "meta_idx {} suggests empty data block "
+                        "but metadata[{}] contains variable "
+                        "information"
+                    )
+                else:
+                    meta_no_data.append(meta_idx)
+        if len(meta_no_data):
+            for meta_idx in meta_no_data:
+                del obj.metadata[meta_idx]
+
+        obj._add_to_filter_history(
+            f"Removed {len(meta_no_data)} metadata blocks that have no data assigned"
+        )
+        return obj
 
     @override
     def save_as(self, file_name, save_dir):

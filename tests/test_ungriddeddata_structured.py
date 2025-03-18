@@ -14,6 +14,13 @@ def ungridded_empty():
     return UngriddedDataStructured()
 
 
+def test_ungridded_new():
+    ud = UngriddedDataStructured(num_points=1000)
+    assert ud._data.capacity == 1000
+    assert len(ud._data._data["meta_id"]) == 1000
+    assert len(ud._data.data["meta_id"]) == 0
+
+
 def test_coordinate_access():
     d = UngriddedDataStructured()
 
