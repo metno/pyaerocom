@@ -629,6 +629,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         if len(meta_no_data):
             for meta_idx in meta_no_data:
                 del obj.metadata[meta_idx]
+        if len(obj.metadata) == 0:
+            raise DataCoverageError("UngriddedData object appears to be empty")
 
         obj._add_to_filter_history(
             f"Removed {len(meta_no_data)} metadata blocks that have no data assigned"

@@ -791,6 +791,28 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def clear_meta_no_data(self, inplace=True):
+        """Remove all metadata blocks that do not have data associated with it
+
+        Parameters
+        ----------
+        inplace : bool
+            if True, the changes are applied to this instance directly, else
+            to a copy
+
+        Returns
+        -------
+        UngriddedData
+            cleaned up data object
+
+        Raises
+        ------
+        DataCoverageError
+            if filtering results in empty data object
+        """
+        pass
+
     # def filter_by_meta -- unsure if need to implement?
     @abc.abstractmethod
     def save_as(self, file_name, save_dir):
