@@ -6,40 +6,30 @@ import time
 import warnings
 from pathlib import Path
 from reprlib import repr
+from tqdm import tqdm
 
 import numpy as np
 import xarray as xr
-from tqdm import tqdm
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _init_meta_glob,
-    _init_site_coord_arrays,
-    _process_sites,
-    _select_period_season_coldata,
-    init_regions_web,
-)
-from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
+from pyaerocom.aeroval.coldatatojson_helpers import _select_period_season_coldata, init_regions_web, _process_sites, _init_meta_glob, _init_site_coord_arrays
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.aeroval.fairmode_engine import FairmodeEngine, SPECIES
 
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
 
 
 class CAMS2_83_Engine(ProcessingEngine):
-    def run(
-        self, files: list[list[str | Path]], var_list: list
-    ) -> None:  # type:ignore[override]
+    def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
         coldata = [ColocatedData(data=file) for file in files]
         coldata, persistent_cols, found_vars = self._sort_coldata(coldata)
         start = time.time()
         if var_list is None:
             var_list = list(found_vars)
-        else:
-            var_list.append("conco3mda8")
         for var in var_list:
             logger.info(f"Processing Component: {var}")
             self.process_coldata(coldata[var], persistent_cols[var], var)
@@ -47,13 +37,10 @@ class CAMS2_83_Engine(ProcessingEngine):
             # self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
 
         logger.info(f"Time for weird plot: {time.time() - start} sec")
+   
 
-    def process_coldata(
-        self,
-        coldata: list[ColocatedData],
-        persistent_coldata: list[ColocatedData],
-        var_name: str,
-    ) -> None:
+
+    def process_coldata(self, coldata: list[ColocatedData],  persistent_coldata: list[ColocatedData], var_name: str) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
         out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
@@ -65,14 +52,13 @@ class CAMS2_83_Engine(ProcessingEngine):
         if use_fairmode:
             fairmode_engine = FairmodeEngine(self.cfg)
 
+
         if use_fairmode and len(persistent_coldata) > 0 and var_name in SPECIES:
             persistent_coldata = persistent_coldata[0]
             calc_forecast_target = True
 
             if SPECIES[var_name]["freq"] != "hourly":
-                persistent_coldata = persistent_coldata.resample_time(
-                    SPECIES[var_name]["freq"]
-                )
+                persistent_coldata = persistent_coldata.resample_time(SPECIES[var_name]["freq"])
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -105,9 +91,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         if calc_forecast_target:
             persistent_coldata.data["season"] = persistent_coldata.data.time.dt.season
-            (regborders, regs, regnames) = init_regions_web(
-                persistent_coldata, regions_how
-            )
+            (regborders, regs, regnames) = init_regions_web(persistent_coldata, regions_how)
             # results_mqi = {}
         results = {}
         results_fairmode = {}
@@ -118,18 +102,13 @@ class CAMS2_83_Engine(ProcessingEngine):
             logger.info(f"Creating subset for {regname}")
             try:
                 subset_region = [
-                    col.filter_region(regid, check_country_meta=use_country)
-                    for col in coldata
+                    col.filter_region(regid, check_country_meta=use_country) for col in coldata
                 ]
                 if calc_forecast_target:
-                    persistent_subset_region = persistent_coldata.filter_region(
-                        regid, check_country_meta=use_country
-                    )
+                    persistent_subset_region = persistent_coldata.filter_region(regid, check_country_meta=use_country)
                     # results_mqi[regname] = {}
             except (DataCoverageError, UnknownRegion) as e:
-                logger.info(
-                    f"Skipping forecast plot for {regname} due to error {str(e)}"
-                )
+                logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
                 continue
             for per in periods:
                 for season in seasons:
@@ -166,18 +145,13 @@ class CAMS2_83_Engine(ProcessingEngine):
                             stats_list[key].append(stats[key])
 
                     if use_fairmode:
-
+                        
+                        
                         fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
-                            fairmode_subset = fairmode_subset.resample_time(
-                                SPECIES[var_name]["freq"]
-                            )
-
-                        results_fairmode[f"{regname}"][f"{perstr}"] = (
-                            fairmode_engine.fairmode_statistics(
-                                fairmode_subset, var_name
-                            )
-                        )
+                            fairmode_subset = fairmode_subset.resample_time(SPECIES[var_name]["freq"])
+                        
+                        results_fairmode[f"{regname}"][f"{perstr}"] = fairmode_engine.fairmode_statistics(fairmode_subset, var_name)
 
                         if calc_forecast_target:
                             # results_mqi[f"{regname}"][f"{perstr}"] = {}
@@ -185,39 +159,24 @@ class CAMS2_83_Engine(ProcessingEngine):
                             for day in range(forecast_days):
                                 ds = subset[day]
                                 ds_p = persistent_subset_region
-
-                                # mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
-                                mqi_results = self._calc_forecast_target_MQI_vectorized(
-                                    ds, ds_p, var_name, day
-                                )
-
+                                
+                                #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
+                                mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name, day)
+                                
                                 results_mqi.append(mqi_results)
-
+                                
                                 # results_mqi[f"{regname}"][f"{perstr}"][day] = mqi_results
-
+                            
                             for station in results_fairmode[f"{regname}"][f"{perstr}"]:
-                                results_fairmode[f"{regname}"][f"{perstr}"][station][
-                                    "beta_mb"
-                                ] = []
-                                results_fairmode[f"{regname}"][f"{perstr}"][station][
-                                    "beta_mqi"
-                                ] = []
+                                results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"] = [] 
+                                results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mqi"] = []
                                 for day in range(forecast_days):
-                                    mqi_p = (
-                                        results_mqi[day][station]
-                                        if station in results_mqi[day]
-                                        else [np.nan, np.nan]
-                                    )
-                                    results_fairmode[f"{regname}"][f"{perstr}"][
-                                        station
-                                    ]["beta_mb"].append(mqi_p[0])
-                                    results_fairmode[f"{regname}"][f"{perstr}"][
-                                        station
-                                    ]["beta_mqi"].append(mqi_p[1])
+                                    mqi_p = results_mqi[day][station] if station in results_mqi[day] else [np.nan, np.nan]
+                                    results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"].append(mqi_p[0])
+                                    results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mqi"].append(mqi_p[1])
 
-                    out_dirs = self.cfg.path_manager.get_json_output_dirs(
-                        True
-                    )  # noqa: F841
+                           
+                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
@@ -228,9 +187,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 var_name_web,
                 vert_code,
                 (
-                    modelname
-                    if (modelname == "ENS" or modelname == "MOS")
-                    else model.name
+                    modelname if (modelname == "ENS" or modelname == "MOS") else model.name
                 ),  # MOS/ENS evaluation special case
                 model_var,
             )
@@ -244,10 +201,9 @@ class CAMS2_83_Engine(ProcessingEngine):
             ),  # MOS/ENS evaluation special case
             model_var,
         )
+                                            
 
-    def _get_median_stats_point(
-        self, data: xr.DataArray, use_weights: bool
-    ) -> dict[str, float]:
+    def _get_median_stats_point(self, data: xr.DataArray, use_weights: bool) -> dict[str, float]:
         stats_list: dict[str, list[float]] = dict(rms=[], R=[], nmb=[], mnmb=[], fge=[])
         station_list = data.station_name.data
         for station in station_list:
@@ -295,7 +251,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         return stats_list
 
     def _pearson_R_vec(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return FairmodeEngine.pearson_R(x, y)
+        return FairmodeEngine.pearson_R(x,y)
         # xmean = np.nanmean(x, axis=0)
         # ymean = np.nanmean(y, axis=0)
         # xm = x - xmean
@@ -310,15 +266,13 @@ class CAMS2_83_Engine(ProcessingEngine):
         # )
 
         # return r
-
-    def _calc_forecast_target_MQI(
-        self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str
-    ) -> dict[str, float]:
-
+    
+    def _calc_forecast_target_MQI(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str) -> dict[str, float]:
+        
         stations = persistent_coldata.data.station_name.values
 
         time = coldata.time.values
-        wanted_time = time - np.timedelta64(24, "h")
+        wanted_time = time - np.timedelta64(24,"h")
         p_time = persistent_coldata.time.values
 
         mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
@@ -326,114 +280,92 @@ class CAMS2_83_Engine(ProcessingEngine):
         results = {}
 
         for i in tqdm(range(len(stations))):
-            assert str(persistent_coldata.data.station_name[i].values) == str(
-                coldata.data.station_name[i].values
-            )
+            assert str(persistent_coldata.data.station_name[i].values) == str(coldata.data.station_name[i].values)
 
             obs_vals = coldata.data.data[0, :, i]
             mod_vals = coldata.data.data[1, :, i]
 
             len_data = len(obs_vals)
 
-            p_mod_vals = persistent_coldata.data.data[0, mask, i]
+            p_mod_vals = persistent_coldata.data.data[0,mask,i]
 
-            factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
-            uncertainty_p_obs = SPECIES[var_name]["UrRV"] * np.sqrt(
-                (1 - SPECIES[var_name]["alpha"] ** 2) * p_mod_vals**2 + factor
-            )
+            factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
+            uncertainty_p_obs = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*p_mod_vals**2 + factor)
 
-            p_diff_vals = np.maximum(
-                np.abs(obs_vals - p_mod_vals - uncertainty_p_obs),
-                np.abs(obs_vals - p_mod_vals + uncertainty_p_obs),
-            )
+            p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
 
-            rmse_m = np.nanmean((mod_vals - obs_vals) ** 2)
-            rmse_p = np.nanmean((p_diff_vals) ** 2)
+            rmse_m = np.nanmean((mod_vals-obs_vals)**2)
+            rmse_p = np.nanmean((p_diff_vals)**2) 
 
-            bias_m = np.nanmean((mod_vals - obs_vals))
+            bias_m = np.nanmean((mod_vals-obs_vals))
 
-            mb = bias_m / rmse_p
-            mqi = rmse_m / rmse_p
+            mb = bias_m/rmse_p
+            mqi = rmse_m/rmse_p
 
             results[stations[i]] = [mb, mqi]
 
         return results
 
-    def _calc_forecast_target_MQI_vectorized(
-        self,
-        coldata: ColocatedData,
-        persistent_coldata: ColocatedData,
-        var_name: str,
-        forecast_day: int,
-    ) -> dict[str, float]:
-
+    def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str, forecast_day: int) -> dict[str, float]:
+        
         results = {}
 
+        
         # Resampling of time for all other variables than NO2
         if SPECIES[var_name]["freq"] != "hourly":
             coldata = coldata.resample_time(SPECIES[var_name]["freq"])
 
         # Creation of mask of shared stations between normal data and peristent data
-        # stations = persistent_coldata.data.station_name.values
-        station_mask = np.intersect1d(
-            persistent_coldata.data.station_name.values,
-            coldata.data.station_name.values,
-            return_indices=True,
-        )
-        assert np.all(
-            persistent_coldata.data.station_name.values[station_mask[1]]
-            == coldata.data.station_name.values[station_mask[2]]
-        )
-
+        #stations = persistent_coldata.data.station_name.values
+        station_mask =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
+        assert np.all(persistent_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
+        
+        
         # Creation of mask of shared timestamps between normal data and peristent data
         time = coldata.time.values
-        wanted_time = time - np.timedelta64(24 * (forecast_day + 1), "h")
+        wanted_time = time - np.timedelta64(24*(forecast_day+1),"h") 
         p_time = persistent_coldata.time.values
 
         time_mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
+
+        
 
         # Fetching of masked data
         obs_vals = coldata.data.data[0, :, station_mask[2]]
         mod_vals = coldata.data.data[1, :, station_mask[2]]
 
-        p_mod_vals = persistent_coldata.data.data[0, :, station_mask[1]][
-            :, time_mask
-        ]  # Persitent model
+        p_mod_vals = persistent_coldata.data.data[0,:, station_mask[1]][:,time_mask] # Persitent model
 
         assert np.all(p_mod_vals.shape == obs_vals.shape)
-
+        
         # Calculation of MQI
-        factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
-        uncertainty_p_obs = SPECIES[var_name]["UrRV"] * np.sqrt(
-            (1 - SPECIES[var_name]["alpha"] ** 2) * p_mod_vals**2 + factor
-        )
+        factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
+        uncertainty_p_obs = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*p_mod_vals**2 + factor)
 
-        p_diff_vals = np.maximum(
-            np.abs(obs_vals - p_mod_vals - uncertainty_p_obs),
-            np.abs(obs_vals - p_mod_vals + uncertainty_p_obs),
-        )
+        p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
 
-        rmse_m = np.nanmean((mod_vals - obs_vals) ** 2, axis=1)
-        rmse_p = np.nanmean((p_diff_vals) ** 2, axis=1)
+        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1)
+        rmse_p = np.nanmean((p_diff_vals)**2, axis=1) 
 
-        mqi = rmse_m / rmse_p
+        mqi = rmse_m/rmse_p
 
-        mb_p = np.nanmean((mod_vals - obs_vals), axis=1) / rmse_p
+        mb_p = np.nanmean((mod_vals-obs_vals), axis=1)/rmse_p
 
-        results = {str(station_mask[0][i]): [mb_p[i], mqi[i]] for i in range(len(mqi))}
+        results = {str(station_mask[0][i]): [mb_p[i],mqi[i]] for i in range(len(mqi))}
 
         return results
 
+
+
     def _sort_coldata(
         self, coldata: list[ColocatedData]
-    ) -> tuple[
-        dict[str, list[ColocatedData]], dict[str, list[ColocatedData]], set[str]
-    ]:
+    ) -> tuple[dict[str, list[ColocatedData]], dict[str, list[ColocatedData]], set[str]]:
         col_dict = dict()
         persistent_dict = dict()
 
         persistent_var_list = []
         var_list = []
+
 
         for col in coldata:
             obs_var = col.metadata["var_name_input"][0]
