@@ -228,7 +228,6 @@ class ExperimentOutput(ProjectOutput):
                     }
                 }
                 self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
-            # for uri in self.avdb.list_glob_stats(self.proj_id, self.exp_id):
             for uri in self.avdb.query(
                 aerovaldb.routes.Route.HEATMAP, project=self.proj_id, experiment=self.exp_id
             ):
@@ -753,10 +752,6 @@ class ExperimentOutput(ProjectOutput):
                 vert_code = uri.meta["layer"]
                 mod_name = uri.meta["model"]
                 mod_var = uri.meta["modvar"]
-
-                # (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(
-                #    file
-                # )
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
