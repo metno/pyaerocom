@@ -36,7 +36,6 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def process_coldata(self, coldata: list[ColocatedData]) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
         use_meteorological_seasons = self.cfg.time_cfg.use_meteorological_seasons
@@ -115,8 +114,6 @@ class CAMS2_83_Engine(ProcessingEngine):
                         logger.debug(time.time() - start)
                         for key in stats_list:
                             stats_list[key].append(stats[key])
-
-                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
