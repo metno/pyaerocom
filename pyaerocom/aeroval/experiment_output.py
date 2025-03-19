@@ -125,25 +125,21 @@ class ExperimentOutput(ProjectOutput):
         """
         bool: True if results are available for this experiment, else False
         """
-        if self.cfg.processing_opts.only_model_maps and not (
-            len(
-                self.avdb.query(
-                    [aerovaldb.routes.Route.CONTOUR, aerovaldb.routes.Route.CONTOUR_TIMESPLIT],
-                    project=self.proj_id,
-                    experiment=self.exp_id,
-                )
+        if self.cfg.processing_opts.only_model_maps:
+            contour_routes = self.avdb.query(
+                [aerovaldb.routes.Route.CONTOUR, aerovaldb.routes.Route.CONTOUR_TIMESPLIT],
+                project=self.proj_id,
+                experiment=self.exp_id,
             )
-            == 0
-            or len(
-                self.avdb.query(
-                    aerovaldb.routes.Route.MAP_OVERLAY,
-                    project=self.proj_id,
-                    experiment=self.exp_id,
-                )
+
+            mapoverlay_routes = self.avdb.query(
+                aerovaldb.routes.Route.MAP_OVERLAY,
+                project=self.proj_id,
+                experiment=self.exp_id,
             )
-            == 0
-        ):
-            return False
+
+            if contour_routes and mapoverlay_routes:
+                return False
         elif not self.cfg.processing_opts.only_model_maps:
             if (
                 len(
