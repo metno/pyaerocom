@@ -43,7 +43,7 @@ class EvalType(str, Enum):
                 main_freq="daily",
                 forecast_evaluation=True,
             )
-        
+
         if self == "season":
             return dict(
                 freqs=["hourly", "daily"],
