@@ -3,7 +3,7 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import TemporalResolutionError
 from . import TsType
 from ..constants import SECONDS_IN_DAY
-from ..time_config import TS_TYPE_SECS
+from ._time_config import TS_TYPE_SECS
 import pandas as pd
 import numpy as np
 from datetime import datetime, date

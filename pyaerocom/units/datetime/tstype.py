@@ -8,7 +8,7 @@ import re
 import numpy as np
 
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.units.time_config import (
+from ._time_config import (
     PANDAS_FREQ_TO_TS_TYPE,
     TS_TYPE_TO_NUMPY_FREQ,
     TS_TYPE_TO_PANDAS_FREQ,

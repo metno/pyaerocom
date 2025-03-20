@@ -3,7 +3,7 @@ from cf_units import Unit
 
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray
-from pyaerocom.units.time_config import SI_TO_TS_TYPE
+from pyaerocom.units.datetime._time_config import SI_TO_TS_TYPE
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
