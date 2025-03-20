@@ -11,7 +11,6 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataQueryError,
@@ -169,9 +168,9 @@ class ReadGridded(GriddedReader):
         "vmrox": add_cubes,
         "fmf550aer": divide_cubes,
         "concno3": add_cubes,
-        "concprcpoxn": compute_concprcp_from_pr_and_wetdep,
-        "concprcpoxs": compute_concprcp_from_pr_and_wetdep,
-        "concprcprdn": compute_concprcp_from_pr_and_wetdep,
+        # "concprcpoxn": compute_concprcp_from_pr_and_wetdep,
+        # "concprcpoxs": compute_concprcp_from_pr_and_wetdep,
+        # "concprcprdn": compute_concprcp_from_pr_and_wetdep,
         "concsspm10": add_cubes,
         "concsspm25": calc_sspm25,
         "concno3pm10": calc_concno3pm10,
