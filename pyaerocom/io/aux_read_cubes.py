@@ -11,7 +11,7 @@ import numpy as np
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
 from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 

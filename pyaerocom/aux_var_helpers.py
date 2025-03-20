@@ -495,7 +495,7 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
     from pyaerocom import TsType
-    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
+    from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(concprcp_var))
 
@@ -550,7 +550,7 @@ def _compute_wdeppr_from_concprcp_helper(data, wdep_pr_var):
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
     from pyaerocom import TsType
-    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
+    from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(pr_var))
 

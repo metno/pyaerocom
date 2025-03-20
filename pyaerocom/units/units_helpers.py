@@ -6,7 +6,7 @@ from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
 from pyaerocom.variable_helpers import get_variable
 
-from .units.constants import M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4, HA_TO_SQM
+from .constants import M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4, HA_TO_SQM
 
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = "d"
@@ -184,7 +184,7 @@ def _unit_conversion_fac_custom(var_name, from_unit):
         raise UnitConversionError(
             f"Failed to convert unit {from_unit} (variable {var_name}). "
             f"Reason: no custom conversion factor could be inferred from table "
-            f"pyaerocom.units_helpers.UCONV_MUL_FACS"
+            f"pyaerocom.units.units_helpers.UCONV_MUL_FACS"
         )
     return (info.to, info.fac)
 

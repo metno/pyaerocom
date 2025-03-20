@@ -5,7 +5,7 @@ from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray
 from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 # ToDo: check if still needed
 DEP_IMPLICIT_UNITS = [Unit("mg N m-2"), Unit("mg S m-2"), Unit("mg m-2")]

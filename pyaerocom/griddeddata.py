@@ -47,7 +47,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
-from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
+from pyaerocom.units.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -811,7 +811,7 @@ class GriddedData:
         Try convert data to input unit using custom conversion
 
         Helpers for custom conversion are defined in
-        :mod:`pyaerocom.units_helpers`.
+        :mod:`pyaerocom.units.units_helpers`.
 
         Parameters
         ----------

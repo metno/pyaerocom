@@ -29,7 +29,7 @@ from pyaerocom.helpers import calc_climatology, isnumeric, isrange, to_datetime6
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
-from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
+from pyaerocom.units.units_helpers import convert_unit, get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 

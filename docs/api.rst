@@ -563,7 +563,7 @@ Units and unit conversion
 Units helpers in base package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.units_helpers
+.. automodule:: pyaerocom.units.units_helpers
    :members:
    :undoc-members:
 
