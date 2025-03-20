@@ -6,6 +6,7 @@ from collections import Counter
 from pyaerocom.units.tstype import TsType
 from datetime import datetime, date
 from .time_config import TS_TYPE_SECS
+from .constants import SECONDS_IN_DAY
 
 
 def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8):
@@ -108,7 +109,8 @@ def seconds_in_periods(timestamps, ts_type):
         if ts_type == TsType("daily"):
             return seconds_in_day * np.ones_like(timestamps)
         raise NotImplementedError("Only yearly, monthly and daily frequencies implemented.")
-    elif ts_type == TsType("yearly"):
+
+    if ts_type == TsType("yearly"):
         days_in_year = []
         for ts in timestamps:
             if ts.year % 4 == 0:
@@ -117,6 +119,7 @@ def seconds_in_periods(timestamps, ts_type):
                 days_in_year.append(365)
         seconds = np.array(days_in_year) * seconds_in_day
         return seconds
+
     raise TemporalResolutionError(f"Unknown TsType: {ts_type}")
 
 
@@ -137,16 +140,16 @@ def to_pandas_timestamp(value):
         value = str(value)
     if isinstance(value, pd.Timestamp):
         return value
-    elif isinstance(value, str | np.datetime64 | datetime | date):
+    if isinstance(value, str | np.datetime64 | datetime | date):
         return pd.Timestamp(value)
-    else:
-        try:
-            numval = int(value)
-            if not 0 <= numval <= 10000:
-                raise ValueError("Could not infer valid year from numerical time input")
-            return pd.Timestamp(str(numval))
-        except Exception as e:
-            raise ValueError(f"Failed to convert {value} to Timestamp: {repr(e)}")
+
+    try:
+        numval = int(value)
+        if not 0 <= numval <= 10000:
+            raise ValueError("Could not infer valid year from numerical time input")
+        return pd.Timestamp(str(numval))
+    except Exception as e:
+        raise ValueError(f"Failed to convert {value} to Timestamp: {repr(e)}")
 
 
 def to_datetime64(value):
@@ -166,14 +169,14 @@ def to_datetime64(value):
     """
     if isinstance(value, np.datetime64):
         return value
-    else:
-        try:
-            return to_pandas_timestamp(value).to_datetime64()
-        except Exception as e:
-            raise ValueError(f"Failed to convert {value} to datetime64 objectError: {repr(e)}")
+
+    try:
+        return to_pandas_timestamp(value).to_datetime64()
+    except Exception as e:
+        raise ValueError(f"Failed to convert {value} to datetime64 objectError: {repr(e)}")
 
 
-def is_year(val):
+def is_year(val) -> bool:
     """Check if input is / may be year
 
     Parameters
@@ -189,12 +192,13 @@ def is_year(val):
     try:
         if -2000 < int(val) < 10000:
             return True
-        raise Exception
-    except Exception:
-        return False
+    except ValueError:
+        pass
+
+    return False
 
 
-def get_tot_number_of_seconds(ts_type, dtime=None):
+def get_tot_number_of_seconds(ts_type: str, dtime: pd.Series | None = None):
     """Get total no. of seconds for a given frequency
 
     ToDo
@@ -235,12 +239,12 @@ def get_tot_number_of_seconds(ts_type, dtime=None):
         # TODO generalize this
         days_in_month = dtime.dt.daysinmonth
 
-        return days_in_month * 24 * 60 * 60
+        return days_in_month * SECONDS_IN_DAY
     else:
         return TS_TYPE_SECS[ts_type]
 
 
-def get_standard_unit(var_name):
+def get_standard_unit(var_name: str) -> str:
     """Gets standard unit of AeroCom variable
 
     Also handles alias names for variables, etc. or strings corresponding to
@@ -261,7 +265,7 @@ def get_standard_unit(var_name):
     return const.VARS[var_name].units
 
 
-def get_lowest_resolution(ts_type, *ts_types):
+def get_lowest_resolution(ts_type: str | TsType, *ts_types: list[str | TsType]) -> str:
     """Get the lowest resolution from several ts_type codes
 
     Parameters
@@ -281,19 +285,14 @@ def get_lowest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    # all_ts_types = const.GRID_IO.TS_TYPES
-    from pyaerocom.units.tstype import TsType
-
-    lowest = TsType(ts_type)
-    for freq in ts_types:
-        _temp = TsType(freq)
-        if _temp < lowest:
-            lowest = _temp
-    return lowest.val
+    ls = [ts_type]
+    ls.extend(ts_types)
+    return sort_ts_types(ls)[-1]
 
 
-def sort_ts_types(ts_types):
-    """Sort a list of ts_types
+def sort_ts_types(ts_types: list[str | TsType]) -> list[str]:
+    """Sort a list of ts_types in ascending order, returning them as
+    strings.
 
     Parameters
     ----------
@@ -310,23 +309,8 @@ def sort_ts_types(ts_types):
     TemporalResolutionError
         if one of the input ts_types is not supported
     """
-    freqs_sorted = []
-    for ts_type in ts_types:
-        if isinstance(ts_type, str):
-            ts_type = TsType(ts_type)
-        if len(freqs_sorted) == 0:
-            freqs_sorted.append(ts_type)
-        else:
-            insert = False
-            for i, tt in enumerate(freqs_sorted):
-                if tt < ts_type:
-                    insert = True
-                    break
-            if insert:
-                freqs_sorted.insert(i, ts_type)
-            else:
-                freqs_sorted.append(ts_type)
-    return [str(tt) for tt in freqs_sorted]
+    ls = [TsType(x) for x in ts_types]
+    return [str(tstype) for tstype in sorted(ls, reverse=True)]
 
 
 def get_highest_resolution(ts_type, *ts_types):

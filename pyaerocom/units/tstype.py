@@ -16,9 +16,12 @@ from pyaerocom.units.time_config import (
     TS_TYPES,
 )
 
+from functools import total_ordering
+
 logger = logging.getLogger(__name__)
 
 
+@total_ordering
 class TsType:
     VALID = TS_TYPES
     VALID_ITER = VALID[:-2]
@@ -393,25 +396,15 @@ class TsType:
     def __lt__(self, other):
         if isinstance(other, str):
             other = TsType(other)
-        nss, nso = self.num_secs, other.num_secs
         # inverted comparison, i.e. if other has less seconds if has higher
         # resolution
-        return nss > nso
-
-    def __le__(self, other):
-        return True if (self.__eq__(other) or self.__lt__(other)) else False
-
-    def __gt__(self, other):
-        return not self.__le__(other)
-
-    def __ge__(self, other):
-        return not self.__lt__(other)
+        return self.num_secs > other.num_secs
 
     def __call__(self):
         return self.val
 
     def __str__(self):
-        return self.val
+        return str(self.val)
 
     def __repr__(self):
-        return self.val
+        return str(self.val)

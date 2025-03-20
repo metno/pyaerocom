@@ -719,7 +719,7 @@ class StationData(StationMetaData):
             self._update_var_timeinfo()
             other._update_var_timeinfo()
 
-            from pyaerocom.helpers import get_lowest_resolution
+            from pyaerocom.units.helpers import get_lowest_resolution
 
             ts_type = get_lowest_resolution(ts_type, ts_type1)
         return ts_type
@@ -952,7 +952,7 @@ class StationData(StationMetaData):
                 f"Trying to infer ts_type in StationData {self.station_name} "
                 f"for variable {var_name}"
             )
-            from pyaerocom.helpers import infer_time_resolution
+            from pyaerocom.units.helpers import infer_time_resolution
 
             try:
                 s = self._to_ts_helper(var_name)
