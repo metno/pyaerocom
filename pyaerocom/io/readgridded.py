@@ -22,7 +22,8 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, to_pandas_timestamp
+from pyaerocom.units.helpers import get_highest_resolution, sort_ts_types
+from pyaerocom.helpers import isnumeric, to_pandas_timestamp
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_components_fun import (
     calc_concNhno3_from_vmr,

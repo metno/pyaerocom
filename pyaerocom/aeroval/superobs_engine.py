@@ -7,7 +7,7 @@ import xarray as xr
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
-from pyaerocom.helpers import get_lowest_resolution
+from pyaerocom.units.helpers import get_lowest_resolution
 
 logger = logging.getLogger(__name__)
 

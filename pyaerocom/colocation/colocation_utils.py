@@ -26,8 +26,8 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.units.helpers import get_lowest_resolution
 from pyaerocom.helpers import (
-    get_lowest_resolution,
     isnumeric,
     make_datetime_index,
     to_pandas_timestamp,

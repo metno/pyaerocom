@@ -25,7 +25,8 @@ from pyaerocom.exceptions import (
     TemporalResolutionError,
     VarNotAvailableError,
 )
-from pyaerocom.helpers import calc_climatology, isnumeric, isrange, to_datetime64
+from pyaerocom.units.helpers import to_datetime64
+from pyaerocom.helpers import calc_climatology, isnumeric, isrange
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.tstype import TsType
