@@ -2,7 +2,7 @@ import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.time_config import SI_TO_TS_TYPE
+from pyaerocom.units.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
 from pyaerocom.variable_helpers import get_variable
 

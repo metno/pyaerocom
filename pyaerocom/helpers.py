@@ -29,7 +29,7 @@ from pyaerocom.exceptions import (
     TemporalResolutionError,
     VariableDefinitionError,
 )
-from pyaerocom.time_config import (
+from pyaerocom.units.time_config import (
     GREGORIAN_BASE,
     PANDAS_RESAMPLE_OFFSETS,
     TS_TYPE_DATETIME_CONV,
