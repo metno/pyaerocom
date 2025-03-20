@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType, sort_ts_types, get_lowest_resolution
 
 
 def test_TsType_VALID():
@@ -472,3 +472,22 @@ def test_TsType__str__():
 
 def test_TsType__repr__():
     assert repr(TsType("daily")) == "daily"
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    (
+        pytest.param(
+            ["monthly", "weekly", "daily", "hourly"], ["hourly", "daily", "weekly", "monthly"]
+        ),
+        pytest.param(
+            ["3daily", "4daily", "6daily", "13daily"], ["3daily", "4daily", "6daily", "13daily"]
+        ),
+    ),
+)
+def test_sort_tstypes(input, expected):
+    assert sort_ts_types(input) == expected
+
+
+def test_get_lowest_resolution():
+    assert get_lowest_resolution("3hourly", "hourly", "monthly", "yearly") == "yearly"

@@ -25,7 +25,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import make_datetime_index
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 from .colocated_data import ColocatedData
 from .colocation_utils import (

@@ -22,7 +22,7 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units.helpers import get_highest_resolution, sort_ts_types
+from pyaerocom.units.datetime import get_highest_resolution, sort_ts_types
 from pyaerocom.helpers import isnumeric, to_pandas_timestamp
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_components_fun import (
@@ -50,7 +50,7 @@ from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
 from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)

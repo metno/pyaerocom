@@ -4,7 +4,7 @@ from os.path import basename, splitext
 from pyaerocom import const
 from pyaerocom.data import resources
 from pyaerocom.exceptions import FileConventionError
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 
 class FileConventionRead:

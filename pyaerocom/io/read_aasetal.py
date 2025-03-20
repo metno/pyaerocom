@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from pyaerocom.units.helpers import get_tot_number_of_seconds
+from pyaerocom.units.datetime import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData

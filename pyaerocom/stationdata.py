@@ -25,11 +25,10 @@ from pyaerocom.exceptions import (
     TemporalResolutionError,
     VarNotAvailableError,
 )
-from pyaerocom.units.helpers import to_datetime64
 from pyaerocom.helpers import calc_climatology, isnumeric, isrange
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType, to_datetime64
 from pyaerocom.units.units_helpers import convert_unit, get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
@@ -719,7 +718,7 @@ class StationData(StationMetaData):
             self._update_var_timeinfo()
             other._update_var_timeinfo()
 
-            from pyaerocom.units.helpers import get_lowest_resolution
+            from pyaerocom.units.datetime import get_lowest_resolution
 
             ts_type = get_lowest_resolution(ts_type, ts_type1)
         return ts_type
@@ -952,7 +951,7 @@ class StationData(StationMetaData):
                 f"Trying to infer ts_type in StationData {self.station_name} "
                 f"for variable {var_name}"
             )
-            from pyaerocom.units.helpers import infer_time_resolution
+            from pyaerocom.units.datetime import infer_time_resolution
 
             try:
                 s = self._to_ts_helper(var_name)

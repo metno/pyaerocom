@@ -46,7 +46,7 @@ from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.stationdata import StationData
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 

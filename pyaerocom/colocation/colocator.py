@@ -28,7 +28,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units.helpers import get_lowest_resolution
+from pyaerocom.units.datetime import get_lowest_resolution
 from pyaerocom.helpers import (
     start_stop,
     to_datestring_YYYYMMDD,

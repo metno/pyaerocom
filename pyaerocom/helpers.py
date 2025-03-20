@@ -40,9 +40,8 @@ from pyaerocom.units.time_config import (
     min_units,
     sec_units,
 )
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.variable_helpers import get_variable
-from pyaerocom.units.helpers import is_year, to_pandas_timestamp
 
 
 logger = logging.getLogger(__name__)

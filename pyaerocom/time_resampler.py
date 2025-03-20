@@ -9,7 +9,7 @@ import xarray as xarr
 
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_timeseries
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 

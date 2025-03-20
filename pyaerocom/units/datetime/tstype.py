@@ -408,3 +408,76 @@ class TsType:
 
     def __repr__(self):
         return str(self.val)
+
+
+def sort_ts_types(ts_types: list[str | TsType]) -> list[str]:
+    """Sort a list of ts_types in ascending order, returning them as
+    strings.
+
+    Parameters
+    ----------
+    ts_types : list
+        list of strings (or instance of :class:`TsType`) to be sorted
+
+    Returns
+    -------
+    list
+        list of strings with sorted frequencies
+
+    Raises
+    ------
+    TemporalResolutionError
+        if one of the input ts_types is not supported
+    """
+    ls = [TsType(x) for x in ts_types]
+    return [str(tstype) for tstype in sorted(ls, reverse=True)]
+
+
+def get_lowest_resolution(ts_type: str | TsType, *ts_types: list[str | TsType]) -> str:
+    """Get the lowest resolution from several ts_type codes
+
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the lowest resolution
+
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    ls = [ts_type]
+    ls.extend(ts_types)
+    return sort_ts_types(ls)[-1]
+
+
+def get_highest_resolution(ts_type, *ts_types):
+    """Get the highest resolution from several ts_type codes
+
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the highest resolution
+
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    lst = [ts_type]
+    lst.extend(ts_types)
+    return sort_ts_types(lst)[0]

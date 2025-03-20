@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from pyaerocom import const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units.helpers import get_highest_resolution
+from pyaerocom.units.datetime import get_highest_resolution
 from pyaerocom.helpers import (
     get_max_period_range,
     make_dummy_cube,

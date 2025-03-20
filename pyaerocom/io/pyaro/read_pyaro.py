@@ -14,7 +14,7 @@ from pyaro.timeseries.Wrappers import VariableNameChangingReader
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.postprocess import PostProcessingReader
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.units.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
