@@ -1,7 +1,8 @@
 import cf_units
 import numpy as np
 
-from pyaerocom import const, TsType
+from pyaerocom import const
+from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 from pyaerocom.variable_helpers import get_variable
 

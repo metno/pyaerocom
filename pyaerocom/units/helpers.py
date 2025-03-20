@@ -4,6 +4,8 @@ from pyaerocom.units.datetime import TsType
 
 from pyaerocom.units.datetime.utils import to_pandas_timestamp
 from .constants import SECONDS_IN_DAY
+from pyaerocom import const
+
 import calendar
 
 
@@ -64,6 +66,4 @@ def get_standard_unit(var_name: str) -> str:
     str
         corresponding standard unit
     """
-    from pyaerocom import const
-
     return const.VARS[var_name].units
