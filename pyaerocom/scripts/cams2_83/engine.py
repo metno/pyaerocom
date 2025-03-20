@@ -45,7 +45,6 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def process_coldata(self, coldata: list[ColocatedData],  persistent_coldata: list[ColocatedData], var_name: str) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
 
@@ -129,7 +128,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     try:
                         subset = [
-                            _select_period_season_coldata(col, per, season)
+                            _select_period_season_coldata(col, per, season, use_meteorological_seasons)
                             for col in subset_region
                         ]
                     except (DataCoverageError, UnknownRegion) as e:

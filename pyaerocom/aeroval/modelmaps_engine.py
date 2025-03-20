@@ -1,7 +1,7 @@
 import glob
 import logging
-import os
 
+import aerovaldb
 import xarray as xr
 
 from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
@@ -27,6 +27,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -198,14 +199,17 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             # check if all files have already been produced
             # if even just one is missing, all is gonna be recomputed
             ts = _jsdate_list(data)
-            fps_geojson = []
-            outdir = self.cfg.path_manager.get_json_output_dirs()["contour"]
-            for i, date in enumerate(ts):
-                outname = f"{var}_{model_name}/{var}_{model_name}_{date}"
-                fps_geojson.append(os.path.join(outdir, f"{outname}.geojson"))
-            if all(os.path.exists(fp) for fp in fps_geojson):
+
+            uris_contour = self.avdb.query(
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                project=self.exp_output.proj_id,
+                experiment=self.exp_output.exp_id,
+            )
+            all_times = [int(uri.meta["timestep"]) for uri in uris_contour]
+
+            if all([date in all_times for date in ts]):
                 logger.info(
-                    f"Skipping contour processing of {var}_{model_name}: data already exists {fps_geojson}."
+                    f"Skipping contour processing of {var}_{model_name}: data already exists {uris_contour}."
                 )
                 return
 
@@ -277,20 +281,31 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if self.cfg.processing_opts.only_model_maps:
             self._check_ts_for_only_model_maps(model_name, var, ts, data)
 
-        outdir = self.cfg.path_manager.get_json_output_dirs()["contour/overlay"]
-
         for i, date in enumerate(ts):
-            write_var_name = self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(
-                var, var
-            )
+            try:
+                write_var_name = self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(
+                    var, var
+                )
+            except EntryNotAvailable:
+                write_var_name = var
 
             # Note this should match the output location defined in aerovaldb
-            outname = f"{write_var_name}_{model_name}_{date}.{self.cfg.modelmaps_opts.overlay_save_format}"
-            fp_overlay = os.path.join(outdir, outname)
+            overlay_uris = self.avdb.query(
+                aerovaldb.routes.Route.MAP_OVERLAY,
+                project=self.exp_output.proj_id,
+                experiment=self.exp_output.exp_id,
+            )
 
             if not reanalyse_existing:
-                if os.path.exists(fp_overlay):
-                    logger.info(f"Skipping overlay processing of {outname}: data already exists.")
+                if any(
+                    uri.meta["variable"] == write_var_name
+                    and uri.meta["source"] == model_name
+                    and uri.meta["date"] == date
+                    for uri in overlay_uris
+                ):
+                    logger.info(
+                        f"Skipping overlay processing for model={model_name}, var={write_var_name}, date={date}: data already exists."
+                    )
                     continue
 
             overlay_plot = plot_overlay_pixel_maps(

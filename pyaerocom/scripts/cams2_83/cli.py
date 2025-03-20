@@ -55,6 +55,7 @@ def make_config(
     run_type: RunType,
     only_map: bool,
     add_map: bool,
+    add_seasons: bool,
     fairmode: bool,
     medianscores: bool,
 ) -> dict:
@@ -104,6 +105,9 @@ def make_config(
 
     if only_map:
         cfg.update(add_model_maps=True, only_model_maps=True)
+
+    if add_seasons:
+        cfg.update(add_seasons=True)    
 
     if fairmode:
         cfg.update(use_fairmode=True)
@@ -156,6 +160,7 @@ def main(
     only_map: bool = typer.Option(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
+    add_seasons: bool = typer.Option(False, "--addseasons", help="set add_seasons"),
     fairmode: bool = typer.Option(False, "--fairmode", help="set use_fairmode"),
     medianscores: bool = typer.Option(
         False,
@@ -204,10 +209,11 @@ def main(
         run_type,
         only_map,
         add_map,
+        add_seasons,
         fairmode,
         medianscores
     )
-
+    
     # we do not want the cache produced in previous runs to be silently cleared
     const.RM_CACHE_OUTDATED = False
 

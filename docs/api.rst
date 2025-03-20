@@ -118,6 +118,9 @@ High-level co-location engine
 .. automodule:: pyaerocom.colocation.colocation_setup
    :members:
 
+.. automodule:: pyaerocom.colocation.uemep.colocator
+   :members:
+
 Low-level co-location functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
