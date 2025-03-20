@@ -3,7 +3,7 @@ from cf_units import Unit
 
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.units.time_config import SI_TO_TS_TYPE
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 from pyaerocom.variable_helpers import get_variable
 
 from .constants import M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4, HA_TO_SQM

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 
 
 def test_TsType_VALID():

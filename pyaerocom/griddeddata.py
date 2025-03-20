@@ -46,7 +46,7 @@ from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 from pyaerocom.units.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess

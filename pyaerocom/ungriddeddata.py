@@ -38,7 +38,7 @@ from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
-from .tstype import TsType
+from .units.tstype import TsType
 
 logger = logging.getLogger(__name__)
 

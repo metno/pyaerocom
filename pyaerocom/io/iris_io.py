@@ -37,7 +37,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import cftime_to_datetime64, make_datetimeindex_from_year
 from pyaerocom.io.file_conventions import FileConventionRead
 from pyaerocom.io.helpers import add_file_to_log
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 
 logger = logging.getLogger(__name__)
 

@@ -49,7 +49,7 @@ from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
 from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)

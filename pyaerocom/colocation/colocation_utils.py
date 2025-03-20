@@ -33,7 +33,7 @@ from pyaerocom.helpers import (
     to_pandas_timestamp,
 )
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 
 if TYPE_CHECKING:
     from pyaerocom.ungriddeddata import UngriddedData

@@ -12,7 +12,7 @@ from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 from .additional_variables import vmr_to_ghost_stations

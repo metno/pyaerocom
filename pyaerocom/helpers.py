@@ -44,7 +44,7 @@ from pyaerocom.units.time_config import (
     min_units,
     sec_units,
 )
-from pyaerocom.tstype import TsType
+from pyaerocom.units.tstype import TsType
 from pyaerocom.variable_helpers import get_variable
 
 logger = logging.getLogger(__name__)
@@ -635,7 +635,7 @@ def get_lowest_resolution(ts_type, *ts_types):
         if one of the input ts_type codes is not supported
     """
     # all_ts_types = const.GRID_IO.TS_TYPES
-    from pyaerocom.tstype import TsType
+    from pyaerocom.units.tstype import TsType
 
     lowest = TsType(ts_type)
     for freq in ts_types:
@@ -1179,7 +1179,7 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     elif "time" not in arr.dims:
         raise DataDimensionError("Cannot resample time: input DataArray has no time dimension")
 
-    from pyaerocom.tstype import TsType
+    from pyaerocom.units.tstype import TsType
 
     to = TsType(freq)
     pd_freq = to.to_pandas_freq()
