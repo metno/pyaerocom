@@ -1,3 +1,4 @@
+import abc
 import fnmatch
 import logging
 import sys
@@ -33,6 +34,8 @@ class UngriddedDataMetadata(UngriddedDataContainer):
     part needs to be implemented independently.
 
     """
+
+    ALLOWED_VERT_COORD_TYPES = ["altitude"]
 
     def __init__(self):
         self.metadata = {}
@@ -474,6 +477,13 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                     list_f[key] = val
         return (str_f, list_f, range_f, val_f)
 
+    @abc.abstractmethod
+    def _len_datapoints(self, meta_idx, var):
+        """Get the number of datapoints for meta_idx and var,
+        needed internally by _find_meta_matches to calculate the
+        total number of new data-size"""
+        pass
+
     def _find_meta_matches(self, negate=None, *filters):
         """Find meta matches for input attributes
 
@@ -509,7 +519,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                     if var in self.ALLOWED_VERT_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
-                        totnum += len(self.meta_idx[meta_idx][var])
+                        totnum += self._len_datapoints(meta_idx, var)
                     except KeyError:
                         logger.debug(
                             f"Ignoring variable {var} in meta block {meta_idx} "
@@ -517,6 +527,97 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                         )
 
         return (meta_matches, totnum)
+
+    def _check_str_filter_match(self, meta, negate, str_f):
+        # Check string equality for input meta data and filters. Supports
+        # wildcard matching
+        for metakey, filterval in str_f.items():
+            # key does not exist in this specific meta_block
+            if metakey not in meta:
+                return False
+            # check if this key is in negate list (then result will be True
+            # for all that do not match the specified filter input value(s))
+            neg = metakey in negate
+
+            # actual value of this key in input metadata
+            metaval = meta[metakey]
+
+            # check equality of values
+            match = metaval == filterval
+            if match:  # direct match found
+                if neg:  # key is flagged in negate -> no match
+                    return False
+            else:  # no direct match found
+                # check wildcard match
+                if "*" in filterval:  # no wildcard in
+                    match = fnmatch.fnmatch(metaval, filterval)
+                    if neg:
+                        if match:
+                            return False
+                    else:
+                        if not match:
+                            return False
+                elif not neg:  # no match, no wildcard match and not inverted
+                    return False
+        return True
+
+    def _check_filter_match(self, meta, negate, str_f, list_f, range_f, val_f):
+        """Helper method that checks if station meta item matches filters
+
+        Note
+        ----
+        This method is used in :func:`apply_filter`
+        """
+        if not self._check_str_filter_match(meta, negate, str_f):
+            return False
+
+        for metakey, filterval in list_f.items():
+            if metakey not in meta:
+                return False
+            neg = metakey in negate
+            metaval = meta[metakey]
+            match = metaval == filterval
+            if match:  # lists are identical
+                if neg:
+                    return False
+            else:
+                # value in metadata block is different from filter value
+                match = metaval in filterval
+                if match:
+                    if neg:
+                        return False
+                else:
+                    # current metavalue is not equal the filterlist and is also
+                    # not contained in the filterlist. However, one or more
+                    # entries in the filterlist may be wildcard
+                    if isinstance(metaval, str):
+                        found = False
+                        for entry in filterval:
+                            if "*" in entry:
+                                match = fnmatch.fnmatch(metaval, entry)
+                                if match:
+                                    found = True
+                                    if neg:
+                                        return False
+                        if not found and not neg:
+                            return False
+        # range filter
+        for metakey, filterval in range_f.items():
+            if metakey not in meta:
+                return False
+            neg = metakey in negate
+            match = in_range(meta[metakey], filterval[0], filterval[1])
+            if (neg and match) or (not neg and not match):
+                return False
+
+        for metakey, filterval in val_f.items():
+            if metakey not in meta:
+                return False
+            neg = metakey in negate
+            match = meta[metakey] == filterval
+            if (neg and match) or (not neg and not match):
+                return False
+        return True
 
     @override
     def filter_by_meta(self, negate=None, **filter_attributes):

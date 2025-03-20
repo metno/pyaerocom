@@ -800,17 +800,15 @@ class ReadUngridded:
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
-        data = UngriddedData()
+        data = None
         for ds in data_ids:
             if ds in self.post_compute:
-                data.append(
-                    self.read_dataset_post(
-                        data_id=ds,
-                        vars_to_retrieve=vars_to_retrieve,
-                        only_cached=only_cached,
-                        filter_post=filter_post,
-                        **kwargs,
-                    )
+                data_to_append = self.read_dataset_post(
+                    data_id=ds,
+                    vars_to_retrieve=vars_to_retrieve,
+                    only_cached=only_cached,
+                    filter_post=filter_post,
+                    **kwargs,
                 )
             else:
                 data_to_append = self.read_dataset(
@@ -820,6 +818,9 @@ class ReadUngridded:
                     filter_post=filter_post,
                     **kwargs,
                 )
+            if data is None:
+                data = data_to_append
+            else:
                 data.append(data_to_append)
                 # TODO: Test this. UngriddedData can contain more than 1 variable
                 if getattr(data_to_append, "is_vertical_profile", None):

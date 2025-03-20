@@ -27,7 +27,6 @@ from pyaerocom.helpers import (
     same_meta_dict,
     start_stop,
 )
-from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
@@ -126,10 +125,6 @@ class UngriddedData(UngriddedDataMetadata):
     # used to code lat and long in a single number for a uniqueness test
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = 90.0
-
-    STANDARD_META_KEYS = STANDARD_META_KEYS
-
-    ALLOWED_VERT_COORD_TYPES = ["altitude"]
 
     @property
     def _ROWNO(self):
@@ -715,7 +710,7 @@ class UngriddedData(UngriddedDataMetadata):
                 raise VarNotAvailableError("Metablock does not contain variable information")
             vars_avail = meta["variables"]
 
-        for key in self.STANDARD_META_KEYS + add_meta_keys:
+        for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
                 logger.warning(f"skipping protected key: {key}")
                 continue
@@ -989,97 +984,6 @@ class UngriddedData(UngriddedDataMetadata):
         result["num_stats"] = num_stats
         return result
 
-    def _check_str_filter_match(self, meta, negate, str_f):
-        # Check string equality for input meta data and filters. Supports
-        # wildcard matching
-        for metakey, filterval in str_f.items():
-            # key does not exist in this specific meta_block
-            if metakey not in meta:
-                return False
-            # check if this key is in negate list (then result will be True
-            # for all that do not match the specified filter input value(s))
-            neg = metakey in negate
-
-            # actual value of this key in input metadata
-            metaval = meta[metakey]
-
-            # check equality of values
-            match = metaval == filterval
-            if match:  # direct match found
-                if neg:  # key is flagged in negate -> no match
-                    return False
-            else:  # no direct match found
-                # check wildcard match
-                if "*" in filterval:  # no wildcard in
-                    match = fnmatch.fnmatch(metaval, filterval)
-                    if neg:
-                        if match:
-                            return False
-                    else:
-                        if not match:
-                            return False
-                elif not neg:  # no match, no wildcard match and not inverted
-                    return False
-        return True
-
-    def _check_filter_match(self, meta, negate, str_f, list_f, range_f, val_f):
-        """Helper method that checks if station meta item matches filters
-
-        Note
-        ----
-        This method is used in :func:`apply_filter`
-        """
-        if not self._check_str_filter_match(meta, negate, str_f):
-            return False
-
-        for metakey, filterval in list_f.items():
-            if metakey not in meta:
-                return False
-            neg = metakey in negate
-            metaval = meta[metakey]
-            match = metaval == filterval
-            if match:  # lists are identical
-                if neg:
-                    return False
-            else:
-                # value in metadata block is different from filter value
-                match = metaval in filterval
-                if match:
-                    if neg:
-                        return False
-                else:
-                    # current metavalue is not equal the filterlist and is also
-                    # not contained in the filterlist. However, one or more
-                    # entries in the filterlist may be wildcard
-                    if isinstance(metaval, str):
-                        found = False
-                        for entry in filterval:
-                            if "*" in entry:
-                                match = fnmatch.fnmatch(metaval, entry)
-                                if match:
-                                    found = True
-                                    if neg:
-                                        return False
-                        if not found and not neg:
-                            return False
-        # range filter
-        for metakey, filterval in range_f.items():
-            if metakey not in meta:
-                return False
-            neg = metakey in negate
-            match = in_range(meta[metakey], filterval[0], filterval[1])
-            if (neg and match) or (not neg and not match):
-                return False
-
-        for metakey, filterval in val_f.items():
-            if metakey not in meta:
-                return False
-            neg = metakey in negate
-            match = meta[metakey] == filterval
-            if (neg and match) or (not neg and not match):
-                return False
-        return True
-
     def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
         obj = self if inplace else self.copy()
 
@@ -1279,6 +1183,10 @@ class UngriddedData(UngriddedDataMetadata):
         new.data_revision.update(self.data_revision)
 
         return new
+
+    def _len_datapoints(self, meta_idx, var):
+        """Get the number of datapoints for meta_idx and var"""
+        return len(self.meta_idx[meta_idx][var])
 
     def clear_meta_no_data(self, inplace=True):
         """Remove all metadata blocks that do not have data associated with it

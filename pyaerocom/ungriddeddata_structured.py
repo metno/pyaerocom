@@ -59,8 +59,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         "flag": -32767,
     }
 
-    STANDARD_META_KEYS = STANDARD_META_KEYS
-
     def __init__(self, num_points: int = 100):
         super().__init__()  # initialize metadata
         self._data = self._create_data_chunk(num_points)
@@ -278,7 +276,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 raise VarNotAvailableError("Metablock does not contain variable information")
             vars_avail = meta["variables"]
 
-        for key in self.STANDARD_META_KEYS + add_meta_keys:
+        for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
                 logger.warning(f"skipping protected key: {key}")
                 continue
@@ -314,12 +312,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         FOUND_ONE = False
         for var in vars_avail:
             # get indices of this station and variable
-            var_idx = np.isin(self._data.data["meta_id"], meta_idx) & np.isin(
-                self._data.data["var_id"], var
+            idx = (self._data.data["meta_id"] == meta_idx) & (
+                self._data.data["var_id"] == self.var_idx[var]
             )
 
             # get subset
-            subset = self._data.data[var_idx]
+            subset = self._data.data[idx]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -355,7 +353,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             flag_mask = subset["flag"] == self._nan_types["flag"]
             flagged = subset["flag"].astype("f4")
             flagged[flag_mask] = np.nan
-            alt_mask = subset["flag"] == self._nan_types["flag"]
+            alt_mask = subset["dataaltitude"] == self._nan_types["dataaltitude"]
             altitude = subset["dataaltitude"].astype("f4")
             altitude[alt_mask] = np.nan
 
@@ -456,7 +454,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     idx = (obj._data.data["meta_id"] == meta_idx) & (
                         obj._data.data["var_id"] == self.var_idx[var_name]
                     )
-                    obj._data.data[idx]["data"] *= fac
+                    obj._data.data["data"][idx] *= fac
                 meta["var_info"][var_name]["units"] = to_unit
 
         return obj
@@ -503,6 +501,13 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             f"(range: {low}-{high}, in trash: {move_to_trash})"
         )
         return new
+
+    @override
+    def _len_datapoints(self, meta_idx, var):
+        var_idx = self.var_idx[var]
+        return np.sum(
+            (self._data.data["meta_id"] == meta_idx) & (self._data.data["var_id"] == var_idx)
+        )
 
     @override
     def extract_vars(self, var_names, check_index=True):
