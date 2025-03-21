@@ -168,10 +168,6 @@ def test_to_datestring_YYYYMMDD(input, expected):
     assert helpers.to_datestring_YYYYMMDD(input) == expected
 
 
-def test_cftime_to_datetime64():
-    pass
-
-
 def get_constraint():
     pass
 

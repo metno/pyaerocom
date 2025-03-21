@@ -1,12 +1,25 @@
 from collections import Counter
+
+from cf_units import Unit
+import iris
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import TemporalResolutionError
 from . import TsType
 from ..constants import SECONDS_IN_DAY
-from ._time_config import TS_TYPE_SECS
+from ._time_config import (
+    GREGORIAN_BASE,
+    TS_TYPE_SECS,
+    microsec_units,
+    millisec_units,
+    sec_units,
+    min_units,
+    hr_units,
+    day_units,
+)
 import pandas as pd
 import numpy as np
 from datetime import datetime, date
+from datetime import MINYEAR
 
 
 def is_year(val) -> bool:
@@ -73,8 +86,8 @@ def get_tot_number_of_seconds(ts_type: str, dtime: pd.Series | None = None):
         days_in_month = dtime.dt.daysinmonth
 
         return days_in_month * SECONDS_IN_DAY
-    else:
-        return TS_TYPE_SECS[ts_type]
+
+    return TS_TYPE_SECS[ts_type]
 
 
 def to_datetime64(value):
@@ -99,6 +112,96 @@ def to_datetime64(value):
         return to_pandas_timestamp(value).to_datetime64()
     except Exception as e:
         raise ValueError(f"Failed to convert {value} to datetime64 objectError: {repr(e)}")
+
+
+def cftime_to_datetime64(times, cfunit=None, calendar=None):
+    """Convert numerical timestamps with epoch to numpy datetime64
+
+    This method was designed to enhance the performance of datetime conversions
+    and is based on the corresponding information provided in the cftime
+    package (`see here <https://github.com/Unidata/cftime/blob/master/cftime/
+    _cftime.pyx>`__). Particularly, this object does, what the :func:`num2date`
+    therein does, but faster, in case the time stamps are not defined on a non
+    standard calendar.
+
+    Parameters
+    ----------
+    times : :obj:`list` or :obj:`ndarray` or :obj:`iris.coords.DimCoord`
+        array containing numerical time stamps (relative to basedate of
+        ``cfunit``). Can also be a single number.
+    cfunit : :obj:`str` or :obj:`Unit`, optional
+        CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
+        unit. Required if `times` is not an instance of
+        :class:`iris.coords.DimCoord`
+    calendar : :obj:`str`, optional
+        string specifying calendar (only required if ``cfunit`` is of type
+        ``str``).
+
+    Returns
+    -------
+    ndarray
+        numpy array containing timestamps as datetime64 objects
+
+    Raises
+    ------
+    ValueError
+        if cfunit is ``str`` and calendar is not provided or invalid, or if
+        the cfunit string is invalid
+
+    Example
+    -------
+
+    >>> cfunit_str = 'day since 2018-01-01 00:00:00.00000000 UTC'
+    >>> cftime_to_datetime64(10, cfunit_str, "gregorian")
+    array(['2018-01-11T00:00:00.000000'], dtype='datetime64[us]')
+    """
+    if isinstance(times, iris.coords.DimCoord):  # special case
+        times, cfunit = times.points, times.units
+    try:
+        len(times)
+    except Exception:
+        times = [times]
+    if isinstance(cfunit, str):
+        if calendar is None:
+            raise ValueError(
+                "Require specification of calendar for conversion into datetime64 objects"
+            )
+        cfunit = Unit(cfunit, calendar)  # raises Error if calendar is invalid
+    if not isinstance(cfunit, Unit):
+        raise ValueError(
+            "Please provide cfunit either as instance of class cf_units.Unit or as a string"
+        )
+    calendar = cfunit.calendar
+    basedate = cfunit.num2date(0)
+    if (calendar == "proleptic_gregorian" and basedate.year >= MINYEAR) or (
+        calendar in ["gregorian", "standard"] and basedate > GREGORIAN_BASE
+    ):
+        # NOTE: changed on 9 July 2018 by jgliss due to error (kernel died)
+        # after update of dependencies (cf_units). Attribute name does not
+        # work anymore...
+        cfu_str = cfunit.origin  # cfunit.name
+
+        res = cfu_str.split()[0].lower()
+        if res in microsec_units:
+            tstr = "us"
+        elif res in millisec_units:
+            tstr = "ms"
+        elif res in sec_units:
+            tstr = "s"
+        elif res in min_units:
+            tstr = "m"
+        elif res in hr_units:
+            tstr = "h"
+        elif res in day_units:
+            tstr = "D"
+        else:
+            raise ValueError("unsupported time units")
+
+        basedate = np.datetime64(basedate)
+        dt = np.asarray(np.asarray(times), dtype=f"timedelta64[{tstr}]")
+        return basedate + dt
+    else:
+        return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])
 
 
 @ignore_warnings(UserWarning, r"Parsing .* in DD/MM/YYYY format")
@@ -194,3 +297,7 @@ def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8
         raise TemporalResolutionError("Failed to infer ts_type")
     tst = TsType.from_total_seconds(most_common_dt)
     return str(tst)
+
+
+def test_cftime_to_datetime64():
+    pass
