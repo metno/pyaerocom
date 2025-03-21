@@ -28,6 +28,15 @@ def test_DynamicRecArray__init__():
     assert set(ary.keys()) == set([x[0] for x in my_dtype])
 
 
+def test_data():
+    ary = DynamicRecArray(my_dtype, 10)
+    assert len(ary) == 0
+    ary2 = DynamicRecArray(my_dtype, 100)
+    rec_array = ary2._array
+    ary.data = rec_array
+    assert len(ary) == 100
+
+
 def test_append():
     ary = DynamicRecArray(my_dtype, 10)
     assert len(ary) == 0
