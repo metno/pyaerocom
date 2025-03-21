@@ -7,4 +7,5 @@ from .utils import (
     infer_time_resolution,
     cftime_to_datetime64,
     datetime2str,
+    seconds_in_periods,
 )
