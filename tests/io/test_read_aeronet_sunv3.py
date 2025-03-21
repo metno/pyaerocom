@@ -36,23 +36,14 @@ def test_read_file(reader):
 def test_read(reader):
     reader.get_file_list()
     files = reader.files[2:4]
-    assert [Path(file).name for file in files] == [
-        "Agoufou.lev30",
-        "Alta_Floresta.lev30",
-    ]
+    assert [Path(file).name for file in files] == ["Agoufou.lev30", "Alta_Floresta.lev30"]
     # proxyzdust is essentially od550aer
     data = reader.read(
-        files=files,
-        vars_to_retrieve=["od550aer", "ang4487aer", "proxyod550oa", "proxyzdust"],
+        files=files, vars_to_retrieve=["od550aer", "ang4487aer", "proxyod550oa", "proxyzdust"]
     )
     assert isinstance(data, UngriddedData)
     assert data.unique_station_names == ["Agoufou", "Alta_Floresta"]
-    assert data.contains_vars == [
-        "od550aer",
-        "ang4487aer",
-        "proxyod550oa",
-        "proxyzdust",
-    ]
+    assert data.contains_vars == ["od550aer", "ang4487aer", "proxyod550oa", "proxyzdust"]
     assert data.contains_instruments == ["sun_photometer"]
     assert data.shape == (23980, 12)
     assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(0.527, rel=1e-3)

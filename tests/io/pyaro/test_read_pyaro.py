@@ -49,12 +49,7 @@ def test_pyarotoungriddeddata_reading(pyaro_testdata):
     # Tests the found stations
     all_stations = data.to_station_data_all("concso4", ts_type_preferred="daily")
 
-    assert all_stations["stats"][0]["ts_type"] in [
-        "hourly",
-        "3daily",
-        "2hourly",
-        "2daily",
-    ]
+    assert all_stations["stats"][0]["ts_type"] in ["hourly", "3daily", "2hourly", "2daily"]
     assert all_stations["stats"][0]["country"] == "NO"
 
     # Tests the dates

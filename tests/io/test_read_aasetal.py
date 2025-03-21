@@ -63,13 +63,7 @@ def test_reader(data_path: Path):
     reader = ReadAasEtal(DATA_ID)
     assert reader.data_id == DATA_ID
     assert reader.data_dir == str(data_path)
-    assert reader.PROVIDES_VARIABLES == [
-        "concso2",
-        "concso4",
-        "pr",
-        "wetso4",
-        "concso4pr",
-    ]
+    assert reader.PROVIDES_VARIABLES == ["concso2", "concso4", "pr", "wetso4", "concso4pr"]
     filenames = [Path(file).name for file in reader.get_file_list()]
     assert filenames == FILENAMES
 
@@ -149,12 +143,7 @@ testdata = [
 @pytest.mark.parametrize("filenum,station_name,colname,var_name", testdata)
 @pytest.mark.xfail(raises=UnitConversionError)
 def test_reading_routines(
-    aasetal_data: UngriddedData,
-    data_paths: list[Path],
-    filenum,
-    station_name,
-    colname,
-    var_name,
+    aasetal_data: UngriddedData, data_paths: list[Path], filenum, station_name, colname, var_name
 ):
     UNITCONVERSION = ReadAasEtal().UNITCONVERSION
 

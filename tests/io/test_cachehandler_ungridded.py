@@ -22,9 +22,7 @@ def test_cache_dir(cache_handler: CacheHandlerUngridded):
 
 
 def test_reload_custom(
-    cache_handler: CacheHandlerUngridded,
-    aeronetsunv3lev2_subset: UngriddedData,
-    tmp_path: Path,
+    cache_handler: CacheHandlerUngridded, aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path
 ):
     path = tmp_path / "test_manual_caching.pkl"
     cache_handler.write(aeronetsunv3lev2_subset, var_or_file_name=path.name, cache_dir=path.parent)

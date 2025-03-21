@@ -375,10 +375,7 @@ def test__read_files_single_var_error(reader: ReadAirNow):
     ],
 )
 def test_read(
-    reader: ReadAirNow,
-    vars_to_retrieve: str | list[str],
-    num_meta_blocks: int,
-    num_stats: int,
+    reader: ReadAirNow, vars_to_retrieve: str | list[str], num_meta_blocks: int, num_stats: int
 ):
     data = reader.read(vars_to_retrieve)
     if isinstance(vars_to_retrieve, str):

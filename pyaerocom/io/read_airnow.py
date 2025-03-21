@@ -561,8 +561,7 @@ class ReadAirNow(ReadUngriddedBase):
         stats = self._read_files(files, vars_to_retrieve)
 
         data = UngriddedData.from_station_data(
-            stats,
-            add_meta_keys=["timezone", "area_classification", "station_classification"],
+            stats, add_meta_keys=["timezone", "area_classification", "station_classification"]
         )
 
         return data

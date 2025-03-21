@@ -576,12 +576,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         return ret_data
 
     def read(
-        self,
-        vars_to_retrieve=None,
-        files=None,
-        first_file=None,
-        last_file=None,
-        metadatafile=None,
+        self, vars_to_retrieve=None, files=None, first_file=None, last_file=None, metadatafile=None
     ):
         """Method that reads list of files as instance of :class:`UngriddedData`
 

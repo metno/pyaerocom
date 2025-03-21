@@ -15,14 +15,10 @@ def aeronet_sda_subset_reader() -> ReadAeronetSdaV3:
 
 
 @pytest.fixture(scope="session")
-def aeronetsunv3lev2_subset(
-    aeronet_sun_subset_reader: ReadAeronetSunV3,
-) -> UngriddedData:
+def aeronetsunv3lev2_subset(aeronet_sun_subset_reader: ReadAeronetSunV3) -> UngriddedData:
     return aeronet_sun_subset_reader.read(vars_to_retrieve=["od550aer", "ang4487aer"])
 
 
 @pytest.fixture(scope="session")
-def aeronetsdav3lev2_subset(
-    aeronet_sda_subset_reader: ReadAeronetSdaV3,
-) -> UngriddedData:
+def aeronetsdav3lev2_subset(aeronet_sda_subset_reader: ReadAeronetSdaV3) -> UngriddedData:
     return aeronet_sda_subset_reader.read(vars_to_retrieve=["od550aer", "od550lt1aer"])
