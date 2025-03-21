@@ -61,7 +61,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     def __init__(self, num_points: int = 100):
         super().__init__()  # initialize metadata
-        self._data = self._create_data_chunk(num_points)
+        self._dra = self._create_data_chunk(num_points)
 
         # filters applied
         self.filter_hist = {}
@@ -81,15 +81,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     continue
                 new_var_idx[var] = self.var_idx[var]
 
-        midx = np.isin(self._data.data["meta_id"], meta_ids)
+        midx = np.isin(self._dra.data["meta_id"], meta_ids)
         # data with the selected stations
-        nd = self._data.data[midx]
+        nd = self._dra.data[midx]
         size = len(nd)
         if size == 0:
             raise DataExtractionError("Filtering results in empty data object")
 
         new = self.__class__(size)
-        new._data.data = nd
+        new._dra.data = nd
         new.metadata = new_metadata
         new.var_idx = new_var_idx
         new.filter_hist = self.filter_hist
@@ -101,14 +101,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         """create a datachunk of size and initialize it to _nan_type values"""
         data = DynamicRecArray(capacity=size, dtype=self._dtype)
         for k, v in self._nan_types.items():
-            data._data[k] = v
+            data._array[k] = v
         return data
 
     @override
     def copy(self):
         new = self.__class__()
         self._copy_metadata_to(new)
-        new._data = deepcopy(self._data)
+        new._dra = deepcopy(self._dra)
         return new
 
     @override
@@ -118,7 +118,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     @property
     @override
     def has_flag_data(self):
-        return (self._data.data["flag"] == self._nan_types["flag"]).any()
+        return (self._dra.data["flag"] == self._nan_types["flag"]).any()
 
     @override
     def set_flags_nan(self, inplace=False):
@@ -129,7 +129,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         else:
             obj = self.copy()
 
-        obj._data.data["flag"] = self._nan_types["flag"]
+        obj._dra.data["flag"] = self._nan_types["flag"]
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
@@ -312,12 +312,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         FOUND_ONE = False
         for var in vars_avail:
             # get indices of this station and variable
-            idx = (self._data.data["meta_id"] == meta_idx) & (
-                self._data.data["var_id"] == self.var_idx[var]
+            idx = (self._dra.data["meta_id"] == meta_idx) & (
+                self._dra.data["var_id"] == self.var_idx[var]
             )
 
             # get subset
-            subset = self._data.data[idx]
+            subset = self._dra.data[idx]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -451,10 +451,10 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     )
                 fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
-                    idx = (obj._data.data["meta_id"] == meta_idx) & (
-                        obj._data.data["var_id"] == self.var_idx[var_name]
+                    idx = (obj._dra.data["meta_id"] == meta_idx) & (
+                        obj._dra.data["var_id"] == self.var_idx[var_name]
                     )
-                    obj._data.data["data"][idx] *= fac
+                    obj._dra.data["data"][idx] *= fac
                 meta["var_info"][var_name]["units"] = to_unit
 
         return obj
@@ -484,14 +484,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             high = const.VARS[var_name].maximum
             logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
         var_idx = new.var_id[var_name]
-        var_mask = new._data.data["var_id"] == var_idx
+        var_mask = new._dra.data["var_id"] == var_idx
 
-        all_data = new._data.data["data"]
+        all_data = new._dra.data["data"]
         invalid_mask = np.logical_or(all_data < low, all_data > high)
 
         mask = invalid_mask * var_mask
-        invalid_vals = new._data.data["data"][mask]
-        new._data.data["data"][mask] = np.nan
+        invalid_vals = new._dra.data["data"][mask]
+        new._dra.data["data"][mask] = np.nan
 
         if move_to_trash:
             logger.warning("trash not implemented")
@@ -506,7 +506,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def _len_datapoints(self, meta_idx, var):
         var_idx = self.var_idx[var]
         return np.sum(
-            (self._data.data["meta_id"] == meta_idx) & (self._data.data["var_id"] == var_idx)
+            (self._dra.data["meta_id"] == meta_idx) & (self._dra.data["var_id"] == var_idx)
         )
 
     @override
@@ -521,9 +521,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 else:
                     raise VarNotAvailableError(f"No such variable {var_name} in data")
         var_ids = [self.var_idx[x] for x in var_names_unaliased]
-        idx = np.isin(self._data.data["var_id"], var_ids)
+        idx = np.isin(self._dra.data["var_id"], var_ids)
         new = self.__class___()
-        new._data.data = deepcopy(self._data.data[idx])
+        new._dra.data = deepcopy(self._dra.data[idx])
         # fix the metadata
         self._copy_metadata_to(new)
         for i, var in enumerate(var_names):
@@ -543,7 +543,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @override
     def all_datapoints_var(self, var_name):
-        return self.extract_var(var_name)._data.data["data"]
+        return self.extract_var(var_name)._dra.data["data"]
 
     @staticmethod
     @override
@@ -577,7 +577,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         data.metadata[meta_idx]["var_info"][var][x] = station_data[x]
 
                 uds = UngriddedDataStructured(num_points=len(values))
-                v_data = uds._data._data  # access to raw numpy-array
+                v_data = uds._dra._array  # access to raw numpy-array
                 v_data["meta_id"][:] = meta_idx
                 v_data["data"] = values
                 v_data["var_id"][:] = var_idx
@@ -591,7 +591,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     nans = ~np.isfinite(flags)
                     v_data["flag"][:] = flags
                     v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
-                data._data.append(v_data)
+                data._dra.append(v_data)
         return data
 
     def clear_meta_no_data(self, inplace=True):
@@ -619,7 +619,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             obj = self.copy()
 
         meta_no_data = []
-        distinct_metas = np.unique(obj._data.data["meta_id"])
+        distinct_metas = np.unique(obj._dra.data["meta_id"])
         for meta_idx, meta in obj.metadata.items():
             if not np.any(distinct_metas == meta_idx):
                 # sanity check

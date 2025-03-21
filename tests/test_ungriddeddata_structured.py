@@ -16,9 +16,9 @@ def ungridded_empty():
 
 def test_ungridded_new():
     ud = UngriddedDataStructured(num_points=1000)
-    assert ud._data.capacity == 1000
-    assert len(ud._data._data["meta_id"]) == 1000
-    assert len(ud._data.data["meta_id"]) == 0
+    assert ud._dra.capacity == 1000
+    assert len(ud._dra._array["meta_id"]) == 1000
+    assert len(ud._dra.data["meta_id"]) == 0
 
 
 def test_coordinate_access():
@@ -209,12 +209,12 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
     for i, meta in out.metadata.items():
         if "sc550aer" in meta["var_info"]:
             assert meta["var_info"]["sc550aer"]["units"] == "m-1"
-            idx = (out._data.data["meta_id"] == i) & (
-                out._data.data["var_id"] == out.var_idx["sc550aer"]
+            idx = (out._dra.data["meta_id"] == i) & (
+                out._dra.data["var_id"] == out.var_idx["sc550aer"]
             )
 
-            data0 = data_scat_jungfraujoch._data.data["data"][idx]
-            data1 = out._data.data["data"][idx]
+            data0 = data_scat_jungfraujoch._dra.data["data"][idx]
+            data1 = out._dra.data["data"][idx]
 
             ratio = np.divide(data1, data0)  # [~nans]
             ratio = ratio[~np.isnan(ratio)]

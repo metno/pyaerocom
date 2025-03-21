@@ -15,7 +15,7 @@ class DynamicRecArray:
         self.dtype = np.dtype(dtype)
         self.length = 0
         self.capacity = capacity
-        self._data = np.empty(self.capacity, dtype=self.dtype)
+        self._array = np.empty(self.capacity, dtype=self.dtype)
 
     def __len__(self):
         return self.length
@@ -23,7 +23,7 @@ class DynamicRecArray:
     def keys(self):
         """all available data-fields, excluding variable and units which are
         considered metadata"""
-        return self._data.dtype.names
+        return self._array.dtype.names
 
     def append(self, rec):
         """append this dataset with a record of the same type
@@ -36,8 +36,8 @@ class DynamicRecArray:
             self.capacity += 10 + (self.capacity >> 3)  # 20 + 1.125*self.capacity
             resize = True
         if resize:
-            self._data = np.resize(self._data, self.capacity)
-        self._data[self.length : newlength] = rec
+            self._array = np.resize(self._array, self.capacity)
+        self._array[self.length : newlength] = rec
         self.length = newlength
 
     def append_array(self, **kwargs):
@@ -63,9 +63,9 @@ class DynamicRecArray:
         :return: np.arry of type dtype
         """
         if self.capacity != self.length:
-            self._data = self._data[:][: self.length]
-            self.capacity = len(self._data)
-        return self._data
+            self._array = self._array[:][: self.length]
+            self.capacity = len(self._array)
+        return self._array
 
     @data.setter
     def data(self, data):
@@ -75,4 +75,4 @@ class DynamicRecArray:
         """
         self.length = len(data)
         self.capacity = len(data)
-        self._data = data
+        self._array = data
