@@ -130,12 +130,12 @@ EEA_FILTER = {
 }
 
 species_list = [
-    # "concno2",
-    # "concco",
-    # "conco3",
-    # "concso2",
+    "concno2",
+    "concco",
+    "conco3",
+    "concso2",
     "concpm10",
-    # "concpm25",
+    "concpm25",
 ]
 
 
