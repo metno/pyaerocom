@@ -277,14 +277,7 @@ class ReadICPForest(ReadUngriddedBase):
                         year, country_code, plot_code, sampler_code
                     )
                     stations[station_name][ts_type] = Station(
-                        country_code,
-                        plot_code,
-                        sampler_code,
-                        lat,
-                        lon,
-                        alt,
-                        partner_code,
-                        ts_type,
+                        country_code, plot_code, sampler_code, lat, lon, alt, partner_code, ts_type
                     )
 
                 for species in vars_to_retrieve:
