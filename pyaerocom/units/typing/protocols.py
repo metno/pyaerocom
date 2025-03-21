@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 
+import datetime
 from typing import Any, Protocol, runtime_checkable
-
+from collections.abc import Iterable
 import numpy as np
 
 
@@ -14,7 +15,7 @@ class UnitProtocol(Protocol):
     https://cf-units.readthedocs.io/en/latest/_modules/cf_units.html#Unit
     """
 
-    __slots__ = ()
+    # __slots__ = ()
 
     category: int | None
     ut_unit: Any
@@ -38,7 +39,7 @@ class UnitProtocol(Protocol):
     @property
     def modulus(self) -> float | None: ...
 
-    def is_convertible(self, other: str, UnitProtocol) -> bool: ...
+    def is_convertible(self, other: str | UnitProtocol) -> bool: ...
 
     def is_dimensionless(self) -> bool: ...
 
@@ -108,4 +109,6 @@ class UnitProtocol(Protocol):
         only_use_python_datetimes: bool = False,
     ) -> Any | np.ndarray: ...
 
-    def num2pydate(self, time_value: float | np.ndarray) -> Any | np.ndarray: ...
+    def num2pydate(
+        self, time_value: float | Iterable[float]
+    ) -> datetime.datetime | Iterable[datetime.datetime]: ...
