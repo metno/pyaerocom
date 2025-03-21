@@ -85,6 +85,8 @@ def coldata_mos(tmp_path_factory) -> Path:
     def dataset(model: str, day: int, start: date, end: date, persistent: bool) -> xr.Dataset:
         if persistent:
             start = start - timedelta(days=1)
+        else:
+            start = start + timedelta(days=day)
 
         hours = (end - start) // timedelta(hours=1) + 1
 
