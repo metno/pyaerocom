@@ -57,12 +57,8 @@ def fairmode_stats(obs_var: str, stats: dict, freq: str) -> dict:
         return {}
 
     # compute only what it makes sense to compute
-    if obs_var == "concno2":
-        if freq != "hourly":
-            return {}
-    else:
-        if freq != "daily":
-            return {}
+    if freq != SPECIES[obs_var]["freq"]:
+        return {}
 
     mean = stats["refdata_mean"]
     obs_std = stats["refdata_std"]
