@@ -25,10 +25,15 @@ class DynamicRecArray:
         considered metadata"""
         return self._array.dtype.names
 
-    def append(self, rec):
+    def append(self, rec: list[tuple] | np.ndarray):
         """append this dataset with a record of the same type
 
-        :param rec: a numpy array of the same datatype
+        Example: append two rows to a three-datatype array
+        ary.append([(0, 1, 3),
+                    (4, 5, 6)])
+
+        :param rec: a numpy array of the same datatype, or a list of tuples with the same number of elements
+
         """
         newlength = self.length + len(rec)
         resize = False
