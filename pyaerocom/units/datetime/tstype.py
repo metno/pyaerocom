@@ -17,6 +17,7 @@ from ._time_config import (
 )
 
 from functools import total_ordering
+from cf_units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -134,8 +135,6 @@ class TsType:
         Be aware that for monthly frequency the number of seconds is not well
         defined!
         """
-        from cf_units import Unit
-
         cf = self.to_si()
         total_secs = 1 / Unit("s").convert(1, cf)
         return total_secs

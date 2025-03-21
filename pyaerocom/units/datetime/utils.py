@@ -273,8 +273,6 @@ def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8
     str
         inferred frequency
     """
-    from pyaerocom import TsType
-
     if not isinstance(time_stamps, pd.DatetimeIndex):
         time_stamps = pd.DatetimeIndex(time_stamps)
     vals = time_stamps.values
