@@ -1,3 +1,7 @@
+# Mypy errors because it doesn't understand the total_ordering
+# decorator used for TsType. This suppresses that error:
+# mypy: disable-error-code=operator
+
 from collections import Counter
 
 from cf_units import Unit
@@ -15,11 +19,17 @@ from ._time_config import (
     min_units,
     hr_units,
     day_units,
+    TS_TYPE_DATETIME_CONV,
 )
 import pandas as pd
 import numpy as np
 from datetime import datetime, date
 from datetime import MINYEAR
+
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def is_year(val) -> bool:
@@ -299,3 +309,14 @@ def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8
 
 def test_cftime_to_datetime64():
     pass
+
+
+def datetime2str(time, ts_type=None):
+    conv = TS_TYPE_DATETIME_CONV[ts_type]
+    if is_year(time):
+        return str(time)
+    try:
+        time = to_pandas_timestamp(time).strftime(conv)
+    except pd.errors.OutOfBoundsDatetime:
+        logger.warning(f"Failed to convert time {time} to string")
+    return time

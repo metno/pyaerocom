@@ -23,11 +23,10 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
+from pyaerocom.units.datetime import cftime_to_datetime64, datetime2str
 from pyaerocom.helpers import (
-    cftime_to_datetime64,
     check_coord_circular,
     copy_coords_cube,
-    datetime2str,
     delete_all_coords_cube,
     extract_latlon_dataarray,
     get_lat_rng_constraint,

@@ -2,8 +2,14 @@
 General helper methods for the pyaerocom library.
 """
 
+# Mypy errors because it doesn't understand the total_ordering
+# decorator used for TsType. This suppresses that error:
+# mypy: disable-error-code=operator
+from __future__ import annotations
+
 import logging
 import re
+from typing import Final, SupportsInt
 
 import numpy as np
 
@@ -24,14 +30,14 @@ logger = logging.getLogger(__name__)
 
 @total_ordering
 class TsType:
-    VALID = TS_TYPES
-    VALID_ITER = VALID[:-2]
-    FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
-    TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
-    TO_NUMPY = TS_TYPE_TO_NUMPY_FREQ
-    TO_SI = TS_TYPE_TO_SI
+    VALID: Final = TS_TYPES
+    VALID_ITER: Final = VALID[:-2]
+    FROM_PANDAS: Final = PANDAS_FREQ_TO_TS_TYPE
+    TO_PANDAS: Final = TS_TYPE_TO_PANDAS_FREQ
+    TO_NUMPY: Final = TS_TYPE_TO_NUMPY_FREQ
+    TO_SI: Final = TS_TYPE_TO_SI
 
-    TS_MAX_VALS = {
+    TS_MAX_VALS: Final = {
         "minutely": 360,  # up to 6hourly
         "hourly": 168,  # up to weekly
         "daily": 180,  # up to 6 monthly
@@ -41,23 +47,23 @@ class TsType:
 
     # "monthly": "days" below is because each month does not have the same number of days
     # netcdf does time calculation for you given starting day and days past (CF convention)
-    TSTR_TO_CF = {"hourly": "hours", "daily": "days", "monthly": "days"}
+    TSTR_TO_CF: Final = {"hourly": "hours", "daily": "days", "monthly": "days"}
 
-    TOL_SECS_PERCENT = 5
+    TOL_SECS_PERCENT: Final = 5
 
     def __init__(self, val):
-        self._mulfac = 1
+        self._mulfac: int = 1
         self._val = None
 
         self.val = val
 
     @property
-    def mulfac(self):
+    def mulfac(self) -> int:
         """Multiplication factor of frequency"""
         return self._mulfac
 
     @mulfac.setter
-    def mulfac(self, value):
+    def mulfac(self, value: SupportsInt):
         try:
             value = int(value)
         except Exception:
@@ -70,19 +76,19 @@ class TsType:
         self._mulfac = value
 
     @property
-    def base(self):
+    def base(self) -> str:
         """Base string (without multiplication factor, cf :attr:`mulfac`)"""
         return self._val
 
     @property
-    def val(self):
+    def val(self) -> str:
         """Value of frequency (string type), e.g. 3daily"""
         if self._mulfac != 1:
             return f"{self._mulfac}{self._val}"
         return self._val
 
     @val.setter
-    def val(self, val):
+    def val(self, val: str):
         if val is None:
             raise TemporalResolutionError(
                 "Invalid input, please provide valid frequency string..."
@@ -110,17 +116,17 @@ class TsType:
         self._mulfac = mulfac
 
     @property
-    def datetime64_str(self):
+    def datetime64_str(self) -> str:
         """Convert ts_type str to datetime64 unit string"""
         return f"datetime64[{self.to_numpy_freq()}]"
 
     @property
-    def timedelta64_str(self):
+    def timedelta64_str(self) -> str:
         """Convert ts_type str to datetime64 unit string"""
         return f"timedelta64[{self.to_numpy_freq()}]"
 
     @property
-    def cf_base_unit(self):
+    def cf_base_unit(self) -> str:
         """Convert ts_type str to CF convention time unit"""
         if self.base not in self.TSTR_TO_CF:
             raise NotImplementedError(f"Cannot convert {self.base} to CF str")
@@ -140,13 +146,13 @@ class TsType:
         return total_secs
 
     @property
-    def tol_secs(self):
+    def tol_secs(self) -> int:
         """Tolerance in seconds for current TsType"""
         total_secs = self.num_secs
         frac = self.TOL_SECS_PERCENT / 100
         return int(np.ceil(frac * total_secs))
 
-    def to_timedelta64(self):
+    def to_timedelta64(self) -> np.timedelta64:
         """
         Convert frequency to timedelta64 object
 
@@ -161,7 +167,7 @@ class TsType:
 
     @property
     def next_higher(self):
-        """Next lower resolution code"""
+        """Next higher resolution code"""
         if self.mulfac > 1:
             return TsType(self._val)
 
@@ -229,7 +235,7 @@ class TsType:
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f"({self.mulfac}{si})"
 
-    def get_min_num_obs(self, to_ts_type: "TsType", min_num_obs: dict) -> int:
+    def get_min_num_obs(self, to_ts_type: TsType, min_num_obs: dict) -> int:
         selfstr = self.val
         if to_ts_type >= self:  # should occur rarely
             if to_ts_type == self:
@@ -387,25 +393,25 @@ class TsType:
             raise TemporalResolutionError(f"Invalid input: {val}, need pandas frequency string")
         return self.FROM_PANDAS[val]
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if isinstance(other, str):
             other = TsType(other)
         return other.val == self.val
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         if isinstance(other, str):
             other = TsType(other)
         # inverted comparison, i.e. if other has less seconds if has higher
         # resolution
         return self.num_secs > other.num_secs
 
-    def __call__(self):
+    def __call__(self) -> str:
         return self.val
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.val)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.val)
 
 
@@ -432,7 +438,7 @@ def sort_ts_types(ts_types: list[str | TsType]) -> list[str]:
     return [str(tstype) for tstype in sorted(ls, reverse=True)]
 
 
-def get_lowest_resolution(ts_type: str | TsType, *ts_types: list[str | TsType]) -> str:
+def get_lowest_resolution(ts_type: str | TsType, *ts_types: str | TsType) -> str:
     """Get the lowest resolution from several ts_type codes
 
     Parameters
@@ -457,7 +463,7 @@ def get_lowest_resolution(ts_type: str | TsType, *ts_types: list[str | TsType]) 
     return sort_ts_types(ls)[-1]
 
 
-def get_highest_resolution(ts_type, *ts_types):
+def get_highest_resolution(ts_type: str | TsType, *ts_types: str | TsType) -> str:
     """Get the highest resolution from several ts_type codes
 
     Parameters

@@ -5,4 +5,6 @@ from .utils import (
     to_datetime64,
     to_pandas_timestamp,
     infer_time_resolution,
+    cftime_to_datetime64,
+    datetime2str,
 )

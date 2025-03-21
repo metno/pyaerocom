@@ -1055,17 +1055,6 @@ def start_stop(start, stop=None, stop_sub_sec=True):
     return (start, stop)
 
 
-def datetime2str(time, ts_type=None):
-    conv = TS_TYPE_DATETIME_CONV[ts_type]
-    if is_year(time):
-        return str(time)
-    try:
-        time = to_pandas_timestamp(time).strftime(conv)
-    except pd.errors.OutOfBoundsDatetime:
-        logger.warning(f"Failed to convert time {time} to string")
-    return time
-
-
 def start_stop_str(start, stop=None, ts_type=None):
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(start) and stop is None:
