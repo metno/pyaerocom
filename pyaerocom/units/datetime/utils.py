@@ -11,7 +11,7 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import TemporalResolutionError
 from . import TsType
 from ..constants import SECONDS_IN_DAY
-from ._time_config import (
+from .time_config import (
     GREGORIAN_BASE,
     TS_TYPE_SECS,
     microsec_units,

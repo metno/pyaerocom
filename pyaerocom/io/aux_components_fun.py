@@ -10,7 +10,7 @@ from pyaerocom.io.aux_read_cubes import (
     _check_same_units,
     add_cubes,
 )
-from pyaerocom.units.molecularmass import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass
 
 logger = logging.getLogger(__name__)
 

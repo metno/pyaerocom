@@ -1,7 +1,7 @@
 import pytest
 
 
-from pyaerocom.units.molecularmass import (
+from pyaerocom.units.molecular_mass import (
     MolecularMass,
     get_molmass,
     _get_species,

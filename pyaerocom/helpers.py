@@ -26,7 +26,7 @@ from pyaerocom.exceptions import (
     ResamplingError,
     VariableDefinitionError,
 )
-from pyaerocom.units.datetime._time_config import (
+from pyaerocom.units.datetime.time_config import (
     PANDAS_RESAMPLE_OFFSETS,
     TS_TYPE_DATETIME_CONV,
     TS_TYPE_TO_PANDAS_FREQ,
