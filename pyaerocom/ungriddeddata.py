@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import fnmatch
 import logging
-import os
 from datetime import datetime
 from typing import Any
 
@@ -1818,71 +1817,6 @@ class UngriddedData(UngriddedDataMetadata):
                     data_other_match.append(data_other[matches[0]])
 
         return (dates, data_this_match, data_other_match)
-
-    def save_as(self, file_name, save_dir):
-        """
-        Save this object to disk
-
-        Note
-        ----
-        So far, only storage as pickled object via
-        `CacheHandlerUngridded` is supported, so input file_name must end
-        with .pkl
-
-        Parameters
-        ----------
-        file_name : str
-            name of output file
-        save_dir : str
-            name of output directory
-
-        Returns
-        -------
-        str
-            file path
-
-        """
-        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-
-        if not os.path.exists(save_dir):
-            raise FileNotFoundError(f"Directory does not exist: {save_dir}")
-        elif not file_name.endswith(".pkl"):
-            raise ValueError("Can only store files as pickle, file_name needs to have format .pkl")
-        ch = CacheHandlerUngridded()
-        return ch.write(self, var_or_file_name=file_name, cache_dir=save_dir)
-
-    @staticmethod
-    def from_cache(data_dir, file_name):
-        """
-        Load pickled instance of `UngriddedData`
-
-        Parameters
-        ----------
-        data_dir : str
-            directory where pickled object is stored
-        file_name : str
-            file name of pickled object (needs to end with pkl)
-
-        Raises
-        ------
-        ValueError
-            if loading failed
-
-        Returns
-        -------
-        UngriddedData
-            loaded UngriddedData object. If this method is called from an
-            instance of `UngriddedData`, this instance remains unchanged.
-            You may merge the returned reloaded instance using
-            :func:`merge`.
-
-        """
-        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-
-        ch = CacheHandlerUngridded()
-        if ch.check_and_load(file_name, cache_dir=data_dir):
-            return ch.loaded_data[file_name]
-        raise ValueError("Failed to load UngriddedData object")
 
     def __iter__(self):
         return self

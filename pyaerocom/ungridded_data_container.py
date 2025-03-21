@@ -1,6 +1,7 @@
 import abc
 import logging
 from collections.abc import Iterator
+import os
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -71,6 +72,12 @@ class UngriddedDataContainer(abc.ABC):
         latest revision (None if no revision is available).
 
         """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def shape(self):
+        """Shape of data array"""
         pass
 
     @property
@@ -813,62 +820,6 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    # def filter_by_meta -- unsure if need to implement?
-    @abc.abstractmethod
-    def save_as(self, file_name, save_dir):
-        """
-        Save this object to disk
-
-        Note
-        ----
-        So far, only storage as pickled object via
-        `CacheHandlerUngridded` is supported, so input file_name must end
-        with .pkl
-
-        Parameters
-        ----------
-        file_name : str
-            name of output file
-        save_dir : str
-            name of output directory
-
-        Returns
-        -------
-        str
-            file path
-
-        """
-        pass
-
-    @staticmethod
-    @abc.abstractmethod
-    def from_cache(data_dir, file_name):
-        """
-        Load pickled instance of `UngriddedData`
-
-        Parameters
-        ----------
-        data_dir : str
-            directory where pickled object is stored
-        file_name : str
-            file name of pickled object (needs to end with pkl)
-
-        Raises
-        ------
-        ValueError
-            if loading failed
-
-        Returns
-        -------
-        UngriddedData
-            loaded UngriddedData object. If this method is called from an
-            instance of `UngriddedData`, this instance remains unchanged.
-            You may merge the returned reloaded instance using
-            :func:`merge`.
-
-        """
-        pass
-
     @abc.abstractmethod
     def copy(self):
         """Make a copy/clone of this object
@@ -1035,3 +986,68 @@ class UngriddedDataContainer(abc.ABC):
             ):  # station data objects contain different data sources
                 return None
         return pref_attr
+
+    @staticmethod
+    def from_cache(data_dir, file_name):
+        """
+        Load pickled instance of `UngriddedData`
+
+        Parameters
+        ----------
+        data_dir : str
+            directory where pickled object is stored
+        file_name : str
+            file name of pickled object (needs to end with pkl)
+
+        Raises
+        ------
+        ValueError
+            if loading failed
+
+        Returns
+        -------
+        UngriddedData
+            loaded UngriddedData object. If this method is called from an
+            instance of `UngriddedData`, this instance remains unchanged.
+            You may merge the returned reloaded instance using
+            :func:`merge`.
+
+        """
+        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+
+        ch = CacheHandlerUngridded()
+        if ch.check_and_load(file_name, cache_dir=data_dir):
+            return ch.loaded_data[file_name]
+        raise ValueError("Failed to load UngriddedData object")
+
+    def save_as(self, file_name, save_dir):
+        """
+        Save this object to disk
+
+        Note
+        ----
+        So far, only storage as pickled object via
+        `CacheHandlerUngridded` is supported, so input file_name must end
+        with .pkl
+
+        Parameters
+        ----------
+        file_name : str
+            name of output file
+        save_dir : str
+            name of output directory
+
+        Returns
+        -------
+        str
+            file path
+
+        """
+        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+
+        if not os.path.exists(save_dir):
+            raise FileNotFoundError(f"Directory does not exist: {save_dir}")
+        elif not file_name.endswith(".pkl"):
+            raise ValueError("Can only store files as pickle, file_name needs to have format .pkl")
+        ch = CacheHandlerUngridded()
+        return ch.write(self, var_or_file_name=file_name, cache_dir=save_dir)

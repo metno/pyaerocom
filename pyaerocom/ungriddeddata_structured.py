@@ -117,6 +117,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @property
     @override
+    def shape(self):
+        return self._dra.data.shape
+
+    @property
+    @override
     def has_flag_data(self):
         return (self._dra.data["flag"] == self._nan_types["flag"]).any()
 
@@ -641,12 +646,3 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             f"Removed {len(meta_no_data)} metadata blocks that have no data assigned"
         )
         return obj
-
-    @override
-    def save_as(self, file_name, save_dir):
-        raise RuntimeError("Not implemented yet")
-
-    @staticmethod
-    @override
-    def from_cache(data_dir, file_name):
-        raise RuntimeError("Not implemented yet")

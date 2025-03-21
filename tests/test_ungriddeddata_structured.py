@@ -1,3 +1,4 @@
+from pathlib import Path
 import string
 
 import numpy as np
@@ -5,6 +6,7 @@ import pytest
 
 from pyaerocom import ungriddeddata
 from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from tests.fixtures.stations import FAKE_STATION_DATA
 
@@ -53,6 +55,13 @@ def test_coordinate_access():
     assert all(c["altitude"] == alts)
 
 
+#
+# TBD: convert these test-parameters for the ebas subset, or wait
+#      make a reader for the aeronetsunv3lev2_subset using ungriddeddata_structured
+#      Since these filter tests are based on metadata, this is not urgent as long as they
+#      exist in test_ungriddeddata.py
+#
+#
 # @pytest.mark.dependency
 # def test_check_set_country(aeronetsunv3lev2_subset):
 #     idx, countries = aeronetsunv3lev2_subset.check_set_country()
@@ -184,13 +193,13 @@ def test_coordinate_access():
 #     assert sorted(sitenames) == stats
 
 
-# def test_cache_reload(aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path):
-#     path = tmp_path / "ungridded_aeronet_subset.pkl"
-#     file = aeronetsunv3lev2_subset.save_as(file_name=path.name, save_dir=path.parent)
-#     assert Path(file) == path
-#     assert path.exists()
-#     data = UngriddedData.from_cache(data_dir=path.parent, file_name=path.name)
-#     assert data.shape == aeronetsunv3lev2_subset.shape
+def test_cache_reload(data_scat_jungfraujoch: UngriddedDataContainer, tmp_path: Path):
+    path = tmp_path / "ungridded_scat_jungfraujoch.pkl"
+    file = data_scat_jungfraujoch.save_as(file_name=path.name, save_dir=path.parent)
+    assert Path(file) == path
+    assert path.exists()
+    data = UngriddedDataContainer.from_cache(data_dir=path.parent, file_name=path.name)
+    assert data.shape == data_scat_jungfraujoch.shape
 
 
 def test_check_unit(data_scat_jungfraujoch):

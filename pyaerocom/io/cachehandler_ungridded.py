@@ -11,9 +11,16 @@ from pathlib import Path
 
 from pyaerocom import const
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 
 logger = logging.getLogger(__name__)
+
+# ensure that all supported classes are in the global scope of this module
+# needed by globals()["UngriddedData"] later in this document
+assert isinstance(UngriddedDataStructured(), UngriddedDataContainer)
+assert isinstance(UngriddedData(), UngriddedDataContainer)
 
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
@@ -36,7 +43,7 @@ class CacheHandlerUngridded:
         :class:`UngriddedData` objects (keys are variable names)
     """
 
-    __version__ = "1.12"
+    __version__ = "1.13"
     #: Cache file header keys that are checked (and required unchanged) when
     #: reading a cache file
     CACHE_HEAD_KEYS = [
@@ -45,6 +52,7 @@ class CacheHandlerUngridded:
         "newest_file_date_in_read_dir",
         "data_revision",
         "reader_version",
+        "ungridded_data_class",
         "ungridded_data_version",
         "cacher_version",
     ]
@@ -143,10 +151,12 @@ class CacheHandlerUngridded:
             raise FileNotFoundError(f"Specified output directory does not exist:{cache_dir}")
         return os.path.join(cache_dir, var_or_file_name)
 
-    def _check_pkl_head_vs_database(self, in_handle):
-        current = self.cache_meta_info()
+    def _check_pkl_head_vs_database(self, head):
+        ungridded_class = globals()[
+            head["ungridded_data_class"]
+        ]  # all classes need to be loaded already
+        current = self._cache_meta_info(ungridded_class)
 
-        head = pickle.load(in_handle)
         if not isinstance(head, dict):
             raise CacheReadError("Invalid cache file")
         pya_version = "pyaerocom_version"
@@ -155,6 +165,7 @@ class CacheHandlerUngridded:
                 raise CacheReadError(f"Invalid cache header key: {k}")
             else:
                 if k == pya_version:
+                    # ignore pya_version
                     continue
                 elif v != current[k]:
                     logger.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
@@ -165,8 +176,14 @@ class CacheHandlerUngridded:
             )
         return True
 
-    def cache_meta_info(self):
-        """Dictionary containing relevant caching meta-info"""
+    def _cache_meta_info(self, data_class):
+        """Dictionary containing relevant caching meta-info
+
+        Parameters
+        ----------
+        data_class : implementation class of UngriddedDataContainer
+
+        """
         try:
             newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getmtime)
             newest_date = os.path.getmtime(newestp)
@@ -190,7 +207,8 @@ class CacheHandlerUngridded:
         current["newest_file_date_in_read_dir"] = newest_date
         current["data_revision"] = rev
         current["reader_version"] = reader_ver
-        current["ungridded_data_version"] = UngriddedData.__version__
+        current["ungridded_data_class"] = data_class.__name__
+        current["ungridded_data_version"] = data_class.__version__
         current["cacher_version"] = self.__version__
         return current
 
@@ -244,13 +262,16 @@ class CacheHandlerUngridded:
         delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
 
         with open(fp, "rb") as in_handle:
+            last_meta = pickle.load(in_handle)
+            if "ungridded_data_class" not in last_meta:
+                # backward compatibility < 0.29
+                last_meta["ungridded_data_class"] = UngriddedData.__name__
+
             if force_use_outdated:
-                last_meta = pickle.load(in_handle)
-                assert len(last_meta) == len(self.CACHE_HEAD_KEYS)
                 ok = True
             else:
                 try:
-                    ok = self._check_pkl_head_vs_database(in_handle)
+                    ok = self._check_pkl_head_vs_database(last_meta)
                 except Exception as e:
                     ok = False
                     delete_existing = True
@@ -273,22 +294,22 @@ class CacheHandlerUngridded:
                 os.remove(fp)
             return False
 
-        if not isinstance(data, UngriddedData):
+        if not isinstance(data, UngriddedDataContainer):
             raise TypeError(
                 f"Unexpected data type stored in cache file, need instance of UngriddedData, "
                 f"got {type(data)}"
             )
 
         self.loaded_data[var_or_file_name] = data
-        logger.info(f"Successfully loaded cache file {fp}")
+        logger.info(f"Successfully loaded cache file {fp} as {data.__class__}")
         return True
 
-    def write(self, data, var_or_file_name=None, cache_dir=None):
+    def write(self, data: UngriddedDataContainer, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
 
         Parameters
         ----------
-        data : UngriddedData
+        data : UngriddedDataContainer
             object containing the data (possibly containing multiple variables)
         var_or_file_name : str, optional
             name of output filename or variable that is supposed to be stored.
@@ -304,22 +325,24 @@ class CacheHandlerUngridded:
         str
             output file path
         """
-        meta = self.cache_meta_info()
+        if not isinstance(data, UngriddedDataContainer):
+            raise TypeError(
+                f"Invalid input, need instance of UngriddedDataContainer, got {type(data)}"
+            )
 
-        if not isinstance(data, UngriddedData):
-            raise TypeError(f"Invalid input, need instance of UngriddedData, got {type(data)}")
+        meta = self._cache_meta_info(data.__class__)
 
         if not var_or_file_name.endswith(".pkl"):
             var_name = var_or_file_name
             if len(data.contains_datasets) > 1:
                 raise CacheWriteError(
-                    f"Input UngriddedData object contains datasets: {data.contains_datasets}. "
+                    f"Input UngriddedDataContainer object contains datasets: {data.contains_datasets}. "
                     f"Can only write single dataset objects"
                 )
             if var_name is None:
                 if len(data.contains_vars) > 1:
                     raise CacheWriteError(
-                        f"Input UngriddedData object for {self.reader.data_id} "
+                        f"Input UngriddedDataContainer object for {self.reader.data_id} "
                         f"contains more than one variable: {data.contains_vars}. "
                         f"Please specify which variable should be cached"
                     )
@@ -328,7 +351,7 @@ class CacheHandlerUngridded:
             elif var_name not in data.contains_vars:
                 raise CacheWriteError(
                     f"Cannot write cache file: variable {var_name} "
-                    f"does not exist in input UngriddedData object"
+                    f"does not exist in input UngriddedDataContainer object"
                 )
 
             if len(data.contains_vars) > 1:
