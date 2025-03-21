@@ -27,9 +27,9 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             files_to_convert = glob.glob(mask)
 
             if not analysis:
-                per_mask = f"{preprocessed_coldata_dir}/CAMS2-83-persistent*/*.nc"
+                per_mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-persistent*/*.nc"
                 per_files = glob.glob(per_mask)
-                files_to_convert += per_files
+                files_to_convert += per_files   
 
         else:
             files_to_convert = []

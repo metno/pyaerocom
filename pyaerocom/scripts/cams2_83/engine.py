@@ -128,7 +128,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     try:
                         subset = [
-                            _select_period_season_coldata(col, per, season, use_meteorological_seasons)
+                            _select_period_season_coldata(col, per, season, use_meteorological_seasons=True)
                             for col in subset_region
                         ]
                     except (DataCoverageError, UnknownRegion) as e:
@@ -147,7 +147,6 @@ class CAMS2_83_Engine(ProcessingEngine):
                             stats_list[key].append(stats[key])
 
                     if use_fairmode and var_name in SPECIES:
-
 
                         fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
@@ -182,6 +181,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
+
             self.exp_output.add_forecast_entry(
                 results[regname],
                 regname,
@@ -193,6 +193,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 ),  # MOS/ENS evaluation special case
                 model_var,
             )
+    
         if use_fairmode and var_name in SPECIES:
             fairmode_engine.save_fairmode_stats(
                 results_fairmode,
@@ -313,7 +314,6 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         results = {}
 
-
         # Resampling of time for all other variables than NO2
         if SPECIES[var_name]["freq"] != "hourly":
             coldata = coldata.resample_time(SPECIES[var_name]["freq"])
@@ -323,15 +323,12 @@ class CAMS2_83_Engine(ProcessingEngine):
         station_mask =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
         assert np.all(persistent_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
 
-
         # Creation of mask of shared timestamps between normal data and peristent data
         time = coldata.time.values
         wanted_time = time - np.timedelta64(24*(forecast_day+1),"h")
         p_time = persistent_coldata.time.values
 
         time_mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
-
-
 
         # Fetching of masked data
         obs_vals = coldata.data.data[0, :, station_mask[2]]
