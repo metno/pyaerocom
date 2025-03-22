@@ -61,3 +61,18 @@ def test_append():
     assert ary.data[0]["int2"] == 1
     assert ary.data[100]["int"] == 99
     assert ary.data[100]["int2"] == 99 * 100
+
+
+def test_append_array():
+    ary = DynamicRecArray(my_dtype, 10)
+    ary.append([(0, 1)])
+    assert len(ary) == 1
+    assert ary.data[0]["int"] == 0
+    assert ary.data[0]["int2"] == 1
+
+    a1 = np.zeros(100) + 1
+    a2 = np.zeros(100) + 2
+    ary.append_array(int=a1, int2=a2)
+    assert len(ary) == 101
+    assert ary.data[100]["int"] == 1
+    assert ary.data[100]["int2"] == 2

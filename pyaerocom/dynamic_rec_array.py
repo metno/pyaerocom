@@ -46,14 +46,19 @@ class DynamicRecArray:
         self.length = newlength
 
     def append_array(self, **kwargs):
+        """append data using a dictionary of np-arrays
+
+        :raises DynamicRecArrayException: if keys are missing, or shapes are not equal
+        """
+        key0 = self.keys()[0]
         for key in self.keys():
             if key not in kwargs:
                 raise DynamicRecArrayException(f"missing key {key} in arguments")
-            if kwargs[key].shape[0] != kwargs["values"].shape[0]:
+            if kwargs[key].shape[0] != kwargs[key0].shape[0]:
                 raise DynamicRecArrayException(
-                    f"array {key} size ({kwargs['values'].shape[0]}) != values size ({kwargs['values'].shape[0]})"
+                    f"array {key} size ({kwargs[key0].shape[0]}) != {key0} size ({kwargs[key0].shape[0]})"
                 )
-        add_len = kwargs["values"].shape[0]
+        add_len = kwargs[key0].shape[0]
         if add_len > 0:
             last_pos = len(self)
             data = np.resize(self.data, last_pos + add_len)
