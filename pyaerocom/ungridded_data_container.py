@@ -1,7 +1,7 @@
 import abc
 import logging
-from collections.abc import Iterator
 import os
+from collections.abc import Iterator
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 class UngriddedDataContainer(abc.ABC):
     """Base-class representing ungridded data like stations data, satellite data sondes"""
 
-    @staticmethod
-    @abc.abstractmethod
+    @classmethod
     def from_station_data(
+        cls,
         stats: StationData | Iterator[StationData],
         add_meta_keys: list[str] | None = None,
     ):
@@ -50,7 +50,11 @@ class UngriddedDataContainer(abc.ABC):
             ungridded data object created from input station data objects
 
         """
-        pass
+        if isinstance(stats, StationData):
+            stats = [stats]
+        data = cls()
+        data.append_station_data(stats, add_meta_keys)
+        return data
 
     @abc.abstractmethod
     def _get_data_revision_helper(self, data_id):
@@ -215,6 +219,38 @@ class UngriddedDataContainer(abc.ABC):
         StationNotFoundError
             if no such station exists in this data object
         """
+
+    @abc.abstractmethod
+    def append_station_data(
+        self,
+        stats: StationData | Iterator[StationData],
+        add_meta_keys: list[str] | None = None,
+    ):
+        """
+        Append StationData(s) to this UngriddedDataContainer
+
+        Parameters
+        ----------
+        stats : iterator or StationData
+            input data object(s)
+        add_meta_keys : list, optional
+            list of metadata keys that are supposed to be imported from the
+            input `StationData` objects, in addition to the default metadata
+            retrieved via :func:`StationData.get_meta`.
+
+        Raises
+        ------
+        ValueError
+            if any of the input data objects is not an instance of
+            :class:`StationData`.
+
+        Returns
+        -------
+        UngriddedDataContainer
+            ungridded data object created from input station data objects
+
+        """
+        pass
 
     @abc.abstractmethod
     def to_station_data(
@@ -849,7 +885,6 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
 
@@ -872,7 +907,17 @@ class UngriddedDataContainer(abc.ABC):
         ValueError
             if input object is not an instance of :class:`UngriddedDataContainer`
         """
-        pass
+        if not isinstance(other, UngriddedDataContainer):
+            raise ValueError(f"merge needs UngriddedDataContainer to merge, got: {type(other)}")
+
+        if new_obj:
+            obj = self.copy()
+        if self == other:
+            return obj
+
+        all_stations = other.to_stationdata_all()
+        obj.from_station_data(all_stations["stats"])
+        return obj
 
     def append(self, other):
         """Append other instance of :class:`UngriddedDataContainer` to this object

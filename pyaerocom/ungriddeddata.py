@@ -1479,6 +1479,9 @@ class UngriddedData(UngriddedDataMetadata):
             )
         return new
 
+    def append_station_data(self, stats, add_meta_keys=None):
+        raise NotImplementedError()
+
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
 
@@ -1502,7 +1505,9 @@ class UngriddedData(UngriddedDataMetadata):
             if input object is not an instance of :class:`UngriddedData`
         """
         if not isinstance(other, UngriddedData):
-            raise ValueError(f"Invalid input, need instance of UngriddedData, got: {type(other)}")
+            raise ValueError(
+                f"Cannot add any UngriddedDataContainer to UngriddedData, got: {type(other)}, please switch order, or implement UngriddedData.append_station_data"
+            )
         if new_obj:
             obj = self.copy()
         else:

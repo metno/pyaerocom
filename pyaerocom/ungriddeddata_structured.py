@@ -111,10 +111,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         new._dra = deepcopy(self._dra)
         return new
 
-    @override
-    def merge(self, other, new_obj=True):
-        raise RuntimeError("Not implemented yet")
-
     @property
     @override
     def shape(self):
@@ -550,36 +546,36 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def all_datapoints_var(self, var_name):
         return self.extract_var(var_name)._dra.data["data"]
 
-    @staticmethod
     @override
-    def from_station_data(
-        stats: StationData | Iterator[StationData],
-        add_meta_keys: list[str] = [],
+    def append_station_data(
+        self, stats: StationData | Iterator[StationData], add_meta_keys: list[str] = []
     ):
         if isinstance(stats, StationData):
             stats = [stats]
-        data = UngriddedDataStructured()
-        for meta_idx, station_data in enumerate(stats):
+        # last meta_idx
+        meta_idx = np.max(self._dra._array["meta_id"])
+        for station_data in stats:
+            meta_idx += 1
             # each file is a metadata-set of its own
-            data.metadata[meta_idx] = {}
-            data.metadata[meta_idx].update(station_data.get_meta(add_none_vals=True))
+            self.metadata[meta_idx] = {}
+            self.metadata[meta_idx].update(station_data.get_meta(add_none_vals=True))
             for key in add_meta_keys:
                 if key in station_data:
-                    data.metadata[meta_idx][key] = station_data[key]
+                    self.metadata[meta_idx][key] = station_data[key]
             contains_vars = list(station_data.var_info)
-            data.metadata[meta_idx]["variables"] = contains_vars
+            self.metadata[meta_idx]["variables"] = contains_vars
 
             for var in contains_vars:
                 values = station_data[var]
-                if var not in data.var_idx:
-                    data.var_idx[var] = len(data.var_idx)
-                var_idx = data.var_idx[var]
-                data.metadata[meta_idx]["var_info"] = {}
-                data.metadata[meta_idx]["var_info"][var] = {}
-                data.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
+                if var not in self.var_idx:
+                    self.var_idx[var] = len(self.var_idx)
+                var_idx = self.var_idx[var]
+                self.metadata[meta_idx]["var_info"] = {}
+                self.metadata[meta_idx]["var_info"][var] = {}
+                self.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
                 for x in ("longitude", "latitude", "altitude"):
-                    if x not in data.metadata[meta_idx]["var_info"][var]:
-                        data.metadata[meta_idx]["var_info"][var][x] = station_data[x]
+                    if x not in self.metadata[meta_idx]["var_info"][var]:
+                        self.metadata[meta_idx]["var_info"][var][x] = station_data[x]
 
                 uds = UngriddedDataStructured(num_points=len(values))
                 v_data = uds._dra._array  # access to raw numpy-array
@@ -596,8 +592,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     nans = ~np.isfinite(flags)
                     v_data["flag"][:] = flags
                     v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
-                data._dra.append(v_data)
-        return data
+                self._dra.append(v_data)
 
     def clear_meta_no_data(self, inplace=True):
         """Remove all metadata blocks that do not have data associated with it
