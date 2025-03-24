@@ -332,12 +332,6 @@ def test_ColocatedData_calc_spatial_statistics_error(
     assert str(e.value).startswith(error)
 
 
-# @pytest.mark.parametrize("coldataset", ["fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"])
-# def test_ColocatedData_plot_scatter(coldata: ColocatedData):
-#    plot = coldata.plot_scatter()
-#    assert isinstance(plot, Axes)
-
-
 def test_meta_access_filename():
     name = f"od550bc_ang4487aer_MOD-AEROCOM-MEDIAN_REF-42AeronET_20000101_20201231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
 
