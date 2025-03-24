@@ -537,7 +537,10 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             common_vars = [var for var in var_names if var in meta["var_info"]]
             if len(common_vars):
                 new.metadata[meta_id] = deepcopy(meta)
-                new.metadata[meta_id]["var_info"] = common_vars
+                new.metadata[meta_id]["var_info"] = {}
+                new.metadata[meta_id]["variables"] = common_vars
+                for var in common_vars:
+                    new.metadata[meta_id]["var_info"][var] = deepcopy(meta["var_info"][var])
         return new
 
     @override
