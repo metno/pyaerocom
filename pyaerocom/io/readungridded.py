@@ -31,7 +31,6 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
 logger = logging.getLogger(__name__)
@@ -455,24 +454,24 @@ class ReadUngridded:
             available as cached objects (not recommended to use but may be
             used if working offline without connection to database)
         filter_post : dict, optional
-            filters applied to `UngriddedData` object AFTER it is read into
-            memory, via :func:`UngriddedData.apply_filters`. This option was
+            filters applied to `UngriddedDataContainer` object AFTER it is read into
+            memory, via :func:`UngriddedDataContainer.apply_filters`. This option was
             introduced in pyaerocom version 0.10.0 and should be used
             preferably over **kwargs. There is a certain flexibility with
             respect to how these filters can be defined, for instance, sub
             dicts for each `data_id`. The most common way would be
             to provide directly the input needed for
-            `UngriddedData.apply_filters`. If you want to read multiple variables
+            `UngriddedDataContainer.apply_filters`. If you want to read multiple variables
             from one or more datasets, and if you want to apply variable
             specific filters, it is recommended to read the data individually
             for each variable and corresponding set of filters and then
-            merge the individual filtered `UngriddedData` objects afterwards,
+            merge the individual filtered `UngriddedDataContainer` objects afterwards,
             e.g. using `data_var1 & data_var2`.
         **kwargs
             Additional input options for reading of data, which are applied
             WHILE the data is read. If any such additional options are
             provided that are applied during the reading, then automatic
-            caching of the output `UngriddedData` object will be deactivated.
+            caching of the output `UngriddedDataContainer` object will be deactivated.
             Thus, it is recommended to handle data filtering via `filter_post`
             argument whenever possible, which will result in better performance
             as the unconstrained original data is read in and cached, and then
@@ -480,7 +479,7 @@ class ReadUngridded:
 
         Returns
         --------
-        UngriddedData
+        UngriddedDataContainer
             data object
         """
         force_caching = False
@@ -551,12 +550,18 @@ class ReadUngridded:
         if len(vars_to_read) == len(vars_available):
             data_out = data_read
         else:
-            data_out = UngriddedData()
+            data_out = None
             for var in vars_available:
                 if var in cache.loaded_data:
-                    data_out.append(cache.loaded_data[var])
+                    if data_out is None:
+                        data_out = cache.loaded_data[var]
+                    else:
+                        data_out.append(cache.loaded_data[var])
             if data_read is not None:
-                data_out.append(data_read)
+                if data_out is None:
+                    data_out = data_read.copy()
+                else:
+                    data_out.append(data_read)
 
         # close the cache-object, keeps otherwise data-references
         cache = None
@@ -599,12 +604,12 @@ class ReadUngridded:
                     if len(vars_available) > 1:
                         raise NotImplementedError(
                             f"Cannot filter different sites for multivariable "
-                            f"UngriddedData objects (i.e. apply filter "
-                            f"ignore_station_names={val} for UngriddedData "
+                            f"UngriddedDataContainer objects (i.e. apply filter "
+                            f"ignore_station_names={val} for UngriddedDataContainer "
                             f"object containing {vars_available}"
                         )
                     else:
-                        # the variable that is available in the UngriddedData
+                        # the variable that is available in the UngriddedDataContainer
                         # object
                         var = vars_available[0]
                         try:
@@ -641,24 +646,24 @@ class ReadUngridded:
             available as cached objects (not recommended to use but may be
             used if working offline without connection to database)
         filter_post : dict, optional
-            filters applied to `UngriddedData` object AFTER it is read into
-            memory, via :func:`UngriddedData.apply_filters`. This option was
+            filters applied to `UngriddedDataContainer` object AFTER it is read into
+            memory, via :func:`UngriddedDataContainer.apply_filters`. This option was
             introduced in pyaerocom version 0.10.0 and should be used
             preferably over **kwargs. There is a certain flexibility with
             respect to how these filters can be defined, for instance, sub
             dicts for each `data_id`. The most common way would be
             to provide directly the input needed for
-            `UngriddedData.apply_filters`. If you want to read multiple variables
+            `UngriddedDataContainer.apply_filters`. If you want to read multiple variables
             from one or more datasets, and if you want to apply variable
             specific filters, it is recommended to read the data individually
             for each variable and corresponding set of filters and then
-            merge the individual filtered `UngriddedData` objects afterwards,
+            merge the individual filtered `UngriddedDataContainer` objects afterwards,
             e.g. using `data_var1 & data_var2`.
         **kwargs
             Additional input options for reading of data, which are applied
             WHILE the data is read. If any such additional options are
             provided that are applied during the reading, then automatic
-            caching of the output `UngriddedData` object will be deactivated.
+            caching of the output `UngriddedDataContainer` object will be deactivated.
             Thus, it is recommended to handle data filtering via `filter_post`
             argument whenever possible, which will result in better performance
             as the unconstrained original data is read in and cached, and then
@@ -666,7 +671,7 @@ class ReadUngridded:
 
         Returns
         --------
-        UngriddedData
+        UngriddedDataContainer
             data object
         """
         aux_info = self.post_compute[data_id]
@@ -719,7 +724,7 @@ class ReadUngridded:
                 var_unit_out=var_unit_out,
                 data_id_out=aux_info["data_id"],
             )
-            loaded.append(UngriddedData.from_station_data(merged_stats))
+            loaded.append(loaded.from_station_data(merged_stats))
         first = loaded[0]
         if len(loaded) == 1:
             return first
@@ -752,24 +757,24 @@ class ReadUngridded:
             available as cached objects (not recommended to use but may be
             used if working offline without connection to database)
         filter_post : dict, optional
-            filters applied to `UngriddedData` object AFTER it is read into
-            memory, via :func:`UngriddedData.apply_filters`. This option was
+            filters applied to `UngriddedDataContainer` object AFTER it is read into
+            memory, via :func:`UngriddedDataContainer.apply_filters`. This option was
             introduced in pyaerocom version 0.10.0 and should be used
             preferably over **kwargs. There is a certain flexibility with
             respect to how these filters can be defined, for instance, sub
             dicts for each `data_id`. The most common way would be
             to provide directly the input needed for
-            `UngriddedData.apply_filters`. If you want to read multiple variables
+            `UngriddedDataContainer.apply_filters`. If you want to read multiple variables
             from one or more datasets, and if you want to apply variable
             specific filters, it is recommended to read the data individually
             for each variable and corresponding set of filters and then
-            merge the individual filtered `UngriddedData` objects afterwards,
+            merge the individual filtered `UngriddedDataContainer` objects afterwards,
             e.g. using `data_var1 & data_var2`.
         **kwargs
             Additional input options for reading of data, which are applied
             WHILE the data is read. If any such additional options are
             provided that are applied during the reading, then automatic
-            caching of the output `UngriddedData` object will be deactivated.
+            caching of the output `UngriddedDataContainer` object will be deactivated.
             Thus, it is recommended to handle data filtering via `filter_post`
             argument whenever possible, which will result in better performance
             as the unconstrained original data is read in and cached, and then
@@ -822,7 +827,7 @@ class ReadUngridded:
                 data = data_to_append
             else:
                 data.append(data_to_append)
-                # TODO: Test this. UngriddedData can contain more than 1 variable
+                # TODO: Test this. UngriddedDataContainer can contain more than 1 variable
                 if getattr(data_to_append, "is_vertical_profile", None):
                     data.is_vertical_profile = data_to_append.is_vertical_profile
 
