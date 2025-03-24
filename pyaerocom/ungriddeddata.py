@@ -370,6 +370,13 @@ class UngriddedData(UngriddedDataMetadata):
             raise ValueError(f"Cannot add data at data index {data_idx}, index already exists")
 
     @property
+    def last_meta_idx(self):
+        """
+        Index of last metadata block
+        """
+        return np.max(list(self.meta_idx))
+
+    @property
     def index(self):
         return self._index
 

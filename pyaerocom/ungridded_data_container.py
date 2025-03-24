@@ -24,7 +24,7 @@ class UngriddedDataContainer(abc.ABC):
     def from_station_data(
         cls,
         stats: StationData | Iterator[StationData],
-        add_meta_keys: list[str] | None = None,
+        add_meta_keys: list[str] = [],
     ):
         """
         Create UngriddedDataContainer from input station data object(s)
@@ -912,11 +912,13 @@ class UngriddedDataContainer(abc.ABC):
 
         if new_obj:
             obj = self.copy()
+        else:
+            obj = self
         if self == other:
             return obj
 
-        all_stations = other.to_stationdata_all()
-        obj.from_station_data(all_stations["stats"])
+        all_stations = other.to_station_data_all()
+        obj.append_station_data(all_stations["stats"])
         return obj
 
     def append(self, other):

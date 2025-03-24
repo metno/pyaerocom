@@ -88,18 +88,15 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         return rev
 
     @property
-    @override
-    def first_meta_idx(self):
-        # First available metadata index
-        return list(self.metadata)[0]
+    def _first_meta_idx(self):
+        """Give the index of the metadata of the first station/meta
 
-    @property
-    @override
-    def last_meta_idx(self):
+        :return: dict
         """
-        Index of last metadata block
-        """
-        return np.max(list(self.meta_idx))
+        # First available metadata index
+        if self.is_empty:
+            raise DataCoverageError("no (meta)-data")
+        return next(iter(self.metadata))
 
     @property
     @override
@@ -446,7 +443,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
 
         """
         # initiate filters that are checked
-        valid_keys = list(self.metadata[self.first_meta_idx])
+        valid_keys = self.metadata[self._first_meta_idx]
         str_f = {}
         list_f = {}
         range_f = {}
@@ -762,7 +759,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
 
         :return: list of metadata values
         """
-        meta = {k: [] for k in self.metadata[self.first_meta_idx]}
+        meta = {k: [] for k in self.metadata[self._first_meta_idx]}
         for meta_item in self.metadata.values():
             for k, v in meta.items():
                 v.append(meta_item[k])

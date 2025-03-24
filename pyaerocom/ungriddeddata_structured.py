@@ -554,6 +554,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             stats = [stats]
         # last meta_idx
         meta_idx = np.max(self._dra._array["meta_id"])
+        if meta_idx == self._nan_types["meta_id"]:
+            meta_idx = -1  # start at 0
         for station_data in stats:
             meta_idx += 1
             # each file is a metadata-set of its own

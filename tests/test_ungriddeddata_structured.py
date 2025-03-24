@@ -16,6 +16,15 @@ def ungridded_empty():
     return UngriddedDataStructured()
 
 
+@pytest.fixture(scope="function")
+def aeronetsunv3lev2_subset_uds(aeronetsunv3lev2_subset):
+    uds = UngriddedDataStructured()
+    # convert ungriddeddata to ungriddeddata_structured by merging
+    uds.merge(aeronetsunv3lev2_subset, new_obj=False)
+    assert not uds.is_empty
+    return uds
+
+
 def test_ungridded_new():
     ud = UngriddedDataStructured(num_points=1000)
     assert ud._dra.capacity == 1000
@@ -55,142 +64,60 @@ def test_coordinate_access():
     assert all(c["altitude"] == alts)
 
 
-#
-# TBD: convert these test-parameters for the ebas subset, or wait
-#      make a reader for the aeronetsunv3lev2_subset using ungriddeddata_structured
-#      Since these filter tests are based on metadata, this is not urgent as long as they
-#      exist in test_ungriddeddata.py
-#
-#
-# @pytest.mark.dependency
-# def test_check_set_country(aeronetsunv3lev2_subset):
-#     idx, countries = aeronetsunv3lev2_subset.check_set_country()
-#     assert len(idx) == len(aeronetsunv3lev2_subset.metadata)
-#     assert len(countries) == len(idx)
-#     assert countries == [
-#         "Italy",
-#         "Japan",
-#         "Mali",
-#         "Brazil",
-#         "American Samoa",
-#         "Fr. S. and Antarctic Lands",
-#         "Republic of Korea",
-#         "France",
-#         "Portugal",
-#         "France",
-#         "Barbados",
-#         "United Kingdom",
-#         "Bolivia",
-#         "United States",
-#         "Fr. Polynesia",
-#         "China",
-#         "Taiwan",
-#         "Algeria",
-#         "Netherlands",
-#         "Greece",
-#         "Belgium",
-#         "Argentina",
-#     ]
-#     idx, countries = aeronetsunv3lev2_subset.check_set_country()
-#     assert idx == []
-#     assert countries == []
-
-
-# @pytest.mark.dependency(depends=["test_check_set_country"])
-# def test_countries_available(aeronetsunv3lev2_subset):
-#     assert aeronetsunv3lev2_subset.countries_available == [
-#         "Algeria",
-#         "American Samoa",
-#         "Argentina",
-#         "Barbados",
-#         "Belgium",
-#         "Bolivia",
-#         "Brazil",
-#         "China",
-#         "Fr. Polynesia",
-#         "Fr. S. and Antarctic Lands",
-#         "France",
-#         "Greece",
-#         "Italy",
-#         "Japan",
-#         "Mali",
-#         "Netherlands",
-#         "Portugal",
-#         "Republic of Korea",
-#         "Taiwan",
-#         "United Kingdom",
-#         "United States",
-#     ]
-
-
-# @pytest.mark.dependency(depends=["test_check_set_country"])
-# @pytest.mark.parametrize(
-#     "region_id,check_mask,check_country_meta,num_meta",
-#     [("Italy", True, True, 1), ("EUROPE", True, True, 7), ("OCN", True, True, 8)],
-# )
-# def test_filter_region(
-#     aeronetsunv3lev2_subset, region_id, check_mask, check_country_meta, num_meta
-# ):
-#     subset = aeronetsunv3lev2_subset.filter_region(
-#         region_id, check_mask=check_mask, check_country_meta=check_country_meta
-#     )
-
-#     assert len(subset.metadata) == num_meta
-
-
 # sites in aeronet data
 
-# ALL_SITES = [
-#     "AAOT",
-#     "ARIAKE_TOWER",
-#     "Agoufou",
-#     "Alta_Floresta",
-#     "American_Samoa",
-#     "Amsterdam_Island",
-#     "Anmyon",
-#     "Avignon",
-#     "Azores",
-#     "BORDEAUX",
-#     "Barbados",
-#     "Blyth_NOAH",
-#     "La_Paz",
-#     "Mauna_Loa",
-#     "Tahiti",
-#     "Taihu",
-#     "Taipei_CWB",
-#     "Tamanrasset_INM",
-#     "The_Hague",
-#     "Thessaloniki",
-#     "Thornton_C-power",
-#     "Trelew",
-# ]
+ALL_SITES = [
+    "AAOT",
+    "ARIAKE_TOWER",
+    "Agoufou",
+    "Alta_Floresta",
+    "American_Samoa",
+    "Amsterdam_Island",
+    "Anmyon",
+    "Avignon",
+    "Azores",
+    "BORDEAUX",
+    "Barbados",
+    "Blyth_NOAH",
+    "La_Paz",
+    "Mauna_Loa",
+    "Tahiti",
+    "Taihu",
+    "Taipei_CWB",
+    "Tamanrasset_INM",
+    "The_Hague",
+    "Thessaloniki",
+    "Thornton_C-power",
+    "Trelew",
+]
 
 
-# @pytest.mark.parametrize(
-#     "args,sitenames",
-#     [
-#         ({"station_name": ["Tr*", "Mauna*"]}, ["Trelew", "Mauna_Loa"]),
-#         (
-#             {"station_name": ["Tr*", "Mauna*"], "negate": "station_name"},
-#             [x for x in ALL_SITES if x not in ["Trelew", "Mauna_Loa"]],
-#         ),
-#         (
-#             {"altitude": [0, 1000], "negate": "altitude"},
-#             ["La_Paz", "Mauna_Loa", "Tamanrasset_INM"],
-#         ),
-#         ({"station_name": "Tr*"}, ["Trelew"]),
-#         (
-#             {"station_name": "Tr*", "negate": "station_name"},
-#             [x for x in ALL_SITES if not x == "Trelew"],
-#         ),
-#     ],
-# )
-# def test_filter_by_meta(aeronetsunv3lev2_subset, args, sitenames):
-#     data = aeronetsunv3lev2_subset
-#     subset = data.filter_by_meta(**args)
-#     sites = [x["station_name"] for x in subset.metadata.values()]
-#     stats = sorted(list(dict.fromkeys(sites)))
-#     assert sorted(sitenames) == stats
+@pytest.mark.parametrize(
+    "args,sitenames",
+    [
+        ({"station_name": ["Tr*", "Mauna*"]}, ["Trelew", "Mauna_Loa"]),
+        (
+            {"station_name": ["Tr*", "Mauna*"], "negate": "station_name"},
+            [x for x in ALL_SITES if x not in ["Trelew", "Mauna_Loa"]],
+        ),
+        (
+            {"altitude": [0, 1000], "negate": "altitude"},
+            ["La_Paz", "Mauna_Loa", "Tamanrasset_INM"],
+        ),
+        ({"station_name": "Tr*"}, ["Trelew"]),
+        (
+            {"station_name": "Tr*", "negate": "station_name"},
+            [x for x in ALL_SITES if not x == "Trelew"],
+        ),
+    ],
+)
+def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
+    data = aeronetsunv3lev2_subset_uds
+    assert isinstance(data, UngriddedDataStructured)
+    subset = data.filter_by_meta(**args)
+    sites = [x["station_name"] for x in subset.metadata.values()]
+    stats = sorted(list(dict.fromkeys(sites)))
+    assert sorted(sitenames) == stats
 
 
 def test_cache_reload(data_scat_jungfraujoch: UngriddedDataContainer, tmp_path: Path):
