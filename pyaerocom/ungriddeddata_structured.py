@@ -119,7 +119,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     @property
     @override
     def has_flag_data(self):
-        return (self._dra.data["flag"] == self._nan_types["flag"]).any()
+        return (self._dra.data["flag"] != self._nan_types["flag"]).any()
 
     @override
     def set_flags_nan(self, inplace=False):
@@ -484,7 +484,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         if high is None:
             high = const.VARS[var_name].maximum
             logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
-        var_idx = new.var_id[var_name]
+        var_idx = new.var_idx[var_name]
         var_mask = new._dra.data["var_id"] == var_idx
 
         all_data = new._dra.data["data"]
@@ -514,33 +514,40 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def extract_vars(self, var_names, check_index=True):
         var_names_unaliased = []
         for var_name in var_names:
-            if var_name not in self.contains_vars:
+            if var_name in self.contains_vars:
+                var_names_unaliased.append(var_name)
+            else:
                 # try alias
                 _var = const.VARS[var_name].var_name_aerocom
                 if _var in self.contains_vars:
                     var_names_unaliased.append(_var)
                 else:
                     raise VarNotAvailableError(f"No such variable {var_name} in data")
+
         var_ids = [self.var_idx[x] for x in var_names_unaliased]
         idx = np.isin(self._dra.data["var_id"], var_ids)
-        new = self.__class___()
+        new = self.__class__()
         new._dra.data = deepcopy(self._dra.data[idx])
         # fix the metadata
         self._copy_metadata_to(new)
         for i, var in enumerate(var_names):
-            new.var_id[var] = var_ids[i]
+            new.var_idx[var] = var_ids[i]
         new.metadata = {}
         for meta_id, meta in self.metadata.items():
             common_vars = [var for var in var_names if var in meta["var_info"]]
             if len(common_vars):
                 new.metadata[meta_id] = deepcopy(meta)
                 new.metadata[meta_id]["var_info"] = common_vars
-        # check_index not needed by this implementation
         return new
 
     @override
     def extract_var(self, var_name, check_index=True):
-        return self.extract_vars([var_name], check_index)
+        new = self.extract_vars([var_name], check_index)
+        new.filter_hist.update(self.filter_hist)
+        new._add_to_filter_history(
+            f"Created {var_name} single var object from multivar UngriddedData instance"
+        )
+        return new
 
     @override
     def all_datapoints_var(self, var_name):
