@@ -7,6 +7,7 @@ from pyaerocom.units.datetime import TsType
 from pyaerocom.variable_helpers import get_variable
 
 from .constants import M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4, HA_TO_SQM
+from .unit import PyaerocomUnit
 
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = "d"
@@ -299,6 +300,20 @@ def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):
     data
         data in new unit
     """
+    try:
+        factor = PyaerocomUnit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
+            1, other=PyaerocomUnit(to_unit, aerocom_var=var_name, ts_type=ts_type)
+        )
+    except ValueError as e:
+        raise UnitConversionError from e
+
+    return data * factor
+    # try:
+    #    dat = PyaerocomUnit(from_unit, aerocom_var = var_name, ts_type=ts_type).convert(data, other=PyaerocomUnit(to_unit, aerocom_var=var_name, ts_type=ts_type))
+    # except ValueError as e:
+    #    raise UnitConversionError from e
+
+    # return dat
     conv_fac = get_unit_conversion_fac(from_unit, to_unit, var_name, ts_type)
     if conv_fac != 1:
         data *= conv_fac

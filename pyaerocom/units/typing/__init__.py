@@ -1,1 +1,1 @@
-from .protocols import UnitProtocol
+from .protocols import UnitLike
