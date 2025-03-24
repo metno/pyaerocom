@@ -26,7 +26,8 @@ from pyaerocom.exceptions import (
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-from pyaerocom.plot.plotscatter import plot_scatter
+
+# from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.stats.stats import calculate_statistics
@@ -1081,76 +1082,77 @@ class ColocatedData(BaseModel):
         stats["num_coords_with_data"] = ncd
         return stats
 
-    def plot_scatter(self, **kwargs):
-        """Create scatter plot of data
-
-        Parameters
-        ----------
-        **kwargs
-            keyword args passed to :func:`pyaerocom.plot.plotscatter.plot_scatter`
-
-        Returns
-        -------
-        Axes
-            matplotlib axes instance
-        """
-        meta = self.metadata
-        try:
-            num_points = self.num_coords_with_data
-        except DataDimensionError:
-            num_points = np.nan
-        try:
-            vars_ = meta["var_name"]
-        except KeyError:
-            vars_ = ["N/D", "N/D"]
-        try:
-            xn, yn = meta["data_source"]
-        except KeyError:
-            xn, yn = "N/D", "N/D"
-
-        if vars_[0] != vars_[1]:
-            var_ref = vars_[0]
-        else:
-            var_ref = None
-        try:
-            tst = meta["ts_type"]
-        except KeyError:
-            tst = "N/D"
-        try:
-            fn = meta["filter_name"]
-        except KeyError:
-            fn = "N/D"
-        try:
-            unit = self.unitstr
-        except KeyError:
-            unit = "N/D"
-        try:
-            start = self.start
-        except AttributeError:
-            start = "N/D"
-
-        try:
-            stop = self.stop
-        except AttributeError:
-            stop = "N/D"
-
-        # ToDo: include option to use area weighted stats in plotting
-        # routine...
-        return plot_scatter(
-            x_vals=self.data.values[0].flatten(),
-            y_vals=self.data.values[1].flatten(),
-            var_name=vars_[1],
-            var_name_ref=var_ref,
-            x_name=xn,
-            y_name=yn,
-            start=start,
-            stop=stop,
-            unit=unit,
-            ts_type=tst,
-            stations_ok=num_points,
-            filter_name=fn,
-            **kwargs,
-        )
+    #
+    # def plot_scatter(self, **kwargs):
+    #    """Create scatter plot of data
+    #
+    #    Parameters
+    #    ----------
+    #    **kwargs
+    #        keyword args passed to :func:`pyaerocom.plot.plotscatter.plot_scatter`
+    #
+    #    Returns
+    #    -------
+    #    Axes
+    #        matplotlib axes instance
+    #    """
+    #    meta = self.metadata
+    #    try:
+    #        num_points = self.num_coords_with_data
+    #    except DataDimensionError:
+    #        num_points = np.nan
+    #    try:
+    #        vars_ = meta["var_name"]
+    #    except KeyError:
+    #        vars_ = ["N/D", "N/D"]
+    #    try:
+    #        xn, yn = meta["data_source"]
+    #    except KeyError:
+    #        xn, yn = "N/D", "N/D"
+    #
+    #    if vars_[0] != vars_[1]:
+    #        var_ref = vars_[0]
+    #    else:
+    #        var_ref = None
+    #    try:
+    #        tst = meta["ts_type"]
+    #    except KeyError:
+    #        tst = "N/D"
+    #    try:
+    #        fn = meta["filter_name"]
+    #    except KeyError:
+    #        fn = "N/D"
+    #    try:
+    #        unit = self.unitstr
+    #    except KeyError:
+    #        unit = "N/D"
+    #    try:
+    #        start = self.start
+    #    except AttributeError:
+    #        start = "N/D"
+    #
+    #    try:
+    #        stop = self.stop
+    #    except AttributeError:
+    #        stop = "N/D"
+    #
+    #    # ToDo: include option to use area weighted stats in plotting
+    #    # routine...
+    #    return plot_scatter(
+    #        x_vals=self.data.values[0].flatten(),
+    #        y_vals=self.data.values[1].flatten(),
+    #        var_name=vars_[1],
+    #        var_name_ref=var_ref,
+    #        x_name=xn,
+    #        y_name=yn,
+    #        start=start,
+    #        stop=stop,
+    #        unit=unit,
+    #        ts_type=tst,
+    #        stations_ok=num_points,
+    #        filter_name=fn,
+    #        **kwargs,
+    #    )
 
     def rename_variable(self, var_name, new_var_name, data_source, inplace=True):
         """Rename a variable in this object
