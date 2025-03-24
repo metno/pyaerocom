@@ -31,6 +31,7 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from pyaerocom.variable import get_aliases
 
 logger = logging.getLogger(__name__)
@@ -724,7 +725,7 @@ class ReadUngridded:
                 var_unit_out=var_unit_out,
                 data_id_out=aux_info["data_id"],
             )
-            loaded.append(loaded.from_station_data(merged_stats))
+            loaded.append(UngriddedDataStructured.from_station_data(merged_stats))
         first = loaded[0]
         if len(loaded) == 1:
             return first

@@ -152,10 +152,7 @@ class CacheHandlerUngridded:
         return os.path.join(cache_dir, var_or_file_name)
 
     def _check_pkl_head_vs_database(self, head):
-        ungridded_class = globals()[
-            head["ungridded_data_class"]
-        ]  # all classes need to be loaded already
-        current = self._cache_meta_info(ungridded_class)
+        current = self._cache_meta_info(head["ungridded_data_class"])
 
         if not isinstance(head, dict):
             raise CacheReadError("Invalid cache file")
@@ -176,7 +173,7 @@ class CacheHandlerUngridded:
             )
         return True
 
-    def _cache_meta_info(self, data_class):
+    def _cache_meta_info(self, data_classname):
         """Dictionary containing relevant caching meta-info
 
         Parameters
@@ -184,6 +181,7 @@ class CacheHandlerUngridded:
         data_class : implementation class of UngriddedDataContainer
 
         """
+        dataclass = globals()[data_classname]  # all classes need to be loaded already
         try:
             newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getmtime)
             newest_date = os.path.getmtime(newestp)
@@ -207,8 +205,8 @@ class CacheHandlerUngridded:
         current["newest_file_date_in_read_dir"] = newest_date
         current["data_revision"] = rev
         current["reader_version"] = reader_ver
-        current["ungridded_data_class"] = data_class.__name__
-        current["ungridded_data_version"] = data_class.__version__
+        current["ungridded_data_class"] = data_classname
+        current["ungridded_data_version"] = dataclass.__version__
         current["cacher_version"] = self.__version__
         return current
 
@@ -301,7 +299,7 @@ class CacheHandlerUngridded:
             )
 
         self.loaded_data[var_or_file_name] = data
-        logger.info(f"Successfully loaded cache file {fp} as {data.__class__}")
+        logger.info(f"Successfully loaded cache file {fp} as {type(data).__name__}")
         return True
 
     def write(self, data: UngriddedDataContainer, var_or_file_name=None, cache_dir=None):
@@ -330,7 +328,7 @@ class CacheHandlerUngridded:
                 f"Invalid input, need instance of UngriddedDataContainer, got {type(data)}"
             )
 
-        meta = self._cache_meta_info(data.__class__)
+        meta = self._cache_meta_info(type(data).__name__)
 
         if not var_or_file_name.endswith(".pkl"):
             var_name = var_or_file_name

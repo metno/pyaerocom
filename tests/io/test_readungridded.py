@@ -102,7 +102,7 @@ def test_ReadUngridded_read_error():
             filter_post=dict(altitude=[1000, 10000], ignore_station_names=dict(od550aer="La_Paz")),
         )
     assert str(e.value).startswith(
-        "Cannot filter different sites for multivariable UngriddedData objects"
+        "Cannot filter different sites for multivariable UngriddedDataContainer objects"
     )
 
 

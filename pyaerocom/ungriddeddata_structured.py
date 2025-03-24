@@ -568,7 +568,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             self.metadata[meta_idx]["variables"] = contains_vars
 
             for var in contains_vars:
-                values = station_data[var]
+                vardata = station_data[var]
+                if isinstance(vardata, pd.Series):
+                    times = vardata.index
+                    values = vardata.values
+                else:
+                    times = station_data["dtime"]
+                    values = vardata
+                    if not len(times) == len(values):
+                        raise ValueError
                 if var not in self.var_idx:
                     self.var_idx[var] = len(self.var_idx)
                 var_idx = self.var_idx[var]
@@ -582,9 +590,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 uds = UngriddedDataStructured(num_points=len(values))
                 v_data = uds._dra._array  # access to raw numpy-array
                 v_data["meta_id"][:] = meta_idx
-                v_data["data"] = values
                 v_data["var_id"][:] = var_idx
-                v_data["start_time"] = station_data["dtime"]
+                v_data["data"] = values
+                v_data["start_time"] = times
                 # v_data["end_time"] not used
                 # v_data["dataaltitude"] not used
                 if var in station_data.data_err:
