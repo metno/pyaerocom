@@ -20,3 +20,29 @@ def test_molecular_mass_initialization(
 
     assert mass.label == exp_label
     assert mass.mass == exp_mass
+
+
+def test_molecular_mass_error1():
+    with pytest.raises(ValueError):
+        MolecularMass("C6H12O6")
+
+
+def test_molecular_mass_error2():
+    with pytest.raises(ValueError):
+        MolecularMass("Ca(OH)2")
+
+
+@pytest.mark.parametrize(
+    "val,label,exp_repr,exp_str",
+    (
+        ("H2O", None, "MolecularMass('H2O')", "H2O"),
+        (1, None, "MolecularMass('1.0000 u')", "1.0000 u"),
+        (1, "test", "MolecularMass('test')", "test"),
+    ),
+)
+def test_molecular_mass___repr___and___str__(
+    val: str | float, label: str | None, exp_repr: str, exp_str: str
+):
+    mass = MolecularMass(val, label=label)
+    assert repr(mass) == exp_repr
+    assert str(mass) == exp_str

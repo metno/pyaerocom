@@ -5,7 +5,17 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-_ELEMENT_MASS = {"H": 1.0079, "Be": 9.0122, "C": 12.0107, "N": 14.0067, "O": 15.9994, "S": 32.065}
+from numbers import Number
+
+_ELEMENT_MASS = {
+    "H": 1.0079,
+    "Be": 9.0122,
+    "C": 12.0107,
+    "N": 14.0067,
+    "O": 15.9994,
+    "Ca": 40.078,
+    "S": 32.065,
+}
 
 
 class MolecularMass:
@@ -13,8 +23,8 @@ class MolecularMass:
     and permits arithmetic calculations on them.
     """
 
-    def __init__(self, val: str | float, *, label: str | None = None):
-        if isinstance(val, float):
+    def __init__(self, val: str | Number, *, label: str | None = None):
+        if isinstance(val, float | int):
             self._mass = val
         else:
             self._mass = self._mass_from_chemical_formula(val)
@@ -39,6 +49,8 @@ class MolecularMass:
         # Limitations
         # Does not support brackets (eg. Ca(OH)2).
         # Does not support multidigit numbers (eg. C6H12O6).
+        if "(" in val or ")" in val:
+            raise ValueError("Brackets are not currently supported.")
         mass: float = 0
         i = 0
         while i < len(val):
@@ -57,7 +69,10 @@ class MolecularMass:
             else:
                 count = 1
 
-            mass += count * _ELEMENT_MASS[element]
+            try:
+                mass += count * _ELEMENT_MASS[element]
+            except KeyError as e:
+                raise ValueError(f"Unable to parse chemical formula '{val}'") from e
 
             i += offset + 1
 
@@ -94,3 +109,15 @@ class MolecularMass:
             return self.mass / other.mass
 
         return self.mass / other
+
+    @override
+    def __float__(self) -> float:
+        return float(self.mass)
+
+    @override
+    def __repr__(self) -> str:
+        return f"MolecularMass('{self.label}')"
+
+    @override
+    def __str__(self) -> str:
+        return self.label
