@@ -1,15 +1,16 @@
 import logging
+import multiprocessing
+import os
 from time import time
 
 from cf_units import Unit
 from numpy.typing import ArrayLike
-import multiprocessing
-import os
 
 from pyaerocom import ColocatedData, TsType, const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
+    _calculte_fairmode,
     _init_data_default_frequencies,
     _init_meta_glob,
     _process_heatmap_data,
@@ -22,13 +23,10 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     init_regions_web,
     process_profile_data_for_regions,
     process_profile_data_for_stations,
-    _calculte_fairmode,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.json_utils import round_floats
-from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-
 from pyaerocom.aeroval.fairmode_engine import FairmodeEngine
+from pyaerocom.aeroval.json_utils import round_floats
 
 logger = logging.getLogger(__name__)
 
@@ -220,7 +218,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                         seasons=seasons,
                         regions_how=regions_how,
                         regs=regs,
-                        )
+                    )
                 logger.info("Processing statistics timeseries for all regions")
 
                 self._process_stats_timeseries_for_all_regions(
@@ -250,7 +248,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                     use_meteorological_seasons=use_meteorological_seasons,
                 )
 
-               
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
                 self._process_diurnal_profiles(
@@ -415,7 +412,15 @@ class ColdataToJsonEngine(ProcessingEngine):
         with multiprocessing.Pool(processes=int(num_workers)) as pool:
             results = pool.starmap(_process_statistics_timeseries_single_region, args)
 
-        for stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var in results:
+        for (
+            stats_ts,
+            region,
+            obs_name,
+            var_name_web,
+            vert_code,
+            model_name,
+            model_var,
+        ) in results:
             self.exp_output.add_heatmap_timeseries_entry(
                 stats_ts,
                 region,
@@ -528,7 +533,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 self.exp_output.write_station_data(ts_data_weekly_reg)
 
-
     def _process_fairmode(
         self,
         data: dict[str, ColocatedData] | None = None,
@@ -544,21 +548,32 @@ class ColdataToJsonEngine(ProcessingEngine):
         regions_how: str = "default",
         regs: dict | None = None,
         use_meteorological_seasons: bool = False,
-     ):
+    ):
         fairmode_engine = FairmodeEngine(self.cfg)
         species = fairmode_engine.species
         freq = species[obs_var]["freq"]
         if freq not in data:
-            
-            if "hourly" in data: # Most species use daily freq, but if daily is not present, but hourly is, then hourly can be resampled
+            if (
+                "hourly" in data
+            ):  # Most species use daily freq, but if daily is not present, but hourly is, then hourly can be resampled
                 fm_data = data["hourly"].resample_time(freq)
             else:
-                logger.warning(f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping...")
+                logger.warning(
+                    f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping..."
+                )
         else:
             fm_data = data[freq]
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-     
-   
-        stats = _calculte_fairmode(fm_data, fairmode_engine, map_meta, obs_var, periods, seasons, use_meteorological_seasons)
-        fairmode_engine.save_fairmode_stats(stats, obs_name, var_name_web, vert_code, model_name, model_var)
+        stats = _calculte_fairmode(
+            fm_data,
+            fairmode_engine,
+            map_meta,
+            obs_var,
+            periods,
+            seasons,
+            use_meteorological_seasons,
+        )
+        fairmode_engine.save_fairmode_stats(
+            stats, obs_name, var_name_web, vert_code, model_name, model_var
+        )
