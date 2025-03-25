@@ -545,15 +545,18 @@ class ColdataToJsonEngine(ProcessingEngine):
         regs: dict | None = None,
         use_meteorological_seasons: bool = False,
      ):
-        (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
-
         fairmode_engine = FairmodeEngine(self.cfg)
         species = fairmode_engine.species
         freq = species[obs_var]["freq"]
-        try:
-            fm_data = data[freq]
-        except:
-            raise ValueError(f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}")
+        
+        if freq not in data:
+            logger.warning(f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping...")
+        
+        (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
+
+     
+        fm_data = data[freq]
+   
         stats = _calculte_fairmode(fm_data, fairmode_engine, map_meta, obs_var, periods, seasons, use_meteorological_seasons)
         
         fairmode_engine.save_fairmode_stats(stats, obs_name, var_name_web, vert_code, model_name, model_var)
