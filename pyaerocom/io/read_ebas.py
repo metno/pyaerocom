@@ -31,13 +31,13 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
 )
+from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
     EbasFileError,
     MetaDataError,
     NotInFileError,
     TemporalResolutionError,
     TemporalSamplingError,
-    UnitConversionError,
 )
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile

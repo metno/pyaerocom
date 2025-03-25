@@ -8,10 +8,10 @@ import cf_units
 import numpy as np
 import pandas as pd
 
-from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.units.datetime import TsType
-from pyaerocom.units.datetime._time_config import SI_TO_TS_TYPE
-from pyaerocom.units.typing import UnitLike
+from .exceptions import UnitConversionError
+from .datetime import TsType
+from .datetime._time_config import SI_TO_TS_TYPE
+from .typing import UnitLike
 from pyaerocom.variable_helpers import get_variable
 
 from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4

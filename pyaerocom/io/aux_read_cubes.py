@@ -84,7 +84,7 @@ def _check_same_units(cube1, cube2):
         cube2.convert_units(u1)
         return (cube1, cube2)
     except Exception:
-        from pyaerocom.exceptions import UnitConversionError
+        from pyaerocom.units import UnitConversionError
 
         raise UnitConversionError("Failed to harmonise units")
 

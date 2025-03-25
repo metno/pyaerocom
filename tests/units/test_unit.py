@@ -34,5 +34,5 @@ def test_PyaerocomUnit_custom_scaling(
     ),
 )
 def test_PyaerocomUnit_implicit_frequency(unit: str, tstype: str | None, output_cf_unit: str):
-    u = PyaerocomUnit(unit, ts_type=tstype)
+    u = PyaerocomUnit(unit, aerocom_var="depdust", ts_type=tstype)
     assert str(u) == output_cf_unit
