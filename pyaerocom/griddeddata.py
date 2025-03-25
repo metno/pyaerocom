@@ -43,7 +43,7 @@ from pyaerocom.mathutils import estimate_value_range, exponent
 from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.units.datetime._time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
+from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import UALIASES, get_unit_conversion_fac

@@ -1,4 +1,4 @@
-from .molecularmass import MolecularMass
+from .molecular_mass import MolecularMass
 
 # Definitions of various custom constants and conversion factors.
 

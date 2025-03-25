@@ -13,7 +13,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
-from pyaerocom.units.datetime._time_config import TS_TYPES
+from pyaerocom.units.datetime.time_config import TS_TYPES
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
