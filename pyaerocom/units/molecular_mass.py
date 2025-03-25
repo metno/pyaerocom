@@ -84,11 +84,7 @@ class MolecularMass:
     and permits arithmetic calculations on them.
     """
 
-<<<<<<< HEAD:pyaerocom/units/molecular_mass.py
-    def __init__(self, val: str | float | int, *, label: str | None = None):
-=======
     def __init__(self, val: str | int | float, *, label: str | None = None):
->>>>>>> 658e22fc (mypy):pyaerocom/units/molecularmass.py
         if isinstance(val, float | int):
             self._mass = float(val)
         else:

@@ -10,7 +10,7 @@ import pandas as pd
 
 from .exceptions import UnitConversionError
 from .datetime import TsType
-from .datetime._time_config import SI_TO_TS_TYPE
+from .datetime.time_config import SI_TO_TS_TYPE
 from .typing import UnitLike
 from pyaerocom.variable_helpers import get_variable
 
