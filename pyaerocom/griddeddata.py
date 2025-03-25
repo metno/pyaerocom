@@ -1625,7 +1625,6 @@ class GriddedData:
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
-        # from pyaerocom.tstype import TsType
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
 
