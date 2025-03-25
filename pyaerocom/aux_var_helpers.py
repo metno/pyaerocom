@@ -761,7 +761,7 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
 
     """
     if mmol_air is None:
-        from pyaerocom.molmasses import get_molmass
+        from pyaerocom.units.molecularmass import get_molmass
 
         mmol_air = get_molmass("air_dry")
 
@@ -809,7 +809,7 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
     """
     if mmol_air is None:
-        from pyaerocom.molmasses import get_molmass
+        from pyaerocom.units.molecularmass import get_molmass
 
         mmol_air = get_molmass("air_dry")
 

@@ -2,7 +2,7 @@ import xarray as xr
 from geonum import atmosphere as atm
 
 from pyaerocom.aux_var_helpers import concx_to_vmrx
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.units.molecularmass import get_molmass
 
 
 def conc_to_vmr(da: xr.DataArray, *, vmr: str, units: str = "ppb") -> xr.DataArray:

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 
 if sys.version_info >= (3, 12):
@@ -16,6 +17,68 @@ _ELEMENT_MASS = {
     "Ca": 40.078,
     "S": 32.065,
 }
+
+_VAR_PREFIXES = [
+    # These are checked in the order written, so should be ordered by most specific to least specific (eg. concN before conc).
+    "vmr",
+    "mmr",
+    "concNt",
+    "concN",
+    "concC",
+    "conc",
+    "sconc",
+    "wet",
+    "dry",
+    "proxydry",
+    "proxywet",
+    "dep",
+]
+
+_MOLMASSES = {
+    # Override molecular masses used for species that do not constitute molecular
+    # formulas with only single letter elements.
+    "air_dry": 28.9647,
+    "isop": 68.12,
+    "glyoxal": 58.036,
+    "glyox": 58.036,
+}
+
+
+class UnkownSpeciesError(ValueError):
+    pass
+
+
+def _get_species(aerocom_var: str) -> str:
+    """
+    Get species name from variable name
+
+    Parameters
+    ----------
+    var_name : str
+        pyaerocom variable name (cf. variables.ini)
+
+    Raises
+    ------
+    UnkownSpeciesError
+        if species cannot be inferred
+
+    Returns
+    -------
+    str
+        name of species
+
+    """
+    if aerocom_var in _MOLMASSES:
+        return aerocom_var
+    for prefix in _VAR_PREFIXES:
+        if aerocom_var.startswith(prefix):
+            species = aerocom_var.split(prefix)[-1]
+            # if species in _MOLMASSES:
+            return species
+
+    raise UnkownSpeciesError(
+        f"Could not infer atom / molecule/ species from var_name {aerocom_var}"
+    )
 
 
 class MolecularMass:
@@ -121,3 +184,60 @@ class MolecularMass:
     @override
     def __str__(self) -> str:
         return self.label
+
+    @staticmethod
+    def from_aerocom_var(aerocom_var: str) -> MolecularMass:
+        species = _get_species(aerocom_var)
+        if species in _MOLMASSES:
+            return MolecularMass(_MOLMASSES[species], label=species)
+        return MolecularMass(species.upper())
+
+
+def get_molmass(aerocom_varname: str) -> float:
+    """
+    Get molar mass for input variable
+
+    Parameters
+    ----------
+    var_name : str
+        pyaerocom variable name (cf. variables.ini) or name of species
+
+    Returns
+    -------
+    float
+        molar mass of species in units of g/mol
+
+    Note:
+    Will break with molecular formulas that contain 2-letter elements (eg. Ca)
+    since this relies on upper case conversion to make it understandable for
+    MolecularMass.__init__(). For now such species should be defined manually
+    in the override dict _MOLMASSES.
+    """
+    try:
+        mass = MolecularMass.from_aerocom_var(aerocom_varname).mass
+    except UnkownSpeciesError:
+        mass = MolecularMass(aerocom_varname.upper()).mass
+
+    return mass
+
+
+def get_mmr_to_vmr_fac(aerocom_varname: str) -> float:
+    """
+    Get conversion factor for MMR -> VMR conversion for input variable
+
+    Note
+    ----
+    Assumes dry air molar mass
+
+    Parameters
+    ----------
+    var_name : str
+        Name of variable to be converted
+
+    Returns
+    -------
+    float
+        multiplication factor to convert MMR -> VMR
+
+    """
+    return get_molmass("air_dry") / get_molmass(aerocom_varname)
