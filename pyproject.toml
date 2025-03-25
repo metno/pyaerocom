@@ -74,7 +74,7 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
 ]
-test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging"]
+test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging", "pytest-xdist"]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
@@ -212,7 +212,7 @@ commands_pre =
     python --version
     python -m pip freeze --all
 commands =
-    python -m pytest . -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest . -n auto -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
