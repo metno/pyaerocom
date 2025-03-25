@@ -162,7 +162,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         crms = self._crms(modstd, obsstd, R)
         mqi = self._mqi(rms, rmsu, beta=1)
         mb = self._mb(bias, rmsu, beta=1)
-  
+
         # assert np.some(np.isclose(
         #     rmsu * mqi,
         #     np.sqrt((bias) ** 2 + (modstd - obsstd) ** 2 + (2 * obsstd * modstd * (1 - R))),
