@@ -11,8 +11,7 @@ from pyaerocom.io.mscw_ctm.additional_variables import (
     update_EC_units,
 )
 from tests.fixtures.mscw_ctm import create_fake_MSCWCtm_data
-
-M_N, M_O, M_H = 14.0067, 15.9994, 1.0079
+from pyaerocom.units.constants import M_N, M_O, M_H
 
 
 def test_calc_concNhno3():
