@@ -78,7 +78,7 @@ def test_get_species(var_name: str, species: str):
     [
         ("air_dry", 28.9647),
         ("concno2", 46.0055),
-        # ("sconcso2", 64.066),
+        ("sconcso2", 64.0638),
         ("vmro3", 47.9982),
         ("mmro3", 47.9982),
         ("wetso4", 96.0626),

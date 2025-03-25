@@ -20,11 +20,11 @@ _VAR_PREFIXES = [
     # These are checked in the order written, so should be ordered by most specific to least specific (eg. concN before conc).
     "vmr",
     "mmr",
+    "sconc",
     "concNt",
     "concN",
     "concC",
     "conc",
-    "sconc",
     "wet",
     "dry",
     "proxydry",
