@@ -228,10 +228,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     if (calendar == "proleptic_gregorian" and basedate.year >= MINYEAR) or (
         calendar in ["gregorian", "standard"] and basedate > GREGORIAN_BASE
     ):
-        # NOTE: changed on 9 July 2018 by jgliss due to error (kernel died)
-        # after update of dependencies (cf_units). Attribute name does not
-        # work anymore...
-        cfu_str = cfunit.origin  # cfunit.name
+        cfu_str = cfunit.origin
 
         res = cfu_str.split()[0].lower()
         if res in microsec_units:
