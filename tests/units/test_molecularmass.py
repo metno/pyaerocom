@@ -15,7 +15,7 @@ from pyaerocom.units.molecularmass import (
         ("Be", None, 9.0122, "Be"),
         ("O", None, 15.9994, "O"),
         ("N", None, 14.0067, "N"),
-        ("H2O", None, 18.0152, "H2O"),
+        ("H2O", None, 18.01528, "H2O"),
     ),
 )
 def test_molecular_mass_initialization(
@@ -82,8 +82,8 @@ def test_get_species(var_name: str, species: str):
         ("vmro3", 47.9982),
         ("mmro3", 47.9982),
         ("wetso4", 96.0626),
-        ("concNnh4", 18.0383),
-        ("concNnh3", 17.0304),
+        ("concNnh4", 18.03846),
+        ("concNnh3", 17.03052),
         ("concNtno3", 62.0049),
         ("proxydryno2", 46.0055),
     ],

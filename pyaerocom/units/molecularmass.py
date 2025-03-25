@@ -9,7 +9,7 @@ else:
 from numbers import Number
 
 _ELEMENT_MASS = {
-    "H": 1.0079,
+    "H": 1.00794,
     "Be": 9.0122,
     "C": 12.0107,
     "N": 14.0067,
