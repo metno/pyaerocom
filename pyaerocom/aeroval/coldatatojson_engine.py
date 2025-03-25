@@ -22,9 +22,13 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     init_regions_web,
     process_profile_data_for_regions,
     process_profile_data_for_stations,
+    _calculte_fairmode,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import round_floats
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
+
+from pyaerocom.aeroval.fairmode_engine import FairmodeEngine
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +205,22 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
             if not diurnal_only:
+                if use_fairmode:
+                    logger.info("Processing Fairmode statistics")
+                    self._process_fairmode(
+                        data=data,
+                        obs_name=obs_name,
+                        obs_var=obs_var,
+                        var_name_web=var_name_web,
+                        vert_code=vert_code,
+                        model_name=model_name,
+                        model_var=model_var,
+                        meta_glob=meta_glob,
+                        periods=periods,
+                        seasons=seasons,
+                        regions_how=regions_how,
+                        regs=regs,
+                        )
                 logger.info("Processing statistics timeseries for all regions")
 
                 self._process_stats_timeseries_for_all_regions(
@@ -229,6 +249,8 @@ class ColdataToJsonEngine(ProcessingEngine):
                     avg_over_trends=avg_over_trends,
                     use_meteorological_seasons=use_meteorological_seasons,
                 )
+
+               
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
                 self._process_diurnal_profiles(
@@ -505,3 +527,33 @@ class ColdataToJsonEngine(ProcessingEngine):
         if ts_objs_weekly_reg is not None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 self.exp_output.write_station_data(ts_data_weekly_reg)
+
+
+    def _process_fairmode(
+        self,
+        data: dict[str, ColocatedData] | None = None,
+        obs_name: str | None = None,
+        obs_var: str = None,
+        var_name_web: str | None = None,
+        vert_code: str | None = None,
+        model_name: str | None = None,
+        model_var: str | None = None,
+        meta_glob: dict | None = None,
+        periods: tuple[str, ...] | None = None,
+        seasons: tuple[str, ...] | None = None,
+        regions_how: str = "default",
+        regs: dict | None = None,
+        use_meteorological_seasons: bool = False,
+     ):
+        (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
+
+        fairmode_engine = FairmodeEngine(self.cfg)
+        species = fairmode_engine.species
+        freq = species[obs_var]["freq"]
+        try:
+            fm_data = data[freq]
+        except:
+            raise ValueError(f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}")
+        stats = _calculte_fairmode(fm_data, fairmode_engine, map_meta, obs_var, periods, seasons, use_meteorological_seasons)
+        
+        fairmode_engine.save_fairmode_stats(stats, obs_name, var_name_web, vert_code, model_name, model_var)

@@ -38,6 +38,9 @@ from pyaerocom.trends_helpers import (
 )
 from pyaerocom.tstype import TsType
 
+
+#from pyaerocom.aeroval.fairmode_engine import FairmodeEngine
+
 logger = logging.getLogger(__name__)
 
 
@@ -1783,3 +1786,41 @@ def _process_statistics_timeseries_single_region(
 
     region = regnames[reg]
     return (stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var)
+
+
+def _calculte_fairmode(
+    coldata: ColocatedData,
+    fairmode_engine,#: FairmodeEngine,
+    map_meta: list[dict],
+    obs_var: str = None,
+    periods: tuple[str, ...] | None = None,
+    seasons: tuple[str, ...] | None = None,
+    use_meteorological_seasons: bool = False,
+):  
+    results = {"ALL": {}}
+    for per in periods:
+        for season in seasons:
+            try:
+                subset = _select_period_season_coldata(
+                    coldata, per, season, use_meteorological_seasons
+                )
+                jsdate = subset.data.jsdate.values.tolist()
+            except (DataCoverageError, TemporalResolutionError):
+                use_dummy = True
+
+            perstr = f"{per}-{season}"
+            fm_stats = fairmode_engine.fairmode_statistics(subset, obs_var)
+            for i, station in enumerate(map_meta):
+                station_name = station["station_name"]
+                region = station["region"][0]
+                if region not in results:
+                    results[region] = {}
+                
+                if perstr not in results[region]:
+                    results[region][perstr] = {}
+                if perstr not in results["ALL"]:
+                    results["ALL"][perstr] = {}
+                
+                results[region][perstr][station_name] = fm_stats[station_name]
+                results["ALL"][perstr][station_name] = fm_stats[station_name]
+    return results

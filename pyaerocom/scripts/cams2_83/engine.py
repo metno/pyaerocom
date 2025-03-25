@@ -23,6 +23,14 @@ warnings.filterwarnings("ignore")
 
 
 class CAMS2_83_Engine(ProcessingEngine):
+    MEDIANSCORE_SPECIES = [
+        "concno2",
+        "concco",
+        "conco3",
+        "concso2",
+        "concpm10",
+        "concpm25",
+    ]
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
         coldata = [ColocatedData(data=file) for file in files]
@@ -35,6 +43,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         for var in var_list:
             logger.info(f"Processing Component: {var}")
+            breakpoint()
             self.process_coldata(coldata[var], persistent_cols[var], var)
 
             # self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
@@ -50,6 +59,8 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         use_fairmode = self.cfg.statistics_opts.use_fairmode
         calc_forecast_target = False
+
+        calc_medianscores = True if var_name in self.MEDIANSCORE_SPECIES else False
 
         if use_fairmode:
             fairmode_engine = FairmodeEngine(self.cfg)
@@ -134,17 +145,17 @@ class CAMS2_83_Engine(ProcessingEngine):
                     except (DataCoverageError, UnknownRegion) as e:
                         logger.info(f"Skipping forecast plot due to error {str(e)}")
                         continue
-
-                    for forecast_hour in range(24 * forecast_days):
-                        logger.debug(f"Calculating statistics for hour {forecast_hour}")
-                        leap, hour = divmod(forecast_hour, 24)
-                        ds = subset[leap]
-                        ds = ds.data.sel(time=(ds.time.dt.hour == hour))
-                        start = time.time()
-                        stats = self._get_median_stats_point_vec(ds, use_weights)
-                        logger.debug(time.time() - start)
-                        for key in stats_list:
-                            stats_list[key].append(stats[key])
+                    # if calc_medianscores:
+                        # for forecast_hour in range(24 * forecast_days):
+                        #     logger.debug(f"Calculating statistics for hour {forecast_hour}")
+                        #     leap, hour = divmod(forecast_hour, 24)
+                        #     ds = subset[leap]
+                        #     ds = ds.data.sel(time=(ds.time.dt.hour == hour))
+                        #     start = time.time()
+                        #     stats = self._get_median_stats_point_vec(ds, use_weights)
+                        #     logger.debug(time.time() - start)
+                        #     for key in stats_list:
+                        #         stats_list[key].append(stats[key])
 
                     if use_fairmode and var_name in SPECIES:
 
@@ -181,18 +192,18 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
-
-            self.exp_output.add_forecast_entry(
-                results[regname],
-                regname,
-                obs_name,
-                var_name_web,
-                vert_code,
-                (
-                    modelname if (modelname == "ENS" or modelname == "MOS") else model.name
-                ),  # MOS/ENS evaluation special case
-                model_var,
-            )
+            if calc_medianscores:
+                self.exp_output.add_forecast_entry(
+                    results[regname],
+                    regname,
+                    obs_name,
+                    var_name_web,
+                    vert_code,
+                    (
+                        modelname if (modelname == "ENS" or modelname == "MOS") else model.name
+                    ),  # MOS/ENS evaluation special case
+                    model_var,
+                )
     
         if use_fairmode and var_name in SPECIES:
             fairmode_engine.save_fairmode_stats(

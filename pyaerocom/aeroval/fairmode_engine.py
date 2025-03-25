@@ -28,6 +28,8 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
     Engine for processing of fairmode statistics
     """
 
+    species = SPECIES
+
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         converted = []
         for file in files:
