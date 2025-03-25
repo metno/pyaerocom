@@ -25,7 +25,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     process_profile_data_for_stations,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.fairmode_engine import FairmodeEngine
+from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
 from pyaerocom.aeroval.json_utils import round_floats
 
 logger = logging.getLogger(__name__)
@@ -203,7 +203,9 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
             if not diurnal_only:
-                if use_fairmode:
+                if (
+                    use_fairmode and obs_var in SPECIES
+                ):  # calculate fairmode only for species where it makes sense
                     logger.info("Processing Fairmode statistics")
                     self._process_fairmode(
                         data=data,

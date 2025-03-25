@@ -16,6 +16,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+import subprocess
+
 import aerovaldb
 import pandas as pd
 from pydantic import (
@@ -29,7 +31,6 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-import subprocess
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
@@ -154,7 +155,7 @@ class ModelMapsSetup(BaseModel):
 
 class CAMS2_83Setup(BaseModel):
     use_cams2_83: bool = False
-    use_cams2_83_fairmode: bool = False # Whether or not fairmode is calculated in the CAMS282 Engine, together with the median scores
+    use_cams2_83_fairmode: bool = False  # Whether or not fairmode is calculated in the CAMS283 Engine, together with the median scores
 
 
 class StatisticsSetup(BaseModel, extra="allow"):
