@@ -154,6 +154,7 @@ class ModelMapsSetup(BaseModel):
 
 class CAMS2_83Setup(BaseModel):
     use_cams2_83: bool = False
+    use_cams2_83_fairmode: bool = False # Whether or not fairmode is calculated in the CAMS282 Engine, together with the median scores
 
 
 class StatisticsSetup(BaseModel, extra="allow"):

@@ -1804,7 +1804,7 @@ def _calculte_fairmode(
                 subset = _select_period_season_coldata(
                     coldata, per, season, use_meteorological_seasons
                 )
-                jsdate = subset.data.jsdate.values.tolist()
+                #jsdate = subset.data.jsdate.values.tolist()
             except (DataCoverageError, TemporalResolutionError):
                 use_dummy = True
 

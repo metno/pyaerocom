@@ -110,7 +110,10 @@ def make_config(
         cfg.update(add_seasons=True)    
 
     if fairmode:
-        cfg.update(use_fairmode=True)
+        if eval_type in ["season", "long"]:
+            cfg.update(use_cams2_83_fairmode=True)
+        else:
+            cfg.update(use_fairmode=True)
 
     return cfg
 

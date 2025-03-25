@@ -548,7 +548,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         fairmode_engine = FairmodeEngine(self.cfg)
         species = fairmode_engine.species
         freq = species[obs_var]["freq"]
-        breakpoint()
         if freq not in data:
             
             if "hourly" in data: # Most species use daily freq, but if daily is not present, but hourly is, then hourly can be resampled
@@ -562,5 +561,4 @@ class ColdataToJsonEngine(ProcessingEngine):
      
    
         stats = _calculte_fairmode(fm_data, fairmode_engine, map_meta, obs_var, periods, seasons, use_meteorological_seasons)
-        
         fairmode_engine.save_fairmode_stats(stats, obs_name, var_name_web, vert_code, model_name, model_var)

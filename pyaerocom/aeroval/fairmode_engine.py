@@ -162,7 +162,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         crms = self._crms(modstd, obsstd, R)
         mqi = self._mqi(rms, rmsu, beta=1)
         mb = self._mb(bias, rmsu, beta=1)
-
+  
         # assert np.some(np.isclose(
         #     rmsu * mqi,
         #     np.sqrt((bias) ** 2 + (modstd - obsstd) ** 2 + (2 * obsstd * modstd * (1 - R))),
@@ -184,8 +184,9 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
                 crms=crms[i],
                 bias=bias[i],
                 rms=rms[i],
-                beta_mqi=mqi[i],
-                bias_mb=mb[i],
+                beta_mqi=[mqi[i]],
+                bias_mb=[mb[i]],
+                persistent_model=False,
                 **SPECIES[var_name],
             )
             for i in range(len(stations))
@@ -230,7 +231,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
             1,
             np.abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R))),
         )
-        return np.where(a >= 1, 1, -1)
+        return np.where(a >= 1, 1.0, -1.0)
         # if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
         #     return 1
         # a = np.abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R)))

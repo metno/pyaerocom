@@ -34,7 +34,7 @@ class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
         coldata = [ColocatedData(data=file) for file in files]
-        coldata, persistent_cols, found_vars = self._sort_coldata(coldata)
+        coldata, persistent_cols, found_vars, found_persistent = self._sort_coldata(coldata)
         start = time.time()
         if var_list is None:
             var_list = list(found_vars)
@@ -43,8 +43,10 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         for var in var_list:
             logger.info(f"Processing Component: {var}")
-            breakpoint()
-            self.process_coldata(coldata[var], persistent_cols[var], var)
+            if found_persistent:
+                self.process_coldata(coldata[var], persistent_cols[var], var)
+            else:
+                self.process_coldata(coldata[var], [], var)
 
             # self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
 
@@ -57,7 +59,8 @@ class CAMS2_83_Engine(ProcessingEngine):
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
 
-        use_fairmode = self.cfg.statistics_opts.use_fairmode
+        #use_fairmode = self.cfg.statistics_opts.use_fairmode
+        use_fairmode = self.cfg.cams2_83_cfg.use_cams2_83_fairmode
         calc_forecast_target = False
 
         calc_medianscores = True if var_name in self.MEDIANSCORE_SPECIES else False
@@ -182,6 +185,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             for station in results_fairmode[f"{regname}"][f"{perstr}"]:
                                 results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"] = []
                                 results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mqi"] = []
+                                results_fairmode[f"{regname}"][f"{perstr}"][station]["persistent_model"] = True
                                 for day in range(forecast_days):
                                     mqi_p = results_mqi[day][station] if station in results_mqi[day] else [np.nan, np.nan]
                                     results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"].append(mqi_p[0])
@@ -370,18 +374,20 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
-    ) -> tuple[dict[str, list[ColocatedData]], dict[str, list[ColocatedData]], set[str]]:
+    ) -> tuple[dict[str, list[ColocatedData]], dict[str, list[ColocatedData]], set[str], bool]:
         col_dict = dict()
         persistent_dict = dict()
 
         persistent_var_list = []
         var_list = []
 
+        found_persistent = False
 
         for col in coldata:
             obs_var = col.metadata["var_name_input"][0]
 
             if "persistent" in col.model_name:
+                found_persistent = True
                 if obs_var in persistent_dict:
                     persistent_dict[obs_var].append(col)
                 else:
@@ -393,12 +399,13 @@ class CAMS2_83_Engine(ProcessingEngine):
                 else:
                     col_dict[obs_var] = [col]
                     var_list.append(obs_var)
-
-        assert set(sorted(var_list)) == set(sorted(persistent_var_list))
+        if found_persistent:
+            logger.info(f"Persisten model has been found for {persistent_var_list}")
+            assert set(sorted(var_list)) == set(sorted(persistent_var_list))
         for var, cols in col_dict.items():
             col_dict[var] = sorted(cols, key=lambda x: self._get_day(x.model_name))
 
-        return col_dict, persistent_dict, set(var_list)
+        return col_dict, persistent_dict, set(var_list), found_persistent
 
     def _get_day(self, model_name: str) -> int:
         return int(re.search(".*day([0-3]).*", model_name).group(1))
