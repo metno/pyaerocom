@@ -6,8 +6,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-from numbers import Number
-
 _ELEMENT_MASS = {
     "H": 1.00794,
     "Be": 9.0122,
@@ -86,7 +84,7 @@ class MolecularMass:
     and permits arithmetic calculations on them.
     """
 
-    def __init__(self, val: str | Number, *, label: str | None = None):
+    def __init__(self, val: str | float | int, *, label: str | None = None):
         if isinstance(val, float | int):
             self._mass = val
         else:
