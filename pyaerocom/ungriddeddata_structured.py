@@ -505,9 +505,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @override
     def _len_datapoints(self, meta_idx, var):
-        var_idx = self.var_idx[var]
+        if isinstance(meta_idx, float):
+            meta_idx = [meta_idx]
+        if isinstance(var, str):
+            var = [var]
+        var_idx = [self.var_idx[v] for v in var]
         return np.sum(
-            (self._dra.data["meta_id"] == meta_idx) & (self._dra.data["var_id"] == var_idx)
+            np.isin(self._dra.data["meta_id"], meta_idx)
+            & np.isin(self._dra.data["var_id"], var_idx)
         )
 
     @override

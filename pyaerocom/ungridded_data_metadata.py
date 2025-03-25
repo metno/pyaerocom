@@ -475,10 +475,20 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         return (str_f, list_f, range_f, val_f)
 
     @abc.abstractmethod
-    def _len_datapoints(self, meta_idx, var):
+    def _len_datapoints(self, meta_idx: float | list[float], var: str | list[str]):
         """Get the number of datapoints for meta_idx and var,
         needed internally by _find_meta_matches to calculate the
-        total number of new data-size"""
+        total number of new data-size
+
+        Parameters
+        ----------
+        meta_idx : index or indices of metadata-ids
+        var : variable name or list of names
+
+        Returns
+        -------
+        number of datapoints matching meta_idx and var
+        """
         pass
 
     def _find_meta_matches(self, negate=None, *filters):
@@ -508,6 +518,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         elif not isinstance(negate, list):
             raise ValueError(f"Invalid input for negate {negate}, need list or str or None")
         meta_matches = []
+        var_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
             if self._check_filter_match(meta, negate, *filters):
@@ -515,14 +526,8 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                 for var in meta["var_info"]:
                     if var in self.ALLOWED_VERT_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += self._len_datapoints(meta_idx, var)
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
+                    var_matches.append(var)
+        totnum = self._len_datapoints(meta_matches, var_matches)
         return (meta_matches, totnum)
 
     def _check_str_filter_match(self, meta, negate, str_f):

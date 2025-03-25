@@ -1191,8 +1191,22 @@ class UngriddedData(UngriddedDataMetadata):
         return new
 
     def _len_datapoints(self, meta_idx, var):
-        """Get the number of datapoints for meta_idx and var"""
-        return len(self.meta_idx[meta_idx][var])
+        """Get the number of datapoints for meta_idx and var."""
+        if isinstance(meta_idx, float):
+            meta_idx = [meta_idx]
+        if isinstance(var, str):
+            var = [var]
+        totnum = 0
+        for m in meta_idx:
+            for v in var:
+                try:
+                    totnum += len(self.meta_idx[m][v])
+                except KeyError:
+                    logger.debug(
+                        f"Ignoring variable {var} in meta block {meta_idx} "
+                        f"since no data could be found"
+                    )
+        return
 
     def clear_meta_no_data(self, inplace=True):
         """Remove all metadata blocks that do not have data associated with it
