@@ -60,10 +60,7 @@ def make_config_mos(
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
-    if eval_type in ["season", "long"]:
-        cfg.update(use_cams2_83_fairmode=True)
-    else:
-        cfg.update(use_fairmode=True)
+    cfg.update(use_cams2_83_fairmode=True)
 
     if add_seasons:
         cfg.update(add_seasons=True)
