@@ -548,14 +548,18 @@ class ColdataToJsonEngine(ProcessingEngine):
         fairmode_engine = FairmodeEngine(self.cfg)
         species = fairmode_engine.species
         freq = species[obs_var]["freq"]
-        
+        breakpoint()
         if freq not in data:
-            logger.warning(f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping...")
-        
+            
+            if "hourly" in data: # Most species use daily freq, but if daily is not present, but hourly is, then hourly can be resampled
+                fm_data = data["hourly"].resample_time(freq)
+            else:
+                logger.warning(f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping...")
+        else:
+            fm_data = data[freq]
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
      
-        fm_data = data[freq]
    
         stats = _calculte_fairmode(fm_data, fairmode_engine, map_meta, obs_var, periods, seasons, use_meteorological_seasons)
         
