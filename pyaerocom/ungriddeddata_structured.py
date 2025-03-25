@@ -589,7 +589,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             meta_idx += 1
             # each file is a metadata-set of its own
             self.metadata[meta_idx] = {}
-            self.metadata[meta_idx].update(station_data.get_meta(add_none_vals=True))
+            self.metadata[meta_idx].update(
+                station_data.get_meta(
+                    force_single_value=False, quality_check=False, add_none_vals=True
+                )
+            )
             for key in add_meta_keys:
                 if key in station_data:
                     self.metadata[meta_idx][key] = station_data[key]
