@@ -175,10 +175,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         # check also Hans' issue on the topic
         start, stop = np.datetime64(start), np.datetime64(stop)
 
+        if len(meta_idx) > 1:
+            sub_idx = np.isin(self._dra.data["meta_id"], meta_idx)
+            subdata = self._dra.data[sub_idx]
+        else:
+            subdata = self._dra.data
         for idx in meta_idx:
             try:
                 stat = self._metablock_to_stationdata(
-                    idx, vars_to_convert, start, stop, add_meta_keys
+                    idx, vars_to_convert, start, stop, add_meta_keys, data=subdata
                 )
                 if ts_type_preferred is not None:
                     if "ts_type" in stat["var_info"][vars_to_convert[0]].keys():
@@ -245,9 +250,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     ### TODO: check if both `variables` and `var_info` attrs are required in
     ### metdatda blocks
     def _metablock_to_stationdata(
-        self, meta_idx, vars_to_convert, start=None, stop=None, add_meta_keys=None
+        self,
+        meta_idx,
+        vars_to_convert,
+        start=None,
+        stop=None,
+        add_meta_keys=None,
+        data=None,
     ):
         """Convert one metadata index to StationData (helper method)
+
+        Data might be a pre-computed internal dataset.
 
         See :func:`to_station_data` for input parameters
         """
@@ -310,15 +323,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             )
         # init helper boolean that is set to True if valid data can be found
         # for at least one of the input variables
+        if data is None:
+            data = self._dra.data
         FOUND_ONE = False
         for var in vars_avail:
             # get indices of this station and variable
-            idx = (self._dra.data["meta_id"] == meta_idx) & (
-                self._dra.data["var_id"] == self.var_idx[var]
-            )
+            idx = (data["meta_id"] == meta_idx) & (data["var_id"] == self.var_idx[var])
 
             # get subset
-            subset = self._dra.data[idx]
+            subset = data[idx]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -376,6 +389,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 vi = meta["var_info"]
             else:
                 vi = {}
+            assert isinstance(vi, dict)
             if not np.isnan(altitude).all():
                 if "altitude" in vi:
                     sd.var_info["altitude"] = vi["altitude"]
