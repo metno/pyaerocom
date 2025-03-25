@@ -23,7 +23,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
-from pyaerocom.units.datetime import cftime_to_datetime64, datetime2str
+from pyaerocom.units.datetime import cftime_to_datetime64, datetime2str, to_pandas_timestamp
 from pyaerocom.helpers import (
     check_coord_circular,
     copy_coords_cube,
@@ -36,7 +36,6 @@ from pyaerocom.helpers import (
     isrange,
     make_dummy_cube_latlon,
     str_to_iris,
-    to_pandas_timestamp,
 )
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 from pyaerocom.mathutils import estimate_value_range, exponent
