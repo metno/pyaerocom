@@ -58,7 +58,7 @@ def get_unit_conversion_fac(from_unit: str, to_unit: str, var_name=None, ts_type
 
 
 def convert_unit(
-    data: T, from_unit: str, to_unit: str, aerocom_var: str | None = None, ts_type: str = None
+    data: T, from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str = None
 ) -> T:
     """Convert unit of data
 
@@ -84,8 +84,8 @@ def convert_unit(
         data in new unit
     """
     try:
-        data = PyaerocomUnit(from_unit, aerocom_var=aerocom_var, ts_type=ts_type).convert(
-            data, other=PyaerocomUnit(to_unit, aerocom_var=aerocom_var, ts_type=ts_type)
+        data = PyaerocomUnit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
+            data, other=PyaerocomUnit(to_unit, aerocom_var=var_name, ts_type=ts_type)
         )
     except ValueError as e:
         raise UnitConversionError(
