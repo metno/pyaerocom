@@ -45,12 +45,12 @@ from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.stationdata import StationData
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 

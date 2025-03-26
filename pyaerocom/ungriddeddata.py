@@ -29,9 +29,9 @@ from pyaerocom.helpers import (
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
-from .tstype import TsType
+from .units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 

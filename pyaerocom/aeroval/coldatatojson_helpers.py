@@ -36,7 +36,7 @@ from pyaerocom.trends_helpers import (
     _get_yearly,
     _init_trends_result_dict,
 )
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 

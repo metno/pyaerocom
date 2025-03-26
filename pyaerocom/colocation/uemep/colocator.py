@@ -12,7 +12,7 @@ import cf_units
 import datetime
 
 
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 
 logger = logging.getLogger(__name__)

@@ -11,7 +11,6 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataQueryError,
@@ -22,7 +21,8 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, to_pandas_timestamp
+from pyaerocom.units.datetime import get_highest_resolution, sort_ts_types, to_pandas_timestamp
+from pyaerocom.helpers import isnumeric
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_components_fun import (
     calc_concNhno3_from_vmr,
@@ -49,7 +49,7 @@ from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
 from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
@@ -168,9 +168,6 @@ class ReadGridded(GriddedReader):
         "vmrox": add_cubes,
         "fmf550aer": divide_cubes,
         "concno3": add_cubes,
-        "concprcpoxn": compute_concprcp_from_pr_and_wetdep,
-        "concprcpoxs": compute_concprcp_from_pr_and_wetdep,
-        "concprcprdn": compute_concprcp_from_pr_and_wetdep,
         "concsspm10": add_cubes,
         "concsspm25": calc_sspm25,
         "concno3pm10": calc_concno3pm10,

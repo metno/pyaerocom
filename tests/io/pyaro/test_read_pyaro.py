@@ -116,7 +116,7 @@ def test_postprocessing(pyaro_test_data_file):
     concNno = data.all_datapoints_var("concNno")
 
     # Proportion of N in NO, ng -> ug conversion
-    conversion_factor = 14.0067 / (14.0067 + 15.999) * 1e-3
+    conversion_factor = 14.0067 / (14.0067 + 15.9994) * 1e-3
 
     assert np.allclose(concno * conversion_factor, concNno)
 

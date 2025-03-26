@@ -8,7 +8,8 @@ from pyaro.timeseries import (
     Data,
 )
 
-from pyaerocom.units_helpers import get_unit_conversion_fac, M_N, M_O, M_S
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.constants import M_N, M_S, M_O
 
 
 @dataclasses.dataclass

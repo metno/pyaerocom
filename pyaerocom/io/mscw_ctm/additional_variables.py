@@ -3,7 +3,9 @@ import logging
 import xarray as xr
 from geonum.atmosphere import T0_STD, p0
 from pyaerocom.aux_var_helpers import concx_to_vmrx
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass
+
+from pyaerocom.units.constants import M_N, M_O, M_H
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +56,6 @@ def subtract_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray
 
 
 def calc_concNhno3(conchno3: xr.DataArray) -> xr.DataArray:
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-
     conchno3 = conchno3.copy(deep=True)
     fac = M_N / (M_H + M_N + M_O * 3)
     concNhno3 = conchno3 * fac
@@ -67,9 +65,6 @@ def calc_concNhno3(conchno3: xr.DataArray) -> xr.DataArray:
 
 # ToDo: add docstring
 def calc_concNno3pm10(concno3f: xr.DataArray, concno3c: xr.DataArray) -> xr.DataArray:
-    M_N = 14.006
-    M_O = 15.999
-
     fac = M_N / (M_N + 3 * M_O)
     concno3pm10 = concno3f + concno3c
     concNno3pm10 = concno3pm10 * fac
@@ -82,9 +77,6 @@ def calc_concNno3pm10(concno3f: xr.DataArray, concno3c: xr.DataArray) -> xr.Data
 def calc_concNno3pm25(
     concno3f: xr.DataArray, concno3c: xr.DataArray, fine_from_coarse_fraction: float = 0.134
 ) -> xr.DataArray:
-    M_N = 14.006
-    M_O = 15.999
-
     fac = M_N / (M_N + 3 * M_O)
     concno3pm25 = concno3f + fine_from_coarse_fraction * concno3c
     concNno3pm25 = concno3pm25 * fac
@@ -125,9 +117,6 @@ def calc_conNtno3(
 
 # ToDo: add docstring
 def calc_concNnh3(concnh3: xr.DataArray) -> xr.DataArray:
-    M_N = 14.006
-    M_H = 1.007
-
     concnh3 = concnh3.copy(deep=True)
     concNnh3 = concnh3 * (M_N / (M_H * 3 + M_N))
     concNnh3.attrs["units"] = "ug N m-3"
@@ -136,9 +125,6 @@ def calc_concNnh3(concnh3: xr.DataArray) -> xr.DataArray:
 
 # ToDo: add docstring
 def calc_concNnh4(concnh4: xr.DataArray) -> xr.DataArray:
-    M_N = 14.006
-    M_H = 1.007
-
     concnh4 = concnh4.copy(deep=True)
     concNnh4 = concnh4 * (M_N / (M_H * 4 + M_N))
     concNnh4.attrs["units"] = "ug N m-3"
@@ -290,9 +276,6 @@ def calc_conNtno3_emep(*arrs):
     if len(arrs) > 1:
         raise ValueError("Should only be given 1 array")
 
-    M_N = 14.006
-    M_O = 15.999
-
     fac = M_N / (M_N + 3 * M_O)
 
     concNtno3 = arrs[0].copy(deep=True)
@@ -305,9 +288,6 @@ def calc_conNtno3_emep(*arrs):
 def calc_conNtnh_emep(*arrs):
     if len(arrs) > 1:
         raise ValueError("Should only be given 1 array")
-
-    M_N = 14.006
-    M_H = 1.007
 
     fac = M_N / (M_H * 4 + M_N)
 

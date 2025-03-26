@@ -12,7 +12,7 @@ from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.projection_information import ProjectionInformation
-from pyaerocom.units_helpers import UALIASES
+from pyaerocom.units.units_helpers import UALIASES
 
 from .additional_variables import (
     add_dataarrays,

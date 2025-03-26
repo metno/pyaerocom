@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.units_helpers import (
+from pyaerocom.units.units_helpers import (
     _check_unit_endswith_freq,
     _unit_conversion_fac_custom,
     _unit_conversion_fac_si,
@@ -80,7 +80,7 @@ def test__unit_conversion_fac_custom_FAIL(monkeypatch):
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
-    monkeypatch.setattr("pyaerocom.units_helpers.UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
+    monkeypatch.setattr("pyaerocom.units.units_helpers.UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
 
     with pytest.raises(UnitConversionError) as e:
         _unit_conversion_fac_custom("concso4", "ug S/m3")
