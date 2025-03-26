@@ -14,7 +14,7 @@ from pyaerocom.helpers import isnumeric
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import in_range
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 

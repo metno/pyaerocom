@@ -18,9 +18,9 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import merge_station_data, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
-from pyaerocom.tstype import TsType
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.datetime import TsType
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 if sys.version_info >= (3, 12):
     from typing import override

@@ -21,17 +21,12 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.geodesy import get_country_info_coords
-from pyaerocom.helpers import (
-    merge_station_data,
-    same_meta_dict,
-    start_stop,
-)
+from pyaerocom.helpers import merge_station_data, same_meta_dict, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
+from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
-
-from .units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 
