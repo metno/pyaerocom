@@ -27,9 +27,10 @@ class PyaerocomUnit:
 
     The first additional behaviour is to handle variables that measure only
     a portion of the real mass. Eg. if concso4 is provided as "ug S/m3", we
-    want the mass in terms of SO2, so the values must be scaled up by a
-    constant factor MolecularMass("SO2")/MolecularMass("S"). This is
-    currently enabled using the lookup tables UCONV_MUL_FACS and UALIASES.
+    want the mass in terms of SO4, so the values must be scaled up by a
+    constant factor MolecularMass("SO4")/MolecularMass("S"). This is
+    currently enabled using the lookup tables UCONV_MUL_FACS and UALIASES,
+    combined with a scalar factor in the unit.
 
     The second behaviour is adding implicit frequency for rate variables
     and a ts_type. If tstype and aerocom_var are provided in __init__, units
