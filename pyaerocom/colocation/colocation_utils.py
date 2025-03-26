@@ -26,11 +26,10 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units.datetime import get_lowest_resolution
+from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
     isnumeric,
     make_datetime_index,
-    to_pandas_timestamp,
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType

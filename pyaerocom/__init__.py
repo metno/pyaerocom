@@ -27,7 +27,7 @@ ignore_earth_radius_warning()
 
 # Sub-packages
 from . import io
-from . import plot
+
 from . import scripts
 
 # Imports

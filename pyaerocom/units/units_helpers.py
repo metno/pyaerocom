@@ -1,7 +1,7 @@
-from pyaerocom.units.exceptions import UnitConversionError
-
 from .unit import PyaerocomUnit
 from typing import TypeVar
+from pyaerocom.units.exceptions import UnitConversionError
+
 
 T = TypeVar("T")
 #: default frequency for rates variables (e.g. deposition, precip)

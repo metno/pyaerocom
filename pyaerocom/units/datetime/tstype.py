@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Final, SupportsInt
+from typing import SupportsInt
 
 import numpy as np
 
@@ -30,14 +30,14 @@ logger = logging.getLogger(__name__)
 
 @total_ordering
 class TsType:
-    VALID: Final = TS_TYPES
-    VALID_ITER: Final = VALID[:-2]
-    FROM_PANDAS: Final = PANDAS_FREQ_TO_TS_TYPE
-    TO_PANDAS: Final = TS_TYPE_TO_PANDAS_FREQ
-    TO_NUMPY: Final = TS_TYPE_TO_NUMPY_FREQ
-    TO_SI: Final = TS_TYPE_TO_SI
+    VALID = TS_TYPES
+    VALID_ITER = VALID[:-2]
+    FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
+    TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
+    TO_NUMPY = TS_TYPE_TO_NUMPY_FREQ
+    TO_SI = TS_TYPE_TO_SI
 
-    TS_MAX_VALS: Final = {
+    TS_MAX_VALS = {
         "minutely": 360,  # up to 6hourly
         "hourly": 168,  # up to weekly
         "daily": 180,  # up to 6 monthly
@@ -47,9 +47,9 @@ class TsType:
 
     # "monthly": "days" below is because each month does not have the same number of days
     # netcdf does time calculation for you given starting day and days past (CF convention)
-    TSTR_TO_CF: Final = {"hourly": "hours", "daily": "days", "monthly": "days"}
+    TSTR_TO_CF = {"hourly": "hours", "daily": "days", "monthly": "days"}
 
-    TOL_SECS_PERCENT: Final = 5
+    TOL_SECS_PERCENT = 5
 
     def __init__(self, val):
         self._mulfac: int = 1

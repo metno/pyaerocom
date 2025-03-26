@@ -39,3 +39,4 @@ dependencies:
   - pytest-dependency
   - pytest-cov
   - packaging
+  - pytest-xdist

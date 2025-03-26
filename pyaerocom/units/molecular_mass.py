@@ -20,11 +20,11 @@ _VAR_PREFIXES = [
     # These are checked in the order written, so should be ordered by most specific to least specific (eg. concN before conc).
     "vmr",
     "mmr",
+    "sconc",
     "concNt",
     "concN",
     "concC",
     "conc",
-    "sconc",
     "wet",
     "dry",
     "proxydry",
@@ -86,6 +86,8 @@ class MolecularMass:
 
     def __init__(self, val: str | int | float, *, label: str | None = None):
         if isinstance(val, float | int):
+            if val < 0:
+                raise ValueError("Molecular mass can not be less than zero.")
             self._mass = float(val)
         else:
             self._mass = self._mass_from_chemical_formula(val)
@@ -139,33 +141,31 @@ class MolecularMass:
 
         return mass
 
-    @override
-    def __add__(self, other):
+    def __add__(self, other) -> MolecularMass:
         if isinstance(other, MolecularMass):
             return MolecularMass(self.mass + other.mass)
 
         return MolecularMass(self.mass + other)
 
-    @override
-    def __sub__(self, other):
+    def __radd__(self, other) -> MolecularMass:
+        return self.__add__(other)
+
+    def __sub__(self, other) -> MolecularMass:
         if isinstance(other, MolecularMass):
             return MolecularMass(self.mass - other.mass)
 
         return MolecularMass(self.mass - other)
 
-    @override
-    def __mul__(self, other):
+    def __mul__(self, other) -> float:
         if isinstance(other, MolecularMass):
-            return MolecularMass(self.mass * other.mass)
+            self.mass * other.mass
 
-        return MolecularMass(self.mass * other)
+        return self.mass * other
 
-    @override
-    def __rmul__(self, other):
+    def __rmul__(self, other) -> float:
         return self.__mul__(other)
 
-    @override
-    def __truediv__(self, other):
+    def __truediv__(self, other) -> float:
         if isinstance(other, MolecularMass):
             return self.mass / other.mass
 
