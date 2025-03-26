@@ -17,11 +17,6 @@ from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 
 logger = logging.getLogger(__name__)
 
-# ensure that all supported classes are in the global scope of this module
-# needed by globals()["UngriddedData"] later in this document
-assert isinstance(UngriddedDataStructured(), UngriddedDataContainer)
-assert isinstance(UngriddedData(), UngriddedDataContainer)
-
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
 # check if variables match the request
@@ -56,6 +51,8 @@ class CacheHandlerUngridded:
         "ungridded_data_version",
         "cacher_version",
     ]
+
+    _cachable_classes = {x.__name__: x for x in (UngriddedDataStructured, UngriddedData)}
 
     def __init__(self, reader=None, cache_dir=None, **kwargs):
         self._reader = None
@@ -181,7 +178,7 @@ class CacheHandlerUngridded:
         data_class : implementation class of UngriddedDataContainer
 
         """
-        dataclass = globals()[data_classname]  # all classes need to be loaded already
+        dataclass = self._cachable_classes[data_classname]
         try:
             newestp = max(glob.iglob(os.path.join(self.src_data_dir, "*")), key=os.path.getmtime)
             newest_date = os.path.getmtime(newestp)
