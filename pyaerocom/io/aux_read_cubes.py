@@ -13,6 +13,9 @@ from pyaerocom.helpers import copy_coords_cube
 from pyaerocom.units.molecular_mass import get_mmr_to_vmr_fac, get_molmass
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
+from pyaerocom.griddeddata import GriddedData
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,8 +52,6 @@ def _apply_operator_cubes(cube1, cube2, operator_name, allow_coord_merge=True):
 
 
 def _check_input_iscube(*data_objs):
-    from pyaerocom.griddeddata import GriddedData
-
     checked = []
     for obj in data_objs:
         if isinstance(obj, GriddedData):

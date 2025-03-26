@@ -6,6 +6,8 @@ from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 from pyaerocom.variable_helpers import get_variable
 
+from pyaerocom.units.molecular_mass import get_molmass
+
 
 def calc_ang4487aer(data):
     """Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs
@@ -761,8 +763,6 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
 
     """
     if mmol_air is None:
-        from pyaerocom.units.molecular_mass import get_molmass
-
         mmol_air = get_molmass("air_dry")
 
     Rspecific = 287.058  # J kg-1 K-1
