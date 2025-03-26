@@ -14,7 +14,7 @@ from pyaerocom import const
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units_helpers import convert_unit
+from pyaerocom.units.units_helpers import convert_unit
 from tests.conftest import lustre_unavail
 
 VARUNITS = {

@@ -36,9 +36,9 @@ from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
-from .tstype import TsType
+from .units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 

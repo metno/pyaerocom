@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pyaerocom import const
 from pyaerocom.aux_var_helpers import vmrx_to_concx
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.stationdata import StationData
 
 

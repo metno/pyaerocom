@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,14 +12,6 @@ def test_get_standarad_name():
         helpers.get_standard_name("od550aer")
         == "atmosphere_optical_thickness_due_to_ambient_aerosol_particles"
     )
-
-
-def test_get_standard_unit():
-    assert helpers.get_standard_unit("ec550aer") == "1/km"
-
-
-def test_get_lowest_resolution():
-    assert helpers.get_lowest_resolution("3hourly", "hourly", "monthly", "yearly") == "yearly"
 
 
 @pytest.mark.parametrize("val", [3, 3.3455, complex(1, 2)])
@@ -178,10 +168,6 @@ def test_to_datestring_YYYYMMDD(input, expected):
     assert helpers.to_datestring_YYYYMMDD(input) == expected
 
 
-def test_cftime_to_datetime64():
-    pass
-
-
 def get_constraint():
     pass
 
@@ -235,21 +221,6 @@ def test_extract_latlon_dataarray_no_matches_error(lat, lon):
     with pytest.raises(DataCoverageError) as e:
         helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert str(e.value) == "Coordinates not found in dataarray"
-
-
-@pytest.mark.parametrize(
-    "date,ts_type,days",
-    [
-        pytest.param("2000-02-18", "yearly", 366, id="leap year"),
-        pytest.param("2001-02-18", "yearly", 365, id="lon leap year"),
-        pytest.param("2000-02-18", "monthly", 29, id="February leap year"),
-        pytest.param("2001-02-18", "monthly", 28, id="February non leap year"),
-        pytest.param("2001-02-18", "daily", 1, id="one day"),
-    ],
-)
-def test_seconds_in_periods(date, ts_type, days):
-    seconds = timedelta(days=days) / timedelta(seconds=1)
-    assert helpers.seconds_in_periods(np.datetime64(date), ts_type) == seconds
 
 
 def test_make_dummy_cube():

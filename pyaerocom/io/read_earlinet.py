@@ -10,7 +10,7 @@ from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
 

@@ -27,7 +27,6 @@ min_units = ["minute", "minutes", "min", "mins"]
 hr_units = ["hour", "hours", "hr", "hrs", "h"]
 day_units = ["day", "days", "d"]
 
-#
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx
 GREGORIAN_BASE = datetime(1582, 10, 15)
@@ -110,6 +109,6 @@ TS_TYPE_SECS = {
     "3hourly": 10800,
     "daily": 86400,
     "weekly": 604800,
-    "monthly": 2592000,  # counting 3 days per month (APPROX)
+    "monthly": 2592000,  # counting 30 days per month (APPROX)
     "yearly": 31536000,  # counting 365 days (APPROX)
 }
