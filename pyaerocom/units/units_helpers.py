@@ -1,7 +1,9 @@
 from pyaerocom.units.exceptions import UnitConversionError
 
 from .unit import PyaerocomUnit
+from typing import TypeVar
 
+T = TypeVar("T")
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = "d"
 
@@ -55,7 +57,9 @@ def get_unit_conversion_fac(from_unit: str, to_unit: str, var_name=None, ts_type
     return factor
 
 
-def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):
+def convert_unit(
+    data: T, from_unit: str, to_unit: str, aerocom_var: str | None = None, ts_type: str = None
+) -> T:
     """Convert unit of data
 
     Parameters
@@ -80,12 +84,12 @@ def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):
         data in new unit
     """
     try:
-        factor = PyaerocomUnit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
-            1, other=PyaerocomUnit(to_unit, aerocom_var=var_name, ts_type=ts_type)
+        data = PyaerocomUnit(from_unit, aerocom_var=aerocom_var, ts_type=ts_type).convert(
+            data, other=PyaerocomUnit(to_unit, aerocom_var=aerocom_var, ts_type=ts_type)
         )
     except ValueError as e:
         raise UnitConversionError(
             f"failed to convert unit from {str(from_unit)} to {to_unit}"
         ) from e
 
-    return data * factor
+    return data

@@ -16,6 +16,10 @@ from pyaerocom.variable_helpers import get_variable
 
 from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
+from typing import TypeVar
+
+T = TypeVar("T")
+
 
 class PyaerocomUnit:
     """Pyaerocom specific encapsulation of cf_units.Unit that extends it
@@ -31,6 +35,9 @@ class PyaerocomUnit:
     and a ts_type. If tstype and aerocom_var are provided in __init__, units
     of the form "mg m-2" will automatically have the temporal frequency
     appended. For instance, assuming tstype='daily', it becomes "mg m-2 d-1"
+
+    Third, cf_units.Unit does not natively support conversion of eg. pd.Series.
+    This wrapper allows conversion of any data structure that supports __mul__.
     """
 
     #: Custom unit conversion factors for certain variables
@@ -255,12 +262,21 @@ class PyaerocomUnit:
 
     def convert(
         self,
-        value: float | np.ndarray,
+        value: T,
         other: str | PyaerocomUnit,
         ctype: Any = np.float64,
         inplace: bool = False,
-    ) -> float | np.ndarray:
-        return self._cfunit.convert(value, other, ctype, inplace)
+    ) -> T:
+        if isinstance(value, int):
+            value = float(value)
+
+        factor = self._cfunit.convert(1, other, ctype, inplace)
+        if factor == 1:
+            return value
+
+        result = factor * value
+        assert type(value) is type(result)
+        return result
 
     @property
     def cftime_unit(self) -> str:
