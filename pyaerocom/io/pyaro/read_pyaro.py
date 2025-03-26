@@ -199,7 +199,12 @@ class PyaroToUngriddedData:
             # outarray[idx, UngriddedData._TRASHINDEX]  # No need to set, only non-NaN values are considered trash
 
         metadata = dict()
-        for (station_name, var, units, tstype), station_key in station_mapper.inner.items():
+        for (
+            station_name,
+            var,
+            units,
+            tstype,
+        ), station_key in station_mapper.inner.items():
             extra_metadata = stations_with_metadata[station_name].metadata
             d = {
                 "data_id": self.config.name,
@@ -215,7 +220,12 @@ class PyaroToUngriddedData:
             metadata[station_key] = d
 
         meta_idx = defaultdict(dict)
-        for (_station_name, var, _units, tstype), station_key in station_mapper.inner.items():
+        for (
+            _station_name,
+            var,
+            _units,
+            tstype,
+        ), station_key in station_mapper.inner.items():
             var_key = var_mapper[var]
             mask = (outarray[:, UngriddedData._METADATAKEYINDEX] == station_key) & (
                 outarray[:, UngriddedData._VARINDEX] == var_key
