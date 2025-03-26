@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import DTypeLike
 
 
 class DynamicRecArrayException(Exception):
@@ -6,19 +7,20 @@ class DynamicRecArrayException(Exception):
 
 
 class DynamicRecArray:
-    def __init__(self, dtype, capacity: int = 10):
+    def __init__(self, dtype: DTypeLike, capacity: int = 10):
         """A dynamic record based array of type dtype.
 
         :param dtype: Datatype of the array. Must be readable by :class:`~numpy.dtype`
-        :param capacity: optional initial capacity
+        :param capacity: optional initial capacity, i.e. initial hidden array-size.
+            Use a large capacity if you intent use many `append` operation on the data.
         """
-        self.dtype = np.dtype(dtype)
-        self.length = 0
-        self.capacity = capacity
-        self._array = np.empty(self.capacity, dtype=self.dtype)
+        self._dtype = np.dtype(dtype)
+        self._length = 0
+        self._capacity = capacity
+        self._array = np.empty(self._capacity, dtype=self._dtype)
 
     def __len__(self):
-        return self.length
+        return self._length
 
     def keys(self):
         """all available data-fields, excluding variable and units which are
@@ -35,15 +37,15 @@ class DynamicRecArray:
         :param rec: a numpy array of the same datatype, or a list of tuples with the same number of elements
 
         """
-        newlength = self.length + len(rec)
+        newlength = self._length + len(rec)
         resize = False
-        while self.capacity <= newlength:
-            self.capacity += 10 + (self.capacity >> 3)  # 20 + 1.125*self.capacity
+        while self._capacity <= newlength:
+            self._capacity += 10 + (self._capacity >> 3)  # 20 + 1.125*self._capacity
             resize = True
         if resize:
-            self._array = np.resize(self._array, self.capacity)
-        self._array[self.length : newlength] = rec
-        self.length = newlength
+            self._array = np.resize(self._array, self._capacity)
+        self._array[self._length : newlength] = rec
+        self._length = newlength
 
     def append_array(self, **kwargs):
         """append data using a dictionary of np-arrays
@@ -67,14 +69,15 @@ class DynamicRecArray:
             self.data = data
 
     @property
-    def data(self):
-        """Return the numpy array
+    def data(self) -> np.array:
+        """Return the numpy array. Access to the data array will also shring the capacity
+        to the length of the array. The returned array is not a copy but a internal view.
 
         :return: np.arry of type dtype
         """
-        if self.capacity != self.length:
-            self._array = self._array[:][: self.length]
-            self.capacity = len(self._array)
+        if self._capacity != self._length:
+            self._array = self._array[:][: self._length]
+            self._capacity = len(self._array)
         return self._array
 
     @data.setter
@@ -83,6 +86,6 @@ class DynamicRecArray:
 
         :param data: numpy array with the same dtype
         """
-        self.length = len(data)
-        self.capacity = len(data)
+        self._length = len(data)
+        self._capacity = len(data)
         self._array = data

@@ -27,7 +27,7 @@ def aeronetsunv3lev2_subset_uds(aeronetsunv3lev2_subset):
 
 def test_ungridded_new():
     ud = UngriddedDataStructured(num_points=1000)
-    assert ud._dra.capacity == 1000
+    assert ud._dra._capacity == 1000
     assert len(ud._dra._array["meta_id"]) == 1000
     assert len(ud._dra.data["meta_id"]) == 0
 

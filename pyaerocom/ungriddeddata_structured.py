@@ -49,14 +49,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         ("flag", "i2"),
     ]
     _nan_types = {
-        "meta_id": -2147483647,
-        "var_id": -32767,
+        "meta_id": np.iinfo("i4").min,
+        "var_id": np.iinfo("i2").min,
         "start_time": np.datetime64("NaT"),
         "end_time": np.datetime64("NaT"),
         "data": np.nan,
         "stdev": np.nan,
-        "dataaltitude": -32767,
-        "flag": -32767,
+        "dataaltitude": np.iinfo("i2").min,
+        "flag": np.iinfo("i2").min,
     }
 
     def __init__(self, num_points: int = 100):
@@ -171,8 +171,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             meta_idx = [meta_idx]
 
         stats = []
-        # ToDo: check consistency, consider using methods in helpers.py
-        # check also Hans' issue on the topic
         start, stop = np.datetime64(start), np.datetime64(stop)
 
         if len(meta_idx) > 1:
@@ -247,8 +245,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             return stats_ok[0]
         return stats_ok
 
-    ### TODO: check if both `variables` and `var_info` attrs are required in
-    ### metdatda blocks
     def _metablock_to_stationdata(
         self,
         meta_idx,

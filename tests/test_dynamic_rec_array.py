@@ -7,21 +7,21 @@ my_dtype = [("int", "i4"), ("int2", "i2")]
 
 def test_DynamicRecArray__init__():
     ary = DynamicRecArray(my_dtype)
-    assert ary.capacity == 10  # default capacity
-    assert len(ary._array) == ary.capacity
+    assert ary._capacity == 10  # default capacity
+    assert len(ary._array) == ary._capacity
     assert len(ary) == 0
     # internal structure on create
     assert isinstance(ary._array, np.ndarray)
-    assert ary._array["int"].shape[0] == ary.capacity
-    assert ary._array["int2"].shape[0] == ary.capacity
+    assert ary._array["int"].shape[0] == ary._capacity
+    assert ary._array["int2"].shape[0] == ary._capacity
     # external structure should be empty
     assert isinstance(ary.data, np.ndarray)
     assert ary.data["int"].shape[0] == 0
     assert ary.data["int2"].shape[0] == 0
 
     ary = DynamicRecArray(my_dtype, 100)
-    assert ary.capacity == 100
-    assert len(ary._array) == ary.capacity
+    assert ary._capacity == 100
+    assert len(ary._array) == ary._capacity
     assert len(ary) == 0
 
     # keys
