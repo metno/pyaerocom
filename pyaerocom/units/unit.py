@@ -18,21 +18,19 @@ from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
 
 class PyaerocomUnit:
-    """Pyaerocom specific encapsulation of cf_units.Unit that
-    extends it with additional needed behaviour.
+    """Pyaerocom specific encapsulation of cf_units.Unit that extends it
+    with additional needed behaviour.
 
-    The first additional behaviour of this class is to handle variables
-    that measure only a portion of the real mass. Eg. if concso4 is provided
-    as "ug S/m3", we want the mass in terms of SO2, so the values must be
-    scaled up by a constant factor MolecularMass("SO2")/MolecularMass("S").
-    This is currently fascilitated using the lookup tables UCONV_MUL_FACS
-    and UALIASES.
+    The first additional behaviour is to handle variables that measure only
+    a portion of the real mass. Eg. if concso4 is provided as "ug S/m3", we
+    want the mass in terms of SO2, so the values must be scaled up by a
+    constant factor MolecularMass("SO2")/MolecularMass("S"). This is
+    currently enabled using the lookup tables UCONV_MUL_FACS and UALIASES.
 
-    The second behaviour handled by this class is adding implicit frequency
-    for rate variables and a ts_type. If tstype and aerocom_var are provided
-    in __init__, units of the form "mg m-2" will automatically have the
-    temporal frequency appended. For instance, assuming tstype='daily', it
-    becomes "mg m-2 d-1"
+    The second behaviour is adding implicit frequency for rate variables
+    and a ts_type. If tstype and aerocom_var are provided in __init__, units
+    of the form "mg m-2" will automatically have the temporal frequency
+    appended. For instance, assuming tstype='daily', it becomes "mg m-2 d-1"
     """
 
     #: Custom unit conversion factors for certain variables
@@ -120,6 +118,9 @@ class PyaerocomUnit:
         except KeyError:
             new_unit, factor = unit, 1
 
+        if factor != 1:
+            new_unit = f"{factor} {new_unit}"
+
         if ts_type is not None and aerocom_var is not None and get_variable(aerocom_var).is_rate:
             ends_with_freq = False
             for si_unit in SI_TO_TS_TYPE:
@@ -131,8 +132,8 @@ class PyaerocomUnit:
                 new_unit = f"{new_unit} {TsType(ts_type).to_si()}-1"
 
         self._aerocom_var = aerocom_var
+        self._ts_type = ts_type
         self._cfunit = cf_units.Unit(new_unit, calendar=calendar)
-        self._multiplier: float = factor
 
     @property
     def category(self):
@@ -241,13 +242,13 @@ class PyaerocomUnit:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, PyaerocomUnit):
-            return self._cfunit.__eq__(other) and self._multiplier == other._multiplier
+            return self._cfunit.__eq__(other)
 
         other = cf_units.Unit(other)
-        return self._cfunit.__eq__(other) and self._multiplier == 1
+        return self._cfunit.__eq__(other)
 
     def __ne__(self, other: object) -> bool:
-        return self._cfunit.__ne__(other)  # ?
+        return self._cfunit.__ne__(other)
 
     def change_calendar(self, calendar: str) -> PyaerocomUnit:
         return self._cfunit.change_calendar(calendar)  # ?
@@ -259,7 +260,7 @@ class PyaerocomUnit:
         ctype: Any = np.float64,
         inplace: bool = False,
     ) -> float | np.ndarray:
-        return self._cfunit.convert(value, other, ctype, inplace) * self._multiplier
+        return self._cfunit.convert(value, other, ctype, inplace)
 
     @property
     def cftime_unit(self) -> str:
