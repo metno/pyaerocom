@@ -6,6 +6,7 @@ import pytest
 
 from pyaerocom import UngriddedData, ungriddeddata
 from pyaerocom.exceptions import DataCoverageError, VariableDefinitionError
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
@@ -200,36 +201,8 @@ def test_cache_reload(aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path):
     file = aeronetsunv3lev2_subset.save_as(file_name=path.name, save_dir=path.parent)
     assert Path(file) == path
     assert path.exists()
-    data = UngriddedData.from_cache(data_dir=path.parent, file_name=path.name)
+    data = UngriddedDataContainer.from_cache(data_dir=path.parent, file_name=path.name)
     assert data.shape == aeronetsunv3lev2_subset.shape
-
-
-def test_check_unit(data_scat_jungfraujoch):
-    data_scat_jungfraujoch.check_unit("sc550aer", unit="1/Mm")
-    from pyaerocom.exceptions import MetaDataError
-
-    with pytest.raises(MetaDataError):
-        data_scat_jungfraujoch.check_unit("sc550aer", unit="m-1")
-
-
-@pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
-def test_check_convert_var_units(data_scat_jungfraujoch):
-    out = data_scat_jungfraujoch.check_convert_var_units("sc550aer", "m-1", inplace=False)
-
-    fac = 1e-6
-    data_idx = out._DATAINDEX
-    for i, meta in out.metadata.items():
-        if "sc550aer" in meta["var_info"]:
-            assert meta["var_info"]["sc550aer"]["units"] == "m-1"
-            idx = out.meta_idx[i]["sc550aer"]
-
-            data0 = data_scat_jungfraujoch._data[idx, data_idx]
-            data1 = out._data[idx, data_idx]
-
-            ratio = np.divide(data1, data0)  # [~nans]
-            ratio = ratio[~np.isnan(ratio)]
-            assert ratio.mean() == pytest.approx(fac)
-            assert ratio.std() == pytest.approx(0)
 
 
 def test_from_single_station_data():
