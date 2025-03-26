@@ -24,6 +24,11 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 
 class UngriddedDataMetadata(UngriddedDataContainer):
     """Metadata-implementation for UngriddedDataContainer implementing
@@ -44,7 +49,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         self.filter_hist = {}
         self._is_vertical_profile = False
 
-    def _copy_metadata_to(self, other):
+    def _copy_metadata_to(self, other: Self) -> Self:
         """
         deepcopy metadata-fields to the other object
         """
