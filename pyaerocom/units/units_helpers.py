@@ -22,7 +22,7 @@ def get_unit_conversion_fac(from_unit: str, to_unit: str, var_name=None, ts_type
 
 
 def convert_unit(
-    data: T, from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str = None
+    data: T, from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str | None = None
 ) -> T:
     """Convert unit of data
 

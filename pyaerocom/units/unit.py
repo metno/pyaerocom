@@ -7,7 +7,7 @@ else:
     from typing_extensions import Self
 
 import datetime
-from typing import Any, Self
+from typing import Any
 from collections.abc import Iterable
 
 
@@ -18,12 +18,11 @@ import pandas as pd
 from .exceptions import UnitConversionError
 from .datetime import TsType
 from .datetime.time_config import SI_TO_TS_TYPE
-from .typing import UnitLike
 from pyaerocom.variable_helpers import get_variable
 
 from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
-from typing import TypeVar
+from typing import TypeVar, overload
 
 T = TypeVar("T")
 
@@ -113,7 +112,7 @@ class PyaerocomUnit:
 
     def __init__(
         self,
-        unit: str | UnitLike,
+        unit: str,
         calendar: str | None = None,
         *,
         aerocom_var: str | None = None,
@@ -266,22 +265,29 @@ class PyaerocomUnit:
     def change_calendar(self, calendar: str) -> PyaerocomUnit:
         return PyaerocomUnit.from_cf_units(self._cfunit.change_calendar(calendar))
 
+    @overload
+    def convert(
+        self, value: int, other: str | PyaerocomUnit, ctype: np.typing.DTypeLike = np.float64
+    ) -> int | float: ...
+
+    @overload
+    def convert(
+        self, value: T, other: str | Self, ctype: np.typing.DTypeLike = np.float64
+    ) -> T: ...
+
     def convert(
         self,
         value: T,
         other: str | PyaerocomUnit,
         ctype: Any = np.float64,
-        inplace: bool = False,
     ) -> T:
-        if isinstance(value, int):
-            value = float(value)
-
-        factor = self._cfunit.convert(1, other, ctype, inplace)
-        if factor == 1:
-            return value
+        factor = self._cfunit.convert(1, other, ctype, inplace=False)
 
         result = factor * value
-        assert type(value) is type(result)
+        if isinstance(value, int):
+            assert isinstance(result, int | float)
+        else:
+            assert type(value) is type(result)
         return result
 
     @property

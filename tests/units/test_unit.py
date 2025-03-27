@@ -1,12 +1,7 @@
 import pytest
 
 
-from pyaerocom.units import PyaerocomUnit, UnitLike
-
-
-def test_PyaerocomUnit_isinstance_of_UnitLike():
-    u = PyaerocomUnit("meter")
-    assert isinstance(u, UnitLike)
+from pyaerocom.units import PyaerocomUnit
 
 
 @pytest.mark.parametrize(

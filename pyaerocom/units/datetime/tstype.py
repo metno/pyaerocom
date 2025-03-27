@@ -51,9 +51,9 @@ class TsType:
 
     TOL_SECS_PERCENT = 5
 
-    def __init__(self, val):
+    def __init__(self, val) -> None:
         self._mulfac: int = 1
-        self._val = None
+        self._val: str
 
         self.val = val
 
@@ -133,7 +133,7 @@ class TsType:
         return self.TSTR_TO_CF[self.base]
 
     @property
-    def num_secs(self):
+    def num_secs(self) -> float:
         """Number of seconds in one period
 
         Note
@@ -163,10 +163,10 @@ class TsType:
         timedelta64
 
         """
-        return np.timedelta64(1, self.to_numpy_freq())
+        return np.timedelta64(1, self.to_numpy_freq())  # type: ignore
 
     @property
-    def next_higher(self):
+    def next_higher(self) -> TsType:
         """Next higher resolution code"""
         if self.mulfac > 1:
             return TsType(self._val)
@@ -177,7 +177,7 @@ class TsType:
         return TsType(self.VALID_ITER[idx - 1])
 
     @property
-    def next_lower(self):
+    def next_lower(self) -> TsType:
         """Next lower resolution code
 
         This will go to the next lower base resolution, that is if current is
@@ -205,20 +205,20 @@ class TsType:
         raise TemporalResolutionError(f"Failed to determine next lower resolution for {self}")
 
     @staticmethod
-    def valid(val):
+    def valid(val) -> bool:
         try:
             TsType(val)
             return True
         except TemporalResolutionError:
             return False
 
-    def to_numpy_freq(self):
+    def to_numpy_freq(self) -> str:
         if self._val not in self.TO_NUMPY:
             raise TemporalResolutionError(f"numpy frequency not available for {self._val}")
         freq = self.TO_NUMPY[self._val]
         return f"{self.mulfac}{freq}"
 
-    def to_pandas_freq(self):
+    def to_pandas_freq(self) -> str:
         """Convert ts_type to pandas frequency string"""
         if self._val not in self.TO_PANDAS:
             raise TemporalResolutionError(f"pandas frequency not available for {self._val}")
@@ -227,7 +227,7 @@ class TsType:
             return freq
         return f"{self._mulfac}{freq}"
 
-    def to_si(self):
+    def to_si(self) -> str:
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
         if base not in self.TO_SI:
@@ -270,7 +270,7 @@ class TsType:
             f"for conversion from {self} to {to_ts_type}"
         )
 
-    def check_match_total_seconds(self, total_seconds):
+    def check_match_total_seconds(self, total_seconds: int | float) -> bool:
         """
         Check if this object matches with input interval length in seconds
 
@@ -295,7 +295,7 @@ class TsType:
         return False
 
     @staticmethod
-    def _try_infer_from_total_seconds(base, total_seconds):
+    def _try_infer_from_total_seconds(base: str, total_seconds: int | float) -> TsType:
         """
         Infer multiplication factor required to match input interval length
 
@@ -345,7 +345,7 @@ class TsType:
         )
 
     @staticmethod
-    def from_total_seconds(total_seconds):
+    def from_total_seconds(total_seconds: int | float) -> TsType:
         """
         Try to infer TsType based on interval length
 
