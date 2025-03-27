@@ -1093,7 +1093,7 @@ class GriddedData:
         add_meta=None,
         use_iris=False,
         **coords,
-    ):
+    ) -> list[StationData]:
         """Extract time-series for provided input coordinates (lon, lat)
 
         Extract time series for each lon / lat coordinate in this cube or at

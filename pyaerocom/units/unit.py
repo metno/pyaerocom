@@ -284,16 +284,18 @@ class PyaerocomUnit:
         self,
         value: int,
         other: str | Self,
+        inplace: bool = False,
         *,
         callback: None | UnitConversionCallbackHandler = None,
         **kwargs,
-    ) -> int | float: ...
+    ) -> float: ...
 
     @overload
     def convert(
         self,
         value: T,
         other: str | Self,
+        inplace: bool = False,
         *,
         callback: None | UnitConversionCallbackHandler = None,
         **kwargs,
@@ -303,12 +305,13 @@ class PyaerocomUnit:
         self,
         value: T,
         other: str | Self,
+        inplace: bool = False,
         *,
         callback: None | UnitConversionCallbackHandler = None,
         **kwargs,
     ) -> T:
         """Implements unit conversion to a different unit that should work
-        with any data structure that supports __mul__.
+        with any data structure that supports __mul__ and / or __imul__.
 
         :param value: The value to be converted.
         :param other: The unit to which to convert (will be passed to PyaerocomUnit.__init__())
@@ -321,20 +324,18 @@ class PyaerocomUnit:
                 "to_cf_unit" - str: The base cf_unit converted to.
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
-
-        Note:
-        -----
-        PyaerocomUnit removes the option for inplace conversion as that isn't used
-        in pyaerocom.
         """
         to_unit = PyaerocomUnit(other, **kwargs)._cfunit
         factor = float(self._cfunit.convert(1, to_unit, inplace=False))
 
-        result = factor * value
-        if isinstance(value, int):
-            assert isinstance(result, int | float)
+        if inplace:
+            value *= factor
         else:
-            assert type(value) is type(result)
+            value = factor * value
+        if isinstance(value, int):
+            assert isinstance(value, float)
+        else:
+            assert type(value) is type(value)
 
         if callback is not None:
             info: UnitConversionCallbackInfo = {
@@ -345,7 +346,7 @@ class PyaerocomUnit:
                 "to_cf_unit": str(to_unit),
             }
             callback(info)
-        return result
+        return value
 
     @property
     def cftime_unit(self) -> str:

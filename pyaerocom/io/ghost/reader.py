@@ -366,9 +366,6 @@ class ReadGhost(ReadUngriddedBase):
                 meta_glob[meta_key] = convert_unit(
                     meta_glob[meta_key], from_unit=from_unit, to_unit=to_unit
                 )
-                # if from_unit != to_unit:
-                #    cfac = cf_units.Unit(from_unit).convert(1, to_unit)
-                #    meta_glob[meta_key] *= cfac
 
             tvals = ds["time"].values
 
