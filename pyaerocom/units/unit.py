@@ -284,9 +284,9 @@ class PyaerocomUnit:
         self,
         value: int,
         other: str | Self,
-        ctype: np.typing.DTypeLike = np.float64,
         *,
         callback: None | UnitConversionCallbackHandler = None,
+        **kwargs,
     ) -> int | float: ...
 
     @overload
@@ -294,20 +294,41 @@ class PyaerocomUnit:
         self,
         value: T,
         other: str | Self,
-        ctype: np.typing.DTypeLike = np.float64,
         *,
         callback: None | UnitConversionCallbackHandler = None,
+        **kwargs,
     ) -> T: ...
 
     def convert(
         self,
         value: T,
         other: str | Self,
-        ctype: np.typing.DTypeLike = np.float64,
         *,
         callback: None | UnitConversionCallbackHandler = None,
+        **kwargs,
     ) -> T:
-        factor = float(self._cfunit.convert(1, other, ctype, inplace=False))
+        """Implements unit conversion to a different unit that should work
+        with any data structure that supports __mul__.
+
+        :param value: The value to be converted.
+        :param other: The unit to which to convert (will be passed to PyaerocomUnit.__init__())
+        :param callback: Callback function for eg. logging, defaults to None
+            The callback function will receive a dict with the following keys:
+                "factor" - float: The numerical conversion factor used.
+                "from_aerocom_var" - str: The aerocom var name.
+                "from_ts_type" - str: The ts_type of the from units.
+                "from_cf_unit" - str: The base cf_unit converted from.
+                "to_cf_unit" - str: The base cf_unit converted to.
+        :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
+        :return: Unit converted data.
+
+        Note:
+        -----
+        PyaerocomUnit removes the option for inplace conversion as that isn't used
+        in pyaerocom.
+        """
+        to_unit = PyaerocomUnit(other, **kwargs)._cfunit
+        factor = float(self._cfunit.convert(1, to_unit, inplace=False))
 
         result = factor * value
         if isinstance(value, int):
@@ -321,7 +342,7 @@ class PyaerocomUnit:
                 "from_aerocom_var": self._aerocom_var,
                 "from_ts_type": self._ts_type,
                 "from_cf_unit": str(self._cfunit),
-                "to_cf_unit": str(other),
+                "to_cf_unit": str(to_unit),
             }
             callback(info)
         return result
