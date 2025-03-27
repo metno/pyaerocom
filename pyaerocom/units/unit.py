@@ -373,6 +373,3 @@ class PyaerocomUnit:
     @classmethod
     def from_cf_units(cls, unit: cf_units.Unit) -> Self:
         return cls(unit)
-
-    # def __repr__(self) -> str:
-    #    return f"PyaerocomUnit('{self._cfunit.name}')"
