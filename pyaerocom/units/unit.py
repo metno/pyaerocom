@@ -1,6 +1,13 @@
 from __future__ import annotations
+import sys
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 import datetime
-from typing import Any
+from typing import Any, Self
 from collections.abc import Iterable
 
 
@@ -44,7 +51,7 @@ class PyaerocomUnit:
     #: Custom unit conversion factors for certain variables
     #: columns: variable -> from unit -> to_unit -> conversion
     #: factor
-    UCONV_MUL_FACS = pd.DataFrame(
+    _UCONV_MUL_FACS = pd.DataFrame(
         [
             # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
             # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
@@ -71,7 +78,7 @@ class PyaerocomUnit:
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
 
-    UALIASES = {
+    _UALIASES = {
         # mass concentrations
         "ug S m-3": "ug S/m3",
         "ug C m-3": "ug C/m3",
@@ -112,15 +119,13 @@ class PyaerocomUnit:
         aerocom_var: str | None = None,
         ts_type: str | TsType | None = None,
     ) -> None:
-        unit = PyaerocomUnit.UALIASES.get(str(unit), str(unit))
+        unit = PyaerocomUnit._UALIASES.get(str(unit), str(unit))
 
         try:
-            info = PyaerocomUnit.UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
+            info = PyaerocomUnit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
             if not isinstance(info, pd.Series):
                 raise UnitConversionError(
-                    "FATAL: Could not find unique conversion factor in table  "
-                    "UCONV_MUL_FACS in units_helpers.py. Please check for "
-                    "dulplicate entries"
+                    "FATAL: Could not find unique conversion factor in table PyaerocomUnit._UCONV_MUL_FACS."
                 )
             new_unit, factor = (info.to, info.fac)
         except KeyError:
@@ -216,13 +221,13 @@ class PyaerocomUnit:
         )
 
     def invert(self) -> PyaerocomUnit:
-        return self._cfunit.invert()  # ?
+        return self._cfunit.invert()
 
     def root(self, root: int) -> PyaerocomUnit:
-        return self._cfunit.root(root)  # ?
+        return self._cfunit.root(root)
 
     def log(self, base: float) -> PyaerocomUnit:
-        return self._cfunit.log(base)  # ?
+        return self._cfunit.log(base)
 
     def __str__(self) -> str:
         return self._cfunit.__str__()
@@ -231,22 +236,22 @@ class PyaerocomUnit:
         return self._cfunit.__repr__()
 
     def __add__(self, other: float) -> PyaerocomUnit:
-        return self._cfunit.__add__(other)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.__add__(other))
 
     def __sub__(self, other: float) -> PyaerocomUnit:
-        return self._cfunit.__sub__(other)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.__sub__(other))
 
     def __mul__(self, other: float | str | PyaerocomUnit) -> PyaerocomUnit:
-        return self._cfunit.__mul__(other)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.__mul__(other))
 
     def __div__(self, other: float | str | PyaerocomUnit) -> PyaerocomUnit:
-        return self._cfunit.__div__(other)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.__div__(other))
 
     def __truediv__(self, other: float | str | PyaerocomUnit) -> PyaerocomUnit:
-        return self._cfunit.__truediv__(other)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.__truediv__(other))
 
     def __pow__(self, power: float) -> PyaerocomUnit:
-        return self._cfunit.__pow__(power)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.__pow__(power))
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, PyaerocomUnit):
@@ -259,7 +264,7 @@ class PyaerocomUnit:
         return self._cfunit.__ne__(other)
 
     def change_calendar(self, calendar: str) -> PyaerocomUnit:
-        return self._cfunit.change_calendar(calendar)  # ?
+        return PyaerocomUnit.from_cf_units(self._cfunit.change_calendar(calendar))
 
     def convert(
         self,
@@ -300,6 +305,10 @@ class PyaerocomUnit:
         self, time_value: float | Iterable[float]
     ) -> datetime.datetime | Iterable[datetime.datetime]:
         return self._cfunit.num2pydate(time_value)
+
+    @classmethod
+    def from_cf_units(cls, unit: cf_units.Unit) -> Self:
+        return cls(unit)
 
     # def __repr__(self) -> str:
     #    return f"PyaerocomUnit('{self._cfunit.name}')"
