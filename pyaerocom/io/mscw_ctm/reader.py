@@ -781,8 +781,6 @@ class ReadMscwCtm(GriddedReader):
 
         arr, proj_info = self._load_var(var_name_aerocom, ts_type)
         arr.attrs["units"] = arr.units
-        # if arr.units in UALIASES:
-        #    arr.attrs["units"] = UALIASES[arr.units]
         try:
             cube = arr.to_iris()
         except MemoryError as e:  # pragma: no cover
