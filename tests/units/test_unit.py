@@ -3,7 +3,7 @@ import pandas as pd
 
 from pyaerocom.units import Unit
 from pyaerocom.units.exceptions import UnitConversionError
-from pyaerocom.units.unit import UnitConversionCallbackInfo
+from pyaerocom.units.units import UnitConversionCallbackInfo
 
 
 @pytest.mark.parametrize(

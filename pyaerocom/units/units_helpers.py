@@ -1,4 +1,4 @@
-from .unit import Unit
+from .units import Unit
 from typing import TypeVar
 from pyaerocom.units.exceptions import UnitConversionError
 
