@@ -55,7 +55,7 @@ class TsType:
         self._mulfac: int = 1
         self._val: str
 
-        self.val = val
+        self.val = str(val)
 
     @property
     def mulfac(self) -> int:

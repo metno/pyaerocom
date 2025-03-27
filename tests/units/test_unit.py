@@ -2,6 +2,7 @@ import pytest
 
 
 from pyaerocom.units import PyaerocomUnit
+from pyaerocom.units.unit import UnitConversionCallbackInfo
 
 
 @pytest.mark.parametrize(
@@ -31,3 +32,23 @@ def test_PyaerocomUnit_custom_scaling(
 def test_PyaerocomUnit_implicit_frequency(unit: str, tstype: str | None, output_cf_unit: str):
     u = PyaerocomUnit(unit, aerocom_var="depdust", ts_type=tstype)
     assert str(u) == output_cf_unit
+
+
+def test_PyaerocomUnit_conversion_callback():
+    u = PyaerocomUnit("mg m-2", aerocom_var="depdust", ts_type="daily")
+
+    callback_ran = False
+
+    def callback(info: UnitConversionCallbackInfo):
+        nonlocal callback_ran
+        callback_ran = True
+
+        assert info["factor"] == pytest.approx(1 / 24)
+        assert info["from_aerocom_var"] == "depdust"
+        assert info["from_ts_type"] == "daily"
+        assert info["from_cf_unit"] == "mg m-2 d-1"
+        assert info["to_cf_unit"] == "mg m-2 h-1"
+
+    u.convert(1, "mg m-2 h-1", callback=callback)
+
+    assert callback_ran

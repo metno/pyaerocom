@@ -22,9 +22,21 @@ from pyaerocom.variable_helpers import get_variable
 
 from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
-from typing import TypeVar, overload
+from typing import TypeVar, overload, TypedDict
+from collections.abc import Callable
 
 T = TypeVar("T")
+
+
+class UnitConversionCallbackInfo(TypedDict):
+    factor: float
+    from_aerocom_var: str | None
+    from_ts_type: TsType | None
+    from_cf_unit: cf_units.Unit
+    to_cf_unit: cf_units.Unit
+
+
+UnitConversionCallbackHandler = Callable[[UnitConversionCallbackInfo], None]
 
 
 class PyaerocomUnit:
@@ -144,7 +156,9 @@ class PyaerocomUnit:
                 new_unit = f"{new_unit} {TsType(ts_type).to_si()}-1"
 
         self._aerocom_var = aerocom_var
-        self._ts_type = ts_type
+        self._ts_type = None
+        if ts_type is not None:
+            self._ts_type = TsType(ts_type)
         self._cfunit = cf_units.Unit(new_unit, calendar=calendar)
 
     @property
@@ -267,27 +281,49 @@ class PyaerocomUnit:
 
     @overload
     def convert(
-        self, value: int, other: str | PyaerocomUnit, ctype: np.typing.DTypeLike = np.float64
+        self,
+        value: int,
+        other: str | Self,
+        ctype: np.typing.DTypeLike = np.float64,
+        *,
+        callback: None | UnitConversionCallbackHandler = None,
     ) -> int | float: ...
 
     @overload
     def convert(
-        self, value: T, other: str | Self, ctype: np.typing.DTypeLike = np.float64
+        self,
+        value: T,
+        other: str | Self,
+        ctype: np.typing.DTypeLike = np.float64,
+        *,
+        callback: None | UnitConversionCallbackHandler = None,
     ) -> T: ...
 
     def convert(
         self,
         value: T,
-        other: str | PyaerocomUnit,
-        ctype: Any = np.float64,
+        other: str | Self,
+        ctype: np.typing.DTypeLike = np.float64,
+        *,
+        callback: None | UnitConversionCallbackHandler = None,
     ) -> T:
-        factor = self._cfunit.convert(1, other, ctype, inplace=False)
+        factor = float(self._cfunit.convert(1, other, ctype, inplace=False))
 
         result = factor * value
         if isinstance(value, int):
             assert isinstance(result, int | float)
         else:
             assert type(value) is type(result)
+
+        if callback is not None:
+            info: UnitConversionCallbackInfo = {
+                "factor": factor,
+                "from_aerocom_var": self._aerocom_var,
+                "from_ts_type": self._ts_type,
+                "from_cf_unit": str(self._cfunit),
+                "to_cf_unit": str(other),
+            }
+            callback(info)
         return result
 
     @property

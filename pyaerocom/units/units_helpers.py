@@ -8,17 +8,12 @@ T = TypeVar("T")
 RATES_FREQ_DEFAULT = "d"
 
 
-def get_unit_conversion_fac(from_unit: str, to_unit: str, var_name=None, ts_type=None):
-    try:
-        factor = PyaerocomUnit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
-            1, other=PyaerocomUnit(to_unit, aerocom_var=var_name, ts_type=ts_type)
-        )
-    except ValueError as e:
-        raise UnitConversionError(
-            f"failed to convert unit from {str(from_unit)} to {to_unit}"
-        ) from e
-
-    return factor
+def get_unit_conversion_fac(
+    from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str | None = None
+) -> float:
+    return convert_unit(
+        1, from_unit=from_unit, to_unit=to_unit, var_name=var_name, ts_type=ts_type
+    )
 
 
 def convert_unit(
