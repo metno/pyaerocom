@@ -2,13 +2,13 @@ import pathlib
 import xarray as xr
 import os
 import logging
+from pyaerocom.units import PyaerocomUnit
 from pyaerocom.io.uemep import uemep_variables
 from pyaerocom.colocation.colocated_data import validate_structure
 from pyaerocom.io.readungridded import ReadUngridded
 import pyaerocom
 import time
 import pandas as pd
-import cf_units
 import datetime
 
 
@@ -124,7 +124,7 @@ class UEMEPColocator:
         logger.info("Using uemep variable '%s' for aerocom variable '%s'", uemep_name, var)
 
         uemep_data = self.uemep_station_data[uemep_name].swap_dims({"station_id": "station_name"})
-        model_unit = cf_units.Unit(uemep_data.attrs["units"])
+        model_unit = PyaerocomUnit(uemep_data.attrs["units"])
         uemep_data = uemep_data.assign_coords(
             {"station_name": uemep_data.station_name.astype(str)}
         ).assign_coords({"time": uemep_data.time + pd.Timedelta(minutes=30)})
@@ -175,7 +175,7 @@ class UEMEPColocator:
                     logger.warning("Length of timeseries for '%s' is 0.", station.station_id)
                     continue
 
-                unit = cf_units.Unit(station.var_info[var]["units"])
+                unit = PyaerocomUnit(station.var_info[var]["units"])
 
                 conversion_factor = get_unit_conversion_fac(unit, model_unit)
                 if conversion_factor != 1:

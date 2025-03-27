@@ -12,6 +12,9 @@ from pyaerocom.io.aux_read_cubes import (
 )
 from pyaerocom.units.molecular_mass import get_molmass
 
+from pyaerocom.units import PyaerocomUnit
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +62,7 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
         component_unit_fac = 1
     Rspecific = 287.058  # J kg-1 K-1
 
-    conversion_fac = 1 / cf_units.Unit("mol mol-1").convert(1, vmr_unit)
+    conversion_fac = 1 / PyaerocomUnit("mol mol-1").convert(1, vmr_unit)
 
     airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
@@ -67,7 +70,7 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
     mult_fun = CUBE_MATHS["multiply"]
     conc = mult_fun(data, mulfac)  # kg m-3
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit("kg m-3").convert(1, to_unit) * component_unit_fac
+        conversion_fac *= PyaerocomUnit("kg m-3").convert(1, to_unit) * component_unit_fac
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         conc = mult_fun(conc, conversion_fac)
 
