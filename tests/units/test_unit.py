@@ -1,7 +1,8 @@
 import pytest
-
+import pandas as pd
 
 from pyaerocom.units import PyaerocomUnit
+from pyaerocom.units.exceptions import UnitConversionError
 from pyaerocom.units.unit import UnitConversionCallbackInfo
 
 
@@ -52,3 +53,18 @@ def test_PyaerocomUnit_conversion_callback():
     u.convert(1, "mg m-2 h-1", callback=callback)
 
     assert callback_ran
+
+
+def test__unit_conversion_fac_custom_FAIL(monkeypatch):
+    MOCK_UCONV_MUL_FACS = pd.DataFrame(
+        [
+            ["concso4", "ug S/m3", "ug m-3", 1],
+            ["concso4", "ug S/m3", "ug m-3", 2],
+        ],
+        columns=["var_name", "from", "to", "fac"],
+    ).set_index(["var_name", "from"])
+    monkeypatch.setattr("pyaerocom.units.unit.PyaerocomUnit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
+
+    with pytest.raises(UnitConversionError) as e:
+        PyaerocomUnit("ug S/m3", aerocom_var="concso4")
+    assert "Could not find unique conversion factor in table" in str(e.value)
