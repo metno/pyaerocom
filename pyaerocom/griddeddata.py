@@ -44,7 +44,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
-from pyaerocom.units import PyaerocomUnit
+from pyaerocom.units import Unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
@@ -757,7 +757,7 @@ class GriddedData:
         cube = self.grid
         if "invalid_units" in cube.attributes:
             try:
-                cube.units = str(PyaerocomUnit(cube.attributes["invalid_units"]))
+                cube.units = str(Unit(cube.attributes["invalid_units"]))
             except ValueError:
                 pass
             else:
@@ -778,7 +778,7 @@ class GriddedData:
             current_unit = self.units
             if to_unit == current_unit:  # string match e.g. both are m-1
                 unit_ok = True
-            elif PyaerocomUnit(to_unit).convert(1, current_unit) == 1:
+            elif Unit(to_unit).convert(1, current_unit) == 1:
                 self.units = to_unit
                 logger.info(
                     f"Updating unit string from {current_unit} to {to_unit} in GriddedData."

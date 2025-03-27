@@ -16,6 +16,10 @@ from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.griddeddata import GriddedData
 
 
+from pyaerocom.varnameinfo import VarNameInfo
+from pyaerocom.units import Unit
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -199,10 +203,6 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     Cube
         Cube containing Angstrom exponent(s)
     """
-    from cf_units import Unit
-
-    from pyaerocom.varnameinfo import VarNameInfo
-
     cube1, cube2 = _check_input_iscube(cube1, cube2)
     if lambda1 is None:
         lambda1 = VarNameInfo(cube1.var_name).wavelength_nm

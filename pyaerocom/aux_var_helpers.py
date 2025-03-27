@@ -1,4 +1,3 @@
-import cf_units
 import numpy as np
 
 from pyaerocom import const
@@ -7,6 +6,8 @@ from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversio
 from pyaerocom.variable_helpers import get_variable
 
 from pyaerocom.units.molecular_mass import get_molmass
+
+from pyaerocom.units import Unit
 
 
 def calc_ang4487aer(data):
@@ -767,13 +768,13 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
 
     Rspecific = 287.058  # J kg-1 K-1
 
-    conversion_fac = 1 / cf_units.Unit("mol mol-1").convert(1, vmr_unit)
+    conversion_fac = 1 / Unit("mol mol-1").convert(1, vmr_unit)
 
     airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
     conc = data * mulfac  # kg m-3
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit("kg m-3").convert(1, to_unit)
+        conversion_fac *= Unit("kg m-3").convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         conc *= conversion_fac
     return conc
@@ -815,13 +816,13 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
     Rspecific = 287.058  # J kg-1 K-1
 
-    conversion_fac = 1 / cf_units.Unit("kg m-3").convert(1, conc_unit)
+    conversion_fac = 1 / Unit("kg m-3").convert(1, conc_unit)
 
     airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
     vmr = data / mulfac  # unitless
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit("mole mole-1").convert(1, to_unit)
+        conversion_fac *= Unit("mole mole-1").convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         vmr *= conversion_fac
     return vmr

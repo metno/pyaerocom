@@ -1,4 +1,4 @@
-from .unit import PyaerocomUnit
+from .unit import Unit
 from typing import TypeVar
 from pyaerocom.units.exceptions import UnitConversionError
 
@@ -43,8 +43,8 @@ def convert_unit(
         data in new unit
     """
     try:
-        data = PyaerocomUnit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
-            data, other=PyaerocomUnit(to_unit, aerocom_var=var_name, ts_type=ts_type)
+        data = Unit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
+            data, other=Unit(to_unit, aerocom_var=var_name, ts_type=ts_type)
         )
     except ValueError as e:
         raise UnitConversionError(

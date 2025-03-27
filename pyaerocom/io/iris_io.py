@@ -15,8 +15,6 @@ import iris
 import iris.coords
 import iris.util
 
-from pyaerocom.units import PyaerocomUnit
-
 try:
     # as of iris version 3
     from iris.util import equalise_attributes
@@ -40,6 +38,8 @@ from pyaerocom.helpers import make_datetimeindex_from_year
 from pyaerocom.io.file_conventions import FileConventionRead
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.units.datetime import TsType, cftime_to_datetime64
+
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -282,9 +282,9 @@ def _check_cube_unitless(cube):
     if var not in const.VARS:
         raise VariableDefinitionError(f"No such pyaerocom default variable: {cube.var_name}")
 
-    unit = cf_units.Unit(cube.units)
+    unit = Unit(cube.units)
     if str(const.VARS[var].units) == "1" and unit.is_unknown():
-        cube.units = PyaerocomUnit("1")
+        cube.units = Unit("1")
     return cube
 
 
@@ -513,7 +513,7 @@ def correct_time_coord(cube, ts_type, year):
     tunit_str = f"{tres_str} since {year}-01-01 00:00:00"
     num = cube.shape[tindex_cube]
 
-    tunit = PyaerocomUnit(tunit_str, calendar=cf_units.CALENDAR_STANDARD)
+    tunit = Unit(tunit_str, calendar=cf_units.CALENDAR_STANDARD)
     tres_np = ts_type.timedelta64_str  # TSTR_TO_NP_TD[ts_type]
     base = np.datetime64(f"{year}-01-01 00:00:00").astype(conv)
     times = base + np.arange(0, num, 1).astype(tres_np)

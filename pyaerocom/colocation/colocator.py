@@ -38,7 +38,7 @@ from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units import PyaerocomUnit
+from pyaerocom.units import Unit
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -890,11 +890,11 @@ class Colocator:
 
         if hasattr(coldata, "vertical_layer"):
             # save colocated vertical layer netCDF files with vertical layers in km
-            if not PyaerocomUnit(coldata.data.altitude_units) == PyaerocomUnit("km"):
-                start = PyaerocomUnit(coldata.data.altitude_units).convert(
+            if not Unit(coldata.data.altitude_units) == Unit("km"):
+                start = Unit(coldata.data.altitude_units).convert(
                     coldata.vertical_layer["start"], other="km"
                 )
-                end = PyaerocomUnit(coldata.data.altitude_units).convert(
+                end = Unit(coldata.data.altitude_units).convert(
                     coldata.vertical_layer["end"], other="km"
                 )
                 vertical_layer = {"start": start, "end": end}

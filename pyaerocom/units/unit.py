@@ -39,7 +39,7 @@ class UnitConversionCallbackInfo(TypedDict):
 UnitConversionCallbackHandler = Callable[[UnitConversionCallbackInfo], None]
 
 
-class PyaerocomUnit:
+class Unit:
     """Pyaerocom specific encapsulation of cf_units.Unit that extends it
     with additional needed behaviour.
 
@@ -130,10 +130,10 @@ class PyaerocomUnit:
         aerocom_var: str | None = None,
         ts_type: str | TsType | None = None,
     ) -> None:
-        unit = PyaerocomUnit._UALIASES.get(str(unit), str(unit))
+        unit = Unit._UALIASES.get(str(unit), str(unit))
 
         try:
-            info = PyaerocomUnit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
+            info = Unit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
             if not isinstance(info, pd.Series):
                 raise UnitConversionError(
                     "FATAL: Could not find unique conversion factor in table PyaerocomUnit._UCONV_MUL_FACS."
@@ -199,7 +199,7 @@ class PyaerocomUnit:
     def modulus(self) -> float | None:
         return self._cfunit.modulus
 
-    def is_convertible(self, other: str | PyaerocomUnit) -> bool:
+    def is_convertible(self, other: str | Unit) -> bool:
         return self._cfunit.is_convertible(other)
 
     def is_dimensionless(self) -> bool:
@@ -226,20 +226,20 @@ class PyaerocomUnit:
     def definition(self) -> str:
         return self._cfunit.definition
 
-    def offset_by_time(self, origin: float) -> PyaerocomUnit:
-        return PyaerocomUnit(
+    def offset_by_time(self, origin: float) -> Unit:
+        return Unit(
             self._cfunit.offset_by_time(origin),
             calendar=self._cfunit.calendar,
             aerocom_var=self._aerocom_var,
         )
 
-    def invert(self) -> PyaerocomUnit:
+    def invert(self) -> Unit:
         return self._cfunit.invert()
 
-    def root(self, root: int) -> PyaerocomUnit:
+    def root(self, root: int) -> Unit:
         return self._cfunit.root(root)
 
-    def log(self, base: float) -> PyaerocomUnit:
+    def log(self, base: float) -> Unit:
         return self._cfunit.log(base)
 
     def __str__(self) -> str:
@@ -248,26 +248,26 @@ class PyaerocomUnit:
     def __repr__(self) -> str:
         return self._cfunit.__repr__()
 
-    def __add__(self, other: float) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.__add__(other))
+    def __add__(self, other: float) -> Unit:
+        return Unit.from_cf_units(self._cfunit.__add__(other))
 
-    def __sub__(self, other: float) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.__sub__(other))
+    def __sub__(self, other: float) -> Unit:
+        return Unit.from_cf_units(self._cfunit.__sub__(other))
 
-    def __mul__(self, other: float | str | PyaerocomUnit) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.__mul__(other))
+    def __mul__(self, other: float | str | Unit) -> Unit:
+        return Unit.from_cf_units(self._cfunit.__mul__(other))
 
-    def __div__(self, other: float | str | PyaerocomUnit) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.__div__(other))
+    def __div__(self, other: float | str | Unit) -> Unit:
+        return Unit.from_cf_units(self._cfunit.__div__(other))
 
-    def __truediv__(self, other: float | str | PyaerocomUnit) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.__truediv__(other))
+    def __truediv__(self, other: float | str | Unit) -> Unit:
+        return Unit.from_cf_units(self._cfunit.__truediv__(other))
 
-    def __pow__(self, power: float) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.__pow__(power))
+    def __pow__(self, power: float) -> Unit:
+        return Unit.from_cf_units(self._cfunit.__pow__(power))
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, PyaerocomUnit):
+        if isinstance(other, Unit):
             return self._cfunit.__eq__(other)
 
         other = cf_units.Unit(other)
@@ -276,8 +276,8 @@ class PyaerocomUnit:
     def __ne__(self, other: object) -> bool:
         return self._cfunit.__ne__(other)
 
-    def change_calendar(self, calendar: str) -> PyaerocomUnit:
-        return PyaerocomUnit.from_cf_units(self._cfunit.change_calendar(calendar))
+    def change_calendar(self, calendar: str) -> Unit:
+        return Unit.from_cf_units(self._cfunit.change_calendar(calendar))
 
     @overload
     def convert(
@@ -325,7 +325,7 @@ class PyaerocomUnit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        to_unit = PyaerocomUnit(other, **kwargs)._cfunit
+        to_unit = Unit(other, **kwargs)._cfunit
         factor = float(self._cfunit.convert(1, to_unit, inplace=False))
 
         if inplace:

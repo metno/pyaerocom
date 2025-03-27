@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 
-from pyaerocom.units import PyaerocomUnit
+from pyaerocom.units import Unit
 from pyaerocom.units.exceptions import UnitConversionError
 from pyaerocom.units.unit import UnitConversionCallbackInfo
 
@@ -17,7 +17,7 @@ from pyaerocom.units.unit import UnitConversionCallbackInfo
 def test_PyaerocomUnit_custom_scaling(
     unit: str, aerocom_var: str | None, to_unit: str, exp_mul: float
 ):
-    u = PyaerocomUnit(unit, aerocom_var=aerocom_var)
+    u = Unit(unit, aerocom_var=aerocom_var)
 
     assert u.convert(1, other=to_unit) == pytest.approx(exp_mul)
 
@@ -31,12 +31,12 @@ def test_PyaerocomUnit_custom_scaling(
     ),
 )
 def test_PyaerocomUnit_implicit_frequency(unit: str, tstype: str | None, output_cf_unit: str):
-    u = PyaerocomUnit(unit, aerocom_var="depdust", ts_type=tstype)
+    u = Unit(unit, aerocom_var="depdust", ts_type=tstype)
     assert str(u) == output_cf_unit
 
 
 def test_PyaerocomUnit_conversion_callback():
-    u = PyaerocomUnit("mg m-2", aerocom_var="depdust", ts_type="daily")
+    u = Unit("mg m-2", aerocom_var="depdust", ts_type="daily")
 
     callback_ran = False
 
@@ -63,8 +63,8 @@ def test__unit_conversion_fac_custom_FAIL(monkeypatch):
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
-    monkeypatch.setattr("pyaerocom.units.unit.PyaerocomUnit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
+    monkeypatch.setattr("pyaerocom.units.unit.Unit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
 
     with pytest.raises(UnitConversionError) as e:
-        PyaerocomUnit("ug S/m3", aerocom_var="concso4")
+        Unit("ug S/m3", aerocom_var="concso4")
     assert "Could not find unique conversion factor in table" in str(e.value)
