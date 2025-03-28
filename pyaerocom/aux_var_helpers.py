@@ -28,7 +28,7 @@ def calc_ang4487aer(data):
 
     Raises
     ------
-    AttributError
+    AttributeError
         if either 'od440aer' or 'od870aer' are not available in data object
 
     Returns
@@ -329,7 +329,7 @@ def compute_ang4470dryaer_from_dry_scat(data):
 
 
 def compute_sc550dryaer(data):
-    """Compute dry scattering coefficent applying RH threshold
+    """Compute dry scattering coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -356,7 +356,7 @@ def compute_sc550dryaer(data):
 
 
 def compute_sc440dryaer(data):
-    """Compute dry scattering coefficent applying RH threshold
+    """Compute dry scattering coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -378,7 +378,7 @@ def compute_sc440dryaer(data):
 
 
 def compute_sc700dryaer(data):
-    """Compute dry scattering coefficent applying RH threshold
+    """Compute dry scattering coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -400,7 +400,7 @@ def compute_sc700dryaer(data):
 
 
 def compute_ac550dryaer(data):
-    """Compute aerosol dry absorption coefficent applying RH threshold
+    """Compute aerosol dry absorption coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 

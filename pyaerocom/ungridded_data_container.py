@@ -456,7 +456,7 @@ class UngriddedDataContainer(abc.ABC):
         ----------
         inplace : bool
             if True, the flagged datapoints will be set to NaN in this object,
-            otherwise a new oject will be created and returned
+            otherwise a new object will be created and returned
 
         Returns
         -------
@@ -498,7 +498,7 @@ class UngriddedDataContainer(abc.ABC):
             variable name
         inplace : bool
             if True, the outliers will be removed in this object, otherwise
-            a new oject will be created and returned
+            a new object will be created and returned
         low : float
             lower end of valid range for input variable. If None, then the
             corresponding value from the default settings for this variable

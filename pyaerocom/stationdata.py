@@ -405,7 +405,7 @@ class StationData(StationMetaData):
             to a single value.
         quality_check : bool
             if True, and coordinate values are lists or arrays, then the
-            standarad deviation in the values is compared to the upper limits
+            standard deviation in the values is compared to the upper limits
             allowed in the local variation. The upper limits are specified
             in attr. ``COORD_MAX_VAR``.
         add_none_vals : bool
@@ -540,7 +540,7 @@ class StationData(StationMetaData):
             elif current_val != val:
                 self[key] = [current_val, val]
 
-            else:  # they shoul be the same
+            else:  # they should be the same
                 assert current_val == val, (current_val, val)
         except Exception as e:
             raise MetaDataError(
@@ -714,7 +714,7 @@ class StationData(StationMetaData):
         ts_type = self.get_var_ts_type(var_name)
         ts_type1 = other.get_var_ts_type(var_name)
         if ts_type != ts_type1:
-            # make sure each variable in the object has explicitely ts_type
+            # make sure each variable in the object has explicitly ts_type
             # assigned (rather than global specification)
 
             self._update_var_timeinfo()
@@ -1345,7 +1345,7 @@ class StationData(StationMetaData):
                     raise ValueError("no data in specified altitude range")
                 return result
 
-            raise DataExtractionError("Cannot intepret input for altitude...")
+            raise DataExtractionError("Cannot interpret input for altitude...")
 
         elif isinstance(data, pd.Series) or len(self.dtime) == len(data):
             if "altitude" not in self:

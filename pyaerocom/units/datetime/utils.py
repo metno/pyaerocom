@@ -127,7 +127,7 @@ def get_tot_number_of_seconds(ts_type: str, dtime: pd.Series | None = None):
     if ts_tpe >= TsType("monthly"):
         if dtime is None:
             raise AttributeError(
-                "For frequncies larger than or eq. monthly you"
+                "For frequencies larger than or eq. monthly you"
                 + " need to provide dtime in order to compute the number of second."
             )
         if not ts_type == "monthly":

@@ -614,7 +614,7 @@ class ExperimentOutput(ProjectOutput):
         stored in the map subdirectory of an existing AeroVal experiment. In
         complex setup cases the variable mapping (model / obs variables)
         used in these json filenames may not be the trivial one expected from
-        the configuaration. These are cases where one specifies
+        the configuration. These are cases where one specifies
         model_add_vars, or model_use_vars or model_rename_vars in a model
         entry.
 
@@ -651,7 +651,7 @@ class ExperimentOutput(ProjectOutput):
 
         # search obs entry (may have web_interface_name set, so have to
         # check keys of ObsCollection but also the individual entries for
-        # occurence of web_interface_name).
+        # occurrence of web_interface_name).
         allobs = self.cfg.obs_cfg
         obs_matches = []
         for ocfg in allobs:
@@ -784,7 +784,7 @@ class ExperimentOutput(ProjectOutput):
         Parameters
         ----------
         avail : dict
-            nested dictionary contining info about available results
+            nested dictionary containing info about available results
 
         Returns
         -------
@@ -1054,7 +1054,7 @@ class ExperimentOutput(ProjectOutput):
                     + float(coldata.data.attrs["vertical_layer"]["start"])
                 ) / 2
                 if "z" not in current[model_name]:
-                    current[model_name]["z"] = [midpoint]  # initalize with midpoint
+                    current[model_name]["z"] = [midpoint]  # initialize with midpoint
 
                 if (
                     midpoint > current[model_name]["z"][-1]

@@ -207,7 +207,7 @@ class ColocationSetup(BaseModel):
         reading API is more harmonised
         (see https://github.com/metno/pyaerocom/issues/174).
     flex_ts_type : bool
-        Bboolean specifying whether reading frequency of gridded data is
+        Boolean specifying whether reading frequency of gridded data is
         allowed to be flexible. This includes all gridded data, whether it is
         model or gridded observation (e.g. satellites). Defaults to True.
     min_num_obs : dict or int, optional

@@ -255,7 +255,7 @@ class PyaroToUngriddedData:
         for var in vars_to_retrieve:
             if var not in allowed_vars:
                 logger.warning(
-                    f"Variable {var} not in list over allowed variabes for {self.config.reader_id}: {allowed_vars}"
+                    f"Variable {var} not in list over allowed variables for {self.config.reader_id}: {allowed_vars}"
                 )
                 continue
 

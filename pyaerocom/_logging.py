@@ -3,7 +3,7 @@ Logging configuration and package metadata helpers
 
 NOTE:
 All pyaerocom child modules share the logging configuration
-- all logging messages are time stamped and writen out to file
+- all logging messages are time stamped and written out to file
 - some messages are also printed to the console
 - log files are kept up to 14 days
 - logging configuration is read from pyaerocom/data/logging.ini

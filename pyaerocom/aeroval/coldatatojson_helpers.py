@@ -284,7 +284,7 @@ def _process_one_station_weekly(stat_name, i, repw_res, meta_glob, time):
     Returns
     -------
     ts_data : dict
-        Dictinary of time series data and metadata for one station. Contains all
+        Dictionary of time series data and metadata for one station. Contains all
         resolutions/averaging windows.
     has_data : bool
         Set to false if all data is missing for a station.
@@ -435,7 +435,7 @@ def _process_weekly_object_to_country_time_series(repw_res, meta_glob, regions_h
 def _process_sites_weekly_ts(coldata, regions_how, region_ids, meta_glob):
     """
     Private helper function to process ColocatedData objects into dictionaries
-    containing represenative weekly time series with hourly resolution.
+    containing representative weekly time series with hourly resolution.
 
     Processing the coloceted data object into a collection of representative
     weekly time series is done in the private function _create_diurnal_weekly_data_object.
@@ -447,7 +447,7 @@ def _process_sites_weekly_ts(coldata, regions_how, region_ids, meta_glob):
     coldata : ColocatedData
         The colocated data to process.
     regions_how : string
-        Srting describing how regions are to be processed. Regional time series
+        String describing how regions are to be processed. Regional time series
         are only calculated if regions_how = country.
     region_ids : dict
         Dict containing mapping of region IDs and names.
@@ -849,7 +849,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
     Function for generating trends from timeseries
 
-    Includes fomatting in a way
+    Includes formatting in a way
     that can be serialized to json. A key, map_var, is added
     for use in the web interface.
 
@@ -881,7 +881,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     Returns
     ------
     (dict, dict)
-        Dicts consiting of the trends data for the obs and mod
+        Dicts consisting of the trends data for the obs and mod
     """
 
     if stop - start < min_yrs:
@@ -948,7 +948,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     Returns
     ------
     (dict, dict)
-        Dicts consiting of the trends data for the obs and mod
+        Dicts consisting of the trends data for the obs and mod
     """
 
     # The model and observation data are made to pandas times series

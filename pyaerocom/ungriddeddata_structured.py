@@ -164,7 +164,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             start, stop = start_stop(start, stop)
 
         if isinstance(meta_idx, str):
-            # user asks explicitely for station name, find all meta indices
+            # user asks explicitly for station name, find all meta indices
             # that match this station
             meta_idx = self.find_station_meta_indices(meta_idx, allow_wildcards_station_name)
         if not isinstance(meta_idx, list):
@@ -300,7 +300,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         except KeyError:
             pass
 
-        # assign station coordinates explicitely
+        # assign station coordinates explicitly
         for ck in sd.STANDARD_COORD_KEYS:
             try:
                 sd.station_coords[ck] = meta[ck]

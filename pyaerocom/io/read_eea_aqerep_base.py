@@ -297,7 +297,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         except Exception:
             if suffix == ".gz":
                 os.remove(f_out.name)
-            raise EEAv2FileError(f"Found corrupt file {filename}. consider deleteing it")
+            raise EEAv2FileError(f"Found corrupt file {filename}. consider deleting it")
 
         # remove the temp file in case the input file was a gz file
         if suffix == ".gz":
@@ -344,7 +344,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         rows[idx][0:10] + "T" + rows[idx][11:19]
                     )
                     # due to the deprecation of the timezone interpretation after numpy 0.11
-                    # we have to substract the offset manually to get to UTC.
+                    # we have to subtract the offset manually to get to UTC.
                     # np.timedelta64 does not accept a float as parameter, only an integer.
                     # Although there are time zones with a 30 minutes offset, these don't
                     # exist in Europe, so just consider integer hours here for speed
@@ -363,7 +363,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if data_dict["unitofmeasurement"] == "":
             if rows[12] == "":
                 raise EEAv2FileError(
-                    f"Unit of Measurment could not be inferred from EEA file {filename}"
+                    f"Unit of Measurement could not be inferred from EEA file {filename}"
                 )
             else:
                 # with loss of generality get the unitofmeasurement from the last row column 12 (which should be a kept header)
@@ -488,7 +488,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         with open(filename) as f:
             # read header...
-            # Countrycode Timezone Namespace   AirQualityNetwork AirQualityStation AirQualityStationEoICode   AirQualityStationNatCode   SamplingPoint  SamplingProces Sample   AirPollutantCode  ObservationDateBegin ObservationDateEnd   Projection  Longitude   Latitude Altitude MeasurementType   AirQualityStationType   AirQualityStationArea   EquivalenceDemonstrated MeasurementEquipment InletHeight BuildingDistance  KerbDistance
+            # Countrycode Timezone Namespace   AirQualityNetwork AirQualityStation AirQualityStationEoICode   AirQualityStationNatCode   SamplingPoint  SamplingProcess Sample   AirPollutantCode  ObservationDateBegin ObservationDateEnd   Projection  Longitude   Latitude Altitude MeasurementType   AirQualityStationType   AirQualityStationArea   EquivalenceDemonstrated MeasurementEquipment InletHeight BuildingDistance  KerbDistance
             header = f.readline().lower().rstrip().split()
             min_row_no = len(header)
             # create output dict

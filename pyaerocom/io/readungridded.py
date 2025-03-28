@@ -41,7 +41,7 @@ class ReadUngridded:
     """Factory class for reading of ungridded data based on obsnetwork ID
 
     This class also features reading functionality that goes beyond reading
-    of inidividual observation datasets; including, reading of multiple
+    of individual observation datasets; including, reading of multiple
     datasets and post computation of new variables based on datasets that can
     be read.
 
@@ -427,7 +427,7 @@ class ReadUngridded:
 
         if data_id in self.data_dirs:
             ddir = self.data_dirs[data_id]
-            logger.info(f"Reading {data_id} from specified data loaction: {ddir}")
+            logger.info(f"Reading {data_id} from specified data location: {ddir}")
         else:
             ddir = None
 
@@ -512,7 +512,7 @@ class ReadUngridded:
             )
         cache = CacheHandlerUngridded(reader)
         if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
-            # initate cache handler
+            # initiate cache handler
             for var in vars_available:
                 try:
                     cache.check_and_load(var, force_use_outdated=only_cached)

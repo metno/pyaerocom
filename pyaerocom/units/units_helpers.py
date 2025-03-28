@@ -34,7 +34,7 @@ def convert_unit(
         :mod:`cf_units` fails, then custom unit conversion is attempted.
     ts_type : str, optional
         frequency of data. May be needed for conversion of rate variables
-        such as precip, deposition, etc, that may be defined implictly
+        such as precip, deposition, etc, that may be defined implicitly
         without proper frequency specification in the unit string.
 
     Returns

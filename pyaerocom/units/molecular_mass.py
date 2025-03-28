@@ -42,7 +42,7 @@ _MOLMASSES = {
 }
 
 
-class UnkownSpeciesError(ValueError):
+class UnknownSpeciesError(ValueError):
     pass
 
 
@@ -57,7 +57,7 @@ def _get_species(aerocom_var: str) -> str:
 
     Raises
     ------
-    UnkownSpeciesError
+    UnknownSpeciesError
         if species cannot be inferred
 
     Returns
@@ -74,7 +74,7 @@ def _get_species(aerocom_var: str) -> str:
             # if species in _MOLMASSES:
             return species
 
-    raise UnkownSpeciesError(
+    raise UnknownSpeciesError(
         f"Could not infer atom / molecule/ species from var_name {aerocom_var}"
     )
 
@@ -246,7 +246,7 @@ def get_molmass(aerocom_varname: str) -> float:
     """
     try:
         mass = MolecularMass.from_aerocom_var(aerocom_varname).mass
-    except UnkownSpeciesError:
+    except UnknownSpeciesError:
         # This function previously was used on pure formulas even though it is only
         # supposed to be used on var_names.
         # This maintains backward compatibility for those cases.

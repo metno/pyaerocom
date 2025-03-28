@@ -157,7 +157,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         if len(nums) == 1:
             if low <= int(nums[0]) <= high:
                 self.logger.debug(
-                    f"Succesfully extracted wavelength {nums[0]} nm from column name {colname}"
+                    f"Successfully extracted wavelength {nums[0]} nm from column name {colname}"
                 )
                 return nums[0]
         raise ValueError(f"Failed to extract wavelength from colname {colname}")
@@ -386,7 +386,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1
                 continue
-            # Fill the metatdata dict
+            # Fill the metadata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot

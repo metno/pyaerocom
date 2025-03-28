@@ -106,7 +106,7 @@ def test_SUPPORTED_DATASETS(reader: ReadAirNow):
 def test_UNIT_MAP(reader: ReadAirNow):
     # units found in file
     UNITS = {
-        "C": "celcius",
+        "C": "celsius",
         "M/S": "m s-1",
         "MILLIBAR": "mbar",
         "MM": "mm",
