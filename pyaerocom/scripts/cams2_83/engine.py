@@ -367,12 +367,12 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
 
-        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1, where=mask)
-        rmse_p = np.nanmean((p_diff_vals)**2, axis=1, where=mask)
+        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1)#, where=mask)
+        rmse_p = np.nanmean((p_diff_vals)**2, axis=1)#, where=mask)
 
         mqi = rmse_m/rmse_p
 
-        mb_p = np.nanmean((mod_vals-obs_vals), axis=1, where=mask)/rmse_p
+        mb_p = np.nanmean((mod_vals-obs_vals), axis=1)/rmse_p#, where=mask)/rmse_p
 
         results = {str(station_mask[0][i]): [mb_p[i],mqi[i]] for i in range(len(mqi))}
 
