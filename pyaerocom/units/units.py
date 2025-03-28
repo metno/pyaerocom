@@ -207,14 +207,16 @@ class Unit:
         return Unit.from_cf_units(self._cfunit.__truediv__(other))
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, Unit):
-            return self._cfunit.__eq__(other)
+        if not isinstance(other, Unit):
+            try:
+                other = Unit(other)
+            except ValueError:
+                return False
 
-        other = cf_units.Unit(other)
-        return self._cfunit.__eq__(other)
+        return self._cfunit.__eq__(other._cfunit)
 
     def __ne__(self, other: object) -> bool:
-        return self._cfunit.__ne__(other)
+        return not self.__eq__(other)
 
     @overload
     def convert(

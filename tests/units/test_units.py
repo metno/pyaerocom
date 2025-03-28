@@ -85,3 +85,19 @@ def test_is_convertible(from_unit: str, to_unit: str, is_convertible: bool):
 def test_is_dimensionless():
     assert not Unit("m").is_dimensionless()
     assert Unit("1").is_dimensionless()
+
+
+@pytest.mark.parametrize(
+    "from_unit,to_unit,is_equal,aerocom_var,ts_type",
+    (
+        ("meter", "meter", True, None, None),
+        ("meter", "cm", False, None, None),
+        ("ug S/m3", "1.9979354436301264 ug m-3", True, "concso2", None),
+        ("g m-2", "g m-2 d-1", True, "depdust", "daily"),
+    ),
+)
+def test_equality(
+    from_unit: str, to_unit: str, is_equal: bool, aerocom_var: str | None, ts_type: str | None
+):
+    assert (Unit(from_unit, aerocom_var=aerocom_var, ts_type=ts_type) == Unit(to_unit)) == is_equal
+    assert (Unit(from_unit, aerocom_var=aerocom_var, ts_type=ts_type) != Unit(to_unit)) != is_equal
