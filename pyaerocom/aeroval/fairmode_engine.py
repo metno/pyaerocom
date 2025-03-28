@@ -141,6 +141,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         self, data: xr.DataArray, var_name: str, use_weights: bool
     ) -> dict[str, dict[str, float]]:
         stations = data.station_name.values
+        station_types = data.station_type.values
 
         obsvals = data.data[0]
         modvals = data.data[1]
@@ -187,6 +188,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
                 beta_mqi=[mqi[i]],
                 bias_mb=[mb[i]],
                 persistent_model=False,
+                station_type=station_types[i],
                 **SPECIES[var_name],
             )
             for i in range(len(stations))

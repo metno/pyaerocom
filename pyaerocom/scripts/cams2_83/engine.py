@@ -148,17 +148,17 @@ class CAMS2_83_Engine(ProcessingEngine):
                     except (DataCoverageError, UnknownRegion) as e:
                         logger.info(f"Skipping forecast plot due to error {str(e)}")
                         continue
-                    # if calc_medianscores:
-                        # for forecast_hour in range(24 * forecast_days):
-                        #     logger.debug(f"Calculating statistics for hour {forecast_hour}")
-                        #     leap, hour = divmod(forecast_hour, 24)
-                        #     ds = subset[leap]
-                        #     ds = ds.data.sel(time=(ds.time.dt.hour == hour))
-                        #     start = time.time()
-                        #     stats = self._get_median_stats_point_vec(ds, use_weights)
-                        #     logger.debug(time.time() - start)
-                        #     for key in stats_list:
-                        #         stats_list[key].append(stats[key])
+                    if calc_medianscores:
+                        for forecast_hour in range(24 * forecast_days):
+                            logger.debug(f"Calculating statistics for hour {forecast_hour}")
+                            leap, hour = divmod(forecast_hour, 24)
+                            ds = subset[leap]
+                            ds = ds.data.sel(time=(ds.time.dt.hour == hour))
+                            start = time.time()
+                            stats = self._get_median_stats_point_vec(ds, use_weights)
+                            logger.debug(time.time() - start)
+                            for key in stats_list:
+                                stats_list[key].append(stats[key])
 
                     if use_fairmode and var_name in SPECIES:
 
