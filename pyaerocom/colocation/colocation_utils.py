@@ -108,8 +108,7 @@ def _regrid_gridded(gridded, regrid_scheme: str, regrid_res_deg: RegridResDeg):
     if not isinstance(regrid_res_deg, dict):  # at runtime RegridResDeg is a dict
         if not isnumeric(regrid_res_deg):
             raise ValueError(
-                "Invalid input for regrid_res_deg. Need integer "
-                "or dict specifying lat and lon res"
+                "Invalid input for regrid_res_deg. Need integer or dict specifying lat and lon res"
             )
         regrid_res_deg = dict(lat_res_deg=regrid_res_deg, lon_res_deg=regrid_res_deg)
 

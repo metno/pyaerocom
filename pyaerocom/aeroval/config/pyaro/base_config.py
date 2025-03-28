@@ -454,7 +454,6 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         #     },
         #
         # ),
-
         ##################
         #    EBAS
         ##################

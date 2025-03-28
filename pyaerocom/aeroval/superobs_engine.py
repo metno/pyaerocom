@@ -88,8 +88,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
 
         if len(np.unique(vert_codes)) > 1 or vert_codes[0] != vert_code:
             raise ValueError(
-                "Cannot merge observations with different vertical types into "
-                "super observation..."
+                "Cannot merge observations with different vertical types into super observation..."
             )
 
         if not len(coldata_files) == len(obs_needed):
