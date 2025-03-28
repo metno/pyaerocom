@@ -13,7 +13,6 @@ from pyaerocom.data import resources
 
 logger = logging.getLogger(__name__)
 
-
 # Constraints
 DEFAULT_RESAMPLE_CONSTRAINTS = dict(
     yearly=dict(monthly=9),
@@ -34,7 +33,6 @@ OC_EC_RESAMPLE_CONSTRAINTS = dict(
     daily=dict(hourly=18),
     hourly=dict(minutely=45),
 )
-
 
 OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
     # monthly=dict(daily=4, weekly=1),
@@ -106,11 +104,12 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         "vmro3",
         # "",
     ]
-    ebas_test_vars_diurnal = [
-        "vmro3",
-        # "",
-        # "",
-    ]
+    # Will be used later
+    # ebas_test_vars_diurnal = [
+    # "vmro3",
+    # "",
+    # "",
+    # ]
 
     CFG = dict(
         json_basedir=os.path.abspath("./data"),
@@ -230,10 +229,10 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         "set_flags_nan": True,
     }
 
-    AERONET_FILTER = {
-        **BASE_FILTER,  # Forandring fra Daniel
-        "altitude": [-20, 1000],
-    }
+    # AERONET_FILTER = {
+    #     **BASE_FILTER,  # Forandring fra Daniel
+    #     "altitude": [-20, 1000],
+    # }
 
     # Station filters
 
@@ -392,18 +391,18 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         "VN0001R",
     ]
 
-    EBAS_FILTER = {
-        key: dict(
-            **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year) + height_ignore_ebas,
-            negate="station_id",
-        )
-        for key in ebas_species
-    }
+    # EBAS_FILTER = {
+    #     key: dict(
+    #         **EBAS_FILTER,
+    #         station_id=_get_ignore_stations(key, year) + height_ignore_ebas,
+    #         negate="station_id",
+    #     )
+    #     for key in ebas_species
+    # }
 
-    EEA_FILTER = {
-        **BASE_FILTER,
-    }
+    # EEA_FILTER = {
+    #     **BASE_FILTER,
+    # }
 
     OBS_GROUNDBASED = {
         # actrisebas
