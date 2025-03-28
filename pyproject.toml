@@ -47,7 +47,7 @@ dependencies = [
     'typing-extensions>=4.6.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.3.0',
-    "pydantic>=2.7.1",
+    "pydantic>=2.7.1, <2.11.0",
     "pyproj>=3.0.0",
     "pyaro>=0.1.1",
     "pooch>=1.7.0",
