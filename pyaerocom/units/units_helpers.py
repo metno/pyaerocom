@@ -2,35 +2,14 @@ import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.time_config import SI_TO_TS_TYPE
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime.time_config import SI_TO_TS_TYPE
+from pyaerocom.units.datetime import TsType
 from pyaerocom.variable_helpers import get_variable
+
+from .constants import M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4, HA_TO_SQM
 
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = "d"
-
-# 1. DEFINITION OF ATOM and MOLECULAR MASSES
-
-# Atoms
-M_O = 15.999  # u
-M_S = 32.065  # u
-M_N = 14.0067  # u
-M_H = 1.00784  # u
-
-# Molecules
-M_SO2 = M_S + 2 * M_O
-M_SO4 = M_S + 4 * M_O
-
-M_NO2 = M_N + 2 * M_O
-M_NO3 = M_N + 3 * M_O
-
-M_NH3 = M_N + 3 * M_H
-M_NH4 = M_N + 4 * M_H
-
-# Unit conversion and custom units definitions
-
-# 2.1 Other conversion factors
-HA_TO_SQM = 10000  # hectar to square metre.
 
 # 3. LOOKUP TABLE FOR CONVERSION FACTORS
 
@@ -209,7 +188,7 @@ def _unit_conversion_fac_custom(var_name, from_unit):
         raise UnitConversionError(
             f"Failed to convert unit {from_unit} (variable {var_name}). "
             f"Reason: no custom conversion factor could be inferred from table "
-            f"pyaerocom.units_helpers.UCONV_MUL_FACS"
+            f"pyaerocom.units.units_helpers.UCONV_MUL_FACS"
         )
     return (info.to, info.fac)
 

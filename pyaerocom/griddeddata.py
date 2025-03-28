@@ -23,11 +23,10 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
+from pyaerocom.units.datetime import cftime_to_datetime64, datetime2str, to_pandas_timestamp
 from pyaerocom.helpers import (
-    cftime_to_datetime64,
     check_coord_circular,
     copy_coords_cube,
-    datetime2str,
     delete_all_coords_cube,
     extract_latlon_dataarray,
     get_lat_rng_constraint,
@@ -37,17 +36,16 @@ from pyaerocom.helpers import (
     isrange,
     make_dummy_cube_latlon,
     str_to_iris,
-    to_pandas_timestamp,
 )
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 from pyaerocom.mathutils import estimate_value_range, exponent
 from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
+from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.tstype import TsType
-from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
+from pyaerocom.units.datetime import TsType
+from pyaerocom.units.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -811,7 +809,7 @@ class GriddedData:
         Try convert data to input unit using custom conversion
 
         Helpers for custom conversion are defined in
-        :mod:`pyaerocom.units_helpers`.
+        :mod:`pyaerocom.units.units_helpers`.
 
         Parameters
         ----------
@@ -1626,7 +1624,6 @@ class GriddedData:
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
-        # from pyaerocom.tstype import TsType
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
 

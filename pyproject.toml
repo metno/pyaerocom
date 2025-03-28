@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.28.dev0"
+version = "0.29.dev1"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -23,8 +23,8 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
-    # and minimum versions in the tox config at the bottom of this file!
-    "aerovaldb>=0.2.3",
+    # and minimum versions in the tox config at the bottom of this file!\
+    "aerovaldb>=0.4.1, <0.5.0",
     "scitools-iris>=3.11.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
@@ -74,7 +74,7 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
 ]
-test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging"]
+test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging", "pytest-xdist"]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
@@ -212,7 +212,7 @@ commands_pre =
     python --version
     python -m pip freeze --all
 commands =
-    python -m pytest . -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest . -n auto -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
@@ -222,7 +222,7 @@ deps =
     # Will only run on lowest supported Python version CI test 
     # (currently 3.10).
     # Should be incremented when changing dependencies above.  
-    aerovaldb ==0.2.1; python_version < "3.11"
+    aerovaldb ==0.4.1; python_version < "3.11"
     scitools-iris ==3.11.0; python_version < "3.11"
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"

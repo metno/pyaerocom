@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from typing import Protocol
 
 import pandas as pd
+from pandas.errors import ParserError
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,8 @@ CAMS2_50_DOMAIN = SimpleNamespace(
     lat=(30, 72),  # °N
     lon=(-25, 45),  # °E
 )
+
+DEFAULT_METADATA_NAME = "mf_stations_list_classification_2025.csv"
 
 
 class Domain(Protocol):
@@ -71,4 +74,33 @@ def read_csv(
     if (df.conc <= 0).any():
         logger.warning("found negative obs")
         df = df[df.conc > 0]
-    return df["station lat lon alt time poll conc".split()]
+
+    df = df["station lat lon alt time poll conc".split()]
+
+    metadata_file_path = Path(path).parent.parent / DEFAULT_METADATA_NAME
+    if not metadata_file_path.is_file():
+        logger.warning(f"Metadata file {metadata_file_path} does not exist")
+        return df
+
+    try:
+        df_metadata = read_metadata(metadata_file_path)
+    except ParserError as e:
+        logger.warning(f"Invalid metadata file {path}, {e}")
+        return df
+
+    if df_metadata.empty:
+        logger.warning("Empty metadata")
+        return df
+
+    return df.merge(df_metadata, on="station", how="left")
+
+
+def read_metadata(path: str | Path) -> pd.DataFrame:
+    return pd.read_csv(
+        path,
+        sep=",",
+        header=0,
+        skipinitialspace=True,
+        names="station station_type".split(),
+        usecols=[0, 2],
+    )

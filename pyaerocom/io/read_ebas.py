@@ -2,6 +2,7 @@ import fnmatch
 import logging
 import os
 import re
+from collections.abc import Iterator
 
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
@@ -24,8 +25,8 @@ from pyaerocom.aux_var_helpers import (
     compute_wetoxs_from_concprcpoxsc,
     compute_wetoxs_from_concprcpoxst,
     compute_wetrdn_from_concprcprdn,
-    compute_wetso4_from_concprcpso4,
     compute_wetrdnpr_from_concprcprdn,
+    compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
@@ -44,11 +45,12 @@ from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.stationdata import StationData
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 
@@ -1807,11 +1809,68 @@ class ReadEbas(ReadUngriddedBase):
         files = files[first_file:last_file]
         files_contain = files_contain[first_file:last_file]
 
-        data = self._read_files(files, vars_to_retrieve, files_contain, constraints)
+        data = self._read_files_structured(files, vars_to_retrieve, files_contain, constraints)
 
         data.clear_meta_no_data()
 
         return data
+
+    def _station_data_iterator(self, files, files_contain) -> Iterator[StationData]:
+        """Turn a list of files into a station-data iterator. Some files might be skipped.
+
+        :param files: list of files
+        :param files_contain: list (len(files)) of variables per file
+        :yields: iterator of StationData
+        """
+        logger.info(f"Reading EBAS data from {self.file_dir}")
+        num_files = len(files)
+        for i in tqdm(range(num_files), disable=None):
+            _file = files[i]
+            contains = files_contain[i]
+            try:
+                station_data = self.read_file(_file, vars_to_retrieve=contains)
+            except (
+                NotInFileError,
+                EbasFileError,
+                TemporalResolutionError,
+                TemporalSamplingError,
+            ) as e:
+                self.files_failed.append(_file)
+                self.logger.warning(
+                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
+                )
+                continue
+            except Exception as e:
+                self.files_failed.append(_file)
+                logger.warning(
+                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
+                )
+                continue
+            yield station_data
+
+    def _read_files_structured(self, files, vars_to_retrieve, files_contain, constraints):
+        """Helper that reads list of files into UngriddedDataStructured
+
+        Note
+        ----
+        This method is not supposed to be called directly but is used in
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        self.files_failed = []
+
+        data_obj = UngriddedDataStructured.from_station_data(
+            self._station_data_iterator(files, files_contain), ["station_name_orig"]
+        )
+
+        # Add reading options to filter "history of UngriddedDataObject"
+        filters = self.readopts_default.filter_dict
+        filters.update(constraints)
+        data_obj._add_to_filter_history(filters)
+
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            logger.warning(f"{num_failed} out of {len(files)} could not be read...")
+        return data_obj
 
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
         """Helper that reads list of files into UngriddedData

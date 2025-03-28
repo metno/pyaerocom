@@ -177,7 +177,7 @@ def test_empty_class_header(empty_cfg):
 
     assert cfg.CLIM_START == 2005
     assert cfg.CLIM_STOP == 2015
-    assert cfg.CLIM_FREQ == "daily"
+    assert cfg.CLIM_FREQ == "monthly"
     assert cfg.CLIM_RESAMPLE_HOW == "mean"
     assert cfg.CLIM_MIN_COUNT == dict(daily=30, monthly=5)
 

@@ -17,7 +17,7 @@ import contourpy
 from pyaerocom import GriddedData
 from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 from pyaerocom.helpers import make_datetime_index
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 
 # names of modelmaps type options

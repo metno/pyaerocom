@@ -27,7 +27,7 @@ ignore_earth_radius_warning()
 
 # Sub-packages
 from . import io
-from . import plot
+
 from . import scripts
 
 # Imports
@@ -62,7 +62,7 @@ from .colocation.colocated_data import ColocatedData
 from .colocation.colocator import Colocator
 from .colocation.colocation_setup import ColocationSetup
 from .filter import Filter
-from .tstype import TsType
+from .units.datetime import TsType
 from .time_resampler import TimeResampler
 from .io.helpers import search_data_dir_aerocom
 from .variable_helpers import get_variable

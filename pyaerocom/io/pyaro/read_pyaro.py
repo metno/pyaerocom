@@ -14,7 +14,7 @@ from pyaro.timeseries.Wrappers import VariableNameChangingReader
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.postprocess import PostProcessingReader
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
@@ -199,40 +199,36 @@ class PyaroToUngriddedData:
             # outarray[idx, UngriddedData._TRASHINDEX]  # No need to set, only non-NaN values are considered trash
 
         metadata = dict()
-        # breakpoint()
-        for (station_name, var, units, tstype), station_key in station_mapper.inner.items():
-            try:
-                extra_metadata = stations_with_metadata[station_name].metadata
-                d = {
-                    "data_id": self.config.name,
-                    "station_name": station_name,
-                    "var_info": {
-                        var: {"units": units},
-                    },
-                    **stations_with_metadata[station_name],
-                    **extra_metadata,
-                }
-                if "ts_type" not in d:
-                    d["ts_type"] = tstype
-                metadata[station_key] = d
-                # breakpoint()
-            except KeyError:
-
-                logger.error(f"Station {station_name} has no extra metadata")
+        for (
+            station_name,
+            var,
+            units,
+            tstype,
+        ), station_key in station_mapper.inner.items():
+            extra_metadata = stations_with_metadata[station_name].metadata
+            d = {
+                "data_id": self.config.name,
+                "station_name": station_name,
+                "var_info": {
+                    var: {"units": units},
+                },
+                **stations_with_metadata[station_name],
+                **extra_metadata,
+            }
+            if "ts_type" not in d:
+                d["ts_type"] = tstype
+            metadata[station_key] = d
 
         meta_idx = defaultdict(dict)
-        # this assumes that all stations in stations_with_metadata provide actual data
-        # this is not the case for at least ACTRIS-EBAS since there might be pyaro filters
-        # that remove all data from a station
-        unique_station_names = np.unique(var_data.stations)
-        for (_station_name, var, _units, tstype), station_key in station_mapper.inner.items():
-            if _station_name not in unique_station_names:
-                logger.info(f"Station {_station_name} not in pyaro data")
-                continue
-
+        for (
+            _station_name,
+            var,
+            _units,
+            tstype,
+        ), station_key in station_mapper.inner.items():
             var_key = var_mapper[var]
             mask = (outarray[:, UngriddedData._METADATAKEYINDEX] == station_key) & (
-                    outarray[:, UngriddedData._VARINDEX] == var_key
+                outarray[:, UngriddedData._VARINDEX] == var_key
             )
             indices = np.flatnonzero(mask)
             meta_idx[station_key][var] = indices

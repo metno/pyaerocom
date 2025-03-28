@@ -2,6 +2,8 @@ import cf_units
 import numpy as np
 
 from pyaerocom import const
+from pyaerocom.units.datetime import TsType
+from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 from pyaerocom.variable_helpers import get_variable
 
 
@@ -494,8 +496,6 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
 
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
-    from pyaerocom import TsType
-    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(concprcp_var))
 
@@ -549,8 +549,6 @@ def _compute_wdeppr_from_concprcp_helper(data, wdep_pr_var):
 
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
-    from pyaerocom import TsType
-    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(pr_var))
 
@@ -763,7 +761,7 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
 
     """
     if mmol_air is None:
-        from pyaerocom.molmasses import get_molmass
+        from pyaerocom.units.molecular_mass import get_molmass
 
         mmol_air = get_molmass("air_dry")
 
@@ -811,7 +809,7 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
     """
     if mmol_air is None:
-        from pyaerocom.molmasses import get_molmass
+        from pyaerocom.units.molecularmass import get_molmass
 
         mmol_air = get_molmass("air_dry")
 
