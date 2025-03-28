@@ -267,12 +267,16 @@ class Unit:
 
         if inplace:
             value *= factor
+            result = value
         else:
-            value = factor * value
+            result = factor * value
+
         if isinstance(value, int):
-            assert isinstance(value, float)
+            assert isinstance(result, float)
         else:
-            assert type(value) is type(value)
+            assert type(result) is type(value)
+
+        assert (result is value) == inplace
 
         if callback is not None:
             info: UnitConversionCallbackInfo = {
@@ -283,7 +287,7 @@ class Unit:
                 "to_cf_unit": str(to_unit),
             }
             callback(info)
-        return value
+        return result
 
     def date2num(
         self, date: datetime.datetime | Iterable[datetime.datetime]
@@ -321,4 +325,11 @@ class Unit:
 
     @classmethod
     def from_cf_units(cls, unit: cf_units.Unit) -> Self:
+        """
+        Initialize from a cf_units.Unit instance.
+
+        :param unit: The input unit.
+
+        :return: The output unit.
+        """
         return cls(unit)

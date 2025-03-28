@@ -20,6 +20,7 @@ def test_PyaerocomUnit_custom_scaling(
     u = Unit(unit, aerocom_var=aerocom_var)
 
     assert u.convert(1, other=to_unit) == pytest.approx(exp_mul)
+    assert u.convert(1, other=to_unit, inplace=True) == pytest.approx(exp_mul)
 
 
 @pytest.mark.parametrize(
@@ -68,3 +69,19 @@ def test__unit_conversion_fac_custom_FAIL(monkeypatch):
     with pytest.raises(UnitConversionError) as e:
         Unit("ug S/m3", aerocom_var="concso4")
     assert "Could not find unique conversion factor in table" in str(e.value)
+
+
+def test_origin():
+    assert Unit("ug S/m3").origin == "ug S/m3"
+
+
+@pytest.mark.parametrize(
+    "from_unit,to_unit,is_convertible", (("m", "km", True), ("m", "kg", False))
+)
+def test_is_convertible(from_unit: str, to_unit: str, is_convertible: bool):
+    assert Unit(from_unit).is_convertible(to_unit) == is_convertible
+
+
+def test_is_dimensionless():
+    assert not Unit("m").is_dimensionless()
+    assert Unit("1").is_dimensionless()
