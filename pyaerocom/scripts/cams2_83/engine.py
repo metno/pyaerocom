@@ -245,19 +245,21 @@ class CAMS2_83_Engine(ProcessingEngine):
         obsvals = data.data[0]
         modvals = data.data[1]
 
+        mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
+
         diff = modvals - obsvals
         diffsquare = diff**2
-        sum_obs = np.nansum(obsvals, axis=0)
-        sum_diff = np.nansum(diff, axis=0)
+        sum_obs = np.sum(obsvals, axis=0, where=mask)
+        sum_diff = np.sum(diff, axis=0, where=mask)
         sum_vals = obsvals + modvals
 
         tmp = diff / sum_vals
 
         nmb = np.where(sum_obs == 0, np.nan, sum_diff / sum_obs)
 
-        mnmb = 2.0 * np.nanmean(tmp, axis=0)
-        fge = 2.0 * np.nanmean(np.abs(tmp), axis=0)
-        rms = np.sqrt(np.nanmean(diffsquare, axis=0))
+        mnmb = 2.0 * np.mean(tmp, axis=0, where=mask)
+        fge = 2.0 * np.mean(np.abs(tmp), axis=0, where=mask)
+        rms = np.sqrt(np.mean(diffsquare, axis=0, where=mask))
 
         R = self._pearson_R_vec(obsvals, modvals)
 
@@ -304,6 +306,10 @@ class CAMS2_83_Engine(ProcessingEngine):
             obs_vals = coldata.data.data[0, :, i]
             mod_vals = coldata.data.data[1, :, i]
 
+            mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
+
+            
+
             len_data = len(obs_vals)
 
             p_mod_vals = persistent_coldata.data.data[0,mask,i]
@@ -313,10 +319,10 @@ class CAMS2_83_Engine(ProcessingEngine):
 
             p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
 
-            rmse_m = np.nanmean((mod_vals-obs_vals)**2)
-            rmse_p = np.nanmean((p_diff_vals)**2)
+            rmse_m = np.nanmean((mod_vals-obs_vals)**2, where=mask)
+            rmse_p = np.nanmean((p_diff_vals)**2, where=mask)
 
-            bias_m = np.nanmean((mod_vals-obs_vals))
+            bias_m = np.nanmean((mod_vals-obs_vals), where=mask)
 
             mb = bias_m/rmse_p
             mqi = rmse_m/rmse_p
@@ -349,6 +355,8 @@ class CAMS2_83_Engine(ProcessingEngine):
         obs_vals = coldata.data.data[0, :, station_mask[2]]
         mod_vals = coldata.data.data[1, :, station_mask[2]]
 
+        mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
+
         p_mod_vals = persistent_coldata.data.data[0,:, station_mask[1]][:,time_mask] # Persitent model
 
         assert np.all(p_mod_vals.shape == obs_vals.shape)
@@ -359,12 +367,12 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
 
-        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1)
-        rmse_p = np.nanmean((p_diff_vals)**2, axis=1)
+        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1, where=mask)
+        rmse_p = np.nanmean((p_diff_vals)**2, axis=1, where=mask)
 
         mqi = rmse_m/rmse_p
 
-        mb_p = np.nanmean((mod_vals-obs_vals), axis=1)/rmse_p
+        mb_p = np.nanmean((mod_vals-obs_vals), axis=1, where=mask)/rmse_p
 
         results = {str(station_mask[0][i]): [mb_p[i],mqi[i]] for i in range(len(mqi))}
 

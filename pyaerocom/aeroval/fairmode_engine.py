@@ -10,6 +10,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _select_period_season_coldata,
     init_regions_web,
 )
+from pyaerocom.stats.implementations import stat_R
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 
 logger = logging.getLogger(__name__)
@@ -146,10 +147,14 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         obsvals = data.data[0]
         modvals = data.data[1]
 
+        mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
+        
+        #mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
+
         obsmean = np.nanmean(obsvals, axis=0)
         # modmean = np.nanmean(modvals, axis=0)
-        obsstd = np.nanstd(obsvals, axis=0)
-        modstd = np.nanstd(modvals, axis=0)
+        obsstd = np.std(obsvals, axis=0, where=mask)
+        modstd = np.std(modvals, axis=0, where=mask)
 
         diff = modvals - obsvals
         diffsquare = diff**2
@@ -198,19 +203,37 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        xmean = np.nanmean(x, axis=0)
-        ymean = np.nanmean(y, axis=0)
+        
+        mask = ~np.isnan(x) * ~np.isnan(y)
+       
+      
+        #return stat_R(x,y, weights=None)
+        # xmean = np.nanmean(x, axis=0)
+        # ymean = np.nanmean(y, axis=0)
+        # xm = x - xmean
+        # ym = y - ymean
+        # normxm = np.sqrt(np.nansum(xm * xm, axis=0))
+        # normym = np.sqrt(np.nansum(ym * ym, axis=0))
+
+        # r = np.where(
+        #     normxm * normym == 0.0,
+        #     np.nan,
+        #     np.nansum(xm * ym, axis=0) / (normxm * normym),
+        # )
+
+        xmean = np.mean(x, axis=0,where=mask)
+        ymean = np.mean(y, axis=0,where=mask)
         xm = x - xmean
         ym = y - ymean
-        normxm = np.sqrt(np.nansum(xm * xm, axis=0))
-        normym = np.sqrt(np.nansum(ym * ym, axis=0))
+        normxm = np.sqrt(np.sum(xm * xm, axis=0,where=mask))
+        normym = np.sqrt(np.sum(ym * ym, axis=0,where=mask))
 
         r = np.where(
             normxm * normym == 0.0,
             np.nan,
-            np.nansum(xm * ym, axis=0) / (normxm * normym),
+            np.sum(xm * ym, axis=0,where=mask) / (normxm * normym),
         )
-
+        
         return r
 
     def _RMSU(self, mean: float, std: float, spec: str) -> float:
