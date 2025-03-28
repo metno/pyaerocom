@@ -2,10 +2,9 @@ import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.units.datetime.time_config import SI_TO_TS_TYPE
 from pyaerocom.units.datetime import TsType
+from pyaerocom.units.datetime.time_config import SI_TO_TS_TYPE
 from pyaerocom.variable_helpers import get_variable
-
 from .constants import M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4, HA_TO_SQM
 
 #: default frequency for rates variables (e.g. deposition, precip)
@@ -80,7 +79,6 @@ UALIASES = {
     "MM/H": "mm h-1",
     # others
     "/m": "m-1",
-    "ug/m3": "ug m-3",
 }
 
 
@@ -267,10 +265,10 @@ def get_unit_conversion_fac(from_unit: str, to_unit: str, var_name=None, ts_type
         return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
     except UnitConversionError:
         if (
-            ts_type is not None
-            and var_name is not None
-            and get_variable(var_name).is_rate
-            and rate_unit_implicit(from_unit)
+                ts_type is not None
+                and var_name is not None
+                and get_variable(var_name).is_rate
+                and rate_unit_implicit(from_unit)
         ):
             freq_si = TsType(ts_type).to_si()
             from_unit = f"{from_unit} {freq_si}-1"
