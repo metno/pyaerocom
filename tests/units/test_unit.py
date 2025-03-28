@@ -63,7 +63,7 @@ def test__unit_conversion_fac_custom_FAIL(monkeypatch):
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
-    monkeypatch.setattr("pyaerocom.units.unit.Unit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
+    monkeypatch.setattr("pyaerocom.units.units.Unit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
 
     with pytest.raises(UnitConversionError) as e:
         Unit("ug S/m3", aerocom_var="concso4")
