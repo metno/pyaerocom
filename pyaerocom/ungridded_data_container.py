@@ -23,7 +23,7 @@ class UngriddedDataContainer(abc.ABC):
     @classmethod
     def from_station_data(
         cls,
-        stats: StationData | Iterator[StationData],
+        stats: StationData | Iterator[StationData] | Iterator[dict],
         add_meta_keys: list[str] = [],
     ):
         """
@@ -31,7 +31,7 @@ class UngriddedDataContainer(abc.ABC):
 
         Parameters
         ----------
-        stats : iterator or StationData
+        stats : iterator of StationData or dict (readable by StationData), or StationData
             input data object(s)
         add_meta_keys : list, optional
             list of metadata keys that are supposed to be imported from the

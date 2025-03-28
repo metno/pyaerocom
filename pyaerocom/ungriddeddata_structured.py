@@ -573,7 +573,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @override
     def append_station_data(
-        self, stats: StationData | Iterator[StationData], add_meta_keys: list[str] = []
+        self,
+        stats: StationData | Iterator[StationData] | Iterator[dict],
+        add_meta_keys: list[str] = [],
     ):
         if isinstance(stats, StationData):
             stats = [stats]
@@ -583,6 +585,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             meta_idx = -1  # start at 0
         for station_data in stats:
             meta_idx += 1
+            if isinstance(station_data, dict):
+                station_data = StationData(**station_data)
+            elif not isinstance(station_data, StationData):
+                raise ValueError("Need instances of StationData or dicts")
+
             # each file is a metadata-set of its own
             self.metadata[meta_idx] = {}
             self.metadata[meta_idx].update(
