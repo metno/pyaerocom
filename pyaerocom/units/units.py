@@ -6,9 +6,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
-import datetime
 from typing import Any
-from collections.abc import Iterable
 
 
 import cf_units
@@ -162,42 +160,8 @@ class Unit:
         self._cfunit = cf_units.Unit(new_unit, calendar=calendar)
 
     @property
-    def category(self):
-        return self._cfunit.category
-
-    @property
-    def ut_unit(self):
-        return self._cfunit.ut_unit
-
-    @property
-    def calendar(self):
-        return self._cfunit.calendar
-
-    @property
     def origin(self):
         return self._cfunit.origin
-
-    def is_time(self) -> bool:
-        return self._cfunit.is_time()
-
-    def is_vertical(self) -> bool:
-        return self._cfunit.is_time()
-
-    def is_udunits(self) -> bool:
-        return self._cfunit.is_udunits()
-
-    def is_time_reference(self) -> bool:
-        return self._cfunit.is_time_reference()
-
-    def is_long_time_interval(self) -> bool:
-        return self._cfunit.is_long_time_interval()
-
-    def title(self, value: float) -> str:
-        return self._cfunit.title(value)
-
-    @property
-    def modulus(self) -> float | None:
-        return self._cfunit.modulus
 
     def is_convertible(self, other: str | Unit) -> bool:
         return self._cfunit.is_convertible(other)
@@ -207,40 +171,6 @@ class Unit:
 
     def is_unknown(self) -> bool:
         return self._cfunit.is_unknown()
-
-    def is_no_unit(self) -> bool:
-        return self._cfunit.is_no_unit()
-
-    def format(self, option: int | list[int] | None = None) -> str:
-        return self._cfunit.format(option)
-
-    @property
-    def name(self) -> str:
-        return self._cfunit.name
-
-    @property
-    def symbol(self) -> str:
-        return self._cfunit.symbol
-
-    @property
-    def definition(self) -> str:
-        return self._cfunit.definition
-
-    def offset_by_time(self, origin: float) -> Unit:
-        return Unit(
-            self._cfunit.offset_by_time(origin),
-            calendar=self._cfunit.calendar,
-            aerocom_var=self._aerocom_var,
-        )
-
-    def invert(self) -> Unit:
-        return self._cfunit.invert()
-
-    def root(self, root: int) -> Unit:
-        return self._cfunit.root(root)
-
-    def log(self, base: float) -> Unit:
-        return self._cfunit.log(base)
 
     def __str__(self) -> str:
         return self._cfunit.__str__()
@@ -257,14 +187,8 @@ class Unit:
     def __mul__(self, other: float | str | Unit) -> Unit:
         return Unit.from_cf_units(self._cfunit.__mul__(other))
 
-    def __div__(self, other: float | str | Unit) -> Unit:
-        return Unit.from_cf_units(self._cfunit.__div__(other))
-
     def __truediv__(self, other: float | str | Unit) -> Unit:
         return Unit.from_cf_units(self._cfunit.__truediv__(other))
-
-    def __pow__(self, power: float) -> Unit:
-        return Unit.from_cf_units(self._cfunit.__pow__(power))
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Unit):
@@ -275,9 +199,6 @@ class Unit:
 
     def __ne__(self, other: object) -> bool:
         return self._cfunit.__ne__(other)
-
-    def change_calendar(self, calendar: str) -> Unit:
-        return Unit.from_cf_units(self._cfunit.change_calendar(calendar))
 
     @overload
     def convert(
@@ -364,11 +285,6 @@ class Unit:
         return self._cfunit.num2date(
             time_value, only_use_cftime_datetimes, only_use_python_datetimes
         )
-
-    def num2pydate(
-        self, time_value: float | Iterable[float]
-    ) -> datetime.datetime | Iterable[datetime.datetime]:
-        return self._cfunit.num2pydate(time_value)
 
     @classmethod
     def from_cf_units(cls, unit: cf_units.Unit) -> Self:
