@@ -216,8 +216,8 @@ def test_NAN_VAL(reader: ReadEbas):
     with pytest.raises(AttributeError) as e:
         reader.NAN_VAL
     assert (
-            str(e.value)
-            == "Irrelevant for EBAS implementation: Info about invalid measurements is extracted from header of NASA Ames files for each variable individually "
+        str(e.value)
+        == "Irrelevant for EBAS implementation: Info about invalid measurements is extracted from header of NASA Ames files for each variable individually "
     )
 
 
@@ -398,7 +398,7 @@ def test_sqlite_database_file(reader: ReadEbas):
     ],
 )
 def test_get_file_list(
-        reader: ReadEbas, vars_to_retrieve: list[str] | str, constraints: dict[str, str]
+    reader: ReadEbas, vars_to_retrieve: list[str] | str, constraints: dict[str, str]
 ):
     files = reader.get_file_list(vars_to_retrieve, **constraints)
     assert isinstance(files, list)
@@ -409,8 +409,8 @@ def test_get_file_list_error(reader: ReadEbas):
     with pytest.raises(FileNotFoundError) as e:
         reader.get_file_list("vmrno", station_names="xkcd")
     assert (
-            str(e.value)
-            == "No files could be found for ['vmrno'] and reading constraints {'station_names': 'xkcd'}."
+        str(e.value)
+        == "No files could be found for ['vmrno'] and reading constraints {'station_names': 'xkcd'}."
     )
 
 
@@ -443,7 +443,7 @@ def test__find_station_matches(reader: ReadEbas):
     ],
 )
 def test__find_station_matches_error(
-        reader: ReadEbas, val: Literal["Bla", 42], exception: type[Exception], error: str
+    reader: ReadEbas, val: Literal["Bla", 42], exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader._find_station_matches(val)
@@ -458,7 +458,7 @@ def test__find_station_matches_error(
     ],
 )
 def test__precheck_vars_to_retrieve(
-        reader: ReadEbas, vars_to_retrieve: list[str] | None, result: list[str] | None
+    reader: ReadEbas, vars_to_retrieve: list[str] | None, result: list[str] | None
 ):
     if result is None:
         result = reader.PROVIDES_VARIABLES
@@ -490,7 +490,7 @@ def test_get_ebas_var(reader: ReadEbas):
     ],
 )
 def test_get_ebas_var_error(
-        reader: ReadEbas, var_name: str, exception: type[Exception], error: str
+    reader: ReadEbas, var_name: str, exception: type[Exception], error: str
 ):
     with pytest.raises(exception) as e:
         reader.get_ebas_var(var_name)
@@ -511,7 +511,7 @@ def test__get_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesF
     ],
 )
 def test__get_var_cols_error(
-        reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
+    reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesFile, var: str, error: str
 ):
     info = EbasVarInfo(var)
     with pytest.raises(NotInFileError) as e:
@@ -536,12 +536,12 @@ def test_find_var_cols(reader: ReadEbas, loaded_nasa_ames_example: EbasNasaAmesF
     ],
 )
 def test__flag_incorrect_frequencies(
-        monkeypatch: pytest.MonkeyPatch,
-        reader: ReadEbas,
-        loaded_nasa_ames_example: EbasNasaAmesFile,
-        ts_type: str,
-        tol_percent: int,
-        num_flagged: int,
+    monkeypatch: pytest.MonkeyPatch,
+    reader: ReadEbas,
+    loaded_nasa_ames_example: EbasNasaAmesFile,
+    ts_type: str,
+    tol_percent: int,
+    num_flagged: int,
 ):
     station = StationData()
     station.start_meas = loaded_nasa_ames_example.start_meas
@@ -641,11 +641,11 @@ def test_read_file(reader: ReadEbas, ebas_issue_files: Path, vars_to_retrieve: s
     ],
 )
 def test_read_file_error(
-        reader: ReadEbas,
-        ebas_issue_files: Path,
-        vars_to_retrieve: str,
-        exception: type[Exception],
-        error: str,
+    reader: ReadEbas,
+    ebas_issue_files: Path,
+    vars_to_retrieve: str,
+    exception: type[Exception],
+    error: str,
 ):
     with pytest.raises(exception) as e:
         reader.read_file(ebas_issue_files, vars_to_retrieve)
@@ -683,11 +683,11 @@ def test__try_get_pt_conversion(reader: ReadEbas):
     ],
 )
 def test_read(
-        reader: ReadEbas,
-        vars_to_retrieve: list[str] | str,
-        ebas_files: list[Path] | None,
-        num_meta: int,
-        num_stats: int,
+    reader: ReadEbas,
+    vars_to_retrieve: list[str] | str,
+    ebas_files: list[Path] | None,
+    num_meta: int,
+    num_stats: int,
 ):
     data = reader.read(vars_to_retrieve, files=ebas_files)
     assert isinstance(data, UngriddedDataMetadata)

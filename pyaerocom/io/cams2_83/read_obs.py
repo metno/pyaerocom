@@ -88,9 +88,9 @@ class ReadCAMS2_83(ReadUngriddedBase):
                 f"Unsupported type {type(vars_to_retrieve)}, "
                 "vars_to_retrieve supported types are: str | list[str] | None"
             )
-        assert all(var in self.PROVIDES_VARIABLES for var in vars_to_retrieve), (
-            f"this dataset only has {self.PROVIDES_VARIABLES}"
-        )
+        assert all(
+            var in self.PROVIDES_VARIABLES for var in vars_to_retrieve
+        ), f"this dataset only has {self.PROVIDES_VARIABLES}"
 
         if files is None:
             files = list(obs_paths(date.today() - timedelta(days=1)))
