@@ -1,4 +1,5 @@
 from __future__ import annotations
+import datetime
 import sys
 
 if sys.version_info >= (3, 11):
@@ -6,7 +7,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
-from typing import Any
+from collections.abc import Iterable
 
 
 import cf_units
@@ -128,6 +129,7 @@ class Unit:
         aerocom_var: str | None = None,
         ts_type: str | TsType | None = None,
     ) -> None:
+        self._origin = str(unit)
         unit = Unit._UALIASES.get(str(unit), str(unit))
 
         try:
@@ -160,16 +162,30 @@ class Unit:
         self._cfunit = cf_units.Unit(new_unit, calendar=calendar)
 
     @property
-    def origin(self):
-        return self._cfunit.origin
+    def origin(self) -> str:
+        """
+        The original string used to create this Unit.
+        """
+        return self._origin
 
     def is_convertible(self, other: str | Unit) -> bool:
+        """
+        Return whether this unit is convertible to other.
+
+        :param other: Other Unit.
+        """
         return self._cfunit.is_convertible(other)
 
     def is_dimensionless(self) -> bool:
+        """
+        Return whether the unit is dimensionless.
+        """
         return self._cfunit.is_dimensionless()
 
     def is_unknown(self) -> bool:
+        """
+        Return whether the unit is defined to be an unknown unit.
+        """
         return self._cfunit.is_unknown()
 
     def __str__(self) -> str:
@@ -269,11 +285,16 @@ class Unit:
             callback(info)
         return value
 
-    @property
-    def cftime_unit(self) -> str:
-        return self._cfunit.cftime_unit
+    def date2num(
+        self, date: datetime.datetime | Iterable[datetime.datetime]
+    ) -> float | np.ndarray:
+        """Returns the numeric time value calculated from the datetime object using the current calendar and unit time reference.
 
-    def date2num(self, date: Any) -> float | np.ndarray:
+        :param date: Date to be converted.
+        :return:
+
+        See also: https://cf-units.readthedocs.io/en/latest/unit.html#cf_units.Unit.date2num
+        """
         return self._cfunit.date2num(date)
 
     def num2date(
@@ -281,7 +302,19 @@ class Unit:
         time_value: float | np.ndarray,
         only_use_cftime_datetimes: bool = True,
         only_use_python_datetimes: bool = False,
-    ) -> Any | np.ndarray:
+    ) -> datetime.datetime | np.ndarray:
+        """
+        Returns a datetime-like object calculated from the numeric time value using the current calendar and the unit time reference.
+
+        :param time_value: Time value(s)
+        :param only_use_cftime_datetimes:
+            If True, will always return cftime datetime objects, regardless of calendar. If False, returns datetime.datetime instances where possible. Defaults to True.
+        :param only_use_python_datetimes:
+            If True, will always return datetime.datetime instances where possible, and raise an exception if not. Ignored if only_use_cftime_datetimes is True. Defaults to False.
+        :return: Datetime or ndarray of datetime.
+
+        See also: https://cf-units.readthedocs.io/en/latest/unit.html#cf_units.Unit.num2date
+        """
         return self._cfunit.num2date(
             time_value, only_use_cftime_datetimes, only_use_python_datetimes
         )
