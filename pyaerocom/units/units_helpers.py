@@ -1,7 +1,7 @@
 from .units import Unit
 from typing import TypeVar
 from pyaerocom.units.exceptions import UnitConversionError
-
+from pyaerocom.units.units import UnitConversionCallbackHandler
 
 T = TypeVar("T")
 #: default frequency for rates variables (e.g. deposition, precip)
@@ -17,7 +17,14 @@ def get_unit_conversion_fac(
 
 
 def convert_unit(
-    data: T, from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str | None = None
+    data: T,
+    from_unit: str,
+    to_unit: str,
+    var_name: str | None = None,
+    ts_type: str | None = None,
+    *,
+    inplace: bool = False,
+    callback: UnitConversionCallbackHandler | None = None,
 ) -> T:
     """Convert unit of data
 
@@ -44,7 +51,10 @@ def convert_unit(
     """
     try:
         data = Unit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
-            data, other=Unit(to_unit, aerocom_var=var_name, ts_type=ts_type)
+            data,
+            other=Unit(to_unit, aerocom_var=var_name, ts_type=ts_type),
+            inplace=inplace,
+            callback=callback,
         )
     except ValueError as e:
         raise UnitConversionError(

@@ -49,6 +49,9 @@ from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
+from pyaerocom.units.logging import LoggingCallback
+from pyaerocom.units import convert_unit
+
 logger = logging.getLogger(__name__)
 
 
@@ -857,12 +860,25 @@ class GriddedData:
         inplace : bool
             convert in this instance or create a new one
         """
-        data_out = self if inplace else self.copy()
-        try:  # uses cf_units functionality (standard stuff, e.g. ug to mg)
-            data_out.grid.convert_units(new_unit)
-        except ValueError:  # try pyaerocom custom code
-            data_out._try_convert_custom_unit(new_unit)
-        return data_out
+        out = self if inplace else self.copy()
+
+        out.grid = convert_unit(
+            out.grid,
+            from_unit=self.units,
+            to_unit=new_unit,
+            var_name=self.var_name,
+            ts_type=self.ts_type,
+            inplace=True,
+            callback=LoggingCallback(logger),
+        )
+        self.units = new_unit
+
+        return self
+        # try:  # uses cf_units functionality (standard stuff, e.g. ug to mg)
+        #    data_out.grid.convert_units(new_unit)
+        # except ValueError:  # try pyaerocom custom code
+        #    data_out._try_convert_custom_unit(new_unit)
+        # return data_out
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
