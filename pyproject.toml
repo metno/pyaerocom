@@ -116,8 +116,6 @@ filterwarnings = [
     'ignore:matplotlib based plotting is no longer directly supported. This (function|class) may be removed in future versions\.:DeprecationWarning:(pyaerocom|tests):',
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
-    # ignore future deprecation warnings in pydantic 3.0 (we pin the dep to ~2.7)
-    "ignore:Accessing this attribute on the instance is deprecated, and will be removed in Pydantic V3.*",
 ]
 
 [tool.coverage.run]
