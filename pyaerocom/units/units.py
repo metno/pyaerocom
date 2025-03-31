@@ -21,13 +21,13 @@ from pyaerocom.variable_helpers import get_variable
 
 from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
-from typing import TypeVar, overload, TypedDict
+from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
 
 T = TypeVar("T")
 
 
-class UnitConversionCallbackInfo(TypedDict):
+class UnitConversionCallbackInfo(NamedTuple):
     factor: float
     from_aerocom_var: str | None
     from_ts_type: TsType | None
@@ -255,7 +255,7 @@ class Unit:
         :param value: The value to be converted.
         :param other: The unit to which to convert (will be passed to PyaerocomUnit.__init__())
         :param callback: Callback function for eg. logging, defaults to None
-            The callback function will receive a dict with the following keys:
+            The callback function will receive a NamedTuple with the following keys:
                 "factor" - float: The numerical conversion factor used.
                 "from_aerocom_var" - str: The aerocom var name.
                 "from_ts_type" - str: The ts_type of the from units.
@@ -281,14 +281,15 @@ class Unit:
         assert (result is value) == inplace
 
         if callback is not None:
-            info: UnitConversionCallbackInfo = {
-                "factor": factor,
-                "from_aerocom_var": self._aerocom_var,
-                "from_ts_type": self._ts_type,
-                "from_cf_unit": str(self._cfunit),
-                "to_cf_unit": str(to_unit),
-            }
+            info = UnitConversionCallbackInfo(
+                factor=factor,
+                from_aerocom_var=self._aerocom_var,
+                from_ts_type=self._ts_type,
+                from_cf_unit=str(self._cfunit),
+                to_cf_unit=str(to_unit),
+            )
             callback(info)
+
         return result
 
     def date2num(

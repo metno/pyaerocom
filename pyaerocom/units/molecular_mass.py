@@ -85,6 +85,12 @@ class MolecularMass:
     """
 
     def __init__(self, val: str | int | float, *, label: str | None = None):
+        """
+        :param val: Either a chemical formula (eg. H2O) or a numeric mass.
+        :param label: Optional label. Defaults to the chemical formula / chemical mass.
+
+        :raises ValueError: If val is negative.
+        """
         if isinstance(val, float | int):
             if val < 0:
                 raise ValueError("Molecular mass can not be less than zero.")
@@ -99,16 +105,36 @@ class MolecularMass:
 
     @property
     def mass(self) -> float:
+        """
+        :return: The mass value (in Dalton).
+        """
         return self._mass
 
     @property
     def label(self) -> str:
+        """
+        :return: Human readable description of the mass (eg. '1 u' or 'H2O')
+        """
         if self._label is None:
             return f"{self.mass:.4f} u"
 
         return self._label
 
     def _mass_from_chemical_formula(self, val: str) -> float:
+        """Determines the mass of simple chemical formulas.
+
+        :param val: Chemicala formula as string (see limitations below).
+        :raises ValueError: If there are brackets in the formula.
+        :raises ValueError: If element masses are not defined in _ELEMENT_MASSES dict.
+
+        :return: Molecular mass (in daltons).
+
+        Limitations:
+        ------------
+        - Elements must have their first character and only the first capitalized.
+        - Numeric subscripts are limited to one digit.
+        - No brackets.
+        """
         # Limitations
         # Does not support brackets (eg. Ca(OH)2).
         # Does not support multidigit numbers (eg. C6H12O6).
@@ -184,6 +210,14 @@ class MolecularMass:
 
     @staticmethod
     def from_aerocom_var(aerocom_var: str) -> MolecularMass:
+        """Produces a MolecularMass from an var_name. It will first check
+        the override dict _MOLMASSES. If the var_name is not defined there
+        it will try to extract the chemical formula from the name (eg. 'concso2'->'SO2').
+
+        :param aerocom_var: string (See variables.ini).
+
+        :return: MolecularMass of element.
+        """
         species = _get_species(aerocom_var)
         if species in _MOLMASSES:
             return MolecularMass(_MOLMASSES[species], label=species)
@@ -213,6 +247,9 @@ def get_molmass(aerocom_varname: str) -> float:
     try:
         mass = MolecularMass.from_aerocom_var(aerocom_varname).mass
     except UnkownSpeciesError:
+        # This function previously was used on pure formulas even though it is only
+        # supposed to be used on var_names.
+        # This maintains backward compatibility for those cases.
         mass = MolecularMass(aerocom_varname.upper()).mass
 
     return mass
@@ -235,6 +272,5 @@ def get_mmr_to_vmr_fac(aerocom_varname: str) -> float:
     -------
     float
         multiplication factor to convert MMR -> VMR
-
     """
     return get_molmass("air_dry") / get_molmass(aerocom_varname)
