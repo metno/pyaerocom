@@ -45,11 +45,11 @@ def test_PyaerocomUnit_conversion_callback():
         nonlocal callback_ran
         callback_ran = True
 
-        assert info["factor"] == pytest.approx(1 / 24)
-        assert info["from_aerocom_var"] == "depdust"
-        assert info["from_ts_type"] == "daily"
-        assert info["from_cf_unit"] == "mg m-2 d-1"
-        assert info["to_cf_unit"] == "mg m-2 h-1"
+        assert info.factor == pytest.approx(1 / 24)
+        assert info.from_aerocom_var == "depdust"
+        assert info.from_ts_type == "daily"
+        assert info.from_cf_unit == "mg m-2 d-1"
+        assert info.to_cf_unit == "mg m-2 h-1"
 
     u.convert(1, "mg m-2 h-1", callback=callback)
 
