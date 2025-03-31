@@ -173,15 +173,15 @@ class GriddedData:
             self.check_unit(convert_unit_on_init)
 
     @property
-    def var_name(self):
+    def var_name(self) -> str:
         """Name of variable"""
         return self.grid.var_name
 
     @var_name.setter
-    def var_name(self, val):
+    def var_name(self, val: str):
         """Name of variable"""
         if not isinstance(val, str):
-            raise ValueError(f"Invalid input for var_name, need str, got {val}")
+            raise TypeError(f"Invalid input for var_name, need str, got {type(val)}")
         self.grid.var_name = val
         if "var_name" in self.metadata:
             self.metadata["var_name"] = val
@@ -768,7 +768,7 @@ class GriddedData:
 
         return cube
 
-    def check_unit(self, try_convert_if_wrong=False):
+    def check_unit(self, try_convert_if_wrong: bool = False) -> bool:
         """Check if unit is correct"""
         self._check_invalid_unit_alias()
         unit_ok = False
@@ -830,7 +830,7 @@ class GriddedData:
         )
         self.units = new_unit
 
-        return self
+        return out
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
