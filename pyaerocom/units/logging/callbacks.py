@@ -1,6 +1,8 @@
 import logging
 from pyaerocom.units.units import UnitConversionCallbackInfo
 
+logger = logging.getLogger(__name__)
+
 
 class LoggingCallback:
     """Class intended to be used as a callback for unit conversion
@@ -8,8 +10,10 @@ class LoggingCallback:
     on if the values where changed (ie. if factor is not 1).
     """
 
-    def __init__(self, logger: logging.Logger) -> None:
-        self._logger = logger
+    def __init__(self, log: logging.Logger | None = None) -> None:
+        if log is None:
+            log = logger
+        self._logger = log
 
     def __call__(self, info: UnitConversionCallbackInfo) -> None:
         if info.factor == 1:
