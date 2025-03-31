@@ -7,7 +7,6 @@ import iris
 import numpy as np
 import pandas as pd
 import xarray as xr
-from cf_units import Unit
 from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
@@ -45,7 +44,8 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
-from pyaerocom.units.units_helpers import UALIASES, get_unit_conversion_fac
+from pyaerocom.units import Unit
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -755,12 +755,14 @@ class GriddedData:
             if applicable
         """
         cube = self.grid
-        if "invalid_units" in cube.attributes and cube.attributes["invalid_units"] in UALIASES:
-            from_unit = cube.attributes["invalid_units"]
-            to_unit = UALIASES[from_unit]
-            logger.info(f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}")
-            del cube.attributes["invalid_units"]
-            cube.units = to_unit
+        if "invalid_units" in cube.attributes:
+            try:
+                cube.units = str(Unit(cube.attributes["invalid_units"]))
+            except ValueError:
+                pass
+            else:
+                del cube.attributes["invalid_units"]
+
         return cube
 
     def check_unit(self, try_convert_if_wrong=False):
@@ -1091,7 +1093,7 @@ class GriddedData:
         add_meta=None,
         use_iris=False,
         **coords,
-    ):
+    ) -> list[StationData]:
         """Extract time-series for provided input coordinates (lon, lat)
 
         Extract time series for each lon / lat coordinate in this cube or at

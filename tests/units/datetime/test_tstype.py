@@ -6,7 +6,7 @@ from pyaerocom.units.datetime import TsType, sort_ts_types, get_lowest_resolutio
 
 
 def test_TsType_VALID():
-    assert TsType.VALID == [
+    assert TsType.VALID == (
         "minutely",
         "hourly",
         "daily",
@@ -15,11 +15,11 @@ def test_TsType_VALID():
         "yearly",
         "native",
         "coarsest",
-    ]
+    )
 
 
 def test_TsType_VALID_ITER():
-    assert TsType.VALID_ITER == ["minutely", "hourly", "daily", "weekly", "monthly", "yearly"]
+    assert TsType.VALID_ITER == ("minutely", "hourly", "daily", "weekly", "monthly", "yearly")
 
 
 def test_TsType_TOL_SECS_PERCENT():
@@ -84,7 +84,7 @@ def test_TsType_val():
         (
             "blaa",
             "Invalid input for ts_type blaa. "
-            "Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest']",
+            "Choose from ('minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest')",
         ),
         (
             "5000daily",

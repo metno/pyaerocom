@@ -10,7 +10,6 @@ import pathlib
 import shutil
 import tempfile
 
-import cf_units
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -20,6 +19,8 @@ from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -380,7 +381,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         except KeyError:
             # this will raise an Exception if cf_units cannot handle. In
             # which case the unit should be added in VAR_UNITS_FILE
-            unit = str(cf_units.Unit(unit_in_file))
+            unit = str(Unit(unit_in_file))
 
         # Empty data object (a dictionary with extended functionality)
         data_out = StationData()

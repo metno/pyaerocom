@@ -2,11 +2,11 @@ import fnmatch
 import logging
 import os
 
-from cf_units import Unit
-
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.variable import Variable
 from pyaerocom.variable_helpers import parse_aliases_ini, parse_variables_ini
+
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -80,9 +80,7 @@ class VarCollection:
         if not isinstance(var, Variable):
             raise ValueError("Can only add instances of Variable class...")
         if not isinstance(var.units, str):
-            if not isinstance(var.units, Unit):
-                raise ValueError("Please assign a unit to the new input variable")
-            var.units = str(var.units)
+            var.units = str(Unit(var.units))
         self._all_vars.append(var.var_name)
         self._vars_added[var.var_name] = var
 

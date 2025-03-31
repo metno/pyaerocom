@@ -7,7 +7,7 @@ from datetime import datetime
 import pandas as pd
 from iris import coord_categorisation
 
-TS_TYPES = [
+TS_TYPES = (
     "minutely",
     "hourly",
     "daily",
@@ -16,16 +16,16 @@ TS_TYPES = [
     "yearly",
     "native",
     "coarsest",
-]
+)
 
 # The following import was removed and the information about available unit
 # strings was copied from the netCDF4 module directly here
-microsec_units = ["microseconds", "microsecond", "microsec", "microsecs"]
-millisec_units = ["milliseconds", "millisecond", "millisec", "millisecs"]
-sec_units = ["second", "seconds", "sec", "secs", "s"]
-min_units = ["minute", "minutes", "min", "mins"]
-hr_units = ["hour", "hours", "hr", "hrs", "h"]
-day_units = ["day", "days", "d"]
+microsec_units = ("microseconds", "microsecond", "microsec", "microsecs")
+millisec_units = ("milliseconds", "millisecond", "millisec", "millisecs")
+sec_units = ("second", "seconds", "sec", "secs", "s")
+min_units = ("minute", "minutes", "min", "mins")
+hr_units = ("hour", "hours", "hr", "hrs", "h")
+day_units = ("day", "days", "d")
 
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx

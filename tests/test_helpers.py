@@ -4,7 +4,8 @@ import pytest
 import xarray as xr
 
 from pyaerocom import StationData, helpers
-from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
+from pyaerocom.units import UnitConversionError
 
 
 def test_get_standarad_name():
