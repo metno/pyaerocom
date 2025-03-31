@@ -6,6 +6,7 @@ import copy
 import functools
 import logging
 import os
+from typing import SupportsInt
 
 import yaml
 
@@ -66,7 +67,7 @@ def _get_ignore_stations_from_file():
     return rows
 
 
-def _get_ignore_stations(specy, year):
+def _get_ignore_stations(specy, year: SupportsInt) -> list[str]:
     """
     Read the ignore stations from either omit_stations.tsv in the local eller in the lib-folder
 
@@ -102,14 +103,12 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         # "wetso4",
         "concso4c",
         "vmro3",
-        # "",
+
     ]
     # Will be used later
-    # ebas_test_vars_diurnal = [
-    # "vmro3",
-    # "",
-    # "",
-    # ]
+    ebas_test_vars_diurnal = [
+    "vmro3",
+    ]
 
     CFG = dict(
         json_basedir=os.path.abspath("./data"),
@@ -219,6 +218,30 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
 
     OBS_GROUNDBASED = {
         # actrisebas
+        "ACTRIS-EBAS-h-diurnal": dict(
+            obs_id="ACTRIS-EBAS-h-diurnal",
+            web_interface_name="ACTRIS-EBAS-h",
+            obs_vars=ebas_test_vars_diurnal,
+            obs_vert_type="Surface",
+            # colocate_time=True,
+            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
+            ts_type="hourly",
+            resample_how="mean",
+            # obs_filters=EBAS_FILTER,
+            pyaro_config={
+                "name": "ACTRIS-EBAS-h-diurnal",
+                "reader_id": "actrisebas",
+                "filename_or_obj_or_url": "",
+                "filters": {
+                    "time_bounds": {
+                        "startend_include": [
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+                        ],
+                    },
+                    "variables": {"include": ebas_test_vars_diurnal},
+                },
+            },
+        ),
         "ACTRIS-EBAS-d-tc": dict(
             obs_id="ACTRIS-EBAS-d-tc",
             web_interface_name="ACTRIS-EBAS-d",
@@ -242,59 +265,6 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
                 },
             },
         ),
-        # "ACTRIS-EBAS-h-diurnal": dict(
-        #     obs_id="ACTRIS-EBAS-h-diurnal",
-        #     web_interface_name="ACTRIS-EBAS-h",
-        #     obs_vars=ebas_test_vars_diurnal,
-        #     obs_vert_type="Surface",
-        #     ts_type="hourly",
-        #     # diurnal_only=True,
-        #     resample_how="mean",
-        #     # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
-        #     pyaro_config={
-        #         "name": "ACTRIS-EBAS-h-diurnal",
-        #         "reader_id": "actrisebas",
-        #         "filename_or_obj_or_url": "",
-        #         "filters": {
-        #             "time_bounds": {
-        #                 "startend_include": [
-        #                     (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
-        #                 ],
-        #             },
-        #             "variables": {"include": ebas_test_vars_diurnal},
-        #         },
-        #     },
-        #
-        # ),
-        ##################
-        #    EBAS
-        ##################
-        # "EBAS-m-tc": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-m",
-        #     obs_vars=[
-        #         "concNhno3",
-        #         "concNtno3",
-        #         "concNtnh",
-        #         "concNnh3",
-        #         "concnh4",
-        #         # "prmm",
-        #         "concpm10",
-        #         "concpm25",
-        #         "concSso2",
-        #         "concNno2",
-        #         "vmrco",
-        #         "vmro3max",
-        #         "vmro3",
-        #         "concNno",
-        #         "concso4t",
-        #         "concso4c",
-        #     ],
-        #     obs_vert_type="Surface",
-        #     colocate_time=True,
-        #     ts_type="monthly",
-        #     obs_filters=EBAS_FILTER,
-        # ),
         "EBAS-d-tc": dict(
             obs_id="EBASMC",
             web_interface_name="EBAS-d",
@@ -306,16 +276,16 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
             # obs_filters=EBAS_FILTER,
         ),
         # # Diurnal
-        # "EBAS-h-diurnal": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-h",
-        #     obs_vars=ebas_test_vars_diurnal,
-        #     obs_vert_type="Surface",
-        #     ts_type="hourly",
-        #     # diurnal_only=True,
-        #     resample_how="mean",
-        #     # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
-        # ),
+        "EBAS-h-diurnal": dict(
+            obs_id="EBASMC",
+            web_interface_name="EBAS-h",
+            obs_vars=ebas_test_vars_diurnal,
+            obs_vert_type="Surface",
+            ts_type="hourly",
+            # diurnal_only=True,
+            resample_how="mean",
+            # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
+        ),
     }
 
     # Setup for supported satellite evaluations
