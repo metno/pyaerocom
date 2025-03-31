@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import warnings
@@ -45,7 +47,6 @@ from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NU
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units import Unit
-from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -769,8 +770,6 @@ class GriddedData:
 
     def check_unit(self, try_convert_if_wrong=False):
         """Check if unit is correct"""
-        from pyaerocom.exceptions import VariableDefinitionError
-
         self._check_invalid_unit_alias()
         unit_ok = False
         to_unit = None
@@ -808,49 +807,7 @@ class GriddedData:
 
         return unit_ok
 
-    def _try_convert_custom_unit(self, new_unit):
-        """
-        Try convert data to input unit using custom conversion
-
-        Helpers for custom conversion are defined in
-        :mod:`pyaerocom.units.units_helpers`.
-
-        Parameters
-        ----------
-        new_unit : str
-            output unit
-
-        Raises
-        ------
-        UnitConversionError
-            if conversion failed
-
-        Returns
-        -------
-        None
-
-        """
-        current = self.units
-
-        mulfac = get_unit_conversion_fac(
-            from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
-        )
-        logger.info(
-            f"Successfully converted unit from {current} to {new_unit} in {self.short_str()}"
-        )
-
-        self._apply_unit_mulfac(new_unit, mulfac)
-
-    def _apply_unit_mulfac(self, new_unit, mulfac):
-        if mulfac != 1:
-            new_cube = self._grid * mulfac
-            new_cube.attributes.update(self._grid.attributes)
-            new_cube.var_name = self.var_name
-            self._grid = new_cube
-        self.units = new_unit
-        return self
-
-    def convert_unit(self, new_unit, inplace=True):
+    def convert_unit(self, new_unit: str, inplace: bool = True) -> GriddedData:
         """Convert unit of data to new unit
 
         Parameters
@@ -874,11 +831,6 @@ class GriddedData:
         self.units = new_unit
 
         return self
-        # try:  # uses cf_units functionality (standard stuff, e.g. ug to mg)
-        #    data_out.grid.convert_units(new_unit)
-        # except ValueError:  # try pyaerocom custom code
-        #    data_out._try_convert_custom_unit(new_unit)
-        # return data_out
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
