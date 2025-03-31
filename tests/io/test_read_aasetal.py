@@ -11,7 +11,7 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from pyaerocom import const
-from pyaerocom.exceptions import UnitConversionError
+from pyaerocom.units import UnitConversionError
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units.units_helpers import convert_unit

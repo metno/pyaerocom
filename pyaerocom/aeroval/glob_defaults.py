@@ -33,8 +33,8 @@ class ScaleAndColmap(dict[str, str | list[float]]):
 
 class VarWebScaleAndColormap(dict[str, ScaleAndColmap]):
     def __init__(self, config_file: str = "", **kwargs):
-        """This class contains scale and colmap informations and is implemented as dict to allow
-        json serialization. It reads it inital data from data/var_scale_colmap.ini. kwargs will be send to update.
+        """This class contains scale and colmap information and is implemented as dict to allow
+        json serialization. It reads it initial data from data/var_scale_colmap.ini. kwargs will be send to update.
 
         :param config_file: filename to additional or updated information, defaults to None
         """
@@ -149,7 +149,7 @@ class VarWebInfo:
 
     def __init__(self, config_file="", **kwargs):
         """This class contains var_web_info and can be accessed like a read-only dict. It
-        reads it inital data from data/var_web_info.ini
+        reads it initial data from data/var_web_info.ini
 
         :param config_file: filename to additional or updated VariableInfo items, defaults to None
         """
@@ -505,7 +505,7 @@ statistics_median_trend = {
         "time_series": False,
     },
 }
-# If doing an obs_only experiement, the only statistics which make sense relate just to the observations
+# If doing an obs_only experiment, the only statistics which make sense relate just to the observations
 statistics_obs_only = {
     "refdata_mean": {
         "name": "Mean-Obs",

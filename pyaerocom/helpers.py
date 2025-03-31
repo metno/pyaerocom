@@ -15,7 +15,6 @@ import iris.cube
 import numpy as np
 import pandas as pd
 import xarray as xr
-from cf_units import Unit
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -36,6 +35,7 @@ from pyaerocom.units.datetime.time_config import (
 from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.variable_helpers import get_variable
 
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 

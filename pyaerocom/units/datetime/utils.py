@@ -127,7 +127,7 @@ def get_tot_number_of_seconds(ts_type: str, dtime: pd.Series | None = None):
     if ts_tpe >= TsType("monthly"):
         if dtime is None:
             raise AttributeError(
-                "For frequncies larger than or eq. monthly you"
+                "For frequencies larger than or eq. monthly you"
                 + " need to provide dtime in order to compute the number of second."
             )
         if not ts_type == "monthly":
@@ -282,7 +282,7 @@ def to_pandas_timestamp(value):
         raise ValueError(f"Failed to convert {value} to Timestamp: {repr(e)}")
 
 
-def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8):
+def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8) -> TsType:
     """Infer time resolution based on input time-stamps
 
     Calculates time difference *dt* between consecutive timestamps provided via
@@ -343,7 +343,7 @@ def infer_time_resolution(time_stamps, dt_tol_percent=5, minfrac_most_common=0.8
     if not frac_ok > minfrac_most_common:
         raise TemporalResolutionError("Failed to infer ts_type")
     tst = TsType.from_total_seconds(most_common_dt)
-    return str(tst)
+    return tst
 
 
 def test_cftime_to_datetime64():

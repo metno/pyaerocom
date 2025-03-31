@@ -29,7 +29,11 @@ from pyaerocom.helpers import calc_climatology, isnumeric, isrange
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType, to_datetime64
-from pyaerocom.units.units_helpers import convert_unit, get_unit_conversion_fac
+from pyaerocom.units import convert_unit
+
+from pyaerocom.units.datetime import infer_time_resolution
+
+from pyaerocom.geodesy import calc_distance
 
 logger = logging.getLogger(__name__)
 
@@ -231,10 +235,10 @@ class StationData(StationMetaData):
         if unit is None:
             unit = const.VARS[var_name].units
         u = self.get_unit(var_name)
-        if not get_unit_conversion_fac(u, unit, var_name) == 1:
+        if not convert_unit(1, u, unit, var_name) == 1:
             raise DataUnitError(f"Invalid unit {u} (expected {unit})")
 
-    def convert_unit(self, var_name: str, to_unit: str):
+    def convert_unit(self, var_name: str, to_unit: str) -> None:
         """Try to convert unit of data
 
         Requires that unit of input variable is available in :attr:`var_info`
@@ -282,8 +286,6 @@ class StationData(StationMetaData):
         float
             distance between this and other station in km
         """
-        from pyaerocom.geodesy import calc_distance
-
         cthis = self.get_station_coords()
         cother = other.get_station_coords()
 
@@ -403,7 +405,7 @@ class StationData(StationMetaData):
             to a single value.
         quality_check : bool
             if True, and coordinate values are lists or arrays, then the
-            standarad deviation in the values is compared to the upper limits
+            standard deviation in the values is compared to the upper limits
             allowed in the local variation. The upper limits are specified
             in attr. ``COORD_MAX_VAR``.
         add_none_vals : bool
@@ -538,7 +540,7 @@ class StationData(StationMetaData):
             elif current_val != val:
                 self[key] = [current_val, val]
 
-            else:  # they shoul be the same
+            else:  # they should be the same
                 assert current_val == val, (current_val, val)
         except Exception as e:
             raise MetaDataError(
@@ -712,7 +714,7 @@ class StationData(StationMetaData):
         ts_type = self.get_var_ts_type(var_name)
         ts_type1 = other.get_var_ts_type(var_name)
         if ts_type != ts_type1:
-            # make sure each variable in the object has explicitely ts_type
+            # make sure each variable in the object has explicitly ts_type
             # assigned (rather than global specification)
 
             self._update_var_timeinfo()
@@ -907,7 +909,7 @@ class StationData(StationMetaData):
         elif not len(self.dtime) > 0:
             raise AttributeError("No timestamps available")
 
-    def get_var_ts_type(self, var_name: str, try_infer: bool = True):
+    def get_var_ts_type(self, var_name: str, try_infer: bool = True) -> TsType:
         """Get ts_type for a certain variable
 
         Note
@@ -939,10 +941,10 @@ class StationData(StationMetaData):
 
         # use variable specific entry if available
         if "ts_type" in self.var_info[var_name]:
-            return TsType(self.var_info[var_name]["ts_type"]).val
+            return TsType(self.var_info[var_name]["ts_type"])
         elif isinstance(self.ts_type, str):
             # ensures validity and corrects for pandas strings
-            ts_type = TsType(self.ts_type).val
+            ts_type = TsType(self.ts_type)
             self.var_info[var_name]["ts_type"] = ts_type
             return ts_type
 
@@ -951,7 +953,6 @@ class StationData(StationMetaData):
                 f"Trying to infer ts_type in StationData {self.station_name} "
                 f"for variable {var_name}"
             )
-            from pyaerocom.units.datetime import infer_time_resolution
 
             try:
                 s = self._to_ts_helper(var_name)
@@ -1344,7 +1345,7 @@ class StationData(StationMetaData):
                     raise ValueError("no data in specified altitude range")
                 return result
 
-            raise DataExtractionError("Cannot intepret input for altitude...")
+            raise DataExtractionError("Cannot interpret input for altitude...")
 
         elif isinstance(data, pd.Series) or len(self.dtime) == len(data):
             if "altitude" not in self:

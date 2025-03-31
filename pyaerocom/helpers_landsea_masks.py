@@ -198,7 +198,7 @@ def get_mask_value(lat, lon, mask):
     Parameters
     ----------
     lat : float
-        latitute
+        latitude
     lon : float
         longitude
     mask : xarray.DataArray
@@ -207,7 +207,7 @@ def get_mask_value(lat, lon, mask):
     Returns
     -------
     float
-        neirest neigbhour mask value to input lat lon
+        nearest neighbour mask value to input lat lon
     """
     if not isinstance(mask, xr.DataArray):
         raise ValueError(f"Invalid input for mask: need DataArray, got {type(mask)}")
@@ -253,11 +253,11 @@ def get_lat_lon_range_mask_region(mask, latdim_name=None, londim_name=None):
     lats = mask.latitude.data
     lons = mask.longitude.data
 
-    lonmask = np.where(data.any(axis=0))[0]  # flatten latitude dimenstion
+    lonmask = np.where(data.any(axis=0))[0]  # flatten latitude dimension
     firstidx, lastidx = lonmask.min(), lonmask.max()
     lonr = sorted([lons[firstidx], lons[lastidx]])
 
-    latmask = np.where(data.any(axis=1))[0]  # flatten latitude dimenstion
+    latmask = np.where(data.any(axis=1))[0]  # flatten latitude dimension
     firstidx, lastidx = latmask.min(), latmask.max()
     latr = sorted([lats[firstidx], lats[lastidx]])
 

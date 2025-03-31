@@ -154,7 +154,7 @@ class TimeResampler:
             current temporal resolution of data
         how : str
             string specifying how the data is to be aggregated, default is mean
-        min_num_obs : dict or int, optinal
+        min_num_obs : dict or int, optional
             integer or nested dictionary specifying minimum number of
             observations required to resample from higher to lower frequency.
             For instance, if `input_data` is hourly and `to_ts_type` is

@@ -107,7 +107,7 @@ class Config:
     # basename of paths.ini
     PATHS_INI_NAME = "paths.ini"
 
-    #: boolean specifying wheter EBAS DB is copied to local cache for faster
+    #: boolean specifying whether EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
 
@@ -641,7 +641,7 @@ class Config:
         obs_vars : str or list
             variables supported by this dataset.
         obs_aux_requires : dict
-            dicionary specifying required datasets and variables for each
+            dictionary specifying required datasets and variables for each
             variable supported by the auxiliary dataset.
         obs_merge_how : str or dict
             info on how to derive each of the supported coordinates (e.g. eval,
@@ -657,7 +657,7 @@ class Config:
             This input is optional, but mandatory if any of the `obs_vars`
             is supposed to be retrieved via `merge_how='eval'`.
         obs_aux_units : dict, optional
-            output units of auxiliary variables (only needed for varibales
+            output units of auxiliary variables (only needed for variables
             that are derived via `merge_how='eval'`)
         **kwargs
             additional keyword arguments (unused, but serves the purpose to

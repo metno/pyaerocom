@@ -72,7 +72,7 @@ class ReadUngriddedBase(abc.ABC):
 
         This should be defined in the header of an implementation class if
         it can be globally defined for the corresponding obs-network or in
-        other cases it should be initated as string ``undefined`` and then,
+        other cases it should be initiated as string ``undefined`` and then,
         if applicable, updated in the reading routine of a file.
 
         The TS_TYPE information should ultimately be written into the meta-data
@@ -90,7 +90,7 @@ class ReadUngriddedBase(abc.ABC):
         - Note also, that the ts_type in a derived class may or may not be \
             defined in a general case. For instance, in the EBAS database the \
             resolution code can be found in the file header and may thus be \
-            intiated as ``"undefined"`` in the initiation of the reading class \
+            initiated as ``"undefined"`` in the initiation of the reading class \
             and then updated when the class is being read
         - For derived implementation classes that support reading of multiple \
             network versions, you may also assign
@@ -127,7 +127,7 @@ class ReadUngriddedBase(abc.ABC):
         Note
         ----
 
-        - May be implemented as global constant in header of derieved class
+        - May be implemented as global constant in header of derived class
         - May be multiple that can be specified on init (see example below)
 
         """
@@ -518,7 +518,7 @@ class ReadUngriddedBase(abc.ABC):
         **valid_rng_vars
             additional keyword args specifying variable name and corresponding
             min / max interval (list or tuple) that specifies valid range
-            for the variable. For each variable that is not explicitely defined
+            for the variable. For each variable that is not explicitly defined
             here, the default minimum / maximum value is used (accessed via
             ``pyaerocom.const.VARS[var_name]``)
         """

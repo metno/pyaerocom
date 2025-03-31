@@ -32,13 +32,13 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
 )
+from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
     EbasFileError,
     MetaDataError,
     NotInFileError,
     TemporalResolutionError,
     TemporalSamplingError,
-    UnitConversionError,
 )
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
@@ -64,7 +64,7 @@ class ReadEbasOptions(BrowseDict):
         preferred order of data statistics. Some files may contain multiple
         columns for one variable, where each column corresponds to one of the
         here defined statistics that where applied to the data. This attribute
-        is only considered for ebas variables, that have not explicitely defined
+        is only considered for ebas variables, that have not explicitly defined
         what statistics to use (and in which preferred order, if applicable).
         Reading preferences for all Ebas variables are specified in the file
         ebas_config.ini in the data directory of pyaerocom.
@@ -1149,7 +1149,7 @@ class ReadEbas(ReadUngriddedBase):
 
     def _check_shift_wavelength(self, var, col_info, meta, data):
         """
-        Where applicable, shift wavelength of input data to another wavelegnth
+        Where applicable, shift wavelength of input data to another wavelength
 
         Applies to cases where input variable corresponds to a wavelength
         (e.g. ac550aer corresponds to 550nm) but EBAS measurement was performed
@@ -1283,7 +1283,7 @@ class ReadEbas(ReadUngriddedBase):
 
             # Find all columns in file that match the current variable
             # There may be multiple matches, e.g. because the variable may
-            # be sampled at different wavelenghts or there may be different
+            # be sampled at different wavelengths or there may be different
             # statistics applied, or there may be different matrices
             # available (e.g. aerosol, pm10, pm25)
             try:
@@ -1413,7 +1413,7 @@ class ReadEbas(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list`, optional
             list of str with variable names to read, if None (and if not
             both of the alternative possible parameters ``_vars_to_read`` and
-            ``_vars_to_compute`` are specified explicitely) then the default
+            ``_vars_to_compute`` are specified explicitly) then the default
             settings are used
 
         Returns
@@ -1733,7 +1733,7 @@ class ReadEbas(ReadUngriddedBase):
         Returns
         -------
         vars_to_retrieve : list
-            input list that may be extented by additional auxiliary variables
+            input list that may be extended by additional auxiliary variables
             that are needed for reading some of the input variables and that
             are supposed to be imported as well.
 
@@ -1924,7 +1924,7 @@ class ReadEbas(ReadUngriddedBase):
                 )
                 continue
 
-            # Fill the metatdata dict
+            # Fill the metadata dict
             # the location in the data set is time step dependent!
             # use the lat location here since we have to choose one location
             # in the time series plot

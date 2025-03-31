@@ -164,10 +164,6 @@ class TemporalSamplingError(ValueError):
     pass
 
 
-class UnitConversionError(ValueError):
-    pass
-
-
 class UnknownRegion(ValueError):
     pass
 

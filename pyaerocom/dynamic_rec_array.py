@@ -73,7 +73,7 @@ class DynamicRecArray:
         """Return the numpy array. Access to the data array will also shring the capacity
         to the length of the array. The returned array is not a copy but a internal view.
 
-        :return: np.arry of type dtype
+        :return: np.aarry of type dtype
         """
         if self._capacity != self._length:
             self._array = self._array[:][: self._length]

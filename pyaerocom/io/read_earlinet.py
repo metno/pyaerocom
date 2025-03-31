@@ -420,7 +420,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     unit_ok=unit_ok,
                     err_read=err_read,
                     outliers_removed=outliers_removed,
-                    has_altitute=has_altitude,
+                    has_altitude=has_altitude,
                 )
         return data_out
 
@@ -475,7 +475,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
 
-        # turn files into a list becauase I suspect there may be a bug if you don't do this
+        # turn files into a list because I suspect there may be a bug if you don't do this
         if isinstance(files, str):
             files = [files]
 
@@ -525,7 +525,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     continue
                 # if last_station_id != station_id:
                 meta_key += 1
-                # Fill the metatdata dict
+                # Fill the metadata dict
                 # the location in the data set is time step dependant!
                 # use the lat location here since we have to choose one location
                 # in the time series plot
@@ -648,7 +648,7 @@ class ReadEarlinet(ReadUngriddedBase):
         return self.exclude_files
 
     def get_file_list(self, vars_to_retrieve=None, pattern=None):
-        """Perform recusive file search for all input variables
+        """Perform recursive file search for all input variables
 
         Note
         ----

@@ -10,9 +10,9 @@ from pyaerocom.exceptions import (
     CoordinateError,
     DataUnitError,
     MetaDataError,
-    UnitConversionError,
     VarNotAvailableError,
 )
+from pyaerocom.units import UnitConversionError
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData

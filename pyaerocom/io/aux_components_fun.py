@@ -1,6 +1,5 @@
 import logging
 
-import cf_units
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
 
@@ -11,6 +10,9 @@ from pyaerocom.io.aux_read_cubes import (
     add_cubes,
 )
 from pyaerocom.units.molecular_mass import get_molmass
+
+from pyaerocom.units import Unit
+
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +49,7 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
     data = _check_input_iscube(data)[0]
 
     p_pascal = p0  # 1013 hPa (US standard atm)
-    T_kelvin = T0_STD  # 15 deg celcius (US standard atm)
+    T_kelvin = T0_STD  # 15 deg celsius (US standard atm)
 
     mmol_air = get_molmass("air_dry")
     mmol_var = get_molmass(var_name)
@@ -59,7 +61,7 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
         component_unit_fac = 1
     Rspecific = 287.058  # J kg-1 K-1
 
-    conversion_fac = 1 / cf_units.Unit("mol mol-1").convert(1, vmr_unit)
+    conversion_fac = 1 / Unit("mol mol-1").convert(1, vmr_unit)
 
     airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
@@ -67,7 +69,7 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
     mult_fun = CUBE_MATHS["multiply"]
     conc = mult_fun(data, mulfac)  # kg m-3
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit("kg m-3").convert(1, to_unit) * component_unit_fac
+        conversion_fac *= Unit("kg m-3").convert(1, to_unit) * component_unit_fac
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         conc = mult_fun(conc, conversion_fac)
 
@@ -105,7 +107,7 @@ def convert_to_ugN(data, var_name):
     component_mass = single_component_mass["n"]
     component_unit_fac = component_mass / mmol_var
     unit = data.units
-    unit_conversion = cf_units.Unit(str(unit)).convert(1, "ug m-3")
+    unit_conversion = Unit(str(unit)).convert(1, "ug m-3")
     if not np.isclose(unit_conversion, 1, rtol=1e-7):
         data = mult_fun(data, unit_conversion)
 

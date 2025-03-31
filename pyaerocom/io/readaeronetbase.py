@@ -13,8 +13,8 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.mathutils import numbers_in_str
-from pyaerocom.units.datetime.time_config import TS_TYPES
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units.datetime.tstype import TsType
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     def _ts_type_from_data_id(self):
         if "." in self.data_id:
             ts_type = self.data_id.split(".")[-1]
-            if ts_type in TS_TYPES:
+            if TsType.valid(ts_type):
                 self.TS_TYPES[self.data_id] = ts_type
                 return ts_type
         raise AttributeError("Failed to retrieve ts_type from data_id")
@@ -157,7 +157,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         if len(nums) == 1:
             if low <= int(nums[0]) <= high:
                 self.logger.debug(
-                    f"Succesfully extracted wavelength {nums[0]} nm from column name {colname}"
+                    f"Successfully extracted wavelength {nums[0]} nm from column name {colname}"
                 )
                 return nums[0]
         raise ValueError(f"Failed to extract wavelength from colname {colname}")
@@ -386,7 +386,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 logger.warning(f"\nSkipping station {stat}. Reason: {repr(e)}.\n")
                 skipped += 1
                 continue
-            # Fill the metatdata dict
+            # Fill the metadata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot

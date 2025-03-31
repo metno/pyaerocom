@@ -1,7 +1,6 @@
 import logging
 from time import time
 
-from cf_units import Unit
 from numpy.typing import ArrayLike
 import multiprocessing
 import os
@@ -25,6 +24,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 )
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import round_floats
+
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 

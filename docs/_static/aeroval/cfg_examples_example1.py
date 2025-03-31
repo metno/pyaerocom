@@ -151,7 +151,7 @@ GLOB_CFG = dict(
     # If True seasons are ['all', 'DJF', 'MAM', 'JJA', 'SON'],
     # if False, just ['all']
     add_seasons=True,
-    # Wheter or not statistics are based on the meteorological definition of seasons.
+    # Whether or not statistics are based on the meteorological definition of seasons.
     # This is relevant for periods that are a single year. So if use_meteorological_seasons=True
     # and add_seasons=True, for a given year ['DJF'] will refer to data from Dec of the previous year
     # (if available) and Jan/Feb of the same year, while if use_meteorological_seasons=False,
@@ -173,7 +173,7 @@ GLOB_CFG = dict(
     exp_descr=(
         "A simple setup evaluating AOD and Angstrom Exponent of 2 "
         "models (NorESM2 from AeroCom phase 3 control experiment and "
-        "CAMS reanalysis dateset) for the year 2010, using AERONET "
+        "CAMS reanalysis dataset) for the year 2010, using AERONET "
         "version 3 sun photometer data as well as data from a merged "
         "satellite product"
     ),
@@ -218,7 +218,7 @@ DEFAULT_COLOCATION_SETUP = dict(
     min_num_obs=dict(weekly=dict(daily=5), monthly=dict(weekly=3)),
     # How to aggregate the data when resampling (linked with min_num_obs and
     # can be setup in a similar way). This setting defaults to "mean",
-    # however, here we use a sligthly more complicated setup that does
+    # however, here we use a slightly more complicated setup that does
     # "median" and is synched with the stepwise min_num_obs regime.
     resample_how=dict(weekly=dict(daily="median"), monthly=dict(weekly="median")),
 )

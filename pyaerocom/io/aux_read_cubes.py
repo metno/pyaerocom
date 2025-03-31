@@ -13,6 +13,13 @@ from pyaerocom.helpers import copy_coords_cube
 from pyaerocom.units.molecular_mass import get_mmr_to_vmr_fac, get_molmass
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
+from pyaerocom.griddeddata import GriddedData
+
+
+from pyaerocom.varnameinfo import VarNameInfo
+from pyaerocom.units import Unit
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,8 +56,6 @@ def _apply_operator_cubes(cube1, cube2, operator_name, allow_coord_merge=True):
 
 
 def _check_input_iscube(*data_objs):
-    from pyaerocom.griddeddata import GriddedData
-
     checked = []
     for obj in data_objs:
         if isinstance(obj, GriddedData):
@@ -84,7 +89,7 @@ def _check_same_units(cube1, cube2):
         cube2.convert_units(u1)
         return (cube1, cube2)
     except Exception:
-        from pyaerocom.exceptions import UnitConversionError
+        from pyaerocom.units import UnitConversionError
 
         raise UnitConversionError("Failed to harmonise units")
 
@@ -198,10 +203,6 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     Cube
         Cube containing Angstrom exponent(s)
     """
-    from cf_units import Unit
-
-    from pyaerocom.varnameinfo import VarNameInfo
-
     cube1, cube2 = _check_input_iscube(cube1, cube2)
     if lambda1 is None:
         lambda1 = VarNameInfo(cube1.var_name).wavelength_nm

@@ -10,7 +10,7 @@ from tests.conftest import lustre_avail
 TEST_REGIONS = const.HTAP_REGIONS[:2]
 
 
-def test_availabe_region_masks():
+def test_available_region_masks():
     assert lsm.available_htap_masks() == [
         "PAN",
         "EAS",

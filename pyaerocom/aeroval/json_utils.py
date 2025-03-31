@@ -19,7 +19,7 @@ def set_float_serialization_precision(precision: int) -> None:
 
 def round_floats(in_data: float | dict | list | tuple) -> float | dict | list | tuple:
     """
-    round all floats in `in_data` to `FLOAT_DECIMALS` precission.
+    round all floats in `in_data` to `FLOAT_DECIMALS` precision.
     For nested structures, this method is called recursively to go through
     all levels
 

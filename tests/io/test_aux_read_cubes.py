@@ -33,7 +33,7 @@ def test_add_cubes(simple_cube: Cube):
     assert np.all(cube1.data + cube2.data == summed_cube.data)
 
 
-def test_subract_cubes(simple_cube: Cube):
+def test_subtract_cubes(simple_cube: Cube):
     cube1, cube2 = simple_cube, simple_cube
     differenced_cube = subtract_cubes(cube1, cube2)
     assert np.all(cube1.data - cube2.data == differenced_cube.data)

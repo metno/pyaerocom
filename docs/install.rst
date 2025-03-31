@@ -55,7 +55,7 @@ check e.g. `conda list pyaerocom`__ .
 Install from source into a default environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you want PyAerocom in your default installation of python, then you install the latest released version of pyaerocom and its depencencies:
+If you want PyAerocom in your default installation of python, then you install the latest released version of pyaerocom and its dependencies:
 ::
 
 	# install pyaerocom on machines with Proj8 or newer
