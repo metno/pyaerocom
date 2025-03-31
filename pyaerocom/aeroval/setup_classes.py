@@ -201,7 +201,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
     stats_decimals: int, optional
-        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a deault of 3.
+        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a default of 3.
         Setting this higher of lower changes the number of decimals shown on the Aeroval webpage.
     round_floats_precision: int, optional
         Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`

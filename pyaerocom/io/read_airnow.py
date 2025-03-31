@@ -96,7 +96,7 @@ class ReadAirNow(ReadUngriddedBase):
 
     #: Units found in data files
     UNIT_MAP = {
-        "C": "celcius",
+        "C": "celsius",
         "M/S": "m s-1",
         "MILLIBAR": "mbar",
         "MM": "mm",
@@ -321,7 +321,7 @@ class ReadAirNow(ReadUngriddedBase):
         NotImplementedError
             if several timezones are assigned to the same station
         AttributeError
-            if data unit is unkown
+            if data unit is unknown
 
         Returns
         -------
@@ -566,7 +566,7 @@ class ReadAirNow(ReadUngriddedBase):
 
         return data
 
-    # the fllowing has been stolen from
+    # the following has been stolen from
     # https://stackoverflow.com/questions/44402983/how-to-read-the-file-without-encoding-and-extract-desired-urls-with-python3
     def get_file_bom_encoding(self, filename):
         with open(filename, "rb") as openfileobject:

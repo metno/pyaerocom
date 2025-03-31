@@ -106,7 +106,7 @@ def validate_structure(data: xr.DataArray) -> None:
     # Check variables.
     if data.name not in const.VARS.all_vars:
         raise ValueError(
-            f"Unexpeted variable name, '{data.name}. Must be variable name defined in variables.ini'"
+            f"Unexpected variable name, '{data.name}. Must be variable name defined in variables.ini'"
         )
 
     # Check longitude and latitude.
@@ -650,7 +650,7 @@ class ColocatedData(BaseModel):
             that one. The default is False (updated in v0.11.0, before was
             True).
         **kwargs
-            Addtitional keyword args passed to :func:`TimeResampler.resample`.
+            Additional keyword args passed to :func:`TimeResampler.resample`.
 
         Returns
         -------
@@ -773,7 +773,7 @@ class ColocatedData(BaseModel):
         Returns
         -------
         list
-            latitute coordinates
+            latitude coordinates
         list
             longitude coordinates
 
@@ -948,7 +948,7 @@ class ColocatedData(BaseModel):
         ----------
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
+            area weights are applied when calculating the statistics based on
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
@@ -990,7 +990,7 @@ class ColocatedData(BaseModel):
         Parameters
         ----------
         aggr : str, optional
-            aggreagator to be used, currently only mean and median are
+            aggregator to be used, currently only mean and median are
             supported. Defaults to mean.
         **kwargs
             additional keyword args passed to
@@ -1041,11 +1041,11 @@ class ColocatedData(BaseModel):
         Parameters
         ----------
         aggr : str, optional
-            aggreagator to be used, currently only mean and median are
+            aggregator to be used, currently only mean and median are
             supported. Defaults to mean.
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
+            area weights are applied when calculating the statistics based on
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
@@ -1164,7 +1164,7 @@ class ColocatedData(BaseModel):
         Returns
         -------
         dict
-            dicitonary with meta information
+            dicitionary with meta information
         """
 
         spl = os.path.basename(file_path).split(".nc")[0].split("_")
@@ -1220,7 +1220,7 @@ class ColocatedData(BaseModel):
 
     def _prepare_meta_to_netcdf(self):
         """
-        Prepare metada for NetCDF format
+        Prepare metadata for NetCDF format
 
         Returns
         -------

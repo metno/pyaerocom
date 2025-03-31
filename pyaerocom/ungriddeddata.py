@@ -74,7 +74,7 @@ class UngriddedData(UngriddedDataMetadata):
         values are dictionaries containing keys specifying variable name and
         corresponding values are arrays or lists, specifying indices (rows) of
         these station / variable information in :attr:`_data`. Note: this
-        information is redunant and is there to accelarate station data
+        information is redundant and is there to accelerate station data
         extraction since the data index matches for a given metadata block
         do not need to be searched in the underlying numpy array.
     var_idx : dict[str, float]
@@ -85,7 +85,7 @@ class UngriddedData(UngriddedDataMetadata):
     Parameters
     ----------
     num_points : :obj:`int`, optional
-        inital number of total datapoints (number of rows in 2D dataarray)
+        initial number of total datapoints (number of rows in 2D dataarray)
     add_cols : :obj:`list`, optional
         list of additional index column names of 2D datarray.
 
@@ -480,7 +480,7 @@ class UngriddedData(UngriddedDataMetadata):
         on country inferred from corresponding lat / lon coordinate. Uses
         :func:`pyaerocom.geodesy.get_country_info_coords` (library
         reverse-geocode) to retrieve countries. This may be errouneous
-        close to country borders as it uses eucledian distance based on a list
+        close to country borders as it uses Euclidean distance based on a list
         of known locations.
 
         Note
@@ -598,7 +598,7 @@ class UngriddedData(UngriddedDataMetadata):
             start, stop = start_stop(start, stop)
 
         if isinstance(meta_idx, str):
-            # user asks explicitely for station name, find all meta indices
+            # user asks explicitly for station name, find all meta indices
             # that match this station
             meta_idx = self.find_station_meta_indices(meta_idx, allow_wildcards_station_name)
         if not isinstance(meta_idx, list):
@@ -725,7 +725,7 @@ class UngriddedData(UngriddedDataMetadata):
         except KeyError:
             pass
 
-        # assign station coordinates explicitely
+        # assign station coordinates explicitly
         for ck in sd.STANDARD_COORD_KEYS:
             try:
                 sd.station_coords[ck] = meta[ck]
@@ -1025,7 +1025,7 @@ class UngriddedData(UngriddedDataMetadata):
         ----------
         inplace : bool
             if True, the flagged datapoints will be set to NaN in this object,
-            otherwise a new oject will be created and returned
+            otherwise a new object will be created and returned
 
         Returns
         -------
@@ -1068,7 +1068,7 @@ class UngriddedData(UngriddedDataMetadata):
             variable name
         inplace : bool
             if True, the outliers will be removed in this object, otherwise
-            a new oject will be created and returned
+            a new object will be created and returned
         low : float
             lower end of valid range for input variable. If None, then the
             corresponding value from the default settings for this variable
@@ -1684,7 +1684,7 @@ class UngriddedData(UngriddedDataMetadata):
         station exists in a second instance of :class:`UngriddedData` that
         is provided. The check is performed on basis of the station name, and
         optionally, if desired, for each station name match, the lon lat
-        coordinates can be compared within a certain radius (defaul 0.1 km).
+        coordinates can be compared within a certain radius (default 0.1 km).
 
         Note
         ----

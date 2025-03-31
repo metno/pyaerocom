@@ -53,7 +53,7 @@ class EbasColDef(dict):
     unit : :obj:`str`, optional
         unit of data in column (if applicable)
     flag_col : :obj:`str`, optional
-        ``name`` of flag column that corresponds to this data colum (only
+        ``name`` of flag column that corresponds to this data column (only
         relevant if :attr:`is_var` is True)
     """
 

@@ -179,7 +179,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         Things done here:
 
             - Update menu file
-            - Make aeroval info table json (tab informations in interface)
+            - Make aeroval info table json (tab information in interface)
             - update and order heatmap file
         """
         self.exp_output.update_interface()

@@ -80,7 +80,7 @@ class Colocator:
             colocation_setup = ColocationSetup(**colocation_setup)
             warnings.warn(
                 DeprecationWarning(
-                    "Future versions of Pyaerocom will require Colocator to injest an instance of ColocationSetup."
+                    "Future versions of Pyaerocom will require Colocator to ingest an instance of ColocationSetup."
                 )
             )
 

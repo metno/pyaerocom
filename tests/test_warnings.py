@@ -24,7 +24,7 @@ def test_filter_warnings_category():
     """filter one warning based on the type of warning"""
 
     with ignore_warnings(RuntimeWarning):
-        warnings.warn(RuntimeWarning("somethng unexpected..."))
+        warnings.warn(RuntimeWarning("something unexpected..."))
 
 
 @pytest.mark.filterwarnings("error")

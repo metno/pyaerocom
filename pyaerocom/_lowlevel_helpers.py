@@ -310,7 +310,7 @@ class BrowseDict(MutableMapping):
         Raises
         ------
         ValueError
-            If input is inalid type.
+            If input is invalid type.
 
         Returns
         -------

@@ -1,5 +1,5 @@
 """
-Settings and helper methods / classes for I/O of obervation data
+Settings and helper methods / classes for I/O of observation data
 
 Note
 ----

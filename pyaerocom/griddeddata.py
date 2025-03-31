@@ -496,7 +496,7 @@ class GriddedData:
 
         Note
         ----
-        This attribute was formerly named ``name`` which is alse the
+        This attribute was formerly named ``name`` which is also the
         corresponding attribute name in :attr:`metadata`
         """
         try:
@@ -698,7 +698,7 @@ class GriddedData:
                 f"{vmax}. Since this will add the variable only temporarily "
                 f"during this run, this might interrupt the processing "
                 f"workflow unexpectedly when rerunning parts of the code without "
-                f"explictly calling GriddedData.register_var_glob. It may be best "
+                f"explicitly calling GriddedData.register_var_glob. It may be best "
                 f"to add this variable to pyaerocom/data/variables.ini."
             )
         return vardef
@@ -834,7 +834,7 @@ class GriddedData:
             from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
         )
         logger.info(
-            f"Succesfully converted unit from {current} to {new_unit} in {self.short_str()}"
+            f"Successfully converted unit from {current} to {new_unit} in {self.short_str()}"
         )
 
         self._apply_unit_mulfac(new_unit, mulfac)
@@ -1080,7 +1080,7 @@ class GriddedData:
             raise ValueError(
                 "Could not extract latitude or longitude info "
                 "from sampling_points or both input arrays "
-                "do not have the same lenght"
+                "do not have the same length"
             )
 
         return dict(lat=lats, lon=lons)
@@ -1604,7 +1604,7 @@ class GriddedData:
             self.cube.data = np.ma.masked_array(self.cube.data)
 
     def _resample_time_iris(self, to_ts_type):
-        """Resample time dimension using iris funcitonality
+        """Resample time dimension using iris functionality
 
         This does not allow to specify further constraints but just
         aggregates to input resolution
@@ -2114,7 +2114,7 @@ class GriddedData:
         Parameters
         -----------
         out_dir : str
-            output direcory (must exist)
+            output directory (must exist)
         savename : str, optional
             name of file. If None, :func:`aerocom_savename` is used which is
             generated automatically and may be modified via `**kwargs`
@@ -2700,7 +2700,7 @@ class GriddedData:
         return GriddedData(sub, **self.metadata)
 
     def __contains__(self, val):
-        """Check if variable or coordinate matchs input string"""
+        """Check if variable or coordinate matches input string"""
         return val is self.data_id or val in self.coord_names
 
     def __dir__(self):

@@ -255,7 +255,7 @@ class Variable:
 
         Note
         ----
-        This funtion only identifies wet and dry deposition based on the variable
+        This function only identifies wet and dry deposition based on the variable
         names, there might be other variables that are deposition variables but
         cannot be identified by this function.
 
@@ -288,7 +288,7 @@ class Variable:
 
         Note
         ----
-        This funtion only identifies wet and dry deposition based on the variable
+        This function only identifies wet and dry deposition based on the variable
         names, there might be other variables that are deposition variables but
         cannot be identified by this function.
 

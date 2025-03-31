@@ -200,7 +200,7 @@ def calc_vmrox(concno2: xr.DataArray, vmro3: xr.DataArray) -> xr.DataArray:
     vmrno2 = concx_to_vmrx(
         data=concno2,
         p_pascal=p0,  # 1013 hPa (US standard atm)
-        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celsius (US standard atm)
         conc_unit=str(concno2.attrs["units"]),
         mmol_var=get_molmass("no2"),  # g/mol NO2
         to_unit="nmol mol-1",
@@ -234,7 +234,7 @@ def calc_vmrox_from_conc(concno2, conco3):
     vmrno2 = concx_to_vmrx(
         data=concno2,
         p_pascal=p0,  # 1013 hPa (US standard atm)
-        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celsius (US standard atm)
         conc_unit=str(concno2.attrs["units"]),
         mmol_var=get_molmass("no2"),  # g/mol NO2
         to_unit="nmol mol-1",
@@ -243,7 +243,7 @@ def calc_vmrox_from_conc(concno2, conco3):
     vmro3 = concx_to_vmrx(
         data=conco3,
         p_pascal=p0,  # 1013 hPa (US standard atm)
-        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celsius (US standard atm)
         conc_unit=str(conco3.attrs["units"]),
         mmol_var=get_molmass("o3"),  # g/mol O3
         to_unit="nmol mol-1",
@@ -258,7 +258,7 @@ def calc_vmrno2(concno2: xr.DataArray) -> xr.DataArray:
     vmrno2 = concx_to_vmrx(
         data=concno2,
         p_pascal=p0,  # 1013 hPa (US standard atm)
-        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celsius (US standard atm)
         conc_unit=str(concno2.attrs["units"]),
         mmol_var=get_molmass("no2"),  # g/mol NO2
         to_unit="nmol mol-1",
@@ -323,7 +323,7 @@ def calc_vmro3(conco3):
     vmro3 = concx_to_vmrx(
         data=conco3,
         p_pascal=p0,  # 1013 hPa (US standard atm)
-        T_kelvin=T0_STD,  # 15 deg celcius (US standard atm)
+        T_kelvin=T0_STD,  # 15 deg celsius (US standard atm)
         conc_unit=str(conco3.attrs["units"]),
         mmol_var=get_molmass("o3"),  # g/mol O3
         to_unit="nmol mol-1",

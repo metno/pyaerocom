@@ -49,7 +49,7 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
     data = _check_input_iscube(data)[0]
 
     p_pascal = p0  # 1013 hPa (US standard atm)
-    T_kelvin = T0_STD  # 15 deg celcius (US standard atm)
+    T_kelvin = T0_STD  # 15 deg celsius (US standard atm)
 
     mmol_air = get_molmass("air_dry")
     mmol_var = get_molmass(var_name)

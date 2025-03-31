@@ -1121,7 +1121,7 @@ class ReadGridded(GriddedReader):
         return sorted(os.path.join(self.data_dir, x) for x in df.filename.values)
 
     def get_var_info_from_files(self) -> dict:
-        """Creates dicitonary that contains variable specific meta information
+        """Creates dictionary that contains variable specific meta information
 
         Returns
         -------
@@ -1765,7 +1765,7 @@ class ReadGridded(GriddedReader):
             dictionary defining read constraint (see
             :func:`check_constraint_valid` for minimum requirement). If
             constraint contains key var_name (not mandatory), then the
-            corresponding variable is attemted to be read and is used to
+            corresponding variable is attempted to be read and is used to
             evaluate constraint and the corresponding boolean mask is then
             applied to input `data`. Wherever this mask is True (i.e. constraint
             is met), the current value in input `data` will be replaced with
@@ -1903,7 +1903,7 @@ class ReadGridded(GriddedReader):
                     rename_var=rename_var,
                     **kwargs,
                 )
-        # this input variable was explicitely set to be computed, in which
+        # this input variable was explicitly set to be computed, in which
         # case reading of that variable is ignored even if a file exists for
         # that
         raise VarNotAvailableError(

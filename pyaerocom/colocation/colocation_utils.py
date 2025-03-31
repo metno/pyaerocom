@@ -121,7 +121,7 @@ def _ensure_gridded_gridded_same_freq(data, data_ref, min_num_obs, resample_how)
     Make sure 2 input gridded data objects are in the same frequency
 
     Checks if both input data objects are in the same frequency, and if not,
-    downsample the one with higher freqency accordingly.
+    downsample the one with higher frequency accordingly.
 
     Parameters
     ----------

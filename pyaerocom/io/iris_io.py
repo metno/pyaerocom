@@ -4,7 +4,7 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 
 1. checking and correction of time definition
 2. number and length of dimension coordinates must match data array
-3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
+3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 interval)
 """
 
 import logging

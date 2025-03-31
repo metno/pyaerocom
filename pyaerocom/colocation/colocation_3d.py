@@ -96,7 +96,7 @@ def _colocate_vertical_profile_gridded(
 
     list_of_colocateddata_objects = []
     for vertical_layer in layer_limits:
-        # Think about efficency here in terms of order of loops. candidate for parallelism
+        # Think about efficiency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
         arr = np.full((2, time_num, stat_num), np.nan)
         try:
@@ -130,7 +130,7 @@ def _colocate_vertical_profile_gridded(
             lats[i] = obs_stat.latitude
             alts[i] = obs_stat.station_coords[
                 "altitude"
-            ]  # altitude refers to altitude of the data. be explcit where getting from
+            ]  # altitude refers to altitude of the data. be explicit where getting from
             station_names[i] = obs_stat.station_name
 
             # ToDo: consider removing to keep ts_type_src_ref (this was probably
@@ -324,7 +324,7 @@ def colocate_vertical_profile_gridded(
     The guts of this function are placed in a helper function as not to repeat the code.
     This is done because colocation must occur twice:
         i) at the the statistics are computed
-        ii) at a finder vertical resoltuion for profile vizualization
+        ii) at a finer vertical resolution for profile visualization
     Some things you do not want to compute twice, however.
     So (most of) the things that correspond to both colocation instances are computed here,
     and then passed to the helper function.
@@ -434,7 +434,7 @@ def colocate_vertical_profile_gridded(
     # use only sites that are within model domain
 
     # filter_by_meta wipes is_vertical_profile
-    # Also note that filter_by_meta may not be calling alt_range. Function fitler_altitude is defined but not used
+    # Also note that filter_by_meta may not be calling alt_range. Function filter_altitude is defined but not used
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range, altitude=alt_range)
 
     # get timeseries from all stations in provided time resolution

@@ -142,7 +142,7 @@ class ReadAasEtal(ReadUngriddedBase):
         for name, station_group in grouped:
             station_group = station_group.drop_duplicates(
                 subset="dtime", keep="first"
-            )  # Drops duplacate rows
+            )  # Drops duplicate rows
 
             tvals = station_group["dtime"]
 

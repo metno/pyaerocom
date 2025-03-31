@@ -802,7 +802,7 @@ class ReadMscwCtm(GriddedReader):
         gridded.metadata["data_id"] = self._data_id
         gridded.metadata["from_files"] = self._filepaths
 
-        # Remove unneccessary metadata. Better way to do this?
+        # Remove unnecessary metadata. Better way to do this?
         for metadata in ["current_date_first", "current_date_last"]:
             if metadata in gridded.metadata.keys():
                 del gridded.metadata[metadata]

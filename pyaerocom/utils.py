@@ -161,7 +161,7 @@ def recursive_defaultdict(d: Mapping | None = None):
     dd["A"]["B"]["C"]["D"]["E"] = "Hello world"
     ```
 
-    Optionally takes a parameter `d` (eg. dictionary) to initalize
+    Optionally takes a parameter `d` (eg. dictionary) to initialize
     the defaultdict. Every existing subdictionary will recursively be
     turned into a recursive_defaultdict.
 
