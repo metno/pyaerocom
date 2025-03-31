@@ -11,6 +11,7 @@ import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 
@@ -114,7 +115,9 @@ class ReadCAMS2_83(ReadUngriddedBase):
         return self.read(vars_to_retrieve, [filename])
 
     @classmethod
-    def __reader(cls, vars_to_retrieve: list[str], files: list[str | Path]) -> Iterator[dict]:
+    def __reader(
+        cls, vars_to_retrieve: list[str], files: list[str | Path]
+    ) -> Iterator[StationData]:
         logger.info(f"reading {cls.DATA_ID} {vars_to_retrieve=}")
         logger.debug(f"reading from {files=}")
         reverse_aerocom = {v: k for k, v in AEROCOM_NAMES.items()}
@@ -148,4 +151,4 @@ class ReadCAMS2_83(ReadUngriddedBase):
             df = df.rename(AEROCOM_NAMES, axis="columns")
             for poll in vars_to_retrieve:
                 output[poll] = df[poll]
-            yield output
+            yield StationData(**output)
