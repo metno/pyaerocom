@@ -1,5 +1,6 @@
 [files]
 extend-exclude = [
+  "pyaerocom/data/country_codes.json",
 ]
 
 [default]
@@ -14,6 +15,9 @@ extend-ignore-identifiers-re = [
   "Aas",
   "iy",
   "NOY",
+  "Noy",
+  "mole_fraction_of_noy_expressed_as_nitrogen_in_air",
+  "atmosphere_mass_content_of_noy_expressed_as_nitrogen",
   "ND",
   "treshold_angstrom",
   "colocation_layer_limts",
@@ -29,4 +33,6 @@ extend-ignore-identifiers-re = [
   "EARLINET_AerRemSen_cyc_Lev02_e0355_202104262030_202104262130_v01_qc03",
   "typ",
   "ts_typs",
+  "emiss",
+  "vas",
 ]
