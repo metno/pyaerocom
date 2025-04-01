@@ -1,6 +1,7 @@
 """
 Global config for emep reporting pyaeroval runs
 """
+
 import pathlib
 
 import copy
