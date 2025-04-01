@@ -634,7 +634,8 @@ Units
 Main API
 ^^^^^^^^
 
-.. automodule:: pyaerocom.units_helpers
+.. automodule:: pyaerocom.units.units_helpers
+
    :members:
    :undoc-members:
 
