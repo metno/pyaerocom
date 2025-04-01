@@ -681,7 +681,33 @@ Custom exceptions
 Units
 -----
 
+Main API
+^^^^^^^^
+
+.. automodule:: pyaerocom.units_helpers
+   :members:
+   :undoc-members:
+
+Units
+^^^^^
+
 .. automodule:: pyaerocom.units
    :members:
    :undoc-members:
-   :ignore-module-all:
+
+Datetime
+^^^^^^^^
+
+.. automodule:: pyaerocom.units.datetime.utils
+   :members:
+   :undoc-members:
+
+.. automodule:: pyaerocom.units.datetime.tstype
+   :members:
+   :undoc-members:
+
+Exceptions
+^^^^^^^^^^
+
+.. automodule:: pyaerocom.units.exceptions
+   :members:
