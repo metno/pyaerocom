@@ -635,12 +635,11 @@ Main API
 ^^^^^^^^
 
 .. automodule:: pyaerocom.units.units_helpers
-
    :members:
    :undoc-members:
 
-Units
-^^^^^
+Unit
+^^^^
 
 .. automodule:: pyaerocom.units.units
    :members:
