@@ -108,19 +108,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             logger.info(f"Processing model maps for {model_name} ({var})")
 
             try:  # pragma: no cover
-                make_contour, make_overlay = False, False
                 if isinstance(self.cfg.modelmaps_opts.plot_types, dict):
-                    make_contour = CONTOUR in self.cfg.modelmaps_opts.plot_types.get(
-                        model_name, False
-                    )
-                    make_overlay = OVERLAY in self.cfg.modelmaps_opts.plot_types.get(
-                        model_name, False
-                    )
-                if self.cfg.modelmaps_opts.plot_types == {CONTOUR} or make_contour:
-                    self._process_contour_map_var(model_name, var, self.reanalyse_existing)
+                    plot_types = self.cfg.modelmaps_opts.plot_types.get(model_name, [])
+                else:
+                    plot_types = self.cfg.modelmaps_opts.plot_types
 
-                if self.cfg.modelmaps_opts.plot_types == {OVERLAY} or make_overlay:
-                    # create overlay (pixel) plots
+                if CONTOUR in plot_types:
+                    self._process_contour_map_var(model_name, var, self.reanalyse_existing)
+                if OVERLAY in plot_types:
                     self._process_overlay_map_var(model_name, var, self.reanalyse_existing)
 
             except ModelVarNotAvailable as ex:

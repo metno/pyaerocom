@@ -62,11 +62,14 @@ def test__run_reanalysefalse(tmp_path, caplog, cfg: dict):
 
 
 def test__run_working(cfg: dict):
+    cfg["plot_types"] = ("contour", "overlay")
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
     engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
     contours = engine.exp_output.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT)
+    overlays = engine.exp_output.avdb.query(aerovaldb.routes.Route.MAP_OVERLAY)
     assert len(contours) > 0
+    assert len(overlays) > 0
     assert contours[0].meta["obsvar"] == "od550aer"
     assert contours[0].meta["model"] == "TM5-AP3-CTRL"
 
