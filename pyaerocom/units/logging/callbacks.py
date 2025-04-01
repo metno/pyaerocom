@@ -13,8 +13,8 @@ class LoggingCallback:
     def __init__(self, log: logging.Logger | None = None) -> None:
         """
         :param log: Instance of logger to be used. If not provided, the logger
-        of this module will be used, which may be undesired due to hiding the
-        real source of the error so it is recommended to provide your own.
+            of this module will be used, which may be undesired due to hiding the
+            real source of the error so it is recommended to provide your own.
         """
         if log is None:
             log = logger
@@ -28,7 +28,7 @@ class LoggingCallback:
 
         self._logger.log(
             level,
-            "Units for variable '%s' converted from '%s' to '%s' using conversion factor '%d'.",
+            "Successfully converted unit of variable '%s' from '%s' to '%s' using conversion factor '%d'.",
             info.from_aerocom_var,
             info.from_cf_unit,
             info.to_cf_unit,

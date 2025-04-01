@@ -729,7 +729,7 @@ class GriddedData:
         elif isinstance(input, str) and os.path.exists(input):
             self._read_netcdf(input, var_name, perform_fmt_checks)
         else:
-            raise OSError(f"Failed to load input: {input}")
+            raise ValueError(f"Failed to load input: {input}")
 
         if var_name is not None and self.var_name != var_name:
             try:

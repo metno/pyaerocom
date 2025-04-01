@@ -8,7 +8,7 @@ def test_callback_1(caplog):
 
     Unit("1").convert(1, "1", callback=LoggingCallback())
 
-    assert "Units for variable" not in caplog.text
+    assert "Successfully converted unit of variable" not in caplog.text
 
 
 def test_callback_2(caplog):
@@ -16,7 +16,7 @@ def test_callback_2(caplog):
 
     Unit("1").convert(1, "1", callback=LoggingCallback())
 
-    assert "Units for variable" in caplog.text
+    assert "Successfully converted unit of variable" in caplog.text
 
 
 def test_callback_3(caplog):
@@ -24,4 +24,4 @@ def test_callback_3(caplog):
 
     Unit("1").convert(1, "2", callback=LoggingCallback())
 
-    assert "Units for variable" in caplog.text
+    assert "Successfully converted unit of variable" in caplog.text

@@ -985,7 +985,9 @@ class UngriddedData(UngriddedDataMetadata):
         result["num_stats"] = num_stats
         return result
 
-    def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
+    def check_convert_var_units(
+        self, var_name: str, to_unit: str | None = None, inplace: bool = True
+    ) -> UngriddedData:
         obj = self if inplace else self.copy()
 
         # get the unit

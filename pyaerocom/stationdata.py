@@ -29,6 +29,8 @@ from pyaerocom.helpers import calc_climatology, isnumeric, isrange
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType, to_datetime64
+from pyaerocom.units.logging import LoggingCallback
+
 from pyaerocom.units import convert_unit
 
 from pyaerocom.units.datetime import infer_time_resolution
@@ -261,17 +263,21 @@ class StationData(StationMetaData):
 
         data = self[var_name]
         try:
-            tst = self.get_var_ts_type(var_name)
+            ts_type = self.get_var_ts_type(var_name)
         except MetaDataError:
-            tst = None
-        data = convert_unit(data, from_unit=unit, to_unit=to_unit, var_name=var_name, ts_type=tst)
+            ts_type = None
+
+        data = convert_unit(
+            data,
+            from_unit=unit,
+            to_unit=to_unit,
+            var_name=var_name,
+            ts_type=ts_type,
+            callback=LoggingCallback(logger),
+        )
 
         self[var_name] = data
         self.var_info[var_name]["units"] = to_unit
-        logger.debug(
-            f"Successfully converted unit of variable {var_name} in {self.station_name} "
-            f"from {unit} to {to_unit}"
-        )
 
     def dist_other(self, other: StationData) -> float:
         """Distance to other station in km
