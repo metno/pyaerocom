@@ -104,11 +104,10 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         "prmm",
         "concso4c",
         "vmro3",
-
     ]
     # Will be used later
     ebas_test_vars_diurnal = [
-    "vmro3",
+        "vmro3",
     ]
 
     CFG = dict(
