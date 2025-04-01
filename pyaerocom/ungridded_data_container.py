@@ -31,7 +31,7 @@ class UngriddedDataContainer(abc.ABC):
 
         Parameters
         ----------
-        stats : iterator or StationData
+        stats : iterator of StationData, or StationData
             input data object(s)
         add_meta_keys : list, optional
             list of metadata keys that are supposed to be imported from the

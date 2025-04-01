@@ -12,7 +12,7 @@ from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH, ReadCAMS2_83
 from pyaerocom.io.cams2_83.read_obs import obs_paths as find_obs_paths
 from pyaerocom.io.readungridded import ReadUngridded
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 
 TEST_DATE = datetime(2021, 12, 1)
 TEST_DATES = [TEST_DATE + timedelta(days=d) for d in range(3)]
@@ -57,7 +57,7 @@ def test_obs_paths(obs_paths: list[Path]):
 
 def test_read_ungridded(obs_paths: list[Path]):
     data = ReadUngridded().read(const.CAMS2_83_NRT_NAME, "concco", files=obs_paths)
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataContainer)
 
 
 def test_obs_no_metadata_file(
@@ -103,7 +103,16 @@ def test_obs_ok_metadata_file(obs_file: Path, metadata_file: Path):
     metadata_file.write_text(dedent(metadata))
 
     df = read_csv(obs_file, polls=["O3"])
-    assert list(df) == ["station", "lat", "lon", "alt", "time", "poll", "conc", "station_type"]
+    assert list(df) == [
+        "station",
+        "lat",
+        "lon",
+        "alt",
+        "time",
+        "poll",
+        "conc",
+        "station_type",
+    ]
     assert df["station_type"].isna().all()
 
 
@@ -119,7 +128,7 @@ def test_obs_read_to_ungridded(
 
     reader = ReadCAMS2_83()
     data = reader.read(vars_to_retrieve=["conco3"], files=[obs_file])
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataContainer)
     assert "Time needed to convert obs to ungridded" in caplog.text
     assert all("station_type" in dict for dict in data.metadata.values())
     assert {dict["station_type"] for dict in data.metadata.values()} == {"rur", "sub"}
