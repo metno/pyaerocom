@@ -338,8 +338,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                     )
         if len(units) == 0 and str(unit) != "1":
             raise MetaDataError(
-                f"Failed to access unit information for variable {var_name}. "
-                f"Expected unit {unit}"
+                f"Failed to access unit information for variable {var_name}. Expected unit {unit}"
             )
         for u in units:
             if not get_unit_conversion_fac(u, unit, var_name) == 1:

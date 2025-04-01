@@ -339,8 +339,7 @@ class ExperimentOutput(ProjectOutput):
             return True
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {uri}. "
-                f"File will be deleted."
+                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted."
             )
             self.avdb.rm_by_uri(uri)
             return True

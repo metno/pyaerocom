@@ -866,7 +866,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "filters": {
                     "time_bounds": {
                         "startend_include": [
-                            (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
                     "valleyfloor_relaltitude": {
@@ -921,7 +921,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "filters": {
                     "time_bounds": {
                         "startend_include": [
-                            (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
                     "valleyfloor_relaltitude": {
@@ -983,7 +983,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "filters": {
                     "time_bounds": {
                         "startend_include": [
-                            (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
                     "valleyfloor_relaltitude": {
@@ -1029,7 +1029,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "filters": {
                     "time_bounds": {
                         "startend_include": [
-                            (f"{year}-01-01 00:00:00", f"{year+1}-01-01 00:00:00")
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
                     "valleyfloor_relaltitude": {

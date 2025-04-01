@@ -470,8 +470,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         if skipped:
             logger.warning(
-                f"{skipped} out of {len(files)} files have been skipped (for "
-                f"details see output)."
+                f"{skipped} out of {len(files)} files have been skipped (for details see output)."
             )
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]

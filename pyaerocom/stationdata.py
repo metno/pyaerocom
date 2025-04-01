@@ -1396,9 +1396,7 @@ class StationData(StationMetaData):
         if isinstance(data, xr.DataArray):
             if not all([x in data.dims for x in ("time", "altitude")]):
                 raise NotImplementedError(
-                    "Can only handle dataarrays that "
-                    "contain 2 dimensions of time "
-                    "and altitude"
+                    "Can only handle dataarrays that contain 2 dimensions of time and altitude"
                 )
             if "altitude" not in kwargs:
                 raise ValueError(

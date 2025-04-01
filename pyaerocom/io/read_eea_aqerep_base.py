@@ -397,8 +397,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             tstype = self.TS_TYPES_FILE[freq]
         except KeyError:
             raise TemporalResolutionError(
-                f"Found invalid ts_type {freq}. Please register in class header "
-                f"attr TS_TYPES_FILE"
+                f"Found invalid ts_type {freq}. Please register in class header attr TS_TYPES_FILE"
             )
 
         data_out.ts_type = tstype

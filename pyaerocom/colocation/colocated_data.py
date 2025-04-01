@@ -1683,8 +1683,7 @@ class ColocatedData(BaseModel):
         """
         if lon_range[0] > lon_range[1]:
             raise NotImplementedError(
-                "Filtering longitude over 180 deg edge is not yet possible in "
-                "3D ColocatedData..."
+                "Filtering longitude over 180 deg edge is not yet possible in 3D ColocatedData..."
             )
         if not isinstance(lat_range, slice):
             lat_range = slice(lat_range[0], lat_range[1])

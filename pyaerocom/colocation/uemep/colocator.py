@@ -110,7 +110,7 @@ class UEMEPColocator:
         start_time = time.perf_counter()
         with xr.open_mfdataset(self._file_path, engine="netcdf4", decode_timedelta=True) as dt:
             self._uemep_station_data = dt
-        logger.info(f"Finished reading data in {time.perf_counter()-start_time:.3f} seconds.")
+        logger.info(f"Finished reading data in {time.perf_counter() - start_time:.3f} seconds.")
 
     @property
     def uemep_station_data(self) -> xr.Dataset:
