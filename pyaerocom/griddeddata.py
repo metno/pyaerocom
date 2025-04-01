@@ -1516,7 +1516,6 @@ class GriddedData:
             )
         return subset
 
-    # TODO: Test, confirm and remove beta flag in docstring
     def remove_outliers(self, low=None, high=None, inplace=True):
         """Remove outliers from data
 

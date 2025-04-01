@@ -24,6 +24,8 @@ from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
 
+__all__ = ["Unit"]
+
 T = TypeVar("T")
 
 

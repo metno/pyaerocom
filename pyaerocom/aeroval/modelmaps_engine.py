@@ -451,7 +451,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     self.cfg.colocation_opts.ts_type
                 )  # emulates the old way closer than None
 
-        data = reader.read_var(
+        data: GriddedData = reader.read_var(
             var,
             start=start,
             stop=stop,
@@ -464,13 +464,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         rm_outliers = self.cfg.colocation_opts.model_remove_outliers
         outlier_ranges = self.cfg.colocation_opts.model_outlier_ranges
 
+        data.check_unit(try_convert_if_wrong=True)
+
         if rm_outliers:
             if var in outlier_ranges:
                 low, high = outlier_ranges[var]
             else:
                 var_info = const.VARS[var]
                 low, high = var_info.minimum, var_info.maximum
-            data.check_unit()
             data.remove_outliers(low, high, inplace=True)
 
         return data
