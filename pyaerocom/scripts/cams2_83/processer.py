@@ -48,7 +48,10 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 model = col.colocation_setup.model_id.split(".")[1]
                 model_id = f"CAMS2-83.{model}.day0.{runtype}"
                 model_name = f"CAMS2-83-{model}-persistent-{runtype}"
-                new_start = col.colocation_setup.start - timedelta(days=1)
+                if isinstance(col.colocation_setup.start, int):
+                    new_start = datetime(year=col.colocation_setup.start, month=1, day=1)  - timedelta(days=1)
+                else:
+                    new_start = col.colocation_setup.start - timedelta(days=1)
                 new_model_start = (datetime.strptime(col.colocation_setup.model_kwargs["daterange"][0], "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
                 
                 col.colocation_setup.model_id = model_id
