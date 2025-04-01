@@ -1,6 +1,7 @@
 """
 Global config for emep reporting pyaeroval runs
 """
+import pathlib
 
 import copy
 import functools
@@ -44,10 +45,10 @@ OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 @functools.cache
 def _get_ignore_stations_from_file():
-    if os.path.exists("./omit_stations.yaml"):
-        filename = os.path.abspath("./omit_stations.yaml")
-        logger.info(f"reading omit_stations.yaml from {filename}")
-        with open(filename) as fh:
+    omit_file = pathlib.Path(__file__).parent / "omit_stations_actris_ebas.yaml"
+    if omit_file.exists():
+        logger.info(f"reading omit_stations_actris_ebas.yaml from {omit_file}")
+        with open(omit_file) as fh:
             stations = yaml.safe_load(fh)
     else:
         with resources.path(__package__, "omit_stations.yaml") as filename:
