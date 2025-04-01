@@ -677,3 +677,10 @@ Custom exceptions
 .. automodule:: pyaerocom.exceptions
    :members:
    :undoc-members:
+
+Units
+-----
+
+.. automodule:: pyaerocom.units
+   :members:
+   :undoc-members:
