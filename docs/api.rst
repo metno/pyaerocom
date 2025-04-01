@@ -684,3 +684,4 @@ Units
 .. automodule:: pyaerocom.units
    :members:
    :undoc-members:
+   :ignore-module-all:
