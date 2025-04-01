@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType, sort_ts_types, get_lowest_resolution
 
 
 def test_TsType_VALID():
-    assert TsType.VALID == [
+    assert TsType.VALID == (
         "minutely",
         "hourly",
         "daily",
@@ -15,11 +15,11 @@ def test_TsType_VALID():
         "yearly",
         "native",
         "coarsest",
-    ]
+    )
 
 
 def test_TsType_VALID_ITER():
-    assert TsType.VALID_ITER == ["minutely", "hourly", "daily", "weekly", "monthly", "yearly"]
+    assert TsType.VALID_ITER == ("minutely", "hourly", "daily", "weekly", "monthly", "yearly")
 
 
 def test_TsType_TOL_SECS_PERCENT():
@@ -84,7 +84,7 @@ def test_TsType_val():
         (
             "blaa",
             "Invalid input for ts_type blaa. "
-            "Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest']",
+            "Choose from ('minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest')",
         ),
         (
             "5000daily",
@@ -472,3 +472,22 @@ def test_TsType__str__():
 
 def test_TsType__repr__():
     assert repr(TsType("daily")) == "daily"
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    (
+        pytest.param(
+            ["monthly", "weekly", "daily", "hourly"], ["hourly", "daily", "weekly", "monthly"]
+        ),
+        pytest.param(
+            ["3daily", "4daily", "6daily", "13daily"], ["3daily", "4daily", "6daily", "13daily"]
+        ),
+    ),
+)
+def test_sort_tstypes(input, expected):
+    assert sort_ts_types(input) == expected
+
+
+def test_get_lowest_resolution():
+    assert get_lowest_resolution("3hourly", "hourly", "monthly", "yearly") == "yearly"

@@ -2,17 +2,17 @@ import pathlib
 import xarray as xr
 import os
 import logging
+from pyaerocom.units import Unit
 from pyaerocom.io.uemep import uemep_variables
 from pyaerocom.colocation.colocated_data import validate_structure
 from pyaerocom.io.readungridded import ReadUngridded
 import pyaerocom
 import time
 import pandas as pd
-import cf_units
 import datetime
 
 
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 
 logger = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class UEMEPColocator:
         start_time = time.perf_counter()
         with xr.open_mfdataset(self._file_path, engine="netcdf4", decode_timedelta=True) as dt:
             self._uemep_station_data = dt
-        logger.info(f"Finished reading data in {time.perf_counter()-start_time:.3f} seconds.")
+        logger.info(f"Finished reading data in {time.perf_counter() - start_time:.3f} seconds.")
 
     @property
     def uemep_station_data(self) -> xr.Dataset:
@@ -124,7 +124,7 @@ class UEMEPColocator:
         logger.info("Using uemep variable '%s' for aerocom variable '%s'", uemep_name, var)
 
         uemep_data = self.uemep_station_data[uemep_name].swap_dims({"station_id": "station_name"})
-        model_unit = cf_units.Unit(uemep_data.attrs["units"])
+        model_unit = Unit(uemep_data.attrs["units"])
         uemep_data = uemep_data.assign_coords(
             {"station_name": uemep_data.station_name.astype(str)}
         ).assign_coords({"time": uemep_data.time + pd.Timedelta(minutes=30)})
@@ -147,14 +147,19 @@ class UEMEPColocator:
             for _, station in zip(stations["station_name"], stations["stats"]):
                 ids = station.station_id.split(";")
                 if not any([id in station_ids for id in ids]):
-                    logger.info("Station '%s' not found in uemep data. Skipping.")
+                    logger.info(
+                        "Station '%s' not found in uemep data. Skipping.",
+                        station.station_id,
+                    )
                     continue
 
                 sdata[station.station_id] = station
 
             if len(sdata.keys()) == 0:
                 logger.error(
-                    "No matching stations found in '%s'. Aborting colocation of '%s'.", obs_id, var
+                    "No matching stations found in '%s'. Aborting colocation of '%s'.",
+                    obs_id,
+                    var,
                 )
                 continue
 
@@ -170,7 +175,7 @@ class UEMEPColocator:
                     logger.warning("Length of timeseries for '%s' is 0.", station.station_id)
                     continue
 
-                unit = cf_units.Unit(station.var_info[var]["units"])
+                unit = Unit(station.var_info[var]["units"])
 
                 conversion_factor = get_unit_conversion_fac(unit, model_unit)
                 if conversion_factor != 1:
@@ -200,6 +205,7 @@ class UEMEPColocator:
             coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
                 {"lat": "latitude", "lon": "longitude"}
             )
+            coldataarray = coldataarray.drop_vars("station_id")
             coldat = pyaerocom.colocation.colocated_data.ColocatedData(coldataarray)
             coldat.data.attrs = {
                 "obs_vars": var,
@@ -210,7 +216,7 @@ class UEMEPColocator:
                     uemep_data.attrs["units"],
                     uemep_data.attrs["units"],
                 ],
-                "data_level": 3,  # ?
+                "data_level": 2,
                 "revision_ref": datetime.datetime.strftime(datetime.date.today(), "%Y%m%d"),
                 "from_files": [str(p) for p in self._file_path],
                 "from_files_ref": [],

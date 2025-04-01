@@ -29,7 +29,7 @@ def test_ExperimentProcessor_run(processor: ExperimentProcessor):
     processor.run()
 
 
-# Temporary until ObsCollection implemented simiarly then can run same test
+# Temporary until ObsCollection implemented similarly then can run same test
 @pytest.mark.parametrize(
     "cfg,kwargs,error",
     [

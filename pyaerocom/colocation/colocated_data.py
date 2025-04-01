@@ -26,7 +26,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-from pyaerocom.plot.plotscatter import plot_scatter
+
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.stats.stats import calculate_statistics
@@ -106,7 +106,7 @@ def validate_structure(data: xr.DataArray) -> None:
     # Check variables.
     if data.name not in const.VARS.all_vars:
         raise ValueError(
-            f"Unexpeted variable name, '{data.name}. Must be variable name defined in variables.ini'"
+            f"Unexpected variable name, '{data.name}. Must be variable name defined in variables.ini'"
         )
 
     # Check longitude and latitude.
@@ -650,7 +650,7 @@ class ColocatedData(BaseModel):
             that one. The default is False (updated in v0.11.0, before was
             True).
         **kwargs
-            Addtitional keyword args passed to :func:`TimeResampler.resample`.
+            Additional keyword args passed to :func:`TimeResampler.resample`.
 
         Returns
         -------
@@ -773,7 +773,7 @@ class ColocatedData(BaseModel):
         Returns
         -------
         list
-            latitute coordinates
+            latitude coordinates
         list
             longitude coordinates
 
@@ -948,7 +948,7 @@ class ColocatedData(BaseModel):
         ----------
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
+            area weights are applied when calculating the statistics based on
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
@@ -990,7 +990,7 @@ class ColocatedData(BaseModel):
         Parameters
         ----------
         aggr : str, optional
-            aggreagator to be used, currently only mean and median are
+            aggregator to be used, currently only mean and median are
             supported. Defaults to mean.
         **kwargs
             additional keyword args passed to
@@ -1041,11 +1041,11 @@ class ColocatedData(BaseModel):
         Parameters
         ----------
         aggr : str, optional
-            aggreagator to be used, currently only mean and median are
+            aggregator to be used, currently only mean and median are
             supported. Defaults to mean.
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
+            area weights are applied when calculating the statistics based on
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
@@ -1080,77 +1080,6 @@ class ColocatedData(BaseModel):
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
-
-    def plot_scatter(self, **kwargs):
-        """Create scatter plot of data
-
-        Parameters
-        ----------
-        **kwargs
-            keyword args passed to :func:`pyaerocom.plot.plotscatter.plot_scatter`
-
-        Returns
-        -------
-        Axes
-            matplotlib axes instance
-        """
-        meta = self.metadata
-        try:
-            num_points = self.num_coords_with_data
-        except DataDimensionError:
-            num_points = np.nan
-        try:
-            vars_ = meta["var_name"]
-        except KeyError:
-            vars_ = ["N/D", "N/D"]
-        try:
-            xn, yn = meta["data_source"]
-        except KeyError:
-            xn, yn = "N/D", "N/D"
-
-        if vars_[0] != vars_[1]:
-            var_ref = vars_[0]
-        else:
-            var_ref = None
-        try:
-            tst = meta["ts_type"]
-        except KeyError:
-            tst = "N/D"
-        try:
-            fn = meta["filter_name"]
-        except KeyError:
-            fn = "N/D"
-        try:
-            unit = self.unitstr
-        except KeyError:
-            unit = "N/D"
-        try:
-            start = self.start
-        except AttributeError:
-            start = "N/D"
-
-        try:
-            stop = self.stop
-        except AttributeError:
-            stop = "N/D"
-
-        # ToDo: include option to use area weighted stats in plotting
-        # routine...
-        return plot_scatter(
-            x_vals=self.data.values[0].flatten(),
-            y_vals=self.data.values[1].flatten(),
-            var_name=vars_[1],
-            var_name_ref=var_ref,
-            x_name=xn,
-            y_name=yn,
-            start=start,
-            stop=stop,
-            unit=unit,
-            ts_type=tst,
-            stations_ok=num_points,
-            filter_name=fn,
-            **kwargs,
-        )
 
     def rename_variable(self, var_name, new_var_name, data_source, inplace=True):
         """Rename a variable in this object
@@ -1235,7 +1164,7 @@ class ColocatedData(BaseModel):
         Returns
         -------
         dict
-            dicitonary with meta information
+            dicitionary with meta information
         """
 
         spl = os.path.basename(file_path).split(".nc")[0].split("_")
@@ -1291,7 +1220,7 @@ class ColocatedData(BaseModel):
 
     def _prepare_meta_to_netcdf(self):
         """
-        Prepare metada for NetCDF format
+        Prepare metadata for NetCDF format
 
         Returns
         -------
@@ -1754,8 +1683,7 @@ class ColocatedData(BaseModel):
         """
         if lon_range[0] > lon_range[1]:
             raise NotImplementedError(
-                "Filtering longitude over 180 deg edge is not yet possible in "
-                "3D ColocatedData..."
+                "Filtering longitude over 180 deg edge is not yet possible in 3D ColocatedData..."
             )
         if not isinstance(lat_range, slice):
             lat_range = slice(lat_range[0], lat_range[1])
@@ -2015,43 +1943,6 @@ class ColocatedData(BaseModel):
         _arr = self.data
         mod, obs = _arr[1], _arr[0]
         return (mod - obs).sum("time") / obs.sum("time")
-
-    def plot_coordinates(self, marker="x", markersize=12, fontsize_base=10, **kwargs):
-        """
-        Plot station coordinates
-
-        Uses :func:`pyaerocom.plot.plotcoordinates.plot_coordinates`.
-
-        Parameters
-        ----------
-        marker : str, optional
-            matplotlib marker name used to plot site locations.
-            The default is 'x'.
-        markersize : int, optional
-            Size of site markers. The default is 12.
-        fontsize_base : int, optional
-            Basic fontsize. The default is 10.
-        **kwargs
-            additional keyword args passed to
-            :func:`pyaerocom.plot.plotcoordinates.plot_coordinates`
-
-        Returns
-        -------
-        matplotlib.axes.Axes
-
-        """
-
-        from pyaerocom.plot.plotcoordinates import plot_coordinates
-
-        lats, lons = self.get_coords_valid_obs()
-        return plot_coordinates(
-            lons=lons,
-            lats=lats,
-            marker=marker,
-            markersize=markersize,
-            fontsize_base=fontsize_base,
-            **kwargs,
-        )
 
     def __contains__(self, val):
         return self.data.__contains__(val)

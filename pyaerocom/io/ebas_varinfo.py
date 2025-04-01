@@ -227,7 +227,7 @@ class EbasVarInfo(BrowseDict):
                     # ToDo: check if this can be generalised better
                     raise ValueError(
                         f"Variable conflict in EBAS SQL request: "
-                        f"{var} cannot depent on itself..."
+                        f"{var} cannot depend on itself..."
                     )
                 info = EbasVarInfo(var)
                 _reqs = info.make_sql_requests(**constraints)
@@ -236,7 +236,7 @@ class EbasVarInfo(BrowseDict):
                         # ToDo: check if this can be generalised better
                         raise ValueError(
                             f"Variable conflict in EBAS SQL request: "
-                            f"{_var} cannot depent on itself..."
+                            f"{_var} cannot depend on itself..."
                         )
                     requests[_var] = _req
 
@@ -244,7 +244,7 @@ class EbasVarInfo(BrowseDict):
 
     def __str__(self) -> str:
         head = f"Pyaerocom {type(self).__name__}"
-        s = f"\n{head}\n{len(head)*'-'}"
+        s = f"\n{head}\n{len(head) * '-'}"
         for k, v in self.items():
             s += f"\n{k}: {v}"
         return s

@@ -7,7 +7,7 @@ import xarray as xr
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
-from pyaerocom.helpers import get_lowest_resolution
+from pyaerocom.units.datetime import get_lowest_resolution
 
 logger = logging.getLogger(__name__)
 
@@ -88,8 +88,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
 
         if len(np.unique(vert_codes)) > 1 or vert_codes[0] != vert_code:
             raise ValueError(
-                "Cannot merge observations with different vertical types into "
-                "super observation..."
+                "Cannot merge observations with different vertical types into super observation..."
             )
 
         if not len(coldata_files) == len(obs_needed):

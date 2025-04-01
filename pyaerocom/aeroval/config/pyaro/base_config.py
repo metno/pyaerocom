@@ -6,13 +6,13 @@ import copy
 import functools
 import logging
 import os
+from typing import SupportsInt
 
 import yaml
 
 from pyaerocom.data import resources
 
 logger = logging.getLogger(__name__)
-
 
 # Constraints
 DEFAULT_RESAMPLE_CONSTRAINTS = dict(
@@ -34,7 +34,6 @@ OC_EC_RESAMPLE_CONSTRAINTS = dict(
     daily=dict(hourly=18),
     hourly=dict(minutely=45),
 )
-
 
 OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
     # monthly=dict(daily=4, weekly=1),
@@ -68,7 +67,7 @@ def _get_ignore_stations_from_file():
     return rows
 
 
-def _get_ignore_stations(specy, year):
+def _get_ignore_stations(specy, year: SupportsInt) -> list[str]:
     """
     Read the ignore stations from either omit_stations.tsv in the local eller in the lib-folder
 
@@ -105,12 +104,11 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
         "prmm",
         "concso4c",
         "vmro3",
-        # "",
+
     ]
+    # Will be used later
     ebas_test_vars_diurnal = [
-        "vmro3",
-        # "",
-        # "",
+    "vmro3",
     ]
 
     CFG = dict(
@@ -220,195 +218,32 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
     Filters
     """
 
-    # OBS SPECIFIC FILTERS (combination of the above and more)
-    BASE_FILTER = {
-        "latitude": [30, 82],
-        "longitude": [-30, 90],
-    }
-
-    EBAS_FILTER = {
-        **BASE_FILTER,
-        "data_level": [None, 2],
-        "set_flags_nan": True,
-    }
-
-    AERONET_FILTER = {
-        **BASE_FILTER,  # Forandring fra Daniel
-        "altitude": [-20, 1000],
-    }
-
-    # Station filters
-
-    ebas_species = [
-        "concNhno3",
-        "concNtno3",
-        "concNtnh",
-        "concNnh3",
-        "concnh4",
-        "prmm",
-        "concpm10",
-        "concpm25",
-        "concSso2",
-        "concNno2",
-        "vmrco",
-        "vmro3max",
-        "vmro3",
-        "concNno",
-        "concCecpm25",
-        "concCocpm25",
-        "concom1",
-        "concCecpm10",
-        "concCocpm10",
-        #        "concnh4pm10", # no output in the model
-        "concnh4pm25",
-        "concnh4pm1",
-        #        "concso4pm10", # no output in the model
-        "concso4pm25",
-        "concso4pm1",
-        "concno3pm10",
-        "concno3pm25",
-        "concno3pm1",
-        "concsspm10",
-        "concsspm25",
-        "concso4t",
-        "concso4c",
-        "wetoxs",
-        "wetoxn",
-        "wetrdn",
-        "vmrox",
-    ]
-
-    # This list of stations was generated using the script found here:
-    # https://gist.github.com/thorbjoernl/b7946882f1696722742053406d056e12.
-    # It excludes stations with a relative altitude (Elevation difference to the lowest
-    # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
-    # an altitude in the ebas file index.
-    # Last updated: ~2025-01-03
-    height_ignore_ebas = [
-        "AM0001R",
-        "AR0001R",
-        "AT0033R",
-        "AT0034G",
-        "AT0037R",
-        "AT0038R",
-        "AT0040R",
-        "AT0048R",
-        "AT0049R",
-        "BG0001R",
-        "BG0053R",
-        "BO0001R",
-        "CA0100R",
-        "CA0103R",
-        "CH0001G",
-        "CH0004R",
-        "CH0005R",
-        "CL0001R",
-        "CN1003R",
-        "DE0003R",
-        "DE0005R",
-        "DE0054R",
-        "DE0057G",
-        "DE0060G",
-        "DE0075R",
-        "DZ0001G",
-        "ES0005R",
-        "ES0018G",
-        "ES0022R",
-        "ES0025U",
-        "FI0009R",
-        "FR0012R",
-        "FR0019R",
-        "FR0026R",
-        "FR0030R",
-        "FR0031R",
-        "FR0033R",
-        "GB0035R",
-        "GB0059G",
-        "GR0003R",
-        "GR0101R",
-        "HR0002R",
-        "HR0004R",
-        "IT0002R",
-        "IT0003R",
-        "IT0005R",
-        "IT0009R",
-        "IT0019R",
-        "IT0031U",
-        "JP1021R",
-        "KE0001G",
-        "MK0007R",
-        "MX0001R",
-        "MY1030R",
-        "NO0036R",
-        "PL0003R",
-        "PL0011R",
-        "PT0005R",
-        "PT0007R",
-        "RO0001R",
-        "RO0002R",
-        "RO0003R",
-        "RO0004R",
-        "RO0005R",
-        "RS0005R",
-        "RU1038R",
-        "SI0032R",
-        "SK0002R",
-        "TW0100R",
-        "US0012R",
-        "US0013R",
-        "US0015R",
-        "US0016R",
-        "US0024R",
-        "US0030R",
-        "US0032R",
-        "US0053R",
-        "US0054R",
-        "US0055R",
-        "US0073R",
-        "US0077R",
-        "US0082R",
-        "US0131R",
-        "US0142R",
-        "US0204R",
-        "US0602R",
-        "US1200R",
-        "US4828R",
-        "US9002R",
-        "US9005R",
-        "US9020R",
-        "US9024R",
-        "US9026R",
-        "US9029R",
-        "US9041R",
-        "US9042R",
-        "US9046R",
-        "US9048R",
-        "US9050R",
-        "US9056R",
-        "US9064R",
-        "US9065R",
-        "US9070R",
-        "US9071R",
-        "US9078R",
-        "US9082U",
-        "VN0001R",
-    ]
-
-    EBAS_FILTER = {
-        key: dict(
-            **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year) + height_ignore_ebas,
-            negate="station_id",
-        )
-        for key in ebas_species
-    }
-
-    EEA_FILTER = {
-        **BASE_FILTER,
-    }
-
     OBS_GROUNDBASED = {
         # actrisebas
+        "ACTRIS-EBAS-h-diurnal": dict(
+            obs_id="ACTRIS-EBAS-h-diurnal",
+            web_interface_name="ACTRIS-EBAS-h",
+            obs_vars=ebas_test_vars_diurnal,
+            obs_vert_type="Surface",
+            # colocate_time=True,
+            min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
+            ts_type="hourly",
+            resample_how="mean",
+            # obs_filters=EBAS_FILTER,
+            pyaro_config={
+                "name": "ACTRIS-EBAS-h-diurnal",
+                "reader_id": "actrisebas",
+                "filename_or_obj_or_url": "",
+                "filters": {
+                    "time_bounds": {
+                        "startend_include": [
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+                        ],
+                    },
+                    "variables": {"include": ebas_test_vars_diurnal},
+                },
+            },
+        ),
         "ACTRIS-EBAS-d-tc": dict(
             obs_id="ACTRIS-EBAS-d-tc",
             web_interface_name="ACTRIS-EBAS-d",
@@ -432,60 +267,6 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
                 },
             },
         ),
-        # "ACTRIS-EBAS-h-diurnal": dict(
-        #     obs_id="ACTRIS-EBAS-h-diurnal",
-        #     web_interface_name="ACTRIS-EBAS-h",
-        #     obs_vars=ebas_test_vars_diurnal,
-        #     obs_vert_type="Surface",
-        #     ts_type="hourly",
-        #     # diurnal_only=True,
-        #     resample_how="mean",
-        #     # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
-        #     pyaro_config={
-        #         "name": "ACTRIS-EBAS-h-diurnal",
-        #         "reader_id": "actrisebas",
-        #         "filename_or_obj_or_url": "",
-        #         "filters": {
-        #             "time_bounds": {
-        #                 "startend_include": [
-        #                     (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
-        #                 ],
-        #             },
-        #             "variables": {"include": ebas_test_vars_diurnal},
-        #         },
-        #     },
-        #
-        # ),
-
-        ##################
-        #    EBAS
-        ##################
-        # "EBAS-m-tc": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-m",
-        #     obs_vars=[
-        #         "concNhno3",
-        #         "concNtno3",
-        #         "concNtnh",
-        #         "concNnh3",
-        #         "concnh4",
-        #         # "prmm",
-        #         "concpm10",
-        #         "concpm25",
-        #         "concSso2",
-        #         "concNno2",
-        #         "vmrco",
-        #         "vmro3max",
-        #         "vmro3",
-        #         "concNno",
-        #         "concso4t",
-        #         "concso4c",
-        #     ],
-        #     obs_vert_type="Surface",
-        #     colocate_time=True,
-        #     ts_type="monthly",
-        #     obs_filters=EBAS_FILTER,
-        # ),
         "EBAS-d-tc": dict(
             obs_id="EBASMC",
             web_interface_name="EBAS-d",
@@ -497,16 +278,16 @@ def get_actrisebase_CFG(reportyear, year, model_dir) -> dict:
             # obs_filters=EBAS_FILTER,
         ),
         # # Diurnal
-        # "EBAS-h-diurnal": dict(
-        #     obs_id="EBASMC",
-        #     web_interface_name="EBAS-h",
-        #     obs_vars=ebas_test_vars_diurnal,
-        #     obs_vert_type="Surface",
-        #     ts_type="hourly",
-        #     # diurnal_only=True,
-        #     resample_how="mean",
-        #     # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
-        # ),
+        "EBAS-h-diurnal": dict(
+            obs_id="EBASMC",
+            web_interface_name="EBAS-h",
+            obs_vars=ebas_test_vars_diurnal,
+            obs_vert_type="Surface",
+            ts_type="hourly",
+            # diurnal_only=True,
+            resample_how="mean",
+            # obs_filters={**EBAS_FILTER, "ts_type": "hourly"},
+        ),
     }
 
     # Setup for supported satellite evaluations

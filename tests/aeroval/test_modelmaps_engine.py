@@ -1,8 +1,8 @@
-import os
 import pathlib
 from copy import deepcopy
 
 import aerovaldb
+import aerovaldb.routes
 import pytest
 
 from pyaerocom import GriddedData
@@ -65,8 +65,10 @@ def test__run_working(cfg: dict):
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
     engine.run(model_list=["TM5-AP3-CTRL"], var_list=["od550aer"])
-    outdirbase = stp.path_manager.get_json_output_dirs()["contour"]
-    assert os.path.exists(f"{outdirbase}/od550aer_TM5-AP3-CTRL/")
+    contours = engine.exp_output.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT)
+    assert len(contours) > 0
+    assert contours[0].meta["obsvar"] == "od550aer"
+    assert contours[0].meta["model"] == "TM5-AP3-CTRL"
 
 
 @pytest.mark.parametrize(
