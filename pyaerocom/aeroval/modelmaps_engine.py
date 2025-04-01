@@ -2,7 +2,6 @@ import glob
 import logging
 
 import aerovaldb
-import iris
 import xarray as xr
 
 from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
@@ -245,6 +244,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                         f"Cannot read data for model {model_name} (variable {var}): {e}"
                     )
 
+        assert isinstance(data, GriddedData)
         var_ranges_defaults = self.cfg.var_scale_colmap
 
         if var in var_ranges_defaults.keys():
@@ -264,15 +264,11 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            if isinstance(data, GriddedData):
-                data = data.resample_time(str(freq))
-            elif isinstance(data, xr.DataArray):
-                data = data.resample(time=str(freq)[0].capitalize()).mean()
+            data = data.resample_time(str(freq), use_iris=True)
 
         ts = _jsdate_list(data)
-        if isinstance(data, GriddedData):
-            data.check_unit()
-            data = data.to_xarray().load()
+        data.check_unit()
+        data = data.to_xarray().load()
 
         if self.cfg.processing_opts.only_model_maps:
             self._check_ts_for_only_model_maps(model_name, var, ts, data)
@@ -285,7 +281,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             except EntryNotAvailable:
                 write_var_name = var
 
-            # Note this should match the output location defined in aerovaldb
             overlay_uris = self.avdb.query(
                 aerovaldb.routes.Route.MAP_OVERLAY,
                 project=self.exp_output.proj_id,
@@ -580,7 +575,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 f"{name=} not is not in either {self.cfg.obs_cfg.keylist()=} nor {self.cfg.model_cfg.keylist()=}"
             )
 
-    def _process_only_json(self, model_name, var):  # pragma: no cover
+    def _process_only_json(self, model_name: str, var: str) -> GriddedData:  # pragma: no cover
         """Process data from ColocatedData for overlay map for if only_json = True."""
         try:
             preprocessed_coldata_dir = glob.escape(
@@ -617,4 +612,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         data = data.drop_vars("data_source")
         data = data.transpose("time", "latitude", "longitude")
         data = data.sortby(["latitude", "longitude"])
-        return GriddedData(iris.experimental.xarray.from_xarray(data))
+
+        out = GriddedData(data.to_iris())
+
+        # NOTE: For some reason, creating a GriddedData object as above results in a (seemingly valid)
+        # GriddedData object except that metadata contains a list of variable names, instead of a single
+        # variable name as string, which breaks during resampling. This fixes that, and allows
+        # _process_overlay_map_var to be rewritten to only deal with GriddedData objects, instead of also
+        # dealing with xarray, reducing branching. End of ted talk.
+        out._grid.attributes["var_name"] = out.var_name
+        return out
