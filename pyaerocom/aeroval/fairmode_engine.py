@@ -10,7 +10,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _select_period_season_coldata,
     init_regions_web,
 )
-from pyaerocom.stats.implementations import stat_R
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 
 logger = logging.getLogger(__name__)
@@ -148,11 +147,9 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         modvals = data.data[1]
 
         mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
-        
-        #mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
 
         obsmean = np.nanmean(obsvals, axis=0)
-        # modmean = np.nanmean(modvals, axis=0)
+
         obsstd = np.std(obsvals, axis=0, where=mask)
         modstd = np.std(modvals, axis=0, where=mask)
 
@@ -203,11 +200,9 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        
         mask = ~np.isnan(x) * ~np.isnan(y)
-       
-      
-        #return stat_R(x,y, weights=None)
+
+        # return stat_R(x,y, weights=None)
         # xmean = np.nanmean(x, axis=0)
         # ymean = np.nanmean(y, axis=0)
         # xm = x - xmean
@@ -221,23 +216,23 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         #     np.nansum(xm * ym, axis=0) / (normxm * normym),
         # )
 
-        xmean = np.mean(x, axis=0,where=mask)
-        ymean = np.mean(y, axis=0,where=mask)
+        xmean = np.mean(x, axis=0, where=mask)
+        ymean = np.mean(y, axis=0, where=mask)
         xm = x - xmean
         ym = y - ymean
-        normxm = np.sqrt(np.sum(xm * xm, axis=0,where=mask))
-        normym = np.sqrt(np.sum(ym * ym, axis=0,where=mask))
+        normxm = np.sqrt(np.sum(xm * xm, axis=0, where=mask))
+        normym = np.sqrt(np.sum(ym * ym, axis=0, where=mask))
 
         r = np.where(
             normxm * normym == 0.0,
             np.nan,
-            np.sum(xm * ym, axis=0,where=mask) / (normxm * normym),
+            np.sum(xm * ym, axis=0, where=mask) / (normxm * normym),
         )
-        
+
         return r
 
     def _RMSU(self, mean: float, std: float, spec: str) -> float:
-        """RMSU is the Root Mean Squared Uncertainity associated with the uncertainity of the observations, U(O_i)."""
+        """RMSU is the Root Mean Squared Uncertainty associated with the uncertainty of the observations, U(O_i)."""
 
         if spec not in SPECIES:
             raise ValueError(f"Unsupported {spec=}")
@@ -257,7 +252,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
             np.abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R))),
         )
         return np.where(a >= 1, 1.0, -1.0)
-        # if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
+        # if obs_std <= 0 or R >= 1:  # guard against sqrt(<0) or div0 errors
         #     return 1
         # a = np.abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R)))
         # return 1 if a >= 1 else -1

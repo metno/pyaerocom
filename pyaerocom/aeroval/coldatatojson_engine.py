@@ -10,7 +10,7 @@ from pyaerocom import ColocatedData, TsType, const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
-    _calculte_fairmode,
+    _calculate_fairmode,
     _init_data_default_frequencies,
     _init_meta_glob,
     _process_heatmap_data,
@@ -567,7 +567,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             fm_data = data[freq]
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        stats = _calculte_fairmode(
+        stats = _calculate_fairmode(
             fm_data,
             fairmode_engine,
             map_meta,

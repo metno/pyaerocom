@@ -339,12 +339,12 @@ class CAMS2_83_Engine(ProcessingEngine):
         if SPECIES[var_name]["freq"] != "hourly":
             coldata = coldata.resample_time(SPECIES[var_name]["freq"])
 
-        # Creation of mask of shared stations between normal data and peristent data
+        # Creation of mask of shared stations between normal data and persistent data
         #stations = persistent_coldata.data.station_name.values
         station_mask =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
         assert np.all(persistent_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
 
-        # Creation of mask of shared timestamps between normal data and peristent data
+        # Creation of mask of shared timestamps between normal data and persistent data
         time = coldata.time.values
         wanted_time = time - np.timedelta64(24*(forecast_day+1),"h")
         p_time = persistent_coldata.time.values
@@ -357,7 +357,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
 
-        p_mod_vals = persistent_coldata.data.data[0,:, station_mask[1]][:,time_mask] # Persitent model
+        p_mod_vals = persistent_coldata.data.data[0,:, station_mask[1]][:,time_mask] # Persistent model
 
         assert np.all(p_mod_vals.shape == obs_vals.shape)
 
@@ -367,12 +367,12 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         p_diff_vals = np.maximum(np.abs(obs_vals - p_mod_vals-uncertainty_p_obs), np.abs(obs_vals - p_mod_vals + uncertainty_p_obs))
 
-        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1)#, where=mask)
-        rmse_p = np.nanmean((p_diff_vals)**2, axis=1)#, where=mask)
+        rmse_m = np.nanmean((mod_vals-obs_vals)**2, axis=1, where=mask)
+        rmse_p = np.nanmean((p_diff_vals)**2, axis=1, where=mask)
 
         mqi = rmse_m/rmse_p
 
-        mb_p = np.nanmean((mod_vals-obs_vals), axis=1)/rmse_p#, where=mask)/rmse_p
+        mb_p = np.nanmean((mod_vals-obs_vals), axis=1, where=mask)/rmse_p
 
         results = {str(station_mask[0][i]): [mb_p[i],mqi[i]] for i in range(len(mqi))}
 
@@ -408,7 +408,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     col_dict[obs_var] = [col]
                     var_list.append(obs_var)
         if found_persistent:
-            logger.info(f"Persisten model has been found for {persistent_var_list}")
+            logger.info(f"Persistent model has been found for {persistent_var_list}")
             assert set(sorted(var_list)) == set(sorted(persistent_var_list))
         for var, cols in col_dict.items():
             col_dict[var] = sorted(cols, key=lambda x: self._get_day(x.model_name))

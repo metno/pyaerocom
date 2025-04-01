@@ -1787,7 +1787,7 @@ def _process_statistics_timeseries_single_region(
     return (stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var)
 
 
-def _calculte_fairmode(
+def _calculate_fairmode(
     coldata: ColocatedData,
     fairmode_engine,  #: FairmodeEngine,
     map_meta: list[dict],
