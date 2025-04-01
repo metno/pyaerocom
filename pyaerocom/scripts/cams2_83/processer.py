@@ -27,7 +27,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             files_to_convert = glob.glob(mask)
 
             if not analysis:
-                per_mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-persistent*/*.nc"
+                per_mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-persistence*/*.nc"
                 per_files = glob.glob(per_mask)
                 files_to_convert += per_files   
 
@@ -47,7 +47,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 runtype = "FC"
                 model = col.colocation_setup.model_id.split(".")[1]
                 model_id = f"CAMS2-83.{model}.day0.{runtype}"
-                model_name = f"CAMS2-83-{model}-persistent-{runtype}"
+                model_name = f"CAMS2-83-{model}-persistence-{runtype}"
                 if isinstance(col.colocation_setup.start, int):
                     new_start = datetime(year=col.colocation_setup.start, month=1, day=1)  - timedelta(days=1)
                 else:

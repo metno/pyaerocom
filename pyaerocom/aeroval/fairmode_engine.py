@@ -189,7 +189,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
                 rms=rms[i],
                 beta_mqi=[mqi[i]],
                 beta_mb=[mb[i]],
-                persistent_model=False,
+                persistence_model=False,
                 station_type=station_types[i],
                 **SPECIES[var_name],
             )

@@ -34,7 +34,7 @@ class CAMS2_83_Engine(ProcessingEngine):
     def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
         logger.info(f"Processing: {repr(files)}")
         coldata = [ColocatedData(data=file) for file in files]
-        coldata, persistent_cols, found_vars, found_persistent = self._sort_coldata(coldata)
+        coldata, persistence_cols, found_vars, found_persistence = self._sort_coldata(coldata)
         start = time.time()
         if var_list is None:
             var_list = list(found_vars)
@@ -43,18 +43,18 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         for var in var_list:
             logger.info(f"Processing Component: {var}")
-            if found_persistent:
-                self.process_coldata(coldata[var], persistent_cols[var], var)
+            if found_persistence:
+                self.process_coldata(coldata[var], persistence_cols[var], var)
             else:
                 self.process_coldata(coldata[var], [], var)
 
-            # self.make_forecast_target_plots(coldata[var], persistent_cols[var], var)
+            # self.make_forecast_target_plots(coldata[var], persistence_cols[var], var)
 
         logger.info(f"Time for weird plot: {time.time() - start} sec")
 
 
 
-    def process_coldata(self, coldata: list[ColocatedData],  persistent_coldata: list[ColocatedData], var_name: str) -> None:
+    def process_coldata(self, coldata: list[ColocatedData],  persistence_coldata: list[ColocatedData], var_name: str) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
@@ -69,12 +69,12 @@ class CAMS2_83_Engine(ProcessingEngine):
             fairmode_engine = FairmodeEngine(self.cfg)
 
 
-        if use_fairmode and len(persistent_coldata) > 0 and var_name in SPECIES:
-            persistent_coldata = persistent_coldata[0]
+        if use_fairmode and len(persistence_coldata) > 0 and var_name in SPECIES:
+            persistence_coldata = persistence_coldata[0]
             calc_forecast_target = True
 
             if SPECIES[var_name]["freq"] != "hourly":
-                persistent_coldata = persistent_coldata.resample_time(SPECIES[var_name]["freq"])
+                persistence_coldata = persistence_coldata.resample_time(SPECIES[var_name]["freq"])
 
         if "var_name_input" in coldata[0].metadata:
             obs_var = coldata[0].metadata["var_name_input"][0]
@@ -106,8 +106,8 @@ class CAMS2_83_Engine(ProcessingEngine):
             (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
 
         if calc_forecast_target:
-            persistent_coldata.data["season"] = persistent_coldata.data.time.dt.season
-            (regborders, regs, regnames) = init_regions_web(persistent_coldata, regions_how)
+            persistence_coldata.data["season"] = persistence_coldata.data.time.dt.season
+            (regborders, regs, regnames) = init_regions_web(persistence_coldata, regions_how)
             # results_mqi = {}
         results = {}
         results_fairmode = {}
@@ -121,7 +121,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     col.filter_region(regid, check_country_meta=use_country) for col in coldata
                 ]
                 if calc_forecast_target:
-                    persistent_subset_region = persistent_coldata.filter_region(regid, check_country_meta=use_country)
+                    persistence_subset_region = persistence_coldata.filter_region(regid, check_country_meta=use_country)
                     # results_mqi[regname] = {}
             except (DataCoverageError, UnknownRegion) as e:
                 logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
@@ -173,7 +173,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             results_mqi = []
                             for day in range(forecast_days):
                                 ds = subset[day]
-                                ds_p = persistent_subset_region
+                                ds_p = persistence_subset_region
 
                                 #mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
                                 mqi_results = self._calc_forecast_target_MQI_vectorized(ds, ds_p, var_name, day)
@@ -185,7 +185,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             for station in results_fairmode[f"{regname}"][f"{perstr}"]:
                                 results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"] = []
                                 results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mqi"] = []
-                                results_fairmode[f"{regname}"][f"{perstr}"][station]["persistent_model"] = True
+                                results_fairmode[f"{regname}"][f"{perstr}"][station]["persistence_model"] = True
                                 for day in range(forecast_days):
                                     mqi_p = results_mqi[day][station] if station in results_mqi[day] else [np.nan, np.nan]
                                     results_fairmode[f"{regname}"][f"{perstr}"][station]["beta_mb"].append(mqi_p[0])
@@ -288,20 +288,20 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         # return r
 
-    def _calc_forecast_target_MQI(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str) -> dict[str, float]:
+    def _calc_forecast_target_MQI(self, coldata: ColocatedData, persistence_coldata: ColocatedData, var_name: str) -> dict[str, float]:
 
-        stations = persistent_coldata.data.station_name.values
+        stations = persistence_coldata.data.station_name.values
 
         time = coldata.time.values
         wanted_time = time - np.timedelta64(24,"h")
-        p_time = persistent_coldata.time.values
+        p_time = persistence_coldata.time.values
 
         mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
 
         results = {}
 
         for i in tqdm(range(len(stations))):
-            assert str(persistent_coldata.data.station_name[i].values) == str(coldata.data.station_name[i].values)
+            assert str(persistence_coldata.data.station_name[i].values) == str(coldata.data.station_name[i].values)
 
             obs_vals = coldata.data.data[0, :, i]
             mod_vals = coldata.data.data[1, :, i]
@@ -312,7 +312,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
             len_data = len(obs_vals)
 
-            p_mod_vals = persistent_coldata.data.data[0,mask,i]
+            p_mod_vals = persistence_coldata.data.data[0,mask,i]
 
             factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
             uncertainty_p_obs = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*p_mod_vals**2 + factor)
@@ -331,7 +331,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         return results
 
-    def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistent_coldata: ColocatedData, var_name: str, forecast_day: int) -> dict[str, float]:
+    def _calc_forecast_target_MQI_vectorized(self, coldata: ColocatedData, persistence_coldata: ColocatedData, var_name: str, forecast_day: int) -> dict[str, float]:
 
         results = {}
 
@@ -339,15 +339,15 @@ class CAMS2_83_Engine(ProcessingEngine):
         if SPECIES[var_name]["freq"] != "hourly":
             coldata = coldata.resample_time(SPECIES[var_name]["freq"])
 
-        # Creation of mask of shared stations between normal data and persistent data
-        #stations = persistent_coldata.data.station_name.values
-        station_mask =  np.intersect1d(persistent_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
-        assert np.all(persistent_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
+        # Creation of mask of shared stations between normal data and persistence data
+        #stations = persistence_coldata.data.station_name.values
+        station_mask =  np.intersect1d(persistence_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
+        assert np.all(persistence_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
 
-        # Creation of mask of shared timestamps between normal data and persistent data
+        # Creation of mask of shared timestamps between normal data and persistence data
         time = coldata.time.values
         wanted_time = time - np.timedelta64(24*(forecast_day+1),"h")
-        p_time = persistent_coldata.time.values
+        p_time = persistence_coldata.time.values
 
         time_mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
 
@@ -357,7 +357,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
 
-        p_mod_vals = persistent_coldata.data.data[0,:, station_mask[1]][:,time_mask] # Persistent model
+        p_mod_vals = persistence_coldata.data.data[0,:, station_mask[1]][:,time_mask] # persistence model
 
         assert np.all(p_mod_vals.shape == obs_vals.shape)
 
@@ -384,36 +384,36 @@ class CAMS2_83_Engine(ProcessingEngine):
         self, coldata: list[ColocatedData]
     ) -> tuple[dict[str, list[ColocatedData]], dict[str, list[ColocatedData]], set[str], bool]:
         col_dict = dict()
-        persistent_dict = dict()
+        persistence_dict = dict()
 
-        persistent_var_list = []
+        persistence_var_list = []
         var_list = []
 
-        found_persistent = False
+        found_persistence = False
 
         for col in coldata:
             obs_var = col.metadata["var_name_input"][0]
 
-            if "persistent" in col.model_name:
-                found_persistent = True
-                if obs_var in persistent_dict:
-                    persistent_dict[obs_var].append(col)
+            if "persistence" in col.model_name:
+                found_persistence = True
+                if obs_var in persistence_dict:
+                    persistence_dict[obs_var].append(col)
                 else:
-                    persistent_dict[obs_var] = [col]
-                    persistent_var_list.append(obs_var)
+                    persistence_dict[obs_var] = [col]
+                    persistence_var_list.append(obs_var)
             else:
                 if obs_var in col_dict:
                     col_dict[obs_var].append(col)
                 else:
                     col_dict[obs_var] = [col]
                     var_list.append(obs_var)
-        if found_persistent:
-            logger.info(f"Persistent model has been found for {persistent_var_list}")
-            assert set(sorted(var_list)) == set(sorted(persistent_var_list))
+        if found_persistence:
+            logger.info(f"persistence model has been found for {persistence_var_list}")
+            assert set(sorted(var_list)) == set(sorted(persistence_var_list))
         for var, cols in col_dict.items():
             col_dict[var] = sorted(cols, key=lambda x: self._get_day(x.model_name))
 
-        return col_dict, persistent_dict, set(var_list), found_persistent
+        return col_dict, persistence_dict, set(var_list), found_persistence
 
     def _get_day(self, model_name: str) -> int:
         return int(re.search(".*day([0-3]).*", model_name).group(1))
