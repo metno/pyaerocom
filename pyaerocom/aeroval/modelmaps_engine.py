@@ -2,6 +2,7 @@ import glob
 import logging
 
 import aerovaldb
+import iris
 import xarray as xr
 
 from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
@@ -616,4 +617,4 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         data = data.drop_vars("data_source")
         data = data.transpose("time", "latitude", "longitude")
         data = data.sortby(["latitude", "longitude"])
-        return data
+        return GriddedData(iris.experimental.xarray.from_xarray(data))
