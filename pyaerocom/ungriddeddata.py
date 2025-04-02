@@ -1013,9 +1013,12 @@ class UngriddedData(UngriddedDataMetadata):
                 fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
                     meta_idx = obj.meta_idx[i][var_name]
-                    current = obj._data[meta_idx, obj._DATAINDEX]
-                    new = current * fac
-                    obj._data[meta_idx, obj._DATAINDEX] = new
+
+                    obj._data[meta_idx, obj._DATAINDEX] = fac * obj._data[meta_idx, obj._DATAINDEX]
+                    obj._data[meta_idx, obj._DATAERRINDEX] = (
+                        fac * obj._data[meta_idx, obj._DATAERRINDEX]
+                    )
+
                     obj.metadata[i]["var_info"][var_name]["units"] = to_unit
 
         return obj
