@@ -349,16 +349,16 @@ class CAMS2_83_Engine(ProcessingEngine):
         # time_freq = "D" if SPECIES[var_name]["freq"] == "daily" else "H"
 
 
-        # Gets times. Moves percistence time forward, indicating that the obs on day N is the perstence model on day N+1
+        # Gets times. Moves percistence time forward, indicating that the obs on day N is the perstence model on day N+1 (or rather N+forecast_day+1)
         data_time = coldata.time.values
-        p_time = persistence_coldata.time.values + np.timedelta64(24*(forecast_day+1),"h")
+        p_time = persistence_coldata.time.values + np.timedelta64(24*(forecast_day+1),"h") # This needs to be checked if it is correct for forecast days > 0
 
         # # Date range with all dates in range. Fills in dates where data is missing
         # data_range = pd.date_range(data_time[0], data_time[-1], freq=time_freq)
         # p_range = data_range - np.timedelta64(24*(forecast_day+1),"h")
 
 
-        # Maskes the time, so that only dates which has a valid persistence model and data is used
+        # Masks the time, so that only dates which has a valid persistence model and data are used
         time_mask = np.intersect1d(p_time, data_time, return_indices=True)
 
         # Fetching of masked data
@@ -371,11 +371,13 @@ class CAMS2_83_Engine(ProcessingEngine):
         mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals) * ~np.isnan(p_mod_vals)
 
         
-
         # Sanity Check
         assert np.all(p_mod_vals.shape == obs_vals.shape)
 
 
+        """
+        Start of Alternative methods which will be remorved if above works
+        """
         # # Gets mask and mask indecies of which dates has data, to fill in full array later
         # data_time_mask = np.isin(data_range, data_time)
         # p_time_mask = np.isin(p_range, p_time)
@@ -421,6 +423,11 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         # breakpoint()
         # assert np.all(expended_p.shape == expended_obs.shape)
+
+        """
+        End of Alternative methods which will be remorved if above works
+        """
+        
 
         # Calculation of MQI
         factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
