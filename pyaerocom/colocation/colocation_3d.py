@@ -10,7 +10,7 @@ from typing import NamedTuple
 
 import iris
 import numpy as np
-from cf_units import Unit
+from pyaerocom.units import Unit
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const

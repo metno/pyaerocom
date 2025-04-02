@@ -814,7 +814,7 @@ class GriddedData:
 
         Parameters
         ----------
-        new_unit : str or cf_units.Unit
+        new_unit : str or pyaerocom.units.Unit
             new unit of data
         inplace : bool
             convert in this instance or create a new one
