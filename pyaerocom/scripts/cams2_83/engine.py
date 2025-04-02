@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 import numpy as np
 import xarray as xr
+import pandas as pd
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
@@ -344,22 +345,82 @@ class CAMS2_83_Engine(ProcessingEngine):
         station_mask =  np.intersect1d(persistence_coldata.data.station_name.values, coldata.data.station_name.values, return_indices=True)
         assert np.all(persistence_coldata.data.station_name.values[station_mask[1]] == coldata.data.station_name.values[station_mask[2]])
 
-        # Creation of mask of shared timestamps between normal data and persistence data
-        time = coldata.time.values
-        wanted_time = time - np.timedelta64(24*(forecast_day+1),"h")
-        p_time = persistence_coldata.time.values
+        # # Creation of mask of shared timestamps between normal data and persistence data
+        # time_freq = "D" if SPECIES[var_name]["freq"] == "daily" else "H"
 
-        time_mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
+
+        # Gets times. Moves percistence time forward, indicating that the obs on day N is the perstence model on day N+1
+        data_time = coldata.time.values
+        p_time = persistence_coldata.time.values + np.timedelta64(24*(forecast_day+1),"h")
+
+        # # Date range with all dates in range. Fills in dates where data is missing
+        # data_range = pd.date_range(data_time[0], data_time[-1], freq=time_freq)
+        # p_range = data_range - np.timedelta64(24*(forecast_day+1),"h")
+
+
+        # Maskes the time, so that only dates which has a valid persistence model and data is used
+        time_mask = np.intersect1d(p_time, data_time, return_indices=True)
 
         # Fetching of masked data
-        obs_vals = coldata.data.data[0, :, station_mask[2]]
-        mod_vals = coldata.data.data[1, :, station_mask[2]]
+        obs_vals = coldata.data.data[0, :, station_mask[2]][:,time_mask[2]]
+        mod_vals = coldata.data.data[1, :, station_mask[2]][:,time_mask[2]]
+        p_mod_vals = persistence_coldata.data.data[0,:, station_mask[1]][:,time_mask[1]] # persistence model
 
-        mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
 
-        p_mod_vals = persistence_coldata.data.data[0,:, station_mask[1]][:,time_mask] # persistence model
+        # Gets a NaN mask
+        mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals) * ~np.isnan(p_mod_vals)
 
+        
+
+        # Sanity Check
         assert np.all(p_mod_vals.shape == obs_vals.shape)
+
+
+        # # Gets mask and mask indecies of which dates has data, to fill in full array later
+        # data_time_mask = np.isin(data_range, data_time)
+        # p_time_mask = np.isin(p_range, p_time)
+        # data_mask_ix = np.where(data_time_mask)
+        # p_mask_ix = np.where(p_time_mask)
+        # #wanted_time = time - np.timedelta64(24*(forecast_day+1),"h")
+
+
+        # # Fetching of masked data
+        # obs_vals = coldata.data.data[0, :, station_mask[2]]
+        # mod_vals = coldata.data.data[1, :, station_mask[2]]
+        # p_mod_vals = persistence_coldata.data.data[0,:, station_mask[1]]#[:,time_mask] # persistence model
+
+        # # Extends array to have all dates in date range. Filled with NaNs
+        # expended_mod = np.empty((len(station_mask[0]),len(data_range)))*np.nan
+        # expended_obs = np.empty((len(station_mask[0]),len(data_range)))*np.nan
+        # expended_p = np.empty((len(station_mask[0]),len(data_range)))*np.nan
+
+        
+        # expended_p[:,p_mask_ix[0]] = p_mod_vals
+        # del(p_mod_vals)
+
+
+
+        # mask = ~np.isnan(expended_mod) * ~np.isnan(expended_obs) * ~np.isnan(expended_p)
+
+        # breakpoint()
+        # assert np.all(expended_p.shape == expended_obs.shape)
+        # breakpoint()
+        # # Filling in existing dates with data. Deletes old arrays to keep memonry low(er)
+        # expended_mod[:, data_mask_ix[0]] = mod_vals
+        # del(mod_vals)
+
+        # expended_obs[:, data_mask_ix[0]] = obs_vals
+        # del(obs_vals)
+        
+        # expended_p[:,p_mask_ix[0]] = p_mod_vals
+        # del(p_mod_vals)
+
+
+
+        # mask = ~np.isnan(expended_mod) * ~np.isnan(expended_obs) * ~np.isnan(expended_p)
+
+        # breakpoint()
+        # assert np.all(expended_p.shape == expended_obs.shape)
 
         # Calculation of MQI
         factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2

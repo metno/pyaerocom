@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 SPECIES = dict(
-    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq="hourly"),
-    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq="daily"),
-    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq="daily"),
-    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq="daily"),
+    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq="hourly", percentile=99.8),
+    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq="daily", percentile=92.9),
+    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq="daily", percentile=90.1),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq="daily", percentile=90.1),
 )
 
 
@@ -165,6 +165,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         crms = self._crms(modstd, obsstd, R)
         mqi = self._mqi(rms, rmsu, beta=1)
         mb = self._mb(bias, rmsu, beta=1)
+        beta_Hperc = self._beta_Hperc(obsvals, modvals, mask, var_name)
 
         # assert np.some(np.isclose(
         #     rmsu * mqi,
@@ -179,6 +180,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         assert len(rms) == len(stations)
         assert len(mqi) == len(stations)
         assert len(mb) == len(stations)
+        assert len(beta_Hperc) == len(stations)
 
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
@@ -189,6 +191,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
                 rms=rms[i],
                 beta_mqi=[mqi[i]],
                 beta_mb=[mb[i]],
+                Hperc=beta_Hperc[i],
                 persistence_model=False,
                 station_type=station_types[i],
                 **SPECIES[var_name],
@@ -268,3 +271,13 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
     def _mb(self, bias: float, rmsu: float, *, beta: float) -> float:
         """Model Bias(MB). Pass beta=1 for `beta MB`"""
         return bias / (rmsu * beta)
+
+    def _beta_Hperc(self, obs: np.ndarray, mod: np.ndarray, mask: np.ndarray, var_name: str, beta=1) -> np.ndarray:
+        percentile = SPECIES[var_name]["percentile"]
+        Operc = np.nanpercentile(obs, percentile, axis=0)
+        Mperc = np.nanpercentile(mod, percentile, axis=0)
+
+        factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
+        uncertainty_Operc = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*Operc**2 + factor)
+
+        return (Operc-Mperc)/(beta*uncertainty_Operc)
