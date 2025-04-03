@@ -15,7 +15,6 @@ from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
-    MetaDataError,
     StationCoordinateError,
     TimeMatchError,
     VarNotAvailableError,
@@ -26,7 +25,6 @@ from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
-from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 
@@ -985,44 +983,6 @@ class UngriddedData(UngriddedDataMetadata):
         result["num_stats"] = num_stats
         return result
 
-    def check_convert_var_units(
-        self, var_name: str, to_unit: str | None = None, inplace: bool = True
-    ) -> UngriddedData:
-        obj = self if inplace else self.copy()
-
-        # get the unit
-        if to_unit is None:
-            to_unit = const.VARS[var_name]["units"]
-
-        for i, meta in obj.metadata.items():
-            if var_name in meta["var_info"]:
-                try:
-                    unit = meta["var_info"][var_name]["units"]
-                except KeyError:
-                    add_str = ""
-                    if "unit" in meta["var_info"][var_name]:
-                        add_str = (
-                            "Corresponding var_info dict contains "
-                            'attr. "unit", which is deprecated, please '
-                            "check corresponding reading routine. "
-                        )
-                    raise MetaDataError(
-                        f"Failed to access unit information for variable {var_name} "
-                        f"in metadata block {i}. {add_str}"
-                    )
-                fac = get_unit_conversion_fac(unit, to_unit, var_name)
-                if fac != 1:
-                    meta_idx = obj.meta_idx[i][var_name]
-
-                    obj._data[meta_idx, obj._DATAINDEX] = fac * obj._data[meta_idx, obj._DATAINDEX]
-                    obj._data[meta_idx, obj._DATAERRINDEX] = (
-                        fac * obj._data[meta_idx, obj._DATAERRINDEX]
-                    )
-
-                    obj.metadata[i]["var_info"][var_name]["units"] = to_unit
-
-        return obj
-
     def set_flags_nan(self, inplace=False):
         """Set all flagged datapoints to NaN
 
@@ -1055,14 +1015,12 @@ class UngriddedData(UngriddedDataMetadata):
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
-    # TODO: check, confirm and remove Beta version note in docstring
     def remove_outliers(
         self,
         var_name,
         inplace=False,
         low=None,
         high=None,
-        unit_ref=None,
         move_to_trash=True,
     ):
         """Method that can be used to remove outliers from data
@@ -1109,7 +1067,7 @@ class UngriddedData(UngriddedDataMetadata):
         else:
             new = self.copy()
 
-        new.check_convert_var_units(var_name, to_unit=unit_ref)
+        new.check_unit(var_name)
 
         if low is None:
             low = const.VARS[var_name].minimum

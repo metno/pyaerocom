@@ -455,7 +455,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         rm_outliers = self.cfg.colocation_opts.model_remove_outliers
         outlier_ranges = self.cfg.colocation_opts.model_outlier_ranges
 
-        data.check_unit(try_convert_if_wrong=True)
+        data.check_unit()
 
         if rm_outliers:
             if var in outlier_ranges:
@@ -619,6 +619,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         # GriddedData object except that metadata contains a list of variable names, instead of a single
         # variable name as string, which breaks during resampling. This fixes that, and allows
         # _process_overlay_map_var to be rewritten to only deal with GriddedData objects, instead of also
-        # dealing with xarray, reducing branching. End of ted talk.
+        # dealing with xarray, reducing branching.
         out._grid.attributes["var_name"] = out.var_name
         return out

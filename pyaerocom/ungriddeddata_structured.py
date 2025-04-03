@@ -14,7 +14,6 @@ from pyaerocom.dynamic_rec_array import DynamicRecArray
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataExtractionError,
-    MetaDataError,
     VarNotAvailableError,
 )
 from pyaerocom.helpers import merge_station_data, start_stop
@@ -23,7 +22,6 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
-from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -457,40 +455,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 _iter.append(stat_name)
         return _iter
 
-    def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
-        obj = self if inplace else self.copy()
-
-        # get the unit
-        if to_unit is None:
-            to_unit = const.VARS[var_name]["units"]
-
-        for meta_idx, meta in obj.metadata.items():
-            if var_name in meta["var_info"]:
-                try:
-                    unit = meta["var_info"][var_name]["units"]
-                except KeyError:
-                    add_str = ""
-                    if "unit" in meta["var_info"][var_name]:
-                        add_str = (
-                            "Corresponding var_info dict contains "
-                            'attr. "unit", which is deprecated, please '
-                            "check corresponding reading routine. "
-                        )
-                    raise MetaDataError(
-                        f"Failed to access unit information for variable {var_name} "
-                        f"in metadata block {meta_idx}. {add_str}"
-                    )
-                fac = get_unit_conversion_fac(unit, to_unit, var_name)
-                if fac != 1:
-                    idx = (obj._dra.data["meta_id"] == meta_idx) & (
-                        obj._dra.data["var_id"] == self.var_idx[var_name]
-                    )
-                    obj._dra.data["data"][idx] *= fac
-                    obj._dra.data["stdev"][idx] *= fac
-                meta["var_info"][var_name]["units"] = to_unit
-
-        return obj
-
     @override
     def remove_outliers(
         self,
@@ -498,7 +462,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         inplace=False,
         low=None,
         high=None,
-        unit_ref=None,
         move_to_trash=True,
     ):
         """see super.remove_outliers move_to_trash is ignored for now"""
@@ -507,7 +470,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         else:
             new = self.copy()
 
-        new.check_convert_var_units(var_name, to_unit=unit_ref)
+        new.check_unit(var_name)
+        # new.check_convert_var_units(var_name, to_unit=unit_ref)
 
         if low is None:
             low = const.VARS[var_name].minimum
