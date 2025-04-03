@@ -43,13 +43,14 @@ class CAMS2_83_Engine(ProcessingEngine):
             var_list.append("conco3mda8")
 
         for var in var_list:
+            if var not in found_vars:
+                logger.warning(f"{var} not found in coldata, skipping")
+                continue
             logger.info(f"Processing Component: {var}")
             if found_persistence:
                 self.process_coldata(coldata[var], persistence_cols[var], var)
             else:
                 self.process_coldata(coldata[var], [], var)
-
-            # self.make_forecast_target_plots(coldata[var], persistence_cols[var], var)
 
         logger.info(f"Time for weird plot: {time.time() - start} sec")
 
