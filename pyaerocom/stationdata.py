@@ -209,11 +209,11 @@ class StationData(StationMetaData):
         """
         to_unit = const.VARS[var_name].units
         try:
-            self.check_unit(var_name, to_unit)
+            self._check_unit(var_name, to_unit)
         except Exception:
             self.convert_unit(var_name, to_unit)
 
-    def check_unit(self, var_name: str, unit: str | None = None):
+    def _check_unit(self, var_name: str, unit: str | None = None):
         """Check if variable unit corresponds to a certain unit
 
         Parameters
@@ -999,7 +999,7 @@ class StationData(StationMetaData):
             info = const.VARS[var_name]
             if check_unit:
                 try:
-                    self.check_unit(var_name)
+                    self.check_var_unit_aerocom(var_name)
                 except DataUnitError:
                     self.convert_unit(var_name, to_unit=info.units)
             if low is None:

@@ -297,7 +297,7 @@ class UngriddedData(UngriddedDataMetadata):
                         for x in times
                     ]
                 )
-                times = np.float64(times)
+                times = times.astype(np.float64)
 
                 num_times = len(times)
                 # check if size of data object needs to be extended

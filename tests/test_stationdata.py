@@ -144,12 +144,12 @@ def test_StationData_check_var_unit_aerocom_error(
 
 
 def test_StationData_check_unit():
-    stat1.check_unit("ec550aer", "m-1")
+    stat1._check_unit("ec550aer", "m-1")
 
 
 def test_StationData_check_unit_error():
     with pytest.raises(DataUnitError) as e:
-        stat1.check_unit("ec550aer", None)
+        stat1._check_unit("ec550aer", None)
     assert str(e.value) == "Invalid unit m-1 (expected 1/km)"
 
 
