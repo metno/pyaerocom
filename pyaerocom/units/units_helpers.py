@@ -3,9 +3,11 @@ from typing import TypeVar
 from pyaerocom.units.exceptions import UnitConversionError
 from pyaerocom.units.units import UnitConversionCallbackHandler
 
+from .typing import SupportsMul
+
 __all__ = ["get_unit_conversion_fac", "convert_unit"]
 
-T = TypeVar("T")
+T = TypeVar("T", bound=SupportsMul)
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = "d"
 
