@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.29.dev1"
+version = "0.29.0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -74,7 +74,13 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
 ]
-test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging", "pytest-xdist"]
+test = [
+    "pytest>=7.4",
+    "pytest-dependency",
+    "pytest-cov",
+    "packaging",
+    "pytest-xdist",
+]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
