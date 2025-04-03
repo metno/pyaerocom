@@ -486,6 +486,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         obj._dra.data["var_id"] == self.var_idx[var_name]
                     )
                     obj._dra.data["data"][idx] *= fac
+                    obj._dra.data["stdev"][idx] *= fac
                 meta["var_info"][var_name]["units"] = to_unit
 
         return obj
