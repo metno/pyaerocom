@@ -43,6 +43,7 @@ from pyaerocom.io.aux_read_cubes import (
     mmr_from_vmr,
     multiply_cubes,
     subtract_cubes,
+    multiply_cube_factor
 )
 from pyaerocom.io.file_conventions import FileConventionRead
 from pyaerocom.io.gridded_reader import GriddedReader
@@ -147,6 +148,7 @@ class ReadGridded(GriddedReader):
         "concNnh3": ("vmrnh3",),
         "concNnh4": ("concnh4",),
         "concNtnh": ("concnh4", "vmrnh3"),
+        "concpolyol": ("concspores", 0.045),
     }
 
     AUX_ALT_VARS = {
@@ -182,6 +184,7 @@ class ReadGridded(GriddedReader):
         "concNnh3": calc_concNnh3_from_vmr,
         "concNnh4": calc_concNnh4,
         "concNtnh": calc_concNtnh,
+        "concpolyol": multiply_cube_factor,
         # 'mec550*'      :    divide_cubes,
         # 'tau*'         :    lifetime_from_load_and_dep
     }

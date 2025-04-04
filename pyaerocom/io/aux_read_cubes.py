@@ -157,6 +157,13 @@ def multiply_cubes(cube1, cube2):
     return cube_out
 
 
+
+def multiply_cube_factor(cube, factor):
+    """Method to multiply cube with constant factor"""
+    cube = _check_input_iscube(cube)
+    return cube*factor
+
+
 def divide_cubes(cube1, cube2):
     """Method to divide 2 cubes with each other"""
     cube1, cube2 = _check_input_iscube(cube1, cube2)
