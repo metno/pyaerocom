@@ -5,11 +5,11 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from pyaerocom.helpers import get_tot_number_of_seconds
+from pyaerocom.units.datetime import get_tot_number_of_seconds
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units_helpers import convert_unit
+from pyaerocom.units import convert_unit
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +142,7 @@ class ReadAasEtal(ReadUngriddedBase):
         for name, station_group in grouped:
             station_group = station_group.drop_duplicates(
                 subset="dtime", keep="first"
-            )  # Drops duplacate rows
+            )  # Drops duplicate rows
 
             tvals = station_group["dtime"]
 

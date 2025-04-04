@@ -63,7 +63,7 @@ def test_HasColocator_get_colocator_error(collocator: HasColocator):
 
 @pytest.fixture
 def importer(eval_config: dict) -> DataImporter:
-    """initalized DataImporter"""
+    """initialized DataImporter"""
     setup = EvalSetup(**eval_config)
     return DataImporter(setup)
 

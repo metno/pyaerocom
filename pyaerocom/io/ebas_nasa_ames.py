@@ -53,7 +53,7 @@ class EbasColDef(dict):
     unit : :obj:`str`, optional
         unit of data in column (if applicable)
     flag_col : :obj:`str`, optional
-        ``name`` of flag column that corresponds to this data colum (only
+        ``name`` of flag column that corresponds to this data column (only
         relevant if :attr:`is_var` is True)
     """
 
@@ -232,7 +232,7 @@ class NasaAmesHeader:
 
     def __str__(self):
         head = f"{type(self).__name__}"
-        s = f"{head}\n{len(head)*'-'}\n"
+        s = f"{head}\n{len(head) * '-'}\n"
         s += dict_to_str(self._head_fix)
         s += f"\n\n{str_underline('Column variable definitions', indent=3)}"
         for item in self._var_defs:

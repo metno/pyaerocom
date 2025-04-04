@@ -4,10 +4,8 @@ Definitions of rectangular regions used in pyaerocom
 NOTE: replaces former regions.ini in pyaerocom/data dir
 """
 
-from typing import Final
-
 #: Name of region containing absolute all valid data points (WORLD in old aerocom notation)
-ALL_REGION_NAME: Final = "ALL"
+ALL_REGION_NAME = "ALL"
 
 _AEROCOM_DEFS = {
     ALL_REGION_NAME: {

@@ -61,7 +61,7 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
             t0 = time()
             shutil.copy2(loc_remote, loc_local)
             logger.info(
-                f"Copied EBAS SQL database to {loc_local}\nElapsed time: {time()-t0:.3f} s"
+                f"Copied EBAS SQL database to {loc_local}\nElapsed time: {time() - t0:.3f} s"
             )
 
             return loc_local
@@ -86,8 +86,8 @@ def _print_read_info(i, mod, tot_num, last_t, name, logger):  # pragma: no cover
     """
     t = datetime.now()
     logger.info(
-        f"Reading files {i+1}-{i+1+mod} of {tot_num} "
-        f"({name}) | {t:%T} (delta = {(t-last_t).seconds} s')"
+        f"Reading files {i + 1}-{i + 1 + mod} of {tot_num} "
+        f"({name}) | {t:%T} (delta = {(t - last_t).seconds} s')"
     )
     return t
 

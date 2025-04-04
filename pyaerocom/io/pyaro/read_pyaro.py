@@ -14,7 +14,7 @@ from pyaro.timeseries.Wrappers import VariableNameChangingReader
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 from pyaerocom.io.pyaro.postprocess import PostProcessingReader
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 logger = logging.getLogger(__name__)
@@ -199,7 +199,12 @@ class PyaroToUngriddedData:
             # outarray[idx, UngriddedData._TRASHINDEX]  # No need to set, only non-NaN values are considered trash
 
         metadata = dict()
-        for (station_name, var, units, tstype), station_key in station_mapper.inner.items():
+        for (
+            station_name,
+            var,
+            units,
+            tstype,
+        ), station_key in station_mapper.inner.items():
             extra_metadata = stations_with_metadata[station_name].metadata
             d = {
                 "data_id": self.config.name,
@@ -215,7 +220,12 @@ class PyaroToUngriddedData:
             metadata[station_key] = d
 
         meta_idx = defaultdict(dict)
-        for (_station_name, var, _units, tstype), station_key in station_mapper.inner.items():
+        for (
+            _station_name,
+            var,
+            _units,
+            tstype,
+        ), station_key in station_mapper.inner.items():
             var_key = var_mapper[var]
             mask = (outarray[:, UngriddedData._METADATAKEYINDEX] == station_key) & (
                 outarray[:, UngriddedData._VARINDEX] == var_key
@@ -245,7 +255,7 @@ class PyaroToUngriddedData:
         for var in vars_to_retrieve:
             if var not in allowed_vars:
                 logger.warning(
-                    f"Variable {var} not in list over allowed variabes for {self.config.reader_id}: {allowed_vars}"
+                    f"Variable {var} not in list over allowed variables for {self.config.reader_id}: {allowed_vars}"
                 )
                 continue
 

@@ -425,7 +425,7 @@ class ReadICPForest(ReadUngriddedBase):
                 quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
                 if quality < self.QUALITY_LIMIT:
                     logger.warning(
-                        f"Quailty of {quality} found for {species} in year {year}. Setting data this year to NaN"
+                        f"Quality of {quality} found for {species} in year {year}. Setting data this year to NaN"
                     )
                     data_array[np.where(years == year)] = np.nan
 

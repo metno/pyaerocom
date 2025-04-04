@@ -26,14 +26,13 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
-    get_lowest_resolution,
     isnumeric,
     make_datetime_index,
-    to_pandas_timestamp,
 )
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 if TYPE_CHECKING:
     from pyaerocom.ungriddeddata import UngriddedData
@@ -109,8 +108,7 @@ def _regrid_gridded(gridded, regrid_scheme: str, regrid_res_deg: RegridResDeg):
     if not isinstance(regrid_res_deg, dict):  # at runtime RegridResDeg is a dict
         if not isnumeric(regrid_res_deg):
             raise ValueError(
-                "Invalid input for regrid_res_deg. Need integer "
-                "or dict specifying lat and lon res"
+                "Invalid input for regrid_res_deg. Need integer or dict specifying lat and lon res"
             )
         regrid_res_deg = dict(lat_res_deg=regrid_res_deg, lon_res_deg=regrid_res_deg)
 
@@ -122,7 +120,7 @@ def _ensure_gridded_gridded_same_freq(data, data_ref, min_num_obs, resample_how)
     Make sure 2 input gridded data objects are in the same frequency
 
     Checks if both input data objects are in the same frequency, and if not,
-    downsample the one with higher freqency accordingly.
+    downsample the one with higher frequency accordingly.
 
     Parameters
     ----------

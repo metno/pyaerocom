@@ -213,7 +213,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 )
                 return
 
-        # first calcualate and save geojson with contour levels
+        # first calculate and save geojson with contour levels
         contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
 
         with self.avdb.lock():

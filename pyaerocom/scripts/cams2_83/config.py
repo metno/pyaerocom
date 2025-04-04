@@ -41,7 +41,7 @@ GLOBAL_CONFIG = dict(
     freqs=["hourly", "daily"],  # Possible frequencies
     periods=[
         "2021-2022"
-    ],  # Periodes, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
+    ],  # Periods, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
     main_freq="hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
     add_seasons=False,
     use_meteorological_seasons=True,

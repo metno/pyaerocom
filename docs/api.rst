@@ -259,7 +259,7 @@ EARLINET
 EBAS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_. Declaration of AEROCOM variables in EBAS and assocaited information such as acceptable minimum and maximum values occurs in ``pyaerocom/data/variables.ini`` .
+`EBAS <https://ebas.nilu.no/>`_ is a database with atmospheric measurement data hosted by the `Norwegian Institute for Air Research <https://www.nilu.no/>`_. Declaration of AEROCOM variables in EBAS and associated information such as acceptable minimum and maximum values occurs in ``pyaerocom/data/variables.ini`` .
 
 .. automodule:: pyaerocom.io.read_ebas
    :members:
@@ -563,7 +563,7 @@ Units and unit conversion
 Units helpers in base package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.units_helpers
+.. automodule:: pyaerocom.units.units_helpers
    :members:
    :undoc-members:
 

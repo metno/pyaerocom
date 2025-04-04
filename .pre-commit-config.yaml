@@ -4,3 +4,8 @@ repos:
   hooks:
     - id: ruff-format
     - id: ruff # linter
+- repo: https://github.com/crate-ci/typos
+  rev: v1.30.3  # Keep in sync with .github/workflows/CI.yml/jobs.spelling
+  hooks:
+    - id: typos
+      args: ["--force-exclude"]  # Don't overwrite files

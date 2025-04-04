@@ -2,13 +2,19 @@
 General helper methods for the pyaerocom library.
 """
 
+# Mypy errors because it doesn't understand the total_ordering
+# decorator used for TsType. This suppresses that error:
+# mypy: disable-error-code=operator
+from __future__ import annotations
+
 import logging
 import re
+from typing import SupportsInt
 
 import numpy as np
 
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.time_config import (
+from .time_config import (
     PANDAS_FREQ_TO_TS_TYPE,
     TS_TYPE_TO_NUMPY_FREQ,
     TS_TYPE_TO_PANDAS_FREQ,
@@ -16,9 +22,13 @@ from pyaerocom.time_config import (
     TS_TYPES,
 )
 
+from functools import total_ordering
+from cf_units import Unit
+
 logger = logging.getLogger(__name__)
 
 
+@total_ordering
 class TsType:
     VALID = TS_TYPES
     VALID_ITER = VALID[:-2]
@@ -41,19 +51,19 @@ class TsType:
 
     TOL_SECS_PERCENT = 5
 
-    def __init__(self, val):
-        self._mulfac = 1
-        self._val = None
+    def __init__(self, val) -> None:
+        self._mulfac: int = 1
+        self._val: str
 
-        self.val = val
+        self.val = str(val)
 
     @property
-    def mulfac(self):
+    def mulfac(self) -> int:
         """Multiplication factor of frequency"""
         return self._mulfac
 
     @mulfac.setter
-    def mulfac(self, value):
+    def mulfac(self, value: SupportsInt):
         try:
             value = int(value)
         except Exception:
@@ -66,19 +76,19 @@ class TsType:
         self._mulfac = value
 
     @property
-    def base(self):
+    def base(self) -> str:
         """Base string (without multiplication factor, cf :attr:`mulfac`)"""
         return self._val
 
     @property
-    def val(self):
+    def val(self) -> str:
         """Value of frequency (string type), e.g. 3daily"""
         if self._mulfac != 1:
             return f"{self._mulfac}{self._val}"
         return self._val
 
     @val.setter
-    def val(self, val):
+    def val(self, val: str):
         if val is None:
             raise TemporalResolutionError(
                 "Invalid input, please provide valid frequency string..."
@@ -106,24 +116,24 @@ class TsType:
         self._mulfac = mulfac
 
     @property
-    def datetime64_str(self):
+    def datetime64_str(self) -> str:
         """Convert ts_type str to datetime64 unit string"""
         return f"datetime64[{self.to_numpy_freq()}]"
 
     @property
-    def timedelta64_str(self):
+    def timedelta64_str(self) -> str:
         """Convert ts_type str to datetime64 unit string"""
         return f"timedelta64[{self.to_numpy_freq()}]"
 
     @property
-    def cf_base_unit(self):
+    def cf_base_unit(self) -> str:
         """Convert ts_type str to CF convention time unit"""
         if self.base not in self.TSTR_TO_CF:
             raise NotImplementedError(f"Cannot convert {self.base} to CF str")
         return self.TSTR_TO_CF[self.base]
 
     @property
-    def num_secs(self):
+    def num_secs(self) -> float:
         """Number of seconds in one period
 
         Note
@@ -131,20 +141,18 @@ class TsType:
         Be aware that for monthly frequency the number of seconds is not well
         defined!
         """
-        from cf_units import Unit
-
         cf = self.to_si()
         total_secs = 1 / Unit("s").convert(1, cf)
         return total_secs
 
     @property
-    def tol_secs(self):
+    def tol_secs(self) -> int:
         """Tolerance in seconds for current TsType"""
         total_secs = self.num_secs
         frac = self.TOL_SECS_PERCENT / 100
         return int(np.ceil(frac * total_secs))
 
-    def to_timedelta64(self):
+    def to_timedelta64(self) -> np.timedelta64:
         """
         Convert frequency to timedelta64 object
 
@@ -155,11 +163,11 @@ class TsType:
         timedelta64
 
         """
-        return np.timedelta64(1, self.to_numpy_freq())
+        return np.timedelta64(1, self.to_numpy_freq())  # type: ignore
 
     @property
-    def next_higher(self):
-        """Next lower resolution code"""
+    def next_higher(self) -> TsType:
+        """Next higher resolution code"""
         if self.mulfac > 1:
             return TsType(self._val)
 
@@ -169,7 +177,7 @@ class TsType:
         return TsType(self.VALID_ITER[idx - 1])
 
     @property
-    def next_lower(self):
+    def next_lower(self) -> TsType:
         """Next lower resolution code
 
         This will go to the next lower base resolution, that is if current is
@@ -197,20 +205,20 @@ class TsType:
         raise TemporalResolutionError(f"Failed to determine next lower resolution for {self}")
 
     @staticmethod
-    def valid(val):
+    def valid(val) -> bool:
         try:
             TsType(val)
             return True
         except TemporalResolutionError:
             return False
 
-    def to_numpy_freq(self):
+    def to_numpy_freq(self) -> str:
         if self._val not in self.TO_NUMPY:
             raise TemporalResolutionError(f"numpy frequency not available for {self._val}")
         freq = self.TO_NUMPY[self._val]
         return f"{self.mulfac}{freq}"
 
-    def to_pandas_freq(self):
+    def to_pandas_freq(self) -> str:
         """Convert ts_type to pandas frequency string"""
         if self._val not in self.TO_PANDAS:
             raise TemporalResolutionError(f"pandas frequency not available for {self._val}")
@@ -219,7 +227,7 @@ class TsType:
             return freq
         return f"{self._mulfac}{freq}"
 
-    def to_si(self):
+    def to_si(self) -> str:
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
         if base not in self.TO_SI:
@@ -227,7 +235,7 @@ class TsType:
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f"({self.mulfac}{si})"
 
-    def get_min_num_obs(self, to_ts_type: "TsType", min_num_obs: dict) -> int:
+    def get_min_num_obs(self, to_ts_type: TsType, min_num_obs: dict) -> int:
         selfstr = self.val
         if to_ts_type >= self:  # should occur rarely
             if to_ts_type == self:
@@ -262,7 +270,7 @@ class TsType:
             f"for conversion from {self} to {to_ts_type}"
         )
 
-    def check_match_total_seconds(self, total_seconds):
+    def check_match_total_seconds(self, total_seconds: int | float) -> bool:
         """
         Check if this object matches with input interval length in seconds
 
@@ -287,7 +295,7 @@ class TsType:
         return False
 
     @staticmethod
-    def _try_infer_from_total_seconds(base, total_seconds):
+    def _try_infer_from_total_seconds(base: str, total_seconds: int | float) -> TsType:
         """
         Infer multiplication factor required to match input interval length
 
@@ -337,7 +345,7 @@ class TsType:
         )
 
     @staticmethod
-    def from_total_seconds(total_seconds):
+    def from_total_seconds(total_seconds: int | float) -> TsType:
         """
         Try to infer TsType based on interval length
 
@@ -385,33 +393,96 @@ class TsType:
             raise TemporalResolutionError(f"Invalid input: {val}, need pandas frequency string")
         return self.FROM_PANDAS[val]
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if isinstance(other, str):
             other = TsType(other)
         return other.val == self.val
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         if isinstance(other, str):
             other = TsType(other)
-        nss, nso = self.num_secs, other.num_secs
         # inverted comparison, i.e. if other has less seconds if has higher
         # resolution
-        return nss > nso
+        return self.num_secs > other.num_secs
 
-    def __le__(self, other):
-        return True if (self.__eq__(other) or self.__lt__(other)) else False
-
-    def __gt__(self, other):
-        return not self.__le__(other)
-
-    def __ge__(self, other):
-        return not self.__lt__(other)
-
-    def __call__(self):
+    def __call__(self) -> str:
         return self.val
 
-    def __str__(self):
-        return self.val
+    def __str__(self) -> str:
+        return str(self.val)
 
-    def __repr__(self):
-        return self.val
+    def __repr__(self) -> str:
+        return str(self.val)
+
+
+def sort_ts_types(ts_types: list[str | TsType]) -> list[str]:
+    """Sort a list of ts_types in ascending order, returning them as
+    strings.
+
+    Parameters
+    ----------
+    ts_types : list
+        list of strings (or instance of :class:`TsType`) to be sorted
+
+    Returns
+    -------
+    list
+        list of strings with sorted frequencies
+
+    Raises
+    ------
+    TemporalResolutionError
+        if one of the input ts_types is not supported
+    """
+    ls = [TsType(x) for x in ts_types]
+    return [str(tstype) for tstype in sorted(ls, reverse=True)]
+
+
+def get_lowest_resolution(ts_type: str | TsType, *ts_types: str | TsType) -> str:
+    """Get the lowest resolution from several ts_type codes
+
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the lowest resolution
+
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    ls = [ts_type]
+    ls.extend(ts_types)
+    return sort_ts_types(ls)[-1]
+
+
+def get_highest_resolution(ts_type: str | TsType, *ts_types: str | TsType) -> str:
+    """Get the highest resolution from several ts_type codes
+
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the highest resolution
+
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    lst = [ts_type]
+    lst.extend(ts_types)
+    return sort_ts_types(lst)[0]

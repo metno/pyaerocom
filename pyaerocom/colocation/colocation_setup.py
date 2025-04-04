@@ -207,7 +207,7 @@ class ColocationSetup(BaseModel):
         reading API is more harmonised
         (see https://github.com/metno/pyaerocom/issues/174).
     flex_ts_type : bool
-        Bboolean specifying whether reading frequency of gridded data is
+        Boolean specifying whether reading frequency of gridded data is
         allowed to be flexible. This includes all gridded data, whether it is
         model or gridded observation (e.g. satellites). Defaults to True.
     min_num_obs : dict or int, optional
@@ -492,7 +492,7 @@ class ColocationSetup(BaseModel):
     @model_validator(mode="after")
     def validate_no_forbidden_keys(self):
         for key in self.FORBIDDEN_KEYS:
-            if key in self.model_fields:
+            if key in ColocationSetup.model_fields:
                 raise ValidationError
         return self
 

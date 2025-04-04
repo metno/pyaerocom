@@ -10,9 +10,9 @@ from pyaerocom.exceptions import (
     CoordinateError,
     DataUnitError,
     MetaDataError,
-    UnitConversionError,
     VarNotAvailableError,
 )
+from pyaerocom.units import UnitConversionError
 from pyaerocom.io import ReadEarlinet
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -305,7 +305,11 @@ def test_StationData_merge_meta_same_station(
 def test_StationData_merge_meta_same_station_error():
     with pytest.raises(CoordinateError, match="differ by more than 0.001 km."):
         stat1.merge_meta_same_station(
-            stat2, coord_tol_km=0.001, check_coords=True, inplace=False, raise_on_error=True
+            stat2,
+            coord_tol_km=0.001,
+            check_coords=True,
+            inplace=False,
+            raise_on_error=True,
         )
 
 
@@ -411,7 +415,10 @@ def test_StationData_select_altitude_Series():
     ],
 )
 def test_StationData_select_altitude_Series_error(
-    stat: StationData, altitudes: tuple[int, int], exception: type[Exception], error: str
+    stat: StationData,
+    altitudes: tuple[int, int],
+    exception: type[Exception],
+    error: str,
 ):
     with pytest.raises(exception) as e:
         stat.select_altitude("od550aer", altitudes)

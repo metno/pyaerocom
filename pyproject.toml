@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.29.dev1"
+version = "0.30.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -47,7 +47,7 @@ dependencies = [
     'typing-extensions>=4.6.1; python_version < "3.11"',
     # https://github.com/SciTools/cf-units/issues/218
     'cf-units>=3.3.0',
-    "pydantic>=2.7.1",
+    "pydantic~=2.7",
     "pyproj>=3.0.0",
     "pyaro>=0.1.1",
     "pooch>=1.7.0",
@@ -74,7 +74,13 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
 ]
-test = ["pytest>=7.4", "pytest-dependency", "pytest-cov", "packaging"]
+test = [
+    "pytest>=7.4",
+    "pytest-dependency",
+    "pytest-cov",
+    "packaging",
+    "pytest-xdist",
+]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
 dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
 
@@ -212,7 +218,7 @@ commands_pre =
     python --version
     python -m pip freeze --all
 commands =
-    python -m pytest . -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest . -n auto -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
@@ -235,7 +241,7 @@ deps =
     importlib-resources ==5.10; python_version < "3.11"
     typing-extensions ==4.6.1; python_version < "3.11"
     cf-units ==3.3.0; python_version < "3.11"
-    pydantic ==2.7.1; python_version < "3.11"
+    pydantic ==2.7.0; python_version < "3.11"
     pyaro == 0.1.1; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
     xarray ==2022.12.0; python_version < "3.11"

@@ -3,7 +3,6 @@ import multiprocessing
 import os
 from time import time
 
-from cf_units import Unit
 from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType, const
@@ -27,6 +26,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
 from pyaerocom.aeroval.json_utils import round_floats
+
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -159,8 +160,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         else:
             raise ValueError("Unable to determine obs_var/model_var")
 
-        model_name = coldata.model_name
-        obs_name = coldata.obs_name
+        model_name = str(coldata.model_name)
+        obs_name = str(coldata.obs_name)
 
         mcfg = self.cfg.model_cfg.get_entry(model_name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)

@@ -13,7 +13,6 @@ from datetime import datetime
 from typing import Any
 
 import pandas as pd
-from cf_units import Unit
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import chk_make_subdir
@@ -28,11 +27,10 @@ from pyaerocom.exceptions import (
     DataCoverageError,
 )
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
-    get_lowest_resolution,
     start_stop,
     to_datestring_YYYYMMDD,
-    to_pandas_timestamp,
 )
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
@@ -40,6 +38,7 @@ from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units import Unit
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -81,7 +80,7 @@ class Colocator:
             colocation_setup = ColocationSetup(**colocation_setup)
             warnings.warn(
                 DeprecationWarning(
-                    "Future versions of Pyaerocom will require Colocator to injest an instance of ColocationSetup."
+                    "Future versions of Pyaerocom will require Colocator to ingest an instance of ColocationSetup."
                 )
             )
 
