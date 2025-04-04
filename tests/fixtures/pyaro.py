@@ -24,7 +24,7 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     stations = ["NO0002", "GB0881"]
     countries = ["NO", "GB"]
     coords = [(58, 8), (60, -1)]
-    species = ["NOx", "SOx", "AOD", "NO"]
+    species = ["NOx", "SOx", "AOD", "NO", "PM10"]
     area_type = ["Rural", "Urban"]
 
     with open(file, "w") as f:
@@ -35,6 +35,7 @@ def make_csv_test_file(tmp_path: Path) -> Path:
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
                     unit = "Gg" if s != "NO" else "ng m-3"
+                    unit = unit if s != "PM10" else "ug m-3"
                     f.write(
                         f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, {unit}, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
                     )
@@ -61,6 +62,20 @@ def testconfig(tmp_path: Path) -> tuple[PyaroConfig, PyaroConfig]:
         name_map={"SOx": "concso4", "AOD": "od550aer"},
     )
     return [config1, config2]
+
+def testconfig2(tmp_path: Path) -> PyaroConfig:
+    reader_id = "csv_timeseries"
+
+    config1 = PyaroConfig(
+        name="test",
+        reader_id=reader_id,
+        filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
+        filters={},
+        name_map={"PM10": "concpm10"},
+    )
+
+    
+    return config1
 
 
 def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
