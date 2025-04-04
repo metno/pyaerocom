@@ -82,8 +82,8 @@ def fake_ExperimentProcessor(monkeypatch):
 def coldata_mos(tmp_path_factory) -> Path:
     root: Path = tmp_path_factory.mktemp("data")
 
-    def dataset(model: str, day: int, start: date, end: date, persistent: bool) -> xr.Dataset:
-        if persistent:
+    def dataset(model: str, day: int, start: date, end: date, persistence: bool) -> xr.Dataset:
+        if persistence:
             start = start - timedelta(days=1)
         else:
             start = start + timedelta(days=day)
@@ -149,11 +149,11 @@ def coldata_mos(tmp_path_factory) -> Path:
     for model in ("ENS", "MOS"):
         path = (
             root
-            / f"cams2-83/mos-colocated-data/CAMS2-83-{model}-persistent-FC/concno2_concno2_MOD-CAMS2-83-{model}-persistent-FC_REF-EEA-UTD_{start:%Y%m%d}_{end:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
+            / f"cams2-83/mos-colocated-data/CAMS2-83-{model}-persistence-FC/concno2_concno2_MOD-CAMS2-83-{model}-persistence-FC_REF-EEA-UTD_{start:%Y%m%d}_{end:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
         )
         path.parent.mkdir(exist_ok=True, parents=True)
         ds = dataset(model, 0, start, end, True)
-        ds["concno2"].attrs.update(model_name=f"CAMS2-83-{model}-persistent-FC")
+        ds["concno2"].attrs.update(model_name=f"CAMS2-83-{model}-persistence-FC")
         ds.to_netcdf(path)
 
     start, end = date(2024, 3, 1), date(2024, 3, 2)
