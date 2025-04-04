@@ -11,10 +11,7 @@ from .engine import CAMS2_83_Engine
 
 logger = logging.getLogger(__name__)
 
-def date_range(start_date: date, end_date: date) -> tuple[date, ...]:
-    days = (end_date - start_date) // timedelta(days=1)
-    assert days >= 0
-    return tuple(start_date + timedelta(days=day) for day in range(days + 1))
+
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
     def _run_single_entry(self, model_name, obs_name, var_list, analysis=False):
         col = self.get_colocator(model_name, obs_name)
