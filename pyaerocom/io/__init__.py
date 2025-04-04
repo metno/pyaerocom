@@ -29,6 +29,7 @@ from .read_ebas import ReadEbas
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from pyaerocom.io.cams2_83.reader import ReadCAMS2_83
+from .evdc_ozone_sonde.reader import ReadEvdcOzoneSondeData
 
 # Pyaro classes
 from .pyaro.read_pyaro import ReadPyaro

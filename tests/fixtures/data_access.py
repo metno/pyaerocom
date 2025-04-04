@@ -9,8 +9,8 @@ import logging
 from pathlib import Path
 from typing import NamedTuple
 
-
 from pyaerocom import const, io
+from pyaerocom.io.evdc_ozone_sonde.reader import ReadEvdcOzoneSondeData
 from pyaerocom.io.ghost.reader import ReadGhost
 from pyaerocom.io.icpforests.reader import ReadICPForest
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -68,6 +68,7 @@ TEST_DATA: dict[str, DataForTests] = {
     "ICPFORESTS.Subset": DataForTests("obsdata/ipc-forests/dep", ReadICPForest),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
+    "EVDC-HARP-test": DataForTests("obsdata/EVDC/HARP", ReadEvdcOzoneSondeData),
 }
 
 

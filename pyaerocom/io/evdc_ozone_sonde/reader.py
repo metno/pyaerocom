@@ -2,15 +2,12 @@ import logging
 import os
 
 import numpy as np
-import pandas as pd
 import xarray
 
 from pyaerocom import const
-from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
 
@@ -27,7 +24,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = const.EVDC_OZONE_SONDE
+    DATA_ID = const.EVDC_OZONE_SONDES_NAME
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME]
@@ -47,7 +44,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: all data values that exceed this number will be set to NaN on read. This
     #: is because iris, xarray, etc. assign a FILL VALUE of the order of e36
     #: to missing data in the netcdf files
-    _MAX_VAL_NAN = 1e6
+    # _MAX_VAL_NAN = 1e6
 
     #: variable name of altitude in files
     ALTITUDE_ID = "geopotential_height"
@@ -55,7 +52,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: temporal resolution
     # Note: This is an approximation based on the fact that the sondes are flown more than once a day
     # as time the middle of the start and stop time rounded to the closed hour is used
-    TS_TYPE = "hourly"
+    TS_TYPE = "3hourly"
 
     # DEFAULT_VARS = ["conco33D", "vmro33D", "pro33D", "rh3D", "ps3D", "ts3D"]
     # O3_volume_mixing_ratio, O3_number_density, O3_partial_pressure, relative_humidity, pressure, temperature, wind_speed, wind_direction
@@ -70,32 +67,37 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         "ts3D": "temperature",
     }
 
-    META_NAMES_FILE = dict(
-        location="site_name",
-        start_utc="datetime_start",
-        stop_utc="datetime_stop",
-        # wavelength_det="DetectionWavelength_nm",
-        # res_raw_m="ResolutionRaw_meter",
-        # instrument_name="system",
-        # comment="comment",
-        # PI="PI",
-        # dataset_name="title",
-        # station_name="station_ID",
-        # website="references",
-        # wavelength_emis="wavelength",
-        # detection_mode="DetectionMode",
-        # res_eval="ResolutionEvaluated",
-        # input_params="InputParameters",
-        altitude="altitude",
-        # eval_method="backscatter_evaluation_method",
-    )
+    LOCATION_VAR_NAME_HARP = "site_name"
+    START_TIME_VAR_NAME_HARP = "datetime_start"
+    STOP_TIME_VAR_NAME_HARP = "datetime_stop"
+
+    #
+    # META_NAMES_FILE = dict(
+    #     location="site_name",
+    #     start_utc="datetime_start",
+    #     stop_utc="datetime_stop",
+    # wavelength_det="DetectionWavelength_nm",
+    # res_raw_m="ResolutionRaw_meter",
+    # instrument_name="system",
+    # comment="comment",
+    # PI="PI",
+    # dataset_name="title",
+    # station_name="station_ID",
+    # website="references",
+    # wavelength_emis="wavelength",
+    # detection_mode="DetectionMode",
+    # res_eval="ResolutionEvaluated",
+    # input_params="InputParameters",
+    # altitude="altitude",
+    # eval_method="backscatter_evaluation_method",
+    # )
     #: metadata keys that are needed for reading (must be values in
     #: :attr:`META_NAMES_FILE`)
-    META_NEEDED = [
-        "location",
-        "measurement_start_datetime",
-        "measurement_start_datetime",
-    ]
+    # META_NEEDED = [
+    #     "location",
+    #     "measurement_start_datetime",
+    #     "measurement_start_datetime",
+    # ]
 
     #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to
     #: standard keys defined in :class:`StationMetaData` and that are supposed
@@ -110,24 +112,24 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     ]
 
     #: Attribute access names for unit reading of variable data
-    VAR_UNIT_NAMES = dict(
-        extinction=["units"],
-        backscatter=["units"],
-        dustlayerheight=["units"],
-        altitude="units",
-    )
+    # VAR_UNIT_NAMES = dict(
+    #     extinction=["units"],
+    #     backscatter=["units"],
+    #     dustlayerheight=["units"],
+    #     altitude="units",
+    # )
     #: Variable names of uncertainty data
-    ERR_VARNAMES = dict(
-        ec532aer="error_extinction",
-        ec355aer="error_extinction",
-    )
+    # ERR_VARNAMES = dict(
+    #     ec532aer="error_extinction",
+    #     ec355aer="error_extinction",
+    # )
 
     #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
-    READ_ERR = False
+    READ_UNCERTAINTIES = False
 
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
-    EXCLUDE_CASES = ["cirrus.txt"]
+    # EXCLUDE_CASES = ["cirrus.txt"]
 
     def __init__(self, data_id=None, data_dir=None):
         # initiate base class
@@ -144,7 +146,12 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         self.is_vertical_profile = True
 
     def read_file(
-        self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True, format="HARP"
+        self,
+        filename,
+        vars_to_retrieve=None,
+        read_uncertainties=False,
+        remove_outliers=True,
+        format="HARP",
     ):
         """Read EARLINET file and return it as instance of :class:`StationData`
 
@@ -155,7 +162,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list`, optional
             list of str with variable names to read. If None, use
             :attr:`DEFAULT_VARS`
-        read_err : bool
+        read_uncertainties : bool
             if True, uncertainty data is also read (where available).
         remove_outliers : bool
             if True, outliers are removed for each variable using the
@@ -169,8 +176,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         StationData
             dict-like object containing results
         """
-        if read_err is None:  # use default setting
-            read_err = self.READ_ERR
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         _vars = []
@@ -196,7 +201,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         data_out = StationData()
         self.logger.debug(f"Reading file {filename}")
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
-            data_out["station_id"] = data_in["site_name"]
+            data_out["station_id"] = data_out["station_name"] = data_in["site_name"]
             data_out["data_id"] = self.data_id
             data_out["ts_type"] = self.TS_TYPE
 
@@ -205,23 +210,23 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             for var in vars_to_read:
                 if var not in self._var_info:
                     self._var_info[var] = Variable(var)
-            var_info = self._var_info
+            # var_info = self._var_info
 
             # Put also just in the attributes. not sure why appears twice
-            data_out["station_coords"]["longitude"] = data_out["longitude"] = np.float64(
-                data_in["longitude"].values
-            )
-            data_out["station_coords"]["latitude"] = data_out["latitude"] = np.float64(
-                data_in["latitude"].values
-            )
+            # set station coords to the first location
+            data_out["station_coords"]["longitude"] = np.float64(data_in["longitude"].values[0])
+            data_out["station_coords"]["latitude"] = np.float64(data_in["latitude"].values[0])
             # Obs: geopotential height
-            data_out["altitude"] = np.float64(
-                data_in["geopotential_height"].values
-            )  # Note altitude is an array for the data, station altitude is different
-            data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
-            data_out["altitude_attrs"] = data_in[
-                "altitude"
-            ].attrs  # get attrs for altitude units + extra
+            data_out["station_coords"]["altitude"] = np.float64(
+                data_in["geopotential_height"].values[0]
+            )
+            # these are the profile coordinates
+            data_out["longitude"] = np.float64(data_in["longitude"].values)
+            data_out["latitude"] = np.float64(data_in["latitude"].values)
+            data_out["altitude"] = np.float64(data_in["geopotential_height"].values)
+            # data_out["altitude_attrs"] = data_in[
+            #     "altitude"
+            # ].attrs  # get attrs for altitude units + extra
 
             # get intersection of metadaa in ddataa_out and data_in
             # for k, v in self.META_NAMES_FILE.items():
@@ -240,15 +245,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             # data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
             # data_out["filename"] = filename
 
-            dtime = pd.Timestamp(data_in.datetime_start).to_numpy().astype("datetime64[s]")
-            stop = pd.Timestamp(data_in.datetime_stop).to_numpy().astype("datetime64[s]")
-
-            # in case measurement goes over midnight into a new day
-            if stop < dtime:
-                stop = stop + np.timedelta64(1, "[D]")
-
-            data_out["dtime"] = [dtime]
-            data_out["stopdtime"] = [stop]
+            # dtime is needed later again
+            dtime = data_in["datetime_start"].values.astype("datetime64[s]")
+            data_out["dtime"] = data_in["datetime_start"].astype("datetime64[s]")
+            data_out["stopdtime"] = data_in["datetime_stop"].astype("datetime64[s]")
 
             for var in vars_to_read:
                 data_out["var_info"][var] = {}
@@ -263,115 +263,63 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     self.logger.warning(f"Variable {var} not found in file {filename}")
                     continue
 
-                info = var_info[var]
+                # info = var_info[var]
                 # xarray.DataArray
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
-                val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+                val = np.squeeze(np.float64(arr.values))  # squeeze to 1D array
+                err = np.full_like(val, np.nan)
+                if read_uncertainties:
+                    try:
+                        err = data_in.variables[f"{netcdf_var_name}_uncertainty"]
+                    except KeyError:
+                        pass
 
                 # CONVERT UNIT
-                unit = None
-
-                unames = self.VAR_UNIT_NAMES[netcdf_var_name]
-                for u in unames:
-                    if u in arr.attrs:
-                        unit = arr.attrs[u]
-                if unit is None:
-                    raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
-                unit_fac = None
+                unit = ""
                 try:
-                    to_unit = self._var_info[var].units
-                    unit_fac = get_unit_conversion_fac(unit, to_unit)
-                    val *= unit_fac
-                    unit = to_unit
-                    unit_ok = True
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to convert unit of {var} in file {filename} (Earlinet): "
-                        f"Error: {repr(e)}"
-                    )
+                    unit = arr.attrs["units"]
+                except KeyError:
+                    pass
 
-                # import errors if applicable
-                err = np.nan
-                if read_err and var in self.ERR_VARNAMES:
-                    err_name = self.ERR_VARNAMES[var]
-                    if err_name in data_in.variables:
-                        err = np.squeeze(np.float64(data_in.variables[err_name]))
-                        if unit_ok:
-                            err *= unit_fac
-                        err_read = True
+                    # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
+                    # for u in unames:
+                    #     if u in arr.attrs:
+                    #         unit = arr.attrs[u]
+                    # if unit is None:
+                    #     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
+                    # unit_fac = None
+                    # try:
+                    #     to_unit = self._var_info[var].units
+                    #     unit_fac = get_unit_conversion_fac(unit, to_unit)
+                    #     val *= unit_fac
+                    #     unit = to_unit
+                    #     unit_ok = True
+                    # except Exception as e:
+                    #     logger.warning(
+                    #         f"Failed to convert unit of {var} in file {filename} (Earlinet): "
+                    #         f"Error: {repr(e)}"
+                    #     )
 
-                # 1D variable
-                if var == "zdust":
-                    if not val.ndim == 0:
-                        raise ValueError("Fatal: dust layer height data must be single value")
-
-                    if unit_ok and info.minimum < val < info.maximum:
-                        logger.warning(f"zdust value {val} out of range, setting to NaN")
-                        val = np.nan
-
-                    if np.isnan(val):
-                        self.logger.warning(
-                            f"Invalid value of variable zdust in file {filename}. Skipping...!"
-                        )
-                        continue
-
-                    data_out["has_zdust"] = True
-                    data_out[var] = val
-
-                else:
-                    if not val.ndim == 1:
-                        raise ValueError("Extinction data must be one dimensional")
-                    elif len(val) == 0:
-                        continue  # no data
-                    # Remove NaN equivalent values
-                    val[val > self._MAX_VAL_NAN] = np.nan
-
-                    wvlg = var_info[var].wavelength_nm
-                    wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
-
-                    assert data_in[wvlg_str].shape == (1,)
-                    if not wvlg == float(data_in[wvlg_str][0]):
-                        self.logger.info("No wavelength match")
-                        continue
-
-                    alt_id = self.ALTITUDE_ID
-                    alt_data = data_in.variables[alt_id]
-
-                    alt_vals = np.float64(alt_data)
-                    alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                    to_alt_unit = const.VARS["alt"].units
-                    if not alt_unit == to_alt_unit:
-                        try:
-                            alt_unit_fac = get_unit_conversion_fac(alt_unit, to_alt_unit)
-                            alt_vals *= alt_unit_fac
-                            alt_unit = to_alt_unit
-                        except Exception as e:
-                            self.logger.warning(f"Failed to convert unit: {repr(e)}")
-                    has_altitude = True
-
-                    # remove outliers from data, if applicable
-                    if remove_outliers and unit_ok:
-                        # REMOVE OUTLIERS
-                        outlier_mask = np.logical_or(val < info.minimum, val > info.maximum)
-                        val[outlier_mask] = np.nan
-
-                        if err_read:
-                            err[outlier_mask] = np.nan
-                        outliers_removed = True
-                    # remove outliers from errors if applicable
-                    if err_read:
-                        err[err > self._MAX_VAL_NAN] = np.nan
+                    # import errors if applicable
+                    # err = np.nan
+                    # if read_uncertainties and var in self.ERR_VARNAMES:
+                    #     err_name = self.ERR_VARNAMES[var]
+                    #     if err_name in data_in.variables:
+                    #         err = np.squeeze(np.float64(data_in.variables[err_name]))
+                    #         if unit_ok:
+                    #             err *= unit_fac
+                    #         err_read = True
 
                     # create instance of ProfileData
                     profile = VerticalProfile(
                         data=val,
-                        altitude=alt_vals,
+                        altitude=data_out["altitude"].values,
                         dtime=dtime,
                         var_name=var,
                         data_err=err,
                         var_unit=unit,
-                        altitude_unit=alt_unit,
+                        altitude_unit=data_in["geopotential_height"].attrs["units"],
                     )
 
                     # Write everything into profile
@@ -429,7 +377,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
 
         if read_err is None:
-            read_err = self.READ_ERR
+            read_err = self.READ_UNCERTAINTIES
 
         if files is None:
             if len(self.files) == 0:
@@ -476,7 +424,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 stat = self.read_file(
                     _file,
                     vars_to_retrieve=vars_to_retrieve,
-                    read_err=read_err,
+                    read_uncertainties=read_err,
                     remove_outliers=remove_outliers,
                 )
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
