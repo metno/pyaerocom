@@ -24,7 +24,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "concso4", "od550aer", "NO"]
+    variables = ["NOx", "concso4", "od550aer", "NO", "PM10"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
