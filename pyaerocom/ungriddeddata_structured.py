@@ -1,10 +1,12 @@
 import fnmatch
+import functools
 import logging
 import sys
 from collections.abc import Iterator
 from copy import deepcopy
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from pyaerocom import const
@@ -18,9 +20,11 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import merge_station_data, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaro.timeseries import Reader
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -28,6 +32,21 @@ else:
     from typing_extensions import override
 
 logger = logging.getLogger(__name__)
+
+
+def _calculate_ts_type(
+    start: npt.NDArray[np.datetime64], end: npt.NDArray[np.datetime64]
+) -> npt.NDArray:
+    seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
+
+    @np.vectorize(otypes=[TsType])
+    @functools.lru_cache(maxsize=128)
+    def memoized_ts_type(x: np.int32) -> TsType:
+        if x == 0:
+            return TsType("hourly")
+        return TsType.from_total_seconds(x)
+
+    return memoized_ts_type(seconds)
 
 
 class UngriddedDataStructured(UngriddedDataMetadata):
@@ -632,6 +651,123 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     v_data["flag"][:] = flags
                     v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
                 self._dra.append(v_data)
+
+    @classmethod
+    def from_pyaro(
+        cls, data_id: str, reader: Reader, vars_to_retrieve: list[str]
+    ) -> UngriddedDataContainer:
+        def _station_tstype_to_int_array(
+            sarray: np.array, mapping: dict[tuple[str, str], int]
+        ) -> np.array:
+            """converter an array-view consisting of two str columns ("stations", "tstype") to an
+            int-array using a mapping
+
+            :param sarray: station,tstype view of a structured array
+            :param mapping: (station,tstype) -> int mapping dictionary
+            :return: array of ints
+            """
+            keys = np.array(
+                list(mapping.keys()),
+                dtype=[
+                    ("stations", sarray["stations"].dtype),
+                    ("tstype", sarray["tstype"].dtype),
+                ],
+            )
+            values = np.array(list(mapping.values()), dtype="int4")
+
+            # Sort keys to ensure correct indexing
+            sorted_indices = np.argsort(keys, order=("stations", "tstype"))
+            sorted_keys = keys[sorted_indices]
+            sorted_values = values[sorted_indices]
+
+            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+            indices = np.searchsorted(sorted_keys, sarray, order=("stations", "tstype"))
+
+            # Use np.take to map indices to values
+            return np.take(sorted_values, indices)
+
+        def _dict_append_by_counter(
+            counter: int,
+            mapping: dict[tuple[str, str], int],
+            station_tstype: np.array,
+        ):
+            """append values of an array to a dict by using a counter
+
+            :param counter: input/output of this function, start-position of the counter
+            :param mapping: mapping/dictionary to be added to
+            :param station_tstype: structured array of stations and tstype
+            :return: counter, start for next added value
+            """
+            station_tstype = np.rec.array(
+                [stations, tstype],
+                dtype=[("stations", stations.dtype), ("tstype", tstype.dtype)],
+            )
+            uarray = np.unique(station_tstype.view(dtype=(stations.dtype, tstype.dtype)))
+
+            for row in uarray:
+                sx = (row[0], row[1])
+                if sx not in mapping:
+                    mapping[sx] = counter
+                    counter += 1
+            return counter
+
+        ugs = UngriddedDataStructured()
+        var_idx = {var: i for i, var in enumerate(vars_to_retrieve)}
+        # a meta is separated more than a station, e.g. meta can split var by
+        # variable and meta should split var by tstype
+        var_metas = {}
+        var_units = {}
+        counter = 0
+        for var in vars_to_retrieve:
+            var_data = reader.data(varname=var)
+            tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
+            stations = var_data.stations
+            station_tstype = np.rec.array(
+                [stations, tstype],
+                dtype=[("stations", stations.dtype), ("tstype", tstype.dtype)],
+            )
+
+            var_units[var] = var_data.units
+            # set meta-ids for each variable but ensure that counter
+            # is for all vars, var_metas contain (stations, tstype) tuples
+            var_metas[var] = {}
+            counter = _dict_append_by_counter(counter, var_metas[var], station_tstype)
+            dra_data = {
+                "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
+                "var_id": np.zeros(len(var_data), dtype=np.int2) + var_idx[var],
+                "start_time": var_data.start_times,
+                "end_time": var_data.end_times,
+                "data": var_data.values,
+                "stdev": var_data.standard_deviations,
+                "dataaltitude": var_data.altitudes.astype("i2"),
+                "flag": var_data.flags,  # TODO check for common undefined values?
+            }
+            ugs._dra.append_array(**dra_data)
+
+        stations_with_metadata = reader.get_stations()
+        metadata = dict()
+        for var in vars_to_retrieve:
+            units = var_units[var]
+            for station_tstype, meta_id in var_metas.items():
+                (station_name, tstype) = station_tstype
+                extra_metadata = stations_with_metadata[station_name].metadata
+                d = {
+                    "data_id": data_id,
+                    "station_name": station_name,
+                    "var_info": {
+                        var: {"units": units},
+                    },
+                    **stations_with_metadata[station_name],
+                    **extra_metadata,
+                }
+                if "ts_type" not in d:
+                    d["ts_type"] = tstype
+                metadata[meta_id] = d
+
+        ugs.metadata = metadata
+        ugs.var_idx = var_idx
+
+        return ugs
 
     def clear_meta_no_data(self, inplace=True):
         """Remove all metadata blocks that do not have data associated with it
