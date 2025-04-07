@@ -16,6 +16,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
@@ -393,7 +394,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
                     alt_vals = np.float64(alt_data)
                     alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                    to_alt_unit = const.VARS["alt"].units
+                    to_alt_unit = get_standard_unit("alt")
                     if not alt_unit == to_alt_unit:
                         try:
                             alt_unit_fac = get_unit_conversion_fac(alt_unit, to_alt_unit)

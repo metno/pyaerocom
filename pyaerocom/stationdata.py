@@ -29,6 +29,7 @@ from pyaerocom.helpers import calc_climatology, isnumeric, isrange
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType, to_datetime64
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.logging import LoggingCallback
 
 from pyaerocom.units import convert_unit
@@ -207,7 +208,7 @@ class StationData(StationMetaData):
             if current unit is not equal to AeroCom default and cannot
             be converted.
         """
-        to_unit = const.VARS[var_name].units
+        to_unit = get_standard_unit(var_name)
         try:
             self._check_unit(var_name, to_unit)
         except Exception:
@@ -235,7 +236,8 @@ class StationData(StationMetaData):
             (e.g. 1/Mm vs 1/m)
         """
         if unit is None:
-            unit = const.VARS[var_name].units
+            unit = get_standard_unit(var_name)
+
         u = self.get_unit(var_name)
         if not convert_unit(1, u, unit, var_name) == 1:
             raise DataUnitError(f"Invalid unit {u} (expected {unit})")

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pyaerocom import const
 from pyaerocom.aux_var_helpers import vmrx_to_concx
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.stationdata import StationData
 
@@ -40,7 +40,7 @@ def vmr_to_ghost_stations(
         T_kelvin = meta["network_provided_volume_standard_temperature"]
         mmol_var = get_molmass(vmrvar)
         unit_var = meta["var_info"][vmrvar]["units"]
-        to_unit = const.VARS[mconcvar].units
+        to_unit = get_standard_unit(mconcvar)
         conc = vmrx_to_concx(
             vmrdata,
             p_pascal=p_pascal,

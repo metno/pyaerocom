@@ -14,6 +14,7 @@ from pyaerocom.helpers import isnumeric
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import in_range
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
@@ -315,7 +316,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             if unit information is not accessible for input variable name
         """
         if unit is None:
-            unit = const.VARS[var_name]["units"]
+            unit = get_standard_unit(var_name)
 
         units = []
         for i, meta in self.metadata.items():
