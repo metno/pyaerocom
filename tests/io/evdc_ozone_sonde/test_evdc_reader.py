@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 
-from pyaerocom import const
+from pyaerocom import const, VerticalProfile
 from pyaerocom.io.evdc_ozone_sonde.reader import ReadEvdcOzoneSondeData
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"]
@@ -19,6 +20,7 @@ TEST_FILES: list[str | Path] = [
 ]
 
 SIMPLE_TEST_VAR = "conco33D"
+TEST_RTOL = 1.0e-4
 
 
 def test_all_files_exist():
@@ -29,7 +31,7 @@ def test_all_files_exist():
 @pytest.mark.parametrize(
     "num,vars_to_retrieve",
     [
-        (0, SIMPLE_TEST_VAR),
+        (1, SIMPLE_TEST_VAR),
     ],
 )
 def test_Evdc_harp_read_file(num: int, vars_to_retrieve: list[str]):
@@ -41,23 +43,23 @@ def test_Evdc_harp_read_file(num: int, vars_to_retrieve: list[str]):
         return
 
     assert SIMPLE_TEST_VAR in stat.var_info
-    assert stat.var_info["ec355aer"]["unit_ok"]
-    assert stat.var_info["ec355aer"]["err_read"]
-    assert stat.var_info["ec355aer"]["outliers_removed"]
+    assert stat.var_info[SIMPLE_TEST_VAR]["unit_ok"]
+    assert "err_read" in stat.var_info[SIMPLE_TEST_VAR]
+    assert "outliers_removed" in stat.var_info[SIMPLE_TEST_VAR]
 
-    # ec355aer = stat.ec355aer
-    # assert isinstance(ec355aer, VerticalProfile)
-    # assert len(ec355aer.data) == 164
-    # assert np.sum(np.isnan(ec355aer.data)) == 0
+    assert isinstance(stat[SIMPLE_TEST_VAR], VerticalProfile)
+    assert len(stat[SIMPLE_TEST_VAR].data) > 1000
+    assert np.sum(np.isnan(stat[SIMPLE_TEST_VAR].data)) == 0
     #
-    # assert np.nanmean(ec355aer.data) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
-    # assert np.nanstd(ec355aer.data) == pytest.approx(0.03295176956505217, rel=TEST_RTOL)
+    assert np.nanmean(stat[SIMPLE_TEST_VAR].data) == pytest.approx(
+        2.3126154036210864, rel=TEST_RTOL
+    )
     #
-    # assert np.nanmean(ec355aer.data_err) == pytest.approx(0.003919774151078758, rel=TEST_RTOL)
-    # assert np.nanstd(ec355aer.data_err) == pytest.approx(0.0020847733483625517, rel=TEST_RTOL)
+    # assert np.nanmean(stat[SIMPLE_TEST_VAR].data_err) == pytest.approx(0.003919774151078758, rel=TEST_RTOL)
+    # assert np.nanstd(stat[SIMPLE_TEST_VAR].data_err) == pytest.approx(0.0020847733483625517, rel=TEST_RTOL)
     #
-    # assert np.min(ec355aer.altitude) == pytest.approx(935.4610692253234, rel=TEST_RTOL)
-    # assert np.max(ec355aer.altitude) == pytest.approx(10678.245216562595, rel=TEST_RTOL)
+    assert np.min(stat[SIMPLE_TEST_VAR].altitude) <= 1000
+    assert np.max(stat[SIMPLE_TEST_VAR].altitude) >= 5000
 
 
 # def test_ReadEarlinet_read():

@@ -49,6 +49,11 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: variable name of altitude in files
     ALTITUDE_ID = "geopotential_height"
 
+    #
+    LONGITUDE_NAME = "longitude"
+    LATITUDE_NAME = "latitude"
+    ALTITUDE_NAME = "altitude"
+
     #: temporal resolution
     # Note: This is an approximation based on the fact that the sondes are flown more than once a day
     # as time the middle of the start and stop time rounded to the closed hour is used
@@ -214,18 +219,22 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
             # Put also just in the attributes. not sure why appears twice
             # set station coords to the first location
-            data_out["station_coords"]["longitude"] = np.float64(data_in["longitude"].values[0])
-            data_out["station_coords"]["latitude"] = np.float64(data_in["latitude"].values[0])
+            data_out["station_coords"][self.LONGITUDE_NAME] = np.float64(
+                data_in[self.LONGITUDE_NAME].values[0]
+            )
+            data_out["station_coords"][self.LATITUDE_NAME] = np.float64(
+                data_in[self.LATITUDE_NAME].values[0]
+            )
             # Obs: geopotential height
-            data_out["station_coords"]["altitude"] = np.float64(
-                data_in["geopotential_height"].values[0]
+            data_out["station_coords"][self.ALTITUDE_NAME] = np.float64(
+                data_in[self.ALTITUDE_ID].values[0]
             )
             # these are the profile coordinates
-            data_out["longitude"] = np.float64(data_in["longitude"].values)
-            data_out["latitude"] = np.float64(data_in["latitude"].values)
-            data_out["altitude"] = np.float64(data_in["geopotential_height"].values)
+            data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME].values)
+            data_out[self.LATITUDE_NAME] = np.float64(data_in[self.LATITUDE_NAME].values)
+            data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID].values)
             # data_out["altitude_attrs"] = data_in[
-            #     "altitude"
+            #     self.ALTITUDE_NAME
             # ].attrs  # get attrs for altitude units + extra
 
             # get intersection of metadaa in ddataa_out and data_in
@@ -272,6 +281,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 if read_uncertainties:
                     try:
                         err = data_in.variables[f"{netcdf_var_name}_uncertainty"]
+                        err_read = True
                     except KeyError:
                         pass
 
@@ -279,51 +289,53 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 unit = ""
                 try:
                     unit = arr.attrs["units"]
+                    unit_ok = True
                 except KeyError:
                     pass
 
-                    # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
-                    # for u in unames:
-                    #     if u in arr.attrs:
-                    #         unit = arr.attrs[u]
-                    # if unit is None:
-                    #     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
-                    # unit_fac = None
-                    # try:
-                    #     to_unit = self._var_info[var].units
-                    #     unit_fac = get_unit_conversion_fac(unit, to_unit)
-                    #     val *= unit_fac
-                    #     unit = to_unit
-                    #     unit_ok = True
-                    # except Exception as e:
-                    #     logger.warning(
-                    #         f"Failed to convert unit of {var} in file {filename} (Earlinet): "
-                    #         f"Error: {repr(e)}"
-                    #     )
+                # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
+                # for u in unames:
+                #     if u in arr.attrs:
+                #         unit = arr.attrs[u]
+                # if unit is None:
+                #     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
+                # unit_fac = None
+                # try:
+                #     to_unit = self._var_info[var].units
+                #     unit_fac = get_unit_conversion_fac(unit, to_unit)
+                #     val *= unit_fac
+                #     unit = to_unit
+                #     unit_ok = True
+                # except Exception as e:
+                #     logger.warning(
+                #         f"Failed to convert unit of {var} in file {filename} (Earlinet): "
+                #         f"Error: {repr(e)}"
+                #     )
 
-                    # import errors if applicable
-                    # err = np.nan
-                    # if read_uncertainties and var in self.ERR_VARNAMES:
-                    #     err_name = self.ERR_VARNAMES[var]
-                    #     if err_name in data_in.variables:
-                    #         err = np.squeeze(np.float64(data_in.variables[err_name]))
-                    #         if unit_ok:
-                    #             err *= unit_fac
-                    #         err_read = True
+                # import errors if applicable
+                # err = np.nan
+                # if read_uncertainties and var in self.ERR_VARNAMES:
+                #     err_name = self.ERR_VARNAMES[var]
+                #     if err_name in data_in.variables:
+                #         err = np.squeeze(np.float64(data_in.variables[err_name]))
+                #         if unit_ok:
+                #             err *= unit_fac
+                #         err_read = True
 
-                    # create instance of ProfileData
-                    profile = VerticalProfile(
-                        data=val,
-                        altitude=data_out["altitude"].values,
-                        dtime=dtime,
-                        var_name=var,
-                        data_err=err,
-                        var_unit=unit,
-                        altitude_unit=data_in["geopotential_height"].attrs["units"],
-                    )
+                # create instance of ProfileData
+                profile = VerticalProfile(
+                    data=val,
+                    altitude=data_out[self.ALTITUDE_NAME],
+                    dtime=dtime,
+                    var_name=var,
+                    data_err=err,
+                    var_unit=unit,
+                    altitude_unit=data_in[self.ALTITUDE_ID].attrs["units"],
+                )
 
-                    # Write everything into profile
-                    data_out[var] = profile
+                # Write everything into profile
+                data_out[var] = profile
+                has_altitude = True
 
                 data_out["var_info"][var].update(
                     unit_ok=unit_ok,
@@ -469,10 +481,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                         data = val.data
                         add = len(data)
                         err = val.data_err
-                        metadata[meta_key]["var_info"]["altitude"] = via = {}
+                        metadata[meta_key]["var_info"][self.ALTITUDE_NAME] = via = {}
 
                         vi.update(val.var_info[var])
-                        via.update(val.var_info["altitude"])
+                        via.update(val.var_info[self.ALTITUDE_NAME])
                     else:
                         add = 1
                         altitude = np.nan
@@ -489,14 +501,14 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                         data_obj.add_chunk(add)
 
                     # write common meta info for this station
-                    data_obj._data[idx:stop, col_idx["latitude"]] = stat["station_coords"][
-                        "latitude"
+                    data_obj._data[idx:stop, col_idx[self.LATITUDE_NAME]] = stat["station_coords"][
+                        self.LATITUDE_NAME
                     ]
-                    data_obj._data[idx:stop, col_idx["longitude"]] = stat["station_coords"][
-                        "longitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["altitude"]] = stat["station_coords"][
-                        "altitude"
+                    data_obj._data[idx:stop, col_idx[self.LONGITUDE_NAME]] = stat[
+                        "station_coords"
+                    ][self.LONGITUDE_NAME]
+                    data_obj._data[idx:stop, col_idx[self.ALTITUDE_NAME]] = stat["station_coords"][
+                        self.ALTITUDE_NAME
                     ]
                     data_obj._data[idx:stop, col_idx["meta"]] = meta_key
 
