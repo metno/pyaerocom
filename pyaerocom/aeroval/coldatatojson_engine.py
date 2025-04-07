@@ -26,7 +26,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
 from pyaerocom.aeroval.json_utils import round_floats
-
 from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
@@ -564,6 +563,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 logger.warning(
                     f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping..."
                 )
+            return
         else:
             fm_data = data[freq]
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)

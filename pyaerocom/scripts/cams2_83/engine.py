@@ -349,55 +349,55 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         # return r
 
-    def _calc_forecast_target_MQI(
-        self, coldata: ColocatedData, persistence_coldata: ColocatedData, var_name: str
-    ) -> dict[str, float]:
+    # def _calc_forecast_target_MQI(
+    #     self, coldata: ColocatedData, persistence_coldata: ColocatedData, var_name: str
+    # ) -> dict[str, float]:
 
-        stations = persistence_coldata.data.station_name.values
+    #     stations = persistence_coldata.data.station_name.values
 
-        time = coldata.time.values
-        wanted_time = time - np.timedelta64(24, "h")
-        p_time = persistence_coldata.time.values
+    #     time = coldata.time.values
+    #     wanted_time = time - np.timedelta64(24, "h")
+    #     p_time = persistence_coldata.time.values
 
-        mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
+    #     mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
 
-        results = {}
+    #     results = {}
 
-        for i in tqdm(range(len(stations))):
-            assert str(persistence_coldata.data.station_name[i].values) == str(
-                coldata.data.station_name[i].values
-            )
+    #     for i in tqdm(range(len(stations))):
+    #         assert str(persistence_coldata.data.station_name[i].values) == str(
+    #             coldata.data.station_name[i].values
+    #         )
 
-            obs_vals = coldata.data.data[0, :, i]
-            mod_vals = coldata.data.data[1, :, i]
+    #         obs_vals = coldata.data.data[0, :, i]
+    #         mod_vals = coldata.data.data[1, :, i]
 
-            mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
+    #         mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
 
-            len_data = len(obs_vals)
+    #         len_data = len(obs_vals)
 
-            p_mod_vals = persistence_coldata.data.data[0, mask, i]
+    #         p_mod_vals = persistence_coldata.data.data[0, mask, i]
 
-            factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
-            uncertainty_p_obs = SPECIES[var_name]["UrRV"] * np.sqrt(
-                (1 - SPECIES[var_name]["alpha"] ** 2) * p_mod_vals**2 + factor
-            )
+    #         factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
+    #         uncertainty_p_obs = SPECIES[var_name]["UrRV"] * np.sqrt(
+    #             (1 - SPECIES[var_name]["alpha"] ** 2) * p_mod_vals**2 + factor
+    #         )
 
-            p_diff_vals = np.maximum(
-                np.abs(obs_vals - p_mod_vals - uncertainty_p_obs),
-                np.abs(obs_vals - p_mod_vals + uncertainty_p_obs),
-            )
+    #         p_diff_vals = np.maximum(
+    #             np.abs(obs_vals - p_mod_vals - uncertainty_p_obs),
+    #             np.abs(obs_vals - p_mod_vals + uncertainty_p_obs),
+    #         )
 
-            rmse_m = np.nanmean((mod_vals - obs_vals) ** 2, where=mask)
-            rmse_p = np.nanmean((p_diff_vals) ** 2, where=mask)
+    #         rmse_m = np.nanmean((mod_vals - obs_vals) ** 2, where=mask)
+    #         rmse_p = np.nanmean((p_diff_vals) ** 2, where=mask)
 
-            bias_m = np.nanmean((mod_vals - obs_vals), where=mask)
+    #         bias_m = np.nanmean((mod_vals - obs_vals), where=mask)
 
-            mb = bias_m / rmse_p
-            mqi = rmse_m / rmse_p
+    #         mb = bias_m / rmse_p
+    #         mqi = rmse_m / rmse_p
 
-            results[stations[i]] = [mb, mqi]
+    #         results[stations[i]] = [mb, mqi]
 
-        return results
+    #     return results
 
     def _calc_forecast_target_MQI_vectorized(
         self,
