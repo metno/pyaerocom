@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
     def _run_single_entry(self, model_name, obs_name, var_list, analysis=False):
+
+        logger.info(f"Running CAMS2_83_Processer._run_single_entry with var_list {var_list} and model name {model_name}")
+
         col = self.get_colocator(model_name, obs_name)
         forecast_days = self.cfg.statistics_opts.forecast_days
 
