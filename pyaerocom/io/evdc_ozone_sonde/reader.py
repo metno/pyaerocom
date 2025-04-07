@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import numpy as np
 import xarray
@@ -19,6 +20,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
     #: Mask for identifying datafiles
     _FILEMASK = "evdc-sonde_*.nc"
+    _FILEMASK_HARP = "evdc-sonde_*.nc"
+    _FILEMASK_EVDC = "evdc-sonde_*.nc"
 
     #: version log of this class (for caching)
     __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
@@ -77,36 +80,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     STOP_TIME_VAR_NAME_HARP = "datetime_stop"
 
     #
-    # META_NAMES_FILE = dict(
-    #     location="site_name",
-    #     start_utc="datetime_start",
-    #     stop_utc="datetime_stop",
-    # wavelength_det="DetectionWavelength_nm",
-    # res_raw_m="ResolutionRaw_meter",
-    # instrument_name="system",
-    # comment="comment",
-    # PI="PI",
-    # dataset_name="title",
-    # station_name="station_ID",
-    # website="references",
-    # wavelength_emis="wavelength",
-    # detection_mode="DetectionMode",
-    # res_eval="ResolutionEvaluated",
-    # input_params="InputParameters",
-    # altitude="altitude",
-    # eval_method="backscatter_evaluation_method",
-    # )
-    #: metadata keys that are needed for reading (must be values in
-    #: :attr:`META_NAMES_FILE`)
-    # META_NEEDED = [
-    #     "location",
-    #     "measurement_start_datetime",
-    #     "measurement_start_datetime",
-    # ]
-
-    #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to
-    #: standard keys defined in :class:`StationMetaData` and that are supposed
-    #: to be inserted into :class:`UngriddedData` object created in :func:`read`
     KEEP_ADD_META = [
         # "location",
         # "wavelength",
@@ -116,29 +89,16 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         # "backscatter_evaluation_method",
     ]
 
-    #: Attribute access names for unit reading of variable data
-    # VAR_UNIT_NAMES = dict(
-    #     extinction=["units"],
-    #     backscatter=["units"],
-    #     dustlayerheight=["units"],
-    #     altitude="units",
-    # )
-    #: Variable names of uncertainty data
-    # ERR_VARNAMES = dict(
-    #     ec532aer="error_extinction",
-    #     ec355aer="error_extinction",
-    # )
-
-    #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
+    #: If true, the uncertainties are also read
     READ_UNCERTAINTIES = False
 
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
 
     # EXCLUDE_CASES = ["cirrus.txt"]
 
-    def __init__(self, data_id=None, data_dir=None):
+    def __init__(self, data_id=None, data_dir: str | Path | None = None, format="HARP"):
         # initiate base class
-        super().__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=str(data_dir))
         #: private dictionary containing loaded Variable instances,
         self._var_info = {}
 
@@ -149,14 +109,44 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         self.excluded_files = []
 
         self.is_vertical_profile = True
+        self.format = format
+        if format == "HARP":
+            self.FILEMASK = self._FILEMASK_HARP
+        else:
+            self.FILEMASK = self._FILEMASK_EVDC
 
     def read_file(
         self,
         filename,
         vars_to_retrieve=None,
+        read_uncertainties=READ_UNCERTAINTIES,
+        remove_outliers=True,
+    ):
+        """
+
+        :param filename:
+        :param vars_to_retrieve:
+        :param read_uncertainties:
+        :param remove_outliers:
+        :param format:
+        :return:
+        """
+        if self.format == "HARP":
+            return self.read_file_harp(
+                filename,
+                vars_to_retrieve=vars_to_retrieve,
+                read_uncertainties=read_uncertainties,
+                remove_outliers=remove_outliers,
+            )
+        else:
+            raise NotImplementedError
+
+    def read_file_harp(
+        self,
+        filename,
+        vars_to_retrieve=None,
         read_uncertainties=False,
         remove_outliers=True,
-        format="HARP",
     ):
         """Read EARLINET file and return it as instance of :class:`StationData`
 
@@ -184,19 +174,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         _vars = []
-        # for var in vars_to_retrieve:
-        #     if (
-        #         var in self.VAR_PATTERNS_FILE
-        #     ):  # make sure to only read what is supported by this file
-        #         if self.VAR_PATTERNS_FILE[var] in filename:
-        #             _vars.append(var)
-        #     elif var in self.AUX_REQUIRES:
-        #         _vars.append(var)
-        #     else:
-        #         raise ValueError(f"{var} is not supported")
-        #
-        # # implemented in base class
-        # vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
         if vars_to_retrieve is None:
             vars_to_read = self.PROVIDES_VARIABLES
         else:
@@ -206,7 +183,11 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         data_out = StationData()
         self.logger.debug(f"Reading file {filename}")
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
-            data_out["station_id"] = data_out["station_name"] = data_in["site_name"]
+            try:
+                data_out["station_id"] = data_out["station_name"] = data_in["site_name"].values
+            except KeyError:
+                logger.error(f"file {filename} does not contain a site name. Skipping")
+                return data_out
             data_out["data_id"] = self.data_id
             data_out["ts_type"] = self.TS_TYPE
 
@@ -215,9 +196,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             for var in vars_to_read:
                 if var not in self._var_info:
                     self._var_info[var] = Variable(var)
-            # var_info = self._var_info
 
-            # Put also just in the attributes. not sure why appears twice
+            # Put also just in the attributes.
             # set station coords to the first location
             data_out["station_coords"][self.LONGITUDE_NAME] = np.float64(
                 data_in[self.LONGITUDE_NAME].values[0]
@@ -233,26 +213,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME].values)
             data_out[self.LATITUDE_NAME] = np.float64(data_in[self.LATITUDE_NAME].values)
             data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID].values)
-            # data_out["altitude_attrs"] = data_in[
-            #     self.ALTITUDE_NAME
-            # ].attrs  # get attrs for altitude units + extra
-
-            # get intersection of metadaa in ddataa_out and data_in
-            # for k, v in self.META_NAMES_FILE.items():
-            #     if v in self.META_NEEDED:
-            #         _meta = data_in.attrs[v]
-            #     else:
-            #         try:
-            #             _meta = data_in.attrs[v]
-            #         except Exception:  # pragma: no cover
-            #             _meta = None
-            #     data_out[k] = _meta
-
-            # get metadata expected in StationData but not in data_in's metadata
-            # data_out["wavelength_emis"] = data_in["wavelength"]
-            # data_out["shots"] = np.float64(data_in["shots"])
-            # data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
-            # data_out["filename"] = filename
 
             # dtime is needed later again
             dtime = data_in["datetime_start"].values.astype("datetime64[s]")
@@ -292,6 +252,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     unit_ok = True
                 except KeyError:
                     pass
+
+                # we might need to adjust the units here later on
+
+                # we might need to fill the StationData object a bit more later on
 
                 # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
                 # for u in unames:
@@ -351,7 +315,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         files=None,
         first_file=None,
         last_file=None,
-        read_err=None,
+        read_err=READ_UNCERTAINTIES,
         remove_outliers=True,
         pattern=None,
     ):
@@ -388,12 +352,9 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
-        if read_err is None:
-            read_err = self.READ_UNCERTAINTIES
-
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list(vars_to_retrieve, pattern=pattern)
+                self.files = self.get_file_list(pattern=self._FILEMASK)
             files = self.files
 
         # turn files into a list because I suspect there may be a bug if you don't do this
@@ -421,17 +382,9 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
-        # last_station_id = ''
-        num_files = len(files)
-
-        disp_each = int(num_files * 0.1)
-        if disp_each < 1:
-            disp_each = 1
-
         VAR_IDX = -1
         for i, _file in enumerate(files):
-            if i % disp_each == 0:
-                print(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
+            logger.info(f"Reading file {_file}")
             try:
                 stat = self.read_file(
                     _file,
@@ -439,11 +392,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     read_uncertainties=read_err,
                     remove_outliers=remove_outliers,
                 )
-                if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    self.logger.info(
-                        f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
-                    )
-                    continue
                 # if last_station_id != station_id:
                 meta_key += 1
                 # Fill the metadata dict
@@ -542,44 +490,16 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
         return data_obj
 
-    def _get_exclude_filelist(self):  # pragma: no cover
-        """Get list of filenames that are supposed to be ignored"""
-        exclude = []
-        import glob
-
-        files = glob.glob(f"{self.data_dir}/EXCLUDE/*.txt")
-        for i, file in enumerate(files):
-            if os.path.basename(file) not in self.EXCLUDE_CASES:
-                continue
-            count = 0
-            num = None
-            indata = False
-            with open(file) as f:
-                for line in f:
-                    if indata:
-                        exclude.append(line.strip())
-                        count += 1
-                    elif "Number of" in line:
-                        num = int(line.split(":")[1].strip())
-                        indata = True
-
-            if not count == num:
-                raise Exception
-        self.exclude_files = list(dict.fromkeys(exclude))
-        return self.exclude_files
-
-    def get_file_list(self, vars_to_retrieve=None, pattern=None):
+    def get_file_list(self, pattern=None):
         """Perform recursive file search for all input variables
 
         Note
         ----
-        Overloaded implementation of base class, since for Earlinet, the
-        paths are variable dependent
+        Overloaded implementation of base class, since for EVDC the
+        paths are dependending on the format
 
         Parameters
         ----------
-        vars_to_retrieve : list
-            list of variables to retrieve
         pattern : str, optional
             file name pattern applied to search
 
@@ -589,42 +509,11 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             list containing file paths
         """
 
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        exclude = self._get_exclude_filelist()
-        logger.info("Fetching EARLINET data files. This might take a while...")
-        patterns = []
-        for var in vars_to_retrieve:
-            if var not in self.VAR_PATTERNS_FILE:
-                from pyaerocom.exceptions import VarNotAvailableError
-
-                raise VarNotAvailableError(f"Input variable {var} is not supported")
-
-            _pattern = self.VAR_PATTERNS_FILE[var]
-            if pattern is not None:
-                if "." in pattern:
-                    raise NotImplementedError("filetype delimiter . not supported")
-                spl = _pattern.split(".")
-                if "*" not in spl[0]:
-                    raise AttributeError(f"Invalid file pattern: {_pattern}")
-                spl[0] = spl[0].replace("*", pattern)
-                _pattern = ".".join(spl)
-
-            patterns.append(_pattern)
-
-        matches = []
-        for root, dirnames, files in os.walk(self.data_dir, topdown=True):
-            paths = [os.path.join(root, f) for f in files]
-            for _pattern in patterns:
-                for path in paths:
-                    file = os.path.basename(path)
-                    if _pattern not in file:
-                        continue
-                    elif file in exclude:
-                        self.excluded_files.append(path)
-                    else:
-                        matches.append(path)
-        self.files = files = list(dict.fromkeys(matches))
+        logger.info("Fetching EVDC data files. This might take a while...")
+        searchpath = Path(self.data_dir)
+        files = []
+        for _file in searchpath.rglob(self.FILEMASK):
+            if _file.is_file():
+                files.append(str(_file))
+        logger.info(f"Found {len(files)} EVDC data files in directory {self.data_dir}.")
         return files

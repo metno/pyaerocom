@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -8,7 +9,7 @@ import pytest
 from pyaerocom import const, VerticalProfile
 from pyaerocom.io.evdc_ozone_sonde.reader import ReadEvdcOzoneSondeData
 
-ROOT: str = const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"]
+ROOT: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 
 TEST_FILES: list[str | Path] = [
     Path(
@@ -21,6 +22,8 @@ TEST_FILES: list[str | Path] = [
 
 SIMPLE_TEST_VAR = "conco33D"
 TEST_RTOL = 1.0e-4
+
+logger = logging.getLogger(__name__)
 
 
 def test_all_files_exist():
@@ -62,12 +65,21 @@ def test_Evdc_harp_read_file(num: int, vars_to_retrieve: list[str]):
     assert np.max(stat[SIMPLE_TEST_VAR].altitude) >= 5000
 
 
-# def test_ReadEarlinet_read():
-#     read = ReadEarlinet()
-#     read.files = TEST_FILES
-#     data = read.read(vars_to_retrieve="ec355aer")
-#
-#     assert len(data.metadata) == 1
+def test_get_file_list():
+    # test the getfiles method
+    read = ReadEvdcOzoneSondeData(data_dir=ROOT)
+    read.files = read.get_file_list()
+    assert len(read.files) >= len(TEST_FILES)
+
+
+def test_EvdcOzoneSondeData_read():
+    read = ReadEvdcOzoneSondeData(data_dir=ROOT)
+    #     read.files = TEST_FILES
+    data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
+    #
+    assert len(data.metadata) == 1
+
+
 #     assert data.shape == (164, 12)
 #
 #     assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(
