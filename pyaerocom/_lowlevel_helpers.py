@@ -520,8 +520,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)
-    if not os.path.exists(d):
-        os.mkdir(d)
+    os.makedirs(d, exist_ok=True)
     return d
 
 
