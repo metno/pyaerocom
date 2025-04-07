@@ -524,17 +524,6 @@ def chk_make_subdir(base, name):
     return d
 
 
-def check_dirs_exist(*dirs, **add_dirs):
-    for d in dirs:
-        if not os.path.exists(d):
-            print(f"Creating dir: {d}")
-            os.mkdir(d)
-    for k, d in add_dirs.items():
-        if not os.path.exists(d):
-            os.mkdir(d)
-            print(f"Creating dir: {d} ({k})")
-
-
 def list_to_shortstr(lst, indent=0):
     """Custom function to convert a list into a short string representation"""
 
