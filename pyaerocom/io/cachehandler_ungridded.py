@@ -144,7 +144,9 @@ class CacheHandlerUngridded:
             var_or_file_name = self.default_file_name(var_or_file_name)
         if cache_dir is None:
             cache_dir = self.cache_dir
-        elif not os.path.exists(cache_dir):
+        if cache_dir is None:
+            raise FileNotFoundError("Specified output directory is None")
+        if not os.path.exists(cache_dir):
             raise FileNotFoundError(f"Specified output directory does not exist:{cache_dir}")
         return os.path.join(cache_dir, var_or_file_name)
 
