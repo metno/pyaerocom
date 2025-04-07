@@ -48,13 +48,14 @@ class CAMS2_83_Engine(ProcessingEngine):
             coldata
         )
         start = time.time()
-        var_list_2 = list(var_list)
+        
         if var_list is None:
             var_list_2 = list(found_vars)
             if not var_list_2:
                 logging.warning(f"No variables found in colocated data var_list={var_list}, found_vars={found_vars}")
                 return
         elif var_list == ["conco3"] or (len(var_list) > 1 and "conco3" in var_list):
+            var_list_2 = list(var_list)
             var_list_2 = var_list_2.append("conco3mda8")
 
         for var in var_list_2:
