@@ -33,9 +33,10 @@ def reset_cachedir():
 
 
 @pytest.fixture
-def patched_config():
+def patched_config(tmp_path):
     cfg = cfg_test.CFG
     assert cfg["proj_id"] == "cams2-83"
+    cfg.update({"json_basedir": tmp_path, "coldata_basedir": tmp_path})
     return cfg
 
 
@@ -63,6 +64,19 @@ def fake_CAMS2_83_Processer(monkeypatch):
         assert update_interface is True
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.evaluation.CAMS2_83_Processer.run", do_not_run)
+
+
+@pytest.fixture
+def fake_CAMS2_83_Engine(monkeypatch):
+    def do_not_run(
+        self,
+        files=None,
+        var_list=None,
+    ):
+        assert files is None
+        assert var_list is None
+
+    monkeypatch.setattr("pyaerocom.scripts.cams2_83.engine.CAMS2_83_Engine.run", do_not_run)
 
 
 @pytest.fixture

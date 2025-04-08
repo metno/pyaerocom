@@ -292,7 +292,7 @@ class ReadCAMS2_83(GriddedReader):
     @property
     def years_avail(self):
         return np.unique(
-            reader.daterange.values.astype("datetime64[Y]").astype("int") + 1970
+            self.daterange.values.astype("datetime64[Y]").astype("int") + 1970
         ).astype("str")
 
     @property
