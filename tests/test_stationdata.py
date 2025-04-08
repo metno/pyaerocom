@@ -1,4 +1,5 @@
 from __future__ import annotations
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -154,7 +155,12 @@ def test_StationData_check_unit_error():
 
 
 def test_StationData_convert_unit():
-    stat1.convert_unit("ec550aer", "1/Gm")
+    stat2 = deepcopy(stat1)
+    stat2.convert_unit("ec550aer", "1/Gm")
+
+    assert stat2["ec550aer"][0] / stat1["ec550aer"][0] == pytest.approx(
+        stat2.data_err["ec550aer"][0] / stat1.data_err["ec550aer"][0]
+    )
 
 
 def test_StationData_convert_unit_error():
