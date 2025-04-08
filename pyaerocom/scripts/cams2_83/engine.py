@@ -97,7 +97,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
             if SPECIES[var_name]["freq"] != "hourly":
                 persistence_coldata = persistence_coldata.resample_time(
-                    SPECIES[var_name]["freq"]
+                    SPECIES[var_name]["freq"], settings_from_meta=True,
                 )
 
         if "var_name_input" in coldata[0].metadata:
@@ -200,7 +200,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
                             fairmode_subset = fairmode_subset.resample_time(
-                                SPECIES[var_name]["freq"]
+                                SPECIES[var_name]["freq"], settings_from_meta=True,
                             )
 
                         results_fairmode[f"{regname}"][f"{perstr}"] = (
@@ -413,7 +413,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         # Resampling of time for all other variables than NO2
         if SPECIES[var_name]["freq"] != "hourly":
-            coldata = coldata.resample_time(SPECIES[var_name]["freq"])
+            coldata = coldata.resample_time(SPECIES[var_name]["freq"], settings_from_meta=True,)
 
         # Creation of mask of shared stations between normal data and persistence data
         # stations = persistence_coldata.data.station_name.values

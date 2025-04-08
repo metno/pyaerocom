@@ -558,7 +558,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             if (
                 "hourly" in data
             ):  # Most species use daily freq, but if daily is not present, but hourly is, then hourly can be resampled
-                fm_data = data["hourly"].resample_time(freq)
+                fm_data = data["hourly"].resample_time(freq, settings_from_meta=True)
             else:
                 logger.warning(
                     f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping..."

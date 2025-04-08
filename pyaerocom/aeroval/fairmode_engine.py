@@ -156,8 +156,8 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         diff = modvals - obsvals
         diffsquare = diff**2
 
-        rms = np.sqrt(np.nanmean(diffsquare, axis=0))
-        bias = np.nanmean(diff, axis=0)
+        rms = np.sqrt(np.nanmean(diffsquare, axis=0, where=mask))
+        bias = np.nanmean(diff, axis=0, where=mask)
 
         R = FairmodeEngine.pearson_R(obsvals, modvals)
         rmsu = self._RMSU(obsmean, obsstd, var_name)
