@@ -57,6 +57,8 @@ class CAMS2_83_Engine(ProcessingEngine):
         elif var_list == ["conco3"] or (len(var_list) > 1 and "conco3" in var_list):
             var_list_2 = list(var_list)
             var_list_2 = var_list_2.append("conco3mda8")
+        else:
+            var_list_2 = list(var_list)
 
         for var in var_list_2:
             if var not in found_vars:
