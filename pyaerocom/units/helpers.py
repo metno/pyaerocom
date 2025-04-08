@@ -1,7 +1,25 @@
+from copy import deepcopy
 from pyaerocom import const
 
+_UNIT_OVERRIDES: None | dict[str, str] = None
 
-def get_standard_unit(var_name: str, *, unit_overrides: dict[str, str] | None = None) -> str:
+
+def set_unit_overrides(units: dict[str, str]) -> None:
+    global _UNIT_OVERRIDES
+    units = deepcopy(units)
+    if _UNIT_OVERRIDES is None:
+        _UNIT_OVERRIDES = units
+        return
+
+    if _UNIT_OVERRIDES != units:
+        raise ValueError(
+            "Units have already been set, and new units dict does not match the old one."
+        )
+
+    _UNIT_OVERRIDES = units
+
+
+def get_standard_unit(var_name: str) -> str:
     """Gets standard unit of AeroCom variable
 
     Also handles alias names for variables, etc. or strings corresponding to
@@ -22,10 +40,8 @@ def get_standard_unit(var_name: str, *, unit_overrides: dict[str, str] | None = 
     1. The units configuration from the user's experiment config.
     2. The default unit configured in variables.ini
     """
-    if unit_overrides is None:
-        unit_overrides = {}
-
-    if var_name in unit_overrides:
-        return unit_overrides[var_name]
+    if _UNIT_OVERRIDES is not None:
+        if var_name in _UNIT_OVERRIDES:
+            return _UNIT_OVERRIDES[var_name]
 
     return const.VARS[var_name].units

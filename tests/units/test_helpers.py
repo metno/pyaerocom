@@ -5,7 +5,3 @@ from pyaerocom.units.helpers import (
 
 def test_get_standard_unit():
     assert get_standard_unit("ec550aer") == "1/km"
-
-
-def test_get_standard_unit_override():
-    assert get_standard_unit("ec550aer", unit_overrides={"ec550aer": "1"}) == "1"
