@@ -181,3 +181,9 @@ def calc_concNtnh(concnh4, vmrnh3):
     concNnh3, concNnh4 = _check_same_units(concNnh3, concNnh4)
 
     return add_cubes(concNnh3, concNnh4)
+
+def calc_concpolyol(concspores):
+    concspores = _check_input_iscube(concspores)[0]
+    factor = 0.045
+    mult_fun = CUBE_MATHS["multiply"]
+    return mult_fun(concspores, factor)
