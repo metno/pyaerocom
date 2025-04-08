@@ -520,20 +520,8 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)
-    if not os.path.exists(d):
-        os.mkdir(d)
+    os.makedirs(d, exist_ok=True)
     return d
-
-
-def check_dirs_exist(*dirs, **add_dirs):
-    for d in dirs:
-        if not os.path.exists(d):
-            print(f"Creating dir: {d}")
-            os.mkdir(d)
-    for k, d in add_dirs.items():
-        if not os.path.exists(d):
-            os.mkdir(d)
-            print(f"Creating dir: {d} ({k})")
 
 
 def list_to_shortstr(lst, indent=0):

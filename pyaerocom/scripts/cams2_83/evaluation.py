@@ -27,6 +27,8 @@ class EvalType(str, Enum):
         return self.value
 
     def check_dates(self, start_date: date, end_date: date) -> None:
+        if end_date < start_date:
+            raise ValueError("End date should be ⩾ start_date")
         if self == "day" and start_date != end_date:
             raise ValueError(
                 f"Evaluation type 'day' should have the same {start_date=} and {end_date=}"

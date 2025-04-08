@@ -11,12 +11,12 @@ from .engine import CAMS2_83_Engine
 
 logger = logging.getLogger(__name__)
 
-def date_range(start_date: date, end_date: date) -> tuple[date, ...]:
-    days = (end_date - start_date) // timedelta(days=1)
-    assert days >= 0
-    return tuple(start_date + timedelta(days=day) for day in range(days + 1))
+
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
     def _run_single_entry(self, model_name, obs_name, var_list, analysis=False):
+
+        logger.info(f"Running CAMS2_83_Processer._run_single_entry with var_list {var_list} and model name {model_name}")
+
         col = self.get_colocator(model_name, obs_name)
         forecast_days = self.cfg.statistics_opts.forecast_days
 
@@ -30,6 +30,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 per_mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-persistence*/*.nc"
                 per_files = glob.glob(per_mask)
                 files_to_convert += per_files   
+   
 
         else:
             files_to_convert = []

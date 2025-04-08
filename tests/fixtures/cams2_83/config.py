@@ -121,6 +121,7 @@ def coldata_mos(tmp_path_factory) -> Path:
                     "data_source", ["CAMS2_83.NRT", f"CAMS2-83.{model}.day{day}.FC"]
                 ),
                 station_name=xr.Variable("station_name", ["AT0ENK1", "AT0ILL1", "XK0012A"]),
+                station_type=xr.Variable("station_name", ["bla", "bla", "bla"]),
                 latitude=xr.Variable("station_name", [48.39, 47.77, 42.66]),
                 longitude=xr.Variable("station_name", [13.67, 16.77, 21.08]),
                 altitude=xr.Variable("station_name", [525, 117, 529]),
