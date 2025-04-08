@@ -109,6 +109,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         self.excluded_files = []
 
         self.is_vertical_profile = True
+        # assert self.data_revision
         self.format = format
         if format == "HARP":
             self.FILEMASK = self._FILEMASK_HARP
@@ -183,9 +184,15 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         data_out = StationData()
         self.logger.debug(f"Reading file {filename}")
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
-            try:
-                data_out["station_id"] = data_out["station_name"] = data_in["site_name"].values
-            except KeyError:
+            if "site_name" in data_in:
+                data_out["station_id"] = data_out["station_name"] = (
+                    data_in["site_name"].values.tostring().decode("utf-8")
+                )
+            elif "location_name" in data_in:
+                data_out["station_id"] = data_out["station_name"] = (
+                    data_in["location_name"].values.tostring().decode("utf-8")
+                )
+            else:
                 logger.error(f"file {filename} does not contain a site name. Skipping")
                 return data_out
             data_out["data_id"] = self.data_id
@@ -218,6 +225,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             dtime = data_in["datetime_start"].values.astype("datetime64[s]")
             data_out["dtime"] = data_in["datetime_start"].astype("datetime64[s]")
             data_out["stopdtime"] = data_in["datetime_stop"].astype("datetime64[s]")
+            data_out["filename"] = filename
 
             for var in vars_to_read:
                 data_out["var_info"][var] = {}

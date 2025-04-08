@@ -77,7 +77,7 @@ def test_EvdcOzoneSondeData_read():
     #     read.files = TEST_FILES
     data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
     #
-    assert len(data.metadata) == 1
+    assert len(data.metadata) > 1
 
 
 #     assert data.shape == (164, 12)
