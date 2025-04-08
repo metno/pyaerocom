@@ -821,6 +821,7 @@ class GriddedData:
         """
         out = self if inplace else self.copy()
 
+        var_name = out.var_name
         out.grid = convert_unit(
             out.grid,
             from_unit=self.units,
@@ -830,7 +831,9 @@ class GriddedData:
             inplace=True,
             callback=LoggingCallback(logger),
         )
-        self.units = new_unit
+        out._grid.attributes.update(self._grid.attributes)
+        out.var_name = var_name
+        out.units = new_unit
 
         return out
 
