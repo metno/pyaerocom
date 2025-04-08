@@ -263,14 +263,13 @@ class StationData(StationMetaData):
         """
         unit = self.get_unit(var_name)
 
-        data = self[var_name]
         try:
             ts_type = self.get_var_ts_type(var_name)
         except MetaDataError:
             ts_type = None
 
-        data = convert_unit(
-            data,
+        fac = convert_unit(
+            1,
             from_unit=unit,
             to_unit=to_unit,
             var_name=var_name,
@@ -278,7 +277,10 @@ class StationData(StationMetaData):
             callback=LoggingCallback(logger),
         )
 
-        self[var_name] = data
+        self[var_name] = fac * self[var_name]
+        if var_name in self.data_err:
+            self.data_err[var_name] = fac * self.data_err[var_name]
+
         self.var_info[var_name]["units"] = to_unit
 
     def dist_other(self, other: StationData) -> float:
