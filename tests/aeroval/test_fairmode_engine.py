@@ -42,7 +42,7 @@ def test__process_fairmode(eval_config: dict):
     )
     assert all(
         item in fm_stats["Agoufou"]
-        for item in ["RMSU", "sign", "beta_mqi", "beta_mb", "crms", "bias", "rms"]
+        for item in ["RMSU", "sign", "beta_mqi", "Hperc", "crms", "bias", "rms"]
     )
 
 

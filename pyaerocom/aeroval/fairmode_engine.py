@@ -6,11 +6,12 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-from pyaerocom.aeroval.coldatatojson_helpers import (
-    _select_period_season_coldata,
-    init_regions_web,
-)
-from pyaerocom.exceptions import DataCoverageError, UnknownRegion
+
+# from pyaerocom.aeroval.coldatatojson_helpers import (
+#    _select_period_season_coldata,
+#    init_regions_web,
+# )
+# from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 
 logger = logging.getLogger(__name__)
 
@@ -39,80 +40,80 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
             converted.append(file)
         return converted
 
-    def process_coldata(self, coldata: ColocatedData):
-        # use_weights = self.cfg.statistics_opts.weighted_stats
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
-        forecast_days = self.cfg.statistics_opts.forecast_days
-        periods = self.cfg.time_cfg.periods
+    # def process_coldata(self, coldata: ColocatedData):
+    #     # use_weights = self.cfg.statistics_opts.weighted_stats
+    #     out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
+    #     forecast_days = self.cfg.statistics_opts.forecast_days
+    #     periods = self.cfg.time_cfg.periods
 
-        if "var_name_input" in coldata[0].metadata:
-            obs_var = coldata[0].metadata["var_name_input"][0]
-            model_var = coldata[0].metadata["var_name_input"][1]
-        else:
-            obs_var = model_var = "UNDEFINED"
+    #     if "var_name_input" in coldata[0].metadata:
+    #         obs_var = coldata[0].metadata["var_name_input"][0]
+    #         model_var = coldata[0].metadata["var_name_input"][1]
+    #     else:
+    #         obs_var = model_var = "UNDEFINED"
 
-        modelname = coldata[0].model_name.split("-")[2]
-        vert_code = coldata[0].get_meta_item("vert_code")
-        obs_name = coldata[0].obs_name
+    #     modelname = coldata[0].model_name.split("-")[2]
+    #     vert_code = coldata[0].get_meta_item("vert_code")
+    #     obs_name = coldata[0].obs_name
 
-        mcfg = self.cfg.model_cfg.get_entry(modelname)
+    #     mcfg = self.cfg.model_cfg.get_entry(modelname)
 
-        var_name_web = mcfg.get_varname_web(model_var, obs_var)
-        seasons = self.cfg.time_cfg.get_seasons()
+    #     var_name_web = mcfg.get_varname_web(model_var, obs_var)
+    #     seasons = self.cfg.time_cfg.get_seasons()
 
-        regions_how = "country"
-        use_country = True
-        for i in range(forecast_days):
-            coldata[i].data["season"] = coldata[i].data.time.dt.season
-            (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
+    #     regions_how = "country"
+    #     use_country = True
+    #     for i in range(forecast_days):
+    #         coldata[i].data["season"] = coldata[i].data.time.dt.season
+    #         (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
 
-        results = {}
+    #     results = {}
 
-        for regid, regname in regnames.items():
-            results[regname] = {}
-            logger.info(f"Creating subset for {regname}")
-            try:
-                subset_region = [
-                    col.filter_region(regid, check_country_meta=use_country) for col in coldata
-                ]
+    #     for regid, regname in regnames.items():
+    #         results[regname] = {}
+    #         logger.info(f"Creating subset for {regname}")
+    #         try:
+    #             subset_region = [
+    #                 col.filter_region(regid, check_country_meta=use_country) for col in coldata
+    #             ]
 
-            except (DataCoverageError, UnknownRegion) as e:
-                logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
-                continue
-            for per in periods:
-                for season in seasons:
-                    perstr = f"{per}-{season}"
+    #         except (DataCoverageError, UnknownRegion) as e:
+    #             logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
+    #             continue
+    #         for per in periods:
+    #             for season in seasons:
+    #                 perstr = f"{per}-{season}"
 
-                    logger.info(f"Making subset for {regid}, {per} and {season}")
-                    if season not in coldata[0].data["season"].data and season != "all":
-                        logger.info(
-                            f"Season {season} is not available for {per} and will be skipped"
-                        )
-                        continue
+    #                 logger.info(f"Making subset for {regid}, {per} and {season}")
+    #                 if season not in coldata[0].data["season"].data and season != "all":
+    #                     logger.info(
+    #                         f"Season {season} is not available for {per} and will be skipped"
+    #                     )
+    #                     continue
 
-                    try:
-                        subset = [
-                            _select_period_season_coldata(col, per, season)
-                            for col in subset_region
-                        ]
-                    except (DataCoverageError, UnknownRegion) as e:
-                        logger.info(f"Skipping forecast plot due to error {str(e)}")
-                        continue
+    #                 try:
+    #                     subset = [
+    #                         _select_period_season_coldata(col, per, season)
+    #                         for col in subset_region
+    #                     ]
+    #                 except (DataCoverageError, UnknownRegion) as e:
+    #                     logger.info(f"Skipping forecast plot due to error {str(e)}")
+    #                     continue
 
-                    stats_list = self.fairmode_statistics(subset, obs_var)
+    #                 stats_list = self.fairmode_statistics(subset, obs_var)
 
-                    out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
+    #                 out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
 
-                    results[f"{regname}"][f"{perstr}"] = stats_list
+    #                 results[f"{regname}"][f"{perstr}"] = stats_list
 
-            self.save_fairmode_stats(
-                results,
-                obs_name,
-                var_name_web,
-                vert_code,
-                modelname,
-                model_var,
-            )
+    #         self.save_fairmode_stats(
+    #             results,
+    #             obs_name,
+    #             var_name_web,
+    #             vert_code,
+    #             modelname,
+    #             model_var,
+    #         )
 
     def save_fairmode_stats(
         self,
@@ -190,7 +191,7 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
                 bias=bias[i],
                 rms=[rms[i]],
                 beta_mqi=[mqi[i]],
-                #beta_mb=[mb[i]],
+                # beta_mb=[mb[i]],
                 Hperc=beta_Hperc[i],
                 persistence_model=False,
                 station_type=station_types[i],
@@ -258,12 +259,16 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         """Model Bias(MB). Pass beta=1 for `beta MB`"""
         return bias / (rmsu * beta)
 
-    def _beta_Hperc(self, obs: np.ndarray, mod: np.ndarray, mask: np.ndarray, var_name: str, beta=1) -> np.ndarray:
+    def _beta_Hperc(
+        self, obs: np.ndarray, mod: np.ndarray, mask: np.ndarray, var_name: str, beta=1
+    ) -> np.ndarray:
         percentile = SPECIES[var_name]["percentile"]
         Operc = np.nanpercentile(obs, percentile, axis=0)
         Mperc = np.nanpercentile(mod, percentile, axis=0)
 
-        factor = SPECIES[var_name]["alpha"]**2*SPECIES[var_name]["RV"]**2
-        uncertainty_Operc = SPECIES[var_name]["UrRV"]*np.sqrt((1-SPECIES[var_name]["alpha"]**2)*Operc**2 + factor)
+        factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
+        uncertainty_Operc = SPECIES[var_name]["UrRV"] * np.sqrt(
+            (1 - SPECIES[var_name]["alpha"] ** 2) * Operc**2 + factor
+        )
 
-        return (Operc-Mperc)/(beta*uncertainty_Operc)
+        return (Operc - Mperc) / (beta * uncertainty_Operc)
