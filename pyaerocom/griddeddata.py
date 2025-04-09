@@ -732,8 +732,6 @@ class GriddedData:
             raise ValueError(f"Failed to load input: {input}")
 
         if var_name is not None and self.var_name != var_name:
-            # if isinstance(var_name, list):
-            #    var_name = var_name[0]
             try:
                 self.var_name = var_name
             except ValueError:
