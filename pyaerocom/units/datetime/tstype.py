@@ -398,6 +398,9 @@ class TsType:
             other = TsType(other)
         return other.val == self.val
 
+    def __hash__(self):
+        return self.val.__hash__()
+
     def __lt__(self, other) -> bool:
         if isinstance(other, str):
             other = TsType(other)

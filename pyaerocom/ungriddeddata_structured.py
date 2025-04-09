@@ -53,6 +53,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
     __version__ = "0.01"
+    _merging_error_logged = False
 
     _dtype = [
         ("meta_id", "i4"),
@@ -249,6 +250,22 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     )
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
+                if var in stat.data_flagged:
+                    if len(stat.data_flagged[var]) != len(stat.dtime):
+                        del stat.data_flagged[var]
+                        if not self._merging_error_logged:
+                            self._merging_error_logged = True
+                            logger.warning(
+                                "merging of station-data objects introduced rubbish flags, removing"
+                            )
+                if var in stat.data_err:
+                    if len(stat.data_err[var]) != len(stat.dtime):
+                        del stat.data_err[var]
+                        if not self._merging_error_logged:
+                            self._merging_error_logged = True
+                            logger.warning(
+                                "merging of station-data objects introduced rubbish stddev, removing"
+                            )
                 if np.all(np.isnan(stat[var].values)):
                     stat = stat.remove_variable(var)
             if any([x in stat for x in vars_to_convert]):
@@ -386,16 +403,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             altitude = subset["dataaltitude"].astype("f4")
             altitude[alt_mask] = np.nan
 
-            data = pd.Series(vals, dtime)
-            if not data.index.is_monotonic_increasing:
-                data = data.sort_index()
+            series = pd.Series(vals, dtime)
+            if not series.index.is_monotonic_increasing:
+                series = series.sort_index()
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
             if any(~np.isnan(flagged)):
                 sd.data_flagged[var] = flagged
 
-            sd["dtime"] = data.index.values
-            sd[var] = data
+            sd["dtime"] = series.index.values
+            sd[var] = series
             sd["var_info"][var] = {}
             FOUND_ONE = True
             # check if there is information about altitude (then relevant 3D
@@ -412,7 +429,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             if var in vi:
                 sd.var_info[var].update(vi[var])
 
-            if len(data.index) == len(data.index.unique()):
+            if len(series.index) == len(series.index.unique()):
                 sd.var_info[var]["overlap"] = False
             else:
                 sd.var_info[var]["overlap"] = True
@@ -647,8 +664,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     v_data["stdev"] = station_data.data_err[var]
                 if var in station_data.data_flagged:
                     flags = station_data.data_flagged[var]
-                    nans = ~np.isfinite(flags)
                     v_data["flag"][:] = flags
+                    nans = ~np.isfinite(flags)
                     v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
                 self._dra.append(v_data)
 
@@ -673,15 +690,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     ("tstype", sarray["tstype"].dtype),
                 ],
             )
-            values = np.array(list(mapping.values()), dtype="int4")
+            values = np.array(list(mapping.values()), dtype="i4")
 
             # Sort keys to ensure correct indexing
-            sorted_indices = np.argsort(keys, order=("stations", "tstype"))
+            sorted_indices = np.argsort(keys)
             sorted_keys = keys[sorted_indices]
             sorted_values = values[sorted_indices]
 
             # Use np.searchsorted to find indices of structured_array elements in sorted_keys
-            indices = np.searchsorted(sorted_keys, sarray, order=("stations", "tstype"))
+            indices = np.searchsorted(sorted_keys, sarray)
 
             # Use np.take to map indices to values
             return np.take(sorted_values, indices)
@@ -698,11 +715,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             :param station_tstype: structured array of stations and tstype
             :return: counter, start for next added value
             """
-            station_tstype = np.rec.array(
-                [stations, tstype],
-                dtype=[("stations", stations.dtype), ("tstype", tstype.dtype)],
-            )
-            uarray = np.unique(station_tstype.view(dtype=(stations.dtype, tstype.dtype)))
+            uarray = np.unique(station_tstype)
 
             for row in uarray:
                 sx = (row[0], row[1])
@@ -734,7 +747,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             counter = _dict_append_by_counter(counter, var_metas[var], station_tstype)
             dra_data = {
                 "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
-                "var_id": np.zeros(len(var_data), dtype=np.int2) + var_idx[var],
+                "var_id": np.zeros(len(var_data), dtype="i2") + var_idx[var],
                 "start_time": var_data.start_times,
                 "end_time": var_data.end_times,
                 "data": var_data.values,
@@ -744,11 +757,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             }
             ugs._dra.append_array(**dra_data)
 
-        stations_with_metadata = reader.get_stations()
+        stations_with_metadata = reader.stations()
         metadata = dict()
         for var in vars_to_retrieve:
             units = var_units[var]
-            for station_tstype, meta_id in var_metas.items():
+            for station_tstype, meta_id in var_metas[var].items():
                 (station_name, tstype) = station_tstype
                 extra_metadata = stations_with_metadata[station_name].metadata
                 d = {
