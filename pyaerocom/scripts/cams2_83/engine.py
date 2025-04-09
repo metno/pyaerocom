@@ -56,10 +56,11 @@ class CAMS2_83_Engine(ProcessingEngine):
                 return
         elif var_list == ["conco3"] or (len(var_list) > 1 and "conco3" in var_list):
             var_list_2 = list(var_list)
-            var_list_2 = var_list_2.append("conco3mda8")
+            var_list_2.append("conco3mda8")
         else:
             var_list_2 = list(var_list)
 
+        logger.info(f"Running CAMS2_83_Engine.run with var_list_2 {var_list_2}")
         for var in var_list_2:
             if var not in found_vars:
                 logger.warning(f"{var} not found in coldata, skipping")

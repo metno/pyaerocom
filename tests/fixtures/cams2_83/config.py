@@ -33,9 +33,10 @@ def reset_cachedir():
 
 
 @pytest.fixture
-def patched_config():
+def patched_config(tmp_path):
     cfg = cfg_test.CFG
     assert cfg["proj_id"] == "cams2-83"
+    cfg.update({"json_basedir": tmp_path, "coldata_basedir": tmp_path})
     return cfg
 
 
