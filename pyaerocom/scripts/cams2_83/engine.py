@@ -56,10 +56,11 @@ class CAMS2_83_Engine(ProcessingEngine):
                 return
         elif var_list == ["conco3"] or (len(var_list) > 1 and "conco3" in var_list):
             var_list_2 = list(var_list)
-            var_list_2 = var_list_2.append("conco3mda8")
+            var_list_2.append("conco3mda8")
         else:
             var_list_2 = list(var_list)
 
+        logger.info(f"Running CAMS2_83_Engine.run with var_list_2 {var_list_2}")
         for var in var_list_2:
             if var not in found_vars:
                 logger.warning(f"{var} not found in coldata, skipping")
@@ -97,7 +98,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
             if SPECIES[var_name]["freq"] != "hourly":
                 persistence_coldata = persistence_coldata.resample_time(
-                    SPECIES[var_name]["freq"]
+                    SPECIES[var_name]["freq"], settings_from_meta=True,
                 )
 
         if "var_name_input" in coldata[0].metadata:
@@ -200,7 +201,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
                             fairmode_subset = fairmode_subset.resample_time(
-                                SPECIES[var_name]["freq"]
+                                SPECIES[var_name]["freq"], settings_from_meta=True,
                             )
 
                         results_fairmode[f"{regname}"][f"{perstr}"] = (
@@ -413,7 +414,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         # Resampling of time for all other variables than NO2
         if SPECIES[var_name]["freq"] != "hourly":
-            coldata = coldata.resample_time(SPECIES[var_name]["freq"])
+            coldata = coldata.resample_time(SPECIES[var_name]["freq"], settings_from_meta=True,)
 
         # Creation of mask of shared stations between normal data and persistence data
         # stations = persistence_coldata.data.station_name.values
