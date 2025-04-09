@@ -470,16 +470,6 @@ class UngriddedDataContainer(abc.ABC):
         """
         pass
 
-    # @abc.abstractmethod
-    # def check_convert_var_units(self, var_name: str, to_unit=None, inplace: bool = True):
-    #    """convert all data of a variable to the new units
-    #
-    #    :param var_name: variable to change
-    #    :param to_unit: new units, defaults to None
-    #    :param inplace: inplace or copy, defaults to True
-    #    """
-    #    pass
-
     @abc.abstractmethod
     def remove_outliers(
         self,
