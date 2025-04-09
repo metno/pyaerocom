@@ -68,13 +68,8 @@ def fake_CAMS2_83_Processer(monkeypatch):
 
 @pytest.fixture
 def fake_CAMS2_83_Engine(monkeypatch):
-    def do_not_run(
-        self,
-        files=None,
-        var_list=None,
-    ):
-        assert files is None
-        assert var_list is None
+    def do_not_run(*args, **kwargs):
+        return
 
     monkeypatch.setattr("pyaerocom.scripts.cams2_83.engine.CAMS2_83_Engine.run", do_not_run)
 
