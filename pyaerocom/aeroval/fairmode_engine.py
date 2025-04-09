@@ -185,12 +185,12 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
                 RMSU=rmsu[i],
-                sign=sign[i],
+                sign=[sign[i]],
                 crms=crms[i],
                 bias=bias[i],
-                rms=rms[i],
+                rms=[rms[i]],
                 beta_mqi=[mqi[i]],
-                beta_mb=[mb[i]],
+                #beta_mb=[mb[i]],
                 Hperc=beta_Hperc[i],
                 persistence_model=False,
                 station_type=station_types[i],
@@ -204,20 +204,6 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         mask = ~np.isnan(x) * ~np.isnan(y)
-
-        # return stat_R(x,y, weights=None)
-        # xmean = np.nanmean(x, axis=0)
-        # ymean = np.nanmean(y, axis=0)
-        # xm = x - xmean
-        # ym = y - ymean
-        # normxm = np.sqrt(np.nansum(xm * xm, axis=0))
-        # normym = np.sqrt(np.nansum(ym * ym, axis=0))
-
-        # r = np.where(
-        #     normxm * normym == 0.0,
-        #     np.nan,
-        #     np.nansum(xm * ym, axis=0) / (normxm * normym),
-        # )
 
         xmean = np.mean(x, axis=0, where=mask)
         ymean = np.mean(y, axis=0, where=mask)

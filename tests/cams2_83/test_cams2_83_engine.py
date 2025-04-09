@@ -27,14 +27,14 @@ def test__process_fairmode(eval_config: dict):
     )
 
     # set dummy values so that mod_vals will be all 2, obs_vals and p_mod_vals all 1
-    # this means that mqi = mb_p and the expected value is just 1.0 / uncertainty_p_obs_val**2
+    # this means that mqi = 1/rmse_persistence and the expected value is just 1.0 / uncertainty_p_obs_val**2
     p_mod_val = obs_val = 1
     mod_val = 2
     factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
     uncertainty_p_obs_val = SPECIES[var_name]["UrRV"] * np.sqrt(
         (1 - SPECIES[var_name]["alpha"] ** 2) * p_mod_val**2 + factor
     )
-    expected_val = 1.0 / uncertainty_p_obs_val**2
+    expected_val = 1.0 / uncertainty_p_obs_val
 
     example_coldata.data[1] = example_coldata.data[1].where(False, mod_val)
     example_coldata.data[0] = example_coldata.data[0].where(False, obs_val)
@@ -52,10 +52,10 @@ def test__process_fairmode(eval_config: dict):
     stations_list = example_coldata.coords["station_name"].values.tolist()
     assert len(mqi_vectorized) == len(stations_list)
     for station in stations_list:
-        assert len(mqi_vectorized[station]) == 2
+        assert len(mqi_vectorized[station]) == 3
         assert mqi_vectorized[station][0].dtype == mqi_vectorized[station][1].dtype == "float64"
         assert (
-            np.round(mqi_vectorized[station][0], 8)
+            np.round(1.0/mqi_vectorized[station][0], 8)
             == np.round(mqi_vectorized[station][1], 8)
             == np.round(expected_val, 8)
         )

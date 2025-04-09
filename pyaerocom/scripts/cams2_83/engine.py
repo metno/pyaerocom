@@ -227,11 +227,15 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                             for station in results_fairmode[f"{regname}"][f"{perstr}"]:
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
-                                    "beta_mb"
+                                    "rms"
                                 ] = []
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
                                     "beta_mqi"
                                 ] = []
+                                results_fairmode[f"{regname}"][f"{perstr}"][station][
+                                    "sign"
+                                ] = []
+                                
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
                                     "persistence_model"
                                 ] = True
@@ -239,14 +243,17 @@ class CAMS2_83_Engine(ProcessingEngine):
                                     mqi_p = (
                                         results_mqi[day][station]
                                         if station in results_mqi[day]
-                                        else [np.nan, np.nan]
+                                        else [np.nan, np.nan, np.nan]
                                     )
                                     results_fairmode[f"{regname}"][f"{perstr}"][
                                         station
-                                    ]["beta_mb"].append(mqi_p[0])
+                                    ]["rms"].append(mqi_p[0])
                                     results_fairmode[f"{regname}"][f"{perstr}"][
                                         station
                                     ]["beta_mqi"].append(mqi_p[1])
+                                    results_fairmode[f"{regname}"][f"{perstr}"][
+                                        station
+                                    ]["sign"].append(mqi_p[2])
 
                     out_dirs = self.cfg.path_manager.get_json_output_dirs(
                         True
@@ -336,70 +343,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def _pearson_R_vec(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         return FairmodeEngine.pearson_R(x, y)
-        # xmean = np.nanmean(x, axis=0)
-        # ymean = np.nanmean(y, axis=0)
-        # xm = x - xmean
-        # ym = y - ymean
-        # normxm = np.sqrt(np.nansum(xm * xm, axis=0))
-        # normym = np.sqrt(np.nansum(ym * ym, axis=0))
-
-        # r = np.where(
-        #     normxm * normym == 0.0,
-        #     np.nan,
-        #     np.nansum(xm * ym, axis=0) / (normxm * normym),
-        # )
-
-        # return r
-
-    # def _calc_forecast_target_MQI(
-    #     self, coldata: ColocatedData, persistence_coldata: ColocatedData, var_name: str
-    # ) -> dict[str, float]:
-
-    #     stations = persistence_coldata.data.station_name.values
-
-    #     time = coldata.time.values
-    #     wanted_time = time - np.timedelta64(24, "h")
-    #     p_time = persistence_coldata.time.values
-
-    #     mask = np.intersect1d(p_time, wanted_time, return_indices=True)[1]
-
-    #     results = {}
-
-    #     for i in tqdm(range(len(stations))):
-    #         assert str(persistence_coldata.data.station_name[i].values) == str(
-    #             coldata.data.station_name[i].values
-    #         )
-
-    #         obs_vals = coldata.data.data[0, :, i]
-    #         mod_vals = coldata.data.data[1, :, i]
-
-    #         mask = ~np.isnan(obs_vals) * ~np.isnan(mod_vals)
-
-    #         len_data = len(obs_vals)
-
-    #         p_mod_vals = persistence_coldata.data.data[0, mask, i]
-
-    #         factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
-    #         uncertainty_p_obs = SPECIES[var_name]["UrRV"] * np.sqrt(
-    #             (1 - SPECIES[var_name]["alpha"] ** 2) * p_mod_vals**2 + factor
-    #         )
-
-    #         p_diff_vals = np.maximum(
-    #             np.abs(obs_vals - p_mod_vals - uncertainty_p_obs),
-    #             np.abs(obs_vals - p_mod_vals + uncertainty_p_obs),
-    #         )
-
-    #         rmse_m = np.nanmean((mod_vals - obs_vals) ** 2, where=mask)
-    #         rmse_p = np.nanmean((p_diff_vals) ** 2, where=mask)
-
-    #         bias_m = np.nanmean((mod_vals - obs_vals), where=mask)
-
-    #         mb = bias_m / rmse_p
-    #         mqi = rmse_m / rmse_p
-
-    #         results[stations[i]] = [mb, mqi]
-
-    #     return results
+        
 
     def _calc_forecast_target_MQI_vectorized(
         self,
@@ -427,18 +371,12 @@ class CAMS2_83_Engine(ProcessingEngine):
             == coldata.data.station_name.values[station_mask[2]]
         )
 
-        # # Creation of mask of shared timestamps between normal data and persistence data
-        # time_freq = "D" if SPECIES[var_name]["freq"] == "daily" else "H"
-
         # Gets times. Moves percistence time forward, indicating that the obs on day N is the perstence model on day N+1 (or rather N+forecast_day+1)
         data_time = coldata.time.values
         p_time = persistence_coldata.time.values + np.timedelta64(
             24 * (forecast_day + 1), "h"
         )  # This needs to be checked if it is correct for forecast days > 0
 
-        # # Date range with all dates in range. Fills in dates where data is missing
-        # data_range = pd.date_range(data_time[0], data_time[-1], freq=time_freq)
-        # p_range = data_range - np.timedelta64(24*(forecast_day+1),"h")
 
         # Masks the time, so that only dates which has a valid persistence model and data are used
         time_mask = np.intersect1d(p_time, data_time, return_indices=True)
@@ -456,52 +394,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         # Sanity Check
         assert np.all(p_mod_vals.shape == obs_vals.shape)
 
-        """
-        Start of Alternative methods which will be remorved if above works
-        """
-        # # Gets mask and mask indecies of which dates has data, to fill in full array later
-        # data_time_mask = np.isin(data_range, data_time)
-        # p_time_mask = np.isin(p_range, p_time)
-        # data_mask_ix = np.where(data_time_mask)
-        # p_mask_ix = np.where(p_time_mask)
-        # #wanted_time = time - np.timedelta64(24*(forecast_day+1),"h")
-
-        # # Fetching of masked data
-        # obs_vals = coldata.data.data[0, :, station_mask[2]]
-        # mod_vals = coldata.data.data[1, :, station_mask[2]]
-        # p_mod_vals = persistence_coldata.data.data[0,:, station_mask[1]]#[:,time_mask] # persistence model
-
-        # # Extends array to have all dates in date range. Filled with NaNs
-        # expended_mod = np.empty((len(station_mask[0]),len(data_range)))*np.nan
-        # expended_obs = np.empty((len(station_mask[0]),len(data_range)))*np.nan
-        # expended_p = np.empty((len(station_mask[0]),len(data_range)))*np.nan
-
-        # expended_p[:,p_mask_ix[0]] = p_mod_vals
-        # del(p_mod_vals)
-
-        # mask = ~np.isnan(expended_mod) * ~np.isnan(expended_obs) * ~np.isnan(expended_p)
-
-        # breakpoint()
-        # assert np.all(expended_p.shape == expended_obs.shape)
-        # breakpoint()
-        # # Filling in existing dates with data. Deletes old arrays to keep memonry low(er)
-        # expended_mod[:, data_mask_ix[0]] = mod_vals
-        # del(mod_vals)
-
-        # expended_obs[:, data_mask_ix[0]] = obs_vals
-        # del(obs_vals)
-
-        # expended_p[:,p_mask_ix[0]] = p_mod_vals
-        # del(p_mod_vals)
-
-        # mask = ~np.isnan(expended_mod) * ~np.isnan(expended_obs) * ~np.isnan(expended_p)
-
-        # breakpoint()
-        # assert np.all(expended_p.shape == expended_obs.shape)
-
-        """
-        End of Alternative methods which will be remorved if above works
-        """
+        sign = self._target_plot_sign(obsvals=obs_vals, modvals=mod_vals, mask=mask, var_name=var_name)
 
         # Calculation of MQI
         factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
@@ -514,16 +407,32 @@ class CAMS2_83_Engine(ProcessingEngine):
             np.abs(obs_vals - p_mod_vals + uncertainty_p_obs),
         )
 
-        rmse_m = np.nanmean((mod_vals - obs_vals) ** 2, axis=1, where=mask)
-        rmse_p = np.nanmean((p_diff_vals) ** 2, axis=1, where=mask)
+        rmse_m = np.sqrt(np.nanmean((mod_vals - obs_vals) ** 2, axis=1, where=mask))
+        rmse_p = np.sqrt(np.nanmean((p_diff_vals) ** 2, axis=1, where=mask))
 
         mqi = rmse_m / rmse_p
 
-        mb_p = np.nanmean((mod_vals - obs_vals), axis=1, where=mask) / rmse_p
 
-        results = {str(station_mask[0][i]): [mb_p[i], mqi[i]] for i in range(len(mqi))}
+        results = {str(station_mask[0][i]): [rmse_p[i], mqi[i], sign[i]] for i in range(len(mqi))}
 
         return results
+    
+    def _target_plot_sign(
+        self,
+        obsvals: np.ndarray,
+        modvals: np.ndarray,
+        mask: np.ndarray,
+        var_name: str,
+    ) -> np.ndarray:
+        
+        threshold = SPECIES[var_name]["RV"]
+        false_alarms = np.sum(np.logical_and(modvals>threshold, obsvals<=threshold, where=mask), axis=1, where=mask)
+        missed_alarms = np.sum(np.logical_and(modvals<=threshold, obsvals>threshold, where=mask), axis=1, where=mask)
+        sign = np.where(false_alarms <= missed_alarms, -1.0, 1.0) #np.where(ratio<1, -1.0, 1.0)
+        return sign
+        
+
+        
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]
