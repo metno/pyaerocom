@@ -212,7 +212,7 @@ class StationData(StationMetaData):
         try:
             self._check_unit(var_name, to_unit)
         except Exception:
-            self.convert_unit(var_name, to_unit, callback=LoggingCallback(logger))
+            self.convert_unit(var_name, to_unit)
 
     def _check_unit(self, var_name: str, unit: str | None = None):
         """Check if variable unit corresponds to a certain unit
