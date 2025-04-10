@@ -69,6 +69,7 @@ TEST_DATA: dict[str, DataForTests] = {
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
     "EVDC-HARP-test": DataForTests("obsdata/EVDC/HARP", ReadEvdcOzoneSondeData),
+    "EVDC-HDF-test": DataForTests("obsdata/EVDC/HDF", ReadEvdcOzoneSondeData),
 }
 
 

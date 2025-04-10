@@ -21,7 +21,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: Mask for identifying datafiles
     _FILEMASK = "evdc-sonde_*.nc"
     _FILEMASK_HARP = "evdc-sonde_*.nc"
-    _FILEMASK_EVDC = "evdc-sonde_*.nc"
+    _FILEMASK_EVDC = "balloon_sonde.*.h5"
 
     #: version log of this class (for caching)
     __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
@@ -50,12 +50,18 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     # _MAX_VAL_NAN = 1e6
 
     #: variable name of altitude in files
-    ALTITUDE_ID = "geopotential_height"
+    ALTITUDE_ID_HARP = "geopotential_height"
+    ALTITUDE_ID_HDF = "ALTITUDE.GPH"
 
-    #
+    # names for output data (and input data for HARP files)
     LONGITUDE_NAME = "longitude"
     LATITUDE_NAME = "latitude"
     ALTITUDE_NAME = "altitude"
+
+    # HDF names
+    LONGITUDE_NAME_HDF = "LONGITUDE"
+    LATITUDE_NAME_HDF = "LATITUDE"
+    ALTITUDE_NAME_HDF = "ALTITUDE.GPH"
 
     #: temporal resolution
     # Note: This is an approximation based on the fact that the sondes are flown more than once a day
@@ -66,7 +72,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     # O3_volume_mixing_ratio, O3_number_density, O3_partial_pressure, relative_humidity, pressure, temperature, wind_speed, wind_direction
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
-    VAR_NAMES_FILE = {
+    VAR_NAMES_FILE_HARP = {
         "conco33D": "O3_volume_mixing_ratio",
         "vmro33D": "O3_number_density",
         "pro33D": "O3_partial_pressure",
@@ -75,9 +81,31 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         "ts3D": "temperature",
     }
 
+    VAR_NAMES_FILE_HDF = {
+        "conco33D": "O3.MIXING.RATIO.VOLUME_INSITU",
+        "vmro33D": "O3.NUMBER.DENSITY_INSITU",
+        "pro33D": "O3.PARTIAL.PRESSURE_INSITU",
+        "rh3D": "HUMIDITY.RELATIVE_INSITU",
+        "ps3D": "PRESSURE_INSITU",
+        "ts3D": "TEMPERATURE_INSITU",
+    }
+
     LOCATION_VAR_NAME_HARP = "site_name"
     START_TIME_VAR_NAME_HARP = "datetime_start"
     STOP_TIME_VAR_NAME_HARP = "datetime_stop"
+
+    # for HDF these are in the global attributes
+    LOCATION_VAR_NAME_HDF = "DATA_LOCATION"
+    START_TIME_VAR_NAME_HDF = "DATA_START_DATE"
+    STOP_TIME_VAR_NAME_HDF = "DATA_STOP_DATE"
+    # the hdf files also provide e.g. info about the PI which could be added here
+
+    # HDF reading needs some more constants
+    # These are attribute names
+    HDF_UNIT_ATTR_NAME = "VAR_UNITS"
+    HDF_VALID_MIN_ATTR_NAME = "VAR_VALID_MIN"
+    HDF_VALID_MAX_ATTR_NAME = "VAR_VALID_MAX"
+    HDF_FILL_VALUE_ATTR_NAME = "VAR_FILL_VALUE"
 
     #
     KEEP_ADD_META = [
@@ -92,7 +120,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: If true, the uncertainties are also read
     READ_UNCERTAINTIES = False
 
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE)
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE_HARP)
 
     # EXCLUDE_CASES = ["cirrus.txt"]
 
@@ -132,8 +160,16 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         :param format:
         :return:
         """
-        if self.format == "HARP":
+        _file = Path(filename)
+        if _file.suffix == ".nc":
             return self.read_file_harp(
+                filename,
+                vars_to_retrieve=vars_to_retrieve,
+                read_uncertainties=read_uncertainties,
+                remove_outliers=remove_outliers,
+            )
+        elif _file.suffix == ".h5" or _file.suffix == ".hdf":
+            return self.read_file_hdf(
                 filename,
                 vars_to_retrieve=vars_to_retrieve,
                 read_uncertainties=read_uncertainties,
@@ -214,12 +250,12 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             )
             # Obs: geopotential height
             data_out["station_coords"][self.ALTITUDE_NAME] = np.float64(
-                data_in[self.ALTITUDE_ID].values[0]
+                data_in[self.ALTITUDE_ID_HARP].values[0]
             )
             # these are the profile coordinates
             data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME].values)
             data_out[self.LATITUDE_NAME] = np.float64(data_in[self.LATITUDE_NAME].values)
-            data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID].values)
+            data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID_HARP].values)
 
             # dtime is needed later again
             dtime = data_in["datetime_start"].values.astype("datetime64[s]")
@@ -234,7 +270,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 outliers_removed = False
                 has_altitude = False
 
-                netcdf_var_name = self.VAR_NAMES_FILE[var]
+                netcdf_var_name = self.VAR_NAMES_FILE_HARP[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
                     self.logger.warning(f"Variable {var} not found in file {filename}")
@@ -302,7 +338,180 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     var_name=var,
                     data_err=err,
                     var_unit=unit,
-                    altitude_unit=data_in[self.ALTITUDE_ID].attrs["units"],
+                    altitude_unit=data_in[self.ALTITUDE_ID_HARP].attrs["units"],
+                )
+
+                # Write everything into profile
+                data_out[var] = profile
+                has_altitude = True
+
+                data_out["var_info"][var].update(
+                    unit_ok=unit_ok,
+                    err_read=err_read,
+                    outliers_removed=outliers_removed,
+                    has_altitude=has_altitude,
+                )
+        return data_out
+
+    def read_file_hdf(
+        self,
+        filename,
+        vars_to_retrieve=None,
+        read_uncertainties=False,
+        remove_outliers=True,
+    ):
+        """Read EVDC hdf file and return it as instance of :class:`StationData`
+
+        Parameters
+        ----------
+        filename : str
+            absolute path to filename to read
+        vars_to_retrieve : :obj:`list`, optional
+            list of str with variable names to read. If None, use
+            :attr:`DEFAULT_VARS`
+        read_uncertainties : bool
+            if True, uncertainty data is also read (where available).
+        remove_outliers : bool
+            if True, outliers are removed for each variable using the
+            `minimum` and `maximum` attributes for that variable (accessed
+            via pyaerocom.const.VARS[var_name]).
+        format : str
+            supported formats are "HARP" or "EVDC"
+
+        Returns
+        -------
+        StationData
+            dict-like object containing results
+        """
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        _vars = []
+        if vars_to_retrieve is None:
+            vars_to_read = self.PROVIDES_VARIABLES
+        else:
+            vars_to_read = vars_to_retrieve
+
+        # create empty data object (is dictionary with extended functionality)
+        data_out = StationData()
+        self.logger.debug(f"Reading file {filename}")
+
+        # reading hdf5 file with the netcdf interface
+        with xarray.open_dataset(filename) as data_in:
+            if self.LOCATION_VAR_NAME_HDF in data_in.attrs:
+                data_out["station_id"] = data_out["station_name"] = data_in.attrs[
+                    self.LOCATION_VAR_NAME_HDF
+                ]
+            else:
+                logger.error(f"file {filename} does not contain a site name. Skipping")
+                return data_out
+            data_out["data_id"] = self.data_id
+            data_out["ts_type"] = self.TS_TYPE
+
+            # create empty arrays for all variables that are supposed to be read
+            # from file
+            for var in vars_to_read:
+                if var not in self._var_info:
+                    self._var_info[var] = Variable(var)
+
+            # Put also just in the attributes.
+            # set station coords to the first location
+            data_out["station_coords"][self.LONGITUDE_NAME] = np.float64(
+                data_in[self.LONGITUDE_NAME_HDF].values[0]
+            )
+            data_out["station_coords"][self.LATITUDE_NAME] = np.float64(
+                data_in[self.LATITUDE_NAME_HDF].values[0]
+            )
+            # Obs: geopotential height
+            data_out["station_coords"][self.ALTITUDE_NAME] = np.float64(
+                data_in[self.ALTITUDE_ID_HDF].values[0]
+            )
+            # these are the profile coordinates
+            data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME_HDF].values)
+            data_out[self.LATITUDE_NAME] = np.float64(data_in[self.LATITUDE_NAME_HDF].values)
+            data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID_HDF].values)
+
+            # dtime is needed later again
+            dtime = data_in["DATETIME"].values.astype("datetime64[s]")
+            data_out["dtime"] = data_in["datetime_start"].astype("datetime64[s]")
+            data_out["stopdtime"] = data_in["datetime_stop"].astype("datetime64[s]")
+            data_out["filename"] = filename
+
+            for var in vars_to_read:
+                data_out["var_info"][var] = {}
+                err_read = False
+                unit_ok = False
+                outliers_removed = False
+                has_altitude = False
+
+                netcdf_var_name = self.VAR_NAMES_FILE_HARP[var]
+                # check if the desired variable is in the file
+                if netcdf_var_name not in data_in.variables:
+                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    continue
+
+                # info = var_info[var]
+                # xarray.DataArray
+                arr = data_in.variables[netcdf_var_name]
+                # the actual data as numpy array (or float if 0-D data, e.g. zdust)
+                val = np.squeeze(np.float64(arr.values))  # squeeze to 1D array
+                err = np.full_like(val, np.nan)
+                if read_uncertainties:
+                    try:
+                        err = data_in.variables[f"{netcdf_var_name}_uncertainty"]
+                        err_read = True
+                    except KeyError:
+                        pass
+
+                # CONVERT UNIT
+                unit = ""
+                try:
+                    unit = arr.attrs["units"]
+                    unit_ok = True
+                except KeyError:
+                    pass
+
+                # we might need to adjust the units here later on
+
+                # we might need to fill the StationData object a bit more later on
+
+                # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
+                # for u in unames:
+                #     if u in arr.attrs:
+                #         unit = arr.attrs[u]
+                # if unit is None:
+                #     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
+                # unit_fac = None
+                # try:
+                #     to_unit = self._var_info[var].units
+                #     unit_fac = get_unit_conversion_fac(unit, to_unit)
+                #     val *= unit_fac
+                #     unit = to_unit
+                #     unit_ok = True
+                # except Exception as e:
+                #     logger.warning(
+                #         f"Failed to convert unit of {var} in file {filename} (Earlinet): "
+                #         f"Error: {repr(e)}"
+                #     )
+
+                # import errors if applicable
+                # err = np.nan
+                # if read_uncertainties and var in self.ERR_VARNAMES:
+                #     err_name = self.ERR_VARNAMES[var]
+                #     if err_name in data_in.variables:
+                #         err = np.squeeze(np.float64(data_in.variables[err_name]))
+                #         if unit_ok:
+                #             err *= unit_fac
+                #         err_read = True
+
+                # create instance of ProfileData
+                profile = VerticalProfile(
+                    data=val,
+                    altitude=data_out[self.ALTITUDE_NAME],
+                    dtime=dtime,
+                    var_name=var,
+                    data_err=err,
+                    var_unit=unit,
+                    altitude_unit=data_in[self.ALTITUDE_ID_HARP].attrs["units"],
                 )
 
                 # Write everything into profile
