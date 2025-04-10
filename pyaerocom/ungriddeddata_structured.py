@@ -723,7 +723,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             def __init__(self):
                 self._counter: int = 0
                 # a meta must be split by variable as well as station and tstype
-                # dictinary about var_meta[var][(station,ts_type)] = meta_id
+                # dictionary about var_meta[var][(station,ts_type)] = meta_id
                 self._mapping: dict[str, dict[tuple[str, str], int]] = {}
 
             def append_var_station_tstype(
