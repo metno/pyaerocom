@@ -6,7 +6,9 @@ import pytest
 import xarray
 
 from pyaerocom import ColocatedData, TsType
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.coldatatojson_helpers import (
+    _calculate_fairmode,
     _create_diurnal_weekly_data_object,
     _get_jsdate,
     _get_period_keys,
@@ -14,11 +16,13 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _init_meta_glob,
     _make_trends,
     _map_indices,
+    _process_sites,
     _process_statistics_timeseries,
     _remove_less_covered,
     _select_period_season_coldata,
 )
 from pyaerocom.aeroval.exceptions import TrendsError
+from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
 
@@ -380,3 +384,56 @@ def test__select_period_season_coldata(
     cd = _select_period_season_coldata(coldatamod, period, "DJF", use_meteorological_seasons)
     assert cd.coords["time"].values[0] == resultfirst
     assert cd.coords["time"].values[-1] == resultlast
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+@pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
+def test_calculate_fairmode(eval_config: dict):
+    example_coldata = COLDATA["tm5_aeronet"]()
+
+    # add fake station_type
+    fake_type = "bla"
+    fake_types = [fake_type] * example_coldata.coords["station_name"].shape[0]
+
+    example_coldata.data = example_coldata.data.assign_coords(
+        station_type=("station_name", fake_types)
+    )
+
+    meta_glob = _init_meta_glob(
+        example_coldata,
+    )
+
+    data = _init_data_default_frequencies(example_coldata, ["monthly"])
+    (ts_objs, map_meta, site_indices) = _process_sites(data, None, "default", meta_glob)
+
+    setup = EvalSetup(**eval_config)
+    fairmode_engine = FairmodeEngine(setup)
+
+    # fill nans
+    np.nan_to_num(data["monthly"].data, copy=False, nan=1)
+
+    period = "2010"
+    season = "DJF"
+
+    # we ignore here the fact that the data is monthly and for od550aer, the data is basically dummy
+    # since we bypass the guards on frequency and variable, _calculate_fairmode will not question it
+    # and treat the data as if it's concno2 hourly
+    results = _calculate_fairmode(
+        data["monthly"],
+        fairmode_engine,
+        map_meta,
+        "concno2",
+        [period],
+        [season],
+        use_meteorological_seasons=False,
+    )
+
+    assert results["ALL"][f"{period}-{season}"]["Agoufou"]["station_type"] == np.str_(fake_type)
+    assert all(
+        results["ALL"][f"{period}-{season}"]["Agoufou"][item] == SPECIES["concno2"][item]
+        for item in ["freq", "alpha", "percentile", "RV", "UrRV"]
+    )
+    assert all(
+        item in results["ALL"][f"{period}-{season}"]["Agoufou"]
+        for item in ["RMSU", "sign", "beta_mqi", "Hperc", "crms", "bias", "rms"]
+    )

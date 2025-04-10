@@ -22,7 +22,7 @@ def test__fairmode_statistics(eval_config: dict):
         station_type=("station_name", fake_types)
     )
 
-    # rename variable to pretend it's a fairmode species
+    # rename variable to pretend it's a fairmode species,
     example_coldata.data = example_coldata.data.assign_attrs(var_name=["concno2", "concno2"])
 
     setup = EvalSetup(**eval_config)
