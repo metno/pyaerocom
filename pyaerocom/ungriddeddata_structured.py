@@ -39,14 +39,21 @@ def _calculate_ts_type(
 ) -> npt.NDArray:
     seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
 
-    @np.vectorize(otypes=[TsType])
+    @np.vectorize(otypes=[str])
     @functools.lru_cache(maxsize=128)
-    def memoized_ts_type(x: np.int32) -> TsType:
+    def memoized_ts_type(x: np.int32) -> str:
         if x == 0:
             return TsType("hourly")
-        return TsType.from_total_seconds(x)
+        return str(TsType.from_total_seconds(x))
 
-    return memoized_ts_type(seconds)
+    uniq_seconds = np.sort(np.unique(seconds))
+    uniq_tstypes = memoized_ts_type(uniq_seconds)
+
+    # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+    indices = np.searchsorted(uniq_seconds, seconds)
+
+    # Use np.take to map indices to values
+    return np.take(uniq_tstypes, indices)
 
 
 class UngriddedDataStructured(UngriddedDataMetadata):
@@ -715,7 +722,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             :param station_tstype: structured array of stations and tstype
             :return: counter, start for next added value
             """
-            uarray = np.unique(station_tstype)
+            uarray = np.unique(station_tstype, axis=0)
 
             for row in uarray:
                 sx = (row[0], row[1])
@@ -732,7 +739,10 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         var_units = {}
         counter = 0
         for var in vars_to_retrieve:
+            var_metas[var] = {}
             var_data = reader.data(varname=var)
+            if len(var_data) == 0:
+                continue
             tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
             stations = var_data.stations
             station_tstype = np.rec.array(
@@ -743,7 +753,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             var_units[var] = var_data.units
             # set meta-ids for each variable but ensure that counter
             # is for all vars, var_metas contain (stations, tstype) tuples
-            var_metas[var] = {}
             counter = _dict_append_by_counter(counter, var_metas[var], station_tstype)
             dra_data = {
                 "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
@@ -760,7 +769,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         stations_with_metadata = reader.stations()
         metadata = dict()
         for var in vars_to_retrieve:
-            units = var_units[var]
             for station_tstype, meta_id in var_metas[var].items():
                 (station_name, tstype) = station_tstype
                 extra_metadata = stations_with_metadata[station_name].metadata
@@ -768,7 +776,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     "data_id": data_id,
                     "station_name": station_name,
                     "var_info": {
-                        var: {"units": units},
+                        var: {"units": var_units[var]},
                     },
                     **stations_with_metadata[station_name],
                     **extra_metadata,
