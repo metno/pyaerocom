@@ -832,7 +832,8 @@ class ReadUngridded:
                 except ValueError:
                     # UngriddedData cannot add UngriddedDataStructured, while the other way works
                     # just re-ordering here in such cases
-                    data = data_to_append.append(data)
+                    data_to_append.append(data)
+                    data = data_to_append
                 # TODO: Test this. UngriddedDataContainer can contain more than 1 variable
                 if getattr(data_to_append, "is_vertical_profile", None):
                     data.is_vertical_profile = data_to_append.is_vertical_profile
