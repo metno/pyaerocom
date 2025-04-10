@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Iterable
 
 import pandas as pd
 import numpy as np
@@ -87,6 +88,7 @@ def test_pyarotoungriddeddata_reading_extra_metadata(pyaro_testdata_kwargs):
     area_type = ["Rural", "Urban"]
     assert all_stations["stats"][1]["area_classification"].strip() == area_type[0]
     assert all_stations["stats"][0]["area_classification"].strip() == area_type[1]
+    assert not isinstance(all_stations["stats"][0]["altitude"], Iterable)
 
 
 def test_pyarotoungriddeddata_stations(pyaro_testdata):

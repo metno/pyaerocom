@@ -34,28 +34,6 @@ else:
 logger = logging.getLogger(__name__)
 
 
-def _calculate_ts_type(
-    start: npt.NDArray[np.datetime64], end: npt.NDArray[np.datetime64]
-) -> npt.NDArray:
-    seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
-
-    @np.vectorize(otypes=[str])
-    @functools.lru_cache(maxsize=128)
-    def memoized_ts_type(x: np.int32) -> str:
-        if x == 0:
-            return TsType("hourly")
-        return str(TsType.from_total_seconds(x))
-
-    uniq_seconds = np.sort(np.unique(seconds))
-    uniq_tstypes = memoized_ts_type(uniq_seconds)
-
-    # Use np.searchsorted to find indices of structured_array elements in sorted_keys
-    indices = np.searchsorted(uniq_seconds, seconds)
-
-    # Use np.take to map indices to values
-    return np.take(uniq_tstypes, indices)
-
-
 class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
@@ -432,7 +410,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             if not np.isnan(altitude).all():
                 if "altitude" in vi:
                     sd.var_info["altitude"] = vi["altitude"]
-                sd.altitude = altitude
+                sd.altitude = altitude[0]
             if var in vi:
                 sd.var_info[var].update(vi[var])
 
@@ -676,13 +654,40 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
                 self._dra.append(v_data)
 
-    @classmethod
+    @staticmethod
     def from_pyaro(
-        cls, data_id: str, reader: Reader, vars_to_retrieve: list[str]
+        data_id: str, reader: Reader, vars_to_retrieve: list[str]
     ) -> UngriddedDataContainer:
+        def _calculate_ts_type(
+            start: npt.NDArray[np.datetime64], end: npt.NDArray[np.datetime64]
+        ) -> npt.NDArray:
+            """convert start and end-time arrays to a ts-type arrray
+
+            :param start: start-times
+            :param end: end-times
+            :return: ts-types as string-array
+            """
+            seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
+
+            @np.vectorize(otypes=[str])
+            @functools.lru_cache(maxsize=128)
+            def memoized_ts_type(x: np.int32) -> str:
+                if x == 0:
+                    return TsType("hourly")
+                return str(TsType.from_total_seconds(x))
+
+            uniq_seconds = np.sort(np.unique(seconds))
+            uniq_tstypes = memoized_ts_type(uniq_seconds)
+
+            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+            indices = np.searchsorted(uniq_seconds, seconds)
+
+            # Use np.take to map indices to values
+            return np.take(uniq_tstypes, indices)
+
         def _station_tstype_to_int_array(
-            sarray: np.array, mapping: dict[tuple[str, str], int]
-        ) -> np.array:
+            sarray: np.ndarray, mapping: dict[tuple[str, str], int]
+        ) -> np.ndarray:
             """converter an array-view consisting of two str columns ("stations", "tstype") to an
             int-array using a mapping
 
@@ -710,39 +715,59 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             # Use np.take to map indices to values
             return np.take(sorted_values, indices)
 
-        def _dict_append_by_counter(
-            counter: int,
-            mapping: dict[tuple[str, str], int],
-            station_tstype: np.array,
-        ):
-            """append values of an array to a dict by using a counter
-
-            :param counter: input/output of this function, start-position of the counter
-            :param mapping: mapping/dictionary to be added to
-            :param station_tstype: structured array of stations and tstype
-            :return: counter, start for next added value
+        class _VariableMetaIds:
+            """Class containing for each variable a dictionary of tuples of station and ts_type to
+            the corresponding meta-d
             """
-            uarray = np.unique(station_tstype, axis=0)
 
-            for row in uarray:
-                sx = (row[0], row[1])
-                if sx not in mapping:
-                    mapping[sx] = counter
-                    counter += 1
-            return counter
+            def __init__(self):
+                self._counter: int = 0
+                # a meta must be split by variable as well as station and tstype
+                # dictinary about var_meta[var][(station,ts_type)] = meta_id
+                self._mapping: dict[str, dict[tuple[str, str], int]] = {}
+
+            def append_var_station_tstype(
+                self,
+                var: str,
+                station_tstype: np.ndarray | None,
+            ):
+                """append values of an array containing station and ts_type tuples
+                :param var: variable
+                :param station_tstype: structured array of stations and tstype
+                """
+                if var not in self._mapping:
+                    self._mapping[var] = {}
+                if len(station_tstype) == 0:
+                    return
+
+                mapping = self._mapping[var]
+                uarray = np.unique(station_tstype, axis=0)
+
+                for row in uarray:
+                    sx = (row[0], row[1])
+                    if sx not in mapping:
+                        mapping[sx] = self._counter
+                        self._counter += 1
+                return
+
+            def __getitem__(self, var) -> dict[tuple[str, str], int]:
+                """Get the (stations, tstype) -> metaid dictionary
+
+                :param var: variable name
+                :return: dictionary of tuple of stations and tstype to meta_ids
+                """
+                return self._mapping[var]
 
         ugs = UngriddedDataStructured()
         var_idx = {var: i for i, var in enumerate(vars_to_retrieve)}
-        # a meta is separated more than a station, e.g. meta can split var by
-        # variable and meta should split var by tstype
-        var_metas = {}
-        var_units = {}
-        counter = 0
+
+        # a meta must be split by variable as well as station and tstype
+        var_metas = _VariableMetaIds()
+        # unit dictionary, var_units[var] = unit
+        var_units: dict[str, str] = {}
         for var in vars_to_retrieve:
-            var_metas[var] = {}
             var_data = reader.data(varname=var)
-            if len(var_data) == 0:
-                continue
+            logger.info(f"Finished reading data for {var} to pyaro")
             tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
             stations = var_data.stations
             station_tstype = np.rec.array(
@@ -750,10 +775,13 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 dtype=[("stations", stations.dtype), ("tstype", tstype.dtype)],
             )
 
-            var_units[var] = var_data.units
             # set meta-ids for each variable but ensure that counter
             # is for all vars, var_metas contain (stations, tstype) tuples
-            counter = _dict_append_by_counter(counter, var_metas[var], station_tstype)
+            var_metas.append_var_station_tstype(var, station_tstype)
+            if len(var_data) == 0:
+                continue
+
+            var_units[var] = var_data.units
             dra_data = {
                 "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
                 "var_id": np.zeros(len(var_data), dtype="i2") + var_idx[var],
@@ -787,6 +815,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
         ugs.metadata = metadata
         ugs.var_idx = var_idx
+        logger.info(f"Finished converting data for {var} from pyaro to UngriddedDataStructured")
 
         return ugs
 
