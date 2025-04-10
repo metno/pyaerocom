@@ -31,6 +31,9 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
     species = SPECIES
 
+    def run(self) -> None:  # type:ignore[override]
+        pass
+
     # def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
     #     converted = []
     #     for file in files:
