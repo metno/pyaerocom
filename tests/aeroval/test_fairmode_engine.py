@@ -12,7 +12,7 @@ from tests.fixtures.collocated_data import COLDATA
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 @pytest.mark.filterwarnings("ignore:divide by zero encountered in .*divide:RuntimeWarning")
-def test__process_fairmode(eval_config: dict):
+def test__fairmode_statistics(eval_config: dict):
     example_coldata = COLDATA["tm5_aeronet"]()
 
     # add fake station_type

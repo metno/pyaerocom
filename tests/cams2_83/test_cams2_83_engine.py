@@ -9,7 +9,7 @@ from tests.fixtures.collocated_data import COLDATA
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
-def test__process_fairmode(eval_config: dict):
+def test__calc_forecast_target_MQI_vectorized(eval_config: dict):
     example_coldata = COLDATA["tm5_aeronet"]()
 
     var_name = "concno2"
