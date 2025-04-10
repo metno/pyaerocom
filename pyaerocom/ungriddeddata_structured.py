@@ -661,7 +661,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         def _calculate_ts_type(
             start: npt.NDArray[np.datetime64], end: npt.NDArray[np.datetime64]
         ) -> npt.NDArray:
-            """convert start and end-time arrays to a ts-type arrray
+            """convert start and end-time arrays to a ts-type array
 
             :param start: start-times
             :param end: end-times
