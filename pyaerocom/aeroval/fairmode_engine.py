@@ -1,6 +1,6 @@
 import logging
-from pathlib import Path
 
+# from pathlib import Path
 import numpy as np
 import xarray as xr
 
@@ -31,14 +31,14 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
     species = SPECIES
 
-    def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
-        converted = []
-        for file in files:
-            logger.info(f"Processing: {file}")
-            coldata = ColocatedData(data=file)
-            self.process_coldata(coldata)
-            converted.append(file)
-        return converted
+    # def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
+    #     converted = []
+    #     for file in files:
+    #         logger.info(f"Processing: {file}")
+    #         coldata = ColocatedData(data=file)
+    #         self.process_coldata(coldata)
+    #         converted.append(file)
+    #     return converted
 
     # def process_coldata(self, coldata: ColocatedData):
     #     # use_weights = self.cfg.statistics_opts.weighted_stats
