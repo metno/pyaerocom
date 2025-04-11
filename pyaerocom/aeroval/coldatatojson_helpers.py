@@ -1806,6 +1806,7 @@ def _calculate_fairmode(
                 # jsdate = subset.data.jsdate.values.tolist()
             except (DataCoverageError, TemporalResolutionError) as e:
                 logger.info(f"Failed to access subset coldata: {e}")
+                return results
 
             perstr = f"{per}-{season}"
             fm_stats = fairmode_engine.fairmode_statistics(subset, obs_var)

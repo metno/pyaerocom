@@ -388,7 +388,7 @@ def test__select_period_season_coldata(
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 @pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
-def test_calculate_fairmode(eval_config: dict):
+def test_calculate_fairmode(eval_config: dict, caplog):
     example_coldata = COLDATA["tm5_aeronet"]()
 
     # add fake station_type
@@ -415,9 +415,9 @@ def test_calculate_fairmode(eval_config: dict):
     period = "2010"
     season = "DJF"
 
-    # we ignore here the fact that the data is monthly and for od550aer, the data is basically dummy
-    # since we bypass the guards on frequency and variable, _calculate_fairmode will not question it
-    # and treat the data as if it's concno2 hourly
+    # we ignore here the fact that the data is monthly and for od550aer, the data is basically to be considered dummy
+    # since we bypass the guards on frequency and variable, _calculate_fairmode will not question the data at this point
+    # and treat it data as if it's concno2 hourly
     results = _calculate_fairmode(
         data["monthly"],
         fairmode_engine,
@@ -436,4 +436,22 @@ def test_calculate_fairmode(eval_config: dict):
     assert all(
         item in results["ALL"][f"{period}-{season}"]["Agoufou"]
         for item in ["RMSU", "sign", "beta_mqi", "Hperc", "crms", "bias", "rms"]
+    )
+
+    wrongperiod = "2025"
+    # here we pass the wrong period to test the case when the coldata subset fails
+    resultsempty = _calculate_fairmode(
+        data["monthly"],
+        fairmode_engine,
+        map_meta,
+        "concno2",
+        [wrongperiod],
+        [season],
+        use_meteorological_seasons=False,
+    )
+
+    assert resultsempty == {"ALL": {}}
+    assert (
+        f"Failed to access subset coldata: No data available in period {wrongperiod}"
+        in caplog.text
     )
