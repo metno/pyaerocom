@@ -409,7 +409,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             if not np.isnan(altitude).all():
                 if "altitude" in vi:
                     sd.var_info["altitude"] = vi["altitude"]
-                sd.altitude = altitude[0]
+                sd.altitude = altitude[0]  # TODO: Revise in case of moving stations
             if var in vi:
                 sd.var_info[var].update(vi[var])
 
