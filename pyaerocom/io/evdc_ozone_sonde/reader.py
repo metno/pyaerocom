@@ -11,12 +11,19 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+from .jdcal import MJD_JD2000, MJD_0, jd2gcal
 
 logger = logging.getLogger(__name__)
 
 
 class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     """Interface for reading of EVDC ozone sonde data data"""
+
+    # in the HDF files time is store as modified julian day starting the 1. January 2000
+    # from https://pypi.org/project/jdcal/
+    # MJD_JD2000 = 51544.5
+    # MJD_0 = 2400000.5
+    MJD_BASE = MJD_JD2000 + MJD_0 - 0.5
 
     #: Mask for identifying datafiles
     _FILEMASK = "evdc-sonde_*.nc"
@@ -62,6 +69,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     LONGITUDE_NAME_HDF = "LONGITUDE"
     LATITUDE_NAME_HDF = "LATITUDE"
     ALTITUDE_NAME_HDF = "ALTITUDE.GPH"
+    TIME_NAME_HDF = "DATETIME"
 
     #: temporal resolution
     # Note: This is an approximation based on the fact that the sondes are flown more than once a day
@@ -93,6 +101,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     LOCATION_VAR_NAME_HARP = "site_name"
     START_TIME_VAR_NAME_HARP = "datetime_start"
     STOP_TIME_VAR_NAME_HARP = "datetime_stop"
+    UNIT_NAME_HARP = "units"
 
     # for HDF these are in the global attributes
     LOCATION_VAR_NAME_HDF = "DATA_LOCATION"
@@ -431,9 +440,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID_HDF].values)
 
             # dtime is needed later again
-            dtime = data_in["DATETIME"].values.astype("datetime64[s]")
-            data_out["dtime"] = data_in["datetime_start"].astype("datetime64[s]")
-            data_out["stopdtime"] = data_in["datetime_stop"].astype("datetime64[s]")
+            dtime = self.get_seconds_since_epoch_from_hdf_time(data_in["DATETIME"].values)
+
+            data_out["dtime"] = dtime[0].astype("datetime64[s]")
+            data_out["stopdtime"] = dtime[-1].astype("datetime64[s]")
             data_out["filename"] = filename
 
             for var in vars_to_read:
@@ -443,7 +453,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 outliers_removed = False
                 has_altitude = False
 
-                netcdf_var_name = self.VAR_NAMES_FILE_HARP[var]
+                netcdf_var_name = self.VAR_NAMES_FILE_HDF[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
                     self.logger.warning(f"Variable {var} not found in file {filename}")
@@ -454,10 +464,17 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
                 val = np.squeeze(np.float64(arr.values))  # squeeze to 1D array
+                # replace fill value with np.nan
+                val[
+                    val
+                    == np.float64(
+                        data_in.variables[netcdf_var_name].attrs[self.HDF_FILL_VALUE_ATTR_NAME]
+                    )
+                ] = np.nan
                 err = np.full_like(val, np.nan)
                 if read_uncertainties:
                     try:
-                        err = data_in.variables[f"{netcdf_var_name}_uncertainty"]
+                        err = data_in.variables[f"{netcdf_var_name}_UNCERTAINTY.COMBINED.STANDARD"]
                         err_read = True
                     except KeyError:
                         pass
@@ -465,7 +482,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 # CONVERT UNIT
                 unit = ""
                 try:
-                    unit = arr.attrs["units"]
+                    unit = arr.attrs[self.HDF_UNIT_ATTR_NAME]
                     unit_ok = True
                 except KeyError:
                     pass
@@ -511,7 +528,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     var_name=var,
                     data_err=err,
                     var_unit=unit,
-                    altitude_unit=data_in[self.ALTITUDE_ID_HARP].attrs["units"],
+                    altitude_unit=data_in[self.ALTITUDE_ID_HDF].attrs[self.HDF_UNIT_ATTR_NAME],
                 )
 
                 # Write everything into profile
@@ -734,3 +751,45 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 files.append(str(_file))
         logger.info(f"Found {len(files)} EVDC data files in directory {self.data_dir}.")
         return files
+
+    def get_seconds_since_epoch_from_hdf_time(self, indata: np.ndarray) -> np.ndarray:
+        """
+        small helper method to calculate seconds after epoch from the year 2000 based
+        HDF time (stored is the Julian day number after 01-01-2000T00:00:00)
+
+        This is not the most efficient way to do this!
+
+        :param indata:
+        :return:
+        """
+        # get_sejd2gcal(data_in["DATETIME"].values[0])
+        from datetime import datetime
+
+        if isinstance(indata, np.ndarray):
+            outdata = np.zeros_like(indata, dtype="datetime64[us]")
+            for i, _inval in enumerate(indata):
+                temp_time_arr = jd2gcal(self.MJD_BASE, _inval)
+                flt_hours = temp_time_arr[-1] * 24.0
+                hours = int(flt_hours)
+                flt_minutes = (flt_hours - hours) * 60
+                minutes = int(flt_minutes)
+                flt_seconds = (flt_minutes - minutes) * 60
+                seconds = int(flt_seconds)
+                microseconds = int((flt_seconds - seconds) * 1e6)
+                bla = np.datetime64(
+                    datetime(
+                        temp_time_arr[0],
+                        temp_time_arr[1],
+                        temp_time_arr[2],
+                        hours,
+                        minutes,
+                        seconds,
+                        microseconds,
+                    ),
+                    "us",
+                )
+                outdata[i] = bla
+        else:
+            raise NotImplementedError
+
+        return outdata
