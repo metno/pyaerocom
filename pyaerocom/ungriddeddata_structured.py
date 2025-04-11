@@ -1,5 +1,4 @@
 import fnmatch
-import functools
 import logging
 import sys
 from collections.abc import Iterator
@@ -8,6 +7,7 @@ from copy import deepcopy
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from pyaro.timeseries import Reader
 
 from pyaerocom import const
 from pyaerocom.dynamic_rec_array import DynamicRecArray
@@ -24,7 +24,6 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
-from pyaro.timeseries import Reader
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -656,8 +655,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @staticmethod
     def from_pyaro(
-        data_id: str, reader: Reader, vars_to_retrieve: list[str]
+        data_id: str, reader: Reader, vars_to_retrieve: list[str], **kwargs
     ) -> UngriddedDataContainer:
+        """Convert data from a pyaro-reader to UngriddedDataStructured
+
+        :param data_id: data_id identifier
+        :param reader: pyaro-reader
+        :param vars_to_retrieve: selection of variables
+        :param kwargs: internal parameters for testing/benchmarking
+        :return: data as UngriddedDataContainer
+        """
+
         def _calculate_ts_type(
             start: npt.NDArray[np.datetime64], end: npt.NDArray[np.datetime64]
         ) -> npt.NDArray:
@@ -669,14 +677,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             """
             seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
 
+            # below line is the same as
+            # uniq_seconds = np.sort(np.unique(seconds))
+            # but several orders of magnitude faster for large array with only few distinct elements
+            uniq_seconds = np.sort(np.nonzero(np.bincount(seconds))[0])
+
             @np.vectorize(otypes=[str])
-            @functools.lru_cache(maxsize=128)
             def memoized_ts_type(x: np.int32) -> str:
                 if x == 0:
                     return TsType("hourly")
                 return str(TsType.from_total_seconds(x))
 
-            uniq_seconds = np.sort(np.unique(seconds))
             uniq_tstypes = memoized_ts_type(uniq_seconds)
 
             # Use np.searchsorted to find indices of structured_array elements in sorted_keys
@@ -741,7 +752,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     return
 
                 mapping = self._mapping[var]
-                uarray = np.unique(station_tstype, axis=0)
+                # below line is for EEA-data about 10x faster than
+                # uarray = np.unique(station_tstype, axis=0)
+                uarray = np.array(list(set(station_tstype.tolist())), dtype=station_tstype.dtype)
 
                 for row in uarray:
                     sx = (row[0], row[1])
@@ -766,9 +779,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         # unit dictionary, var_units[var] = unit
         var_units: dict[str, str] = {}
         for var in vars_to_retrieve:
-            logger.info(f"Getting data of {var} from pyaro")
-            var_data = reader.data(varname=var)
-            logger.info(f"Converting data of {var} from pyaro to ungridded")
+            logger.info(f"Getting data of {var} from pyaro/{data_id}")
+            if "bench_dataset" in kwargs:
+                var_data = kwargs["bench_dataset"]
+            else:
+                var_data = reader.data(varname=var)
+            logger.info(f"Converting data of {var} from pyaro/{data_id} to ungridded")
             tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
             stations = var_data.stations
             station_tstype = np.rec.array(
@@ -795,7 +811,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             }
             ugs._dra.append_array(**dra_data)
 
-        logger.info("Converting metadata from pyaro to ungridded")
+        logger.info(f"Converting metadata from pyaro/{data_id} to ungridded")
         stations_with_metadata = reader.stations()
         for var in vars_to_retrieve:
             for station_tstype, meta_id in var_metas[var].items():
@@ -814,7 +830,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     d["ts_type"] = tstype
                 ugs.metadata[meta_id] = d
 
-        logger.info("Finished converting from pyaro to UngriddedDataStructured")
+        logger.info(f"Finished converting from pyaro/{data_id} to UngriddedDataStructured")
 
         return ugs
 
@@ -843,7 +859,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             obj = self.copy()
 
         meta_no_data = []
-        distinct_metas = np.unique(obj._dra.data["meta_id"])
+        # faster implementation of: distinct_metas = np.unique(obj._dra.data["meta_id"])
+        distinct_metas = np.nonzero(np.bincount(obj._dra.data["meta_id"]))[0]
+
         for meta_idx, meta in obj.metadata.items():
             if not np.any(distinct_metas == meta_idx):
                 # sanity check
