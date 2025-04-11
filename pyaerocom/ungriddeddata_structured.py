@@ -759,15 +759,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 return self._mapping[var]
 
         ugs = UngriddedDataStructured()
-        var_idx = {var: i for i, var in enumerate(vars_to_retrieve)}
+        ugs.var_idx = {var: i for i, var in enumerate(vars_to_retrieve)}
 
         # a meta must be split by variable as well as station and tstype
         var_metas = _VariableMetaIds()
         # unit dictionary, var_units[var] = unit
         var_units: dict[str, str] = {}
         for var in vars_to_retrieve:
+            logger.info(f"Getting data of {var} from pyaro")
             var_data = reader.data(varname=var)
-            logger.info(f"Finished reading data for {var} to pyaro")
+            logger.info(f"Converting data of {var} from pyaro to ungridded")
             tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
             stations = var_data.stations
             station_tstype = np.rec.array(
@@ -784,7 +785,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             var_units[var] = var_data.units
             dra_data = {
                 "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
-                "var_id": np.zeros(len(var_data), dtype="i2") + var_idx[var],
+                "var_id": np.zeros(len(var_data), dtype="i2") + ugs.var_idx[var],
                 "start_time": var_data.start_times,
                 "end_time": var_data.end_times,
                 "data": var_data.values,
@@ -794,8 +795,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             }
             ugs._dra.append_array(**dra_data)
 
+        logger.info("Converting metadata from pyaro to ungridded")
         stations_with_metadata = reader.stations()
-        metadata = dict()
         for var in vars_to_retrieve:
             for station_tstype, meta_id in var_metas[var].items():
                 (station_name, tstype) = station_tstype
@@ -811,10 +812,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 }
                 if "ts_type" not in d:
                     d["ts_type"] = tstype
-                metadata[meta_id] = d
+                ugs.metadata[meta_id] = d
 
-        ugs.metadata = metadata
-        ugs.var_idx = var_idx
         logger.info(f"Finished converting data for {var} from pyaro to UngriddedDataStructured")
 
         return ugs
