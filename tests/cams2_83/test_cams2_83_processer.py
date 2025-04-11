@@ -33,11 +33,11 @@ def test__run_single_entry(patched_config, tmp_path):
     assert col.colocation_setup.model_name == model_name
     d0 = (
         tmp_path
-        / f"cams2-83/{processer.cfg.exp_id}/CAMS2-83-{model_name}-day0-FC/{var}_{var}_MOD-CAMS2-83-{model_name}-day0-FC_REF-EEA-UTD_{startstring}_{stopstring}_hourly_ALL-wMOUNTAINS.nc"
+        / f"{processer.cfg.proj_id}/{processer.cfg.exp_id}/CAMS2-83-{model_name}-day0-FC/{var}_{var}_MOD-CAMS2-83-{model_name}-day0-FC_REF-EEA-UTD_{startstring}_{stopstring}_hourly_ALL-wMOUNTAINS.nc"
     )
     dp = (
         tmp_path
-        / f"cams2-83/{processer.cfg.exp_id}/CAMS2-83-{model_name}-persistence-FC/{var}_{var}_MOD-CAMS2-83-{model_name}-persistence-FC_REF-EEA-UTD_{newstartstring}_{stopstring}_hourly_ALL-wMOUNTAINS.nc"
+        / f"{processer.cfg.proj_id}/{processer.cfg.exp_id}/CAMS2-83-{model_name}-persistence-FC/{var}_{var}_MOD-CAMS2-83-{model_name}-persistence-FC_REF-EEA-UTD_{newstartstring}_{stopstring}_hourly_ALL-wMOUNTAINS.nc"
     )
 
     assert d0.is_file()

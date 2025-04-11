@@ -61,8 +61,8 @@ CFG = {
         }
     },
     "proj_id": "cams2-83",
-    "exp_id": "prototype",
-    "exp_name": "Prototype-daily",
+    "exp_id": "test",
+    "exp_name": "Test",
     "exp_descr": "Evaluation using EEA-MF NRT obs.",
     "exp_pi": "<a href='https://atmosphere.copernicus.eu/help-and-support'>CAMS user support</a>",
     "public": True,
