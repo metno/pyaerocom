@@ -814,7 +814,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     d["ts_type"] = tstype
                 ugs.metadata[meta_id] = d
 
-        logger.info(f"Finished converting data for {var} from pyaro to UngriddedDataStructured")
+        logger.info("Finished converting from pyaro to UngriddedDataStructured")
 
         return ugs
 
