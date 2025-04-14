@@ -192,3 +192,13 @@ class VariableDefinitionError(IOError):
 
 class VariableNotFoundError(IOError):
     pass
+
+
+class MissingOptionalDependencyError(ImportError):
+    """Raised when failing to import an optional dependency.
+
+    :param dep : The identifier of the missing dependency.
+    """
+
+    def __init__(self, dep: str) -> None:
+        super().__init__(f"Unable to proceed due to missing optional dependency '{dep}'.")
