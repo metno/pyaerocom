@@ -827,7 +827,13 @@ class ReadUngridded:
             if data is None:
                 data = data_to_append
             else:
-                data.append(data_to_append)
+                try:
+                    data.append(data_to_append)
+                except ValueError:
+                    # UngriddedData cannot add UngriddedDataStructured, while the other way works
+                    # just re-ordering here in such cases
+                    data_to_append.append(data)
+                    data = data_to_append
                 # TODO: Test this. UngriddedDataContainer can contain more than 1 variable
                 if getattr(data_to_append, "is_vertical_profile", None):
                     data.is_vertical_profile = data_to_append.is_vertical_profile

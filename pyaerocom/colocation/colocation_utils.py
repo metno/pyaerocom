@@ -4,7 +4,6 @@ Methods and / or classes to perform colocation
 
 import logging
 import os
-from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -26,6 +25,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
     isnumeric,
@@ -33,9 +33,6 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
-
-if TYPE_CHECKING:
-    from pyaerocom.ungriddeddata import UngriddedData
 
 from .colocated_data import ColocatedData
 
@@ -611,7 +608,7 @@ def _colocate_site_data_helper_timecol(
 
 def colocate_gridded_ungridded(
     data: GriddedData,
-    data_ref: "UngriddedData",
+    data_ref: UngriddedDataContainer,
     ts_type=None,
     start=None,
     stop=None,
@@ -644,7 +641,7 @@ def colocate_gridded_ungridded(
     ----------
     data : GriddedData
         gridded data object (e.g. model results).
-    data_ref : UngriddedData
+    data_ref : UngriddedDataContainer
         ungridded data object (e.g. observations).
     ts_type : str
         desired temporal resolution of colocated data (must be valid AeroCom
@@ -706,12 +703,12 @@ def colocate_gridded_ungridded(
     VarNotAvailableError
         if grid data variable is not available in ungridded data object
     AttributeError
-        if instance of input :class:`UngriddedData` object contains more than
+        if instance of input :class:`UngriddedDataContainer` object contains more than
         one dataset
     TimeMatchError
         if gridded data time range does not overlap with input time range
     ColocationError
-        if none of the data points in input :class:`UngriddedData` matches
+        if none of the data points in input :class:`UngriddedDataContainer` matches
         the input colocation constraints
     """
     if filter_name is None:

@@ -917,8 +917,16 @@ class UngriddedDataContainer(abc.ABC):
         if self == other:
             return obj
 
-        all_stations = other.to_station_data_all()
-        obj.append_station_data(all_stations["stats"])
+        for var in other.contains_vars:
+            # convert variable by variable, since to_station_data_all
+            # fails is not implemented for multiple variables
+            all_stations = other.to_station_data_all(vars_to_convert=var)
+            obj.append_station_data(all_stations["stats"])
+
+        # update metadata
+        obj.data_revision.update(other.data_revision)
+        obj.filter_hist.update(other.filter_hist)
+
         return obj
 
     def append(self, other):
@@ -930,7 +938,7 @@ class UngriddedDataContainer(abc.ABC):
 
         Parameters
         -----------
-        other : UngriddedData
+        other : UngriddedDataContainer
             other data object
 
         Returns
@@ -941,7 +949,7 @@ class UngriddedDataContainer(abc.ABC):
         Raises
         -------
         ValueError
-            if input object is not an instance of :class:`UngriddedData`
+            if input object is not an instance of :class:`UngriddedDataContainer`
 
         """
         return self.merge(other, new_obj=False)
