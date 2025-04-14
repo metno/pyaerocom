@@ -108,7 +108,7 @@ class OutputPaths(BaseModel):
 
     def _check_init_dir(self, loc, assert_exists):
         if assert_exists and not os.path.exists(loc):
-            os.makedirs(loc)
+            os.makedirs(loc, exist_ok=True)
         return loc
 
     def get_coldata_dir(self, assert_exists=True):
