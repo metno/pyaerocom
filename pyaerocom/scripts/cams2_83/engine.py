@@ -8,16 +8,11 @@ from pathlib import Path
 from reprlib import repr
 
 import numpy as np
-import pandas as pd
 import xarray as xr
-from tqdm import tqdm
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
-    _init_meta_glob,
-    _init_site_coord_arrays,
-    _process_sites,
     _select_period_season_coldata,
     init_regions_web,
 )
@@ -48,11 +43,13 @@ class CAMS2_83_Engine(ProcessingEngine):
             coldata
         )
         start = time.time()
-        
+
         if var_list is None:
             var_list_2 = list(found_vars)
             if not var_list_2:
-                logging.warning(f"No variables found in colocated data var_list={var_list}, found_vars={found_vars}")
+                logging.warning(
+                    f"No variables found in colocated data var_list={var_list}, found_vars={found_vars}"
+                )
                 return
         elif var_list == ["conco3"] or (len(var_list) > 1 and "conco3" in var_list):
             var_list_2 = list(var_list)
@@ -98,7 +95,8 @@ class CAMS2_83_Engine(ProcessingEngine):
 
             if SPECIES[var_name]["freq"] != "hourly":
                 persistence_coldata = persistence_coldata.resample_time(
-                    SPECIES[var_name]["freq"], settings_from_meta=True,
+                    SPECIES[var_name]["freq"],
+                    settings_from_meta=True,
                 )
 
         if "var_name_input" in coldata[0].metadata:
@@ -201,7 +199,8 @@ class CAMS2_83_Engine(ProcessingEngine):
                         fairmode_subset = subset[0]
                         if SPECIES[var_name]["freq"] != "hourly":
                             fairmode_subset = fairmode_subset.resample_time(
-                                SPECIES[var_name]["freq"], settings_from_meta=True,
+                                SPECIES[var_name]["freq"],
+                                settings_from_meta=True,
                             )
 
                         results_fairmode[f"{regname}"][f"{perstr}"] = (
@@ -236,7 +235,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
                                     "sign"
                                 ] = []
-                                
+
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
                                     "persistence_model"
                                 ] = True
@@ -344,7 +343,6 @@ class CAMS2_83_Engine(ProcessingEngine):
 
     def _pearson_R_vec(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         return FairmodeEngine.pearson_R(x, y)
-        
 
     def _calc_forecast_target_MQI_vectorized(
         self,
@@ -358,7 +356,10 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         # Resampling of time for all other variables than NO2
         if SPECIES[var_name]["freq"] != "hourly":
-            coldata = coldata.resample_time(SPECIES[var_name]["freq"], settings_from_meta=True,)
+            coldata = coldata.resample_time(
+                SPECIES[var_name]["freq"],
+                settings_from_meta=True,
+            )
 
         # Creation of mask of shared stations between normal data and persistence data
         # stations = persistence_coldata.data.station_name.values
@@ -378,7 +379,6 @@ class CAMS2_83_Engine(ProcessingEngine):
             24 * (forecast_day + 1), "h"
         )  # This needs to be checked if it is correct for forecast days > 0
 
-
         # Masks the time, so that only dates which has a valid persistence model and data are used
         time_mask = np.intersect1d(p_time, data_time, return_indices=True)
 
@@ -395,7 +395,9 @@ class CAMS2_83_Engine(ProcessingEngine):
         # Sanity Check
         assert np.all(p_mod_vals.shape == obs_vals.shape)
 
-        sign = self._target_plot_sign(obsvals=obs_vals, modvals=mod_vals, mask=mask, var_name=var_name)
+        sign = self._target_plot_sign(
+            obsvals=obs_vals, modvals=mod_vals, mask=mask, var_name=var_name
+        )
 
         # Calculation of MQI
         factor = SPECIES[var_name]["alpha"] ** 2 * SPECIES[var_name]["RV"] ** 2
@@ -413,11 +415,13 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         mqi = rmse_m / rmse_p
 
-
-        results = {str(station_mask[0][i]): [rmse_p[i], mqi[i], sign[i]] for i in range(len(mqi))}
+        results = {
+            str(station_mask[0][i]): [rmse_p[i], mqi[i], sign[i]]
+            for i in range(len(mqi))
+        }
 
         return results
-    
+
     def _target_plot_sign(
         self,
         obsvals: np.ndarray,
@@ -425,15 +429,22 @@ class CAMS2_83_Engine(ProcessingEngine):
         mask: np.ndarray,
         var_name: str,
     ) -> np.ndarray:
-        
-        threshold = SPECIES[var_name]["RV"]
-        false_alarms = np.sum(np.logical_and(modvals>threshold, obsvals<=threshold, where=mask), axis=1, where=mask)
-        missed_alarms = np.sum(np.logical_and(modvals<=threshold, obsvals>threshold, where=mask), axis=1, where=mask)
-        sign = np.where(false_alarms <= missed_alarms, -1.0, 1.0) #np.where(ratio<1, -1.0, 1.0)
-        return sign
-        
 
-        
+        threshold = SPECIES[var_name]["RV"]
+        false_alarms = np.sum(
+            np.logical_and(modvals > threshold, obsvals <= threshold, where=mask),
+            axis=1,
+            where=mask,
+        )
+        missed_alarms = np.sum(
+            np.logical_and(modvals <= threshold, obsvals > threshold, where=mask),
+            axis=1,
+            where=mask,
+        )
+        sign = np.where(
+            false_alarms <= missed_alarms, -1.0, 1.0
+        )  # np.where(ratio<1, -1.0, 1.0)
+        return sign
 
     def _sort_coldata(
         self, coldata: list[ColocatedData]

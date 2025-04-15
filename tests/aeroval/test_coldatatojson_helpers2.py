@@ -264,7 +264,7 @@ def test__init_meta_glob(coldata: ColocatedData):
     assert set(res.values()) == {"UNDEFINED"}
 
 
-@pytest.mark.parametrize("resolution", [("yearly")])
+@pytest.mark.parametrize("resolution", ["yearly"])
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
 def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: str):
     obj = _create_diurnal_weekly_data_object(coldata, resolution)
@@ -417,7 +417,7 @@ def test_calculate_fairmode(eval_config: dict, caplog):
 
     # we ignore here the fact that the data is monthly and for od550aer, the data is basically to be considered dummy
     # since we bypass the guards on frequency and variable, _calculate_fairmode will not question the data at this point
-    # and treat it data as if it's concno2 hourly
+    # and treat it as if it's concno2 hourly
     results = _calculate_fairmode(
         data["monthly"],
         fairmode_engine,
