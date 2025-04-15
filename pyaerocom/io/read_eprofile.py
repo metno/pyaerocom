@@ -13,6 +13,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class ReadEprofile(ReadUngriddedBase):
     """Interface for reading of EARLINET data"""
 
     #: Mask for identifying datafiles
-    _FILEMASK = "*.*"
+    _FILEMASK = "*.nc*"
 
     #: version log of this class (for caching)
     __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
@@ -50,12 +51,11 @@ class ReadEprofile(ReadUngriddedBase):
     # at an hourly reoslution. Some files are a little less, but typically this is the case
     TS_TYPE = "hourly"
 
-    VAR_PATTERNS_FILE = {
-        "od1064aer": "_e0532",
-        "ec1064aer": "_e0355",
-        "bsc1064aer": "_b1064",
-        # "zdust": "*.e*", # not sure if EARLINET has this anymore
-    }
+    # VAR_PATTERNS_FILE = {
+    #     "od1064aer": "_e0532",
+    #     "ec1064aer": "_e0355",
+    #     "bsc1064aer": "_b1064",
+    # }
 
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
@@ -82,16 +82,16 @@ class ReadEprofile(ReadUngriddedBase):
     #: metadata keys that are needed for reading (must be values in
     #: :attr:`META_NAMES_FILE`)
     META_NEEDED = [
-        "location",
+        "station_longitude",
+        "station_latitude",
+        "station_altitude",
     ]
 
     #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to
     #: standard keys defined in :class:`StationMetaData` and that are supposed
     #: to be inserted into :class:`UngriddedData` object created in :func:`read`
     KEEP_ADD_META = [
-        "location",
         "comment",
-        "shots",
     ]
 
     #: Attribute access names for unit reading of variable data
@@ -102,15 +102,12 @@ class ReadEprofile(ReadUngriddedBase):
         altitude="units",
     )
     #: Variable names of uncertainty data
-    ERR_VARNAMES = dict(
-        # ec532aer="error_extinction",
-        # ec355aer="error_extinction",
-    )
+    ERR_VARNAMES = dict()
 
     #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
-    READ_ERR = True
+    # READ_ERR = True
 
-    PROVIDES_VARIABLES = list(VAR_PATTERNS_FILE)
+    PROVIDES_VARIABLES = list(DEFAULT_VARS)
 
     EXCLUDE_CASES = ["cirrus.txt"]
 
@@ -145,7 +142,7 @@ class ReadEprofile(ReadUngriddedBase):
 
         self.is_vertical_profile = True
 
-    def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
+    def read_file(self, filename, vars_to_retrieve=None, remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
 
         Parameters
@@ -155,8 +152,6 @@ class ReadEprofile(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list`, optional
             list of str with variable names to read. If None, use
             :attr:`DEFAULT_VARS`
-        read_err : bool
-            if True, uncertainty data is also read (where available).
         remove_outliers : bool
             if True, outliers are removed for each variable using the
             `minimum` and `maximum` attributes for that variable (accessed
@@ -167,8 +162,8 @@ class ReadEprofile(ReadUngriddedBase):
         StationData
             dict-like object containing results
         """
-        if read_err is None:  # use default setting
-            read_err = self.READ_ERR
+        # if read_err is None:  # use default setting
+        #     read_err = self.READ_ERR
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         _vars = []
@@ -310,13 +305,13 @@ class ReadEprofile(ReadUngriddedBase):
 
                 # import errors if applicable
                 err = np.nan
-                if read_err and var in self.ERR_VARNAMES:
-                    err_name = self.ERR_VARNAMES[var]
-                    if err_name in data_in.variables:
-                        err = np.squeeze(np.float64(data_in.variables[err_name]))
-                        if unit_ok:
-                            err *= unit_fac
-                        err_read = True
+                # if read_err and var in self.ERR_VARNAMES:
+                #     err_name = self.ERR_VARNAMES[var]
+                #     if err_name in data_in.variables:
+                #         err = np.squeeze(np.float64(data_in.variables[err_name]))
+                #         if unit_ok:
+                #             err *= unit_fac
+                #         err_read = True
 
                 # 1D variable
                 if var == "zdust":
@@ -408,7 +403,6 @@ class ReadEprofile(ReadUngriddedBase):
         files=None,
         first_file=None,
         last_file=None,
-        read_err=None,
         remove_outliers=True,
         pattern=None,
     ):
@@ -428,9 +422,6 @@ class ReadEprofile(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file
             in the list is used
-        read_err : bool
-            if True, uncertainty data is also read (where available). If
-            unspecified (None), then the default is used (cf. :attr:`READ_ERR`)
          pattern : str, optional
             string pattern for file search (cf :func:`get_file_list`)
 
@@ -445,8 +436,8 @@ class ReadEprofile(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
-        if read_err is None:
-            read_err = self.READ_ERR
+        # if read_err is None:
+        #     read_err = self.READ_ERR
 
         if files is None:
             if len(self.files) == 0:
@@ -493,7 +484,6 @@ class ReadEprofile(ReadUngriddedBase):
                 stat = self.read_file(
                     _file,
                     vars_to_retrieve=vars_to_retrieve,
-                    read_err=read_err,
                     remove_outliers=remove_outliers,
                 )
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
@@ -537,7 +527,7 @@ class ReadEprofile(ReadUngriddedBase):
                         altitude = val.altitude
                         data = val.data
                         add = len(data)
-                        err = val.data_err
+                        # err = val.data_err
                         metadata[meta_key]["var_info"]["altitude"] = via = {}
 
                         vi.update(val.var_info[var])
@@ -546,10 +536,10 @@ class ReadEprofile(ReadUngriddedBase):
                         add = 1
                         altitude = np.nan
                         data = val
-                        if var in stat.data_err:
-                            err = stat.err[var]
-                        else:
-                            err = np.nan
+                        # if var in stat.data_err:
+                        #     err = stat.err[var]
+                        # else:
+                        #     err = np.nan
                     vi.update(stat.var_info[var])
                     stop = idx + add
                     # check if size of data object needs to be extended
@@ -576,8 +566,8 @@ class ReadEprofile(ReadUngriddedBase):
                     data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
 
-                    if read_err:
-                        data_obj._data[idx:stop, col_idx["dataerr"]] = err
+                    # if read_err:
+                    #     data_obj._data[idx:stop, col_idx["dataerr"]] = err
 
                     if var not in meta_idx[meta_key]:
                         meta_idx[meta_key][var] = []
@@ -650,38 +640,40 @@ class ReadEprofile(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-        exclude = self._get_exclude_filelist()
-        logger.info("Fetching EARLINET data files. This might take a while...")
-        patterns = []
-        for var in vars_to_retrieve:
-            if var not in self.VAR_PATTERNS_FILE:
-                from pyaerocom.exceptions import VarNotAvailableError
+        exclude_files = [Path(file) for file in self._get_exclude_filelist()]
+        logger.info("Fetching EPROFILE data files...")
+        # patterns = []
+        # for var in vars_to_retrieve:
+        #     # if var not in self.VAR_PATTERNS_FILE:
+        #     #     from pyaerocom.exceptions import VarNotAvailableError
 
-                raise VarNotAvailableError(f"Input variable {var} is not supported")
+        #     #     raise VarNotAvailableError(f"Input variable {var} is not supported")
 
-            _pattern = self.VAR_PATTERNS_FILE[var]
-            if pattern is not None:
-                if "." in pattern:
-                    raise NotImplementedError("filetype delimiter . not supported")
-                spl = _pattern.split(".")
-                if "*" not in spl[0]:
-                    raise AttributeError(f"Invalid file pattern: {_pattern}")
-                spl[0] = spl[0].replace("*", pattern)
-                _pattern = ".".join(spl)
+        #     # _pattern = self.VAR_PATTERNS_FILE[var]
+        #     # if pattern is not None:
+        #     #     if "." in pattern:
+        #     #         raise NotImplementedError("filetype delimiter . not supported")
+        #     #     spl = _pattern.split(".")
+        #     #     if "*" not in spl[0]:
+        #     #         raise AttributeError(f"Invalid file pattern: {_pattern}")
+        #     #     spl[0] = spl[0].replace("*", pattern)
+        #     #     _pattern = ".".join(spl)
 
-            patterns.append(_pattern)
+        #     # patterns.append(_pattern)
 
-        matches = []
-        for root, dirnames, files in os.walk(self.data_dir, topdown=True):
-            paths = [os.path.join(root, f) for f in files]
-            for _pattern in patterns:
-                for path in paths:
-                    file = os.path.basename(path)
-                    if _pattern not in file:
-                        continue
-                    elif file in exclude:
-                        self.excluded_files.append(path)
-                    else:
-                        matches.append(path)
-        self.files = files = list(dict.fromkeys(matches))
+        # matches = []
+        # for root, dirnames, files in os.walk(self.data_dir, topdown=True):
+        #     paths = [os.path.join(root, f) for f in files]
+        #     for _pattern in patterns:
+        #         for path in paths:
+        #             file = os.path.basename(path)
+        #             if _pattern not in file:
+        #                 continue
+        #             elif file in exclude:
+        #                 self.excluded_files.append(path)
+        #             else:
+        #                 matches.append(path)
+        all_files = list(self.data_dir.rglob(self._FILEMASK))
+        files = all_files - exclude_files
+        self.files = files
         return files
