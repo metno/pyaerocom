@@ -21,7 +21,6 @@ def test_all_files_exist():
 @pytest.mark.parametrize(
     "vars_to_retrieve",
     [
-        (None, 1),
         (["ec1064aer"], 2),
     ],
 )

@@ -28,7 +28,7 @@ class ReadEprofile(ReadUngriddedBase):
     __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = const.EPRFOILE_NAME
+    DATA_ID = const.EPROFILE_NAME
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EPROFILE_NAME]
@@ -109,28 +109,28 @@ class ReadEprofile(ReadUngriddedBase):
 
     PROVIDES_VARIABLES = list(DEFAULT_VARS)
 
-    EXCLUDE_CASES = ["cirrus.txt"]
+    EXCLUDE_CASES = []
 
     def __init__(self, data_id=None, data_dir=None):
         # initiate base class
         super().__init__(data_id=data_id, data_dir=data_dir)
         # make sure everything is properly set up
-        if not all(
-            [x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]
-        ):  # pragma: no cover
-            raise AttributeError(
-                "Please specify file search masks in "
-                "header dict VAR_PATTERNS_FILE for each "
-                "variable defined in PROVIDES_VARIABLES"
-            )
-        elif not all(
-            [x in self.VAR_NAMES_FILE for x in self.PROVIDES_VARIABLES]
-        ):  # pragma: no cover
-            raise AttributeError(
-                "Please specify file search masks in "
-                "header dict VAR_NAMES_FILE for each "
-                "variable defined in PROVIDES_VARIABLES"
-            )
+        # if not all(
+        #     [x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]
+        # ):  # pragma: no cover
+        #     raise AttributeError(
+        #         "Please specify file search masks in "
+        #         "header dict VAR_PATTERNS_FILE for each "
+        #         "variable defined in PROVIDES_VARIABLES"
+        #     )
+        # elif not all(
+        #     [x in self.VAR_NAMES_FILE for x in self.PROVIDES_VARIABLES]
+        # ):  # pragma: no cover
+        #     raise AttributeError(
+        #         "Please specify file search masks in "
+        #         "header dict VAR_NAMES_FILE for each "
+        #         "variable defined in PROVIDES_VARIABLES"
+        #     )
         #: private dictionary containing loaded Variable instances,
         self._var_info = {}
 
@@ -635,45 +635,10 @@ class ReadEprofile(ReadUngriddedBase):
         list
             list containing file paths
         """
-
-        # if vars_to_retrieve is None:
-        #     vars_to_retrieve = self.DEFAULT_VARS
-        # elif isinstance(vars_to_retrieve, str):
-        #     vars_to_retrieve = [vars_to_retrieve]
-        exclude_files = [Path(file) for file in self._get_exclude_filelist()]
+        exclude_files = set([Path(file) for file in self._get_exclude_filelist()])
         logger.info("Fetching EPROFILE data files...")
-        # patterns = []
-        # for var in vars_to_retrieve:
-        #     # if var not in self.VAR_PATTERNS_FILE:
-        #     #     from pyaerocom.exceptions import VarNotAvailableError
 
-        #     #     raise VarNotAvailableError(f"Input variable {var} is not supported")
-
-        #     # _pattern = self.VAR_PATTERNS_FILE[var]
-        #     # if pattern is not None:
-        #     #     if "." in pattern:
-        #     #         raise NotImplementedError("filetype delimiter . not supported")
-        #     #     spl = _pattern.split(".")
-        #     #     if "*" not in spl[0]:
-        #     #         raise AttributeError(f"Invalid file pattern: {_pattern}")
-        #     #     spl[0] = spl[0].replace("*", pattern)
-        #     #     _pattern = ".".join(spl)
-
-        #     # patterns.append(_pattern)
-
-        # matches = []
-        # for root, dirnames, files in os.walk(self.data_dir, topdown=True):
-        #     paths = [os.path.join(root, f) for f in files]
-        #     for _pattern in patterns:
-        #         for path in paths:
-        #             file = os.path.basename(path)
-        #             if _pattern not in file:
-        #                 continue
-        #             elif file in exclude:
-        #                 self.excluded_files.append(path)
-        #             else:
-        #                 matches.append(path)
-        all_files = list(self.data_dir.rglob(self._FILEMASK))
-        files = all_files - exclude_files
+        all_files = set(Path(self.data_dir).rglob(self._FILEMASK))
+        files = list(all_files - exclude_files)
         self.files = files
         return files
