@@ -167,25 +167,24 @@ class ReadEprofile(ReadUngriddedBase):
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         _vars = []
+
         for var in vars_to_retrieve:
-            if (
-                var in self.VAR_PATTERNS_FILE
-            ):  # make sure to only read what is supported by this file
-                if self.VAR_PATTERNS_FILE[var] in filename:
-                    _vars.append(var)
+            if var in self.VAR_NAMES_FILE:  # make sure to only read what is supported by this file
+                _vars.append(var)
             elif var in self.AUX_REQUIRES:
                 _vars.append(var)
             else:
                 raise ValueError(f"{var} is not supported")
 
+        # LB: Check why 1064 wavelength vars appear not to be valid
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
 
         # create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out["station_id"] = filename.split("/")[-1].split("_")[
-            2
-        ]  # loss of generality but should work. can also get from reading file if needed: data_in.station_ID
+        # data_out["station_id"] = filename.split("/")[-1].split("_")[
+        #     2
+        # ]  # loss of generality but should work. can also get from reading file if needed: data_in.station_ID
         data_out["data_id"] = self.data_id
         data_out["ts_type"] = self.TS_TYPE
 

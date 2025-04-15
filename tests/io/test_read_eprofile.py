@@ -28,3 +28,16 @@ def test_ReadEarlinet_get_file_list(vars_to_retrieve: list[str] | None):
     reader = ReadEprofile()
     files = reader.get_file_list()
     assert len(files) > 0
+
+
+@pytest.mark.parametrize(
+    "num,vars_to_retrieve",
+    [
+        (0, "ec1064aer"),
+    ],
+)
+def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
+    read = ReadEprofile()
+    read.files = paths = TEST_FILES
+    stat = read.read_file(paths[num], vars_to_retrieve)
+    assert stat
