@@ -615,7 +615,7 @@ class ReadEprofile(ReadUngriddedBase):
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
 
-    def get_file_list(self, vars_to_retrieve=None, pattern=None):
+    def get_file_list(self):
         """Perform recursive file search for all input variables
 
         Note
@@ -636,10 +636,10 @@ class ReadEprofile(ReadUngriddedBase):
             list containing file paths
         """
 
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
+        # if vars_to_retrieve is None:
+        #     vars_to_retrieve = self.DEFAULT_VARS
+        # elif isinstance(vars_to_retrieve, str):
+        #     vars_to_retrieve = [vars_to_retrieve]
         exclude_files = [Path(file) for file in self._get_exclude_filelist()]
         logger.info("Fetching EPROFILE data files...")
         # patterns = []
