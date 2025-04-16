@@ -29,9 +29,15 @@ class VerticalProfile:
 
         # Guard against having data (and data errors) with missing associated altitude info
         if hasattr(self.data_err, "__len__"):
-            assert len(self.data) == len(self.data_err) == len(self.altitude)
+            if not self.data.shape[-1] == self.altitude.shape[-1] == self.data_err.shape[-1]:
+                raise ValueError(
+                    "Data, data errors, and altitude arrays must have the same length."
+                )
         else:
-            assert len(self.data) == len(self.altitude)
+            if not self.data.shape[-1] == self.altitude.shape[-1]:
+                raise ValueError(
+                    "Data and altitude arrays must have the same length along the last axis."
+                )
 
     @property
     def data(self):
