@@ -33,7 +33,7 @@ def test_ReadEarlinet_get_file_list(vars_to_retrieve: list[str] | None):
 @pytest.mark.parametrize(
     "num,vars_to_retrieve",
     [
-        (0, "ec1064aer"),
+        (0, "od1064aer"),
     ],
 )
 def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
