@@ -61,3 +61,11 @@ def test_ReadEprofile_read_file(num: int, vars_to_retrieve: list[str]):
     assert np.nanstd(bsc1064aer.data) == pytest.approx(0.005380064098560619, rel=TEST_RTOL)
     assert np.min(bsc1064aer.altitude) == pytest.approx(10.989999771118164, rel=TEST_RTOL)
     assert np.max(bsc1064aer.altitude) == pytest.approx(15340.989999771118, rel=TEST_RTOL)
+
+
+def test_ReadEprofile_read():
+    read = ReadEprofile()
+    read.files = TEST_FILES
+    data = read.read(vars_to_retrieve="bsc1064aer")
+
+    assert len(data.metadata) == 1
