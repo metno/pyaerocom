@@ -50,17 +50,11 @@ class ReadEprofile(ReadUngriddedBase):
     # at an hourly reoslution. Some files are a little less, but typically this is the case
     TS_TYPE = "hourly"
 
-    # VAR_PATTERNS_FILE = {
-    #     "od1064aer": "_e0532",
-    #     "ec1064aer": "_e0355",
-    #     "bsc1064aer": "_b1064",
-    # }
-
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
     VAR_NAMES_FILE = {
         "ec1064aer": "extinction",
-        "od1064aer": "aod",
+        # "od1064aer": "aod", # LB: deal with AOD on a separate run though.
         "bsc1064aer": "attenuated_backscatter_0",
     }
 
@@ -97,9 +91,9 @@ class ReadEprofile(ReadUngriddedBase):
 
     #: Attribute access names for unit reading of variable data
     VAR_UNIT_NAMES = dict(
-        extinction=["unit"],
-        backscatter=["unit"],
-        aod=["unit"],
+        extinction=["unit"],  # LB: needs checking
+        attenuated_backscatter_0=["units"],
+        # aod=["unit"],
         altitude=["units"],
     )
     #: Variable names of uncertainty data
@@ -163,8 +157,7 @@ class ReadEprofile(ReadUngriddedBase):
         StationData
             dict-like object containing results
         """
-        # if read_err is None:  # use default setting
-        #     read_err = self.READ_ERR
+
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         _vars = []
@@ -176,16 +169,10 @@ class ReadEprofile(ReadUngriddedBase):
                 _vars.append(var)
             else:
                 raise ValueError(f"{var} is not supported")
-
-        # LB: Check why 1064 wavelength vars appear not to be valid
-        # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
 
         # create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        # data_out["station_id"] = filename.split("/")[-1].split("_")[
-        #     2
-        # ]  # loss of generality but should work. can also get from reading file if needed: data_in.station_ID
         data_out["data_id"] = self.data_id
         data_out["ts_type"] = self.TS_TYPE
 
@@ -200,14 +187,6 @@ class ReadEprofile(ReadUngriddedBase):
         self.logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
-            # for filter in self.CLOUD_FILTERS:
-            #     if filter in data_in.variables:
-            #         if data_in.variables[filter].item() == self.CLOUD_FILTERS[filter]:
-            #             self.logger.debug(f"Skipping {filename} due to cloud filtering")
-            #             continue
-
-            # getting the coords since no longer in metadata
-            # Put also just in the attributes. not sure why appears twice
             data_out["station_coords"]["longitude"] = data_out["longitude"] = (
                 data_in.station_longitude
             )
@@ -243,24 +222,10 @@ class ReadEprofile(ReadUngriddedBase):
             if len(loc_split) > 1:
                 data_out["country"] = loc_split[1]
 
-            # dtime = (
-            #     pd.Timestamp(data_in.measurement_start_datetime).to_numpy().astype("datetime64[s]")
-            # )
-            # stop = (
-            #     pd.Timestamp(data_in.measurement_stop_datetime).to_numpy().astype("datetime64[s]")
-            # )
-
-            # in case measurement goes over midnight into a new day
-            # if stop < dtime:
-            #     stop = stop + np.timedelta64(1, "[D]")
-
-            data_out["time"] = data_in.time.values
-            # data_out["stopdtime"] = [stop]
-            # data_out["has_zdust"] = False
+            data_out["dtime"] = data_in.time.values
 
             for var in vars_to_read:
                 data_out["var_info"][var] = {}
-                err_read = False
                 unit_ok = False
                 outliers_removed = False
                 has_altitude = False
@@ -299,40 +264,13 @@ class ReadEprofile(ReadUngriddedBase):
                         )
                 else:
                     logger.warning(
-                        f"Failed to convert unit of {var} in file {filename} (EPROFILE): Meaningful unit not found in file"
+                        f"Failed to convert unit of {var} in file {filename} (EPROFILE): Meaningful unit not found in file, so assuming unit_ok = True and that the units in the data are the same as in variables.ini"
                     )
+                    unit_ok = True
+                    unit = self._var_info[var].units
 
-                # import errors if applicable
-                err = np.nan
-                # if read_err and var in self.ERR_VARNAMES:
-                #     err_name = self.ERR_VARNAMES[var]
-                #     if err_name in data_in.variables:
-                #         err = np.squeeze(np.float64(data_in.variables[err_name]))
-                #         if unit_ok:
-                #             err *= unit_fac
-                #         err_read = True
-
-                # 1D variable
-                # if var == "zdust":
-                #     if not val.ndim == 0:
-                #         raise ValueError("Fatal: dust layer height data must be single value")
-
-                #     if unit_ok and info.minimum < val < info.maximum:
-                #         logger.warning(f"zdust value {val} out of range, setting to NaN")
-                #         val = np.nan
-
-                #     if np.isnan(val):
-                #         self.logger.warning(
-                #             f"Invalid value of variable zdust in file {filename}. Skipping...!"
-                #         )
-                #         continue
-
-                #     data_out["has_zdust"] = True
-                #     data_out[var] = val
-
-                # else:
-                if not val.ndim == 1:
-                    raise ValueError("EPROFILE data must be one dimensional")
+                if not val.ndim == 2:
+                    raise ValueError("EPROFILE data must be two dimensional")
                 elif len(val) == 0:
                     continue  # no data
                 # Remove NaN equivalent values
@@ -345,16 +283,14 @@ class ReadEprofile(ReadUngriddedBase):
                     self.logger.info("No wavelength match")
                     continue
 
-                alt_id = self.ALTITUDE_ID
-                alt_data = data_in.variables[alt_id]
+                alt_data = data_in.variables[self.ALTITUDE_ID]
 
-                alt_vals = np.float64(alt_data)
-                alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
+                alt_unit = alt_data.attrs["units"]
                 to_alt_unit = const.VARS["alt"].units
                 if not alt_unit == to_alt_unit:
                     try:
                         alt_unit_fac = get_unit_conversion_fac(alt_unit, to_alt_unit)
-                        alt_vals *= alt_unit_fac
+                        alt_data *= alt_unit_fac
                         alt_unit = to_alt_unit
                     except Exception as e:
                         self.logger.warning(f"Failed to convert unit: {repr(e)}")
@@ -366,20 +302,13 @@ class ReadEprofile(ReadUngriddedBase):
                     outlier_mask = np.logical_or(val < info.minimum, val > info.maximum)
                     val[outlier_mask] = np.nan
 
-                    if err_read:
-                        err[outlier_mask] = np.nan
-                    outliers_removed = True
-                # remove outliers from errors if applicable
-                if err_read:
-                    err[err > self._MAX_VAL_NAN] = np.nan
-
                 # create instance of ProfileData
                 profile = VerticalProfile(
                     data=val,
-                    altitude=alt_vals,
+                    altitude=alt_data.values,
                     dtime=data_in.time.values,
                     var_name=var,
-                    data_err=err,
+                    data_err=np.nan,  # EPROFILE does not provide error data
                     var_unit=unit,
                     altitude_unit=alt_unit,
                 )
@@ -389,7 +318,7 @@ class ReadEprofile(ReadUngriddedBase):
 
             data_out["var_info"][var].update(
                 unit_ok=unit_ok,
-                err_read=err_read,
+                err_read=False,  # EPROFILE foes not provide error data
                 outliers_removed=outliers_removed,
                 has_altitude=has_altitude,
             )
