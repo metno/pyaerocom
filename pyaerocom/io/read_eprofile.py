@@ -137,7 +137,7 @@ class ReadEprofile(ReadUngriddedBase):
 
         self.is_vertical_profile = True
 
-    def read_file(self, filename, vars_to_retrieve=None, remove_outliers=True):
+    def read_file(self, filename, vars_to_retrieve=None, remove_outliers=True) -> StationData:
         """Read EARLINET file and return it as instance of :class:`StationData`
 
         Parameters
@@ -333,7 +333,7 @@ class ReadEprofile(ReadUngriddedBase):
         last_file=None,
         remove_outliers=True,
         pattern=None,
-    ):
+    ) -> UngriddedData:
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -441,7 +441,7 @@ class ReadEprofile(ReadUngriddedBase):
                 # last_station_id = station_id
 
                 # Is floating point single value
-                time = stat.dtime[0]
+                # time = stat.dtime[0] # LB: Check this
                 for var in stat.vars_available:
                     if var not in data_obj.var_idx:
                         VAR_IDX += 1
@@ -488,8 +488,10 @@ class ReadEprofile(ReadUngriddedBase):
                     data_obj._data[idx:stop, col_idx["meta"]] = meta_key
 
                     # write data to data object
-                    data_obj._data[idx:stop, col_idx["time"]] = time
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat.stopdtime[0]
+                    data_obj._data[idx:stop, col_idx["time"]] = stat.dtime  # time
+                    data_obj._data[idx:stop, col_idx["stoptime"]] = (
+                        stat.dtime
+                    )  # time #stat.stopdtime[0]
                     data_obj._data[idx:stop, col_idx["data"]] = data
                     data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
