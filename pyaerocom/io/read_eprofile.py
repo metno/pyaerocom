@@ -301,6 +301,7 @@ class ReadEprofile(ReadUngriddedBase):
                     # REMOVE OUTLIERS
                     outlier_mask = np.logical_or(val < info.minimum, val > info.maximum)
                     val[outlier_mask] = np.nan
+                    outliers_removed = True
 
                 # create instance of ProfileData
                 profile = VerticalProfile(
