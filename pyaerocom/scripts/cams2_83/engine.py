@@ -87,7 +87,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         calc_medianscores = True if var_name in self.MEDIANSCORE_SPECIES else False
 
         if use_fairmode:
-            fairmode_statistics = FairmodeStatistics(self.cfg)
+            fairmode_statistics = FairmodeStatistics()
 
         if use_fairmode and len(persistence_coldata) > 0 and var_name in SPECIES:
             persistence_coldata = persistence_coldata[0]

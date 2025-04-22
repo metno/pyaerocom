@@ -551,7 +551,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         regs: dict | None = None,
         use_meteorological_seasons: bool = False,
     ):
-        fairmode_statistics = FairmodeStatistics(self.cfg)
+        fairmode_statistics = FairmodeStatistics()
         species = fairmode_statistics.species
         freq = species[obs_var]["freq"]
         if freq not in data:

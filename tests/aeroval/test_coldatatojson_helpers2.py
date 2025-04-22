@@ -6,7 +6,6 @@ import pytest
 import xarray
 
 from pyaerocom import ColocatedData, TsType
-from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _calculate_fairmode,
     _create_diurnal_weekly_data_object,
@@ -406,8 +405,7 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     data = _init_data_default_frequencies(example_coldata, ["monthly"])
     (ts_objs, map_meta, site_indices) = _process_sites(data, None, "default", meta_glob)
 
-    setup = EvalSetup(**eval_config)
-    fairmode_statistics = FairmodeStatistics(setup)
+    fairmode_statistics = FairmodeStatistics()
 
     # fill nans
     np.nan_to_num(data["monthly"].data, copy=False, nan=1)
