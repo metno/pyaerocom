@@ -18,7 +18,7 @@ SPECIES = dict(
 )
 
 
-class FairmodeEngine:
+class FairmodeStatistics:
     """
     Class for computing the FAIRMODE statistics
 
