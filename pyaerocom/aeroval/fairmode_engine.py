@@ -5,13 +5,7 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom import ColocatedData
-from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
-
-# from pyaerocom.aeroval.coldatatojson_helpers import (
-#    _select_period_season_coldata,
-#    init_regions_web,
-# )
-# from pyaerocom.exceptions import DataCoverageError, UnknownRegion
+from pyaerocom.aeroval._processing_base import HasColocator
 
 logger = logging.getLogger(__name__)
 
@@ -24,99 +18,12 @@ SPECIES = dict(
 )
 
 
-class FairmodeEngine(ProcessingEngine, DataImporter):
+class FairmodeEngine(HasColocator):
     """
     Engine for processing of fairmode statistics
     """
 
     species = SPECIES
-
-    def run(self) -> None:  # type:ignore[override]
-        pass
-
-    # def run(self, files: list[list[str | Path]], var_list: list) -> None:  # type:ignore[override]
-    #     converted = []
-    #     for file in files:
-    #         logger.info(f"Processing: {file}")
-    #         coldata = ColocatedData(data=file)
-    #         self.process_coldata(coldata)
-    #         converted.append(file)
-    #     return converted
-
-    # def process_coldata(self, coldata: ColocatedData):
-    #     # use_weights = self.cfg.statistics_opts.weighted_stats
-    #     out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
-    #     forecast_days = self.cfg.statistics_opts.forecast_days
-    #     periods = self.cfg.time_cfg.periods
-
-    #     if "var_name_input" in coldata[0].metadata:
-    #         obs_var = coldata[0].metadata["var_name_input"][0]
-    #         model_var = coldata[0].metadata["var_name_input"][1]
-    #     else:
-    #         obs_var = model_var = "UNDEFINED"
-
-    #     modelname = coldata[0].model_name.split("-")[2]
-    #     vert_code = coldata[0].get_meta_item("vert_code")
-    #     obs_name = coldata[0].obs_name
-
-    #     mcfg = self.cfg.model_cfg.get_entry(modelname)
-
-    #     var_name_web = mcfg.get_varname_web(model_var, obs_var)
-    #     seasons = self.cfg.time_cfg.get_seasons()
-
-    #     regions_how = "country"
-    #     use_country = True
-    #     for i in range(forecast_days):
-    #         coldata[i].data["season"] = coldata[i].data.time.dt.season
-    #         (regborders, regs, regnames) = init_regions_web(coldata[i], regions_how)
-
-    #     results = {}
-
-    #     for regid, regname in regnames.items():
-    #         results[regname] = {}
-    #         logger.info(f"Creating subset for {regname}")
-    #         try:
-    #             subset_region = [
-    #                 col.filter_region(regid, check_country_meta=use_country) for col in coldata
-    #             ]
-
-    #         except (DataCoverageError, UnknownRegion) as e:
-    #             logger.info(f"Skipping forecast plot for {regname} due to error {str(e)}")
-    #             continue
-    #         for per in periods:
-    #             for season in seasons:
-    #                 perstr = f"{per}-{season}"
-
-    #                 logger.info(f"Making subset for {regid}, {per} and {season}")
-    #                 if season not in coldata[0].data["season"].data and season != "all":
-    #                     logger.info(
-    #                         f"Season {season} is not available for {per} and will be skipped"
-    #                     )
-    #                     continue
-
-    #                 try:
-    #                     subset = [
-    #                         _select_period_season_coldata(col, per, season)
-    #                         for col in subset_region
-    #                     ]
-    #                 except (DataCoverageError, UnknownRegion) as e:
-    #                     logger.info(f"Skipping forecast plot due to error {str(e)}")
-    #                     continue
-
-    #                 stats_list = self.fairmode_statistics(subset, obs_var)
-
-    #                 out_dirs = self.cfg.path_manager.get_json_output_dirs(True)  # noqa: F841
-
-    #                 results[f"{regname}"][f"{perstr}"] = stats_list
-
-    #         self.save_fairmode_stats(
-    #             results,
-    #             obs_name,
-    #             var_name_web,
-    #             vert_code,
-    #             modelname,
-    #             model_var,
-    #         )
 
     def save_fairmode_stats(
         self,
@@ -163,19 +70,13 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
         rms = np.sqrt(np.nanmean(diffsquare, axis=0, where=mask))
         bias = np.nanmean(diff, axis=0, where=mask)
 
-        R = FairmodeEngine.pearson_R(obsvals, modvals)
+        R = self.pearson_R(obsvals, modvals)
         rmsu = self._RMSU(obsmean, obsstd, var_name)
         sign = self._fairmode_sign(modstd, obsstd, R)
         crms = self._crms(modstd, obsstd, R)
         mqi = self._mqi(rms, rmsu, beta=1)
         mb = self._mb(bias, rmsu, beta=1)
         beta_Hperc = self._beta_Hperc(obsvals, modvals, mask, var_name)
-
-        # assert np.some(np.isclose(
-        #     rmsu * mqi,
-        #     np.sqrt((bias) ** 2 + (modstd - obsstd) ** 2 + (2 * obsstd * modstd * (1 - R))),
-        #     rtol=1e-2,
-        # )), "failed MQI check"
 
         assert len(rmsu) == len(stations)
         assert len(sign) == len(stations)
@@ -194,7 +95,6 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
                 bias=bias[i],
                 rms=[rms[i]],
                 beta_mqi=[mqi[i]],
-                # beta_mb=[mb[i]],
                 Hperc=beta_Hperc[i],
                 persistence_model=False,
                 station_type=station_types[i],
@@ -224,7 +124,8 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
         return r
 
-    def _RMSU(self, mean: float, std: float, spec: str) -> float:
+    @staticmethod
+    def _RMSU(mean: float, std: float, spec: str) -> float:
         """RMSU is the Root Mean Squared Uncertainty associated with the uncertainty of the observations, U(O_i)."""
 
         if spec not in SPECIES:
@@ -238,33 +139,32 @@ class FairmodeEngine(ProcessingEngine, DataImporter):
 
         return UrRV * np.sqrt(in_sqrt)
 
-    def _fairmode_sign(self, mod_std: float, obs_std: float, R: float) -> float:
+    @staticmethod
+    def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
         a = np.where(
             np.logical_or(obs_std <= 0, R >= 1),
             1,
             np.abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R))),
         )
         return np.where(a >= 1, 1.0, -1.0)
-        # if obs_std <= 0 or R >= 1:  # guard against sqrt(<0) or div0 errors
-        #     return 1
-        # a = np.abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R)))
-        # return 1 if a >= 1 else -1
 
-    def _crms(self, mod_std: float, obs_std: float, R: float) -> float:
+    @staticmethod
+    def _crms(mod_std: float, obs_std: float, R: float) -> float:
         """Returns the Centered Root Mean Squared Error"""
         return np.sqrt(mod_std**2 + obs_std**2 - 2 * mod_std * obs_std * R)
 
-    def _mqi(self, rms: float, rmsu: float, *, beta: float) -> float:
+    @staticmethod
+    def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
         """Model Quality Indicator (MQI). Pass beta=1 for `beta MQI`"""
         return rms / (rmsu * beta)
 
-    def _mb(self, bias: float, rmsu: float, *, beta: float) -> float:
+    @staticmethod
+    def _mb(bias: float, rmsu: float, *, beta: float) -> float:
         """Model Bias(MB). Pass beta=1 for `beta MB`"""
         return bias / (rmsu * beta)
 
-    def _beta_Hperc(
-        self, obs: np.ndarray, mod: np.ndarray, mask: np.ndarray, var_name: str, beta=1
-    ) -> np.ndarray:
+    @staticmethod
+    def _beta_Hperc(obs: np.ndarray, mod: np.ndarray, var_name: str, beta=1) -> np.ndarray:
         percentile = SPECIES[var_name]["percentile"]
         Operc = np.nanpercentile(obs, percentile, axis=0)
         Mperc = np.nanpercentile(mod, percentile, axis=0)
