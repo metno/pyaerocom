@@ -3,8 +3,8 @@ import pytest
 
 # from pyaerocom import ColocatedData, Colocator
 from pyaerocom.aeroval import EvalSetup  # , ExperimentProcessor
-from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine  # , ExperimentOutput
 from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
+from pyaerocom.aeroval.experiment_output import ExperimentOutput
 
 # from tests.fixtures.aeroval.cfg_test_fairmode import CFG, fairmode_cfg
 from tests.fixtures.collocated_data import COLDATA
@@ -12,13 +12,23 @@ from tests.fixtures.collocated_data import COLDATA
 
 @pytest.fixture
 def fairmode_engine(patched_config):
-    setup = EvalSetup(**patched_config)
-    fairmode_engine = FairmodeEngine(setup)
+    # setup = EvalSetup(**patched_config)
+    fairmode_engine = FairmodeEngine()
 
-    assert isinstance(fairmode_engine, ProcessingEngine)
-    assert isinstance(fairmode_engine, HasColocator)
+    # assert isinstance(fairmode_engine, ProcessingEngine)
+    # assert isinstance(fairmode_engine, HasColocator)
 
     return fairmode_engine
+
+
+@pytest.fixture
+def fairmode_exp_output(patched_config):
+    setup = EvalSetup(**patched_config)
+    exp_output = ExperimentOutput(setup)
+
+    assert isinstance(exp_output, ExperimentOutput)
+
+    return exp_output
 
 
 @pytest.fixture
@@ -113,19 +123,27 @@ def fairmode_stats_example() -> dict:
     }
 
 
-def test_save_fairmode_stats(fairmode_engine, fairmode_stats_example, tmp_path):
+def test_save_fairmode_stats(
+    fairmode_engine, fairmode_exp_output, fairmode_stats_example, tmp_path
+):
     obs_name = "obsname"
     var_name_web = "name"
     vert_code = "Surface"
     modelname = "modelname"
     model_var = "modelvar"
     fairmode_engine.save_fairmode_stats(
-        fairmode_stats_example, obs_name, var_name_web, vert_code, modelname, model_var
+        fairmode_exp_output,
+        fairmode_stats_example,
+        obs_name,
+        var_name_web,
+        vert_code,
+        modelname,
+        model_var,
     )
 
     fileout = (
         tmp_path
-        / f"{fairmode_engine.cfg.proj_id}/{fairmode_engine.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}.json"
+        / f"{fairmode_exp_output.cfg.proj_id}/{fairmode_exp_output.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}.json"
     )
     assert fileout.is_file()
 

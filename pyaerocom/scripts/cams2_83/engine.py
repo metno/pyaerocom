@@ -210,20 +210,20 @@ class CAMS2_83_Engine(ProcessingEngine):
                         )
 
                         if calc_forecast_target:
-                            # results_mqi[f"{regname}"][f"{perstr}"] = {}
+                            
                             results_mqi = []
                             for day in range(forecast_days):
                                 ds = subset[day]
                                 ds_p = persistence_subset_region
 
-                                # mqi_results = self._calc_forecast_target_MQI(ds, ds_p, var_name)
+                                
                                 mqi_results = self._calc_forecast_target_MQI_vectorized(
                                     ds, ds_p, var_name, day
                                 )
 
                                 results_mqi.append(mqi_results)
 
-                                # results_mqi[f"{regname}"][f"{perstr}"][day] = mqi_results
+                               
 
                             for station in results_fairmode[f"{regname}"][f"{perstr}"]:
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
@@ -278,6 +278,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         if use_fairmode and var_name in SPECIES:
             fairmode_engine.save_fairmode_stats(
+                self.exp_output,
                 results_fairmode,
                 obs_name,
                 var_name_web,
@@ -443,7 +444,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         )
         sign = np.where(
             false_alarms <= missed_alarms, -1.0, 1.0
-        )  # np.where(ratio<1, -1.0, 1.0)
+        )  
         return sign
 
     def _sort_coldata(

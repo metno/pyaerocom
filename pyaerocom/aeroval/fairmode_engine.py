@@ -1,11 +1,11 @@
 import logging
+from pyaerocom.aeroval.experiment_output import ExperimentOutput
 
 # from pathlib import Path
 import numpy as np
 import xarray as xr
 
 from pyaerocom import ColocatedData
-from pyaerocom.aeroval._processing_base import HasColocator
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +18,27 @@ SPECIES = dict(
 )
 
 
-class FairmodeEngine(HasColocator):
+class FairmodeEngine:
     """
-    Engine for processing of fairmode statistics
+    Class for computing the FAIRMODE statistics
+
+    FAIRMODE is the Forum for Air Quality Modeling, an initiative to bring together air quality modelers and users.
+        - Promote and Support the use of models by EU Member States
+        - Emphasis is on model application for air quality policy (monitoring, regulation, etc.)
+        - Develop harmonized set of tools to test whether or a not a model is fit for a given purpose
+        - CAMS has to make use of FAIRMODE diagrams
+
+    This module contains methods to compute the relevant FAIRMODE statistics.
     """
 
     species = SPECIES
 
+    def __init__(self):
+        pass
+
     def save_fairmode_stats(
         self,
+        exp_output: ExperimentOutput,
         fairmode_stats: dict,
         obs_name: str,
         var_name_web: str,
@@ -35,7 +47,7 @@ class FairmodeEngine(HasColocator):
         model_var: str,
     ):
         for regname in fairmode_stats:
-            self.exp_output.add_fairmode_entry(
+            exp_output.add_fairmode_entry(
                 fairmode_stats[regname],
                 regname,
                 obs_name,
@@ -76,7 +88,7 @@ class FairmodeEngine(HasColocator):
         crms = self._crms(modstd, obsstd, R)
         mqi = self._mqi(rms, rmsu, beta=1)
         mb = self._mb(bias, rmsu, beta=1)
-        beta_Hperc = self._beta_Hperc(obsvals, modvals, mask, var_name)
+        beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
 
         assert len(rmsu) == len(stations)
         assert len(sign) == len(stations)
