@@ -3,7 +3,7 @@ import pytest
 import xarray as xr
 
 from pyaerocom.aeroval import EvalSetup  # , ExperimentProcessor
-from pyaerocom.aeroval.fairmode_engine import SPECIES
+from pyaerocom.aeroval.fairmode_statistics import SPECIES
 from pyaerocom.scripts.cams2_83.engine import CAMS2_83_Engine
 from tests.fixtures.collocated_data import COLDATA
 

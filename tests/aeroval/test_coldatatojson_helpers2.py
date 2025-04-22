@@ -22,7 +22,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _select_period_season_coldata,
 )
 from pyaerocom.aeroval.exceptions import TrendsError
-from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
+from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
 
@@ -407,7 +407,7 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     (ts_objs, map_meta, site_indices) = _process_sites(data, None, "default", meta_glob)
 
     setup = EvalSetup(**eval_config)
-    fairmode_engine = FairmodeEngine(setup)
+    fairmode_statistics = FairmodeStatistics(setup)
 
     # fill nans
     np.nan_to_num(data["monthly"].data, copy=False, nan=1)
@@ -420,7 +420,7 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     # and treat it as if it's concno2 hourly
     results = _calculate_fairmode(
         data["monthly"],
-        fairmode_engine,
+        fairmode_statistics,
         map_meta,
         "concno2",
         [period],
@@ -442,7 +442,7 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     # here we pass the wrong period to test the case when the coldata subset fails
     resultsempty = _calculate_fairmode(
         data["monthly"],
-        fairmode_engine,
+        fairmode_statistics,
         map_meta,
         "concno2",
         [wrongperiod],

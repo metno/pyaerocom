@@ -24,7 +24,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     process_profile_data_for_stations,
 )
 from pyaerocom.aeroval.exceptions import ConfigError
-from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
+from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.units import Unit
 
@@ -551,8 +551,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         regs: dict | None = None,
         use_meteorological_seasons: bool = False,
     ):
-        fairmode_engine = FairmodeEngine(self.cfg)
-        species = fairmode_engine.species
+        fairmode_statistics = FairmodeStatistics(self.cfg)
+        species = fairmode_statistics.species
         freq = species[obs_var]["freq"]
         if freq not in data:
             if (
@@ -570,13 +570,13 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         stats = _calculate_fairmode(
             fm_data,
-            fairmode_engine,
+            fairmode_statistics,
             map_meta,
             obs_var,
             periods,
             seasons,
             use_meteorological_seasons,
         )
-        fairmode_engine.save_fairmode_stats(
+        fairmode_statistics.save_fairmode_stats(
             self.exp_output, stats, obs_name, var_name_web, vert_code, model_name, model_var
         )

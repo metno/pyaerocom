@@ -16,7 +16,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _select_period_season_coldata,
     init_regions_web,
 )
-from pyaerocom.aeroval.fairmode_engine import SPECIES, FairmodeEngine
+from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
 
@@ -87,7 +87,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         calc_medianscores = True if var_name in self.MEDIANSCORE_SPECIES else False
 
         if use_fairmode:
-            fairmode_engine = FairmodeEngine(self.cfg)
+            fairmode_statistics = FairmodeStatistics(self.cfg)
 
         if use_fairmode and len(persistence_coldata) > 0 and var_name in SPECIES:
             persistence_coldata = persistence_coldata[0]
@@ -204,7 +204,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             )
 
                         results_fairmode[f"{regname}"][f"{perstr}"] = (
-                            fairmode_engine.fairmode_statistics(
+                            fairmode_statistics.fairmode_statistics(
                                 fairmode_subset, var_name
                             )
                         )
@@ -277,7 +277,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 )
 
         if use_fairmode and var_name in SPECIES:
-            fairmode_engine.save_fairmode_stats(
+            fairmode_statistics.save_fairmode_stats(
                 self.exp_output,
                 results_fairmode,
                 obs_name,
@@ -343,7 +343,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         return stats_list
 
     def _pearson_R_vec(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return FairmodeEngine.pearson_R(x, y)
+        return FairmodeStatistics.pearson_R(x, y)
 
     def _calc_forecast_target_MQI_vectorized(
         self,

@@ -38,7 +38,7 @@ from pyaerocom.trends_helpers import (
 )
 from pyaerocom.units.datetime import TsType
 
-# from pyaerocom.aeroval.fairmode_engine import FairmodeEngine
+# from pyaerocom.aeroval.fairmode_statistics import FairmodeStatistics
 
 logger = logging.getLogger(__name__)
 
@@ -1789,7 +1789,7 @@ def _process_statistics_timeseries_single_region(
 
 def _calculate_fairmode(
     coldata: ColocatedData,
-    fairmode_engine,  #: FairmodeEngine,
+    fairmode_statistics,  #: FairmodeStatistics,
     map_meta: list[dict],
     obs_var: str = None,
     periods: tuple[str, ...] | None = None,
@@ -1809,7 +1809,7 @@ def _calculate_fairmode(
                 return results
 
             perstr = f"{per}-{season}"
-            fm_stats = fairmode_engine.fairmode_statistics(subset, obs_var)
+            fm_stats = fairmode_statistics.fairmode_statistics(subset, obs_var)
             for i, station in enumerate(map_meta):
                 station_name = station["station_name"]
                 region = station["region"][0]
