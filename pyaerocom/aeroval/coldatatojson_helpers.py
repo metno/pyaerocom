@@ -1258,8 +1258,8 @@ def _calc_temporal_corr(coldata):
 
 def _select_period_season_coldata(coldata, period, season, use_meteorological_seasons):
     tslice = _period_str_to_timeslice(period)
-    if use_meteorological_seasons and len(period) == 4:
-        # relevant only for single years
+    if use_meteorological_seasons and len(period) == 4 and season == "DJF":
+        # relevant only for single years and DJF
         # for period = '2022' tslice needs to be slice('2021-12','2022-11')
         yeardt = datetime.strptime(period, "%Y")
         tslice = slice(f"{yeardt.year - 1}-12", f"{yeardt.year}-11")
