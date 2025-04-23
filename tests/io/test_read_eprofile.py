@@ -67,5 +67,4 @@ def test_ReadEprofile_read():
     read = ReadEprofile()
     read.files = TEST_FILES
     data = read.read(vars_to_retrieve="bsc1064aer")
-
-    assert len(data.metadata) == 1
+    assert len(data.metadata) == len(TEST_FILES)

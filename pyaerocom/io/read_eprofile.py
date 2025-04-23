@@ -454,7 +454,7 @@ class ReadEprofile(ReadUngriddedBase):
                     if isinstance(val, VerticalProfile):
                         altitude = val.altitude
                         data = val.data
-                        add = len(data)
+                        add = np.prod(data.shape)
                         # err = val.data_err
                         metadata[meta_key]["var_info"]["altitude"] = via = {}
 
@@ -488,12 +488,16 @@ class ReadEprofile(ReadUngriddedBase):
                     data_obj._data[idx:stop, col_idx["meta"]] = meta_key
 
                     # write data to data object
-                    data_obj._data[idx:stop, col_idx["time"]] = stat.dtime  # time
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = (
-                        stat.dtime
-                    )  # time #stat.stopdtime[0]
-                    data_obj._data[idx:stop, col_idx["data"]] = data
-                    data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
+                    data_obj._data[idx:stop, col_idx["time"]] = np.repeat(
+                        stat.dtime, data.shape[-1]
+                    )
+                    data_obj._data[idx:stop, col_idx["stoptime"]] = np.repeat(
+                        stat.dtime, data.shape[-1]
+                    )
+                    data_obj._data[idx:stop, col_idx["data"]] = data.flatten()
+                    data_obj._data[idx:stop, col_idx["dataaltitude"]] = np.tile(
+                        altitude, data.shape[0]
+                    )
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
 
                     # if read_err:
