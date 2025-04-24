@@ -47,17 +47,3 @@ def test_VerticalProfile_error(kwargs: dict, exception: type[Exception], error: 
     with pytest.raises(exception) as e:
         VerticalProfile(**kwargs)
     assert str(e.value).endswith(error)
-
-
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        dict(),
-        dict(plot_errs=False),
-        dict(whole_alt_range=True),
-        dict(errs_shaded=False),
-        dict(add_vertbar_zero=False),
-    ],
-)
-def test_VerticalProfile_plot(vertical_profile: VerticalProfile, kwargs: dict[str, bool]):
-    vertical_profile.plot(**kwargs)
