@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 
 from pyaerocom.io.read_eprofile import ReadEprofile
-from pyaerocom import VerticalProfile
+from pyaerocom import VerticalProfile, UngriddedData
 from tests.conftest import TEST_RTOL
 
 
@@ -63,8 +63,18 @@ def test_ReadEprofile_read_file(num: int, vars_to_retrieve: list[str]):
     assert np.max(bsc1064aer.altitude) == pytest.approx(15340.989999771118, rel=TEST_RTOL)
 
 
+def test_ReadEprofile_read_file_error():
+    read = ReadEprofile()
+    read.files = paths = TEST_FILES
+    with pytest.raises(ValueError) as e:
+        read.read_file(paths[0], "invalidvar")
+    assert str(e.value).endswith("is not supported")
+
+
 def test_ReadEprofile_read():
     read = ReadEprofile()
     read.files = TEST_FILES
     data = read.read(vars_to_retrieve="bsc1064aer")
+    assert isinstance(data, UngriddedData)
     assert len(data.metadata) == len(TEST_FILES)
+    assert len(data.shape) == 2
