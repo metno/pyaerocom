@@ -1166,7 +1166,8 @@ class UngriddedData(UngriddedDataMetadata):
                 totnum = len(indices)
 
                 stop = data_idx_new + totnum
-
+                while stop > new._data.shape[0]:
+                    new.add_chunk()
                 new._data[data_idx_new:stop, :] = self._data[indices, :]
                 new._data[data_idx_new:stop, new._METADATAKEYINDEX] = meta_idx_new
                 new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new, stop)
