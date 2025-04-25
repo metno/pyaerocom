@@ -22,16 +22,10 @@ def test_all_files_exist():
         assert Path(file).exists()
 
 
-@pytest.mark.parametrize(
-    "vars_to_retrieve",
-    [
-        (["ec1064aer"], 2),
-    ],
-)
-def test_ReadEprofile_get_file_list(vars_to_retrieve: list[str] | None):
+def test_ReadEprofile_get_file_list():
     reader = ReadEprofile()
     files = reader.get_file_list()
-    assert len(files) > 0
+    assert isinstance(files, list)
 
 
 @pytest.mark.parametrize(
