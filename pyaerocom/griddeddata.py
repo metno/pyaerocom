@@ -47,6 +47,7 @@ from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NU
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units import Unit
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -775,7 +776,7 @@ class GriddedData:
         to_unit = None
         try:
             var = const.VARS[self.cube.var_name]
-            to_unit = var.units
+            to_unit = get_standard_unit(var.var_name)
             current_unit = self.units
             if to_unit == current_unit:  # string match e.g. both are m-1
                 unit_ok = True
