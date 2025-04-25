@@ -6,13 +6,15 @@ import pytest
 import numpy as np
 
 from pyaerocom.io.read_eprofile import ReadEprofile
-from pyaerocom import VerticalProfile, UngriddedData
+from pyaerocom import const, VerticalProfile, UngriddedData
 from tests.conftest import TEST_RTOL
 
 
+ROOT: str = const.OBSLOCS_UNGRIDDED["Eprofile-test"]
+
 TEST_FILES: list[str] = [
-    "/lustre/storeB/project/fou/kl/v-profiles/2025/01/01/AP_0-20000-0-06235-A-2025-01-01.nc",
-    "/lustre/storeB/project/fou/kl/v-profiles/2025/01/01/AP_0-20000-0-06240-A-2025-01-01.nc",
+    f"{ROOT}/AP_0-20000-0-06235-A-2025-01-01.nc",
+    f"{ROOT}/AP_0-20000-0-06240-A-2025-01-01.nc",
 ]
 
 
