@@ -46,15 +46,14 @@ class ReadEprofile(ReadUngriddedBase):
     ALTITUDE_ID = "altitude"
 
     #: temporal resolution
-    # Note: This is an approximation based on the fact that MOST of the data appears to be collected
-    # at an hourly reoslution. Some files are a little less, but typically this is the case
+    # TODO: check this
     TS_TYPE = "hourly"
 
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
+    # TODO: add aod
     VAR_NAMES_FILE = {
         "ec1064aer": "extinction",
-        # "od1064aer": "aod", # LB: deal with AOD on a separate run though.
         "bsc1064aer": "attenuated_backscatter_0",
     }
 
@@ -91,16 +90,12 @@ class ReadEprofile(ReadUngriddedBase):
 
     #: Attribute access names for unit reading of variable data
     VAR_UNIT_NAMES = dict(
-        extinction=["unit"],  # LB: needs checking
+        extinction=["unit"],  # TODO: needs checking
         attenuated_backscatter_0=["units"],
-        # aod=["unit"],
         altitude=["units"],
     )
     #: Variable names of uncertainty data
     ERR_VARNAMES = dict()
-
-    #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
-    # READ_ERR = True
 
     PROVIDES_VARIABLES = list(DEFAULT_VARS)
 
@@ -109,23 +104,7 @@ class ReadEprofile(ReadUngriddedBase):
     def __init__(self, data_id=None, data_dir=None):
         # initiate base class
         super().__init__(data_id=data_id, data_dir=data_dir)
-        # make sure everything is properly set up
-        # if not all(
-        #     [x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]
-        # ):  # pragma: no cover
-        #     raise AttributeError(
-        #         "Please specify file search masks in "
-        #         "header dict VAR_PATTERNS_FILE for each "
-        #         "variable defined in PROVIDES_VARIABLES"
-        #     )
-        # elif not all(
-        #     [x in self.VAR_NAMES_FILE for x in self.PROVIDES_VARIABLES]
-        # ):  # pragma: no cover
-        #     raise AttributeError(
-        #         "Please specify file search masks in "
-        #         "header dict VAR_NAMES_FILE for each "
-        #         "variable defined in PROVIDES_VARIABLES"
-        #     )
+
         #: private dictionary containing loaded Variable instances,
         self._var_info = {}
 
@@ -381,9 +360,7 @@ class ReadEprofile(ReadUngriddedBase):
         if last_file is None:
             last_file = len(files)
 
-        files = files[
-            first_file : last_file + 1
-        ]  # think need to +1 here in order to actually get desired subset
+        files = files[first_file : last_file + 1]
 
         self.read_failed = []
 
@@ -419,7 +396,6 @@ class ReadEprofile(ReadUngriddedBase):
                         f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
                     )
                     continue
-                # if last_station_id != station_id:
                 meta_key += 1
                 # Fill the metadata dict
                 # the location in the data set is time step dependant!
@@ -464,10 +440,6 @@ class ReadEprofile(ReadUngriddedBase):
                         add = 1
                         altitude = np.nan
                         data = val
-                        # if var in stat.data_err:
-                        #     err = stat.err[var]
-                        # else:
-                        #     err = np.nan
                     vi.update(stat.var_info[var])
                     stop = idx + add
                     # check if size of data object needs to be extended
@@ -499,9 +471,6 @@ class ReadEprofile(ReadUngriddedBase):
                         altitude, data.shape[0]
                     )
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
-
-                    # if read_err:
-                    #     data_obj._data[idx:stop, col_idx["dataerr"]] = err
 
                     if var not in meta_idx[meta_key]:
                         meta_idx[meta_key][var] = []
