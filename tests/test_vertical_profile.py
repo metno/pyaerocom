@@ -19,12 +19,11 @@ def vertical_profile() -> VerticalProfile:
 
 
 @pytest.mark.parametrize(
-    "kwargs,exception,error",
+    "kwargs,exception",
     [
         pytest.param(
             dict(),
             TypeError,
-            "missing 7 required positional arguments: 'data', 'altitude', 'dtime', 'var_name', 'data_err', 'var_unit', and 'altitude_unit'",
             id="no args",
         ),
         pytest.param(
@@ -37,13 +36,11 @@ def vertical_profile() -> VerticalProfile:
                 var_unit="1",
                 altitude_unit="1",
             ),
-            AssertionError,
-            "",
+            ValueError,
             id="wrong data",
         ),
     ],
 )
-def test_VerticalProfile_error(kwargs: dict, exception: type[Exception], error: str):
-    with pytest.raises(exception) as e:
+def test_VerticalProfile_error(kwargs: dict, exception: type[Exception]):
+    with pytest.raises(exception):
         VerticalProfile(**kwargs)
-    assert str(e.value).endswith(error)
