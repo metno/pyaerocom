@@ -88,6 +88,12 @@ class Unit:
             ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
             ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
             ["drynh3", "kg ha-1 yr-1", "kg m-2 s-2", 1 / (HA_TO_SQM * (365 * 24 * 60 * 60))],
+            [
+                "drynh3",
+                "kg N ha-1 yr-1",
+                "kg m-2 s-2",
+                (M_NH3 / M_N) / (1 / (HA_TO_SQM * (365 * 24 * 60 * 60))),
+            ],
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
