@@ -6,7 +6,8 @@ import numpy as np
 import xarray
 
 from pyaerocom import const
-from pyaerocom.exceptions import DataUnitError
+from pyaerocom.units import convert_unit
+from pyaerocom.exceptions import DataUnitError, DataDimensionError, EprofileFileError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -236,12 +237,10 @@ class ReadEprofile(ReadUngriddedBase):
                         unit = arr.attrs[u]
                 if unit is None:
                     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
-                unit_fac = None
                 if len(unit) > 0:
                     try:
                         to_unit = self._var_info[var].units
-                        unit_fac = get_unit_conversion_fac(unit, to_unit)
-                        val *= unit_fac
+                        val = convert_unit(val, from_unit=unit, to_unit=to_unit)
                         unit = to_unit
                         unit_ok = True
                     except Exception as e:
@@ -257,7 +256,7 @@ class ReadEprofile(ReadUngriddedBase):
                     unit = self._var_info[var].units
 
                 if not val.ndim == 2:
-                    raise ValueError("EPROFILE data must be two dimensional")
+                    raise DataDimensionError("EPROFILE data must be two dimensional")
                 elif len(val) == 0:
                     continue  # no data
                 # Remove NaN equivalent values
@@ -393,7 +392,7 @@ class ReadEprofile(ReadUngriddedBase):
         VAR_IDX = -1
         for i, _file in enumerate(files):
             if i % disp_each == 0:
-                print(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
+                logger.info(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
             try:
                 stat = self.read_file(
                     _file,
@@ -520,7 +519,9 @@ class ReadEprofile(ReadUngriddedBase):
                         indata = True
 
             if not count == num:
-                raise Exception
+                raise EprofileFileError(
+                    f"Number of excluded files in {file} does not match the number of files found in the file"
+                )
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
 
