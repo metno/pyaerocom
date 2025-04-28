@@ -118,7 +118,7 @@ class StrType(Validator):
 class Loc(abc.ABC):
     """Abstract descriptor representing a path location
 
-    Descriptor???
+    Descriptor: TODO
     See here: https://docs.python.org/3/howto/descriptor.html#complete-practical-example
 
     Note

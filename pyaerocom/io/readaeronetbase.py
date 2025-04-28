@@ -156,7 +156,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         nums = numbers_in_str(colname)
         if len(nums) == 1:
             if low <= int(nums[0]) <= high:
-                self.logger.debug(
+                logger.debug(
                     f"Successfully extracted wavelength {nums[0]} nm from column name {colname}"
                 )
                 return nums[0]
@@ -235,7 +235,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                         idx = self._search_var_wavelength_tol(var, cols)
                         col_index[var] = idx
                     except Exception as e:
-                        self.logger.info(
+                        logger.info(
                             f"Failed to infer data column of variable {var} "
                             f"within wavelength tolerance range. Error:\n{repr(e)}"
                         )
@@ -373,7 +373,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             try:
                 station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
             except AeronetReadError as e:
-                self.logger.warning(f"\n{repr(e)}.")
+                logger.warning(f"\n{repr(e)}.")
                 skipped += 1
                 continue
 
