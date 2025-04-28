@@ -6,7 +6,12 @@ import pandas as pd
 import xarray
 
 from pyaerocom import const
-from pyaerocom.exceptions import DataUnitError
+from pyaerocom.exceptions import (
+    DataDimensionError,
+    DataUnitError,
+    EarlinetFileError,
+    VarNotAvailableError,
+)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -203,7 +208,7 @@ class ReadEarlinet(ReadUngriddedBase):
             elif var in self.AUX_REQUIRES:
                 _vars.append(var)
             else:
-                raise ValueError(f"{var} is not supported")
+                raise VarNotAvailableError(f"{var} is not supported")
 
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
@@ -224,13 +229,13 @@ class ReadEarlinet(ReadUngriddedBase):
         var_info = self._var_info
 
         # Iterate over the lines of the file
-        self.logger.debug(f"Reading file {filename}")
+        logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
             for filter in self.CLOUD_FILTERS:
                 if filter in data_in.variables:
                     if data_in.variables[filter].item() == self.CLOUD_FILTERS[filter]:
-                        self.logger.debug(f"Skipping {filename} due to cloud filtering")
+                        logger.debug(f"Skipping {filename} due to cloud filtering")
                         continue
 
             # getting the coords since no longer in metadata
@@ -299,7 +304,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 netcdf_var_name = self.VAR_NAMES_FILE[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
-                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    logger.warning(f"Variable {var} not found in file {filename}")
                     continue
 
                 info = var_info[var]
@@ -343,14 +348,16 @@ class ReadEarlinet(ReadUngriddedBase):
                 # 1D variable
                 if var == "zdust":
                     if not val.ndim == 0:
-                        raise ValueError("Fatal: dust layer height data must be single value")
+                        raise DataDimensionError(
+                            "Fatal: dust layer height data must be single value"
+                        )
 
                     if unit_ok and info.minimum < val < info.maximum:
                         logger.warning(f"zdust value {val} out of range, setting to NaN")
                         val = np.nan
 
                     if np.isnan(val):
-                        self.logger.warning(
+                        logger.warning(
                             f"Invalid value of variable zdust in file {filename}. Skipping...!"
                         )
                         continue
@@ -360,7 +367,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
                 else:
                     if not val.ndim == 1:
-                        raise ValueError("Extinction data must be one dimensional")
+                        raise DataDimensionError("Extinction data must be one dimensional")
                     elif len(val) == 0:
                         continue  # no data
                     # Remove NaN equivalent values
@@ -371,7 +378,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
                     assert data_in[wvlg_str].shape == (1,)
                     if not wvlg == float(data_in[wvlg_str][0]):
-                        self.logger.info("No wavelength match")
+                        logger.info("No wavelength match")
                         continue
 
                     alt_id = self.ALTITUDE_ID
@@ -386,7 +393,7 @@ class ReadEarlinet(ReadUngriddedBase):
                             alt_vals *= alt_unit_fac
                             alt_unit = to_alt_unit
                         except Exception as e:
-                            self.logger.warning(f"Failed to convert unit: {repr(e)}")
+                            logger.warning(f"Failed to convert unit: {repr(e)}")
                     has_altitude = True
 
                     # remove outliers from data, if applicable
@@ -510,7 +517,7 @@ class ReadEarlinet(ReadUngriddedBase):
         VAR_IDX = -1
         for i, _file in enumerate(files):
             if i % disp_each == 0:
-                print(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
+                logger.info(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
             try:
                 stat = self.read_file(
                     _file,
@@ -519,7 +526,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     remove_outliers=remove_outliers,
                 )
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    self.logger.info(
+                    logger.info(
                         f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
                     )
                     continue
@@ -612,9 +619,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
             except Exception as e:
                 self.read_failed.append(_file)
-                self.logger.exception(
-                    f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})"
-                )
+                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
@@ -643,7 +648,9 @@ class ReadEarlinet(ReadUngriddedBase):
                         indata = True
 
             if not count == num:
-                raise Exception
+                raise EarlinetFileError(
+                    "Number of excluded files does not match the number of files in the list"
+                )
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
 
@@ -677,8 +684,6 @@ class ReadEarlinet(ReadUngriddedBase):
         patterns = []
         for var in vars_to_retrieve:
             if var not in self.VAR_PATTERNS_FILE:
-                from pyaerocom.exceptions import VarNotAvailableError
-
                 raise VarNotAvailableError(f"Input variable {var} is not supported")
 
             _pattern = self.VAR_PATTERNS_FILE[var]

@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 import numpy as np
 import xarray
@@ -13,6 +14,12 @@ from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
 from pathlib import Path
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 logger = logging.getLogger(__name__)
 
@@ -116,6 +123,7 @@ class ReadEprofile(ReadUngriddedBase):
 
         self.is_vertical_profile = True
 
+    @override
     def read_file(self, filename, vars_to_retrieve=None, remove_outliers=True) -> StationData:
         """Read EARLINET file and return it as instance of :class:`StationData`
 
@@ -163,7 +171,7 @@ class ReadEprofile(ReadUngriddedBase):
         var_info = self._var_info
 
         # Iterate over the lines of the file
-        self.logger.debug(f"Reading file {filename}")
+        logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
             data_out["station_coords"]["longitude"] = data_out["longitude"] = (
@@ -212,7 +220,7 @@ class ReadEprofile(ReadUngriddedBase):
                 netcdf_var_name = self.VAR_NAMES_FILE[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
-                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    logger.warning(f"Variable {var} not found in file {filename}")
                     continue
 
                 info = var_info[var]
@@ -259,7 +267,7 @@ class ReadEprofile(ReadUngriddedBase):
                 wvlg_str = self.META_NAMES_FILE["wavelength_emis"]
 
                 if not wvlg == data_in.attrs[wvlg_str]:
-                    self.logger.info("No wavelength match")
+                    logger.info("No wavelength match")
                     continue
 
                 alt_data = data_in.variables[self.ALTITUDE_ID]
@@ -272,7 +280,7 @@ class ReadEprofile(ReadUngriddedBase):
                         alt_data *= alt_unit_fac
                         alt_unit = to_alt_unit
                     except Exception as e:
-                        self.logger.warning(f"Failed to convert unit: {repr(e)}")
+                        logger.warning(f"Failed to convert unit: {repr(e)}")
                 has_altitude = True
 
                 # remove outliers from data, if applicable
@@ -304,6 +312,7 @@ class ReadEprofile(ReadUngriddedBase):
             )
         return data_out
 
+    @override
     def read(
         self,
         vars_to_retrieve=None,
@@ -392,7 +401,7 @@ class ReadEprofile(ReadUngriddedBase):
                     remove_outliers=remove_outliers,
                 )
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    self.logger.info(
+                    logger.info(
                         f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
                     )
                     continue
@@ -483,9 +492,7 @@ class ReadEprofile(ReadUngriddedBase):
 
             except Exception as e:
                 self.read_failed.append(_file)
-                self.logger.exception(
-                    f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})"
-                )
+                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
@@ -518,6 +525,7 @@ class ReadEprofile(ReadUngriddedBase):
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
 
+    @override
     def get_file_list(self):
         """Perform recursive file search for all input variables
 
