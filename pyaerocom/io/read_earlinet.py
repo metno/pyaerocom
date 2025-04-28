@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,11 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +178,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         self.is_vertical_profile = True
 
+    @override
     def read_file(self, filename, vars_to_retrieve=None, read_err=None, remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
 
@@ -431,6 +438,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 )
         return data_out
 
+    @override
     def read(
         self,
         vars_to_retrieve=None,
@@ -654,6 +662,7 @@ class ReadEarlinet(ReadUngriddedBase):
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
 
+    @override
     def get_file_list(self, vars_to_retrieve=None, pattern=None):
         """Perform recursive file search for all input variables
 
