@@ -502,9 +502,8 @@ class ReadEprofile(ReadUngriddedBase):
     def _get_exclude_filelist(self):  # pragma: no cover
         """Get list of filenames that are supposed to be ignored"""
         exclude = []
-        import glob
 
-        files = glob.glob(f"{self.data_dir}/EXCLUDE/*.txt")
+        files = files = (Path(self.data_dir) / "EXCLUDE").glob("*.txt")
         for i, file in enumerate(files):
             if os.path.basename(file) not in self.EXCLUDE_CASES:
                 continue
@@ -526,7 +525,7 @@ class ReadEprofile(ReadUngriddedBase):
         return self.exclude_files
 
     @override
-    def get_file_list(self):
+    def get_file_list(self) -> list[Path]:
         """Perform recursive file search for all input variables
 
         Note
@@ -546,10 +545,12 @@ class ReadEprofile(ReadUngriddedBase):
         list
             list containing file paths
         """
-        exclude_files = set([Path(file) for file in self._get_exclude_filelist()])
+        exclude_files = {Path(file) for file in self._get_exclude_filelist()}
+        if self.data_dir is None:
+            raise ValueError("No data directory set")
         logger.info("Fetching EPROFILE data files...")
 
-        all_files = set(Path(self.data_dir).rglob(self._FILEMASK))
+        all_files = set(f for f in Path(self.data_dir).rglob(self._FILEMASK) if f.is_file())
         files = list(all_files - exclude_files)
         self.files = files
         return files
