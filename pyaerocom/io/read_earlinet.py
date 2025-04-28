@@ -224,13 +224,13 @@ class ReadEarlinet(ReadUngriddedBase):
         var_info = self._var_info
 
         # Iterate over the lines of the file
-        self.logger.debug(f"Reading file {filename}")
+        logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
             for filter in self.CLOUD_FILTERS:
                 if filter in data_in.variables:
                     if data_in.variables[filter].item() == self.CLOUD_FILTERS[filter]:
-                        self.logger.debug(f"Skipping {filename} due to cloud filtering")
+                        logger.debug(f"Skipping {filename} due to cloud filtering")
                         continue
 
             # getting the coords since no longer in metadata
@@ -299,7 +299,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 netcdf_var_name = self.VAR_NAMES_FILE[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
-                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    logger.warning(f"Variable {var} not found in file {filename}")
                     continue
 
                 info = var_info[var]
@@ -350,7 +350,7 @@ class ReadEarlinet(ReadUngriddedBase):
                         val = np.nan
 
                     if np.isnan(val):
-                        self.logger.warning(
+                        logger.warning(
                             f"Invalid value of variable zdust in file {filename}. Skipping...!"
                         )
                         continue
@@ -371,7 +371,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
                     assert data_in[wvlg_str].shape == (1,)
                     if not wvlg == float(data_in[wvlg_str][0]):
-                        self.logger.info("No wavelength match")
+                        logger.info("No wavelength match")
                         continue
 
                     alt_id = self.ALTITUDE_ID
@@ -386,7 +386,7 @@ class ReadEarlinet(ReadUngriddedBase):
                             alt_vals *= alt_unit_fac
                             alt_unit = to_alt_unit
                         except Exception as e:
-                            self.logger.warning(f"Failed to convert unit: {repr(e)}")
+                            logger.warning(f"Failed to convert unit: {repr(e)}")
                     has_altitude = True
 
                     # remove outliers from data, if applicable
@@ -519,7 +519,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     remove_outliers=remove_outliers,
                 )
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    self.logger.info(
+                    logger.info(
                         f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
                     )
                     continue
@@ -612,9 +612,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
             except Exception as e:
                 self.read_failed.append(_file)
-                self.logger.exception(
-                    f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})"
-                )
+                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]

@@ -545,7 +545,7 @@ class ReadEbas(ReadUngriddedBase):
                             mapping[fpath].append(other_var)
                         except ValueError:
                             pass
-        self.logger.info(f"Number of files to read reduced to {len(mapping)}")
+        logger.info(f"Number of files to read reduced to {len(mapping)}")
         files, files_contain = [], []
         for path, contains_vars in mapping.items():
             files.append(path)
@@ -657,7 +657,7 @@ class ReadEbas(ReadUngriddedBase):
         # make sure variable names are input correctly
         vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
 
-        self.logger.info("Fetching data files. This might take a while...")
+        logger.info("Fetching data files. This might take a while...")
 
         db = self.file_index
         files_vars = {}
@@ -1836,7 +1836,7 @@ class ReadEbas(ReadUngriddedBase):
                 TemporalSamplingError,
             ) as e:
                 self.files_failed.append(_file)
-                self.logger.warning(
+                logger.warning(
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
@@ -1913,7 +1913,7 @@ class ReadEbas(ReadUngriddedBase):
                 TemporalSamplingError,
             ) as e:
                 self.files_failed.append(_file)
-                self.logger.warning(
+                logger.warning(
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
