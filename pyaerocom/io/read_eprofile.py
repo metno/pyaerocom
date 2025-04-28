@@ -41,7 +41,7 @@ class ReadEprofile(ReadUngriddedBase):
     SUPPORTED_DATASETS = [const.EPROFILE_NAME]
 
     #: default variables for read method
-    DEFAULT_VARS = ["ec1064aer", "od1064aer", "bsc1064aer"]
+    DEFAULT_VARS = ["ec1064aer", "bsc1064aer"]
 
     CLOUD_FILTERS = {}
 
