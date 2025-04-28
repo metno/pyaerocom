@@ -66,7 +66,8 @@ class ReadUngriddedBase(abc.ABC):
     def __repr__(self):
         return str(type(self).__name__)
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def TS_TYPE(self):
         """Temporal resolution of dataset
 
@@ -97,7 +98,8 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def _FILEMASK(self):
         """Mask for identifying datafiles (e.g. '*.txt')
 
@@ -107,7 +109,8 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def __version__(self):
         """Version of reading class
 
@@ -120,7 +123,8 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def DATA_ID(self):
         """Name of dataset (OBS_ID)
 
@@ -133,7 +137,8 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def SUPPORTED_DATASETS(self):
         """List of all datasets supported by this interface
 
@@ -145,7 +150,8 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def PROVIDES_VARIABLES(self):
         """List of variables that are provided by this dataset
 
@@ -155,7 +161,8 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def DEFAULT_VARS(self):
         """List containing default variables to read"""
         pass

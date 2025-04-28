@@ -96,6 +96,14 @@ class EEAv2FileError(ValueError):
     pass
 
 
+class EprofileFileError(ValueError):
+    pass
+
+
+class EarlinetFileError(ValueError):
+    pass
+
+
 class EntryNotAvailable(KeyError):
     pass
 

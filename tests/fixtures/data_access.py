@@ -68,6 +68,7 @@ TEST_DATA: dict[str, DataForTests] = {
     "ICPFORESTS.Subset": DataForTests("obsdata/ipc-forests/dep", ReadICPForest),
     "EEA_AQeRep.v2.Subset": DataForTests("obsdata/EEA_AQeRep.v2/renamed", io.ReadEEAAQEREP_V2),
     "Earlinet-test": DataForTests("obsdata/Earlinet", io.ReadEarlinet),
+    "Eprofile-test": DataForTests("obsdata/EPROFILE", io.ReadEprofile),
 }
 
 

@@ -86,8 +86,11 @@ class Config:
     #: EEAV2 name
     EEA_V2_NAME = "EEAAQeRep.v2"
 
-    #: Earlinet access name;
+    #: Earlinet access name
     EARLINET_NAME = "EARLINET"
+
+    #: EPROFILE access name
+    EPROFILE_NAME = "EPROFILE"
 
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = "GAWTADsubsetAasEtAl"
