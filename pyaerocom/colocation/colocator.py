@@ -8,14 +8,11 @@ import os
 import traceback
 import warnings
 from collections import defaultdict
-from collections.abc import Callable
-from datetime import datetime
 from typing import Any
 
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import chk_make_subdir
 from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
@@ -82,7 +79,6 @@ class Colocator:
             )
 
         self.colocation_setup = colocation_setup
-        self._log: Callable | None = None
         self.logging: bool = True
         self._loaded_model_data: dict | None = {}
         self.data: dict = {}
@@ -324,11 +320,6 @@ class Colocator:
             are obs vars.
 
         """
-        try:
-            self._init_log()
-        except Exception:
-            logger.warning("Deactivating logging in Colocator")
-            self.logging = False
 
         if isinstance(self.colocation_setup.obs_vars, str):
             self.colocation_setup.obs_vars = (self.colocation_setup.obs_vars,)
@@ -382,8 +373,7 @@ class Colocator:
             logger.exception(ex)
             if self.colocation_setup.raise_exceptions:
                 self._print_processing_status()
-                self._write_log(f"ABORTED: raise_exceptions is True: {traceback.format_exc()}\n")
-                self._close_log()
+                logger.critical(f"ABORTED: raise_exceptions is True: {traceback.format_exc()}\n")
                 raise ex
             vars_to_process = {}
         self._print_coloc_info(vars_to_process)
@@ -415,14 +405,13 @@ class Colocator:
                 msg = f"Failed to perform analysis: {traceback.format_exc()}\n"
                 logger.warning(msg)
                 self._processing_status.append([mod_var, obs_var, 5])
-                self._write_log(msg)
                 if self.colocation_setup.raise_exceptions:
                     self._print_processing_status()
-                    self._write_log("ABORTED: raise_exceptions is True\n")
-                    self._close_log()
+                    logger.critical("ABORTED: raise_exceptions is True\n")
+
                     raise ColocationError(traceback.format_exc())
-        self._write_log("Colocation finished")
-        self._close_log()
+        logger.info("Colocation finished")
+
         self._print_processing_status()
         if self.colocation_setup.keep_data:
             self.data = data_out
@@ -579,7 +568,6 @@ class Colocator:
             except Exception as e:
                 msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
                 logger.warning(msg)
-                self._write_log(msg + "\n")
                 self._processing_status.append([mvar, ovar, 4])
                 if self.colocation_setup.raise_exceptions:
                     raise ColocationError(msg)
@@ -907,7 +895,6 @@ class Colocator:
         fp = coldata.to_netcdf(self.output_dir, savename=savename)
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"
-        self._write_log(msg)
         logger.info(msg)
 
     def _eval_resample_how(self, model_var: str, obs_var: str):
@@ -1136,30 +1123,3 @@ class Colocator:
             "The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR\n"
             + "\n".join(key_vals)
         )
-
-    def _init_log(self):
-        logdir = chk_make_subdir(self.colocation_setup.basedir_coldata, self.get_model_name())
-        oname = self.get_obs_name()
-        datestr = datetime.today().strftime("%Y%m%d")
-        datetimestr = datetime.today().strftime("%d-%m-%Y %H:%M")
-
-        fname = f"{oname}_{datestr}.log"
-        logfile = os.path.join(logdir, fname)
-        self._log = log = open(logfile, "a+")
-        log.write("\n------------------ NEW ----------------\n")
-        log.write(f"Timestamp: {datetimestr}\n\n")
-        log.write("Analysis configuration\n")
-        ignore = ["_log", "logging", "data", "_model_reader", "_obs_reader"]
-        for key, val in self.model_dump().items():
-            if key in ignore:
-                continue
-            log.write(f"{key}: {val}\n")
-
-    def _write_log(self, msg):
-        if self.logging:
-            self._log.write(msg)
-
-    def _close_log(self):
-        if self._log is not None:
-            self._log.close()
-            self._log = None

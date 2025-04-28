@@ -4,11 +4,14 @@ Interface for reading GAW files.
 
 import numpy as np
 import pandas as pd
+import logging
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadGAW(ReadUngriddedBase):
@@ -101,7 +104,7 @@ class ReadGAW(ReadUngriddedBase):
                 raise ValueError(f"Invalid input variable {var}")
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        logger.info(f"Reading file {filename}")
 
         # We need to map the variables in the file with the values in VAR_NAME_FILE,
         # and for that we reverse the dictionary.

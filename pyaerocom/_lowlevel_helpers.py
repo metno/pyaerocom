@@ -118,7 +118,7 @@ class StrType(Validator):
 class Loc(abc.ABC):
     """Abstract descriptor representing a path location
 
-    Descriptor???
+    Descriptor: TODO
     See here: https://docs.python.org/3/howto/descriptor.html#complete-practical-example
 
     Note
@@ -133,14 +133,10 @@ class Loc(abc.ABC):
         assert_exists=False,
         auto_create=False,
         tooltip=None,
-        logger=None,
     ):
         self.assert_exists = assert_exists
         self.auto_create = auto_create
         self.tooltip = "" if tooltip is None else tooltip
-        if logger is None:
-            logger = logging.getLogger(f"{__name__}.{type(self).__qualname__}")
-        self.logger = logger
         self.__set__(self, default)
 
     def __set_name__(self, owner, name):
@@ -182,12 +178,12 @@ class Loc(abc.ABC):
 class DirLoc(Loc):
     def create(self, value):
         os.makedirs(value, exist_ok=True)
-        self.logger.info(f"created directory {value}")
+        logger.info(f"created directory {value}")
 
 
 class AsciiFileLoc(Loc):
     def create(self, value):
-        self.logger.info(f"create ascii file {value}")
+        logger.info(f"create ascii file {value}")
         open(value, "w").close()
 
 

@@ -164,7 +164,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out[item] = []
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        logger.info(f"Reading file {filename}")
         # enable alternative reading of .gz files here to save space on the file system
         suffix = pathlib.Path(filename).suffix
         tmp_name = filename
@@ -203,7 +203,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
         line_idx += 1
 
         _lines_ignored.append(data_type_comment)
-        self.logger.debug(f"Data type comment: {data_type_comment}")
+        logger.debug(f"Data type comment: {data_type_comment}")
 
         # put together a dict with the header string as key and the index number as value so that we can access
         # the index number via the header string
@@ -211,7 +211,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
         line_idx += 1
 
         if col_index_str != self._last_col_index_str:
-            self.logger.info("Header has changed, reloading col_index map")
+            logger.info("Header has changed, reloading col_index map")
             self._update_col_index(col_index_str)
         col_index = self.col_index
 
@@ -226,7 +226,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             if var in col_index:
                 vars_available[var] = col_index[var]
             else:
-                self.logger.warning(
+                logger.warning(
                     f"Variable {var} not available in file {os.path.basename(filename)}"
                 )
         pl = None
@@ -236,14 +236,14 @@ class ReadAeronetSunV3(ReadAeronetBase):
             dummy_arr = line.split(self.COL_DELIM)
 
             if pl is not None and len(dummy_arr) != len(pl):
-                self.logger.warning(f"Data line {i} in {filename} is corrupt, skipping...")
+                logger.warning(f"Data line {i} in {filename} is corrupt, skipping...")
                 continue
             # copy the meta data (array of type string)
             for var in self.META_NAMES_FILE:
                 try:
                     val = dummy_arr[col_index[var]]
                 except IndexError as e:
-                    self.logger.warning(repr(e))
+                    logger.warning(repr(e))
 
                 try:
                     # e.g. lon, lat, altitude
@@ -300,5 +300,5 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     data_out[var] = pd.Series(data_out[var], index=data_out["dtime"])
                 else:
                     del data_out[var]
-        self.logger.debug(f"The following lines were ignored: {_lines_ignored}")
+        logger.debug(f"The following lines were ignored: {_lines_ignored}")
         return data_out
