@@ -222,8 +222,6 @@ class ReadUngriddedBase(abc.ABC):
 
         self._data_dir = data_dir
 
-        #: Class own instance of logger class
-        self.logger = logging.getLogger(__name__)
         self._add_aux_variables()
 
         if data_id is not None:
@@ -299,15 +297,6 @@ class ReadUngriddedBase(abc.ABC):
             pass
         self._data_revision = rev
         return rev
-
-    @property
-    def verbosity_level(self):
-        """Current level of verbosity of logger"""
-        return self.logger.level
-
-    @verbosity_level.setter
-    def verbosity_level(self, val):
-        self.logger.setLevel(val)
 
     def _add_aux_variables(self):
         """Helper that makes sure all auxiliary variables can be computed"""
@@ -593,7 +582,7 @@ class ReadUngriddedBase(abc.ABC):
                 "_FILEMASK attr. must not be None...using default pattern *.* for file search"
             )
             pattern = "*.*"
-        self.logger.info("Fetching data files. This might take a while...")
+        logger.info("Fetching data files. This might take a while...")
         files = sorted(glob.glob(os.path.join(self.data_dir, pattern)))
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.data_dir))
