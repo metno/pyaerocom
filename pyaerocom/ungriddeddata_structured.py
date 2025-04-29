@@ -471,7 +471,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             new = self.copy()
 
         new.check_unit(var_name)
-        # new.check_convert_var_units(var_name, to_unit=unit_ref)
 
         if low is None:
             low = const.VARS[var_name].minimum
