@@ -241,6 +241,8 @@ class StationData(StationMetaData):
         u = self.get_unit(var_name)
         if not convert_unit(1, u, unit, var_name) == 1:
             raise DataUnitError(f"Invalid unit {u} (expected {unit})")
+        else:
+            self.var_info[var_name]["units"] = unit
 
     def convert_unit(self, var_name: str, to_unit: str) -> None:
         """Try to convert unit of data
