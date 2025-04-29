@@ -620,6 +620,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     self.metadata[meta_idx][key] = station_data[key]
             contains_vars = list(station_data.var_info)
             self.metadata[meta_idx]["variables"] = contains_vars
+            if "data_revision" in station_data:
+                self.metadata[meta_idx]["data_revision"] = station_data.data_revision
 
             for var in contains_vars:
                 vardata = station_data[var]

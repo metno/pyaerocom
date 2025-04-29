@@ -241,7 +241,7 @@ def _colocate_vertical_profile_gridded(
             revision = data_ref.data_revision[dataset_ref]
         except Exception:
             try:
-                revision = data_ref._get_data_revision_helper(dataset_ref)
+                revision = data_ref.get_data_id_revision(dataset_ref)
             except MetaDataError:
                 revision = "MULTIPLE"
             except Exception:

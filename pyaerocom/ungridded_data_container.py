@@ -57,9 +57,9 @@ class UngriddedDataContainer(abc.ABC):
         return data
 
     @abc.abstractmethod
-    def _get_data_revision_helper(self, data_id):
+    def get_data_id_revision(self, data_id):
         """
-        Helper method to get last data revision
+        Get the data revision of the data_id
 
         Parameters
         ----------

@@ -60,7 +60,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         other.is_vertical_profile = self._is_vertical_profile
 
     @override
-    def _get_data_revision_helper(self, data_id):
+    def get_data_id_revision(self, data_id):
         """
         Helper method to get last data revision
 
