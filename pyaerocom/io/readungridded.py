@@ -826,8 +826,7 @@ class ReadUngridded:
                     filter_post=filter_post,
                     **kwargs,
                 )
-            for var in vars_to_retrieve:
-                data_to_append.check_unit(var)
+
             if data is None:
                 data = data_to_append
             else:

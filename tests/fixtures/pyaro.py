@@ -34,7 +34,7 @@ def make_csv_test_file(tmp_path: Path) -> Path:
                     delta_t = ["1h", "3D", "2D", "2h"][
                         j % 4
                     ]  # Rotates over the freqs in a deterministic fashion
-                    unit = "Gg" if s != "NO" else "ng m-3"
+                    unit = "Gg m-3" if s != "NO" else "ng m-3"
                     f.write(
                         f"{s}, {station}, {coords[i][1]}, {coords[i][0]}, {np.random.normal(10, 5)}, {unit}, {date}, {date+pd.Timedelta(delta_t)},{countries[i]},{area_type[i]} \n"
                     )
