@@ -91,7 +91,7 @@ class Unit:
             [
                 "drynh3",
                 "kg N ha-1 yr-1",
-                "kg m-2 s-2",
+                "kg m-2 s-1",
                 (M_NH3 / M_N) / (1 / (HA_TO_SQM * (365 * 24 * 60 * 60))),
             ],
         ],
