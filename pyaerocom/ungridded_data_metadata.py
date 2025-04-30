@@ -396,7 +396,6 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         """
         Alphabetically sorted list of country names available
         """
-        # self.check_set_country()
         countries = []
         for idx, meta in self.metadata.items():
             try:
