@@ -3,8 +3,8 @@ import pytest
 
 # from pyaerocom import ColocatedData, Colocator
 from pyaerocom.aeroval import EvalSetup  # , ExperimentProcessor
-from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
+from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 
 # from tests.fixtures.aeroval.cfg_test_fairmode import CFG, fairmode_cfg
 from tests.fixtures.collocated_data import COLDATA
@@ -61,6 +61,18 @@ def test_fairmode_statistics(fairmode_statistics, dummy_coldata_to_fairmode_stat
         item in fm_stats["Agoufou"]
         for item in ["RMSU", "sign", "beta_mqi", "Hperc", "crms", "bias", "rms"]
     )
+
+
+def test_fairmode_statistics_wrongspecies(
+    fairmode_statistics, dummy_coldata_to_fairmode_statistics, caplog
+):
+    wrongspec = "concco"
+    example_coldata = dummy_coldata_to_fairmode_statistics
+    example_coldata.data = example_coldata.data.assign_attrs(var_name=[wrongspec, wrongspec])
+
+    with pytest.raises(ValueError) as e:
+        fairmode_statistics.fairmode_statistics(example_coldata, wrongspec)
+    assert f"Unsupported spec='{wrongspec}'" in str(e.value)
 
 
 @pytest.fixture
