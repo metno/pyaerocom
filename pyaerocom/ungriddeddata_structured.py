@@ -295,7 +295,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta["data_id"]]
+                rev = self.get_data_revision(meta["data_id"])
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev

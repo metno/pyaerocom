@@ -57,7 +57,7 @@ class UngriddedDataContainer(abc.ABC):
         return data
 
     @abc.abstractmethod
-    def get_data_id_revision(self, data_id):
+    def get_data_revision(self, data_id):
         """
         Get the data revision of the data_id
 
@@ -924,7 +924,7 @@ class UngriddedDataContainer(abc.ABC):
             obj.append_station_data(all_stations["stats"])
 
         # update metadata
-        obj.data_revision.update(other.data_revision)
+        obj._data_revision.update(other._data_revision)
         obj.filter_hist.update(other.filter_hist)
 
         return obj

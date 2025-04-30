@@ -114,9 +114,9 @@ ALL_SITES = [
 def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
     data = aeronetsunv3lev2_subset_uds
     assert isinstance(data, UngriddedDataStructured)
-    assert data.get_data_id_revision("AeronetSunV3L2Subset.daily") == "n/d"
+    assert data.get_data_revision("AeronetSunV3L2Subset.daily") == "n/d"
     subset = data.filter_by_meta(**args)
-    assert subset.get_data_id_revision("AeronetSunV3L2Subset.daily") == "n/d"
+    assert subset.get_data_revision("AeronetSunV3L2Subset.daily") == "n/d"
     sites = [x["station_name"] for x in subset.metadata.values()]
     stats = sorted(list(dict.fromkeys(sites)))
     assert sorted(sitenames) == stats
@@ -124,7 +124,7 @@ def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
 
 def test_ebas_revision(data_scat_jungfraujoch: UngriddedDataContainer):
     assert isinstance(data_scat_jungfraujoch, UngriddedDataStructured)
-    assert data_scat_jungfraujoch.get_data_id_revision("EBASSubset") == "20220101"
+    assert data_scat_jungfraujoch.get_data_revision("EBASSubset") == "20220101"
 
 
 def test_cache_reload(data_scat_jungfraujoch: UngriddedDataContainer, tmp_path: Path):

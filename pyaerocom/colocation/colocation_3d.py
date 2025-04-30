@@ -238,14 +238,11 @@ def _colocate_vertical_profile_gridded(
                 )
 
         try:
-            revision = data_ref.data_revision[dataset_ref]
+            revision = data_ref.get_data_revision[dataset_ref]
+        except MetaDataError:
+            revision = "MULTIPLE"
         except Exception:
-            try:
-                revision = data_ref.get_data_id_revision(dataset_ref)
-            except MetaDataError:
-                revision = "MULTIPLE"
-            except Exception:
-                revision = "n/a"
+            revision = "n/a"
 
         files = [os.path.basename(x) for x in data.from_files]
 
@@ -262,7 +259,7 @@ def _colocate_vertical_profile_gridded(
             "from_files": files,
             "from_files_ref": None,
             "colocate_time": colocate_time,
-            "obs_is_clim": True if isinstance(use_climatology_ref, ClimatologyConfig) else False,
+            "obs_is_clim": (True if isinstance(use_climatology_ref, ClimatologyConfig) else False),
             "pyaerocom": pya_ver,
             "min_num_obs": min_num_obs,
             "resample_how": resample_how,
