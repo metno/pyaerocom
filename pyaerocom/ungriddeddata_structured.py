@@ -819,6 +819,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             ugs._dra.append_array(**dra_data)
 
         logger.info(f"Converting metadata from pyaro/{data_id} to ungridded")
+        rev = None
+        if "revision" in reader.metadata():
+            rev = reader.metadata()["revision"]
+        else:
+            logger.warning(
+                f"pyaro/{data_id} does not contain a 'revision', please inform data-provider, or pyaro-readers"
+            )
+
         stations_with_metadata = reader.stations()
         for var in vars_to_retrieve:
             for station_tstype, meta_id in var_metas[var].items():
@@ -826,6 +834,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 extra_metadata = stations_with_metadata[station_name].metadata
                 d = {
                     "data_id": data_id,
+                    "data_revision": rev,
                     "station_name": station_name,
                     "var_info": {
                         var: {"units": var_units[var]},
