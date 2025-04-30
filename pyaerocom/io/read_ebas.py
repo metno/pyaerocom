@@ -1435,6 +1435,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
 
         data_out = self._add_meta(data_out, file)
+        data_out.data_revision = self.data_revision
 
         freq_ebas = data_out["ts_type"]  # resolution code
         # store the raw EBAS meta dictionary (who knows what for later ;P )

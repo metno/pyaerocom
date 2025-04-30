@@ -700,7 +700,7 @@ class UngriddedData(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta["data_id"]]
+                rev = self.get_data_revision[meta["data_id"]]
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -1182,7 +1182,7 @@ class UngriddedData(UngriddedDataMetadata):
 
         # write history of filtering applied
         new.filter_hist.update(self.filter_hist)
-        new.data_revision.update(self.data_revision)
+        new._data_revision.update(self._data_revision)
 
         return new
 
@@ -1534,7 +1534,7 @@ class UngriddedData(UngriddedDataMetadata):
             obj._data = other._data
             obj.metadata = other.metadata
             # obj.unit = other.unit
-            obj.data_revision = other.data_revision
+            obj._data_revision = other._data_revision
             obj.meta_idx = other.meta_idx
             # potentially temporary fix for pyaro actrisebas reader
             # if len(other.meta_idx) != len(other.metadata):
@@ -1569,7 +1569,7 @@ class UngriddedData(UngriddedDataMetadata):
                     else:
                         obj.var_idx[var] = idx
             obj._data = np.vstack([obj._data, other._data])
-            obj.data_revision.update(other.data_revision)
+            obj._data_revision.update(other._data_revision)
         obj.filter_hist.update(other.filter_hist)
         obj._check_index()
         return obj
