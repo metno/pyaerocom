@@ -19,6 +19,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
@@ -93,7 +94,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             persistence_coldata = persistence_coldata[0]
             calc_forecast_target = True
 
-            if SPECIES[var_name]["freq"] != "hourly":
+            if SPECIES[var_name]["freq"] != TsType("hourly"):
                 persistence_coldata = persistence_coldata.resample_time(
                     SPECIES[var_name]["freq"],
                     settings_from_meta=True,
@@ -197,7 +198,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     if use_fairmode and var_name in SPECIES:
 
                         fairmode_subset = subset[0]
-                        if SPECIES[var_name]["freq"] != "hourly":
+                        if SPECIES[var_name]["freq"] != TsType("hourly"):
                             fairmode_subset = fairmode_subset.resample_time(
                                 SPECIES[var_name]["freq"],
                                 settings_from_meta=True,
@@ -356,7 +357,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         results = {}
 
         # Resampling of time for all other variables than NO2
-        if SPECIES[var_name]["freq"] != "hourly":
+        if SPECIES[var_name]["freq"] != TsType("hourly"):
             coldata = coldata.resample_time(
                 SPECIES[var_name]["freq"],
                 settings_from_meta=True,

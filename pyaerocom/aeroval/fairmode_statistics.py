@@ -1,20 +1,21 @@
 import logging
-from pyaerocom.aeroval.experiment_output import ExperimentOutput
 
 # from pathlib import Path
 import numpy as np
 import xarray as xr
 
 from pyaerocom import ColocatedData
+from pyaerocom.aeroval.experiment_output import ExperimentOutput
+from pyaerocom.units.datetime import TsType
 
 logger = logging.getLogger(__name__)
 
 
 SPECIES = dict(
-    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq="hourly", percentile=99.8),
-    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq="daily", percentile=92.9),
-    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq="daily", percentile=90.1),
-    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq="daily", percentile=90.1),
+    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly"), percentile=99.8),
+    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily"), percentile=92.9),
+    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily"), percentile=90.1),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1),
 )
 
 

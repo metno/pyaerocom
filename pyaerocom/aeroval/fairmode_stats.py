@@ -12,11 +12,13 @@ This module contains methods to compute the relevant FAIRMODE statistics.
 
 import numpy as np
 
+from pyaerocom.units.datetime import TsType
+
 SPECIES = dict(
-    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq="hourly"),
-    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq="daily"),
-    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq="daily"),
-    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq="daily"),
+    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly")),
+    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily")),
+    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily")),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily")),
 )
 
 
@@ -57,7 +59,7 @@ def fairmode_stats(obs_var: str, stats: dict, freq: str) -> dict:
         return {}
 
     # compute only what it makes sense to compute
-    if freq != SPECIES[obs_var]["freq"]:
+    if TsType(freq) != SPECIES[obs_var]["freq"]:
         return {}
 
     mean = stats["refdata_mean"]
