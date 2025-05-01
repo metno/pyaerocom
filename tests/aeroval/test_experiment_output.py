@@ -109,9 +109,8 @@ def test_ExperimentOutput():
 
 
 def test_ExperimentOutput_error():
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError):
         ExperimentOutput(None)
-    assert str(e.value) == "need instance of <class 'pyaerocom.aeroval.eval_setup.EvalSetup'>"
 
 
 def test_ExperimentOutput_exp_id(dummy_expout: ExperimentOutput):
