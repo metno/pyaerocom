@@ -1,5 +1,3 @@
-import logging
-
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -8,8 +6,6 @@ from pydantic import (
 )
 
 from pyaerocom.aeroval.json_utils import set_float_serialization_precision
-
-logger = logging.getLogger(__name__)
 
 
 class StatisticsSetup(BaseModel, extra="allow"):
