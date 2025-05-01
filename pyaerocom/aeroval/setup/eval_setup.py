@@ -36,15 +36,15 @@ from pyaerocom.aeroval.helpers import (
 from pyaerocom.aeroval.json_utils import read_json
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
-from pyaerocom.aeroval.setup.output_paths import OutputPaths
-from pyaerocom.aeroval.setup.model_maps_setup import ModelMapsSetup
-from pyaerocom.aeroval.setup.statistics_setup import StatisticsSetup
-from pyaerocom.aeroval.setup.time_setup import TimeSetup
-from pyaerocom.aeroval.setup.web_display_setup import WebDisplaySetup
-from pyaerocom.aeroval.setup.eval_run_options import EvalRunOptions
-from pyaerocom.aeroval.setup.project_info import ProjectInfo
-from pyaerocom.aeroval.setup.experiment_info import ExperimentInfo
-from pyaerocom.aeroval.setup.cams2_83_setup import CAMS2_83Setup
+from .output_paths import OutputPaths
+from .model_maps_setup import ModelMapsSetup
+from .statistics_setup import StatisticsSetup
+from .time_setup import TimeSetup
+from .web_display_setup import WebDisplaySetup
+from .eval_run_options import EvalRunOptions
+from .project_info import ProjectInfo
+from .experiment_info import ExperimentInfo
+from .cams2_83_setup import CAMS2_83Setup
 
 logger = logging.getLogger(__name__)
 
