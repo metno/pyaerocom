@@ -1,12 +1,8 @@
-import logging
-
 from pydantic import (
     BaseModel,
     Field,
 )
 from typing import Literal
-
-logger = logging.getLogger(__name__)
 
 
 class TimeSetup(BaseModel):
