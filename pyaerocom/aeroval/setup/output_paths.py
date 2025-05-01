@@ -1,4 +1,3 @@
-import logging
 import os
 
 from pathlib import Path
@@ -13,8 +12,6 @@ from pydantic import (
 
 from pyaerocom import const
 from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
-
-logger = logging.getLogger(__name__)
 
 PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})
 

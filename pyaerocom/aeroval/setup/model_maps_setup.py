@@ -1,5 +1,3 @@
-import logging
-
 from typing import Literal
 from pydantic import (
     BaseModel,
@@ -12,8 +10,6 @@ from pyaerocom.aeroval.helpers import (
 
 from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 
-
-logger = logging.getLogger(__name__)
 
 PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})
 
