@@ -107,6 +107,8 @@ class Config:
     # TROPOMI access names
     TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
 
+    TROPOMI_COBRA_XEMEP_R01x01_NAME = "TROPOMI_COBRA_XEMEP_R01x01"
+
     # basename of paths.ini
     PATHS_INI_NAME = "paths.ini"
 
