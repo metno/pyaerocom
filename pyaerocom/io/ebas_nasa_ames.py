@@ -756,12 +756,12 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         idf, val = (x.strip() for x in sub)
                         data[idf.lower().replace(" ", "_")] = val
                     else:
-                        logger.warning(
+                        logger.info(
                             f"Error reading file '{pathlib.Path(file).resolve()}'. Could not interpret part of column "
                             f"definition in EBAS NASA Ames file: {item}"
                         )
                 else:  # unit
-                    logger.warning(
+                    logger.info(
                         f"Error reading file '{pathlib.Path(file).resolve()}'. Failed to interpret {item}."
                     )
 
