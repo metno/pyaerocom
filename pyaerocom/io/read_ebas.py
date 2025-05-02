@@ -994,7 +994,7 @@ class ReadEbas(ReadUngriddedBase):
             msg += f"\nFilename: {file.file_name}"
             msg += add_msg
             msg += "\n\nTHIS FILE WILL BE SKIPPED\n"
-            logger.warning(msg)
+            logger.info(msg)
             raise ValueError("failed to identify unique data column")
 
         return result_col[0]
