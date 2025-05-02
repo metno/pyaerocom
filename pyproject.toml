@@ -122,7 +122,6 @@ filterwarnings = [
     'ignore:matplotlib based plotting is no longer directly supported. This (function|class) may be removed in future versions\.:DeprecationWarning:(pyaerocom|tests):',
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
-#    'ignore:This process \(pid=\d+\) is multi-threaded, use of fork\(\) may lead to deadlocks in the child:DeprecationWarning',
 ]
 
 [tool.coverage.run]
