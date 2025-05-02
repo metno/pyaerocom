@@ -761,7 +761,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
                             f"definition in EBAS NASA Ames file: {item}"
                         )
                 else:  # unit
-                    logger.warning(f"Failed to interpret {item}")
+                    logger.warning(
+                        f"Error reading file '{pathlib.Path(file).resolve()}'. Failed to interpret {item}."
+                    )
 
         return data
 
