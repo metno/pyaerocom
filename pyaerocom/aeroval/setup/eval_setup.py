@@ -94,7 +94,7 @@ class EvalSetup(BaseModel):
             ls.extend(missing_vars)
             self.webdisp_opts.var_order_menu = tuple(ls)
             logger.info(
-                f"Some variables are configured as obsvars but not included in var_order_menu. They have been appended to var_order_menu. Missing variables: {",".join(missing_vars)}."
+                f"Some variables are configured as obsvars but not included in var_order_menu. They have been appended to var_order_menu. Missing variables: {', '.join(missing_vars)}."
             )
 
         return self
