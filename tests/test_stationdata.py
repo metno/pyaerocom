@@ -19,6 +19,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from tests.conftest import TEST_RTOL
 from tests.fixtures.stations import FAKE_STATION_DATA
+from pyaerocom.utils import dicts_equal
 
 
 def get_earlinet_data(var_name):
@@ -34,12 +35,13 @@ stat2 = FAKE_STATION_DATA["station_data2"]
 
 def test_StationData_copy():
     cp = stat1.copy()
-    for key, val in stat1.items():
-        assert key in cp
-        if isinstance(val, np.ndarray):
-            assert np.all(val == cp[key])
-        else:
-            assert val == cp[key]
+    assert dicts_equal(stat1, cp)
+    # for key, val in stat1.items():
+    #    assert key in cp
+    #    if isinstance(val, np.ndarray):
+    #        assert np.all(val == cp[key])
+    #    else:
+    #        assert val == cp[key]
 
 
 stat3 = stat2.copy()

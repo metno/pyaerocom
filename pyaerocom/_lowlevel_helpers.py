@@ -327,25 +327,6 @@ class BrowseDict(MutableMapping):
     def __str__(self):
         return str(self.to_dict())
 
-    def __eq__(self, other) -> bool:
-        if isinstance(other, BrowseDict):
-            # NOTE: This fixes issue where BrowseDict equality checks fails for instances where BrowseDict
-            # contains numpy arrays (ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all())
-            if not set(other.keys()) == set(self.keys()):
-                return False
-
-            for k, v in self.items():
-                if isinstance(v, np.ndarray):
-                    if not np.array_equal(v, other[k]):
-                        return False
-
-                elif not v == other[k]:
-                    return False
-
-            return True
-
-        return super().__eq__(other)
-
 
 class ConstrainedContainer(BrowseDict):
     """Restrictive dict-like class with fixed keys
