@@ -36,12 +36,6 @@ stat2 = FAKE_STATION_DATA["station_data2"]
 def test_StationData_copy():
     cp = stat1.copy()
     assert dicts_equal(stat1, cp)
-    # for key, val in stat1.items():
-    #    assert key in cp
-    #    if isinstance(val, np.ndarray):
-    #        assert np.all(val == cp[key])
-    #    else:
-    #        assert val == cp[key]
 
 
 stat3 = stat2.copy()
