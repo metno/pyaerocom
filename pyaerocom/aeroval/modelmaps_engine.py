@@ -108,14 +108,19 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             logger.info(f"Processing model maps for {model_name} ({var})")
 
             try:  # pragma: no cover
+                make_contour, make_overlay = False, False
                 if isinstance(self.cfg.modelmaps_opts.plot_types, dict):
-                    plot_types = self.cfg.modelmaps_opts.plot_types.get(model_name, [])
-                else:
-                    plot_types = self.cfg.modelmaps_opts.plot_types
-
-                if CONTOUR in plot_types:
+                    make_contour = CONTOUR in self.cfg.modelmaps_opts.plot_types.get(
+                        model_name, False
+                    )
+                    make_overlay = OVERLAY in self.cfg.modelmaps_opts.plot_types.get(
+                        model_name, False
+                    )
+                if CONTOUR in self.cfg.modelmaps_opts.plot_types or make_contour:
                     self._process_contour_map_var(model_name, var, self.reanalyse_existing)
-                if OVERLAY in plot_types:
+
+                if OVERLAY in self.cfg.modelmaps_opts.plot_types or make_overlay:
+                    # create overlay (pixel) plots
                     self._process_overlay_map_var(model_name, var, self.reanalyse_existing)
 
             except ModelVarNotAvailable as ex:
@@ -244,7 +249,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                         f"Cannot read data for model {model_name} (variable {var}): {e}"
                     )
 
-        assert isinstance(data, GriddedData)
         var_ranges_defaults = self.cfg.var_scale_colmap
 
         if var in var_ranges_defaults.keys():
@@ -264,11 +268,15 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            data = data.resample_time(str(freq), use_iris=True)
+            if isinstance(data, GriddedData):
+                data = data.resample_time(str(freq))
+            elif isinstance(data, xr.DataArray):
+                data = data.resample(time=str(freq)[0].capitalize()).mean()
 
         ts = _jsdate_list(data)
-        data.check_unit()
-        data = data.to_xarray().load()
+        if isinstance(data, GriddedData):
+            data.check_unit()
+            data = data.to_xarray().load()
 
         if self.cfg.processing_opts.only_model_maps:
             self._check_ts_for_only_model_maps(model_name, var, ts, data)
@@ -281,6 +289,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             except EntryNotAvailable:
                 write_var_name = var
 
+            # Note this should match the output location defined in aerovaldb
             overlay_uris = self.avdb.query(
                 aerovaldb.routes.Route.MAP_OVERLAY,
                 project=self.exp_output.proj_id,
@@ -442,7 +451,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     self.cfg.colocation_opts.ts_type
                 )  # emulates the old way closer than None
 
-        data: GriddedData = reader.read_var(
+        data = reader.read_var(
             var,
             start=start,
             stop=stop,
@@ -455,14 +464,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         rm_outliers = self.cfg.colocation_opts.model_remove_outliers
         outlier_ranges = self.cfg.colocation_opts.model_outlier_ranges
 
-        data.check_unit()
-
         if rm_outliers:
             if var in outlier_ranges:
                 low, high = outlier_ranges[var]
             else:
                 var_info = const.VARS[var]
                 low, high = var_info.minimum, var_info.maximum
+            data.check_unit()
             data.remove_outliers(low, high, inplace=True)
 
         return data
@@ -575,7 +583,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 f"{name=} not is not in either {self.cfg.obs_cfg.keylist()=} nor {self.cfg.model_cfg.keylist()=}"
             )
 
-    def _process_only_json(self, model_name: str, var: str) -> GriddedData:  # pragma: no cover
+    def _process_only_json(self, model_name, var):  # pragma: no cover
         """Process data from ColocatedData for overlay map for if only_json = True."""
         try:
             preprocessed_coldata_dir = glob.escape(
@@ -612,13 +620,4 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         data = data.drop_vars("data_source")
         data = data.transpose("time", "latitude", "longitude")
         data = data.sortby(["latitude", "longitude"])
-
-        out = GriddedData(data.to_iris())
-
-        # NOTE: For some reason, creating a GriddedData object as above results in a (seemingly valid)
-        # GriddedData object except that metadata contains a list of variable names, instead of a single
-        # variable name as string, which breaks during resampling. This fixes that, and allows
-        # _process_overlay_map_var to be rewritten to only deal with GriddedData objects, instead of also
-        # dealing with xarray, reducing branching.
-        out._grid.attributes["var_name"] = out.var_name
-        return out
+        return data
