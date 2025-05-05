@@ -6,7 +6,6 @@ from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
-from pyaerocom.units.helpers import set_unit_overrides
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +29,6 @@ class HasConfig:
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
-        set_unit_overrides(self.cfg.units_cfg.units)
         self.exp_output = ExperimentOutput(cfg)
         self.avdb = self.exp_output.avdb
 

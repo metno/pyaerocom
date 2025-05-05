@@ -49,10 +49,6 @@ from .cams2_83_setup import CAMS2_83Setup
 logger = logging.getLogger(__name__)
 
 
-class UnitsConfig(BaseModel):
-    units: dict[str, str] = {}
-
-
 class EvalSetup(BaseModel):
     """Composite class representing a whole analysis setup
 
@@ -148,16 +144,6 @@ class EvalSetup(BaseModel):
             key: val for key, val in self.model_extra.items() if key in OutputPaths.model_fields
         }
         return OutputPaths(**model_args)
-
-    @computed_field
-    @cached_property
-    def units_cfg(self) -> UnitsConfig:
-        if not hasattr(self, "model_extra") or self.model_extra is None:
-            return UnitsConfig()
-        model_args = {
-            key: val for key, val in self.model_extra.items() if key in UnitsConfig.model_fields
-        }
-        return UnitsConfig(**model_args)
 
     # Many computed_fields here have this hack to get keys from a general CFG into their appropriate respective classes
     # TODO: all these computed fields could be more easily defined if the config were
