@@ -471,7 +471,7 @@ class UngriddedData(UngriddedDataMetadata):
             coords.append((lat, lon))
         return (meta_idx, coords)
 
-    def check_set_country(self):
+    def _check_set_country(self):
         """CHecks all metadata entries for availability of country information
 
         Deprecated - no longer used?
@@ -495,7 +495,10 @@ class UngriddedData(UngriddedDataMetadata):
         list
             corresponding countries that were inferred from lat / lon
         """
-        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
+        # HK 2025-04-30
+        logger.warning(
+            "This method is deprecated because no usage could be found, except for tests for check_country_available"
+        )
         meta_idx, coords = self._get_stat_coords()
         info = get_country_info_coords(coords)
         meta_idx_updated = []
@@ -700,7 +703,7 @@ class UngriddedData(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta["data_id"]]
+                rev = self.get_data_revision[meta["data_id"]]
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -949,42 +952,6 @@ class UngriddedData(UngriddedDataMetadata):
                 out_data["failed"].append([idx, repr(e)])
         return out_data
 
-    # TODO: check more general cases (i.e. no need to convert to StationData
-    # if no time conversion is required)
-    def get_variable_data(
-        self, variables, start=None, stop=None, ts_type=None, **kwargs
-    ):  # pragma: no cover
-        """Extract all data points of a certain variable
-
-        Deprecated: no usage found
-
-        Parameters
-        ----------
-        vars_to_extract : :obj:`str` or :obj:`list`
-            all variables that are supposed to be accessed
-        """
-        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
-
-        if isinstance(variables, str):
-            variables = [variables]
-        all_stations = self.to_station_data_all(variables, start, stop, freq=ts_type, **kwargs)
-        result = {}
-        num_stats = {}
-        for var in variables:
-            result[var] = []
-            num_stats[var] = 0
-        for stat_data in all_stations:
-            if stat_data is not None:
-                num_points = len(stat_data.dtime)
-                for var in variables:
-                    if var in stat_data:
-                        num_stats[var] += 1
-                        result[var].extend(stat_data[var])
-                    else:
-                        result[var].extend([np.nan] * num_points)
-        result["num_stats"] = num_stats
-        return result
-
     def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
         obj = self if inplace else self.copy()
 
@@ -1166,7 +1133,8 @@ class UngriddedData(UngriddedDataMetadata):
                 totnum = len(indices)
 
                 stop = data_idx_new + totnum
-
+                while stop > new._data.shape[0]:
+                    new.add_chunk()
                 new._data[data_idx_new:stop, :] = self._data[indices, :]
                 new._data[data_idx_new:stop, new._METADATAKEYINDEX] = meta_idx_new
                 new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new, stop)
@@ -1181,7 +1149,7 @@ class UngriddedData(UngriddedDataMetadata):
 
         # write history of filtering applied
         new.filter_hist.update(self.filter_hist)
-        new.data_revision.update(self.data_revision)
+        new._data_revision.update(self._data_revision)
 
         return new
 
@@ -1369,33 +1337,6 @@ class UngriddedData(UngriddedDataMetadata):
             data._check_index()
         return data
 
-    def code_lat_lon_in_float(self):
-        """method to code lat and lon in a single number so that we can use np.unique to
-        determine single locations"""
-        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
-
-        # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
-        self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
-            self._data[:, self._LATINDEX] + self._LAT_OFFSET
-        ) * (10**self._LOCATION_PRECISION)
-        return self.coded_loc
-
-    def decode_lat_lon_from_float(self):
-        """method to decode lat and lon from a single number calculated by code_lat_lon_in_float"""
-        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
-
-        lons = (
-            np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-            / 10**self._LOCATION_PRECISION
-        )
-        lats = (
-            self.coded_loc
-            - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-            * 10 ** (2 * self._LOCATION_PRECISION)
-        ) / (10**self._LOCATION_PRECISION) - self._LAT_OFFSET
-
-        return lats, lons
-
     def _find_common_meta(self, ignore_keys=None):
         """Searches all metadata dictionaries that are the same
 
@@ -1533,7 +1474,7 @@ class UngriddedData(UngriddedDataMetadata):
             obj._data = other._data
             obj.metadata = other.metadata
             # obj.unit = other.unit
-            obj.data_revision = other.data_revision
+            obj._data_revision = other._data_revision
             obj.meta_idx = other.meta_idx
             # potentially temporary fix for pyaro actrisebas reader
             # if len(other.meta_idx) != len(other.metadata):
@@ -1568,7 +1509,7 @@ class UngriddedData(UngriddedDataMetadata):
                     else:
                         obj.var_idx[var] = idx
             obj._data = np.vstack([obj._data, other._data])
-            obj.data_revision.update(other.data_revision)
+            obj._data_revision.update(other._data_revision)
         obj.filter_hist.update(other.filter_hist)
         obj._check_index()
         return obj
@@ -1670,177 +1611,6 @@ class UngriddedData(UngriddedDataMetadata):
         idx = self.var_idx[var_name]
         mask = np.where(self._data[:, self._VARINDEX] == idx)[0]
         return self._data[mask, self._DATAINDEX]
-
-    def find_common_stations(
-        self,
-        other: UngriddedData,
-        check_vars_available=None,
-        check_coordinates: bool = True,
-        max_diff_coords_km: float = 0.1,
-    ) -> dict:
-        """Search common stations between two UngriddedData objects
-
-        Deprecated, HK 2025-03-13
-
-        This method loops over all stations that are stored within this
-        object (using :attr:`metadata`) and checks if the corresponding
-        station exists in a second instance of :class:`UngriddedData` that
-        is provided. The check is performed on basis of the station name, and
-        optionally, if desired, for each station name match, the lon lat
-        coordinates can be compared within a certain radius (default 0.1 km).
-
-        Note
-        ----
-        This is a beta version and thus, to be treated with care.
-
-        Parameters
-        ----------
-        other : UngriddedData
-            other object of ungridded data
-        check_vars_available : :obj:`list` (or similar), optional
-            list of variables that need to be available in stations of both
-            datasets
-        check_coordinates : bool
-            if True, check that lon and lat coordinates of station candidates
-            match within a certain range, specified by input parameter
-            ``max_diff_coords_km``
-
-        Returns
-        -------
-        dict
-            dictionary where keys are meta_indices of the common station in
-            this object and corresponding values are meta indices of the
-            station in the other object
-
-        """
-        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
-
-        if len(self.contains_datasets) > 1:
-            raise NotImplementedError(
-                "This data object contains data from "
-                "more than one dataset and thus may "
-                "include multiple station matches for "
-                "each station ID. This method, however "
-                "is implemented such, that it checks "
-                "only the first match for each station"
-            )
-        elif len(other.contains_datasets) > 1:
-            raise NotImplementedError(
-                "Other data object contains data from "
-                "more than one dataset and thus may "
-                "include multiple station matches for "
-                "each station ID. This method, however "
-                "is implemented such, that it checks "
-                "only the first match for each station"
-            )
-        _check_vars = False
-        if check_vars_available is not None:
-            _check_vars = True
-            if isinstance(check_vars_available, str):
-                check_vars_available = [check_vars_available]
-            elif isinstance(check_vars_available, tuple | np.ndarray):
-                check_vars_available = list(check_vars_available)
-            if not isinstance(check_vars_available, list):
-                raise ValueError(
-                    f"Invalid input for check_vars_available. "
-                    f"Need str or list-like, got: {check_vars_available}"
-                )
-        lat_len = 111.0  # approximate length of latitude degree in km
-        station_map = {}
-        stations_other = other.station_name
-        for meta_idx, meta in self.metadata.items():
-            name = meta["station_name"]
-            # bool that is used to accelerate things
-            ok = True
-            if _check_vars:
-                for var in check_vars_available:
-                    try:
-                        if var not in meta["variables"]:
-                            logger.debug(f"No {var} in data of station {name} ({meta['data_id']})")
-                            ok = False
-                    except Exception:  # attribute does not exist or is not iterable
-                        ok = False
-            if ok and name in stations_other:
-                for meta_idx_other, meta_other in other.metadata.items():
-                    if meta_other["station_name"] == name:
-                        if _check_vars:
-                            for var in check_vars_available:
-                                try:
-                                    if var not in meta_other["variables"]:
-                                        logger.debug(
-                                            f"No {var} in data of station {name} ({meta_other['data_id']})"
-                                        )
-                                        ok = False
-                                except Exception:  # attribute does not exist or is not iterable
-                                    ok = False
-                        if ok and check_coordinates:
-                            dlat = abs(meta["latitude"] - meta_other["latitude"])
-                            dlon = abs(meta["longitude"] - meta_other["longitude"])
-                            lon_fac = np.cos(np.deg2rad(meta["latitude"]))
-                            # compute distance between both station coords
-                            dist = np.linalg.norm((dlat * lat_len, dlon * lat_len * lon_fac))
-                            if dist > max_diff_coords_km:
-                                logger.warning(
-                                    f"Coordinate of station {name} "
-                                    f"varies more than {max_diff_coords_km} km "
-                                    f"between {meta['data_id']} and {meta_other['data_id']} data. "
-                                    f"Retrieved distance: {dist:.2f} km "
-                                )
-                                ok = False
-                        if ok:  # match found
-                            station_map[meta_idx] = meta_idx_other
-                            logger.debug(f"Found station match {name}")
-                            # no need to further iterate over the rest
-                            continue
-
-        return station_map
-
-    # TODO: brute force at the moment, we need to rethink and define how to
-    # work with time intervals and perform temporal merging.
-    def find_common_data_points(self, other, var_name, sampling_freq="daily"):
-        logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
-        if not sampling_freq == "daily":
-            raise NotImplementedError("Currently only works with daily data")
-        if not isinstance(other, UngriddedData):
-            raise NotImplementedError(
-                "So far, common data points can only be "
-                "retrieved between two instances of "
-                "UngriddedData"
-            )
-        # find all stations that are common
-        common = self.find_common_stations(
-            other, check_vars_available=var_name, check_coordinates=True
-        )
-        if len(common) == 0:
-            raise DataExtractionError("None of the stations in the two match")
-        dates = []
-        data_this_match = []
-        data_other_match = []
-
-        for idx_this, idx_other in common.items():
-            data_idx_this = self.meta_idx[idx_this][var_name]
-            data_idx_other = other.meta_idx[idx_other][var_name]
-
-            # timestamps of variable match for station...
-            dtimes_this = self._data[data_idx_this, self._TIMEINDEX]
-            dtimes_other = other._data[data_idx_other, other._TIMEINDEX]
-            # ... and corresponding data values of variable
-            data_this = self._data[data_idx_this, self._DATAINDEX]
-            data_other = other._data[data_idx_other, other._DATAINDEX]
-            # round to daily resolution. looks too complicated, but is much
-            # faster than pandas combined with datetime
-            date_nums_this = dtimes_this.astype("datetime64[s]").astype("M8[D]").astype(int)
-            date_nums_other = dtimes_other.astype("datetime64[s]").astype("M8[D]").astype(int)
-
-            # TODO: loop over shorter array
-            for idx, datenum in enumerate(date_nums_this):
-                matches = np.where(date_nums_other == datenum)[0]
-                if len(matches) == 1:
-                    dates.append(datenum)
-                    data_this_match.append(data_this[idx])
-                    data_other_match.append(data_other[matches[0]])
-
-        return (dates, data_this_match, data_other_match)
 
     def __iter__(self):
         return self

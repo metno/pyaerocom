@@ -48,7 +48,6 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.stationdata import StationData
 from pyaerocom.units.datetime import TsType
-from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
@@ -190,7 +189,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.52_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.53_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -545,7 +544,7 @@ class ReadEbas(ReadUngriddedBase):
                             mapping[fpath].append(other_var)
                         except ValueError:
                             pass
-        self.logger.info(f"Number of files to read reduced to {len(mapping)}")
+        logger.info(f"Number of files to read reduced to {len(mapping)}")
         files, files_contain = [], []
         for path, contains_vars in mapping.items():
             files.append(path)
@@ -657,7 +656,7 @@ class ReadEbas(ReadUngriddedBase):
         # make sure variable names are input correctly
         vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
 
-        self.logger.info("Fetching data files. This might take a while...")
+        logger.info("Fetching data files. This might take a while...")
 
         db = self.file_index
         files_vars = {}
@@ -1435,6 +1434,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
 
         data_out = self._add_meta(data_out, file)
+        data_out.data_revision = self.data_revision
 
         freq_ebas = data_out["ts_type"]  # resolution code
         # store the raw EBAS meta dictionary (who knows what for later ;P )
@@ -1836,7 +1836,7 @@ class ReadEbas(ReadUngriddedBase):
                 TemporalSamplingError,
             ) as e:
                 self.files_failed.append(_file)
-                self.logger.warning(
+                logger.warning(
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
@@ -1870,142 +1870,4 @@ class ReadEbas(ReadUngriddedBase):
         num_failed = len(self.files_failed)
         if num_failed > 0:
             logger.warning(f"{num_failed} out of {len(files)} could not be read...")
-        return data_obj
-
-    def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
-        """Helper that reads list of files into UngriddedData
-
-        Note
-        ----
-        This method is not supposed to be called directly but is used in
-        :func:`read` and serves the purpose of parallel loading of data
-        """
-        self.files_failed = []
-        data_obj = UngriddedData(num_points=1000000)
-
-        # Add reading options to filter "history of UngriddedDataObject"
-        filters = self.readopts_default.filter_dict
-        filters.update(constraints)
-        data_obj._add_to_filter_history(filters)
-
-        meta_key = 0.0
-        idx = 0
-
-        # assign metadata object
-        metadata = data_obj.metadata
-        meta_idx = data_obj.meta_idx
-
-        # counter that is updated whenever a new variable appears during read
-        # (is used for attr. var_idx in UngriddedData object)
-        var_count_glob = -1
-        logger.info(f"Reading EBAS data from {self.file_dir}")
-        num_files = len(files)
-        for i in tqdm(range(num_files), disable=None):
-            _file = files[i]
-            contains = files_contain[i]
-            try:
-                station_data = self.read_file(_file, vars_to_retrieve=contains)
-
-            except (
-                NotInFileError,
-                EbasFileError,
-                TemporalResolutionError,
-                TemporalSamplingError,
-            ) as e:
-                self.files_failed.append(_file)
-                self.logger.warning(
-                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
-                )
-                continue
-            except Exception as e:
-                self.files_failed.append(_file)
-                logger.warning(
-                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
-                )
-                continue
-
-            # Fill the metadata dict
-            # the location in the data set is time step dependent!
-            # use the lat location here since we have to choose one location
-            # in the time series plot
-            metadata[meta_key] = {}
-            metadata[meta_key].update(station_data.get_meta(add_none_vals=True))
-
-            if "station_name_orig" in station_data:
-                metadata[meta_key]["station_name_orig"] = station_data["station_name_orig"]
-
-            metadata[meta_key]["data_revision"] = self.data_revision
-            metadata[meta_key]["var_info"] = {}
-            # this is a list with indices of this station for each variable
-            # not sure yet, if we really need that or if it speeds up things
-            meta_idx[meta_key] = {}
-
-            num_times = len(station_data["dtime"])
-
-            contains_vars = list(station_data.var_info)
-            # access array containing time stamps
-            # TODO: check using index instead (even though not a problem here
-            # since all Aerocom data files are of type timeseries)
-            times = np.float64(station_data["dtime"])
-
-            append_vars = [x for x in np.intersect1d(vars_to_retrieve, contains_vars)]
-
-            totnum = num_times * len(append_vars)
-
-            # check if size of data object needs to be extended
-            if (idx + totnum) >= data_obj._ROWNO:
-                # if totnum < data_obj._CHUNKSIZE, then the latter is used
-                data_obj.add_chunk(totnum)
-
-            for var_count, var in enumerate(append_vars):
-                # data values
-                values = station_data[var]
-
-                # get start / stop index for this data vector
-                start = idx + var_count * num_times
-                stop = start + num_times
-
-                if var not in data_obj.var_idx:
-                    var_count_glob += 1
-                    var_idx = var_count_glob
-                    data_obj.var_idx[var] = var_idx
-                else:
-                    var_idx = data_obj.var_idx[var]
-
-                # write common meta info for this station (data lon, lat and
-                # altitude are set to station locations)
-                data_obj._data[start:stop, data_obj._LATINDEX] = station_data["latitude"]
-                data_obj._data[start:stop, data_obj._LONINDEX] = station_data["longitude"]
-                data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = station_data["altitude"]
-                data_obj._data[start:stop, data_obj._METADATAKEYINDEX] = meta_key
-
-                # write data to data object
-                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
-
-                data_obj._data[start:stop, data_obj._DATAINDEX] = values
-
-                data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-
-                if var in station_data.data_flagged:
-                    invalid = station_data.data_flagged[var]
-                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
-                if var in station_data.data_err:
-                    errs = station_data.data_err[var]
-                    data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
-
-                var_info = station_data["var_info"][var]
-                metadata[meta_key]["var_info"][var] = {}
-                metadata[meta_key]["var_info"][var].update(var_info)
-                meta_idx[meta_key][var] = np.arange(start, stop)
-
-            metadata[meta_key]["variables"] = append_vars
-            idx += totnum
-            meta_key += 1
-
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-
-        num_failed = len(self.files_failed)
-        if num_failed > 0:
-            logger.warning(f"{num_failed} out of {num_files} could not be read...")
         return data_obj

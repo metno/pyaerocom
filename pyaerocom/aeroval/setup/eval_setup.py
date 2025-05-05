@@ -1,12 +1,10 @@
-import datetime
 import logging
 import os
 import sys
 from datetime import timedelta
 from functools import cached_property
-from getpass import getuser
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
 from pyaerocom.aeroval.obsentry import ObsEntry
@@ -23,333 +21,33 @@ import pandas as pd
 from pydantic import (
     BaseModel,
     ConfigDict,
-    Field,
-    NonNegativeInt,
-    PositiveInt,
     computed_field,
     field_serializer,
-    field_validator,
     model_validator,
 )
 
-from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.helpers import (
-    BoundingBox,
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
 )
-from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
-from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
+from pyaerocom.aeroval.json_utils import read_json
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
+from .output_paths import OutputPaths
+from .model_maps_setup import ModelMapsSetup
+from .statistics_setup import StatisticsSetup
+from .time_setup import TimeSetup
+from .web_display_setup import WebDisplaySetup
+from .eval_run_options import EvalRunOptions
+from .project_info import ProjectInfo
+from .experiment_info import ExperimentInfo
+from .cams2_83_setup import CAMS2_83Setup
+
 logger = logging.getLogger(__name__)
-
-PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})
-
-
-class OutputPaths(BaseModel):
-    """
-    Setup class for output paths of json files and co-located data
-
-    This interface generates all paths required for an experiment.
-
-    Attributes
-    ----------
-    proj_id : str
-        project ID
-    exp_id : str
-        experiment ID
-    json_basedir : str, Path
-    avdb_resource : str, Path, None
-        An aerovaldb resource identifier as expected by aerovaldb.open()[1].
-        If not provided, pyaerocom will fall back to using json_basedir, for
-        backwards compatibility.
-
-        [1] https://aerovaldb.readthedocs.io/en/latest/api.html#aerovaldb.open
-    """
-
-    # Pydantic ConfigDict
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    _JSON_SUBDIRS: list[str] = [
-        "map",
-        "ts",
-        "ts/diurnal",
-        "scat",
-        "hm",
-        "hm/ts",
-        "contour",
-        "profiles",
-        "overlay",
-    ]
-    avdb_resource: Path | str | None = None
-
-    json_basedir: Path | str = Field(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/data"), validate_default=True
-    )
-    coldata_basedir: Path | str = Field(
-        default=os.path.join(const.OUTPUTDIR, "aeroval/coldata"), validate_default=True
-    )
-
-    @field_validator("json_basedir", "coldata_basedir")
-    @classmethod
-    def validate_basedirs(cls, v):
-        if not os.path.exists(v):
-            tmp = Path(v) if isinstance(v, str) else v
-            tmp.mkdir(parents=True, exist_ok=True)
-        return v
-
-    proj_id: str
-    exp_id: str
-
-    def _check_init_dir(self, loc, assert_exists):
-        if assert_exists and not os.path.exists(loc):
-            os.makedirs(loc, exist_ok=True)
-        return loc
-
-    def get_coldata_dir(self, assert_exists=True):
-        loc = os.path.join(self.coldata_basedir, self.proj_id, self.exp_id)
-        return self._check_init_dir(loc, assert_exists)
-
-    def get_json_output_dirs(self, assert_exists=True):
-        out = {}
-        base = os.path.join(self.json_basedir, self.proj_id, self.exp_id)
-        for subdir in self._JSON_SUBDIRS:
-            loc = self._check_init_dir(os.path.join(base, subdir), assert_exists)
-            out[subdir] = loc
-        # for cams2_83 the extra 'forecast' folder will contain the median scores if computed
-        if self.proj_id == "cams2-83":
-            loc = self._check_init_dir(os.path.join(base, "forecast"), assert_exists)
-            out["forecast"] = loc
-        return out
-
-
-class ModelMapsSetup(BaseModel):
-    maps_freq: Literal["hourly", "daily", "monthly", "yearly", "coarsest"] = "coarsest"
-    plot_types: dict[str, str | set[str]] | set[str] = {CONTOUR}
-    boundaries: BoundingBox = BoundingBox(west=-180, east=180, north=90, south=-90)
-    right_menu: tuple[str, ...] | None = None
-    overlay_save_format: Literal["webp", "png"] = "webp"
-
-    @field_validator("plot_types")
-    def validate_plot_types(cls, v):
-        if isinstance(v, dict):
-            for m in v:
-                if not isinstance(v[m], set):
-                    v[m] = set([v[m]])  # v[m] must be a string
-                if v[m] not in PLOT_TYPE_OPTIONS:
-                    raise ConfigError("Model maps set up given a non-valid plot type.")
-            return v
-        if isinstance(v, str):
-            v = set([v])
-        if isinstance(v, list):  # can occur when reading a serialized config
-            v = set(v)
-        if v not in PLOT_TYPE_OPTIONS:
-            raise ConfigError("Model maps set up given a non-valid plot type.")
-        return v
-
-
-class CAMS2_83Setup(BaseModel):
-    use_cams2_83: bool = False
-    use_cams2_83_fairmode: bool = False  # Whether or not fairmode is calculated in the CAMS283 Engine, together with the median scores
-
-
-class StatisticsSetup(BaseModel, extra="allow"):
-    """
-    Setup options for statistical calculations
-
-    Attributes
-    ----------
-    weighted_stats : bool
-        if True, statistics are calculated using area weights,
-        this is only relevant for gridded / gridded evaluations.
-    annual_stats_constrained : bool
-        if True, then only sites are considered that satisfy a potentially
-        specified annual resampling constraint (see
-        :attr:`pyaerocom.colocation.ColocationSetup.min_num_obs`). E.g.
-
-        lets say you want to calculate statistics (bias,
-        correlation, etc.) for monthly model / obs data for a given site and
-        year. Lets further say, that there are only 8 valid months of data, and
-        4 months are missing, so statistics will be calculated for that year
-        based on 8 vs. 8 values. Now if
-        :attr:`pyaerocom.colocation.ColocationSetup.min_num_obs` is
-        specified in way that requires e.g. at least 9 valid months to
-        represent the whole year, then this station will not be considered in
-        case `annual_stats_constrained` is True, else it will. Defaults to
-        False.
-    stats_tseries_base_freq : str, optional
-        The statistics Time Series display in AeroVal (under Overall Evaluation)
-        is computed in intervals of a certain frequency, which is specified
-        via :attr:`TimeSetup.main_freq` (defaults to monthly). That is,
-        monthly colocated data is used as a basis to compute the statistics
-        for each month (e.g. if you have 10 sites, then statistics will be
-        computed based on 10 monthly values for each month of the timeseries,
-        1 value for each site). `stats_tseries_base_freq` may be specified in
-        case a higher resolution is supposed to be used as a basis to compute
-        the timeseries in the resolution specified by
-        :attr:`TimeSetup.main_freq` (e.g. if daily is specified here, then for
-        the above example 310 values would be used - 31 for each site - to
-        compute the statistics for a given month (in this case, a month with 31
-        days, obviously).
-    drop_stats: tuple, optional
-        tuple of strings with names of statistics (as determined by keys in
-        aeroval.glob_defaults.py's statistics_defaults) to not compute. For example,
-        setting drop_stats = ("mb", "mab"), results in json files in hm/ts with
-        entries which do not contain the mean bias and mean absolute bias,
-        but the other statistics are preserved.
-    stats_decimals: int, optional
-        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a default of 3.
-        Setting this higher of lower changes the number of decimals shown on the Aeroval webpage.
-    round_floats_precision: int, optional
-        Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`
-
-
-    Parameters
-    ----------
-    kwargs
-        any of the supported attributes, e.g.
-        `StatisticsSetup(annual_stats_constrained=True)`
-
-    """
-
-    # Pydantic ConfigDict
-    model_config = ConfigDict(protected_namespaces=())
-    # StatisticsSetup attributes
-    MIN_NUM: PositiveInt = 1
-    weighted_stats: bool = True
-    annual_stats_constrained: bool = False
-
-    # Trends config
-    add_trends: bool = False  # Adding trend calculations, only trends over the average time series over stations in a region
-    avg_over_trends: bool = (
-        False  # Adds calculation of avg over trends of time series of stations in region
-    )
-    obs_min_yrs: NonNegativeInt = 0  # Removes stations with less than this number of years of valid data (a year with data points in all four seasons) Should in most cases be the same as stats_min_yrs
-    stats_min_yrs: PositiveInt = obs_min_yrs  # Calculates trends if number of valid years are equal or more than this. Should in most cases be the same as obs_min_yrs
-    sequential_yrs: bool = False  # Whether or not the min_yrs should be sequential
-
-    stats_tseries_base_freq: str | None = None
-    forecast_evaluation: bool = False
-    forecast_days: PositiveInt = 4
-    use_fairmode: bool = False
-    use_diurnal: bool = False
-    obs_only_stats: bool = False
-    model_only_stats: bool = False
-    drop_stats: tuple[str, ...] = ()
-    stats_decimals: int | None = None
-    round_floats_precision: int | None = None
-
-    if round_floats_precision:
-        set_float_serialization_precision(round_floats_precision)
-
-
-class TimeSetup(BaseModel):
-    """
-    Time setup options
-
-    Attributes
-    ----------
-    add_seasons : bool, default True
-        if True, seasons will be ['all', 'DJF', 'MAM', 'JJA', 'SON'], if False, just ['all'].
-    use_meteorological_seasons : bool, default False
-        if True, then statistics are based on the meteorological definition of seasons. This is relevant
-        for periods that are a single year. So if :attr:`add_seasons` is True, for a given year ['DJF'] will
-        refer to data from Dec of the previous year (if available) and Jan/Feb of the same year, while if
-        :attr:`use_meteorological_seasons` is False, it will be based on data from Jan/Feb and December
-        of the same year. Similarly, and weather or not :attr:`add_seasons` is True,
-        if :attr:`use_meteorological_seasons` is True, ['all'] (whole year) will refer to data from Dec of
-        the previous year to Nov of the same year, while if False, it will refer to data from Jan to Dec
-        of the same year.
-    """
-
-    DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
-    SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
-    main_freq: str = "monthly"
-    freqs: list[str] = ["monthly", "yearly"]
-    periods: list[str] = Field(default_factory=list)
-    add_seasons: bool = True
-    use_meteorological_seasons: bool = False
-
-    def get_seasons(self):
-        """
-        Get list of seasons to be analysed
-
-        Returns :attr:`SEASONS` if :attr:`add_seasons` it True, else `[
-        'all']` (only whole year).
-
-        Returns
-        -------
-        list
-            list of season strings for analysis
-
-        """
-        if self.add_seasons:
-            return self.SEASONS
-        return ["all"]
-
-    def _get_all_period_strings(self):
-        """
-        Get list of all period strings for evaluation
-
-        Returns
-        -------
-        list
-            list of period / season strings
-        """
-        output = []
-        for per in self.periods:
-            for season in self.get_seasons():
-                perstr = f"{per}-{season}"
-                output.append(perstr)
-        return output
-
-
-class WebDisplaySetup(BaseModel):
-    # Pydantic ConfigDict
-    model_config = ConfigDict(protected_namespaces=())
-    # WebDisplaySetup attributes
-    map_zoom: Literal["World", "Europe", "xEMEP"] = "World"
-    regions_how: Literal["default", "aerocom", "htap", "country"] = "default"
-    map_zoom: str = "World"
-    add_model_maps: bool = False
-    modelorder_from_config: bool = True
-    obsorder_from_config: bool = True
-    var_order_menu: tuple[str, ...] = ()
-    obs_order_menu: tuple[str, ...] = ()
-    stats_order_menu: tuple[str, ...] = ()
-    model_order_menu: tuple[str, ...] = ()
-    hide_charts: tuple[str, ...] = ()
-    hide_pages: tuple[str, ...] = ()
-    ts_annotations: dict[str, str] = Field(default_factory=dict)
-    pages: tuple[str, ...] = ("maps", "evaluation", "intercomp", "overall", "infos")
-
-
-class EvalRunOptions(BaseModel):
-    clear_existing_json: bool = True
-    only_json: bool = False
-    only_colocation: bool = False
-    #: If True, process only maps (skip obs evaluation)
-    only_model_maps: bool = False
-    obs_only: bool = False
-
-
-class ProjectInfo(BaseModel):
-    proj_id: str
-
-
-class ExperimentInfo(BaseModel):
-    exp_id: str
-    exp_name: str = ""
-    exp_descr: str = ""
-    public: bool = False
-    exp_pi: str = getuser()
-    pyaerocom_version: str = __version__
-    creation_date: str = f"{datetime.datetime.now(datetime.timezone.utc):%Y-%m-%dT%H:%M:%S.%fZ}"
 
 
 class EvalSetup(BaseModel):

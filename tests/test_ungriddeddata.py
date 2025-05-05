@@ -67,7 +67,7 @@ def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
 
 @pytest.mark.dependency
 def test_check_set_country(aeronetsunv3lev2_subset):
-    idx, countries = aeronetsunv3lev2_subset.check_set_country()
+    idx, countries = aeronetsunv3lev2_subset._check_set_country()
     assert len(idx) == len(aeronetsunv3lev2_subset.metadata)
     assert len(countries) == len(idx)
     assert countries == [
@@ -94,7 +94,7 @@ def test_check_set_country(aeronetsunv3lev2_subset):
         "Belgium",
         "Argentina",
     ]
-    idx, countries = aeronetsunv3lev2_subset.check_set_country()
+    idx, countries = aeronetsunv3lev2_subset._check_set_country()
     assert idx == []
     assert countries == []
 
@@ -259,10 +259,3 @@ def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedData):
     data = aeronetsunv3lev2_subset.copy()
     with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
-
-
-def test_find_common_stations(aeronetsunv3lev2_subset: UngriddedData):
-    data1 = aeronetsunv3lev2_subset.copy()
-    data2 = aeronetsunv3lev2_subset.copy()
-    station_map = data1.find_common_stations(other=data2)
-    assert station_map == {key: key for key in station_map}

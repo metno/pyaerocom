@@ -119,6 +119,8 @@ class Unit:
         "MM/H": "mm h-1",
         # others
         "/m": "m-1",
+        # attenuated backscatter
+        "Mm-1.sr-1": "Mm-1 sr-1",
     }
 
     def __init__(

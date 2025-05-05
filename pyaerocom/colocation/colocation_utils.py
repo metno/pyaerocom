@@ -947,14 +947,11 @@ def colocate_gridded_ungridded(
                 f"not be added to ColocatedData. Reason: {e}"
             )
     try:
-        revision = data_ref.data_revision[dataset_ref]
+        revision = data_ref.get_data_revision(dataset_ref)
+    except MetaDataError:
+        revision = "MULTIPLE"
     except Exception:
-        try:
-            revision = data_ref._get_data_revision_helper(dataset_ref)
-        except MetaDataError:
-            revision = "MULTIPLE"
-        except Exception:
-            revision = "n/a"
+        revision = "n/a"
 
     files = [os.path.basename(x) for x in data.from_files]
 
