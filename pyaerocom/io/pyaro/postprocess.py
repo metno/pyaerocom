@@ -190,6 +190,9 @@ class PostProcessingReader(Reader):
                 known_variables.append(transform.out_varname())
                 self.compute_vars[transform.out_varname()] = transform
 
+    def metadata(self) -> dict[str, str]:
+        return self.reader.metadata()
+
     def data(self, varname: str) -> Data:
         if varname not in self.compute_vars:
             data = self.reader.data(varname)

@@ -45,7 +45,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
 
     def __init__(self):
         self.metadata = {}
-        self.data_revision = {}
+        self._data_revision = {}
         self.var_idx = {}
         self.filter_hist = {}
         self._is_vertical_profile = False
@@ -55,15 +55,15 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         deepcopy metadata-fields to the other object
         """
         other.metadata = deepcopy(self.metadata)
-        other.data_revision = deepcopy(self.data_revision)
+        other._data_revision = deepcopy(self._data_revision)
         other.var_idx = deepcopy(self.var_idx)
         other.filter_hist = deepcopy(self.filter_hist)
         other.is_vertical_profile = self._is_vertical_profile
 
     @override
-    def _get_data_revision_helper(self, data_id):
+    def get_data_revision(self, data_id) -> str | None:
         """
-        Helper method to get last data revision
+        Get data revision for a data_id.
 
         Parameters
         ----------
@@ -80,18 +80,18 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         latest revision (None if no revision is available).
 
         """
-        rev = None
-        for meta in self.metadata.values():
-            if meta["data_id"] == data_id:
-                if rev is None:
-                    rev = meta["data_revision"]
-                elif not meta["data_revision"] == rev:
-                    raise MetaDataError(f"Found different data revisions for dataset {data_id}")
-        if data_id in self.data_revision:
-            if not rev == self.data_revision[data_id]:
-                raise MetaDataError(f"Found different data revisions for dataset {data_id}")
-        self.data_revision[data_id] = rev
-        return rev
+        if data_id not in self._data_revision:
+            rev = None
+            for meta in self.metadata.values():
+                if meta["data_id"] == data_id:
+                    if rev is None:
+                        rev = meta["data_revision"]
+                    elif not meta["data_revision"] == rev:
+                        raise MetaDataError(
+                            f"Found different data revisions for dataset {data_id}"
+                        )
+            self._data_revision[data_id] = rev
+        return self._data_revision[data_id]
 
     @property
     def _first_meta_idx(self):
@@ -397,7 +397,6 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         """
         Alphabetically sorted list of country names available
         """
-        # self.check_set_country()
         countries = []
         for idx, meta in self.metadata.items():
             try:

@@ -1,3 +1,3 @@
 # isort:skip_file
-from .setup_classes import EvalSetup
+from .setup import EvalSetup
 from .experiment_processor import ExperimentProcessor
