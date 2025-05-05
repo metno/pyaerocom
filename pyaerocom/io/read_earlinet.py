@@ -259,7 +259,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     "altitude"
                 ].values  # altitude is defined in EARLINET in terms of altitude above sea level
             )  # Note altitude is an array for the data, station altitude is different
-            data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
+
+            data_out["station_coords"]["altitude"] = data_in.station_altitude.item()
             data_out["altitude_attrs"] = data_in[
                 "altitude"
             ].attrs  # get attrs for altitude units + extra
@@ -277,7 +278,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
             # get metadata expected in StationData but not in data_in's metadata
             data_out["wavelength_emis"] = data_in["wavelength"]
-            data_out["shots"] = np.float64(data_in["shots"])
+            data_out["shots"] = data_in["shots"].item()
             data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
             data_out["filename"] = filename
             if "Lev02" in filename:

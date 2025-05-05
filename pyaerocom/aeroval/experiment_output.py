@@ -440,10 +440,10 @@ class ExperimentOutput(ProjectOutput):
             info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
-            logger.warning(
-                f"Failed to infer cmap and variable "
-                f"ranges for {var}, using default "
-                f"settings which are {info}"
+            logger.info(
+                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'.",
+                var,
+                info,
             )
 
         return info
