@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class AerocomBrowser(BrowseDict):
-    """Interface for browsing all Aerocom data direcories
+    """Interface for browsing all Aerocom data directories
 
     Note
     ----

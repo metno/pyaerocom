@@ -13,7 +13,6 @@ from datetime import datetime
 from typing import Any
 
 import pandas as pd
-from cf_units import Unit
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import chk_make_subdir
@@ -27,17 +26,16 @@ from pyaerocom.exceptions import (
     ColocationSetupError,
     DataCoverageError,
 )
-from pyaerocom.helpers import (
-    get_lowest_resolution,
-    start_stop,
-    to_datestring_YYYYMMDD,
-    to_pandas_timestamp,
-)
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.helpers import start_stop, to_datestring_YYYYMMDD
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
+from pyaerocom.units import Unit
+from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -79,7 +77,7 @@ class Colocator:
             colocation_setup = ColocationSetup(**colocation_setup)
             warnings.warn(
                 DeprecationWarning(
-                    "Future versions of Pyaerocom will require Colocator to injest an instance of ColocationSetup."
+                    "Future versions of Pyaerocom will require Colocator to ingest an instance of ColocationSetup."
                 )
             )
 
@@ -278,7 +276,7 @@ class Colocator:
             return self.colocation_setup.obs_id
         return self.colocation_setup.obs_name
 
-    def get_model_data(self, model_var):
+    def get_model_data(self, model_var: str):
         if model_var in self._loaded_model_data:
             mdata = self._loaded_model_data[model_var]
             if mdata.data_id == self.colocation_setup.model_id:
@@ -288,7 +286,7 @@ class Colocator:
         self._loaded_model_data[model_var] = mdata
         return mdata
 
-    def get_obs_data(self, obs_var):
+    def get_obs_data(self, obs_var: str):
         if self.obs_is_ungridded:
             return self._read_ungridded(obs_var)
         else:
@@ -304,7 +302,7 @@ class Colocator:
             raise AttributeError("stop time is not set")
         return to_datestring_YYYYMMDD(to_pandas_timestamp(self.stop))
 
-    def prepare_run(self, var_list: list = None) -> dict:
+    def prepare_run(self, var_list: list[str] | None = None) -> dict:
         """
         Prepare colocation run for current setup.
 
@@ -350,7 +348,7 @@ class Colocator:
             vars_to_process = self._filter_var_matches_files_not_exist(vars_to_process, ts_types)
         return vars_to_process
 
-    def run(self, var_list: list = None):
+    def run(self, var_list: list[str] | None = None):
         """Perform colocation for current setup
 
         See also :func:`prepare_run`.
@@ -835,7 +833,7 @@ class Colocator:
                 ]
         raise DataCoverageError(f"No alternative vert type found for {var_name}")
 
-    def _check_remove_outliers_gridded(self, data, var_name, is_model):
+    def _check_remove_outliers_gridded(self, data: GriddedData, var_name: str, is_model: bool):
         if is_model:
             rm_outliers = self.colocation_setup.model_remove_outliers
             outlier_ranges = self.colocation_setup.model_outlier_ranges
@@ -862,7 +860,7 @@ class Colocator:
             data.remove_outliers(low, high, inplace=True)
         return data
 
-    def _eval_obs_filters(self, var_name):
+    def _eval_obs_filters(self, var_name: str):
         obs_filters = self.obs_filters
         if var_name in obs_filters:
             # return obs_filters[var_name]
@@ -874,7 +872,7 @@ class Colocator:
             )
         return obs_filters if len(obs_filters) > 0 else {}
 
-    def _save_coldata(self, coldata):
+    def _save_coldata(self, coldata: ColocatedData):
         """Helper for saving colocateddata"""
         obs_var, mod_var = coldata.metadata["var_name_input"]
         if mod_var in self.colocation_setup.model_rename_vars:
@@ -912,7 +910,7 @@ class Colocator:
         self._write_log(msg)
         logger.info(msg)
 
-    def _eval_resample_how(self, model_var, obs_var):
+    def _eval_resample_how(self, model_var: str, obs_var: str):
         rshow = self.colocation_setup.resample_how
         if not isinstance(rshow, dict):
             return rshow
@@ -1034,7 +1032,19 @@ class Colocator:
             min_num_obs=self.colocation_setup.min_num_obs,
             colocate_time=self.colocation_setup.colocate_time,
             resample_how=rshow,
+            add_meta_keys=[],
         )
+        # check if the station_type key has been passed to the ungridded data object
+        # (not all readers may do that, currently only the CAMS2_83 reader does)
+        if isinstance(obs_data, UngriddedDataContainer):
+            are_there_station_types = {
+                "station_type" in dict for dict in obs_data.metadata.values()
+            }
+            if are_there_station_types == {True, False}:
+                raise ValueError("some stations have `station_type` metadata while others do not")
+            if are_there_station_types == {True}:  # all have station_type
+                args.update(add_meta_keys=["station_type"])
+
         if self.obs_is_ungridded:
             ts_type = self._get_colocation_ts_type(model_data.ts_type)
             args.update(
@@ -1119,10 +1129,13 @@ class Colocator:
         if not var_matches:
             logger.info("Nothing to colocate")
             return
-        logger.info("The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR")
-
+        key_vals = []
         for key, val in var_matches.items():
-            logger.info(f"{key}\t{val}")
+            key_vals.append(f"{key}\t{val}")
+        logger.info(
+            "The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR\n"
+            + "\n".join(key_vals)
+        )
 
     def _init_log(self):
         logdir = chk_make_subdir(self.colocation_setup.basedir_coldata, self.get_model_name())

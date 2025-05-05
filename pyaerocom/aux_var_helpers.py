@@ -1,8 +1,13 @@
-import cf_units
 import numpy as np
 
 from pyaerocom import const
+from pyaerocom.units.datetime import TsType
+from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 from pyaerocom.variable_helpers import get_variable
+
+from pyaerocom.units.molecular_mass import get_molmass
+
+from pyaerocom.units import Unit
 
 
 def calc_ang4487aer(data):
@@ -23,7 +28,7 @@ def calc_ang4487aer(data):
 
     Raises
     ------
-    AttributError
+    AttributeError
         if either 'od440aer' or 'od870aer' are not available in data object
 
     Returns
@@ -324,7 +329,7 @@ def compute_ang4470dryaer_from_dry_scat(data):
 
 
 def compute_sc550dryaer(data):
-    """Compute dry scattering coefficent applying RH threshold
+    """Compute dry scattering coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -351,7 +356,7 @@ def compute_sc550dryaer(data):
 
 
 def compute_sc440dryaer(data):
-    """Compute dry scattering coefficent applying RH threshold
+    """Compute dry scattering coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -373,7 +378,7 @@ def compute_sc440dryaer(data):
 
 
 def compute_sc700dryaer(data):
-    """Compute dry scattering coefficent applying RH threshold
+    """Compute dry scattering coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -395,7 +400,7 @@ def compute_sc700dryaer(data):
 
 
 def compute_ac550dryaer(data):
-    """Compute aerosol dry absorption coefficent applying RH threshold
+    """Compute aerosol dry absorption coefficient applying RH threshold
 
     Cf. :func:`_compute_dry_helper`
 
@@ -494,8 +499,6 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
 
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
-    from pyaerocom import TsType
-    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(concprcp_var))
 
@@ -549,8 +552,6 @@ def _compute_wdeppr_from_concprcp_helper(data, wdep_pr_var):
 
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
-    from pyaerocom import TsType
-    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(pr_var))
 
@@ -763,19 +764,17 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
 
     """
     if mmol_air is None:
-        from pyaerocom.molmasses import get_molmass
-
         mmol_air = get_molmass("air_dry")
 
     Rspecific = 287.058  # J kg-1 K-1
 
-    conversion_fac = 1 / cf_units.Unit("mol mol-1").convert(1, vmr_unit)
+    conversion_fac = 1 / Unit("mol mol-1").convert(1, vmr_unit)
 
     airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
     conc = data * mulfac  # kg m-3
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit("kg m-3").convert(1, to_unit)
+        conversion_fac *= Unit("kg m-3").convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         conc *= conversion_fac
     return conc
@@ -811,19 +810,19 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
     """
     if mmol_air is None:
-        from pyaerocom.molmasses import get_molmass
+        from pyaerocom.units.molecular_mass import get_molmass
 
         mmol_air = get_molmass("air_dry")
 
     Rspecific = 287.058  # J kg-1 K-1
 
-    conversion_fac = 1 / cf_units.Unit("kg m-3").convert(1, conc_unit)
+    conversion_fac = 1 / Unit("kg m-3").convert(1, conc_unit)
 
     airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
     vmr = data / mulfac  # unitless
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit("mole mole-1").convert(1, to_unit)
+        conversion_fac *= Unit("mole mole-1").convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         vmr *= conversion_fac
     return vmr

@@ -1,0 +1,38 @@
+[files]
+extend-exclude = [
+  "pyaerocom/data/country_codes.json",
+]
+
+[default]
+extend-ignore-identifiers-re = [
+  "aer",
+  "lod",
+  "hav",
+  "NAM",
+  "aas",
+  "nd",
+  "BA",
+  "Aas",
+  "iy",
+  "NOY",
+  "Noy",
+  "mole_fraction_of_noy_expressed_as_nitrogen_in_air",
+  "atmosphere_mass_content_of_noy_expressed_as_nitrogen",
+  "ND",
+  "treshold_angstrom",
+  "colocation_layer_limts",
+  "CAMS2_83_Processer",
+  "processer",
+  "GAWTADsubsetAasEtAl",
+  "_cachable_classes",
+  "station_datas",
+  "ReadAasEtal",
+  "ReadSulphurAasEtAl",
+  "GawTadSubsetAasEtAl",
+  "EARLINET_AerRemSen_waw_Lev02_b0532_202109221030_202109221130_v01_qc03",
+  "EARLINET_AerRemSen_cyc_Lev02_e0355_202104262030_202104262130_v01_qc03",
+  "typ",
+  "ts_typs",
+  "emiss",
+  "vas",
+]

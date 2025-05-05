@@ -3,7 +3,6 @@ import logging
 import os
 from pathlib import Path
 
-import cf_units
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -12,11 +11,13 @@ from pyaerocom.exceptions import DataSourceError
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
 from .additional_variables import vmr_to_ghost_stations
 from .meta_keys import ghost_meta_keys
+
+from pyaerocom.units import convert_unit
 
 logger = logging.getLogger(__name__)
 
@@ -362,9 +363,9 @@ class ReadGhost(ReadUngriddedBase):
             for meta_key, to_unit in self.CONVERT_UNITS_META.items():
                 from_unit = ds[meta_key].attrs["units"]
 
-                if from_unit != to_unit:
-                    cfac = cf_units.Unit(from_unit).convert(1, to_unit)
-                    meta_glob[meta_key] *= cfac
+                meta_glob[meta_key] = convert_unit(
+                    meta_glob[meta_key], from_unit=from_unit, to_unit=to_unit
+                )
 
             tvals = ds["time"].values
 

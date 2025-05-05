@@ -421,7 +421,7 @@ def test__infer_index_surface_level_wrong_dim(
 
 def test_find_closest_index_empty(
     data_tm5: GriddedData,
-):  # can't find a place where called in codebase but doesn't seem to be depricated
+):  # can't find a place where called in codebase but doesn't seem to be deprecated
     empty = data_tm5.find_closest_index()
     assert len(empty) == 0
 

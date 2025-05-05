@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import sys
@@ -6,7 +7,6 @@ from functools import cached_property
 from getpass import getuser
 from pathlib import Path
 from typing import Annotated, Literal
-import datetime
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
 from pyaerocom.aeroval.obsentry import ObsEntry
@@ -22,26 +22,27 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    PositiveInt,
     NonNegativeInt,
+    PositiveInt,
     computed_field,
     field_serializer,
     field_validator,
     model_validator,
 )
+import subprocess
 
 from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.helpers import (
+    BoundingBox,
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
-    BoundingBox,
 )
-from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
+from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 
 logger = logging.getLogger(__name__)
@@ -82,7 +83,7 @@ class OutputPaths(BaseModel):
         "hm/ts",
         "contour",
         "profiles",
-        "contour/overlay",
+        "overlay",
     ]
     avdb_resource: Path | str | None = None
 
@@ -200,7 +201,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
         entries which do not contain the mean bias and mean absolute bias,
         but the other statistics are preserved.
     stats_decimals: int, optional
-        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a deault of 3.
+        If provided, overwrites the decimals key in glod_defaults for the statistics, which has a default of 3.
         Setting this higher of lower changes the number of decimals shown on the Aeroval webpage.
     round_floats_precision: int, optional
         Sets the precision argument for the function `pyaerocom.aaeroval.json_utils:set_float_serialization_precision`
@@ -246,6 +247,24 @@ class StatisticsSetup(BaseModel, extra="allow"):
 
 
 class TimeSetup(BaseModel):
+    """
+    Time setup options
+
+    Attributes
+    ----------
+    add_seasons : bool, default True
+        if True, seasons will be ['all', 'DJF', 'MAM', 'JJA', 'SON'], if False, just ['all'].
+    use_meteorological_seasons : bool, default False
+        if True, then statistics are based on the meteorological definition of seasons. This is relevant
+        for periods that are a single year. So if :attr:`add_seasons` is True, for a given year ['DJF'] will
+        refer to data from Dec of the previous year (if available) and Jan/Feb of the same year, while if
+        :attr:`use_meteorological_seasons` is False, it will be based on data from Jan/Feb and December
+        of the same year. Similarly, and weather or not :attr:`add_seasons` is True,
+        if :attr:`use_meteorological_seasons` is True, ['all'] (whole year) will refer to data from Dec of
+        the previous year to Nov of the same year, while if False, it will refer to data from Jan to Dec
+        of the same year.
+    """
+
     DEFAULT_FREQS: Literal["monthly", "yearly"] = "monthly"
     SEASONS: list[str] = ["all", "DJF", "MAM", "JJA", "SON"]
     """
@@ -259,6 +278,7 @@ class TimeSetup(BaseModel):
     freqs: list[str] = ["monthly", "yearly"]
     periods: list[str] = Field(default_factory=list)
     add_seasons: bool = True
+    use_meteorological_seasons: bool = False
 
     def get_seasons(self):
         """
@@ -553,6 +573,14 @@ class EvalSetup(BaseModel):
     @field_serializer("model_cfg")
     def serialize_model_cfg(self, model_cfg: ModelCollection):
         return model_cfg.as_dict()
+
+    @computed_field
+    @cached_property
+    def pip_freeze(self) -> list[str]:
+        reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        splt = [x for x in reqs.decode().split("\n") if x != ""]
+
+        return sorted(splt)
 
     ###########################
     ##       Methods

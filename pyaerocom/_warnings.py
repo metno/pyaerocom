@@ -16,7 +16,7 @@ def ignore_warnings(category: type[Warning], *messages: str):
         warning messages to be ignored. E.g.
         ignore_warnings(Warning, 'Warning that can safely be ignored', 'Other warning to ignore').
         For each
-        `<entry>` :func:`warnigns.filterwarnings('ignore', Warning, message=<entry>)`
+        `<entry>` :func:`warnings.filterwarnings('ignore', Warning, message=<entry>)`
         is called.
 
     Example

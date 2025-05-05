@@ -14,7 +14,7 @@ EMEP_DATA_PATH = TEST_DATA["MODELS"].path / "EMEP_2017"
 
 @pytest.fixture(scope="session")
 def path_emep() -> dict[str, str]:
-    """dictionary contining EMEP test data"""
+    """dictionary containing EMEP test data"""
     paths = dict(
         daily=EMEP_DATA_PATH / "Base_day.nc",
         monthly=EMEP_DATA_PATH / "Base_month.nc",

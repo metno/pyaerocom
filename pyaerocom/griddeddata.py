@@ -7,7 +7,6 @@ import iris
 import numpy as np
 import pandas as pd
 import xarray as xr
-from cf_units import Unit
 from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
@@ -23,11 +22,10 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
+from pyaerocom.units.datetime import cftime_to_datetime64, datetime2str, to_pandas_timestamp
 from pyaerocom.helpers import (
-    cftime_to_datetime64,
     check_coord_circular,
     copy_coords_cube,
-    datetime2str,
     delete_all_coords_cube,
     extract_latlon_dataarray,
     get_lat_rng_constraint,
@@ -37,17 +35,17 @@ from pyaerocom.helpers import (
     isrange,
     make_dummy_cube_latlon,
     str_to_iris,
-    to_pandas_timestamp,
 )
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 from pyaerocom.mathutils import estimate_value_range, exponent
 from pyaerocom.projection_information import ProjectionInformation
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
+from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.tstype import TsType
-from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
+from pyaerocom.units.datetime import TsType
+from pyaerocom.units import Unit
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -368,8 +366,7 @@ class GriddedData:
         freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
         if not int(dt.astype(f"timedelta64[{freq}]")) == 1:
             raise AttributeError(
-                "Mismatch between sampling freq and "
-                "actual frequency of values in time dimension "
+                "Mismatch between sampling freq and actual frequency of values in time dimension "
             )
 
     @property
@@ -498,7 +495,7 @@ class GriddedData:
 
         Note
         ----
-        This attribute was formerly named ``name`` which is alse the
+        This attribute was formerly named ``name`` which is also the
         corresponding attribute name in :attr:`metadata`
         """
         try:
@@ -700,7 +697,7 @@ class GriddedData:
                 f"{vmax}. Since this will add the variable only temporarily "
                 f"during this run, this might interrupt the processing "
                 f"workflow unexpectedly when rerunning parts of the code without "
-                f"explictly calling GriddedData.register_var_glob. It may be best "
+                f"explicitly calling GriddedData.register_var_glob. It may be best "
                 f"to add this variable to pyaerocom/data/variables.ini."
             )
         return vardef
@@ -757,12 +754,14 @@ class GriddedData:
             if applicable
         """
         cube = self.grid
-        if "invalid_units" in cube.attributes and cube.attributes["invalid_units"] in UALIASES:
-            from_unit = cube.attributes["invalid_units"]
-            to_unit = UALIASES[from_unit]
-            logger.info(f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}")
-            del cube.attributes["invalid_units"]
-            cube.units = to_unit
+        if "invalid_units" in cube.attributes:
+            try:
+                cube.units = str(Unit(cube.attributes["invalid_units"]))
+            except ValueError:
+                pass
+            else:
+                del cube.attributes["invalid_units"]
+
         return cube
 
     def check_unit(self, try_convert_if_wrong=False):
@@ -811,7 +810,7 @@ class GriddedData:
         Try convert data to input unit using custom conversion
 
         Helpers for custom conversion are defined in
-        :mod:`pyaerocom.units_helpers`.
+        :mod:`pyaerocom.units.units_helpers`.
 
         Parameters
         ----------
@@ -834,7 +833,7 @@ class GriddedData:
             from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
         )
         logger.info(
-            f"Succesfully converted unit from {current} to {new_unit} in {self.short_str()}"
+            f"Successfully converted unit from {current} to {new_unit} in {self.short_str()}"
         )
 
         self._apply_unit_mulfac(new_unit, mulfac)
@@ -1080,7 +1079,7 @@ class GriddedData:
             raise ValueError(
                 "Could not extract latitude or longitude info "
                 "from sampling_points or both input arrays "
-                "do not have the same lenght"
+                "do not have the same length"
             )
 
         return dict(lat=lats, lon=lons)
@@ -1093,7 +1092,7 @@ class GriddedData:
         add_meta=None,
         use_iris=False,
         **coords,
-    ):
+    ) -> list[StationData]:
         """Extract time-series for provided input coordinates (lon, lat)
 
         Extract time series for each lon / lat coordinate in this cube or at
@@ -1604,7 +1603,7 @@ class GriddedData:
             self.cube.data = np.ma.masked_array(self.cube.data)
 
     def _resample_time_iris(self, to_ts_type):
-        """Resample time dimension using iris funcitonality
+        """Resample time dimension using iris functionality
 
         This does not allow to specify further constraints but just
         aggregates to input resolution
@@ -1626,7 +1625,6 @@ class GriddedData:
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
-        # from pyaerocom.tstype import TsType
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
 
@@ -2052,7 +2050,7 @@ class GriddedData:
         """
         from pyaerocom.io.helpers import aerocom_savename
 
-        if vert_code is None and self.metadata["vert_code"] is not None:
+        if vert_code is None and self.metadata.get("vert_code", None) is not None:
             vert_code = self.metadata["vert_code"]
 
         if vert_code in (None, ""):
@@ -2115,7 +2113,7 @@ class GriddedData:
         Parameters
         -----------
         out_dir : str
-            output direcory (must exist)
+            output directory (must exist)
         savename : str, optional
             name of file. If None, :func:`aerocom_savename` is used which is
             generated automatically and may be modified via `**kwargs`
@@ -2171,17 +2169,6 @@ class GriddedData:
         -------
         GriddedData
             new data object containing interpolated data
-
-        Examples
-        --------
-
-            >>> from pyaerocom import GriddedData
-            >>> data = GriddedData()
-            >>> data._init_testdata_default()
-            >>> itp = data.interpolate([("longitude", (10)),
-            ...                         ("latitude" , (35))])
-            >>> print(itp.shape)
-            (365, 1, 1)
         """
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
@@ -2712,7 +2699,7 @@ class GriddedData:
         return GriddedData(sub, **self.metadata)
 
     def __contains__(self, val):
-        """Check if variable or coordinate matchs input string"""
+        """Check if variable or coordinate matches input string"""
         return val is self.data_id or val in self.coord_names
 
     def __dir__(self):
@@ -2725,10 +2712,7 @@ class GriddedData:
 
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return (
-            f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n"
-            f"{self._grid.__repr__()}"
-        )
+        return f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n{self._grid.__repr__()}"
 
     def __add__(self, other):
         raise NotImplementedError("Coming soon")

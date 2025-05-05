@@ -310,7 +310,7 @@ class BrowseDict(MutableMapping):
         Raises
         ------
         ValueError
-            If input is inalid type.
+            If input is invalid type.
 
         Returns
         -------
@@ -337,7 +337,7 @@ class ConstrainedContainer(BrowseDict):
 
     This class enables to create dict-like objects that have a fixed set of
     keys and value types (once assigned). Optional values may be instantiated
-    as None, in which case the first time instantiation definecs its type.
+    as None, in which case the first time instantiation defines its type.
 
     Note
     ----
@@ -346,12 +346,11 @@ class ConstrainedContainer(BrowseDict):
 
     Example
     -------
-    class MyContainer(ConstrainedContainer):
-        def __init__(self):
-            self.val1 = 1
-            self.val2 = 2
-            self.option = None
-
+    >>> class MyContainer(ConstrainedContainer):
+    ...    def __init__(self):
+    ...        self.val1 = 1
+    ...        self.val2 = 2
+    ...        self.option = None
     >>> mc = MyContainer()
     >>> mc['option'] = 42
     """
@@ -521,20 +520,8 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)
-    if not os.path.exists(d):
-        os.mkdir(d)
+    os.makedirs(d, exist_ok=True)
     return d
-
-
-def check_dirs_exist(*dirs, **add_dirs):
-    for d in dirs:
-        if not os.path.exists(d):
-            print(f"Creating dir: {d}")
-            os.mkdir(d)
-    for k, d in add_dirs.items():
-        if not os.path.exists(d):
-            os.mkdir(d)
-            print(f"Creating dir: {d} ({k})")
 
 
 def list_to_shortstr(lst, indent=0):

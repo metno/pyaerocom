@@ -1,7 +1,6 @@
 import logging
 from time import time
 
-from cf_units import Unit
 from numpy.typing import ArrayLike
 import multiprocessing
 import os
@@ -25,6 +24,8 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 )
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import round_floats
+
+from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -86,10 +87,10 @@ class ColdataToJsonEngine(ProcessingEngine):
         freqs = self.cfg.time_cfg.freqs
         periods = self.cfg.time_cfg.periods
         seasons = self.cfg.time_cfg.get_seasons()
+        use_meteorological_seasons = self.cfg.time_cfg.use_meteorological_seasons
         main_freq = self.cfg.time_cfg.main_freq
         annual_stats_constrained = self.cfg.statistics_opts.annual_stats_constrained
 
-        out_dirs = self.cfg.path_manager.get_json_output_dirs(True)
         regions_how = self.cfg.webdisp_opts.regions_how
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
@@ -155,10 +156,10 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
 
         else:
-            obs_var = model_var = "UNDEFINED"
+            raise ValueError("Unable to determine obs_var/model_var")
 
-        model_name = coldata.model_name
-        obs_name = coldata.obs_name
+        model_name = str(coldata.model_name)
+        obs_name = str(coldata.obs_name)
 
         mcfg = self.cfg.model_cfg.get_entry(model_name)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
@@ -214,7 +215,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                     obs_name=obs_name,
                     obs_var=obs_var,
                     var_name_web=var_name_web,
-                    out_dirs=out_dirs,
                     vert_code=vert_code,
                     model_name=model_name,
                     model_var=model_var,
@@ -228,6 +228,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     stats_min_num=stats_min_num,
                     use_fairmode=use_fairmode,
                     avg_over_trends=avg_over_trends,
+                    use_meteorological_seasons=use_meteorological_seasons,
                 )
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
@@ -249,6 +250,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 seasons=seasons,
                 obs_name=obs_name,
                 var_name_web=var_name_web,
+                use_meteorological_seasons=use_meteorological_seasons,
             )
 
         logger.info(
@@ -293,6 +295,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         seasons: tuple[str, ...] = None,
         obs_name: str = None,
         var_name_web: str = None,
+        use_meteorological_seasons: bool = False,
     ):
         if region_names is None and station_names is None:
             raise ValueError("Both region_id and station_name can not both be None")
@@ -305,6 +308,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 use_country=use_country,
                 periods=periods,
                 seasons=seasons,
+                use_meteorological_seasons=use_meteorological_seasons,
             )
             location = region_names[regid]
             self.exp_output.add_profile_entry(
@@ -325,6 +329,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 use_country=use_country,
                 periods=periods,
                 seasons=seasons,
+                use_meteorological_seasons=use_meteorological_seasons,
             )
 
             self.exp_output.add_profile_entry(
@@ -349,7 +354,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         obs_name: str | None = None,
         obs_var: str = None,
         var_name_web: str | None = None,
-        out_dirs: dict | None = None,
         vert_code: str | None = None,
         model_name: str | None = None,
         model_var: str | None = None,
@@ -363,6 +367,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         stats_min_num: int = 1,
         use_fairmode: bool = False,
         avg_over_trends: bool = False,
+        use_meteorological_seasons: bool = False,
     ):
         input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
 
@@ -389,7 +394,15 @@ class ColdataToJsonEngine(ProcessingEngine):
         with multiprocessing.Pool(processes=int(num_workers)) as pool:
             results = pool.starmap(_process_statistics_timeseries_single_region, args)
 
-        for stats_ts, region, obs_name, var_name_web, vert_code, model_name, model_var in results:
+        for (
+            stats_ts,
+            region,
+            obs_name,
+            var_name_web,
+            vert_code,
+            model_name,
+            model_var,
+        ) in results:
             self.exp_output.add_heatmap_timeseries_entry(
                 stats_ts,
                 region,
@@ -414,6 +427,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             add_trends,
             trends_min_yrs,
             avg_over_trends,
+            use_meteorological_seasons,
         )
 
         for freq, hm_data in hm_all.items():
@@ -456,6 +470,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 use_fairmode,
                 obs_var,
                 drop_stats,
+                use_meteorological_seasons,
             )
 
             with self.avdb.lock():

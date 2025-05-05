@@ -42,7 +42,7 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
 ### 2. Publish on PyPi
 
 - Make sure version on *pyproject.toml* is correct
-- Make sure there are no uncommited or unstaged changes in your local clone before running the next step, e.g. via:
+- Make sure there are no uncommitted or unstaged changes in your local clone before running the next step, e.g. via:
 
     ``` bash
     git status .
@@ -65,7 +65,7 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
     [distribution package]: https://packaging.python.org/glossary/#term-Distribution-Package
     [package index]: https://packaging.python.org/glossary/#term-Package-Index
 
-- Genereate new [distribution package]:
+- Generate new [distribution package]:
 
     ``` bash
     pipx run build

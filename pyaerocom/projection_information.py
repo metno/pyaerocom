@@ -51,7 +51,8 @@ class ProjectionInformation:
         if "grid_mapping" not in da.attrs:
             return None
         pi = ProjectionInformation()
-        pi._crs = CRS.from_cf(ds[da.grid_mapping].attrs)
+        grid_mapping = ds[da.attrs["grid_mapping"]]
+        pi._crs = CRS.from_cf(grid_mapping.attrs)
 
         for c in da.coords:
             if len(da.coords[c].dims) != 1:
@@ -68,6 +69,17 @@ class ProjectionInformation:
                 if da.coords[c].axis in ("x", "X"):
                     pi._x_axis = c
                     break
+            units = ds.coords[c].attrs.get("units")
+            if units in [
+                "degrees_east",
+                "degree_east",
+                "degree_E",
+                "degrees_E",
+                "degreeE",
+                "degreesE",
+            ]:
+                pi._x_axis = c
+                break
         for c in da.coords:
             if len(da.coords[c].dims) != 1:
                 continue
@@ -83,6 +95,17 @@ class ProjectionInformation:
                 if da.coords[c].axis in ("y", "Y"):
                     pi._y_axis = c
                     break
+            units = ds.coords[c].attrs.get("units")
+            if units in [
+                "degrees_north",
+                "degree_north",
+                "degree_N",
+                "degrees_N",
+                "degreeN",
+                "degreesN",
+            ]:
+                pi._y_axis = c
+                break
         if pi._x_axis is None or pi._y_axis is None:
             raise ProjectionInformationException(f"no x or y axis found for variable '{var}'")
         pi._units = da.coords[pi._y_axis].units

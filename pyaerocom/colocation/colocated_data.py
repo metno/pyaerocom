@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import logging
 import os
 from ast import literal_eval
@@ -25,23 +26,24 @@ from pyaerocom.exceptions import (
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-from pyaerocom.plot.plotscatter import plot_scatter
+
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.stats.stats import calculate_statistics
 from pyaerocom.time_resampler import TimeResampler
 
+
 logger = logging.getLogger(__name__)
 
 
-def ensure_correct_dimensions(data: xr.DataArray):
+def validate_dimensions(data: xr.DataArray) -> None:
     """
     Ensure the dimensions on an xarray.DataArray passed to ColocatedData.
     If a ColocatedData object is created outside of pyaerocom, this checking is needed.
     This function is used as part of the model validator.
     """
     if not isinstance(data, xr.DataArray):
-        raise ValueError("Could not interpret data")
+        raise TypeError(f"Expected DataArray; got {type(data)}.")
 
     shape = data.shape[0]
     num_dims = len(data.dims)
@@ -50,6 +52,98 @@ def ensure_correct_dimensions(data: xr.DataArray):
         raise DataDimensionError("invalid input, need 2D, 3D or 4D numpy array")
     elif not shape == 2:
         raise DataDimensionError("first dimension (data_source) must be of length 2(obs, model)")
+
+
+# These are the entries required in the metadata for an external colocated data object to be able to be imported. See
+# colocated data tutorial here: https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/making_a_colocated_data_object_with_pyaerocom.html
+REQUIRED_METADATA_KEYS = (
+    (
+        "obs_vars",
+        "var_name_input",
+    ),  # Any one of the keys must be present. https://github.com/metno/pyaerocom/blob/ce754a6c0c15db8dc21645f1b3d731ee7519c97a/pyaerocom/aeroval/coldatatojson_engine.py#L141
+    "ts_type",
+    "filter_name",
+    "ts_type_src",
+    "var_units",
+    "data_level",
+    "revision_ref",
+    "from_files",
+    "from_files_ref",
+    "colocate_time",
+    "obs_is_clim",
+    "pyaerocom",
+    "CONV!min_num_obs",
+    "resample_how",
+    "obs_name",
+    "vert_code",
+    "diurnal_only",
+    "zeros_to_nan",
+    "data_source",
+    "var_name",
+)
+
+
+def validate_structure(data: xr.DataArray) -> None:
+    """This check is supposed to be applied to a ColocatedData's .data property
+    as an additional check for validity. It is not currently part of the pydantic
+    validation.
+
+    While passing this check does not guarantee a correct colocated data object
+    it should give increased confidence.
+
+    Things to check (Not all implemented currently):
+    - Object contains exactly one variable name recognized by pyaerocom.
+    - Latitude and longitude exist and are named `latitude` and `longitude`.
+    - Metadata (ie. netcdf attributes) contain the necessary metadata specified in
+    the tutorial (https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/making_a_colocated_data_object_with_pyaerocom.html).
+    - No duplicate station names.
+
+    :raises ValueError or KeyError: If Validation fails.
+    """
+    if not isinstance(data, xr.DataArray):
+        raise TypeError(f"Expected xr.DataArray. Got {type(data)}.")
+
+    # Check variables.
+    if data.name not in const.VARS.all_vars:
+        raise ValueError(
+            f"Unexpected variable name, '{data.name}. Must be variable name defined in variables.ini'"
+        )
+
+    # Check longitude and latitude.
+    if "latitude" not in data.coords:
+        raise ValueError("ColocatedData object is missing latitude coord.")
+    if "longitude" not in data.coords:
+        raise ValueError("ColocatedData object is missing longitude coord.")
+
+    # Check dimensions.
+    if not (set(data.dims) == {"data_source", "time", "station_name"}) or (
+        set(data.dims) == {"data_source", "time", "latitude", "longitude"}
+    ):
+        raise ValueError(
+            "ColocatedData must have 3-4 dimensions named either {'data_source', 'time', 'station_name'} or {'data_source', 'time', 'latitude', 'longitude'}. "
+            f"Got {set(data.dims)}"
+        )
+
+    # Check metadata
+    for key in REQUIRED_METADATA_KEYS:
+        if isinstance(key, str):
+            key = tuple([key])
+
+        if not any([k in data.attrs for k in key]):
+            if len(key) == 1:
+                msg = f"Colocated data is missing key '{key}' required in metadata."
+            elif len(key) > 1:
+                msg = f"Colocated data is missing one of the following keys: '{key}'. Please any one of them and try again."
+            else:
+                assert False  # Should not happen.
+
+            raise AttributeError(msg)
+
+    duplicates = [k for k, v in Counter(data.station_name.values).items() if v > 1]
+    if len(duplicates) > 0:
+        raise ValueError(f"Duplicate station names found: {duplicates}.")
+
+    return None
 
 
 class ColocatedData(BaseModel):
@@ -129,12 +223,11 @@ class ColocatedData(BaseModel):
             # make sure path is str instance
             self.data = str(self.data)
         if isinstance(self.data, str):
-            if not self.data.endswith("nc"):
+            if not self.data.endswith(".nc"):
                 raise ValueError(
-                    f"Invalid data filepath str, must point to a .nc file. Got {self.data}"
+                    f"Invalid data filepath str, must point to a .nc file. Got '{self.data}'."
                 )
-            self.open(self.data)
-            return self
+            self._open(self.data)
         if isinstance(self.data, np.ndarray):
             if hasattr(self, "model_extra"):
                 da_keys = dir(xr.DataArray)
@@ -145,8 +238,13 @@ class ColocatedData(BaseModel):
                 extra_args_from_class_initialization = {}
             data = xr.DataArray(self.data, **extra_args_from_class_initialization)
             self.data = data
-        # self.data should be xr.DataArray at this stage
-        ensure_correct_dimensions(self.data)
+
+        assert isinstance(self.data, xr.DataArray)
+        validate_dimensions(self.data)
+        # TODO: Ideally this should also validate structure, but this stricted validation fails on a lot of
+        # tests that test on invalid mock objects. For now validate_structure can be called on ColocatedData.data
+        # directly.
+        # validate_structure(self.data)
         return self
 
     # Override __init__ to allow for positional arguments
@@ -188,7 +286,7 @@ class ColocatedData(BaseModel):
     def model_name(self):
         if "model_name" in self.metadata:
             return self.metadata["model_name"]
-        return self.data_source[1]
+        return self.data_source[1].values
 
     @property
     def obs_name(self):
@@ -552,7 +650,7 @@ class ColocatedData(BaseModel):
             that one. The default is False (updated in v0.11.0, before was
             True).
         **kwargs
-            Addtitional keyword args passed to :func:`TimeResampler.resample`.
+            Additional keyword args passed to :func:`TimeResampler.resample`.
 
         Returns
         -------
@@ -675,7 +773,7 @@ class ColocatedData(BaseModel):
         Returns
         -------
         list
-            latitute coordinates
+            latitude coordinates
         list
             longitude coordinates
 
@@ -850,7 +948,7 @@ class ColocatedData(BaseModel):
         ----------
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
+            area weights are applied when calculating the statistics based on
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
@@ -892,7 +990,7 @@ class ColocatedData(BaseModel):
         Parameters
         ----------
         aggr : str, optional
-            aggreagator to be used, currently only mean and median are
+            aggregator to be used, currently only mean and median are
             supported. Defaults to mean.
         **kwargs
             additional keyword args passed to
@@ -943,11 +1041,11 @@ class ColocatedData(BaseModel):
         Parameters
         ----------
         aggr : str, optional
-            aggreagator to be used, currently only mean and median are
+            aggregator to be used, currently only mean and median are
             supported. Defaults to mean.
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
-            area weights are applied when caluclating the statistics based on
+            area weights are applied when calculating the statistics based on
             the coordinate cell sizes. Defaults to False.
         **kwargs
             additional keyword args passed to
@@ -982,77 +1080,6 @@ class ColocatedData(BaseModel):
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
         return stats
-
-    def plot_scatter(self, **kwargs):
-        """Create scatter plot of data
-
-        Parameters
-        ----------
-        **kwargs
-            keyword args passed to :func:`pyaerocom.plot.plotscatter.plot_scatter`
-
-        Returns
-        -------
-        Axes
-            matplotlib axes instance
-        """
-        meta = self.metadata
-        try:
-            num_points = self.num_coords_with_data
-        except DataDimensionError:
-            num_points = np.nan
-        try:
-            vars_ = meta["var_name"]
-        except KeyError:
-            vars_ = ["N/D", "N/D"]
-        try:
-            xn, yn = meta["data_source"]
-        except KeyError:
-            xn, yn = "N/D", "N/D"
-
-        if vars_[0] != vars_[1]:
-            var_ref = vars_[0]
-        else:
-            var_ref = None
-        try:
-            tst = meta["ts_type"]
-        except KeyError:
-            tst = "N/D"
-        try:
-            fn = meta["filter_name"]
-        except KeyError:
-            fn = "N/D"
-        try:
-            unit = self.unitstr
-        except KeyError:
-            unit = "N/D"
-        try:
-            start = self.start
-        except AttributeError:
-            start = "N/D"
-
-        try:
-            stop = self.stop
-        except AttributeError:
-            stop = "N/D"
-
-        # ToDo: include option to use area weighted stats in plotting
-        # routine...
-        return plot_scatter(
-            x_vals=self.data.values[0].flatten(),
-            y_vals=self.data.values[1].flatten(),
-            var_name=vars_[1],
-            var_name_ref=var_ref,
-            x_name=xn,
-            y_name=yn,
-            start=start,
-            stop=stop,
-            unit=unit,
-            ts_type=tst,
-            stations_ok=num_points,
-            filter_name=fn,
-            **kwargs,
-        )
 
     def rename_variable(self, var_name, new_var_name, data_source, inplace=True):
         """Rename a variable in this object
@@ -1125,7 +1152,7 @@ class ColocatedData(BaseModel):
             )
 
     @staticmethod
-    def get_meta_from_filename(file_path):
+    def get_meta_from_filename(file_path: str) -> dict:
         """Get meta information from file name
 
         Note
@@ -1137,7 +1164,7 @@ class ColocatedData(BaseModel):
         Returns
         -------
         dict
-            dicitonary with meta information
+            dicitionary with meta information
         """
 
         spl = os.path.basename(file_path).split(".nc")[0].split("_")
@@ -1193,7 +1220,7 @@ class ColocatedData(BaseModel):
 
     def _prepare_meta_to_netcdf(self):
         """
-        Prepare metada for NetCDF format
+        Prepare metadata for NetCDF format
 
         Returns
         -------
@@ -1276,8 +1303,12 @@ class ColocatedData(BaseModel):
                 meta[key] = val
         return meta
 
-    def read_netcdf(self, file_path):
+    def _read_netcdf(self, file_path: str) -> None:
         """Read data from NetCDF file
+
+        Note:
+        This is meant to be an internal method, and calling it directly may sidestep pydantic
+        validation.
 
         Parameters
         ----------
@@ -1291,10 +1322,8 @@ class ColocatedData(BaseModel):
                 f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
         arr = xr.load_dataarray(file_path)
-        ensure_correct_dimensions(arr)
         arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr
-        return self
 
     def to_dataframe(self):
         """Convert this object into pandas.DataFrame
@@ -1400,8 +1429,12 @@ class ColocatedData(BaseModel):
         self.from_dataframe(df)
         self.data.attrs.update(**meta)
 
-    def open(self, file_path):
+    def _open(self, file_path: str) -> None:
         """High level helper for reading from supported file sources
+
+        Note:
+        This is meant to be an internal method, and calling it directly may sidestep pydantic
+        validation.
 
         Parameters
         ----------
@@ -1409,7 +1442,7 @@ class ColocatedData(BaseModel):
             file path
         """
         if file_path.endswith("nc"):
-            self.read_netcdf(file_path)
+            self._read_netcdf(file_path)
             return
 
         raise OSError(
@@ -1650,8 +1683,7 @@ class ColocatedData(BaseModel):
         """
         if lon_range[0] > lon_range[1]:
             raise NotImplementedError(
-                "Filtering longitude over 180 deg edge is not yet possible in "
-                "3D ColocatedData..."
+                "Filtering longitude over 180 deg edge is not yet possible in 3D ColocatedData..."
             )
         if not isinstance(lat_range, slice):
             lat_range = slice(lat_range[0], lat_range[1])
@@ -1911,43 +1943,6 @@ class ColocatedData(BaseModel):
         _arr = self.data
         mod, obs = _arr[1], _arr[0]
         return (mod - obs).sum("time") / obs.sum("time")
-
-    def plot_coordinates(self, marker="x", markersize=12, fontsize_base=10, **kwargs):
-        """
-        Plot station coordinates
-
-        Uses :func:`pyaerocom.plot.plotcoordinates.plot_coordinates`.
-
-        Parameters
-        ----------
-        marker : str, optional
-            matplotlib marker name used to plot site locations.
-            The default is 'x'.
-        markersize : int, optional
-            Size of site markers. The default is 12.
-        fontsize_base : int, optional
-            Basic fontsize. The default is 10.
-        **kwargs
-            additional keyword args passed to
-            :func:`pyaerocom.plot.plotcoordinates.plot_coordinates`
-
-        Returns
-        -------
-        matplotlib.axes.Axes
-
-        """
-
-        from pyaerocom.plot.plotcoordinates import plot_coordinates
-
-        lats, lons = self.get_coords_valid_obs()
-        return plot_coordinates(
-            lons=lons,
-            lats=lats,
-            marker=marker,
-            markersize=markersize,
-            fontsize_base=fontsize_base,
-            **kwargs,
-        )
 
     def __contains__(self, val):
         return self.data.__contains__(val)

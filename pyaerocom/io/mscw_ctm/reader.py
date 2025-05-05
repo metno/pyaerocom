@@ -12,7 +12,6 @@ from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.projection_information import ProjectionInformation
-from pyaerocom.units_helpers import UALIASES
 
 from .additional_variables import (
     add_dataarrays,
@@ -790,8 +789,7 @@ class ReadMscwCtm(GriddedReader):
         ts_type = self._ts_type
 
         arr, proj_info = self._load_var(var_name_aerocom, ts_type)
-        if arr.units in UALIASES:
-            arr.attrs["units"] = UALIASES[arr.units]
+        arr.attrs["units"] = arr.units
         try:
             cube = arr.to_iris()
         except MemoryError as e:  # pragma: no cover
@@ -813,7 +811,7 @@ class ReadMscwCtm(GriddedReader):
         gridded.metadata["data_id"] = self._data_id
         gridded.metadata["from_files"] = self._filepaths
 
-        # Remove unneccessary metadata. Better way to do this?
+        # Remove unnecessary metadata. Better way to do this?
         for metadata in ["current_date_first", "current_date_last"]:
             if metadata in gridded.metadata.keys():
                 del gridded.metadata[metadata]

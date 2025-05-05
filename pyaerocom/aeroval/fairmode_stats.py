@@ -1,7 +1,7 @@
 """
 Functions for computing the FAIRMODE statistics
 
-FAIRMODE is the Forum for Air Quality Modeling, an initative to bring together air quality modelers and users.
+FAIRMODE is the Forum for Air Quality Modeling, an initiative to bring together air quality modelers and users.
     - Promote and Support the use of models by EU Member States
     - Emphasis is on model application for air quality policy (monitoring, regulation, etc.)
     - Develop harmonized set of tools to test whether or a not a model is fit for a given purpose
@@ -14,7 +14,6 @@ import numpy as np
 
 SPECIES = dict(
     concno2=dict(UrRV=0.24, RV=200, alpha=0.2),
-    conco3=dict(UrRV=0.18, RV=120, alpha=0.79),
     conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79),
     concpm10=dict(UrRV=0.28, RV=50, alpha=0.25),
     concpm25=dict(UrRV=0.36, RV=25, alpha=0.5),
@@ -22,7 +21,7 @@ SPECIES = dict(
 
 
 def _RMSU(mean: float, std: float, spec: str) -> float:
-    """RMSU is the Root Mean Squared Uncertainity associated with the uncertainity of the observations, U(O_i)."""
+    """RMSU is the Root Mean Squared Uncertainty associated with the uncertainty of the observations, U(O_i)."""
 
     if spec not in SPECIES:
         raise ValueError(f"Unsupported {spec=}")
@@ -37,7 +36,7 @@ def _RMSU(mean: float, std: float, spec: str) -> float:
 
 
 def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:
-    if obs_std <= 0 or R >= 1:  # guard aginst sqrt(<0) or div0 errors
+    if obs_std <= 0 or R >= 1:  # guard against sqrt(<0) or div0 errors
         return 1
     a = abs(mod_std - obs_std) / (obs_std * np.sqrt(2 * (1 - R)))
     return 1 if a >= 1 else -1
@@ -53,9 +52,17 @@ def _mqi(rms: float, rmsu: float, *, beta: float) -> float:
     return rms / (rmsu * beta)
 
 
-def fairmode_stats(obs_var: str, stats: dict) -> dict:
+def fairmode_stats(obs_var: str, stats: dict, freq: str) -> dict:
     if obs_var not in SPECIES or np.isnan(list(stats.values())).any():
         return {}
+
+    # compute only what it makes sense to compute
+    if obs_var == "concno2":
+        if freq != "hourly":
+            return {}
+    else:
+        if freq != "daily":
+            return {}
 
     mean = stats["refdata_mean"]
     obs_std = stats["refdata_std"]

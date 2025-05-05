@@ -288,7 +288,7 @@ def main():
             else:
                 sys.stderr.write(f"Error: path {options['outfile']} exists")
         else:
-            # obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
+            # obj.to_netcdf_simple(options['outfile'], global_attributes=ancillary_data['mph'])
             obj.to_netcdf_simple(
                 netcdf_filename=options["outfile"],
                 data_to_write=data_numpy,
