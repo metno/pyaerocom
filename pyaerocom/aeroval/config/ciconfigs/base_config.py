@@ -178,7 +178,7 @@ def get_CFG(reportyear, year) -> dict:
         ################
         "Pyaro-h": dict(
             obs_id=config.name,
-            obs_config=config,
+            pyaro_config=config,
             web_interface_name=data_name,
             obs_name=data_name,
             obs_vars=["vmro3"],

@@ -43,7 +43,7 @@ def test_obs_data_readable():
     )
     assert CFG
     for aeroval_obs_name in CFG["obs_cfg"]:
-        config = CFG["obs_cfg"][aeroval_obs_name]["obs_config"]
+        config = CFG["obs_cfg"][aeroval_obs_name]["pyaro_config"]
         reader = ReadUngridded(configs=config)
         data = reader.read()
         assert data
@@ -59,9 +59,8 @@ def test_model_data_readable():
         year=year,
     )
     assert CFG
-    config = CFG["model_cfg"]
     for aeroval_model_name in CFG["model_cfg"]:
-    #
+        #
         data = ReadGridded(data_id=CFG["model_cfg"][aeroval_model_name]["model_id"])
         assert data
 
@@ -79,19 +78,13 @@ def test_aeroval_config_diurnal():
 
     stp = EvalSetup(**CFG)
     ana = ExperimentProcessor(stp)
-    ana.update_interface()
+    # ana.update_interface()
 
     ana.run()
     diurnal_path = (
-        # pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
-            pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"]
+        pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
     )
-    print(diurnal_path)
     assert diurnal_path.exists()
     tmp = diurnal_path.glob("*.json")
     diurnal_files = [x for x in tmp if x.is_file()]
     assert len(diurnal_files) > 1
-
-
-if __name__ == "__main__":
-    test_aeroval_config_diurnal()
