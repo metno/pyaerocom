@@ -1,9 +1,7 @@
 import logging
-from time import time
-
-from numpy.typing import ArrayLike
-import multiprocessing
 import os
+from numpy.typing import ArrayLike
+from time import time
 
 from pyaerocom import ColocatedData, TsType, const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
@@ -24,7 +22,6 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 )
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.json_utils import round_floats
-
 from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
@@ -389,9 +386,16 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
             for reg in regnames
         ]
-        num_workers = os.getenv(const.PYAEROCOM_NUM_WORKERS, "1")
+        num_workers = int(os.getenv(const.PYAEROCOM_NUM_WORKERS, "1"))
 
-        with multiprocessing.Pool(processes=int(num_workers)) as pool:
+        if num_workers == 1:
+            from multiprocessing.pool import ThreadPool as Pool
+            # pool = ThreadPool(processes=num_workers)
+        else:
+            from multiprocessing import Pool
+        # pool = multiprocessing.pool.Pool(processes=num_workers)
+
+        with Pool(processes=num_workers) as pool:
             results = pool.starmap(_process_statistics_timeseries_single_region, args)
 
         for (

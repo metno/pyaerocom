@@ -1149,7 +1149,10 @@ class UngriddedData(UngriddedDataMetadata):
 
         # write history of filtering applied
         new.filter_hist.update(self.filter_hist)
-        new._data_revision.update(self._data_revision)
+        try:
+            new._data_revision.update(self._data_revision)
+        except Exception:
+            new._data_revision.update(self.data_revision)
 
         return new
 
