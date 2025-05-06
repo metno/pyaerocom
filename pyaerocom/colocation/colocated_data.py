@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections import Counter
 import logging
 import os
 from ast import literal_eval
+from collections import Counter
 from functools import cached_property
 from pathlib import Path
 
@@ -26,12 +26,10 @@ from pyaerocom.exceptions import (
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-
 from pyaerocom.region import Region
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.stats.stats import calculate_statistics
 from pyaerocom.time_resampler import TimeResampler
-
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,8 @@ REQUIRED_METADATA_KEYS = (
     (
         "obs_vars",
         "var_name_input",
-    ),  # Any one of the keys must be present. https://github.com/metno/pyaerocom/blob/ce754a6c0c15db8dc21645f1b3d731ee7519c97a/pyaerocom/aeroval/coldatatojson_engine.py#L141
+    ),
+    # Any one of the keys must be present. https://github.com/metno/pyaerocom/blob/ce754a6c0c15db8dc21645f1b3d731ee7519c97a/pyaerocom/aeroval/coldatatojson_engine.py#L141
     "ts_type",
     "filter_name",
     "ts_type_src",
@@ -1832,19 +1831,24 @@ class ColocatedData(BaseModel):
             mask = mask.interp_like(arr)
             arr = arr.where(mask)
         else:
-            # data = data.flatten_latlondim_station_name()
-
             drop_idx = []
             nstats = len(arr.station_name)
             for lat, lon, stat in data._iter_stats():
                 if get_mask_value(lat, lon, mask) < 1:
+                    if stat in drop_idx:
+                        logger.error(
+                            f"Regionmask idx {stat} is present already! This will likely break the filtering"
+                        )
                     drop_idx.append(stat)
 
             ndrop = len(drop_idx)
             if ndrop == nstats:
                 raise DataCoverageError(f"No data available in region {region_id}")
             elif ndrop > 0:
-                arr = arr.drop_sel({"station_name": drop_idx})
+                try:
+                    arr = arr.drop_sel({"station_name": drop_idx})
+                except Exception as e:
+                    logger.error(f"{e}")
         data.data = arr
         return data
 
