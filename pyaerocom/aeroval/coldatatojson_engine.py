@@ -387,13 +387,10 @@ class ColdataToJsonEngine(ProcessingEngine):
             for reg in regnames
         ]
         num_workers = int(os.getenv(const.PYAEROCOM_NUM_WORKERS, "1"))
-
         if num_workers == 1:
             from multiprocessing.pool import ThreadPool as Pool
-            # pool = ThreadPool(processes=num_workers)
         else:
             from multiprocessing import Pool
-        # pool = multiprocessing.pool.Pool(processes=num_workers)
 
         with Pool(processes=num_workers) as pool:
             results = pool.starmap(_process_statistics_timeseries_single_region, args)
