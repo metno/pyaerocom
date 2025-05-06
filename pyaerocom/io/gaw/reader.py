@@ -4,18 +4,21 @@ Interface for reading GAW files.
 
 import numpy as np
 import pandas as pd
+import logging
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
+logger = logging.getLogger(__name__)
+
 
 class ReadGAW(ReadUngriddedBase):
     """Class for reading DMS data
 
     Extended class derived from  low-level base class :class: ReadUngriddedBase
-    that contains some more functionallity.
+    that contains some more functionality.
     """
 
     # Mask for identifying datafiles
@@ -101,7 +104,7 @@ class ReadGAW(ReadUngriddedBase):
                 raise ValueError(f"Invalid input variable {var}")
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        logger.info(f"Reading file {filename}")
 
         # We need to map the variables in the file with the values in VAR_NAME_FILE,
         # and for that we reverse the dictionary.
@@ -144,7 +147,7 @@ class ReadGAW(ReadUngriddedBase):
         # file_vars = file_vars[5:]
         # and add these variables to VAR_NAMES_FILE
 
-        # The variables analized are only the intersection of those provided by
+        # The variables analyzed are only the intersection of those provided by
         # the dataset, vars_to_retrieve, and those available in the file,
         # file_vars.
         vars_to_retrieve_file = list(

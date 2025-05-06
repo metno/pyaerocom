@@ -17,6 +17,7 @@ from pydantic import (
 )
 
 from pyaerocom import const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
@@ -109,9 +110,9 @@ class ColocationSetup(BaseModel):
     obs_data_dir : str, optional
         location of obs data. If None, attempt to infer obs location based on
         obs ID.
-    obs_use_climatology : bool
-        BETA if True, pyaerocom default climatology is computed from observation
-        stations (so far only possible for unrgidded / gridded colocation).
+    obs_use_climatology : ClimatologyConfig | bool, optional
+        Configuration for climatology. If True is given, a default configuration is made.
+        With False, climatology is turned off
     obs_vert_type : str
         AeroCom vertical code encoded in the model filenames (only AeroCom 3
         and later). Specifies which model file should be read in case there are
@@ -206,7 +207,7 @@ class ColocationSetup(BaseModel):
         reading API is more harmonised
         (see https://github.com/metno/pyaerocom/issues/174).
     flex_ts_type : bool
-        Bboolean specifying whether reading frequency of gridded data is
+        Boolean specifying whether reading frequency of gridded data is
         allowed to be flexible. This includes all gridded data, whether it is
         model or gridded observation (e.g. satellites). Defaults to True.
     min_num_obs : dict or int, optional
@@ -379,7 +380,21 @@ class ColocationSetup(BaseModel):
     obs_name: str | None = None
     obs_data_dir: Path | str | None = None
 
-    obs_use_climatology: bool = False
+    obs_use_climatology: ClimatologyConfig | bool = False
+
+    @field_validator("obs_use_climatology")
+    @classmethod
+    def validate_obs_use_climatology(cls, v):
+        if isinstance(v, ClimatologyConfig):
+            return v
+
+        if isinstance(v, bool):
+            if v:
+                return ClimatologyConfig()
+            else:
+                return v
+
+        raise ValidationError
 
     obs_cache_only: bool = False  # only relevant if obs is ungridded
     obs_vert_type: str | None = None
@@ -477,7 +492,7 @@ class ColocationSetup(BaseModel):
     @model_validator(mode="after")
     def validate_no_forbidden_keys(self):
         for key in self.FORBIDDEN_KEYS:
-            if key in self.model_fields:
+            if key in ColocationSetup.model_fields:
                 raise ValidationError
         return self
 

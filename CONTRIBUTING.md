@@ -38,7 +38,7 @@ You are welcome to contribute code to implement new features, fix bugs or contri
 
 ### Tests
 
-Any new functions/methods you add must be covered by tests. Tests are wirtten and run using `pytest` and/or `tox` and are found under pyaerocom/tests. Please run tests before locally (and if working at MET also on PPI) before making a PR.
+Any new functions/methods you add must be covered by tests. Tests are written and run using `pytest` and/or `tox` and are found under pyaerocom/tests. Please run tests before locally (and if working at MET also on PPI) before making a PR.
 
 Missing test coverage will trigger a warning in the GitHub CI.
 

@@ -2,6 +2,7 @@ import fnmatch
 import logging
 import os
 import re
+from collections.abc import Iterator
 
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
@@ -24,31 +25,31 @@ from pyaerocom.aux_var_helpers import (
     compute_wetoxs_from_concprcpoxsc,
     compute_wetoxs_from_concprcpoxst,
     compute_wetrdn_from_concprcprdn,
-    compute_wetso4_from_concprcpso4,
     compute_wetrdnpr_from_concprcprdn,
+    compute_wetso4_from_concprcpso4,
     concx_to_vmrx,
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
 )
+from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
     EbasFileError,
     MetaDataError,
     NotInFileError,
     TemporalResolutionError,
     TemporalSamplingError,
-    UnitConversionError,
 )
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.stationdata import StationData
-from pyaerocom.tstype import TsType
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.datetime import TsType
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class ReadEbasOptions(BrowseDict):
         preferred order of data statistics. Some files may contain multiple
         columns for one variable, where each column corresponds to one of the
         here defined statistics that where applied to the data. This attribute
-        is only considered for ebas variables, that have not explicitely defined
+        is only considered for ebas variables, that have not explicitly defined
         what statistics to use (and in which preferred order, if applicable).
         Reading preferences for all Ebas variables are specified in the file
         ebas_config.ini in the data directory of pyaerocom.
@@ -188,7 +189,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.52_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.53_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -543,7 +544,7 @@ class ReadEbas(ReadUngriddedBase):
                             mapping[fpath].append(other_var)
                         except ValueError:
                             pass
-        self.logger.info(f"Number of files to read reduced to {len(mapping)}")
+        logger.info(f"Number of files to read reduced to {len(mapping)}")
         files, files_contain = [], []
         for path, contains_vars in mapping.items():
             files.append(path)
@@ -655,7 +656,7 @@ class ReadEbas(ReadUngriddedBase):
         # make sure variable names are input correctly
         vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
 
-        self.logger.info("Fetching data files. This might take a while...")
+        logger.info("Fetching data files. This might take a while...")
 
         db = self.file_index
         files_vars = {}
@@ -993,7 +994,7 @@ class ReadEbas(ReadUngriddedBase):
             msg += f"\nFilename: {file.file_name}"
             msg += add_msg
             msg += "\n\nTHIS FILE WILL BE SKIPPED\n"
-            logger.warning(msg)
+            logger.info(msg)
             raise ValueError("failed to identify unique data column")
 
         return result_col[0]
@@ -1147,7 +1148,7 @@ class ReadEbas(ReadUngriddedBase):
 
     def _check_shift_wavelength(self, var, col_info, meta, data):
         """
-        Where applicable, shift wavelength of input data to another wavelegnth
+        Where applicable, shift wavelength of input data to another wavelength
 
         Applies to cases where input variable corresponds to a wavelength
         (e.g. ac550aer corresponds to 550nm) but EBAS measurement was performed
@@ -1281,7 +1282,7 @@ class ReadEbas(ReadUngriddedBase):
 
             # Find all columns in file that match the current variable
             # There may be multiple matches, e.g. because the variable may
-            # be sampled at different wavelenghts or there may be different
+            # be sampled at different wavelengths or there may be different
             # statistics applied, or there may be different matrices
             # available (e.g. aerosol, pm10, pm25)
             try:
@@ -1411,7 +1412,7 @@ class ReadEbas(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list`, optional
             list of str with variable names to read, if None (and if not
             both of the alternative possible parameters ``_vars_to_read`` and
-            ``_vars_to_compute`` are specified explicitely) then the default
+            ``_vars_to_compute`` are specified explicitly) then the default
             settings are used
 
         Returns
@@ -1433,6 +1434,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
 
         data_out = self._add_meta(data_out, file)
+        data_out.data_revision = self.data_revision
 
         freq_ebas = data_out["ts_type"]  # resolution code
         # store the raw EBAS meta dictionary (who knows what for later ;P )
@@ -1731,7 +1733,7 @@ class ReadEbas(ReadUngriddedBase):
         Returns
         -------
         vars_to_retrieve : list
-            input list that may be extented by additional auxiliary variables
+            input list that may be extended by additional auxiliary variables
             that are needed for reading some of the input variables and that
             are supposed to be imported as well.
 
@@ -1807,38 +1809,19 @@ class ReadEbas(ReadUngriddedBase):
         files = files[first_file:last_file]
         files_contain = files_contain[first_file:last_file]
 
-        data = self._read_files(files, vars_to_retrieve, files_contain, constraints)
+        data = self._read_files_structured(files, vars_to_retrieve, files_contain, constraints)
 
         data.clear_meta_no_data()
 
         return data
 
-    def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
-        """Helper that reads list of files into UngriddedData
+    def _station_data_iterator(self, files, files_contain) -> Iterator[StationData]:
+        """Turn a list of files into a station-data iterator. Some files might be skipped.
 
-        Note
-        ----
-        This method is not supposed to be called directly but is used in
-        :func:`read` and serves the purpose of parallel loading of data
+        :param files: list of files
+        :param files_contain: list (len(files)) of variables per file
+        :yields: iterator of StationData
         """
-        self.files_failed = []
-        data_obj = UngriddedData(num_points=1000000)
-
-        # Add reading options to filter "history of UngriddedDataObject"
-        filters = self.readopts_default.filter_dict
-        filters.update(constraints)
-        data_obj._add_to_filter_history(filters)
-
-        meta_key = 0.0
-        idx = 0
-
-        # assign metadata object
-        metadata = data_obj.metadata
-        meta_idx = data_obj.meta_idx
-
-        # counter that is updated whenever a new variable appears during read
-        # (is used for attr. var_idx in UngriddedData object)
-        var_count_glob = -1
         logger.info(f"Reading EBAS data from {self.file_dir}")
         num_files = len(files)
         for i in tqdm(range(num_files), disable=None):
@@ -1846,7 +1829,6 @@ class ReadEbas(ReadUngriddedBase):
             contains = files_contain[i]
             try:
                 station_data = self.read_file(_file, vars_to_retrieve=contains)
-
             except (
                 NotInFileError,
                 EbasFileError,
@@ -1854,7 +1836,7 @@ class ReadEbas(ReadUngriddedBase):
                 TemporalSamplingError,
             ) as e:
                 self.files_failed.append(_file)
-                self.logger.warning(
+                logger.warning(
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
@@ -1864,89 +1846,28 @@ class ReadEbas(ReadUngriddedBase):
                     f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
+            yield station_data
 
-            # Fill the metatdata dict
-            # the location in the data set is time step dependent!
-            # use the lat location here since we have to choose one location
-            # in the time series plot
-            metadata[meta_key] = {}
-            metadata[meta_key].update(station_data.get_meta(add_none_vals=True))
+    def _read_files_structured(self, files, vars_to_retrieve, files_contain, constraints):
+        """Helper that reads list of files into UngriddedDataStructured
 
-            if "station_name_orig" in station_data:
-                metadata[meta_key]["station_name_orig"] = station_data["station_name_orig"]
+        Note
+        ----
+        This method is not supposed to be called directly but is used in
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        self.files_failed = []
 
-            metadata[meta_key]["data_revision"] = self.data_revision
-            metadata[meta_key]["var_info"] = {}
-            # this is a list with indices of this station for each variable
-            # not sure yet, if we really need that or if it speeds up things
-            meta_idx[meta_key] = {}
+        data_obj = UngriddedDataStructured.from_station_data(
+            self._station_data_iterator(files, files_contain), ["station_name_orig"]
+        )
 
-            num_times = len(station_data["dtime"])
-
-            contains_vars = list(station_data.var_info)
-            # access array containing time stamps
-            # TODO: check using index instead (even though not a problem here
-            # since all Aerocom data files are of type timeseries)
-            times = np.float64(station_data["dtime"])
-
-            append_vars = [x for x in np.intersect1d(vars_to_retrieve, contains_vars)]
-
-            totnum = num_times * len(append_vars)
-
-            # check if size of data object needs to be extended
-            if (idx + totnum) >= data_obj._ROWNO:
-                # if totnum < data_obj._CHUNKSIZE, then the latter is used
-                data_obj.add_chunk(totnum)
-
-            for var_count, var in enumerate(append_vars):
-                # data values
-                values = station_data[var]
-
-                # get start / stop index for this data vector
-                start = idx + var_count * num_times
-                stop = start + num_times
-
-                if var not in data_obj.var_idx:
-                    var_count_glob += 1
-                    var_idx = var_count_glob
-                    data_obj.var_idx[var] = var_idx
-                else:
-                    var_idx = data_obj.var_idx[var]
-
-                # write common meta info for this station (data lon, lat and
-                # altitude are set to station locations)
-                data_obj._data[start:stop, data_obj._LATINDEX] = station_data["latitude"]
-                data_obj._data[start:stop, data_obj._LONINDEX] = station_data["longitude"]
-                data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = station_data["altitude"]
-                data_obj._data[start:stop, data_obj._METADATAKEYINDEX] = meta_key
-
-                # write data to data object
-                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
-
-                data_obj._data[start:stop, data_obj._DATAINDEX] = values
-
-                data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-
-                if var in station_data.data_flagged:
-                    invalid = station_data.data_flagged[var]
-                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
-                if var in station_data.data_err:
-                    errs = station_data.data_err[var]
-                    data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
-
-                var_info = station_data["var_info"][var]
-                metadata[meta_key]["var_info"][var] = {}
-                metadata[meta_key]["var_info"][var].update(var_info)
-                meta_idx[meta_key][var] = np.arange(start, stop)
-
-            metadata[meta_key]["variables"] = append_vars
-            idx += totnum
-            meta_key += 1
-
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
+        # Add reading options to filter "history of UngriddedDataObject"
+        filters = self.readopts_default.filter_dict
+        filters.update(constraints)
+        data_obj._add_to_filter_history(filters)
 
         num_failed = len(self.files_failed)
         if num_failed > 0:
-            logger.warning(f"{num_failed} out of {num_files} could not be read...")
+            logger.warning(f"{num_failed} out of {len(files)} could not be read...")
         return data_obj

@@ -101,7 +101,7 @@ COUNTRIES = {
 
 class Station:
     """Holds information for a singe ICP Forest station. The same station with different ts_types
-    are treated as seperate stations at this level
+    are treated as separate stations at this level
 
     Parameters
     ----------
@@ -118,7 +118,7 @@ class Station:
     alt: int
         altitude
     partner_code : int
-        number of the institude doing the measurement. Mostly used for metadata
+        number of the institute doing the measurement. Mostly used for metadata
     ts_type : str
         ts_type of the station
 
@@ -232,7 +232,7 @@ class Station:
         time : datetime
             The timestamp of the measurement
         measurement : float
-            The value of the measure ment
+            The value of the measurement
         unit : str
             unit
 

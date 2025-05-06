@@ -16,6 +16,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _map_indices,
     _process_statistics_timeseries,
     _remove_less_covered,
+    _select_period_season_coldata,
 )
 from pyaerocom.aeroval.exceptions import TrendsError
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
@@ -339,3 +340,43 @@ def test__remove_less_covered_all():
     cd = COLDATA["fake_3d_partial_trends_coltime"]()
     new_cd = _remove_less_covered(cd, 1000)
     assert new_cd.data.station_name.shape[0] == 0
+
+
+@pytest.mark.parametrize(
+    "period, use_meteorological_seasons, resultfirst, resultlast",
+    [
+        (
+            "2004",
+            True,
+            np.datetime64("2003-12-01T00:00:00.000000000"),
+            np.datetime64("2004-02-29T00:00:00.000000000"),
+        ),
+        (
+            "2003-2004",
+            True,
+            np.datetime64("2003-01-01T00:00:00.000000000"),
+            np.datetime64("2004-12-31T00:00:00.000000000"),
+        ),
+        (
+            "2004",
+            False,
+            np.datetime64("2004-01-01T00:00:00.000000000"),
+            np.datetime64("2004-12-31T00:00:00.000000000"),
+        ),
+    ],
+)
+@pytest.mark.parametrize("coldataset", ["fake_3d_partial_trends"])
+def test__select_period_season_coldata(
+    coldata: ColocatedData,
+    period: str,
+    use_meteorological_seasons: bool,
+    resultfirst: np.datetime64,
+    resultlast: np.datetime64,
+):
+    coldatamod = coldata.copy()
+    coldatamod.data = coldatamod.data.assign_coords(
+        season=("time", coldata.coords["time.season"].values)
+    )
+    cd = _select_period_season_coldata(coldatamod, period, "DJF", use_meteorological_seasons)
+    assert cd.coords["time"].values[0] == resultfirst
+    assert cd.coords["time"].values[-1] == resultlast

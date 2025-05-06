@@ -14,6 +14,7 @@ from cf_units import Unit
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -24,7 +25,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import make_datetime_index
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 from .colocated_data import ColocatedData
 from .colocation_utils import (
@@ -95,7 +96,7 @@ def _colocate_vertical_profile_gridded(
 
     list_of_colocateddata_objects = []
     for vertical_layer in layer_limits:
-        # Think about efficency here in terms of order of loops. candidate for parallelism
+        # Think about efficiency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
         arr = np.full((2, time_num, stat_num), np.nan)
         try:
@@ -129,7 +130,7 @@ def _colocate_vertical_profile_gridded(
             lats[i] = obs_stat.latitude
             alts[i] = obs_stat.station_coords[
                 "altitude"
-            ]  # altitude refers to altitude of the data. be explcit where getting from
+            ]  # altitude refers to altitude of the data. be explicit where getting from
             station_names[i] = obs_stat.station_name
 
             # ToDo: consider removing to keep ts_type_src_ref (this was probably
@@ -237,14 +238,11 @@ def _colocate_vertical_profile_gridded(
                 )
 
         try:
-            revision = data_ref.data_revision[dataset_ref]
+            revision = data_ref.get_data_revision[dataset_ref]
+        except MetaDataError:
+            revision = "MULTIPLE"
         except Exception:
-            try:
-                revision = data_ref._get_data_revision_helper(dataset_ref)
-            except MetaDataError:
-                revision = "MULTIPLE"
-            except Exception:
-                revision = "n/a"
+            revision = "n/a"
 
         files = [os.path.basename(x) for x in data.from_files]
 
@@ -261,7 +259,7 @@ def _colocate_vertical_profile_gridded(
             "from_files": files,
             "from_files_ref": None,
             "colocate_time": colocate_time,
-            "obs_is_clim": use_climatology_ref,
+            "obs_is_clim": (True if isinstance(use_climatology_ref, ClimatologyConfig) else False),
             "pyaerocom": pya_ver,
             "min_num_obs": min_num_obs,
             "resample_how": resample_how,
@@ -311,7 +309,7 @@ def colocate_vertical_profile_gridded(
     update_baseyear_gridded: int = None,
     min_num_obs: int | dict | None = None,
     colocate_time: bool = False,
-    use_climatology_ref: bool = False,
+    use_climatology_ref: dict = False,
     resample_how: str | dict = None,
     colocation_layer_limits: tuple[LayerLimits, ...] | None = None,
     profile_layer_limits: tuple[LayerLimits, ...] | None = None,
@@ -323,7 +321,7 @@ def colocate_vertical_profile_gridded(
     The guts of this function are placed in a helper function as not to repeat the code.
     This is done because colocation must occur twice:
         i) at the the statistics are computed
-        ii) at a finder vertical resoltuion for profile vizualization
+        ii) at a finer vertical resolution for profile visualization
     Some things you do not want to compute twice, however.
     So (most of) the things that correspond to both colocation instances are computed here,
     and then passed to the helper function.
@@ -412,10 +410,10 @@ def colocate_vertical_profile_gridded(
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
 
-    if use_climatology_ref:  # pragma: no cover
-        col_freq = "monthly"
-        obs_start = const.CLIM_START
-        obs_stop = const.CLIM_STOP
+    if isinstance(use_climatology_ref, ClimatologyConfig):  # pragma: no cover
+        col_freq = use_climatology_ref.freq
+        obs_start = use_climatology_ref.start
+        obs_stop = use_climatology_ref.stop
     else:
         col_freq = str(ts_type)
         obs_start = start
@@ -433,7 +431,7 @@ def colocate_vertical_profile_gridded(
     # use only sites that are within model domain
 
     # filter_by_meta wipes is_vertical_profile
-    # Also note that filter_by_meta may not be calling alt_range. Function fitler_altitude is defined but not used
+    # Also note that filter_by_meta may not be calling alt_range. Function filter_altitude is defined but not used
     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range, altitude=alt_range)
 
     # get timeseries from all stations in provided time resolution

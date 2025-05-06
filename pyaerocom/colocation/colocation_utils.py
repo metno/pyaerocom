@@ -13,6 +13,7 @@ from geonum.atmosphere import pressure
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import RegridResDeg
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
     DataUnitError,
     DimensionOrderError,
@@ -23,21 +24,22 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.filter import Filter
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
+from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
-    get_lowest_resolution,
     isnumeric,
     make_datetime_index,
-    to_pandas_timestamp,
 )
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 from .colocated_data import ColocatedData
 
 logger = logging.getLogger(__name__)
 
 
-def resolve_var_name(data):
+def resolve_var_name(data: GriddedData) -> tuple[str, str]:
     """
     Check variable name of `GriddedData` against AeroCom default
 
@@ -115,7 +117,7 @@ def _ensure_gridded_gridded_same_freq(data, data_ref, min_num_obs, resample_how)
     Make sure 2 input gridded data objects are in the same frequency
 
     Checks if both input data objects are in the same frequency, and if not,
-    downsample the one with higher freqency accordingly.
+    downsample the one with higher frequency accordingly.
 
     Parameters
     ----------
@@ -426,8 +428,9 @@ def _colocate_site_data_helper(
         to aggregate from hourly to daily, rather than the mean.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
-    use_climatology_ref : bool
-        if True, climatological timeseries are used from observations
+    use_climatology_ref : ClimateConfig | bool, optional
+        If provided, the climatology will be calculated from the config
+
 
     Raises
     ------
@@ -447,8 +450,17 @@ def _colocate_site_data_helper(
         var, ts_type=ts_type, how=resample_how, min_num_obs=min_num_obs, inplace=True
     )[var]
 
-    if use_climatology_ref:
-        obs_ts = stat_data_ref.calc_climatology(var_ref, min_num_obs=min_num_obs)[var_ref]
+    if isinstance(use_climatology_ref, ClimatologyConfig):
+        obs_ts = stat_data_ref.calc_climatology(
+            var_ref,
+            start=use_climatology_ref.start,
+            stop=use_climatology_ref.stop,
+            min_num_obs=min_num_obs,
+            clim_mincount=use_climatology_ref.min_count,
+            resample_how=use_climatology_ref.resample_how,
+            clim_freq=use_climatology_ref.freq,
+            set_year=use_climatology_ref.set_year,
+        )[var_ref]
     else:
         obs_ts = stat_data_ref.resample_time(
             var_ref,
@@ -500,15 +512,15 @@ def _colocate_site_data_helper_timecol(
         to aggregate from hourly to daily, rather than the mean.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
-    use_climatology_ref : bool
-        if True, NotImplementedError is raised
+    use_climatology_ref: ClimateConfig | bool
+        if provided, NotImplementedError is raised
 
     Raises
     ------
     TemporalResolutionError
         if model or obs sampling frequency is lower than desired output frequency
     NotImplementedError
-        if input arg `use_climatology_ref` is True.
+        if input arg `use_climatology_ref` is provided.
 
     Returns
     -------
@@ -516,10 +528,9 @@ def _colocate_site_data_helper_timecol(
         dataframe containing the colocated input data (column names are
         data and ref)
     """
-    if use_climatology_ref:
+    if isinstance(use_climatology_ref, ClimatologyConfig):
         raise NotImplementedError(
-            "Using observation climatology in colocation with option "
-            "colocate_time=True is not available yet ..."
+            "Using observation climatology in colocation with option colocate_time is not available yet"
         )
 
     grid_tst = stat_data.get_var_ts_type(var)
@@ -596,8 +607,8 @@ def _colocate_site_data_helper_timecol(
 
 
 def colocate_gridded_ungridded(
-    data,
-    data_ref,
+    data: GriddedData,
+    data_ref: UngriddedDataContainer,
     ts_type=None,
     start=None,
     stop=None,
@@ -630,7 +641,7 @@ def colocate_gridded_ungridded(
     ----------
     data : GriddedData
         gridded data object (e.g. model results).
-    data_ref : UngriddedData
+    data_ref : UngriddedDataContainer
         ungridded data object (e.g. observations).
     ts_type : str
         desired temporal resolution of colocated data (must be valid AeroCom
@@ -671,8 +682,8 @@ def colocate_gridded_ungridded(
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time
         *before* resampling to lower resolution.
-    use_climatology_ref : bool
-        if True, climatological timeseries are used from observations
+    use_climatology_ref : ClimateConfig | bool, optional.
+        Configuration for calculating the climatology. If set to a bool, this will not be done
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -692,12 +703,12 @@ def colocate_gridded_ungridded(
     VarNotAvailableError
         if grid data variable is not available in ungridded data object
     AttributeError
-        if instance of input :class:`UngriddedData` object contains more than
+        if instance of input :class:`UngriddedDataContainer` object contains more than
         one dataset
     TimeMatchError
         if gridded data time range does not overlap with input time range
     ColocationError
-        if none of the data points in input :class:`UngriddedData` matches
+        if none of the data points in input :class:`UngriddedDataContainer` matches
         the input colocation constraints
     """
     if filter_name is None:
@@ -756,10 +767,10 @@ def colocate_gridded_ungridded(
         data = data.resample_time(str(ts_type), min_num_obs=min_num_obs, how=resample_how)
         ts_type_data = ts_type
 
-    if use_climatology_ref:
-        col_freq = "monthly"
-        obs_start = const.CLIM_START
-        obs_stop = const.CLIM_STOP
+    if isinstance(use_climatology_ref, ClimatologyConfig):  # pragma: no cover
+        col_freq = use_climatology_ref.freq
+        obs_start = use_climatology_ref.start
+        obs_stop = use_climatology_ref.stop
     else:
         col_freq = str(ts_type)
         obs_start = start
@@ -828,6 +839,7 @@ def colocate_gridded_ungridded(
     lats = [np.nan] * stat_num
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
+    station_types = [""] * stat_num
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -835,7 +847,6 @@ def colocate_gridded_ungridded(
         data_unit = str(data.units)
     else:
         data_unit = None
-
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
@@ -843,6 +854,7 @@ def colocate_gridded_ungridded(
         lats[i] = obs_stat.latitude
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
+        station_types[i] = getattr(obs_stat, "station_type", "")
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
@@ -935,14 +947,11 @@ def colocate_gridded_ungridded(
                 f"not be added to ColocatedData. Reason: {e}"
             )
     try:
-        revision = data_ref.data_revision[dataset_ref]
+        revision = data_ref.get_data_revision(dataset_ref)
+    except MetaDataError:
+        revision = "MULTIPLE"
     except Exception:
-        try:
-            revision = data_ref._get_data_revision_helper(dataset_ref)
-        except MetaDataError:
-            revision = "MULTIPLE"
-        except Exception:
-            revision = "n/a"
+        revision = "n/a"
 
     files = [os.path.basename(x) for x in data.from_files]
 
@@ -959,7 +968,7 @@ def colocate_gridded_ungridded(
         "from_files": files,
         "from_files_ref": None,
         "colocate_time": colocate_time,
-        "obs_is_clim": use_climatology_ref,
+        "obs_is_clim": (True if isinstance(use_climatology_ref, ClimatologyConfig) else False),
         "pyaerocom": pya_ver,
         "min_num_obs": min_num_obs,
         "resample_how": resample_how,
@@ -970,6 +979,7 @@ def colocate_gridded_ungridded(
         "data_source": meta["data_source"],
         "time": time_idx,
         "station_name": station_names,
+        "station_type": ("station_name", station_types),
         "latitude": ("station_name", lats),
         "longitude": ("station_name", lons),
         "altitude": ("station_name", alts),
@@ -1030,7 +1040,7 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     mintemps = []
     maxtemps = []
     ps = []
-    with xr.open_dataset(const.ERA5_SURFTEMP_FILE)["t2m"] as temp:
+    with xr.open_dataset(const.ERA5_SURFTEMP_FILE, decode_timedelta=True)["t2m"] as temp:
         for i, (lat, lon, alt, name) in enumerate(coords):
             logger.info(name, ", Lat", lat, ", Lon", lon)
             p = pressure(alt)

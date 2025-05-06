@@ -1,5 +1,5 @@
 from pyaerocom._lowlevel_helpers import dict_to_str
-from pyaerocom.time_config import TS_TYPES
+from pyaerocom.units.datetime.time_config import TS_TYPES
 
 
 class GridIO:

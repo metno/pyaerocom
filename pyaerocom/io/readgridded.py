@@ -11,7 +11,6 @@ import pandas as pd
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataQueryError,
@@ -22,7 +21,8 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, to_pandas_timestamp
+from pyaerocom.units.datetime import get_highest_resolution, sort_ts_types, to_pandas_timestamp
+from pyaerocom.helpers import isnumeric
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.aux_components_fun import (
     calc_concNhno3_from_vmr,
@@ -49,7 +49,7 @@ from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
 from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 from pyaerocom.variable import Variable
 
 logger = logging.getLogger(__name__)
@@ -168,9 +168,6 @@ class ReadGridded(GriddedReader):
         "vmrox": add_cubes,
         "fmf550aer": divide_cubes,
         "concno3": add_cubes,
-        "concprcpoxn": compute_concprcp_from_pr_and_wetdep,
-        "concprcpoxs": compute_concprcp_from_pr_and_wetdep,
-        "concprcprdn": compute_concprcp_from_pr_and_wetdep,
         "concsspm10": add_cubes,
         "concsspm25": calc_sspm25,
         "concno3pm10": calc_concno3pm10,
@@ -209,8 +206,6 @@ class ReadGridded(GriddedReader):
 
         #: data_id of gridded dataset
         self._data_id = data_id
-
-        self.logger = logger
 
         # file naming convention. Default is aerocom3 file convention, change
         # using self.file_convention.import_default("aerocom2"). Is
@@ -380,7 +375,7 @@ class ReadGridded(GriddedReader):
         year = years[-1]
 
         if year == 9999:
-            self.logger.warning(
+            logger.warning(
                 "Data contains climatology. Will be ignored as stop time, using last year"
             )
             if len(years) == 1:
@@ -1124,7 +1119,7 @@ class ReadGridded(GriddedReader):
         return sorted(os.path.join(self.data_dir, x) for x in df.filename.values)
 
     def get_var_info_from_files(self) -> dict:
-        """Creates dicitonary that contains variable specific meta information
+        """Creates dictionary that contains variable specific meta information
 
         Returns
         -------
@@ -1185,12 +1180,12 @@ class ReadGridded(GriddedReader):
         """
         for k, v in kwargs.items():
             if k in self.__dict__:
-                self.logger.info(
+                logger.info(
                     f"Updating {k} in ModelImportResult for model {self.data_id}. New value: {v}"
                 )
                 self.__dict__[k] = v
             else:
-                self.logger.info(f"Ignoring key {k} in ModelImportResult.update()")
+                logger.info(f"Ignoring key {k} in ModelImportResult.update()")
 
     def concatenate_cubes(self, cubes):
         """Concatenate list of cubes into one cube
@@ -1768,7 +1763,7 @@ class ReadGridded(GriddedReader):
             dictionary defining read constraint (see
             :func:`check_constraint_valid` for minimum requirement). If
             constraint contains key var_name (not mandatory), then the
-            corresponding variable is attemted to be read and is used to
+            corresponding variable is attempted to be read and is used to
             evaluate constraint and the corresponding boolean mask is then
             applied to input `data`. Wherever this mask is True (i.e. constraint
             is met), the current value in input `data` will be replaced with
@@ -1906,7 +1901,7 @@ class ReadGridded(GriddedReader):
                     rename_var=rename_var,
                     **kwargs,
                 )
-        # this input variable was explicitely set to be computed, in which
+        # this input variable was explicitly set to be computed, in which
         # case reading of that variable is ignored even if a file exists for
         # that
         raise VarNotAvailableError(
@@ -2024,7 +2019,7 @@ class ReadGridded(GriddedReader):
                     )
                 )
             except (VarNotAvailableError, DataCoverageError) as e:
-                self.logger.warning(repr(e))
+                logger.warning(repr(e))
         return tuple(data)
 
     def _load_files(self, files, var_name, perform_fmt_checks=None):
@@ -2182,7 +2177,7 @@ class ReadGridded(GriddedReader):
             crop_time = True
             crop_time_range[1] = to_pandas_timestamp(stop)
         if crop_time:
-            self.logger.info("Applying temporal cropping of result cube")
+            logger.info("Applying temporal cropping of result cube")
             data = data.crop(time_range=crop_time_range)
         return data
 

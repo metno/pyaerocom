@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import fnmatch
 import logging
-import os
 from datetime import datetime
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -19,31 +17,21 @@ from pyaerocom.exceptions import (
     DataExtractionError,
     MetaDataError,
     StationCoordinateError,
-    StationNotFoundError,
     TimeMatchError,
     VarNotAvailableError,
 )
 from pyaerocom.geodesy import get_country_info_coords
-from pyaerocom.helpers import (
-    isnumeric,
-    merge_station_data,
-    same_meta_dict,
-    start_stop,
-    start_stop_str,
-)
-from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
-from pyaerocom.mathutils import in_range
+from pyaerocom.helpers import merge_station_data, same_meta_dict, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
-from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
-from pyaerocom.units_helpers import get_unit_conversion_fac
-
-from .tstype import TsType
+from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
+from pyaerocom.units.datetime import TsType
+from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
 
 
-class UngriddedData:
+class UngriddedData(UngriddedDataMetadata):
     """Class representing point-cloud data (ungridded)
 
     The data is organised in a 2-dimensional numpy array where the first index
@@ -86,7 +74,7 @@ class UngriddedData:
         values are dictionaries containing keys specifying variable name and
         corresponding values are arrays or lists, specifying indices (rows) of
         these station / variable information in :attr:`_data`. Note: this
-        information is redunant and is there to accelarate station data
+        information is redundant and is there to accelerate station data
         extraction since the data index matches for a given metadata block
         do not need to be searched in the underlying numpy array.
     var_idx : dict[str, float]
@@ -97,7 +85,7 @@ class UngriddedData:
     Parameters
     ----------
     num_points : :obj:`int`, optional
-        inital number of total datapoints (number of rows in 2D dataarray)
+        initial number of total datapoints (number of rows in 2D dataarray)
     add_cols : :obj:`list`, optional
         list of additional index column names of 2D datarray.
 
@@ -132,15 +120,12 @@ class UngriddedData:
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = 90.0
 
-    STANDARD_META_KEYS = STANDARD_META_KEYS
-
-    ALLOWED_VERT_COORD_TYPES = ["altitude"]
-
     @property
     def _ROWNO(self):
         return self._data.shape[0]
 
     def __init__(self, num_points=None, add_cols=None):
+        super().__init__()  # initialize metadata
         if num_points is None:
             num_points = self._CHUNKSIZE
 
@@ -149,17 +134,8 @@ class UngriddedData:
 
         # keep private, this is not supposed to be used by the user
         self._data = np.full([num_points, self._COLNO], np.nan)
-
-        self.metadata = {}
-        # single value data revision is deprecated
-        self.data_revision = {}
         self.meta_idx = {}
-        self.var_idx = {}
-
         self._idx = -1
-
-        self.filter_hist = {}
-        self._is_vertical_profile = False
 
     @staticmethod
     def _from_raw_parts(
@@ -176,38 +152,6 @@ class UngriddedData:
         data_obj.var_idx = var_idx
 
         return data_obj
-
-    def _get_data_revision_helper(self, data_id):
-        """
-        Helper method to get last data revision
-
-        Parameters
-        ----------
-        data_id : str
-            ID of dataset for which revision is to be retrieved
-
-        Raises
-        ------
-        MetaDataError
-            If multiple revisions are found for this dataset.
-
-        Returns
-        -------
-        latest revision (None if no revision is available).
-
-        """
-        rev = None
-        for meta in self.metadata.values():
-            if meta["data_id"] == data_id:
-                if rev is None:
-                    rev = meta["data_revision"]
-                elif not meta["data_revision"] == rev:
-                    raise MetaDataError(f"Found different data revisions for dataset {data_id}")
-        if data_id in self.data_revision:
-            if not rev == self.data_revision[data_id]:
-                raise MetaDataError(f"Found different data revisions for dataset {data_id}")
-        self.data_revision[data_id] = rev
-        return rev
 
     def _check_index(self):
         """Checks if all indices are assigned correctly"""
@@ -259,7 +203,9 @@ class UngriddedData:
                 )
 
     @staticmethod
-    def from_station_data(stats, add_meta_keys=None):
+    def from_station_data(
+        stats: StationData, add_meta_keys: list[str] | None = None
+    ) -> UngriddedData:
         """
         Create UngriddedData from input station data object(s)
 
@@ -280,7 +226,7 @@ class UngriddedData:
 
         Returns
         -------
-        UngriddedData
+        UngriddedDataMeta
             ungridded data object created from input station data objects
 
         """
@@ -353,7 +299,7 @@ class UngriddedData:
                         for x in times
                     ]
                 )
-                times = np.float64(times)
+                times = times.astype(np.float64)
 
                 num_times = len(times)
                 # check if size of data object needs to be extended
@@ -429,11 +375,6 @@ class UngriddedData:
     def index(self):
         return self._index
 
-    @property
-    def first_meta_idx(self):
-        # First available metadata index
-        return list(self.metadata)[0]
-
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
         idx = dict(
@@ -474,21 +415,6 @@ class UngriddedData:
         """Boolean specifying whether this object contains flag data"""
         return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
 
-    @property
-    def is_vertical_profile(self):
-        """Boolean specifying whether is vertical profile"""
-        return self._is_vertical_profile
-
-    @is_vertical_profile.setter
-    def is_vertical_profile(self, value):
-        """
-        Boolean specifying whether is vertical profile.
-        Note must be set in ReadUngridded based on the reader
-        because the instance of class used during reading is
-        not the same as the instance used later in the workflow
-        """
-        self._is_vertical_profile = value
-
     def copy(self):
         """Make a copy of this object
 
@@ -506,172 +432,15 @@ class UngriddedData:
         from copy import deepcopy
 
         new = UngriddedData()
+        self._copy_metadata_to(new)
         new._data = np.copy(self._data)
-        new.metadata = deepcopy(self.metadata)
-        new.data_revision = self.data_revision
         new.meta_idx = deepcopy(self.meta_idx)
-        new.var_idx = deepcopy(self.var_idx)
-        new.filter_hist = deepcopy(self.filter_hist)
         return new
-
-    @property
-    def contains_vars(self) -> list[str]:
-        """List of all variables in this dataset"""
-        return list(self.var_idx)
-
-    @property
-    def contains_datasets(self):
-        """List of all datasets in this object"""
-        datasets = []
-        for info in self.metadata.values():
-            ds = info["data_id"]
-            if ds not in datasets:
-                datasets.append(ds)
-        return datasets
-
-    @property
-    def contains_instruments(self):
-        """List of all instruments in this object"""
-        instruments = []
-        for info in self.metadata.values():
-            try:
-                instr = info["instrument_name"]
-                if instr is not None and instr not in instruments:
-                    instruments.append(instr)
-            except Exception:
-                pass
-        return instruments
 
     @property
     def shape(self):
         """Shape of data array"""
         return self._data.shape
-
-    @property
-    def is_empty(self):
-        """Boolean specifying whether this object contains data or not"""
-        return True if len(self.metadata) == 0 else False
-
-    @property
-    def is_filtered(self):
-        """Boolean specifying whether this data object has been filtered
-
-        Note
-        ----
-        Details about applied filtering can be found in :attr:`filter_hist`
-        """
-        if len(self.filter_hist) > 0:
-            return True
-        return False
-
-    @property
-    def longitude(self):
-        """Longitudes of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["longitude"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @longitude.setter
-    def longitude(self, value):
-        raise AttributeError("Station longitudes cannot be changed")
-
-    @property
-    def latitude(self):
-        """Latitudes of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["latitude"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @latitude.setter
-    def latitude(self, value):
-        raise AttributeError("Station latitudes cannot be changed")
-
-    @property
-    def altitude(self):
-        """Altitudes of stations"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["altitude"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @altitude.setter
-    def altitude(self, value):
-        raise AttributeError("Station altitudes cannot be changed")
-
-    @property
-    def station_name(self):
-        """Latitudes of data"""
-        vals = []
-        for v in self.metadata.values():
-            try:
-                vals.append(v["station_name"])
-            except Exception:
-                vals.append(np.nan)
-        return vals
-
-    @station_name.setter
-    def station_name(self, value):
-        raise AttributeError("Station names cannot be changed")
-
-    @property
-    def unique_station_names(self):
-        """List of unique station names"""
-        return sorted(list(dict.fromkeys(self.station_name)))
-
-    @property
-    def available_meta_keys(self):
-        """List of all available metadata keys
-
-        Note
-        ----
-        This is a list of all metadata keys that exist in this dataset, but
-        it does not mean that all of the keys are registered in all metadata
-        blocks, especially if the data is merged from different sources with
-        different metadata availability
-        """
-        metakeys = []
-        for meta in self.metadata.values():
-            for key in meta:
-                if key not in metakeys:
-                    metakeys.append(key)
-        return metakeys
-
-    @property
-    def nonunique_station_names(self):
-        """List of station names that occur more than once in metadata"""
-        import collections
-
-        lst = self.station_name
-        return [item for item, count in collections.Counter(lst).items() if count > 1]
-
-    @property
-    def time(self):
-        """Time dimension of data"""
-        raise NotImplementedError
-
-    @time.setter
-    def time(self, value):
-        raise AttributeError("Time array cannot be changed")
-
-    def last_filter_applied(self):
-        """Returns the last filter that was applied to this dataset
-
-        To see all filters, check out :attr:`filter_hist`
-        """
-        if not self.is_filtered:
-            raise AttributeError("No filters were applied so far")
-        return self.filter_hist[max(self.filter_hist)]
 
     def add_chunk(self, size=None):
         """Extend the size of the data array
@@ -689,64 +458,6 @@ class UngriddedData:
         self._data = np.append(self._data, chunk, axis=0)
         logger.info(f"adding chunk, new array size ({self._data.shape})")
 
-    def _find_station_indices_wildcards(self, station_str):
-        """Find indices of all metadata blocks matching input station name
-
-        Parameters
-        ----------
-        station_str : str
-            station name or wildcard pattern
-
-        Returns
-        -------
-        list
-           list containing all metadata indices that match the input station
-           name or pattern
-
-        Raises
-        ------
-        StationNotFoundError
-            if no such station exists in this data object
-        """
-        idx = []
-        for i, meta in self.metadata.items():
-            if fnmatch.fnmatch(meta["station_name"], station_str):
-                idx.append(i)
-        if len(idx) == 0:
-            raise StationNotFoundError(
-                f"No station available in UngriddedData that matches pattern {station_str}"
-            )
-        return idx
-
-    def _find_station_indices(self, station_str):
-        """Find indices of all metadata blocks matching input station name
-
-        Parameters
-        ----------
-        station_str : str
-            station name
-
-        Returns
-        -------
-        list
-           list containing all metadata indices that match the input station
-           name or pattern
-
-        Raises
-        ------
-        StationNotFoundError
-            if no such station exists in this data object
-        """
-        idx = []
-        for i, meta in self.metadata.items():
-            if meta["station_name"] == station_str:
-                idx.append(i)
-        if len(idx) == 0:
-            raise StationNotFoundError(
-                f"No station available in UngriddedData that matches name {station_str}"
-            )
-        return idx
-
     def _get_stat_coords(self):
         meta_idx = []
         coords = []
@@ -760,14 +471,16 @@ class UngriddedData:
             coords.append((lat, lon))
         return (meta_idx, coords)
 
-    def check_set_country(self):
+    def _check_set_country(self):
         """CHecks all metadata entries for availability of country information
+
+        Deprecated - no longer used?
 
         Metadata blocks that are missing country entry will be updated based
         on country inferred from corresponding lat / lon coordinate. Uses
         :func:`pyaerocom.geodesy.get_country_info_coords` (library
         reverse-geocode) to retrieve countries. This may be errouneous
-        close to country borders as it uses eucledian distance based on a list
+        close to country borders as it uses Euclidean distance based on a list
         of known locations.
 
         Note
@@ -782,6 +495,10 @@ class UngriddedData:
         list
             corresponding countries that were inferred from lat / lon
         """
+        # HK 2025-04-30
+        logger.warning(
+            "This method is deprecated because no usage could be found, except for tests for check_country_available"
+        )
         meta_idx, coords = self._get_stat_coords()
         info = get_country_info_coords(coords)
         meta_idx_updated = []
@@ -796,55 +513,6 @@ class UngriddedData:
                 meta_idx_updated.append(idx)
                 countries.append(country)
         return (meta_idx_updated, countries)
-
-    @property
-    def countries_available(self):
-        """
-        Alphabetically sorted list of country names available
-        """
-        # self.check_set_country()
-        countries = []
-        for idx, meta in self.metadata.items():
-            try:
-                countries.append(meta["country"])
-            except Exception:
-                logger.warning("No country information in meta block", idx)
-        if len(countries) == 0:
-            logger.warning(
-                "None of the metadata blocks contains "
-                "country information. You may want to "
-                "run class method check_set_country first "
-                "to automatically assign countries."
-            )
-        return sorted(dict.fromkeys(countries))
-
-    def find_station_meta_indices(self, station_name_or_pattern, allow_wildcards=True):
-        """Find indices of all metadata blocks matching input station name
-
-        You may also use wildcard pattern as input (e.g. *Potenza*)
-
-        Parameters
-        ----------
-        station_pattern : str
-            station name or wildcard pattern
-        allow_wildcards : bool
-            if True, input station_pattern will be used as wildcard pattern and
-            all matches are returned.
-
-        Returns
-        -------
-        list
-           list containing all metadata indices that match the input station
-           name or pattern
-
-        Raises
-        ------
-        StationNotFoundError
-            if no such station exists in this data object
-        """
-        if not allow_wildcards:
-            return self._find_station_indices(station_name_or_pattern)
-        return self._find_station_indices_wildcards(station_name_or_pattern)
 
     # TODO: see docstring
     def to_station_data(
@@ -933,7 +601,7 @@ class UngriddedData:
             start, stop = start_stop(start, stop)
 
         if isinstance(meta_idx, str):
-            # user asks explicitely for station name, find all meta indices
+            # user asks explicitly for station name, find all meta indices
             # that match this station
             meta_idx = self.find_station_meta_indices(meta_idx, allow_wildcards_station_name)
         if not isinstance(meta_idx, list):
@@ -1011,40 +679,6 @@ class UngriddedData:
             return stats_ok[0]
         return stats_ok
 
-    def _try_infer_stat_merge_pref_attr(self, stats):
-        """Checks if a preferred attribute for handling of overlaps can be inferred
-
-        Parameters
-        ----------
-        stats : list
-            list of :class:`StationData` objects
-
-        Returns
-        -------
-        str
-            preferred merge attribute parameter, if applicable, else None
-        """
-        data_id = None
-        pref_attr = None
-        for stat in stats:
-            if "data_id" not in stat:
-                return None
-            elif data_id is None:
-                data_id = stat["data_id"]
-                from pyaerocom.metastandards import DataSource
-
-                s = DataSource(
-                    data_id=data_id
-                )  # reads default data source info that may contain preferred meta attribute
-                pref_attr = s.stat_merge_pref_attr
-                if pref_attr is None:
-                    return None
-            elif (
-                not stat["data_id"] == data_id
-            ):  # station data objects contain different data sources
-                return None
-        return pref_attr
-
     ### TODO: check if both `variables` and `var_info` attrs are required in
     ### metdatda blocks
     def _metablock_to_stationdata(
@@ -1069,7 +703,7 @@ class UngriddedData:
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta["data_id"]]
+                rev = self.get_data_revision[meta["data_id"]]
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -1080,7 +714,7 @@ class UngriddedData:
                 raise VarNotAvailableError("Metablock does not contain variable information")
             vars_avail = meta["variables"]
 
-        for key in self.STANDARD_META_KEYS + add_meta_keys:
+        for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
                 logger.warning(f"skipping protected key: {key}")
                 continue
@@ -1094,7 +728,7 @@ class UngriddedData:
         except KeyError:
             pass
 
-        # assign station coordinates explicitely
+        # assign station coordinates explicitly
         for ck in sd.STANDARD_COORD_KEYS:
             try:
                 sd.station_coords[ck] = meta[ck]
@@ -1263,10 +897,11 @@ class UngriddedData:
         Returns
         -------
         dict
-            4-element dictionary containing following key / value pairs:
+            5-element dictionary containing following key / value pairs:
 
                 - stats: list of :class:`StationData` objects
                 - station_name: list of corresponding station names
+                - station_type: list of corresponding station types, might be empty
                 - latitude: list of latitude coordinates
                 - longitude: list of longitude coordinates
 
@@ -1274,6 +909,7 @@ class UngriddedData:
         out_data = {
             "stats": [],
             "station_name": [],
+            "station_type": [],
             "latitude": [],
             "failed": [],
             "longitude": [],
@@ -1293,10 +929,15 @@ class UngriddedData:
                     ts_type_preferred=ts_type_preferred,
                     **kwargs,
                 )
-
                 out_data["latitude"].append(data["latitude"])
                 out_data["longitude"].append(data["longitude"])
                 out_data["station_name"].append(data["station_name"])
+                if hasattr(data, "station_type"):
+                    out_data["station_type"].append(data["station_type"])
+                else:
+                    logger.debug(
+                        "No station_type found in StationData, station_type will be blank"
+                    )
                 out_data["stats"].append(data)
 
             # catch the exceptions that are acceptable
@@ -1310,185 +951,6 @@ class UngriddedData:
                 logger.debug(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
         return out_data
-
-    # TODO: check more general cases (i.e. no need to convert to StationData
-    # if no time conversion is required)
-    def get_variable_data(
-        self, variables, start=None, stop=None, ts_type=None, **kwargs
-    ):  # pragma: no cover
-        """Extract all data points of a certain variable
-
-        Parameters
-        ----------
-        vars_to_extract : :obj:`str` or :obj:`list`
-            all variables that are supposed to be accessed
-        """
-        if isinstance(variables, str):
-            variables = [variables]
-        all_stations = self.to_station_data_all(variables, start, stop, freq=ts_type, **kwargs)
-        result = {}
-        num_stats = {}
-        for var in variables:
-            result[var] = []
-            num_stats[var] = 0
-        for stat_data in all_stations:
-            if stat_data is not None:
-                num_points = len(stat_data.dtime)
-                for var in variables:
-                    if var in stat_data:
-                        num_stats[var] += 1
-                        result[var].extend(stat_data[var])
-                    else:
-                        result[var].extend([np.nan] * num_points)
-        result["num_stats"] = num_stats
-        return result
-
-    def _check_str_filter_match(self, meta, negate, str_f):
-        # Check string equality for input meta data and filters. Supports
-        # wildcard matching
-        for metakey, filterval in str_f.items():
-            # key does not exist in this specific meta_block
-            if metakey not in meta:
-                return False
-            # check if this key is in negate list (then result will be True
-            # for all that do not match the specified filter input value(s))
-            neg = metakey in negate
-
-            # actual value of this key in input metadata
-            metaval = meta[metakey]
-
-            # check equality of values
-            match = metaval == filterval
-            if match:  # direct match found
-                if neg:  # key is flagged in negate -> no match
-                    return False
-            else:  # no direct match found
-                # check wildcard match
-                if "*" in filterval:  # no wildcard in
-                    match = fnmatch.fnmatch(metaval, filterval)
-                    if neg:
-                        if match:
-                            return False
-                    else:
-                        if not match:
-                            return False
-                elif not neg:  # no match, no wildcard match and not inverted
-                    return False
-        return True
-
-    def _check_filter_match(self, meta, negate, str_f, list_f, range_f, val_f):
-        """Helper method that checks if station meta item matches filters
-
-        Note
-        ----
-        This method is used in :func:`apply_filter`
-        """
-        if not self._check_str_filter_match(meta, negate, str_f):
-            return False
-
-        for metakey, filterval in list_f.items():
-            if metakey not in meta:
-                return False
-            neg = metakey in negate
-            metaval = meta[metakey]
-            match = metaval == filterval
-            if match:  # lists are identical
-                if neg:
-                    return False
-            else:
-                # value in metadata block is different from filter value
-                match = metaval in filterval
-                if match:
-                    if neg:
-                        return False
-                else:
-                    # current metavalue is not equal the filterlist and is also
-                    # not contained in the filterlist. However, one or more
-                    # entries in the filterlist may be wildcard
-                    if isinstance(metaval, str):
-                        found = False
-                        for entry in filterval:
-                            if "*" in entry:
-                                match = fnmatch.fnmatch(metaval, entry)
-                                if match:
-                                    found = True
-                                    if neg:
-                                        return False
-                        if not found and not neg:
-                            return False
-        # range filter
-        for metakey, filterval in range_f.items():
-            if metakey not in meta:
-                return False
-            neg = metakey in negate
-            match = in_range(meta[metakey], filterval[0], filterval[1])
-            if (neg and match) or (not neg and not match):
-                return False
-
-        for metakey, filterval in val_f.items():
-            if metakey not in meta:
-                return False
-            neg = metakey in negate
-            match = meta[metakey] == filterval
-            if (neg and match) or (not neg and not match):
-                return False
-        return True
-
-    def _init_meta_filters(self, **filter_attributes):
-        """Init filter dictionary for :func:`apply_filter_meta`
-
-        Parameters
-        ----------
-        **filter_attributes
-            valid meta keywords that are supposed to be filtered and the
-            corresponding filter values (or value ranges)
-            Only valid meta keywords are considered (e.g. data_id,
-            longitude, latitude, altitude, ts_type)
-
-        Returns
-        -------
-        tuple
-            3-element tuple containing
-
-            - dict: string match filters for metakeys \
-              (e.g. dict['data_id'] = 'AeronetSunV2Lev2.daily')
-            - dict: in-list match filters for metakeys \
-              (e.g. dict['station_name'] = ['stat1', 'stat2', 'stat3'])
-            - dict: in-range dictionary for metakeys \
-              (e.g. dict['longitude'] = [-30, 30])
-
-        """
-        # initiate filters that are checked
-        valid_keys = list(self.metadata[self.first_meta_idx])
-        str_f = {}
-        list_f = {}
-        range_f = {}
-        val_f = {}
-        for key, val in filter_attributes.items():
-            if key not in valid_keys:
-                raise OSError(
-                    f"Invalid input parameter for filtering: {key}. "
-                    f"Please choose from {valid_keys}"
-                )
-
-            if isinstance(val, str):
-                str_f[key] = val
-            elif isnumeric(val):
-                val_f[key] = val
-            elif isinstance(val, list | np.ndarray | tuple):
-                if all([isinstance(x, str) for x in val]):
-                    list_f[key] = val
-                elif len(val) == 2 and all([isnumeric(x) for x in val]):
-                    try:
-                        low, high = float(val[0]), float(val[1])
-                        if not low < high:
-                            raise ValueError("First entry needs to be smaller than 2nd")
-                        range_f[key] = [low, high]
-                    except Exception:
-                        list_f[key] = val
-                else:
-                    list_f[key] = val
-        return (str_f, list_f, range_f, val_f)
 
     def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
         obj = self if inplace else self.copy()
@@ -1523,51 +985,6 @@ class UngriddedData:
 
         return obj
 
-    def check_unit(self, var_name, unit=None):
-        """Check if variable unit corresponds to AeroCom unit
-
-        Parameters
-        ----------
-        var_name : str
-            variable name for which unit is to be checked
-        unit : :obj:`str`, optional
-            unit to be checked, if None, AeroCom default unit is used
-
-        Raises
-        ------
-        MetaDataError
-            if unit information is not accessible for input variable name
-        """
-        if unit is None:
-            unit = const.VARS[var_name]["units"]
-
-        units = []
-        for i, meta in self.metadata.items():
-            if var_name in meta["var_info"]:
-                try:
-                    u = meta["var_info"][var_name]["units"]
-                    if u not in units:
-                        units.append(u)
-                except KeyError:
-                    add_str = ""
-                    if "unit" in meta["var_info"][var_name]:
-                        add_str = (
-                            "Corresponding var_info dict contains "
-                            'attr. "unit", which is deprecated, please '
-                            "check corresponding reading routine. "
-                        )
-                    raise MetaDataError(
-                        f"Failed to access unit information for variable {var_name} "
-                        f"in metadata block {i}. {add_str}"
-                    )
-        if len(units) == 0 and str(unit) != "1":
-            raise MetaDataError(
-                f"Failed to access unit information for variable {var_name}. Expected unit {unit}"
-            )
-        for u in units:
-            if not get_unit_conversion_fac(u, unit, var_name) == 1:
-                raise MetaDataError(f"Invalid unit {u} detected (expected {unit})")
-
     def set_flags_nan(self, inplace=False):
         """Set all flagged datapoints to NaN
 
@@ -1575,7 +992,7 @@ class UngriddedData:
         ----------
         inplace : bool
             if True, the flagged datapoints will be set to NaN in this object,
-            otherwise a new oject will be created and returned
+            otherwise a new object will be created and returned
 
         Returns
         -------
@@ -1618,7 +1035,7 @@ class UngriddedData:
             variable name
         inplace : bool
             if True, the outliers will be removed in this object, otherwise
-            a new oject will be created and returned
+            a new object will be created and returned
         low : float
             lower end of valid range for input variable. If None, then the
             corresponding value from the default settings for this variable
@@ -1691,375 +1108,9 @@ class UngriddedData:
         )
         return new
 
-    def _add_to_filter_history(self, info):
-        """Add info to :attr:`filter_hist`
-
-        Key is current system time string
-
-        Parameter
-        ---------
-        info
-            information to be appended to filter history
-        """
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.filter_hist[int(time_str)] = info
-
     def empty_trash(self):
         """Set all values in trash column to NaN"""
         self._data[:, self._TRASHINDEX] = np.nan
-
-    @property
-    def station_coordinates(self):
-        """dictionary with station coordinates
-
-        Returns
-        -------
-        dict
-            dictionary containing station coordinates (latitude, longitude,
-            altitude -> values) for all stations (keys) where these parameters
-            are accessible.
-        """
-        d = {"station_name": [], "latitude": [], "longitude": [], "altitude": []}
-
-        for i, meta in self.metadata.items():
-            if "station_name" not in meta:
-                logger.debug(f"Skipping meta-block {i}: station_name is not defined")
-                continue
-            elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
-                logger.debug(
-                    f"Skipping meta-block {i} (station {meta['station_name']}): "
-                    f"one or more of the coordinates is not defined"
-                )
-                continue
-
-            stat = meta["station_name"]
-
-            if stat in d["station_name"]:
-                continue
-            d["station_name"].append(stat)
-            for k in const.STANDARD_COORD_NAMES:
-                d[k].append(meta[k])
-        return d
-
-    def _find_meta_matches(self, negate=None, *filters):
-        """Find meta matches for input attributes
-
-        Parameters
-        ----------
-        negate : list or str, optional
-            specified meta key(s) provided in `*filters` that are
-            supposed to be treated as 'not valid'. E.g. if
-            `station_name="bad_site"` is input in `filter_attributes` and if
-            `station_name` is listed in `negate`, then all metadata blocks
-            containing "bad_site" as station_name will be excluded in output
-            data object.
-        *filters
-            list of filters to be applied
-
-        Returns
-        -------
-        tuple
-            list of metadata indices that match input filter
-        """
-        if negate is None:
-            negate = []
-        elif isinstance(negate, str):
-            negate = [negate]
-        elif not isinstance(negate, list):
-            raise ValueError(f"Invalid input for negate {negate}, need list or str or None")
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            if self._check_filter_match(meta, negate, *filters):
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
-                        continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += len(self.meta_idx[meta_idx][var])
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
-        return (meta_matches, totnum)
-
-    def filter_altitude(self, alt_range):
-        """Filter altitude range
-
-        Parameters
-        ----------
-        alt_range : list or tuple
-            2-element list specifying altitude range to be filtered in m
-
-        Returns
-        -------
-        UngriddedData
-            filtered data object
-        """
-        return self.filter_by_meta(altitude=alt_range)
-
-    def filter_region(self, region_id, check_mask=True, check_country_meta=False, **kwargs):
-        """Filter object by a certain region
-
-        Parameters
-        ----------
-        region_id : str
-            name of region (must be valid AeroCom region name or HTAP region)
-        check_mask : bool
-            if True and region_id a valid name for a binary mask, then the
-            filtering is done based on that binary mask.
-        check_country_meta : bool
-            if True, then the input region_id is first checked against
-            available country names in metadata. If that fails, it is assumed
-            that this regions is either a valid name for registered rectangular
-            regions or for available binary masks.
-        **kwargs
-            currently not used in method (makes usage in higher level classes
-            such as :class:`Filter` easier as other data objects have the
-            same method with possibly other input possibilities)
-
-        Returns
-        -------
-        UngriddedData
-            filtered data object (containing only stations that fall into
-            input region)
-        """
-        if check_country_meta:
-            if region_id in self.countries_available:
-                return self.filter_by_meta(country=region_id)
-
-        if region_id in const.HTAP_REGIONS and check_mask:
-            return self.apply_region_mask(region_id)
-
-        region = Region(region_id)
-        return self.filter_by_meta(longitude=region.lon_range, latitude=region.lat_range)
-
-    def apply_region_mask(self, region_id=None):
-        """
-        TODO : Write documentations
-
-        Parameters
-        ----------
-        region_id : str or list (of strings)
-            ID of region or IDs of multiple regions to be combined
-        """
-        if region_id not in const.HTAP_REGIONS:
-            raise ValueError(
-                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
-            )
-
-        # 1. find matches -> list of meta indices that are in region
-        # 2. Get total number of datapoints -> defines shape of output UngriddedData
-        # 3. Create
-
-        mask = load_region_mask_xr(region_id)
-
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            lon, lat = meta["longitude"], meta["latitude"]
-
-            mask_val = get_mask_value(lat, lon, mask)
-            if mask_val >= 1:  # coordinate is in mask
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    totnum += len(self.meta_idx[meta_idx][var])
-
-        new = self._new_from_meta_blocks(meta_matches, totnum)
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = f"Applied mask {region_id}"
-        new._check_index()
-        return new
-
-    def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
-        """Extended filtering method
-
-        Combines :func:`filter_by_meta` and adds option to also remove outliers
-        (keyword `remove_outliers`), set flagged data points to NaN (keyword
-        `set_flags_nan`) and to extract individual variables (keyword
-        `var_name`).
-
-        Parameters
-        ----------
-        var_outlier_ranges : dict, optional
-            dictionary specifying custom outlier ranges for individual
-            variables.
-        **filter_attributes : dict
-            filters that are supposed to be applied to the data.
-            To remove outliers, use keyword `remove_outliers`, to set flagged
-            values to NaN, use keyword `set_flags_nan`, to extract single or
-            multiple variables, use keyword `var_name`. Further filter keys
-            are assumed to be metadata specific and are passed to
-            :func:`filter_by_meta`.
-
-        Returns
-        -------
-        UngriddedData
-            filtered data object
-        """
-        data = self
-
-        remove_outliers = False
-        set_flags_nan = False
-        extract_vars = None
-        region_id = None
-        if "remove_outliers" in filter_attributes:
-            remove_outliers = filter_attributes.pop("remove_outliers")
-        if "set_flags_nan" in filter_attributes:
-            set_flags_nan = filter_attributes.pop("set_flags_nan")
-        if "var_name" in filter_attributes:
-            extract_vars = filter_attributes.pop("var_name")
-            if isinstance(extract_vars, str):
-                extract_vars = [extract_vars]
-            for var in extract_vars:
-                if var not in data.contains_vars:
-                    raise VarNotAvailableError(
-                        f"No such variable {var} in UngriddedData object. "
-                        f"Available vars: {self.contains_vars}"
-                    )
-        if "region_id" in filter_attributes:
-            region_id = filter_attributes.pop("region_id")
-
-        if len(filter_attributes) > 0:
-            data = data.filter_by_meta(**filter_attributes)
-
-        if extract_vars is not None:
-            data = data.extract_vars(extract_vars)
-
-        if remove_outliers:
-            if var_outlier_ranges is None:
-                var_outlier_ranges = {}
-
-            for var in data.contains_vars:
-                lower, upper = (
-                    None,
-                    None,
-                )  # uses pyaerocom default specified in variables.ini
-                if var in var_outlier_ranges:
-                    lower, upper = var_outlier_ranges[var]
-                data = data.remove_outliers(
-                    var, inplace=True, low=lower, high=upper, move_to_trash=False
-                )
-        if set_flags_nan:
-            if not data.has_flag_data:
-                # jgriesfeller 20230210
-                # not sure if raising this exception is the right thing to do
-                # the fake variables (vars computed from other variables) might not have
-                # and do not need flags (because that has been done during the read of the
-                # variable they are computed from)
-                # disabling and logging it for now
-                # raise MetaDataError(
-                logger.info(
-                    'Cannot apply filter "set_flags_nan" to '
-                    "UngriddedData object, since it does not "
-                    "contain flag information"
-                )
-            else:
-                data = data.set_flags_nan(inplace=True)
-        if region_id:
-            data = data.filter_region(region_id)
-        return data
-
-    def filter_by_projection(
-        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
-    ):
-        """Filter the ungridded data to a horizontal bounding box given by a projection
-
-        :param projection: a function turning projection(lat, lon) -> (x, y)
-        :param xrange: x range (min/max included) in the projection plane
-        :param yrange: y range (min/max included) in the projection plane
-        """
-        meta_matches = []
-        totnum = 0
-        for meta_idx, meta in self.metadata.items():
-            lon = meta["longitude"]
-            lat = meta["latitude"]
-            x, y = projection(lat, lon)
-
-            match_x = in_range(x, xrange[0], xrange[1])
-            match_y = in_range(y, yrange[0], yrange[1])
-
-            if match_x and match_y:
-                meta_matches.append(meta_idx)
-                for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
-                        continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += len(self.meta_idx[meta_idx][var])
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
-        if len(meta_matches) == len(self.metadata):
-            logger.info("filter_by_projection result in unchanged data object")
-            return self
-        new = self._new_from_meta_blocks(meta_matches, totnum)
-        return new
-
-    def filter_by_meta(self, negate=None, **filter_attributes):
-        """Flexible method to filter these data based on input meta specs
-
-        Parameters
-        ----------
-        negate : list or str, optional
-            specified meta key(s) provided via `filter_attributes` that are
-            supposed to be treated as 'not valid'. E.g. if
-            `station_name="bad_site"` is input in `filter_attributes` and if
-            `station_name` is listed in `negate`, then all metadata blocks
-            containing "bad_site" as station_name will be excluded in output
-            data object.
-        **filter_attributes
-            valid meta keywords that are supposed to be filtered and the
-            corresponding filter values (or value ranges)
-            Only valid meta keywords are considered (e.g. data_id,
-            longitude, latitude, altitude, ts_type)
-
-        Returns
-        -------
-        UngriddedData
-            filtered ungridded data object
-
-        Raises
-        ------
-        NotImplementedError
-            if attempt variables are supposed to be filtered (not yet possible)
-        IOError
-            if any of the input keys are not valid meta key
-
-        Example
-        -------
-        >>> import pyaerocom as pya
-        >>> r = pya.io.ReadUngridded(['AeronetSunV2Lev2.daily',
-                                      'AeronetSunV3Lev2.daily'], 'od550aer')
-        >>> data = r.read()
-        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV2Lev2.daily',
-        ...                                     longitude=[-30, 30],
-        ...                                     latitude=[20, 70],
-        ...                                     altitude=[0, 1000])
-        """
-
-        if "variables" in filter_attributes:
-            raise NotImplementedError("Cannot yet filter by variables")
-
-        # separate filters by strin, list, etc.
-        filters = self._init_meta_filters(**filter_attributes)
-
-        # find all metadata blocks that match the filters
-        meta_matches, totnum_new = self._find_meta_matches(
-            negate,
-            *filters,
-        )
-        if len(meta_matches) == len(self.metadata):
-            logger.info(f"Input filters {filter_attributes} result in unchanged data object")
-            return self
-        new = self._new_from_meta_blocks(meta_matches, totnum_new)
-        time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = filter_attributes
-        return new
 
     def _new_from_meta_blocks(self, meta_indices, totnum_new):
         # make a new empty object with the right size (totnum_new)
@@ -2082,7 +1133,8 @@ class UngriddedData:
                 totnum = len(indices)
 
                 stop = data_idx_new + totnum
-
+                while stop > new._data.shape[0]:
+                    new.add_chunk()
                 new._data[data_idx_new:stop, :] = self._data[indices, :]
                 new._data[data_idx_new:stop, new._METADATAKEYINDEX] = meta_idx_new
                 new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new, stop)
@@ -2097,9 +1149,27 @@ class UngriddedData:
 
         # write history of filtering applied
         new.filter_hist.update(self.filter_hist)
-        new.data_revision.update(self.data_revision)
+        new._data_revision.update(self._data_revision)
 
         return new
+
+    def _len_datapoints(self, meta_idx, var):
+        """Get the number of datapoints for meta_idx and var."""
+        if isinstance(meta_idx, float):
+            meta_idx = [meta_idx]
+        if isinstance(var, str):
+            var = [var]
+        totnum = 0
+        for m in meta_idx:
+            for v in var:
+                try:
+                    totnum += len(self.meta_idx[m][v])
+                except KeyError:
+                    logger.debug(
+                        f"Ignoring variable {var} in meta block {meta_idx} "
+                        f"since no data could be found"
+                    )
+        return
 
     def clear_meta_no_data(self, inplace=True):
         """Remove all metadata blocks that do not have data associated with it
@@ -2151,25 +1221,6 @@ class UngriddedData:
         )
         obj._check_index()
         return obj
-
-    def extract_dataset(self, data_id):
-        """Extract single dataset into new instance of :class:`UngriddedData`
-
-        Calls :func:`filter_by_meta`.
-
-        Parameters
-        -----------
-        data_id : str
-            ID of dataset
-
-        Returns
-        -------
-        UngriddedData
-            new instance of ungridded data containing only data from specified
-            input network
-        """
-        logger.info(f"Extracting dataset {data_id} from data object")
-        return self.filter_by_meta(data_id=data_id)
 
     def extract_var(self, var_name, check_index=True):
         """Split this object into single-var UngriddedData objects
@@ -2286,31 +1337,6 @@ class UngriddedData:
             data._check_index()
         return data
 
-    def code_lat_lon_in_float(self):
-        """method to code lat and lon in a single number so that we can use np.unique to
-        determine single locations"""
-
-        # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
-        self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
-            self._data[:, self._LATINDEX] + self._LAT_OFFSET
-        ) * (10**self._LOCATION_PRECISION)
-        return self.coded_loc
-
-    def decode_lat_lon_from_float(self):
-        """method to decode lat and lon from a single number calculated by code_lat_lon_in_float"""
-
-        lons = (
-            np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-            / 10**self._LOCATION_PRECISION
-        )
-        lats = (
-            self.coded_loc
-            - np.trunc(self.coded_loc / 10 ** (2 * self._LOCATION_PRECISION))
-            * 10 ** (2 * self._LOCATION_PRECISION)
-        ) / (10**self._LOCATION_PRECISION) - self._LAT_OFFSET
-
-        return lats, lons
-
     def _find_common_meta(self, ignore_keys=None):
         """Searches all metadata dictionaries that are the same
 
@@ -2410,6 +1436,9 @@ class UngriddedData:
             )
         return new
 
+    def append_station_data(self, stats, add_meta_keys=None):
+        raise NotImplementedError()
+
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
 
@@ -2433,7 +1462,9 @@ class UngriddedData:
             if input object is not an instance of :class:`UngriddedData`
         """
         if not isinstance(other, UngriddedData):
-            raise ValueError(f"Invalid input, need instance of UngriddedData, got: {type(other)}")
+            raise ValueError(
+                f"Cannot add any UngriddedDataContainer to UngriddedData, got: {type(other)}, please switch order, or implement UngriddedData.append_station_data"
+            )
         if new_obj:
             obj = self.copy()
         else:
@@ -2443,8 +1474,11 @@ class UngriddedData:
             obj._data = other._data
             obj.metadata = other.metadata
             # obj.unit = other.unit
-            obj.data_revision = other.data_revision
+            obj._data_revision = other._data_revision
             obj.meta_idx = other.meta_idx
+            # potentially temporary fix for pyaro actrisebas reader
+            # if len(other.meta_idx) != len(other.metadata):
+            #     obj.meta_idx = {key: other.meta_idx[key] for key in other.metadata.keys()}
             obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
@@ -2463,19 +1497,19 @@ class UngriddedData:
             for var, idx in other.var_idx.items():
                 if var in obj.var_idx:  # variable already exists in this object
                     if not idx == obj.var_idx[var]:
-                        other.change_var_idx(var, obj.var_idx[var])
+                        other._change_var_idx(var, obj.var_idx[var])
                 else:  # variable does not yet exist
                     idx_exists = [v for v in obj.var_idx.values()]
                     if idx in idx_exists:
                         # variable index is already assigned to another
                         # variable and needs to be changed
                         new_idx = max(idx_exists) + 1
-                        other.change_var_idx(var, new_idx)
+                        other._change_var_idx(var, new_idx)
                         obj.var_idx[var] = new_idx
                     else:
                         obj.var_idx[var] = idx
             obj._data = np.vstack([obj._data, other._data])
-            obj.data_revision.update(other.data_revision)
+            obj._data_revision.update(other._data_revision)
         obj.filter_hist.update(other.filter_hist)
         obj._check_index()
         return obj
@@ -2483,6 +1517,7 @@ class UngriddedData:
     def colocate_vardata(
         self, var1, data_id1=None, var2=None, data_id2=None, other=None, **kwargs
     ):
+        # UNTESTED UNDOCUMENTED METHOD, HK 2025-03-15
         if other is None:
             other = self
         if var2 is None:
@@ -2514,7 +1549,7 @@ class UngriddedData:
         new = UngriddedData.from_station_data(statlist)
         return new
 
-    def change_var_idx(self, var_name, new_idx):
+    def _change_var_idx(self, var_name, new_idx):
         """Change index that is assigned to variable
 
         Each variable in this object has assigned a unique index that is
@@ -2553,31 +1588,6 @@ class UngriddedData:
         var_indices = np.where(self._data[:, self._VARINDEX] == cidx)
         self._data[var_indices, self._VARINDEX] = new_idx
 
-    def append(self, other):
-        """Append other instance of :class:`UngriddedData` to this object
-
-        Note
-        ----
-        Calls :func:`merge(other, new_obj=False)`
-
-        Parameters
-        -----------
-        other : UngriddedData
-            other data object
-
-        Returns
-        -------
-        UngriddedData
-            merged data object
-
-        Raises
-        -------
-        ValueError
-            if input object is not an instance of :class:`UngriddedData`
-
-        """
-        return self.merge(other, new_obj=False)
-
     def all_datapoints_var(self, var_name):
         """Get array of all data values of input variable
 
@@ -2602,456 +1612,6 @@ class UngriddedData:
         mask = np.where(self._data[:, self._VARINDEX] == idx)[0]
         return self._data[mask, self._DATAINDEX]
 
-    def num_obs_var_valid(self, var_name):
-        """Number of valid observations of variable in this dataset
-
-        Parameters
-        ----------
-        var_name : str
-            name of variable
-
-        Returns
-        -------
-        int
-            number of valid observations (all values that are not NaN)
-        """
-        raise NotImplementedError("Coming soon")
-
-    def find_common_stations(
-        self,
-        other: UngriddedData,
-        check_vars_available=None,
-        check_coordinates: bool = True,
-        max_diff_coords_km: float = 0.1,
-    ) -> dict:
-        """Search common stations between two UngriddedData objects
-
-        This method loops over all stations that are stored within this
-        object (using :attr:`metadata`) and checks if the corresponding
-        station exists in a second instance of :class:`UngriddedData` that
-        is provided. The check is performed on basis of the station name, and
-        optionally, if desired, for each station name match, the lon lat
-        coordinates can be compared within a certain radius (defaul 0.1 km).
-
-        Note
-        ----
-        This is a beta version and thus, to be treated with care.
-
-        Parameters
-        ----------
-        other : UngriddedData
-            other object of ungridded data
-        check_vars_available : :obj:`list` (or similar), optional
-            list of variables that need to be available in stations of both
-            datasets
-        check_coordinates : bool
-            if True, check that lon and lat coordinates of station candidates
-            match within a certain range, specified by input parameter
-            ``max_diff_coords_km``
-
-        Returns
-        -------
-        dict
-            dictionary where keys are meta_indices of the common station in
-            this object and corresponding values are meta indices of the
-            station in the other object
-
-        """
-        if len(self.contains_datasets) > 1:
-            raise NotImplementedError(
-                "This data object contains data from "
-                "more than one dataset and thus may "
-                "include multiple station matches for "
-                "each station ID. This method, however "
-                "is implemented such, that it checks "
-                "only the first match for each station"
-            )
-        elif len(other.contains_datasets) > 1:
-            raise NotImplementedError(
-                "Other data object contains data from "
-                "more than one dataset and thus may "
-                "include multiple station matches for "
-                "each station ID. This method, however "
-                "is implemented such, that it checks "
-                "only the first match for each station"
-            )
-        _check_vars = False
-        if check_vars_available is not None:
-            _check_vars = True
-            if isinstance(check_vars_available, str):
-                check_vars_available = [check_vars_available]
-            elif isinstance(check_vars_available, tuple | np.ndarray):
-                check_vars_available = list(check_vars_available)
-            if not isinstance(check_vars_available, list):
-                raise ValueError(
-                    f"Invalid input for check_vars_available. "
-                    f"Need str or list-like, got: {check_vars_available}"
-                )
-        lat_len = 111.0  # approximate length of latitude degree in km
-        station_map = {}
-        stations_other = other.station_name
-        for meta_idx, meta in self.metadata.items():
-            name = meta["station_name"]
-            # bool that is used to accelerate things
-            ok = True
-            if _check_vars:
-                for var in check_vars_available:
-                    try:
-                        if var not in meta["variables"]:
-                            logger.debug(f"No {var} in data of station {name} ({meta['data_id']})")
-                            ok = False
-                    except Exception:  # attribute does not exist or is not iterable
-                        ok = False
-            if ok and name in stations_other:
-                for meta_idx_other, meta_other in other.metadata.items():
-                    if meta_other["station_name"] == name:
-                        if _check_vars:
-                            for var in check_vars_available:
-                                try:
-                                    if var not in meta_other["variables"]:
-                                        logger.debug(
-                                            f"No {var} in data of station {name} ({meta_other['data_id']})"
-                                        )
-                                        ok = False
-                                except Exception:  # attribute does not exist or is not iterable
-                                    ok = False
-                        if ok and check_coordinates:
-                            dlat = abs(meta["latitude"] - meta_other["latitude"])
-                            dlon = abs(meta["longitude"] - meta_other["longitude"])
-                            lon_fac = np.cos(np.deg2rad(meta["latitude"]))
-                            # compute distance between both station coords
-                            dist = np.linalg.norm((dlat * lat_len, dlon * lat_len * lon_fac))
-                            if dist > max_diff_coords_km:
-                                logger.warning(
-                                    f"Coordinate of station {name} "
-                                    f"varies more than {max_diff_coords_km} km "
-                                    f"between {meta['data_id']} and {meta_other['data_id']} data. "
-                                    f"Retrieved distance: {dist:.2f} km "
-                                )
-                                ok = False
-                        if ok:  # match found
-                            station_map[meta_idx] = meta_idx_other
-                            logger.debug(f"Found station match {name}")
-                            # no need to further iterate over the rest
-                            continue
-
-        return station_map
-
-    # TODO: brute force at the moment, we need to rethink and define how to
-    # work with time intervals and perform temporal merging.
-    def find_common_data_points(self, other, var_name, sampling_freq="daily"):
-        if not sampling_freq == "daily":
-            raise NotImplementedError("Currently only works with daily data")
-        if not isinstance(other, UngriddedData):
-            raise NotImplementedError(
-                "So far, common data points can only be "
-                "retrieved between two instances of "
-                "UngriddedData"
-            )
-        # find all stations that are common
-        common = self.find_common_stations(
-            other, check_vars_available=var_name, check_coordinates=True
-        )
-        if len(common) == 0:
-            raise DataExtractionError("None of the stations in the two match")
-        dates = []
-        data_this_match = []
-        data_other_match = []
-
-        for idx_this, idx_other in common.items():
-            data_idx_this = self.meta_idx[idx_this][var_name]
-            data_idx_other = other.meta_idx[idx_other][var_name]
-
-            # timestamps of variable match for station...
-            dtimes_this = self._data[data_idx_this, self._TIMEINDEX]
-            dtimes_other = other._data[data_idx_other, other._TIMEINDEX]
-            # ... and corresponding data values of variable
-            data_this = self._data[data_idx_this, self._DATAINDEX]
-            data_other = other._data[data_idx_other, other._DATAINDEX]
-            # round to daily resolution. looks too complicated, but is much
-            # faster than pandas combined with datetime
-            date_nums_this = dtimes_this.astype("datetime64[s]").astype("M8[D]").astype(int)
-            date_nums_other = dtimes_other.astype("datetime64[s]").astype("M8[D]").astype(int)
-
-            # TODO: loop over shorter array
-            for idx, datenum in enumerate(date_nums_this):
-                matches = np.where(date_nums_other == datenum)[0]
-                if len(matches) == 1:
-                    dates.append(datenum)
-                    data_this_match.append(data_this[idx])
-                    data_other_match.append(data_other[matches[0]])
-
-        return (dates, data_this_match, data_other_match)
-
-    def _meta_to_lists(self):
-        meta = {k: [] for k in self.metadata[self.first_meta_idx]}
-        for meta_item in self.metadata.values():
-            for k, v in meta.items():
-                v.append(meta_item[k])
-        return meta
-
-    def plot_station_timeseries(
-        self,
-        station_name,
-        var_name,
-        start=None,
-        stop=None,
-        ts_type=None,
-        insert_nans=True,
-        ax=None,
-        **kwargs,
-    ):  # pragma: no cover
-        """Plot time series of station and variable
-
-        Parameters
-        ----------
-        station_name : :obj:`str` or :obj:`int`
-            station name or index of station in metadata dict
-        var_name : str
-            name of variable to be retrieved
-        start
-            start time (optional)
-        stop
-            stop time (optional). If start time is provided and stop time not,
-            then only the corresponding year inferred from start time will be
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution
-
-        **kwargs
-            Addifional keyword args passed to method :func:`pandas.Series.plot`
-
-        Returns
-        -------
-        axes
-            matplotlib axes instance
-
-        """
-        if ax is None:
-            from pyaerocom.plot.config import FIGSIZE_DEFAULT
-
-            fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
-
-        stat = self.to_station_data(
-            station_name,
-            var_name,
-            start,
-            stop,
-            freq=ts_type,
-            merge_if_multi=True,
-            insert_nans=insert_nans,
-        )
-        ax = stat.plot_timeseries(var_name, ax=ax, **kwargs)
-        return ax
-
-    def plot_station_coordinates(
-        self,
-        var_name=None,
-        start=None,
-        stop=None,
-        ts_type=None,
-        color="r",
-        marker="o",
-        markersize=8,
-        fontsize_base=10,
-        legend=True,
-        add_title=True,
-        **kwargs,
-    ):  # pragma: no cover
-        """Plot station coordinates on a map
-
-        All input parameters are optional and may be used to add constraints
-        related to which stations are plotted. Default is all stations of all
-        times.
-
-        Parameters
-        ----------
-
-        var_name : :obj:`str`, optional
-            name of variable to be retrieved
-        start
-            start time (optional)
-        stop
-            stop time (optional). If start time is provided and stop time not,
-            then only the corresponding year inferred from start time will be
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution
-        color : str
-            color of stations on map
-        marker : str
-            marker type of stations
-        markersize : int
-            size of station markers
-        fontsize_base : int
-            basic fontsize
-        legend : bool
-            if True, legend is added
-        add_title : bool
-            if True, title will be added
-        **kwargs
-            Addifional keyword args passed to
-            :func:`pyaerocom.plot.plot_coordinates`
-
-        Returns
-        -------
-        axes
-            matplotlib axes instance
-
-        """
-        from pyaerocom.plot.plotcoordinates import plot_coordinates
-
-        if len(self.contains_datasets) > 1:
-            logger.warning(
-                "UngriddedData object contains more than one "
-                "dataset ({}). Station coordinates will not be "
-                "distinguishable. You may want to apply a filter "
-                "first and plot them separately"
-            )
-
-        subset = self
-        if var_name is None:
-            info_str = "AllVars"
-        else:
-            if not isinstance(var_name, str):
-                raise ValueError("Can only handle single variable (or all -> input var_name=None)")
-            elif var_name not in subset.contains_vars:
-                raise ValueError(f"Input variable {var_name} is not available in dataset ")
-            info_str = var_name
-
-        try:
-            info_str += f"_{start_stop_str(start, stop, ts_type)}"
-        except Exception:
-            info_str += "_AllTimes"
-        if ts_type is not None:
-            info_str += f"_{ts_type}"
-
-        if all([x is None for x in (var_name, start, stop)]):  # use all stations
-            all_meta = subset._meta_to_lists()
-            lons, lats = all_meta["longitude"], all_meta["latitude"]
-
-        else:
-            stat_data = subset.to_station_data_all(var_name, start, stop, ts_type)
-
-            if len(stat_data["stats"]) == 0:
-                raise DataCoverageError(
-                    "No stations could be found for input specs (var, start, stop, freq)"
-                )
-            lons = stat_data["longitude"]
-            lats = stat_data["latitude"]
-        if "label" not in kwargs:
-            kwargs["label"] = info_str
-
-        ax = plot_coordinates(
-            lons,
-            lats,
-            color=color,
-            marker=marker,
-            markersize=markersize,
-            legend=legend,
-            **kwargs,
-        )
-
-        if "title" in kwargs:
-            title = kwargs["title"]
-        else:
-            title = info_str
-        if add_title:
-            ax.set_title(title, fontsize=fontsize_base + 4)
-        return ax
-
-    def save_as(self, file_name, save_dir):
-        """
-        Save this object to disk
-
-        Note
-        ----
-        So far, only storage as pickled object via
-        `CacheHandlerUngridded` is supported, so input file_name must end
-        with .pkl
-
-        Parameters
-        ----------
-        file_name : str
-            name of output file
-        save_dir : str
-            name of output directory
-
-        Returns
-        -------
-        str
-            file path
-
-        """
-        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-
-        if not os.path.exists(save_dir):
-            raise FileNotFoundError(f"Directory does not exist: {save_dir}")
-        elif not file_name.endswith(".pkl"):
-            raise ValueError("Can only store files as pickle, file_name needs to have format .pkl")
-        ch = CacheHandlerUngridded()
-        return ch.write(self, var_or_file_name=file_name, cache_dir=save_dir)
-
-    @staticmethod
-    def from_cache(data_dir, file_name):
-        """
-        Load pickled instance of `UngriddedData`
-
-        Parameters
-        ----------
-        data_dir : str
-            directory where pickled object is stored
-        file_name : str
-            file name of pickled object (needs to end with pkl)
-
-        Raises
-        ------
-        ValueError
-            if loading failed
-
-        Returns
-        -------
-        UngriddedData
-            loaded UngriddedData object. If this method is called from an
-            instance of `UngriddedData`, this instance remains unchanged.
-            You may merge the returned reloaded instance using
-            :func:`merge`.
-
-        """
-        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-
-        ch = CacheHandlerUngridded()
-        if ch.check_and_load(file_name, cache_dir=data_dir):
-            return ch.loaded_data[file_name]
-        raise ValueError("Failed to load UngriddedData object")
-
-    def __contains__(self, key):
-        """Check if input key (str) is valid dataset, variable, instrument or
-        station name
-
-        Parameters
-        ----------
-        key : str
-            search key
-
-        Returns
-        -------
-        bool
-            True, if key can be found, False if not
-        """
-
-        if not isinstance(key, str):
-            raise ValueError("Need string (e.g. variable name, station name, instrument name")
-        if key in self.contains_datasets:
-            return True
-        elif key in self.contains_vars:
-            return True
-        elif key in self.station_name:
-            return True
-        elif key in self.contains_instruments:
-            return True
-        return False
-
     def __iter__(self):
         return self
 
@@ -3072,53 +1632,10 @@ class UngriddedData:
     def __repr__(self):
         return f"{type(self).__name__} <networks: {self.contains_datasets}; vars: {self.contains_vars}; instruments: {self.contains_instruments}; No. of metadata units: {len(self.metadata)}"
 
-    def __getitem__(self, key):
-        if isnumeric(key) or key in self.unique_station_names:
-            return self.to_station_data(key, insert_nans=True)
-        raise KeyError("Invalid input key, need metadata index or station name ")
-
-    def __and__(self, other):
-        """Merge this object with another using the logical ``and`` operator
-
-        Example
-        -------
-        >>> from pyaerocom.io import ReadAeronetSdaV2
-        >>> read = ReadAeronetSdaV2()
-
-        >>> d0 = read.read(last_file=10)
-        >>> d1 = read.read(first_file=10, last_file=20)
-
-        >>> merged = d0 & d1
-
-        >>> print(d0.shape, d1.shape, merged.shape)
-        (7326, 11) (9894, 11) (17220, 11)
-        """
-        return self.merge(other, new_obj=True)
-
-    def __str__(self):
-        head = f"Pyaerocom {type(self).__name__}"
-        s = (
-            f"\n{head}\n{len(head) * '-'}"
-            f"\nContains networks: {self.contains_datasets}"
-            f"\nContains variables: {self.contains_vars}"
-            f"\nContains instruments: {self.contains_instruments}"
-            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
-        )
-        if self.is_filtered:
-            s += "\nFilters that were applied:"
-            for tstamp, f in self.filter_hist.items():
-                if f:
-                    s += f"\n Filter time log: {tstamp}"
-                    if isinstance(f, dict):
-                        for key, val in f.items():
-                            s += f"\n\t{key}: {val}"
-                    else:
-                        s += f"\n\t{f}"
-
-        return s
-
 
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):
+    logger.warning("This method is deprecated because no usage could be found, HK 2025-03-13")
+
     test = sorted(arr_to_be_reduced)
     closest_idx = []
     for num in sorted(arr_nominal):

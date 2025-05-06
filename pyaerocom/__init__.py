@@ -6,6 +6,18 @@ from ._warnings import ignore_basemap_warning, ignore_earth_radius_warning
 
 __version__ = metadata.version(__package__)
 
+import iris
+
+# Enable new iris functionality to suppress deprecation warning.
+# https://scitools-iris.readthedocs.io/en/latest/generated/api/iris.html#iris.FUTURE
+iris.FUTURE.save_split_attrs = True
+
+try:
+    iris.FUTURE.date_microseconds = True
+except AttributeError:
+    # Old iris version that doesn't support this override. Use old behaviour.
+    pass
+
 from .config import Config
 
 # Instantiate default configuration
@@ -15,7 +27,7 @@ ignore_earth_radius_warning()
 
 # Sub-packages
 from . import io
-from . import plot
+
 from . import scripts
 
 # Imports
@@ -50,7 +62,7 @@ from .colocation.colocated_data import ColocatedData
 from .colocation.colocator import Colocator
 from .colocation.colocation_setup import ColocationSetup
 from .filter import Filter
-from .tstype import TsType
+from .units.datetime import TsType
 from .time_resampler import TimeResampler
 from .io.helpers import search_data_dir_aerocom
 from .variable_helpers import get_variable

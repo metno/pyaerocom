@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 import xarray as xr
-from matplotlib.axes import Axes
 from numpy.typing import ArrayLike
 from pydantic import ValidationError
 
@@ -333,12 +332,6 @@ def test_ColocatedData_calc_spatial_statistics_error(
     assert str(e.value).startswith(error)
 
 
-@pytest.mark.parametrize("coldataset", ["fake_nodims", "tm5_aeronet", "fake_3d", "fake_4d"])
-def test_ColocatedData_plot_scatter(coldata: ColocatedData):
-    plot = coldata.plot_scatter()
-    assert isinstance(plot, Axes)
-
-
 def test_meta_access_filename():
     name = f"od550bc_ang4487aer_MOD-AEROCOM-MEDIAN_REF-42AeronET_20000101_20201231_monthly_{ALL_REGION_NAME}-noMOUNTAINS.nc"
 
@@ -479,7 +472,7 @@ def test_ColocatedData_to_netcdf(coldata: ColocatedData, tmp_path: Path, filenam
 def test_ColocatedData_read_netcdf(coldata: ColocatedData, tmp_path: Path):
     file = coldata.to_netcdf(tmp_path)
     assert Path(file).exists()
-    cd = ColocatedData().read_netcdf(file)
+    cd = ColocatedData(file)
     assert isinstance(cd, ColocatedData)
 
 

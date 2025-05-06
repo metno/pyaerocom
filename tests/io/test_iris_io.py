@@ -109,7 +109,7 @@ def test_check_time_coord(cube: Cube):
             "blaa",
             2010,
             TemporalResolutionError,
-            "Invalid input for ts_type blaa. Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest']",
+            "Invalid input for ts_type blaa. Choose from ('minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native', 'coarsest')",
             id="wrong ts_type",
         ),
         pytest.param(
@@ -134,7 +134,7 @@ def test_check_time_coord(cube: Cube):
             2008,
             ValueError,
             "First timestamp of data 2010-01-15T12:00:00.000000 does not lie in first period: 2008-01",
-            id="worng year",
+            id="wrong year",
         ),
     ],
 )
@@ -180,7 +180,7 @@ def test_get_dimnames_cube(cube: Cube):
         pytest.param(
             "notime",
             FileConventionRead("aerocom2"),
-            ["latitude", "longitude"],  # no time can be infered under aerocom2
+            ["latitude", "longitude"],  # no time can be inferred under aerocom2
             id="NoTime AeroCom2",
         ),
         pytest.param(

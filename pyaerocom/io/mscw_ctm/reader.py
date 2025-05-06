@@ -12,7 +12,6 @@ from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.projection_information import ProjectionInformation
-from pyaerocom.units_helpers import UALIASES
 
 from .additional_variables import (
     add_dataarrays,
@@ -128,6 +127,7 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalNonResEM": ["concecFineNonResNewEM", "concecFineNonResAgeEM"],
         "concebcem": ["concecFineEM", "concecCoarseEM"],
         "concCecpm25EM": ["concecFineEM"],
+        "concCecpm10EM": ["concecFineEM"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -184,6 +184,7 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalNonResEM": add_dataarrays,
         "concebcem": add_dataarrays,
         "concCecpm25EM": update_EC_units,
+        "concCecpm10EM": update_EC_units,
     }
 
     #: supported filename template, freq-placeholder is for frequencies
@@ -340,7 +341,7 @@ class ReadMscwCtm(GriddedReader):
     @staticmethod
     @functools.cache
     def _get_year_from_nc(filename: str) -> int:
-        with xr.open_dataset(filename) as nc:
+        with xr.open_dataset(filename, decode_timedelta=True) as nc:
             return np.mean(nc["time"][:]).data.astype("datetime64[Y]").astype(int) + 1970
 
     def _get_yrs_from_filepaths(self) -> list[str]:
@@ -589,7 +590,7 @@ class ReadMscwCtm(GriddedReader):
             start_date = None
             end_date = None
             for fp in fps:
-                with xr.open_dataset(fp) as nc:
+                with xr.open_dataset(fp, decode_timedelta=True) as nc:
                     file_start_date = nc["time"][:].data.min()
                     file_end_date = nc["time"][:].data.max()
 
@@ -602,7 +603,7 @@ class ReadMscwCtm(GriddedReader):
                 )
 
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps, chunks={"time": 24})
+        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
 
         self._private.filedata = ds
 
@@ -779,8 +780,7 @@ class ReadMscwCtm(GriddedReader):
         ts_type = self._ts_type
 
         arr, proj_info = self._load_var(var_name_aerocom, ts_type)
-        if arr.units in UALIASES:
-            arr.attrs["units"] = UALIASES[arr.units]
+        arr.attrs["units"] = arr.units
         try:
             cube = arr.to_iris()
         except MemoryError as e:  # pragma: no cover
@@ -802,7 +802,7 @@ class ReadMscwCtm(GriddedReader):
         gridded.metadata["data_id"] = self._data_id
         gridded.metadata["from_files"] = self._filepaths
 
-        # Remove unneccessary metadata. Better way to do this?
+        # Remove unnecessary metadata. Better way to do this?
         for metadata in ["current_date_first", "current_date_last"]:
             if metadata in gridded.metadata.keys():
                 del gridded.metadata[metadata]

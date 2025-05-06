@@ -311,7 +311,7 @@ def main():
             else:
                 data_numpy = data_numpy_tmp
 
-            ancilliary_data = obj.read_data_fields(filename, fields_to_read=["mph"])
+            ancillary_data = obj.read_data_fields(filename, fields_to_read=["mph"])
             if temp_file_flag:
                 obj.logger.info(f"removing temp file {filename}")
                 os.remove(filename)
@@ -342,7 +342,7 @@ def main():
     if "outfile" in options or "gridfile" in options or "outdir" in options:
         # if not global_attributes:
         #     global_attributes = {}
-        global_attributes = ancilliary_data["mph"]
+        global_attributes = ancillary_data["mph"]
         global_attributes["Aeolus_Retrieval"] = obj.RETRIEVAL_READ
         global_attributes["input files"] = ",".join(obj.files_read)
         global_attributes["info"] = (
@@ -403,7 +403,7 @@ def main():
 
         # read topography since that needs to be added to the ground following height of the model
         obj.logger.info("reading topography file {}".format(options["topofile"]))
-        topo_data = xr.open_dataset(options["topofile"])
+        topo_data = xr.open_dataset(options["topofile"], decode_timedelta=True)
 
         # truncate Aeolus times to hour
 
@@ -431,7 +431,7 @@ def main():
             if file_name != last_netcdf_file:
                 obj.logger.info(f"reading and co-locating on model file {file_name}")
                 last_netcdf_file = file_name
-                nc_data = xr.open_dataset(file_name)
+                nc_data = xr.open_dataset(file_name, decode_timedelta=True)
                 nc_times = nc_data.time.data.astype("datetime64[h]")
                 nc_latitudes = nc_data["lat"].data
                 nc_longitudes = nc_data["lon"].data

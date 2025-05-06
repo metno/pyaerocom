@@ -1,10 +1,8 @@
-import glob
 import itertools
 import logging
 import os
 import pathlib
 import shutil
-from collections import namedtuple
 
 import aerovaldb
 
@@ -15,6 +13,7 @@ from pyaerocom._lowlevel_helpers import (
     TypeValidator,
     sort_dict_by_name,
 )
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
     VariableInfo,
@@ -28,7 +27,6 @@ from pyaerocom.aeroval.glob_defaults import (
 )
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
-from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
@@ -37,10 +35,6 @@ from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases, get_variable
 
-MapInfo = namedtuple(
-    "MapInfo",
-    ["obs_network", "obs_var", "vert_code", "mod_name", "mod_var", "time_period"],
-)
 
 logger = logging.getLogger(__name__)
 
@@ -131,25 +125,32 @@ class ExperimentOutput(ProjectOutput):
         """
         bool: True if results are available for this experiment, else False
         """
-        if self.exp_id not in os.listdir(self.proj_dir):
-            return False
-        elif self.cfg.processing_opts.only_model_maps and not self._has_files(
-            self.out_dirs_json["contour"]
-        ):
-            return False
-        elif (
-            not len(self._get_json_output_files("map")) > 0
-            and not self.cfg.processing_opts.only_model_maps
-        ):
-            return False
-        return True
+        if self.cfg.processing_opts.only_model_maps:
+            contour_routes = self.avdb.query(
+                [aerovaldb.routes.Route.CONTOUR, aerovaldb.routes.Route.CONTOUR_TIMESPLIT],
+                project=self.proj_id,
+                experiment=self.exp_id,
+            )
 
-    @property
-    def out_dirs_json(self) -> dict:
-        """
-        json output directories (`dict`)
-        """
-        return self.cfg.path_manager.get_json_output_dirs()
+            mapoverlay_routes = self.avdb.query(
+                aerovaldb.routes.Route.MAP_OVERLAY,
+                project=self.proj_id,
+                experiment=self.exp_id,
+            )
+
+            if contour_routes and mapoverlay_routes:
+                return False
+        elif not self.cfg.processing_opts.only_model_maps:
+            if (
+                len(
+                    self.avdb.query(
+                        aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
+                    )
+                )
+                == 0
+            ):
+                return False
+        return True
 
     def update_menu(self) -> None:
         """Update menu
@@ -223,8 +224,8 @@ class ExperimentOutput(ProjectOutput):
                     }
                 }
                 self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
-            for uri in self.avdb.list_glob_stats(
-                self.proj_id, self.exp_id, access_type=aerovaldb.AccessType.URI
+            for uri in self.avdb.query(
+                aerovaldb.routes.Route.HEATMAP, project=self.proj_id, experiment=self.exp_id
             ):
                 data = self.avdb.get_by_uri(uri)
                 hm = {}
@@ -261,116 +262,24 @@ class ExperimentOutput(ProjectOutput):
                     hm_data[region][per] = dummy_stats
         return hm_data
 
-    @staticmethod
-    def _info_from_map_file(filename: str) -> MapInfo:
-        """
-        Separate map filename into meta info on obs and model content
-
-        Parameters
-        ----------
-        filename : str
-            name of file in "map" subdirectory of json output directory for
-            this experiment
-
-        Raises
-        ------
-        ValueError
-            if input filename is invalid
-
-        Returns
-        -------
-        str
-            name of observation network
-        str
-            name of observation variable
-        str
-            name of vertical code (e.g. Surface)
-        str
-            name of model
-        str
-            name of model variable
-        str
-            Time period
-        """
-        spl = os.path.basename(filename).split(".json")[0].split("_")
-        if len(spl) != 4:
-            raise ValueError(
-                f"invalid map filename: {filename}. Must "
-                f"contain exactly 3 underscores _ to separate "
-                f"obsinfo, vertical, model info, and periods"
-            )
-        obsinfo = spl[0]
-        vert_code = spl[1]
-        modinfo = spl[2]
-        time_period = spl[3]
-
-        mspl = modinfo.split("-")
-        mod_var = mspl[-1]
-        mod_id = "-".join(mspl[:-1])
-
-        ospl = obsinfo.split("-")
-        obs_var = ospl[-1]
-        obs_network = "-".join(ospl[:-1])
-
-        return MapInfo(obs_network, obs_var, vert_code, mod_id, mod_var, time_period)
-
-    @staticmethod
-    def _info_from_contour_dir_file(file: pathlib.PosixPath):
-        """
-        Separate map filename into meta info on obs and model content
-
-        Parameters
-        ----------
-        filename : str
-            name of file in "contour" subdirectory of json output directory for
-            this experiment
-
-        Raises
-        ------
-        ValueError
-            if input filename is invalid
-
-        Returns
-        -------
-        str
-            name of model
-        str
-            name of variable
-        str
-            Time period
-        """
-        spl = os.path.basename(file.name).split(file.suffix)[0].split("_")
-
-        if len(spl) == 3:  # png, webp
-            name = spl[0]
-            var_name = spl[1]
-            per = spl[2]
-            return (name, var_name, per)
-        elif len(spl) == 2:  # geojson
-            name = spl[1]
-            var_name = spl[0]
-            per = None
-            return (name, var_name, per)
-        else:
-            raise ValueError(f"invalid contour filename: {file}")
-
     def _results_summary(self) -> dict[str, list[str]]:
         if self.cfg.processing_opts.only_model_maps:
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
-            files = self._get_output_files(self.out_dirs_json["contour"])
-            for file in files:
-                file_info = self._info_from_contour_dir_file(file)
-                for i, entry in enumerate(file_info):
-                    res[i].append(entry)
+
+            for uri in self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT):
+                for i, key in enumerate(["model", "obsvar", "timestep"]):
+                    res[i].append(uri.meta[key])
+
         else:
             infos = ["obs", "ovar", "vc", "mod", "mvar", "per"]
             res = [[], [], [], [], [], []]
-            files = self._get_json_output_files("map")
-            for file in files:
-                map_info = self._info_from_map_file(file)
-                for i, entry in enumerate(map_info):
-                    res[i].append(entry)
+            for uri in self.avdb.query(
+                aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
+            ):
+                for i, key in enumerate(["network", "obsvar", "layer", "model", "modvar", "time"]):
+                    res[i].append(uri.meta[key])
+
         output = {}
         for i, name in enumerate(infos):
             output[name] = list(set(res[i]))
@@ -390,81 +299,57 @@ class ExperimentOutput(ProjectOutput):
             "Running clean_json_files: Checking json output directories for "
             "outdated or invalid data and cleaning up."
         )
-        outdirs = self.out_dirs_json
-        mapfiles = self._get_json_output_files("map")
-        rmmap = []
         vert_codes = self.cfg.obs_cfg.all_vert_types
-        for file_path in mapfiles:
-            try:
-                (
-                    obs_network,
-                    obs_var,
-                    vert_code,
-                    mod_name,
-                    mod_var,
-                    time_period,
-                ) = self._info_from_map_file(file_path)
-            except Exception as e:
-                logger.warning(
-                    f"FATAL: invalid file convention for map json file:"
-                    f" {file_path}. This file will be deleted. Error message: "
-                    f"{repr(e)}"
-                )
-                rmmap.append(file_path)
-                continue
+        for uri in self.avdb.query(
+            [aerovaldb.routes.Route.MAP, aerovaldb.routes.Route.SCATTER],
+            project=self.proj_id,
+            experiment=self.exp_id,
+        ):
+            obs_network = uri.meta["network"]
+            obs_var = uri.meta["obsvar"]
+            vert_code = uri.meta["layer"]
+            mod_name = uri.meta["model"]
+            mod_var = uri.meta["modvar"]
+
             if not self._is_part_of_experiment(obs_network, obs_var, mod_name, mod_var):
-                rmmap.append(file_path)
+                self.avdb.rm_by_uri(uri)
+                modified.append(uri)
             elif vert_code not in vert_codes:
-                rmmap.append(file_path)
+                self.avdb.rm_by_uri(uri)
+                modified.append(uri)
 
-        scatfiles = os.listdir(outdirs["scat"])
-        for file_path in rmmap:  # delete map files
-            logger.info(f"Deleting outdated map json file: {file_path}.")
-            os.remove(file_path)
-            modified.append(file_path)
-            fname = os.path.basename(file_path)
-            if fname in scatfiles:
-                scfp = os.path.join(outdirs["scat"], fname)
-                logger.info(f"Deleting outdated scatter json file: {scfp}.")
-                os.remove(scfp)
-                modified.append(file_path)
+        for uri in self.avdb.query(
+            aerovaldb.routes.Route.TIMESERIES, project=self.proj_id, experiment=self.exp_id
+        ):
+            if self._check_clean_ts_uri(uri):
+                modified.append(uri)
 
-        tsfiles = self._get_json_output_files("ts")
-
-        for file_path in tsfiles:
-            if self._check_clean_ts_file(file_path):
-                modified.append(file_path)
-        modified.extend(self._clean_modelmap_files())
         self.update_interface()  # will take care of heatmap data
         return modified
 
-    def _check_clean_ts_file(self, fp) -> bool:
-        fname = os.path.basename(fp)
-        spl = fname.split(".json")[0].split("_")
-        vert_code, obsinfo = spl[-1], spl[-2]
+    def _check_clean_ts_uri(self, uri) -> bool:
+        vert_code = uri.meta["layer"]
+        obs_name = uri.meta["network"]
+
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vert_code} in ts file {fp}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted."
             )
-            os.remove(fp)
+            self.avdb.rm_by_uri(uri)
             return True
-        obs_name = str.join("-", obsinfo.split("-")[:-1])
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {fp}. File will be deleted."
+                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted."
             )
-            os.remove(fp)
+            self.avdb.rm_by_uri(uri)
             return True
 
         with self.avdb.lock():
             try:
-                # TODO: Hack to get uri. Ideally this should be rewritten to use URIs directly further
-                # up.
-                uri = self.avdb._get_uri_for_file(fp)
                 data = self.avdb.get_by_uri(uri)
             except Exception:
-                logger.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
-                os.remove(fp)
+                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file...")
+                self.avdb.rm_by_uri(uri)
                 return True
 
             models_avail = list(data)
@@ -479,39 +364,11 @@ class ExperimentOutput(ProjectOutput):
                     data_new[mod_name] = data[mod_name]
                 else:
                     modified = True
-                    logger.info(f"Removing data for model {mod_name} from ts file: {fp}")
+                    logger.info(f"Removing data for model {mod_name} from ts file: {uri}")
 
             self.avdb.put_by_uri(data_new, uri)
+
         return modified
-
-    def _clean_modelmap_files(self) -> list[str]:
-        # Note: to be called after cleanup of files in map subdir
-        json_files = self._get_json_output_files("contour")
-        rm = []
-        for file in json_files:
-            if not self.cfg.webdisp_opts.add_model_maps:
-                rm.append(file)
-            else:
-                fname = os.path.basename(file)
-                spl = fname.split(".")[0].split("_")
-                if not len(spl) == 2:
-                    msg = f"FATAL: invalid file convention for map json file: {file}."
-                    if len(spl) > 2:
-                        msg += "Likely due to underscore being present in model or variable name."
-                    rm.append(file)
-                    logger.warning(msg)
-                elif spl[-1] in self._invalid["models"]:
-                    rm.append(file)
-
-        removed = []
-        for file in rm:
-            os.remove(file)
-            removed.append(file)
-            file1 = file.replace(".json", ".geojson")
-            if os.path.exists(file1):
-                os.remove(file1)
-                removed.append(file)
-        return removed
 
     def delete_experiment_data(self, also_coldata=True) -> None:
         """Delete all data associated with a certain experiment
@@ -572,20 +429,6 @@ class ExperimentOutput(ProjectOutput):
             order.extend(self.cfg.obs_cfg.web_interface_names)
         return order
 
-    def _get_json_output_files(self, dirname) -> list[str]:
-        dirloc = self.out_dirs_json[dirname]
-        return glob.glob(f"{dirloc}/*.json")
-
-    def _has_files(self, directory: str):
-        """
-        Checks if a directory contains any files.
-        The contour directory may contains files, but these are not json files (geojson, webp, png)
-        """
-        return len(self._get_output_files(directory)) > 0
-
-    def _get_output_files(self, directory):
-        return [p for p in pathlib.Path(directory).rglob("*") if p.is_file()]
-
     def _get_cmap_info(self, var) -> dict[str, str | list[float]]:
         var_ranges_defaults = self.cfg.var_scale_colmap
         if var in var_ranges_defaults:
@@ -596,10 +439,10 @@ class ExperimentOutput(ProjectOutput):
             info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
-            logger.warning(
-                f"Failed to infer cmap and variable "
-                f"ranges for {var}, using default "
-                f"settings which are {info}"
+            logger.info(
+                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'.",
+                var,
+                info,
             )
 
         return info
@@ -758,7 +601,9 @@ class ExperimentOutput(ProjectOutput):
                 return True
         return False
 
-    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var) -> bool:
+    def _is_part_of_experiment(
+        self, obs_name: str, obs_var: str, mod_name: str, mod_var: str
+    ) -> bool:
         """
         Check if input combination of model and obs var is valid
 
@@ -768,7 +613,7 @@ class ExperimentOutput(ProjectOutput):
         stored in the map subdirectory of an existing AeroVal experiment. In
         complex setup cases the variable mapping (model / obs variables)
         used in these json filenames may not be the trivial one expected from
-        the configuaration. These are cases where one specifies
+        the configuration. These are cases where one specifies
         model_add_vars, or model_use_vars or model_rename_vars in a model
         entry.
 
@@ -805,7 +650,7 @@ class ExperimentOutput(ProjectOutput):
 
         # search obs entry (may have web_interface_name set, so have to
         # check keys of ObsCollection but also the individual entries for
-        # occurence of web_interface_name).
+        # occurrence of web_interface_name).
         allobs = self.cfg.obs_cfg
         obs_matches = []
         for ocfg in allobs:
@@ -824,7 +669,11 @@ class ExperimentOutput(ProjectOutput):
     def _create_menu_dict(self) -> dict:
         new = {}
         if self.cfg.processing_opts.only_model_maps:
-            files = self._get_output_files(self.out_dirs_json["contour"])
+            uris = self.avdb.query(
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                project=self.proj_id,
+                experiment=self.exp_id,
+            )
             all_combinations = list(
                 itertools.product(
                     self.cfg.obs_cfg.keylist(),
@@ -833,8 +682,12 @@ class ExperimentOutput(ProjectOutput):
                 )
             )
         else:
-            files = self._get_json_output_files("map")
-        for file in files:
+            uris = self.avdb.query(
+                aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
+            )
+            # files = self._get_json_output_files("map")
+
+        for uri in uris:
             if self.cfg.processing_opts.only_model_maps:
                 # Hack to build menu.json
                 # The key issue we need to get around is that the ExperimentOutput class
@@ -845,9 +698,9 @@ class ExperimentOutput(ProjectOutput):
                 if not all_combinations:
                     break
 
-                (mod_name, var_name, per) = self._info_from_contour_dir_file(file)
-
-                obs_var, mod_var = var_name, var_name
+                mod_name = uri.meta["model"]
+                obs_var = uri.meta["obsvar"]
+                mod_var = uri.meta["obsvar"]
 
                 if mod_name in self.cfg.obs_cfg.keylist():
                     obs_name = mod_name
@@ -856,7 +709,7 @@ class ExperimentOutput(ProjectOutput):
                         (
                             item
                             for item in all_combinations
-                            if item[0] == obs_name and item[-1] == var_name
+                            if item[0] == obs_name and item[-1] == obs_var
                         ),
                         None,
                     )
@@ -867,7 +720,7 @@ class ExperimentOutput(ProjectOutput):
                 elif mod_name in self.cfg.model_cfg.keylist():
                     vert_code = None
                     for o in self.cfg.obs_cfg.keylist():
-                        if var_name in self.cfg.obs_cfg.get_entry(o).obs_vars:
+                        if obs_var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
                         raise ValueError(
@@ -877,7 +730,7 @@ class ExperimentOutput(ProjectOutput):
                         (
                             item
                             for item in all_combinations
-                            if item[1] == mod_name and item[-1] == var_name
+                            if item[1] == mod_name and item[-1] == obs_var
                         ),
                         None,
                     )
@@ -889,9 +742,11 @@ class ExperimentOutput(ProjectOutput):
                     raise ValueError("Failed to infer vert_code in an only_model_maps experiment")
 
             else:
-                (obs_name, obs_var, vert_code, mod_name, mod_var, per) = self._info_from_map_file(
-                    file
-                )
+                obs_name = uri.meta["network"]
+                obs_var = uri.meta["obsvar"]
+                vert_code = uri.meta["layer"]
+                mod_name = uri.meta["model"]
+                mod_var = uri.meta["modvar"]
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
@@ -928,7 +783,7 @@ class ExperimentOutput(ProjectOutput):
         Parameters
         ----------
         avail : dict
-            nested dictionary contining info about available results
+            nested dictionary containing info about available results
 
         Returns
         -------
@@ -1198,7 +1053,7 @@ class ExperimentOutput(ProjectOutput):
                     + float(coldata.data.attrs["vertical_layer"]["start"])
                 ) / 2
                 if "z" not in current[model_name]:
-                    current[model_name]["z"] = [midpoint]  # initalize with midpoint
+                    current[model_name]["z"] = [midpoint]  # initialize with midpoint
 
                 if (
                     midpoint > current[model_name]["z"][-1]

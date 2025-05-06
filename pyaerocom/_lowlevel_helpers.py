@@ -118,7 +118,7 @@ class StrType(Validator):
 class Loc(abc.ABC):
     """Abstract descriptor representing a path location
 
-    Descriptor???
+    Descriptor: TODO
     See here: https://docs.python.org/3/howto/descriptor.html#complete-practical-example
 
     Note
@@ -133,14 +133,10 @@ class Loc(abc.ABC):
         assert_exists=False,
         auto_create=False,
         tooltip=None,
-        logger=None,
     ):
         self.assert_exists = assert_exists
         self.auto_create = auto_create
         self.tooltip = "" if tooltip is None else tooltip
-        if logger is None:
-            logger = logging.getLogger(f"{__name__}.{type(self).__qualname__}")
-        self.logger = logger
         self.__set__(self, default)
 
     def __set_name__(self, owner, name):
@@ -182,12 +178,12 @@ class Loc(abc.ABC):
 class DirLoc(Loc):
     def create(self, value):
         os.makedirs(value, exist_ok=True)
-        self.logger.info(f"created directory {value}")
+        logger.info(f"created directory {value}")
 
 
 class AsciiFileLoc(Loc):
     def create(self, value):
-        self.logger.info(f"create ascii file {value}")
+        logger.info(f"create ascii file {value}")
         open(value, "w").close()
 
 
@@ -310,7 +306,7 @@ class BrowseDict(MutableMapping):
         Raises
         ------
         ValueError
-            If input is inalid type.
+            If input is invalid type.
 
         Returns
         -------
@@ -337,7 +333,7 @@ class ConstrainedContainer(BrowseDict):
 
     This class enables to create dict-like objects that have a fixed set of
     keys and value types (once assigned). Optional values may be instantiated
-    as None, in which case the first time instantiation definecs its type.
+    as None, in which case the first time instantiation defines its type.
 
     Note
     ----
@@ -346,12 +342,11 @@ class ConstrainedContainer(BrowseDict):
 
     Example
     -------
-    class MyContainer(ConstrainedContainer):
-        def __init__(self):
-            self.val1 = 1
-            self.val2 = 2
-            self.option = None
-
+    >>> class MyContainer(ConstrainedContainer):
+    ...    def __init__(self):
+    ...        self.val1 = 1
+    ...        self.val2 = 2
+    ...        self.option = None
     >>> mc = MyContainer()
     >>> mc['option'] = 42
     """
@@ -521,20 +516,8 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)
-    if not os.path.exists(d):
-        os.mkdir(d)
+    os.makedirs(d, exist_ok=True)
     return d
-
-
-def check_dirs_exist(*dirs, **add_dirs):
-    for d in dirs:
-        if not os.path.exists(d):
-            print(f"Creating dir: {d}")
-            os.mkdir(d)
-    for k, d in add_dirs.items():
-        if not os.path.exists(d):
-            os.mkdir(d)
-            print(f"Creating dir: {d} ({k})")
 
 
 def list_to_shortstr(lst, indent=0):

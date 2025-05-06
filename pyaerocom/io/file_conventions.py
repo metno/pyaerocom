@@ -4,7 +4,7 @@ from os.path import basename, splitext
 from pyaerocom import const
 from pyaerocom.data import resources
 from pyaerocom.exceptions import FileConventionError
-from pyaerocom.tstype import TsType
+from pyaerocom.units.datetime import TsType
 
 
 class FileConventionRead:
@@ -105,12 +105,15 @@ class FileConventionRead:
         >>> from pyaerocom.io import FileConventionRead
         >>> filename = 'aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc'
         >>> print(FileConventionRead().from_file(filename))
+        <BLANKLINE>
         pyaeorocom FileConventionRead
         name: aerocom3
         file_sep: _
         year_pos: -2
         var_pos: -4
         ts_pos: -1
+        vert_pos: -3
+        data_id_pos: 1
         """
 
         if basename(file).count("_") >= 4:
@@ -295,6 +298,9 @@ class FileConventionRead:
         ('year', 2010)
         ('var_name', 'od550aer')
         ('ts_type', 'monthly')
+        ('vert_code', 'Column')
+        ('is_at_stations', False)
+        ('data_id', 'CAM5.3-Oslo_AP3-CTRL2016-PD')
         """
         if self.name == "aerocom3":
             return self._info_from_aerocom3(file)

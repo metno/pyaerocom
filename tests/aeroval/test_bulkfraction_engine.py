@@ -1,7 +1,7 @@
+from copy import deepcopy
 import pytest
 import numpy as np
 from pathlib import Path
-import json
 
 from pyaerocom.aeroval.bulkfraction_engine import BulkFractionEngine
 from pyaerocom.aeroval import ExperimentProcessor
@@ -12,15 +12,23 @@ from tests.fixtures.aeroval import cfg_test_bulk
 
 
 @pytest.fixture
-def bulkengine_instance() -> BulkFractionEngine:
-    cfg = EvalSetup(**cfg_test_bulk.CFG)
-    bfe = BulkFractionEngine(cfg)
+def cfg(tmpdir) -> dict:
+    cfg = deepcopy(cfg_test_bulk.CFG)
+    cfg["json_basedir"] = f"{tmpdir}/data"
+    cfg["coldata_basedir"] = f"{tmpdir}/coldata"
+    return cfg
+
+
+@pytest.fixture
+def bulkengine_instance(cfg: dict) -> BulkFractionEngine:
+    setup = deepcopy(EvalSetup(**cfg))
+    bfe = BulkFractionEngine(setup)
     return bfe
 
 
-def test___init__():
-    cfg = EvalSetup(**cfg_test_bulk.CFG)
-    bfe = BulkFractionEngine(cfg)
+def test___init__(cfg: dict):
+    setup = EvalSetup(**cfg)
+    bfe = BulkFractionEngine(setup)
     assert isinstance(bfe, ProcessingEngine)
     assert isinstance(bfe, HasColocator)
 
@@ -204,23 +212,21 @@ def test_run(bulkengine_instance: BulkFractionEngine):
     assert Path(output.exp_dir).is_dir()
 
 
-def test_run_cfg():
+def test_run_cfg(cfg: dict):
     model_name = "TM5-AP3-CTRL"
-    cfg = EvalSetup(**cfg_test_bulk.CFG)
-    proc = ExperimentProcessor(cfg)
+    setup = EvalSetup(**cfg)
+    proc = ExperimentProcessor(setup)
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run(obs_name="AERONET-Sun", model_name="TM5-AP3-CTRL")
 
     output: ExperimentOutput = proc.exp_output
     assert Path(output.exp_dir).is_dir()
 
-    assert Path(output.experiments_file).exists()
-
-    ts_path = Path(output.exp_dir) / "ts/ALL_AERONET-Sun-fraction_Column.json"
-    with open(ts_path) as f:
-        data = json.load(f)
-        m_data = data[model_name]["monthly_mod"]
-        o_data = data[model_name]["monthly_obs"]
-
-        assert pytest.approx(np.nanmean(m_data), rel=1e-5) == 1.0
-        assert pytest.approx(np.nanmean(o_data), rel=1e-5) == 1.0
+    output.avdb.get_experiments(output.proj_id)
+    data = output.avdb.get_timeseries(
+        output.proj_id, output.exp_id, "ALL", "AERONET-Sun", "fraction", "Column"
+    )
+    m_data = data[model_name]["monthly_mod"]
+    o_data = data[model_name]["monthly_obs"]
+    assert pytest.approx(np.nanmean(m_data), rel=1e-5) == 1.0
+    assert pytest.approx(np.nanmean(o_data), rel=1e-5) == 1.0

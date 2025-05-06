@@ -82,7 +82,7 @@ class VarNameInfo:
 
     @property
     def wavelength_nm(self):
-        """Wavelength in nm (if appliable)"""
+        """Wavelength in nm (if applicable)"""
         if not self.is_wavelength_dependent:
             raise VariableDefinitionError(
                 f"Variable {self.var_name} is not wavelength "
@@ -136,7 +136,7 @@ class VarNameInfo:
             f"is_wavelength_dependent: {self.is_wavelength_dependent}\n"
         )
         if hasattr(self, "is_optical_density"):  # pragma: no cover
-            s += f"is_optical_density: {self.is_optical_density}\n"  # can't find situation where this happens however not sure if depricated
+            s += f"is_optical_density: {self.is_optical_density}\n"  # can't find situation where this happens however not sure if deprecated
         if self.is_wavelength_dependent:
             s += f"\nwavelength_nm: {self.wavelength_nm}"
         return s

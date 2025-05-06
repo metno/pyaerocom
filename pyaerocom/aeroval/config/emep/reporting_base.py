@@ -185,11 +185,14 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
         # Comparison of several models
         MODEL = CFG["model_cfg"]["EMEP"]
+        PLTTYPES = CFG["plot_types"]["EMEP"]
         for mid, fpath in dir_versions.items():
             CFG["model_cfg"][mid] = MODEL.copy()
+            CFG["plot_types"][mid] = PLTTYPES.copy()
             CFG["model_cfg"][mid]["model_data_dir"] = fpath
             CFG["model_cfg"][mid]["model_id"] = mid
         del CFG["model_cfg"]["EMEP"]
+        del CFG["plot_types"]["EMEP"]
 
         # change some config settings, usually not needed
         CFG.update(
@@ -335,7 +338,14 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         only_json=False,
         add_model_maps=True,
         only_model_maps=False,
-        modelmaps_opts=dict(maps_freq="yearly", maps_res_deg=5),
+        boundaries={
+            "west": -30,
+            "east": 90,
+            "north": 82,
+            "south": 30,
+        },
+        maps_freq="yearly",
+        plot_types={"EMEP": ["contour", "overlay"]},
         clear_existing_json=False,
         # if True, the analysis will stop whenever an error occurs (else, errors that
         # occurred will be written into the logfiles)
@@ -894,6 +904,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_vars=[
                 "concNno2",
                 "vmro3",
+                "vmrox",
             ],
             pyaro_config={
                 "name": "EEA-h-diurnal-rural",
@@ -924,6 +935,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "post_processing": [
                     "concNno2_from_concno2",
                     "vmro3_from_conco3",
+                    "vmrno2_from_concno2",
+                    "vmrox_from_vmrno2_vmro3",
                 ],
                 "dataset": "verified",
                 "station_area": [
@@ -999,6 +1012,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_vars=[
                 "concNno2",
                 "vmro3",
+                "vmrox",
             ],
             pyaro_config={
                 "name": "EEA-h-diurnal-all",
@@ -1029,6 +1043,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "post_processing": [
                     "concNno2_from_concno2",
                     "vmro3_from_conco3",
+                    "vmrno2_from_concno2",
+                    "vmrox_from_vmrno2_vmro3",
                 ],
                 "dataset": "verified",
             },
