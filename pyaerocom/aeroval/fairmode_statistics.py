@@ -111,7 +111,7 @@ class FairmodeStatistics:
                 Hperc=beta_Hperc[i],
                 persistence_model=False,
                 station_type=station_types[i],
-                **SPECIES[var_name],
+                **{k: (str(v) if k == "freq" else v) for (k, v) in SPECIES[var_name].items()},
             )
             for i in range(len(stations))
         }
