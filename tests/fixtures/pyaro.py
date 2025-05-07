@@ -66,20 +66,6 @@ def testconfig(tmp_path: Path) -> tuple[PyaroConfig, PyaroConfig]:
     return [config1, config2]
 
 
-# def testconfig2(tmp_path: Path) -> PyaroConfig:
-#    reader_id = "csv_timeseries"
-
-#    config1 = PyaroConfig(
-#        name="test",
-#        reader_id=reader_id,
-#        filename_or_obj_or_url=str(make_csv_test_file(tmp_path)),
-#        filters={},
-#        name_map={"PM10": "concpm10"},
-#    )
-
-#    return config1
-
-
 def testconfig_kwargs(tmp_path: Path) -> PyaroConfig:
     reader_id = "csv_timeseries"
     columns = {
