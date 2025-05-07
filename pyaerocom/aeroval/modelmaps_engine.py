@@ -322,7 +322,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     self.exp_output.exp_id,
                     model_name,
                     write_var_name,
-                    date,
+                    str(date),
                 )
 
     def _get_maps_freq(self) -> TsType:
