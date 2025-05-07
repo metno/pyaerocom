@@ -5,8 +5,10 @@ from collections import defaultdict
 from collections.abc import Mapping
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io import ReadGridded
 
 
@@ -177,3 +179,28 @@ def recursive_defaultdict(d: Mapping | None = None):
             d[k] = recursive_defaultdict(d[k])
 
     return d
+
+
+def dicts_equal(d1: dict, d2: dict) -> bool:
+    """Recursively checks equality of dicts ensuring that ndarrays are compared
+    item-wise.
+
+    :param d1: First dict.
+    :param d2: Second Dict.
+    :return: boolean indicating equality.
+    """
+    if set(d1.keys()) != set(d2.keys()):
+        return False
+
+    for k, v in d1.items():
+        if isinstance(v, np.ndarray):
+            if not np.all(v == d2[k]):
+                return False
+        elif isinstance(v, dict | BrowseDict):
+            if not dicts_equal(v, d2[k]):
+                return False
+        else:
+            if not v == d2[k]:
+                return False
+
+    return True

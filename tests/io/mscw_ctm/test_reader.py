@@ -4,7 +4,7 @@ import os
 import re
 from pathlib import Path
 
-import cf_units
+from pyaerocom.units import Unit
 import pytest
 import xarray as xr
 
@@ -347,8 +347,8 @@ def test_read_emep_dummy_data(
         data = reader.read_var(var, ts_type=tst)
         objs[var] = data
         assert isinstance(data, GriddedData)
-        aerocom_unit = cf_units.Unit(get_variable(var).units)
-        assert cf_units.Unit(data.units) == aerocom_unit
+        aerocom_unit = Unit(get_variable(var).units)
+        assert Unit(data.units) == aerocom_unit
         assert data.ts_type == tst
     if isinstance(add_read, list):
         for var in add_read:

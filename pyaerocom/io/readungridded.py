@@ -826,6 +826,7 @@ class ReadUngridded:
                     filter_post=filter_post,
                     **kwargs,
                 )
+
             if data is None:
                 data = data_to_append
             else:

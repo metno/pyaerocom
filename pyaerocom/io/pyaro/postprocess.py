@@ -157,7 +157,10 @@ class PostProcessingReaderData(Data):
 
     @property
     def standard_deviations(self):
-        return self.data.standard_deviations
+        if self.scaling is None:
+            return self.data.standard_deviations
+        else:
+            return self.data.standard_deviations * self.scaling
 
 
 class PostProcessingReaderException(Exception):

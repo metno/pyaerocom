@@ -574,56 +574,6 @@ Units helpers in `io` sub-package
   :members:
   :undoc-members:
 
-
-Plotting / visualisation (sub package `plot`)
-----------------------------------------------
-
-The :mod:`pyaerocom.plot` package contains algorithms related to data
-visualisation and plotting.
-
-Plotting of maps
-^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.mapping
-  :members:
-  :undoc-members:
-
-Plotting coordinates on maps
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.plotcoordinates
-  :members:
-  :undoc-members:
-
-Scatter plots
-^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.plotscatter
-  :members:
-  :undoc-members:
-
-Heatmap plots
-^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.heatmaps
-  :members:
-  :undoc-members:
-
-
-Colors schemes
-^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.config
-  :members:
-  :undoc-members:
-
-Plot helper functions
-^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.helpers
-  :members:
-  :undoc-members:
-
 Configuration and global constants
 ----------------------------------
 
@@ -677,3 +627,37 @@ Custom exceptions
 .. automodule:: pyaerocom.exceptions
    :members:
    :undoc-members:
+
+Units
+-----
+
+Main API
+^^^^^^^^
+
+.. automodule:: pyaerocom.units.units_helpers
+   :members:
+   :undoc-members:
+
+Unit
+^^^^
+
+.. automodule:: pyaerocom.units.units
+   :members:
+   :undoc-members:
+
+Datetime
+^^^^^^^^
+
+.. automodule:: pyaerocom.units.datetime.utils
+   :members:
+   :undoc-members:
+
+.. automodule:: pyaerocom.units.datetime.tstype
+   :members:
+   :undoc-members:
+
+Exceptions
+^^^^^^^^^^
+
+.. automodule:: pyaerocom.units.exceptions
+   :members:
