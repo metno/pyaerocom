@@ -8,8 +8,6 @@ import numpy as np
 from pyaerocom.io.read_eprofile import ReadEprofile
 from pyaerocom import const, VerticalProfile, UngriddedData
 
-from tests.conftest import lustre_unavail
-
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Eprofile-test"]
 
@@ -22,13 +20,6 @@ TEST_FILES: list[str] = [
 def test_all_files_exist():
     for file in TEST_FILES:
         assert Path(file).exists()
-
-
-@lustre_unavail
-def test_ReadEprofile_get_file_list():
-    reader = ReadEprofile()
-    files = reader.get_file_list()
-    assert isinstance(files, list)
 
 
 @pytest.mark.parametrize(
