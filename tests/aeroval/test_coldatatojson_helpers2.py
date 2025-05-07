@@ -7,6 +7,7 @@ import xarray
 
 from pyaerocom import ColocatedData, TsType
 from pyaerocom.aeroval.coldatatojson_helpers import (
+    _calculate_fairmode,
     _create_diurnal_weekly_data_object,
     _get_jsdate,
     _get_period_keys,
@@ -14,11 +15,13 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _init_meta_glob,
     _make_trends,
     _map_indices,
+    _process_sites,
     _process_statistics_timeseries,
     _remove_less_covered,
     _select_period_season_coldata,
 )
 from pyaerocom.aeroval.exceptions import TrendsError
+from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
 
@@ -260,7 +263,7 @@ def test__init_meta_glob(coldata: ColocatedData):
     assert set(res.values()) == {"UNDEFINED"}
 
 
-@pytest.mark.parametrize("resolution", [("yearly")])
+@pytest.mark.parametrize("resolution", ["yearly"])
 @pytest.mark.parametrize("coldataset", ["fake_3d_trends"])
 def test__create_diurnal_weekly_data_object(coldata: ColocatedData, resolution: str):
     obj = _create_diurnal_weekly_data_object(coldata, resolution)
@@ -380,3 +383,73 @@ def test__select_period_season_coldata(
     cd = _select_period_season_coldata(coldatamod, period, "DJF", use_meteorological_seasons)
     assert cd.coords["time"].values[0] == resultfirst
     assert cd.coords["time"].values[-1] == resultlast
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+@pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
+def test_calculate_fairmode(eval_config: dict, caplog):
+    example_coldata = COLDATA["tm5_aeronet"]()
+
+    # add fake station_type
+    fake_type = "bla"
+    fake_types = [fake_type] * example_coldata.coords["station_name"].shape[0]
+
+    example_coldata.data = example_coldata.data.assign_coords(
+        station_type=("station_name", fake_types)
+    )
+
+    meta_glob = _init_meta_glob(
+        example_coldata,
+    )
+
+    data = _init_data_default_frequencies(example_coldata, ["monthly"])
+    (ts_objs, map_meta, site_indices) = _process_sites(data, None, "default", meta_glob)
+
+    fairmode_statistics = FairmodeStatistics()
+
+    # fill nans
+    np.nan_to_num(data["monthly"].data, copy=False, nan=1)
+
+    period = "2010"
+    season = "DJF"
+
+    # we ignore here the fact that the data is monthly and for od550aer, the data is basically to be considered dummy
+    # since we bypass the guards on frequency and variable, _calculate_fairmode will not question the data at this point
+    # and treat it as if it's concno2 hourly
+    results = _calculate_fairmode(
+        data["monthly"],
+        fairmode_statistics,
+        map_meta,
+        "concno2",
+        [period],
+        [season],
+        use_meteorological_seasons=False,
+    )
+
+    assert results["ALL"][f"{period}-{season}"]["Agoufou"]["station_type"] == np.str_(fake_type)
+    assert all(
+        results["ALL"][f"{period}-{season}"]["Agoufou"][item] == SPECIES["concno2"][item]
+        for item in ["freq", "alpha", "percentile", "RV", "UrRV"]
+    )
+    assert all(
+        item in results["ALL"][f"{period}-{season}"]["Agoufou"]
+        for item in ["RMSU", "sign", "beta_mqi", "Hperc", "crms", "bias", "rms"]
+    )
+
+    wrongperiod = "2025"
+    # here we pass the wrong period to test the case when the coldata subset fails
+    resultsempty = _calculate_fairmode(
+        data["monthly"],
+        fairmode_statistics,
+        map_meta,
+        "concno2",
+        [wrongperiod],
+        [season],
+        use_meteorological_seasons=False,
+    )
+
+    assert resultsempty == {"ALL": {}}
+    assert (
+        f"Failed to access subset coldata: No data available in period {wrongperiod}"
+        in caplog.text
+    )
