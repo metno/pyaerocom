@@ -1,9 +1,7 @@
 import logging
-import multiprocessing
 import os
-from time import time
-
 from numpy.typing import ArrayLike
+from time import time
 
 from pyaerocom import ColocatedData, TsType, const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
@@ -48,7 +46,6 @@ class ColdataToJsonEngine(ProcessingEngine):
             list of files that have been converted.
 
         """
-
         converted = []
         for file in files:
             logger.info(f"Processing: {file}")
@@ -409,9 +406,13 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
             for reg in regnames
         ]
-        num_workers = os.getenv(const.PYAEROCOM_NUM_WORKERS, "1")
+        num_workers = int(os.getenv(const.PYAEROCOM_NUM_WORKERS, "1"))
+        if num_workers == 1:
+            from multiprocessing.pool import ThreadPool as Pool
+        else:
+            from multiprocessing import Pool
 
-        with multiprocessing.Pool(processes=int(num_workers)) as pool:
+        with Pool(processes=num_workers) as pool:
             results = pool.starmap(_process_statistics_timeseries_single_region, args)
 
         for (

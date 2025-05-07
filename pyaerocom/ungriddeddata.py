@@ -299,7 +299,7 @@ class UngriddedData(UngriddedDataMetadata):
                         for x in times
                     ]
                 )
-                times = np.float64(times)
+                times = times.astype(np.float64)
 
                 num_times = len(times)
                 # check if size of data object needs to be extended
@@ -1017,14 +1017,12 @@ class UngriddedData(UngriddedDataMetadata):
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
-    # TODO: check, confirm and remove Beta version note in docstring
     def remove_outliers(
         self,
         var_name,
         inplace=False,
         low=None,
         high=None,
-        unit_ref=None,
         move_to_trash=True,
     ):
         """Method that can be used to remove outliers from data
@@ -1071,7 +1069,7 @@ class UngriddedData(UngriddedDataMetadata):
         else:
             new = self.copy()
 
-        new.check_convert_var_units(var_name, to_unit=unit_ref)
+        new.check_unit(var_name)
 
         if low is None:
             low = const.VARS[var_name].minimum

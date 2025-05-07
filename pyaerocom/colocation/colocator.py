@@ -508,6 +508,7 @@ class Colocator:
             filter_post=obs_filters_post,
             **self.colocation_setup.read_opts_ungridded,
         )
+        obs_data.check_unit(var_name)
 
         if self.colocation_setup.obs_remove_outliers:
             oor = self.colocation_setup.obs_outlier_ranges

@@ -7,6 +7,7 @@ from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 
+
 logger = logging.getLogger(__name__)
 
 

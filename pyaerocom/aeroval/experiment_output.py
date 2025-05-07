@@ -32,8 +32,9 @@ from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
-from pyaerocom.variable_helpers import get_aliases, get_variable
+from pyaerocom.variable_helpers import get_aliases
 
 
 logger = logging.getLogger(__name__)
@@ -439,10 +440,10 @@ class ExperimentOutput(ProjectOutput):
             info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
-            logger.warning(
-                f"Failed to infer cmap and variable "
-                f"ranges for {var}, using default "
-                f"settings which are {info}"
+            logger.info(
+                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'.",
+                var,
+                info,
             )
 
         return info
@@ -456,7 +457,7 @@ class ExperimentOutput(ProjectOutput):
             for var in all_vars:
                 if var not in ranges or ranges[var]["scale"] == []:
                     ranges[var] = self._get_cmap_info(var)
-                ranges[var]["unit"] = get_variable(var).units
+                ranges[var]["unit"] = get_standard_unit(var)
             self.avdb.put_ranges(ranges, self.proj_id, self.exp_id)
 
     def _create_statistics_json(self) -> None:

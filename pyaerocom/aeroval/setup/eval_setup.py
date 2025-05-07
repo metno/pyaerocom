@@ -80,7 +80,7 @@ class EvalSetup(BaseModel):
 
     @model_validator(mode="after")
     def model_validator(self) -> Self:
-        # Warn user if var_order_menu does not match used variables.
+        # Add missing variables to var_order_menu.
         var_order_menu = set(self.webdisp_opts.var_order_menu)
         obs_cfg = self.obs_cfg
 
@@ -90,8 +90,12 @@ class EvalSetup(BaseModel):
                 variables.add(var)
 
         if not var_order_menu.issuperset(variables):
-            logger.warning(
-                f"Some variables are configured as obsvars but not included in var_order_menu. They may not show up on aerovalweb. Missing variables: {list(variables - var_order_menu)}"
+            missing_vars = sorted(variables - var_order_menu)
+            ls = list(self.webdisp_opts.var_order_menu)
+            ls.extend(missing_vars)
+            self.webdisp_opts.var_order_menu = tuple(ls)
+            logger.info(
+                f"Some variables are configured as obsvars but not included in var_order_menu. They have been appended to var_order_menu. Missing variables: {', '.join(missing_vars)}."
             )
 
         return self

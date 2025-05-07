@@ -16,6 +16,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
@@ -258,7 +259,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     "altitude"
                 ].values  # altitude is defined in EARLINET in terms of altitude above sea level
             )  # Note altitude is an array for the data, station altitude is different
-            data_out["station_coords"]["altitude"] = np.float64(data_in.station_altitude)
+
+            data_out["station_coords"]["altitude"] = data_in.station_altitude.item()
             data_out["altitude_attrs"] = data_in[
                 "altitude"
             ].attrs  # get attrs for altitude units + extra
@@ -276,7 +278,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
             # get metadata expected in StationData but not in data_in's metadata
             data_out["wavelength_emis"] = data_in["wavelength"]
-            data_out["shots"] = np.float64(data_in["shots"])
+            data_out["shots"] = data_in["shots"].item()
             data_out["zenith_angle"] = np.float64(data_in["zenith_angle"])
             data_out["filename"] = filename
             if "Lev02" in filename:
@@ -393,7 +395,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
                     alt_vals = np.float64(alt_data)
                     alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                    to_alt_unit = const.VARS["alt"].units
+                    to_alt_unit = get_standard_unit("alt")
                     if not alt_unit == to_alt_unit:
                         try:
                             alt_unit_fac = get_unit_conversion_fac(alt_unit, to_alt_unit)

@@ -530,7 +530,7 @@ def list_to_shortstr(lst, indent=0):
                 with ignore_warnings(
                     RuntimeWarning,
                     "divide by zero encountered in log10",
-                    "overflow encountered in long_scalars",
+                    "overflow encountered in scalar multiply",
                 ):
                     ndigits = -1 * np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
                 lout.append(f"{val:.{ndigits}f}")

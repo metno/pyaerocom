@@ -33,6 +33,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
+from pyaerocom.units.helpers import get_standard_unit
 
 from .colocated_data import ColocatedData
 
@@ -890,11 +891,11 @@ def colocate_gridded_ungridded(
         grid_stat = grid_stat_data[i]
         if harmonise_units:
             grid_unit = grid_stat.get_unit(var)
-            obs_unit = obs_stat.get_unit(var_ref)
-            if not grid_unit == obs_unit:
-                grid_stat.convert_unit(var, obs_unit)
+            to_unit = get_standard_unit(var_ref)
+            if not grid_unit == to_unit:
+                grid_stat.convert_unit(var, to_unit)
             if data_unit is None:
-                data_unit = obs_unit
+                data_unit = to_unit
 
         try:
             if colocate_time:
