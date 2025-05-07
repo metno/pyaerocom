@@ -217,7 +217,6 @@ requires =
 commands_pre =
     python --version
     python -m pip freeze --all
-    pya getsampledata --extract-dir "${HOME}/MyPyaerocom"
 commands =
     python -m pytest . -n auto -ra -q {posargs:--cov --no-cov-on-fail}
 extras =

@@ -41,8 +41,13 @@ COLDATA_DIR.mkdir(exist_ok=True)
 # data directory for test data
 TEST_DATA_DIR = MYPYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "diurnal_test_data"
 
+IO_AUX_FILE = MYPYAEROCOM_DIR / "testdata-minimal" / "config" / "gridded_io_aux.py"
 
-def get_CFG(reportyear, year) -> dict:
+
+def get_CFG(
+    reportyear,
+    year,
+) -> dict:
     """create aeroval configuration dict to run the variable
     ratpm10pm25 (ratio pm10 vspm25)
 
@@ -53,6 +58,7 @@ def get_CFG(reportyear, year) -> dict:
     CFG = dict(
         json_basedir=JSON_DIR,
         coldata_basedir=COLDATA_DIR,
+        io_aux_file=IO_AUX_FILE,
         # io_aux_file=os.path.abspath("/home/jang/data/aeroval-local-web/gridded_io_aux.py"), not needed for ReadMscwCtm
         # io_aux_file=os.path.join(base_conf_path, "gridded_io_aux.py"),
         # var_scale_colmap_file=os.path.abspath(

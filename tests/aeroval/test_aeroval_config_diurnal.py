@@ -1,3 +1,4 @@
+import os.path
 import pathlib
 
 import pyaro
@@ -47,6 +48,18 @@ def test_obs_data_readable():
         reader = ReadUngridded(configs=config)
         data = reader.read()
         assert data
+
+
+def test_aux_file_available():
+    """test if the aux file is available"""
+    from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
+
+    reportyear = year = 2018
+    CFG = get_CFG(
+        reportyear=reportyear,
+        year=year,
+    )
+    assert os.path.exists(CFG["io_aux_file"])
 
 
 def test_model_data_readable():
