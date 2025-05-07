@@ -379,7 +379,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         try:
             unit = self.VAR_UNITS_FILE[unit_in_file]
         except KeyError:
-            # this will raise an Exception if cf_units cannot handle. In
+            # this will raise an Exception if pyaerocom.units cannot handle. In
             # which case the unit should be added in VAR_UNITS_FILE
             unit = str(Unit(unit_in_file))
 

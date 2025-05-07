@@ -10,6 +10,7 @@ import numpy as np
 
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.molecular_mass import get_mmr_to_vmr_fac, get_molmass
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
@@ -78,10 +79,10 @@ def _check_same_units(cube1, cube2):
     var2 = cube2.var_name
     u2 = cube2.units
 
-    if var1 in const.VARS and u1 == const.VARS[var1]["units"]:
+    if var1 in const.VARS and u1 == get_standard_unit(var1):
         cube2.convert_units(u1)
         return (cube1, cube2)
-    elif var2 in const.VARS and u2 == const.VARS[var2]["units"]:
+    elif var2 in const.VARS and u2 == get_standard_unit(var2):
         cube1.convert_units(u2)
         return (cube1, cube2)
 

@@ -23,8 +23,11 @@ from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
 from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
+from .typing import SupportsMul
 
-T = TypeVar("T")
+__all__ = ["Unit"]
+
+T = TypeVar("T", bound=SupportsMul)
 
 
 class UnitConversionCallbackInfo(NamedTuple):
@@ -84,6 +87,13 @@ class Unit:
             # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
             ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
             ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
+            ["drynh3", "kg ha-1 yr-1", "kg m-2 s-2", 1 / (HA_TO_SQM * (365 * 24 * 60 * 60))],
+            [
+                "drynh3",
+                "kg N ha-1 yr-1",
+                "kg m-2 s-1",
+                (M_NH3 / M_N) / (1 / (HA_TO_SQM * (365 * 24 * 60 * 60))),
+            ],
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
@@ -211,7 +221,7 @@ class Unit:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Unit):
             try:
-                other = Unit(other)
+                other = Unit(str(other))
             except ValueError:
                 return False
 
@@ -266,7 +276,7 @@ class Unit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        to_unit = Unit(other, **kwargs)._cfunit
+        to_unit = Unit(str(other), **kwargs)._cfunit
         factor = float(self._cfunit.convert(1, to_unit, inplace=False))
 
         if inplace:

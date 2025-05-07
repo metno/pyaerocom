@@ -116,10 +116,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     make_overlay = OVERLAY in self.cfg.modelmaps_opts.plot_types.get(
                         model_name, False
                     )
-                if self.cfg.modelmaps_opts.plot_types == {CONTOUR} or make_contour:
+                if CONTOUR in self.cfg.modelmaps_opts.plot_types or make_contour:
                     self._process_contour_map_var(model_name, var, self.reanalyse_existing)
 
-                if self.cfg.modelmaps_opts.plot_types == {OVERLAY} or make_overlay:
+                if OVERLAY in self.cfg.modelmaps_opts.plot_types or make_overlay:
                     # create overlay (pixel) plots
                     self._process_overlay_map_var(model_name, var, self.reanalyse_existing)
 
