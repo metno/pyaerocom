@@ -6,7 +6,6 @@ import xarray as xr
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.stats.implementations import stat_nmb
 from pyaerocom.units.datetime import TsType
 
 logger = logging.getLogger(__name__)
@@ -84,7 +83,7 @@ class FairmodeStatistics:
         rms = np.sqrt(np.nanmean(diffsquare, axis=0, where=mask))
         bias = np.nanmean(diff, axis=0, where=mask)
 
-        NMB = stat_nmb(modvals, obsvals, None)
+        NMB = self._NMB(modvals, obsvals)
         R = self.pearson_R(obsvals, modvals)
         rmsu = self._RMSU(obsmean, obsstd, var_name)
         sign = self._fairmode_sign(modstd, obsstd, R)
@@ -124,6 +123,10 @@ class FairmodeStatistics:
         }
 
         return stats_list
+
+    @staticmethod
+    def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        return np.sum(x - y) / np.sum(x)
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
