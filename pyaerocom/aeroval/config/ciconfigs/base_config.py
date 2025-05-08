@@ -24,10 +24,6 @@ DEFAULT_RESAMPLE_CONSTRAINTS_DAILY = dict(
     daily=dict(hourly=18),
 )
 
-# ODCSFUN_EEANRT = "EEAAQeRep.NRT;concpm10/EEAAQeRep.NRT;concpm25"
-# ODCSFUN_EEAV2 = "EEAAQeRep.v2;concpm10/EEAAQeRep.v2;concpm25"
-# ODCSFUN_EBAS = "EBASMC;concpm10/EBASMC;concpm25"
-
 HOMEDIR = Path.home()
 MYPYAEROCOM_DIR = Path.home() / "MyPyaerocom"
 MYPYAEROCOM_DIR.mkdir(exist_ok=True)
@@ -53,17 +49,11 @@ def get_CFG(
 
     :returns: a dict of a model configuration usable for EvalSetup
     """
-    # get current path for reference to local gridded_io_aux.py
 
     CFG = dict(
         json_basedir=JSON_DIR,
         coldata_basedir=COLDATA_DIR,
         io_aux_file=IO_AUX_FILE,
-        # io_aux_file=os.path.abspath("/home/jang/data/aeroval-local-web/gridded_io_aux.py"), not needed for ReadMscwCtm
-        # io_aux_file=os.path.join(base_conf_path, "gridded_io_aux.py"),
-        # var_scale_colmap_file=os.path.abspath(
-        #     "/home/jang/data/aeroval-local-web/pyaerocom-config/config_files/CAMEO/user_var_scale_colmap.ini"
-        # ),
         # if True, existing colocated data files will be deleted and contours will be overwritten
         reanalyse_existing=True,
         only_json=False,
@@ -156,11 +146,6 @@ def get_CFG(
     Filters
     """
 
-    # BASE_FILTER = {
-    #     "latitude": [30, 82],
-    #     "longitude": [-30, 90],
-    # }
-
     data_name = "CITestData"
     data_id = "harp"
 
@@ -172,12 +157,6 @@ def get_CFG(
         name_map={"O3_density": "vmro3"},
     )
 
-    # EBAS_FILTER = {
-    #     **BASE_FILTER,
-    #     "data_level": [None, 2],
-    #     "set_flags_nan": True,
-    # }
-
     OBS_GROUNDBASED = {
         ################
         #    Pyaro
@@ -188,17 +167,8 @@ def get_CFG(
             web_interface_name=data_name,
             obs_name=data_name,
             obs_vars=["vmro3"],
-            # obs_vert_type="Column",
             obs_vert_type="Surface",
-            # colocate_time=True,
-            # min_num_obs={
-            #     "yearly": {"monthly": 9},
-            #     "monthly": {"daily": 4, "weekly": 1},
-            #     "daily": {"hourly": 18},
-            #     # "hourly": {"minutely": 45},
-            # },
             ts_type="hourly",
-            # obs_filters=Pyaro_FILTER,
         ),
     }
 
