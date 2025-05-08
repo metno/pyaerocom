@@ -18,6 +18,13 @@ SPECIES = dict(
     concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1),
 )
 
+EXC_THRESHOLDS = dict(
+    concpm25=25.0,
+    concpm10=50.0,
+    conco3mda8=120.0,
+    concno2=200.0,
+)
+
 
 class FairmodeStatistics:
     """
@@ -105,7 +112,7 @@ class FairmodeStatistics:
             stations[i]: dict(
                 refdata_mean=obsmean,
                 data_std=modstd,
-                # exceedances=???
+                exceedances=self._exccalc(np.array(obsvals.T[i]), var_name),
                 NMB=NMB[i],
                 R=R[i],
                 RMSU=rmsu[i],
@@ -123,6 +130,16 @@ class FairmodeStatistics:
         }
 
         return stats_list
+
+    @staticmethod
+    def _exccalc(arr: np.array, var_name: str) -> int:
+        if var_name == "concno2":
+            nofdays = 0
+            for subarr in np.split(arr, len(arr) / 24):
+                if np.any(subarr > EXC_THRESHOLDS[var_name]):
+                    nofdays = nofdays + 1
+            return nofdays
+        return int(sum(np.array(arr > EXC_THRESHOLDS[var_name])))
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
