@@ -18,7 +18,7 @@ SPECIES = dict(
     concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1),
 )
 
-EXC_THRESHOLDS = dict(
+EXC_THRESHOLDS = dict(  # we assume all the units are ug/m3
     concpm25=25.0,
     concpm10=50.0,
     conco3mda8=120.0,
@@ -110,8 +110,8 @@ class FairmodeStatistics:
 
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
-                refdata_mean=obsmean,
-                data_std=modstd,
+                refdata_mean=obsmean[i],
+                data_std=modstd[i],
                 exceedances=self._exccalc(np.array(obsvals.T[i]), var_name),
                 NMB=NMB[i],
                 R=R[i],
