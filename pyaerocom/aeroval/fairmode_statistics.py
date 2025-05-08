@@ -84,7 +84,7 @@ class FairmodeStatistics:
         rms = np.sqrt(np.nanmean(diffsquare, axis=0, where=mask))
         bias = np.nanmean(diff, axis=0, where=mask)
 
-        NMB = stat_nmb(modvals, obsvals)
+        NMB = stat_nmb(modvals, obsvals, None)
         R = self.pearson_R(obsvals, modvals)
         rmsu = self._RMSU(obsmean, obsstd, var_name)
         sign = self._fairmode_sign(modstd, obsstd, R)
