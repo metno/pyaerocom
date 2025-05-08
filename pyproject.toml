@@ -54,7 +54,7 @@ dependencies = [
     "psutil>=5.0.0",
     "contourpy>=1.3.0",
     "geojson",
-    "snowballstemmer<3",
+
 ]
 
 [project.readme]
@@ -74,6 +74,7 @@ docs = [
     "sphinx_rtd_theme",
     "sphinx-argparse",
     "nbsphinx",
+    "snowballstemmer<3",
 ]
 test = [
     "pytest>=7.4",
