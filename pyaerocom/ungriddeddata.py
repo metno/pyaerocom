@@ -91,8 +91,8 @@ class UngriddedData(UngriddedDataMetadata):
 
     """
 
-    #: version of class (for caching)
-    __version__ = "0.22"
+    #: version for caching, needs also updating when UngriddedDataMetadata has changed
+    __version__ = "0.23"
 
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
