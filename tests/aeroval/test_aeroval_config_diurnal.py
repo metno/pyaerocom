@@ -26,7 +26,9 @@ def test_harp_reader_available():
 def test_harp_test_data_available():
     obs_config = CFG["obs_cfg"]
     conf_name = list(obs_config.keys())[0]
-    data_path = dict(CFG["obs_cfg"][conf_name]["pyaro_config"])["filename_or_obj_or_url"]
+    data_path = pathlib.Path(
+        dict(CFG["obs_cfg"][conf_name]["pyaro_config"])["filename_or_obj_or_url"]
+    )
     tmp = data_path.glob("*.nc")
     data_files = [x.name for x in tmp if x.is_file()]
     assert len(data_files) > 0
@@ -91,7 +93,6 @@ def test_aeroval_config_diurnal():
 
     stp = EvalSetup(**CFG)
     ana = ExperimentProcessor(stp)
-    # ana.update_interface()
 
     ana.run()
     diurnal_path = (
