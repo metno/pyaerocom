@@ -54,6 +54,7 @@ dependencies = [
     "psutil>=5.0.0",
     "contourpy>=1.3.0",
     "geojson",
+    "snowballstemmer<3",
 ]
 
 [project.readme]
