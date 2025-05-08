@@ -126,7 +126,7 @@ class FairmodeStatistics:
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return np.sum(x - y) / np.sum(x)
+        return np.sum(x - y, axis=0) / np.sum(x, axis=0)
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
