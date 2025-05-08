@@ -33,9 +33,10 @@ def reset_cachedir():
 
 
 @pytest.fixture
-def patched_config():
+def patched_config(tmp_path):
     cfg = cfg_test.CFG
     assert cfg["proj_id"] == "cams2-83"
+    cfg.update({"json_basedir": tmp_path, "coldata_basedir": tmp_path})
     return cfg
 
 
@@ -82,8 +83,14 @@ def fake_ExperimentProcessor(monkeypatch):
 def coldata_mos(tmp_path_factory) -> Path:
     root: Path = tmp_path_factory.mktemp("data")
 
-    def dataset(model: str, day: int, start: date, end: date) -> xr.Dataset:
+    def dataset(model: str, day: int, start: date, end: date, persistence: bool) -> xr.Dataset:
+        if persistence:
+            start = start - timedelta(days=1)
+        else:
+            start = start + timedelta(days=day)
+
         hours = (end - start) // timedelta(hours=1) + 1
+
         ds = xr.Dataset(
             data_vars=dict(
                 concno2=xr.Variable(
@@ -115,6 +122,7 @@ def coldata_mos(tmp_path_factory) -> Path:
                     "data_source", ["CAMS2_83.NRT", f"CAMS2-83.{model}.day{day}.FC"]
                 ),
                 station_name=xr.Variable("station_name", ["AT0ENK1", "AT0ILL1", "XK0012A"]),
+                station_type=xr.Variable("station_name", ["bla", "bla", "bla"]),
                 latitude=xr.Variable("station_name", [48.39, 47.77, 42.66]),
                 longitude=xr.Variable("station_name", [13.67, 16.77, 21.08]),
                 altitude=xr.Variable("station_name", [525, 117, 529]),
@@ -138,7 +146,17 @@ def coldata_mos(tmp_path_factory) -> Path:
             / f"cams2-83/mos-colocated-data/CAMS2-83-{model}-day{day}-FC/concno2_concno2_MOD-CAMS2-83-{model}-day{day}-FC_REF-EEA-UTD_{start:%Y%m%d}_{end:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
         )
         path.parent.mkdir(exist_ok=True, parents=True)
-        dataset(model, day, start, end).to_netcdf(path)
+        dataset(model, day, start, end, False).to_netcdf(path)
+
+    for model in ("ENS", "MOS"):
+        path = (
+            root
+            / f"cams2-83/mos-colocated-data/CAMS2-83-{model}-persistence-FC/concno2_concno2_MOD-CAMS2-83-{model}-persistence-FC_REF-EEA-UTD_{start:%Y%m%d}_{end:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
+        )
+        path.parent.mkdir(exist_ok=True, parents=True)
+        ds = dataset(model, 0, start, end, True)
+        ds["concno2"].attrs.update(model_name=f"CAMS2-83-{model}-persistence-FC")
+        ds.to_netcdf(path)
 
     start, end = date(2024, 3, 1), date(2024, 3, 2)
     for model in ("ENS", "MOS"):
@@ -147,7 +165,7 @@ def coldata_mos(tmp_path_factory) -> Path:
             / f"cams2-83/mos-colocated-data/{model}/concno2_concno2_MOD-{model}_REF-EEA-UTD_{start:%Y%m%d}_{start:%Y%m%d}_hourly_ALL-wMOUNTAINS.nc"
         )
         path.parent.mkdir(exist_ok=True, parents=True)
-        ds = dataset(model, 0, start, end)
+        ds = dataset(model, 0, start, end, False)
         ds["concno2"].attrs.update(model_name=model)
         ds.to_netcdf(path)
 

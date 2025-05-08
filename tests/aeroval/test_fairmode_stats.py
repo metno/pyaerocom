@@ -5,7 +5,7 @@ import pytest
 
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 
-FAIRMODE_KEYS = {"RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi"}
+FAIRMODE_KEYS = {"RMSU", "sign", "crms", "bias", "rms", "alpha", "UrRV", "RV", "beta_mqi", "freq"}
 
 
 @pytest.mark.parametrize(

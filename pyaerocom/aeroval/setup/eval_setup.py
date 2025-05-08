@@ -14,6 +14,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+import subprocess
+
 import aerovaldb
 import pandas as pd
 from pydantic import (
@@ -23,7 +25,6 @@ from pydantic import (
     field_serializer,
     model_validator,
 )
-import subprocess
 
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection

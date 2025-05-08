@@ -24,7 +24,7 @@ def make_csv_test_file(tmp_path: Path) -> Path:
     stations = ["NO0002", "GB0881"]
     countries = ["NO", "GB"]
     coords = [(58, 8), (60, -1)]
-    species = ["NOx", "SOx", "AOD", "NO"]
+    species = ["NOx", "SOx", "AOD", "NO", "PM10"]
     area_type = ["Rural", "Urban"]
 
     with open(file, "w") as f:

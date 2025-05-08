@@ -1,3 +1,4 @@
+import fcntl
 import logging
 import os
 
@@ -47,13 +48,19 @@ def download_minimal_dataset(
         default files are extracted into `~/MyPyaerocom`
     """
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
+    lockfile = str(minimal_dataset.path.joinpath(".lck"))
+    with open(lockfile, "w") as fh:
+        try:
+            fcntl.flock(fh, fcntl.LOCK_EX)
+            if extract_dir_override is not None:
+                extract_dir = os.path.abspath(extract_dir_override)
+            else:
+                extract_dir = "."
 
-    if extract_dir_override is not None:
-        extract_dir = os.path.abspath(extract_dir_override)
-    else:
-        extract_dir = "."
-
-    minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
-    minimal_dataset.fetch(
-        file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir=extract_dir)
-    )
+            minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
+            minimal_dataset.fetch(
+                file_name,
+                processor=pooch.Untar(["testdata-minimal"], extract_dir=extract_dir),
+            )
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)

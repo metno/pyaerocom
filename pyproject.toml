@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.30.dev3"
+version = "0.31.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -23,8 +23,8 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
-    # and minimum versions in the tox config at the bottom of this file!\
-    "aerovaldb>=0.4.1, <0.5.0",
+    # and minimum versions in the tox config at the bottom of this file!
+    "aerovaldb>=0.4.2, <0.5.0",
     "scitools-iris>=3.11.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
@@ -107,7 +107,7 @@ exclude = [
 minversion = "7.4"
 log_cli = false
 log_cli_level = "WARNING"
-addopts = ["--failed-first", "--import-mode=importlib", "-n4"]
+addopts = ["--failed-first", "--import-mode=importlib", "--durations=5"]
 xfail_strict = true
 testpaths = ["tests"]
 filterwarnings = [
@@ -225,10 +225,10 @@ setenv =
     UDUNITS2_XML_PATH=/usr/share/xml/udunits/udunits2-common.xml
 deps =
     # This pins key dependencies to the minimal supported version.
-    # Will only run on lowest supported Python version CI test 
+    # Will only run on lowest supported Python version CI test
     # (currently 3.10).
-    # Should be incremented when changing dependencies above.  
-    aerovaldb ==0.4.1; python_version < "3.11"
+    # Should be incremented when changing dependencies above.
+    aerovaldb ==0.4.2; python_version < "3.11"
     scitools-iris ==3.11.0; python_version < "3.11"
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"
