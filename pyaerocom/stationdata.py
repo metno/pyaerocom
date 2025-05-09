@@ -980,6 +980,7 @@ class StationData(StationMetaData):
         var_name: str,
         low: float | None = None,
         high: float | None = None,
+        unit_ref=None,
         check_unit: bool = True,
     ):
         """Remove outliers from one of the variable timeseries
