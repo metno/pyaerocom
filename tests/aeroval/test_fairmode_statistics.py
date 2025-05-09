@@ -195,7 +195,24 @@ def test_save_fairmode_stats(
     assert fileout.is_file()
 
 
-def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
+@pytest.mark.parametrize(
+    "var, val1, val2",
+    [
+        pytest.param(
+            "concno2",
+            24,
+            1,
+            id="no2",
+        ),
+        pytest.param(
+            "concpm10",
+            1,
+            0,
+            id="pm10",
+        ),
+    ],
+)
+def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics, var, val1, val2):
     # reindex fake data hourly and assign new fake values all above threshold (for concno2 threshold is 200)
     start = dummy_coldata_to_fairmode_statistics.data["time"].values[0]
     end = dummy_coldata_to_fairmode_statistics.data["time"].values[-1]
@@ -211,9 +228,7 @@ def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
     dummy_coldata_to_fairmode_statistics.data[0] = dummy_coldata_to_fairmode_statistics.data[
         0
     ].where(False, 250.0)
-    [exco, excm] = fairmode_statistics._exceedances(
-        dummy_coldata_to_fairmode_statistics.data, "concno2"
-    )
+    [exco, excm] = fairmode_statistics._exceedances(dummy_coldata_to_fairmode_statistics.data, var)
 
-    assert all(exco == nhours // 24 + 1)
-    assert all(excm == nhours // 24 + 1)
+    assert all(exco == nhours // val1 + val2)
+    assert all(excm == nhours // val1 + val2)
