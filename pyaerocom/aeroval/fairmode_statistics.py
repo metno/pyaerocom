@@ -146,8 +146,8 @@ class FairmodeStatistics:
         modvals = new_data.data[1]
 
         mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
-        obsex = np.sum(obsvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
-        modex = np.sum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
+        obsex = np.nansum(obsvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
+        modex = np.nansum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
 
         return [obsex, modex]
 
