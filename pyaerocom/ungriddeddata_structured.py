@@ -35,7 +35,8 @@ logger = logging.getLogger(__name__)
 class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
-    __version__ = "0.01"
+    #: version for caching, needs also updating when UngriddedDataMetadata has changed
+    __version__ = "0.02"
     _merging_error_logged = False
 
     _dtype = [
