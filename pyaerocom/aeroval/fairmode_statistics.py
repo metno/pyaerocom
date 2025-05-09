@@ -79,7 +79,7 @@ class FairmodeStatistics:
 
         mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
 
-        obsmean = np.nanmean(obsvals, axis=0)
+        obsmean = np.nanmean(obsvals, axis=0, where=mask)
 
         obsstd = np.std(obsvals, axis=0, where=mask)
         modstd = np.std(modvals, axis=0, where=mask)
@@ -113,7 +113,9 @@ class FairmodeStatistics:
             stations[i]: dict(
                 refdata_mean=obsmean[i],
                 data_std=modstd[i],
-                exceedances=exceedances[i],#self._exccalc(np.array(obsvals.T[i]), var_name),
+                exceedances_obs=exceedances[0][i],#self._exccalc(np.array(obsvals.T[i]), var_name),
+                exceedances_mod=exceedances[1][i],
+                obsmean=obsmean[i],
                 NMB=NMB[i],
                 R=R[i],
                 RMSU=rmsu[i],
@@ -143,14 +145,20 @@ class FairmodeStatistics:
         return int(sum(np.array(arr > EXC_THRESHOLDS[var_name])))
     
     @staticmethod
-    def _exceedances(data: xr.DataArray, var_name: str) -> np.array:
+    def _exceedances(data: xr.DataArray, var_name: str) -> list[np.array]:
         if var_name == "concno2":
             new_data = data.resample(time="1D",skipna=True).max()
         else:
             new_data = data
 
         obsvals = new_data.data[0]
-        return np.nansum(obsvals > EXC_THRESHOLDS[var_name], axis=0)
+        modvals = new_data.data[1]
+
+        mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
+        obsex = np.sum(obsvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
+        modex = np.sum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
+
+        return [obsex, modvals]
         
 
     @staticmethod
