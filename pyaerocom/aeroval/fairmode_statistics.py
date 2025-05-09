@@ -113,7 +113,7 @@ class FairmodeStatistics:
             stations[i]: dict(
                 refdata_mean=obsmean[i],
                 data_std=modstd[i],
-                exceedances_obs=exceedances[0][i],#self._exccalc(np.array(obsvals.T[i]), var_name),
+                exceedances_obs=exceedances[0][i],
                 exceedances_mod=exceedances[1][i],
                 obsmean=obsmean[i],
                 NMB=NMB[i],
@@ -135,19 +135,9 @@ class FairmodeStatistics:
         return stats_list
 
     @staticmethod
-    def _exccalc(arr: np.array, var_name: str) -> int:
-        if var_name == "concno2":
-            nofdays = 0
-            for subarr in np.split(arr, len(arr) / 24):
-                if np.any(subarr > EXC_THRESHOLDS[var_name]):
-                    nofdays = nofdays + 1
-            return nofdays
-        return int(sum(np.array(arr > EXC_THRESHOLDS[var_name])))
-    
-    @staticmethod
     def _exceedances(data: xr.DataArray, var_name: str) -> list[np.array]:
         if var_name == "concno2":
-            new_data = data.resample(time="1D",skipna=True).max()
+            new_data = data.resample(time="1D", skipna=True).max()
         else:
             new_data = data
 
@@ -158,15 +148,14 @@ class FairmodeStatistics:
         obsex = np.sum(obsvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
         modex = np.sum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
 
-        return [obsex, modvals]
-        
+        return [obsex, modex]
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         num = np.sum(x - y, axis=0)
         denum = np.sum(x, axis=0)
-        return np.where(denum == 0, np.nan, num/denum)
-        #return np.sum(x - y, axis=0) / np.sum(x, axis=0)
+        return np.where(denum == 0, np.nan, num / denum)
+        # return np.sum(x - y, axis=0) / np.sum(x, axis=0)
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
