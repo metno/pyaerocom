@@ -22,7 +22,6 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
-from pyaerocom.units.helpers import get_standard_unit
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -605,12 +604,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 self.metadata[meta_idx]["var_info"] = {}
                 self.metadata[meta_idx]["var_info"][var] = {}
 
-                if "units" in self.metadata[meta_idx]["var_info"][var]:
-                    u1 = self.metadata[meta_idx]["var_info"][var]
-                    # u2 = station_data["var_info"][var]["units"]
-                    station_data.convert_unit(var, u1)
-                else:
-                    station_data.convert_unit(var, get_standard_unit(var))
+                # if "units" in self.metadata[meta_idx]["var_info"][var]:
+                #    u1 = self.metadata[meta_idx]["var_info"][var]
+                #    # u2 = station_data["var_info"][var]["units"]
+                #    station_data.convert_unit(var, u1)
+                # else:
+                #    station_data.convert_unit(var, get_standard_unit(var))
                 self.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
                 for x in ("longitude", "latitude", "altitude"):
                     if x not in self.metadata[meta_idx]["var_info"][var]:
