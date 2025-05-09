@@ -138,7 +138,7 @@ class FairmodeStatistics:
     @staticmethod
     def _exceedances(data: xr.DataArray, var_name: str) -> list[np.array]:
         if var_name == "concno2":
-            new_data = data.data.resample(time="1D", skipna=True).max()
+            new_data = data.resample(time="1D", skipna=True).max()
         else:
             new_data = data
 

@@ -212,7 +212,7 @@ def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
         0
     ].where(False, 250.0)
     [exco, excm] = fairmode_statistics._exceedances(
-        dummy_coldata_to_fairmode_statistics, "concno2"
+        dummy_coldata_to_fairmode_statistics.data, "concno2"
     )
 
     assert all(exco == nhours // 24 + 1)
