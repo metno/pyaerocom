@@ -60,11 +60,11 @@ def test_fairmode_statistics(fairmode_statistics, dummy_coldata_to_fairmode_stat
     assert all(
         item in fm_stats["Agoufou"]
         for item in [
-            "refdata_mean",
-            "data_std",
+            "obs_mean",
+            "mod_std",
+            "mod_mean",
             "exceedances_obs",
             "exceedances_mod",
-            "obsmean",
             "NMB",
             "R",
             "RMSU",
@@ -96,11 +96,11 @@ def fairmode_stats_example() -> dict:
         "ALL": {
             "2010-DJF": {
                 "Alta_Floresta": {
-                    "refdata_mean": np.float64(0.3884868563740519),
-                    "data_std": np.float64(0.6060961573280594),
+                    "obs_mean": np.float64(0.3884868563740519),
+                    "mod_std": np.float64(0.6060961573280594),
+                    "mod_mean": np.float64(0.389367163926363),
                     "exceedances_obs": np.int64(0),
                     "exceedances_mod": np.int64(0),
-                    "obsmean": np.float64(0.3884868563740519),
                     "NMB": np.float64(0.0020848533921114204),
                     "R": np.float64(0.900162558255497),
                     "RMSU": np.float64(9.600056476313366),
@@ -119,11 +119,11 @@ def fairmode_stats_example() -> dict:
                     "percentile": 99.8,
                 },
                 "Thessaloniki": {
-                    "refdata_mean": np.float64(0.18863685117105966),
-                    "data_std": np.float64(0.043870373343254006),
+                    "obs_mean": np.float64(0.18863685117105966),
+                    "mod_std": np.float64(0.043870373343254006),
+                    "mod_mean": np.float64(0.24130742929198526),
                     "exceedances_obs": np.int64(0),
                     "exceedances_mod": np.int64(0),
-                    "obsmean": np.float64(0.18863685117105966),
                     "NMB": np.float64(0.20555936048513765),
                     "R": np.float64(0.6360611765520063),
                     "RMSU": np.float64(9.600986774272528),
@@ -142,11 +142,11 @@ def fairmode_stats_example() -> dict:
                     "percentile": 99.8,
                 },
                 "Trelew": {
-                    "refdata_mean": np.float64(0.0423639675804894),
-                    "data_std": np.float64(0.008299612612318126),
+                    "obs_mean": np.float64(0.0423639675804894),
+                    "mod_std": np.float64(0.008299612612318126),
+                    "mod_mean": np.float64(0.042434395394391485),
                     "exceedances_obs": np.int64(0),
                     "exceedances_mod": np.int64(0),
-                    "obsmean": np.float64(0.0423639675804894),
                     "NMB": np.float64(0.0013019203413407127),
                     "R": np.float64(-0.26051012045618877),
                     "RMSU": np.float64(9.600004401086988),

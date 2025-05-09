@@ -80,6 +80,7 @@ class FairmodeStatistics:
         mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
 
         obsmean = np.nanmean(obsvals, axis=0, where=mask)
+        modmean = np.nanmean(modvals, axis=0, where=mask)
 
         obsstd = np.std(obsvals, axis=0, where=mask)
         modstd = np.std(modvals, axis=0, where=mask)
@@ -111,11 +112,11 @@ class FairmodeStatistics:
 
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
-                refdata_mean=obsmean[i],
-                data_std=modstd[i],
+                obs_mean=obsmean[i],
+                mod_std=modstd[i],
+                mod_mean=modmean[i],
                 exceedances_obs=exceedances[0][i],
                 exceedances_mod=exceedances[1][i],
-                obsmean=obsmean[i],
                 NMB=NMB[i],
                 R=R[i],
                 RMSU=rmsu[i],
