@@ -160,7 +160,8 @@ class Unit:
         if ts_type is not None and aerocom_var is not None and get_variable(aerocom_var).is_rate:
             ends_with_freq = False
             for si_unit in SI_TO_TS_TYPE:
-                if unit.endswith(f"/{si_unit}") or unit.endswith(f"{si_unit}-1"):
+                freq_si = TsType(ts_type).to_si()
+                if unit.endswith(f"/{freq_si}") or unit.endswith(f"{freq_si}-1"):
                     ends_with_freq = True
                     break
 
