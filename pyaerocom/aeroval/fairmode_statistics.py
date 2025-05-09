@@ -226,4 +226,4 @@ class FairmodeStatistics:
             (1 - SPECIES[var_name]["alpha"] ** 2) * Operc**2 + factor
         )
 
-        return (Operc - Mperc) / (beta * uncertainty_Operc)
+        return (Mperc - Operc) / (beta * uncertainty_Operc)
