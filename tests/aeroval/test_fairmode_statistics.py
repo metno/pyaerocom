@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import xarray as xr
 
 # from pyaerocom import ColocatedData, Colocator
 from pyaerocom.aeroval import EvalSetup  # , ExperimentProcessor
@@ -192,3 +193,27 @@ def test_save_fairmode_stats(
         / f"{fairmode_exp_output.cfg.proj_id}/{fairmode_exp_output.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}.json"
     )
     assert fileout.is_file()
+
+
+def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
+    # reindex fake data hourly and assign new fake values all above threshold (for concno2 threshold is 200)
+    start = dummy_coldata_to_fairmode_statistics.data["time"].values[0]
+    end = dummy_coldata_to_fairmode_statistics.data["time"].values[-1]
+    dummy_coldata_to_fairmode_statistics.data = dummy_coldata_to_fairmode_statistics.data.reindex(
+        {"time": xr.date_range(start, end, freq="h")}
+    )
+
+    nhours = len(xr.date_range(start, end, freq="h"))
+    assert dummy_coldata_to_fairmode_statistics.shape == (2, nhours, 8)
+    dummy_coldata_to_fairmode_statistics.data[1] = dummy_coldata_to_fairmode_statistics.data[
+        1
+    ].where(False, 250.0)
+    dummy_coldata_to_fairmode_statistics.data[0] = dummy_coldata_to_fairmode_statistics.data[
+        0
+    ].where(False, 250.0)
+    [exco, excm] = fairmode_statistics._exceedances(
+        dummy_coldata_to_fairmode_statistics, "concno2"
+    )
+
+    assert all(exco == nhours // 24 + 1)
+    assert all(excm == nhours // 24 + 1)
