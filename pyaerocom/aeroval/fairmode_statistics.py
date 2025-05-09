@@ -98,6 +98,7 @@ class FairmodeStatistics:
         mqi = self._mqi(rms, rmsu, beta=1)
         mb = self._mb(bias, rmsu, beta=1)
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
+        exceedances = self._exceedances(data=data, var_name=var_name)
 
         assert len(rmsu) == len(stations)
         assert len(sign) == len(stations)
@@ -112,7 +113,7 @@ class FairmodeStatistics:
             stations[i]: dict(
                 refdata_mean=obsmean[i],
                 data_std=modstd[i],
-                exceedances=self._exccalc(np.array(obsvals.T[i]), var_name),
+                exceedances=exceedances[i],#self._exccalc(np.array(obsvals.T[i]), var_name),
                 NMB=NMB[i],
                 R=R[i],
                 RMSU=rmsu[i],
@@ -140,10 +141,24 @@ class FairmodeStatistics:
                     nofdays = nofdays + 1
             return nofdays
         return int(sum(np.array(arr > EXC_THRESHOLDS[var_name])))
+    
+    @staticmethod
+    def _exceedances(data: xr.DataArray, var_name: str) -> np.array:
+        if var_name == "concno2":
+            new_data = data.resample(time="1D",skipna=True).max()
+        else:
+            new_data = data
+
+        obsvals = new_data.data[0]
+        return np.nansum(obsvals > EXC_THRESHOLDS[var_name], axis=0)
+        
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return np.sum(x - y, axis=0) / np.sum(x, axis=0)
+        num = np.sum(x - y, axis=0)
+        denum = np.sum(x, axis=0)
+        return np.where(denum == 0, np.nan, num/denum)
+        #return np.sum(x - y, axis=0) / np.sum(x, axis=0)
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
