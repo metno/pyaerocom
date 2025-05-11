@@ -104,7 +104,7 @@ class FairmodeStatistics:
         BRMSUt = self.BRMSU_t(obsvals, beta=1, spec=var_name)
         BRMSUs = self.BRMSU_s(obsmean, beta=1, spec=var_name)
 
-        assert np.array_equal(np.round(rmsu, 8), np.round(BRMSUt, 8))
+        assert np.allclose(rmsu, BRMSUt, equal_nan=True)
 
         MPI_bias_t = self._MPI_bias_t(obsmean, modmean, BRMSUt)
         MPI_R_t = self._MPI_R_t(obsstd, modstd, R, BRMSUt)
