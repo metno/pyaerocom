@@ -101,6 +101,42 @@ class FairmodeStatistics:
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
 
+        BRMSUt = self.BRMSU_t(obsvals, beta=1, spec=var_name)
+        BRMSUs = self.BRMSU_s(obsmean, beta=1, spec=var_name)
+
+        assert np.array_equal(np.round(rmsu, 8), np.round(BRMSUt, 8))
+
+        # TIME Corr Norm: 2 sigma_O sigma_M(1-R) / (beta^2 RMS_U^2)
+        # ----------------------------------------------------------
+        # MF formula: (2.*scores['obs_std']*scores['sim_std']*(1. - scores['PearsonR'])) / (beta*rmsu)**2
+        MPI_R_t = 2 * modstd * obsstd * (1 - R) / BRMSUt**2
+
+        # TIME Bias Norm: |BIAS| / (beta RMS_U)
+        # -------------------------------------------
+        # MF formula: scores['MeanBias']/(beta*rmsu)
+        MPI_bias_t = (modmean - obsmean) / BRMSUt  # do we need an abs here?
+
+        # TIME StDev Norm: (sigma_M-sigma_O) / (beta RMS_U)
+        # ---------------------------------------------------
+        # MF formula: (scores['sim_std']-scores['obs_std'])/(beta*rmsu)
+        MPI_std_t = modstd - obsstd / BRMSUt
+
+        # SPACE Corr Norm: 2 sigma_bar{O} sigma_bar{M} (1-R) / (beta^2 RMS_bar{U}^2)
+        # ----------------------------------------------------------------------------
+        # MF formula: ((2.*np.nanstd(obs)*np.nanstd(sim)*(1. - corr)) / (beta*rmsu_)**2)
+        # where sim = scores['sim_mean'], obs = scores['obs_mean']
+        # corr = ((np.nanmean((obs-np.nanmean(obs))*(sim-np.nanmean(sim)))) / (np.nanstd(obs)*np.nanstd(sim)))
+        corr = np.nanmean((obsmean - np.nanmean(obsmean)) * (modmean - np.nanmean(modmean))) / (
+            np.nanstd(obsmean) * np.nanstd(modmean)
+        )
+        MPI_R_s = 2 * np.nanstd(obsmean) * np.nanstd(modmean) * (1.0 - corr) / BRMSUs**2
+
+        # SPACE StDev Norm: (sigma_bar{M}-sigma_bar{O}) / ( beta RMS_bar{U})
+        # -------------------------------------------------------------------
+        # MF formula: (np.nanstd(sim)-np.nanstd(obs))/(beta*rmsu_)
+        # where sim = scores['sim_mean'], obs = scores['obs_mean']
+        MPI_std_s = (np.nanstd(modmean) - np.nanstd(obsmean)) / BRMSUs
+
         assert len(rmsu) == len(stations)
         assert len(sign) == len(stations)
         assert len(crms) == len(stations)
@@ -117,6 +153,11 @@ class FairmodeStatistics:
                 mod_mean=modmean[i],
                 exceedances_obs=int(exceedances[0][i]),
                 exceedances_mod=int(exceedances[1][i]),
+                MPI_R_t=MPI_R_t[i],
+                MPI_bias_t=MPI_bias_t[i],
+                MPI_std_t=MPI_std_t[i],
+                MPI_R_s=MPI_R_s,
+                MPI_std_s=MPI_std_s,
                 NMB=NMB[i],
                 R=R[i],
                 RMSU=rmsu[i],
@@ -175,6 +216,26 @@ class FairmodeStatistics:
         )
 
         return r
+
+    def obsuncertainty(self, obs: np.ndarray, spec: str) -> np.ndarray:
+        """formula 57 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
+
+        if spec not in SPECIES:
+            raise ValueError(f"Unsupported {spec=}")
+
+        UrRV = SPECIES[spec]["UrRV"]
+        RV = SPECIES[spec]["RV"]
+        alpha = SPECIES[spec]["alpha"]
+
+        in_sqrt = (1 - alpha**2) * (obs**2) + alpha**2 * RV**2
+
+        return UrRV * np.sqrt(in_sqrt)
+
+    def BRMSU_t(self, obsvals: np.ndarray, beta: float, spec: str) -> np.ndarray:
+        return beta * np.sqrt(np.nanmean(np.square(self.obsuncertainty(obsvals, spec)), axis=0))
+
+    def BRMSU_s(self, obsmean: np.ndarray, beta: float, spec: str) -> float:
+        return beta * np.sqrt(np.nanmean(self.obsuncertainty(obsmean, spec)))
 
     @staticmethod
     def _RMSU(mean: float, std: float, spec: str) -> float:
