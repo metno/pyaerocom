@@ -85,7 +85,7 @@ def test_fairmode_statistics(fairmode_statistics, dummy_coldata_to_fairmode_stat
 
 
 def test_fairmode_statistics_wrongspecies(
-    fairmode_statistics, dummy_coldata_to_fairmode_statistics, caplog
+    fairmode_statistics, dummy_coldata_to_fairmode_statistics
 ):
     wrongspec = "concco"
     example_coldata = dummy_coldata_to_fairmode_statistics
@@ -93,6 +93,15 @@ def test_fairmode_statistics_wrongspecies(
 
     with pytest.raises(ValueError) as e:
         fairmode_statistics.fairmode_statistics(example_coldata, wrongspec)
+    assert f"Unsupported spec='{wrongspec}'" in str(e.value)
+
+
+def test_obsuncertainty_wrongspecies(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
+    obsvals = dummy_coldata_to_fairmode_statistics.data[0]
+    wrongspec = "concso2"
+
+    with pytest.raises(ValueError) as e:
+        fairmode_statistics.obsuncertainty(obsvals, wrongspec)
     assert f"Unsupported spec='{wrongspec}'" in str(e.value)
 
 
@@ -252,3 +261,17 @@ def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics, 
 
     assert all(exco == nhours // val1 + val2)
     assert all(excm == nhours // val1 + val2)
+
+
+def test_BRSMUt_equal_rsmu(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
+    var_name = "concno2"
+    obsvals = dummy_coldata_to_fairmode_statistics.data[0]
+
+    obsmean = np.nanmean(obsvals, axis=0)
+
+    obsstd = np.std(obsvals, axis=0)
+
+    rmsu = fairmode_statistics._RMSU(obsmean, obsstd, var_name)
+    BRMSUt = fairmode_statistics.BRMSU_t(obsvals, beta=1, spec=var_name)
+
+    assert np.array_equal(np.round(rmsu, 8), np.round(BRMSUt, 8))
