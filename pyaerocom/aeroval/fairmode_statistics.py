@@ -109,33 +109,42 @@ class FairmodeStatistics:
         # TIME Corr Norm: 2 sigma_O sigma_M(1-R) / (beta^2 RMS_U^2)
         # ----------------------------------------------------------
         # MF formula: (2.*scores['obs_std']*scores['sim_std']*(1. - scores['PearsonR'])) / (beta*rmsu)**2
-        MPI_R_t = 2 * modstd * obsstd * (1 - R) / BRMSUt**2
+        MPI_R_t = np.where(BRMSUt == 0, np.nan, 2 * modstd * obsstd * (1 - R) / BRMSUt**2)
 
         # TIME Bias Norm: |BIAS| / (beta RMS_U)
         # -------------------------------------------
         # MF formula: scores['MeanBias']/(beta*rmsu)
-        MPI_bias_t = (modmean - obsmean) / BRMSUt  # do we need an abs here?
+        MPI_bias_t = np.where(
+            BRMSUt == 0, np.nan, (modmean - obsmean) / BRMSUt
+        )  # do we need an abs here?
 
         # TIME StDev Norm: (sigma_M-sigma_O) / (beta RMS_U)
         # ---------------------------------------------------
         # MF formula: (scores['sim_std']-scores['obs_std'])/(beta*rmsu)
-        MPI_std_t = modstd - obsstd / BRMSUt
+        MPI_std_t = np.where(BRMSUt == 0, np.nan, modstd - obsstd / BRMSUt)
 
         # SPACE Corr Norm: 2 sigma_bar{O} sigma_bar{M} (1-R) / (beta^2 RMS_bar{U}^2)
         # ----------------------------------------------------------------------------
         # MF formula: ((2.*np.nanstd(obs)*np.nanstd(sim)*(1. - corr)) / (beta*rmsu_)**2)
         # where sim = scores['sim_mean'], obs = scores['obs_mean']
         # corr = ((np.nanmean((obs-np.nanmean(obs))*(sim-np.nanmean(sim)))) / (np.nanstd(obs)*np.nanstd(sim)))
-        corr = np.nanmean((obsmean - np.nanmean(obsmean)) * (modmean - np.nanmean(modmean))) / (
-            np.nanstd(obsmean) * np.nanstd(modmean)
+        corr = (
+            0.0
+            if np.nanstd(obsmean) * np.nanstd(modmean) == 0
+            else np.nanmean((obsmean - np.nanmean(obsmean)) * (modmean - np.nanmean(modmean)))
+            / (np.nanstd(obsmean) * np.nanstd(modmean))
         )
-        MPI_R_s = 2 * np.nanstd(obsmean) * np.nanstd(modmean) * (1.0 - corr) / BRMSUs**2
+        MPI_R_s = (
+            2 * np.nanstd(obsmean) * np.nanstd(modmean) * (1.0 - corr) / BRMSUs**2
+            if BRMSUs != 0
+            else np.nan
+        )
 
         # SPACE StDev Norm: (sigma_bar{M}-sigma_bar{O}) / ( beta RMS_bar{U})
         # -------------------------------------------------------------------
         # MF formula: (np.nanstd(sim)-np.nanstd(obs))/(beta*rmsu_)
         # where sim = scores['sim_mean'], obs = scores['obs_mean']
-        MPI_std_s = (np.nanstd(modmean) - np.nanstd(obsmean)) / BRMSUs
+        MPI_std_s = (np.nanstd(modmean) - np.nanstd(obsmean)) / BRMSUs if BRMSUs != 0 else np.nan
 
         assert len(rmsu) == len(stations)
         assert len(sign) == len(stations)
