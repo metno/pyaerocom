@@ -203,7 +203,7 @@ class FairmodeStatistics:
         mask: np.ndarray,
     ) -> np.ndarray:
         def obsuncertainty(obs: np.ndarray, spec: str) -> np.ndarray:
-            """formula 57 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
+            """eq. 57 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
 
             if spec not in SPECIES:
                 raise ValueError(f"Unsupported {spec=}")
@@ -223,7 +223,7 @@ class FairmodeStatistics:
     @staticmethod
     def _BRMSU_s(obsmean: np.ndarray, beta: float, var_name: str) -> float:
         def obsuncertainty(obs: np.ndarray, spec: str) -> np.ndarray:
-            """formula 39 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
+            """eq. 39 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
 
             if spec not in SPECIES:
                 raise ValueError(f"Unsupported {spec=}")
@@ -244,14 +244,14 @@ class FairmodeStatistics:
     def _MPI_R_t(obsstd: np.array, modstd: np.array, R: float, BRMSUt: np.array) -> np.array:
         # TIME Corr Norm: 2 sigma_O sigma_M(1-R) / (beta^2 RMS_U^2)
         # ----------------------------------------------------------
-        # MF formula: (2.*scores['obs_std']*scores['sim_std']*(1. - scores['PearsonR'])) / (beta*rmsu)**2
+        # MF eq.: (2.*scores['obs_std']*scores['sim_std']*(1. - scores['PearsonR'])) / (beta*rmsu)**2
         return np.where(BRMSUt == 0, np.nan, 2 * modstd * obsstd * (1 - R) / BRMSUt**2)
 
     @staticmethod
     def _MPI_bias_t(obsmean: np.array, modmean: np.array, BRMSUt: np.array) -> np.array:
         # TIME Bias Norm: |BIAS| / (beta RMS_U)
         # -------------------------------------------
-        # MF formula: scores['MeanBias']/(beta*rmsu)
+        # MF eq.: scores['MeanBias']/(beta*rmsu)
         return np.where(
             BRMSUt == 0, np.nan, np.abs(modmean - obsmean) / BRMSUt
         )  # check the abs here, why NMF does not have it?
@@ -260,14 +260,14 @@ class FairmodeStatistics:
     def _MPI_std_t(obsstd: np.array, modstd: np.array, BRMSUt: np.array) -> np.array:
         # TIME StDev Norm: (sigma_M-sigma_O) / (beta RMS_U)
         # ---------------------------------------------------
-        # MF formula: (scores['sim_std']-scores['obs_std'])/(beta*rmsu)
+        # MF eq.: (scores['sim_std']-scores['obs_std'])/(beta*rmsu)
         return np.where(BRMSUt == 0, np.nan, modstd - obsstd / BRMSUt)
 
     @staticmethod
     def _MPI_R_s(obsmean: np.array, modmean: np.array, BRMSUs: float) -> float:
         # SPACE Corr Norm: 2 sigma_bar{O} sigma_bar{M} (1-R) / (beta^2 RMS_bar{U}^2)
         # ----------------------------------------------------------------------------
-        # MF formula: ((2.*np.nanstd(obs)*np.nanstd(sim)*(1. - corr)) / (beta*rmsu_)**2)
+        # MF eq.: ((2.*np.nanstd(obs)*np.nanstd(sim)*(1. - corr)) / (beta*rmsu_)**2)
         # where sim = scores['sim_mean'], obs = scores['obs_mean']
         # corr = ((np.nanmean((obs-np.nanmean(obs))*(sim-np.nanmean(sim)))) / (np.nanstd(obs)*np.nanstd(sim)))
         corr = (
@@ -286,7 +286,7 @@ class FairmodeStatistics:
     def _MPI_std_s(obsmean: np.array, modmean: np.array, BRMSUs: float) -> float:
         # SPACE StDev Norm: (sigma_bar{M}-sigma_bar{O}) / ( beta RMS_bar{U})
         # -------------------------------------------------------------------
-        # MF formula: (np.nanstd(sim)-np.nanstd(obs))/(beta*rmsu_)
+        # MF eq.: (np.nanstd(sim)-np.nanstd(obs))/(beta*rmsu_)
         # where sim = scores['sim_mean'], obs = scores['obs_mean']
         return (np.nanstd(modmean) - np.nanstd(obsmean)) / BRMSUs if BRMSUs != 0 else np.nan
 
