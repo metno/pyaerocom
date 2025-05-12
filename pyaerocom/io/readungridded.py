@@ -513,7 +513,7 @@ class ReadUngridded:
                 f"supported by {data_id} interface"
             )
         cache = CacheHandlerUngridded(reader)
-        if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
+        if not self.ignore_cache:
             # initiate cache handler
             for var in vars_available:
                 try:
@@ -538,7 +538,7 @@ class ReadUngridded:
 
             for var in vars_to_read:
                 # write the cache file
-                if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
+                if not self.ignore_cache:
                     try:
                         cache.write(data_read, var)
                     except Exception as e:
