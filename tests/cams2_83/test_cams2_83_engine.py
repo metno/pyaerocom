@@ -46,7 +46,11 @@ def test__calc_forecast_target_MQI_vectorized(eval_config: dict):
     c23engine = CAMS2_83_Engine(setup)
 
     mqi_vectorized = c23engine._calc_forecast_target_MQI_vectorized(
-        example_coldata, example_persistence_coldata, "concno2", 1
+        example_coldata,
+        example_persistence_coldata,
+        "concno2",
+        1,
+        min_num_obs=eval_config["min_num_obs"],
     )
 
     stations_list = example_coldata.coords["station_name"].values.tolist()

@@ -12,10 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 SPECIES = dict(
-    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly"), percentile=99.8, Np=5.2, Nnp=5.5),
-    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily"), percentile=92.9, Np=11., Nnp=3.),
-    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily"), percentile=90.1, Np=20., Nnp=1.5),
-    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1, Np=20., Nnp=1.5),
+    concno2=dict(
+        UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly"), percentile=99.8, Np=5.2, Nnp=5.5
+    ),
+    conco3mda8=dict(
+        UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily"), percentile=92.9, Np=11.0, Nnp=3.0
+    ),
+    concpm10=dict(
+        UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily"), percentile=90.1, Np=20.0, Nnp=1.5
+    ),
+    concpm25=dict(
+        UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1, Np=20.0, Nnp=1.5
+    ),
 )
 
 EXC_THRESHOLDS = dict(  # we assume all the units are ug/m3
@@ -101,8 +109,8 @@ class FairmodeStatistics:
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
 
-        BRMSUt = self.BRMSU_t(obsvals, beta=1, spec=var_name, mask=mask)
-        BRMSUs = self.BRMSU_s(obsmean, beta=1, spec=var_name, mask=mask)
+        BRMSUt = self._BRMSU_t(obsvals, beta=1, var_name=var_name, mask=mask)
+        BRMSUs = self._BRMSU_s(obsmean, beta=1, var_name=var_name)
 
         assert np.allclose(rmsu, BRMSUt, equal_nan=True)
 
@@ -193,25 +201,50 @@ class FairmodeStatistics:
 
         return r
 
-    def obsuncertainty(self, obs: np.ndarray, spec: str) -> np.ndarray:
-        """formula 57 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
+    @staticmethod
+    def _BRMSU_t(
+        obsvals: np.ndarray,
+        beta: float,
+        var_name: str,
+        mask: np.ndarray,
+    ) -> np.ndarray:
+        def obsuncertainty(obs: np.ndarray, spec: str) -> np.ndarray:
+            """formula 57 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
 
-        if spec not in SPECIES:
-            raise ValueError(f"Unsupported {spec=}")
+            if spec not in SPECIES:
+                raise ValueError(f"Unsupported {spec=}")
 
-        UrRV = SPECIES[spec]["UrRV"]
-        RV = SPECIES[spec]["RV"]
-        alpha = SPECIES[spec]["alpha"]
+            UrRV = SPECIES[spec]["UrRV"]
+            RV = SPECIES[spec]["RV"]
+            alpha = SPECIES[spec]["alpha"]
 
-        in_sqrt = (1 - alpha**2) * (obs**2) + alpha**2 * RV**2
+            in_sqrt = (1 - alpha**2) * (obs**2) + alpha**2 * RV**2
 
-        return UrRV * np.sqrt(in_sqrt)
+            return UrRV * np.sqrt(in_sqrt)
 
-    def BRMSU_t(self, obsvals: np.ndarray, beta: float, spec: str, mask: np.ndarray) -> np.ndarray:
-        return beta * np.sqrt(np.nanmean(np.square(self.obsuncertainty(obsvals, spec), where=mask), axis=0))
+        return beta * np.sqrt(
+            np.nanmean(np.square(obsuncertainty(obsvals, var_name), where=mask), axis=0)
+        )
 
-    def BRMSU_s(self, obsmean: np.ndarray, beta: float, spec: str) -> float:
-        return beta * np.sqrt(np.nanmean(self.obsuncertainty(obsmean, spec)))
+    @staticmethod
+    def _BRMSU_s(obsmean: np.ndarray, beta: float, var_name: str) -> float:
+        def obsuncertainty(obs: np.ndarray, spec: str) -> np.ndarray:
+            """formula 39 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
+
+            if spec not in SPECIES:
+                raise ValueError(f"Unsupported {spec=}")
+
+            UrRV = SPECIES[spec]["UrRV"]
+            RV = SPECIES[spec]["RV"]
+            alpha = SPECIES[spec]["alpha"]
+            N_p = SPECIES[spec]["Np"]
+            N_np = SPECIES[spec]["Nnp"]
+
+            in_sqrt = (1 - alpha**2) / N_p * (obs**2) + alpha**2 * RV**2 / N_np
+
+            return UrRV * np.sqrt(in_sqrt)
+
+        return beta * np.sqrt(np.nanmean(obsuncertainty(obsmean, var_name)))
 
     @staticmethod
     def _MPI_R_t(obsstd: np.array, modstd: np.array, R: float, BRMSUt: np.array) -> np.array:
