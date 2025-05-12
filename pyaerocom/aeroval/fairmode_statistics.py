@@ -80,6 +80,7 @@ class FairmodeStatistics:
         mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
 
         obsmean = np.nanmean(obsvals, axis=0, where=mask)
+        modmean = np.nanmean(modvals, axis=0, where=mask)
 
         obsstd = np.std(obsvals, axis=0, where=mask)
         modstd = np.std(modvals, axis=0, where=mask)
@@ -100,6 +101,18 @@ class FairmodeStatistics:
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
 
+        BRMSUt = self.BRMSU_t(obsvals, beta=1, spec=var_name)
+        BRMSUs = self.BRMSU_s(obsmean, beta=1, spec=var_name)
+
+        assert np.allclose(rmsu, BRMSUt, equal_nan=True)
+
+        MPI_bias_t = self._MPI_bias_t(obsmean, modmean, BRMSUt)
+        MPI_R_t = self._MPI_R_t(obsstd, modstd, R, BRMSUt)
+        MPI_std_t = self._MPI_std_t(obsstd, modstd, BRMSUt)
+
+        MPI_R_s = self._MPI_R_s(obsmean, modmean, BRMSUs)
+        MPI_std_s = self._MPI_std_s(obsmean, modmean, BRMSUs)
+
         assert len(rmsu) == len(stations)
         assert len(sign) == len(stations)
         assert len(crms) == len(stations)
@@ -111,11 +124,16 @@ class FairmodeStatistics:
 
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
-                refdata_mean=obsmean[i],
-                data_std=modstd[i],
-                exceedances_obs=exceedances[0][i],#self._exccalc(np.array(obsvals.T[i]), var_name),
-                exceedances_mod=exceedances[1][i],
-                obsmean=obsmean[i],
+                obs_mean=obsmean[i],
+                mod_std=modstd[i],
+                mod_mean=modmean[i],
+                exceedances_obs=int(exceedances[0][i]),
+                exceedances_mod=int(exceedances[1][i]),
+                MPI_R_t=MPI_R_t[i],
+                MPI_bias_t=MPI_bias_t[i],
+                MPI_std_t=MPI_std_t[i],
+                MPI_R_s=MPI_R_s,
+                MPI_std_s=MPI_std_s,
                 NMB=NMB[i],
                 R=R[i],
                 RMSU=rmsu[i],
@@ -135,19 +153,9 @@ class FairmodeStatistics:
         return stats_list
 
     @staticmethod
-    def _exccalc(arr: np.array, var_name: str) -> int:
-        if var_name == "concno2":
-            nofdays = 0
-            for subarr in np.split(arr, len(arr) / 24):
-                if np.any(subarr > EXC_THRESHOLDS[var_name]):
-                    nofdays = nofdays + 1
-            return nofdays
-        return int(sum(np.array(arr > EXC_THRESHOLDS[var_name])))
-    
-    @staticmethod
     def _exceedances(data: xr.DataArray, var_name: str) -> list[np.array]:
         if var_name == "concno2":
-            new_data = data.resample(time="1D",skipna=True).max()
+            new_data = data.resample(time="1D", skipna=True).max()
         else:
             new_data = data
 
@@ -155,18 +163,16 @@ class FairmodeStatistics:
         modvals = new_data.data[1]
 
         mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
-        obsex = np.sum(obsvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
-        modex = np.sum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
+        obsex = np.nansum(obsvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
+        modex = np.nansum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
 
-        return [obsex, modvals]
-        
+        return [obsex, modex]
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        num = np.sum(x - y, axis=0)
-        denum = np.sum(x, axis=0)
-        return np.where(denum == 0, np.nan, num/denum)
-        #return np.sum(x - y, axis=0) / np.sum(x, axis=0)
+        num = np.nansum(x - y, axis=0)
+        denum = np.nansum(x, axis=0)
+        return np.where(denum == 0, np.nan, num / denum)
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -186,6 +192,76 @@ class FairmodeStatistics:
         )
 
         return r
+
+    def obsuncertainty(self, obs: np.ndarray, spec: str) -> np.ndarray:
+        """formula 57 here https://fairmode.jrc.ec.europa.eu/document/fairmode/WG1/Guidance_MQO_Bench_vs3.3_20220519.pdf"""
+
+        if spec not in SPECIES:
+            raise ValueError(f"Unsupported {spec=}")
+
+        UrRV = SPECIES[spec]["UrRV"]
+        RV = SPECIES[spec]["RV"]
+        alpha = SPECIES[spec]["alpha"]
+
+        in_sqrt = (1 - alpha**2) * (obs**2) + alpha**2 * RV**2
+
+        return UrRV * np.sqrt(in_sqrt)
+
+    def BRMSU_t(self, obsvals: np.ndarray, beta: float, spec: str) -> np.ndarray:
+        return beta * np.sqrt(np.nanmean(np.square(self.obsuncertainty(obsvals, spec)), axis=0))
+
+    def BRMSU_s(self, obsmean: np.ndarray, beta: float, spec: str) -> float:
+        return beta * np.sqrt(np.nanmean(self.obsuncertainty(obsmean, spec)))
+
+    @staticmethod
+    def _MPI_R_t(obsstd: np.array, modstd: np.array, R: float, BRMSUt: np.array) -> np.array:
+        # TIME Corr Norm: 2 sigma_O sigma_M(1-R) / (beta^2 RMS_U^2)
+        # ----------------------------------------------------------
+        # MF formula: (2.*scores['obs_std']*scores['sim_std']*(1. - scores['PearsonR'])) / (beta*rmsu)**2
+        return np.where(BRMSUt == 0, np.nan, 2 * modstd * obsstd * (1 - R) / BRMSUt**2)
+
+    @staticmethod
+    def _MPI_bias_t(obsmean: np.array, modmean: np.array, BRMSUt: np.array) -> np.array:
+        # TIME Bias Norm: |BIAS| / (beta RMS_U)
+        # -------------------------------------------
+        # MF formula: scores['MeanBias']/(beta*rmsu)
+        return np.where(
+            BRMSUt == 0, np.nan, np.abs(modmean - obsmean) / BRMSUt
+        )  # check the abs here, why NMF does not have it?
+
+    @staticmethod
+    def _MPI_std_t(obsstd: np.array, modstd: np.array, BRMSUt: np.array) -> np.array:
+        # TIME StDev Norm: (sigma_M-sigma_O) / (beta RMS_U)
+        # ---------------------------------------------------
+        # MF formula: (scores['sim_std']-scores['obs_std'])/(beta*rmsu)
+        return np.where(BRMSUt == 0, np.nan, modstd - obsstd / BRMSUt)
+
+    @staticmethod
+    def _MPI_R_s(obsmean: np.array, modmean: np.array, BRMSUs: float) -> float:
+        # SPACE Corr Norm: 2 sigma_bar{O} sigma_bar{M} (1-R) / (beta^2 RMS_bar{U}^2)
+        # ----------------------------------------------------------------------------
+        # MF formula: ((2.*np.nanstd(obs)*np.nanstd(sim)*(1. - corr)) / (beta*rmsu_)**2)
+        # where sim = scores['sim_mean'], obs = scores['obs_mean']
+        # corr = ((np.nanmean((obs-np.nanmean(obs))*(sim-np.nanmean(sim)))) / (np.nanstd(obs)*np.nanstd(sim)))
+        corr = (
+            0.0
+            if np.nanstd(obsmean) * np.nanstd(modmean) == 0
+            else np.nanmean((obsmean - np.nanmean(obsmean)) * (modmean - np.nanmean(modmean)))
+            / (np.nanstd(obsmean) * np.nanstd(modmean))
+        )
+        return (
+            2 * np.nanstd(obsmean) * np.nanstd(modmean) * (1.0 - corr) / BRMSUs**2
+            if BRMSUs != 0
+            else np.nan
+        )
+
+    @staticmethod
+    def _MPI_std_s(obsmean: np.array, modmean: np.array, BRMSUs: float) -> float:
+        # SPACE StDev Norm: (sigma_bar{M}-sigma_bar{O}) / ( beta RMS_bar{U})
+        # -------------------------------------------------------------------
+        # MF formula: (np.nanstd(sim)-np.nanstd(obs))/(beta*rmsu_)
+        # where sim = scores['sim_mean'], obs = scores['obs_mean']
+        return (np.nanstd(modmean) - np.nanstd(obsmean)) / BRMSUs if BRMSUs != 0 else np.nan
 
     @staticmethod
     def _RMSU(mean: float, std: float, spec: str) -> float:
@@ -237,4 +313,4 @@ class FairmodeStatistics:
             (1 - SPECIES[var_name]["alpha"] ** 2) * Operc**2 + factor
         )
 
-        return (Operc - Mperc) / (beta * uncertainty_Operc)
+        return (Mperc - Operc) / (beta * uncertainty_Operc)
