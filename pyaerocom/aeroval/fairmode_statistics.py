@@ -99,20 +99,19 @@ class FairmodeStatistics:
         rms = np.sqrt(np.nanmean(diffsquare, axis=0, where=mask))
         bias = np.nanmean(diff, axis=0, where=mask)
 
-        NMB = self._NMB(modvals, obsvals)
-        R = self.pearson_R(obsvals, modvals)
-        rmsu = self._RMSU(obsmean, obsstd, var_name)
-        sign = self._fairmode_sign(modstd, obsstd, R)
-        crms = self._crms(modstd, obsstd, R)
-        mqi = self._mqi(rms, rmsu, beta=1)
-        mb = self._mb(bias, rmsu, beta=1)
-        beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
-        exceedances = self._exceedances(data=data, var_name=var_name)
-
         BRMSUt = self._BRMSU_t(obsvals, beta=1, var_name=var_name, mask=mask)
         BRMSUs = self._BRMSU_s(obsmean, beta=1, var_name=var_name)
 
-        assert np.allclose(rmsu, BRMSUt, equal_nan=True)
+        NMB = self._NMB(modvals, obsvals)
+        R = self.pearson_R(obsvals, modvals)
+        sign = self._fairmode_sign(modstd, obsstd, R)
+        crms = self._crms(modstd, obsstd, R)
+        mqi = self._mqi(rms, BRMSUt, beta=1)
+        mb = self._mb(bias, BRMSUt, beta=1)
+        beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
+        exceedances = self._exceedances(data=data, var_name=var_name)
+
+        MPI_mean = obsmean / BRMSUt
 
         MPI_bias_t = self._MPI_bias_t(obsmean, modmean, BRMSUt)
         MPI_R_t = self._MPI_R_t(obsstd, modstd, R, BRMSUt)
@@ -121,7 +120,7 @@ class FairmodeStatistics:
         MPI_R_s = self._MPI_R_s(obsmean, modmean, BRMSUs)
         MPI_std_s = self._MPI_std_s(obsmean, modmean, BRMSUs)
 
-        assert len(rmsu) == len(stations)
+        assert len(BRMSUt) == len(stations)
         assert len(sign) == len(stations)
         assert len(crms) == len(stations)
         assert len(bias) == len(stations)
@@ -132,25 +131,20 @@ class FairmodeStatistics:
 
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
-                obs_mean=obsmean[i],
-                mod_std=modstd[i],
-                mod_mean=modmean[i],
                 exceedances_obs=int(exceedances[0][i]),
-                exceedances_mod=int(exceedances[1][i]),
+                MPI_mean=MPI_mean[i],
                 MPI_R_t=MPI_R_t[i],
                 MPI_bias_t=MPI_bias_t[i],
                 MPI_std_t=MPI_std_t[i],
                 MPI_R_s=MPI_R_s,
                 MPI_std_s=MPI_std_s,
+                MPI_Hperc=beta_Hperc[i],
                 NMB=NMB[i],
-                R=R[i],
-                RMSU=rmsu[i],
+                RMSU=BRMSUt[i],
                 sign=[sign[i]],
                 crms=crms[i],
-                bias=bias[i],
                 rms=[rms[i]],
                 beta_mqi=[mqi[i]],
-                Hperc=beta_Hperc[i],
                 persistence_model=False,
                 station_type=station_types[i],
                 **{k: (str(v) if k == "freq" else v) for (k, v) in SPECIES[var_name].items()},
@@ -295,21 +289,6 @@ class FairmodeStatistics:
         # MF formula: (np.nanstd(sim)-np.nanstd(obs))/(beta*rmsu_)
         # where sim = scores['sim_mean'], obs = scores['obs_mean']
         return (np.nanstd(modmean) - np.nanstd(obsmean)) / BRMSUs if BRMSUs != 0 else np.nan
-
-    @staticmethod
-    def _RMSU(mean: float, std: float, spec: str) -> float:
-        """RMSU is the Root Mean Squared Uncertainty associated with the uncertainty of the observations, U(O_i)."""
-
-        if spec not in SPECIES:
-            raise ValueError(f"Unsupported {spec=}")
-
-        UrRV = SPECIES[spec]["UrRV"]
-        RV = SPECIES[spec]["RV"]
-        alpha = SPECIES[spec]["alpha"]
-
-        in_sqrt = (1 - alpha**2) * (mean**2 + std**2) + alpha**2 * RV**2
-
-        return UrRV * np.sqrt(in_sqrt)
 
     @staticmethod
     def _fairmode_sign(mod_std: float, obs_std: float, R: float) -> float:

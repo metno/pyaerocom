@@ -61,24 +61,19 @@ def test_fairmode_statistics(fairmode_statistics, dummy_coldata_to_fairmode_stat
     assert all(
         item in fm_stats["Agoufou"]
         for item in [
-            "obs_mean",
-            "mod_std",
-            "mod_mean",
             "exceedances_obs",
-            "exceedances_mod",
+            "MPI_mean",
             "MPI_R_t",
             "MPI_bias_t",
             "MPI_std_t",
             "MPI_R_s",
             "MPI_std_s",
+            "MPI_Hperc",
             "NMB",
-            "R",
             "RMSU",
             "sign",
             "beta_mqi",
-            "Hperc",
             "crms",
-            "bias",
             "rms",
         ]
     )
@@ -121,25 +116,20 @@ def fairmode_stats_example() -> dict:
         "ALL": {
             "2010-DJF": {
                 "Alta_Floresta": {
-                    "obs_mean": np.float64(0.3884868563740519),
-                    "mod_std": np.float64(0.6060961573280594),
-                    "mod_mean": np.float64(0.389367163926363),
                     "exceedances_obs": 0,
-                    "exceedances_mod": 0,
+                    "MPI_mean": np.float64(0.0005913779651058249),
                     "MPI_R_t": np.float64(0.0005913779651058249),
                     "MPI_bias_t": np.float64(9.168897156799856e-05),
                     "MPI_std_t": np.float64(0.5591805335919174),
                     "MPI_R_s": np.float64(0.000614303815616783),
                     "MPI_std_s": np.float64(-0.02044109782843315),
+                    "MPI_Hperc": np.float64(0.00965331794743008),
                     "NMB": np.float64(0.0020848533921114204),
-                    "R": np.float64(0.900162558255497),
                     "RMSU": np.float64(9.600056476313366),
                     "sign": [np.float64(1.0)],
                     "crms": np.float64(0.02482145009443063),
-                    "bias": np.float64(-0.0593675912149444),
                     "rms": [np.float64(0.064347612787539)],
                     "beta_mqi": [np.float64(0.006702836899585607)],
-                    "Hperc": np.float64(0.00965331794743008),
                     "persistence_model": False,
                     "station_type": np.str_("bla"),
                     "UrRV": 0.24,
@@ -149,25 +139,20 @@ def fairmode_stats_example() -> dict:
                     "percentile": 99.8,
                 },
                 "Thessaloniki": {
-                    "obs_mean": np.float64(0.18863685117105966),
-                    "mod_std": np.float64(0.043870373343254006),
-                    "mod_mean": np.float64(0.24130742929198526),
                     "exceedances_obs": 0,
-                    "exceedances_mod": 0,
+                    "MPI_mean": np.float64(0.0005913779651058249),
                     "MPI_R_t": np.float64(1.910032059129425e-05),
                     "MPI_bias_t": np.float64(0.005486454983897092),
                     "MPI_std_t": np.float64(0.03812805574279277),
                     "MPI_R_s": np.float64(0.000614303815616783),
                     "MPI_std_s": np.float64(-0.02044109782843315),
+                    "MPI_Hperc": np.float64(0.08138205388790398),
                     "NMB": np.float64(0.20555936048513765),
-                    "R": np.float64(0.6360611765520063),
                     "RMSU": np.float64(9.600986774272528),
                     "sign": [np.float64(-1.0)],
                     "crms": np.float64(0.4285870343218295),
-                    "bias": np.float64(-0.23278371875543458),
                     "rms": [np.float64(0.4877244157374022)],
                     "beta_mqi": [np.float64(0.05079940501994467)],
-                    "Hperc": np.float64(0.08138205388790398),
                     "persistence_model": False,
                     "station_type": np.str_("bla"),
                     "UrRV": 0.24,
@@ -177,25 +162,20 @@ def fairmode_stats_example() -> dict:
                     "percentile": 99.8,
                 },
                 "Trelew": {
-                    "obs_mean": np.float64(0.0423639675804894),
-                    "mod_std": np.float64(0.008299612612318126),
-                    "mod_mean": np.float64(0.042434395394391485),
                     "exceedances_obs": 0,
-                    "exceedances_mod": 0,
+                    "MPI_mean": np.float64(0.0005913779651058249),
                     "MPI_R_t": np.float64(2.1497603568997187e-06),
                     "MPI_bias_t": np.float64(7.3362264675617376e-06),
                     "MPI_std_t": np.float64(0.007313270958775213),
                     "MPI_R_s": np.float64(0.000614303815616783),
                     "MPI_std_s": np.float64(-0.02044109782843315),
+                    "MPI_Hperc": np.float64(-0.0009102268365390729),
                     "NMB": np.float64(0.0013019203413407127),
-                    "R": np.float64(-0.26051012045618877),
                     "RMSU": np.float64(9.600004401086988),
                     "sign": [np.float64(-1.0)],
                     "crms": np.float64(0.006734189622538359),
-                    "bias": np.float64(0.010339278114124648),
                     "rms": [np.float64(0.012338961941489254)],
                     "beta_mqi": [np.float64(0.0012853079463267891)],
-                    "Hperc": np.float64(-0.0009102268365390729),
                     "persistence_model": False,
                     "station_type": np.str_("bla"),
                     "UrRV": 0.24,
@@ -271,18 +251,3 @@ def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics, 
 
     assert all(exco == nhours // val1 + val2)
     assert all(excm == nhours // val1 + val2)
-
-
-def test_BRSMUt_equal_rsmu(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
-    var_name = "concno2"
-    obsvals = dummy_coldata_to_fairmode_statistics.data[0]
-    modvals = dummy_coldata_to_fairmode_statistics.data[1]
-    mask = ~np.isnan(obsvals) * ~np.isnan(modvals)
-
-    obsmean = np.nanmean(obsvals, axis=0)
-    obsstd = np.std(obsvals, axis=0)
-
-    rmsu = fairmode_statistics._RMSU(obsmean, obsstd, var_name)
-    BRMSUt = fairmode_statistics._BRMSU_t(obsvals, beta=1, var_name=var_name, mask=mask)
-
-    assert np.array_equal(np.round(rmsu, 8), np.round(BRMSUt, 8))
