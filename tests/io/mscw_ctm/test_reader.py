@@ -600,3 +600,10 @@ def test_reader_regexp(tmp_path: Path):
     reader._search_all_files()
 
     assert len(reader._private.filepaths) == 10
+
+
+def test_reader_read_deposition():
+    # https://github.com/metno/pyaerocom/issues/1624
+    file_path = Path("~/MyPyaerocom/EMEP-2022/").expanduser()
+    reader = ReadMscwCtm(data_dir=str(file_path))
+    reader.read_var("dryrdn", ts_type="monthly")
