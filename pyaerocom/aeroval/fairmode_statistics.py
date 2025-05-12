@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 SPECIES = dict(
-    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly"), percentile=99.8),
-    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily"), percentile=92.9),
-    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily"), percentile=90.1),
-    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1),
+    concno2=dict(UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly"), percentile=99.8, Np=5.2, Nnp=5.5),
+    conco3mda8=dict(UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily"), percentile=92.9, Np=11., Nnp=3.),
+    concpm10=dict(UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily"), percentile=90.1, Np=20., Nnp=1.5),
+    concpm25=dict(UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1, Np=20., Nnp=1.5),
 )
 
 EXC_THRESHOLDS = dict(  # we assume all the units are ug/m3
@@ -101,8 +101,8 @@ class FairmodeStatistics:
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
 
-        BRMSUt = self.BRMSU_t(obsvals, beta=1, spec=var_name)
-        BRMSUs = self.BRMSU_s(obsmean, beta=1, spec=var_name)
+        BRMSUt = self.BRMSU_t(obsvals, beta=1, spec=var_name, mask=mask)
+        BRMSUs = self.BRMSU_s(obsmean, beta=1, spec=var_name, mask=mask)
 
         assert np.allclose(rmsu, BRMSUt, equal_nan=True)
 
@@ -207,8 +207,8 @@ class FairmodeStatistics:
 
         return UrRV * np.sqrt(in_sqrt)
 
-    def BRMSU_t(self, obsvals: np.ndarray, beta: float, spec: str) -> np.ndarray:
-        return beta * np.sqrt(np.nanmean(np.square(self.obsuncertainty(obsvals, spec)), axis=0))
+    def BRMSU_t(self, obsvals: np.ndarray, beta: float, spec: str, mask: np.ndarray) -> np.ndarray:
+        return beta * np.sqrt(np.nanmean(np.square(self.obsuncertainty(obsvals, spec), where=mask), axis=0))
 
     def BRMSU_s(self, obsmean: np.ndarray, beta: float, spec: str) -> float:
         return beta * np.sqrt(np.nanmean(self.obsuncertainty(obsmean, spec)))
