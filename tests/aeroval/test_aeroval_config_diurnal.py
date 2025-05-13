@@ -2,6 +2,8 @@ import os.path
 import pathlib
 
 import pyaro
+import aerovaldb
+import aerovaldb.routes
 
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
@@ -37,14 +39,12 @@ def test_harp_test_data_available():
 
 def test_obs_data_readable():
     """test reading obs data using pyaerocom"""
-    from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
 
     reportyear = year = 2018
     CFG = get_CFG(
         reportyear=reportyear,
         year=year,
     )
-    assert CFG
     for aeroval_obs_name in CFG["obs_cfg"]:
         config = CFG["obs_cfg"][aeroval_obs_name]["pyaro_config"]
         reader = ReadUngridded(configs=config)
@@ -54,7 +54,6 @@ def test_obs_data_readable():
 
 def test_aux_file_available():
     """test if the aux file is available"""
-    from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
 
     reportyear = year = 2018
     CFG = get_CFG(
@@ -66,7 +65,6 @@ def test_aux_file_available():
 
 def test_model_data_readable():
     """test reading model data using pyaerocom"""
-    from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
 
     reportyear = year = 2018
     CFG = get_CFG(
@@ -95,10 +93,5 @@ def test_aeroval_config_diurnal():
     ana = ExperimentProcessor(stp)
 
     ana.run()
-    diurnal_path = (
-        pathlib.Path(CFG["json_basedir"]) / CFG["proj_id"] / CFG["exp_id"] / "ts" / "diurnal"
-    )
-    assert diurnal_path.exists()
-    tmp = diurnal_path.glob("*.json")
-    diurnal_files = [x for x in tmp if x.is_file()]
-    assert len(diurnal_files) > 1
+    diurnals = ana.exp_output.avdb.query(aerovaldb.routes.Route.TIMESERIES_WEEKLY)
+    assert len(diurnals) > 0

@@ -26,13 +26,10 @@ DEFAULT_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 HOMEDIR = Path.home()
 MYPYAEROCOM_DIR = Path.home() / "MyPyaerocom"
-MYPYAEROCOM_DIR.mkdir(exist_ok=True)
 TMP_DIR = Path.home() / "tmp"
-TMP_DIR.mkdir(exist_ok=True)
 JSON_DIR = Path.home() / "tmp" / "data"
-JSON_DIR.mkdir(exist_ok=True)
 COLDATA_DIR = Path.home() / "tmp" / "coldata"
-COLDATA_DIR.mkdir(exist_ok=True)
+
 
 # data directory for test data
 TEST_DATA_DIR = MYPYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "diurnal_test_data"
@@ -49,7 +46,10 @@ def get_CFG(
 
     :returns: a dict of a model configuration usable for EvalSetup
     """
-
+    MYPYAEROCOM_DIR.mkdir(exist_ok=True)
+    TMP_DIR.mkdir(exist_ok=True)
+    JSON_DIR.mkdir(exist_ok=True)
+    COLDATA_DIR.mkdir(exist_ok=True)
     CFG = dict(
         json_basedir=JSON_DIR,
         coldata_basedir=COLDATA_DIR,
