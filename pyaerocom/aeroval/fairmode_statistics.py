@@ -237,7 +237,7 @@ class FairmodeStatistics:
 
             return UrRV * np.sqrt(in_sqrt)
 
-        return beta * np.sqrt(np.nanmean(obsuncertainty(obsmean, var_name)))
+        return beta * np.sqrt(np.nanmean(np.square(obsuncertainty(obsmean, var_name))))
 
     @staticmethod
     def _MPI_R_t(obsstd: np.array, modstd: np.array, R: float, BRMSUt: np.array) -> np.array:
