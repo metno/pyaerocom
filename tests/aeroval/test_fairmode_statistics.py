@@ -69,6 +69,7 @@ def test_fairmode_statistics(fairmode_statistics, dummy_coldata_to_fairmode_stat
             "MPI_R_s",
             "MPI_std_s",
             "MPI_Hperc",
+            "bias",
             "NMB",
             "RMSU",
             "sign",

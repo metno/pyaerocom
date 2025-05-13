@@ -139,6 +139,7 @@ class FairmodeStatistics:
                 MPI_R_s=MPI_R_s,
                 MPI_std_s=MPI_std_s,
                 MPI_Hperc=beta_Hperc[i],
+                bias=bias[i],
                 NMB=NMB[i],
                 RMSU=BRMSUt[i],
                 sign=[sign[i]],
