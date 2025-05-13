@@ -477,6 +477,7 @@ class UngriddedDataContainer(abc.ABC):
         inplace=False,
         low=None,
         high=None,
+        unit_ref=None,
         move_to_trash=True,
     ):
         """Method that can be used to remove outliers from data
