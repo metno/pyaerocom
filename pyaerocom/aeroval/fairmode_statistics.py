@@ -111,8 +111,6 @@ class FairmodeStatistics:
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
 
-        MPI_mean = obsmean / BRMSUt
-
         MPI_bias_t = self._MPI_bias_t(obsmean, modmean, BRMSUt)
         MPI_R_t = self._MPI_R_t(obsstd, modstd, R, BRMSUt)
         MPI_std_t = self._MPI_std_t(obsstd, modstd, BRMSUt)
@@ -132,7 +130,7 @@ class FairmodeStatistics:
         stats_list: dict[str, dict[str, float]] = {
             stations[i]: dict(
                 exceedances_obs=int(exceedances[0][i]),
-                MPI_mean=MPI_mean[i],
+                MPI_mean=obsmean[i],
                 MPI_R_t=MPI_R_t[i],
                 MPI_bias_t=MPI_bias_t[i],
                 MPI_std_t=MPI_std_t[i],
