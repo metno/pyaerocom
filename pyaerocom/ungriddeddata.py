@@ -91,8 +91,8 @@ class UngriddedData(UngriddedDataMetadata):
 
     """
 
-    #: version of class (for caching)
-    __version__ = "0.22"
+    #: version for caching, needs also updating when UngriddedDataMetadata has changed
+    __version__ = "0.23"
 
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
@@ -1023,6 +1023,7 @@ class UngriddedData(UngriddedDataMetadata):
         inplace=False,
         low=None,
         high=None,
+        unit_ref=None,
         move_to_trash=True,
     ):
         """Method that can be used to remove outliers from data
@@ -1069,7 +1070,7 @@ class UngriddedData(UngriddedDataMetadata):
         else:
             new = self.copy()
 
-        new.check_unit(var_name)
+        new.check_convert_var_units(var_name, to_unit=unit_ref)
 
         if low is None:
             low = const.VARS[var_name].minimum
