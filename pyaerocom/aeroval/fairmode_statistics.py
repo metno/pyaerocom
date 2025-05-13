@@ -262,7 +262,7 @@ class FairmodeStatistics:
         # TIME StDev Norm: (sigma_M-sigma_O) / (beta RMS_U)
         # ---------------------------------------------------
         # MF eq.: (scores['sim_std']-scores['obs_std'])/(beta*rmsu)
-        return np.where(BRMSUt == 0, np.nan, modstd - obsstd / BRMSUt)
+        return np.where(BRMSUt == 0, np.nan, np.abs(modstd - obsstd) / BRMSUt)
 
     @staticmethod
     def _MPI_R_s(obsmean: np.array, modmean: np.array, BRMSUs: float) -> float:
