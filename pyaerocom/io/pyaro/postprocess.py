@@ -121,6 +121,14 @@ class PostProcessingReaderData(Data):
         return self.data.__len__()
 
     @property
+    def variable(self) -> str:
+        return self._variable
+
+    @property
+    def units(self) -> str:
+        return self._units
+
+    @property
     def values(self):
         if self.scaling is None:
             return self.data.values
@@ -204,7 +212,9 @@ class PostProcessingReader(Reader):
         if isinstance(transform, VariableScaling):
             data = self.reader.data(transform.REQ_VAR)
             scaling = transform.SCALING_FACTOR * get_unit_conversion_fac(
-                from_unit=data.units, to_unit=transform.IN_UNIT, var_name=transform.REQ_VAR
+                from_unit=data.units,
+                to_unit=transform.IN_UNIT,
+                var_name=transform.REQ_VAR,
             )
             return PostProcessingReaderData(
                 data, variable=varname, units=transform.OUT_UNIT, scaling=scaling
@@ -350,12 +360,20 @@ class DictBackedData(Data):
     def slice(self, index):
         return DictBackedData(
             data=self._data()[index],
-            variable=self._variable,
+            variable=self.variable,
             units=self._units,
         )
 
     def __len__(self):
         return len(self.values)
+
+    @property
+    def variable(self) -> str:
+        return self._variable
+
+    @property
+    def units(self) -> str:
+        return self._units
 
     @property
     def values(self):
