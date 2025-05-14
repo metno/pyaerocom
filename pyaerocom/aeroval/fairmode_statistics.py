@@ -177,7 +177,7 @@ class FairmodeStatistics:
 
     @staticmethod
     def pearson_R(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        mask = ~np.isnan(x) * ~np.isnan(y)
+        mask = np.isfinite(x) & np.isfinite(y)
 
         xmean = np.mean(x, axis=0, where=mask)
         ymean = np.mean(y, axis=0, where=mask)
