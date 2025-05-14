@@ -80,6 +80,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         use_weights = self.cfg.statistics_opts.weighted_stats
         forecast_days = self.cfg.statistics_opts.forecast_days
         periods = self.cfg.time_cfg.periods
+        min_num_obs = self.cfg.colocation_opts.min_num_obs
 
         # use_fairmode = self.cfg.statistics_opts.use_fairmode
         use_fairmode = self.cfg.cams2_83_cfg.use_cams2_83_fairmode
@@ -98,6 +99,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 persistence_coldata = persistence_coldata.resample_time(
                     SPECIES[var_name]["freq"],
                     settings_from_meta=True,
+                    min_num_obs=min_num_obs,
                 )
 
         if "var_name_input" in coldata[0].metadata:
@@ -202,6 +204,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             fairmode_subset = fairmode_subset.resample_time(
                                 SPECIES[var_name]["freq"],
                                 settings_from_meta=True,
+                                min_num_obs=min_num_obs
                             )
 
                         results_fairmode[f"{regname}"][f"{perstr}"] = (
@@ -219,7 +222,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                                 
                                 mqi_results = self._calc_forecast_target_MQI_vectorized(
-                                    ds, ds_p, var_name, day
+                                    ds, ds_p, var_name, day, min_num_obs
                                 )
 
                                 results_mqi.append(mqi_results)
@@ -352,6 +355,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         persistence_coldata: ColocatedData,
         var_name: str,
         forecast_day: int,
+        min_num_obs: dict,
     ) -> dict[str, float]:
 
         results = {}
@@ -361,6 +365,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             coldata = coldata.resample_time(
                 SPECIES[var_name]["freq"],
                 settings_from_meta=True,
+                min_num_obs=min_num_obs
             )
 
         # Creation of mask of shared stations between normal data and persistence data
