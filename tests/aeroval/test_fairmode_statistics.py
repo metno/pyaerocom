@@ -92,22 +92,22 @@ def test_fairmode_statistics_wrongspecies(
     assert f"Unsupported spec='{wrongspec}'" in str(e.value)
 
 
-def test_BRMSUt_wrongspecies(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
+def test_βRMSUt_wrongspecies(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
     obsvals = dummy_coldata_to_fairmode_statistics.data[0]
     wrongspec = "concso2"
 
     with pytest.raises(ValueError) as e:
-        fairmode_statistics._BRMSU_t(obsvals, beta=1, var_name=wrongspec, mask=None)
+        fairmode_statistics._βRMSU_t(obsvals, beta=1, var_name=wrongspec, mask=None)
     assert f"Unsupported spec='{wrongspec}'" in str(e.value)
 
 
-def test_BRMSUs_wrongspecies(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
+def test_βRMSUs_wrongspecies(fairmode_statistics, dummy_coldata_to_fairmode_statistics):
     obsvals = dummy_coldata_to_fairmode_statistics.data[0]
     obsmean = np.nanmean(obsvals, axis=0)
     wrongspec = "concso2"
 
     with pytest.raises(ValueError) as e:
-        fairmode_statistics._BRMSU_s(obsmean, beta=1, var_name=wrongspec)
+        fairmode_statistics._βRMSU_s(obsmean, beta=1, var_name=wrongspec)
     assert f"Unsupported spec='{wrongspec}'" in str(e.value)
 
 
