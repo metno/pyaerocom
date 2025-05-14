@@ -194,6 +194,11 @@ class FairmodeStatistics:
 
         return r
 
+    # in the following _s and _t are for the spatial(ly averaged) and temporal(ly-only averaged) quantities,
+    # we define a _βRMSU_t to be used for the calculation of (following MeteoFrance/evaltools naming)
+    # Time Bias Norm (_MPI_bias_t), Time Corr Norm (_MPI_r_t) and Time StdDev Norm (_MPI_std_t)
+    # and a _βRMSU_s to be used for the calculation of Space Corr Norm (_MPI_R_s) and Space StDev Norm (_MPI_std_s)
+
     @staticmethod
     def _βRMSU_t(
         obsvals: np.ndarray,
