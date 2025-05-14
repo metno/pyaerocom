@@ -54,6 +54,7 @@ from pyaerocom.vert_coords import AltitudeAccess
 from pyaerocom.units.logging import LoggingCallback
 from pyaerocom.units import convert_unit
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -846,8 +847,8 @@ class GriddedData:
         list
             list containing all time stamps as datetime64 objects
         """
-        if self.has_time_dim:
-            return cftime_to_datetime64(self.time)
+        # if self.has_time_dim:
+        return cftime_to_datetime64(self.time)
 
     def years_avail(self):
         """
@@ -1893,7 +1894,45 @@ class GriddedData:
                     self.cube.coord("time").bounds = None
                 except Exception:
                     pass
+                mask = np.logical_and(
+                    time_range[0] <= self.time_stamps(), self.time_stamps() < time_range[1]
+                )
+                dates = self.time_stamps()[mask]
                 data = data.extract(time_constraint)
+                if len(dates) == 1:
+                    time_coord = data.coord("time")
+
+                    # coord_values = time_coord.points
+                    # coord_units = time_coord.units
+                    # coord_standard_name = time_coord.standard_name
+                    # coord_long_name = time_coord.long_name
+
+                    # time_dim_coord = iris.coords.DimCoord(
+                    #    coord_values,
+                    #    standard_name=coord_standard_name,
+                    #    units=coord_units,
+                    #    long_name=coord_long_name,
+                    # )
+
+                    data.remove_coord("time")
+
+                    # extract removes dimension for length 1, so we re-add it here.
+                    # unix_timestamp = (dates[0] - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+                    # date = datetime.datetime.utcfromtimestamp(unix_timestamp)
+                    #
+                    # times = [cf_units.date2num(date, str(self.grid.dim_coords[0].units), calendar="gregorian")]
+                    # time_coord = iris.coords.DimCoord(times, standard_name='time')
+                    new_shape = (1,) + data.shape
+                    nd_data = np.reshape(data.data, new_shape)
+                    data = iris.cube.Cube(
+                        nd_data,
+                        dim_coords_and_dims=[(time_coord, 0)]
+                        + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
+                        var_name=data.var_name,
+                        long_name=data.long_name,
+                        units=data.units,
+                    )
+
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
                 data = data[time_range[0] : time_range[1]]
