@@ -15,7 +15,6 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
-    DataUnitError,
     DimensionOrderError,
     MetaDataError,
     TemporalResolutionError,
@@ -33,7 +32,6 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
-from pyaerocom.units.helpers import get_standard_unit
 
 from .colocated_data import ColocatedData
 
@@ -162,7 +160,7 @@ def colocate_gridded_gridded(
     stop=None,
     filter_name=None,
     regrid_res_deg: float | RegridResDeg | None = None,
-    harmonise_units=True,
+    # harmonise_units=True,
     regrid_scheme: str = "areaweighted",
     update_baseyear_gridded=None,
     min_num_obs=None,
@@ -241,15 +239,15 @@ def colocate_gridded_gridded(
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
 
-    if harmonise_units:
-        if not data.units == data_ref.units:
-            try:
-                data_ref.convert_unit(data.units)
-            except Exception:
-                raise DataUnitError(
-                    f"Failed to merge data unit of reference gridded data object ({data.units}) "
-                    f"to data unit of gridded data object ({data_ref.units})"
-                )
+    # if harmonise_units:
+    #    if not data.units == data_ref.units:
+    #        try:
+    #            data_ref.convert_unit(data.units)
+    #        except Exception:
+    #            raise DataUnitError(
+    #                f"Failed to merge data unit of reference gridded data object ({data.units}) "
+    #                f"to data unit of gridded data object ({data_ref.units})"
+    #            )
 
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
@@ -615,7 +613,7 @@ def colocate_gridded_ungridded(
     stop=None,
     filter_name=None,
     regrid_res_deg: float | RegridResDeg | None = None,
-    harmonise_units=True,
+    # harmonise_units=True,
     regrid_scheme: str = "areaweighted",
     var_ref=None,
     update_baseyear_gridded=None,
@@ -845,10 +843,11 @@ def colocate_gridded_ungridded(
 
     data_ref_unit = None
     ts_type_src_ref = None
-    if not harmonise_units:
-        data_unit = str(data.units)
-    else:
-        data_unit = None
+    data_unit = str(data.units)
+    # if not harmonise_units:
+    #    data_unit = str(data.units)
+    # else:
+    #    data_unit = None
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
@@ -891,13 +890,13 @@ def colocate_gridded_ungridded(
 
         # get model station data
         grid_stat = grid_stat_data[i]
-        if harmonise_units:
-            grid_unit = grid_stat.get_unit(var)
-            to_unit = get_standard_unit(var_ref)
-            if not grid_unit == to_unit:
-                grid_stat.convert_unit(var, to_unit)
-            if data_unit is None:
-                data_unit = to_unit
+        # if harmonise_units:
+        #    grid_unit = grid_stat.get_unit(var)
+        #    to_unit = get_standard_unit(var_ref)
+        #    if not grid_unit == to_unit:
+        #        grid_stat.convert_unit(var, to_unit)
+        #    if data_unit is None:
+        #        data_unit = to_unit
 
         try:
             if colocate_time:

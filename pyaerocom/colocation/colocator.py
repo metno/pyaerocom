@@ -1000,13 +1000,14 @@ class Colocator:
         model_data = self.get_model_data(model_var)
         obs_data = self.get_obs_data(obs_var)
 
-        model_data.convert_unit(get_standard_unit(obs_var), inplace=True)
-        if isinstance(obs_data, GriddedData):
-            obs_data.convert_unit(get_standard_unit(model_var), inplace=True)
-        elif isinstance(obs_data, UngriddedDataStructured | UngriddedData):
-            obs_data.check_convert_var_units(
-                obs_var
-            )  # TODO: Fix, units not necessarily harmonized if different vars.
+        if self.colocation_setup.harmonise_units:
+            model_data.convert_unit(get_standard_unit(obs_var), inplace=True)
+            if isinstance(obs_data, GriddedData):
+                obs_data.convert_unit(get_standard_unit(model_var), inplace=True)
+            elif isinstance(obs_data, UngriddedDataStructured | UngriddedData):
+                obs_data.check_convert_var_units(
+                    obs_var
+                )  # TODO: Fix, units not necessarily harmonized if different vars.
 
         if getattr(obs_data, "is_vertical_profile", None):
             self.obs_is_vertical_profile = obs_data.is_vertical_profile
@@ -1025,7 +1026,7 @@ class Colocator:
             stop=self.stop,
             filter_name=self.colocation_setup.filter_name,
             regrid_res_deg=self.colocation_setup.regrid_res_deg,
-            harmonise_units=self.colocation_setup.harmonise_units,
+            # harmonise_units=self.colocation_setup.harmonise_units,
             update_baseyear_gridded=baseyr,
             min_num_obs=self.colocation_setup.min_num_obs,
             colocate_time=self.colocation_setup.colocate_time,
