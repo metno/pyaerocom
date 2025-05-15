@@ -31,11 +31,9 @@ from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from pyaerocom.units import Unit
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
-from pyaerocom.units.helpers import get_standard_unit
+from pyaerocom.units.harmonise import harmonise_units
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -1001,13 +999,16 @@ class Colocator:
         obs_data = self.get_obs_data(obs_var)
 
         if self.colocation_setup.harmonise_units:
-            model_data.convert_unit(get_standard_unit(obs_var), inplace=True)
-            if isinstance(obs_data, GriddedData):
-                obs_data.convert_unit(get_standard_unit(model_var), inplace=True)
-            elif isinstance(obs_data, UngriddedDataStructured | UngriddedData):
-                obs_data.check_convert_var_units(
-                    obs_var
-                )  # TODO: Fix, units not necessarily harmonized if different vars.
+            model_data, obs_data = harmonise_units(
+                model_data, obs_data, var=model_var, var_ref=obs_var
+            )
+            # model_data.convert_unit(get_standard_unit(obs_var), inplace=True)
+            # if isinstance(obs_data, GriddedData):
+            #    obs_data.convert_unit(get_standard_unit(model_var), inplace=True)
+            # elif isinstance(obs_data, UngriddedDataStructured | UngriddedData):
+            #    obs_data.check_convert_var_units(
+            #        obs_var
+            #    )  # TODO: Fix, units not necessarily harmonized if different vars.
 
         if getattr(obs_data, "is_vertical_profile", None):
             self.obs_is_vertical_profile = obs_data.is_vertical_profile
