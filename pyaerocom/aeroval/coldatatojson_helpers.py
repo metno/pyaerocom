@@ -491,7 +491,7 @@ class CoordSiteArrays:
     alts: list[float]
     countries: list[str]
     jsdates: dict[str, list[str]]
-    display_names: list[str] | None
+    display_names: list[str | None] | None
 
 
 def _init_site_coord_arrays(data) -> CoordSiteArrays:
@@ -577,7 +577,9 @@ def _process_sites(data, regions, regions_how, meta_glob):
         else:
             site_meta["region"] = regs[i]
         if coord_arrays.display_names is not None:
-            site_meta["station_display_name"] = coord_arrays.display_names[i]
+            display_name = coord_arrays.display_names[i]
+            if display_name is not None:
+                site_meta["station_display_name"] = display_name
         ts_data = _init_ts_data(freqs)
         ts_data.update(meta_glob)
         ts_data.update(site_meta)
