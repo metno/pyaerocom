@@ -104,6 +104,8 @@ def init_regions_web(coldata, regions_how):
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
         regs.update(add_regs)
+    elif regions_how == "none":
+        pass
     else:
         raise ValueError("Invalid input for regions_how", regions_how)
 
@@ -527,6 +529,8 @@ def _process_sites(data, regions, regions_how, meta_glob):
         regs = countries
     elif regions_how == "htap":
         regs = _get_stat_regions(lats, lons, regions, regions_how=regions_how)
+    elif regions_how == "none":
+        regs = ["ALL" for _ in range(len(sites))]
     else:
         regs = _get_stat_regions(lats, lons, regions)
 

@@ -2258,7 +2258,7 @@ class GriddedData:
 
         suppl = dict(**self.metadata)
         suppl["regridded"] = True
-        data_out = GriddedData(data_rg, **suppl)
+        data_out = GriddedData(data_rg, convert_unit_on_init=False, **suppl)
         return data_out
 
     def check_lon_circular(self):
