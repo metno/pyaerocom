@@ -516,8 +516,8 @@ def _init_site_coord_arrays(data) -> CoordSiteArrays:
                 countries = cd.data.country.values
             else:
                 countries = ["UNAVAIL"] * len(lats)
-            if "display_name" in cd.data.coords:
-                display_names = cd.data["display_name"].values
+            if "station_display_name" in cd.data.coords:
+                display_names = cd.data["station_display_name"].values
             else:
                 display_names = None
 

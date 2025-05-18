@@ -857,7 +857,7 @@ def colocate_gridded_ungridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
         station_types[i] = getattr(obs_stat, "station_type", "")
-        station_display_names[i] = getattr(obs_stat, "station_display_name", None)
+        station_display_names[i] = getattr(obs_stat, "display_name", None)
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
