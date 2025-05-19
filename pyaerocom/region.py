@@ -4,14 +4,13 @@ This module contains functionality related to regions in pyaerocom
 
 from __future__ import annotations
 
-import numpy as np
-
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
+from pyaerocom.geodesy import calc_distance
 
 POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
 
@@ -124,8 +123,6 @@ class Region(BrowseDict):
         float
             distance in km
         """
-        from pyaerocom.geodesy import calc_distance
-
         cc = self.center_coordinate
         return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
 
@@ -175,60 +172,6 @@ class Region(BrowseDict):
             self._mask_data = load_region_mask_xr(self.region_id)
         return self._mask_data
 
-    def plot_mask(self, ax, color, alpha=0.2):
-        mask = self.get_mask_data()
-        # import numpy as np
-        data = mask.data
-        data[data == 0] = np.nan
-        mask.data = data
-
-        mask.plot(ax=ax)
-        return ax
-
-    def plot_borders(self, ax, color, lw=2):
-        raise NotImplementedError("Coming soon...")
-
-    def plot(self, ax=None):
-        """
-        Plot this region
-
-        Draws a rectangle of the outer bounds of the region and if a binary
-        mask is available for this region, it will be plotted as well.
-
-        Parameters
-        ----------
-        ax : GeoAxes, optional
-            axes instance to be used for plotting. Defaults to None in which
-            case a new instance is created.
-
-        Returns
-        -------
-        GeoAxes
-            axes instance used for plotting
-
-        """
-        from cartopy.mpl.geoaxes import GeoAxes
-
-        from pyaerocom.plot.mapping import init_map
-
-        if ax is None:
-            ax = init_map()
-        elif not isinstance(ax, GeoAxes):
-            raise ValueError("Invalid input for ax: need cartopy GeoAxes..")
-
-        if self.mask_available():
-            self.plot_mask(ax, color="r")
-
-        ax.set_xlabel("Longitude")
-        ax.set_ylabel("Latitude")
-        name = self.name
-        if not name == self.region_id:
-            name += f" (ID={self.region_id})"
-
-        ax.set_title(name)
-
-        return ax
-
     def __contains__(self, val: tuple) -> bool:
         if not isinstance(val, tuple):
             raise TypeError("Invalid input, need tuple")
@@ -236,10 +179,10 @@ class Region(BrowseDict):
             raise ValueError("Invalid input: coordinate must contain 2 elements (lat, lon)")
         return self.contains_coordinate(lat=val[0], lon=val[1])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Region {self.name} {super().__repr__()}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = (
             f"pyaeorocom Region\nName: {self.name}\n"
             f"Longitude range: {self.lon_range}\n"
