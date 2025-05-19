@@ -94,12 +94,6 @@ class Unit:
                 (M_NH3 / M_N) / (HA_TO_SQM * (365 * 24 * 60 * 60)),
             ],
             ["drynh3", "kg m-2 s-1", "mg N m-2 d-1", ((M_N / M_NH3) * 1000) / (24 * 60 * 60)],
-            # [
-            #    "drynh3",
-            #    "kg N ha-1 yr-1",
-            #    "kg m-2 s-1",
-            #    (M_NH3 / M_N) / (1 / (HA_TO_SQM * (365 * 24 * 60 * 60))),
-            # ],
         ],
         columns=["var_name", "from", "to", "fac"],
     ).set_index(["var_name", "from"])
