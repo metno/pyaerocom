@@ -847,8 +847,8 @@ class GriddedData:
         list
             list containing all time stamps as datetime64 objects
         """
-        # if self.has_time_dim:
-        return cftime_to_datetime64(self.time)
+        if self.has_time_dim:
+            return cftime_to_datetime64(self.time)
 
     def years_avail(self):
         """
