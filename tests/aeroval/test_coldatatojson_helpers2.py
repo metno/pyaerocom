@@ -433,7 +433,7 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     )
     assert all(
         item in results["ALL"][f"{period}-{season}"]["Agoufou"]
-        for item in ["RMSU", "sign", "beta_mqi", "Hperc", "crms", "bias", "rms"]
+        for item in ["RMSU", "sign", "beta_mqi", "MPI_Hperc", "crms", "rms"]
     )
 
     wrongperiod = "2025"

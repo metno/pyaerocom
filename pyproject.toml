@@ -49,7 +49,7 @@ dependencies = [
     'cf-units>=3.3.0',
     "pydantic~=2.7",
     "pyproj>=3.0.0",
-    "pyaro>=0.1.3",
+    "pyaro>=0.2.0, <0.3.0",
     "pooch>=1.7.0",
     "psutil>=5.0.0",
     "contourpy>=1.3.0",
@@ -244,7 +244,7 @@ deps =
     typing-extensions ==4.6.1; python_version < "3.11"
     cf-units ==3.3.0; python_version < "3.11"
     pydantic ==2.7.0; python_version < "3.11"
-    pyaro == 0.1.3; python_version < "3.11"
+    pyaro == 0.2.0; python_version < "3.11"
     pooch ==1.7.0; python_version < "3.11"
     xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
