@@ -13,7 +13,7 @@ from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
-from pyaerocom.geodesy import calc_distance, haversines
+from pyaerocom.geodesy import haversines
 from typing import TypeVar
 
 
@@ -121,36 +121,46 @@ class Region(BrowseDict):
         float
             distance in km
         """
-        if isinstance(lat, np.ndarray):
-            assert isinstance(lon, np.ndarray)
-            assert lat.shape == lon.shape
-            assert lat.ndim == lon.ndim == 1
+        if isinstance(lat, float):
+            lat = np.array([lat])
+        if isinstance(lon, float):
+            lon = np.array([lon])
+
+        assert lat.shape == lon.shape
+        assert lat.ndim == lon.ndim == 1
 
         cc = self.center_coordinate
-        if isinstance(lat, float):
-            return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
+        return haversines(np.array([cc[0]] * len(lat)), np.array([cc[1]] * len(lat)), lat, lon)
 
-        return haversines(np.array([cc[0]] * len(lat)), np.array([cc[1]] * len(lat), lat, lon))
-
-    def contains_coordinate(self, lat: float, lon: float) -> bool:
+    def contains_coordinate(self, lat: T, lon: T) -> T:
         """Check if input lat/lon coordinate is contained in region
 
         Parameters
         ----------
-        lat : float
+        lat : float | np.ndarray
             latitude of coordinate
-        lon : float
+        lon : float | np.ndarray
             longitude of coordinate
 
         Returns
         -------
-        bool
+        bool | np.ndarray
             True if coordinate is contained in this region, False if not
         """
-        lat_lb = self.lat_range[0]
-        lat_ub = self.lat_range[1]
-        lon_lb = self.lon_range[0]
-        lon_ub = self.lon_range[1]
+        if isinstance(lat, float | int):
+            lat = np.array([lat])
+        if isinstance(lon, float | int):
+            lon = np.array([lon])
+
+        assert lat.shape == lon.shape
+        assert lat.ndim == lon.ndim == 1
+
+        length = len(lat)
+        lat_lb = np.array([self.lat_range[0]] * length)
+        lat_ub = np.array([self.lat_range[1]] * length)
+        lon_lb = np.array([self.lon_range[0]] * length)
+        lon_ub = np.array([self.lon_range[1]] * length)
+
         # latitude bounding boxes should always be defined with the southern most boundary less than the northernmost
         lat_ok = lat_lb <= lat <= lat_ub
         # if the longitude bounding box has a lowerbound less than the upperbound
@@ -160,9 +170,10 @@ class Region(BrowseDict):
         # if the longitude lowerbound has a value lessthan the upperbound
         elif lon_ub < lon_lb:
             # lon is contained in the bounding box in two cases
-            lon_ok = lon < lon_ub or lon > lon_lb
+            lon_ok = np.logical_or(lon < lon_ub, lon > lon_lb)
         else:
             lon_ok = False  # safeguard
+
         return lat_ok * lon_ok
 
     def mask_available(self) -> bool:
@@ -334,16 +345,29 @@ def find_closest_region_coord(
     list[str]
         sorted list of region IDs of identified regions
     """
+    if isinstance(lat, float | int):
+        lat = np.array([lat])
+    if isinstance(lon, float | int):
+        lon = np.array([lon])
     if regions is None:
         regions = get_all_default_regions()
-    matches = get_regions_coord(lat, lon, regions)
-    matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
-    if kwargs.get("regions_how") == "htap":
-        # keep only first entry and Oceans if it exists
-        keep = matches[:1]
+    # matches = get_regions_coord(lat, lon, regions)
+
+    reg = list(regions)
+    dist = np.empty(shape=(len(lat), len(reg)))
+
+    for i, r in enumerate(reg):
+        dist[:, i] = regions[r].distance_to_center(lat, lon)
+
+    matches = []
+    for i in range(len(lat)):
+        m = [reg[i] for i in np.argsort(dist[i, :])]
+        keep = m[:1]
         if "Oceans" in matches[1:]:
             keep += ["Oceans"]
         if ALL_REGION_NAME in matches[1:]:
             keep += [ALL_REGION_NAME]
-        return list(set(keep))
+
+        matches.append(list(set(keep)))
+
     return matches
