@@ -841,6 +841,7 @@ def colocate_gridded_ungridded(
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
     station_types = [""] * stat_num
+    station_display_names = [None] * stat_num
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -856,6 +857,7 @@ def colocate_gridded_ungridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
         station_types[i] = getattr(obs_stat, "station_type", "")
+        station_display_names[i] = getattr(obs_stat, "display_name", None)
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
@@ -985,6 +987,8 @@ def colocate_gridded_ungridded(
         "longitude": ("station_name", lons),
         "altitude": ("station_name", alts),
     }
+    if any(x is not None for x in station_display_names):
+        coords["station_display_name"] = ("station_name", station_display_names)
 
     dims = ["data_source", "time", "station_name"]
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)

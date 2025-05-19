@@ -7,6 +7,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Literal
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -481,7 +482,19 @@ def _process_sites_weekly_ts(coldata, regions_how, region_ids, meta_glob):
     return (ts_objs, ts_objs_reg)
 
 
-def _init_site_coord_arrays(data):
+@dataclass
+class CoordSiteArrays:
+    station_names: list[str]
+    station_types: list[str]
+    lats: list[float]
+    lons: list[float]
+    alts: list[float]
+    countries: list[str]
+    jsdates: dict[str, list[str]]
+    display_names: list[str | None] | None
+
+
+def _init_site_coord_arrays(data) -> CoordSiteArrays:
     found = False
     jsdates = {}
     for freq, cd in data.items():
@@ -503,12 +516,25 @@ def _init_site_coord_arrays(data):
                 countries = cd.data.country.values
             else:
                 countries = ["UNAVAIL"] * len(lats)
+            if "station_display_name" in cd.data.coords:
+                display_names = cd.data["station_display_name"].values
+            else:
+                display_names = None
 
             found = True
         else:
             assert all(cd.data.station_name.values == sites)
         jsdates[freq] = cd.data.jsdate.values.tolist()
-    return (sites, sites_types, lats, lons, alts, countries, jsdates)
+    return CoordSiteArrays(
+        station_names=sites,
+        station_types=sites_types,
+        lats=lats,
+        lons=lons,
+        alts=alts,
+        countries=countries,
+        jsdates=jsdates,
+        display_names=display_names,
+    )
 
 
 def _get_stat_regions(lats, lons, regions, **kwargs):
@@ -522,31 +548,38 @@ def _get_stat_regions(lats, lons, regions, **kwargs):
 
 def _process_sites(data, regions, regions_how, meta_glob):
     freqs = list(data)
-    (sites, site_types, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
+    # (sites, site_types, lats, lons, alts, countries, jsdates)
+    coord_arrays = _init_site_coord_arrays(data)
     if regions_how == "country":
-        regs = countries
+        regs = coord_arrays.countries
     elif regions_how == "htap":
-        regs = _get_stat_regions(lats, lons, regions, regions_how=regions_how)
+        regs = _get_stat_regions(
+            coord_arrays.lats, coord_arrays.lons, regions, regions_how=regions_how
+        )
     else:
-        regs = _get_stat_regions(lats, lons, regions)
+        regs = _get_stat_regions(coord_arrays.lats, coord_arrays.lons, regions)
 
     ts_objs = []
     site_indices = []
     map_meta = []
 
-    for i, site in enumerate(sites):
+    for i, site in enumerate(coord_arrays.station_names):
         # init empty timeseries data object
         site_meta = {
             "station_name": str(site),
-            "station_type": site_types[i],
-            "latitude": lats[i],
-            "longitude": lons[i],
-            "altitude": alts[i],
+            "station_type": coord_arrays.station_types[i],
+            "latitude": coord_arrays.lats[i],
+            "longitude": coord_arrays.lons[i],
+            "altitude": coord_arrays.alts[i],
         }
         if regions_how == "country":
             site_meta["region"] = [regs[i]]
         else:
             site_meta["region"] = regs[i]
+        if coord_arrays.display_names is not None:
+            display_name = coord_arrays.display_names[i]
+            if display_name is not None:
+                site_meta["station_display_name"] = display_name
         ts_data = _init_ts_data(freqs)
         ts_data.update(meta_glob)
         ts_data.update(site_meta)
@@ -558,7 +591,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
                 if np.all(np.isnan(sitedata)):
                     # skip this site, all is NaN
                     continue
-                ts_data[f"{freq}_date"] = jsdates[freq]
+                ts_data[f"{freq}_date"] = coord_arrays.jsdates[freq]
                 ts_data[f"{freq}_obs"] = sitedata[0].tolist()
                 ts_data[f"{freq}_mod"] = sitedata[1].tolist()
                 has_data = True
