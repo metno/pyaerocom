@@ -1025,15 +1025,14 @@ class Colocator:
         # (not all readers may do that, currently only the CAMS2_83 reader does)
         if isinstance(obs_data, UngriddedDataContainer):
             add_meta_keys = []
-            are_there_station_types = {
-                "station_type" in dict for dict in obs_data.metadata.values()
-            }
+            are_there_station_types = {"station_type" in d for d in obs_data.metadata.values()}
             if are_there_station_types == {True, False}:
                 raise ValueError("some stations have `station_type` metadata while others do not")
             if are_there_station_types == {True}:  # all have station_type
                 add_meta_keys.append("station_type")
 
-            add_meta_keys.append("display_name")
+            if any("display_name" in d for d in obs_data.metadata.values()):
+                add_meta_keys.append("display_name")
             args["add_meta_keys"] = add_meta_keys
 
         if self.obs_is_ungridded:
