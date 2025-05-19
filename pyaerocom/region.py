@@ -3,6 +3,9 @@ This module contains functionality related to regions in pyaerocom
 """
 
 from __future__ import annotations
+from functools import cached_property
+
+import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
@@ -10,9 +13,13 @@ from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
-from pyaerocom.geodesy import calc_distance
+from pyaerocom.geodesy import calc_distance, haversines
+from typing import TypeVar
+
 
 POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
+
+T = TypeVar("T", bound=float | np.ndarray)
 
 
 class Region(BrowseDict):
@@ -64,24 +71,20 @@ class Region(BrowseDict):
         self.lon_range = None
         self.lat_range = None
 
-        # longitude / latitude range of data in plots
-        self.lon_range_plot = None
-        self.lat_range_plot = None
-
         self.lon_ticks = None
         self.lat_ticks = None
 
         self._mask_data = None
         if region_id in REGION_DEFS:
-            self.import_default(region_id)
+            self._import_default(region_id)
 
         self.update(**kwargs)
 
     def is_htap(self) -> bool:
         """Boolean specifying whether region is an HTAP binary region"""
-        return True if self.region_id in HTAP_REGIONS else False
+        return self.region_id in HTAP_REGIONS
 
-    def import_default(self, region_id: str) -> None:
+    def _import_default(self, region_id: str) -> None:
         """Import region definition
 
         Parameters
@@ -96,26 +99,21 @@ class Region(BrowseDict):
         """
         self.update(REGION_DEFS[region_id])
 
-        if self.lon_range_plot is None:
-            self.lon_range_plot = self.lon_range
-        if self.lat_range_plot is None:
-            self.lat_range_plot = self.lat_range
-
-    @property
+    @cached_property
     def center_coordinate(self) -> tuple[float, float]:
         """Center coordinate of this region"""
         latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0]) / 2
         lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0]) / 2
         return (latc, lonc)
 
-    def distance_to_center(self, lat: float, lon: float) -> float:
-        """Compute distance of input coordinate to center of this region
+    def distance_to_center(self, lat: T, lon: T) -> T:
+        """Compute distance of input coordinate(s) to center of this region
 
         Parameters
         ----------
-        lat : float
+        lat : float | np.ndarray
             latitude of coordinate
-        lon : float
+        lon : float | np.ndarray
             longitude of coordinate
 
         Returns
@@ -123,8 +121,16 @@ class Region(BrowseDict):
         float
             distance in km
         """
+        if isinstance(lat, np.ndarray):
+            assert isinstance(lon, np.ndarray)
+            assert lat.shape == lon.shape
+            assert lat.ndim == lon.ndim == 1
+
         cc = self.center_coordinate
-        return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
+        if isinstance(lat, float):
+            return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
+
+        return haversines(np.array([cc[0]] * len(lat)), np.array([cc[1]] * len(lat), lat, lon))
 
     def contains_coordinate(self, lat: float, lon: float) -> bool:
         """Check if input lat/lon coordinate is contained in region
@@ -141,7 +147,6 @@ class Region(BrowseDict):
         bool
             True if coordinate is contained in this region, False if not
         """
-
         lat_lb = self.lat_range[0]
         lat_ub = self.lat_range[1]
         lon_lb = self.lon_range[0]
@@ -161,9 +166,7 @@ class Region(BrowseDict):
         return lat_ok * lon_ok
 
     def mask_available(self) -> bool:
-        if not self.is_htap():
-            return False
-        return True
+        return self.is_htap()
 
     def get_mask_data(self):
         if not self.mask_available():

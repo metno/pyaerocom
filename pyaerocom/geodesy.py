@@ -356,3 +356,25 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     c = 2 * np.arcsin(np.sqrt(a))
 
     return earth_radius * c
+
+
+EARTH_RADIUS = 6378137
+
+
+def haversines(
+    lat1: np.ndarray, lon1: np.ndarray, lat2: np.ndarray, lon2: np.ndarray
+) -> np.ndarray:
+    """
+    Calculate the great-circle distance between two points on the Earth (specified in decimal degrees).
+    returns:
+        Distance (in km)
+    """
+    # Convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    c = 2 * np.arcsin(np.sqrt(a))
+    m = (EARTH_RADIUS * c) / 1_000
+    return m
