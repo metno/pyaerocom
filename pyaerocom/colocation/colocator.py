@@ -1000,15 +1000,8 @@ class Colocator:
 
         if self.colocation_setup.harmonise_units:
             model_data, obs_data = harmonise_units(
-                model_data, obs_data, var=model_var, var_ref=obs_var
+                model_data, obs_data, var=model_var, var_ref=obs_var, inplace=True
             )
-            # model_data.convert_unit(get_standard_unit(obs_var), inplace=True)
-            # if isinstance(obs_data, GriddedData):
-            #    obs_data.convert_unit(get_standard_unit(model_var), inplace=True)
-            # elif isinstance(obs_data, UngriddedDataStructured | UngriddedData):
-            #    obs_data.check_convert_var_units(
-            #        obs_var
-            #    )  # TODO: Fix, units not necessarily harmonized if different vars.
 
         if getattr(obs_data, "is_vertical_profile", None):
             self.obs_is_vertical_profile = obs_data.is_vertical_profile

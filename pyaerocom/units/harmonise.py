@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def harmonise_units(data, data_ref, *, var: str, var_ref: str) -> tuple:
+def harmonise_units(data, data_ref, *, var: str, var_ref: str, inplace=False) -> tuple:
     """Tries to perform unit conversion for the provided data object, so that
     the units of the data objects match for the given variable names.
 
@@ -18,6 +18,7 @@ def harmonise_units(data, data_ref, *, var: str, var_ref: str) -> tuple:
     :param data: Reference data.
     :param var: Varname for data.
     :param var_ref: Varname for data_ref.
+    :param inplace: Whether to perform conversion inplace.
     :return: tuple of length n, containing converted data and ref_data.
     """
     std_unit = get_standard_unit(var)
@@ -31,13 +32,15 @@ def harmonise_units(data, data_ref, *, var: str, var_ref: str) -> tuple:
     harmonised_unit = std_unit_ref
 
     try:
-        data = data.convert_unit(harmonised_unit, inplace=True)
+        data = data.convert_unit(harmonised_unit, inplace=inplace)
     except AttributeError:
-        data = data.check_convert_var_units(var, to_unit=harmonised_unit, inplace=True)
+        data = data.check_convert_var_units(var, to_unit=harmonised_unit, inplace=inplace)
 
     try:
-        data_ref = data_ref.convert_unit(harmonised_unit, inplace=True)
+        data_ref = data_ref.convert_unit(harmonised_unit, inplace=inplace)
     except AttributeError:
-        data_ref = data_ref.check_convert_var_units(var_ref, to_unit=harmonised_unit, inplace=True)
+        data_ref = data_ref.check_convert_var_units(
+            var_ref, to_unit=harmonised_unit, inplace=inplace
+        )
 
     return data, data_ref
