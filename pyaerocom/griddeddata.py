@@ -1900,28 +1900,10 @@ class GriddedData:
                 dates = self.time_stamps()[mask]
                 data = data.extract(time_constraint)
                 if len(dates) == 1:
+                    # Working around iris 'squeezing' the cube when extract is length 1 along the date
+                    # dimension by readding the dimension with the appropriate value.
                     time_coord = data.coord("time")
-
-                    # coord_values = time_coord.points
-                    # coord_units = time_coord.units
-                    # coord_standard_name = time_coord.standard_name
-                    # coord_long_name = time_coord.long_name
-
-                    # time_dim_coord = iris.coords.DimCoord(
-                    #    coord_values,
-                    #    standard_name=coord_standard_name,
-                    #    units=coord_units,
-                    #    long_name=coord_long_name,
-                    # )
-
                     data.remove_coord("time")
-
-                    # extract removes dimension for length 1, so we re-add it here.
-                    # unix_timestamp = (dates[0] - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
-                    # date = datetime.datetime.utcfromtimestamp(unix_timestamp)
-                    #
-                    # times = [cf_units.date2num(date, str(self.grid.dim_coords[0].units), calendar="gregorian")]
-                    # time_coord = iris.coords.DimCoord(times, standard_name='time')
                     new_shape = (1,) + data.shape
                     nd_data = np.reshape(data.data, new_shape)
                     data = iris.cube.Cube(
