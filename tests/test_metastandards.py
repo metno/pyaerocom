@@ -24,8 +24,7 @@ def test_datasource_empty():
 
 
 @pytest.mark.parametrize(
-    "data_id,dataset_name,data_product,data_version,"
-    "data_level,revision_date,stat_merge_pref_attr",
+    "data_id,dataset_name,data_product,data_version,data_level,revision_date,stat_merge_pref_attr",
     [
         ("AeronetSunV3Lev2.daily", "AERONET", "Sun", 3.0, 2.0, None, None),
         ("EBASMC", "EBAS", None, None, None, None, "revision_date"),

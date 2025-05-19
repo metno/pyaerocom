@@ -8,6 +8,7 @@ from pyaerocom import const
 pytest_plugins = [
     "tests.fixtures.mscw_ctm",
     "tests.fixtures.tm5",
+    "tests.fixtures.emep_ci",
     "tests.fixtures.ebas",
     "tests.fixtures.aeronet",
     "tests.fixtures.stations",
@@ -18,7 +19,6 @@ pytest_plugins = [
 ]
 
 TEST_RTOL = 1e-4
-
 
 # skipif marker that is True if no access to metno PPI is provided
 # (some tests are skipped in this case)
