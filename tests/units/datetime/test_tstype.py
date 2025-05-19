@@ -129,7 +129,6 @@ def test_TsType_cf_base_unit(tst: TsType, unit: str):
     [
         (TsType("native"), "Cannot convert native to CF str"),
         (TsType("minutely"), "Cannot convert minutely to CF str"),
-        # (TsType("yearly"), "Cannot convert yearly to CF str"),
     ],
 )
 def test_TsType_cf_base_unit_error(tst: TsType, error: str):
