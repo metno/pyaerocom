@@ -50,7 +50,7 @@ class Region(BrowseDict):
         potentially defined default attrs. that are imported automatically.
     """
 
-    def __init__(self, region_id=None, **kwargs):
+    def __init__(self, region_id: str | None = None, **kwargs):
         if region_id is None:
             region_id = ALL_REGION_NAME
 
@@ -78,11 +78,11 @@ class Region(BrowseDict):
 
         self.update(**kwargs)
 
-    def is_htap(self):
+    def is_htap(self) -> bool:
         """Boolean specifying whether region is an HTAP binary region"""
         return True if self.region_id in HTAP_REGIONS else False
 
-    def import_default(self, region_id):
+    def import_default(self, region_id: str) -> None:
         """Import region definition
 
         Parameters
@@ -103,13 +103,13 @@ class Region(BrowseDict):
             self.lat_range_plot = self.lat_range
 
     @property
-    def center_coordinate(self):
+    def center_coordinate(self) -> tuple[float, float]:
         """Center coordinate of this region"""
         latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0]) / 2
         lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0]) / 2
         return (latc, lonc)
 
-    def distance_to_center(self, lat, lon):
+    def distance_to_center(self, lat: float, lon: float) -> float:
         """Compute distance of input coordinate to center of this region
 
         Parameters
@@ -129,7 +129,7 @@ class Region(BrowseDict):
         cc = self.center_coordinate
         return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
 
-    def contains_coordinate(self, lat, lon):
+    def contains_coordinate(self, lat: float, lon: float) -> bool:
         """Check if input lat/lon coordinate is contained in region
 
         Parameters
@@ -163,7 +163,7 @@ class Region(BrowseDict):
             lon_ok = False  # safeguard
         return lat_ok * lon_ok
 
-    def mask_available(self):
+    def mask_available(self) -> bool:
         if not self.is_htap():
             return False
         return True
@@ -229,7 +229,7 @@ class Region(BrowseDict):
 
         return ax
 
-    def __contains__(self, val):
+    def __contains__(self, val: tuple) -> bool:
         if not isinstance(val, tuple):
             raise TypeError("Invalid input, need tuple")
         if not len(val) == 2:
