@@ -104,7 +104,7 @@ def test_equality(
 
 
 @pytest.mark.parametrize(
-    "unit,var,out_cf_unit", (("kg N ha-1 yr-1", "drynh3", "383441123690.80505 kg m-2 s-1"),)
+    "unit,var,out_cf_unit", (("kg N ha-1 yr-1", "drynh3", "3.855542323140657e-12 kg m-2 s-1"),)
 )
 def test_custom_unit_conversion(unit: str, var: str, out_cf_unit: str):
     assert str(Unit(unit, aerocom_var=var)._cfunit) == out_cf_unit
