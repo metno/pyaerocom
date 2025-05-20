@@ -54,6 +54,7 @@ dependencies = [
     "psutil>=5.0.0",
     "contourpy>=1.3.0",
     "geojson",
+
 ]
 
 [project.readme]
@@ -73,6 +74,7 @@ docs = [
     "sphinx_rtd_theme",
     "sphinx-argparse",
     "nbsphinx",
+    "snowballstemmer<3",
 ]
 test = [
     "pytest>=7.4",
@@ -247,6 +249,7 @@ deps =
     xarray ==2022.12.0; python_version < "3.11"
     pandas ==1.5.3; python_version < "3.11"
     contourpy ==1.3.0; python_version < "3.11"
+    git+https://github.com/metno/pyaro-readers.git@v0.1.1
 
 [testenv:lint]
 skip_install = True
