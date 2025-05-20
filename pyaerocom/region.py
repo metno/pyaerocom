@@ -4,6 +4,7 @@ This module contains functionality related to regions in pyaerocom
 
 from __future__ import annotations
 from functools import cached_property
+import time
 
 import numpy as np
 
@@ -326,7 +327,7 @@ def get_regions_coord(lat, lon, regions=None):
 
 
 def find_closest_region_coord(
-    lat: float, lon: float, regions: dict | None = None, **kwargs
+    lat: float, lon: float, regions: dict | None = None, *, regions_how: str
 ) -> list[str]:
     """Finds list of regions sorted by their center closest to input coordinate
 
@@ -339,6 +340,9 @@ def find_closest_region_coord(
     regions : dict, optional
         dictionary containing instances of :class:`Region` as values, which
         are considered. If None, then all default regions are used.
+    regions_how: str
+        string value of either "default", "htap", "country", or "none" (See EvalSetup
+        for details)
 
     Returns
     -------
@@ -351,7 +355,6 @@ def find_closest_region_coord(
         lon = np.array([lon])
     if regions is None:
         regions = get_all_default_regions()
-    # matches = get_regions_coord(lat, lon, regions)
 
     reg = list(regions)
     dist = np.empty(shape=(len(lat), len(reg)))
@@ -361,13 +364,20 @@ def find_closest_region_coord(
 
     matches = []
     for i in range(len(lat)):
-        m = [reg[i] for i in np.argsort(dist[i, :])]
-        keep = m[:1]
-        if "Oceans" in matches[1:]:
-            keep += ["Oceans"]
-        if ALL_REGION_NAME in matches[1:]:
-            keep += [ALL_REGION_NAME]
+        start_time = time.perf_counter()
+        m = [reg[j] for j in np.argsort(dist[i, :]) if reg[j] in get_regions_coord(lat[i], lon[i])]
+        if regions_how == "htap":
+            keep = m[:1]
+            if "Oceans" in matches[1:]:
+                keep += ["Oceans"]
+            if ALL_REGION_NAME in matches[1:]:
+                keep += [ALL_REGION_NAME]
 
-        matches.append(list(set(keep)))
+            matches.append(list(set(keep)))
+        else:
+            matches.append(m)
+
+        end_time = time.perf_counter()
+        print(f"[{i+1}/{len(lat)}] {end_time-start_time:3f} seconds elapsed.")
 
     return matches
