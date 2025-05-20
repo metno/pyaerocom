@@ -539,9 +539,10 @@ def _init_site_coord_arrays(data) -> CoordSiteArrays:
 
 def _get_stat_regions(lats, lons, regions, **kwargs):
     regions_how = kwargs.get("regions_how", None)
-    regs = find_closest_region_coord(
-        np.array(lats), np.array(lons), regions=regions, regions_how=regions_how
-    )
+    regs = []
+    for lat, lon in zip(lats, lons):
+        reg = find_closest_region_coord(lat, lon, regions=regions, regions_how=regions_how)
+        regs.append(reg)
     return regs
 
 
