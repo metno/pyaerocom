@@ -4,7 +4,6 @@ This module contains functionality related to regions in pyaerocom
 
 from __future__ import annotations
 from functools import cached_property
-import time
 
 import numpy as np
 
@@ -364,7 +363,6 @@ def find_closest_region_coord(
 
     matches = []
     for i in range(len(lat)):
-        start_time = time.perf_counter()
         valid_regions = set(get_regions_coord(lat[i], lon[i], regions=regions))
         m = [reg[j] for j in np.argsort(dist[i, :]) if reg[j] in valid_regions]
         if regions_how == "htap":
@@ -377,8 +375,5 @@ def find_closest_region_coord(
             matches.append(list(set(keep)))
         else:
             matches.append(m)
-
-        end_time = time.perf_counter()
-        print(f"[{i+1}/{len(lat)}] {end_time-start_time:3f} seconds elapsed.")
 
     return matches
