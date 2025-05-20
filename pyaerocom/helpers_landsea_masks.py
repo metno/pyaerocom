@@ -9,6 +9,7 @@ data classes (i.e. :class:`GriddedData`, :class:`UngriddedData`,
 :class:`ColocatedData`).
 """
 
+from functools import lru_cache
 import glob
 import logging
 import os
@@ -131,6 +132,7 @@ def get_htap_mask_files(*region_ids):
     return out
 
 
+@lru_cache(maxsize=1)
 def load_region_mask_xr(*regions):
     """Load boolean mask for input regions (as xarray.DataArray)
 
