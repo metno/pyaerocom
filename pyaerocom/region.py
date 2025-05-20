@@ -365,7 +365,8 @@ def find_closest_region_coord(
     matches = []
     for i in range(len(lat)):
         start_time = time.perf_counter()
-        m = [reg[j] for j in np.argsort(dist[i, :]) if reg[j] in get_regions_coord(lat[i], lon[i])]
+        valid_regions = set(get_regions_coord(lat[i], lon[i]))
+        m = [reg[j] for j in np.argsort(dist[i, :]) if reg[j] in valid_regions]
         if regions_how == "htap":
             keep = m[:1]
             if "Oceans" in matches[1:]:
