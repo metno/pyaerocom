@@ -12,8 +12,8 @@ from pyaerocom import const, VerticalProfile, UngriddedData
 ROOT: str = const.OBSLOCS_UNGRIDDED["Eprofile-test"]
 
 TEST_FILES: list[str] = [
-    f"{ROOT}/AP_0-20000-0-06235-A-2025-01-01.nc",
-    f"{ROOT}/AP_0-20000-0-06240-A-2025-01-01.nc",
+    f"{ROOT}/AP_0-20000-0-01001-A-2025-01-01.nc",
+    f"{ROOT}/AP_0-20000-0-06380-A-2025-01-01.nc",
 ]
 
 
