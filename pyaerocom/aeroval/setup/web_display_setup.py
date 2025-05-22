@@ -11,7 +11,7 @@ class WebDisplaySetup(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
     # WebDisplaySetup attributes
     map_zoom: Literal["World", "Europe", "xEMEP"] = "World"
-    regions_how: Literal["default", "aerocom", "htap", "country", "none"] = "default"
+    regions_how: Literal["default", "aerocom", "htap", "country"] = "default"
     map_zoom: str = "World"
     add_model_maps: bool = False
     modelorder_from_config: bool = True
