@@ -11,7 +11,7 @@ dependencies:
   - pandas >=1.5.3
   - numpy >=1.25.0
   - seaborn >=0.12.2
-  - dask <= 2025.5.0
+  - dask < 2025.5.0
   - geonum ==1.5.0
   - simplejson
   - requests
