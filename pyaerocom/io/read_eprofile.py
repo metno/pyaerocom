@@ -84,9 +84,9 @@ class ReadEprofile(ReadUngriddedBase):
     #: metadata keys that are needed for reading (must be values in
     #: :attr:`META_NAMES_FILE`)
     META_NEEDED = [
-        "station_longitude",
-        "station_latitude",
-        "station_altitude",
+        "station_longitude_t0",
+        "station_latitude_t0",
+        "station_altitude_t0",
     ]
 
     #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to
@@ -182,8 +182,8 @@ class ReadEprofile(ReadUngriddedBase):
                 data_in.station_latitude
             )
             data_out["altitude"] = (
-                data_in.altitude.values
-            )  # Note altitude is an array for the data, station altitude is different
+                data_in.station_altitude_t0 + data_in.altitude.values
+            )  # Note altitude is an array for the data, station altitude is different. Moreover, EPROFILE as of 21.05.2025 gives altitude in altitude above ground level, so add the station altitude to get the altitude above sea level
             data_out["station_coords"]["altitude"] = data_in.station_altitude
             data_out["altitude_attrs"] = (
                 data_in.altitude.attrs
