@@ -128,7 +128,10 @@ class ExperimentOutput(ProjectOutput):
         """
         if self.cfg.processing_opts.only_model_maps:
             contour_routes = self.avdb.query(
-                [aerovaldb.routes.Route.CONTOUR, aerovaldb.routes.Route.CONTOUR_TIMESPLIT],
+                [
+                    aerovaldb.routes.Route.CONTOUR,
+                    aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                ],
                 project=self.proj_id,
                 experiment=self.exp_id,
             )
@@ -145,7 +148,9 @@ class ExperimentOutput(ProjectOutput):
             if (
                 len(
                     self.avdb.query(
-                        aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
+                        aerovaldb.routes.Route.MAP,
+                        project=self.proj_id,
+                        experiment=self.exp_id,
                     )
                 )
                 == 0
@@ -226,7 +231,9 @@ class ExperimentOutput(ProjectOutput):
                 }
                 self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
             for uri in self.avdb.query(
-                aerovaldb.routes.Route.HEATMAP, project=self.proj_id, experiment=self.exp_id
+                aerovaldb.routes.Route.HEATMAP,
+                project=self.proj_id,
+                experiment=self.exp_id,
             ):
                 data = self.avdb.get_by_uri(uri)
                 hm = {}
@@ -320,7 +327,9 @@ class ExperimentOutput(ProjectOutput):
                 modified.append(uri)
 
         for uri in self.avdb.query(
-            aerovaldb.routes.Route.TIMESERIES, project=self.proj_id, experiment=self.exp_id
+            aerovaldb.routes.Route.TIMESERIES,
+            project=self.proj_id,
+            experiment=self.exp_id,
         ):
             if self._check_clean_ts_uri(uri):
                 modified.append(uri)
@@ -671,10 +680,14 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         if self.cfg.processing_opts.only_model_maps:
             uris = self.avdb.query(
-                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                [
+                    aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                    aerovaldb.routes.Route.MAP_OVERLAY,
+                ],
                 project=self.proj_id,
                 experiment=self.exp_id,
             )
+
             all_combinations = list(
                 itertools.product(
                     self.cfg.obs_cfg.keylist(),
@@ -699,18 +712,21 @@ class ExperimentOutput(ProjectOutput):
                 if not all_combinations:
                     break
 
-                mod_name = uri.meta["model"]
-                obs_var = uri.meta["obsvar"]
-                mod_var = uri.meta["obsvar"]
+                # mod_name = uri.meta["model"]
+                # obs_var = uri.meta["obsvar"]
+                # mod_var = uri.meta["obsvar"]
 
-                if mod_name in self.cfg.obs_cfg.keylist():
-                    obs_name = mod_name
+                src_name = uri.meta["source"]
+                var = uri.meta["variable"]
+
+                if src_name in self.cfg.obs_cfg.keylist():
+                    obs_name = mod_name = src_name
                     vert_code = self.cfg.obs_cfg.get_entry(obs_name).obs_vert_type
                     first_with_obs_name = next(
                         (
                             item
                             for item in all_combinations
-                            if item[0] == obs_name and item[-1] == obs_var
+                            if item[0] == obs_name and item[-1] == var
                         ),
                         None,
                     )
@@ -718,10 +734,10 @@ class ExperimentOutput(ProjectOutput):
                         continue
                     mod_name = first_with_obs_name[1]
                     all_combinations.remove(first_with_obs_name)
-                elif mod_name in self.cfg.model_cfg.keylist():
+                elif src_name in self.cfg.model_cfg.keylist():
                     vert_code = None
                     for o in self.cfg.obs_cfg.keylist():
-                        if obs_var in self.cfg.obs_cfg.get_entry(o).obs_vars:
+                        if var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
                         raise ValueError(
@@ -731,7 +747,7 @@ class ExperimentOutput(ProjectOutput):
                         (
                             item
                             for item in all_combinations
-                            if item[1] == mod_name and item[-1] == obs_var
+                            if item[1] == src_name and item[-1] == var
                         ),
                         None,
                     )
