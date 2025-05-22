@@ -2,6 +2,8 @@ from __future__ import annotations
 import datetime
 import sys
 
+from pyaerocom.units.molecular_mass import MolecularMass, UnknownSpeciesError, _get_species
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
@@ -14,7 +16,6 @@ import cf_units
 import numpy as np
 import pandas as pd
 
-from .exceptions import UnitConversionError
 from .datetime import TsType
 from .datetime.time_config import SI_TO_TS_TYPE
 from pyaerocom.variable_helpers import get_variable
@@ -61,6 +62,8 @@ class Unit:
     This wrapper allows conversion of any data structure that supports __mul__.
     """
 
+    # If found in the nominator, these are treated as elements for scaling units.
+    _TREAT_AS_ELEMENT = ["C", "N", "S"]
     #: Custom unit conversion factors for certain variables
     #: columns: variable -> from unit -> to_unit -> conversion
     #: factor
@@ -140,22 +143,44 @@ class Unit:
         *,
         aerocom_var: str | None = None,
         ts_type: str | TsType | None = None,
+        **kwargs,
     ) -> None:
         self._origin = str(unit)
         unit = Unit._UALIASES.get(str(unit), str(unit))
 
-        try:
-            info = Unit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
-            if not isinstance(info, pd.Series):
-                raise UnitConversionError(
-                    "FATAL: Could not find unique conversion factor in table PyaerocomUnit._UCONV_MUL_FACS."
-                )
-            new_unit, factor = (info.to, info.fac)
-        except KeyError:
-            new_unit, factor = unit, 1
+        self._species = kwargs.pop("species", None)
+        if self._species is None:
+            try:
+                self._species = _get_species(aerocom_var).upper()
+            except (UnknownSpeciesError, AttributeError):
+                pass
+
+        self._element = None
+        if self._species is not None:
+            for e in Unit._TREAT_AS_ELEMENT:
+                if e in self._origin_nominator:
+                    unit = unit.replace(e, "", 1)
+                    self._element = e
+                    break
+
+        if self._element is not None and self._species is not None:
+            factor = MolecularMass(self._species) / MolecularMass(self._element)
+        else:
+            factor = 1
+        # try:
+        #    info = Unit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
+        #    if not isinstance(info, pd.Series):
+        #        raise UnitConversionError(
+        #            "FATAL: Could not find unique conversion factor in table PyaerocomUnit._UCONV_MUL_FACS."
+        #        )
+        #    new_unit, factor = (info.to, info.fac)
+        # except KeyError:
+        #    new_unit, factor = unit, 1
 
         if factor != 1:
-            new_unit = f"{factor} {new_unit}"
+            new_unit = f"{factor} {unit}"
+        else:
+            new_unit = unit
 
         if ts_type is not None and aerocom_var is not None and get_variable(aerocom_var).is_rate:
             ends_with_freq = False
@@ -179,6 +204,36 @@ class Unit:
         The original string used to create this Unit.
         """
         return self._origin
+
+    @property
+    def _origin_nominator(self) -> str:
+        if "/" in self.origin:
+            return self.origin.split("/")[0].strip()
+
+        if "-" in self.origin:
+            idx = self.origin.index("-")
+            try:
+                while self.origin[idx] not in [" ", "."]:
+                    idx -= 1
+            except IndexError:
+                pass
+            return self.origin[:idx].strip()
+
+        return self.origin.strip()
+
+    @property
+    def _origin_denominator(self) -> str:
+        if "/" in self.origin:
+            return self.origin.split("/")[1].strip()
+
+        if "-" in self.origin:
+            idx = self.origin.index("-")
+            while self.origin[idx] != " ":
+                idx -= 1
+
+            return self.origin[idx:].strip()
+
+        return ""
 
     def is_convertible(self, other: str | Unit) -> bool:
         """

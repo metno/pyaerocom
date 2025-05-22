@@ -108,3 +108,37 @@ def test_equality(
 )
 def test_custom_unit_conversion(unit: str, var: str, out_cf_unit: str):
     assert str(Unit(unit, aerocom_var=var)._cfunit) == out_cf_unit
+
+
+@pytest.mark.parametrize(
+    "unit,nominator,denominator",
+    (("mg", "mg", ""), ("mg N / m2 d", "mg N", "m2 d"), ("mg N m-2 d-1", "mg N", "m-2 d-1")),
+)
+def test_nominator_denominator(unit: str, nominator: str, denominator: str):
+    u = Unit(unit)
+    assert u._origin_nominator == nominator
+    assert u._origin_denominator == denominator
+
+
+@pytest.mark.parametrize(
+    "unit,element,species,var",
+    (
+        ("mg", None, None, None),
+        ("mg N", "N", None, None),
+        ("mg N", "N", "NH3", None),
+        ("mg N", "N", "NH3", "drynh3"),
+    ),
+)
+def test_species_and_element_detection(
+    unit: str, element: str | None, species: str | None, var: str | None
+):
+    if var is None:
+        u = Unit(unit, species=species, aerocom_var=var)
+    else:
+        u = Unit(unit, aerocom_var=var)
+    assert u._element == element
+    assert u._species == species
+
+
+def test_unit_conversion(from_unit: str, to_unit: str, species: str):
+    pass
