@@ -81,7 +81,6 @@ TS_TYPE_TO_NUMPY_FREQ = {
 
 # conversion of ts_types to strings that cf_units understands
 TS_TYPE_TO_SI = {
-    "secondly": "s",
     "minutely": "min",
     "hourly": "h",
     "daily": "d",
