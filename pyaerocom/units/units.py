@@ -14,13 +14,10 @@ from collections.abc import Iterable
 
 import cf_units
 import numpy as np
-# import pandas as pd
 
 from .datetime import TsType
 from .datetime.time_config import SI_TO_TS_TYPE
 from pyaerocom.variable_helpers import get_variable
-
-# from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
 from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
@@ -65,35 +62,6 @@ class Unit:
 
     # If found in the nominator, these are treated as elements for scaling units.
     _TREAT_AS_ELEMENT = ["C", "N", "S"]
-    #: Custom unit conversion factors for certain variables
-    #: columns: variable -> from unit -> to_unit -> conversion
-    #: factor
-    # _UCONV_MUL_FACS = pd.DataFrame(
-    #    [
-    #        # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
-    #        # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
-    #        # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
-    #        # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
-    #        # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
-    #        # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
-    #        ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
-    #        ["concbc", "ug C/m3", "ug m-3", 1.0],
-    #        ["concoa", "ug C/m3", "ug m-3", 1.0],
-    #        ["concoc", "ug C/m3", "ug m-3", 1.0],
-    #        ["conctc", "ug C/m3", "ug m-3", 1.0],
-    #        # a little hacky for ratpm10pm25...
-    #        # ["ratpm10pm25", "ug m-3", "1", 1.0],
-    #        ["concpm25", "ug m-3", "ug m-3", 1.0],
-    #        ["concpm10", "ug m-3", "ug m-3", 1.0],
-    #        ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
-    #        # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
-    #        ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
-    #        # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
-    #        ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
-    #        ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
-    #    ],
-    #    columns=["var_name", "from", "to", "fac"],
-    # ).set_index(["var_name", "from"])
 
     _UALIASES = {
         # mass concentrations
@@ -167,15 +135,6 @@ class Unit:
                 factor = 1
         else:
             factor = 1
-        # try:
-        #    info = Unit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
-        #    if not isinstance(info, pd.Series):
-        #        raise UnitConversionError(
-        #            "FATAL: Could not find unique conversion factor in table PyaerocomUnit._UCONV_MUL_FACS."
-        #        )
-        #    new_unit, factor = (info.to, info.fac)
-        # except KeyError:
-        #    new_unit, factor = unit, 1
 
         if factor != 1:
             new_unit = f"{factor} {unit}"
@@ -256,8 +215,6 @@ class Unit:
             same_variable = self._aerocom_var == other._aerocom_var
             if known_mass_ratio or same_variable:
                 return self._cfunit.is_convertible(other._cfunit)
-        # elif self._element == other._element and self._aerocom_var == other._aerocom_var:
-        #    return self._cfunit.is_convertible(other._cfunit)
         else:
             return self._cfunit.is_convertible(other._cfunit)
 

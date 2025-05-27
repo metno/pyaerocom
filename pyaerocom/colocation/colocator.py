@@ -1020,7 +1020,6 @@ class Colocator:
             stop=self.stop,
             filter_name=self.colocation_setup.filter_name,
             regrid_res_deg=self.colocation_setup.regrid_res_deg,
-            # harmonise_units=self.colocation_setup.harmonise_units,
             update_baseyear_gridded=baseyr,
             min_num_obs=self.colocation_setup.min_num_obs,
             colocate_time=self.colocation_setup.colocate_time,
