@@ -34,7 +34,7 @@ dependencies:
     - geocoder_reverse_natural_earth >= 0.0.2
     - aerovaldb >= 0.4.6, < 0.5.0
     - pyaro >= 0.2.0, < 0.3
-    - git+https://github.com/metno/pyaro-readers.git@v0.1.1
+    - pyaro-readers >=0.1.4, < 0.2.0
 ## testing
   - pytest >=7.4
   - pytest-dependency

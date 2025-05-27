@@ -10,6 +10,8 @@ from pyaerocom.aeroval.config.ciconfigs.base_config import get_CFG
 from pyaerocom.io import ReadUngridded
 from pyaerocom.io import ReadGridded
 
+import pytest
+
 reportyear = year = 2018
 CFG = get_CFG(
     reportyear=reportyear,
@@ -19,12 +21,18 @@ CFG = get_CFG(
 TEST_FILE = "mep-rd-Birkenes-2018-001.nc"
 
 
+@pytest.mark.skip(
+    reason="This test is skipped because the pyaro reader is not available in the current tox environment for testing on CI."
+)
 def test_harp_reader_available():
     """quick test to make sure pyaro_readers is working"""
     engine = "harp"
     assert engine in pyaro.list_timeseries_engines()
 
 
+@pytest.mark.skip(
+    reason="This test is skipped because the pyaro reader is not available in the current tox environment for testing on CI."
+)
 def test_harp_test_data_available():
     obs_config = CFG["obs_cfg"]
     conf_name = list(obs_config.keys())[0]
@@ -37,6 +45,9 @@ def test_harp_test_data_available():
     assert TEST_FILE in data_files
 
 
+@pytest.mark.skip(
+    reason="This test is skipped because the pyaro reader is not available in the current tox environment for testing on CI."
+)
 def test_obs_data_readable():
     """test reading obs data using pyaerocom"""
 
@@ -78,6 +89,9 @@ def test_model_data_readable():
         assert data
 
 
+@pytest.mark.skip(
+    reason="This test is skipped because the pyaro reader is not available in the current tox environment for testing on CI."
+)
 def test_aeroval_config_diurnal():
     """test to make sure diurnal cycle analysis works
     The data used is entirely fake
