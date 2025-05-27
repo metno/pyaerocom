@@ -14,17 +14,18 @@ from collections.abc import Iterable
 
 import cf_units
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 from .datetime import TsType
 from .datetime.time_config import SI_TO_TS_TYPE
 from pyaerocom.variable_helpers import get_variable
 
-from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
+# from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
 from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
 from .typing import SupportsMul
+from .exceptions import UnitConversionError
 
 __all__ = ["Unit"]
 
@@ -67,39 +68,32 @@ class Unit:
     #: Custom unit conversion factors for certain variables
     #: columns: variable -> from unit -> to_unit -> conversion
     #: factor
-    _UCONV_MUL_FACS = pd.DataFrame(
-        [
-            # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
-            # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
-            # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
-            # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
-            # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
-            # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
-            ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
-            ["concbc", "ug C/m3", "ug m-3", 1.0],
-            ["concoa", "ug C/m3", "ug m-3", 1.0],
-            ["concoc", "ug C/m3", "ug m-3", 1.0],
-            ["conctc", "ug C/m3", "ug m-3", 1.0],
-            # a little hacky for ratpm10pm25...
-            # ["ratpm10pm25", "ug m-3", "1", 1.0],
-            ["concpm25", "ug m-3", "ug m-3", 1.0],
-            ["concpm10", "ug m-3", "ug m-3", 1.0],
-            ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
-            # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
-            ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
-            # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
-            ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
-            ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
-            ["drynh3", "kg ha-1 yr-1", "kg m-2 s-2", 1 / (HA_TO_SQM * (365 * 24 * 60 * 60))],
-            [
-                "drynh3",
-                "kg N ha-1 yr-1",
-                "kg m-2 s-1",
-                (M_NH3 / M_N) / (1 / (HA_TO_SQM * (365 * 24 * 60 * 60))),
-            ],
-        ],
-        columns=["var_name", "from", "to", "fac"],
-    ).set_index(["var_name", "from"])
+    # _UCONV_MUL_FACS = pd.DataFrame(
+    #    [
+    #        # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
+    #        # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
+    #        # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
+    #        # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
+    #        # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
+    #        # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
+    #        ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
+    #        ["concbc", "ug C/m3", "ug m-3", 1.0],
+    #        ["concoa", "ug C/m3", "ug m-3", 1.0],
+    #        ["concoc", "ug C/m3", "ug m-3", 1.0],
+    #        ["conctc", "ug C/m3", "ug m-3", 1.0],
+    #        # a little hacky for ratpm10pm25...
+    #        # ["ratpm10pm25", "ug m-3", "1", 1.0],
+    #        ["concpm25", "ug m-3", "ug m-3", 1.0],
+    #        ["concpm10", "ug m-3", "ug m-3", 1.0],
+    #        ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
+    #        # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
+    #        ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
+    #        # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
+    #        ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
+    #        ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
+    #    ],
+    #    columns=["var_name", "from", "to", "fac"],
+    # ).set_index(["var_name", "from"])
 
     _UALIASES = {
         # mass concentrations
@@ -151,9 +145,11 @@ class Unit:
         self._species = kwargs.pop("species", None)
         if self._species is None:
             try:
-                self._species = _get_species(aerocom_var).upper()
+                sp = _get_species(aerocom_var).upper()
             except (UnknownSpeciesError, AttributeError):
                 pass
+            else:
+                self._species = sp
 
         self._element = None
         if self._species is not None:
@@ -164,7 +160,11 @@ class Unit:
                     break
 
         if self._element is not None and self._species is not None:
-            factor = MolecularMass(self._species) / MolecularMass(self._element)
+            try:
+                factor = MolecularMass(self._species) / MolecularMass(self._element)
+            except ValueError:
+                self._species = None
+                factor = 1
         else:
             factor = 1
         # try:
@@ -241,7 +241,27 @@ class Unit:
 
         :param other: Other Unit.
         """
-        return self._cfunit.is_convertible(other)
+        if isinstance(other, str):
+            other = Unit(other)
+
+        if self._element == other._element and self._species == other._species:
+            return self._cfunit.is_convertible(other._cfunit)
+        elif self._element is not None:
+            known_mass_ratio = self._element is not None and self._species is not None
+            same_variable = self._aerocom_var == other._aerocom_var
+            if known_mass_ratio or same_variable:
+                return self._cfunit.is_convertible(other._cfunit)
+        elif other._element is not None:
+            known_mass_ratio = other._element is not None and other._species is not None
+            same_variable = self._aerocom_var == other._aerocom_var
+            if known_mass_ratio or same_variable:
+                return self._cfunit.is_convertible(other._cfunit)
+        # elif self._element == other._element and self._aerocom_var == other._aerocom_var:
+        #    return self._cfunit.is_convertible(other._cfunit)
+        else:
+            return self._cfunit.is_convertible(other._cfunit)
+
+        return False
 
     def is_dimensionless(self) -> bool:
         """
@@ -331,8 +351,12 @@ class Unit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        to_unit = Unit(str(other), **kwargs)._cfunit
-        factor = float(self._cfunit.convert(1, to_unit, inplace=False))
+        to_unit = Unit(str(other), **kwargs)
+
+        if not self.is_convertible(to_unit):
+            raise UnitConversionError
+        to_unit_cf = to_unit._cfunit
+        factor = float(self._cfunit.convert(1, to_unit_cf, inplace=False))
 
         if inplace:
             value *= factor

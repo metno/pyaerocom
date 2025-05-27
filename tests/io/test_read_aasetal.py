@@ -11,9 +11,9 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from pyaerocom import const
-from pyaerocom.units import UnitConversionError
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units.exceptions import UnitConversionError
 from pyaerocom.units.units_helpers import convert_unit
 from tests.conftest import lustre_unavail
 
@@ -76,7 +76,7 @@ def aasetal_data() -> UngriddedData:
 
 
 @lustre_unavail
-@pytest.mark.xfail(raises=UnitConversionError)
+# @pytest.mark.xfail(raises=UnitConversionError)
 def test_aasetal_data(aasetal_data: UngriddedData):
     data = aasetal_data
     assert len(data.station_name) == 890
@@ -152,9 +152,7 @@ def test_reading_routines(
     # values in original units
     vals = subset[colname].astype(float).values
     from_unit, to_unit = UNITCONVERSION[var_name]
-    should_be = convert_unit(
-        data=vals, from_unit=from_unit, to_unit=to_unit, var_name=var_name
-    ).mean()
+    should_be = convert_unit(vals, from_unit=from_unit, to_unit=to_unit, var_name=var_name).mean()
 
     actual = aasetal_data.to_station_data(station_name, var_name)[var_name].values.mean()
 

@@ -777,10 +777,16 @@ class GriddedData:
         try:
             var = const.VARS[self.cube.var_name]
             to_unit = get_standard_unit(var.var_name)
-            current_unit = self.units
+            current_unit = Unit(self.units, aerocom_var=var.var_name, ts_type=self.ts_type)
             if to_unit == current_unit:  # string match e.g. both are m-1
                 unit_ok = True
-            elif Unit(to_unit).convert(1, current_unit) == 1:
+            # TODO: Clean up the below line.
+            elif (
+                Unit(to_unit, aerocom_var=var.var_name, ts_type=self.ts_type).convert(
+                    1, current_unit, aerocom_var=var.var_name
+                )
+                == 1
+            ):
                 self.units = to_unit
                 logger.info(
                     f"Updating unit string from {current_unit} to {to_unit} in GriddedData."

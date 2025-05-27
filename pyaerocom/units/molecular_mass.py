@@ -32,6 +32,8 @@ _VAR_PREFIXES = [
     "dep",
 ]
 
+_VAR_POSTFIXES = ["pr"]
+
 _MOLMASSES = {
     # Override molecular masses used for species that do not constitute molecular
     # formulas with only single letter elements.
@@ -71,8 +73,14 @@ def _get_species(aerocom_var: str) -> str:
     for prefix in _VAR_PREFIXES:
         if aerocom_var.startswith(prefix):
             species = aerocom_var.split(prefix)[-1]
+            break
             # if species in _MOLMASSES:
-            return species
+    for postfix in _VAR_POSTFIXES:
+        if species.endswith(postfix):
+            species = species.split(postfix)[0]
+            break
+
+    return species
 
     raise UnknownSpeciesError(
         f"Could not infer atom / molecule/ species from var_name {aerocom_var}"

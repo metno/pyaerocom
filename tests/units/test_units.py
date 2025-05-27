@@ -1,8 +1,6 @@
 import pytest
-import pandas as pd
 
 from pyaerocom.units import Unit
-from pyaerocom.units.exceptions import UnitConversionError
 from pyaerocom.units.units import UnitConversionCallbackInfo
 
 
@@ -56,19 +54,19 @@ def test_PyaerocomUnit_conversion_callback():
     assert callback_ran
 
 
-def test__unit_conversion_fac_custom_FAIL(monkeypatch):
-    MOCK_UCONV_MUL_FACS = pd.DataFrame(
-        [
-            ["concso4", "ug S/m3", "ug m-3", 1],
-            ["concso4", "ug S/m3", "ug m-3", 2],
-        ],
-        columns=["var_name", "from", "to", "fac"],
-    ).set_index(["var_name", "from"])
-    monkeypatch.setattr("pyaerocom.units.units.Unit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
-
-    with pytest.raises(UnitConversionError) as e:
-        Unit("ug S/m3", aerocom_var="concso4")
-    assert "Could not find unique conversion factor in table" in str(e.value)
+# def test__unit_conversion_fac_custom_FAIL(monkeypatch):
+#    MOCK_UCONV_MUL_FACS = pd.DataFrame(
+#        [
+#            ["concso4", "ug S/m3", "ug m-3", 1],
+#            ["concso4", "ug S/m3", "ug m-3", 2],
+#        ],
+#        columns=["var_name", "from", "to", "fac"],
+#    ).set_index(["var_name", "from"])
+#    monkeypatch.setattr("pyaerocom.units.units.Unit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
+#
+#    with pytest.raises(UnitConversionError) as e:
+#        Unit("ug S/m3", aerocom_var="concso4")
+#    assert "Could not find unique conversion factor in table" in str(e.value)
 
 
 def test_origin():
@@ -76,10 +74,22 @@ def test_origin():
 
 
 @pytest.mark.parametrize(
-    "from_unit,to_unit,is_convertible", (("m", "km", True), ("m", "kg", False))
+    "from_unit,to_unit,is_convertible",
+    (
+        ("m", "km", True),
+        ("m", "kg", False),
+        (Unit("mg S"), Unit("mg"), False),
+        (Unit("mg S", species="SO4"), Unit("mg"), True),
+        (Unit("mg"), Unit("mg S", species="SO4"), True),
+    ),
 )
-def test_is_convertible(from_unit: str, to_unit: str, is_convertible: bool):
-    assert Unit(from_unit).is_convertible(to_unit) == is_convertible
+def test_is_convertible(from_unit: str | Unit, to_unit: str | Unit, is_convertible: bool):
+    if isinstance(from_unit, str):
+        from_unit = Unit(from_unit)
+    if isinstance(to_unit, str):
+        to_unit = Unit(to_unit)
+
+    assert from_unit.is_convertible(to_unit) == is_convertible
 
 
 def test_is_dimensionless():
@@ -104,13 +114,6 @@ def test_equality(
 
 
 @pytest.mark.parametrize(
-    "unit,var,out_cf_unit", (("kg N ha-1 yr-1", "drynh3", "383441123690.80505 kg m-2 s-1"),)
-)
-def test_custom_unit_conversion(unit: str, var: str, out_cf_unit: str):
-    assert str(Unit(unit, aerocom_var=var)._cfunit) == out_cf_unit
-
-
-@pytest.mark.parametrize(
     "unit,nominator,denominator",
     (("mg", "mg", ""), ("mg N / m2 d", "mg N", "m2 d"), ("mg N m-2 d-1", "mg N", "m-2 d-1")),
 )
@@ -121,24 +124,61 @@ def test_nominator_denominator(unit: str, nominator: str, denominator: str):
 
 
 @pytest.mark.parametrize(
-    "unit,element,species,var",
+    "unit,species,var,exp_element,exp_species",
     (
-        ("mg", None, None, None),
-        ("mg N", "N", None, None),
-        ("mg N", "N", "NH3", None),
-        ("mg N", "N", "NH3", "drynh3"),
+        ("mg", None, None, None, None),
+        ("mg N", None, None, None, None),
+        ("mg N", "NH3", None, "N", "NH3"),
+        ("mg N", None, "drynh3", "N", "NH3"),
     ),
 )
 def test_species_and_element_detection(
-    unit: str, element: str | None, species: str | None, var: str | None
+    unit: str,
+    species: str | None,
+    var: str | None,
+    exp_element: str | None,
+    exp_species: str | None,
 ):
-    if var is None:
-        u = Unit(unit, species=species, aerocom_var=var)
-    else:
-        u = Unit(unit, aerocom_var=var)
-    assert u._element == element
-    assert u._species == species
+    u = Unit(unit, species=species, aerocom_var=var)
+    assert u._element == exp_element
+    assert u._species == exp_species
 
 
-def test_unit_conversion(from_unit: str, to_unit: str, species: str):
-    pass
+@pytest.mark.parametrize(
+    "from_unit,to_unit,species,conversion_fac",
+    (
+        (
+            "kg N",
+            "kg",
+            "NH3",
+            17.03052 / 14.0067,  # Molecular mass ratio of NH3/N
+        ),
+        ("mg N", "kg", "NH3", (17.03052 / 14.0067) / 1_000_000),
+        ("mg N s-1", "kg s-1", "NH3", (17.03052 / 14.0067) / 1_000_000),
+        ("mg N s-1", "kg h-1", "NH3", 3_600 * (17.03052 / 14.0067) / (1_000_000)),
+    ),
+)
+def test_unit_conversion(from_unit: str, to_unit: str, species: str, conversion_fac: float):
+    u = Unit(from_unit, species=species)
+    fac = u.convert(1, to_unit, species=species)
+    assert fac == pytest.approx(conversion_fac)
+
+
+@pytest.mark.parametrize(
+    "from_unit,to_unit",
+    (
+        (  # No known reference species to do conversion.
+            Unit("kg S"),
+            Unit("kg"),
+        ),
+        (  # Element don't match
+            Unit(
+                "kg N",
+            ),
+            Unit("kg S"),
+        ),
+    ),
+)
+def test_unit_conversion_fails(from_unit: Unit, to_unit: Unit):
+    with pytest.raises(Exception):
+        from_unit.convert(1, to_unit)
