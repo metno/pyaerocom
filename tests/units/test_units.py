@@ -54,21 +54,6 @@ def test_PyaerocomUnit_conversion_callback():
     assert callback_ran
 
 
-# def test__unit_conversion_fac_custom_FAIL(monkeypatch):
-#    MOCK_UCONV_MUL_FACS = pd.DataFrame(
-#        [
-#            ["concso4", "ug S/m3", "ug m-3", 1],
-#            ["concso4", "ug S/m3", "ug m-3", 2],
-#        ],
-#        columns=["var_name", "from", "to", "fac"],
-#    ).set_index(["var_name", "from"])
-#    monkeypatch.setattr("pyaerocom.units.units.Unit._UCONV_MUL_FACS", MOCK_UCONV_MUL_FACS)
-#
-#    with pytest.raises(UnitConversionError) as e:
-#        Unit("ug S/m3", aerocom_var="concso4")
-#    assert "Could not find unique conversion factor in table" in str(e.value)
-
-
 def test_origin():
     assert Unit("ug S/m3").origin == "ug S/m3"
 

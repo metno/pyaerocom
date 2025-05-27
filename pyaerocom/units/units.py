@@ -22,7 +22,6 @@ from pyaerocom.variable_helpers import get_variable
 from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
 from .typing import SupportsMul
-from .exceptions import UnitConversionError
 
 __all__ = ["Unit"]
 
@@ -47,9 +46,7 @@ class Unit:
     The first additional behaviour is to handle variables that measure only
     a portion of the real mass. Eg. if concso4 is provided as "ug S/m3", we
     want the mass in terms of SO4, so the values must be scaled up by a
-    constant factor MolecularMass("SO4")/MolecularMass("S"). This is
-    currently enabled using the lookup tables UCONV_MUL_FACS and UALIASES,
-    combined with a scalar factor in the unit.
+    constant factor MolecularMass("SO4")/MolecularMass("S").
 
     The second behaviour is adding implicit frequency for rate variables
     and a ts_type. If tstype and aerocom_var are provided in __init__, units
@@ -166,6 +163,9 @@ class Unit:
 
     @property
     def _origin_nominator(self) -> str:
+        """
+        The nominator of the original string used to initialize this Unit instance.
+        """
         if "/" in self.origin:
             return self.origin.split("/")[0].strip()
 
@@ -182,6 +182,9 @@ class Unit:
 
     @property
     def _origin_denominator(self) -> str:
+        """
+        The denominator of the original string used to initialize this Unit instance.
+        """
         if "/" in self.origin:
             return self.origin.split("/")[1].strip()
 
@@ -196,7 +199,13 @@ class Unit:
 
     def is_convertible(self, other: str | Unit) -> bool:
         """
-        Return whether this unit is convertible to other.
+        Return whether this unit is convertible to other. It handles a couple of
+        additional cases when checking convertibility, namely:
+
+        - Units that contain elements (eg. kg N m-2) need to have compatible mass ratios:
+           - This is assumed to be the case if element and species are the same, the aerocom
+           variable is the same (to account for variables that don't have a clear mass ratio —
+           eg. wetrdn.)
 
         :param other: Other Unit.
         """
@@ -236,7 +245,16 @@ class Unit:
         return self._cfunit.__str__()
 
     def __repr__(self) -> str:
-        return self._cfunit.__repr__()
+        result = f"Unit('{self.origin}'"
+        if self._aerocom_var is not None:
+            result += f", aerocom_var='{self._aerocom_var}'"
+        if self._species is not None:
+            result += f", species='{self._species}'"
+        if self._ts_type is not None:
+            result += f", ts_type='{self._ts_type}'"
+
+        result += ")"
+        return result
 
     def __add__(self, other: float) -> Unit:
         return Unit.from_cf_units(self._cfunit.__add__(other))
@@ -311,7 +329,9 @@ class Unit:
         to_unit = Unit(str(other), **kwargs)
 
         if not self.is_convertible(to_unit):
-            raise UnitConversionError
+            raise ValueError(
+                f"Unable to convert units. Got incompatible units '{repr(self)}' and '{repr(to_unit)}'."
+            )
         to_unit_cf = to_unit._cfunit
         factor = float(self._cfunit.convert(1, to_unit_cf, inplace=False))
 
