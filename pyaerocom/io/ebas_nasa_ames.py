@@ -10,6 +10,7 @@ import logging
 import os
 from datetime import datetime
 from io import StringIO
+import pathlib
 
 import numpy as np
 
@@ -662,12 +663,12 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         END_VAR_DEF = self._NUM_FIXLINES + self.num_cols_dependent - 1
                         NUM_HEAD_LINES = self.num_head_lines
                         try:
-                            self.var_defs.append(self._read_vardef_line(line))
+                            self.var_defs.append(self._read_vardef_line(line, file=nasa_ames_file))
                         except Exception as e:
                             logger.warning(repr(e))
 
                     elif lc < END_VAR_DEF:
-                        self.var_defs.append(self._read_vardef_line(line))
+                        self.var_defs.append(self._read_vardef_line(line, file=nasa_ames_file))
 
                     elif lc == NUM_HEAD_LINES - 1:
                         IN_DATA = True
@@ -730,8 +731,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
         if quality_check:
             self._quality_check()
 
-    def _read_vardef_line(self, line_from_file):
+    def _read_vardef_line(self, line_from_file: str, *, file: os.PathLike) -> EbasColDef:
         """Import variable definition line from NASA Ames file"""
+        abs_path = pathlib.Path(file).resolve()
         lineX = line_from_file.replace(", ", ",")  # avoid two-char delimiters
         cr = csv.reader(StringIO(lineX), delimiter=",", quotechar='"')
         row = next(cr)
@@ -755,12 +757,13 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         idf, val = (x.strip() for x in sub)
                         data[idf.lower().replace(" ", "_")] = val
                     else:
-                        logger.warning(
-                            f"Could not interpret part of column "
-                            f"definition in EBAS NASA Ames file: {item}"
+                        logger.info(
+                            "Error reading file '%s'. Could not interpret part of column definition in EBAS NASA Ames file: %s",
+                            abs_path,
+                            item,
                         )
                 else:  # unit
-                    logger.warning(f"Failed to interpret {item}")
+                    logger.info("Error reading file '%s'. Failed to interpret %s.", abs_path, item)
 
         return data
 

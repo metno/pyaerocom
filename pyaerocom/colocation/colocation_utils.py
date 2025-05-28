@@ -33,6 +33,7 @@ from pyaerocom.helpers import (
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
+from pyaerocom.units.helpers import get_standard_unit
 
 from .colocated_data import ColocatedData
 
@@ -840,6 +841,7 @@ def colocate_gridded_ungridded(
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
     station_types = [""] * stat_num
+    station_display_names = [None] * stat_num
 
     data_ref_unit = None
     ts_type_src_ref = None
@@ -855,6 +857,7 @@ def colocate_gridded_ungridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
         station_types[i] = getattr(obs_stat, "station_type", "")
+        station_display_names[i] = getattr(obs_stat, "display_name", None)
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
@@ -890,11 +893,11 @@ def colocate_gridded_ungridded(
         grid_stat = grid_stat_data[i]
         if harmonise_units:
             grid_unit = grid_stat.get_unit(var)
-            obs_unit = obs_stat.get_unit(var_ref)
-            if not grid_unit == obs_unit:
-                grid_stat.convert_unit(var, obs_unit)
+            to_unit = get_standard_unit(var_ref)
+            if not grid_unit == to_unit:
+                grid_stat.convert_unit(var, to_unit)
             if data_unit is None:
-                data_unit = obs_unit
+                data_unit = to_unit
 
         try:
             if colocate_time:
@@ -947,14 +950,11 @@ def colocate_gridded_ungridded(
                 f"not be added to ColocatedData. Reason: {e}"
             )
     try:
-        revision = data_ref.data_revision[dataset_ref]
+        revision = data_ref.get_data_revision(dataset_ref)
+    except MetaDataError:
+        revision = "MULTIPLE"
     except Exception:
-        try:
-            revision = data_ref._get_data_revision_helper(dataset_ref)
-        except MetaDataError:
-            revision = "MULTIPLE"
-        except Exception:
-            revision = "n/a"
+        revision = "n/a"
 
     files = [os.path.basename(x) for x in data.from_files]
 
@@ -987,6 +987,8 @@ def colocate_gridded_ungridded(
         "longitude": ("station_name", lons),
         "altitude": ("station_name", alts),
     }
+    if any(x is not None for x in station_display_names):
+        coords["station_display_name"] = ("station_name", station_display_names)
 
     dims = ["data_source", "time", "station_name"]
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)

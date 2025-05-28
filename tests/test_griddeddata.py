@@ -35,9 +35,9 @@ def test_GriddedData_var_name():
 
 def test_GriddedData_var_name_error():
     not_a_str = None
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(TypeError) as e:
         GriddedData().var_name = not_a_str
-    assert str(e.value) == f"Invalid input for var_name, need str, got {not_a_str}"
+    assert "Invalid input for var_name, need str, got " in str(e.value)
 
 
 @pytest.mark.parametrize(

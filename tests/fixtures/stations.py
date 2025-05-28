@@ -37,6 +37,7 @@ def station_data1() -> StationData:
 
     stat.ec550aer = np.random.random_sample(NUM) - 0.5
     stat.od550aer = np.ones(NUM)
+    stat.data_err["ec550aer"] = np.random.random_sample(NUM) - 0.5
     stat.latitude = list(np.ones(NUM) * 33)
     stat.longitude = np.ones(NUM) * 15
     stat.altitude = (np.ones(NUM) * 300).astype(int)

@@ -114,10 +114,17 @@ ALL_SITES = [
 def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
     data = aeronetsunv3lev2_subset_uds
     assert isinstance(data, UngriddedDataStructured)
+    assert data.get_data_revision("AeronetSunV3L2Subset.daily") == "n/d"
     subset = data.filter_by_meta(**args)
+    assert subset.get_data_revision("AeronetSunV3L2Subset.daily") == "n/d"
     sites = [x["station_name"] for x in subset.metadata.values()]
     stats = sorted(list(dict.fromkeys(sites)))
     assert sorted(sitenames) == stats
+
+
+def test_ebas_revision(data_scat_jungfraujoch: UngriddedDataContainer):
+    assert isinstance(data_scat_jungfraujoch, UngriddedDataStructured)
+    assert data_scat_jungfraujoch.get_data_revision("EBASSubset") == "20220101"
 
 
 def test_cache_reload(data_scat_jungfraujoch: UngriddedDataContainer, tmp_path: Path):
@@ -135,27 +142,6 @@ def test_check_unit(data_scat_jungfraujoch):
 
     with pytest.raises(MetaDataError):
         data_scat_jungfraujoch.check_unit("sc550aer", unit="m-1")
-
-
-@pytest.mark.filterwarnings("ignore:invalid value encountered in .*divide:RuntimeWarning")
-def test_check_convert_var_units(data_scat_jungfraujoch):
-    out = data_scat_jungfraujoch.check_convert_var_units("sc550aer", "m-1", inplace=False)
-
-    fac = 1e-6
-    for i, meta in out.metadata.items():
-        if "sc550aer" in meta["var_info"]:
-            assert meta["var_info"]["sc550aer"]["units"] == "m-1"
-            idx = (out._dra.data["meta_id"] == i) & (
-                out._dra.data["var_id"] == out.var_idx["sc550aer"]
-            )
-
-            data0 = data_scat_jungfraujoch._dra.data["data"][idx]
-            data1 = out._dra.data["data"][idx]
-
-            ratio = np.divide(data1, data0)  # [~nans]
-            ratio = ratio[~np.isnan(ratio)]
-            assert ratio.mean() == pytest.approx(fac)
-            assert ratio.std() == pytest.approx(0)
 
 
 def test_from_single_station_data():

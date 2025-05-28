@@ -3,15 +3,16 @@ This module contains functionality related to regions in pyaerocom
 """
 
 from __future__ import annotations
-
-import numpy as np
+from functools import cached_property
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.geodesy import calc_distance
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
+
 
 POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
 
@@ -50,7 +51,7 @@ class Region(BrowseDict):
         potentially defined default attrs. that are imported automatically.
     """
 
-    def __init__(self, region_id=None, **kwargs):
+    def __init__(self, region_id: str | None = None, **kwargs):
         if region_id is None:
             region_id = ALL_REGION_NAME
 
@@ -65,24 +66,20 @@ class Region(BrowseDict):
         self.lon_range = None
         self.lat_range = None
 
-        # longitude / latitude range of data in plots
-        self.lon_range_plot = None
-        self.lat_range_plot = None
-
         self.lon_ticks = None
         self.lat_ticks = None
 
         self._mask_data = None
         if region_id in REGION_DEFS:
-            self.import_default(region_id)
+            self._import_default(region_id)
 
         self.update(**kwargs)
 
-    def is_htap(self):
+    def is_htap(self) -> bool:
         """Boolean specifying whether region is an HTAP binary region"""
-        return True if self.region_id in HTAP_REGIONS else False
+        return self.region_id in HTAP_REGIONS
 
-    def import_default(self, region_id):
+    def _import_default(self, region_id: str) -> None:
         """Import region definition
 
         Parameters
@@ -97,20 +94,15 @@ class Region(BrowseDict):
         """
         self.update(REGION_DEFS[region_id])
 
-        if self.lon_range_plot is None:
-            self.lon_range_plot = self.lon_range
-        if self.lat_range_plot is None:
-            self.lat_range_plot = self.lat_range
-
-    @property
-    def center_coordinate(self):
+    @cached_property
+    def center_coordinate(self) -> tuple[float, float]:
         """Center coordinate of this region"""
         latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0]) / 2
         lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0]) / 2
         return (latc, lonc)
 
-    def distance_to_center(self, lat, lon):
-        """Compute distance of input coordinate to center of this region
+    def distance_to_center(self, lat: float, lon: float) -> float:
+        """Compute distance of input coordinate(s) to center of this region
 
         Parameters
         ----------
@@ -124,12 +116,10 @@ class Region(BrowseDict):
         float
             distance in km
         """
-        from pyaerocom.geodesy import calc_distance
-
         cc = self.center_coordinate
         return calc_distance(lat0=cc[0], lon0=cc[1], lat1=lat, lon1=lon)
 
-    def contains_coordinate(self, lat, lon):
+    def contains_coordinate(self, lat: float, lon: float) -> float:
         """Check if input lat/lon coordinate is contained in region
 
         Parameters
@@ -144,11 +134,11 @@ class Region(BrowseDict):
         bool
             True if coordinate is contained in this region, False if not
         """
-
         lat_lb = self.lat_range[0]
         lat_ub = self.lat_range[1]
         lon_lb = self.lon_range[0]
         lon_ub = self.lon_range[1]
+
         # latitude bounding boxes should always be defined with the southern most boundary less than the northernmost
         lat_ok = lat_lb <= lat <= lat_ub
         # if the longitude bounding box has a lowerbound less than the upperbound
@@ -161,12 +151,11 @@ class Region(BrowseDict):
             lon_ok = lon < lon_ub or lon > lon_lb
         else:
             lon_ok = False  # safeguard
+
         return lat_ok * lon_ok
 
-    def mask_available(self):
-        if not self.is_htap():
-            return False
-        return True
+    def mask_available(self) -> bool:
+        return self.is_htap()
 
     def get_mask_data(self):
         if not self.mask_available():
@@ -175,71 +164,17 @@ class Region(BrowseDict):
             self._mask_data = load_region_mask_xr(self.region_id)
         return self._mask_data
 
-    def plot_mask(self, ax, color, alpha=0.2):
-        mask = self.get_mask_data()
-        # import numpy as np
-        data = mask.data
-        data[data == 0] = np.nan
-        mask.data = data
-
-        mask.plot(ax=ax)
-        return ax
-
-    def plot_borders(self, ax, color, lw=2):
-        raise NotImplementedError("Coming soon...")
-
-    def plot(self, ax=None):
-        """
-        Plot this region
-
-        Draws a rectangle of the outer bounds of the region and if a binary
-        mask is available for this region, it will be plotted as well.
-
-        Parameters
-        ----------
-        ax : GeoAxes, optional
-            axes instance to be used for plotting. Defaults to None in which
-            case a new instance is created.
-
-        Returns
-        -------
-        GeoAxes
-            axes instance used for plotting
-
-        """
-        from cartopy.mpl.geoaxes import GeoAxes
-
-        from pyaerocom.plot.mapping import init_map
-
-        if ax is None:
-            ax = init_map()
-        elif not isinstance(ax, GeoAxes):
-            raise ValueError("Invalid input for ax: need cartopy GeoAxes..")
-
-        if self.mask_available():
-            self.plot_mask(ax, color="r")
-
-        ax.set_xlabel("Longitude")
-        ax.set_ylabel("Latitude")
-        name = self.name
-        if not name == self.region_id:
-            name += f" (ID={self.region_id})"
-
-        ax.set_title(name)
-
-        return ax
-
-    def __contains__(self, val):
+    def __contains__(self, val: tuple) -> bool:
         if not isinstance(val, tuple):
             raise TypeError("Invalid input, need tuple")
         if not len(val) == 2:
             raise ValueError("Invalid input: coordinate must contain 2 elements (lat, lon)")
         return self.contains_coordinate(lat=val[0], lon=val[1])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Region {self.name} {super().__repr__()}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = (
             f"pyaeorocom Region\nName: {self.name}\n"
             f"Longitude range: {self.lon_range}\n"
@@ -369,7 +304,7 @@ def get_regions_coord(lat, lon, regions=None):
 
 
 def find_closest_region_coord(
-    lat: float, lon: float, regions: dict | None = None, **kwargs
+    lat: float, lon: float, regions: dict | None = None, *, regions_how: str
 ) -> list[str]:
     """Finds list of regions sorted by their center closest to input coordinate
 
@@ -382,6 +317,9 @@ def find_closest_region_coord(
     regions : dict, optional
         dictionary containing instances of :class:`Region` as values, which
         are considered. If None, then all default regions are used.
+    regions_how: str
+        string value of either "default", "htap", "country", or "none" (See EvalSetup
+        for details)
 
     Returns
     -------
@@ -390,9 +328,10 @@ def find_closest_region_coord(
     """
     if regions is None:
         regions = get_all_default_regions()
+
     matches = get_regions_coord(lat, lon, regions)
     matches.sort(key=lambda id: regions[id].distance_to_center(lat, lon))
-    if kwargs.get("regions_how") == "htap":
+    if regions_how == "htap":
         # keep only first entry and Oceans if it exists
         keep = matches[:1]
         if "Oceans" in matches[1:]:
@@ -400,4 +339,5 @@ def find_closest_region_coord(
         if ALL_REGION_NAME in matches[1:]:
             keep += [ALL_REGION_NAME]
         return list(set(keep))
+
     return matches

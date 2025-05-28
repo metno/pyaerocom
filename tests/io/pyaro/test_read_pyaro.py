@@ -25,7 +25,7 @@ def test_readpyaro(pyaro_testdata):
 
 def test_variables(pyaro_testdata):
     rp = pyaro_testdata
-    variables = ["NOx", "concso4", "od550aer", "NO"]
+    variables = ["NOx", "concso4", "od550aer", "NO", "PM10"]
 
     assert rp.PROVIDES_VARIABLES == variables
     assert rp.DEFAULT_VARS == variables
@@ -173,7 +173,10 @@ def test_vmrox():
     )
     reader = PyaroToUngriddedData(config)
     data = reader.read(vars_to_retrieve=["vmrox"])
-
+    rev = data.get_data_revision("whatever")
+    # WIP: waiting for eeareader to add revision, to be done by m06-2025
+    # assert rev is not None
+    rev is not None
     alldata = data.to_station_data_all()
     stats = alldata["stats"]
     assert len(stats) >= 4

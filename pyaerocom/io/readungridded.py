@@ -28,6 +28,7 @@ from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
+from pyaerocom.io.read_eprofile import ReadEprofile
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
@@ -56,6 +57,7 @@ class ReadUngridded:
         ReadAeronetSdaV3,
         ReadAeronetSunV3,
         ReadEarlinet,
+        ReadEprofile,
         ReadEbas,
         ReadAasEtal,
         ReadAirNow,
@@ -511,7 +513,7 @@ class ReadUngridded:
                 f"supported by {data_id} interface"
             )
         cache = CacheHandlerUngridded(reader)
-        if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
+        if not self.ignore_cache:
             # initiate cache handler
             for var in vars_available:
                 try:
@@ -536,7 +538,7 @@ class ReadUngridded:
 
             for var in vars_to_read:
                 # write the cache file
-                if not self.ignore_cache and not isinstance(cache.reader, ReadPyaro):
+                if not self.ignore_cache:
                     try:
                         cache.write(data_read, var)
                     except Exception as e:
@@ -824,6 +826,7 @@ class ReadUngridded:
                     filter_post=filter_post,
                     **kwargs,
                 )
+
             if data is None:
                 data = data_to_append
             else:

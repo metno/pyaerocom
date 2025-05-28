@@ -1,4 +1,5 @@
 import os
+import logging
 
 import numpy as np
 import pandas as pd
@@ -7,6 +8,8 @@ from pyaerocom import const
 from pyaerocom.aux_var_helpers import calc_od550aer, calc_od550gt1aer, calc_od550lt1aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetSdaV3(ReadAeronetBase):
@@ -130,7 +133,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             data_out[var] = []
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        logger.info(f"Reading file {filename}")
 
         with open(filename) as in_file:
             # skip first 4 lines
@@ -152,7 +155,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             # the index number via the header string
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:
-                self.logger.info("Header has changed, reloading col_index map")
+                logger.info("Header has changed, reloading col_index map")
                 self._update_col_index(col_index_str)
             col_index = self.col_index
 
@@ -166,7 +169,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                 if var in col_index:
                     vars_available[var] = col_index[var]
                 else:
-                    self.logger.warning(
+                    logger.warning(
                         f"Variable {var} not available in file {os.path.basename(filename)}"
                     )
 

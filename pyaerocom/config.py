@@ -86,8 +86,11 @@ class Config:
     #: EEAV2 name
     EEA_V2_NAME = "EEAAQeRep.v2"
 
-    #: Earlinet access name;
+    #: Earlinet access name
     EARLINET_NAME = "EARLINET"
+
+    #: EPROFILE access name
+    EPROFILE_NAME = "EPROFILE"
 
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = "GAWTADsubsetAasEtAl"
@@ -103,6 +106,8 @@ class Config:
 
     # TROPOMI access names
     TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
+
+    TROPOMI_COBRA_XEMEP_R01x01_NAME = "TROPOMI_COBRA_XEMEP_R01x01"
 
     # basename of paths.ini
     PATHS_INI_NAME = "paths.ini"
@@ -849,7 +854,7 @@ class Config:
             return False
 
         # get all locations defined in config file as list
-        locs = mcfg["dir"].replace("\n", "").split(",")
+        locs = mcfg["dir"].replace("\n", "").replace("${HOME}", os.path.expanduser("~")).split(",")
 
         # find first location that contains BASEDIR to determine
         try:

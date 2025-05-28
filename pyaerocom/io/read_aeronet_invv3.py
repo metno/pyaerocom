@@ -1,4 +1,5 @@
 import os
+import logging
 
 import numpy as np
 import pandas as pd
@@ -7,6 +8,8 @@ from pyaerocom import const
 from pyaerocom.aux_var_helpers import calc_abs550aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
+
+logger = logging.getLogger(__name__)
 
 
 class ReadAeronetInvV3(ReadAeronetBase):
@@ -125,14 +128,14 @@ class ReadAeronetInvV3(ReadAeronetBase):
             data_out[var] = []
 
         # Iterate over the lines of the file
-        self.logger.debug(f"Reading file {filename}")
+        logger.debug(f"Reading file {filename}")
 
         with open(filename, encoding="ISO-8859-1") as in_file:
             data_out["dataset_info"] = in_file.readline().strip()
-            self.logger.debug(f"Skipping line: {in_file.readline()}")
+            logger.debug(f"Skipping line: {in_file.readline()}")
             data_out["algorithm_info"] = in_file.readline().strip()
 
-            self.logger.debug(f"Skipping line: {in_file.readline()}")
+            logger.debug(f"Skipping line: {in_file.readline()}")
 
             c_dummy = in_file.readline().strip().split(",")
             data_out["freq_info"] = c_dummy[0].strip()
@@ -145,12 +148,11 @@ class ReadAeronetInvV3(ReadAeronetBase):
             data_out["ts_type"] = self.TS_TYPE
 
             # skip next two lines
-            self.logger.debug(f"Skipping line:\n{in_file.readline()}")
-            # self.logger.info(f"Skipping line:\n{in_file.readline()}")
+            logger.debug(f"Skipping line:\n{in_file.readline()}")
 
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:
-                self.logger.debug("Header has changed, reloading col_index map")
+                logger.debug("Header has changed, reloading col_index map")
                 self._update_col_index(col_index_str)
             col_index = self.col_index
 
@@ -164,7 +166,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
                 if var in col_index:
                     vars_available[var] = col_index[var]
                 else:
-                    self.logger.warning(
+                    logger.warning(
                         f"Variable {var} not available in file {os.path.basename(filename)}"
                     )
 

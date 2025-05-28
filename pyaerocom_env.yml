@@ -9,7 +9,7 @@ dependencies:
   - matplotlib-base >=3.7.1
   - scipy >=1.10.1
   - pandas >=1.5.3
-  - numpy >=1.25.0, <2.0.0
+  - numpy >=1.25.0
   - seaborn >=0.12.2
   - dask
   - geonum ==1.5.0
@@ -32,8 +32,9 @@ dependencies:
   - pip
   - pip:
     - geocoder_reverse_natural_earth >= 0.0.2
-    - pyaro >= 0.1.1
-    - aerovaldb >= 0.4.1, <0.5.0
+    - aerovaldb >= 0.4.6, < 0.5.0
+    - pyaro >= 0.2.0, < 0.3
+    - pyaro-readers >=0.1.4, < 0.2.0
 ## testing
   - pytest >=7.4
   - pytest-dependency

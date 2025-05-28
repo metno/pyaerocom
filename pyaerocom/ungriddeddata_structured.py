@@ -36,7 +36,8 @@ logger = logging.getLogger(__name__)
 class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
-    __version__ = "0.01"
+    #: version for caching, needs also updating when UngriddedDataMetadata has changed
+    __version__ = "0.02"
     _merging_error_logged = False
 
     _dtype = [
@@ -295,7 +296,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta["data_id"]]
+                rev = self.get_data_revision(meta["data_id"])
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -620,6 +621,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     self.metadata[meta_idx][key] = station_data[key]
             contains_vars = list(station_data.var_info)
             self.metadata[meta_idx]["variables"] = contains_vars
+            if "data_revision" in station_data:
+                self.metadata[meta_idx]["data_revision"] = station_data.data_revision
 
             for var in contains_vars:
                 vardata = station_data[var]
@@ -636,6 +639,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 var_idx = self.var_idx[var]
                 self.metadata[meta_idx]["var_info"] = {}
                 self.metadata[meta_idx]["var_info"][var] = {}
+
                 self.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
                 for x in ("longitude", "latitude", "altitude"):
                     if x not in self.metadata[meta_idx]["var_info"][var]:
@@ -817,6 +821,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             ugs._dra.append_array(**dra_data)
 
         logger.info(f"Converting metadata from pyaro/{data_id} to ungridded")
+        rev = None
+        if "revision" in reader.metadata():
+            rev = reader.metadata()["revision"]
+        else:
+            logger.warning(
+                f"pyaro/{data_id} does not contain a 'revision', please inform data-provider, or pyaro-readers"
+            )
+
         stations_with_metadata = reader.stations()
         for var in vars_to_retrieve:
             for station_tstype, meta_id in var_metas[var].items():
@@ -824,6 +836,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 extra_metadata = stations_with_metadata[station_name].metadata
                 d = {
                     "data_id": data_id,
+                    "data_revision": rev,
                     "station_name": station_name,
                     "var_info": {
                         var: {"units": var_units[var]},

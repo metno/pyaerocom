@@ -57,6 +57,7 @@ def make_config(
     add_map: bool,
     add_seasons: bool,
     fairmode: bool,
+    medianscores: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -86,7 +87,10 @@ def make_config(
         cfg.update(eval_type.freqs_config())
 
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
-    obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
+    if run_type != RunType.AN and medianscores:
+        obs_dates = date_range(start_date - timedelta(days=1), end_date + timedelta(days=extra_obs_days))
+    else:
+        obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
         str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
     ]
@@ -106,7 +110,10 @@ def make_config(
         cfg.update(add_seasons=True)    
 
     if fairmode:
-        cfg.update(use_fairmode=True)
+        if eval_type in ["season", "long"]:
+            cfg.update(use_cams2_83_fairmode=True)
+        else:
+            cfg.update(use_fairmode=True)
 
     return cfg
 
@@ -207,6 +214,7 @@ def main(
         add_map,
         add_seasons,
         fairmode,
+        medianscores
     )
     
     # we do not want the cache produced in previous runs to be silently cleared

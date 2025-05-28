@@ -1,9 +1,13 @@
 from .units import Unit
 from typing import TypeVar
 from pyaerocom.units.exceptions import UnitConversionError
+from pyaerocom.units.units import UnitConversionCallbackHandler
 
+from .typing import SupportsMul
 
-T = TypeVar("T")
+__all__ = ["get_unit_conversion_fac", "convert_unit"]
+
+T = TypeVar("T", bound=SupportsMul)
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = "d"
 
@@ -11,13 +15,33 @@ RATES_FREQ_DEFAULT = "d"
 def get_unit_conversion_fac(
     from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str | None = None
 ) -> float:
+    """Gets a unit conversion factor for converting from one unit to another.
+
+    :param from_unit: From unit.
+    :param to_unit: To unit.
+    :param var_name: aerocom var name, defaults to None
+    :param ts_type: ts_type, defaults to None
+
+    :return: Conversion factor.
+
+    :raises: UnitConversionError
+        if unable to convert between units.
+    """
     return convert_unit(
         1, from_unit=from_unit, to_unit=to_unit, var_name=var_name, ts_type=ts_type
     )
 
 
 def convert_unit(
-    data: T, from_unit: str, to_unit: str, var_name: str | None = None, ts_type: str | None = None
+    data: T,
+    /,
+    from_unit: str,
+    to_unit: str,
+    var_name: str | None = None,
+    ts_type: str | None = None,
+    *,
+    inplace: bool = False,
+    callback: UnitConversionCallbackHandler | None = None,
 ) -> T:
     """Convert unit of data
 
@@ -44,7 +68,10 @@ def convert_unit(
     """
     try:
         data = Unit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
-            data, other=Unit(to_unit, aerocom_var=var_name, ts_type=ts_type)
+            data,
+            other=Unit(to_unit, aerocom_var=var_name, ts_type=ts_type),
+            inplace=inplace,
+            callback=callback,
         )
     except ValueError as e:
         raise UnitConversionError(

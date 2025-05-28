@@ -261,7 +261,6 @@ class AltitudeAccess:
         self.data_obj = gridded_data
         self._subset1d = None
         self._checked_and_failed = []
-        self.logger = logger
 
     def __setitem__(self, key, val):
         self.__dict__[key] = val

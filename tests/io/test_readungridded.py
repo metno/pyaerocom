@@ -29,6 +29,7 @@ def test_supported():
         "EARLINET",
         "EBASMC",
         "EBASSubset",
+        "EPROFILE",
         "DMS_AMS_CVO",
         "GAWTADsubsetAasEtAl",
         "GHOST.EEA.monthly",

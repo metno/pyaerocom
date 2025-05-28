@@ -170,7 +170,7 @@ class ReadAasEtal(ReadUngriddedBase):
                         from_unit, to_unit = self.UNITCONVERSION[var]
                         values = pd.to_numeric(station_group[key], errors="coerce").values
                         stat[var] = convert_unit(
-                            data=values, from_unit=from_unit, to_unit=to_unit, var_name=var
+                            values, from_unit=from_unit, to_unit=to_unit, var_name=var
                         )
 
                         if var == "wetso4":

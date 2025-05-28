@@ -1,12 +1,10 @@
-import datetime
 import logging
 import os
 import sys
 from datetime import timedelta
 from functools import cached_property
-from getpass import getuser
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated
 
 from pyaerocom.aeroval.glob_defaults import VarWebInfo, VarWebScaleAndColormap
 from pyaerocom.aeroval.obsentry import ObsEntry
@@ -16,37 +14,42 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+import subprocess
+
 import aerovaldb
 import pandas as pd
 from pydantic import (
     BaseModel,
     ConfigDict,
-    Field,
-    NonNegativeInt,
-    PositiveInt,
     computed_field,
     field_serializer,
-    field_validator,
     model_validator,
 )
-import subprocess
 
-from pyaerocom import __version__, const
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.helpers import (
-    BoundingBox,
     _check_statistics_periods,
     _get_min_max_year_periods,
     check_if_year,
 )
-from pyaerocom.aeroval.json_utils import read_json, set_float_serialization_precision
-from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
+from pyaerocom.aeroval.json_utils import read_json
 from pyaerocom.colocation.colocation_setup import ColocationSetup
+
+from .output_paths import OutputPaths
+from .model_maps_setup import ModelMapsSetup
+from .statistics_setup import StatisticsSetup
+from .time_setup import TimeSetup
+from .web_display_setup import WebDisplaySetup
+from .eval_run_options import EvalRunOptions
+from .project_info import ProjectInfo
+from .experiment_info import ExperimentInfo
+from .cams2_83_setup import CAMS2_83Setup
 
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD:pyaerocom/aeroval/setup_classes.py
 PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})
 
 
@@ -356,6 +359,8 @@ class ExperimentInfo(BaseModel):
     pyaerocom_version: str = __version__
     creation_date: str = f"{datetime.datetime.now(datetime.timezone.utc):%Y-%m-%dT%H:%M:%S.%fZ}"
 
+=======
+>>>>>>> main-dev:pyaerocom/aeroval/setup/eval_setup.py
 
 class EvalSetup(BaseModel):
     """Composite class representing a whole analysis setup
@@ -387,7 +392,7 @@ class EvalSetup(BaseModel):
 
     @model_validator(mode="after")
     def model_validator(self) -> Self:
-        # Warn user if var_order_menu does not match used variables.
+        # Add missing variables to var_order_menu.
         var_order_menu = set(self.webdisp_opts.var_order_menu)
         obs_cfg = self.obs_cfg
 
@@ -397,8 +402,12 @@ class EvalSetup(BaseModel):
                 variables.add(var)
 
         if not var_order_menu.issuperset(variables):
-            logger.warning(
-                f"Some variables are configured as obsvars but not included in var_order_menu. They may not show up on aerovalweb. Missing variables: {list(variables - var_order_menu)}"
+            missing_vars = sorted(variables - var_order_menu)
+            ls = list(self.webdisp_opts.var_order_menu)
+            ls.extend(missing_vars)
+            self.webdisp_opts.var_order_menu = tuple(ls)
+            logger.info(
+                f"Some variables are configured as obsvars but not included in var_order_menu. They have been appended to var_order_menu. Missing variables: {', '.join(missing_vars)}."
             )
 
         return self

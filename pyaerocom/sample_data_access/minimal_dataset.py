@@ -1,3 +1,4 @@
+import fcntl
 import logging
 import os
 
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 __all__ = ["download_minimal_dataset"]
 
 #: tarfile to download
-DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20241120"
+DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20250521"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -25,6 +26,11 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20231116": "md5:5da747f6596817295ba7affe3402b722",
         "testdata-minimal.tar.gz.20240722": "md5:7d933901c6d273d012f132c60df086cc",
         "testdata-minimal.tar.gz.20241120": "md5:4d2bc1782b1f468321817139d327e014",
+        "testdata-minimal.tar.gz.20250425": "md5:23f5b2e34f294c3232248a2b9b779864",
+        "testdata-minimal.tar.gz.20250506": "md5:aab174c263d350e9c6120614a0bda8a5",
+        "testdata-minimal.tar.gz.20250512": "md5:00d2f7cf41e6303bad33e822d25fe960",
+        "testdata-minimal.tar.gz.20250513": "md5:ea4be3361cb89eab35b5b00cc5101c60",
+        "testdata-minimal.tar.gz.20250521": "md5:42b2f476145e763a010587881576e38c",
     },
 )
 
@@ -43,13 +49,19 @@ def download_minimal_dataset(
         default files are extracted into `~/MyPyaerocom`
     """
     logger.debug(f"fetch {file_name} to {minimal_dataset.path}")
+    lockfile = str(minimal_dataset.path.joinpath(".lck"))
+    with open(lockfile, "w") as fh:
+        try:
+            fcntl.flock(fh, fcntl.LOCK_EX)
+            if extract_dir_override is not None:
+                extract_dir = os.path.abspath(extract_dir_override)
+            else:
+                extract_dir = "."
 
-    if extract_dir_override is not None:
-        extract_dir = os.path.abspath(extract_dir_override)
-    else:
-        extract_dir = "."
-
-    minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
-    minimal_dataset.fetch(
-        file_name, processor=pooch.Untar(["testdata-minimal"], extract_dir=extract_dir)
-    )
+            minimal_dataset.path.joinpath("tmp").mkdir(parents=True, exist_ok=True)
+            minimal_dataset.fetch(
+                file_name,
+                processor=pooch.Untar(["testdata-minimal"], extract_dir=extract_dir),
+            )
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)

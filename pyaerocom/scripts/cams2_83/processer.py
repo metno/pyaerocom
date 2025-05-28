@@ -1,7 +1,11 @@
 import glob
 import logging
 
+from datetime import timedelta, datetime, date
+
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
+from pyaerocom.io.cams2_83.read_obs import obs_paths
+
 
 from .engine import CAMS2_83_Engine
 
@@ -10,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
     def _run_single_entry(self, model_name, obs_name, var_list, analysis=False):
+
+        logger.info(f"Running CAMS2_83_Processer._run_single_entry with var_list {var_list} and model name {model_name}")
+
         col = self.get_colocator(model_name, obs_name)
         forecast_days = self.cfg.statistics_opts.forecast_days
 
@@ -18,6 +25,13 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             preprocessed_coldata_dir = self.cfg.path_manager.get_coldata_dir()
             mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-day*/*.nc"
             files_to_convert = glob.glob(mask)
+
+            if not analysis:
+                per_mask = f"{preprocessed_coldata_dir}/CAMS2-83-{model_name}-persistence*/*.nc"
+                per_files = glob.glob(per_mask)
+                files_to_convert += per_files   
+   
+
         else:
             files_to_convert = []
             for leap in range(forecast_days):
@@ -28,6 +42,27 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
                 col.colocation_setup.model_id = model_id
                 col.colocation_setup.model_name = model_name
                 col.run(var_list)
+
+            if not analysis:
+
+                runtype = "FC"
+                model = col.colocation_setup.model_id.split(".")[1]
+                model_id = f"CAMS2-83.{model}.day0.{runtype}"
+                model_name = f"CAMS2-83-{model}-persistence-{runtype}"
+                if isinstance(col.colocation_setup.start, int):
+                    new_start = datetime(year=col.colocation_setup.start, month=1, day=1)  - timedelta(days=1)
+                else:
+                    new_start = col.colocation_setup.start - timedelta(days=1)
+                new_model_start = (datetime.strptime(col.colocation_setup.model_kwargs["daterange"][0], "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+                
+                col.colocation_setup.model_id = model_id
+                col.colocation_setup.model_name = model_name
+                col.colocation_setup.start = new_start
+                col.colocation_setup.model_kwargs["daterange"][0] = new_model_start
+
+                col.run(var_list)
+
+
 
             files_to_convert = col.files_written
 
@@ -48,6 +83,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         var_list=None,
         update_interface=True,
         analysis=False,
+        obs_path=None,
     ):
         if isinstance(var_list, str):
             var_list = [var_list]

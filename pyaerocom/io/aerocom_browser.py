@@ -87,7 +87,6 @@ class AerocomBrowser(BrowseDict):
         for search_dir in const.DATA_SEARCH_DIRS:
             # get the directories
             if os.path.isdir(search_dir):
-                # subdirs = listdir(search_dir)
                 subdirs = [
                     x for x in os.listdir(search_dir) if os.path.isdir(os.path.join(search_dir, x))
                 ]
