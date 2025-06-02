@@ -14,6 +14,7 @@ from pyaerocom.exceptions import CacheReadError, CacheWriteError
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
+from pyaerocom.io.pyaro.read_pyaro import ReadPyaro
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class CacheHandlerUngridded:
     def __init__(self, reader=None, cache_dir=None, **kwargs):
         self._reader = None
         if reader is not None:
-            self.reader = reader
+            self._reader = reader
 
         self.loaded_data = {}
         self._cache_dir = cache_dir
@@ -144,7 +145,9 @@ class CacheHandlerUngridded:
             var_or_file_name = self.default_file_name(var_or_file_name)
         if cache_dir is None:
             cache_dir = self.cache_dir
-        elif not os.path.exists(cache_dir):
+        if cache_dir is None:
+            raise FileNotFoundError("Specified output directory is None")
+        if not os.path.exists(cache_dir):
             raise FileNotFoundError(f"Specified output directory does not exist:{cache_dir}")
         return os.path.join(cache_dir, var_or_file_name)
 
@@ -205,6 +208,8 @@ class CacheHandlerUngridded:
         current["ungridded_data_class"] = data_classname
         current["ungridded_data_version"] = dataclass.__version__
         current["cacher_version"] = self.__version__
+        if isinstance(self._reader, ReadPyaro):
+            current["pyaro_config"] = self.reader.config
         return current
 
     def check_and_load(self, var_or_file_name, force_use_outdated=False, cache_dir=None):

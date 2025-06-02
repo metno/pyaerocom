@@ -254,7 +254,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         aerocom_var_name = var_name
 
         # Iterate over the lines of the file
-        self.logger.info(f"Reading file {filename}")
+        logger.info(f"Reading file {filename}")
         file_delimiter = self.FILE_COL_DELIM
         # this lists the data to keep from the original read string
         # this becomes a time series
@@ -379,7 +379,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         try:
             unit = self.VAR_UNITS_FILE[unit_in_file]
         except KeyError:
-            # this will raise an Exception if cf_units cannot handle. In
+            # this will raise an Exception if pyaerocom.units cannot handle. In
             # which case the unit should be added in VAR_UNITS_FILE
             unit = str(Unit(unit_in_file))
 
@@ -474,7 +474,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # test also for a gzipped file...
         if not os.path.isfile(filename):
             filename = filename + ".gz"
-        self.logger.warning(f"Reading file {filename}")
+        logger.warning(f"Reading file {filename}")
 
         struct_data = {}
         suffix = pathlib.Path(filename).suffix
@@ -522,7 +522,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     pass
                 lineidx += 1
 
-        self.logger.info(f"Reading file {filename} done")
+        logger.info(f"Reading file {filename} done")
         # remove the temp file in case the input file was a gz file
         if suffix == ".gz":
             f_out.close()
@@ -556,7 +556,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             logger.warning("using default pattern *.* for file search")
             pattern = "*.*"
 
-        self.logger.info("Fetching data files. This might take a while...")
+        logger.info("Fetching data files. This might take a while...")
         fp = os.path.join(self.data_dir, pattern)
         return sorted(glob.glob(fp, recursive=True))
 
@@ -648,16 +648,16 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             try:
                 station_data = self.read_file(_file, var_name=var_name)
             except EEAv2FileError:
-                self.logger.warning(f"file {_file} is corrupt! consider deleting it")
+                logger.warning(f"file {_file} is corrupt! consider deleting it")
                 continue
             except TemporalResolutionError as e:
-                self.logger.warning(f"{_file} has TemporalResolutionError")
+                logger.warning(f"{_file} has TemporalResolutionError")
                 logger.warning(f"{repr(e)}. Skipping file...")
                 continue
 
             # readfile might fail outside of the error captured by the try statement above
             if station_data is None:
-                self.logger.warning(f"file {_file} did not provide data. skipping...!")
+                logger.warning(f"file {_file} did not provide data. skipping...!")
                 continue
 
             # to find the metadata quickly, we use a string internally
@@ -666,7 +666,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # Fill the metadata dict.
             # The location in the data set is time step dependant
             if _meta_key not in self._metadata:
-                self.logger.warning(
+                logger.warning(
                     f"metadata for station {_meta_key} not found! skipping that station!"
                 )
                 continue

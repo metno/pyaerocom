@@ -11,7 +11,11 @@ import typer
 
 from pyaerocom import const
 from pyaerocom.scripts.cams2_83.config import CFG
-from pyaerocom.scripts.cams2_83.evaluation import EvalType, runnermedianscores, runnermos
+from pyaerocom.scripts.cams2_83.evaluation import (
+    EvalType,
+    runnermedianscores,
+    runnermos,
+)
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
@@ -56,7 +60,7 @@ def make_config_mos(
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
-    cfg.update(use_fairmode=True)
+    cfg.update(use_cams2_83_fairmode=True)
 
     if add_seasons:
         cfg.update(add_seasons=True)

@@ -57,9 +57,9 @@ class UngriddedDataContainer(abc.ABC):
         return data
 
     @abc.abstractmethod
-    def _get_data_revision_helper(self, data_id):
+    def get_data_revision(self, data_id):
         """
-        Helper method to get last data revision
+        Get the data revision of the data_id
 
         Parameters
         ----------
@@ -467,16 +467,6 @@ class UngriddedDataContainer(abc.ABC):
         ------
         AttributeError
             if no flags are assigned
-        """
-        pass
-
-    @abc.abstractmethod
-    def check_convert_var_units(self, var_name, to_unit=None, inplace=True):
-        """convert all data of a variable to the new units
-
-        :param var_name: variable to change
-        :param to_unit: new units, defaults to None
-        :param inplace: inplace or copy, defaults to True
         """
         pass
 
@@ -917,8 +907,16 @@ class UngriddedDataContainer(abc.ABC):
         if self == other:
             return obj
 
-        all_stations = other.to_station_data_all()
-        obj.append_station_data(all_stations["stats"])
+        for var in other.contains_vars:
+            # convert variable by variable, since to_station_data_all
+            # fails is not implemented for multiple variables
+            all_stations = other.to_station_data_all(vars_to_convert=var)
+            obj.append_station_data(all_stations["stats"])
+
+        # update metadata
+        obj._data_revision.update(other._data_revision)
+        obj.filter_hist.update(other.filter_hist)
+
         return obj
 
     def append(self, other):
@@ -930,7 +928,7 @@ class UngriddedDataContainer(abc.ABC):
 
         Parameters
         -----------
-        other : UngriddedData
+        other : UngriddedDataContainer
             other data object
 
         Returns
@@ -941,7 +939,7 @@ class UngriddedDataContainer(abc.ABC):
         Raises
         -------
         ValueError
-            if input object is not an instance of :class:`UngriddedData`
+            if input object is not an instance of :class:`UngriddedDataContainer`
 
         """
         return self.merge(other, new_obj=False)

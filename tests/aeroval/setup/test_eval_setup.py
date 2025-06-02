@@ -256,8 +256,10 @@ def test_user_var_scale_colmap(cfg_exp1: dict):
     assert "deprdn" in es1.var_scale_colmap
 
     cfg = cfg_exp1.copy()
+    current_directory = os.path.dirname(__file__)
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
     cfg["var_scale_colmap_file"] = os.path.join(
-        os.path.dirname(__file__), "data", "user_var_scale_colmap.ini"
+        parent_directory, "data", "user_var_scale_colmap.ini"
     )
     esX = EvalSetup(**cfg)
     assert "deprdn" in esX.var_scale_colmap
@@ -267,7 +269,7 @@ def test_user_var_scale_colmap(cfg_exp1: dict):
 
     cfg_fail = cfg_exp1.copy()
     cfg_fail["var_scale_colmap_file"] = os.path.join(
-        os.path.dirname(__file__), "data", "buggy_var_scale_colmap.ini"
+        parent_directory, "data", "buggy_var_scale_colmap.ini"
     )
     esY = EvalSetup(**cfg_fail)
     with pytest.raises(KeyError) as e:
@@ -282,9 +284,9 @@ def test_user_var_web_info(cfg_exp1: dict):
     assert "deprdn" in es1.var_web_info
 
     cfg = cfg_exp1.copy()
-    cfg["var_web_info_file"] = os.path.join(
-        os.path.dirname(__file__), "data", "user_var_web_info.ini"
-    )
+    current_directory = os.path.dirname(__file__)
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    cfg["var_web_info_file"] = os.path.join(parent_directory, "data", "user_var_web_info.ini")
     esX = EvalSetup(**cfg)
     assert "deprdn" in esX.var_web_info
     assert "newvar" in esX.var_web_info
@@ -292,7 +294,7 @@ def test_user_var_web_info(cfg_exp1: dict):
 
     cfg_fail = cfg_exp1.copy()
     cfg_fail["var_web_info_file"] = os.path.join(
-        os.path.dirname(__file__), "data", "buggy_var_web_info.ini"
+        parent_directory, "data", "buggy_var_web_info.ini"
     )
     esY = EvalSetup(**cfg_fail)
     with pytest.raises(KeyError) as e:

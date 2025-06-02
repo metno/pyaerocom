@@ -207,8 +207,6 @@ class ReadGridded(GriddedReader):
         #: data_id of gridded dataset
         self._data_id = data_id
 
-        self.logger = logger
-
         # file naming convention. Default is aerocom3 file convention, change
         # using self.file_convention.import_default("aerocom2"). Is
         # automatically updated in class ReadGridded
@@ -377,7 +375,7 @@ class ReadGridded(GriddedReader):
         year = years[-1]
 
         if year == 9999:
-            self.logger.warning(
+            logger.warning(
                 "Data contains climatology. Will be ignored as stop time, using last year"
             )
             if len(years) == 1:
@@ -1182,12 +1180,12 @@ class ReadGridded(GriddedReader):
         """
         for k, v in kwargs.items():
             if k in self.__dict__:
-                self.logger.info(
+                logger.info(
                     f"Updating {k} in ModelImportResult for model {self.data_id}. New value: {v}"
                 )
                 self.__dict__[k] = v
             else:
-                self.logger.info(f"Ignoring key {k} in ModelImportResult.update()")
+                logger.info(f"Ignoring key {k} in ModelImportResult.update()")
 
     def concatenate_cubes(self, cubes):
         """Concatenate list of cubes into one cube
@@ -2021,7 +2019,7 @@ class ReadGridded(GriddedReader):
                     )
                 )
             except (VarNotAvailableError, DataCoverageError) as e:
-                self.logger.warning(repr(e))
+                logger.warning(repr(e))
         return tuple(data)
 
     def _load_files(self, files, var_name, perform_fmt_checks=None):
@@ -2179,7 +2177,7 @@ class ReadGridded(GriddedReader):
             crop_time = True
             crop_time_range[1] = to_pandas_timestamp(stop)
         if crop_time:
-            self.logger.info("Applying temporal cropping of result cube")
+            logger.info("Applying temporal cropping of result cube")
             data = data.crop(time_range=crop_time_range)
         return data
 

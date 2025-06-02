@@ -1,4 +1,5 @@
 from __future__ import annotations
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from tests.conftest import TEST_RTOL
 from tests.fixtures.stations import FAKE_STATION_DATA
+from pyaerocom.utils import dicts_equal
 
 
 def get_earlinet_data(var_name):
@@ -33,12 +35,7 @@ stat2 = FAKE_STATION_DATA["station_data2"]
 
 def test_StationData_copy():
     cp = stat1.copy()
-    for key, val in stat1.items():
-        assert key in cp
-        if isinstance(val, np.ndarray):
-            assert np.all(val == cp[key])
-        else:
-            assert val == cp[key]
+    assert dicts_equal(stat1, cp)
 
 
 stat3 = stat2.copy()
@@ -144,17 +141,22 @@ def test_StationData_check_var_unit_aerocom_error(
 
 
 def test_StationData_check_unit():
-    stat1.check_unit("ec550aer", "m-1")
+    stat1._check_unit("ec550aer", "m-1")
 
 
 def test_StationData_check_unit_error():
     with pytest.raises(DataUnitError) as e:
-        stat1.check_unit("ec550aer", None)
+        stat1._check_unit("ec550aer", None)
     assert str(e.value) == "Invalid unit m-1 (expected 1/km)"
 
 
 def test_StationData_convert_unit():
-    stat1.convert_unit("ec550aer", "1/Gm")
+    stat2 = deepcopy(stat1)
+    stat2.convert_unit("ec550aer", "1/Gm")
+
+    assert stat2["ec550aer"][0] / stat1["ec550aer"][0] == pytest.approx(
+        stat2.data_err["ec550aer"][0] / stat1.data_err["ec550aer"][0]
+    )
 
 
 def test_StationData_convert_unit_error():

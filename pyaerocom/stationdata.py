@@ -29,6 +29,9 @@ from pyaerocom.helpers import calc_climatology, isnumeric, isrange
 from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType, to_datetime64
+from pyaerocom.units.helpers import get_standard_unit
+from pyaerocom.units.logging import LoggingCallback
+
 from pyaerocom.units import convert_unit
 
 from pyaerocom.units.datetime import infer_time_resolution
@@ -205,13 +208,13 @@ class StationData(StationMetaData):
             if current unit is not equal to AeroCom default and cannot
             be converted.
         """
-        to_unit = const.VARS[var_name].units
+        to_unit = get_standard_unit(var_name)
         try:
-            self.check_unit(var_name, to_unit)
+            self._check_unit(var_name, to_unit)
         except Exception:
             self.convert_unit(var_name, to_unit)
 
-    def check_unit(self, var_name: str, unit: str | None = None):
+    def _check_unit(self, var_name: str, unit: str | None = None):
         """Check if variable unit corresponds to a certain unit
 
         Parameters
@@ -233,10 +236,13 @@ class StationData(StationMetaData):
             (e.g. 1/Mm vs 1/m)
         """
         if unit is None:
-            unit = const.VARS[var_name].units
+            unit = get_standard_unit(var_name)
+
         u = self.get_unit(var_name)
         if not convert_unit(1, u, unit, var_name) == 1:
             raise DataUnitError(f"Invalid unit {u} (expected {unit})")
+        else:
+            self.var_info[var_name]["units"] = unit
 
     def convert_unit(self, var_name: str, to_unit: str) -> None:
         """Try to convert unit of data
@@ -259,19 +265,25 @@ class StationData(StationMetaData):
         """
         unit = self.get_unit(var_name)
 
-        data = self[var_name]
         try:
-            tst = self.get_var_ts_type(var_name)
+            ts_type = self.get_var_ts_type(var_name)
         except MetaDataError:
-            tst = None
-        data = convert_unit(data, from_unit=unit, to_unit=to_unit, var_name=var_name, ts_type=tst)
+            ts_type = None
 
-        self[var_name] = data
-        self.var_info[var_name]["units"] = to_unit
-        logger.debug(
-            f"Successfully converted unit of variable {var_name} in {self.station_name} "
-            f"from {unit} to {to_unit}"
+        fac = convert_unit(
+            1,
+            from_unit=unit,
+            to_unit=to_unit,
+            var_name=var_name,
+            ts_type=ts_type,
+            callback=LoggingCallback(logger),
         )
+
+        self[var_name] = fac * self[var_name]
+        if var_name in self.data_err:
+            self.data_err[var_name] = fac * self.data_err[var_name]
+
+        self.var_info[var_name]["units"] = to_unit
 
     def dist_other(self, other: StationData) -> float:
         """Distance to other station in km
@@ -968,6 +980,7 @@ class StationData(StationMetaData):
         var_name: str,
         low: float | None = None,
         high: float | None = None,
+        unit_ref=None,
         check_unit: bool = True,
     ):
         """Remove outliers from one of the variable timeseries
@@ -993,7 +1006,7 @@ class StationData(StationMetaData):
             info = const.VARS[var_name]
             if check_unit:
                 try:
-                    self.check_unit(var_name)
+                    self.check_var_unit_aerocom(var_name)
                 except DataUnitError:
                     self.convert_unit(var_name, to_unit=info.units)
             if low is None:

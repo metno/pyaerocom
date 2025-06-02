@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import warnings
@@ -45,9 +47,12 @@ from pyaerocom.units.datetime.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NU
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units import Unit
-from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
+
+from pyaerocom.units.logging import LoggingCallback
+from pyaerocom.units import convert_unit
 
 logger = logging.getLogger(__name__)
 
@@ -169,15 +174,15 @@ class GriddedData:
             self.check_unit(convert_unit_on_init)
 
     @property
-    def var_name(self):
+    def var_name(self) -> str:
         """Name of variable"""
         return self.grid.var_name
 
     @var_name.setter
-    def var_name(self, val):
+    def var_name(self, val: str):
         """Name of variable"""
         if not isinstance(val, str):
-            raise ValueError(f"Invalid input for var_name, need str, got {val}")
+            raise TypeError(f"Invalid input for var_name, need str, got {type(val)}")
         self.grid.var_name = val
         if "var_name" in self.metadata:
             self.metadata["var_name"] = val
@@ -725,7 +730,7 @@ class GriddedData:
         elif isinstance(input, str) and os.path.exists(input):
             self._read_netcdf(input, var_name, perform_fmt_checks)
         else:
-            raise OSError(f"Failed to load input: {input}")
+            raise ValueError(f"Failed to load input: {input}")
 
         if var_name is not None and self.var_name != var_name:
             try:
@@ -764,16 +769,14 @@ class GriddedData:
 
         return cube
 
-    def check_unit(self, try_convert_if_wrong=False):
+    def check_unit(self, try_convert_if_wrong: bool = False) -> bool:
         """Check if unit is correct"""
-        from pyaerocom.exceptions import VariableDefinitionError
-
         self._check_invalid_unit_alias()
         unit_ok = False
         to_unit = None
         try:
             var = const.VARS[self.cube.var_name]
-            to_unit = var.units
+            to_unit = get_standard_unit(var.var_name)
             current_unit = self.units
             if to_unit == current_unit:  # string match e.g. both are m-1
                 unit_ok = True
@@ -805,64 +808,33 @@ class GriddedData:
 
         return unit_ok
 
-    def _try_convert_custom_unit(self, new_unit):
-        """
-        Try convert data to input unit using custom conversion
-
-        Helpers for custom conversion are defined in
-        :mod:`pyaerocom.units.units_helpers`.
-
-        Parameters
-        ----------
-        new_unit : str
-            output unit
-
-        Raises
-        ------
-        UnitConversionError
-            if conversion failed
-
-        Returns
-        -------
-        None
-
-        """
-        current = self.units
-
-        mulfac = get_unit_conversion_fac(
-            from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
-        )
-        logger.info(
-            f"Successfully converted unit from {current} to {new_unit} in {self.short_str()}"
-        )
-
-        self._apply_unit_mulfac(new_unit, mulfac)
-
-    def _apply_unit_mulfac(self, new_unit, mulfac):
-        if mulfac != 1:
-            new_cube = self._grid * mulfac
-            new_cube.attributes.update(self._grid.attributes)
-            new_cube.var_name = self.var_name
-            self._grid = new_cube
-        self.units = new_unit
-        return self
-
-    def convert_unit(self, new_unit, inplace=True):
+    def convert_unit(self, new_unit: str, inplace: bool = True) -> GriddedData:
         """Convert unit of data to new unit
 
         Parameters
         ----------
-        new_unit : str or cf_units.Unit
+        new_unit : str or pyaerocom.units.Unit
             new unit of data
         inplace : bool
             convert in this instance or create a new one
         """
-        data_out = self if inplace else self.copy()
-        try:  # uses cf_units functionality (standard stuff, e.g. ug to mg)
-            data_out.grid.convert_units(new_unit)
-        except ValueError:  # try pyaerocom custom code
-            data_out._try_convert_custom_unit(new_unit)
-        return data_out
+        out = self if inplace else self.copy()
+
+        var_name = out.var_name
+        out.grid = convert_unit(
+            out.grid,
+            from_unit=self.units,
+            to_unit=new_unit,
+            var_name=self.var_name,
+            ts_type=self.ts_type,
+            inplace=True,
+            callback=LoggingCallback(logger),
+        )
+        out._grid.attributes.update(self._grid.attributes)
+        out.var_name = var_name
+        out.units = new_unit
+
+        return out
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -1548,7 +1520,6 @@ class GriddedData:
             )
         return subset
 
-    # TODO: Test, confirm and remove beta flag in docstring
     def remove_outliers(self, low=None, high=None, inplace=True):
         """Remove outliers from data
 

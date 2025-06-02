@@ -85,7 +85,7 @@ def test_VarCollection_get_var_error(collection: VarCollection):
     [
         ("*blaaaaaaa*", 0),
         ("dep*", 9),
-        ("od*", 26),
+        ("od*", 27),
         ("conc*", 122),
     ],
 )

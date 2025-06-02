@@ -5,7 +5,9 @@ from collections.abc import Iterator
 from copy import deepcopy
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
+from pyaro.timeseries import Reader
 
 from pyaerocom import const
 from pyaerocom.dynamic_rec_array import DynamicRecArray
@@ -18,6 +20,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.helpers import merge_station_data, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
@@ -33,7 +36,9 @@ logger = logging.getLogger(__name__)
 class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
-    __version__ = "0.01"
+    #: version for caching, needs also updating when UngriddedDataMetadata has changed
+    __version__ = "0.02"
+    _merging_error_logged = False
 
     _dtype = [
         ("meta_id", "i4"),
@@ -230,6 +235,22 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     )
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
+                if var in stat.data_flagged:
+                    if len(stat.data_flagged[var]) != len(stat.dtime):
+                        del stat.data_flagged[var]
+                        if not self._merging_error_logged:
+                            self._merging_error_logged = True
+                            logger.warning(
+                                "merging of station-data objects introduced rubbish flags, removing"
+                            )
+                if var in stat.data_err:
+                    if len(stat.data_err[var]) != len(stat.dtime):
+                        del stat.data_err[var]
+                        if not self._merging_error_logged:
+                            self._merging_error_logged = True
+                            logger.warning(
+                                "merging of station-data objects introduced rubbish stddev, removing"
+                            )
                 if np.all(np.isnan(stat[var].values)):
                     stat = stat.remove_variable(var)
             if any([x in stat for x in vars_to_convert]):
@@ -275,7 +296,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.data_revision[meta["data_id"]]
+                rev = self.get_data_revision(meta["data_id"])
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -367,16 +388,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             altitude = subset["dataaltitude"].astype("f4")
             altitude[alt_mask] = np.nan
 
-            data = pd.Series(vals, dtime)
-            if not data.index.is_monotonic_increasing:
-                data = data.sort_index()
+            series = pd.Series(vals, dtime)
+            if not series.index.is_monotonic_increasing:
+                series = series.sort_index()
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
             if any(~np.isnan(flagged)):
                 sd.data_flagged[var] = flagged
 
-            sd["dtime"] = data.index.values
-            sd[var] = data
+            sd["dtime"] = series.index.values
+            sd[var] = series
             sd["var_info"][var] = {}
             FOUND_ONE = True
             # check if there is information about altitude (then relevant 3D
@@ -389,11 +410,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             if not np.isnan(altitude).all():
                 if "altitude" in vi:
                     sd.var_info["altitude"] = vi["altitude"]
-                sd.altitude = altitude
+                sd.altitude = altitude[0]  # TODO: Revise in case of moving stations
             if var in vi:
                 sd.var_info[var].update(vi[var])
 
-            if len(data.index) == len(data.index.unique()):
+            if len(series.index) == len(series.index.unique()):
                 sd.var_info[var]["overlap"] = False
             else:
                 sd.var_info[var]["overlap"] = True
@@ -600,6 +621,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     self.metadata[meta_idx][key] = station_data[key]
             contains_vars = list(station_data.var_info)
             self.metadata[meta_idx]["variables"] = contains_vars
+            if "data_revision" in station_data:
+                self.metadata[meta_idx]["data_revision"] = station_data.data_revision
 
             for var in contains_vars:
                 vardata = station_data[var]
@@ -616,6 +639,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 var_idx = self.var_idx[var]
                 self.metadata[meta_idx]["var_info"] = {}
                 self.metadata[meta_idx]["var_info"][var] = {}
+
                 self.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
                 for x in ("longitude", "latitude", "altitude"):
                     if x not in self.metadata[meta_idx]["var_info"][var]:
@@ -633,10 +657,200 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     v_data["stdev"] = station_data.data_err[var]
                 if var in station_data.data_flagged:
                     flags = station_data.data_flagged[var]
-                    nans = ~np.isfinite(flags)
                     v_data["flag"][:] = flags
+                    nans = ~np.isfinite(flags)
                     v_data["flag"][nans] = UngriddedDataStructured._nan_types["flag"]
                 self._dra.append(v_data)
+
+    @staticmethod
+    def from_pyaro(
+        data_id: str, reader: Reader, vars_to_retrieve: list[str], **kwargs
+    ) -> UngriddedDataContainer:
+        """Convert data from a pyaro-reader to UngriddedDataStructured
+
+        :param data_id: data_id identifier
+        :param reader: pyaro-reader
+        :param vars_to_retrieve: selection of variables
+        :param kwargs: internal parameters for testing/benchmarking
+        :return: data as UngriddedDataContainer
+        """
+
+        def _calculate_ts_type(
+            start: npt.NDArray[np.datetime64], end: npt.NDArray[np.datetime64]
+        ) -> npt.NDArray:
+            """convert start and end-time arrays to a ts-type array
+
+            :param start: start-times
+            :param end: end-times
+            :return: ts-types as string-array
+            """
+            seconds = (end - start).astype("timedelta64[s]").astype(np.int32)
+
+            # below line is the same as
+            # uniq_seconds = np.sort(np.unique(seconds))
+            # but several orders of magnitude faster for large array with only few distinct elements
+            uniq_seconds = np.sort(np.nonzero(np.bincount(seconds))[0])
+
+            @np.vectorize(otypes=[str])
+            def memoized_ts_type(x: np.int32) -> str:
+                if x == 0:
+                    return TsType("hourly")
+                return str(TsType.from_total_seconds(x))
+
+            uniq_tstypes = memoized_ts_type(uniq_seconds)
+
+            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+            indices = np.searchsorted(uniq_seconds, seconds)
+
+            # Use np.take to map indices to values
+            return np.take(uniq_tstypes, indices)
+
+        def _station_tstype_to_int_array(
+            sarray: np.ndarray, mapping: dict[tuple[str, str], int]
+        ) -> np.ndarray:
+            """converter an array-view consisting of two str columns ("stations", "tstype") to an
+            int-array using a mapping
+
+            :param sarray: station,tstype view of a structured array
+            :param mapping: (station,tstype) -> int mapping dictionary
+            :return: array of ints
+            """
+            keys = np.array(
+                list(mapping.keys()),
+                dtype=[
+                    ("stations", sarray["stations"].dtype),
+                    ("tstype", sarray["tstype"].dtype),
+                ],
+            )
+            values = np.array(list(mapping.values()), dtype="i4")
+
+            # Sort keys to ensure correct indexing
+            sorted_indices = np.argsort(keys)
+            sorted_keys = keys[sorted_indices]
+            sorted_values = values[sorted_indices]
+
+            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+            indices = np.searchsorted(sorted_keys, sarray)
+
+            # Use np.take to map indices to values
+            return np.take(sorted_values, indices)
+
+        class _VariableMetaIds:
+            """Class containing for each variable a dictionary of tuples of station and ts_type to
+            the corresponding meta-d
+            """
+
+            def __init__(self):
+                self._counter: int = 0
+                # a meta must be split by variable as well as station and tstype
+                # dictionary about var_meta[var][(station,ts_type)] = meta_id
+                self._mapping: dict[str, dict[tuple[str, str], int]] = {}
+
+            def append_var_station_tstype(
+                self,
+                var: str,
+                station_tstype: np.ndarray | None,
+            ):
+                """append values of an array containing station and ts_type tuples
+                :param var: variable
+                :param station_tstype: structured array of stations and tstype
+                """
+                if var not in self._mapping:
+                    self._mapping[var] = {}
+                if len(station_tstype) == 0:
+                    return
+
+                mapping = self._mapping[var]
+                # below line is for EEA-data about 10x faster than
+                # uarray = np.unique(station_tstype, axis=0)
+                uarray = np.array(list(set(station_tstype.tolist())), dtype=station_tstype.dtype)
+
+                for row in uarray:
+                    sx = (row[0], row[1])
+                    if sx not in mapping:
+                        mapping[sx] = self._counter
+                        self._counter += 1
+                return
+
+            def __getitem__(self, var) -> dict[tuple[str, str], int]:
+                """Get the (stations, tstype) -> metaid dictionary
+
+                :param var: variable name
+                :return: dictionary of tuple of stations and tstype to meta_ids
+                """
+                return self._mapping[var]
+
+        ugs = UngriddedDataStructured()
+        ugs.var_idx = {var: i for i, var in enumerate(vars_to_retrieve)}
+
+        # a meta must be split by variable as well as station and tstype
+        var_metas = _VariableMetaIds()
+        # unit dictionary, var_units[var] = unit
+        var_units: dict[str, str] = {}
+        for var in vars_to_retrieve:
+            logger.info(f"Getting data of {var} from pyaro/{data_id}")
+            if "bench_dataset" in kwargs:
+                var_data = kwargs["bench_dataset"]
+            else:
+                var_data = reader.data(varname=var)
+            logger.info(f"Converting data of {var} from pyaro/{data_id} to ungridded")
+            tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
+            stations = var_data.stations
+            station_tstype = np.rec.array(
+                [stations, tstype],
+                dtype=[("stations", stations.dtype), ("tstype", tstype.dtype)],
+            )
+
+            # set meta-ids for each variable but ensure that counter
+            # is for all vars, var_metas contain (stations, tstype) tuples
+            var_metas.append_var_station_tstype(var, station_tstype)
+            if len(var_data) == 0:
+                continue
+
+            var_units[var] = var_data.units
+            dra_data = {
+                "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
+                "var_id": np.zeros(len(var_data), dtype="i2") + ugs.var_idx[var],
+                "start_time": var_data.start_times,
+                "end_time": var_data.end_times,
+                "data": var_data.values,
+                "stdev": var_data.standard_deviations,
+                "dataaltitude": var_data.altitudes.astype("i2"),
+                "flag": var_data.flags,  # TODO check for common undefined values?
+            }
+            ugs._dra.append_array(**dra_data)
+
+        logger.info(f"Converting metadata from pyaro/{data_id} to ungridded")
+        rev = None
+        if "revision" in reader.metadata():
+            rev = reader.metadata()["revision"]
+        else:
+            logger.warning(
+                f"pyaro/{data_id} does not contain a 'revision', please inform data-provider, or pyaro-readers"
+            )
+
+        stations_with_metadata = reader.stations()
+        for var in vars_to_retrieve:
+            for station_tstype, meta_id in var_metas[var].items():
+                (station_name, tstype) = station_tstype
+                extra_metadata = stations_with_metadata[station_name].metadata
+                d = {
+                    "data_id": data_id,
+                    "data_revision": rev,
+                    "station_name": station_name,
+                    "var_info": {
+                        var: {"units": var_units[var]},
+                    },
+                    **stations_with_metadata[station_name],
+                    **extra_metadata,
+                }
+                if "ts_type" not in d:
+                    d["ts_type"] = tstype
+                ugs.metadata[meta_id] = d
+
+        logger.info(f"Finished converting from pyaro/{data_id} to UngriddedDataStructured")
+
+        return ugs
 
     def clear_meta_no_data(self, inplace=True):
         """Remove all metadata blocks that do not have data associated with it
@@ -663,7 +877,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             obj = self.copy()
 
         meta_no_data = []
-        distinct_metas = np.unique(obj._dra.data["meta_id"])
+        # faster implementation of: distinct_metas = np.unique(obj._dra.data["meta_id"])
+        distinct_metas = np.nonzero(np.bincount(obj._dra.data["meta_id"]))[0]
+
         for meta_idx, meta in obj.metadata.items():
             if not np.any(distinct_metas == meta_idx):
                 # sanity check

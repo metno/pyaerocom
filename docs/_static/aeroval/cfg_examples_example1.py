@@ -151,14 +151,13 @@ GLOB_CFG = dict(
     # If True seasons are ['all', 'DJF', 'MAM', 'JJA', 'SON'],
     # if False, just ['all']
     add_seasons=True,
-    # Whether or not statistics are based on the meteorological definition of seasons.
+    # Whether or not DJF statistics are based on the meteorological definition of the season.
     # This is relevant for periods that are a single year. So if use_meteorological_seasons=True
     # and add_seasons=True, for a given year ['DJF'] will refer to data from Dec of the previous year
     # (if available) and Jan/Feb of the same year, while if use_meteorological_seasons=False,
-    # it will refer to data from Jan/Feb and December of the same year. Similarly, and independently
-    # of the value of add_seasons, if use_meteorological_seasons=True, ['all'] (whole year) will refer
-    # to data from Dec of the previous year to Nov of the same year, while if False, it will refer to data
-    # from Jan to Dec of the same year.
+    # it will refer to data from Jan/Feb and December of the same year. (The ['all'] (whole year) key
+    # for the year in question will not be affected, so it will refer to data from January 1st to
+    # December 31st.
     use_meteorological_seasons=False,
     # Whether or not to add trends output to the analysis. Trends analysis
     # needs at least 7 years of data, so this is skipped here for this

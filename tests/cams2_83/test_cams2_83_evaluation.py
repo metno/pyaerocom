@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from pyaerocom.scripts.cams2_83.evaluation import EvalType
+from pyaerocom.scripts.cams2_83.evaluation import EvalType, date_range
 
 
 @pytest.mark.parametrize(
@@ -43,6 +43,13 @@ def test_periods(eval_type: str, start_date: datetime, end_date: datetime, resul
     "eval_type,start_date,end_date,error",
     [
         pytest.param(
+            "season",
+            datetime(2023, 12, 28),
+            datetime(2023, 12, 12),
+            "End date should be ⩾ start_date",
+            id="invalid",
+        ),
+        pytest.param(
             "week",
             datetime(2023, 12, 28),
             datetime(2024, 1, 1),
@@ -52,7 +59,7 @@ def test_periods(eval_type: str, start_date: datetime, end_date: datetime, resul
         pytest.param(
             "day",
             datetime(2024, 1, 12),
-            datetime(2022, 1, 12),
+            datetime(2024, 2, 12),
             "Evaluation type 'day' should have the same",
             id="day",
         ),
@@ -63,3 +70,28 @@ def test_check_dates(eval_type: str, start_date: datetime, end_date: datetime, e
     with pytest.raises(ValueError) as excinfo:
         eval.check_dates(start_date, end_date)
     assert error in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "start_date,end_date,result",
+    [
+        pytest.param(
+            datetime(2023, 12, 28),
+            datetime(2023, 12, 28),
+            (datetime(2023, 12, 28, 0, 0),),
+            id="1d",
+        ),
+        pytest.param(
+            datetime(2023, 12, 28),
+            datetime(2023, 12, 30),
+            (
+                datetime(2023, 12, 28, 0, 0),
+                datetime(2023, 12, 29, 0, 0),
+                datetime(2023, 12, 30, 0, 0),
+            ),
+            id="3d",
+        ),
+    ],
+)
+def test_date_range(start_date: datetime, end_date: datetime, result: tuple[datetime, ...]):
+    assert date_range(start_date=start_date, end_date=end_date) == result

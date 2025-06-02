@@ -15,6 +15,8 @@ import iris
 import iris.coords
 import iris.util
 
+from pyaerocom.units.helpers import get_standard_unit
+
 try:
     # as of iris version 3
     from iris.util import equalise_attributes
@@ -283,7 +285,7 @@ def _check_cube_unitless(cube):
         raise VariableDefinitionError(f"No such pyaerocom default variable: {cube.var_name}")
 
     unit = Unit(cube.units)
-    if str(const.VARS[var].units) == "1" and unit.is_unknown():
+    if str(get_standard_unit(var)) == "1" and unit.is_unknown():
         cube.units = Unit("1")
     return cube
 
