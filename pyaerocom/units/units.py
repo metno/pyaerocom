@@ -212,19 +212,26 @@ class Unit:
         if isinstance(other, str):
             other = Unit(other)
 
-        if self._element == other._element and self._species == other._species:
+        cf_units_only = self._element is None and other._element is None
+        compatible_element = (
+            (self._element is None)
+            or (other._element is None)
+            or (self._element == other._element)
+        )
+        same_species = (self._species is not None and other._species is not None) and (
+            self._species == other._species
+        )
+        same_variable = (self._aerocom_var is not None and other._aerocom_var is not None) and (
+            self._aerocom_var == other._aerocom_var
+        )
+
+        if cf_units_only:
             return self._cfunit.is_convertible(other._cfunit)
-        elif self._element is not None:
-            known_mass_ratio = self._element is not None and self._species is not None
-            same_variable = self._aerocom_var == other._aerocom_var
-            if known_mass_ratio or same_variable:
-                return self._cfunit.is_convertible(other._cfunit)
-        elif other._element is not None:
-            known_mass_ratio = other._element is not None and other._species is not None
-            same_variable = self._aerocom_var == other._aerocom_var
-            if known_mass_ratio or same_variable:
-                return self._cfunit.is_convertible(other._cfunit)
-        else:
+
+        if not compatible_element:
+            return False
+
+        if same_species or same_variable:
             return self._cfunit.is_convertible(other._cfunit)
 
         return False
@@ -326,7 +333,11 @@ class Unit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        to_unit = Unit(str(other), **kwargs)
+        if isinstance(other, str):
+            to_unit = Unit(str(other), **kwargs)
+        else:
+            assert isinstance(other, Unit)
+            to_unit = other
 
         if not self.is_convertible(to_unit):
             raise ValueError(

@@ -15,10 +15,11 @@ from pyaerocom.units.units import UnitConversionCallbackInfo
 def test_PyaerocomUnit_custom_scaling(
     unit: str, aerocom_var: str | None, to_unit: str, exp_mul: float
 ):
-    u = Unit(unit, aerocom_var=aerocom_var)
+    u1 = Unit(unit, aerocom_var=aerocom_var)
+    u2 = Unit(to_unit, aerocom_var=aerocom_var)
 
-    assert u.convert(1, other=to_unit) == pytest.approx(exp_mul)
-    assert u.convert(1, other=to_unit, inplace=True) == pytest.approx(exp_mul)
+    assert u1.convert(1, other=u2) == pytest.approx(exp_mul)
+    assert u1.convert(1, other=u2, inplace=True) == pytest.approx(exp_mul)
 
 
 @pytest.mark.parametrize(
@@ -64,8 +65,11 @@ def test_origin():
         ("m", "km", True),
         ("m", "kg", False),
         (Unit("mg S"), Unit("mg"), False),
-        (Unit("mg S", species="SO4"), Unit("mg"), True),
-        (Unit("mg"), Unit("mg S", species="SO4"), True),
+        (Unit("mg S", species="SO4"), Unit("mg", species="SO4"), True),
+        (Unit("mg S", aerocom_var="concso2"), Unit("mg", aerocom_var="concso2"), True),
+        (Unit("mg", species="SO4"), Unit("mg S", species="SO4"), True),
+        (Unit("mg", aerocom_var="concso2"), Unit("mg S", aerocom_var="concso2"), True),
+        (Unit("mg S", species="SO2"), Unit("mg N", species="SO2"), False),
     ),
 )
 def test_is_convertible(from_unit: str | Unit, to_unit: str | Unit, is_convertible: bool):
