@@ -54,6 +54,7 @@ from pyaerocom.vert_coords import AltitudeAccess
 from pyaerocom.units.logging import LoggingCallback
 from pyaerocom.units import convert_unit
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -1894,7 +1895,30 @@ class GriddedData:
                     self.cube.coord("time").bounds = None
                 except Exception:
                     pass
+                mask = np.logical_and(
+                    time_range[0] <= self.time_stamps(), self.time_stamps() < time_range[1]
+                )
+                dates = self.time_stamps()[mask]
                 data = data.extract(time_constraint)
+                if len(dates) == 1:
+                    # Working around iris 'squeezing' the cube when extract is length 1 along the date
+                    # dimension by readding the dimension with the appropriate value.
+                    time_coord = data.coord("time")
+                    data.remove_coord("time")
+                    new_shape = (1,) + data.shape
+                    nd_data = np.reshape(data.data, new_shape)
+                    data = iris.cube.Cube(
+                        nd_data,
+                        dim_coords_and_dims=[(time_coord, 0)]
+                        + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
+                        aux_coords_and_dims=[
+                            (coord, i) for i, coord in enumerate(data.aux_coords)
+                        ],
+                        var_name=data.var_name,
+                        long_name=data.long_name,
+                        units=data.units,
+                    )
+
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
                 data = data[time_range[0] : time_range[1]]
@@ -2220,7 +2244,7 @@ class GriddedData:
 
         suppl = dict(**self.metadata)
         suppl["regridded"] = True
-        data_out = GriddedData(data_rg, **suppl)
+        data_out = GriddedData(data_rg, convert_unit_on_init=False, **suppl)
         return data_out
 
     def check_lon_circular(self):

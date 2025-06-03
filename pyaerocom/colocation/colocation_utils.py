@@ -216,7 +216,8 @@ def colocate_gridded_gridded(
     colocate_time : bool
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time
-        *before* resampling to lower resolution.
+        *before* resampling to lower resolution. NOTE: If there are missing data
+        in the model, having this true will interpolate the missing model data!
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -662,7 +663,8 @@ def colocate_gridded_ungridded(
     colocate_time : bool
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time
-        *before* resampling to lower resolution.
+        *before* resampling to lower resolution. NOTE: If there are missing data
+        in the model, having this true will interpolate the missing model data!
     use_climatology_ref : ClimateConfig | bool, optional.
         Configuration for calculating the climatology. If set to a bool, this will not be done
     resample_how : str or dict
