@@ -1910,6 +1910,9 @@ class GriddedData:
                         nd_data,
                         dim_coords_and_dims=[(time_coord, 0)]
                         + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
+                        aux_coords_and_dims=[
+                            (coord, i) for i, coord in enumerate(data.aux_coords)
+                        ],
                         var_name=data.var_name,
                         long_name=data.long_name,
                         units=data.units,
