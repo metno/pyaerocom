@@ -160,7 +160,6 @@ def colocate_gridded_gridded(
     stop=None,
     filter_name=None,
     regrid_res_deg: float | RegridResDeg | None = None,
-    # harmonise_units=True,
     regrid_scheme: str = "areaweighted",
     update_baseyear_gridded=None,
     min_num_obs=None,
@@ -203,9 +202,6 @@ def colocate_gridded_gridded(
         resolution (if input is integer, both lat and lon are regridded to that
         resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
         to specify regrid resolutions, respectively).
-    harmonise_units : bool
-        if True, units are attempted to be harmonised (note: raises Exception
-        if True and units cannot be harmonised). Defaults to True.
     regrid_scheme : str
         iris scheme used for regridding (defaults to area weighted regridding)
     update_baseyear_gridded : int, optional
@@ -603,7 +599,6 @@ def colocate_gridded_ungridded(
     stop=None,
     filter_name=None,
     regrid_res_deg: float | RegridResDeg | None = None,
-    # harmonise_units=True,
     regrid_scheme: str = "areaweighted",
     var_ref=None,
     update_baseyear_gridded=None,
@@ -652,9 +647,6 @@ def colocate_gridded_ungridded(
         resolution (if input is integer, both lat and lon are regridded to that
         resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
         to specify regrid resolutions, respectively).
-    harmonise_units : bool
-        if True, units are attempted to be harmonised (note: raises Exception
-        if True and units cannot be harmonised).
     var_ref : :obj:`str`, optional
         variable against which data in arg `data` is supposed to be compared.
         If None, then the same variable is used (i.e. `data.var_name`).
