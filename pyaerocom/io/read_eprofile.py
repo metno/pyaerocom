@@ -7,7 +7,12 @@ import xarray
 
 from pyaerocom import const
 from pyaerocom.units import convert_unit
-from pyaerocom.exceptions import DataUnitError, DataDimensionError, EprofileFileError
+from pyaerocom.exceptions import (
+    DataUnitError,
+    DataDimensionError,
+    EprofileFileError,
+    VarNotAvailableError,
+)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -526,7 +531,7 @@ class ReadEprofile(ReadUngriddedBase):
         return self.exclude_files
 
     @override
-    def get_file_list(self) -> list[Path]:
+    def get_file_list(self, vars_to_retrieve=None, pattern=None) -> list[Path]:
         """Perform recursive file search for all input variables
 
         Note
@@ -546,12 +551,39 @@ class ReadEprofile(ReadUngriddedBase):
         list
             list containing file paths
         """
+
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
         exclude_files = {Path(file) for file in self._get_exclude_filelist()}
+
         if self.data_dir is None:
             raise ValueError("No data directory set")
         logger.info("Fetching EPROFILE data files...")
 
+        patterns = []
+        for var in vars_to_retrieve:
+            if var not in self.VAR_PATTERNS_FILE:
+                raise VarNotAvailableError(f"Input variable {var} is not supported")
+
+            _pattern = self.VAR_PATTERNS_FILE[var]
+            if pattern is not None:
+                if "." in pattern:
+                    raise NotImplementedError("filetype delimiter . not supported")
+                spl = _pattern.split(".")
+                if "*" not in spl[0]:
+                    raise AttributeError(f"Invalid file pattern: {_pattern}")
+                spl[0] = spl[0].replace("*", pattern)
+                _pattern = ".".join(spl)
+
+            patterns.append(_pattern)
+
         all_files = set(f for f in Path(self.data_dir).rglob(self._FILEMASK) if f.is_file())
         files = list(all_files - exclude_files)
-        self.files = files
+        matching_files = []
+        for _patern in patterns:
+            _ = [f for f in files if _patern in str(f)]
+            matching_files.extend(_)
+        self.files = matching_files
         return files
