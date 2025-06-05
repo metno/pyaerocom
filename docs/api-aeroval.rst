@@ -11,9 +11,35 @@ Tools for AeroVal experiment setup
 High level analysis setup for AeroVal experiment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.aeroval.setup_classes
+.. automodule:: pyaerocom.aeroval.setup_classes.project_info
    :members:
 
+.. automodule:: pyaerocom.aeroval.setup_classes.experiment_info
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.eval_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.time_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.statistics_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.web_display_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.units_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.cams2_83_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.model_maps_setup
+   :members:
+
+.. automodule:: pyaerocom.aeroval.setup_classes.output_paths
+   :members:
 Specification of observation datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

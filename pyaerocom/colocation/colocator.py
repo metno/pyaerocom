@@ -33,6 +33,7 @@ from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units import Unit
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
+from pyaerocom.units.harmonise import harmonise_units
 
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
@@ -997,6 +998,11 @@ class Colocator:
         model_data = self.get_model_data(model_var)
         obs_data = self.get_obs_data(obs_var)
 
+        if self.colocation_setup.harmonise_units:
+            model_data, obs_data = harmonise_units(
+                model_data, obs_data, var=model_var, var_ref=obs_var, inplace=True
+            )
+
         if getattr(obs_data, "is_vertical_profile", None):
             self.obs_is_vertical_profile = obs_data.is_vertical_profile
 
@@ -1014,7 +1020,6 @@ class Colocator:
             stop=self.stop,
             filter_name=self.colocation_setup.filter_name,
             regrid_res_deg=self.colocation_setup.regrid_res_deg,
-            harmonise_units=self.colocation_setup.harmonise_units,
             update_baseyear_gridded=baseyr,
             min_num_obs=self.colocation_setup.min_num_obs,
             colocate_time=self.colocation_setup.colocate_time,

@@ -2,6 +2,8 @@ from __future__ import annotations
 import datetime
 import sys
 
+from pyaerocom.units.molecular_mass import MolecularMass, UnknownSpeciesError, _get_species
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
@@ -12,14 +14,10 @@ from collections.abc import Iterable
 
 import cf_units
 import numpy as np
-import pandas as pd
 
-from .exceptions import UnitConversionError
 from .datetime import TsType
 from .datetime.time_config import SI_TO_TS_TYPE
 from pyaerocom.variable_helpers import get_variable
-
-from .constants import HA_TO_SQM, M_SO2, M_S, M_NO2, M_N, M_NH3, M_SO4
 
 from typing import TypeVar, overload, NamedTuple
 from collections.abc import Callable
@@ -48,9 +46,7 @@ class Unit:
     The first additional behaviour is to handle variables that measure only
     a portion of the real mass. Eg. if concso4 is provided as "ug S/m3", we
     want the mass in terms of SO4, so the values must be scaled up by a
-    constant factor MolecularMass("SO4")/MolecularMass("S"). This is
-    currently enabled using the lookup tables UCONV_MUL_FACS and UALIASES,
-    combined with a scalar factor in the unit.
+    constant factor MolecularMass("SO4")/MolecularMass("S").
 
     The second behaviour is adding implicit frequency for rate variables
     and a ts_type. If tstype and aerocom_var are provided in __init__, units
@@ -61,35 +57,8 @@ class Unit:
     This wrapper allows conversion of any data structure that supports __mul__.
     """
 
-    #: Custom unit conversion factors for certain variables
-    #: columns: variable -> from unit -> to_unit -> conversion
-    #: factor
-    _UCONV_MUL_FACS = pd.DataFrame(
-        [
-            # ["dryso4", "mg/m2/d", "mgS m-2 d-1", M_S / M_SO4],
-            # ["drynh4", "mg/m2/d", "mgN m-2 d-1", M_N/ M_NH4],
-            # ["concso4", "ug S/m3", "ug m-3", M_SO4 / M_S],
-            # ["SO4ugSm3", "ug/m3", "ug S m-3", M_S / M_SO4],
-            # ["concso4pm25", "ug S/m3", "ug m-3", M_SO4 / M_S],
-            # ["concso4pm10", "ug S/m3", "ug m-3", M_SO4 / M_S],
-            ["concso2", "ug S/m3", "ug m-3", M_SO2 / M_S],
-            ["concbc", "ug C/m3", "ug m-3", 1.0],
-            ["concoa", "ug C/m3", "ug m-3", 1.0],
-            ["concoc", "ug C/m3", "ug m-3", 1.0],
-            ["conctc", "ug C/m3", "ug m-3", 1.0],
-            # a little hacky for ratpm10pm25...
-            # ["ratpm10pm25", "ug m-3", "1", 1.0],
-            ["concpm25", "ug m-3", "ug m-3", 1.0],
-            ["concpm10", "ug m-3", "ug m-3", 1.0],
-            ["concno2", "ug N/m3", "ug m-3", M_NO2 / M_N],
-            # ["concno3", "ug N/m3", "ug m-3", M_NO3 / M_N],
-            ["concnh3", "ug N/m3", "ug m-3", M_NH3 / M_N],
-            # ["concnh4", "ug N/m3", "ug m-3", M_NH4 / M_N],
-            ["wetso4", "kg S/ha", "kg m-2", M_SO4 / M_S / HA_TO_SQM],
-            ["concso4pr", "mg S/L", "g m-3", M_SO4 / M_S],
-        ],
-        columns=["var_name", "from", "to", "fac"],
-    ).set_index(["var_name", "from"])
+    # If found in the nominator, these are treated as elements for scaling units.
+    _TREAT_AS_ELEMENT = ["C", "N", "S"]
 
     _UALIASES = {
         # mass concentrations
@@ -133,22 +102,41 @@ class Unit:
         *,
         aerocom_var: str | None = None,
         ts_type: str | TsType | None = None,
+        **kwargs,
     ) -> None:
         self._origin = str(unit)
         unit = Unit._UALIASES.get(str(unit), str(unit))
 
-        try:
-            info = Unit._UCONV_MUL_FACS.loc[(aerocom_var, str(unit)), :]
-            if not isinstance(info, pd.Series):
-                raise UnitConversionError(
-                    "FATAL: Could not find unique conversion factor in table PyaerocomUnit._UCONV_MUL_FACS."
-                )
-            new_unit, factor = (info.to, info.fac)
-        except KeyError:
-            new_unit, factor = unit, 1
+        self._species = kwargs.pop("species", None)
+        if self._species is None:
+            try:
+                sp = _get_species(aerocom_var).upper()
+            except (UnknownSpeciesError, AttributeError):
+                pass
+            else:
+                self._species = sp
+
+        self._element = None
+        if self._species is not None:
+            for e in Unit._TREAT_AS_ELEMENT:
+                if e in self._origin_nominator:
+                    unit = unit.replace(e, "", 1)
+                    self._element = e
+                    break
+
+        if self._element is not None and self._species is not None:
+            try:
+                factor = MolecularMass(self._species) / MolecularMass(self._element)
+            except ValueError:
+                self._species = None
+                factor = 1
+        else:
+            factor = 1
 
         if factor != 1:
-            new_unit = f"{factor} {new_unit}"
+            new_unit = f"{factor} {unit}"
+        else:
+            new_unit = unit
 
         if ts_type is not None and aerocom_var is not None and get_variable(aerocom_var).is_rate:
             ends_with_freq = False
@@ -173,13 +161,80 @@ class Unit:
         """
         return self._origin
 
+    @property
+    def _origin_nominator(self) -> str:
+        """
+        The nominator of the original string used to initialize this Unit instance.
+        """
+        if "/" in self.origin:
+            return self.origin.split("/")[0].strip()
+
+        if "-" in self.origin:
+            idx = self.origin.index("-")
+            try:
+                while self.origin[idx] not in [" ", "."]:
+                    idx -= 1
+            except IndexError:
+                pass
+            return self.origin[:idx].strip()
+
+        return self.origin.strip()
+
+    @property
+    def _origin_denominator(self) -> str:
+        """
+        The denominator of the original string used to initialize this Unit instance.
+        """
+        if "/" in self.origin:
+            return self.origin.split("/")[1].strip()
+
+        if "-" in self.origin:
+            idx = self.origin.index("-")
+            while self.origin[idx] != " ":
+                idx -= 1
+
+            return self.origin[idx:].strip()
+
+        return ""
+
     def is_convertible(self, other: str | Unit) -> bool:
         """
-        Return whether this unit is convertible to other.
+        Return whether this unit is convertible to other. It handles a couple of
+        additional cases when checking convertibility, namely:
+
+        - Units that contain elements (eg. kg N m-2) need to have compatible mass ratios:
+           - This is assumed to be the case if element and species are the same, the aerocom
+           variable is the same (to account for variables that don't have a clear mass ratio —
+           eg. wetrdn.)
 
         :param other: Other Unit.
         """
-        return self._cfunit.is_convertible(other)
+        if isinstance(other, str):
+            other = Unit(other)
+
+        cf_units_only = self._element is None and other._element is None
+        compatible_element = (
+            (self._element is None)
+            or (other._element is None)
+            or (self._element == other._element)
+        )
+        same_species = (self._species is not None and other._species is not None) and (
+            self._species == other._species
+        )
+        same_variable = (self._aerocom_var is not None and other._aerocom_var is not None) and (
+            self._aerocom_var == other._aerocom_var
+        )
+
+        if cf_units_only:
+            return self._cfunit.is_convertible(other._cfunit)
+
+        if not compatible_element:
+            return False
+
+        if same_species or same_variable:
+            return self._cfunit.is_convertible(other._cfunit)
+
+        return False
 
     def is_dimensionless(self) -> bool:
         """
@@ -197,7 +252,16 @@ class Unit:
         return self._cfunit.__str__()
 
     def __repr__(self) -> str:
-        return self._cfunit.__repr__()
+        result = f"Unit('{self.origin}'"
+        if self._aerocom_var is not None:
+            result += f", aerocom_var='{self._aerocom_var}'"
+        if self._species is not None:
+            result += f", species='{self._species}'"
+        if self._ts_type is not None:
+            result += f", ts_type='{self._ts_type}'"
+
+        result += ")"
+        return result
 
     def __add__(self, other: float) -> Unit:
         return Unit.from_cf_units(self._cfunit.__add__(other))
@@ -269,8 +333,18 @@ class Unit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        to_unit = Unit(str(other), **kwargs)._cfunit
-        factor = float(self._cfunit.convert(1, to_unit, inplace=False))
+        if isinstance(other, str):
+            to_unit = Unit(str(other), **kwargs)
+        else:
+            assert isinstance(other, Unit)
+            to_unit = other
+
+        if not self.is_convertible(to_unit):
+            raise ValueError(
+                f"Unable to convert units. Got incompatible units '{repr(self)}' and '{repr(to_unit)}'."
+            )
+        to_unit_cf = to_unit._cfunit
+        factor = float(self._cfunit.convert(1, to_unit_cf, inplace=False))
 
         if inplace:
             value *= factor
