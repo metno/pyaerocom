@@ -249,6 +249,14 @@ class ReadMscwCtm(GriddedReader):
             else:
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
 
+        if "unsafe_reading" in kwargs:
+            self._unsafe_reading = kwargs["unsafe_reading"]
+            if not isinstance(self._unsafe_reading, bool):
+                raise ValueError(f"unsafe_reading in kwargs must be bool, not {type(self._unsafe_reading)}")
+            logger.warning(f"Unsafe_reading is now set to {self._unsafe_reading}, this will cause problems!")
+        else:
+            self._unsafe_reading = False
+
         if file_pattern is None:
             # Pattern for the 'Base_{freq}.nc' default strategy.
             file_pattern = rf"^Base_({'|'.join(self.FREQ_CODES.keys())}).nc$"
@@ -595,8 +603,8 @@ class ReadMscwCtm(GriddedReader):
 
         ts_type = self._ts_type
         fps = self._clean_filepaths(fps, yrs, ts_type)
-
-        if ts_type == "hourly" and len(fps) > 1:
+        
+        if ts_type == "hourly" and len(fps) > 1 and not self._unsafe_reading:
             start_date = None
             end_date = None
             for fp in fps:
@@ -607,7 +615,7 @@ class ReadMscwCtm(GriddedReader):
                 start_date = min([x for x in [start_date, file_start_date] if x is not None])
                 end_date = max([x for x in [end_date, file_end_date] if x is not None])
 
-            if (end_date - start_date) / np.timedelta64(1, "h") > (366 * 24):
+            if (end_date - start_date) / np.timedelta64(1, "h") > (2*366 * 24):
                 raise ValueError(
                     f"ts_type {ts_type} can not be hourly when using multiple years ({start_date} - {end_date})"
                 )
