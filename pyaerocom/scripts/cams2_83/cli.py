@@ -15,7 +15,12 @@ from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
 from pyaerocom.scripts.cams2_83.config import CFG
-from pyaerocom.scripts.cams2_83.evaluation import EvalType, date_range, runner, runnermedianscores
+from pyaerocom.scripts.cams2_83.evaluation import (
+    EvalType,
+    date_range,
+    runner,
+    runnermedianscores,
+)
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
@@ -67,7 +72,7 @@ def make_config(
     cfg = deepcopy(CFG)
     cfg.update(
         model_cfg={
-            f"{model.name}": make_model_entry(
+            f"{model.webname}": make_model_entry(
                 start_date,
                 end_date,
                 leap,
@@ -88,11 +93,16 @@ def make_config(
 
     extra_obs_days = 4 if eval_type in {"season", "long"} else 0
     if run_type != RunType.AN and medianscores:
-        obs_dates = date_range(start_date - timedelta(days=1), end_date + timedelta(days=extra_obs_days))
+        obs_dates = date_range(
+            start_date - timedelta(days=1), end_date + timedelta(days=extra_obs_days)
+        )
     else:
         obs_dates = date_range(start_date, end_date + timedelta(days=extra_obs_days))
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
-        str(p) for p in obs_paths(*obs_dates, root_path=obs_path, analysis=run_type == RunType.AN)
+        str(p)
+        for p in obs_paths(
+            *obs_dates, root_path=obs_path, analysis=run_type == RunType.AN
+        )
     ]
 
     if run_type == RunType.AN:
@@ -107,7 +117,7 @@ def make_config(
         cfg.update(add_model_maps=True, only_model_maps=True)
 
     if add_seasons:
-        cfg.update(add_seasons=True)    
+        cfg.update(add_seasons=True)
 
     if fairmode:
         if eval_type in ["season", "long"]:
@@ -128,7 +138,9 @@ def main(
     end_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),
-    leap: int = typer.Argument(0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"),
+    leap: int = typer.Argument(
+        0, min=RunType.AN.days, max=RunType.FC.days, help="forecast day"
+    ),
     model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
@@ -214,9 +226,9 @@ def main(
         add_map,
         add_seasons,
         fairmode,
-        medianscores
+        medianscores,
     )
-    
+
     # we do not want the cache produced in previous runs to be silently cleared
     const.RM_CACHE_OUTDATED = False
 
@@ -234,7 +246,9 @@ def main(
             )
         else:
             logger.info("Special run for median scores only")
-            runnermedianscores(cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool)
+            runnermedianscores(
+                cfg, cache, analysis=analysis, dry_run=dry_run, pool=pool
+            )
     else:
         logger.info("Standard run")
         runner(cfg, cache, dry_run=dry_run, pool=pool)
