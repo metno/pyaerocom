@@ -355,10 +355,10 @@ class RegionName(str):
         return str(self) == str(other)
 
     def __lt__(self, other) -> bool:
-        if str(self) == str(other):
+        if str(self).lower() == str(other).lower():
             return False
 
         if str(self) == ALL_REGION_NAME:
             return True
 
-        return str(self) < str(other)
+        return str(self).lower() < str(other).lower()
