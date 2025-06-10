@@ -40,7 +40,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME]
 
     #: default variables for read method
-    DEFAULT_VARS = ["conco33D", "vmro33D", "pro33D", "rh3D", "ps3D", "ts3D"]
+    DEFAULT_VARS = ["conco33d", "vmro33d", "pro33d", "rh3d", "ps3d", "ts3d"]
     # O3_volume_mixing_ratio, O3_number_density, O3_partial_pressure, relative_humidity, pressure, temperature, wind_speed, wind_direction
 
     # These are applied to all files. If new cloud filter names are discovered they should be added here.
@@ -81,21 +81,21 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
     VAR_NAMES_FILE_HARP = {
-        "conco33D": "O3_volume_mixing_ratio",
-        "vmro33D": "O3_number_density",
-        "pro33D": "O3_partial_pressure",
-        "rh3D": "relative_humidity",
-        "ps3D": "pressure",
-        "ts3D": "temperature",
+        "conco33d": "O3_volume_mixing_ratio",
+        "vmro33d": "O3_number_density",
+        "pro33d": "O3_partial_pressure",
+        "rh3d": "relative_humidity",
+        "ps3d": "pressure",
+        "ts3d": "temperature",
     }
 
     VAR_NAMES_FILE_HDF = {
-        "conco33D": "O3.MIXING.RATIO.VOLUME_INSITU",
-        "vmro33D": "O3.NUMBER.DENSITY_INSITU",
-        "pro33D": "O3.PARTIAL.PRESSURE_INSITU",
-        "rh3D": "HUMIDITY.RELATIVE_INSITU",
-        "ps3D": "PRESSURE_INSITU",
-        "ts3D": "TEMPERATURE_INSITU",
+        "conco33d": "O3.MIXING.RATIO.VOLUME_INSITU",
+        "vmro33d": "O3.NUMBER.DENSITY_INSITU",
+        "pro33d": "O3.PARTIAL.PRESSURE_INSITU",
+        "rh3d": "HUMIDITY.RELATIVE_INSITU",
+        "ps3d": "PRESSURE_INSITU",
+        "ts3d": "TEMPERATURE_INSITU",
     }
 
     LOCATION_VAR_NAME_HARP = "site_name"

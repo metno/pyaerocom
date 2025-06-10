@@ -28,6 +28,7 @@ from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
+from pyaerocom.io.evdc_ozone_sonde.reader import ReadEvdcOzoneSondeData
 from pyaerocom.io.read_eprofile import ReadEprofile
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
@@ -69,6 +70,7 @@ class ReadUngridded:
         ReadCNEMC,
         ReadICOS,
         ReadICPForest,
+        ReadEvdcOzoneSondeData,
     ]
 
     # Creates list of all readers excluding ReadPyaro

@@ -30,7 +30,7 @@ TEST_FILES_HDF: list[str | Path] = [
     ),
 ]
 
-SIMPLE_TEST_VAR = "conco33D"
+SIMPLE_TEST_VAR = "conco33d"
 TEST_RTOL = 1.0e-4
 
 logger = logging.getLogger(__name__)
