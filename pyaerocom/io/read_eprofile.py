@@ -4,18 +4,21 @@ import sys
 
 import numpy as np
 import xarray
+from glob import glob
+from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom.units import convert_unit
+from collections.abc import Iterator
 from pyaerocom.exceptions import (
     DataUnitError,
     DataDimensionError,
     EprofileFileError,
-    VarNotAvailableError,
 )
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
@@ -37,7 +40,7 @@ class ReadEprofile(ReadUngriddedBase):
     _FILEMASK = "*.nc*"
 
     #: version log of this class (for caching)
-    __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.02_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EPROFILE_NAME
@@ -62,6 +65,8 @@ class ReadEprofile(ReadUngriddedBase):
     # TODO: check this
     TS_TYPE = "hourly"
 
+    VAR_PATTERNS_FILE = {}
+
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
     # TODO: add aod
@@ -71,9 +76,9 @@ class ReadEprofile(ReadUngriddedBase):
     }
 
     META_NAMES_FILE = dict(
-        station_longitude="station_longitude",
-        station_latitude="station_latitude",
-        station_altitude="station_altitude",
+        station_longitude="station_longitude_t0",
+        station_latitude="station_latitude_t0",
+        station_altitude="station_altitude_t0",
         instrument_name="instrument_id",
         instrument_type="instrument_type",
         comment="comment",
@@ -103,7 +108,7 @@ class ReadEprofile(ReadUngriddedBase):
 
     #: Attribute access names for unit reading of variable data
     VAR_UNIT_NAMES = dict(
-        extinction=["unit"],  # TODO: needs checking
+        extinction=["unit", "units"],  # TODO: needs checking
         attenuated_backscatter_0=["units"],
         altitude=["units"],
     )
@@ -180,16 +185,15 @@ class ReadEprofile(ReadUngriddedBase):
         logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
-            data_out["station_coords"]["longitude"] = data_out["longitude"] = (
-                data_in.station_longitude
-            )
-            data_out["station_coords"]["latitude"] = data_out["latitude"] = (
-                data_in.station_latitude
-            )
+            data_out["station_coords"]["longitude"] = data_in.station_longitude_t0
+
+            data_out["longitude"] = data_in.station_longitude.values
+            data_out["station_coords"]["latitude"] = data_in.station_latitude_t0
+            data_out["latitude"] = data_in.station_latitude.values
             data_out["altitude"] = (
                 data_in.station_altitude_t0 + data_in.altitude.values
             )  # Note altitude is an array for the data, station altitude is different. Moreover, EPROFILE as of 21.05.2025 gives altitude in altitude above ground level, so add the station altitude to get the altitude above sea level
-            data_out["station_coords"]["altitude"] = data_in.station_altitude
+            data_out["station_coords"]["altitude"] = data_in.station_altitude_t0
             data_out["altitude_attrs"] = (
                 data_in.altitude.attrs
             )  # get attrs for altitude units + extra
@@ -356,15 +360,11 @@ class ReadEprofile(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
-        # if read_err is None:
-        #     read_err = self.READ_ERR
-
         if files is None:
             if len(self.files) == 0:
                 self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
 
-        # turn files into a list because I suspect there may be a bug if you don't do this
         if isinstance(files, str):
             files = [files]
 
@@ -475,14 +475,14 @@ class ReadEprofile(ReadUngriddedBase):
                     # write data to data object
                     data_obj._data[idx:stop, col_idx["time"]] = np.repeat(
                         stat.dtime, data.shape[-1]
-                    )
+                    )  # stat.dtime[0]
                     data_obj._data[idx:stop, col_idx["stoptime"]] = np.repeat(
                         stat.dtime, data.shape[-1]
-                    )
+                    )  # stat.dtime[0]
                     data_obj._data[idx:stop, col_idx["data"]] = data.flatten()
                     data_obj._data[idx:stop, col_idx["dataaltitude"]] = np.tile(
                         altitude, data.shape[0]
-                    )
+                    )  # altitude
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
 
                     if var not in meta_idx[meta_key]:
@@ -536,15 +536,14 @@ class ReadEprofile(ReadUngriddedBase):
 
         Note
         ----
-        Overloaded implementation of base class, since for Earlinet, the
-        paths are variable dependent
+        Overloaded implementation of base class. For EPROFILE, variables are not stored in different files, so the arguments are accepted but not used.
 
         Parameters
         ----------
         vars_to_retrieve : list
             list of variables to retrieve
         pattern : str, optional
-            file name pattern applied to search
+            file name pattern applied to search. Defaults to "/*/*/*/*.nc". to match the vprofiles directory structure. Not recommended to change this.
 
         Returns
         -------
@@ -552,38 +551,59 @@ class ReadEprofile(ReadUngriddedBase):
             list containing file paths
         """
 
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
         exclude_files = {Path(file) for file in self._get_exclude_filelist()}
 
         if self.data_dir is None:
             raise ValueError("No data directory set")
         logger.info("Fetching EPROFILE data files...")
 
-        patterns = []
-        for var in vars_to_retrieve:
-            if var not in self.VAR_PATTERNS_FILE:
-                raise VarNotAvailableError(f"Input variable {var} is not supported")
+        search_pattern = (
+            "/*/*/*.nc" if pattern is None else pattern
+        )  # TODO: Check if can just give pattern a default value of "/*/*/*/*.nc". ruff sometimes complains about this
+        all_files = set(glob(self.data_dir + search_pattern))
 
-            _pattern = self.VAR_PATTERNS_FILE[var]
-            if pattern is not None:
-                if "." in pattern:
-                    raise NotImplementedError("filetype delimiter . not supported")
-                spl = _pattern.split(".")
-                if "*" not in spl[0]:
-                    raise AttributeError(f"Invalid file pattern: {_pattern}")
-                spl[0] = spl[0].replace("*", pattern)
-                _pattern = ".".join(spl)
-
-            patterns.append(_pattern)
-
-        all_files = set(f for f in Path(self.data_dir).rglob(self._FILEMASK) if f.is_file())
         files = list(all_files - exclude_files)
-        matching_files = []
-        for _patern in patterns:
-            _ = [f for f in files if _patern in str(f)]
-            matching_files.extend(_)
-        self.files = matching_files
+        self.files = files
         return files
+
+    def _read_files_structured(self, files, vars_to_retrieve, files_contain, constraints):
+        """Helper that reads list of files into UngriddedDataStructured
+
+        Note
+        ----
+        This method is not supposed to be called directly but is used in
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        self.files_failed = []
+
+        data_obj = UngriddedDataStructured.from_station_data(
+            self._station_data_iterator(files, files_contain), ["station_name_orig"]
+        )
+
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            logger.warning(f"{num_failed} out of {len(files)} could not be read...")
+        return data_obj
+
+    def _station_data_iterator(self, files, files_contain) -> Iterator[StationData]:
+        """Generator that yields StationData objects for each file in files"""
+        logger.info(f"Reading EPROFILE data from {self.data_dir}...")
+        num_files = len(files)
+        for i in tqdm(range(num_files), disable=None):
+            _file = files[i]
+            contains = files_contain[i]
+            try:
+                station_data = self.read_file(_file, vars_to_retrieve=contains)
+            except (
+                ValueError,
+                DataUnitError,
+                DataDimensionError,
+            ) as e:
+                self.files_failed.append(_file)
+                logger.warning(f"Skipping reading of EPROFILE file: {_file}. Reason: {repr(e)}")
+                continue
+            except Exception as e:
+                self.files_failed.append(_file)
+                logger.warning(f"Skipping reading of EPROFILE file: {_file}. Reason: {repr(e)}")
+                continue
+            yield station_data

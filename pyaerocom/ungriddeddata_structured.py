@@ -24,6 +24,7 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.vertical_profile import VerticalProfile
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -626,9 +627,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
             for var in contains_vars:
                 vardata = station_data[var]
+                altitude = None
                 if isinstance(vardata, pd.Series):
                     times = vardata.index
                     values = vardata.values
+                elif isinstance(vardata, VerticalProfile):
+                    values = vardata.data
+                    times = np.repeat(station_data.dtime, values.shape[-1])
+                    altitude = np.tile(vardata.altitude, values.shape[0]).astype("i2")
+                    values = values.flatten()
+
                 else:
                     times = station_data["dtime"]
                     values = vardata
@@ -652,6 +660,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 v_data["data"] = values
                 v_data["start_time"] = times
                 # v_data["end_time"] not used
+                if altitude is not None:
+                    v_data["dataaltitude"] = altitude
                 # v_data["dataaltitude"] not used
                 if var in station_data.data_err:
                     v_data["stdev"] = station_data.data_err[var]

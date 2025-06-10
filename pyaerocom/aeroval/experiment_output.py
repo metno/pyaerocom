@@ -718,6 +718,8 @@ class ExperimentOutput(ProjectOutput):
 
                 src_name = uri.meta["source"]
                 var = uri.meta["variable"]
+                obs_var = var
+                mod_var = var
 
                 if src_name in self.cfg.obs_cfg.keylist():
                     obs_name = mod_name = src_name
@@ -756,7 +758,13 @@ class ExperimentOutput(ProjectOutput):
                     obs_name = first_with_mod_name[0]
                     all_combinations.remove(first_with_mod_name)
                 else:
-                    raise ValueError("Failed to infer vert_code in an only_model_maps experiment")
+                    # raise ValueError(
+                    #     "Failed to infer vert_code in an only_model_maps experiment"
+                    # )
+                    logger.warning(
+                        f"Failed to infer origin of source {src_name} and variable {var}. Check that they are provided in the config file. THis may show up as a result of rerunning an experiment with only_model_maps=True, but without the exact same set up in the config as is on disk. Skipping this entry."
+                    )
+                    continue
 
             else:
                 obs_name = uri.meta["network"]

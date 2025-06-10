@@ -35,6 +35,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             logger.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
+
         if ocfg.is_superobs:
             try:
                 engine = SuperObsEngine(self.cfg)
