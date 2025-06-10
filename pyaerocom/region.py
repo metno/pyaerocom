@@ -3,7 +3,7 @@ This module contains functionality related to regions in pyaerocom
 """
 
 from __future__ import annotations
-from functools import cached_property
+from functools import cached_property, total_ordering
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
@@ -12,6 +12,7 @@ from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
+# from pyaerocom.region_defs import ALL_REGION_NAME
 
 
 POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
@@ -341,3 +342,23 @@ def find_closest_region_coord(
         return list(set(keep))
 
     return matches
+
+
+@total_ordering
+class RegionName(str):
+    """String class for ordering of region names. Region names
+    are sorted such that ALL_REGION_NAME always comes first, and
+    any other regions are sorted alphabetically.
+    """
+
+    def __eq__(self, other) -> bool:
+        return str(self) == str(other)
+
+    def __lt__(self, other) -> bool:
+        if str(self) == str(other):
+            return False
+
+        if str(self) == ALL_REGION_NAME:
+            return True
+
+        return str(self) < str(other)
