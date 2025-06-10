@@ -263,8 +263,9 @@ def test_Colocator_run_gridded_ungridded(
 
 def test_Colocator_prepare_colocation_args(monkeypatch):
     def dummy_mdata(*args):
-        d = GriddedData()
+        d = GriddedData(var_name="abs550aer")
         d.ts_type = "hourly"
+        d.units = "1"
         return d
 
     def dummy_odata(*args):
@@ -273,9 +274,7 @@ def test_Colocator_prepare_colocation_args(monkeypatch):
         fake_data = list(string.ascii_lowercase)
         for i, n in enumerate(fake_data):
             d.metadata[i] = dict(
-                data_id="testcase",
-                station_name=n,
-                station_type=n,
+                data_id="testcase", station_name=n, station_type=n, var_info={"units": "1"}
             )
         assert d.station_name == fake_data
         assert {"station_type" in dict for dict in d.metadata.values()} == {True}
@@ -296,8 +295,9 @@ def test_Colocator_prepare_colocation_args(monkeypatch):
 
 def test_Colocator_prepare_colocation_args_malformed_metadata(monkeypatch):
     def dummy_mdata(*args):
-        d = GriddedData()
+        d = GriddedData(var_name="abs550aer")
         d.ts_type = "hourly"
+        d.units = "1"
         return d
 
     def dummy_odata(*args):
@@ -308,15 +308,10 @@ def test_Colocator_prepare_colocation_args_malformed_metadata(monkeypatch):
         for i, n in enumerate(fake_data):
             if i > len(fake_data) / 2:
                 d.metadata[i] = dict(
-                    data_id="testcase",
-                    station_name=n,
-                    station_type=n,
+                    data_id="testcase", station_name=n, station_type=n, var_info={"units": "1"}
                 )
             else:
-                d.metadata[i] = dict(
-                    data_id="testcase",
-                    station_name=n,
-                )
+                d.metadata[i] = dict(data_id="testcase", station_name=n, var_info={"units": "1"})
 
         assert {"station_type" in dict for dict in d.metadata.values()} == {True, False}
         return d

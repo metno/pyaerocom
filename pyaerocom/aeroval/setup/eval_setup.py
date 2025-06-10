@@ -46,6 +46,7 @@ from .eval_run_options import EvalRunOptions
 from .project_info import ProjectInfo
 from .experiment_info import ExperimentInfo
 from .cams2_83_setup import CAMS2_83Setup
+from .units_setup import UnitsSetup
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +267,16 @@ class EvalSetup(BaseModel):
         for k, v in self.model_extra.get("model_cfg", {}).items():
             mc.add_entry(k, v)
         return mc
+
+    @computed_field
+    @cached_property
+    def units_cfg(self) -> UnitsSetup:
+        if not hasattr(self, "model_extra") or self.model_extra is None:
+            return UnitsSetup()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in UnitsSetup.model_fields
+        }
+        return UnitsSetup(**model_args)
 
     @field_serializer("model_cfg")
     def serialize_model_cfg(self, model_cfg: ModelCollection):
