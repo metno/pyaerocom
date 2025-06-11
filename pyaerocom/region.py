@@ -12,7 +12,6 @@ from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
 from pyaerocom.region_defs import REGION_DEFS  # all region definitions
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
-# from pyaerocom.region_defs import ALL_REGION_NAME
 
 
 POSSIBLE_REGION_OCEAN_NAMES = ["OCN", "Oceans"]
