@@ -24,11 +24,13 @@ SUPPORTED_VERT_CODES: tuple[
     str,
 ] = (
     "Column",
-    "Profile",
+    "ModelLevel",
+    # "Profile",
     "Surface",
 )
 
-ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
+# ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
+ALT_NAMES_VERT_CODES: dict = dict(Profile="ModelLevel")
 
 
 SUPPORTED_VERT_LOCS: tuple[str, str, str] = (
