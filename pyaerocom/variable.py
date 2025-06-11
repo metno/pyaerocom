@@ -155,11 +155,11 @@ class Variable:
 
     @staticmethod
     def _check_input_var_name(var_name):
-        if "3d" in var_name:
-            var_name = var_name.replace("3d", "")
-        elif "3D" in var_name:
-            var_name = var_name.replace("3D", "")
-        elif "_" in var_name:
+        # if "3d" in var_name:
+        #     var_name = var_name.replace("3d", "")
+        # elif "3D" in var_name:
+        #     var_name = var_name.replace("3D", "")
+        if "_" in var_name:
             raise ValueError(f"invalid variable name {var_name}. Must not contain underscore")
         return var_name
 
