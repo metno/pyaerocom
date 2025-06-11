@@ -624,9 +624,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             self.metadata[meta_idx]["variables"] = contains_vars
             if "data_revision" in station_data:
                 self.metadata[meta_idx]["data_revision"] = station_data.data_revision
-
+            # breakpoint()
             for var in contains_vars:
-                vardata = station_data[var]
+                try:
+                    vardata = station_data[var]
+                except (KeyError, AttributeError):
+                    breakpoint()
                 altitude = None
                 if isinstance(vardata, pd.Series):
                     times = vardata.index
@@ -636,7 +639,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     times = np.repeat(station_data.dtime, values.shape[-1])
                     altitude = np.tile(vardata.altitude, values.shape[0]).astype("i2")
                     values = values.flatten()
-
                 else:
                     times = station_data["dtime"]
                     values = vardata
