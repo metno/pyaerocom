@@ -35,7 +35,7 @@ def obs_paths(
     *dates: datetime | date | str,
     root_path: Path | str = DATA_FOLDER_PATH,
     analysis: bool = False,
-    force_analysis_obsset: bool = False,
+    forceanaobsset: bool = False,
 ) -> Iterator[Path]:
     for date in dates:  # noqa: F402
         if isinstance(date, str):
@@ -44,7 +44,7 @@ def obs_paths(
             date = date.date()
         if isinstance(root_path, str):
             root_path = Path(root_path)
-        if analysis or force_analysis_obsset:
+        if analysis or forceanaobsset:
             filename = "%Y%m/obsmacc4verifana_%Y%m%d.csv"
         else:
             filename = "%Y%m/obsmacc4verif_%Y%m%d.csv"
