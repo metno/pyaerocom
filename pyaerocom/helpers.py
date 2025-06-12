@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+import pyaerocom.exceptions
 from pyaerocom import const
 from pyaerocom.exceptions import (
     DataCoverageError,
@@ -567,7 +568,10 @@ def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
         if i == 0:
             merged = stat
         else:
-            merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
+            try:
+                merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
+            except pyaerocom.exceptions.CoordinateError:
+                continue
 
         _data[:, i] = np.interp(vert_grid, stat["altitude"], stat[var_name].values)
 

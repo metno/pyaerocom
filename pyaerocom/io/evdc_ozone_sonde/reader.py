@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +13,12 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
 from .jdcal import MJD_JD2000, MJD_0, jd2gcal
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +42,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EVDC_OZONE_SONDES_NAME
+    DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME]
@@ -82,7 +90,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: variable (keys)
     VAR_NAMES_FILE_HARP = {
         "conco33d": "O3_volume_mixing_ratio",
-        "vmro33d": "O3_number_density",
+        # "vmro33d": "O3_number_density",
+        "vmro33d": "O3_volume_mixing_ratio",
         "pro33d": "O3_partial_pressure",
         "rh3d": "relative_humidity",
         "ps3d": "pressure",
@@ -135,7 +144,11 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
     def __init__(self, data_id=None, data_dir: str | Path | None = None, format="HARP"):
         # initiate base class
-        super().__init__(data_id=data_id, data_dir=str(data_dir))
+        if isinstance(data_id, Path):
+            _data_dir = str(data_dir)
+        else:
+            _data_dir = data_dir
+        super().__init__(data_id=data_id, data_dir=_data_dir)
         #: private dictionary containing loaded Variable instances,
         self._var_info = {}
 
@@ -153,6 +166,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         else:
             self.FILEMASK = self._FILEMASK_EVDC
 
+    @override
     def read_file(
         self,
         filename,
@@ -227,15 +241,17 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
         # create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        self.logger.debug(f"Reading file {filename}")
+        logger.debug(f"Reading file {filename}")
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
             if "site_name" in data_in:
-                data_out["station_id"] = data_out["station_name"] = (
-                    data_in["site_name"].values.tostring().decode("utf-8")
+                # data_in["site_name"].values.tostring().decode("utf-8")
+                data_out["station_id"] = data_out["station_name"] = str(
+                    data_in["site_name"].values.astype(str)
                 )
             elif "location_name" in data_in:
                 data_out["station_id"] = data_out["station_name"] = (
-                    data_in["location_name"].values.tostring().decode("utf-8")
+                    # data_in["location_name"].values.tostring().decode("utf-8")
+                    str(data_in["location_name"].values.astype(str))
                 )
             else:
                 logger.error(f"file {filename} does not contain a site name. Skipping")
@@ -282,7 +298,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 netcdf_var_name = self.VAR_NAMES_FILE_HARP[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
-                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    logger.warning(f"Variable {var} not found in file {filename}")
                     continue
 
                 # info = var_info[var]
@@ -402,7 +418,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
         # create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        self.logger.debug(f"Reading file {filename}")
+        logger.debug(f"Reading file {filename}")
 
         # reading hdf5 file with the netcdf interface
         with xarray.open_dataset(filename) as data_in:
@@ -456,7 +472,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 netcdf_var_name = self.VAR_NAMES_FILE_HDF[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
-                    self.logger.warning(f"Variable {var} not found in file {filename}")
+                    logger.warning(f"Variable {var} not found in file {filename}")
                     continue
 
                 # info = var_info[var]
@@ -543,6 +559,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 )
         return data_out
 
+    @override
     def read(
         self,
         vars_to_retrieve=None,
@@ -715,9 +732,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
             except Exception as e:
                 self.read_failed.append(_file)
-                self.logger.exception(
-                    f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})"
-                )
+                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
