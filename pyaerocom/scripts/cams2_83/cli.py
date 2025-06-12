@@ -63,6 +63,7 @@ def make_config(
     add_seasons: bool,
     fairmode: bool,
     medianscores: bool,
+    forceanaobsset: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -101,11 +102,11 @@ def make_config(
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
         str(p)
         for p in obs_paths(
-            *obs_dates, root_path=obs_path, analysis=run_type == RunType.AN
+            *obs_dates, root_path=obs_path, analysis=run_type == RunType.AN, forceanaobsset=forceanaobsset
         )
     ]
 
-    if run_type == RunType.AN:
+    if (run_type == RunType.AN or forceanaobsset):
         cfg.update(forecast_days=1)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
@@ -182,6 +183,7 @@ def main(
         "--medianscores",
         help="If true just the cams2_83-specific statistics are computed, a.k.a. the median scores plots or 'weird' plots, the cache is not cleared and it's assumed that the colocated data is already in place and the regular statistics have already been run",
     ),
+    forceanaobsset: bool = typer.Option(False, "--forceanaobsset", help="Meant to be used in combination with eval_type forecast: the observations set will be the one for the analysis, evaluation will be limited to just 1 forecast day. This is a hack to produce plots needed for the quarterly reports."),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
@@ -227,6 +229,7 @@ def main(
         add_seasons,
         fairmode,
         medianscores,
+        forceanaobsset,
     )
 
     # we do not want the cache produced in previous runs to be silently cleared
