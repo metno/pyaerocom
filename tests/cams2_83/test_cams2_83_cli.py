@@ -139,7 +139,7 @@ def test_make_config(
         add_seasons=True,
         fairmode=True,
         medianscores=True,
-        forceanaobsset=False,
+        force_analysis_obsset=False,
     )
     assert cfg["periods"] == ["20250301-20250308"]
     assert cfg["add_model_maps"]
