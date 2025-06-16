@@ -221,7 +221,7 @@ class Unit:
         same_species = (self._species is not None and other._species is not None) and (
             self._species == other._species
         )
-        same_variable = (self._aerocom_var is not None and other._aerocom_var is not None) and (
+        same_variable = (self._aerocom_var is None and other._aerocom_var is None) or (
             self._aerocom_var == other._aerocom_var
         )
 
@@ -231,7 +231,10 @@ class Unit:
         if not compatible_element:
             return False
 
-        if same_species or same_variable:
+        if same_species and same_variable:
+            return self._cfunit.is_convertible(other._cfunit)
+
+        if (self._element == other._element) and same_variable:
             return self._cfunit.is_convertible(other._cfunit)
 
         return False
