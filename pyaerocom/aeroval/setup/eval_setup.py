@@ -68,8 +68,8 @@ class EvalSetup(BaseModel):
     ########################################
 
     io_aux_file: Annotated[
-        Path | str, ".py file containing additional read methods for modeldata"
-    ] = ""
+        Path | str | None, ".py file containing additional read methods for modeldata"
+    ] = None
 
     var_web_info_file: Annotated[Path | str, "config file containing additional variables"] = ""
 
