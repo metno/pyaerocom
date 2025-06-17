@@ -11,14 +11,12 @@ from pyaerocom.io.aux_read_cubes import (
     compute_angstrom_coeff_cubes,
     mmr_to_vmr_cube,
 )
-from pyaerocom.units.molecular_mass import get_molmass
+from pyaerocom.units.molecular_mass import get_molmass, MolecularMass
 
-# ToDo: migrate these methods into pyaerocom.io.aux_read_cubes and harmonise
-# (e,g, molmasses and units handling, etc...)
 
-M_N = 14.006
-M_O = 15.999
-M_H = 1.007
+M_N = float(MolecularMass("N"))
+M_O = float(MolecularMass("O"))
+M_H = float(MolecularMass("H"))
 
 
 def mmr_from_vmr(cube):

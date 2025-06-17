@@ -1,6 +1,7 @@
 import importlib
 import os
 import sys
+import importlib.resources
 from collections.abc import Callable
 
 if sys.version_info >= (3, 11):
@@ -14,8 +15,10 @@ from pydantic import (
     BaseModel,
     model_validator,
 )
-
+import logging
 from pyaerocom._lowlevel_helpers import AsciiFileLoc
+
+logger = logging.getLogger(__name__)
 
 
 def check_aux_info(fun, vars_required, funcs):
@@ -105,8 +108,14 @@ class ReadAuxHandler:
 
     aux_file = AsciiFileLoc(assert_exists=True, auto_create=False)
 
-    def __init__(self, aux_file: str):
-        self.aux_file = aux_file
+    def __init__(self, aux_file: str | None = None):
+        if aux_file is None:
+            with importlib.resources.as_file("pyaerocom.io.resources").joinpath(
+                "default_gridded_io_aux.py"
+            ) as template_file:
+                self.aux_file = template_file.fname
+        else:
+            self.aux_file = aux_file
 
     def import_module(self):
         """
@@ -119,6 +128,7 @@ class ReadAuxHandler:
             imported module.
 
         """
+        logger.info(f"Importing auxillary functions from '{self.aux_file}'.")
         moddir, fname = os.path.split(self.aux_file)
         if moddir not in sys.path:
             sys.path.append(moddir)
