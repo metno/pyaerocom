@@ -515,7 +515,7 @@ class ReadEprofile(ReadUngriddedBase):
 
         # # shorten data_obj._data to the right number of points
         # data_obj._data = data_obj._data[:idx]
-        # breakpoint()
+        breakpoint()
         data = self._read_files_structured(files, vars_to_retrieve=vars_to_retrieve)
 
         data.clear_meta_no_data()
@@ -609,7 +609,7 @@ class ReadEprofile(ReadUngriddedBase):
         """Generator that yields StationData objects for each file in files"""
         logger.info(f"Reading EPROFILE data from {self.data_dir}...")
         num_files = len(files)
-        # breakpoint()
+        #  breakpoint()
         for i in tqdm(range(num_files), disable=None):
             _file = files[i]
             try:
