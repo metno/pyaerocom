@@ -110,10 +110,11 @@ class ReadAuxHandler:
 
     def __init__(self, aux_file: str | None = None):
         if aux_file is None:
-            with importlib.resources.as_file("pyaerocom.io.resources").joinpath(
+            template_res = importlib.resources.files("pyaerocom.io.resources").joinpath(
                 "default_gridded_io_aux.py"
-            ) as template_file:
-                self.aux_file = template_file.fname
+            )
+            with importlib.resources.as_file(template_res) as template_file:
+                self.aux_file = template_file
         else:
             self.aux_file = aux_file
 
