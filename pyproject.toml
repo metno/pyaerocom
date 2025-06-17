@@ -120,8 +120,6 @@ filterwarnings = [
     'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
-    # Ignore self-deprecation warnings related to plotting
-    'ignore:matplotlib based plotting is no longer directly supported. This (function|class) may be removed in future versions\.:DeprecationWarning:(pyaerocom|tests):',
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
 ]
