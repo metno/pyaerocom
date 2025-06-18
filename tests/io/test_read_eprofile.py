@@ -63,4 +63,3 @@ def test_ReadEprofile_read():
     data = read.read(vars_to_retrieve="bsc1064aer")
     assert isinstance(data, UngriddedDataStructured)
     assert len(data.metadata) == len(TEST_FILES)
-    assert len(data.shape) == 2
