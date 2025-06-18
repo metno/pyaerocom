@@ -110,6 +110,7 @@ class FairmodeStatistics:
         mb = self._mb(bias, βRMSUt, beta=1)
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
+        fa, ma, gan, gap = _exceedances_indicators(data=data, var_name=var_name)
 
         MPI_bias_t = self._MPI_bias_t(obsmean, modmean, βRMSUt)
         MPI_R_t = self._MPI_R_t(obsstd, modstd, R, βRMSUt)
@@ -137,6 +138,10 @@ class FairmodeStatistics:
                 MPI_R_s=MPI_R_s,
                 MPI_std_s=MPI_std_s,
                 MPI_Hperc=beta_Hperc[i],
+                fa=fa[i],
+                ma=ma[i],
+                gan=gan[i],
+                gap=gap[i],
                 bias=bias[i],
                 NMB=NMB[i],
                 RMSU=βRMSUt[i],
@@ -168,6 +173,27 @@ class FairmodeStatistics:
         modex = np.sum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
 
         return [obsex, modex]
+    
+    @staticmethod
+    def _exceedances_indicators(data: xr.DataArray, var_name: str) -> list[np.array]:
+        if var_name == "concno2":
+            new_data = data.resample(time="1D", skipna=True).max()
+        else:
+            new_data = data
+
+        obsvals = new_data.data[0]
+        modvals = new_data.data[1]
+
+        mask = np.isfinite(obsvals) & np.isfinite(modvals)
+        obsex = obsvals > EXC_THRESHOLDS[var_name]
+        modex = modvals > EXC_THRESHOLDS[var_name]
+
+        fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask)
+        ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask)
+        gan = np.sum(~(obsex*modex), axis=0, where=mask)
+        gap = np.sum(obsex*modex, axis=0, where=mask)
+        
+        return [fa, ma, gan, gap]
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
