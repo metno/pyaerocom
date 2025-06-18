@@ -54,6 +54,7 @@ from pyaerocom.vert_coords import AltitudeAccess
 from pyaerocom.units.logging import LoggingCallback
 from pyaerocom.units import convert_unit
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -773,37 +774,38 @@ class GriddedData:
         """Check if unit is correct"""
         self._check_invalid_unit_alias()
         unit_ok = False
-        to_unit = None
+        to_unit_str = None
         try:
             var = const.VARS[self.cube.var_name]
-            to_unit = get_standard_unit(var.var_name)
-            current_unit = self.units
+            to_unit_str = get_standard_unit(var.var_name)
+            to_unit = Unit(to_unit_str, aerocom_var=var.var_name, ts_type=self.ts_type)
+            current_unit = Unit(self.units, aerocom_var=var.var_name, ts_type=self.ts_type)
             if to_unit == current_unit:  # string match e.g. both are m-1
                 unit_ok = True
-            elif Unit(to_unit).convert(1, current_unit) == 1:
-                self.units = to_unit
+            elif to_unit.convert(1, current_unit) == 1:
+                self.units = to_unit_str
                 logger.info(
-                    f"Updating unit string from {current_unit} to {to_unit} in GriddedData."
+                    f"Updating unit string from {current_unit} to {to_unit_str} in GriddedData."
                 )
                 unit_ok = True
         except (VariableDefinitionError, ValueError):
             pass
 
-        if not unit_ok and try_convert_if_wrong and isinstance(to_unit, str):
+        if not unit_ok and try_convert_if_wrong and isinstance(to_unit_str, str):
             logger.warning(
                 f"Unit {self.units} in GriddedData {self.short_str()} is not "
-                f"AeroCom conform ({to_unit}). Trying to convert ... "
+                f"AeroCom conform ({to_unit_str}). Trying to convert ... "
             )
             if self.var_info.units == "1" and self.units.is_unknown():
                 self.units = "1"
                 unit_ok = True
             else:
                 try:
-                    self.convert_unit(to_unit)
+                    self.convert_unit(to_unit_str)
                     unit_ok = True
                 except Exception as e:
                     logger.warning(
-                        f"Failed to convert unit from {self.units} to {to_unit}. Reason: {e}"
+                        f"Failed to convert unit from {self.units} to {to_unit_str}. Reason: {e}"
                     )
 
         return unit_ok
@@ -1893,7 +1895,30 @@ class GriddedData:
                     self.cube.coord("time").bounds = None
                 except Exception:
                     pass
+                mask = np.logical_and(
+                    time_range[0] <= self.time_stamps(), self.time_stamps() < time_range[1]
+                )
+                dates = self.time_stamps()[mask]
                 data = data.extract(time_constraint)
+                if len(dates) == 1:
+                    # Working around iris 'squeezing' the cube when extract is length 1 along the date
+                    # dimension by readding the dimension with the appropriate value.
+                    time_coord = data.coord("time")
+                    data.remove_coord("time")
+                    new_shape = (1,) + data.shape
+                    nd_data = np.reshape(data.data, new_shape)
+                    data = iris.cube.Cube(
+                        nd_data,
+                        dim_coords_and_dims=[(time_coord, 0)]
+                        + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
+                        aux_coords_and_dims=[
+                            (coord, i) for i, coord in enumerate(data.aux_coords)
+                        ],
+                        var_name=data.var_name,
+                        long_name=data.long_name,
+                        units=data.units,
+                    )
+
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
                 data = data[time_range[0] : time_range[1]]
@@ -2219,7 +2244,7 @@ class GriddedData:
 
         suppl = dict(**self.metadata)
         suppl["regridded"] = True
-        data_out = GriddedData(data_rg, **suppl)
+        data_out = GriddedData(data_rg, convert_unit_on_init=False, **suppl)
         return data_out
 
     def check_lon_circular(self):

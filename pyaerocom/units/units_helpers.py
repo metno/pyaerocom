@@ -72,6 +72,7 @@ def convert_unit(
             other=Unit(to_unit, aerocom_var=var_name, ts_type=ts_type),
             inplace=inplace,
             callback=callback,
+            aerocom_var=var_name,
         )
     except ValueError as e:
         raise UnitConversionError(

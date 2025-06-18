@@ -270,7 +270,8 @@ class ColocationSetup(BaseModel):
         if True and if obs and model sampling frequency (e.g. daily) are higher
         than output colocation frequency (e.g. monthly), then the datasets are
         first colocated in time (e.g. on a daily basis), before the monthly
-        averages are calculated. Default is False.
+        averages are calculated. Default is False. NOTE: If there are missing data
+        in the model, having this true will interpolate the missing model data!
     reanalyse_existing : bool
         if True, always redo co-location, even if there is already an existing
         co-located NetCDF file (under the output location specified by

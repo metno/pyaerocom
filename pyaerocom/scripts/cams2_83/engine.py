@@ -121,7 +121,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         if modelname == "ENS" or modelname == "MOS":  # MOS/ENS evaluation special case
             mcfg = self.cfg.model_cfg.get_entry(modelname)
         else:
-            mcfg = self.cfg.model_cfg.get_entry(model.name)
+            mcfg = self.cfg.model_cfg.get_entry(model.webname)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
         seasons = self.cfg.time_cfg.get_seasons()
 
@@ -204,7 +204,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                             fairmode_subset = fairmode_subset.resample_time(
                                 SPECIES[var_name]["freq"],
                                 settings_from_meta=True,
-                                min_num_obs=min_num_obs
+                                min_num_obs=min_num_obs,
                             )
 
                         results_fairmode[f"{regname}"][f"{perstr}"] = (
@@ -214,20 +214,17 @@ class CAMS2_83_Engine(ProcessingEngine):
                         )
 
                         if calc_forecast_target:
-                            
+
                             results_mqi = []
                             for day in range(forecast_days):
                                 ds = subset[day]
                                 ds_p = persistence_subset_region
 
-                                
                                 mqi_results = self._calc_forecast_target_MQI_vectorized(
                                     ds, ds_p, var_name, day, min_num_obs
                                 )
 
                                 results_mqi.append(mqi_results)
-
-                               
 
                             for station in results_fairmode[f"{regname}"][f"{perstr}"]:
                                 results_fairmode[f"{regname}"][f"{perstr}"][station][
@@ -275,7 +272,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     (
                         modelname
                         if (modelname == "ENS" or modelname == "MOS")
-                        else model.name
+                        else model.webname
                     ),  # MOS/ENS evaluation special case
                     model_var,
                 )
@@ -290,7 +287,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 (
                     modelname
                     if (modelname == "ENS" or modelname == "MOS")
-                    else model.name
+                    else model.webname
                 ),  # MOS/ENS evaluation special case
                 model_var,
             )
@@ -365,7 +362,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             coldata = coldata.resample_time(
                 SPECIES[var_name]["freq"],
                 settings_from_meta=True,
-                min_num_obs=min_num_obs
+                min_num_obs=min_num_obs,
             )
 
         # Creation of mask of shared stations between normal data and persistence data
@@ -448,9 +445,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             axis=1,
             where=mask,
         )
-        sign = np.where(
-            false_alarms <= missed_alarms, -1.0, 1.0
-        )  
+        sign = np.where(false_alarms <= missed_alarms, -1.0, 1.0)
         return sign
 
     def _sort_coldata(

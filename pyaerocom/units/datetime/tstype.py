@@ -47,7 +47,7 @@ class TsType:
 
     # "monthly": "days" below is because each month does not have the same number of days
     # netcdf does time calculation for you given starting day and days past (CF convention)
-    TSTR_TO_CF = {"hourly": "hours", "daily": "days", "monthly": "days"}
+    TSTR_TO_CF = {"hourly": "hours", "daily": "days", "monthly": "days", "yearly": "days"}
 
     TOL_SECS_PERCENT = 5
 
