@@ -110,7 +110,7 @@ class FairmodeStatistics:
         mb = self._mb(bias, βRMSUt, beta=1)
         beta_Hperc = self._beta_Hperc(obsvals, modvals, var_name)
         exceedances = self._exceedances(data=data, var_name=var_name)
-        fa, ma, gan, gap = _exceedances_indicators(data=data, var_name=var_name)
+        fa, ma, gan, gap = self._exceedances_indicators(data=data, var_name=var_name)
 
         MPI_bias_t = self._MPI_bias_t(obsmean, modmean, βRMSUt)
         MPI_R_t = self._MPI_R_t(obsstd, modstd, R, βRMSUt)
