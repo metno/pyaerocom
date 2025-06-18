@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 
 from pyaerocom.io.read_eprofile import ReadEprofile
-from pyaerocom import const, VerticalProfile, UngriddedData
+from pyaerocom import const, VerticalProfile, UngriddedDataStructured
 
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Eprofile-test"]
@@ -61,6 +61,6 @@ def test_ReadEprofile_read():
     read = ReadEprofile()
     read.files = TEST_FILES
     data = read.read(vars_to_retrieve="bsc1064aer")
-    assert isinstance(data, UngriddedData)
+    assert isinstance(data, UngriddedDataStructured)
     assert len(data.metadata) == len(TEST_FILES)
     assert len(data.shape) == 2
