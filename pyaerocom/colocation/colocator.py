@@ -466,6 +466,8 @@ class Colocator:
                             break
                 if ok:
                     valid.append(file)
+            elif candidate and meta["obs_var"] == "conco3mda8":
+                valid.append(file)
 
         return valid
 
