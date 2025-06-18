@@ -156,7 +156,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         # compute model maps (completely independent of obs-eval processing below)
         if self.cfg.webdisp_opts.add_model_maps:
             engine = ModelMapsEngine(self.cfg)
-
+            maps_model_list = model_list
             if isinstance(
                 self.cfg.modelmaps_opts.plot_types, dict
             ):  # There may be additional obs networks to compute "model" maps for
