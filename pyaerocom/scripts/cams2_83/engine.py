@@ -38,7 +38,7 @@ class CAMS2_83_Engine(ProcessingEngine):
     def run(
         self, files: list[list[str | Path]], var_list: list
     ) -> None:  # type:ignore[override]
-        logger.info(f"Processing: {repr(files)}")
+        logger.info(f"Processing: {files}")
         coldata = [ColocatedData(data=file) for file in files]
         coldata, persistence_cols, found_vars, found_persistence = self._sort_coldata(
             coldata
