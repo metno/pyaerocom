@@ -59,7 +59,7 @@ def make_config_mos(
     cfg.update(only_json=True)
 
     #this is an only_json=True experiment so conco3mda8 needs to be added to the variables list in order for the conco3mda8 colocated data files to be read by Colocator.get_available_coldata_files to 
-    cfg.update(species_list=["concno2","concco","conco3","conco3mda8","concso2","concpm10","concpm25",])
+    cfg["obs_cfg"]["EEA"]["obs_vars"]=["concno2","concco","conco3","conco3mda8","concso2","concpm10","concpm25",]
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
