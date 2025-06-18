@@ -515,7 +515,6 @@ class ReadEprofile(ReadUngriddedBase):
 
         # # shorten data_obj._data to the right number of points
         # data_obj._data = data_obj._data[:idx]
-        breakpoint()
         data = self._read_files_structured(files, vars_to_retrieve=vars_to_retrieve)
 
         data.clear_meta_no_data()
