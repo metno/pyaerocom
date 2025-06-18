@@ -160,9 +160,9 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             if isinstance(
                 self.cfg.modelmaps_opts.plot_types, dict
             ):  # There may be additional obs networks to compute "model" maps for
-                model_list = list(set(model_list) and set(self.cfg.modelmaps_opts.plot_types))
+                maps_model_list = list(set(model_list) and set(self.cfg.modelmaps_opts.plot_types))
 
-            engine.run(model_list=model_list, var_list=var_list)
+            engine.run(model_list=maps_model_list, var_list=var_list)
 
         if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:
