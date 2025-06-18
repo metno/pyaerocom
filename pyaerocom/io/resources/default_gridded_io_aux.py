@@ -10,47 +10,14 @@ from pyaerocom.io.aux_read_cubes import (
     multiply_cubes,
     compute_angstrom_coeff_cubes,
     mmr_to_vmr_cube,
+    conc_from_vmr_STP,
 )
-from pyaerocom.units.molecular_mass import get_molmass, MolecularMass
+from pyaerocom.units.molecular_mass import MolecularMass
 
 
 M_N = float(MolecularMass("N"))
 M_O = float(MolecularMass("O"))
 M_H = float(MolecularMass("H"))
-
-
-def mmr_from_vmr(cube):
-    """
-    Convvert gas volume/mole mixing ratios into mass mixing ratios.
-
-    Parameters
-    ----------
-    cube : iris.cube.Cube
-        A cube containing gas vmr data to be converted into mmr.
-    Returns
-    -------
-    cube_out : iris.cube.Cube
-        Cube containing mmr data.
-    """
-    var_name = cube.var_name
-    M_dry_air = get_molmass("air_dry")
-    M_variable = get_molmass(var_name)
-
-    cube_out = (M_variable / M_dry_air) * cube
-    return cube_out
-
-
-def conc_from_vmr_STP(cube):
-    R = 287.058  # R for dry air
-
-    standard_T = 293
-    standard_P = 101300
-
-    mmr_cube = mmr_from_vmr(cube)
-    rho = standard_P / (R * standard_T)
-
-    cube_out = rho * mmr_cube
-    return cube_out
 
 
 def calc_concnh3(concnh3):
