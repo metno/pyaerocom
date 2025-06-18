@@ -138,10 +138,10 @@ class FairmodeStatistics:
                 MPI_R_s=MPI_R_s,
                 MPI_std_s=MPI_std_s,
                 MPI_Hperc=beta_Hperc[i],
-                fa=fa[i],
-                ma=ma[i],
-                gan=gan[i],
-                gap=gap[i],
+                fa=int(fa[i]),
+                ma=int(ma[i]),
+                gan=int(gan[i]),
+                gap=int(gap[i]),
                 bias=bias[i],
                 NMB=NMB[i],
                 RMSU=βRMSUt[i],
@@ -175,7 +175,7 @@ class FairmodeStatistics:
         return [obsex, modex]
     
     @staticmethod
-    def _exceedances_indicators(data: xr.DataArray, var_name: str) -> list[np.array]:
+    def _exceedances_indicators(data: xr.DataArray, var_name: str) -> tuple[np.array]:
         if var_name == "concno2":
             new_data = data.resample(time="1D", skipna=True).max()
         else:
@@ -193,7 +193,7 @@ class FairmodeStatistics:
         gan = np.sum(~(obsex*modex), axis=0, where=mask)
         gap = np.sum(obsex*modex, axis=0, where=mask)
         
-        return [fa, ma, gan, gap]
+        return fa, ma, gan, gap
 
     @staticmethod
     def _NMB(x: np.ndarray, y: np.ndarray) -> np.ndarray:
