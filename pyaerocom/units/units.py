@@ -130,11 +130,8 @@ class Unit:
             except ValueError:
                 self._species = None
         if self._element is not None and self._species is not None:
-            # try:
             factor = MolecularMass(self._species) / MolecularMass(self._element)
-            # except ValueError:
-            #    self._species = None
-            #    factor = 1
+
         else:
             factor = 1
 
