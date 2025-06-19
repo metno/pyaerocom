@@ -501,7 +501,6 @@ class Colocator:
         """
         obs_reader = self.obs_reader
         obs_filters_post = self._eval_obs_filters(var_name)
-
         obs_data = obs_reader.read(
             data_ids=[self.colocation_setup.obs_id],
             vars_to_retrieve=var_name,

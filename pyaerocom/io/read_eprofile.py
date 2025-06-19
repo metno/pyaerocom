@@ -235,7 +235,6 @@ class ReadEprofile(ReadUngriddedBase):
                 if netcdf_var_name not in data_in.variables:
                     logger.info(f"Variable {var} not found in file {filename}")
                     # var_info.pop(var)
-                    breakpoint()
                     continue
                 if self.VAR_TO_WAVELENGTH[var] != data_in.attrs["l0_wavelength"]:
                     logger.info(
@@ -574,9 +573,8 @@ class ReadEprofile(ReadUngriddedBase):
         if self.data_dir is None:
             raise ValueError("No data directory set")
         logger.info("Fetching EPROFILE data files...")
-
         search_pattern = (
-            "/*/*/*.nc" if pattern is None else pattern
+            "*/*.nc" if pattern is None else pattern
         )  # TODO: Check if can just give pattern a default value of "/*/*/*/*.nc". ruff sometimes complains about this
         all_files = set(glob(self.data_dir + search_pattern))
 
@@ -608,7 +606,7 @@ class ReadEprofile(ReadUngriddedBase):
         """Generator that yields StationData objects for each file in files"""
         logger.info(f"Reading EPROFILE data from {self.data_dir}...")
         num_files = len(files)
-        #  breakpoint()
+
         for i in tqdm(range(num_files), disable=None):
             _file = files[i]
             try:
