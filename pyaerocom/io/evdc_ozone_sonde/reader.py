@@ -322,39 +322,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 except KeyError:
                     pass
 
-                # we might need to adjust the units here later on
-
-                # we might need to fill the StationData object a bit more later on
-
-                # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
-                # for u in unames:
-                #     if u in arr.attrs:
-                #         unit = arr.attrs[u]
-                # if unit is None:
-                #     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
-                # unit_fac = None
-                # try:
-                #     to_unit = self._var_info[var].units
-                #     unit_fac = get_unit_conversion_fac(unit, to_unit)
-                #     val *= unit_fac
-                #     unit = to_unit
-                #     unit_ok = True
-                # except Exception as e:
-                #     logger.warning(
-                #         f"Failed to convert unit of {var} in file {filename} (Earlinet): "
-                #         f"Error: {repr(e)}"
-                #     )
-
-                # import errors if applicable
-                # err = np.nan
-                # if read_uncertainties and var in self.ERR_VARNAMES:
-                #     err_name = self.ERR_VARNAMES[var]
-                #     if err_name in data_in.variables:
-                #         err = np.squeeze(np.float64(data_in.variables[err_name]))
-                #         if unit_ok:
-                #             err *= unit_fac
-                #         err_read = True
-
                 # create instance of ProfileData
                 profile = VerticalProfile(
                     data=val,
@@ -665,7 +632,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 # last_station_id = station_id
 
                 # Is floating point single value
-                time = stat.dtime[0]
+                time = stat.dtime
                 for var in stat.vars_available:
                     if var not in data_obj.var_idx:
                         VAR_IDX += 1
@@ -713,7 +680,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
                     # write data to data object
                     data_obj._data[idx:stop, col_idx["time"]] = time
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat.stopdtime[0]
+                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat.stopdtime
                     data_obj._data[idx:stop, col_idx["data"]] = data
                     data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
