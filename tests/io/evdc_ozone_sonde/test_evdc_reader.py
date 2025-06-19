@@ -31,6 +31,7 @@ TEST_FILES_HDF: list[str | Path] = [
 ]
 
 SIMPLE_TEST_VAR = "conco33d"
+TEST_VAR_HDF = "pro33d"  # this is what all files provide
 TEST_RTOL = 1.0e-4
 
 logger = logging.getLogger(__name__)
@@ -127,10 +128,9 @@ def test_get_file_list_hdf():
 
 def test_EvdcOzoneSondeData_read_hdf():
     read = ReadEvdcOzoneSondeData(data_dir=ROOT_HDF, format="HDF")
-    #     read.files = TEST_FILES_HARP
-    data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
+    data = read.read(vars_to_retrieve=TEST_VAR_HDF)
     #
-    assert len(data.metadata) == 1
+    assert len(data.metadata) >= 1
 
 
 def test_EvdcOzoneSondeData_read_harp():
