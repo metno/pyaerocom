@@ -95,7 +95,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             persistence_coldata = persistence_coldata[0]
             calc_forecast_target = True
 
-            if SPECIES[var_name]["freq"] != TsType("hourly"):
+            if var_name!="conco3mda8" and SPECIES[var_name]["freq"] != TsType("hourly"):
                 persistence_coldata = persistence_coldata.resample_time(
                     SPECIES[var_name]["freq"],
                     settings_from_meta=True,
