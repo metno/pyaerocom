@@ -173,7 +173,7 @@ class FairmodeStatistics:
         modex = np.sum(modvals > EXC_THRESHOLDS[var_name], axis=0, where=mask)
 
         return [obsex, modex]
-    
+
     @staticmethod
     def _exceedances_indicators(data: xr.DataArray, var_name: str) -> tuple[np.array]:
         if var_name == "concno2":
@@ -190,9 +190,9 @@ class FairmodeStatistics:
 
         fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask)
         ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask)
-        gan = np.sum(~(obsex*modex), axis=0, where=mask)
-        gap = np.sum(obsex*modex, axis=0, where=mask)
-        
+        gan = np.sum(np.logical(~obsex, ~modex), axis=0, where=mask)
+        gap = np.sum(np.logical(obsex, modex), axis=0, where=mask)
+
         return fa, ma, gan, gap
 
     @staticmethod
