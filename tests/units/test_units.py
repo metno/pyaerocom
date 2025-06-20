@@ -154,6 +154,16 @@ def test_unit_conversion(from_unit: str, to_unit: str, species: str, conversion_
 
 
 @pytest.mark.parametrize(
+    "from_unit,to_unit,aerocom_var,conversion_fac",
+    (("g N", "mg N", "blah", 1000), ("mg S l-1", "kg S m-3", "blah", 10**-3)),
+)
+def test_unit_conversion2(from_unit: str, to_unit: str, aerocom_var: str, conversion_fac: float):
+    u = Unit(from_unit, aerocom_var=aerocom_var)
+    fac = u.convert(1, to_unit, aerocom_var=aerocom_var)
+    assert fac == pytest.approx(conversion_fac)
+
+
+@pytest.mark.parametrize(
     "from_unit,to_unit",
     (
         (  # No known reference species to do conversion.

@@ -24,6 +24,24 @@ class ModelName(str, Enum):
     def __str__(self) -> str:
         return self.value
 
+    @property
+    def webname(self) -> str:
+        return dict(
+            ENSEMBLE="ENSEMBLE",
+            CHIMERE="CHIMERE",
+            DEHM="DEHM",
+            EMEP="EMEP",
+            EURAD="EURAD-IM",
+            GEMAQ="GEM-AQ",
+            LOTOS="LOTOS-EUROS",
+            MATCH="MATCH",
+            MINNI="MINNI",
+            MOCAGE="MOCAGE",
+            MONARCH="MONARCH",
+            SILAM="SILAM",
+            IFS="IFS",
+        )[self.name]
+
 
 class RunType(str, Enum):
     FC = "forecast"
