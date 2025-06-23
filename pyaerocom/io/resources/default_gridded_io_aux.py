@@ -1,4 +1,3 @@
-# pragma: no cover
 """
 Config file for AeroCom PhaseIII test project
 """
@@ -21,7 +20,7 @@ M_O = float(MolecularMass("O"))
 M_H = float(MolecularMass("H"))
 
 
-def calc_concnh3(concnh3):
+def calc_concnh3(concnh3):  # pragma: no cover
     in_ts_type = concnh3.ts_type
 
     concNnh3 = concnh3 * (M_N / (M_N + M_H * 3))
@@ -32,7 +31,7 @@ def calc_concnh3(concnh3):
     return concNnh3
 
 
-def calc_concnh4(concnh4):
+def calc_concnh4(concnh4):  # pragma: no cover
     if concnh4.units == "ug m-3" or concnh4.units == "ug/m**3":
         concnh4.units = "ug/m3"
     assert concnh4.units == "ug/m3"
@@ -47,7 +46,7 @@ def calc_concnh4(concnh4):
     return concnh4
 
 
-def calc_conchno3(vmrhno3):
+def calc_conchno3(vmrhno3):  # pragma: no cover
     if vmrhno3.units == "1e-9":
         vmrhno3.units == "ppb"
     assert vmrhno3.units == "ppb"
@@ -62,11 +61,11 @@ def calc_conchno3(vmrhno3):
     return conchno3
 
 
-def calc_fine_concno310(concno3f):
+def calc_fine_concno310(concno3f):  # pragma: no cover
     return calc_concno310(concno3f=concno3f, concno3c=None)
 
 
-def calc_concno310(concno3c, concno3f):
+def calc_concno310(concno3c, concno3f):  # pragma: no cover
     if concno3c is not None:
         if concno3c.units == "ug m-3" or concno3c.units == "ug/m**3":
             concno3c.units = "ug/m3"
@@ -85,7 +84,7 @@ def calc_concno310(concno3c, concno3f):
     return concno310
 
 
-def calc_concno325(concno3f):
+def calc_concno325(concno3f):  # pragma: no cover
     assert concno3f.units == "ug/m3"
     in_ts_type = concno3f.ts_type
     concno325 = concno3f.cube
@@ -96,11 +95,11 @@ def calc_concno325(concno3f):
     return concno325
 
 
-def calc_fine_conctno3(concno3f, vmrhno3):
+def calc_fine_conctno3(concno3f, vmrhno3):  # pragma: no cover
     return calc_conctno3(concno3f=concno3f, concno3c=None, vmrhno3=vmrhno3)
 
 
-def calc_conctno3(concno3c, concno3f, vmrhno3):
+def calc_conctno3(concno3c, concno3f, vmrhno3):  # pragma: no cover
     if concno3c is not None:
         if concno3c.units == "ug m-3" or concno3c.units == "ug/m**3":
             concno3c.units = "ug/m3"
@@ -127,7 +126,7 @@ def calc_conctno3(concno3c, concno3f, vmrhno3):
     return conctno3
 
 
-def calc_conctnh(concnh4, vmrnh3):
+def calc_conctnh(concnh4, vmrnh3):  # pragma: no cover
     if concnh4.units == "ug m-3" or concnh4.units == "ug/m**3":
         concnh4.units = "ug/m3"
     if vmrnh3.units == "1e-9":
@@ -147,7 +146,7 @@ def calc_conctnh(concnh4, vmrnh3):
     return conctnh
 
 
-def calc_aod_from_species_contributions(*gridded_objects):
+def calc_aod_from_species_contributions(*gridded_objects):  # pragma: no cover
     data = gridded_objects[0].cube
 
     assert str(data.units) == "1"
