@@ -24,6 +24,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
 )
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom import MultiGriddedData
 from pyaerocom.helpers import start_stop, to_datestring_YYYYMMDD
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
@@ -158,6 +159,15 @@ class Colocator:
                 f"{self._model_reader.data_id}. New ID: {self.colocation_setup.model_id}"
             )
         self._model_reader = self._instantiate_gridded_reader(what="model")
+        self._loaded_model_data = {}
+        return self._model_reader
+
+    def _reload_model_reader_with_new_dir(self, model_dir=None) -> ReadGridded:
+        if self._model_reader is not None:
+            logger.info(
+                f"Reloading outdated model reader with new DIR: {self.colocation_setup.model_data_dir}"
+            )
+        self._model_reader = self._instantiate_gridded_reader(what="model", data_dir_in=model_dir)
         self._loaded_model_data = {}
         return self._model_reader
 
@@ -561,16 +571,19 @@ class Colocator:
         """
         filtered, ts_types = {}, {}
         for mvar, ovar in var_matches.items():
-            try:
-                mdata = self.get_model_data(mvar)
-                filtered[mvar] = ovar
-                ts_types[mvar] = mdata.ts_type
-            except Exception as e:
-                msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
-                logger.warning(msg)
-                self._processing_status.append([mvar, ovar, 4])
-                if self.colocation_setup.raise_exceptions:
-                    raise ColocationError(msg)
+            mdata = self.get_model_data(mvar)
+            filtered[mvar] = ovar
+            ts_types[mvar] = mdata.ts_type
+            # try:
+            #     mdata = self.get_model_data(mvar)
+            #     filtered[mvar] = ovar
+            #     ts_types[mvar] = mdata.ts_type
+            # except Exception as e:
+            #     msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
+            #     logger.warning(msg)
+            #     self._processing_status.append([mvar, ovar, 4])
+            #     if self.colocation_setup.raise_exceptions:
+            #         raise ColocationError(msg)
         return filtered, ts_types
 
     def _filter_var_matches_files_not_exist(self, var_matches, ts_types):
@@ -590,7 +603,7 @@ class Colocator:
             elif not all([isinstance(x, str) for x in mvars]):
                 raise ValueError("Values of model_add_vars need to be list of strings")
 
-    def _instantiate_gridded_reader(self, what):
+    def _instantiate_gridded_reader(self, what, data_dir_in=None):
         """
         Create reader for model or observational gridded data.
 
@@ -609,6 +622,8 @@ class Colocator:
         else:
             data_id = self.colocation_setup.obs_id
             data_dir = self.colocation_setup.obs_data_dir
+        if data_dir_in is not None:
+            data_dir = data_dir_in
         reader_class = self._get_gridded_reader_class(what=what)
         if what == "model" and reader_class in self.MODELS_WITH_KWARGS:
             reader = reader_class(
@@ -789,6 +804,38 @@ class Colocator:
             ts_type_read = self.colocation_setup.obs_ts_type_read
             kwargs.update(self._eval_obs_filters(var_name))
 
+        if self.colocation_setup.multigrid_use:
+            data = self._read_multigridded(
+                reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
+            )
+        else:
+            data = self._read_single_gridded(
+                reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
+            )
+
+        return data
+
+    def _read_multigridded(
+        self, reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
+    ):
+        from tqdm import tqdm
+
+        model_id = self.colocation_setup.model_id
+        multi_data = MultiGriddedData(model_id)
+        folders = self.colocation_setup.multigrid_dirs
+        for folder in tqdm(folders):
+            reader = self._reload_model_reader_with_new_dir(folder)
+            # reader.data_dir = folder
+            data = self._read_single_gridded(
+                reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
+            )
+            multi_data.add_griddeddata(data)
+
+        return multi_data
+
+    def _read_single_gridded(
+        self, reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
+    ):
         try:
             data = reader.read_var(
                 var_name,

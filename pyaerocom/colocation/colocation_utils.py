@@ -25,6 +25,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.multigriddeddata import MultiGriddedData
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
@@ -608,7 +609,7 @@ def _colocate_site_data_helper_timecol(
 
 
 def colocate_gridded_ungridded(
-    data: GriddedData,
+    data: GriddedData | MultiGriddedData,
     data_ref: UngriddedDataContainer,
     ts_type=None,
     start=None,
@@ -754,6 +755,7 @@ def colocate_gridded_ungridded(
 
     # check time overlap and crop model data if needed
     start, stop = check_time_ival(data, start, stop)
+
     data = data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
@@ -780,9 +782,9 @@ def colocate_gridded_ungridded(
     # colocation frequency
     col_tst = TsType(col_freq)
 
-    latitude = data.latitude.points
-    longitude = data.longitude.points
     if data.proj_info is None:
+        latitude = data.latitude.points
+        longitude = data.longitude.points
         lat_range = [np.min(latitude), np.max(latitude)]
         lon_range = [np.min(longitude), np.max(longitude)]
         # use only sites that are within model domain
@@ -792,17 +794,20 @@ def colocate_gridded_ungridded(
     else:
         # gridded data with projection,
         # add x/y information to ungridded
-        for coord in data.cube.dim_coords:
-            if coord.var_name == data.proj_info.x_axis:
-                vals = coord.points
-                xrange = (np.min(vals), np.max(vals))
-            if coord.var_name == data.proj_info.y_axis:
-                vals = coord.points
-                yrange = (np.min(vals), np.max(vals))
-        if xrange is None or yrange is None:
-            raise VariableDefinitionError(
-                f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
-            )
+        if isinstance(data, MultiGriddedData):
+            xrange, yrange = data.get_min_max_x_y()
+        else:
+            for coord in data.cube.dim_coords:
+                if coord.var_name == data.proj_info.x_axis:
+                    vals = coord.points
+                    xrange = (np.min(vals), np.max(vals))
+                if coord.var_name == data.proj_info.y_axis:
+                    vals = coord.points
+                    yrange = (np.min(vals), np.max(vals))
+            if xrange is None or yrange is None:
+                raise VariableDefinitionError(
+                    f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+                )
         data_ref = data_ref.filter_by_projection(data.proj_info.to_proj, xrange, yrange)
 
     # get timeseries from all stations in provided time resolution
@@ -850,6 +855,7 @@ def colocate_gridded_ungridded(
     else:
         data_unit = None
     # loop over all stations and append to colocated data object
+    breakpoint()
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
         lons[i] = obs_stat.longitude

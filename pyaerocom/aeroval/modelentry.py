@@ -1,5 +1,6 @@
 # import inspect
 from copy import deepcopy
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
@@ -60,6 +61,10 @@ class ModelEntry(BaseModel):
     # attributes previously given as kwargs used in CAMS2_83
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
     model_kwargs: dict = {}
+
+    # For the use of multigrid
+    multigrid_use: bool = False
+    multigrid_dirs: list[Path | str] = []
 
     @property
     def aux_funs_required(self):

@@ -678,13 +678,16 @@ class UngriddedDataMetadata(UngriddedDataContainer):
 
     @override
     def filter_by_projection(
-        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
+        self,
+        projection,
+        xrange: tuple[float, float] | list[tuple[float, float]],
+        yrange: tuple[float, float] | list[tuple[float, float]],
     ):
         """Filter the ungridded data to a horizontal bounding box given by a projection
 
         :param projection: a function turning projection(lat, lon) -> (x, y)
-        :param xrange: x range (min/max included) in the projection plane
-        :param yrange: y range (min/max included) in the projection plane
+        :param xrange: x range (min/max included) in the projection plane, or list of multiple x ranges
+        :param yrange: y range (min/max included) in the projection plane, or list of multiple y ranges
         """
         meta_matches = []
         totnum = 0
@@ -692,6 +695,10 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             lon = meta["longitude"]
             lat = meta["latitude"]
             x, y = projection(lat, lon)
+
+            if isinstance(xrange, list):
+                if not isinstance(yrange, list):
+                    raise ValueError()
 
             match_x = in_range(x, xrange[0], xrange[1])
             match_y = in_range(y, yrange[0], yrange[1])
@@ -702,7 +709,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                     if var in self.ALLOWED_VERT_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
-                        totnum += len(self.meta_idx[meta_idx][var])
+                        totnum += len(self.metadata[meta_idx][var])
                     except KeyError:
                         logger.debug(
                             f"Ignoring variable {var} in meta block {meta_idx} "
