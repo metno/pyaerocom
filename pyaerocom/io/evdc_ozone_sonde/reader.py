@@ -35,34 +35,15 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: Mask for identifying datafiles
     _FILEMASK = "evdc-sonde_*.nc"
     _FILEMASK_HARP = "evdc-sonde_*.nc"
-    _FILEMASK_EVDC = "balloon_sonde.*.h5"
+    _SUFFIX_HARP = Path(_FILEMASK_HARP).suffix
+    _FILEMASK_HDF = "balloon_sonde.*.h5"
+    _SUFFIX_HDF = Path(_FILEMASK_HDF).suffix
 
     #: version log of this class (for caching)
-    __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
-
-    #: Name of dataset (OBS_ID)
-    DATA_ID = const.EVDC_OZONE_SONDES_NAME
-    DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
-
-    #: List of all datasets supported by this interface
-    SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME]
+    __version__ = "0.02_" + ReadUngriddedBase.__baseversion__
 
     #: default variables for read method
     DEFAULT_VARS = ["conco33d", "vmro33d", "pro33d", "rh3d", "ps3d", "ts3d"]
-    # O3_volume_mixing_ratio, O3_number_density, O3_partial_pressure, relative_humidity, pressure, temperature, wind_speed, wind_direction
-
-    # These are applied to all files. If new cloud filter names are discovered they should be added here.
-    # As of 20.08.24, however, there are still files with less reliable data which get through the filters.
-    # https://github.com/metno/pyaerocom/issues/1310
-    # CLOUD_FILTERS = {
-    #     "cloud_mask_type": 0,  # "no_cloudmask_available manual_cloudmask automatic_cloudmask"
-    #     "cirrus_contamination": 2,  # "not_available no_cirrus cirrus_detected"
-    # }
-
-    #: all data values that exceed this number will be set to NaN on read. This
-    #: is because iris, xarray, etc. assign a FILL VALUE of the order of e36
-    #: to missing data in the netcdf files
-    # _MAX_VAL_NAN = 1e6
 
     #: variable name of altitude in files
     ALTITUDE_ID_HARP = "geopotential_height"
@@ -84,29 +65,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     # as time the middle of the start and stop time rounded to the closed hour is used
     TS_TYPE = "3hourly"
 
-    # DEFAULT_VARS = ["conco33D", "vmro33D", "pro33D", "rh3D", "ps3D", "ts3D"]
-    # O3_volume_mixing_ratio, O3_number_density, O3_partial_pressure, relative_humidity, pressure, temperature, wind_speed, wind_direction
-    #: dictionary specifying the file column names (values) for each Aerocom
-    #: variable (keys)
-    VAR_NAMES_FILE_HARP = {
-        "conco33d": "O3_volume_mixing_ratio",
-        # "vmro33d": "O3_number_density",
-        "vmro33d": "O3_volume_mixing_ratio",
-        "pro33d": "O3_partial_pressure",
-        "rh3d": "relative_humidity",
-        "ps3d": "pressure",
-        "ts3d": "temperature",
-    }
-
-    VAR_NAMES_FILE_HDF = {
-        "conco33d": "O3.MIXING.RATIO.VOLUME_INSITU",
-        "vmro33d": "O3.NUMBER.DENSITY_INSITU",
-        "pro33d": "O3.PARTIAL.PRESSURE_INSITU",
-        "rh3d": "HUMIDITY.RELATIVE_INSITU",
-        "ps3d": "PRESSURE_INSITU",
-        "ts3d": "TEMPERATURE_INSITU",
-    }
-
     LOCATION_VAR_NAME_HARP = "site_name"
     START_TIME_VAR_NAME_HARP = "datetime_start"
     STOP_TIME_VAR_NAME_HARP = "datetime_stop"
@@ -125,22 +83,11 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     HDF_VALID_MAX_ATTR_NAME = "VAR_VALID_MAX"
     HDF_FILL_VALUE_ATTR_NAME = "VAR_FILL_VALUE"
 
-    #
-    KEEP_ADD_META = [
-        # "location",
-        # "wavelength",
-        # "zenith_angle",
-        # "comment",
-        # "shots",
-        # "backscatter_evaluation_method",
-    ]
+    # Not needed for now
+    KEEP_ADD_META = []
 
     #: If true, the uncertainties are also read
     READ_UNCERTAINTIES = False
-
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE_HARP)
-
-    # EXCLUDE_CASES = ["cirrus.txt"]
 
     def __init__(self, data_id=None, data_dir: str | Path | None = None, format="HARP"):
         # initiate base class
@@ -164,7 +111,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         if format == "HARP":
             self.FILEMASK = self._FILEMASK_HARP
         else:
-            self.FILEMASK = self._FILEMASK_EVDC
+            self.FILEMASK = self._FILEMASK_HDF
 
     @override
     def read_file(
@@ -184,14 +131,14 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         :return:
         """
         _file = Path(filename)
-        if _file.suffix == ".nc":
+        if _file.suffix == self._SUFFIX_HARP:
             return self.read_file_harp(
                 filename,
                 vars_to_retrieve=vars_to_retrieve,
                 read_uncertainties=read_uncertainties,
                 remove_outliers=remove_outliers,
             )
-        elif _file.suffix == ".h5" or _file.suffix == ".hdf":
+        elif _file.suffix == self._SUFFIX_HDF:
             return self.read_file_hdf(
                 filename,
                 vars_to_retrieve=vars_to_retrieve,
@@ -747,6 +694,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         # get_sejd2gcal(data_in["DATETIME"].values[0])
         from datetime import datetime
 
+        outdata = None
+        _inval = None
         if isinstance(indata, np.ndarray):
             outdata = np.zeros_like(indata, dtype="datetime64[us]")
             for i, _inval in enumerate(indata):
@@ -775,3 +724,83 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             raise NotImplementedError
 
         return outdata
+
+
+class ReadEvdcOzoneSondeDataHarp(ReadEvdcOzoneSondeData):
+    """
+    Interface for reading of EVDC ozone sonde data in HARP format as provides by the CAMS2-82 project via
+    the CAMS validation server
+    """
+
+    #: Name of dataset (OBS_ID)
+    DATA_ID = const.EVDC_OZONE_SONDES_NAME_HARP
+    DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
+
+    #: List of all datasets supported by this interface
+    SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME_HARP]
+
+    VAR_NAMES_FILE_HARP = {
+        "conco33d": "O3_volume_mixing_ratio",
+        # "vmro33d": "O3_number_density",
+        "vmro33d": "O3_volume_mixing_ratio",
+        "pro33d": "O3_partial_pressure",
+        "rh3d": "relative_humidity",
+        "ps3d": "pressure",
+        "ts3d": "temperature",
+    }
+
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE_HARP)
+
+    def __init__(self, data_id=None, data_dir: str | Path | None = None):
+        # initiate base class
+        if isinstance(data_id, Path):
+            _data_dir = str(data_dir)
+        else:
+            _data_dir = data_dir
+        super().__init__(data_id=data_id, data_dir=_data_dir, format="HARP")
+
+
+class ReadEvdcOzoneSondeDataHdf(ReadEvdcOzoneSondeData):
+    """
+    Interface for reading of EVDC ozone sonde data in HDF5 format
+
+    IMPORTANT NOTE:
+    The EVDC data is a mixture of files in HDF4 and HDF5 format. Because we don't want to add pyhdf as a dependency,
+    the design decision has been made that only HDF5 files will be read by this reader (Because xarray can read those
+    via the standard netcdf4 reader.
+
+    Existing HDF4 file can be easily converted to HDF5 / netcdf4 with the command
+    ncks -4 <hdf4 file> <hdf5 file>
+
+    This reader needs the file extension to be ".h5"
+
+    The outcome of the command above is a hdf5 file that is not entirely of the same format as the EVDC HDF5 files,
+    but similar enough so that the code in this package can read it.
+    The dimensions are different, but the variable names are the same.
+    """
+
+    #: Name of dataset (OBS_ID)
+    DATA_ID = const.EVDC_OZONE_SONDES_NAME_HDF
+    DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
+
+    #: List of all datasets supported by this interface
+    SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME_HDF]
+
+    VAR_NAMES_FILE_HDF = {
+        "conco33d": "O3.MIXING.RATIO.VOLUME_INSITU",
+        "vmro33d": "O3.NUMBER.DENSITY_INSITU",
+        "pro33d": "O3.PARTIAL.PRESSURE_INSITU",
+        "rh3d": "HUMIDITY.RELATIVE_INSITU",
+        "ps3d": "PRESSURE_INSITU",
+        "ts3d": "TEMPERATURE_INSITU",
+    }
+
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE_HDF)
+
+    def __init__(self, data_id=None, data_dir: str | Path | None = None):
+        # initiate base class
+        if isinstance(data_id, Path):
+            _data_dir = str(data_dir)
+        else:
+            _data_dir = data_dir
+        super().__init__(data_id=data_id, data_dir=_data_dir, format="HDF")

@@ -104,7 +104,8 @@ class Config:
     #: ICOS name
     ICOS_NAME = "ICOS"
 
-    EVDC_OZONE_SONDES_NAME = "EVDC.Ozone.Sondes"
+    EVDC_OZONE_SONDES_NAME_HARP = "EVDC.Ozone.Sondes.HARP"
+    EVDC_OZONE_SONDES_NAME_HDF = "EVDC.Ozone.Sondes.HDF"
 
     # TROPOMI access names
     TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"

@@ -7,7 +7,10 @@ import numpy as np
 import pytest
 
 from pyaerocom import const, VerticalProfile
-from pyaerocom.io.evdc_ozone_sonde.reader import ReadEvdcOzoneSondeData
+from pyaerocom.io.evdc_ozone_sonde.reader import (
+    ReadEvdcOzoneSondeDataHdf,
+    ReadEvdcOzoneSondeDataHarp,
+)
 
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
@@ -49,7 +52,7 @@ def test_all_files_exist():
     ],
 )
 def test_Evdc_harp_read_file(num: int, vars_to_retrieve: list[str]):
-    read = ReadEvdcOzoneSondeData()
+    read = ReadEvdcOzoneSondeDataHarp()
     read.files = paths = TEST_FILES_HARP
     stat = read.read_file(paths[num], vars_to_retrieve)
 
@@ -83,7 +86,7 @@ def test_Evdc_harp_read_file(num: int, vars_to_retrieve: list[str]):
     ],
 )
 def test_Evdc_hdf_read_file(num: int, vars_to_retrieve: list[str]):
-    read = ReadEvdcOzoneSondeData()
+    read = ReadEvdcOzoneSondeDataHdf()
     read.files = paths = TEST_FILES_HDF
     stat = read.read_file(paths[num], vars_to_retrieve)
 
@@ -112,14 +115,16 @@ def test_Evdc_hdf_read_file(num: int, vars_to_retrieve: list[str]):
 
 def test_get_file_list_harp():
     # test the getfiles method
-    read = ReadEvdcOzoneSondeData(data_dir=ROOT_HARP)
+    read = ReadEvdcOzoneSondeDataHarp(data_dir=ROOT_HARP)
     read.files = read.get_file_list()
     assert len(read.files) >= len(TEST_FILES_HARP)
 
 
 def test_get_file_list_hdf():
     # test the getfiles method
-    read = ReadEvdcOzoneSondeData(data_dir=ROOT_HDF, format="HDF")
+    read = ReadEvdcOzoneSondeDataHdf(
+        data_dir=ROOT_HDF,
+    )
     read.files = read.get_file_list()
     # assert len(read.files) >= len(TEST_FILES_HDF)
     # we look foo h5 files only and omit hdf files for the moment
@@ -127,14 +132,16 @@ def test_get_file_list_hdf():
 
 
 def test_EvdcOzoneSondeData_read_hdf():
-    read = ReadEvdcOzoneSondeData(data_dir=ROOT_HDF, format="HDF")
+    read = ReadEvdcOzoneSondeDataHdf(
+        data_dir=ROOT_HDF,
+    )
     data = read.read(vars_to_retrieve=TEST_VAR_HDF)
     #
     assert len(data.metadata) >= 1
 
 
 def test_EvdcOzoneSondeData_read_harp():
-    read = ReadEvdcOzoneSondeData(data_dir=ROOT_HARP)
+    read = ReadEvdcOzoneSondeDataHarp(data_dir=ROOT_HARP)
     #     read.files = TEST_FILES_HARP
     data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
     #
