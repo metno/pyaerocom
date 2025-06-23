@@ -4,11 +4,11 @@ import glob
 import logging
 
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
+from pyaerocom.aeroval.bulkfraction_engine import BulkFractionEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.helpers import delete_dummy_model, make_dummy_model
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
-from pyaerocom.aeroval.bulkfraction_engine import BulkFractionEngine
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +87,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
+                logger.info(f"Found files to process: {files_to_convert}")
             else:
                 col.run(var_list)
                 files_to_convert = col.files_written
