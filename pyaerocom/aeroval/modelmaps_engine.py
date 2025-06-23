@@ -59,9 +59,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             except VarNotAvailableError:
                 logger.warning(f"no data for model {model}, skipping")
                 continue
-
         self.cfg.modelmaps_opts.maps_freq = (
-            self._get_maps_freq()
+            str(self._get_maps_freq())
         )  # if needed, reassign "coarsest" to actual coarsest frequency
 
     def _get_vars_to_process(self, model_name, var_list):
