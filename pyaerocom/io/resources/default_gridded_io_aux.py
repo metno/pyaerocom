@@ -1,3 +1,4 @@
+# pragma: no cover
 """
 Config file for AeroCom PhaseIII test project
 """
