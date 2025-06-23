@@ -61,7 +61,13 @@ def test_merge_station_data(
     )
     assert isinstance(stat, StationData)
     vardata = stat[var_name]
-    assert len(vardata) == num
+
+    if any([var_name in s.data_err for s in stats]):
+        varerror = stat.data_err[var_name]
+        assert len(vardata) == len(varerror) == num
+    else:
+        assert len(vardata) == num
+
     assert stat.get_var_ts_type(var_name) == tst
     assert np.mean(vardata) == pytest.approx(mean, rel=1e-2)
 
