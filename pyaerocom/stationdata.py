@@ -775,11 +775,18 @@ class StationData(StationMetaData):
             min_num_obs=min_num_obs,
             inplace=True,
         )
+
         s0 = stat0[var_name]  # .dropna()
         s1 = stat1[var_name]  # .dropna()
 
-        e0 = stat0.get_error_timeseries(var_name)
-        e1 = stat1.get_error_timeseries(var_name)
+        idx0 = s0.index[s0.notna()]
+        idx1 = s1.index[s1.notna()]
+
+        s0 = s0[idx0]
+        s1 = s1[idx1]
+
+        e0 = stat0.get_error_timeseries(var_name)[idx0]
+        e1 = stat1.get_error_timeseries(var_name)[idx1]
 
         info = other.var_info[var_name]
         removed = None
