@@ -3,6 +3,7 @@ from __future__ import annotations
 import getpass
 import logging
 import os.path
+import os
 from pathlib import Path
 
 import pytest
@@ -122,8 +123,15 @@ def test_user_specific_paths_ini():
     # cfg = testmod.Config(try_infer_environment=False)
     # assert cfg.GAWTADSUBSETAASETAL == CHANGE_NAME
 
+    # remove user specific paths.ini if running on CI
+    # stolen from https://github.com/orgs/community/discussions/49224
+    if "CI" in os.environ or os.environ["CI"] or "GITHUB_RUN_ID" in os.environ:
+        del_flag = True
     if del_flag:
-        os.remove(user_file)
+        try:
+            os.remove(user_file)
+        except FileNotFoundError:
+            pass
 
 
 def test_Config_read_config():
