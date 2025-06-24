@@ -107,7 +107,46 @@ _OTHER_REG_DEFS = {
 }
 
 
-REGION_DEFS = {**_AEROCOM_DEFS, **_HTAP_DEFS, **_OTHER_REG_DEFS}
+_EU_CITIES = {
+    "Amsterdam": {
+        "lat_range": [52.235111236572266, 52.450042724609375],
+        "lon_range": [4.7180094718933105, 5.103306293487549],
+    },
+    "Bordeaux": {
+        "lat_range": [44.70786666870117, 44.96601486206055],
+        "lon_range": [-0.8970025181770325, -0.4452879726886749],
+    },
+    "Budapest": {
+        "lat_range": [47.33146286010742, 47.6281623840332],
+        "lon_range": [18.889860153198242, 19.36115264892578],
+    },
+    "Dresden": {
+        "lat_range": [50.9670524597168, 51.184104919433594],
+        "lon_range": [13.570295333862305, 13.982483863830566],
+    },
+    "Hamburg": {
+        "lat_range": [53.38390350341797, 53.975887298583984],
+        "lon_range": [8.409785270690918, 10.33332633972168],
+    },
+    "Hanover": {
+        "lat_range": [52.30150604248047, 52.457183837890625],
+        "lon_range": [9.597295761108398, 9.924869537353516],
+    },
+    "Munich": {
+        "lat_range": [48.05363082885742, 48.25450134277344],
+        "lon_range": [11.35603141784668, 11.734712600708008],
+    },
+    "Nice": {
+        "lat_range": [43.61017608642578, 43.77079391479492],
+        "lon_range": [7.039936065673828, 7.402710437774658],
+    },
+    "Stuttgart": {
+        "lat_range": [48.68381118774414, 48.87253189086914],
+        "lon_range": [9.034162521362305, 9.319469451904297],
+    },
+}
+
+REGION_DEFS = {**_AEROCOM_DEFS, **_HTAP_DEFS, **_OTHER_REG_DEFS, **_EU_CITIES}
 
 # optional: alternative names for regions (e.g. used for plotting)
 # if undefined the corresponding ID is used as name. Names are adapetd from
@@ -137,3 +176,5 @@ OLD_AEROCOM_REGIONS = list(_AEROCOM_DEFS)
 HTAP_REGIONS_DEFAULT = list(_HTAP_NAMES)
 HTAP_REGIONS = list(_HTAP_DEFS)
 OTHER_REGIONS = list(_OTHER_REG_DEFS)
+
+EU_CITIES_REGIONS = list(_EU_CITIES)
