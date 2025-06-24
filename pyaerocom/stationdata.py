@@ -1218,7 +1218,7 @@ class StationData(StationMetaData):
         )
         new_err = None
         if var_name in outdata.data_err:
-            err = pd.Series(outdata.data_err[var_name], index=data.index)
+            err = pd.Series(outdata.data_err[var_name], index=data.index.copy())
             resampler_err = TimeResampler(err)
             new_err = resampler_err.resample(
                 to_ts_type=to_ts_type,
@@ -1588,9 +1588,16 @@ class StationData(StationMetaData):
 
         return s
 
-    def get_error_timeseries(self, var_name: str) -> pd.Series | None:
+    def get_error_timeseries(self, var_name: str) -> pd.Series:
+        """Returns the error timeseries for a given value as a pandas Series. If no
+        error values exist, a Series of matching size to the data values filled with
+        NaN will be returned.
+
+        :param var_name: Variable name.
+        :return: Series containing error values.
+        """
         if var_name in self.data_err:
             assert len(self.data_err[var_name]) == len(self[var_name])
-            return pd.Series(self.data_err[var_name], index=self[var_name].index)
+            return pd.Series(self.data_err[var_name], index=self[var_name].index.copy())
 
-        return pd.Series([np.nan] * len(self[var_name]), index=self[var_name].index)
+        return pd.Series([np.nan] * len(self[var_name]), index=self[var_name].index.copy())
