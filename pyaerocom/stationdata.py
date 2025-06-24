@@ -761,20 +761,25 @@ class StationData(StationMetaData):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         ts_type = self._check_ts_types_for_merge(other, var_name)
 
-        s0 = self.resample_time(
+        stat0 = self.resample_time(
             var_name,
             ts_type=ts_type,
             how=resample_how,
             min_num_obs=min_num_obs,
             inplace=True,
-        )[var_name].dropna()
-        s1 = other.resample_time(
+        )
+        stat1 = other.resample_time(
             var_name,
             ts_type=ts_type,
             how=resample_how,
             min_num_obs=min_num_obs,
             inplace=True,
-        )[var_name].dropna()
+        )
+        s0 = stat0[var_name]  # .dropna()
+        s1 = stat1[var_name]  # .dropna()
+
+        e0 = stat0.get_error_timeseries(var_name)
+        e1 = stat1.get_error_timeseries(var_name)
 
         info = other.var_info[var_name]
         removed = None
@@ -789,12 +794,17 @@ class StationData(StationMetaData):
                     # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
                     # s1 = s1.drop(index=overlap, inplace=True)
                     s1.drop(index=overlap, inplace=True)
+                    e1.drop(index=overlap, inplace=True)
                 # compute merged time series
                 if len(s1) > 0:
                     s0 = pd.concat([s0, s1], verify_integrity=True)
+                    e0 = pd.concat([e0, e1], verify_integrity=True)
 
                 # sort the concatenated series based on timestamps
-                s0.sort_index(inplace=True)
+                idx = s0.index.argsort()
+                s0 = s0.iloc[idx]
+                e0 = e0.iloc[idx]
+                # s0.sort_index(inplace=True)
                 self.merge_varinfo(other, var_name)
             except KeyError:
                 logger.warning(
@@ -805,6 +815,8 @@ class StationData(StationMetaData):
 
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
+        self.data_err[var_name] = e0
+
         self.dtime = s0.index.values
 
         if removed is not None:
@@ -1196,6 +1208,7 @@ class StationData(StationMetaData):
         if not isinstance(data, pd.Series | xr.DataArray):
             data = outdata.to_timeseries(var_name)
         resampler = TimeResampler(data)
+
         new = resampler.resample(
             to_ts_type=to_ts_type,
             from_ts_type=from_ts_type,
@@ -1203,6 +1216,17 @@ class StationData(StationMetaData):
             min_num_obs=min_num_obs,
             **kwargs,
         )
+        new_err = None
+        if var_name in outdata.data_err:
+            err = pd.Series(outdata.data_err[var_name], index=data.index)
+            resampler_err = TimeResampler(err)
+            new_err = resampler_err.resample(
+                to_ts_type=to_ts_type,
+                from_ts_type=from_ts_type,
+                how="error",
+                min_num_obs=min_num_obs,
+            )
+            outdata.data_err[var_name] = new_err
 
         outdata[var_name] = new
         outdata.var_info[var_name]["ts_type"] = to_ts_type.val
@@ -1563,3 +1587,10 @@ class StationData(StationMetaData):
             s += series
 
         return s
+
+    def get_error_timeseries(self, var_name: str) -> pd.Series | None:
+        if var_name in self.data_err:
+            assert len(self.data_err[var_name]) == len(self[var_name])
+            return pd.Series(self.data_err[var_name], index=self[var_name].index)
+
+        return pd.Series([np.nan] * len(self[var_name]), index=self[var_name].index)
