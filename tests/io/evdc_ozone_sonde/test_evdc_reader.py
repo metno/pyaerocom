@@ -15,7 +15,7 @@ from pyaerocom.io.evdc_ozone_sonde.reader import (
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
 
-LUSTRE_ROOT_HDF = Path(const.OBSLOCS_UNGRIDDED["EVDC.Ozone.Sondes"]).parent / "native"
+LUSTRE_ROOT_HDF = Path(const.OBSLOCS_UNGRIDDED["EVDC.Ozone.Sondes.HDF"])
 
 TEST_FILES_HARP: list[str | Path] = [
     Path(
@@ -153,7 +153,9 @@ def test_EvdcOzoneSondeData_read_harp():
 
 def test_EvdcOzoneSondeData_read_hdf_lustre():
     if LUSTRE_ROOT_HDF.exists():
-        read = ReadEvdcOzoneSondeData(data_dir=LUSTRE_ROOT_HDF, format="HDF")
+        read = ReadEvdcOzoneSondeDataHdf(
+            data_dir=LUSTRE_ROOT_HDF,
+        )
         data = read.read(vars_to_retrieve=TEST_VAR_HDF)
         #
         assert len(data.metadata) >= 1
