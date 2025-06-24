@@ -1,8 +1,14 @@
 import numpy as np
+import logging
+from copy import deepcopy
 
 from .griddeddata import GriddedData
 from pyaerocom.stationdata import StationData
 from iris.coords import DimCoord, AuxCoord
+from pyaerocom.exceptions import DataCoverageError
+
+
+logger = logging.getLogger(__name__)
 
 
 class MultiGriddedDataException(Exception):
@@ -33,14 +39,8 @@ class MultiGriddedData:
         self.var_name = None
         self.ts_type = None
 
-    # noe med
-    ## _regrid_gridded(data, regrid_scheme, regrid_res_deg)
-    ## check_ts_type(data, ts_type)
-    # regfilter.apply(data)
-    # check_time_ival(data, start, stop)
-
     def _initiate(self, data: GriddedData):
-        self.proj_info = data.proj_info
+        self.proj_info = deepcopy(data.proj_info)
         self.start = data.start
         self.stop = data.stop
 
@@ -51,8 +51,11 @@ class MultiGriddedData:
         self.ndim = data.ndim
         self.ts_type = data.ts_type
 
-        self.latitude = data.latitude
-        self.longitude = data.longitude
+        self.latitude = data.latitude[:]
+        self.longitude = data.longitude[:]
+
+        self.xranges = []
+        self.yranges = []
 
         # self.base_year = data.base_year
 
@@ -93,14 +96,13 @@ class MultiGriddedData:
 
         # self.base_year = min(self.base_year, data.base_year)
 
-        self.from_files.append(data.from_files)
+        self.from_files += data.from_files
 
         self.children.append(data)
 
     def _add_coord(
         self, old_dim: DimCoord | AuxCoord, new_dim: DimCoord | AuxCoord
     ) -> DimCoord | AuxCoord:
-        breakpoint()
         points = np.concatenate((old_dim.points, new_dim.points))
 
         if type(new_dim) is not type(new_dim):
@@ -151,6 +153,30 @@ class MultiGriddedData:
 
         return x, y
 
+    def get_xyranges(self) -> tuple[list[tuple[float, float]]] | None:
+        if self.proj_info is None:
+            return None
+
+        xranges = []
+        yranges = []
+        for data in self.children:
+            xrange = None
+            yrange = None
+            for coord in data.cube.dim_coords:
+                if coord.var_name == data.proj_info.x_axis:
+                    vals = coord.points
+                    xrange = (np.min(vals), np.max(vals))
+                if coord.var_name == data.proj_info.y_axis:
+                    vals = coord.points
+                    yrange = (np.min(vals), np.max(vals))
+            if xrange is None or yrange is None:
+                raise ValueError(
+                    f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+                )
+            xranges.append(xrange)
+            yranges.append(yrange)
+        return xranges, yranges
+
     def check_dimcoords_tseries(self):
         for data in self.children:
             data.check_dimcoords_tseries()
@@ -182,9 +208,13 @@ class MultiGriddedData:
     ) -> list[StationData]:
         sd_list = []
         for data in self.children:
-            sd_list += data.to_time_series(
-                sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
-            )
+            try:
+                sd_list += data.to_time_series(
+                    sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
+                )
+            except DataCoverageError:
+                print(f"Could not resample for grid from {data.from_files}")
+                logger.info(f"Could not resample for grid from {data.from_files}")
 
         return sd_list
 

@@ -409,7 +409,6 @@ class GriddedData:
         if not self.has_time_dim:
             raise DataDimensionError("Could not access base year: data has no time dimension")
         try:
-            breakpoint()
             return self.time.units.utime().origin.year
         except Exception as e:
             raise DataDimensionError(f"Could access base-year. Unexpected error: {repr(e)}")

@@ -795,7 +795,7 @@ def colocate_gridded_ungridded(
         # gridded data with projection,
         # add x/y information to ungridded
         if isinstance(data, MultiGriddedData):
-            xrange, yrange = data.get_min_max_x_y()
+            xrange, yrange = data.get_xyranges()
         else:
             for coord in data.cube.dim_coords:
                 if coord.var_name == data.proj_info.x_axis:
@@ -855,7 +855,7 @@ def colocate_gridded_ungridded(
     else:
         data_unit = None
     # loop over all stations and append to colocated data object
-    breakpoint()
+
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
         lons[i] = obs_stat.longitude

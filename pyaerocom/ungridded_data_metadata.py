@@ -699,9 +699,15 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             if isinstance(xrange, list):
                 if not isinstance(yrange, list):
                     raise ValueError()
+                for xr, yr in zip(xrange, yrange):
+                    match_x = in_range(x, xr[0], xr[1])
+                    match_y = in_range(y, yr[0], yr[1])
 
-            match_x = in_range(x, xrange[0], xrange[1])
-            match_y = in_range(y, yrange[0], yrange[1])
+                    if match_x and match_y:
+                        break
+            else:
+                match_x = in_range(x, xrange[0], xrange[1])
+                match_y = in_range(y, yrange[0], yrange[1])
 
             if match_x and match_y:
                 meta_matches.append(meta_idx)
