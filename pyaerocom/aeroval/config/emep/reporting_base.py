@@ -939,6 +939,12 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "vmrox_from_vmrno2_vmro3",
                 ],
                 "dataset": "verified",
+                "station_area": [
+                    "rural",
+                    "rural-regional",
+                    "rural-nearcity",
+                    "rural-remote",
+                ],
                 "station_type": [
                     "background",
                 ],
