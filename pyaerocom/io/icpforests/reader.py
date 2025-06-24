@@ -420,17 +420,15 @@ class ReadICPForest(ReadUngriddedBase):
 
         for year in range(self.MIN_YEAR, self.MAX_YEAR):
             yr_flags = flags_array[np.where(years == year)]
-            # yr_flags can have 0 length
-            try:
+
+            if len(yr_flags) == 0:
+                logger.warning(f"No data for species {species} in year {year}.")
+            else:
                 quality = np.sum(np.where(yr_flags == 0)) / len(yr_flags)
                 if quality < self.QUALITY_LIMIT:
                     logger.warning(
                         f"Quality of {quality} found for {species} in year {year}. Setting data this year to NaN"
                     )
                     data_array[np.where(years == year)] = np.nan
-
-            except RuntimeWarning:
-                # yr_flags has 0 length
-                logger.warning(f"No data for species {species} in year {year}.")
 
         return list(data_array)

@@ -201,8 +201,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     str(data_in["location_name"].values.astype(str))
                 )
             else:
-                logger.error(f"file {filename} does not contain a site name. Skipping")
-                return data_out
+                logger.error(f"file {filename} does not contain a site name. Skipping...")
+                return None
             data_out["data_id"] = self.data_id
             data_out["ts_type"] = self.TS_TYPE
 
@@ -336,13 +336,24 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
         # reading hdf5 file with the netcdf interface
         with xarray.open_dataset(filename) as data_in:
+            # 1st, some checks that might prevent us from using the current data file:
+            # - no station name provided
+            # - the data file doesn't contain all variables we are after
             if self.LOCATION_VAR_NAME_HDF in data_in.attrs:
                 data_out["station_id"] = data_out["station_name"] = data_in.attrs[
                     self.LOCATION_VAR_NAME_HDF
                 ]
             else:
                 logger.error(f"file {filename} does not contain a site name. Skipping")
-                return data_out
+                return None
+
+            # check if all data variables are in the data file
+            for var in vars_to_retrieve:
+                netcdf_var_name = self.VAR_NAMES_FILE_HDF[var]
+                # check if the desired variable is in the file
+                if netcdf_var_name not in data_in.variables:
+                    logger.info(f"Variable {var} not found in file {filename}. Skipping that file")
+                    return None
             data_out["data_id"] = self.data_id
             data_out["ts_type"] = self.TS_TYPE
 
@@ -384,13 +395,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 has_altitude = False
 
                 netcdf_var_name = self.VAR_NAMES_FILE_HDF[var]
-                # check if the desired variable is in the file
-                if netcdf_var_name not in data_in.variables:
-                    logger.warning(f"Variable {var} not found in file {filename}")
-                    continue
-
-                # info = var_info[var]
-                # xarray.DataArray
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
                 val = np.squeeze(np.float64(arr.values))  # squeeze to 1D array
@@ -548,6 +552,9 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         meta_idx = data_obj.meta_idx
 
         VAR_IDX = -1
+        self.files_found = len(files)
+        self.files_not_read = 0
+
         for i, _file in enumerate(files):
             logger.info(f"Reading file {_file}")
             try:
@@ -557,6 +564,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                     read_uncertainties=read_err,
                     remove_outliers=remove_outliers,
                 )
+                if stat is None:
+                    self.files_not_read += 1
+                    logger.info(f"File {_file} has no useful data. Skipping...")
+                    continue
                 # if last_station_id != station_id:
                 meta_key += 1
                 # Fill the metadata dict
@@ -650,6 +661,9 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
+        logger.info(
+            f"reading summary: found {self.files_found} files, {self.files_not_read} didn't provide usable data."
+        )
 
         return data_obj
 

@@ -15,6 +15,8 @@ from pyaerocom.io.evdc_ozone_sonde.reader import (
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
 
+LUSTRE_ROOT_HDF = Path(const.OBSLOCS_UNGRIDDED["EVDC.Ozone.Sondes"]).parent / "native"
+
 TEST_FILES_HARP: list[str | Path] = [
     Path(
         f"{ROOT_HARP}/2019/08/07/evdc-sonde_o3-mch-000-consolidated-payerne-20190807T110000-20190807T123713-003-20200907T191640.nc"
@@ -34,7 +36,8 @@ TEST_FILES_HDF: list[str | Path] = [
 ]
 
 SIMPLE_TEST_VAR = "conco33d"
-TEST_VAR_HDF = "pro33d"  # this is what all files provide
+# TEST_VAR_HDF = "pro33d"  # this is what all files provide
+TEST_VAR_HDF = "vmro33d"  # this is what all files provide
 TEST_RTOL = 1.0e-4
 
 logger = logging.getLogger(__name__)
@@ -146,6 +149,16 @@ def test_EvdcOzoneSondeData_read_harp():
     data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
     #
     assert len(data.metadata) > 1
+
+
+def test_EvdcOzoneSondeData_read_hdf_lustre():
+    if LUSTRE_ROOT_HDF.exists():
+        read = ReadEvdcOzoneSondeData(data_dir=LUSTRE_ROOT_HDF, format="HDF")
+        data = read.read(vars_to_retrieve=TEST_VAR_HDF)
+        #
+        assert len(data.metadata) >= 1
+    else:
+        assert True
 
 
 #     assert data.shape == (164, 12)
