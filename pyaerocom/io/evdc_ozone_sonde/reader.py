@@ -89,7 +89,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: If true, the uncertainties are also read
     READ_UNCERTAINTIES = False
 
-    def __init__(self, data_id=None, data_dir: str | Path | None = None, format="HARP"):
+    def __init__(self, data_id=None, data_dir: str | Path | None = None, format: str = "HARP"):
         # initiate base class
         if isinstance(data_id, Path):
             _data_dir = str(data_dir)
@@ -110,8 +110,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         self.format = format
         if format == "HARP":
             self.FILEMASK = self._FILEMASK_HARP
-        else:
+        elif format == "HDF":
             self.FILEMASK = self._FILEMASK_HDF
+        else:
+            raise NotImplementedError
 
     @override
     def read_file(
