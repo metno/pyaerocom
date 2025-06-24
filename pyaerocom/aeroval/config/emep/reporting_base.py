@@ -956,6 +956,111 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             ts_type="hourly",
         ),
         ################
+        #   EEA-background
+        ################
+        "EEA-d-background": dict(
+            obs_id="EEA-d-background",
+            obs_vars=[
+                "concpm10",
+                "concpm25",
+                "concSso2",
+                "concNno2",
+                "concNno",
+                "vmro3max",
+            ],
+            pyaro_config={
+                "name": "EEA-d-background",
+                "reader_id": "eeareader",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "name_map": {
+                    "PM2.5": "concpm25",
+                    "PM10": "concpm10",
+                    "NO": "concno",
+                    "NO2": "concno2",
+                    "SO2": "concso2",
+                    "O3": "conco3",
+                },
+                "filters": {
+                    "time_bounds": {
+                        "startend_include": [
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+                        ],
+                    },
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "radius": 5000,
+                        "topo_var": "Band1",
+                        "lower": None,
+                        "upper": 500,
+                    },
+                },
+                "post_processing": [
+                    "concNno_from_concno",
+                    "concNno2_from_concno2",
+                    "concSso2_from_concso2",
+                    "vmro3max_from_conco3",
+                ],
+                "dataset": "verified",
+                "station_type": [
+                    "background",
+                ],
+            },
+            web_interface_name="EEA-background",
+            obs_vert_type="Surface",
+            obs_filters=EEA_FILTER,
+            ts_type="daily",
+        ),
+        "EEA-h-diurnal-background": dict(
+            obs_id="EEA-h-diurnal-background",
+            obs_vars=[
+                "concNno2",
+                "vmro3",
+                "vmrox",
+            ],
+            pyaro_config={
+                "name": "EEA-h-diurnal-background",
+                "reader_id": "eeareader",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "name_map": {
+                    "PM2.5": "concpm25",
+                    "PM10": "concpm10",
+                    "NO": "concno",
+                    "NO2": "concno2",
+                    "SO2": "concso2",
+                    "O3": "conco3",
+                },
+                "filters": {
+                    "time_bounds": {
+                        "startend_include": [
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+                        ],
+                    },
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "radius": 5000,
+                        "topo_var": "Band1",
+                        "lower": None,
+                        "upper": 500,
+                    },
+                },
+                "post_processing": [
+                    "concNno2_from_concno2",
+                    "vmro3_from_conco3",
+                    "vmrno2_from_concno2",
+                    "vmrox_from_vmrno2_vmro3",
+                ],
+                "dataset": "verified",
+                "station_type": [
+                    "background",
+                ],
+            },
+            web_interface_name="EEA-h-background",
+            obs_vert_type="Surface",
+            obs_filters={**EEA_FILTER, "ts_type": "hourly"},
+            resample_how="mean",
+            ts_type="hourly",
+        ),
+        ################
         #    EEA-all
         ################
         "EEA-d-all": dict(
