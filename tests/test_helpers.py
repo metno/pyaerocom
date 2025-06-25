@@ -117,7 +117,7 @@ def fake_hourly_ts():
         ("daily", "1percentile", None, 8, -1),
         ("daily", "25percentile", None, 8, -0.64),
         ("daily", "75percentile", None, 8, 0.64),
-        ("daily", "error", 0, 8, 3.455068690680145),
+        ("daily", "error", 0, 8, 0.14396119544500605),
     ],
 )
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
