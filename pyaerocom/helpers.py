@@ -806,7 +806,7 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
 
 
 def resample_errors(ds: pd.Series, *args, **kwargs):
-    return math.sqrt((ds**2).sum(skipna=True)) / len(ds)
+    return math.sqrt((ds**2).sum(skipna=True)) / len(ds[ds.notna()])
 
 
 def resample_timeseries(ts, freq, how=None, min_num_obs=None):
