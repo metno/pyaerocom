@@ -10,7 +10,6 @@ import xarray as xr
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
-    BrowseDict,
     dict_to_str,
     list_to_shortstr,
     merge_dicts,
@@ -96,14 +95,14 @@ class StationData(StationMetaData):
     def __init__(self, **meta_info):
         self.dtime = []
 
-        self.var_info: BrowseDict[xr.DataArray, pd.Series] = BrowseDict()
+        self.var_info: dict[xr.DataArray, pd.Series] = {}
 
         self.station_coords = dict.fromkeys(self.STANDARD_COORD_KEYS)
 
-        self.data_err = BrowseDict()
-        self.overlap = BrowseDict()
-        self.numobs = BrowseDict()
-        self.data_flagged = BrowseDict()
+        self.data_err = {}
+        self.overlap = {}
+        self.numobs = {}
+        self.data_flagged = {}
 
         super().__init__(**meta_info)
 
