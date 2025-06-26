@@ -826,6 +826,7 @@ class StationData(StationMetaData):
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
         self.data_err[var_name] = e0
+        assert len(self[var_name]) == len(self.data_err[var_name])
 
         self.dtime = s0.index.values
 
@@ -1162,6 +1163,7 @@ class StationData(StationMetaData):
         new.var_info[var_name]["clim_mincount"] = clim_mincount
         new.data_err[var_name] = clim["std"]
         new.numobs[var_name] = clim["numobs"]
+        assert len(new.data_err[var_name]) == len(new[var_name])
         return new
 
     def resample_time(
@@ -1232,6 +1234,7 @@ class StationData(StationMetaData):
             min_num_obs=min_num_obs,
             **kwargs,
         )
+        outdata[var_name] = new
         new_err = None
         if var_name in outdata.data_err:
             err = pd.Series(outdata.data_err[var_name], index=data.index.copy())
@@ -1243,10 +1246,8 @@ class StationData(StationMetaData):
                 min_num_obs=min_num_obs,
             )
             outdata.data_err[var_name] = new_err
+            assert len(outdata.data_err[var_name]) == len(outdata[var_name])
 
-        breakpoint()
-
-        outdata[var_name] = new
         outdata.var_info[var_name]["ts_type"] = to_ts_type.val
         outdata.var_info[var_name].update(resampler.last_setup)
         # there is other variables that are not resampled
