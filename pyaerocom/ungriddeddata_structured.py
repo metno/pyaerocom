@@ -393,7 +393,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 idx = data.index.argsort()
                 data = data.iloc[idx]
                 vals_err = vals_err.iloc[idx]
-                # data = data.sort_index()
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
             if any(~np.isnan(flagged)):
