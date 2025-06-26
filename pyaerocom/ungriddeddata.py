@@ -791,7 +791,9 @@ class UngriddedData(UngriddedDataMetadata):
 
             data = pd.Series(vals, dtime)
             if not data.index.is_monotonic_increasing:
-                data = data.sort_index()
+                idx = data.index.argsort()
+                data = data.iloc[idx]
+                vals_err = vals_err.iloc[idx]
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
             if any(~np.isnan(flagged)):
