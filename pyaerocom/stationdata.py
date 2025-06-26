@@ -776,8 +776,8 @@ class StationData(StationMetaData):
             inplace=True,
         )
 
-        s0 = stat0[var_name]  # .dropna()
-        s1 = stat1[var_name]  # .dropna()
+        s0 = stat0[var_name]
+        s1 = stat1[var_name]
 
         idx0 = s0.index[s0.notna()]
         idx1 = s1.index[s1.notna()]
@@ -815,7 +815,6 @@ class StationData(StationMetaData):
                 idx = s0.index.argsort()
                 s0 = s0.iloc[idx]
                 e0 = e0.iloc[idx]
-                # s0.sort_index(inplace=True)
                 self.merge_varinfo(other, var_name)
             except KeyError:
                 logger.warning(
