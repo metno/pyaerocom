@@ -785,6 +785,10 @@ class StationData(StationMetaData):
         s0 = s0[idx0]
         s1 = s1[idx1]
 
+        # Note: All errors are resampled as mean of the error even if data values are median or
+        # percentile based. This may give strange values — especially at the tails — it was agreed
+        # to be the best we can do given the general nature of Pyaerocom. Possibly an area for future
+        # improvement.
         e0 = stat0.get_error_timeseries(var_name)[idx0]
         e1 = stat1.get_error_timeseries(var_name)[idx1]
 
