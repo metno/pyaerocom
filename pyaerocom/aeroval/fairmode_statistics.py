@@ -190,8 +190,8 @@ class FairmodeStatistics:
 
         fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask)
         ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask)
-        gan = np.sum(np.logical(~obsex, ~modex), axis=0, where=mask)
-        gap = np.sum(np.logical(obsex, modex), axis=0, where=mask)
+        gan = np.sum(np.logical_and(~obsex, ~modex), axis=0, where=mask)
+        gap = np.sum(np.logical_and(obsex, modex), axis=0, where=mask)
 
         return fa, ma, gan, gap
 
