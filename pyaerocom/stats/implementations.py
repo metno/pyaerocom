@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.stats import ConstantInputWarning, kendalltau, spearmanr
-import scipy
 
 from pyaerocom.mathutils import corr, sum
 
@@ -84,7 +83,6 @@ def stat_R_spearman(
     return spearmanr(data, ref_data)[0]
 
 
-@ignore_warnings(scipy.stats._axis_nan_policy.SmallSampleWarning)
 def stat_R_kendall(
     data: np.ndarray, ref_data: np.ndarray, weights: np.ndarray | None
 ) -> np.float64:
