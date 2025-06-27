@@ -63,10 +63,11 @@ class MultiGriddedData:
         if len(self.children) == 0:
             self._initiate(data)
 
-        if data.proj_info != self.proj_info:
-            raise MultiGriddedDataException(
-                "Proj data of added griddeddata is different from the existing proj info"
-            )
+        if data.proj_info is not None or self.proj_info is not None:
+            if data.proj_info != self.proj_info:
+                raise MultiGriddedDataException(
+                    "Proj data of added griddeddata is different from the existing proj info"
+                )
 
         if data.var_name != self.var_name:
             raise MultiGriddedDataException(
@@ -153,9 +154,9 @@ class MultiGriddedData:
 
         return x, y
 
-    def get_xyranges(self) -> tuple[list[tuple[float, float]]] | None:
+    def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
         if self.proj_info is None:
-            return None
+            raise MultiGriddedDataException("X and Y cannot be found, since proj_info is None")
 
         xranges = []
         yranges = []
@@ -176,6 +177,24 @@ class MultiGriddedData:
             xranges.append(xrange)
             yranges.append(yrange)
         return xranges, yranges
+
+    def get_latlon_ranges(self) -> tuple[list[tuple[float, float]]]:
+        lats = []
+        lons = []
+
+        for data in self.children:
+            latitude = data.latitude.points
+            longitude = data.longitude.points
+            lat_range = (np.min(latitude), np.max(latitude))
+            lon_range = (np.min(longitude), np.max(longitude))
+
+            lats.append(lat_range)
+            lons.append(lon_range)
+
+        if len(lats) == 0 or len(lons) == 0:
+            raise MultiGriddedDataException("Failed to find lat or lon ranges")
+
+        return lats, lons
 
     def check_dimcoords_tseries(self):
         for data in self.children:

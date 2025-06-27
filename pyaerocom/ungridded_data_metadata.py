@@ -677,6 +677,56 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         return new
 
     @override
+    def filter_by_latlon(
+        self,
+        lat_range: tuple[float, float] | list[tuple[float, float]],
+        lon_range: tuple[float, float] | list[tuple[float, float]],
+    ):
+        """Filter the ungridded data to a horizontal bounding box
+
+        :param lat_range: lat range (min/max included) in the projection plane, or list of multiple lat ranges
+        :param lon_range: lon range (min/max included) in the projection plane, or list of multiple lat ranges
+        """
+
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            lon = meta["longitude"]
+            lat = meta["latitude"]
+
+            if isinstance(lat_range, list):
+                if not isinstance(lon_range, list):
+                    raise ValueError()
+                for latr, lonr in zip(lat_range, lon_range):
+                    match_lat = in_range(lat, latr[0], latr[1])
+                    match_lon = in_range(lon, lonr[0], lonr[1])
+
+                    if match_lat and match_lon:
+                        break
+            else:
+                match_lat = in_range(lat, lat_range[0], lat_range[1])
+                match_lon = in_range(lon, lon_range[0], lon_range[1])
+
+            if match_lat and match_lon:
+                meta_matches.append(meta_idx)
+                for var in meta["var_info"]:
+                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                        continue  # altitude is not actually a variable but is stored in var_info like one
+                    try:
+                        totnum += len(self.metadata[meta_idx][var])
+                    except KeyError:
+                        logger.debug(
+                            f"Ignoring variable {var} in meta block {meta_idx} "
+                            f"since no data could be found"
+                        )
+
+        if len(meta_matches) == len(self.metadata):
+            logger.info("filter_by_projection result in unchanged data object")
+            return self
+        new = self._new_from_meta_blocks(meta_matches, totnum)
+        return new
+
+    @override
     def filter_by_projection(
         self,
         projection,

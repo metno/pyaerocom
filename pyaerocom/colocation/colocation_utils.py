@@ -783,14 +783,19 @@ def colocate_gridded_ungridded(
     col_tst = TsType(col_freq)
 
     if data.proj_info is None:
-        latitude = data.latitude.points
-        longitude = data.longitude.points
-        lat_range = [np.min(latitude), np.max(latitude)]
-        lon_range = [np.min(longitude), np.max(longitude)]
-        # use only sites that are within model domain
+        if isinstance(data, MultiGriddedData):
+            lat_range, lon_range = data.get_latlon_ranges()
 
-        # filter_by_meta wipes is_vertical_profile
-        data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+            data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
+        else:
+            latitude = data.latitude.points
+            longitude = data.longitude.points
+            lat_range = [np.min(latitude), np.max(latitude)]
+            lon_range = [np.min(longitude), np.max(longitude)]
+            # use only sites that are within model domain
+
+            # filter_by_meta wipes is_vertical_profile
+            data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
     else:
         # gridded data with projection,
         # add x/y information to ungridded
