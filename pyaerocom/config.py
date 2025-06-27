@@ -2,7 +2,8 @@ import configparser
 import getpass
 import logging
 import os
-from configparser import ConfigParser
+
+# from configparser import ConfigParser
 from pathlib import Path
 from datetime import datetime
 
@@ -851,8 +852,10 @@ class Config:
         if init_data_search_dirs:
             self._search_dirs = []
 
-        cr = ConfigParser()
-        cr.optionxform = str
+        # cr = ConfigParser()
+        # cr.optionxform = str
+        cr = configparser.RawConfigParser()
+        cr.optionxform = lambda option: str(option).lower()
         cr.read(config_file)
         # init base directories for Model data
         if cr.has_section("modelfolders"):
@@ -865,8 +868,8 @@ class Config:
             self._init_output_folders_from_cfg(cr)
 
         if cr.has_section("supplfolders"):
-            if basedir is None and "BASEDIR" in cr["supplfolders"]:
-                basedir = cr["supplfolders"]["BASEDIR"]
+            if basedir is None and "basedir" in cr["supplfolders"]:
+                basedir = cr["supplfolders"]["basedir"]
 
             for name, path in cr["supplfolders"].items():
                 if "${BASEDIR}" in path:
@@ -895,8 +898,8 @@ class Config:
         mcfg = cr["modelfolders"]
 
         # check and update model base directory if applicable
-        if "BASEDIR" in mcfg:
-            _dir = mcfg["BASEDIR"]
+        if "basedir" in mcfg:
+            _dir = mcfg["basedir"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
             elif "${USER}" in _dir:
@@ -933,11 +936,8 @@ class Config:
         cfg = cr["obsfolders"]
 
         # check and update model base directory if applicable
-        if "BASEDIR" in cfg or "basedir" in cfg:
-            try:
-                _dir = cfg["BASEDIR"]
-            except KeyError:
-                _dir = cfg["basedir"]
+        if "basedir" in cfg:
+            _dir = cfg["basedir"]
 
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
@@ -955,7 +955,7 @@ class Config:
         repl = "${BASEDIR}"
         if cr.has_section("obsfolders"):
             for obsname, path in cr["obsfolders"].items():
-                if obsname.lower() == "basedir":
+                if obsname == "basedir":
                     continue
                 name_str = f"{obsname.upper()}_NAME"
                 if name_str in names_cfg:
