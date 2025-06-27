@@ -1,8 +1,10 @@
+import configparser
 import getpass
 import logging
 import os
-from configparser import ConfigParser
+
 from pathlib import Path
+from datetime import datetime
 
 import numpy as np
 
@@ -302,17 +304,70 @@ class Config:
         """
         check if ~/MyPyaerocom/paths.ini exists.
         if not, use the default paths.ini
+        if ~/MyPyaerocom/paths.ini is missing configurations, these are added
+        with the default values.
+        Unfortunately a side effect is that comments are removed and that all keys
+        are converted to lower case (as per ini file "standard")
         """
+        with resources.path("pyaerocom.data", self.PATHS_INI_NAME) as path:
+            default_paths_ini = path
 
         self._paths_ini = os.path.join(self.my_pyaerocom_dir, self.PATHS_INI_NAME)
         if os.path.exists(self._paths_ini):
             logger.info(f"using user specific config file: {self._paths_ini}")
+            # check if user specific config file needs to be updated
+            self.update_config_ini_file(self._paths_ini, default_paths_ini)
         else:
-            with resources.path("pyaerocom.data", self.PATHS_INI_NAME) as path:
-                self._paths_ini = str(path)
-                logger.info(f"using default config file: {self._paths_ini}")
+            self._paths_ini = str(default_paths_ini)
+            logger.info(f"using default config file: {self._paths_ini}")
 
         return self._paths_ini
+
+    def update_config_ini_file(self, user_file: str, default_file: str):
+        """
+        helper method that puts new keys from the default ini file into the user specific ini file
+        below the path ~/MyPyaerocom
+
+        from https://docs.python.org/3/library/configparser.html:
+        It is possible to read several configurations into a single ConfigParser, where the most recently added
+        configuration has the highest priority. Any conflicting keys are taken from the more recent configuration
+        while the previously existing keys are retained.
+
+        :return:
+        """
+        if user_file == default_file:
+            return
+
+        # try to determine if an update of the user file is needed...
+        user_config = configparser.ConfigParser()
+        user_config.read(user_file)
+        default_config = configparser.ConfigParser()
+        default_config.read(default_file)
+        user_keys = []
+        default_keys = []
+        for _section in user_config.sections():
+            for key in user_config.options(_section):
+                user_keys.append(f"{_section}_{key}")
+
+        for _section in default_config.sections():
+            for key in default_config.options(_section):
+                default_keys.append(f"{_section}_{key}")
+
+        # This check is likely not precise enough as we could also remove keys from the default
+        # config, but we ignore that for now
+        if len(user_keys) != len(default_keys):
+            updated_config = configparser.ConfigParser()
+            updated_config.read([default_file, user_file])
+            logger.info(
+                f"updating user config file {user_file} with additional keys from default file."
+            )
+            backup_file_name = user_file + ".backup" + datetime.today().strftime("%Y%m%d%H%M%S")
+            os.rename(user_file, backup_file_name)
+            with open(user_file, "w") as user_file:
+                updated_config.write(user_file)
+            logger.info(
+                f"update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
+            )
 
     def register_custom_variables(
         self, vars: dict[str, Variable] | dict[str, dict[str, str]]
@@ -798,8 +853,10 @@ class Config:
         if init_data_search_dirs:
             self._search_dirs = []
 
-        cr = ConfigParser()
-        cr.optionxform = str
+        cr = configparser.RawConfigParser()
+        # this makes that all keys are converted to lower case strings so that we can
+        # check with lower case strings only later on
+        cr.optionxform = lambda option: str(option).lower()
         cr.read(config_file)
         # init base directories for Model data
         if cr.has_section("modelfolders"):
@@ -812,8 +869,8 @@ class Config:
             self._init_output_folders_from_cfg(cr)
 
         if cr.has_section("supplfolders"):
-            if basedir is None and "BASEDIR" in cr["supplfolders"]:
-                basedir = cr["supplfolders"]["BASEDIR"]
+            if basedir is None and "basedir" in cr["supplfolders"]:
+                basedir = cr["supplfolders"]["basedir"]
 
             for name, path in cr["supplfolders"].items():
                 if "${BASEDIR}" in path:
@@ -842,8 +899,8 @@ class Config:
         mcfg = cr["modelfolders"]
 
         # check and update model base directory if applicable
-        if "BASEDIR" in mcfg:
-            _dir = mcfg["BASEDIR"]
+        if "basedir" in mcfg:
+            _dir = mcfg["basedir"]
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
             elif "${USER}" in _dir:
@@ -880,8 +937,9 @@ class Config:
         cfg = cr["obsfolders"]
 
         # check and update model base directory if applicable
-        if "BASEDIR" in cfg:
-            _dir = cfg["BASEDIR"]
+        if "basedir" in cfg:
+            _dir = cfg["basedir"]
+
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
             if "${USER}" in _dir:
@@ -898,7 +956,7 @@ class Config:
         repl = "${BASEDIR}"
         if cr.has_section("obsfolders"):
             for obsname, path in cr["obsfolders"].items():
-                if obsname.lower() == "basedir":
+                if obsname == "basedir":
                     continue
                 name_str = f"{obsname.upper()}_NAME"
                 if name_str in names_cfg:
@@ -925,17 +983,17 @@ class Config:
 
     def _init_output_folders_from_cfg(self, cr):
         cfg = cr["outputfolders"]
-        if "CACHEDIR" in cfg and not self._check_access(self._cache_basedir):
-            self._cache_basedir = cfg["CACHEDIR"]
+        if "cachedir" in cfg and not self._check_access(self._cache_basedir):
+            self._cache_basedir = cfg["cachedir"]
 
-        if "OUTPUTDIR" in cfg and not self._check_access(self._outputdir):
-            self._outputdir = cfg["OUTPUTDIR"]
+        if "outputdir" in cfg and not self._check_access(self._outputdir):
+            self._outputdir = cfg["outputdir"]
 
-        if "COLOCATEDDATADIR" in cfg and not self._check_access(self._colocateddatadir):
-            self._colocateddatadir = cfg["COLOCATEDDATADIR"]
+        if "colocateddatadir" in cfg and not self._check_access(self._colocateddatadir):
+            self._colocateddatadir = cfg["colocateddatadir"]
 
-        if "LOCALTMPDIR" in cfg:
-            _dir = cfg["LOCALTMPDIR"]
+        if "localtmpdir" in cfg:
+            _dir = cfg["localtmpdir"]
             # expand ${HOME}
             if "${HOME}" in _dir:
                 _dir = _dir.replace("${HOME}", os.path.expanduser("~"))
