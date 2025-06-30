@@ -99,10 +99,10 @@ class StationData(StationMetaData):
 
         self.station_coords = dict.fromkeys(self.STANDARD_COORD_KEYS)
 
-        self.data_err = {}
+        self.data_err: dict[str, pd.Series] = {}
         self.overlap = {}
         self.numobs = {}
-        self.data_flagged = {}
+        self.data_flagged: dict[str, pd.Series] = {}
 
         super().__init__(**meta_info)
 
