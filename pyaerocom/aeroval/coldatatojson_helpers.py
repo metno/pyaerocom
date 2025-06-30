@@ -1079,9 +1079,7 @@ def _process_map_and_scat(
                                 except TrendsError as e:
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                     logger.info(msg)
-
-                        stats["units"] = subset.data.units
-
+                    stats["units"] = subset.units[0]
                     perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
                     if freq == scatter_freq:
