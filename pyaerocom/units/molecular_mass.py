@@ -43,6 +43,8 @@ _MOLMASSES = {
     "glyox": 58.036,
 }
 
+_SPECIES_OVERRIDE = {"concso4c": "SO4"}
+
 
 class UnknownSpeciesError(ValueError):
     pass
@@ -70,6 +72,9 @@ def _get_species(aerocom_var: str) -> str:
     """
     if aerocom_var in _MOLMASSES:
         return aerocom_var
+
+    if aerocom_var in _SPECIES_OVERRIDE:
+        return _SPECIES_OVERRIDE.get(aerocom_var)
     species = None
     for prefix in _VAR_PREFIXES:
         if aerocom_var.startswith(prefix):

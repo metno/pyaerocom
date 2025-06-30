@@ -851,6 +851,8 @@ class ReadEbas(ReadUngriddedBase):
                     continue
             if len(_cols) > 0:
                 result_col = _cols
+        if len(result_col) > 1:
+            result_col = [result_col[0]]
         return result_col
 
     def _resolve_meas_height_cols(self, result_col, file):
