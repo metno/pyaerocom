@@ -792,7 +792,7 @@ class StationData(StationMetaData):
         e1 = stat1._get_error_timeseries(var_name)[idx1]
 
         # Note: Resampling flags isn't really meaningful and flags aren't really used for anything as of
-        # writing. For now these are resampled as the mean, to maintain a shape consistent with the data.
+        # 2025-06-30. For now these are resampled as the mean, to maintain a shape consistent with the data.
         f0 = stat0._get_flag_timeseries(var_name)[idx0]
         f1 = stat1._get_flag_timeseries(var_name)[idx1]
 
