@@ -1080,6 +1080,8 @@ def _process_map_and_scat(
                                     msg = f"Failed to calculate trends, and will skip. This was due to {e}"
                                     logger.info(msg)
 
+                        stats["units"] = subset.data.units
+
                     perstr = f"{per}-{season}"
                     map_stat[freq][perstr] = stats
                     if freq == scatter_freq:
