@@ -343,31 +343,72 @@ class Config:
         user_config.read(user_file)
         default_config = configparser.ConfigParser()
         default_config.read(default_file)
-        user_keys = []
-        default_keys = []
-        for _section in user_config.sections():
-            for key in user_config.options(_section):
-                user_keys.append(f"{_section}_{key}")
 
-        for _section in default_config.sections():
-            for key in default_config.options(_section):
-                default_keys.append(f"{_section}_{key}")
+        user_keys = {
+            f"{section}_{key}"
+            for section in user_config.sections()
+            for key in user_config.options(section)
+        }
+        default_keys = {
+            f"{section}_{key}"
+            for section in default_config.sections()
+            for key in default_config.options(section)
+        }
 
-        # This check is likely not precise enough as we could also remove keys from the default
-        # config, but we ignore that for now
-        if len(user_keys) != len(default_keys):
-            updated_config = configparser.ConfigParser()
-            updated_config.read([default_file, user_file])
-            logger.info(
-                f"updating user config file {user_file} with additional keys from default file."
-            )
+        missing_default_keys = default_keys - user_keys
+        extra_user_keys = user_keys - default_keys
+
+        if missing_default_keys or extra_user_keys:
             backup_file_name = user_file + ".backup" + datetime.today().strftime("%Y%m%d%H%M%S")
-            os.rename(user_file, backup_file_name)
-            with open(user_file, "w") as user_file:
-                updated_config.write(user_file)
-            logger.info(
-                f"update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
-            )
+            # try to make this fail save
+            try:
+                os.rename(user_file, backup_file_name)
+            except Exception as e:
+                logger.warning(f"Failed to rename user file: {repr(e)}")
+                return
+
+            # add potential missing sections to user config
+            if len(missing_default_keys) > 0:
+                for section in default_config.sections():
+                    if section not in user_config.sections():
+                        user_config.add_section(section)
+                        logger.info(
+                            f"Added {section} from default paths.ini to ~/MyPyaerocom/paths.ini"
+                        )
+
+                # add missing keys
+                for key in missing_default_keys:
+                    _section, _key = key.split("_", 1)
+                    user_config[_section][_key] = default_config[_section][_key]
+                    logger.info(
+                        f"Added {_section}/{_key} to ~/MyPyaerocom/paths.ini with default values."
+                    )
+
+            if len(extra_user_keys) > 0:
+                for section in user_config.sections():
+                    if section not in default_config.sections():
+                        user_config.remove_section(section)
+                        logger.info(
+                            f"Removed {section} from ~/MyPyaerocom/paths.ini because it's not used by pyaerocom."
+                        )
+
+                for key in extra_user_keys:
+                    _section, _key = key.split("_", 1)
+                    del user_config[_section][_key]
+                    logger.info(
+                        f"deleted {_section}/{_key} from ~/MyPyaerocom/paths.ini because it's not used by pyaerocom."
+                    )
+
+            try:
+                with open(user_file, "w") as fh:
+                    fh.write(user_file)
+                logger.info(
+                    f"update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
+                )
+            except BaseException:
+                logger.warning(f"Failed to write user file: {user_file}. Undoing changes.")
+                os.rename(backup_file_name, user_file)
+                os.remove(backup_file_name)
 
     def register_custom_variables(
         self, vars: dict[str, Variable] | dict[str, dict[str, str]]
