@@ -1143,7 +1143,13 @@ class StationData(StationMetaData):
         return new
 
     def resample_time(
-        self, var_name: str, ts_type: str, how=None, min_num_obs=None, inplace=False, **kwargs
+        self,
+        var_name: str,
+        ts_type: str,
+        how=None,
+        min_num_obs=None,
+        inplace=False,
+        **kwargs,
     ):
         """Resample one of the time-series in this object
 
@@ -1367,6 +1373,7 @@ class StationData(StationMetaData):
                 data = pd.Series(data, self.dtime)
             alt = self.altitude
             if not isinstance(alt, list | np.ndarray):
+                # breakpoint()
                 raise AttributeError("need 1D altitude array")
             elif not len(alt) == len(data):
                 raise DataDimensionError(

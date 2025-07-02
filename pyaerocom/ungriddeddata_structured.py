@@ -83,7 +83,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             meta = self.metadata[meta_id]
             new_metadata[meta_id] = meta
             for var in meta["var_info"]:
-                if var in self.ALLOWED_VERT_COORD_TYPES:
+                if var in self.ALLOWED_COORD_TYPES:
                     continue
                 new_var_idx[var] = self.var_idx[var]
 
@@ -624,13 +624,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             self.metadata[meta_idx]["variables"] = contains_vars
             if "data_revision" in station_data:
                 self.metadata[meta_idx]["data_revision"] = station_data.data_revision
-            # breakpoint()
             for var in contains_vars:
                 try:
                     vardata = station_data[var]
                 except (KeyError, AttributeError):
-                    breakpoint()
+                    logger.info(f"Variable {var} not available in station data, skipping.")
+                    continue
                 altitude = None
+                self.metadata[meta_idx]["var_info"] = vi = {}
+                vi[var] = {}
                 if isinstance(vardata, pd.Series):
                     times = vardata.index
                     values = vardata.values
@@ -639,6 +641,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     times = np.repeat(station_data.dtime, values.shape[-1])
                     altitude = np.tile(vardata.altitude, values.shape[0]).astype("i2")
                     values = values.flatten()
+                    vi["altitude"] = altitude
                 else:
                     times = station_data["dtime"]
                     values = vardata
@@ -647,13 +650,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 if var not in self.var_idx:
                     self.var_idx[var] = len(self.var_idx)
                 var_idx = self.var_idx[var]
-                self.metadata[meta_idx]["var_info"] = {}
-                self.metadata[meta_idx]["var_info"][var] = {}
 
-                self.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
+                vi[var].update(station_data["var_info"][var])
                 for x in ("longitude", "latitude", "altitude"):
-                    if x not in self.metadata[meta_idx]["var_info"][var]:
-                        self.metadata[meta_idx]["var_info"][var][x] = station_data[x]
+                    if x not in vi[var]:
+                        vi[x] = station_data[x]
 
                 uds = UngriddedDataStructured(num_points=len(values))
                 v_data = uds._dra._array  # access to raw numpy-array

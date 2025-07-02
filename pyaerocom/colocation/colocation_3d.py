@@ -126,6 +126,7 @@ def _colocate_vertical_profile_gridded(
         # loop over all stations and append to colocated data object
         for i, obs_stat in enumerate(obs_stat_data):
             # Add coordinates to arrays required for xarray.DataArray below
+            # breakpoint()
             lons[i] = obs_stat.longitude
             lats[i] = obs_stat.latitude
             alts[i] = obs_stat.station_coords[
@@ -369,7 +370,11 @@ def colocate_vertical_profile_gridded(
 
     data_ref_meta_idxs_with_var_info = []
     for i in range(len(data_ref.metadata)):
-        if "altitude" not in data_ref.metadata[i]["var_info"]:
+        if (
+            "altitude"
+            not in data_ref.metadata[i]["var_info"]  # old way of checking, may need to be fixed.
+            or "altitude" not in data_ref.metadata[i]["var_info"][var]
+        ):
             logger.warning(
                 f"Warning: Station {data_ref.metadata[i]['station_name']} does not have any var_info"
             )

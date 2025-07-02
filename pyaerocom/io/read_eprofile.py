@@ -195,9 +195,11 @@ class ReadEprofile(ReadUngriddedBase):
 
             data_out["station_coords"]["longitude"] = data_in.station_longitude_t0
 
-            data_out["longitude"] = data_in.station_longitude.values
+            data_out["longitude"] = (
+                data_in.station_longitude_t0
+            )  # data_in.station_longitude.values
             data_out["station_coords"]["latitude"] = data_in.station_latitude_t0
-            data_out["latitude"] = data_in.station_latitude.values
+            data_out["latitude"] = data_in.station_latitude_t0  # data_in.station_latitude.values
             data_out["altitude"] = (
                 data_in.station_altitude_t0 + data_in.altitude.values
             )  # Note altitude is an array for the data, station altitude is different. Moreover, EPROFILE as of 21.05.2025 gives altitude in altitude above ground level, so add the station altitude to get the altitude above sea level
@@ -219,7 +221,7 @@ class ReadEprofile(ReadUngriddedBase):
 
             # get metadata expected in StationData but not in data_in's metadata
             data_out["wavelength_emis"] = data_in.l0_wavelength
-            data_out["zenith_angle"] = data_in.z_ref.values
+            # data_out["zenith_angle"] = data_in.z_ref.values
             data_out["filename"] = filename
 
             loc_split = data_in.attrs["site_location"].split(", ")
@@ -328,6 +330,7 @@ class ReadEprofile(ReadUngriddedBase):
 
                 data_out["var_info"][var].update(
                     unit_ok=unit_ok,
+                    units=unit,
                     err_read=False,  # EPROFILE foes not provide error data
                     outliers_removed=outliers_removed,
                     has_altitude=has_altitude,
@@ -515,7 +518,7 @@ class ReadEprofile(ReadUngriddedBase):
         # # shorten data_obj._data to the right number of points
         # data_obj._data = data_obj._data[:idx]
         data = self._read_files_structured(files, vars_to_retrieve=vars_to_retrieve)
-
+        # breakpoint()
         data.clear_meta_no_data()
 
         return data
@@ -574,7 +577,7 @@ class ReadEprofile(ReadUngriddedBase):
             raise ValueError("No data directory set")
         logger.info("Fetching EPROFILE data files...")
         search_pattern = (
-            "*/*.nc" if pattern is None else pattern
+            "*/*.nc" if not pattern else pattern
         )  # TODO: Check if can just give pattern a default value of "/*/*/*/*.nc". ruff sometimes complains about this
         all_files = set(glob(self.data_dir + search_pattern))
 

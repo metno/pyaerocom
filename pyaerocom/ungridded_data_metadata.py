@@ -41,7 +41,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
 
     """
 
-    ALLOWED_VERT_COORD_TYPES = ["altitude"]
+    ALLOWED_COORD_TYPES = ["longitude", "latitude", "altitude"]
 
     def __init__(self):
         self.metadata = {}
@@ -518,8 +518,8 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
-                        continue  # altitude is not actually a variable but is stored in var_info like one
+                    if var in self.ALLOWED_COORD_TYPES:
+                        continue  # altitude (and sometimes lat and lon) is not actually a variable but is stored in var_info like one
                     var_matches.append(var)
         totnum = self._len_datapoints(meta_matches, var_matches)
         return (meta_matches, totnum)
@@ -668,6 +668,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             negate,
             *filters,
         )
+
         if len(meta_matches) == len(self.metadata):
             logger.info(f"Input filters {filter_attributes} result in unchanged data object")
             return self
@@ -699,7 +700,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             if match_x and match_y:
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                    if var in self.ALLOWED_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
