@@ -638,10 +638,28 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     values = vardata.values
                 elif isinstance(vardata, VerticalProfile):
                     values = vardata.data
-                    times = np.repeat(station_data.dtime, values.shape[-1])
-                    altitude = np.tile(vardata.altitude, values.shape[0]).astype("i2")
-                    values = values.flatten()
-                    vi["altitude"] = altitude
+                    n_times = vardata.data.shape[0]
+                    n_alts = vardata.data.shape[1]
+                    if not len(station_data.dtime) == n_times:
+                        raise ValueError(
+                            "Number of times in station data does not match number of times in VerticalProfile data"
+                        )
+                    times = np.repeat(station_data.dtime, n_alts)
+                    if not len(vardata.altitude) == n_alts:
+                        raise ValueError(
+                            "Number of altitudes in VerticalProfile data does not match number of altidues in station data"
+                        )
+                    altitude = np.tile(vardata.altitude, n_times).astype("i2")
+                    values = (
+                        values.flatten()
+                    )  # flatten into row major order - stores similar times together
+                    if not len(values) == len(times) == len(altitude):
+                        breakpoint()
+                        raise ValueError(
+                            "Mismatch in number of times, values and altitudes in VerticalProfile data"
+                        )
+                    vi["altitude"] = vardata.var_info["altitude"]
+                    vi[var]["altitude"] = altitude
                 else:
                     times = station_data["dtime"]
                     values = vardata

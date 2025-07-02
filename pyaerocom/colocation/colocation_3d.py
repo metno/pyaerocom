@@ -378,6 +378,7 @@ def colocate_vertical_profile_gridded(
             logger.warning(
                 f"Warning: Station {data_ref.metadata[i]['station_name']} does not have any var_info"
             )
+
         else:
             data_ref_meta_idxs_with_var_info.append(i)
 

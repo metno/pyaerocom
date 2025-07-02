@@ -294,9 +294,10 @@ class ReadEprofile(ReadUngriddedBase):
                     logger.info("No wavelength match")
                     continue
 
-                alt_data = data_in.variables[self.ALTITUDE_ID]
+                # alt_data = data_in.variables[self.ALTITUDE_ID]
+                alt_data = data_in.station_altitude_t0 + data_in.altitude.values
 
-                alt_unit = alt_data.attrs["units"]
+                alt_unit = data_in.variables[self.ALTITUDE_ID].attrs["units"]
                 to_alt_unit = const.VARS["alt"].units
                 if not alt_unit == to_alt_unit:
                     try:
@@ -317,7 +318,7 @@ class ReadEprofile(ReadUngriddedBase):
                 # create instance of ProfileData
                 profile = VerticalProfile(
                     data=val,
-                    altitude=alt_data.values,
+                    altitude=alt_data,
                     dtime=data_in.time.values,
                     var_name=var,
                     data_err=np.nan,  # EPROFILE does not provide error data
@@ -328,13 +329,13 @@ class ReadEprofile(ReadUngriddedBase):
                 # Write everything into profile
                 data_out[var] = profile
 
-                data_out["var_info"][var].update(
-                    unit_ok=unit_ok,
-                    units=unit,
-                    err_read=False,  # EPROFILE foes not provide error data
-                    outliers_removed=outliers_removed,
-                    has_altitude=has_altitude,
-                )
+            data_out["var_info"][var].update(
+                unit_ok=unit_ok,
+                units=unit,
+                err_read=False,  # EPROFILE foes not provide error data
+                outliers_removed=outliers_removed,
+                has_altitude=has_altitude,
+            )
         return data_out
 
     @override

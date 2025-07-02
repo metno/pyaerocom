@@ -1372,13 +1372,18 @@ class StationData(StationMetaData):
             if not isinstance(data, pd.Series):
                 data = pd.Series(data, self.dtime)
             alt = self.altitude
-            if not isinstance(alt, list | np.ndarray):
-                # breakpoint()
-                raise AttributeError("need 1D altitude array")
+            if not isinstance(alt, list | np.ndarray) and self.var_info[var_name].get(
+                "has_altitude", False
+            ):
+                try:
+                    alt = self.var_info[var_name]["altitude"]
+                except KeyError:
+                    raise AttributeError("need 1D altitude array")
             elif not len(alt) == len(data):
                 raise DataDimensionError(
                     f"Altitude data and {var_name} data have different lengths"
                 )
+            breakpoint()
             mask = np.logical_and(alt >= altitudes[0], alt <= altitudes[1])
             if mask.sum() == 0:
                 raise ValueError("no data in specified altitude range")
