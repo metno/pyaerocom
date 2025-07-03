@@ -329,13 +329,13 @@ class ReadEprofile(ReadUngriddedBase):
                 # Write everything into profile
                 data_out[var] = profile
 
-            data_out["var_info"][var].update(
-                unit_ok=unit_ok,
-                units=unit,
-                err_read=False,  # EPROFILE foes not provide error data
-                outliers_removed=outliers_removed,
-                has_altitude=has_altitude,
-            )
+                data_out["var_info"][var].update(
+                    unit_ok=unit_ok,
+                    units=unit,
+                    err_read=False,  # EPROFILE foes not provide error data
+                    outliers_removed=outliers_removed,
+                    has_altitude=has_altitude,
+                )
         return data_out
 
     @override
@@ -604,6 +604,7 @@ class ReadEprofile(ReadUngriddedBase):
         num_failed = len(self.files_failed)
         if num_failed > 0:
             logger.warning(f"{num_failed} out of {len(files)} could not be read...")
+
         return data_obj
 
     def _station_data_iterator(self, files, vars_to_retrieve) -> Iterator[StationData]:

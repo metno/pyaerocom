@@ -65,14 +65,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         "flag": np.iinfo("i2").min,
     }
 
-    def __init__(self, num_points: int = 100):
+    def __init__(self, num_points: int = 100, is_vertical_profile: bool = False):
         super().__init__()  # initialize metadata
+
         self._dra = self._create_data_chunk(num_points)
 
         # filters applied
         self.filter_hist = {}
 
-        self._is_vertical_profile = False
+        self._is_vertical_profile = is_vertical_profile
 
     @override
     def _new_from_meta_blocks(self, meta_ids: list, total: int = 100):
@@ -106,8 +107,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
         data = DynamicRecArray(capacity=size, dtype=self._dtype)
-        for k, v in self._nan_types.items():
-            data._array[k] = v
+        # for k, v in self._nan_types.items():
+        #     data._array[k] = v
         return data
 
     @override
@@ -570,7 +571,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         for i, var in enumerate(var_names):
             new.var_idx[var] = var_ids[i]
         new.metadata = {}
-        for meta_id, meta in self.metadata.items():
+        breakpoint()
+        for meta_id, meta in enumerate(self.metadata.values()):
             common_vars = [var for var in var_names if var in meta["var_info"]]
             if len(common_vars):
                 new.metadata[meta_id] = deepcopy(meta)
@@ -633,6 +635,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 altitude = None
                 self.metadata[meta_idx]["var_info"] = vi = {}
                 vi[var] = {}
+                uds = None
                 if isinstance(vardata, pd.Series):
                     times = vardata.index
                     values = vardata.values
@@ -654,12 +657,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         values.flatten()
                     )  # flatten into row major order - stores similar times together
                     if not len(values) == len(times) == len(altitude):
-                        breakpoint()
                         raise ValueError(
                             "Mismatch in number of times, values and altitudes in VerticalProfile data"
                         )
                     vi["altitude"] = vardata.var_info["altitude"]
                     vi[var]["altitude"] = altitude
+                    uds = UngriddedDataStructured(num_points=len(values), is_vertical_profile=True)
                 else:
                     times = station_data["dtime"]
                     values = vardata
@@ -674,7 +677,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     if x not in vi[var]:
                         vi[x] = station_data[x]
 
-                uds = UngriddedDataStructured(num_points=len(values))
+                if uds is None:
+                    uds = UngriddedDataStructured(num_points=len(values))
                 v_data = uds._dra._array  # access to raw numpy-array
                 v_data["meta_id"][:] = meta_idx
                 v_data["var_id"][:] = var_idx

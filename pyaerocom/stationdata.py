@@ -1210,6 +1210,8 @@ class StationData(StationMetaData):
             **kwargs,
         )
 
+        breakpoint()
+
         outdata[var_name] = new
         outdata.var_info[var_name]["ts_type"] = to_ts_type.val
         outdata.var_info[var_name].update(resampler.last_setup)
