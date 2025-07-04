@@ -706,19 +706,32 @@ class StationData(StationMetaData):
 
     def check_if_3d(self, var_name: str) -> bool:
         """Checks if altitude data is available in this object"""
-        if "altitude" in self:
-            val = self["altitude"]
+        if "altitude" in self.var_info[var_name]:
+            val = self.var_info[var_name]["altitude"]
             if isnumeric(val):  # is numerical value
                 return False
             # unique altitude values
             uvals = np.unique(val)
-            if len(uvals) == 1:  # only one value in altitude array (NOT 3D)
+            if len(uvals) == 1:  # only one value in altitude array (
                 return False
             elif (
                 len(uvals[~np.isnan(uvals)]) == 1
             ):  # only 2 unique values in altitude array but one is NaN
                 return False
             return True
+        # if "altitude" in self: # LB: self.altitude refers the the STATION altitude, not the altitude of the data.
+        #     val = self["altitude"]
+        #     if isnumeric(val):  # is numerical value
+        #         return False
+        #     # unique altitude values
+        #     uvals = np.unique(val)
+        #     if len(uvals) == 1:  # only one value in altitude array (NOT 3D)
+        #         return False
+        #     elif (
+        #         len(uvals[~np.isnan(uvals)]) == 1
+        #     ):  # only 2 unique values in altitude array but one is NaN
+        #         return False
+        #     return True
         return False
 
     def _check_ts_types_for_merge(self, other: StationData, var_name: str):
@@ -1234,11 +1247,10 @@ class StationData(StationMetaData):
 
         data = outdata[var_name]
 
-        breakpoint()
         if not isinstance(data, pd.Series | xr.DataArray):
             data = outdata.to_timeseries(var_name)
         resampler = TimeResampler(data)
-        breakpoint()
+
         new = resampler.resample(
             to_ts_type=to_ts_type,
             from_ts_type=from_ts_type,
@@ -1274,11 +1286,6 @@ class StationData(StationMetaData):
             outdata.data_flagged[var_name] = new_flag
             assert len(outdata.data_flagged[var_name]) == len(outdata[var_name])
 
-        # LB: Pick up with how to sample altitude data
-        if outdata["var_info"][var_name].get("altitude", False):
-            # if altitude is available, then resample it as well
-            pass
-
         outdata.var_info[var_name]["ts_type"] = to_ts_type.val
         outdata.var_info[var_name].update(resampler.last_setup)
         # there is other variables that are not resampled
@@ -1287,7 +1294,7 @@ class StationData(StationMetaData):
             outdata.ts_type = None
             outdata.dtime = None
             for var, info in outdata.var_info.items():
-                if not var == var_name:
+                if not var == var_name and var != "altitude":
                     info["ts_type"] = _tt
         else:  # no other variables, update global class attributes
             outdata.ts_type = to_ts_type.val
@@ -1451,7 +1458,6 @@ class StationData(StationMetaData):
                 raise DataDimensionError(
                     f"Altitude data and {var_name} data have different lengths"
                 )
-            breakpoint()
             mask = np.logical_and(alt >= altitudes[0], alt <= altitudes[1])
             if mask.sum() == 0:
                 raise ValueError("no data in specified altitude range")

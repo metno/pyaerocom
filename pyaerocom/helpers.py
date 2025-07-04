@@ -656,6 +656,7 @@ def merge_station_data(
             raise NotImplementedError("Merging of multivar data not yet possible")
         var_name = var_name[0]
 
+    # LB: check this. might need to implement 3d merging
     stats, is_3d, has_errs = _check_stats_merge(stats, var_name, pref_attr, fill_missing_nan)
     # ToDo: data_err is not handled at the moment for 2D data, needs r
     # revision and should be done in StationData.merge, also 3D vs 2D

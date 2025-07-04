@@ -417,8 +417,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 sd.altitude = altitude[0]  # TODO: Revise in case of moving stations
             if var in vi:
                 sd.var_info[var].update(vi[var])
-                if vi[var].get(
-                    "altitude", False
+                if (
+                    "altitude" in vi[var]
                 ):  # vertical profile altitude stored in var_info, crop to match series
                     sd.var_info["altitude"] = vi[var]["altitude"][tmask]
             if len(series.index) == len(series.index.unique()):
