@@ -61,8 +61,10 @@ variables:
 
 2023:
   ALL:
-    - NO0042*
+    - NO0043R
     - DK0010G
+    - IT0019*
+
   NO:
     - BE0007*
     - DK0008*
