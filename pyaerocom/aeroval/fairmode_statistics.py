@@ -176,11 +176,11 @@ class FairmodeStatistics:
 
     @staticmethod
     def _exceedances_indicators(data: xr.DataArray, var_name: str) -> tuple[np.array]:
-        if var_name == "concno2":
-            new_data = data.resample(time="1D", skipna=True).max()
-        else:
-            new_data = data
-
+        # if var_name == "concno2":
+        #     new_data = data.resample(time="1D", skipna=True).max()
+        # else:
+        #     new_data = data
+        new_data = data
         obsvals = new_data.data[0]
         modvals = new_data.data[1]
 
