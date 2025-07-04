@@ -218,7 +218,7 @@ commands_pre =
     python --version
     python -m pip freeze --all
 commands =
-    python -m pytest . -n auto -ra -q {posargs:--cov --no-cov-on-fail}
+    python -m pytest . -n auto --order-group-scope=module -ra -q {posargs:--cov --no-cov-on-fail}
 extras =
     test
 setenv =
