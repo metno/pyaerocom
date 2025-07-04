@@ -70,6 +70,7 @@ variables:
     - ES0017*
     - LV0010*
     - MT0001*
+    - SI0008*
   NO2:
     - BE0007*
     - DK0008*
@@ -77,6 +78,7 @@ variables:
     - ES0017*
     - LV0010*
     - MT0001*
+    - SI0008*
   NO3:
     - EE0009*
   NH4:
@@ -91,6 +93,7 @@ variables:
     - ES0012*
     - ES0016*
   SO4:
+    - BE0007*
     - CZ0003*
     - EE0009*
 
