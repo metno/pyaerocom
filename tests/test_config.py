@@ -103,17 +103,17 @@ def test_user_specific_paths_ini():
     # test if user specific paths.ini file is read
     CHANGE_NAME = "NAME_CHANGED_FOR_TESTING"
     CHECK_NAME = "GAWTADSUBSETAASETAL"
-    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME)
+    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME + ".CI")
     # we don't want to interfere with the developer's paths.ini
     # so move that away for a sec
-    file_exist_flag = False
-    if Path(user_file).exists():
-        tmp_file = user_file + ".CI.tmp"
-        os.rename(user_file, tmp_file)
-        file_exist_flag = True
-        del_flag = False
-    else:
-        del_flag = True
+    # file_exist_flag = False
+    # if Path(user_file).exists():
+    #     tmp_file = user_file + ".CI.tmp"
+    #     os.rename(user_file, tmp_file)
+    #     file_exist_flag = True
+    #     del_flag = False
+    # else:
+    #     del_flag = True
     with open(DEFAULT_PATHS_INI) as infile, open(user_file, "w") as outfile:
         for line in infile:
             if CHECK_NAME in line:
@@ -130,12 +130,13 @@ def test_user_specific_paths_ini():
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()
 
-    if file_exist_flag:
-        os.rename(tmp_file, user_file)
-    elif del_flag:
-        os.remove(user_file)
-    else:
-        pass
+    # if file_exist_flag:
+    #     os.rename(tmp_file, user_file)
+    # elif del_flag:
+    #     os.remove(user_file)
+    # else:
+    #     pass
+    os.remove(user_file)
 
 
 def test_Config_read_config():
@@ -159,14 +160,14 @@ def test_Config_read_config_partly_deleted():
         lines = f.readlines()
         # remove 10 lines to call the addition of non-existing keys on CI
         lines = lines[0:-10]
-    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME)
+    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME + ".CI.part")
     # we don't want to interfere with the developer's paths.ini
     # so move that away for a sec
-    file_exist_flag = False
-    if Path(user_file).exists():
-        tmp_file = user_file + ".CI.tmp"
-        os.rename(user_file, tmp_file)
-        file_exist_flag = True
+    # file_exist_flag = False
+    # if Path(user_file).exists():
+    #     tmp_file = user_file + ".CI.tmp"
+    #     os.rename(user_file, tmp_file)
+    #     file_exist_flag = True
     with open(user_file, "w") as outfile:
         outfile.writelines(lines)
 
@@ -176,15 +177,17 @@ def test_Config_read_config_partly_deleted():
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()
-    if file_exist_flag:
-        # for local testing
-        os.rename(user_file, user_file + ".CI.sav")
-        os.rename(tmp_file, user_file)
-    else:
-        os.remove(user_file)
-        # this unfortunately leaves a file named ~/MyPyaerocom/paths.ini.backup*
-        # from the test. But finding and deleting that can prove difficult
-        # so we live with that
+    # if file_exist_flag:
+    #     # for local testing
+    #     os.rename(user_file, user_file + ".CI.sav")
+    #     os.rename(tmp_file, user_file)
+    # else:
+    #     os.remove(user_file)
+    # this unfortunately leaves a file named ~/MyPyaerocom/paths.ini.backup*
+    # from the test. But finding and deleting that can prove difficult
+    # so we live with that
+
+    os.remove(user_file)
 
 
 def test_empty_class_header(empty_cfg):
