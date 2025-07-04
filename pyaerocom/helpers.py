@@ -534,7 +534,7 @@ def _merge_stats_2d(
 
     # remove first station from the list
     merged = stats.pop(0)
-    for i, stat in enumerate(stats):
+    for _, stat in enumerate(stats):
         merged.merge_other(
             stat,
             var_name,

@@ -381,7 +381,7 @@ def colocate_vertical_profile_gridded(
 
         else:
             data_ref_meta_idxs_with_var_info.append(key)
-    breakpoint()
+
     if any(
         data.altitude.units != Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
         for i in data_ref_meta_idxs_with_var_info

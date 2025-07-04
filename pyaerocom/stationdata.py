@@ -1234,10 +1234,11 @@ class StationData(StationMetaData):
 
         data = outdata[var_name]
 
+        breakpoint()
         if not isinstance(data, pd.Series | xr.DataArray):
             data = outdata.to_timeseries(var_name)
         resampler = TimeResampler(data)
-
+        breakpoint()
         new = resampler.resample(
             to_ts_type=to_ts_type,
             from_ts_type=from_ts_type,
@@ -1272,6 +1273,11 @@ class StationData(StationMetaData):
             )
             outdata.data_flagged[var_name] = new_flag
             assert len(outdata.data_flagged[var_name]) == len(outdata[var_name])
+
+        # LB: Pick up with how to sample altitude data
+        if outdata["var_info"][var_name].get("altitude", False):
+            # if altitude is available, then resample it as well
+            pass
 
         outdata.var_info[var_name]["ts_type"] = to_ts_type.val
         outdata.var_info[var_name].update(resampler.last_setup)
