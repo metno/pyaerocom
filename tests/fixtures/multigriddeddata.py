@@ -1,0 +1,43 @@
+import pytest
+from tests.fixtures.data_access import TEST_DATA
+from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
+from pyaerocom import GriddedData
+
+EMEP_DATA_PATH = TEST_DATA["MODELS"].path / "EMEP_cities"
+UEMEP_DATA_PATH = TEST_DATA["MODELS"].path / "uEMEP_cities"
+
+EMEP_FILE_PATHS = [
+    EMEP_DATA_PATH / "Amsterdam",
+    EMEP_DATA_PATH / "Berlin",
+]
+
+UEMEP_FILE_PATHS = [
+    UEMEP_DATA_PATH / "Bordeaux",
+    UEMEP_DATA_PATH / "Lyon",
+]
+
+
+@pytest.fixture(scope="session")
+def path_emep() -> list[str]:
+    return EMEP_FILE_PATHS
+
+
+@pytest.fixture(scope="session")
+def path_uemep() -> list[str]:
+    return UEMEP_FILE_PATHS
+
+
+@pytest.fixture(scope="session")
+def cities_data() -> dict[str, list[GriddedData]]:
+    data_dict = {}
+
+    data_dict["uEMEP"] = [
+        ReadMscwCtm("uemep", str(ddir)).read_var("concpm25", ts_type="hourly")
+        for ddir in UEMEP_FILE_PATHS
+    ]
+    data_dict["EMEP"] = [
+        ReadMscwCtm("emep", str(ddir)).read_var("concpm25", ts_type="monthly")
+        for ddir in EMEP_FILE_PATHS
+    ]
+
+    return data_dict

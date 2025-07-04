@@ -63,7 +63,9 @@ class MultiGriddedData:
         if len(self.children) == 0:
             self._initiate(data)
 
-        if data.proj_info is not None or self.proj_info is not None:
+        if type(data.proj_info) != type(self.proj_info):
+            raise MultiGriddedDataException(f"Proj info from added griddeddata and existing proj info do not have the same type: {type(data.proj_info), {type(self.proj_info)}}")
+        if data.proj_info is not None and self.proj_info is not None:
             if data.proj_info != self.proj_info:
                 raise MultiGriddedDataException(
                     "Proj data of added griddeddata is different from the existing proj info"
@@ -101,58 +103,58 @@ class MultiGriddedData:
 
         self.children.append(data)
 
-    def _add_coord(
-        self, old_dim: DimCoord | AuxCoord, new_dim: DimCoord | AuxCoord
-    ) -> DimCoord | AuxCoord:
-        points = np.concatenate((old_dim.points, new_dim.points))
+    # def _add_coord(
+    #     self, old_dim: DimCoord | AuxCoord, new_dim: DimCoord | AuxCoord
+    # ) -> DimCoord | AuxCoord:
+    #     points = np.concatenate((old_dim.points, new_dim.points))
 
-        if type(new_dim) is not type(new_dim):
-            raise MultiGriddedDataException("New dim was not of the same type as old dim")
-        if isinstance(old_dim, AuxCoord):
-            return_dim = AuxCoord
-        else:
-            return_dim = DimCoord
+    #     if type(new_dim) is not type(new_dim):
+    #         raise MultiGriddedDataException("New dim was not of the same type as old dim")
+    #     if isinstance(old_dim, AuxCoord):
+    #         return_dim = AuxCoord
+    #     else:
+    #         return_dim = DimCoord
 
-        return return_dim(
-            points,
-            standard_name=old_dim.standard_name,
-            long_name=old_dim.long_name,
-            var_name=old_dim.var_name,
-            units=old_dim.units,
-            bounds=old_dim.bounds,
-            attributes=old_dim.attributes,
-            coord_system=old_dim.coord_system,
-        )
+    #     return return_dim(
+    #         points,
+    #         standard_name=old_dim.standard_name,
+    #         long_name=old_dim.long_name,
+    #         var_name=old_dim.var_name,
+    #         units=old_dim.units,
+    #         bounds=old_dim.bounds,
+    #         attributes=old_dim.attributes,
+    #         coord_system=old_dim.coord_system,
+    #     )
 
-    def get_min_max_x_y(self) -> tuple[list[float, float]] | None:
-        if self.proj_info is None:
-            return None
+    # def get_min_max_x_y(self) -> tuple[list[float, float]] | None:
+    #     if self.proj_info is None:
+    #         return None
 
-        x = []
-        y = []
-        for data in self.children:
-            for coord in data.cube.dim_coords:
-                if coord.var_name == data.proj_info.x_axis:
-                    vals = coord.points
-                    xrange = (np.min(vals), np.max(vals))
-                if coord.var_name == data.proj_info.y_axis:
-                    vals = coord.points
-                    yrange = (np.min(vals), np.max(vals))
-            if xrange is None or yrange is None:
-                raise ValueError(
-                    f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
-                )
-            if len(x) == 0:
-                x = xrange[:]
-                y = yrange[:]
-            else:
-                new_x = [np.min([x[0], xrange[0]]), np.max([x[1], xrange[1]])]
-                new_y = [np.min([y[0], yrange[0]]), np.max([y[1], yrange[1]])]
+    #     x = []
+    #     y = []
+    #     for data in self.children:
+    #         for coord in data.cube.dim_coords:
+    #             if coord.var_name == data.proj_info.x_axis:
+    #                 vals = coord.points
+    #                 xrange = (np.min(vals), np.max(vals))
+    #             if coord.var_name == data.proj_info.y_axis:
+    #                 vals = coord.points
+    #                 yrange = (np.min(vals), np.max(vals))
+    #         if xrange is None or yrange is None:
+    #             raise ValueError(
+    #                 f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+    #             )
+    #         if len(x) == 0:
+    #             x = xrange[:]
+    #             y = yrange[:]
+    #         else:
+    #             new_x = [np.min([x[0], xrange[0]]), np.max([x[1], xrange[1]])]
+    #             new_y = [np.min([y[0], yrange[0]]), np.max([y[1], yrange[1]])]
 
-                x = new_x[:]
-                y = new_y[:]
+    #             x = new_x[:]
+    #             y = new_y[:]
 
-        return x, y
+    #     return x, y
 
     def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
         if self.proj_info is None:
