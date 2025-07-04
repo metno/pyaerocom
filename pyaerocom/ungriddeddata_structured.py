@@ -413,7 +413,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             assert isinstance(vi, dict)
             if not np.isnan(altitude).all():
                 if "altitude" in vi:
-                    sd.var_info["altitude"] = vi["altitude"][tmask]
+                    sd.var_info["altitude"] = vi[var]["altitude"][tmask]
                 sd.altitude = altitude[0]  # TODO: Revise in case of moving stations
             if var in vi:
                 sd.var_info[var].update(vi[var])
