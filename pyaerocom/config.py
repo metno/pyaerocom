@@ -345,10 +345,14 @@ class Config:
         default_config.read(default_file)
 
         user_keys = {
-            f"{section}_{key}" for section in user_config.sections() for key in section.keys()
+            f"{section}_{key}"
+            for section in user_config.sections()
+            for key in user_config.options(section)
         }
         default_keys = {
-            f"{section}_{key}" for section in default_config.sections() for key in section.keys()
+            f"{section}_{key}"
+            for section in default_config.sections()
+            for key in default_config.options(section)
         }
 
         missing_default_keys = default_keys - user_keys

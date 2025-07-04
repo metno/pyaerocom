@@ -135,7 +135,6 @@ def test_Config_read_config():
     assert Path(cfg.CACHEDIR).exists()
 
 
-@pytest.mark.order(-1)
 def test_Config_read_config_partly_deleted():
     # test if the addition of new lines in the distributions default paths.ini
     # to the user specific one works
