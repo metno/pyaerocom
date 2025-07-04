@@ -384,20 +384,23 @@ class Config:
                         f"Added {_section}/{_key} to ~/MyPyaerocom/paths.ini with default values."
                     )
 
-            if len(extra_user_keys) > 0:
-                for section in user_config.sections():
-                    if section not in default_config.sections():
-                        user_config.remove_section(section)
-                        logger.info(
-                            f"Removed {section} from ~/MyPyaerocom/paths.ini because it's not used by pyaerocom."
-                        )
+            # it's not a good idea to delete additional entries because the user might use an older module
+            # for testing
+            # commenting this out therefore
+            # if len(extra_user_keys) > 0:
+            #     for section in user_config.sections():
+            #         if section not in default_config.sections():
+            #             user_config.remove_section(section)
+            #             logger.info(
+            #                 f"Removed {section} from ~/MyPyaerocom/paths.ini because it's not used by pyaerocom."
+            #             )
 
-                for key in extra_user_keys:
-                    _section, _key = key.split("_", 1)
-                    del user_config[_section][_key]
-                    logger.info(
-                        f"deleted {_section}/{_key} from ~/MyPyaerocom/paths.ini because it's not used by pyaerocom."
-                    )
+            # for key in extra_user_keys:
+            #     _section, _key = key.split("_", 1)
+            #     del user_config[_section][_key]
+            #     logger.info(
+            #         f"deleted {_section}/{_key} from ~/MyPyaerocom/paths.ini because it's not used by pyaerocom."
+            #     )
 
             try:
                 with open(user_file, "w") as fh:
