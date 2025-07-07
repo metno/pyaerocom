@@ -9,6 +9,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (  # _add_heatmap_entry_json
     _prepare_country_regions,
     _prepare_default_regions_json,
     _prepare_htap_regions_json,
+    _prepare_cities_regions_json,
     _prepare_regions_json_helper,
 )
 from pyaerocom.region import get_all_default_region_ids
@@ -16,6 +17,7 @@ from pyaerocom.region_defs import (
     HTAP_REGIONS,
     HTAP_REGIONS_DEFAULT,
     OLD_AEROCOM_REGIONS,
+    EU_CITIES_REGIONS,
     OTHER_REGIONS,
 )
 
@@ -30,6 +32,7 @@ def test__init_stats_dummy():
     "region_ids",
     [
         param(OLD_AEROCOM_REGIONS, id="old AeroCom"),
+        param(EU_CITIES_REGIONS, id="EU cities"),
         param(HTAP_REGIONS_DEFAULT, id="HTAP default"),
         param(HTAP_REGIONS, id="HTAP"),
         param(OTHER_REGIONS, id="other"),
@@ -71,6 +74,14 @@ def test__prepare_aerocom_regions_json():
     assert [reg.region_id for reg in regions.values()] == region_ids
 
 
+def test__prepare_eu_cities_regions_json():
+    borders, regions = _prepare_cities_regions_json()
+    region_ids = EU_CITIES_REGIONS
+    assert bool(borders) and bool(regions) and bool(region_ids)
+    assert list(borders) == list(regions)
+    assert [reg.region_id for reg in regions.values()] == region_ids
+
+
 def test__prepare_htap_regions_json():
     borders, regions = _prepare_htap_regions_json()
     region_ids = HTAP_REGIONS_DEFAULT
@@ -84,6 +95,7 @@ def test__prepare_htap_regions_json():
     [
         param(OLD_AEROCOM_REGIONS, id="old AeroCom"),
         param(HTAP_REGIONS_DEFAULT, id="HTAP default"),
+        param(EU_CITIES_REGIONS, id="EU cities"),
         param(HTAP_REGIONS, id="HTAP"),
         param(OTHER_REGIONS, id="other"),
     ],

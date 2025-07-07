@@ -1,6 +1,7 @@
 import xarray
 from pytest import approx
 import numpy as np
+from copy import deepcopy
 
 from pyaerocom.projection_information import ProjectionInformation
 from tests.fixtures.data_access import TEST_DATA
@@ -58,3 +59,17 @@ def test_projection_snap():
     (lat, lon) = pi.to_latlon(x0, y0)
     assert x0 == approx(lon, abs=1e-3)
     assert y0 == approx(lat, abs=1e-3)
+
+
+def test___eq__():
+    proj_info1 = ProjectionInformation()
+    proj_info1._x_axis == "x"
+    proj_info1._y_axis == "y"
+
+    proj_info2 = deepcopy(proj_info1)
+
+    proj_info3 = deepcopy(proj_info1)
+    proj_info3._y_axis = "j"
+
+    assert proj_info1 == proj_info2
+    assert proj_info1 != proj_info3
