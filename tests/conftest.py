@@ -16,6 +16,7 @@ pytest_plugins = [
     "tests.fixtures.aeroval.config",
     "tests.fixtures.cams2_83.config",
     "tests.fixtures.pyaro",
+    "tests.fixtures.multigriddeddata",
 ]
 
 TEST_RTOL = 1e-4

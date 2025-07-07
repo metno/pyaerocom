@@ -2,7 +2,6 @@ import pytest
 
 from pyaerocom.multigriddeddata import MultiGriddedData, MultiGriddedDataException
 from pyaerocom import GriddedData
-from tests.fixtures.multigriddeddata import path_emep, path_uemep, cities_data
 
 
 def test___init__():
