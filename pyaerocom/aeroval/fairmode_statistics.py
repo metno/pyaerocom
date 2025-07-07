@@ -176,8 +176,8 @@ class FairmodeStatistics:
 
     @staticmethod
     def _exceedances_indicators(data: xr.DataArray, var_name: str) -> tuple[np.array]:
-        obsvals = data[0]
-        modvals = data[1]
+        obsvals = data.data[0]
+        modvals = data.data[1]
 
         mask = np.isfinite(obsvals) & np.isfinite(modvals)
         obsex = obsvals > EXC_THRESHOLDS[var_name]
