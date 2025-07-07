@@ -21,14 +21,14 @@ UEMEP_FILE_PATHS = [
 ]
 
 
-@pytest.fixture
-def path_emep() -> list[str]:
-    return EMEP_FILE_PATHS
+# @pytest.fixture
+# def path_emep() -> list[str]:
+#     return EMEP_FILE_PATHS
 
 
-@pytest.fixture
-def path_uemep() -> list[str]:
-    return UEMEP_FILE_PATHS
+# @pytest.fixture
+# def path_uemep() -> list[str]:
+#     return UEMEP_FILE_PATHS
 
 
 @pytest.fixture
