@@ -61,7 +61,13 @@ def test_merge_station_data(
     )
     assert isinstance(stat, StationData)
     vardata = stat[var_name]
-    assert len(vardata) == num
+
+    if any([var_name in s.data_err for s in stats]):
+        varerror = stat.data_err[var_name]
+        assert len(vardata) == len(varerror) == num
+    else:
+        assert len(vardata) == num
+
     assert stat.get_var_ts_type(var_name) == tst
     assert np.mean(vardata) == pytest.approx(mean, rel=1e-2)
 
@@ -111,6 +117,7 @@ def fake_hourly_ts():
         ("daily", "1percentile", None, 8, -1),
         ("daily", "25percentile", None, 8, -0.64),
         ("daily", "75percentile", None, 8, 0.64),
+        ("daily", "error", 0, 8, 0.14396119544500605),
     ],
 )
 @pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")

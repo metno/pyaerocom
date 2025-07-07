@@ -37,6 +37,7 @@ from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.variable_helpers import get_variable
 
 from pyaerocom.units import Unit
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -808,6 +809,14 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
     return clim
 
 
+def resample_errors(ds: pd.Series, *args, **kwargs):
+    length = len(ds[ds.notna()])
+    if length == 0:
+        return math.nan
+
+    return math.sqrt((ds**2).sum(skipna=True)) / length
+
+
 def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     """Resample a timeseries (pandas.Series)
 
@@ -839,6 +848,12 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     elif "percentile" in how:
         p = int(how.split("percentile")[0])
         how = lambda x: np.nanpercentile(x, p)  # noqa: E731
+
+    if how == "error":
+        if not isinstance(ts, pd.Series):
+            raise NotImplementedError("Not yet implemented.")
+
+        how = resample_errors
 
     freq, offset = _get_pandas_freq_and_offset(freq)
     resampler = ts.resample(freq)

@@ -181,3 +181,10 @@ def test_unit_conversion2(from_unit: str, to_unit: str, aerocom_var: str, conver
 def test_unit_conversion_fails(from_unit: Unit, to_unit: Unit):
     with pytest.raises(Exception):
         from_unit.convert(1, to_unit)
+
+
+def test_units_species_concso4c():
+    u = Unit("mg S / m3", aerocom_var="concso4c")
+
+    assert u._species == "SO4"
+    assert u.convert(1, Unit("mg m-3", aerocom_var="concso4c")) == pytest.approx(2.99, abs=0.01)

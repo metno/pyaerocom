@@ -68,8 +68,8 @@ class EvalSetup(BaseModel):
     ########################################
 
     io_aux_file: Annotated[
-        Path | str, ".py file containing additional read methods for modeldata"
-    ] = ""
+        Path | str | None, ".py file containing additional read methods for modeldata"
+    ] = None
 
     var_web_info_file: Annotated[Path | str, "config file containing additional variables"] = ""
 
@@ -129,7 +129,9 @@ class EvalSetup(BaseModel):
 
     @cached_property
     def gridded_aux_funs(self) -> dict:
-        if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
+        if not bool(self._aux_funs) and (
+            self.io_aux_file is None or os.path.exists(self.io_aux_file)
+        ):
             self._import_aux_funs()
         return self._aux_funs
 
