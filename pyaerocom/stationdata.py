@@ -1442,7 +1442,7 @@ class StationData(StationMetaData):
             raise DataExtractionError("Cannot interpret input for altitude...")
 
         elif isinstance(data, pd.Series) or len(self.dtime) == len(data):
-            if "altitude" not in self:
+            if "altitude" not in self and "altitude" not in self.var_info[var_name]:
                 raise ValueError("Missing altitude information")
             if not isinstance(data, pd.Series):
                 data = pd.Series(data, self.dtime)

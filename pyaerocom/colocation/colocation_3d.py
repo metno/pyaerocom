@@ -10,6 +10,8 @@ from typing import NamedTuple
 
 import iris
 import numpy as np
+import xarray as xr
+import pandas as pd
 from pyaerocom.units import Unit
 
 from pyaerocom import __version__ as pya_ver
@@ -126,7 +128,6 @@ def _colocate_vertical_profile_gridded(
         # loop over all stations and append to colocated data object
         for i, obs_stat in enumerate(obs_stat_data):
             # Add coordinates to arrays required for xarray.DataArray below
-            # breakpoint()
             lons[i] = obs_stat.longitude
             lats[i] = obs_stat.latitude
             alts[i] = obs_stat.station_coords[
@@ -171,13 +172,50 @@ def _colocate_vertical_profile_gridded(
             obs_stat_this_layer = obs_stat.copy()
 
             try:
-                obs_stat_this_layer[var_ref] = (
-                    obs_stat_this_layer.select_altitude(
-                        var_name=var_ref, altitudes=list(vertical_layer.values())
-                    )
-                    .mean("altitude", skipna=True)  # very important to skip nans here
-                    .to_series()  # make pandas series
+                obs_stat_this_layer[var_ref] = obs_stat_this_layer.select_altitude(
+                    var_name=var_ref, altitudes=list(vertical_layer.values())
                 )
+
+                if isinstance(obs_stat_this_layer[var_ref], xr.DataArray):
+                    obs_stat_this_layer[var_ref] = (
+                        obs_stat_this_layer[var_ref].mean("altitude", skipna=True).to_series()
+                    )  # very important to skip nans here. make pandas series
+                elif isinstance(obs_stat_this_layer[var_ref], pd.Series):
+                    grouped = (
+                        pd.Series(obs_stat_this_layer[var_ref].index)
+                        .groupby(obs_stat_this_layer[var_ref].index)
+                        .groups
+                    )
+                    obs_stat_this_layer[var_ref] = (
+                        obs_stat_this_layer[var_ref]
+                        .groupby(obs_stat_this_layer[var_ref].index)
+                        .agg(np.nanmean)
+                    )
+
+                    obs_stat_this_layer.dtime = obs_stat_this_layer[
+                        var_ref
+                    ].index  # TODO: Check if needed
+                    if var_ref in obs_stat_this_layer.data_err:
+                        grouped_err = {
+                            ts: np.nanmean(obs_stat_this_layer.data_err[var_ref][indices])
+                            for ts, indices in grouped.items()
+                        }
+                        obs_stat_this_layer.data_err[var_ref] = pd.Series(
+                            grouped_err, index=obs_stat_this_layer[var_ref].index
+                        )
+                    if var_ref in obs_stat_this_layer.data_flagged:
+                        grouped_flag = {
+                            ts: np.nanmean(obs_stat_this_layer.data_flagged[var_ref][indices])
+                            for ts, indices in grouped.items()
+                        }
+                        obs_stat_this_layer.data_flagged[var_ref] = pd.Series(
+                            grouped_flag, index=obs_stat_this_layer[var_ref].index
+                        )
+
+                else:
+                    raise TypeError(
+                        f"Unsupported type for {var_ref} in obs_stat_this_layer: {type(obs_stat_this_layer[var_ref])}"
+                    )
             except ValueError:
                 logger.warning(
                     f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data"
@@ -442,6 +480,7 @@ def colocate_vertical_profile_gridded(
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
+
     all_stats = data_ref.to_station_data_all(
         vars_to_convert=var_ref,
         start=obs_start,

@@ -498,7 +498,8 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
 
         is_3d.append(stat.check_if_3d(var_name))
 
-        if var_name in stat.data_err:
+        # TODO: Figure out where all zero errors come from
+        if var_name in stat.data_err and not all(stat.data_err[var_name] == 0):
             has_errs = True
 
         stats.append(stat)
@@ -546,44 +547,97 @@ def _merge_stats_2d(
 
 
 def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
-    dtime = []
-    for stat in stats:
-        _t = stat[var_name].index.unique()
-        if not len(_t) == 1:
-            raise NotImplementedError(
-                "So far, merging of profile data "
-                "requires that profile values are "
-                "sampled at the same time"
-            )
-        dtime.append(_t[0])
-    tidx = pd.DatetimeIndex(dtime)
+    # dtime = []
+    # for stat in stats:
+    #     _t = stat[var_name].index.unique()
+    #     if not len(_t) == 1:
+    #         raise NotImplementedError(
+    #             "So far, merging of profile data "
+    #             "requires that profile values are "
+    #             "sampled at the same time"
+    #         )
+    #     dtime.append(_t[0])
+    # tidx = pd.DatetimeIndex(dtime)
 
-    # AeroCom default vertical grid
+    # # AeroCom default vertical grid
+    # vert_grid = const.make_default_vert_grid()
+    # _data = np.ones((len(vert_grid), len(tidx))) * np.nan
+    # if has_errs:
+    #     _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
+
+    # for i, stat in enumerate(stats):
+    #     if i == 0:
+    #         merged = stat
+    #     else:
+    #         merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
+
+    #     _data[:, i] = np.interp(vert_grid, stat["altitude"], stat[var_name].values)
+
+    #     if has_errs:
+    #         try:
+    #             _data_err[:, i] = np.interp(
+    #                 vert_grid, stat["altitude"], stat.data_err[var_name]
+    #             )
+    #         except Exception:
+    #             pass
+    # _coords = {"time": tidx, "altitude": vert_grid}
+
+    # d = xr.DataArray(
+    #     data=_data, coords=_coords, dims=["altitude", "time"], name=var_name
+    # )
+    # d = d.sortby("time")
+    # merged[var_name] = d
+    # merged.dtime = d.time
+    # merged.altitude = d.altitude
+    # return merged
     vert_grid = const.make_default_vert_grid()
-    _data = np.ones((len(vert_grid), len(tidx))) * np.nan
-    if has_errs:
-        _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
+
+    all_profiles = []
+    all_times = []
+    all_errors = []
 
     for i, stat in enumerate(stats):
+        # Merge metadata if not in first object
         if i == 0:
             merged = stat
         else:
             merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
+        times = stat[var_name].index.unique()
+        for t in times:
+            profile = stat[var_name].loc[t]
+            it = stat[var_name].index.get_loc(t)
+            altitude = stat.var_info[var_name]["altitude"][it]
 
-        _data[:, i] = np.interp(vert_grid, stat["altitude"], stat[var_name].values)
+            # LB: at this part of the processing, each StationData object should only have it's own altitudes.
+            # Interpolate profile to the default vertical grid
+            interpolated_profile = np.interp(vert_grid, altitude, profile.values)
+            all_profiles.append(interpolated_profile)
+            all_times.append(t)
 
-        if has_errs:
-            try:
-                _data_err[:, i] = np.interp(vert_grid, stat["altitude"], stat.data_err[var_name])
-            except Exception:
-                pass
-    _coords = {"time": tidx, "altitude": vert_grid}
-
+            if has_errs:
+                try:
+                    profile_err = stat.data_err[var_name][it]
+                    interpolated_err = np.interp(vert_grid, altitude, profile_err)
+                    all_errors.append(interpolated_err)
+                except Exception:
+                    all_errors.append(np.full_like(vert_grid, np.nan))
+    # Create a DataArray with the merged profiles
+    all_times = pd.DatetimeIndex(all_times)
+    _data = np.vstack(all_profiles).T  # Stack profiles vertically. Shape: (altitude, time)
+    _coords = {"time": all_times, "altitude": vert_grid}
     d = xr.DataArray(data=_data, coords=_coords, dims=["altitude", "time"], name=var_name)
     d = d.sortby("time")
+
     merged[var_name] = d
     merged.dtime = d.time
     merged.altitude = d.altitude
+
+    if has_errs:
+        _data_err = np.vstack(all_errors).T  # Stack errors vertically
+        err_arr = xr.DataArray(
+            data=_data_err, coords=_coords, dims=["altitude", "time"], name=var_name
+        )
+        merged.data_err[var_name] = err_arr
     return merged
 
 

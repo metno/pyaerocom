@@ -420,7 +420,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 if (
                     "altitude" in vi[var]
                 ):  # vertical profile altitude stored in var_info, crop to match series
-                    sd.var_info["altitude"] = vi[var]["altitude"][tmask]
+                    sd.var_info[var]["altitude"] = vi[var]["altitude"][tmask]
+                    assert len(sd.var_info[var]["altitude"]) == len(series)
             if len(series.index) == len(series.index.unique()):
                 sd.var_info[var]["overlap"] = False
             else:
