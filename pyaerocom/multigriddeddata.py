@@ -74,7 +74,7 @@ class MultiGriddedData:
 
         if data.var_name != self.var_name:
             raise MultiGriddedDataException(
-                f"Var name of added griddeddata {data.var_name} is different from the existing var name {self.var_name}"
+                f"var_name of added griddeddata {data.var_name} is different from the existing var name {self.var_name}"
             )
 
         if data.ts_type != self.ts_type:

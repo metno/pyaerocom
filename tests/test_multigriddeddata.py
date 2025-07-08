@@ -1,4 +1,5 @@
 import pytest
+from copy import deepcopy
 
 from pyaerocom.multigriddeddata import MultiGriddedData, MultiGriddedDataException
 from pyaerocom import GriddedData
@@ -96,7 +97,7 @@ def test_get_xyranges(cities_data):
 # Tests for error handling
 
 
-def test_add_griddeddata_error(cities_data):
+def test_add_griddeddata_different_model(cities_data):
     data_id = "test_id"
     mg = MultiGriddedData(data_id)
 
@@ -110,3 +111,29 @@ def test_add_griddeddata_error(cities_data):
         match="Proj info from added griddeddata and existing proj info do not have the same type*",
     ):
         mg.add_griddeddata(uemep)
+
+
+@pytest.mark.parametrize(
+    "attribute,attr_value",
+    [
+        ["var_name", "concpm10"],
+        ["ts_type", "daily"],
+        ["units", "1"],
+    ],
+)
+def test_add_griddeddata_errors(cities_data, attribute, attr_value):
+    data_id = "test_id"
+    mg = MultiGriddedData(data_id)
+
+    emep = cities_data["EMEP"][0]
+    emep2 = deepcopy(cities_data["EMEP"][1])
+
+    setattr(emep2, attribute, attr_value)
+
+    mg.add_griddeddata(emep)
+
+    with pytest.raises(
+        MultiGriddedDataException,
+        match=f"{attribute} of added griddeddata*",
+    ):
+        mg.add_griddeddata(emep2)
