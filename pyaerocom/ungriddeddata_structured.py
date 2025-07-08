@@ -311,7 +311,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
         for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
-                logger.warning(f"skipping protected key: {key}")
+                logger.warning(f"Skipping protected key: {key}")
                 continue
             try:
                 sd[key] = meta[key]

@@ -48,7 +48,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                logger.warning("failed to process superobs...")
+                logger.warning("Failed to process superobs...")
         elif ocfg.only_superobs:
             logger.info(
                 f"Skipping json processing of {obs_name}, as this is "
@@ -173,7 +173,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             self.update_interface()
         if use_dummy_model:
             delete_dummy_model(model_id)
-        logger.info("Finished processing.")
+        logger.info("Finished processing. 🎉")
 
     def update_interface(self):
         """Update aeroval interface

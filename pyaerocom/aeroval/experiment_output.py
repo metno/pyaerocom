@@ -198,7 +198,7 @@ class ExperimentOutput(ProjectOutput):
 
         """
         if not self.results_available:
-            logger.warning(f"no output available for experiment {self.exp_id} in {self.proj_id}")
+            logger.warning(f"No output available for experiment {self.exp_id} in {self.proj_id} ⚠️")
             return
         exp_data = {"public": self.cfg.exp_info.public}
         self._add_entry_experiments_json(self.exp_id, exp_data)

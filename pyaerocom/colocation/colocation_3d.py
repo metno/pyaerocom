@@ -12,6 +12,7 @@ import iris
 import numpy as np
 import xarray as xr
 import pandas as pd
+import warnings
 from pyaerocom.units import Unit
 
 from pyaerocom import __version__ as pya_ver
@@ -186,24 +187,34 @@ def _colocate_vertical_profile_gridded(
                         .groupby(obs_stat_this_layer[var_ref].index)
                         .groups
                     )
-                    obs_stat_this_layer[var_ref] = (
-                        obs_stat_this_layer[var_ref]
-                        .groupby(obs_stat_this_layer[var_ref].index)
-                        .agg(np.nanmean)
-                    )
-
+                    with warnings.catch_warnings():
+                        warnings.simplefilter(
+                            "ignore", FutureWarning
+                        )  # Ignore pandas warning about directly future versions using np.nanmean directly
+                        warnings.simplefilter(
+                            "ignore", RuntimeWarning
+                        )  # Ignore numpy warning about nanmean empty slice
+                        obs_stat_this_layer[var_ref] = (
+                            obs_stat_this_layer[var_ref]
+                            .groupby(obs_stat_this_layer[var_ref].index)
+                            .agg(np.nanmean)
+                        )
                     obs_stat_this_layer.dtime = obs_stat_this_layer[
                         var_ref
                     ].index  # TODO: Check if needed
                     if var_ref in obs_stat_this_layer.data_err:
-                        grouped_err = {
-                            ts: np.nanmean(obs_stat_this_layer.data_err[var_ref][indices])
-                            for ts, indices in grouped.items()
-                        }
+                        with warnings.catch_warnings():
+                            warnings.simplefilter(action="ignore", category=RuntimeWarning)
+                            grouped_err = {
+                                ts: np.nanmean(obs_stat_this_layer.data_err[var_ref][indices])
+                                for ts, indices in grouped.items()
+                            }
                         obs_stat_this_layer.data_err[var_ref] = pd.Series(
                             grouped_err, index=obs_stat_this_layer[var_ref].index
                         )
                     if var_ref in obs_stat_this_layer.data_flagged:
+                        with warnings.catch_warnings():
+                            warnings.simplefilter(action="ignore", category=RuntimeWarning)
                         grouped_flag = {
                             ts: np.nanmean(obs_stat_this_layer.data_flagged[var_ref][indices])
                             for ts, indices in grouped.items()
@@ -218,7 +229,7 @@ def _colocate_vertical_profile_gridded(
                     )
             except ValueError:
                 logger.warning(
-                    f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data"
+                    f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data ⏭️"
                 )
                 continue
 

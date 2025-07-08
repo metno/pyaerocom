@@ -2615,7 +2615,7 @@ class GriddedData:
             if key == "var_name" and not isinstance(val, str):
                 logger.warning(
                     f"Skipping assignment of var_name from metadata in GriddedData, "
-                    f"since attr. needs to be str and is {val}"
+                    f"since attr. needs to be str and is {val} ⏭️"
                 )
             else:
                 self._grid.attributes[key] = val

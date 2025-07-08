@@ -716,7 +716,7 @@ class UngriddedData(UngriddedDataMetadata):
 
         for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
-                logger.warning(f"skipping protected key: {key}")
+                logger.warning(f"Skipping protected key: {key}")
                 continue
             try:
                 sd[key] = meta[key]
@@ -815,6 +815,7 @@ class UngriddedData(UngriddedDataMetadata):
                 sd.altitude = altitude
             if var in vi:
                 sd.var_info[var].update(vi[var])
+                # TODO: Check if need to do similar here as what is done in UngriddedDataStructured
 
             if len(data.index) == len(data.index.unique()):
                 sd.var_info[var]["overlap"] = False
