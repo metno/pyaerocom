@@ -571,19 +571,16 @@ class Colocator:
         """
         filtered, ts_types = {}, {}
         for mvar, ovar in var_matches.items():
-            mdata = self.get_model_data(mvar)
-            filtered[mvar] = ovar
-            ts_types[mvar] = mdata.ts_type
-            # try:
-            #     mdata = self.get_model_data(mvar)
-            #     filtered[mvar] = ovar
-            #     ts_types[mvar] = mdata.ts_type
-            # except Exception as e:
-            #     msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
-            #     logger.warning(msg)
-            #     self._processing_status.append([mvar, ovar, 4])
-            #     if self.colocation_setup.raise_exceptions:
-            #         raise ColocationError(msg)
+            try:
+                mdata = self.get_model_data(mvar)
+                filtered[mvar] = ovar
+                ts_types[mvar] = mdata.ts_type
+            except Exception as e:
+                msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
+                logger.warning(msg)
+                self._processing_status.append([mvar, ovar, 4])
+                if self.colocation_setup.raise_exceptions:
+                    raise ColocationError(msg)
         return filtered, ts_types
 
     def _filter_var_matches_files_not_exist(self, var_matches, ts_types):
