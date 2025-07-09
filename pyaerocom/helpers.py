@@ -547,49 +547,6 @@ def _merge_stats_2d(
 
 
 def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
-    # dtime = []
-    # for stat in stats:
-    #     _t = stat[var_name].index.unique()
-    #     if not len(_t) == 1:
-    #         raise NotImplementedError(
-    #             "So far, merging of profile data "
-    #             "requires that profile values are "
-    #             "sampled at the same time"
-    #         )
-    #     dtime.append(_t[0])
-    # tidx = pd.DatetimeIndex(dtime)
-
-    # # AeroCom default vertical grid
-    # vert_grid = const.make_default_vert_grid()
-    # _data = np.ones((len(vert_grid), len(tidx))) * np.nan
-    # if has_errs:
-    #     _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
-
-    # for i, stat in enumerate(stats):
-    #     if i == 0:
-    #         merged = stat
-    #     else:
-    #         merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
-
-    #     _data[:, i] = np.interp(vert_grid, stat["altitude"], stat[var_name].values)
-
-    #     if has_errs:
-    #         try:
-    #             _data_err[:, i] = np.interp(
-    #                 vert_grid, stat["altitude"], stat.data_err[var_name]
-    #             )
-    #         except Exception:
-    #             pass
-    # _coords = {"time": tidx, "altitude": vert_grid}
-
-    # d = xr.DataArray(
-    #     data=_data, coords=_coords, dims=["altitude", "time"], name=var_name
-    # )
-    # d = d.sortby("time")
-    # merged[var_name] = d
-    # merged.dtime = d.time
-    # merged.altitude = d.altitude
-    # return merged
     vert_grid = const.make_default_vert_grid()
 
     all_profiles = []
