@@ -564,8 +564,6 @@ def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
             profile = stat[var_name].loc[t]
             it = stat[var_name].index.get_loc(t)
             altitude = stat.var_info[var_name]["altitude"][it]
-
-            # LB: at this part of the processing, each StationData object should only have it's own altitudes.
             # Interpolate profile to the default vertical grid
             interpolated_profile = np.interp(vert_grid, altitude, profile.values)
             all_profiles.append(interpolated_profile)
@@ -667,7 +665,6 @@ def merge_station_data(
             raise NotImplementedError("Merging of multivar data not yet possible")
         var_name = var_name[0]
 
-    # LB: check this. might need to implement 3d merging
     stats, is_3d, has_errs = _check_stats_merge(stats, var_name, pref_attr, fill_missing_nan)
     # ToDo: data_err is not handled at the moment for 2D data, needs r
     # revision and should be done in StationData.merge, also 3D vs 2D

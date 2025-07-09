@@ -719,19 +719,6 @@ class StationData(StationMetaData):
             ):  # only 2 unique values in altitude array but one is NaN
                 return False
             return True
-        # if "altitude" in self: # LB: self.altitude refers the the STATION altitude, not the altitude of the data.
-        #     val = self["altitude"]
-        #     if isnumeric(val):  # is numerical value
-        #         return False
-        #     # unique altitude values
-        #     uvals = np.unique(val)
-        #     if len(uvals) == 1:  # only one value in altitude array (NOT 3D)
-        #         return False
-        #     elif (
-        #         len(uvals[~np.isnan(uvals)]) == 1
-        #     ):  # only 2 unique values in altitude array but one is NaN
-        #         return False
-        #     return True
         return False
 
     def _check_ts_types_for_merge(self, other: StationData, var_name: str):
