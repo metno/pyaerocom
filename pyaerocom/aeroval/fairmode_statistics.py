@@ -176,7 +176,6 @@ class FairmodeStatistics:
 
     @staticmethod
     def _exceedances_indicators(data: xr.DataArray, var_name: str) -> tuple[np.array]:
-
         obsvals = data.data[0]
         modvals = data.data[1]
 
