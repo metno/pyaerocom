@@ -100,30 +100,27 @@ def test_Config_has_access_lustre():
 
 
 def test_user_specific_paths_ini():
-    # test if user specific paths.ini file is read
+    # test if user-specific paths.ini file is read
     CHANGE_NAME = "NAME_CHANGED_FOR_TESTING"
     CHECK_NAME = "GAWTADSUBSETAASETAL"
-    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME)
-    # only create user_file if it doesn't exist
-    del_flag = False
-    if not os.path.exists(user_file):
-        with open(DEFAULT_PATHS_INI) as infile, open(user_file, "w") as outfile:
-            for line in infile:
-                if CHECK_NAME in line:
-                    line = f"{CHECK_NAME} = {CHANGE_NAME}\n"
-                else:
-                    line = line.replace("/lustre/storeB/project", "${HOME}")
-                outfile.write(line)
-        del_flag = True
+    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME + ".CI")
+    with open(DEFAULT_PATHS_INI) as infile, open(user_file, "w") as outfile:
+        for line in infile:
+            if CHECK_NAME in line:
+                line = f"{CHECK_NAME} = {CHANGE_NAME}\n"
+            else:
+                line = line.replace("/lustre/storeB/project", "${HOME}")
+            outfile.write(line)
 
     assert os.path.exists(user_file)
-    # no real test here for now since we would need to get rid of the already loaded const module
-    # and recreate that The following does not work due to caching
-    # cfg = testmod.Config(try_infer_environment=False)
-    # assert cfg.GAWTADSUBSETAASETAL == CHANGE_NAME
+    cfg = testmod.Config(try_infer_environment=False)
+    cfg.read_config(user_file)
+    assert cfg.GAWTADSUBSETAASETAL_NAME == CHANGE_NAME
+    assert Path(cfg.OUTPUTDIR).exists()
+    assert Path(cfg.COLOCATEDDATADIR).exists()
+    assert Path(cfg.CACHEDIR).exists()
 
-    if del_flag:
-        os.remove(user_file)
+    os.remove(user_file)
 
 
 def test_Config_read_config():
@@ -136,6 +133,28 @@ def test_Config_read_config():
     assert Path(cfg.OUTPUTDIR).exists()
     assert Path(cfg.COLOCATEDDATADIR).exists()
     assert Path(cfg.CACHEDIR).exists()
+
+
+def test_Config_read_config_partly_deleted():
+    # test if the addition of new lines in the distributions default paths.ini
+    # to the user specific one works
+    # create testfile from default and remove some lines
+    with open(DEFAULT_PATHS_INI) as f:
+        lines = f.readlines()
+        # remove 10 lines to call the addition of non-existing keys on CI
+        lines = lines[0:-10]
+    user_file = os.path.join(const.my_pyaerocom_dir, const.PATHS_INI_NAME + ".CI.part")
+    with open(user_file, "w") as outfile:
+        outfile.writelines(lines)
+
+    cfg = testmod.Config(try_infer_environment=True)
+    assert Path(user_file).exists()
+    cfg.read_config(user_file)
+    assert Path(cfg.OUTPUTDIR).exists()
+    assert Path(cfg.COLOCATEDDATADIR).exists()
+    assert Path(cfg.CACHEDIR).exists()
+
+    os.remove(user_file)
 
 
 def test_empty_class_header(empty_cfg):

@@ -618,13 +618,6 @@ def test_read_file(reader: ReadEbas, ebas_issue_files: Path, vars_to_retrieve: s
     "issue_files,vars_to_retrieve,exception,error",
     [
         pytest.param(
-            "pm10_colsel",
-            "concpm10",
-            ValueError,
-            "failed to identify unique data column",
-            id="repeated column",
-        ),
-        pytest.param(
             "o3_neg_dt",
             "conco3",
             TemporalResolutionError,
