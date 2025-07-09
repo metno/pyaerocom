@@ -63,6 +63,8 @@ def fake_model_data_with_altitude():
 
     data = GriddedData(dummy)
 
+    data.units = "km-1 sr-1"
+
     return data
 
 
