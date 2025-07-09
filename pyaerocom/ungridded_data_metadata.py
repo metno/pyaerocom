@@ -519,7 +519,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
                     if var in self.ALLOWED_COORD_TYPES:
-                        continue  # altitude (and sometimes lat and lon) is not actually a variable but is stored in var_info like one
+                        continue  # altitude is not actually a variable but is stored in var_info like one
                     var_matches.append(var)
         totnum = self._len_datapoints(meta_matches, var_matches)
         return (meta_matches, totnum)
