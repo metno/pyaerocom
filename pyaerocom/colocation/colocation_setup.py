@@ -554,7 +554,6 @@ class ColocationSetup(BaseModel):
             set2 = {frozenset(d.items()) for d in tuple2}
             return set1.isdisjoint(set2)
 
-        breakpoint()
         if not are_tuples_distinct(self.colocation_layer_limits, self.profile_layer_limits):
             raise PydanticCustomError(
                 "Invalid profile and colocation layer limits",
