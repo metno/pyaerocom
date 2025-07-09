@@ -577,7 +577,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         for i, var in enumerate(var_names):
             new.var_idx[var] = var_ids[i]
         new.metadata = {}
-        breakpoint()
+
         for meta_id, meta in enumerate(self.metadata.values()):
             common_vars = [var for var in var_names if var in meta["var_info"]]
             if len(common_vars):
