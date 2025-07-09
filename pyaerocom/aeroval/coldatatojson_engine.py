@@ -48,7 +48,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         """
         converted = []
-        for file in set(files):  # set to remove duplicates
+        for file in files:
             logger.info(f"Processing: {file} 🛠️")
             coldata = ColocatedData(data=file)
             self.process_coldata(coldata)
@@ -201,7 +201,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-        if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
+        if not bool(coldata.data.attrs.get("just_for_viz", False)):  # make the regular json output
             if not diurnal_only:
                 if (
                     use_fairmode and obs_var in SPECIES
@@ -222,7 +222,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                         regs=regs,
                     )
                 logger.info("Processing statistics timeseries for all regions ⏳")
-
+                # breakpoint()
                 self._process_stats_timeseries_for_all_regions(
                     data=data,
                     coldata=coldata,
@@ -260,7 +260,6 @@ class ColdataToJsonEngine(ProcessingEngine):
                 )
         else:
             logger.info("Processing profile data for visualization ⏳")
-
             self._process_profile_data_for_visualization(
                 data=data,
                 use_country=use_country,
