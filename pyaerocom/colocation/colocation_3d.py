@@ -199,9 +199,7 @@ def _colocate_vertical_profile_gridded(
                             .groupby(obs_stat_this_layer[var_ref].index)
                             .agg(np.nanmean)
                         )
-                    obs_stat_this_layer.dtime = obs_stat_this_layer[
-                        var_ref
-                    ].index  # TODO: Check if needed
+                    obs_stat_this_layer.dtime = obs_stat_this_layer[var_ref].index
                     if var_ref in obs_stat_this_layer.data_err:
                         with warnings.catch_warnings():
                             warnings.simplefilter(action="ignore", category=RuntimeWarning)
