@@ -972,6 +972,7 @@ class ColocatedData(BaseModel):
 
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
+        stats["units"] = self.data.var_units[0]
         return stats
 
     def calc_temporal_statistics(self, aggr=None, **kwargs):
