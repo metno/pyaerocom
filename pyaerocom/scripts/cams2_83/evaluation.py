@@ -200,7 +200,7 @@ def runnermedianscores(
     stp = EvalSetup(**cfg)
 
     logger.info(
-        "Running CAMS2_83 Specific Statistics, cache is not cleared, colocated data is assumed in place, regular statistics are assumed to have been run"
+        "Running CAMS2_83 Specific Statistics, cache is not cleared, regular statistics are assumed to have been run"
     )
     if pool > 1:
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")

@@ -10,7 +10,6 @@ import xarray as xr
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
-    BrowseDict,
     dict_to_str,
     list_to_shortstr,
     merge_dicts,
@@ -96,14 +95,14 @@ class StationData(StationMetaData):
     def __init__(self, **meta_info):
         self.dtime = []
 
-        self.var_info: BrowseDict[xr.DataArray, pd.Series] = BrowseDict()
+        self.var_info: dict[xr.DataArray, pd.Series] = {}
 
         self.station_coords = dict.fromkeys(self.STANDARD_COORD_KEYS)
 
-        self.data_err = BrowseDict()
-        self.overlap = BrowseDict()
-        self.numobs = BrowseDict()
-        self.data_flagged = BrowseDict()
+        self.data_err: dict[str, pd.Series] = {}
+        self.overlap = {}
+        self.numobs = {}
+        self.data_flagged: dict[str, pd.Series] = {}
 
         super().__init__(**meta_info)
 
@@ -761,20 +760,41 @@ class StationData(StationMetaData):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         ts_type = self._check_ts_types_for_merge(other, var_name)
 
-        s0 = self.resample_time(
+        stat0 = self.resample_time(
             var_name,
             ts_type=ts_type,
             how=resample_how,
             min_num_obs=min_num_obs,
             inplace=True,
-        )[var_name].dropna()
-        s1 = other.resample_time(
+        )
+        stat1 = other.resample_time(
             var_name,
             ts_type=ts_type,
             how=resample_how,
             min_num_obs=min_num_obs,
             inplace=True,
-        )[var_name].dropna()
+        )
+
+        s0 = stat0[var_name]
+        s1 = stat1[var_name]
+
+        idx0 = s0.index[s0.notna()]
+        idx1 = s1.index[s1.notna()]
+
+        s0 = s0[idx0]
+        s1 = s1[idx1]
+
+        # Note: All errors are resampled as mean of the error even if data values are median or
+        # percentile based. This may give strange values — especially at the tails — it was agreed
+        # to be the best we can do given the general nature of Pyaerocom. Possibly an area for future
+        # improvement.
+        e0 = stat0._get_error_timeseries(var_name)[idx0]
+        e1 = stat1._get_error_timeseries(var_name)[idx1]
+
+        # Note: Resampling flags isn't really meaningful and flags aren't really used for anything as of
+        # 2025-06-30. For now these are resampled as the mean, to maintain a shape consistent with the data.
+        f0 = stat0._get_flag_timeseries(var_name)[idx0]
+        f1 = stat1._get_flag_timeseries(var_name)[idx1]
 
         info = other.var_info[var_name]
         removed = None
@@ -789,12 +809,19 @@ class StationData(StationMetaData):
                     # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
                     # s1 = s1.drop(index=overlap, inplace=True)
                     s1.drop(index=overlap, inplace=True)
+                    e1.drop(index=overlap, inplace=True)
+                    f1.drop(index=overlap, inplace=True)
                 # compute merged time series
                 if len(s1) > 0:
                     s0 = pd.concat([s0, s1], verify_integrity=True)
+                    e0 = pd.concat([e0, e1], verify_integrity=True)
+                    f0 = pd.concat([f0, f1], verify_integrity=True)
 
                 # sort the concatenated series based on timestamps
-                s0.sort_index(inplace=True)
+                idx = s0.index.argsort()
+                s0 = s0.iloc[idx]
+                e0 = e0.iloc[idx]
+                f0 = f0.iloc[idx]
                 self.merge_varinfo(other, var_name)
             except KeyError:
                 logger.warning(
@@ -805,6 +832,13 @@ class StationData(StationMetaData):
 
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
+        self.data_err[var_name] = e0
+        self.data_flagged[var_name] = f0
+
+        assert (
+            len(self[var_name]) == len(self.data_err[var_name]) == len(self.data_flagged[var_name])
+        )
+
         self.dtime = s0.index.values
 
         if removed is not None:
@@ -1140,6 +1174,7 @@ class StationData(StationMetaData):
         new.var_info[var_name]["clim_mincount"] = clim_mincount
         new.data_err[var_name] = clim["std"]
         new.numobs[var_name] = clim["numobs"]
+        assert len(new.data_err[var_name]) == len(new[var_name])
         return new
 
     def resample_time(
@@ -1196,6 +1231,7 @@ class StationData(StationMetaData):
         if not isinstance(data, pd.Series | xr.DataArray):
             data = outdata.to_timeseries(var_name)
         resampler = TimeResampler(data)
+
         new = resampler.resample(
             to_ts_type=to_ts_type,
             from_ts_type=from_ts_type,
@@ -1203,8 +1239,34 @@ class StationData(StationMetaData):
             min_num_obs=min_num_obs,
             **kwargs,
         )
-
         outdata[var_name] = new
+        new_err = None
+        if var_name in outdata.data_err:
+            err = pd.Series(outdata.data_err[var_name], index=data.index.copy())
+            resampler_err = TimeResampler(err)
+            new_err = resampler_err.resample(
+                to_ts_type=to_ts_type,
+                from_ts_type=from_ts_type,
+                how="error",
+                min_num_obs=min_num_obs,
+            )
+            outdata.data_err[var_name] = new_err
+            assert len(outdata.data_err[var_name]) == len(outdata[var_name])
+
+        new_flag = None
+        if var_name in outdata.data_flagged:
+            flag = pd.Series(outdata.data_flagged[var_name], index=data.index.copy())
+            resampler_flag = TimeResampler(flag)
+
+            new_flag = resampler_flag.resample(
+                to_ts_type=to_ts_type,
+                from_ts_type=from_ts_type,
+                how="mean",
+                min_num_obs=min_num_obs,
+            )
+            outdata.data_flagged[var_name] = new_flag
+            assert len(outdata.data_flagged[var_name]) == len(outdata[var_name])
+
         outdata.var_info[var_name]["ts_type"] = to_ts_type.val
         outdata.var_info[var_name].update(resampler.last_setup)
         # there is other variables that are not resampled
@@ -1563,3 +1625,24 @@ class StationData(StationMetaData):
             s += series
 
         return s
+
+    def _get_error_timeseries(self, var_name: str) -> pd.Series:
+        """Returns the error timeseries for a given value as a pandas Series. If no
+        error values exist, a Series of matching size to the data values filled with
+        NaN will be returned.
+
+        :param var_name: Variable name.
+        :return: Series containing error values.
+        """
+        if var_name in self.data_err:
+            assert len(self.data_err[var_name]) == len(self[var_name])
+            return pd.Series(self.data_err[var_name], index=self[var_name].index.copy())
+
+        return pd.Series([np.nan] * len(self[var_name]), index=self[var_name].index.copy())
+
+    def _get_flag_timeseries(self, var_name: str) -> pd.Series:
+        if var_name in self.data_flagged:
+            assert len(self.data_flagged[var_name]) == len(self[var_name])
+            return pd.Series(self.data_flagged[var_name], index=self[var_name].index.copy())
+
+        return pd.Series([np.nan] * len(self[var_name]), index=self[var_name].index.copy())

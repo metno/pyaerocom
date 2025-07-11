@@ -89,4 +89,8 @@ def stat_R_kendall(
     """
     Kendall's tau implementation.
     """
+    assert len(data) == len(ref_data)
+    if len(data) <= 1:
+        return np.nan
+
     return kendalltau(data, ref_data)[0]

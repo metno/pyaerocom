@@ -166,3 +166,5 @@ playground/
 PATH_TO_AEROVAL_OUT/
 coldata/
 data/
+
+*.prof  # Profiling files

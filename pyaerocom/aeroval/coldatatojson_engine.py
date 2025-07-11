@@ -24,6 +24,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.aeroval.json_utils import round_floats
+from pyaerocom.region import RegionName
 from pyaerocom.units import Unit
 
 logger = logging.getLogger(__name__)
@@ -189,6 +190,8 @@ class ColdataToJsonEngine(ProcessingEngine):
             )
             for region_name, region_info in regborders.items():
                 regions[region_name] = round_floats(region_info)
+
+            regions = {k: v for k, v in sorted(regions.items(), key=lambda x: RegionName(x[0]))}
             self.avdb.put_regions(regions, self.exp_output.proj_id, self.exp_output.exp_id)
 
         use_country = True if regions_how == "country" else False
@@ -250,7 +253,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles")
                 self._process_diurnal_profiles(
-                    coldata=coldata,
+                    coldata=data["hourly"],  # coldata,
                     regions_how=regions_how,
                     regnames=regnames,
                     meta_glob=meta_glob,

@@ -157,7 +157,8 @@ GLOB_CFG = dict(
     # (if available) and Jan/Feb of the same year, while if use_meteorological_seasons=False,
     # it will refer to data from Jan/Feb and December of the same year. (The ['all'] (whole year) key
     # for the year in question will not be affected, so it will refer to data from January 1st to
-    # December 31st.
+    # December 31st. This applies at the moment only to the statistics that make use of
+    # `_select_period_season_coldata`,so not diurnal statistics.
     use_meteorological_seasons=False,
     # Whether or not to add trends output to the analysis. Trends analysis
     # needs at least 7 years of data, so this is skipped here for this
